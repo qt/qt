@@ -923,14 +923,6 @@ void QApplicationPrivate::initialize()
 
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
-
-#ifdef QT_MAC_USE_COCOA
-    // Use the raster graphics system by default on Cocoa, override with
-    // -graphicssystem native
-    if (graphics_system_name.isEmpty()) {
-        graphics_system_name = QLatin1String("raster");
-    }
-#endif
     
 #if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
     // initialize the graphics system - on X11 this is initialized inside

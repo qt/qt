@@ -168,7 +168,7 @@ class BookmarkManager : public QObject
     Q_OBJECT
 
 public:
-    BookmarkManager(QHelpEngineCore* helpEngine);
+    BookmarkManager();
     ~BookmarkManager();
 
     BookmarkModel* treeBookmarkModel();
@@ -208,7 +208,6 @@ private:
     BookmarkModel *treeModel;
     BookmarkModel *listModel;
     QStandardItem *renameItem;
-    QHelpEngineCore *helpEngine;
     QMap<QAction*, QModelIndex> map;
 };
 

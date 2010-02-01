@@ -77,6 +77,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qdatabuffer_p.h>
+#include <private/qtriangulator_p.h>
 
 #include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"
@@ -606,10 +607,13 @@ struct QGL2PEVectorPathCache
 {
 #ifdef QT_OPENGL_CACHE_AS_VBOS
     GLuint vbo;
+    GLuint ibo;
 #else
     float *vertices;
+    quint32 *indices;
 #endif
     int vertexCount;
+    int indexCount;
     GLenum primitiveType;
     qreal iscale;
 };
@@ -620,9 +624,12 @@ void QGL2PaintEngineExPrivate::cleanupVectorPath(QPaintEngineEx *engine, void *d
 #ifdef QT_OPENGL_CACHE_AS_VBOS
     Q_ASSERT(engine->type() == QPaintEngine::OpenGL2);
     static_cast<QGL2PaintEngineEx *>(engine)->d_func()->unusedVBOSToClean << c->vbo;
+    if (c->ibo)
+        d->unusedIBOSToClean << c->ibo;
 #else
     Q_UNUSED(engine);
     qFree(c->vertices);
+    qFree(c->indices);
 #endif
     delete c;
 }
@@ -653,6 +660,9 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
     const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
 
+    // ### Remove before release...
+    static bool do_vectorpath_cache = qgetenv("QT_OPENGL_NO_PATH_CACHE").isEmpty();
+
     // Check to see if there's any hints
     if (path.shape() == QVectorPath::RectangleHint) {
         QGLRect rect(points[0].x(), points[0].y(), points[2].x(), points[2].y());
@@ -664,6 +674,8 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             QVectorPath::CacheEntry *data = path.lookupCacheData(q);
             QGL2PEVectorPathCache *cache;
 
+            bool updateCache = false;
+
             if (data) {
                 cache = (QGL2PEVectorPathCache *) data->data;
                 // Check if scale factor is exceeded for curved paths and generate curves if so...
@@ -673,34 +685,39 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 #ifdef QT_OPENGL_CACHE_AS_VBOS
                         glDeleteBuffers(1, &cache->vbo);
                         cache->vbo = 0;
+                        Q_ASSERT(cache->ibo == 0);
 #else
                         qFree(cache->vertices);
+                        Q_ASSERT(cache->indices == 0);
 #endif
-                        cache->vertexCount = 0;
+                        updateCache = true;
                     }
                 }
             } else {
                 cache = new QGL2PEVectorPathCache;
-                cache->vertexCount = 0;
                 data = const_cast<QVectorPath &>(path).addCacheData(q, cache, cleanupVectorPath);
+                updateCache = true;
             }
 
             // Flatten the path at the current scale factor and fill it into the cache struct.
-            if (!cache->vertexCount) {
+            if (updateCache) {
                 vertexCoordinateArray.clear();
                 vertexCoordinateArray.addPath(path, inverseScale, false);
                 int vertexCount = vertexCoordinateArray.vertexCount();
                 int floatSizeInBytes = vertexCount * 2 * sizeof(float);
                 cache->vertexCount = vertexCount;
+                cache->indexCount = 0;
                 cache->primitiveType = GL_TRIANGLE_FAN;
                 cache->iscale = inverseScale;
 #ifdef QT_OPENGL_CACHE_AS_VBOS
                 glGenBuffers(1, &cache->vbo);
                 glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
                 glBufferData(GL_ARRAY_BUFFER, floatSizeInBytes, vertexCoordinateArray.data(), GL_STATIC_DRAW);
+                cache->ibo = 0;
 #else
                 cache->vertices = (float *) qMalloc(floatSizeInBytes);
                 memcpy(cache->vertices, vertexCoordinateArray.data(), floatSizeInBytes);
+                cache->indices = 0;
 #endif
             }
 
@@ -716,8 +733,6 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         } else {
       //        printf(" - Marking path as cachable...\n");
             // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
-            // ### Remove before release...
-            static bool do_vectorpath_cache = qgetenv("QT_OPENGL_NO_PATH_CACHE").isEmpty();
             if (do_vectorpath_cache)
                 path.makeCacheable();
             vertexCoordinateArray.clear();
@@ -727,31 +742,117 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         }
 
     } else {
-        // The path is too complicated & needs the stencil technique
-        vertexCoordinateArray.clear();
-        vertexCoordinateArray.addPath(path, inverseScale, false);
-
-        fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
-
-        glStencilMask(0xff);
-        glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-
-        if (q->state()->clipTestEnabled) {
-            // Pass when high bit is set, replace stencil value with current clip
-            glStencilFunc(GL_NOTEQUAL, q->state()->currentClip, GL_STENCIL_HIGH_BIT);
-        } else if (path.hasWindingFill()) {
-            // Pass when any bit is set, replace stencil value with 0
-            glStencilFunc(GL_NOTEQUAL, 0, 0xff);
-        } else {
-            // Pass when high bit is set, replace stencil value with 0
-            glStencilFunc(GL_NOTEQUAL, 0, GL_STENCIL_HIGH_BIT);
+        bool useCache = path.isCacheable();
+        if (useCache) {
+            QRectF bbox = path.controlPointRect();
+            // If the path doesn't fit within these limits, it is possible that the triangulation will fail.
+            useCache &= (bbox.left() > -0x8000 * inverseScale)
+                     && (bbox.right() < 0x8000 * inverseScale)
+                     && (bbox.top() > -0x8000 * inverseScale)
+                     && (bbox.bottom() < 0x8000 * inverseScale);
         }
-        prepareForDraw(currentBrush.isOpaque());
 
-        // Stencil the brush onto the dest buffer
-        composite(vertexCoordinateArray.boundingRect());
-        glStencilMask(0);
-        updateClipScissorTest();
+        if (useCache) {
+            QVectorPath::CacheEntry *data = path.lookupCacheData(q);
+            QGL2PEVectorPathCache *cache;
+
+            bool updateCache = false;
+
+            if (data) {
+                cache = (QGL2PEVectorPathCache *) data->data;
+                // Check if scale factor is exceeded for curved paths and generate curves if so...
+                if (path.isCurved()) {
+                    qreal scaleFactor = cache->iscale / inverseScale;
+                    if (scaleFactor < 0.5 || scaleFactor > 2.0) {
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+                        glDeleteBuffers(1, &cache->vbo);
+                        glDeleteBuffers(1, &cache->ibo);
+#else
+                        qFree(cache->vertices);
+                        qFree(cache->indices);
+#endif
+                        updateCache = true;
+                    }
+                }
+            } else {
+                cache = new QGL2PEVectorPathCache;
+                data = const_cast<QVectorPath &>(path).addCacheData(q, cache, cleanupVectorPath);
+                updateCache = true;
+            }
+
+            // Flatten the path at the current scale factor and fill it into the cache struct.
+            if (updateCache) {
+                QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale));
+                cache->vertexCount = polys.vertices.size() / 2;
+                cache->indexCount = polys.indices.size();
+                cache->primitiveType = GL_TRIANGLES;
+                cache->iscale = inverseScale;
+
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+                glGenBuffers(1, &cache->vbo);
+                glGenBuffers(1, &cache->ibo);
+                glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint32) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
+
+                QVarLengthArray<float> vertices(polys.vertices.size());
+                for (int i = 0; i < polys.vertices.size(); ++i)
+                    vertices[i] = float(inverseScale * polys.vertices.at(i));
+                glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+#else
+                cache->vertices = (float *) qMalloc(sizeof(float) * polys.vertices.size());
+                cache->indices = (quint32 *) qMalloc(sizeof(quint32) * polys.indices.size());
+                memcpy(cache->indices, polys.indices.data(), sizeof(quint32) * polys.indices.size());
+                for (int i = 0; i < polys.vertices.size(); ++i)
+                    cache->vertices[i] = float(inverseScale * polys.vertices.at(i));
+#endif
+            }
+
+            prepareForDraw(currentBrush.isOpaque());
+#ifdef QT_OPENGL_CACHE_AS_VBOS
+            glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
+            setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, 0);
+            glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+#else
+            setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, cache->vertices);
+            glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, cache->indices);
+#endif
+
+        } else {
+      //        printf(" - Marking path as cachable...\n");
+            // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
+            if (do_vectorpath_cache)
+                path.makeCacheable();
+
+            // The path is too complicated & needs the stencil technique
+            vertexCoordinateArray.clear();
+            vertexCoordinateArray.addPath(path, inverseScale, false);
+
+            fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
+
+            glStencilMask(0xff);
+            glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+
+            if (q->state()->clipTestEnabled) {
+                // Pass when high bit is set, replace stencil value with current clip
+                glStencilFunc(GL_NOTEQUAL, q->state()->currentClip, GL_STENCIL_HIGH_BIT);
+            } else if (path.hasWindingFill()) {
+                // Pass when any bit is set, replace stencil value with 0
+                glStencilFunc(GL_NOTEQUAL, 0, 0xff);
+            } else {
+                // Pass when high bit is set, replace stencil value with 0
+                glStencilFunc(GL_NOTEQUAL, 0, GL_STENCIL_HIGH_BIT);
+            }
+            prepareForDraw(currentBrush.isOpaque());
+
+            // Stencil the brush onto the dest buffer
+            composite(vertexCoordinateArray.boundingRect());
+            glStencilMask(0);
+            updateClipScissorTest();
+        }
     }
 }
 
@@ -1604,6 +1705,10 @@ bool QGL2PaintEngineEx::end()
     if (!d->unusedVBOSToClean.isEmpty()) {
         glDeleteBuffers(d->unusedVBOSToClean.size(), d->unusedVBOSToClean.constData());
         d->unusedVBOSToClean.clear();
+    }
+    if (!d->unusedIBOSToClean.isEmpty()) {
+        glDeleteBuffers(d->unusedIBOSToClean.size(), d->unusedIBOSToClean.constData());
+        d->unusedIBOSToClean.clear();
     }
 #endif
 

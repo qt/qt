@@ -103,9 +103,11 @@ public:
             mtx2->lock();
             return true;
         }
-        mtx1->unlock();
-        mtx2->lock();
-        mtx1->lock();
+        if (!mtx2->tryLock()) {
+            mtx1->unlock();
+            mtx2->lock();
+            mtx1->lock();
+        }
         return true;
     }
 

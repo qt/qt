@@ -65,6 +65,7 @@ private:
 
 QT_END_NAMESPACE
 
+// #define TRACING_REQUESTED
 #ifdef TRACING_REQUESTED
 #define TRACE_OBJ Tracer traceObj__(Q_FUNC_INFO);
 #else

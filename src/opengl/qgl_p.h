@@ -132,11 +132,15 @@ public:
     QGLFormatPrivate()
         : ref(1)
     {
-        opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
+        opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering
+             | QGL::StencilBuffer | QGL::DeprecatedFunctions;
         pln = 0;
         depthSize = accumSize = stencilSize = redSize = greenSize = blueSize = alphaSize = -1;
         numSamples = -1;
         swapInterval = -1;
+        majorVersion = 1;
+        minorVersion = 0;
+        profile = QGLFormat::NoProfile;
     }
     QGLFormatPrivate(const QGLFormatPrivate *other)
         : ref(1),
@@ -150,7 +154,10 @@ public:
           blueSize(other->blueSize),
           alphaSize(other->alphaSize),
           numSamples(other->numSamples),
-          swapInterval(other->swapInterval)
+          swapInterval(other->swapInterval),
+          majorVersion(other->majorVersion),
+          minorVersion(other->minorVersion),
+          profile(other->profile)
     {
     }
     QAtomicInt ref;
@@ -165,6 +172,9 @@ public:
     int alphaSize;
     int numSamples;
     int swapInterval;
+    int majorVersion;
+    int minorVersion;
+    QGLFormat::OpenGLContextProfile profile;
 };
 
 class QGLWidgetPrivate : public QWidgetPrivate
@@ -342,6 +352,10 @@ public:
 
     void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
     void syncGlState(); // Makes sure the GL context's state is what we think it is
+
+#if defined(Q_WS_WIN)
+    void updateFormatVersion();
+#endif
 
 #if defined(Q_WS_WIN)
     HGLRC rc;

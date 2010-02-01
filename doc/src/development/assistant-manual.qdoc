@@ -154,12 +154,16 @@
         \row
             \o -unregister <doc.qch>
             \o Unregisters the specified compressed help file from the given
-            collection file.
+               collection file.
         \row
             \o -remove-search-index
             \o Purges the help search engine's index. This option is
                useful in case the associated index files get corrupted.
                \QA will re-index the documentation at the next start-up.
+        \row
+            \o -rebuild-search-index
+            \o Rebuilds the help search engine's index. 
+               Note that this operation may take a while to finish.
         \row
             \o -setCurrentFilter <filter>
             \o Sets the given filter as the active filter.

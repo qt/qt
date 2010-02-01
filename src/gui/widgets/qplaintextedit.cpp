@@ -911,6 +911,7 @@ void QPlainTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCurso
         setTopBlock(block.blockNumber(), line);
 
         if (moveCursor) {
+            cursor.setVisualNavigation(true);
             // move using movePosition to keep the cursor's x
             lastY += verticalOffset();
             bool moved = false;

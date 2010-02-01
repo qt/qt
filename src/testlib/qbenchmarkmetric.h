@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtTest module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,23 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef DIRMODEL_H
-#define DIRMODEL_H
+#ifndef QBENCHMARKMETRIC_H
+#define QBENCHMARKMETRIC_H
 
-#include <QDirModel>
+#include <QtTest/qtest_global.h>
 
-// With a QDirModel, set on a view, you will see "Program Files" in the view
-// But with this model, you will see "C:\Program Files" in the view.
-// We acheive this, by having the data() return the entire file path for
-// the display role. Note that the Qt::EditRole over which the QCompleter
-// looks for matches is left unchanged
-//! [0]
-class DirModel : public QDirModel
-{
-public:
-    DirModel(QObject *parent = 0);
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Test)
+
+namespace QTest {
+
+enum QBenchmarkMetric {
+    FramesPerSecond,
+    BitsPerSecond,
+    BytesPerSecond,
+    WalltimeMilliseconds,
+    CPUTicks,
+    InstructionReads,
+    Events
 };
-//! [0]
 
-#endif
+}
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QBENCHMARK_H

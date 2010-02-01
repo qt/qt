@@ -222,6 +222,9 @@ bool qt_gl_preferGL2Engine()
     \value DirectRendering   Specifies that the context is used for direct rendering to a display.
     \value HasOverlay        Enables the use of an overlay.
     \value SampleBuffers     Enables the use of sample buffers.
+    \value DeprecatedFunctions      Enables the use of deprecated functionality for OpenGL 3.x
+                                    contexts. A context with deprecated functionality enabled is
+                                    called a full context in the OpenGL specification.
     \value SingleBuffer      Specifies the use of a single buffer, as opposed to double buffers.
     \value NoDepthBuffer     Disables the use of a depth buffer.
     \value ColorIndex        Specifies that the context should use a color index as its pixel format.
@@ -232,6 +235,9 @@ bool qt_gl_preferGL2Engine()
     \value IndirectRendering Specifies that the context is used for indirect rendering to a buffer.
     \value NoOverlay         Disables the use of an overlay.
     \value NoSampleBuffers   Disables the use of sample buffers.
+    \value NoDeprecatedFunctions    Disables the use of deprecated functionality for OpenGL 3.x
+                                    contexts. A context with deprecated functionality disabled is
+                                    called a forward compatible context in the OpenGL specification.
 
     \sa {Sample Buffers Example}
 */
@@ -1077,6 +1083,88 @@ int QGLFormat::stencilBufferSize() const
 }
 
 /*!
+    \since 4.7
+
+    Set the OpenGL version. If a context compatible with the requested OpenGL version
+    cannot be created, a context compatible with version 1.x is created instead.
+
+    \sa majorVersion(), minorVersion()
+*/
+void QGLFormat::setVersion(int major, int minor)
+{
+    if (major < 1 || minor < 0) {
+        qWarning("QGLFormat::setVersion: Cannot set zero or negative version number %d.%d", major, minor);
+        return;
+    }
+    detach();
+    d->majorVersion = major;
+    d->minorVersion = minor;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL major version.
+
+    \sa setVersion(), minorVersion()
+*/
+int QGLFormat::majorVersion() const
+{
+    return d->majorVersion;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL minor version.
+
+    \sa setVersion(), majorVersion()
+*/
+int QGLFormat::minorVersion() const
+{
+    return d->minorVersion;
+}
+
+/*!
+    \enum QGLFormat::OpenGLContextProfile
+    \since 4.7
+
+    This enum describes the OpenGL context profiles that can be specified for contexts implementing
+    OpenGL version 3.2 or higher. These profiles are different from OpenGL ES profiles.
+
+    \value NoProfile            OpenGL version is lower than 3.2.
+    \value CoreProfile          Functionality deprecated in OpenGL version 3.0 is not available.
+    \value CompatibilityProfile Functionality from earlier OpenGL versions is available.
+*/
+
+/*!
+    \since 4.7
+
+    Set the OpenGL context profile. The profile is ignored if the requested OpenGL
+    version is less than 3.2.
+
+    \sa profile()
+*/
+void QGLFormat::setProfile(OpenGLContextProfile profile)
+{
+    detach();
+    d->profile = profile;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL context profile.
+
+    \sa setProfile()
+*/
+QGLFormat::OpenGLContextProfile QGLFormat::profile() const
+{
+    return d->profile;
+}
+
+
+/*!
     \fn bool QGLFormat::hasOpenGL()
 
     Returns true if the window system has any OpenGL support;
@@ -1112,25 +1200,21 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_Common_Version_1_1 |
                                         QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
-                }
-                else {
+                } else {
                     // Not -CM, must be CL, CommonLite
                     versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_0;
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
                 }
-            }
-            else {
+            } else {
                 // OpenGL ES version 2.0 or higher
                 versionFlags |= QGLFormat::OpenGL_ES_Version_2_0;
             }
-        }
-        else {
+        } else {
             // if < 3 parts to the name, it is an unrecognised OpenGL ES
             qWarning("Unrecognised OpenGL ES version");
         }
-    }
-    else {
+    } else {
         // not ES, regular OpenGL, the version numbers are first in the string
         if (versionString.startsWith(QLatin1String("1."))) {
             switch (versionString[2].toAscii()) {
@@ -1147,30 +1231,35 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             default:
                 break;
             }
-        }
-        else if (versionString.startsWith(QLatin1String("2."))) {
+        } else if (versionString.startsWith(QLatin1String("2."))) {
             versionFlags |= QGLFormat::OpenGL_Version_1_1 |
                             QGLFormat::OpenGL_Version_1_2 |
                             QGLFormat::OpenGL_Version_1_3 |
                             QGLFormat::OpenGL_Version_1_4 |
                             QGLFormat::OpenGL_Version_1_5 |
                             QGLFormat::OpenGL_Version_2_0;
-            QString minorVersion = versionString.section(QLatin1Char(' '), 0, 0).section(QLatin1Char('.'), 1, 1);
-            if (minorVersion == QChar(QLatin1Char('1')))
+            if (versionString[2].toAscii() == '1')
                 versionFlags |= QGLFormat::OpenGL_Version_2_1;
-        }
-        else if (versionString.startsWith(QLatin1String("3."))) {
-         versionFlags |= QGLFormat::OpenGL_Version_1_1 |
-                         QGLFormat::OpenGL_Version_1_2 |
-                         QGLFormat::OpenGL_Version_1_3 |
-                         QGLFormat::OpenGL_Version_1_4 |
-                         QGLFormat::OpenGL_Version_1_5 |
-                         QGLFormat::OpenGL_Version_2_0 |
-                         QGLFormat::OpenGL_Version_2_1 |
-                         QGLFormat::OpenGL_Version_3_0;
-        }
-        else
+        } else if (versionString.startsWith(QLatin1String("3."))) {
+            versionFlags |= QGLFormat::OpenGL_Version_1_1 |
+                            QGLFormat::OpenGL_Version_1_2 |
+                            QGLFormat::OpenGL_Version_1_3 |
+                            QGLFormat::OpenGL_Version_1_4 |
+                            QGLFormat::OpenGL_Version_1_5 |
+                            QGLFormat::OpenGL_Version_2_0 |
+                            QGLFormat::OpenGL_Version_2_1 |
+                            QGLFormat::OpenGL_Version_3_0;
+            switch (versionString[2].toAscii()) {
+            case '2':
+                versionFlags |= QGLFormat::OpenGL_Version_3_2;
+            case '1':
+                versionFlags |= QGLFormat::OpenGL_Version_3_1;
+            default:
+                break;
+            }
+        } else {
             qWarning("Unrecognised OpenGL version");
+        }
     }
     return versionFlags;
 }
@@ -1201,6 +1290,12 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
     \value OpenGL_Version_2_1  OpenGL version 2.1 or higher is present.
 
     \value OpenGL_Version_3_0  OpenGL version 3.0 or higher is present.
+
+    \value OpenGL_Version_3_1  OpenGL version 3.1 or higher is present.
+    Note that OpenGL version 3.1 or higher does not necessarily support all the features of
+    version 3.0 and lower.
+
+    \value OpenGL_Version_3_2  OpenGL version 3.2 or higher is present.
 
     \value OpenGL_ES_CommonLite_Version_1_0  OpenGL ES version 1.0 Common Lite or higher is present.
 
@@ -1373,14 +1468,20 @@ void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 
 bool operator==(const QGLFormat& a, const QGLFormat& b)
 {
-    return (int) a.d->opts == (int) b.d->opts && a.d->pln == b.d->pln && a.d->alphaSize == b.d->alphaSize
-        && a.d->accumSize == b.d->accumSize && a.d->stencilSize == b.d->stencilSize
+    return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
+        && a.d->pln == b.d->pln
+        && a.d->alphaSize == b.d->alphaSize
+        && a.d->accumSize == b.d->accumSize
+        && a.d->stencilSize == b.d->stencilSize
         && a.d->depthSize == b.d->depthSize
         && a.d->redSize == b.d->redSize
         && a.d->greenSize == b.d->greenSize
         && a.d->blueSize == b.d->blueSize
         && a.d->numSamples == b.d->numSamples
-        && a.d->swapInterval == b.d->swapInterval;
+        && a.d->swapInterval == b.d->swapInterval
+        && a.d->majorVersion == b.d->majorVersion
+        && a.d->minorVersion == b.d->minorVersion
+        && a.d->profile == b.d->profile);
 }
 
 

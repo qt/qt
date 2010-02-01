@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtTest module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,31 @@
 **
 ****************************************************************************/
 
-#include "dirmodel.h"
+#ifndef OLDNORMALIZEOBJECT_H
+#define OLDNORMALIZEOBJECT_H
 
-//! [0]
-DirModel::DirModel(QObject *parent)
-    : QDirModel(parent)
+#include <QObject>
+
+struct Struct;
+class Class;
+template <typename T> class Template;
+
+// An object with old moc output that incorrectly normalizes 'T<C> const &' in the function
+// signatures
+class OldNormalizeObject : public QObject
 {
-}
-//! [0]
+    /* tmake ignore Q_OBJECT */
+    Q_OBJECT
 
-//! [1]
-QVariant DirModel::data(const QModelIndex &index, int role) const
-{
-    if (role == Qt::DisplayRole && index.column() == 0) {
-        QString path  = QDir::toNativeSeparators(filePath(index));
-        if (path.endsWith(QDir::separator()))
-            path.chop(1);
-        return path;
-    }
+signals:
+    void typeRefSignal(Template<Class &> &ref);
+    void constTypeRefSignal(const Template<const Class &> &ref);
+    void typeConstRefSignal(Template<Class const &> const &ref);
 
-    return QDirModel::data(index, role);
-}
-//! [1]
+public slots:
+    void typeRefSlot(Template<Class &> &) {}
+    void constTypeRefSlot(const Template<const Class &> &) {}
+    void typeConstRefSlot(Template<Class const &> const &) {}
+};
+
+#endif // OLDNORMALIZEOBJECT_H

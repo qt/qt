@@ -175,12 +175,12 @@ static void createPluginStub(const QFileInfo& info,
                              QStringList& generatedDirs,
                              QStringList& generatedFiles)
 {
-    QDir().mkpath(QLatin1String(PLUGIN_STUB_DIR "\\"));
+    QDir().mkpath(PLUGIN_STUB_DIR);
     if (!generatedDirs.contains(PLUGIN_STUB_DIR))
         generatedDirs << PLUGIN_STUB_DIR;
     // Plugin stubs must have different name from the actual plugins, because
     // the toolchain for creating ROM images cannot handle non-binary .dll files properly.
-    QFile stubFile(QLatin1String(PLUGIN_STUB_DIR "\\") + info.completeBaseName() + "." SUFFIX_QTPLUGIN);
+    QFile stubFile(QDir(PLUGIN_STUB_DIR).filePath(info.completeBaseName() + "." SUFFIX_QTPLUGIN));
     if (stubFile.open(QIODevice::WriteOnly)) {
         if (!generatedFiles.contains(stubFile.fileName()))
             generatedFiles << stubFile.fileName();
@@ -329,12 +329,12 @@ void initProjectDeploySymbian(QMakeProject* project,
                     if (isBinary(info)) {
                         if (deployBinaries) {
                             // Executables and libraries are deployed to \sys\bin
-                            QFileInfo releasePath(epocRoot() + "epoc32\\release\\" + platform + "\\" + build + "\\");
+                            QFileInfo releasePath(epocRoot() + QDir::toNativeSeparators("epoc32/release/" + platform + "/" + build + "/"));
                             if(devicePathHasDriveLetter) {
-                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
+                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(QDir(releasePath.absolutePath()).filePath(info.fileName()), false, true),
                                                                Option::fixPathToLocalOS(devicePath.left(2) + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
                             } else {
-                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
+                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(QDir(releasePath.absolutePath()).filePath(info.fileName()), false, true),
                                                                Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
                             }
                         }

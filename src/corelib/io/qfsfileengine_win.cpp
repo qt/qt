@@ -177,7 +177,7 @@ void QFSFileEnginePrivate::resolveLibs()
 
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE advapiHnd = LoadLibraryW(L"advapi32");
+        HINSTANCE advapiHnd = LoadLibrary(L"advapi32");
         if (advapiHnd) {
             ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
             ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
@@ -209,7 +209,7 @@ void QFSFileEnginePrivate::resolveLibs()
                 ptrFreeSid(pWorld);
             }
         }
-        HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
+        HINSTANCE userenvHnd = LoadLibrary(L"userenv");
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
 #endif
@@ -217,7 +217,6 @@ void QFSFileEnginePrivate::resolveLibs()
 }
 #endif // QT_NO_LIBRARY
 
-// UNC functions NT
 typedef DWORD (WINAPI *PtrNetShareEnum)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
 static PtrNetShareEnum ptrNetShareEnum = 0;
 typedef DWORD (WINAPI *PtrNetApiBufferFree)(LPVOID);
@@ -241,7 +240,7 @@ bool QFSFileEnginePrivate::resolveUNCLibs()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE hLib = LoadLibraryW(L"Netapi32");
+        HINSTANCE hLib = LoadLibrary(L"netapi32");
         if (hLib) {
             ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
             if (ptrNetShareEnum)
@@ -1038,11 +1037,11 @@ QString QFSFileEngine::homePath()
         if (ok) {
             DWORD dwBufferSize = 0;
             // First call, to determine size of the strings (with '\0').
-            ok = ::ptrGetUserProfileDirectoryW(token, NULL, &dwBufferSize);
+            ok = ptrGetUserProfileDirectoryW(token, NULL, &dwBufferSize);
             if (!ok && dwBufferSize != 0) {        // We got the required buffer size
                 wchar_t *userDirectory = new wchar_t[dwBufferSize];
                 // Second call, now we can fill the allocated buffer.
-                ok = ::ptrGetUserProfileDirectoryW(token, userDirectory, &dwBufferSize);
+                ok = ptrGetUserProfileDirectoryW(token, userDirectory, &dwBufferSize);
                 if (ok)
                     ret = QString::fromWCharArray(userDirectory);
 
@@ -1414,7 +1413,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
     QAbstractFileEngine::FileFlags ret = 0;
 
 #if !defined(QT_NO_LIBRARY)
-    if((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
+    if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
         resolveLibs();
         if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
             enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
@@ -1717,8 +1716,7 @@ QString QFSFileEngine::owner(FileOwner own) const
     QString name;
 #if !defined(QT_NO_LIBRARY)
     Q_D(const QFSFileEngine);
-
-    if ((qt_ntfs_permission_lookup > 0) && ((QSysInfo::WindowsVersion&QSysInfo::WV_NT_based) > QSysInfo::WV_NT)) {
+    if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
         QFSFileEnginePrivate::resolveLibs();
         if (ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
             PSID pOwner = 0;

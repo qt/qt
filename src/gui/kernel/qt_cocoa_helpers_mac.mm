@@ -143,6 +143,9 @@ extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
 void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds)
 {
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+#endif
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
     if (wnd) {
         QWidget *widget;
@@ -1277,5 +1280,20 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
     [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) set];
 }
 #endif
+
+@implementation DebugNSApplication {
+}
+- (void)sendEvent:(NSEvent *)event
+{
+    NSLog(@"NSAppDebug: sendEvent: %@", event);
+    return [super sendEvent:event];
+}
+
+- (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)sender
+{
+    NSLog(@"NSAppDebug: sendAction: %s to %@ from %@", anAction, aTarget, sender);
+    return [super sendAction:anAction to:aTarget from:sender];
+}
+@end
 
 QT_END_NAMESPACE

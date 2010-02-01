@@ -1092,7 +1092,12 @@ QString::QString(QChar ch)
     \internal
 */
 
-/*! \fn void QString::isDetached() const
+/*! \fn bool QString::isDetached() const
+
+    \internal
+*/
+
+/*! \fn bool QString::isSharedWith(const QString &other) const
 
     \internal
 */

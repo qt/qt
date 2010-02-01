@@ -150,6 +150,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \since 4.7
+    \fn void QFileSystemModel::directoryLoaded(const QString &path)
+
+    This signal is emitted when the gatherer thread has finished to load the \a path.
+
+*/
+
+/*!
     \fn bool QFileSystemModel::remove(const QModelIndex &index) const
 
     Removes the model item \a index from the file system model and \bold{deletes the
@@ -673,7 +681,7 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
     case Qt::EditRole:
     case Qt::DisplayRole:
         switch (index.column()) {
-        case 0: return d->name(index);
+        case 0: return d->displayName(index);
         case 1: return d->size(index);
         case 2: return d->type(index);
         case 3: return d->time(index);
@@ -789,8 +797,20 @@ QString QFileSystemModelPrivate::name(const QModelIndex &index) const
         if (resolvedSymLinks.contains(fullPath))
             return resolvedSymLinks[fullPath];
     }
-    // ### TODO it would be nice to grab the volume name if dirNode->parent == root
     return dirNode->fileName;
+}
+
+/*!
+    \internal
+*/
+QString QFileSystemModelPrivate::displayName(const QModelIndex &index) const
+{
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QFileSystemNode *dirNode = node(index);
+    if (!dirNode->volumeName.isNull())
+        return dirNode->volumeName + QLatin1String(" (") + name(index) + QLatin1Char(')');
+#endif
+    return name(index);
 }
 
 /*!
@@ -1640,6 +1660,18 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
 #ifndef QT_NO_FILESYSTEMWATCHER
     node->populate(info);
 #endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    //The parentNode is "" so we are listing the drives
+    if (parentNode->fileName.isEmpty()) {
+        wchar_t name[MAX_PATH + 1];
+        //GetVolumeInformation requires to add trailing backslash
+        const QString nodeName = fileName + QLatin1String("\\");
+        BOOL success = ::GetVolumeInformation((wchar_t *)(nodeName.utf16()),
+                name, MAX_PATH + 1, NULL, 0, NULL, NULL, 0);
+        if (success && name[0])
+            node->volumeName = QString::fromWCharArray(name);
+    }
+#endif
     parentNode->children.insert(fileName, node);
     return node;
 }
@@ -1869,6 +1901,8 @@ void QFileSystemModelPrivate::init()
             q, SLOT(_q_fileSystemChanged(QString,QList<QPair<QString,QFileInfo> >)));
     q->connect(&fileInfoGatherer, SIGNAL(nameResolved(QString,QString)),
             q, SLOT(_q_resolvedName(QString,QString)));
+    q->connect(&fileInfoGatherer, SIGNAL(directoryLoaded(QString)),
+               q, SIGNAL(directoryLoaded(QString)));
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
 }
 

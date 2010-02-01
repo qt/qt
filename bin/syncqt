@@ -595,9 +595,6 @@ while ( @ARGV ) {
         # skip, it's been dealt with at the top of the file
         shift @ARGV;
         next;
-    } elsif("$arg" eq '*') {
-        # workaround for windows 9x where "%*" expands to "*"
-        $var = 1;
     }
 
     #do something

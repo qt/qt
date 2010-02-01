@@ -112,7 +112,8 @@ win32 {
 }
 symbian {
   confclean.depends += distclean
-  confclean.commands += \
+  contains(QMAKE_HOST.os, "Windows") {
+    confclean.commands += \
             (cd src\tools\moc && $(MAKE) distclean) $$escape_expand(\n\t) \
             (cd src\tools\rcc && $(MAKE) distclean) $$escape_expand(\n\t) \
             (cd src\tools\uic && $(MAKE) distclean) $$escape_expand(\n\t) \
@@ -121,7 +122,17 @@ symbian {
             -$(DEL_FILE) mkspecs\qconfig.pri $$escape_expand(\n\t) \
             -$(DEL_FILE) .qmake.cache $$escape_expand(\n\t) \
             (cd qmake && $(MAKE) distclean)
-            
+  } else {
+    confclean.commands += \
+            (cd src/tools/moc && $(MAKE) distclean) $$escape_expand(\n\t) \
+            (cd src/tools/rcc && $(MAKE) distclean) $$escape_expand(\n\t) \
+            (cd src/tools/uic && $(MAKE) distclean) $$escape_expand(\n\t) \
+            -$(DEL_FILE) src/corelib/global/qconfig.h $$escape_expand(\n\t) \
+            -$(DEL_FILE) src/corelib/global/qconfig.cpp $$escape_expand(\n\t) \
+            -$(DEL_FILE) mkspecs/qconfig.pri $$escape_expand(\n\t) \
+            -$(DEL_FILE) .qmake.cache $$escape_expand(\n\t) \
+            (cd qmake && $(MAKE) distclean)
+  }
 }
 QMAKE_EXTRA_TARGETS += confclean
 qmakeclean.commands += (cd qmake && $(MAKE) clean)

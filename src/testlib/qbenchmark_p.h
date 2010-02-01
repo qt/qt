@@ -42,6 +42,8 @@
 #ifndef QBENCHMARK_P_H
 #define QBENCHMARK_P_H
 
+#include <stdlib.h>
+
 //
 //  W A R N I N G
 //  -------------
@@ -68,6 +70,7 @@
 #include "QtTest/private/qbenchmarkvalgrind_p.h"
 #endif
 #include "QtTest/private/qbenchmarkevent_p.h"
+#include "QtTest/private/qbenchmarkmetric_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -92,23 +95,29 @@ class QBenchmarkResult
 {
 public:
     QBenchmarkContext context;
-    qint64 value;
+    qreal value;
     int iterations;
+    QTest::QBenchmarkMetric metric;
+    bool setByMacro;
     bool valid;
 
     QBenchmarkResult()
     : value(-1)
     , iterations(-1)
+    , setByMacro(true)
     , valid(false)
-    {  }
+    { }
 
-    QBenchmarkResult(const QBenchmarkContext &context, const qint64 value, const int iterations)
+    QBenchmarkResult(
+        const QBenchmarkContext &context, const qreal value, const int iterations,
+        QTest::QBenchmarkMetric metric, bool setByMacro)
         : context(context)
         , value(value)
         , iterations(iterations)
+        , metric(metric)
+        , setByMacro(setByMacro)
         , valid(true)
-    {
-    }
+    { }
 
     bool operator<(const QBenchmarkResult &other) const 
     {
@@ -167,7 +176,7 @@ public:
     bool isBenchmark() const { return result.valid; }
     bool resultsAccepted() const { return resultAccepted; }
     int adjustIterationCount(int suggestion);
-    void setResult(qint64 value);
+    void setResult(qreal value, QTest::QBenchmarkMetric metric, bool setByMacro = true);
 
     QBenchmarkResult result;
     bool resultAccepted;
@@ -183,10 +192,7 @@ namespace QTest
     void setIterationCount(int count);
 
     Q_TESTLIB_EXPORT void beginBenchmarkMeasurement();
-    Q_TESTLIB_EXPORT qint64 endBenchmarkMeasurement();
-
-    void setResult(qint64 result);
-    void setResult(const QString &tag, qint64 result);
+    Q_TESTLIB_EXPORT quint64 endBenchmarkMeasurement();
 }
 
 QT_END_NAMESPACE

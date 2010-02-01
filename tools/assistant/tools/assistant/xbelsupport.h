@@ -48,6 +48,8 @@
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 QT_FORWARD_DECLARE_CLASS(QStandardItem)
 
+QT_BEGIN_NAMESPACE
+
 class BookmarkModel;
 
 class XbelWriter : public QXmlStreamWriter
@@ -83,5 +85,7 @@ private:
     BookmarkModel *treeModel;
     BookmarkModel *listModel;
 };
+
+QT_END_NAMESPACE
 
 #endif  // XBELSUPPORT_H

@@ -38,27 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QLibraryInfo>
 #include <QtCore/QDateTime>
 #include <QtCore/QFileSystemWatcher>
 #include <QtHelp/QHelpEngineCore>
-#include "../shared/collectionconfiguration.h"
+#include "helpenginewrapper.h"
 #include "qtdocinstaller.h"
 
 QT_BEGIN_NAMESPACE
 
-QtDocInstaller::QtDocInstaller(const QString &collectionFile,
-                               QFileSystemWatcher *qchWatcher)
-    : m_qchWatcher(qchWatcher)
+QtDocInstaller::QtDocInstaller(const QList<DocInfo> &docInfos)
+    : m_abort(false), m_docInfos(docInfos)
 {
-    m_abort = false;
-    m_collectionFile = collectionFile;
+    TRACE_OBJ
 }
 
 QtDocInstaller::~QtDocInstaller()
 {
+    TRACE_OBJ
     if (!isRunning())
         return;
     m_mutex.lock();
@@ -69,92 +69,59 @@ QtDocInstaller::~QtDocInstaller()
 
 void QtDocInstaller::installDocs()
 {
+    TRACE_OBJ
     start(LowPriority);
 }
 
 void QtDocInstaller::run()
 {
-    QHelpEngineCore *helpEngine = new QHelpEngineCore(m_collectionFile);
-    helpEngine->setupData();
+    TRACE_OBJ
+    m_qchDir = QLibraryInfo::location(QLibraryInfo::DocumentationPath)
+        + QDir::separator() + QLatin1String("qch");
+    m_qchFiles = m_qchDir.entryList(QStringList() << QLatin1String("*.qch"));
+
     bool changes = false;
-
-    QStringList docs;
-    docs << QLatin1String("assistant")
-        << QLatin1String("designer")
-        << QLatin1String("linguist")
-        << QLatin1String("qmake")
-        << QLatin1String("qt");
-
-    foreach (const QString &doc, docs) {
-        changes |= installDoc(doc, helpEngine);
+    foreach (const DocInfo &docInfo, m_docInfos) {
+        changes |= installDoc(docInfo);
         m_mutex.lock();
         if (m_abort) {
-            delete helpEngine;
             m_mutex.unlock();
             return;
         }
         m_mutex.unlock();
     }
-    delete helpEngine;
     emit docsInstalled(changes);
 }
 
-bool QtDocInstaller::installDoc(const QString &name, QHelpEngineCore *helpEngine)
+bool QtDocInstaller::installDoc(const DocInfo &docInfo)
 {
-    QStringList lst = CollectionConfiguration::qtDocInfo(*helpEngine, name);
-
+    TRACE_OBJ
+    const QString &component = docInfo.first;
+    const QStringList &info = docInfo.second;
     QDateTime dt;
-    if (!lst.isEmpty() && !lst.first().isEmpty())
-        dt = QDateTime::fromString(lst.first(), Qt::ISODate);
+    if (!info.isEmpty() && !info.first().isEmpty())
+        dt = QDateTime::fromString(info.first(), Qt::ISODate);
 
     QString qchFile;
-    if (lst.count() == 2)
-        qchFile = lst.last();
+    if (info.count() == 2)
+        qchFile = info.last();
 
-    QDir dir(QLibraryInfo::location(QLibraryInfo::DocumentationPath)
-        + QDir::separator() + QLatin1String("qch"));
-
-    const QStringList files = dir.entryList(QStringList() << QLatin1String("*.qch"));
-    if (files.isEmpty()) {
-        CollectionConfiguration::setQtDocInfo(*helpEngine, name,
-            QStringList(QDateTime().toString(Qt::ISODate)));
+    if (m_qchFiles.isEmpty()) {
+        emit qchFileNotFound(component);
         return false;
     }
-    foreach (const QString &f, files) {
-        if (f.startsWith(name)) {
-            QFileInfo fi(dir.absolutePath() + QDir::separator() + f);
+    foreach (const QString &f, m_qchFiles) {
+        if (f.startsWith(component)) {
+            QFileInfo fi(m_qchDir.absolutePath() + QDir::separator() + f);
             if (dt.isValid() && fi.lastModified().toTime_t() == dt.toTime_t()
                 && qchFile == fi.absoluteFilePath())
                 return false;
-
-            QString namespaceName = QHelpEngineCore::namespaceName(fi.absoluteFilePath());
-            if (namespaceName.isEmpty())
-                continue;
-
-            if (helpEngine->registeredDocumentations().contains(namespaceName)) {
-                const QString docFile =
-                    helpEngine->documentationFileName(namespaceName);
-                if (helpEngine->unregisterDocumentation(namespaceName))
-                    m_qchWatcher->removePath(docFile);
-            }
-
-            if (!helpEngine->registerDocumentation(fi.absoluteFilePath())) {
-                emit errorMessage(
-                    tr("The file %1 could not be registered successfully!\n\nReason: %2")
-                    .arg(fi.absoluteFilePath()).arg(helpEngine->error()));
-            } else {
-                m_qchWatcher->addPath(fi.absoluteFilePath());
-            }
-
-            Q_ASSERT(m_qchWatcher->files().count()
-                     == helpEngine->registeredDocumentations().count());
-
-            CollectionConfiguration::setQtDocInfo(*helpEngine, name,
-                QStringList() << fi.lastModified().toString(Qt::ISODate)
-                              << fi.absoluteFilePath());
+            emit registerDocumentation(component, fi.absoluteFilePath());
             return true;
         }
     }
+
+    emit qchFileNotFound(component);
     return false;
 }
 

@@ -70,9 +70,12 @@ QT_FORWARD_DECLARE_CLASS(QStringList);
 
 @interface QT_MANGLE_NAMESPACE(QCocoaWindow) : NSWindow {
     bool leftButtonIsRightButton;
+    QStringList *currentCustomDragTypes;
 }
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
+- (void)registerDragTypes;
+
 @end
 #endif
 

@@ -295,6 +295,7 @@ public:
 
     QSet<QVectorPath::CacheEntry *> pathCaches;
     QVector<GLuint> unusedVBOSToClean;
+    QVector<GLuint> unusedIBOSToClean;
 
     const GLfloat *vertexAttribPointers[3];
 };
