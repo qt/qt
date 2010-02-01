@@ -68,7 +68,7 @@ class QtToolBarManager : public QObject
     Q_OBJECT
 public:
 
-    QtToolBarManager(QObject *parent = 0);
+    explicit QtToolBarManager(QObject *parent = 0);
     ~QtToolBarManager();
 
     void setMainWindow(QMainWindow *mainWindow);
@@ -100,7 +100,7 @@ class QtToolBarDialog : public QDialog
     Q_OBJECT
 public:
 
-    QtToolBarDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit QtToolBarDialog(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~QtToolBarDialog();
 
     void setToolBarManager(QtToolBarManager *toolBarManager);

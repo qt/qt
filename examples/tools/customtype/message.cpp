@@ -64,7 +64,7 @@ Message::Message(const QString &body, const QStringList &headers)
 }
 
 //! [custom type streaming operator]
-QDebug &operator<<(QDebug &dbg, const Message &message)
+QDebug operator<<(QDebug dbg, const Message &message)
 {
     QStringList pieces = message.body().split("\r\n", QString::SkipEmptyParts);
     if (pieces.isEmpty())
