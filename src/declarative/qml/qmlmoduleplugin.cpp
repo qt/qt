@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
     The plugin should register QML types with QML_DEFINE_TYPE.
 
-    The strings returned by keys() should be the list of URIs of module
+    The strings returned by keys() should be the list of URIs of modules
     that the plugin registers.
 
     \sa examples/declarative/plugins
