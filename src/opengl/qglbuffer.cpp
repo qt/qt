@@ -251,7 +251,7 @@ bool QGLBuffer::isCreated() const
 }
 
 /*!
-    Reads the \a size bytes in this buffer starting at \a offset
+    Reads the \a count bytes in this buffer starting at \a offset
     into \a data.  Returns true on success; false if reading from
     the buffer is not supported.  Buffer reading is not supported
     under OpenGL/ES.
@@ -260,14 +260,14 @@ bool QGLBuffer::isCreated() const
 
     \sa write(), bind()
 */
-bool QGLBuffer::read(int offset, void *data, int size)
+bool QGLBuffer::read(int offset, void *data, int count)
 {
 #if !defined(QT_OPENGL_ES)
     Q_D(QGLBuffer);
     if (!glGetBufferSubData || !d->guard.id())
         return false;
     while (glGetError() != GL_NO_ERROR) ; // Clear error state.
-    glGetBufferSubData(d->type, offset, size, data);
+    glGetBufferSubData(d->type, offset, count, data);
     return glGetError() == GL_NO_ERROR;
 #else
     Q_UNUSED(offset);
@@ -278,7 +278,7 @@ bool QGLBuffer::read(int offset, void *data, int size)
 }
 
 /*!
-    Replaces the \a size bytes of this buffer starting at \a offset
+    Replaces the \a count bytes of this buffer starting at \a offset
     with the contents of \a data.  Any other bytes in the buffer
     will be left unmodified.
 
@@ -287,15 +287,15 @@ bool QGLBuffer::read(int offset, void *data, int size)
 
     \sa create(), read(), allocate()
 */
-void QGLBuffer::write(int offset, const void *data, int size)
+void QGLBuffer::write(int offset, const void *data, int count)
 {
     Q_D(QGLBuffer);
     if (d->guard.id())
-        glBufferSubData(d->type, offset, size, data);
+        glBufferSubData(d->type, offset, count, data);
 }
 
 /*!
-    Allocates \a size bytes of space to the buffer, initialized to
+    Allocates \a count bytes of space to the buffer, initialized to
     the contents of \a data.  Any previous contents will be removed.
 
     It is assumed that create() has been called on this buffer and that
@@ -303,18 +303,18 @@ void QGLBuffer::write(int offset, const void *data, int size)
 
     \sa create(), read(), write()
 */
-void QGLBuffer::allocate(const void *data, int size)
+void QGLBuffer::allocate(const void *data, int count)
 {
     Q_D(QGLBuffer);
     if (d->guard.id())
-        glBufferData(d->type, size, data, d->actualUsagePattern);
+        glBufferData(d->type, count, data, d->actualUsagePattern);
 }
 
 /*!
-    \fn void QGLBuffer::allocate(int size)
+    \fn void QGLBuffer::allocate(int count)
     \overload
 
-    Allocates \a size bytes of space to the buffer.  Any previous
+    Allocates \a count bytes of space to the buffer.  Any previous
     contents will be removed.
 
     It is assumed that create() has been called on this buffer and that

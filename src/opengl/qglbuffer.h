@@ -101,11 +101,11 @@ public:
 
     int size() const;
 
-    bool read(int offset, void *data, int size);
-    void write(int offset, const void *data, int size);
+    bool read(int offset, void *data, int count);
+    void write(int offset, const void *data, int count);
 
-    void allocate(const void *data, int size);
-    inline void allocate(int size) { allocate(0, size); }
+    void allocate(const void *data, int count);
+    inline void allocate(int count) { allocate(0, count); }
 
     void *map(QGLBuffer::Access access);
     bool unmap();
