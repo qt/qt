@@ -342,7 +342,12 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
-void QNetworkAccessBackend::start()
+/*!
+    Starts the backend.  Returns true if the backend is started.  Returns false if the backend
+    could not be started due to an unopened or roaming session.  The caller should recall this
+    function once the session has been opened or the roaming process has finished.
+*/
+bool QNetworkAccessBackend::start()
 {
     QHostInfo hostInfo = QHostInfo::fromName(reply->url.host());
     foreach (const QHostAddress &address, hostInfo.addresses()) {
@@ -350,35 +355,23 @@ void QNetworkAccessBackend::start()
             address == QHostAddress::LocalHostIPv6) {
             // Don't need session for local host access.
             open();
-            return;
+            return true;
         }
     }
 
-    connect(manager->session, SIGNAL(stateChanged(QNetworkSession::State)),
-            this, SLOT(sessionStateChanged(QNetworkSession::State)));
-    connect(manager->session, SIGNAL(error(QNetworkSession::SessionError)),
-            this, SLOT(sessionError(QNetworkSession::SessionError)));
-
-    switch (manager->session->state()) {
-    case QNetworkSession::Roaming:
-        break;
-    case QNetworkSession::Connected:
-        open();
-        break;
-    default:
-        manager->session->open();
+    if (manager->session->isOpen()) {
+        if (manager->session->state() == QNetworkSession::Connected) {
+            qDebug() << "Session is open and state is connected";
+            open();
+            return true;
+        } else {
+            qDebug() << "we are roaming, connecting, etc. delay until roaming completes";
+        }
+    } else {
+        qDebug() << "session not open";
     }
-}
 
-void QNetworkAccessBackend::sessionStateChanged(QNetworkSession::State state)
-{
-    if (state == QNetworkSession::Connected)
-        open();
-}
-
-void QNetworkAccessBackend::sessionError(QNetworkSession::SessionError error)
-{
-    manager->sendDebugMessage(QString::fromLatin1("Session error %1").arg(error));
+    return false;
 }
 
 QT_END_NAMESPACE

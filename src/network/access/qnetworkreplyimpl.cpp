@@ -83,7 +83,18 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
-    backend->start();
+    if (!backend->start()) {
+        // backend failed to start because the session state is not Connected.
+        // QNetworkAccessManager will call reply->backend->start() again for us when the session
+        // state changes.
+        qDebug() << "Waiting for session for" << url;
+        state = WaitingForSession;
+
+        if (!manager->d_func()->session->isOpen())
+            manager->d_func()->session->open();
+
+        return;
+    }
 
     //backend->open();
     if (state != Finished) {
@@ -504,20 +515,10 @@ void QNetworkReplyImplPrivate::finished()
     if (state == Finished || state == Aborted)
         return;
 
-    state = Finished;
-    pendingNotifications.clear();
-
     pauseNotificationHandling();
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (totalSize.isNull() || totalSize == -1) {
-        emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
-    }
-
-    if (bytesUploaded == -1 && (outgoingData || outgoingDataBuffer))
-        emit q->uploadProgress(0, 0);
-    resumeNotificationHandling();
-
-    if (manager->d_func()->session->state() == QNetworkSession::Roaming) {
+    if (state == Working && errorCode != QNetworkReply::OperationCanceledError &&
+        manager->d_func()->session->state() == QNetworkSession::Roaming) {
         // only content with a known size will fail with a temporary network failure error
         if (!totalSize.isNull()) {
             qDebug() << "Connection broke during download.";
@@ -538,6 +539,19 @@ void QNetworkReplyImplPrivate::finished()
             }
         }
     }
+    resumeNotificationHandling();
+
+    state = Finished;
+    pendingNotifications.clear();
+
+    pauseNotificationHandling();
+    if (totalSize.isNull() || totalSize == -1) {
+        emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
+    }
+
+    if (bytesUploaded == -1 && (outgoingData || outgoingDataBuffer))
+        emit q->uploadProgress(0, 0);
+    resumeNotificationHandling();
 
     // if we don't know the total size of or we received everything save the cache
     if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)

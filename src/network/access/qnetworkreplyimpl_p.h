@@ -114,7 +114,8 @@ public:
         Buffering,
         Working,
         Finished,
-        Aborted
+        Aborted,
+        WaitingForSession
     };
 
     typedef QQueue<InternalNotifications> NotificationQueue;

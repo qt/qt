@@ -807,13 +807,24 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
     if (deferredMigration) {
         bool repliesPending = false;
         foreach (QObject *child, q->children()) {
-            if (child != reply && child->inherits("QNetworkReply")) {
-                repliesPending = true;
-                break;
+            if (child != reply && child->inherits("QNetworkReplyImpl")) {
+                QNetworkReplyImpl *replyImpl = qobject_cast<QNetworkReplyImpl *>(child);
+                qDebug() << "reply state is" << replyImpl->d_func()->state;
+                switch (replyImpl->d_func()->state) {
+                case QNetworkReplyImplPrivate::Idle:
+                case QNetworkReplyImplPrivate::Finished:
+                case QNetworkReplyImplPrivate::Aborted:
+                    break;
+                case QNetworkReplyImplPrivate::Buffering:
+                case QNetworkReplyImplPrivate::Working:
+                    repliesPending = true;
+                    break;
+                }
             }
         }
         if (!repliesPending) {
-            emit q->debugMessage(QLatin1String("Migrating as there are no pending replies."));
+            deferredMigration = false;
+            qDebug() << "Migrating as there are no pending replies.";
             session->migrate();
         }
     }
@@ -1072,6 +1083,15 @@ QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
 void QNetworkAccessManagerPrivate::_q_sessionOpened()
 {
     Q_Q(QNetworkAccessManager);
+
+    qDebug() << "Session Opened";
+
+    // start waiting children
+    foreach (QObject *child, q->children()) {
+        QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
+        if (reply && reply->d_func()->state == QNetworkReplyImplPrivate::WaitingForSession)
+            QMetaObject::invokeMethod(reply, "_q_startOperation", Qt::QueuedConnection);
+    }
 }
 
 void QNetworkAccessManagerPrivate::_q_sessionClosed()
@@ -1091,6 +1111,8 @@ void QNetworkAccessManagerPrivate::_q_sessionError(QNetworkSession::SessionError
 void QNetworkAccessManagerPrivate::_q_sessionStateChanged(QNetworkSession::State state)
 {
     Q_Q(QNetworkAccessManager);
+
+    qDebug() << "session state changed to" << state;
 }
 
 void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
@@ -1098,13 +1120,30 @@ void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
     Q_Q(QNetworkAccessManager);
 
     foreach (QObject *child, q->children()) {
-        QNetworkReply *reply = qobject_cast<QNetworkReply *>(child);
+        QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
         if (reply) {
-            emit q->debugMessage(QString::fromLatin1("Unexpected reply for %1").arg(reply->url().toString()));
+            switch (reply->d_func()->state) {
+            case QNetworkReplyImplPrivate::Buffering:
+            case QNetworkReplyImplPrivate::Working:
+                emit q->debugMessage(QString::fromLatin1("Unexpected reply for %1")
+                                        .arg(reply->url().toString()));
+                break;
+            default:
+                qDebug() << "Testing new interface for" << reply->url();
+                ;
+            }
         }
     }
 
+    qDebug() << "Accepting new configuration.";
     session->accept();
+
+    // start waiting children
+    foreach (QObject *child, q->children()) {
+        QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
+        if (reply && reply->d_func()->state == QNetworkReplyImplPrivate::WaitingForSession)
+            QMetaObject::invokeMethod(reply, "_q_startOperation", Qt::QueuedConnection);
+    }
 }
 
 void QNetworkAccessManagerPrivate::_q_sessionPreferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless)
@@ -1113,14 +1152,26 @@ void QNetworkAccessManagerPrivate::_q_sessionPreferredConfigurationChanged(const
 
     deferredMigration = false;
     foreach (QObject *child, q->children()) {
-        if (child->inherits("QNetworkReply")) {
-            deferredMigration = true;
-            break;
+        if (child->inherits("QNetworkReplyImpl")) {
+            QNetworkReplyImpl *replyImpl = qobject_cast<QNetworkReplyImpl *>(child);
+            qDebug() << "reply state is" << replyImpl->d_func()->state;
+            switch (replyImpl->d_func()->state) {
+            case QNetworkReplyImplPrivate::Idle:
+            case QNetworkReplyImplPrivate::Finished:
+            case QNetworkReplyImplPrivate::Aborted:
+                break;
+            case QNetworkReplyImplPrivate::Buffering:
+            case QNetworkReplyImplPrivate::Working:
+                deferredMigration = true;
+                break;
+            }
         }
     }
 
-    if (!deferredMigration)
+    if (!deferredMigration) {
+        qDebug() << "Migrating as there are no pending replies.";
         session->migrate();
+    }
 }
 
 QT_END_NAMESPACE
