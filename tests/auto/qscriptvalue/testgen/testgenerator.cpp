@@ -1,21 +1,43 @@
-/*
-  Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Library General Public
-  License as published by the Free Software Foundation; either
-  version 2 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Library General Public License for more details.
-
-  You should have received a copy of the GNU Library General Public License
-  along with this library; see the file COPYING.LIB.  If not, write to
-  the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-  Boston, MA 02110-1301, USA.
-*/
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
 #include "testgenerator.h"
 
@@ -364,24 +386,46 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
 
 static QString generateInitDef(const QVector<QString>& allDataTags)
 {
-    static const QString templ = "/*\n"\
-                                 "  Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)\n"\
-                                 "\n"\
-                                 "  This library is free software; you can redistribute it and/or\n"\
-                                 "  modify it under the terms of the GNU Library General Public\n"\
-                                 "  License as published by the Free Software Foundation; either\n"\
-                                 "  version 2 of the License, or (at your option) any later version.\n"\
-                                 "\n"\
-                                 "  This library is distributed in the hope that it will be useful,\n"\
-                                 "  but WITHOUT ANY WARRANTY; without even the implied warranty of\n"\
-                                 "  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n"\
-                                 "  Library General Public License for more details.\n"\
-                                 "\n"\
-                                 "  You should have received a copy of the GNU Library General Public License\n"\
-                                 "  along with this library; see the file COPYING.LIB.  If not, write to\n"\
-                                 "  the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,\n"\
-                                 "  Boston, MA 02110-1301, USA.\n"\
-                                 "*/\n"\
+    static const QString templ = "/****************************************************************************\n"
+                                 "**\n"
+                                 "** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\n"
+                                 "** All rights reserved.\n"
+                                 "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
+                                 "**\n"
+                                 "** This file is part of the test suite of the Qt Toolkit.\n"
+                                 "**\n"
+                                 "** $QT_BEGIN_LICENSE:LGPL$\n"
+                                 "** No Commercial Usage\n"
+                                 "** This file contains pre-release code and may not be distributed.\n"
+                                 "** You may use this file in accordance with the terms and conditions\n"
+                                 "** contained in the Technology Preview License Agreement accompanying\n"
+                                 "** this package.\n"
+                                 "**\n"
+                                 "** GNU Lesser General Public License Usage\n"
+                                 "** Alternatively, this file may be used under the terms of the GNU Lesser\n"
+                                 "** General Public License version 2.1 as published by the Free Software\n"
+                                 "** Foundation and appearing in the file LICENSE.LGPL included in the\n"
+                                 "** packaging of this file.  Please review the following information to\n"
+                                 "** ensure the GNU Lesser General Public License version 2.1 requirements\n"
+                                 "** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.\n"
+                                 "**\n"
+                                 "** In addition, as a special exception, Nokia gives you certain additional\n"
+                                 "** rights.  These rights are described in the Nokia Qt LGPL Exception\n"
+                                 "** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.\n"
+                                 "**\n"
+                                 "** If you have questions regarding the use of this file, please contact\n"
+                                 "** Nokia at qt-info@nokia.com.\n"
+                                 "**\n"
+                                 "**\n"
+                                 "**\n"
+                                 "**\n"
+                                 "**\n"
+                                 "**\n"
+                                 "**\n"
+                                 "**\n"
+                                 "** $QT_END_LICENSE$\n"
+                                 "**\n"
+                                 "****************************************************************************/\n"
                                  "\n"\
                                  "#include \"tst_qscriptvalue.h\"\n\n"\
                                  "#define DEFINE_TEST_VALUE(expr) m_values.insert(QString::fromLatin1(#expr), expr)\n"\
