@@ -110,7 +110,8 @@ Qt for Unix (X11 and Mac OS X)
 
 Qt for Linux/X11
 ----------------
-
+  * Fix a bug where QPixmap::serialNumber was not set on a transformed pixmap
+    in Qt/X11.
  -
 
 Qt for Windows
@@ -130,7 +131,13 @@ Qt for Embedded Linux
 
 DirectFB
 --------
-
+  * Fix a bug where QPixmap::serialNumber was not set on a transformed pixmap
+    in DirectFB.
+  * Reimplement QPixmapData::scroll for QDirectFBPixmapData which optimizes
+    QPixmap::scroll
+  * Fix a rendering issue for semi-transparent top level windows in DirectFB.
+  * Make it possible to fall back to the raster engine for stretch blits in
+    DirectFB using QT_NO_DIRECTFB_STRETCHBLIT
  -
 
 Qt for Windows CE
