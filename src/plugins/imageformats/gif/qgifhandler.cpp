@@ -72,6 +72,7 @@ public:
 
     int decode(QImage *image, const uchar* buffer, int length,
                int *nextFrameDelay, int *loopCount, QSize *nextSize);
+    static int imageCount(QIODevice *device);
 
     bool newFrame;
     bool partialNewFrame;
@@ -645,6 +646,234 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
     return initial-length;
 }
 
+/*!
+   Returns the number of images that can be read from \a device.
+*/
+
+int QGIFFormat::imageCount(QIODevice *device)
+{
+    if (!device)
+        return 0;
+
+    qint64 oldPos = device->pos();
+    if (!device->seek(0))
+        return 0;
+
+    int colorCount = 0;
+    int localColorCount = 0;
+    int globalColorCount = 0;
+    int colorReadCount = 0;
+    bool localColormap = false;
+    bool globalColormap = false;
+    int count = 0;
+    int blockSize = 0;
+    bool done = false;
+    uchar hold[16];
+    int imageCount = 0;
+    State state = Header;
+
+    const int readBufferSize = 40960; // 40k read buffer
+    QByteArray readBuffer(device->read(readBufferSize));
+
+    if (readBuffer.isEmpty())
+        return 0;
+
+    // this is a specialized version of the state machine from decode(),
+    // which doesn't do any image decoding or mallocing, and has an
+    // optimized way of skipping SkipBlocks, ImageDataBlocks and
+    // Global/LocalColorMaps.
+
+    while (!readBuffer.isEmpty()) {
+        int length = readBuffer.size();
+        const uchar *buffer = (const uchar *) readBuffer.constData();
+        while (!done && length) {
+            length--;
+            uchar ch = *buffer++;
+            switch (state) {
+            case Header:
+                hold[count++] = ch;
+                if (count == 6) {
+                    state = LogicalScreenDescriptor;
+                    count = 0;
+                }
+                break;
+            case LogicalScreenDescriptor:
+                hold[count++] = ch;
+                if (count == 7) {
+                    globalColormap = !!(hold[4] & 0x80);
+                    globalColorCount = 2 << (hold[4] & 0x7);
+                    count = 0;
+                    colorCount = globalColorCount;
+                    if (globalColormap) {
+                        int colorTableSize = 3 * globalColorCount;
+                        if (length >= colorTableSize) {
+                            // skip the global color table in one go
+                            length -= colorTableSize;
+                            buffer += colorTableSize;
+                            state = Introducer;
+                        } else {
+                            colorReadCount = 0;
+                            state = GlobalColorMap;
+                        }
+                    } else {
+                        state=Introducer;
+                    }
+                }
+                break;
+            case GlobalColorMap:
+            case LocalColorMap:
+                hold[count++] = ch;
+                if (count == 3) {
+                    if (++colorReadCount >= colorCount) {
+                        if (state == LocalColorMap)
+                            state = TableImageLZWSize;
+                        else
+                            state = Introducer;
+                    }
+                    count = 0;
+                }
+                break;
+            case Introducer:
+                hold[count++] = ch;
+                switch (ch) {
+                case 0x2c:
+                    state = ImageDescriptor;
+                    break;
+                case 0x21:
+                    state = ExtensionLabel;
+                    break;
+                case 0x3b:
+                    state = Done;
+                    break;
+                default:
+                    done = true;
+                    state = Error;
+                }
+                break;
+            case ImageDescriptor:
+                hold[count++] = ch;
+                if (count == 10) {
+                    localColormap = !!(hold[9] & 0x80);
+                    localColorCount = localColormap ? (2 << (hold[9] & 0x7)) : 0;
+                    if (localColorCount)
+                        colorCount = localColorCount;
+                    else
+                        colorCount = globalColorCount;
+                    imageCount++;
+
+                    count = 0;
+                    if (localColormap) {
+                        int colorTableSize = 3 * localColorCount;
+                        if (length >= colorTableSize) {
+                            // skip the local color table in one go
+                            length -= colorTableSize;
+                            buffer += colorTableSize;
+                            state = TableImageLZWSize;
+                        } else {
+                            colorReadCount = 0;
+                            state = LocalColorMap;
+                        }
+                    } else {
+                        state = TableImageLZWSize;
+                    }
+                }
+                break;
+            case TableImageLZWSize:
+                if (ch > max_lzw_bits)
+                    state = Error;
+                else
+                    state = ImageDataBlockSize;
+                count = 0;
+                break;
+            case ImageDataBlockSize:
+                blockSize = ch;
+                if (blockSize) {
+                    if (length >= blockSize) {
+                        // we can skip the block in one go
+                        length -= blockSize;
+                        buffer += blockSize;
+                        count = 0;
+                    } else {
+                        state = ImageDataBlock;
+                    }
+                } else {
+                    state = Introducer;
+                }
+                break;
+            case ImageDataBlock:
+                ++count;
+                if (count == blockSize) {
+                    count = 0;
+                    state = ImageDataBlockSize;
+                }
+                break;
+            case ExtensionLabel:
+                switch (ch) {
+                case 0xf9:
+                    state = GraphicControlExtension;
+                    break;
+                case 0xff:
+                    state = ApplicationExtension;
+                    break;
+                default:
+                    state = SkipBlockSize;
+                }
+                count = 0;
+                break;
+            case ApplicationExtension:
+                if (count < 11)
+                    hold[count] = ch;
+                ++count;
+                if (count == hold[0] + 1) {
+                    state = SkipBlockSize;
+                    count = 0;
+                }
+                break;
+            case GraphicControlExtension:
+                if (count < 5)
+                    hold[count] = ch;
+                ++count;
+                if (count == hold[0] + 1) {
+                    count = 0;
+                    state = SkipBlockSize;
+                }
+                break;
+            case NetscapeExtensionBlockSize: // fallthrough
+            case SkipBlockSize:
+                blockSize = ch;
+                count = 0;
+                if (blockSize) {
+                    if (length >= blockSize) {
+                        // we can skip the block in one go
+                        length -= blockSize;
+                        buffer += blockSize;
+                    } else {
+                        state = SkipBlock;
+                    }
+                } else {
+                    state = Introducer;
+                }
+                break;
+            case NetscapeExtensionBlock: // fallthrough
+            case SkipBlock:
+                ++count;
+                if (count == blockSize)
+                    state = SkipBlockSize;
+                break;
+            case Done:
+                done = true;
+                break;
+            case Error:
+                device->seek(oldPos);
+                return 0;
+            }
+        }
+        readBuffer = device->read(readBufferSize);
+    }
+    device->seek(oldPos);
+    return imageCount;
+}
+
 void QGIFFormat::fillRect(QImage *image, int col, int row, int w, int h, QRgb color)
 {
     if (w>0) {
@@ -766,6 +995,7 @@ QGifHandler::QGifHandler()
     loopCnt = 0;
     frameNumber = -1;
     nextSize = QSize();
+    imageCnt = -1;
 }
 
 QGifHandler::~QGifHandler()
@@ -883,7 +1113,10 @@ int QGifHandler::nextImageDelay() const
 
 int QGifHandler::imageCount() const
 {
-    return 0; // Don't know
+    if (imageCnt != -1)
+        return imageCnt;
+    imageCnt = QGIFFormat::imageCount(device());
+    return imageCnt;
 }
 
 int QGifHandler::loopCount() const
