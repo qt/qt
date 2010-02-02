@@ -315,13 +315,6 @@ bool MainWindow::initHelpDB()
         needsSetup = true;
     }
 
-    if (!helpEngineWrapper.unfilteredInserted()) {
-        helpEngineWrapper.addCustomFilter(tr("Unfiltered"), QStringList());
-        helpEngineWrapper.setUnfilteredInserted();
-        helpEngineWrapper.setCurrentFilter(tr("Unfiltered"));
-        needsSetup = true;
-    }
-
     if (needsSetup)
         helpEngineWrapper.setupData();
     return true;
