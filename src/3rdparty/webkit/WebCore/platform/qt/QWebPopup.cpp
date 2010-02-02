@@ -36,7 +36,9 @@ QWebPopup::QWebPopup(PopupMenuClient* client)
 {
     Q_ASSERT(m_client);
 
+#if !defined(Q_WS_S60) && !defined(Q_WS_MAEMO_5)
     setFont(m_client->menuStyle().font().font());
+#endif
     connect(this, SIGNAL(activated(int)),
             SLOT(activeChanged(int)), Qt::QueuedConnection);
 }
