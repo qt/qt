@@ -174,8 +174,9 @@ bool synchronizeDocs(QHelpEngineCore &collection,
         if (!cachedDocs.contains(doc)) {
             const QString &docFile = collection.documentationFileName(doc);
             if (!cachedCollection.registerDocumentation(docFile)) {
-                cmd.showMessage(QObject::tr("Error registering documentation file '%1': %2").
-                        arg(docFile).arg(cachedCollection.error()), true);
+                cmd.showMessage(QCoreApplication::translate("Assistant",
+                                    "Error registering documentation file '%1': %2").
+                                arg(docFile).arg(cachedCollection.error()), true);
                 return false;
             }
         }
@@ -212,7 +213,8 @@ bool rebuildSearchIndex(QCoreApplication &app, const QString &collectionFile,
     TRACE_OBJ
     QHelpEngine engine(collectionFile);
     if (!engine.setupData()) {
-        cmd.showMessage(QObject::tr("Error: %1").arg(engine.error()), true);
+        cmd.showMessage(QCoreApplication::translate("Assistant", "Error: %1")
+                        .arg(engine.error()), true);
         return false;
     }
 
@@ -250,13 +252,14 @@ bool registerDocumentation(QHelpEngineCore &collection, CmdLineParser &cmd,
 {
     TRACE_OBJ
     if (!collection.registerDocumentation(cmd.helpFile())) {
-        cmd.showMessage(
-                QObject::tr("Could not register documentation file\n%1\n\nReason:\n%2")
-                .arg(cmd.helpFile()).arg(collection.error()), true);
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                     "Could not register documentation file\n%1\n\nReason:\n%2")
+                     .arg(cmd.helpFile()).arg(collection.error()), true);
         return false;
     }
     if (printSuccess)
-        cmd.showMessage(QObject::tr("Documentation successfully registered."),
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Documentation successfully registered."),
                         false);
     CollectionConfiguration::updateLastRegisterTime(collection);
     return true;
@@ -267,14 +270,16 @@ bool unregisterDocumentation(QHelpEngineCore &collection,
 {
     TRACE_OBJ
     if (!collection.unregisterDocumentation(namespaceName)) {
-        cmd.showMessage(QObject::tr("Could not unregister documentation"
-                                    " file\n%1\n\nReason:\n%2").
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                             "Could not unregister documentation"
+                             " file\n%1\n\nReason:\n%2").
                         arg(cmd.helpFile()).arg(collection.error()), true);
         return false;
     }
     updateLastPagesOnUnregister(collection, namespaceName);
     if (printSuccess)
-        cmd.showMessage(QObject::tr("Documentation successfully unregistered."),
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Documentation successfully unregistered."),
                         false);
     return true;
 }
@@ -328,7 +333,8 @@ int main(int argc, char *argv[])
     if (collectionFileGiven) {
         collection.reset(new QHelpEngineCore(collectionFile));
         if (!collection->setupData()) {
-            cmd.showMessage(QObject::tr("Error reading collection file '%1': %2.").
+            cmd.showMessage(QCoreApplication::translate("Assistant",
+                                "Error reading collection file '%1': %2.").
                 arg(collectionFile).arg(collection->error()), true);
             return EXIT_FAILURE;
         }
@@ -338,13 +344,15 @@ int main(int argc, char *argv[])
         : MainWindow::defaultHelpCollectionFileName();
     if (collectionFileGiven && !QFileInfo(cachedCollectionFile).exists()
         && !collection->copyCollectionFile(cachedCollectionFile)) {
-        cmd.showMessage(QObject::tr("Error creating collection file '%1': %2.").
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Error creating collection file '%1': %2.").
                 arg(cachedCollectionFile).arg(collection->error()), true);
         return EXIT_FAILURE;
     }
     QHelpEngineCore cachedCollection(cachedCollectionFile);
     if (!cachedCollection.setupData()) {
-        cmd.showMessage(QObject::tr("Error reading collection file '%1': %2").
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Error reading collection file '%1': %2").
                         arg(cachedCollectionFile).
                         arg(cachedCollection.error()), true);
         return EXIT_FAILURE;
@@ -365,7 +373,8 @@ int main(int argc, char *argv[])
         const QString &namespaceName =
             QHelpEngineCore::namespaceName(cmd.helpFile());
         if (cmd.registerRequest() == CmdLineParser::Register) {
-            if (collectionFileGiven && !registerDocumentation(*collection, cmd, true))
+            if (collectionFileGiven
+                && !registerDocumentation(*collection, cmd, true))
                 return EXIT_FAILURE;
             if (!cachedDocs.contains(namespaceName)
                 && !registerDocumentation(cachedCollection, cmd, !collectionFileGiven))
@@ -395,7 +404,8 @@ int main(int argc, char *argv[])
     }
 
     if (!QSqlDatabase::isDriverAvailable(QLatin1String("QSQLITE"))) {
-        cmd.showMessage(QObject::tr("Cannot load sqlite database driver!"),
+        cmd.showMessage(QCoreApplication::translate("Assistant",
+                            "Cannot load sqlite database driver!"),
                         true);
         return EXIT_FAILURE;
     }
