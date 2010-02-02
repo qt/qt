@@ -136,6 +136,8 @@ private:
     qreal wp, xp, yp, zp;
 };
 
+Q_DECLARE_TYPEINFO(QQuaternion, Q_MOVABLE_TYPE);
+
 inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
 
 inline QQuaternion::QQuaternion(qreal aScalar, qreal xpos, qreal ypos, qreal zpos) : wp(aScalar), xp(xpos), yp(ypos), zp(zpos) {}
