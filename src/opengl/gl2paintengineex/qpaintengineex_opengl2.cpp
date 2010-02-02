@@ -1276,6 +1276,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
+#define QSTATICTEXT_USE_INDEXARRAY
+
 namespace {
 
     class QOpenGLStaticTextUserData: public QStaticTextUserData
@@ -1296,6 +1298,10 @@ namespace {
         QGLContext *ctx;
         GLuint vertexCoordVBOId;
         GLuint textureCoordVBOId;
+
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+        QVector<GLubyte> indices;
+#endif
     };
 }
 
@@ -1332,11 +1338,20 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();
 
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+    QVector<GLubyte> indices;
+#endif
+
     if (staticTextItem->userData == 0
         || staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData
         || staticTextItem->userDataNeedsUpdate) {
         vertexCoordinateArray.clear();
         textureCoordinateArray.clear();
+
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+        indices.clear();
+        int j=0;
+#endif
 
         for (int i=0; i<staticTextItem->numGlyphs; ++i) {
             const QTextureGlyphCache::Coord &c = cache->coords.value(staticTextItem->glyphs[i]);
@@ -1345,8 +1360,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
             vertexCoordinateArray.addRect(QRectF(x, y, c.w, c.h));
             textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
-        }
 
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+            for (int k=0; k<6; ++k)
+                indices.append(j++);
+#endif
+        }
 
         if (staticTextItem->useBackendOptimizations) {
             QOpenGLStaticTextUserData *userData =
@@ -1370,16 +1389,19 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             glBufferData(GL_ARRAY_BUFFER, textureCoordinateArraySize,
                          textureCoordinateArray.data(), GL_STATIC_DRAW);
 
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+            userData->indices = indices;
+#endif
+
             // If a new user data has been created, make sure we delete the old
             staticTextItem->setUserData(userData);
-            staticTextItem->userDataNeedsUpdate = false;
+            staticTextItem->userDataNeedsUpdate = false;            
 
         } else {
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
             setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
         }
     }
-
     if (staticTextItem->useBackendOptimizations) {
         Q_ASSERT(staticTextItem->userData != 0);
         Q_ASSERT(staticTextItem->userData->type == QStaticTextUserData::OpenGLUserData);
@@ -1391,6 +1413,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
         glBindBuffer(GL_ARRAY_BUFFER, userData->textureCoordVBOId);
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+        indices = userData->indices;
+#endif
     }
 
     if (addOffset) {
@@ -1491,7 +1517,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
+
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+    glDrawElements(GL_TRIANGLES, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_BYTE, indices.constData());
+#else
     glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
+#endif
 
     // Reset bindings
     glBindBuffer(GL_ARRAY_BUFFER, 0);
