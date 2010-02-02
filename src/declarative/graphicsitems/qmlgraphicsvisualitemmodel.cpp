@@ -806,8 +806,12 @@ QmlGraphicsVisualDataModel::ReleaseFlags QmlGraphicsVisualDataModel::release(Qml
     }
 
     if (d->m_cache.releaseItem(obj)) {
-        if (inPackage)
+        if (inPackage) {
             emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
+        } else {
+            item->setVisible(false);
+            static_cast<QGraphicsItem*>(item)->setParentItem(0);
+        }
         stat |= Destroyed;
         obj->deleteLater();
     } else if (!inPackage) {

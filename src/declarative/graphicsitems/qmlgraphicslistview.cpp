@@ -2399,12 +2399,12 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
             // Special case of appending an item to the model.
             modelIndex = d->visibleIndex + d->visibleItems.count();
         } else {
-            if (modelIndex + count - 1 < d->visibleIndex) {
+            if (modelIndex < d->visibleIndex) {
                 // Insert before visible items
                 d->visibleIndex += count;
                 for (int i = 0; i < d->visibleItems.count(); ++i) {
                     FxListItem *listItem = d->visibleItems.at(i);
-                    if (listItem->index != -1)
+                    if (listItem->index != -1 && listItem->index >= modelIndex)
                         listItem->index += count;
                 }
             }
