@@ -119,6 +119,7 @@ private slots:
 
     void mnemonic_data();
     void mnemonic();
+    void selection();
 
 private:
     QLabel *testWidget;
@@ -559,6 +560,27 @@ void tst_QLabel::mnemonic()
     QCOMPARE(d->shortcutCursor.selectedText(), expectedShortcutCursor);
 }
 
+void tst_QLabel::selection()
+{
+    QLabel label;
+    label.setText("Hello world");
+
+    label.setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+    QVERIFY(!label.hasSelectedText());
+    QCOMPARE(label.selectedText(), QString());
+    QCOMPARE(label.selectionStart(), -1);
+
+    label.setSelection(0, 4);
+    QVERIFY(label.hasSelectedText());
+    QCOMPARE(label.selectedText(), QString::fromLatin1("Hell"));
+    QCOMPARE(label.selectionStart(), 0);
+
+    label.setSelection(6, 5);
+    QVERIFY(label.hasSelectedText());
+    QCOMPARE(label.selectedText(), QString::fromLatin1("world"));
+    QCOMPARE(label.selectionStart(), 6);
+}
 
 QTEST_MAIN(tst_QLabel)
 #include "tst_qlabel.moc"

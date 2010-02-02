@@ -2907,7 +2907,7 @@ void tst_QScriptValue::equals()
     QScriptValue qobj1 = eng.newQObject(this);
     QScriptValue qobj2 = eng.newQObject(this);
     QScriptValue qobj3 = eng.newQObject(0);
-    QScriptValue qobj4 = eng.newQObject(new QObject());
+    QScriptValue qobj4 = eng.newQObject(new QObject(), QScriptEngine::ScriptOwnership);
     QVERIFY(qobj1.equals(qobj2)); // compares the QObject pointers
     QVERIFY(!qobj2.equals(qobj4)); // compares the QObject pointers
     QVERIFY(!qobj2.equals(obj2)); // compares the QObject pointers
