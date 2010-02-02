@@ -70,8 +70,8 @@ void QsaKernelParser::parseSourceFile( const Location& location,
 				       const QString& filePath,
 				       Tree * /* tree */ )
 {
-    FILE *in = fopen( QFile::encodeName(filePath), "r" );
-    if ( in == 0 ) {
+    QFile in(filePath);
+    if (!in.open(QIODevice::ReadOnly)) {
         location.error( tr("Cannot open QSA kernel file '%1'").arg(filePath) );
         return;
     }
@@ -171,7 +171,7 @@ void QsaKernelParser::parseSourceFile( const Location& location,
 	    readToken();
 	}
     }
-    fclose( in );
+    in.close();
 }
 
 void QsaKernelParser::doneParsingSourceFiles( Tree * /* tree */ )

@@ -176,7 +176,7 @@ void PageGenerator::beginSubPage(const Location& location,
 	location.fatal(tr("Cannot open output file '%1'")
 			.arg(outFile->fileName()));
     QTextStream *out = new QTextStream(outFile);
-    out->setCodec("ISO-8859-1");
+    out->setCodec(outputCodec);
     outStreamStack.push(out);
 }
 
