@@ -88,6 +88,7 @@ private:
     mutable int loopCnt;
     int frameNumber;
     mutable QSize nextSize;
+    mutable int imageCnt;
 };
 
 QT_END_NAMESPACE
