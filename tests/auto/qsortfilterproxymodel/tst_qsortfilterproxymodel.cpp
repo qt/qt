@@ -136,6 +136,7 @@ private slots:
     void task252507_mapFromToSource();
     void task255652_removeRowsRecursive();
     void taskQTBUG_6205_doubleProxySelectionSetSourceModel();
+    void taskQTBUG_7537_appearsAndSort();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -2850,6 +2851,74 @@ void tst_QSortFilterProxyModel::taskQTBUG_6205_doubleProxySelectionSetSourceMode
     toggleProxy->setSourceModel(model2);
     // No crash, it's good news!
     QVERIFY(ism.selection().isEmpty());
+}
+
+void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
+{
+    class PModel : public QSortFilterProxyModel
+    {
+        public:
+            PModel() : mVisible(false) {};
+        protected:
+            bool filterAcceptsRow(int, const QModelIndex &) const
+            {
+                return mVisible;
+            }
+
+        public:
+            void updateXX()
+            {
+                mVisible = true;
+                invalidate();
+            }
+        private:
+            bool mVisible;
+    } proxyModel;
+
+
+    QStringListModel sourceModel;
+    QStringList list;
+    list << "b" << "a" << "c";
+    sourceModel.setStringList(list);
+
+    proxyModel.setSourceModel(&sourceModel);
+    proxyModel.setDynamicSortFilter(true);
+    proxyModel.sort(0, Qt::AscendingOrder);
+
+    QApplication::processEvents();
+    QCOMPARE(sourceModel.rowCount(), 3);
+    QCOMPARE(proxyModel.rowCount(), 0); //all rows are hidden at first;
+
+    QSignalSpy spyAbout1(&proxyModel, SIGNAL(layoutAboutToBeChanged()));
+    QSignalSpy spyChanged1(&proxyModel, SIGNAL(layoutChanged()));
+
+    //introducing secondProxyModel to test the layoutChange when many items appears at once
+    QSortFilterProxyModel secondProxyModel;
+    secondProxyModel.setSourceModel(&proxyModel);
+    secondProxyModel.setDynamicSortFilter(true);
+    secondProxyModel.sort(0, Qt::DescendingOrder);
+    QCOMPARE(secondProxyModel.rowCount(), 0); //all rows are hidden at first;
+    QSignalSpy spyAbout2(&secondProxyModel, SIGNAL(layoutAboutToBeChanged()));
+    QSignalSpy spyChanged2(&secondProxyModel, SIGNAL(layoutChanged()));
+
+    proxyModel.updateXX();
+    QApplication::processEvents();
+    //now rows should be visible, and sorted
+    QCOMPARE(proxyModel.rowCount(), 3);
+    QCOMPARE(proxyModel.data(proxyModel.index(0,0), Qt::DisplayRole).toString(), QString::fromLatin1("a"));
+    QCOMPARE(proxyModel.data(proxyModel.index(1,0), Qt::DisplayRole).toString(), QString::fromLatin1("b"));
+    QCOMPARE(proxyModel.data(proxyModel.index(2,0), Qt::DisplayRole).toString(), QString::fromLatin1("c"));
+
+    //now rows should be visible, and sorted
+    QCOMPARE(secondProxyModel.rowCount(), 3);
+    QCOMPARE(secondProxyModel.data(secondProxyModel.index(0,0), Qt::DisplayRole).toString(), QString::fromLatin1("c"));
+    QCOMPARE(secondProxyModel.data(secondProxyModel.index(1,0), Qt::DisplayRole).toString(), QString::fromLatin1("b"));
+    QCOMPARE(secondProxyModel.data(secondProxyModel.index(2,0), Qt::DisplayRole).toString(), QString::fromLatin1("a"));
+
+    QCOMPARE(spyAbout1.count(), 1);
+    QCOMPARE(spyChanged1.count(), 1);
+    QCOMPARE(spyAbout2.count(), 1);
+    QCOMPARE(spyChanged2.count(), 1);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
