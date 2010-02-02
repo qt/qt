@@ -39,50 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef UNIXMAKE_H
-#define UNIXMAKE_H
+#ifndef SYMBIAN_MAKEFILE_H
+#define SYMBIAN_MAKEFILE_H
 
-#include "makefile.h"
+#include "symbiancommon.h"
 
-QT_BEGIN_NAMESPACE
-
-class UnixMakefileGenerator : public MakefileGenerator
+// This allows us to reuse the code for both win32 and unix makefile generators.
+template <class T>
+class SymbianMakefileTemplate : public T, public SymbianCommonGenerator
 {
-    bool init_flag, include_deps;
-    QString libtoolFileName(bool fixify=true);
-    void writeLibtoolFile();     // for libtool
-    QString pkgConfigPrefix() const;
-    QString pkgConfigFileName(bool fixify=true);
-    QString pkgConfigFixPath(QString) const;
-    void writePkgConfigFile();   // for pkg-config
-    void writePrlFile(QTextStream &);
-
 public:
-    UnixMakefileGenerator();
-    ~UnixMakefileGenerator();
+    SymbianMakefileTemplate() : SymbianCommonGenerator(this) {}
 
-protected:
-    virtual bool doPrecompiledHeaders() const { return project->isActiveConfig("precompile_header"); }
-    virtual bool doDepends() const { return !include_deps && !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
-    virtual QString defaultInstall(const QString &);
-    virtual void processPrlVariable(const QString &, const QStringList &);
-    virtual void processPrlFiles();
+    void init()
+    {
+        T::init();
+        SymbianCommonGenerator::init();
+    }
 
-    virtual bool findLibraries();
-    virtual QString escapeFilePath(const QString &path) const;
-    virtual QStringList &findDependencies(const QString &);
-    virtual void init();
+    bool writeMakefile(QTextStream &t)
+    {
+        bool ret = T::writeMakefile(t);
 
-    void writeMakeParts(QTextStream &);
-    bool writeMakefile(QTextStream &);
+        QString iconFile;
+        DeploymentList depList;
+        generatePkgFile(iconFile, depList, false);
 
-private:
-    void init2();
+        return ret;
+    }
 };
 
-inline UnixMakefileGenerator::~UnixMakefileGenerator()
-{ }
-
-QT_END_NAMESPACE
-
-#endif // UNIXMAKE_H
+#endif // SYMBIAN_MAKEFILE_H

@@ -70,7 +70,6 @@ count(splitVersion, 1) {
 }
 #error ("hexVersion: $$hexVersion, decVersion: $$decVersion")
 
-isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_uid("$${OUT_PWD}/$${TARGET}")
 intUid3 = $$lower($$replace(TARGET.UID3, "^0x", ""))
 isEmpty(TARGET.SID):TARGET.SID = $$TARGET.UID3
 isEmpty(TARGET.UID2):TARGET.UID2 = 0x00000000
@@ -126,7 +125,7 @@ symbianresources.commands = cpp -nostdinc -undef \
                             -o $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             && rcomp -u -m045,046,047 \
                             -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
-                            -o$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsc \
+                            -o$${symbianDestdir}/${QMAKE_FILE_BASE}.rsc \
                             -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsg \
                             -i${QMAKE_FILE_NAME}
 symbianresources.dependency_type = TYPE_C

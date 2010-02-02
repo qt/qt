@@ -39,50 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef UNIXMAKE_H
-#define UNIXMAKE_H
+#ifndef SYMBIANCOMMON_H
+#define SYMBIANCOMMON_H
 
-#include "makefile.h"
+#include <project.h>
+#include <makefile.h>
+#include "initprojectdeploy_symbian.h"
 
-QT_BEGIN_NAMESPACE
+#define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
-class UnixMakefileGenerator : public MakefileGenerator
+class SymbianCommonGenerator
 {
-    bool init_flag, include_deps;
-    QString libtoolFileName(bool fixify=true);
-    void writeLibtoolFile();     // for libtool
-    QString pkgConfigPrefix() const;
-    QString pkgConfigFileName(bool fixify=true);
-    QString pkgConfigFixPath(QString) const;
-    void writePkgConfigFile();   // for pkg-config
-    void writePrlFile(QTextStream &);
-
 public:
-    UnixMakefileGenerator();
-    ~UnixMakefileGenerator();
+    enum TargetType {
+        TypeExe,
+        TypeDll,
+        TypeLib,
+        TypePlugin,
+        TypeSubdirs
+    };
 
-protected:
-    virtual bool doPrecompiledHeaders() const { return project->isActiveConfig("precompile_header"); }
-    virtual bool doDepends() const { return !include_deps && !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
-    virtual QString defaultInstall(const QString &);
-    virtual void processPrlVariable(const QString &, const QStringList &);
-    virtual void processPrlFiles();
+    SymbianCommonGenerator(MakefileGenerator *generator);
 
-    virtual bool findLibraries();
-    virtual QString escapeFilePath(const QString &path) const;
-    virtual QStringList &findDependencies(const QString &);
     virtual void init();
 
-    void writeMakeParts(QTextStream &);
-    bool writeMakefile(QTextStream &);
+    QString removePathSeparators(QString &file);
+    void removeSpecialCharacters(QString& str);
+    void generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild);
+    bool containsStartWithItem(const QChar &c, const QStringList& src);
 
-private:
-    void init2();
+protected:
+    MakefileGenerator *generator;
+
+    QStringList generatedFiles;
+    QStringList generatedDirs;
+    QString fixedTarget;
+    QString privateDirUid;
+    QString uid3;
+    TargetType targetType;
 };
 
-inline UnixMakefileGenerator::~UnixMakefileGenerator()
-{ }
-
-QT_END_NAMESPACE
-
-#endif // UNIXMAKE_H
+#endif // SYMBIANCOMMON_H

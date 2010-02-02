@@ -239,6 +239,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                               DeploymentList &deploymentList,
                               const QString &testPath,
                               bool deployBinaries,
+                              bool epocBuild,
                               const QString &platform,
                               const QString &build,
                               QStringList& generatedDirs,
@@ -321,7 +322,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                 dirSearch = true;
             } else {
                 if (info.exists() || source.indexOf('*') != -1) {
-                    nameFilter = source.split('\\').last();
+                    nameFilter = source.split(QDir::separator()).last();
                     searchPath = info.absolutePath();
                 } else {
                     // Entry was not found. That is ok if it is a binary, since those do not necessarily yet exist.
@@ -329,12 +330,16 @@ void initProjectDeploySymbian(QMakeProject* project,
                     if (isBinary(info)) {
                         if (deployBinaries) {
                             // Executables and libraries are deployed to \sys\bin
-                            QFileInfo releasePath(epocRoot() + "epoc32\\release\\" + platform + "\\" + build + "\\");
+                            QFileInfo targetPath;
+                            if (epocBuild)
+                                targetPath.setFile(epocRoot() + "epoc32\\release\\" + platform + "\\" + build + "\\");
+                            else
+                                targetPath.setFile(info.path() + QDir::separator());
                             if(devicePathHasDriveLetter) {
-                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
+                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(targetPath.absolutePath() + "\\" + info.fileName(), false, true),
                                                                Option::fixPathToLocalOS(devicePath.left(2) + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
                             } else {
-                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
+                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(targetPath.absolutePath() + "\\" + info.fileName(), false, true),
                                                                Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
                             }
                         }

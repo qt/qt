@@ -410,7 +410,7 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
 
     QString remoteTestPath = epocRoot() + QLatin1String("epoc32\\winscw\\c\\private\\") + privateDirUid;   // default 4 OpenC; 4 all Symbian too
     DeploymentList depList;
-    initProjectDeploySymbian(project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
 
     if (depList.size())
         t << "\t-echo Deploying changed files..." << endl;
