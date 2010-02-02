@@ -66,7 +66,7 @@ public:
 
     static QVariant toVariant(QmlEngine *, const QScriptValue &);
 
-#if (QT_VERSION < QT_VERSION_CHECK(4, 6, 2))
+#if (QT_VERSION <= QT_VERSION_CHECK(4, 6, 2))
     struct Value : public QScriptValue { 
         Value() : QScriptValue() {}
         Value(QScriptEngine *engine, int v) : QScriptValue(engine, v) {}
