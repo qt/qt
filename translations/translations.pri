@@ -17,7 +17,7 @@ LUPDATE += -locations relative -no-ui-lines
 
 ###### Qt Libraries
 
-QT_TS        = ar da de es fr iw ja_JP pl pt ru sk sl sv uk zh_CN zh_TW
+QT_TS        = ar cs da de es fr iw ja_JP pl pt ru sk sl sv uk zh_CN zh_TW
 
 ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                 -I../include -I../include/Qt \
