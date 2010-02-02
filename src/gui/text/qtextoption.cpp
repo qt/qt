@@ -52,6 +52,9 @@ struct QTextOptionPrivate
 
 /*!
     Constructs a text option with default properties for text.
+    The text alignment property is set to Qt::AlignLeft. The
+    word wrap property is set to QTextOption::WordWrap. The
+    using of design metrics flag is set to false.
 */
 QTextOption::QTextOption()
     : align(Qt::AlignLeft),
@@ -67,6 +70,8 @@ QTextOption::QTextOption()
 
 /*!
     Constructs a text option with the given \a alignment for text.
+    The word wrap property is set to QTextOption::WordWrap. The using
+    of design metrics flag is set to false.
 */
 QTextOption::QTextOption(Qt::Alignment alignment)
     : align(alignment),

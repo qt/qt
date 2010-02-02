@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 contains(QT_CONFIG,xmlpatterns) {
   SUBDIRS += lib
-  !wince*:lib.file = lib/lib.pro
   test.depends = lib
 }
 SUBDIRS += test

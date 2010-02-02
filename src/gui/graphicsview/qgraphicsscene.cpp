@@ -4832,7 +4832,8 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 }
 
 void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, bool invalidateChildren,
-                                      bool force, bool ignoreOpacity, bool removingItemFromScene)
+                                      bool force, bool ignoreOpacity, bool removingItemFromScene,
+                                      bool updateBoundingRect)
 {
     Q_ASSERT(item);
     if (updateAll)
@@ -4903,7 +4904,8 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (ignoreOpacity)
         item->d_ptr->ignoreOpacity = 1;
 
-    item->d_ptr->markParentDirty();
+    if (!updateBoundingRect)
+        item->d_ptr->markParentDirty();
 }
 
 static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate *item,

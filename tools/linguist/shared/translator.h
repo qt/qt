@@ -153,6 +153,7 @@ public:
     void reportDuplicates(const Duplicates &dupes, const QString &fileName, bool verbose);
 
     void setCodecName(const QByteArray &name);
+    void setCodec(QTextCodec *codec) { m_codec = codec; }
     QByteArray codecName() const;
     QTextCodec *codec() const { return m_codec; }
 

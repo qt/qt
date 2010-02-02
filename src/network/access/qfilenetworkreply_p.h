@@ -57,6 +57,7 @@
 #include "qnetworkreply_p.h"
 #include "qnetworkaccessmanager.h"
 #include <QFile>
+#include <QAbstractFileEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -85,9 +86,11 @@ class QFileNetworkReplyPrivate: public QNetworkReplyPrivate
 {
 public:
     QFileNetworkReplyPrivate();
+    ~QFileNetworkReplyPrivate();
 
-    QFile realFile;
-    qint64 realFileSize;
+    QAbstractFileEngine *fileEngine;
+    qint64 fileSize;
+    qint64 filePos;
 
     virtual bool isFinished() const;
 

@@ -634,11 +634,11 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     QByteArray tmp;
     for (int i = 0; i <= array.size() - 64; i += 64) {
         tmp += QByteArray::fromRawData(array.data() + i, 64);
-        tmp += "\n";
+        tmp += '\n';
     }
     if (int remainder = array.size() % 64) {
         tmp += QByteArray::fromRawData(array.data() + array.size() - remainder, remainder);
-        tmp += "\n";
+        tmp += '\n';
     }
 
     return BEGINCERTSTRING "\n" + tmp + ENDCERTSTRING "\n";
