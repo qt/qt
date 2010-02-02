@@ -1300,7 +1300,7 @@ namespace {
         GLuint textureCoordVBOId;
 
 #if defined(QSTATICTEXT_USE_INDEXARRAY)
-        QVector<GLubyte> indices;
+        QVector<GLuint> indices;
 #endif
     };
 }
@@ -1339,7 +1339,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     GLfloat dy = 1.0 / cache->height();
 
 #if defined(QSTATICTEXT_USE_INDEXARRAY)
-    QVector<GLubyte> indices;
+    QVector<GLuint> indices;
 #endif
 
     if (staticTextItem->userData == 0
@@ -1519,7 +1519,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
 #if defined(QSTATICTEXT_USE_INDEXARRAY)
-    glDrawElements(GL_TRIANGLES, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_BYTE, indices.constData());
+    glDrawElements(GL_TRIANGLES, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_INT, indices.constData());
 #else
     glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
 #endif
