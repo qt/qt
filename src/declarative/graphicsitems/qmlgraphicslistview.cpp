@@ -2114,12 +2114,14 @@ void QmlGraphicsListView::viewportMoved()
                 const qreal minX = minXExtent();
                 if ((minX - d->_moveX.value() < height()/2 || d->flickTargetX - d->_moveX.value() < height()/2)
                     && minX != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
+                    d->flickX(-d->horizontalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferBefore;
             } else if (d->velocityX < 0) {
                 const qreal maxX = maxXExtent();
                 if ((d->_moveX.value() - maxX < height()/2 || d->_moveX.value() - d->flickTargetX < height()/2)
                     && maxX != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
+                    d->flickX(-d->horizontalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferAfter;
             }
         }
         d->inFlickCorrection = false;
