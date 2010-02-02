@@ -565,25 +565,6 @@ inline static void qt_mac_set_window_group_to_popup(OSWindowRef window)
 }
 #endif
 
-#ifdef QT_MAC_USE_COCOA
-void qt_mac_set_needs_display(QWidget *widget, QRegion region)
-{
-    NSView *theNSView = qt_mac_nativeview_for(widget);
-    if (region.isNull()) {
-        [theNSView setNeedsDisplay:YES];
-        return;
-    }
-
-    QVector<QRect> rects = region.rects();
-    for (int i = 0; i<rects.count(); ++i) {
-        const QRect &rect = rects.at(i);
-        NSRect nsrect = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
-        [theNSView setNeedsDisplayInRect:nsrect];
-    }
-
-}
-#endif
-
 inline static bool updateRedirectedToGraphicsProxyWidget(QWidget *widget, const QRect &rect)
 {
     if (!widget)
