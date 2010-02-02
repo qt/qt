@@ -43,6 +43,9 @@
     \example qws/svgalib
     \title Accelerated Graphics Driver Example
 
+    \warning This example was designed to work with Qt 4.4 and will not work
+    with current versions of Qt. It will be removed from Qt 4.7.
+
     The Accelerated Graphics Driver example shows how you can write
     your own accelerated graphics driver and \l {add your graphics
     driver to Qt for Embedded Linux}.  In \l{Qt for Embedded Linux},

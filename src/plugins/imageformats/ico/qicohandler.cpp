@@ -556,7 +556,11 @@ QImage ICOReader::iconAt(int index)
                 else                    // # colors used
                     icoAttrib.ncolors = header.biClrUsed ? header.biClrUsed : 1 << icoAttrib.nbits;
                 icoAttrib.w = iconEntry.bWidth;
+                if (icoAttrib.w == 0)
+                    icoAttrib.w = header.biWidth;
                 icoAttrib.h = iconEntry.bHeight;
+                if (icoAttrib.h == 0)
+                    icoAttrib.h = header.biHeight/2;
 
                 QImage::Format format = QImage::Format_ARGB32;
                 if (icoAttrib.nbits == 24)

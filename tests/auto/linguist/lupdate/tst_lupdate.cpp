@@ -59,8 +59,6 @@ public:
 private slots:
     void good_data();
     void good();
-    void commandline_data();
-    void commandline();
 #if CHECK_SIMTEXTH
     void simtexth();
     void simtexth_data();
@@ -245,10 +243,10 @@ void tst_lupdate::good()
 
     qDebug() << "Checking...";
 
-    QString generatedtsfile(dir + QLatin1String("/project.ts"));
-
-    // look for a command
+    QString workDir = dir;
+    QStringList generatedtsfiles(QLatin1String("project.ts"));
     QString lupdatecmd;
+
     QFile file(dir + "/lupdatecmd");
     if (file.exists()) {
         QVERIFY2(file.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(file.fileName()));
@@ -262,23 +260,32 @@ void tst_lupdate::good()
                 break;
             } else if (cmdstring.startsWith("TRANSLATION:")) {
                 cmdstring.remove(0, 12);
-                generatedtsfile = dir + QLatin1Char('/') + cmdstring.trimmed();
+                generatedtsfiles.clear();
+                foreach (const QByteArray &s, cmdstring.split(' '))
+                    if (!s.isEmpty())
+                        generatedtsfiles << s;
+            } else if (cmdstring.startsWith("cd ")) {
+                cmdstring.remove(0, 3);
+                workDir = QDir::cleanPath(dir + QLatin1Char('/') + cmdstring);
             }
         }
         file.close();
     }
 
-    QFile::remove(generatedtsfile);
-    QString beforetsfile = generatedtsfile + QLatin1String(".before");
-    if (QFile::exists(beforetsfile))
-        QVERIFY2(QFile::copy(beforetsfile, generatedtsfile), qPrintable(beforetsfile));
+    foreach (const QString &ts, generatedtsfiles) {
+        QString genTs = workDir + QLatin1Char('/') + ts;
+        QFile::remove(genTs);
+        QString beforetsfile = dir + QLatin1Char('/') + ts + QLatin1String(".before");
+        if (QFile::exists(beforetsfile))
+            QVERIFY2(QFile::copy(beforetsfile, genTs), qPrintable(beforetsfile));
+    }
 
     if (lupdatecmd.isEmpty())
         lupdatecmd = QLatin1String("project.pro");
     lupdatecmd.prepend("-silent ");
 
     QProcess proc;
-    proc.setWorkingDirectory(dir);
+    proc.setWorkingDirectory(workDir);
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.start(m_cmdLupdate + ' ' + lupdatecmd, QIODevice::ReadWrite | QIODevice::Text);
     QVERIFY2(proc.waitForFinished(5000), qPrintable(lupdatecmd));
@@ -287,7 +294,7 @@ void tst_lupdate::good()
              "\"lupdate " + lupdatecmd.toLatin1() + "\" crashed\n" + output);
     QVERIFY2(!proc.exitCode(),
              "\"lupdate " + lupdatecmd.toLatin1() + "\" exited with code " +
-             QByteArray::number(proc.exitCode()) + "\n" + proc.readAll());
+             QByteArray::number(proc.exitCode()) + "\n" + output);
 
     // If the file expectedoutput.txt exists, compare the
     // console output with the content of that file
@@ -299,47 +306,9 @@ void tst_lupdate::good()
             return;
     }
 
-    QString expectedFile = generatedtsfile + QLatin1String(".result");
-    doCompare(generatedtsfile, expectedFile, false);
-}
-
-void tst_lupdate::commandline_data()
-{
-    QTest::addColumn<QString>("currentPath");
-    QTest::addColumn<QString>("commandline");
-    QTest::addColumn<QString>("generatedtsfile");
-    QTest::addColumn<QString>("expectedtsfile");
-
-    QTest::newRow("Recursive scan") << QString("recursivescan")
-       << QString(". -ts foo.ts") << QString("foo.ts") << QString("foo.ts.result");
-    QTest::newRow("Deep path argument") << QString("recursivescan")
-       << QString("sub/finddialog.cpp -ts bar.ts") << QString("bar.ts") << QString("bar.ts.result");
-}
-
-void tst_lupdate::commandline()
-{
-    QFETCH(QString, currentPath);
-    QFETCH(QString, commandline);
-    QFETCH(QString, generatedtsfile);
-    QFETCH(QString, expectedtsfile);
-
-    QString generated =
-        m_basePath + currentPath + QLatin1Char('/') + generatedtsfile;
-    QFile gen(generated);
-    if (gen.exists())
-        QVERIFY(gen.remove());
-    QProcess proc;
-    proc.setWorkingDirectory(m_basePath + currentPath);
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(m_cmdLupdate + " -silent " + commandline, QIODevice::ReadWrite | QIODevice::Text);
-    QVERIFY2(proc.waitForFinished(5000), qPrintable(commandline));
-    QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
-             "\"lupdate -silent " + commandline.toLatin1() + "\" crashed\n" + proc.readAll());
-    QVERIFY2(!proc.exitCode(),
-             "\"lupdate -silent " + commandline.toLatin1() + "\" exited with code " +
-             QByteArray::number(proc.exitCode()) + "\n" + proc.readAll());
-
-    doCompare(generated, m_basePath + currentPath + QLatin1Char('/') + expectedtsfile, false);
+    foreach (const QString &ts, generatedtsfiles)
+        doCompare(workDir + QLatin1Char('/') + ts,
+                  dir + QLatin1Char('/') + ts + QLatin1String(".result"), false);
 }
 
 #if CHECK_SIMTEXTH

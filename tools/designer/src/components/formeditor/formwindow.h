@@ -278,8 +278,6 @@ private:
 
     void checkPreviewGeometry(QRect &r);
 
-    void finishContextMenu(QWidget *w, QWidget *menuParent, QContextMenuEvent *e);
-
     bool handleContextMenu(QWidget *widget, QWidget *managedWidget, QContextMenuEvent *e);
     bool handleMouseButtonDblClickEvent(QWidget *widget, QWidget *managedWidget, QMouseEvent *e);
     bool handleMousePressEvent(QWidget *widget, QWidget *managedWidget, QMouseEvent *e);

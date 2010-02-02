@@ -295,10 +295,8 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     CGContextRestoreGState(context);
 #ifndef QT_MAC_USE_COCOA
     QDEndCGContext(port, &context);
-#else
-    CGContextFlush(context);
 #endif
-#endif
+#endif // Q_WS_MAC
 
 #ifdef Q_OS_SYMBIAN
     Q_UNUSED(widget);

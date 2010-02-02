@@ -1,0 +1,7 @@
+# With DEF files disabled, binary compatibility is broken every time you build
+
+CONFIG -= def_files
+
+# with EXPORTUNFROZEN enabled, new exports are included in the dll without
+# needing to run abld/sbs freeze
+MMP_RULES += EXPORTUNFROZEN

@@ -74,8 +74,8 @@ namespace qdesigner_internal {
 class QDESIGNER_SHARED_EXPORT WidgetDataBaseItem: public QDesignerWidgetDataBaseItemInterface
 {
 public:
-    WidgetDataBaseItem(const QString &name = QString(),
-                       const QString &group = QString());
+    explicit WidgetDataBaseItem(const QString &name = QString(),
+                                const QString &group = QString());
 
     QString name() const;
     void setName(const QString &name);
@@ -159,7 +159,7 @@ class QDESIGNER_SHARED_EXPORT WidgetDataBase: public QDesignerWidgetDataBaseInte
 {
     Q_OBJECT
 public:
-    WidgetDataBase(QDesignerFormEditorInterface *core, QObject *parent = 0);
+    explicit WidgetDataBase(QDesignerFormEditorInterface *core, QObject *parent = 0);
     virtual ~WidgetDataBase();
 
     virtual QDesignerFormEditorInterface *core() const;

@@ -80,7 +80,7 @@ QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const 
 
     QByteArray result;
     bool first = true;
-    foreach (QByteArray value, allValues) {
+    foreach (const QByteArray &value, allValues) {
         if (!first)
             result += ", ";
         first = false;

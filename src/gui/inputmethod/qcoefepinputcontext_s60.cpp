@@ -72,7 +72,8 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_formatRetriever(0),
       m_pointerHandler(0),
       m_longPress(0),
-      m_cursorPos(0)
+      m_cursorPos(0),
+      m_hasTempPreeditString(false)
 {
     m_fepState->SetObjectProvider(this);
     m_fepState->SetFlags(EAknEditorFlagDefault);
@@ -100,6 +101,8 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
 void QCoeFepInputContext::reset()
 {
+    commitTemporaryPreeditString();
+
     CCoeFep* fep = CCoeEnv::Static()->Fep();
     if (fep)
         fep->CancelTransaction();
@@ -200,7 +203,11 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     if (!focusWidget())
         return false;
 
-    if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
+    switch (event->type()) {
+    case QEvent::KeyPress:
+        commitTemporaryPreeditString();
+        // fall through intended
+    case QEvent::KeyRelease:
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
         switch (keyEvent->key()) {
         case Qt::Key_F20:
@@ -223,6 +230,21 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         default:
             break;
         }
+
+        if (keyEvent->type() == QEvent::KeyPress
+            && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
+            && !keyEvent->text().isEmpty()) {
+            // Send some temporary preedit text in order to make text visible for a moment.
+            m_preeditString = keyEvent->text();
+            QList<QInputMethodEvent::Attribute> attributes;
+            QInputMethodEvent imEvent(m_preeditString, attributes);
+            QApplication::sendEvent(focusWidget(), &imEvent);
+            m_tempPreeditStringTimeout.start(1000, this);
+            m_hasTempPreeditString = true;
+            update();
+            return true;
+        }
+        break;
     }
 
     if (!needsInputPanel())
@@ -251,6 +273,24 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     }
 
     return false;
+}
+
+void QCoeFepInputContext::timerEvent(QTimerEvent *timerEvent)
+{
+    if (timerEvent->timerId() == m_tempPreeditStringTimeout.timerId())
+        commitTemporaryPreeditString();
+}
+
+void QCoeFepInputContext::commitTemporaryPreeditString()
+{
+    if (m_tempPreeditStringTimeout.isActive())
+        m_tempPreeditStringTimeout.stop();
+
+    if (!m_hasTempPreeditString)
+        return;
+
+    commitCurrentString(false);
+    m_hasTempPreeditString = false;
 }
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
@@ -309,6 +349,8 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
 void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 {
     using namespace Qt;
+
+    commitTemporaryPreeditString();
 
     bool numbersOnly = hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
             || hints & ImhDialableCharactersOnly;
@@ -501,6 +543,8 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     if (!w)
         return;
 
+    commitTemporaryPreeditString();
+
     m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
     
     QList<QInputMethodEvent::Attribute> attributes;
@@ -599,6 +643,8 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
     QWidget *w = focusWidget();
     if (!w)
         return;
+
+    commitTemporaryPreeditString();
 
     int pos = aCursorSelection.iAnchorPos;
     int length = aCursorSelection.iCursorPos - pos;

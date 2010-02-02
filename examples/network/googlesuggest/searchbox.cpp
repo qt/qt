@@ -70,3 +70,4 @@ void SearchBox::doSearch()
     QDesktopServices::openUrl(QUrl(url));
 }
 //! [2]
+

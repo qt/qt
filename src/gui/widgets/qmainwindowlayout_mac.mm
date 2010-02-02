@@ -472,14 +472,20 @@ void QMainWindowLayout::removeFromMacToolbar(QToolBar *toolbar)
 
 void QMainWindowLayout::cleanUpMacToolbarItems()
 {
-    for (int i = 0; i < toolbarItemsCopy.size(); ++i)
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+#endif
+    for (int i = 0; i < toolbarItemsCopy.size(); ++i) {
+#ifdef QT_MAC_USE_COCOA
+        NSToolbarItem *item = static_cast<NSToolbarItem *>(toolbarItemsCopy.at(i));
+        [item setView:0];
+#endif
         CFRelease(toolbarItemsCopy.at(i));
+    }
     toolbarItemsCopy.clear();
     unifiedToolbarHash.clear();
 
 #ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
-
     OSWindowRef window = qt_mac_window_for(layoutState.mainWindow);
     NSToolbar *macToolbar = [window toolbar];
     if (macToolbar) {

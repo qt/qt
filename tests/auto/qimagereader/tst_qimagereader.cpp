@@ -1633,7 +1633,8 @@ void tst_QImageReader::pixelCompareWithBaseline_data()
 
     QTest::newRow("floppy (16px,32px - 16 colors)") << "35floppy.ico";
     QTest::newRow("semitransparent") << "semitransparent.ico";
-    QTest::newRow("slightlybroken") << "kde_favicon.ico";
+    QTest::newRow("slightlybrokenBMPHeader") << "kde_favicon.ico";
+    QTest::newRow("sightlybrokenIconHeader") << "connect.ico";
 }
 
 void tst_QImageReader::pixelCompareWithBaseline()
@@ -1641,14 +1642,20 @@ void tst_QImageReader::pixelCompareWithBaseline()
     QFETCH(QString, fileName);
 
     QImage icoImg;
+    const QString inputFileName(QString::fromAscii("images/%1").arg(fileName));
+    QFileInfo fi(inputFileName);
+
     // might fail if the plugin does not exist, which is ok.
-    if (icoImg.load(QString::fromAscii("images/%1").arg(fileName))) {
-        QString baselineFileName = QString::fromAscii("baseline/%1").arg(fileName);
+    if (icoImg.load(inputFileName)) {
+        icoImg = icoImg.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        const QString baselineFileName(QString::fromAscii("baseline/%1.png").arg(fi.baseName()));
 #if 0
         icoImg.save(baselineFileName);
 #else
         QImage baseImg;
         QVERIFY(baseImg.load(baselineFileName));
+        baseImg = baseImg.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        QCOMPARE(int(baseImg.format()), int(icoImg.format()));
         QCOMPARE(baseImg, icoImg);
 #endif
     }

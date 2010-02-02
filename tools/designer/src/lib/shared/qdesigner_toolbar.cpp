@@ -440,7 +440,7 @@ QAction *ToolBarEventFilter::actionAt(const QToolBar *tb, const QPoint &pos)
     return tb->actions().at(index);
 }
 
-//that's a trick to get acces to the initStyleOption which is a protected member
+//that's a trick to get access to the initStyleOption which is a protected member
 class FriendlyToolBar : public QToolBar {
 public:
     friend class ToolBarEventFilter;

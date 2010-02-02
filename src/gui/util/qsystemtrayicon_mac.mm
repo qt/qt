@@ -569,16 +569,3 @@ private:
 }
 @end
 
-
-/* Done here because this is the only .mm for now! -Sam */
-QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
-{
-    NSApplicationLoad();
-    pool = (void*)[[NSAutoreleasePool alloc] init];
-}
-
-QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
-{
-    [(NSAutoreleasePool*)pool release];
-}
-

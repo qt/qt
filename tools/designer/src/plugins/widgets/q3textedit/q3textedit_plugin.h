@@ -51,7 +51,7 @@ class Q3TextEditPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3TextEditPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3TextEditPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;

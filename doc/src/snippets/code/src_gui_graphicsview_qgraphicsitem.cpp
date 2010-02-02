@@ -260,3 +260,14 @@ class CustomItem : public QGraphicsItem
    ...
 };
 //! [QGraphicsItem type]
+
+//! [18]
+class QGraphicsPathItem : public QAbstractGraphicsShapeItem
+{
+ public:
+  enum { Type = 2 };
+    int type() const { return Type; }
+  ...
+};
+//! [18]
+

@@ -395,7 +395,7 @@ static QStringList styleSheetParameters(const QGradient &gradient)
 static QStringList styleSheetStops(const QGradient &gradient)
 {
     QStringList result;
-    foreach (QGradientStop stop, gradient.stops()) {
+    foreach (const QGradientStop &stop, gradient.stops()) {
         const QColor color = stop.second;
 
         const QString stopDescription = QLatin1String("stop:") + QString::number(stop.first) + QLatin1String(" rgba(")

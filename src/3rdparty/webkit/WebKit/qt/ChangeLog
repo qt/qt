@@ -1,3 +1,107 @@
+2010-01-28  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        Do not set the combobox font on Maemo5 and S60; use the
+        default instead.
+
+        * WebCoreSupport/QtFallbackWebPopup.cpp:
+        (WebCore::QtFallbackWebPopup::populate):
+
+2010-01-28  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Support kinetic scrolling on Maemo 5
+
+        https://bugs.webkit.org/show_bug.cgi?id=34267
+
+        Patch by Ralf Engels <ralf.engels@nokia.com> and
+        Robert Griebl <rgriebl@trolltech.com>
+
+        * Api/qwebview.cpp:
+        (QWebViewKineticScroller::QWebViewKineticScroller):
+        (QWebViewKineticScroller::eventFilter):
+        (QWebViewKineticScroller::currentFrame):
+        (QWebViewKineticScroller::scrollingFrameAt):
+        (QWebViewKineticScroller::attachToWidget):
+        (QWebViewKineticScroller::removeFromWidget):
+        (QWebViewKineticScroller::positionRange):
+        (QWebViewKineticScroller::position):
+        (QWebViewKineticScroller::viewportSize):
+        (QWebViewKineticScroller::setPosition):
+        (QWebView::QWebView):
+
+2010-01-29  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann
+
+        Disable auto-uppercase and predictive text on Maemo5, just like the
+        build-in MicroB Browser.
+
+        * WebCoreSupport/EditorClientQt.cpp:
+        (WebCore::EditorClientQt::setInputMethodState):
+
+2010-01-28  Trond Kjernåsen <trond@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix for endless print loop when printing web pages
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::print):
+
+2010-01-26  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Show comboboxes on Maemo 5
+        https://bugs.webkit.org/show_bug.cgi?id=34088
+
+        Don't try to show the combobox by simulating a mouse event from QCursor::pos() to
+        get the combobox position right. The position on Maemo 5 is independent from the mouse
+        and there's no QCursor::pos().
+
+        * WebCoreSupport/QtFallbackWebPopup.cpp:
+        (WebCore::QtFallbackWebPopup::show):
+
+2010-01-26  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] JavaScript prompt is currently broken
+        https://bugs.webkit.org/show_bug.cgi?id=30914
+
+        In r52152 a patch was landed to convert a null QString
+        to an empty WebCore::String in case the prompt was accepted
+        but the default implementation returned the null QString.
+
+        The patch tried to avoid assign to result twice and
+        was not checking the QString if it is null but the default
+        value. This lead to always returning an empty string on
+        successful prompts. Fix it by checking the variable 'x'
+        for isNull.
+
+        The manual test case used didn't cover the case of non
+        empty input, replace it with an automatic test case that
+        should cover all cases.
+
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::runJavaScriptPrompt): Fix the bug.
+        * tests/qwebpage/tst_qwebpage.cpp: Add automatic test case
+        (JSPromptPage::JSPromptPage):
+        (JSPromptPage::javaScriptPrompt):
+        (tst_QWebPage::testJSPrompt):
+
+2010-01-25  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Phone backup support for QtWebkit for Symbian devices.
+        https://bugs.webkit.org/show_bug.cgi?id=34077
+
+        * symbian/backup_registration.xml: Added.
+
 2009-11-19  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.

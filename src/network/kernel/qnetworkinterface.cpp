@@ -541,7 +541,7 @@ QList<QNetworkInterface> QNetworkInterface::allInterfaces()
 {
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > privs = manager()->allInterfaces();
     QList<QNetworkInterface> result;
-    foreach (QSharedDataPointer<QNetworkInterfacePrivate> p, privs) {
+    foreach (const QSharedDataPointer<QNetworkInterfacePrivate> &p, privs) {
         QNetworkInterface item;
         item.d = p;
         result << item;
@@ -560,7 +560,7 @@ QList<QHostAddress> QNetworkInterface::allAddresses()
 {
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > privs = manager()->allInterfaces();
     QList<QHostAddress> result;
-    foreach (const QSharedDataPointer<QNetworkInterfacePrivate> p, privs) {
+    foreach (const QSharedDataPointer<QNetworkInterfacePrivate> &p, privs) {
         foreach (const QNetworkAddressEntry &entry, p->addressEntries)
             result += entry.ip();
     }

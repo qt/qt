@@ -5,6 +5,7 @@ SUBDIRS = containers-associative \
 	qbytearray \
         qfileinfo \
         qfile_vs_qnetworkaccessmanager \
+        qfontmetrics \
         qhostinfo \
 	qpainter \
 	qtestlib-simple	events \

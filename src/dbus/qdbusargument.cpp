@@ -535,7 +535,6 @@ QDBusArgument &QDBusArgument::operator<<(const QByteArray &arg)
 
 /*!
     \internal
-    Returns the type signature of the D-Bus type this QDBusArgument
     \since 4.5
 
     Appends the variant \a v.

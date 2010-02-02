@@ -1,3 +1,97 @@
+2010-02-01  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Use the fallback style on Maemo 5
+
+        https://bugs.webkit.org/show_bug.cgi?id=34376
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::RenderThemeQt):
+        (WebCore::RenderThemeQt::fallbackStyle):
+        (WebCore::RenderThemeQt::qStyle):
+        (WebCore::RenderThemeQt::setPaletteFromPageClientIfExists):
+        * platform/qt/RenderThemeQt.h:
+
+2010-01-29  Oswald Buddenhagen <oswald.buddenhagen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Speed up the WebCore::String -> QString conversion
+
+        Use QString(const QChar *, int len) constructor instead of QString::fromUtf16 to
+        avoid BOM checks and byteswapping.
+
+        * bridge/qt/qt_class.cpp:
+        (JSC::Bindings::QtClass::fieldNamed):
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::convertValueToQVariant):
+
+2010-01-14  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Enable scrolling optimization for pages with embedded widgets
+
+        https://bugs.webkit.org/show_bug.cgi?id=33373
+
+        Added a basic manual test for scrolling of embedded QWidgets.
+
+        * manual-tests/qt/qtplugin-scrolling.html: Added.
+        * platform/ScrollView.cpp:
+        (WebCore::ScrollView::scrollContents):
+        (WebCore::ScrollView::setParent):
+        * platform/ScrollView.h:
+        * platform/qt/ScrollViewQt.cpp:
+        (WebCore::ScrollView::platformInit):
+        (WebCore::ScrollView::platformAddChild):
+        (WebCore::ScrollView::platformRemoveChild):
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::PluginView::updatePluginWidget):
+        (WebCore::PluginView::invalidateRect):
+
+2010-01-29  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Turn off websocket support by default for Qt 4.6.x
+        https://bugs.webkit.org/show_bug.cgi?id=34284
+
+        * WebCore.pro:
+
+2010-01-26  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] JavaScript prompt is currently broken.
+        https://bugs.webkit.org/show_bug.cgi?id=30914
+
+        Remove the manual test case in favor of an automated
+        test case in WebKit/qt/tests/qwebpage.
+
+        * manual-tests/qt/java-script-prompt.html: Removed.
+
+2010-01-25  Janne Koskinen  <janne.p.koskinen@digia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Phone backup support for QtWebkit for Symbian devices.
+        https://bugs.webkit.org/show_bug.cgi?id=34077
+
+        * WebCore.pro:
+
+2010-01-21  Thiago Macieira  <thiago.macieira@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix incorrect dependency to QtXmlPatterns in generated include/QtWebKit/QtWebKit header
+
+        The generated file includes QtXmlPatterns/QtXmlPatterns, which is neither used/required by
+        the public QtWebKit API nor will it be available if Qt is configured with -no-xmlpatterns.
+
+        * WebCore.pro: Trick syncqt to believe that xmlpatterns is not a dependency, so that it's not
+        included in the generated file. It'll still be used and linked to with this trick.
+
 2010-01-17  Srinidhi Shreedhara  <srinidhi.shreedhara@nokia.com>
 
         Reviewed by Simon Hausmann.

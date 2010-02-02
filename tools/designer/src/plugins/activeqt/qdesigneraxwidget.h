@@ -105,7 +105,7 @@ private:
 
 class QDesignerAxPluginWidget : public QDesignerAxWidget
 {
-   // No Q_OBJECT here! - meta functionality is overriden
+   // No Q_OBJECT here! - meta functionality is overridden
 public:
     explicit QDesignerAxPluginWidget(QWidget *parent);
     virtual ~QDesignerAxPluginWidget();

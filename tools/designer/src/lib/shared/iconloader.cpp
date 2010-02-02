@@ -60,7 +60,7 @@ QDESIGNER_SHARED_EXPORT QIcon createIconSet(const QString &name)
 #endif
         << (QString::fromUtf8(":/trolltech/formeditor/images/designer_") + name);
 
-    foreach (QString f, candidates) {
+    foreach (const QString &f, candidates) {
         if (QFile::exists(f))
             return QIcon(f);
     }

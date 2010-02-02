@@ -507,7 +507,7 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         hostWindow()->repaint(panScrollIconDirtyRect, true);
     }
 
-    if (canBlitOnScroll() && !rootPreventsBlitting()) { // The main frame can just blit the WebView window
+    if (canBlitOnScroll()) { // The main frame can just blit the WebView window
        // FIXME: Find a way to blit subframes without blitting overlapping content
        hostWindow()->scroll(-scrollDelta, scrollViewRect, clipRect);
     } else { 
@@ -596,14 +596,6 @@ void ScrollView::setParent(ScrollView* parentView)
 
     if (m_scrollbarsAvoidingResizer && parent())
         parent()->adjustScrollbarsAvoidingResizerCount(-m_scrollbarsAvoidingResizer);
-
-#if PLATFORM(QT)
-    if (m_widgetsPreventingBlitting && parent())
-        parent()->adjustWidgetsPreventingBlittingCount(-m_widgetsPreventingBlitting);
-
-    if (m_widgetsPreventingBlitting && parentView)
-        parentView->adjustWidgetsPreventingBlittingCount(m_widgetsPreventingBlitting);
-#endif
 
     Widget::setParent(parentView);
 

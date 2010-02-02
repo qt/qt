@@ -63,7 +63,7 @@ static QStringList byteArrayListToStringList(const QList<QByteArray> &l)
 static inline QString charToQString(const char *c)
 {
     if (!c)
-        return QString::null;
+        return QString();
     return QString::fromUtf8(c);
 }
 

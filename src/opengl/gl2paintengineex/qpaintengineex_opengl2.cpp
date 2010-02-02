@@ -168,12 +168,6 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
 
     if (matrixDirty)
         updateMatrix();
-
-    if (simpleShaderMatrixUniformDirty) {
-        const GLuint location = shaderManager->simpleProgram()->uniformLocation("pmvMatrix");
-        glUniformMatrix3fv(location, 1, GL_FALSE, (GLfloat*)pmvMatrix);
-        simpleShaderMatrixUniformDirty = false;
-    }
 }
 
 void QGL2PaintEngineExPrivate::updateBrushTexture()
@@ -392,9 +386,11 @@ void QGL2PaintEngineExPrivate::updateMatrix()
 
     matrixDirty = false;
 
-    // The actual data has been updated so both shader program's uniforms need updating
-    simpleShaderMatrixUniformDirty = true;
-    shaderMatrixUniformDirty = true;
+    // Set the PMV matrix attribute. As we use an attributes rather than uniforms, we only
+    // need to do this once for every matrix change and persists across all shader programs.
+    glVertexAttrib3fv(QT_PMV_MATRIX_1_ATTR, pmvMatrix[0]);
+    glVertexAttrib3fv(QT_PMV_MATRIX_2_ATTR, pmvMatrix[1]);
+    glVertexAttrib3fv(QT_PMV_MATRIX_3_ATTR, pmvMatrix[2]);
 
     dasher.setInvScale(inverseScale);
     stroker.setInvScale(inverseScale);
@@ -932,17 +928,11 @@ bool QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
     if (changed) {
         // The shader program has changed so mark all uniforms as dirty:
         brushUniformsDirty = true;
-        shaderMatrixUniformDirty = true;
         opacityUniformDirty = true;
     }
 
     if (brushUniformsDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
         updateBrushUniforms();
-
-    if (shaderMatrixUniformDirty) {
-        glUniformMatrix3fv(location(QGLEngineShaderManager::PmvMatrix), 1, GL_FALSE, (GLfloat*)pmvMatrix);
-        shaderMatrixUniformDirty = false;
-    }
 
     if (opacityMode == QGLEngineShaderManager::UniformOpacity && opacityUniformDirty) {
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::GlobalOpacity), (GLfloat)q->state()->opacity);
@@ -1955,11 +1945,8 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
     if (old_state == s || old_state->renderHintsChanged)
         renderHintsChanged();
 
-    if (old_state == s || old_state->matrixChanged) {
+    if (old_state == s || old_state->matrixChanged)
         d->matrixDirty = true;
-        d->simpleShaderMatrixUniformDirty = true;
-        d->shaderMatrixUniformDirty = true;
-    }
 
     if (old_state == s || old_state->compositionModeChanged)
         d->compositionModeDirty = true;

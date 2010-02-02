@@ -1148,10 +1148,15 @@ bool QScriptValue::strictlyEquals(const QScriptValue &other) const
     }
 
     if (d->type != other.d_ptr->type) {
-        if (d->type == QScriptValuePrivate::JavaScriptCore)
-            return JSC::JSValue::strictEqual(d->jscValue, d->engine->scriptValueToJSCValue(other));
-        else if (other.d_ptr->type == QScriptValuePrivate::JavaScriptCore)
-            return JSC::JSValue::strictEqual(other.d_ptr->engine->scriptValueToJSCValue(*this), other.d_ptr->jscValue);
+        if (d->type == QScriptValuePrivate::JavaScriptCore) {
+            QScriptEnginePrivate *eng_p = d->engine ? d->engine : other.d_ptr->engine;
+            if (eng_p)
+                return JSC::JSValue::strictEqual(d->jscValue, eng_p->scriptValueToJSCValue(other));
+        } else if (other.d_ptr->type == QScriptValuePrivate::JavaScriptCore) {
+            QScriptEnginePrivate *eng_p = other.d_ptr->engine ? other.d_ptr->engine : d->engine;
+            if (eng_p)
+                return JSC::JSValue::strictEqual(eng_p->scriptValueToJSCValue(*this), other.d_ptr->jscValue);
+        }
 
         return false;
     }

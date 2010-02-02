@@ -324,7 +324,8 @@ void FtpWindow::processItem(QTreeWidgetItem *item, int /*column*/)
     if (isDirectory.value(name)) {
         fileList->clear();
         isDirectory.clear();
-        currentPath += "/" + name;
+        currentPath += '/';
+        currentPath += name;
         ftp->cd(name);
         ftp->list();
         cdToParentButton->setEnabled(true);

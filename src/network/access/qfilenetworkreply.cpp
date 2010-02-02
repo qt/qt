@@ -49,8 +49,13 @@
 QT_BEGIN_NAMESPACE
 
 QFileNetworkReplyPrivate::QFileNetworkReplyPrivate()
-    : QNetworkReplyPrivate(), realFileSize(0)
+    : QNetworkReplyPrivate(), fileEngine(0), fileSize(0), filePos(0)
 {
+}
+
+QFileNetworkReplyPrivate::~QFileNetworkReplyPrivate()
+{
+    delete fileEngine;
 }
 
 QFileNetworkReply::~QFileNetworkReply()
@@ -94,9 +99,8 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
     if (fileName.isEmpty()) {
         fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
     }
-    d->realFile.setFileName(fileName);
 
-    QFileInfo fi(d->realFile);
+    QFileInfo fi(fileName);
     if (fi.isDir()) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url.toString());
         setError(QNetworkReply::ContentOperationNotPermittedError, msg);
@@ -106,14 +110,15 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
         return;
     }
 
-    bool opened = d->realFile.open(QIODevice::ReadOnly | QIODevice::Unbuffered);
+    d->fileEngine = QAbstractFileEngine::create(fileName);
+    bool opened = d->fileEngine->open(QIODevice::ReadOnly | QIODevice::Unbuffered);
 
     // could we open the file?
     if (!opened) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
-                      .arg(d->realFile.fileName(), d->realFile.errorString());
+                      .arg(fileName, d->fileEngine->errorString());
 
-        if (d->realFile.exists()) {
+        if (fi.exists()) {
             setError(QNetworkReply::ContentAccessDenied, msg);
             QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
                 Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentAccessDenied));
@@ -126,13 +131,13 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
         return;
     }
 
-    d->realFileSize = fi.size();
+    d->fileSize = fi.size();
     setHeader(QNetworkRequest::LastModifiedHeader, fi.lastModified());
-    setHeader(QNetworkRequest::ContentLengthHeader, d->realFileSize);
+    setHeader(QNetworkRequest::ContentLengthHeader, d->fileSize);
 
     QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "downloadProgress", Qt::QueuedConnection,
-        Q_ARG(qint64, d->realFileSize), Q_ARG(qint64, d->realFileSize));
+        Q_ARG(qint64, d->fileSize), Q_ARG(qint64, d->fileSize));
     QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }
@@ -146,20 +151,25 @@ void QFileNetworkReply::close()
 {
     Q_D(QFileNetworkReply);
     QNetworkReply::close();
-    d->realFile.close();
+    if (d->fileEngine)
+        d->fileEngine->close();
 }
 
 void QFileNetworkReply::abort()
 {
     Q_D(QFileNetworkReply);
     QNetworkReply::close();
-    d->realFile.close();
+    if (d->fileEngine)
+        d->fileEngine->close();
 }
 
 qint64 QFileNetworkReply::bytesAvailable() const
 {
     Q_D(const QFileNetworkReply);
-    return QNetworkReply::bytesAvailable() + d->realFile.bytesAvailable();
+    if (!d->fileEngine)
+        return 0;
+
+    return QNetworkReply::bytesAvailable() + d->fileSize - d->filePos;
 }
 
 bool QFileNetworkReply::isSequential () const
@@ -170,7 +180,7 @@ bool QFileNetworkReply::isSequential () const
 qint64 QFileNetworkReply::size() const
 {
     Q_D(const QFileNetworkReply);
-    return d->realFileSize;
+    return d->fileSize;
 }
 
 /*!
@@ -179,11 +189,17 @@ qint64 QFileNetworkReply::size() const
 qint64 QFileNetworkReply::readData(char *data, qint64 maxlen)
 {
     Q_D(QFileNetworkReply);
-    qint64 ret = d->realFile.read(data, maxlen);
-    if (ret == 0 && bytesAvailable() == 0)
+    if (!d->fileEngine)
+        return -1;
+
+    qint64 ret = d->fileEngine->read(data, maxlen);
+    if (ret == 0 && bytesAvailable() == 0) {
         return -1; // everything had been read
-    else
-        return ret;
+    } else if (ret > 0) {
+        d->filePos += ret;
+    }
+
+    return ret;
 }
 
 

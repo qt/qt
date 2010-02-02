@@ -110,6 +110,12 @@ QT_USE_NAMESPACE
     }
 }
 
+- (void)removeActionsFromAppMenu
+{
+    for (NSMenuItem *item in [appMenu itemArray])
+        [item setTag:nil];
+}
+
 - (void)dealloc
 {
     [lastAppSpecificItem release];

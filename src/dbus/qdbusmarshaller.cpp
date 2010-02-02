@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusargument_p.h"
+#include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -167,7 +168,7 @@ inline bool QDBusMarshaller::append(const QDBusVariant &arg)
 
     QByteArray tmpSignature;
     const char *signature = 0;
-    if (int(id) == qMetaTypeId<QDBusArgument>()) {
+    if (int(id) == QDBusMetaTypeId::argument) {
         // take the signature from the QDBusArgument object we're marshalling
         tmpSignature =
             qvariant_cast<QDBusArgument>(value).currentSignature().toLatin1();
@@ -353,7 +354,7 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
     }
 
     // intercept QDBusArgument parameters here
-    if (id == qMetaTypeId<QDBusArgument>()) {
+    if (id == QDBusMetaTypeId::argument) {
         QDBusArgument dbusargument = qvariant_cast<QDBusArgument>(arg);
         QDBusArgumentPrivate *d = QDBusArgumentPrivate::d(dbusargument);
         if (!d->message)

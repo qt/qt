@@ -2907,7 +2907,7 @@ void tst_QScriptValue::equals()
     QScriptValue qobj1 = eng.newQObject(this);
     QScriptValue qobj2 = eng.newQObject(this);
     QScriptValue qobj3 = eng.newQObject(0);
-    QScriptValue qobj4 = eng.newQObject(new QObject());
+    QScriptValue qobj4 = eng.newQObject(new QObject(), QScriptEngine::ScriptOwnership);
     QVERIFY(qobj1.equals(qobj2)); // compares the QObject pointers
     QVERIFY(!qobj2.equals(qobj4)); // compares the QObject pointers
     QVERIFY(!qobj2.equals(obj2)); // compares the QObject pointers
@@ -3090,6 +3090,20 @@ void tst_QScriptValue::strictlyEquals()
     QVERIFY(!falskt.strictlyEquals(undefined));
     QVERIFY(!falskt.strictlyEquals(null));
     QVERIFY(!falskt.strictlyEquals(QScriptValue()));
+
+    QVERIFY(!QScriptValue(false).strictlyEquals(123));
+    QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).strictlyEquals(123));
+    QVERIFY(!QScriptValue(QScriptValue::NullValue).strictlyEquals(123));
+    QVERIFY(!QScriptValue(false).strictlyEquals("ciao"));
+    QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).strictlyEquals("ciao"));
+    QVERIFY(!QScriptValue(QScriptValue::NullValue).strictlyEquals("ciao"));
+    QVERIFY(QScriptValue(&eng, "ciao").strictlyEquals("ciao"));
+    QVERIFY(QScriptValue("ciao").strictlyEquals(QScriptValue(&eng, "ciao")));
+    QVERIFY(!QScriptValue("ciao").strictlyEquals(123));
+    QVERIFY(!QScriptValue("ciao").strictlyEquals(QScriptValue(&eng, 123)));
+    QVERIFY(!QScriptValue(123).strictlyEquals("ciao"));
+    QVERIFY(!QScriptValue(123).strictlyEquals(QScriptValue(&eng, "ciao")));
+    QVERIFY(!QScriptValue(&eng, 123).strictlyEquals("ciao"));
 
     QScriptValue obj1 = eng.newObject();
     QScriptValue obj2 = eng.newObject();

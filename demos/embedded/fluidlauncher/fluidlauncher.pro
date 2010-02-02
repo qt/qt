@@ -207,8 +207,11 @@ symbian {
     saxbookmarks.sources += $$PWD/../../../examples/xml/saxbookmarks/jennifer.xbel
     saxbookmarks.path = /data/qt/saxbookmarks
 
+    fluidbackup.sources = backup_registration.xml
+    fluidbackup.path = /private/$$replace(TARGET.UID3, 0x,)
+
     DEPLOYMENT += config files executables viewerimages saxbookmarks reg_resource resource \
-        mifs desktopservices_music desktopservices_images
+        mifs desktopservices_music desktopservices_images fluidbackup
 
     TARGET.EPOCHEAPSIZE = 100000 20000000
 }

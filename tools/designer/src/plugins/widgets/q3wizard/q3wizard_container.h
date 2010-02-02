@@ -59,7 +59,7 @@ class Q3WizardHelper : public QObject
 {
     Q_OBJECT
 public:
-    Q3WizardHelper(Q3Wizard *wizard);
+    explicit Q3WizardHelper(Q3Wizard *wizard);
 private slots:
     void slotCurrentChanged();
 private:

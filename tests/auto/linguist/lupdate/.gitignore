@@ -1,4 +1,4 @@
 tst_lupdate
-testdata/good/*/project.ts
-testdata/good/*/*/project.ts
-testdata/recursivescan/*.ts
+testdata/*/*.ts
+testdata/*/*/*.ts
+testdata/*/*/*/*.ts

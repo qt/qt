@@ -76,7 +76,7 @@ class QDESIGNER_SHARED_EXPORT LanguageResourceDialog : public QDialog
 {
     Q_OBJECT
 
-    LanguageResourceDialog(QDesignerResourceBrowserInterface *rb, QWidget *parent = 0);
+    explicit LanguageResourceDialog(QDesignerResourceBrowserInterface *rb, QWidget *parent = 0);
 
 public:
     virtual ~LanguageResourceDialog();

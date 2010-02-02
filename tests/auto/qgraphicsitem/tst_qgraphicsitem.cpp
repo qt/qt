@@ -316,6 +316,7 @@ private slots:
     void childrenBoundingRectTransformed();
     void childrenBoundingRect2();
     void childrenBoundingRect3();
+    void childrenBoundingRect4();
     void group();
     void setGroup();
     void setGroup2();
@@ -417,6 +418,7 @@ private slots:
     void task197802_childrenVisibility();
     void QTBUG_4233_updateCachedWithSceneRect();
     void QTBUG_5418_textItemSetDefaultColor();
+    void QTBUG_6738_missingUpdateWithSetParent();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -3255,6 +3257,32 @@ void tst_QGraphicsItem::childrenBoundingRect3()
     QCOMPARE(subTreeRect.top(), qreal(75.0));
     QCOMPARE(subTreeRect.width(), qreal(351.7766952966369));
     QCOMPARE(subTreeRect.height(), qreal(251.7766952966369));
+}
+
+void tst_QGraphicsItem::childrenBoundingRect4()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *rect = scene.addRect(QRectF(0, 0, 10, 10));
+    QGraphicsRectItem *rect2 = scene.addRect(QRectF(0, 0, 20, 20));
+    QGraphicsRectItem *rect3 = scene.addRect(QRectF(0, 0, 30, 30));
+    rect2->setParentItem(rect);
+    rect3->setParentItem(rect);
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTest::qWaitForWindowShown(&view);
+
+    // Try to mess up the cached bounding rect.
+    rect->childrenBoundingRect();
+    rect2->childrenBoundingRect();
+
+    rect3->setOpacity(0.0);
+    rect3->setParentItem(rect2);
+
+    QCOMPARE(rect->childrenBoundingRect(), rect3->boundingRect());
+    QCOMPARE(rect2->childrenBoundingRect(), rect3->boundingRect());
 }
 
 void tst_QGraphicsItem::group()
@@ -9867,6 +9895,64 @@ void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
     i->setDefaultTextColor(col);
     QApplication::processEvents();
     QCOMPARE(i->painted, 0); //same color as before should not trigger an update (QTBUG-6242)
+}
+
+void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
+{
+    // In all 3 test cases below the reparented item should disappear
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+    EventTester *child2 = new EventTester(parent);
+    EventTester *child3 = new EventTester(parent);
+    EventTester *child4 = new EventTester(parent);
+
+    child->setPos(10, 10);
+    child2->setPos(20, 20);
+    child3->setPos(30, 30);
+    child4->setPos(40, 40);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    class MyGraphicsView : public QGraphicsView
+    { public:
+        int repaints;
+        QRegion paintedRegion;
+        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+        void paintEvent(QPaintEvent *e)
+        {
+            ++repaints;
+            paintedRegion += e->region();
+            QGraphicsView::paintEvent(e);
+        }
+        void reset() { repaints = 0; paintedRegion = QRegion(); }
+    };
+
+    MyGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.repaints > 0);
+
+    // test case #1
+    view.reset();
+    child2->setVisible(false);
+    child2->setParentItem(child);
+
+    QTRY_VERIFY(view.repaints == 1);
+
+    // test case #2
+    view.reset();
+    child3->setOpacity(0.0);
+    child3->setParentItem(child);
+
+    QTRY_VERIFY(view.repaints == 1);
+
+    // test case #3
+    view.reset();
+    child4->setParentItem(child);
+    child4->setVisible(false);
+
+    QTRY_VERIFY(view.repaints == 1);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

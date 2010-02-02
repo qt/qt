@@ -292,7 +292,6 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       processDirtyItemsEmitted(false),
       selectionChanging(0),
       needSortTopLevelItems(true),
-      unpolishedItemsModified(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
       scenePosDescendantsUpdatePending(false),
@@ -429,22 +428,38 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::_q_polishItems()
 {
-    QSet<QGraphicsItem *>::Iterator it = unpolishedItems.begin();
+    if (unpolishedItems.isEmpty())
+        return;
+
     const QVariant booleanTrueVariant(true);
-    while (!unpolishedItems.isEmpty()) {
-        QGraphicsItem *item = *it;
-        it = unpolishedItems.erase(it);
-        unpolishedItemsModified = false;
-        if (!item->d_ptr->explicitlyHidden) {
+    QGraphicsItem *item = 0;
+    QGraphicsItemPrivate *itemd = 0;
+    const int oldUnpolishedCount = unpolishedItems.count();
+
+    for (int i = 0; i < oldUnpolishedCount; ++i) {
+        item = unpolishedItems.at(i);
+        if (!item)
+            continue;
+        itemd = item->d_ptr.data();
+        itemd->pendingPolish = false;
+        if (!itemd->explicitlyHidden) {
             item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
             item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
         }
-        if (item->isWidget()) {
+        if (itemd->isWidget) {
             QEvent event(QEvent::Polish);
             QApplication::sendEvent((QGraphicsWidget *)item, &event);
         }
-        if (unpolishedItemsModified)
-            it = unpolishedItems.begin();
+    }
+
+    if (unpolishedItems.count() == oldUnpolishedCount) {
+        // No new items were added to the vector.
+        unpolishedItems.clear();
+    } else {
+        // New items were appended; keep them and remove the old ones.
+        unpolishedItems.remove(0, oldUnpolishedCount);
+        unpolishedItems.squeeze();
+        QMetaObject::invokeMethod(q_ptr, "_q_polishItems", Qt::QueuedConnection);
     }
 }
 
@@ -599,7 +614,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         if (parentItem->scene()) {
             Q_ASSERT_X(parentItem->scene() == q, "QGraphicsScene::removeItem",
                        "Parent item's scene is different from this item's scene");
-            item->d_ptr->setParentItemHelper(0);
+            item->setParentItem(0);
         }
     } else {
         unregisterTopLevelItem(item);
@@ -638,8 +653,12 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     selectedItems.remove(item);
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
-    unpolishedItems.remove(item);
-    unpolishedItemsModified = true;
+    if (item->d_ptr->pendingPolish) {
+        const int unpolishedIndex = unpolishedItems.indexOf(item);
+        if (unpolishedIndex != -1)
+            unpolishedItems[unpolishedIndex] = 0;
+        item->d_ptr->pendingPolish = false;
+    }
     resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
@@ -1936,7 +1955,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSe
     \since 4.3
 
     This convenience function is equivalent to calling items(QRectF(\a x, \a y, \a w, \a h), \a mode).
-    
+
     This function is deprecated and returns incorrect results if the scene
     contains items that ignore transformations. Use the overload that takes
     a QTransform instead.
@@ -2482,12 +2501,12 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         qWarning("QGraphicsScene::addItem: cannot add null item");
         return;
     }
-    if (item->scene() == this) {
+    if (item->d_ptr->scene == this) {
         qWarning("QGraphicsScene::addItem: item has already been added to this scene");
         return;
     }
     // Remove this item from its existing scene
-    if (QGraphicsScene *oldScene = item->scene())
+    if (QGraphicsScene *oldScene = item->d_ptr->scene)
         oldScene->removeItem(item);
 
     // Notify the item that its scene is changing, and allow the item to
@@ -2496,15 +2515,20 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
                                                     qVariantFromValue<QGraphicsScene *>(this)));
     QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
     if (targetScene != this) {
-        if (targetScene && item->scene() != targetScene)
+        if (targetScene && item->d_ptr->scene != targetScene)
             targetScene->addItem(item);
         return;
     }
 
+    if (d->unpolishedItems.isEmpty())
+        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+    d->unpolishedItems.append(item);
+    item->d_ptr->pendingPolish = true;
+
     // Detach this item from its parent if the parent's scene is different
     // from this scene.
-    if (QGraphicsItem *itemParent = item->parentItem()) {
-        if (itemParent->scene() != this)
+    if (QGraphicsItem *itemParent = item->d_ptr->parent) {
+        if (itemParent->d_ptr->scene != this)
             item->setParentItem(0);
     }
 
@@ -2534,7 +2558,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         d->enableMouseTrackingOnViews();
     }
 #ifndef QT_NO_CURSOR
-    if (d->allItemsUseDefaultCursor && item->hasCursor()) {
+    if (d->allItemsUseDefaultCursor && item->d_ptr->hasCursor) {
         d->allItemsUseDefaultCursor = false;
         if (d->allItemsIgnoreHoverEvents) // already enabled otherwise
             d->enableMouseTrackingOnViews();
@@ -2542,7 +2566,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 #endif //QT_NO_CURSOR
 
     // Enable touch events if the item accepts touch events.
-    if (d->allItemsIgnoreTouchEvents && item->acceptTouchEvents()) {
+    if (d->allItemsIgnoreTouchEvents && item->d_ptr->acceptTouchEvents) {
         d->allItemsIgnoreTouchEvents = false;
         d->enableTouchEventsOnViews();
     }
@@ -2575,17 +2599,14 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     }
 
     // Add all children recursively
-    foreach (QGraphicsItem *child, item->children())
-        addItem(child);
+    item->d_ptr->ensureSortedChildren();
+    for (int i = 0; i < item->d_ptr->children.size(); ++i)
+        addItem(item->d_ptr->children.at(i));
 
     // Resolve font and palette.
     item->d_ptr->resolveFont(d->font.resolve());
     item->d_ptr->resolvePalette(d->palette.resolve());
 
-    if (d->unpolishedItems.isEmpty())
-        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-    d->unpolishedItems.insert(item);
-    d->unpolishedItemsModified = true;
 
     // Reenable selectionChanged() for individual items
     --d->selectionChanging;
@@ -2619,7 +2640,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         }
     }
 
-    if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
+    if (item->d_ptr->flags & QGraphicsItem::ItemSendsScenePositionChanges)
         d->registerScenePosItem(item);
 
     // Ensure that newly added items that have subfocus set, gain
@@ -3766,10 +3787,10 @@ void QGraphicsScene::helpEvent(QGraphicsSceneHelpEvent *helpEvent)
 
 bool QGraphicsScenePrivate::itemAcceptsHoverEvents_helper(const QGraphicsItem *item) const
 {
-    return (!item->isBlockedByModalPanel() &&
-            (item->acceptHoverEvents()
-             || (item->isWidget()
-                 && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration())));
+    return (item->d_ptr->acceptsHover
+            || (item->d_ptr->isWidget
+                && static_cast<const QGraphicsWidget *>(item)->d_func()->hasDecoration()))
+           && !item->isBlockedByModalPanel();
 }
 
 /*!
@@ -4811,7 +4832,8 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
 }
 
 void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, bool invalidateChildren,
-                                      bool force, bool ignoreOpacity, bool removingItemFromScene)
+                                      bool force, bool ignoreOpacity, bool removingItemFromScene,
+                                      bool updateBoundingRect)
 {
     Q_ASSERT(item);
     if (updateAll)
@@ -4882,17 +4904,8 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (ignoreOpacity)
         item->d_ptr->ignoreOpacity = 1;
 
-    QGraphicsItem *p = item->d_ptr->parent;
-    while (p) {
-        p->d_ptr->dirtyChildren = 1;
-#ifndef QT_NO_GRAPHICSEFFECT
-        if (p->d_ptr->graphicsEffect && p->d_ptr->graphicsEffect->isEnabled()) {
-            p->d_ptr->dirty = 1;
-            p->d_ptr->fullUpdatePending = 1;
-        }
-#endif //QT_NO_GRAPHICSEFFECT
-        p = p->d_ptr->parent;
-    }
+    if (!updateBoundingRect)
+        item->d_ptr->markParentDirty();
 }
 
 static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate *item,

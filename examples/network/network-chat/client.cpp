@@ -69,8 +69,8 @@ void Client::sendMessage(const QString &message)
 
 QString Client::nickName() const
 {
-    return QString(peerManager->userName()) + "@" + QHostInfo::localHostName()
-           + ":" + QString::number(server.serverPort());
+    return QString(peerManager->userName()) + '@' + QHostInfo::localHostName()
+           + ':' + QString::number(server.serverPort());
 }
 
 bool Client::hasConnection(const QHostAddress &senderIp, int senderPort) const

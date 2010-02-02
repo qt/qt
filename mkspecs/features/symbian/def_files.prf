@@ -1,0 +1,26 @@
+# With DEF files enabled, removed exported symbols are treated as errors
+# and there is binary compatibility between successive builds.
+
+CONFIG -= def_files_disabled
+
+!isEmpty(defFilePath) {
+    defBlock = \
+    "$${LITERAL_HASH}ifdef WINSCW" \
+    "DEFFILE $$defFilePath/bwins/$${TARGET}.def" \
+    "$${LITERAL_HASH}elif defined EABI" \
+    "DEFFILE $$defFilePath/eabi/$${TARGET}.def" \
+    "$${LITERAL_HASH}endif"
+
+    MMP_RULES += defBlock
+} else {
+    # If defFilePath is not defined, then put the folders containing the DEF files at the
+    # same level as the .pro (and generated MMP) file(s)
+    defBlock = \
+    "$${LITERAL_HASH}ifdef WINSCW" \
+    "DEFFILE ./bwins/$${TARGET}.def" \
+    "$${LITERAL_HASH}elif defined EABI" \
+    "DEFFILE ./eabi/$${TARGET}.def" \
+    "$${LITERAL_HASH}endif"
+
+    MMP_RULES += defBlock
+}

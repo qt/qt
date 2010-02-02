@@ -153,7 +153,7 @@ public:
         dirtyChildren(0),
         localCollisionHack(0),
         inSetPosHelper(0),
-        needSortChildren(1), // ### can be 0 by default?
+        needSortChildren(0),
         allChildrenDirty(0),
         fullUpdatePending(0),
         flags(0),
@@ -178,6 +178,8 @@ public:
         sequentialOrdering(1),
         updateDueToGraphicsEffect(0),
         scenePosDescendants(0),
+        pendingPolish(0),
+        mayHaveChildWithGraphicsEffect(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -195,8 +197,10 @@ public:
         return item->d_ptr.data();
     }
 
+    void updateChildWithGraphicsEffectFlagRecursively();
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
                             AncestorFlag flag = NoFlag, bool enabled = false, bool root = true);
+    void updateAncestorFlags();
     void setIsMemberOfGroup(bool enabled);
     void remapItemPos(QEvent *event, QGraphicsItem *item);
     QPointF genericMapFromScene(const QPointF &pos, const QWidget *viewport) const;
@@ -223,13 +227,18 @@ public:
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
 #ifndef QT_NO_GRAPHICSEFFECT
-    void invalidateGraphicsEffectsRecursively();
+    enum InvalidateReason {
+        OpacityChanged
+    };
+    void invalidateParentGraphicsEffectsRecursively();
+    void invalidateChildGraphicsEffectsRecursively(InvalidateReason reason);
 #endif //QT_NO_GRAPHICSEFFECT
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
-    void setParentItemHelper(QGraphicsItem *parent);
+    void setParentItemHelper(QGraphicsItem *parent, const QVariant *newParentVariant,
+                             const QVariant *thisPointerVariant);
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
@@ -397,6 +406,8 @@ public:
         return !visible || (childrenCombineOpacity() && isFullyTransparent());
     }
 
+    inline void markParentDirty(bool updateBoundingRect = false);
+
     void setFocusHelper(Qt::FocusReason focusReason, bool climb);
     void setSubFocus(QGraphicsItem *rootItem = 0);
     void clearSubFocus(QGraphicsItem *rootItem = 0);
@@ -484,6 +495,8 @@ public:
     quint32 sequentialOrdering : 1;
     quint32 updateDueToGraphicsEffect : 1;
     quint32 scenePosDescendants : 1;
+    quint32 pendingPolish : 1;
+    quint32 mayHaveChildWithGraphicsEffect : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -721,11 +734,13 @@ inline QTransform QGraphicsItemPrivate::transformToParent() const
 inline void QGraphicsItemPrivate::ensureSortedChildren()
 {
     if (needSortChildren) {
-        qSort(children.begin(), children.end(), qt_notclosestLeaf);
         needSortChildren = 0;
         sequentialOrdering = 1;
+        if (children.isEmpty())
+            return;
+        qSort(children.begin(), children.end(), qt_notclosestLeaf);
         for (int i = 0; i < children.size(); ++i) {
-            if (children[i]->d_ptr->siblingIndex != i) {
+            if (children.at(i)->d_ptr->siblingIndex != i) {
                 sequentialOrdering = 0;
                 break;
             }
@@ -739,6 +754,37 @@ inline void QGraphicsItemPrivate::ensureSortedChildren()
 inline bool QGraphicsItemPrivate::insertionOrder(QGraphicsItem *a, QGraphicsItem *b)
 {
     return a->d_ptr->siblingIndex < b->d_ptr->siblingIndex;
+}
+
+/*!
+    \internal
+*/
+inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
+{
+    QGraphicsItemPrivate *parentp = this;
+    while (parentp->parent) {
+        parentp = parentp->parent->d_ptr.data();
+        parentp->dirtyChildren = 1;
+
+        if (updateBoundingRect) {
+            parentp->dirtyChildrenBoundingRect = 1;
+            // ### Only do this if the parent's effect applies to the entire subtree.
+            parentp->notifyBoundingRectChanged = 1;
+        }
+#ifndef QT_NO_GRAPHICSEFFECT
+        if (parentp->graphicsEffect) {
+            if (updateBoundingRect) {
+                parentp->notifyInvalidated = 1;
+                static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()
+                                                                ->source->d_func())->invalidateCache();
+            }
+            if (parentp->graphicsEffect->isEnabled()) {
+                parentp->dirty = 1;
+                parentp->fullUpdatePending = 1;
+            }
+        }
+#endif
+    }
 }
 
 QT_END_NAMESPACE

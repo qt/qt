@@ -357,9 +357,6 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
                 ++i;
             }
         } else {
-            positions.resize(glyphs.numGlyphs);
-            glyphs_out.resize(glyphs.numGlyphs);
-            int i = 0;
             while (i < glyphs.numGlyphs) {
                 if (!glyphs.attributes[i].dontPrint) {
                     QFixed gpos_x = xpos + glyphs.offsets[i].x;

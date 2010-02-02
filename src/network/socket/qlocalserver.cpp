@@ -122,9 +122,9 @@ void QLocalServer::close()
     qDeleteAll(d->pendingConnections);
     d->pendingConnections.clear();
     d->closeServer();
-    d->serverName = QString();
-    d->fullServerName = QString();
-    d->errorString = QString();
+    d->serverName.clear();
+    d->fullServerName.clear();
+    d->errorString.clear();
     d->error = QAbstractSocket::UnknownSocketError;
 }
 
@@ -226,8 +226,8 @@ bool QLocalServer::listen(const QString &name)
     }
 
     if (!d->listen(name)) {
-        d->serverName = QString();
-        d->fullServerName = QString();
+        d->serverName.clear();
+        d->fullServerName.clear();
         return false;
     }
 

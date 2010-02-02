@@ -44,7 +44,10 @@
 #include <QTextDocumentWriter>
 #include <QTextLayout>
 #include <QTextCursor>
+#include <private/qtextcontrol_p.h>
+#include <qmath.h>
 #include <QFile>
+#include <QPainter>
 #include <QBuffer>
 #include <qtest.h>
 
@@ -56,6 +59,7 @@ class tst_QText: public QObject
 public:
     tst_QText() {
         m_lorem = QString::fromLatin1("Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.");
+        m_shortLorem = QString::fromLatin1("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
     }
 
 private slots:
@@ -69,8 +73,26 @@ private slots:
     void odfWriting_text();
     void odfWriting_images();
 
+    void constructControl();
+    void constructDocument();
+
+    void layout();
+    void paintLayoutToPixmap();
+    void paintLayoutToPixmap_painterFill();
+
+    void document();
+    void paintDocToPixmap();
+    void paintDocToPixmap_painterFill();
+
+    void control();
+    void paintControlToPixmap();
+    void paintControlToPixmap_painterFill();
+
 private:
+    QSize setupTextLayout(QTextLayout *layout);
+
     QString m_lorem;
+    QString m_shortLorem;
 };
 
 void tst_QText::loadHtml_data()
@@ -193,6 +215,189 @@ void tst_QText::odfWriting_images()
         writer.write(doc);
     }
     delete doc;
+}
+
+QSize tst_QText::setupTextLayout(QTextLayout *layout)
+{
+    bool wrap = true;
+    int wrapWidth = 300;
+    layout->setCacheEnabled(true);
+
+    int height = 0;
+    qreal widthUsed = 0;
+    qreal lineWidth = 0;
+
+    //set manual width
+    if (wrap)
+        lineWidth = wrapWidth;
+
+    layout->beginLayout();
+
+    while (1) {
+        QTextLine line = layout->createLine();
+        if (!line.isValid())
+            break;
+
+        if (wrap)
+            line.setLineWidth(lineWidth);
+    }
+    layout->endLayout();
+
+    for (int i = 0; i < layout->lineCount(); ++i) {
+        QTextLine line = layout->lineAt(i);
+        widthUsed = qMax(widthUsed, line.naturalTextWidth());
+        line.setPosition(QPointF(0, height));
+        height += int(line.height());
+    }
+    return QSize(qCeil(widthUsed), height);
+}
+
+void tst_QText::constructControl()
+{
+    QTextControl *control = new QTextControl;
+    delete control;
+
+    QBENCHMARK {
+        QTextControl *control = new QTextControl;
+        delete control;
+    }
+}
+
+void tst_QText::constructDocument()
+{
+    QTextDocument *doc = new QTextDocument;
+    delete doc;
+
+    QBENCHMARK {
+        QTextDocument *doc = new QTextDocument;
+        delete doc;
+    }
+}
+
+void tst_QText::layout()
+{
+    QTextLayout layout(m_shortLorem);
+    setupTextLayout(&layout);
+
+    QBENCHMARK {
+        QTextLayout layout(m_shortLorem);
+        setupTextLayout(&layout);
+    }
+}
+
+void tst_QText::paintLayoutToPixmap()
+{
+    QTextLayout layout(m_shortLorem);
+    QSize size = setupTextLayout(&layout);
+
+    QBENCHMARK {
+        QPixmap img(size);
+        img.fill(Qt::transparent);
+        QPainter p(&img);
+        layout.draw(&p, QPointF(0, 0));
+    }
+}
+
+void tst_QText::paintLayoutToPixmap_painterFill()
+{
+    QTextLayout layout(m_shortLorem);
+    QSize size = setupTextLayout(&layout);
+
+    QBENCHMARK {
+        QPixmap img(size);
+        QPainter p(&img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        layout.draw(&p, QPointF(0, 0));
+    }
+}
+
+void tst_QText::document()
+{
+    QTextDocument *doc = new QTextDocument;
+
+    QBENCHMARK {
+        QTextDocument *doc = new QTextDocument;
+        doc->setHtml(m_shortLorem);
+    }
+}
+
+void tst_QText::paintDocToPixmap()
+{
+    QTextDocument *doc = new QTextDocument;
+    doc->setHtml(m_shortLorem);
+    doc->setTextWidth(300);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        img.fill(Qt::transparent);
+        QPainter p(&img);
+        doc->drawContents(&p);
+    }
+}
+
+void tst_QText::paintDocToPixmap_painterFill()
+{
+    QTextDocument *doc = new QTextDocument;
+    doc->setHtml(m_shortLorem);
+    doc->setTextWidth(300);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        QPainter p(&img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        doc->drawContents(&p);
+    }
+}
+
+void tst_QText::control()
+{
+    QTextControl *control = new QTextControl(m_shortLorem);
+
+    QBENCHMARK {
+        QTextControl *control = new QTextControl;
+        QTextDocument *doc = control->document();
+        doc->setHtml(m_shortLorem);
+    }
+}
+
+void tst_QText::paintControlToPixmap()
+{
+    QTextControl *control = new QTextControl;
+    QTextDocument *doc = control->document();
+    doc->setHtml(m_shortLorem);
+    doc->setTextWidth(300);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        img.fill(Qt::transparent);
+        QPainter p(&img);
+        control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
+    }
+}
+
+void tst_QText::paintControlToPixmap_painterFill()
+{
+    QTextControl *control = new QTextControl;
+    QTextDocument *doc = control->document();
+    doc->setHtml(m_shortLorem);
+    doc->setTextWidth(300);
+    QSize size = doc->size().toSize();
+
+    QBENCHMARK {
+        QPixmap img(size);
+        QPainter p(&img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(0, 0, img.width(), img.height(), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        control->drawContents(&p, QRectF(QPointF(0, 0), QSizeF(size)));
+    }
 }
 
 QTEST_MAIN(tst_QText)

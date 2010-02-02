@@ -70,7 +70,7 @@ Q_DECLARE_METATYPE(Message);
 //! [custom type meta-type declaration]
 
 //! [custom type streaming operator]
-QDebug &operator<<(QDebug &dbg, const Message &message);
+QDebug operator<<(QDebug dbg, const Message &message);
 //! [custom type streaming operator]
 
 #endif

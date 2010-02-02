@@ -105,7 +105,7 @@ void PluginDialog::populateTreeWidget()
         QTreeWidgetItem *topLevelItem = setTopLevelItem(QLatin1String("Loaded Plugins"));
         QFont boldFont = topLevelItem->font(0);
 
-        foreach (QString fileName, fileNames) {
+        foreach (const QString &fileName, fileNames) {
             QPluginLoader loader(fileName);
             const QFileInfo fileInfo(fileName);
 
@@ -127,7 +127,7 @@ void PluginDialog::populateTreeWidget()
     if (!notLoadedPlugins.isEmpty()) {
         QTreeWidgetItem *topLevelItem = setTopLevelItem(QLatin1String("Failed Plugins"));
         const QFont boldFont = topLevelItem->font(0);
-        foreach (const QString plugin, notLoadedPlugins) {
+        foreach (const QString &plugin, notLoadedPlugins) {
             const QString failureReason = pluginManager->failureReason(plugin);
             QTreeWidgetItem *pluginItem = setPluginItem(topLevelItem, plugin, boldFont);
             setItem(pluginItem, failureReason, failureReason, QString(), QIcon());

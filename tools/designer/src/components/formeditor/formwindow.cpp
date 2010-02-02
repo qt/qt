@@ -2219,6 +2219,11 @@ QMenu *FormWindow::createPopupMenu(QWidget *w)
             QToolBoxHelper::addToolBoxContextMenuActions(toolBox, popup);
         }
 
+        if (manager->actionLower()->isEnabled()) {
+            popup->addAction(manager->actionLower());
+            popup->addAction(manager->actionRaise());
+            popup->addSeparator();
+        }
         popup->addAction(manager->actionCut());
         popup->addAction(manager->actionCopy());
     }

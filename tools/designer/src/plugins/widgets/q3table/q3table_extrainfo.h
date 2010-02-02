@@ -79,7 +79,7 @@ class Q3TableExtraInfoFactory: public QExtensionFactory
 {
     Q_OBJECT
 public:
-    Q3TableExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
+    explicit Q3TableExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
 
 protected:
     virtual QObject *createExtension(QObject *object, const QString &iid, QObject *parent) const;

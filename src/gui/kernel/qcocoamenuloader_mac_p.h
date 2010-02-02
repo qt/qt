@@ -70,6 +70,7 @@
 
 }
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
+- (void)removeActionsFromAppMenu;
 - (NSMenu *)applicationMenu;
 - (NSMenu *)menu;
 - (NSMenuItem *)quitMenuItem;

@@ -163,6 +163,7 @@ private slots:
     void addChildInpolishEvent();
     void polishEvent();
     void polishEvent2();
+    void initialShow();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2854,6 +2855,30 @@ void tst_QGraphicsWidget::polishEvent2()
 
     // Make sure the item got polish event.
     QVERIFY(widget->events.contains(QEvent::Polish));
+}
+
+void tst_QGraphicsWidget::initialShow()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+        MyGraphicsWidget() : repaints(0) {}
+        int repaints;
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget*) { ++repaints; }
+        void polishEvent() { update(); }
+    };
+
+    QGraphicsScene scene;
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QTest::qWait(100);
+    scene.addItem(widget);
+    QTest::qWait(100);
+
+    QCOMPARE(widget->repaints, 1);
 }
 
 void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()

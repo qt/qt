@@ -138,7 +138,7 @@ private:
     void setPopupPadding(RenderStyle*) const;
 
     QStyle* qStyle() const;
-    QStyle* fallbackStyle();
+    QStyle* fallbackStyle() const;
 
     Page* m_page;
 

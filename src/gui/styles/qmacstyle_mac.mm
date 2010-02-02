@@ -667,32 +667,47 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
 
     switch (ct) {
     case QStyle::CT_PushButton: {
-        const QPushButton *psh = static_cast<const QPushButton *>(widg);
-        QString buttonText = qt_mac_removeMnemonics(psh->text());
-        if (buttonText.contains(QLatin1Char('\n')))
-            ret = QSize(-1, -1);
-        else if (sz == QAquaSizeLarge)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
-        else if (sz == QAquaSizeSmall)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallPushButtonHeight));
-        else if (sz == QAquaSizeMini)
-            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniPushButtonHeight));
+        const QPushButton *psh = qobject_cast<const QPushButton *>(widg);
+        // If this comparison is false, then the widget was not a push button.
+        // This is bad and there's very little we can do since we were requested to find a
+        // sensible size for a widget that pretends to be a QPushButton but is not.
+        if(psh) {
+            QString buttonText = qt_mac_removeMnemonics(psh->text());
+            if (buttonText.contains(QLatin1Char('\n')))
+                ret = QSize(-1, -1);
+            else if (sz == QAquaSizeLarge)
+                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
+            else if (sz == QAquaSizeSmall)
+                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallPushButtonHeight));
+            else if (sz == QAquaSizeMini)
+                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniPushButtonHeight));
 
-        if (!psh->icon().isNull()){
-            // If the button got an icon, and the icon is larger than the
-            // button, we can't decide on a default size
-            ret.setWidth(-1);
-            if (ret.height() < psh->iconSize().height())
-                ret.setHeight(-1);
-        }
-        else if (buttonText == QLatin1String("OK") || buttonText == QLatin1String("Cancel")){
-            // Aqua Style guidelines restrict the size of OK and Cancel buttons to 68 pixels.
-            // However, this doesn't work for German, therefore only do it for English,
-            // I suppose it would be better to do some sort of lookups for languages
-            // that like to have really long words.
-            ret.setWidth(77 - 8);
-        }
-
+            if (!psh->icon().isNull()){
+                // If the button got an icon, and the icon is larger than the
+                // button, we can't decide on a default size
+                ret.setWidth(-1);
+                if (ret.height() < psh->iconSize().height())
+                    ret.setHeight(-1);
+            }
+            else if (buttonText == QLatin1String("OK") || buttonText == QLatin1String("Cancel")){
+                // Aqua Style guidelines restrict the size of OK and Cancel buttons to 68 pixels.
+                // However, this doesn't work for German, therefore only do it for English,
+                // I suppose it would be better to do some sort of lookups for languages
+                // that like to have really long words.
+                ret.setWidth(77 - 8);
+            }
+        } else {
+            // The only sensible thing to do is to return whatever the style suggests...
+            if (sz == QAquaSizeLarge)
+                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
+            else if (sz == QAquaSizeSmall)
+                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricSmallPushButtonHeight));
+            else if (sz == QAquaSizeMini)
+                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricMiniPushButtonHeight));
+            else
+                // Since there's no default size we return the large size...
+                ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricPushButtonHeight));
+         }
 #if 0 //Not sure we are applying the rules correctly for RadioButtons/CheckBoxes --Sam
     } else if (ct == QStyle::CT_RadioButton) {
         QRadioButton *rdo = static_cast<QRadioButton *>(widg);
@@ -749,23 +764,30 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if (sz == QAquaSizeSmall) {
             int width = 0, height = 0;
             if (szHint == QSize(-1, -1)) { //just 'guess'..
-                const QToolButton *bt = static_cast<const QToolButton *>(widg);
-                if (!bt->icon().isNull()) {
-                    QSize iconSize = bt->iconSize();
-                    QSize pmSize = bt->icon().actualSize(QSize(32, 32), QIcon::Normal);
-                    width = qMax(width, qMax(iconSize.width(), pmSize.width()));
-                    height = qMax(height, qMax(iconSize.height(), pmSize.height()));
-                }
-                if (!bt->text().isNull() && bt->toolButtonStyle() != Qt::ToolButtonIconOnly) {
-                    int text_width = bt->fontMetrics().width(bt->text()),
-                       text_height = bt->fontMetrics().height();
-                    if (bt->toolButtonStyle() == Qt::ToolButtonTextUnderIcon) {
-                        width = qMax(width, text_width);
-                        height += text_height;
-                    } else {
-                        width += text_width;
-                        width = qMax(height, text_height);
+                const QToolButton *bt = qobject_cast<const QToolButton *>(widg);
+                // If this conversion fails then the widget was not what it claimed to be.
+                if(bt) {
+                    if (!bt->icon().isNull()) {
+                        QSize iconSize = bt->iconSize();
+                        QSize pmSize = bt->icon().actualSize(QSize(32, 32), QIcon::Normal);
+                        width = qMax(width, qMax(iconSize.width(), pmSize.width()));
+                        height = qMax(height, qMax(iconSize.height(), pmSize.height()));
                     }
+                    if (!bt->text().isNull() && bt->toolButtonStyle() != Qt::ToolButtonIconOnly) {
+                        int text_width = bt->fontMetrics().width(bt->text()),
+                           text_height = bt->fontMetrics().height();
+                        if (bt->toolButtonStyle() == Qt::ToolButtonTextUnderIcon) {
+                            width = qMax(width, text_width);
+                            height += text_height;
+                        } else {
+                            width += text_width;
+                            width = qMax(height, text_height);
+                        }
+                    }
+                } else {
+                    // Let's return the size hint...
+                    width = szHint.width();
+                    height = szHint.height();
                 }
             } else {
                 width = szHint.width();
@@ -778,37 +800,47 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         break;
     case QStyle::CT_Slider: {
         int w = -1;
-        const QSlider *sld = static_cast<const QSlider *>(widg);
-        if (sz == QAquaSizeLarge) {
-            if (sld->orientation() == Qt::Horizontal) {
-                w = qt_mac_aqua_get_metric(kThemeMetricHSliderHeight);
-                if (sld->tickPosition() != QSlider::NoTicks)
-                    w += qt_mac_aqua_get_metric(kThemeMetricHSliderTickHeight);
-            } else {
-                w = qt_mac_aqua_get_metric(kThemeMetricVSliderWidth);
-                if (sld->tickPosition() != QSlider::NoTicks)
-                    w += qt_mac_aqua_get_metric(kThemeMetricVSliderTickWidth);
+        const QSlider *sld = qobject_cast<const QSlider *>(widg);
+        // If this conversion fails then the widget was not what it claimed to be.
+        if(sld) {
+            if (sz == QAquaSizeLarge) {
+                if (sld->orientation() == Qt::Horizontal) {
+                    w = qt_mac_aqua_get_metric(kThemeMetricHSliderHeight);
+                    if (sld->tickPosition() != QSlider::NoTicks)
+                        w += qt_mac_aqua_get_metric(kThemeMetricHSliderTickHeight);
+                } else {
+                    w = qt_mac_aqua_get_metric(kThemeMetricVSliderWidth);
+                    if (sld->tickPosition() != QSlider::NoTicks)
+                        w += qt_mac_aqua_get_metric(kThemeMetricVSliderTickWidth);
+                }
+            } else if (sz == QAquaSizeSmall) {
+                if (sld->orientation() == Qt::Horizontal) {
+                    w = qt_mac_aqua_get_metric(kThemeMetricSmallHSliderHeight);
+                    if (sld->tickPosition() != QSlider::NoTicks)
+                        w += qt_mac_aqua_get_metric(kThemeMetricSmallHSliderTickHeight);
+                } else {
+                    w = qt_mac_aqua_get_metric(kThemeMetricSmallVSliderWidth);
+                    if (sld->tickPosition() != QSlider::NoTicks)
+                        w += qt_mac_aqua_get_metric(kThemeMetricSmallVSliderTickWidth);
+                }
+            } else if (sz == QAquaSizeMini) {
+                if (sld->orientation() == Qt::Horizontal) {
+                    w = qt_mac_aqua_get_metric(kThemeMetricMiniHSliderHeight);
+                    if (sld->tickPosition() != QSlider::NoTicks)
+                        w += qt_mac_aqua_get_metric(kThemeMetricMiniHSliderTickHeight);
+                } else {
+                    w = qt_mac_aqua_get_metric(kThemeMetricMiniVSliderWidth);
+                    if (sld->tickPosition() != QSlider::NoTicks)
+                        w += qt_mac_aqua_get_metric(kThemeMetricMiniVSliderTickWidth);
+                }
             }
-        } else if (sz == QAquaSizeSmall) {
-            if (sld->orientation() == Qt::Horizontal) {
-                w = qt_mac_aqua_get_metric(kThemeMetricSmallHSliderHeight);
-                if (sld->tickPosition() != QSlider::NoTicks)
-                    w += qt_mac_aqua_get_metric(kThemeMetricSmallHSliderTickHeight);
-            } else {
-                w = qt_mac_aqua_get_metric(kThemeMetricSmallVSliderWidth);
-                if (sld->tickPosition() != QSlider::NoTicks)
-                    w += qt_mac_aqua_get_metric(kThemeMetricSmallVSliderTickWidth);
-            }
-        } else if (sz == QAquaSizeMini) {
-            if (sld->orientation() == Qt::Horizontal) {
-                w = qt_mac_aqua_get_metric(kThemeMetricMiniHSliderHeight);
-                if (sld->tickPosition() != QSlider::NoTicks)
-                    w += qt_mac_aqua_get_metric(kThemeMetricMiniHSliderTickHeight);
-            } else {
-                w = qt_mac_aqua_get_metric(kThemeMetricMiniVSliderWidth);
-                if (sld->tickPosition() != QSlider::NoTicks)
-                    w += qt_mac_aqua_get_metric(kThemeMetricMiniVSliderTickWidth);
-            }
+        } else {
+            // This is tricky, we were requested to find a size for a slider which is not
+            // a slider. We don't know if this is vertical or horizontal or if we need to
+            // have tick marks or not.
+            // For this case we will return an horizontal slider without tick marks.
+            w = qt_mac_aqua_get_metric(kThemeMetricHSliderHeight);
+            w += qt_mac_aqua_get_metric(kThemeMetricHSliderTickHeight);
         }
         if (sld->orientation() == Qt::Horizontal)
             ret.setHeight(w);
@@ -2379,7 +2411,12 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_ToolBarFrameWidth:
-        ret = 0;
+        ret = 1;
+        if (widget) {
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(widget->parent()))
+                if (mainWindow->unifiedTitleAndToolBarOnMac())
+                    ret = 0;
+        }
         break;
     default:
         ret = QWindowsStyle::pixelMetric(metric, opt, widget);
@@ -4309,8 +4346,6 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 rect.setY(0);
                 rect.setHeight(widget->height());
             }
-            if (opt->direction == Qt::RightToLeft)
-                rect.adjust(15, 0, -20, 0);
         }
         break;
     case SE_ProgressBarGroove:
@@ -5685,12 +5720,16 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
     case CT_ToolButton:
         if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
-            sz.rwidth() += 4;
-            if (sz.height() <= 32) {
-                // Workaround strange HIToolBar bug when getting constraints.
-                sz.rheight() += 1;
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(widget->parent())) {
+                if (mainWindow->unifiedTitleAndToolBarOnMac()) {
+                    sz.rwidth() += 4;
+                    if (sz.height() <= 32) {
+                        // Workaround strange HIToolBar bug when getting constraints.
+                        sz.rheight() += 1;
+                    }
+                    return sz;
+                }
             }
-            return sz;
         }
         sz.rwidth() += 10;
         sz.rheight() += 10;

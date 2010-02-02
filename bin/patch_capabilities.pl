@@ -111,12 +111,31 @@ if (@ARGV)
         # Parse each line.
         while (<PKG>)
         {
+            # Patch pkg UID
             my $line = $_;
             my $newLine = $line;
-            if ( $line =~ m/^\#.*\(0x[0-9|a-f|A-F]*\).*$/)
+            if ($line =~ m/^\#.*\(0x[0-9|a-f|A-F]*\).*$/)
             {
                 $newLine =~ s/\(0x./\(0xE/;
             }
+
+            # Patch embedded sis name and UID
+            if ($line =~ m/^@.*\.sis.*\(0x[0-9|a-f|A-F]*\).*$/)
+            {
+                $newLine =~ s/\(0x./\(0xE/;
+                if ($line !~ m/^.*_selfsigned.sis.*$/)
+                {
+                    $newLine =~ s/\.sis/_selfsigned\.sis/i;
+                }
+            }
+
+            # Remove all dependencies to other packages to reduce unnecessary error messages
+            # from depended packages that are also patched and therefore have different UID.
+            if ($line =~ m/^\(0x[0-9|a-f|A-F]*\).*\{.*\}$/)
+            {
+                $newLine = ""
+            }
+
             print NEW_PKG $newLine;
 
             chomp ($line);

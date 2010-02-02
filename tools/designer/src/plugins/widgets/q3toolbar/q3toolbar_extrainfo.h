@@ -78,7 +78,7 @@ class Q3ToolBarExtraInfoFactory: public QExtensionFactory
 {
     Q_OBJECT
 public:
-    Q3ToolBarExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
+    explicit Q3ToolBarExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
 
 protected:
     virtual QObject *createExtension(QObject *object, const QString &iid, QObject *parent) const;

@@ -1,0 +1,1 @@
+lupdate warning: Codec for tr\(\) 'ISO-8859-1' disagrees with existing file's codec 'UTF-8'\. Expect trouble\.

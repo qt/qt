@@ -23,10 +23,12 @@ SOURCES += \
         styles/qstylesheetstyle.cpp \
         styles/qstylesheetstyle_default.cpp
 
-!wince* {
-        RESOURCES += styles/qstyle.qrc
+wince* {
+    RESOURCES += styles/qstyle_wince.qrc
+} else:symbian {
+    RESOURCES += styles/qstyle_s60.qrc
 } else {
-        RESOURCES += styles/qstyle_wince.qrc
+    RESOURCES += styles/qstyle.qrc
 }
 
 contains( styles, all ) {
@@ -168,7 +170,7 @@ contains( styles, s60 ):contains(QT_CONFIG, s60) {
 	SOURCES += styles/qs60style.cpp
 	symbian {
 		SOURCES += styles/qs60style_s60.cpp
-		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils -legul
+		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils -legul -lbmpanim
 	} else {
 		SOURCES += styles/qs60style_simulated.cpp
 		RESOURCES += styles/qstyle_s60_simulated.qrc

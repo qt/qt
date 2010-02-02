@@ -818,7 +818,7 @@ bool QSslSocketBackendPrivate::startHandshake()
             QRegExp regexp(commonName, Qt::CaseInsensitive, QRegExp::Wildcard);
             if (!regexp.exactMatch(peerName)) {
                 bool matched = false;
-                foreach (QString altName, configuration.peerCertificate
+                foreach (const QString &altName, configuration.peerCertificate
                          .alternateSubjectNames().values(QSsl::DnsEntry)) {
                     regexp.setPattern(altName);
                     if (regexp.exactMatch(peerName)) {

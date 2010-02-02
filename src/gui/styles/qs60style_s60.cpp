@@ -63,6 +63,7 @@
 #include <aknutils.h>
 #include <aknnavi.h>
 #include <gulicon.h>
+#include <AknBitmapAnimation.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
@@ -72,6 +73,7 @@ enum TDrawType {
     EDrawIcon,
     EDrawGulIcon,
     EDrawBackground,
+    EDrawAnimation,
     ENoDraw
 };
 
@@ -97,6 +99,47 @@ typedef struct {
     int newMinorSkinId;
 } partMapEntry;
 
+AnimationData::AnimationData(const QS60StyleEnums::SkinParts part, int frames, int interval) : m_id(part),
+    m_frames(frames), m_interval(interval), m_mode(QS60StyleEnums::AM_Looping)
+{
+}
+
+AnimationDataV2::AnimationDataV2(const AnimationData &data) : AnimationData(data.m_id, data.m_frames, data.m_interval),
+    m_animation(0), m_currentFrame(0), m_resourceBased(false), m_timerId(0)
+{
+}
+AnimationDataV2::~AnimationDataV2()
+{
+    delete m_animation;
+}
+
+QS60StyleAnimation::QS60StyleAnimation(const QS60StyleEnums::SkinParts part, int frames, int interval)
+{
+    QT_TRAP_THROWING(m_defaultData = new (ELeave) AnimationData(part, frames, interval));
+    QT_TRAP_THROWING(m_currentData = new (ELeave) AnimationDataV2(*m_defaultData));
+}
+
+QS60StyleAnimation::~QS60StyleAnimation()
+{
+    delete m_currentData;
+    delete m_defaultData;
+}
+
+void QS60StyleAnimation::setAnimationObject(CAknBitmapAnimation* animation)
+{
+    Q_ASSERT(animation);
+    if (m_currentData->m_animation)
+        delete m_currentData->m_animation;
+    m_currentData->m_animation = animation;
+}
+
+void QS60StyleAnimation::resetToDefaults()
+{
+    delete m_currentData;
+    m_currentData = 0;
+    QT_TRAP_THROWING(m_currentData = new (ELeave) AnimationDataV2(*m_defaultData));
+}
+
 class QS60StyleModeSpecifics
 {
 public:
@@ -113,6 +156,8 @@ public:
     static QSize naviPaneSize();
     static TAknsItemID partSpecificThemeId(int part);
 
+    static QVariant themeDefinition(QS60StyleEnums::ThemeDefinitions definition, QS60StyleEnums::SkinParts part);
+
 private:
     static QPixmap createSkinnedGraphicsLX(QS60StyleEnums::SkinParts part,
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
@@ -128,7 +173,7 @@ private:
 };
 
 const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
-    /* SP_QgnGrafBarWait */                {KAknsIIDQgnGrafBarWaitAnim,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafBarWaitAnim */            {KAknsIIDQgnGrafBarWaitAnim,       EDrawAnimation,   ES60_All,    -1,-1},
     /* SP_QgnGrafBarFrameCenter */         {KAknsIIDQgnGrafBarFrameCenter,         EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafBarFrameSideL */          {KAknsIIDQgnGrafBarFrameSideL,          EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafBarFrameSideR */          {KAknsIIDQgnGrafBarFrameSideR,          EDrawIcon,   ES60_All,    -1,-1},
@@ -371,7 +416,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
 void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &stylePart, TInt &fallbackIndex)
 {
     switch(stylePart) {
-        case QS60StyleEnums::SP_QgnGrafBarWait:
+        case QS60StyleEnums::SP_QgnGrafBarWaitAnim:
             fallbackIndex = EMbmAvkonQgn_graf_bar_wait_1;
             break;
         case QS60StyleEnums::SP_QgnGrafBarFrameCenter:
@@ -604,6 +649,11 @@ bool QS60StylePrivate::hasSliderGrooveGraphic()
     return QSysInfo::s60Version() != QSysInfo::SV_S60_3_1;
 }
 
+bool QS60StylePrivate::isSingleClickUi()
+{
+    return (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0);
+}
+
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
     CCoeControl *control = targetWidget->effectiveWinId();
@@ -709,6 +759,69 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
     //        QS60WindowSurface::lockBitmapHeap();
             break;
         }
+        case EDrawAnimation: {
+            CFbsBitmap* animationFrame;
+            CFbsBitmap* frameMask;
+            CAknBitmapAnimation* aknAnimation = 0;
+            TBool constructedFromTheme = ETrue;
+
+            QS60StyleAnimation* animation = QS60StylePrivate::animationDefinition(part); //ownership is not passed
+            if (animation) {
+                if (!animation->animationObject() && !animation->isResourceBased()) {// no pre-made item exists, create new animation
+                    CAknBitmapAnimation* newAnimation = CAknBitmapAnimation::NewL();
+                    CleanupStack::PushL(newAnimation);
+                    if (newAnimation)
+                        constructedFromTheme = newAnimation->ConstructFromSkinL(skinId);
+                    if (constructedFromTheme && newAnimation->BitmapAnimData()->FrameArray().Count() > 0) {
+                        animation->setResourceBased(false);
+                        animation->setAnimationObject(newAnimation); //animation takes ownership
+                    }
+                    CleanupStack::Pop(newAnimation);
+                }
+                //fill-in stored information
+                aknAnimation = animation->animationObject();
+                constructedFromTheme = !animation->isResourceBased();
+            }
+
+            const int currentFrame = QS60StylePrivate::currentAnimationFrame(part);
+            if (constructedFromTheme && aknAnimation && aknAnimation->BitmapAnimData()->FrameArray().Count() > 0) {
+                //Animation was created succesfully and contains frames, just fetch current frame
+                if(currentFrame >= aknAnimation->BitmapAnimData()->FrameArray().Count())
+                    User::Leave(KErrOverflow);
+                const CBitmapFrameData* frameData = aknAnimation->BitmapAnimData()->FrameArray().At(currentFrame);
+                if (frameData) {
+                    animationFrame = frameData->Bitmap();
+                    frameMask = frameData->Mask();
+                }
+            } else {
+                //Theme does not contain animation theming, create frames from resource file
+                TInt fallbackGraphicID = -1;
+                fallbackInfo(part, fallbackGraphicID);
+                fallbackGraphicID = fallbackGraphicID + (currentFrame * 2); //skip masks
+                TInt fallbackGraphicsMaskID =
+                    (fallbackGraphicID == KErrNotFound) ? KErrNotFound : fallbackGraphicID + 1; //masks are auto-generated as next in mif files
+                if (fallbackGraphicsMaskID != KErrNotFound)
+                    fallbackGraphicsMaskID = fallbackGraphicsMaskID + (currentFrame * 2); //skip actual graphics
+
+                //Then draw animation frame
+                AknsUtils::CreateIconL(
+                    skinInstance,
+                    KAknsIIDDefault, //animation is not themed, lets force fallback graphics
+                    animationFrame,
+                    frameMask,
+                    AknIconUtils::AvkonIconFileName(),
+                    fallbackGraphicID ,
+                    fallbackGraphicsMaskID);
+            }
+            result = fromFbsBitmap(animationFrame, frameMask, flags, targetSize);
+            if (!constructedFromTheme) {
+                delete animationFrame;
+                animationFrame = 0;
+                delete frameMask;
+                frameMask = 0;
+            }
+            break;
+        }
     }
     if (!result)
         result = QPixmap();
@@ -731,7 +844,6 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
     QPixmap result;
 
-//        QS60WindowSurface::unlockBitmapHeap();
     static const TDisplayMode displayMode = S60->supportsPremultipliedAlpha ? Q_SYMBIAN_ECOLOR16MAP : EColor16MA;
     static const TInt drawParam = S60->supportsPremultipliedAlpha ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
 
@@ -985,8 +1097,13 @@ void QS60StylePrivate::setActiveLayout()
     m_pmPointer = data[activeLayoutIndex];
 }
 
+Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)
+
 QS60StylePrivate::QS60StylePrivate()
 {
+    //Animation defaults need to be created when style is instantiated
+    QS60StyleAnimation* progressBarAnimation = new QS60StyleAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim, 7, 100);
+    m_animations()->append(progressBarAnimation);
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
 }
@@ -1187,6 +1304,11 @@ void QS60StylePrivate::handleSkinChange()
         setThemePalette(topLevelWidget);
         topLevelWidget->ensurePolished();
     }
+#ifndef QT_NO_PROGRESSBAR
+    //re-start animation timer
+    stopAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //todo: once we have more animations, we could say "stop all running ones"
+    startAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim); //and "re-start all previously running ones"
+#endif
 }
 
 QSize QS60StylePrivate::naviPaneSize()
@@ -1204,6 +1326,121 @@ QSize QS60StyleModeSpecifics::naviPaneSize()
             return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
     }
     return QSize(0,0);
+}
+
+int QS60StylePrivate::currentAnimationFrame(QS60StyleEnums::SkinParts part)
+{
+    QS60StyleAnimation *animation = animationDefinition(part);
+    // todo: looping could be done in QS60Style::timerEvent
+    if (animation->frameCount() == animation->currentFrame())
+        animation->setCurrentFrame(0);
+    return animation->currentFrame();
+}
+
+QS60StyleAnimation* QS60StylePrivate::animationDefinition(QS60StyleEnums::SkinParts part)
+{
+    int i = 0;
+    const int animationsCount = m_animations()->isEmpty() ? 0 : m_animations()->count();
+    for(; i < animationsCount; i++) {
+        if (part == m_animations()->at(i)->animationId())
+            break;
+    }
+    return m_animations()->at(i);
+}
+
+void QS60StylePrivate::startAnimation(QS60StyleEnums::SkinParts animationPart)
+{
+    Q_Q(QS60Style);
+
+    //Query animation data from theme and store values to local struct.
+    QVariant themeAnimationDataVariant = QS60StyleModeSpecifics::themeDefinition(
+        QS60StyleEnums::TD_AnimationData, animationPart);
+    QList<QVariant> themeAnimationData = themeAnimationDataVariant.toList();
+
+    QS60StyleAnimation *animation = QS60StylePrivate::animationDefinition(animationPart);
+    if (animation) {
+        if (themeAnimationData.at(QS60StyleEnums::AD_Interval).toInt() != 0)
+            animation->setInterval(themeAnimationData.at(QS60StyleEnums::AD_Interval).toInt());
+
+        if (themeAnimationData.at(QS60StyleEnums::AD_NumberOfFrames).toInt() != 0)
+            animation->setFrameCount(themeAnimationData.at(QS60StyleEnums::AD_NumberOfFrames).toInt());
+
+        //todo: playmode is ignored for now, since it seems to return invalid data on some themes
+        //lets use the table values for play mode
+
+        animation->setCurrentFrame(0); //always initialize
+        const int timerId = q->startTimer(animation->interval());
+        animation->setTimerId(timerId);
+    }
+}
+
+void QS60StylePrivate::stopAnimation(QS60StyleEnums::SkinParts animationPart)
+{
+    Q_Q(QS60Style);
+
+    QS60StyleAnimation *animation = QS60StylePrivate::animationDefinition(animationPart);
+    if (animation) {
+        animation->setCurrentFrame(0);
+        if (animation->timerId() != 0) {
+            q->killTimer(animation->timerId());
+            animation->setTimerId(0);
+        }
+        animation->resetToDefaults();
+    }
+}
+
+QVariant QS60StyleModeSpecifics::themeDefinition(
+    QS60StyleEnums::ThemeDefinitions definition, QS60StyleEnums::SkinParts part)
+{
+    MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
+
+    Q_ASSERT(skinInstance);
+
+    switch(definition) {
+    //Animation definitions
+    case QS60StyleEnums::TD_AnimationData:
+        {
+            CAknsBmpAnimItemData *animationData;
+            TAknsItemID animationSkinId = partSpecificThemeId(part);
+            QList<QVariant> list;
+
+            TRAPD( error, QT_TRYCATCH_LEAVING(
+                    animationData = static_cast<CAknsBmpAnimItemData*>(skinInstance->CreateUncachedItemDataL(
+                            animationSkinId, EAknsITBmpAnim))));
+            if (error)
+                return list;
+
+            if (animationData) {
+                list.append((int)animationData->FrameInterval());
+                list.append((int)animationData->NumberOfImages());
+
+                QS60StyleEnums::AnimationMode playMode;
+                switch(animationData->PlayMode()) {
+                    case CBitmapAnimClientData::EPlay:
+                        playMode = QS60StyleEnums::AM_PlayOnce;
+                        break;
+                    case CBitmapAnimClientData::ECycle:
+                        playMode = QS60StyleEnums::AM_Looping;
+                        break;
+                    case CBitmapAnimClientData::EBounce:
+                        playMode = QS60StyleEnums::AM_Bounce;
+                        break;
+                    default:
+                        break;
+                }
+                list.append(QVariant((int)playMode));
+                delete animationData;
+            } else {
+                list.append(0);
+                list.append(0);
+            }
+            return list;
+        }
+        break;
+    default:
+        break;
+    }
+    return QVariant();
 }
 
 #endif // Q_WS_S60
