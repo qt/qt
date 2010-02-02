@@ -55,7 +55,7 @@ class ItemViewFindWidget : public AbstractFindWidget
     Q_OBJECT
 
 public:
-    ItemViewFindWidget(FindFlags flags = FindFlags(), QWidget *parent = 0);
+    explicit ItemViewFindWidget(FindFlags flags = FindFlags(), QWidget *parent = 0);
 
     QAbstractItemView *itemView() const
     { return m_itemView; }
