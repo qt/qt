@@ -125,7 +125,6 @@ PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
 RenderThemeQt::RenderThemeQt(Page* page)
     : RenderTheme()
     , m_page(page)
-    , m_fallbackStyle(0)
 {
     QPushButton button;
     button.setAttribute(Qt::WA_MacSmallSize);
@@ -135,6 +134,8 @@ RenderThemeQt::RenderThemeQt(Page* page)
 #ifdef Q_WS_MAC
     m_buttonFontPixelSize = fontInfo.pixelSize();
 #endif
+
+    m_fallbackStyle = QStyleFactory::create(QLatin1String("windows"));
 }
 
 RenderThemeQt::~RenderThemeQt()
@@ -143,19 +144,17 @@ RenderThemeQt::~RenderThemeQt()
 }
 
 // for some widget painting, we need to fallback to Windows style
-QStyle* RenderThemeQt::fallbackStyle()
+QStyle* RenderThemeQt::fallbackStyle() const
 {
-    if (!m_fallbackStyle)
-        m_fallbackStyle = QStyleFactory::create(QLatin1String("windows"));
-
-    if (!m_fallbackStyle)
-        m_fallbackStyle = QApplication::style();
-
-    return m_fallbackStyle;
+    return (m_fallbackStyle) ? m_fallbackStyle : QApplication::style();
 }
 
 QStyle* RenderThemeQt::qStyle() const
 {
+#ifdef Q_WS_MAEMO_5
+    return fallbackStyle();
+#endif
+
     if (m_page) {
         ChromeClientQt* client = static_cast<ChromeClientQt*>(m_page->chrome()->client());
 
@@ -758,6 +757,10 @@ ControlPart RenderThemeQt::applyTheme(QStyleOption& option, RenderObject* o) con
     if (result == RadioPart || result == CheckboxPart)
         option.state |= (isChecked(o) ? QStyle::State_On : QStyle::State_Off);
 
+#ifdef Q_WS_MAEMO_5
+    static QPalette lightGrayPalette(Qt::lightGray);
+    option.palette = lightGrayPalette;
+#else
     // If the owner widget has a custom palette, use it
     Page* page = o->document()->page();
     if (page) {
@@ -766,6 +769,7 @@ ControlPart RenderThemeQt::applyTheme(QStyleOption& option, RenderObject* o) con
         if (pageClient)
             option.palette = pageClient->palette();
     }
+#endif
 
     return result;
 }
