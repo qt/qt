@@ -561,6 +561,7 @@ void QGL2PaintEngineExPrivate::resetGLState()
     glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
     glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
     glDisableVertexAttribArray(QT_OPACITY_ATTR);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // color may have been changed by glVertexAttrib()
 }
 
 void QGL2PaintEngineEx::endNativePainting()
