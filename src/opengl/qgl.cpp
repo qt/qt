@@ -1683,7 +1683,6 @@ void QGLTextureCache::cleanupBeforePixmapDestruction(QPixmapData* pmd)
 {
     // Remove any bound textures first:
     cleanupTextures(pmd);
-    Q_ASSERT(instance()->getTexture(pmd->cacheKey()) == 0);
 
 #if defined(Q_WS_X11)
     if (pmd->classId() == QPixmapData::X11Class) {
