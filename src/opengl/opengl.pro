@@ -26,6 +26,7 @@ HEADERS += qgl.h \
            qglframebufferobject_p.h  \
            qglextensions_p.h \
            qglpaintdevice_p.h \
+           qglbuffer.h \
 
 
 SOURCES	+= qgl.cpp \
@@ -34,6 +35,7 @@ SOURCES	+= qgl.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
            qglpaintdevice.cpp \
+           qglbuffer.cpp \
 
 
 !contains(QT_CONFIG, opengles2) {
