@@ -818,6 +818,16 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         newState == QNetworkSession::Connected) {
         activeConfig = activeConfiguration(accessPointId);
         activeInterface = interface(toSymbianConfig(privateConfiguration(activeConfig))->numericId);
+#ifdef SNAP_FUNCTIONALITY_AVAILABLE
+        if (iDynamicSetdefaultif) {
+            // Use name of the IAP to set default IAP
+            QByteArray nameAsByteArray = activeConfig.name().toUtf8();
+            ifreq ifr;
+            strcpy(ifr.ifr_name, nameAsByteArray.constData());
+
+            iDynamicSetdefaultif(&ifr);
+        }
+#endif
     }
 
     // Make sure that same state is not signaled twice in a row.
