@@ -116,7 +116,7 @@ void TextFinder::on_findButton_clicked()
     if (isFirstTime == false)
         document->undo();
 
-    if (searchString == "") {
+    if (searchString.isEmpty()) {
         QMessageBox::information(this, tr("Empty Search Field"),
                 "The search field is empty. Please enter a word and click Find.");
     } else {

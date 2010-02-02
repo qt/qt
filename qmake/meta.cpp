@@ -119,10 +119,11 @@ QMakeMetaInfo::findLib(QString lib)
             }
         }
     }
-    if(ret.isNull())
+    if(ret.isNull()) {
         debug_msg(2, "QMakeMetaInfo: Cannot find info file for %s", lib.toLatin1().constData());
-    else
+    } else {
         debug_msg(2, "QMakeMetaInfo: Found info file %s for %s", ret.toLatin1().constData(), lib.toLatin1().constData());
+    }
     return ret;
 }
 
