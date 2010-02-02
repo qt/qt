@@ -102,7 +102,7 @@ void FindFileDialog::openFile(QTreeWidgetItem *item)
     if (file.open(QIODevice::ReadOnly)) {
         QString data(file.readAll());
 
-        if (fileName.endsWith(".html"))
+        if (fileName.endsWith(QLatin1String(".html")))
             currentEditor->setHtml(data);
         else
             currentEditor->setPlainText(data);
