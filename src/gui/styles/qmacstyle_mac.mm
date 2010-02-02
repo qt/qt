@@ -2412,9 +2412,11 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_ToolBarFrameWidth:
         ret = 1;
-        if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(widget->parent()))
-            if (mainWindow->unifiedTitleAndToolBarOnMac())
-                ret = 0;
+        if (widget) {
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(widget->parent()))
+                if (mainWindow->unifiedTitleAndToolBarOnMac())
+                    ret = 0;
+        }
         break;
     default:
         ret = QWindowsStyle::pixelMetric(metric, opt, widget);
