@@ -1043,32 +1043,12 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
 
 /*!
-    \since 4.7
-
-    \fn int QModelIndex::rowCount() const
-
-    Returns the number of children of this model index.
-
-    \sa columnCount(), parent(), child(), sibling(), model()
-*/
-
-/*!
-    \since 4.7
-
-    \fn int QModelIndex::columnCount() const
-
-    Returns the number of columns for the children of this model index.
-
-    \sa rowCount(), parent(), child(), sibling(), model()
-*/
-
-/*!
     \fn QModelIndex QModelIndex::parent() const
 
     Returns the parent of the model index, or QModelIndex() if it has no
     parent.
 
-    \sa child(), sibling(), rowCount(), columnCount(), model()
+    \sa child(), sibling(), model()
 */
 
 /*!
