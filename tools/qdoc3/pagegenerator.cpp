@@ -104,7 +104,8 @@ QString PageGenerator::fileBase(const Node *node)
           we prepend "qml-" to the file name of QML element doc
           files.
          */
-        if (p->subType() == Node::QmlClass) {
+        if ((p->subType() == Node::QmlClass) ||
+            (p->subType() == Node::QmlBasicType)) {
             base.prepend("qml-");
         }
 #endif        
@@ -209,6 +210,10 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
         if (fakeNode->subType() == Node::QmlPropertyGroup)
             return;
 #endif            
+        if (fakeNode->subType() == Node::Page) {
+            if (node->count() > 0)
+                qDebug() << "PAGE" << fakeNode->title() << "HAS CHILDREN";
+        }
     }
 
     if (node->parent() != 0) {

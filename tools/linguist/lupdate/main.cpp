@@ -562,7 +562,6 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        numFiles++;
         QStringList files;
         if (arg.startsWith(QLatin1String("@"))) {
             QFile lstFile(arg.mid(1));
@@ -576,7 +575,6 @@ int main(int argc, char **argv)
         } else {
             files << arg;
         }
-
         if (metTsFlag) {
             foreach (const QString &file, files) {
                 bool found = false;
@@ -599,9 +597,6 @@ int main(int argc, char **argv)
                     return 1;
                 }
             }
-        } else if (arg.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
-                || arg.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
-            proFiles << arg;
             numFiles++;
         } else {
             foreach (const QString &file, files) {

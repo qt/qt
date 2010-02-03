@@ -579,7 +579,6 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
             // [NSApp run], which is the normal code path for cocoa applications.
             if (NSModalSession session = d->currentModalSession()) {
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
-
                 while ([NSApp runModalSession:session] == NSRunContinuesResponse && !d->interrupt)
                     qt_mac_waitForMoreModalSessionEvents();
 

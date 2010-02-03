@@ -1988,20 +1988,6 @@ static QMenuBar *findMenubarForWindow(QWidget *w)
     return mb;
 }
 
-static void cancelAllMenuTracking()
-{
-#ifdef QT_MAC_USE_COCOA
-    QMacCocoaAutoReleasePool pool;
-    NSMenu *mainMenu = [NSApp mainMenu];
-    [mainMenu cancelTracking];
-    for (NSMenuItem *item in [mainMenu itemArray]) {
-        if ([item submenu]) {
-            [[item submenu] cancelTracking];
-        }
-    }
-#endif
-}
-
 void qt_mac_clear_menubar()
 {
     if (QApplication::testAttribute(Qt::AA_MacPluginApplication))

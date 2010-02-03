@@ -28,6 +28,7 @@ SOURCES =  ../qvfb.cpp \
 
 TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
+    $$TR_DIR/qvfb_hu.ts \
     $$TR_DIR/qvfb_pl.ts \
     $$TR_DIR/qvfb_ru.ts \
     $$TR_DIR/qvfb_zh_CN.ts \

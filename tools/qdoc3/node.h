@@ -96,7 +96,8 @@ class Node
 #ifdef QDOC_QML
         ExternalPage,
         QmlClass,
-        QmlPropertyGroup
+        QmlPropertyGroup,
+        QmlBasicType
 #else
         ExternalPage
 #endif
@@ -371,6 +372,14 @@ class QmlClassNode : public FakeNode
 
  private:
     const ClassNode* cnode;
+};
+
+class QmlBasicTypeNode : public FakeNode
+{
+ public:
+    QmlBasicTypeNode(InnerNode *parent, 
+                     const QString& name);
+    virtual ~QmlBasicTypeNode() { }
 };
 
 class QmlPropGroupNode : public FakeNode
