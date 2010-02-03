@@ -826,17 +826,17 @@ void QmlGraphicsFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
         QmlGraphicsItem::wheelEvent(event);
     } else if (yflick()) {
         if (event->delta() > 0)
-            d->velocityY = qMax(event->delta() - d->verticalVelocity.value(), 250.0);
+            d->velocityY = qMax(event->delta() - d->verticalVelocity.value(), qreal(250.0));
         else
-            d->velocityY = qMin(event->delta() - d->verticalVelocity.value(), -250.0);
+            d->velocityY = qMin(event->delta() - d->verticalVelocity.value(), qreal(-250.0));
         d->flicked = false;
         d->flickY(d->velocityY);
         event->accept();
     } else if (xflick()) {
         if (event->delta() > 0)
-            d->velocityX = qMax(event->delta() - d->horizontalVelocity.value(), 250.0);
+            d->velocityX = qMax(event->delta() - d->horizontalVelocity.value(), qreal(250.0));
         else
-            d->velocityX = qMin(event->delta() - d->horizontalVelocity.value(), -250.0);
+            d->velocityX = qMin(event->delta() - d->horizontalVelocity.value(), qreal(-250.0));
         d->flicked = false;
         d->flickX(d->velocityX);
         event->accept();

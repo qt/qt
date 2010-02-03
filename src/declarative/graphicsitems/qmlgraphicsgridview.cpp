@@ -151,7 +151,7 @@ class QmlGraphicsGridViewPrivate : public QmlGraphicsFlickablePrivate
 
 public:
     QmlGraphicsGridViewPrivate()
-    : model(0), currentItem(0), flow(QmlGraphicsGridView::LeftToRight)
+    : currentItem(0), flow(QmlGraphicsGridView::LeftToRight)
     , visiblePos(0), visibleIndex(0) , currentIndex(-1)
     , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
     , highlightComponent(0), highlight(0), trackedItem(0)
@@ -307,7 +307,7 @@ public:
         }
     }
 
-    QmlGraphicsVisualModel *model;
+    QGuard<QmlGraphicsVisualModel> model;
     QVariant modelVariant;
     QList<FxGridItem*> visibleItems;
     QHash<QmlGraphicsItem*,int> unrequestedItems;
@@ -350,6 +350,7 @@ void QmlGraphicsGridViewPrivate::init()
 
 void QmlGraphicsGridViewPrivate::clear()
 {
+    qDebug() << "clearing items" << visibleItems.count();
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
     visibleItems.clear();
@@ -384,13 +385,16 @@ FxGridItem *QmlGraphicsGridViewPrivate::createItem(int modelIndex)
 void QmlGraphicsGridViewPrivate::releaseItem(FxGridItem *item)
 {
     Q_Q(QmlGraphicsGridView);
-    if (!item)
+    if (!item || !model)
         return;
     if (trackedItem == item) {
         QObject::disconnect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
     }
+    qDebug() << "release" << item;
+    qDebug() << " item" << item->item;
+    qDebug() << " model" << model;
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));

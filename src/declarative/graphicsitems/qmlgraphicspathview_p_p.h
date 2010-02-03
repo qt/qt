@@ -79,7 +79,7 @@ public:
       : path(0), currentIndex(0), startPc(0), lastDist(0)
         , lastElapsed(0), stealMouse(false), ownModel(false), activeItem(0)
         , snapPos(0), dragMargin(0), moveOffset(this, &QmlGraphicsPathViewPrivate::setOffset)
-        , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1), model(0)
+        , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1)
         , moveReason(Other)
     {
         fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsPathViewPrivate, &QmlGraphicsPathViewPrivate::fixOffset>(&moveOffset, this);
@@ -95,18 +95,8 @@ public:
         q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
     }
 
-    QmlGraphicsItem *getItem(int modelIndex) {
-        Q_Q(QmlGraphicsPathView);
-        requestedIndex = modelIndex;
-        QmlGraphicsItem *item = model->item(modelIndex);
-        if (item)
-            item->setParentItem(q);
-        requestedIndex = -1;
-        return item;
-    }
-    void releaseItem(QmlGraphicsItem *item) {
-        model->release(item);
-    }
+    QmlGraphicsItem *getItem(int modelIndex);
+    void releaseItem(QmlGraphicsItem *item);
 
     bool isValid() const {
         return model && model->count() > 0 && model->isValid() && path;
@@ -143,7 +133,7 @@ public:
     int pathOffset;
     int requestedIndex;
     QList<QmlGraphicsItem *> items;
-    QmlGraphicsVisualModel *model;
+    QGuard<QmlGraphicsVisualModel> model;
     QVariant modelVariant;
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;
