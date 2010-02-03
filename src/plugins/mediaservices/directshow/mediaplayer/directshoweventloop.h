@@ -76,7 +76,7 @@ private:
     QMutex m_mutex;
 };
 
-QT_END_NAMESPAC
+QT_END_NAMESPACE
 
 QT_END_HEADER
 
