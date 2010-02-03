@@ -210,7 +210,7 @@ class QmlGraphicsListViewPrivate : public QmlGraphicsFlickablePrivate, private Q
 
 public:
     QmlGraphicsListViewPrivate()
-        : model(0), currentItem(0), orient(QmlGraphicsListView::Vertical)
+        : currentItem(0), orient(QmlGraphicsListView::Vertical)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , highlightRangeStart(0), highlightRangeEnd(0)
@@ -495,7 +495,7 @@ public:
     virtual void flickX(qreal velocity);
     virtual void flickY(qreal velocity);
 
-    QmlGraphicsVisualModel *model;
+    QGuard<QmlGraphicsVisualModel> model;
     QVariant modelVariant;
     QList<FxListItem*> visibleItems;
     QHash<QmlGraphicsItem*,int> unrequestedItems;
@@ -615,7 +615,7 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
 void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
 {
     Q_Q(QmlGraphicsListView);
-    if (!item)
+    if (!item || !model)
         return;
     if (trackedItem == item) {
         const char *notifier1 = orient == QmlGraphicsListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
