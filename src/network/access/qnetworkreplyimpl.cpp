@@ -87,7 +87,6 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
-        qDebug() << "Waiting for session for" << url;
         state = WaitingForSession;
 
         if (!manager->d_func()->session->isOpen())
@@ -556,8 +555,6 @@ void QNetworkReplyImplPrivate::finished()
     // if we don't know the total size of or we received everything save the cache
     if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
         completeCacheSave();
-    else
-        qDebug() << "Not saving cache.";
 
     // note: might not be a good idea, since users could decide to delete us
     // which would delete the backend too...

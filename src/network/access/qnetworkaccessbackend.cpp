@@ -359,16 +359,9 @@ bool QNetworkAccessBackend::start()
         return true;
     }
 
-    if (manager->session->isOpen()) {
-        if (manager->session->state() == QNetworkSession::Connected) {
-            qDebug() << "Session is open and state is connected";
-            open();
-            return true;
-        } else {
-            qDebug() << "we are roaming, connecting, etc. delay until roaming completes";
-        }
-    } else {
-        qDebug() << "session not open";
+    if (manager->session->isOpen() && manager->session->state() == QNetworkSession::Connected) {
+        open();
+        return true;
     }
 
     return false;

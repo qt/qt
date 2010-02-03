@@ -1084,8 +1084,6 @@ void QNetworkAccessManagerPrivate::_q_sessionOpened()
 {
     Q_Q(QNetworkAccessManager);
 
-    qDebug() << "Session Opened";
-
     // start waiting children
     foreach (QObject *child, q->children()) {
         QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
