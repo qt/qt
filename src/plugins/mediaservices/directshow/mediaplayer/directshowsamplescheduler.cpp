@@ -53,6 +53,7 @@ public:
         : m_next(0)
         , m_sample(sample)
         , m_cookie(0)
+        , m_lastSample(false)
     {
         m_sample->AddRef();
     }
@@ -75,10 +76,14 @@ public:
 
     bool isReady(IReferenceClock *clock) const;
 
+    bool isLast() const { return m_lastSample; }
+    void setLast() { m_lastSample = true; }
+
 private:
     DirectShowTimedSample *m_next;
     IMediaSample *m_sample;
     DWORD_PTR m_cookie;
+    bool m_lastSample;
 };
 
 bool DirectShowTimedSample::schedule(
@@ -355,7 +360,7 @@ void DirectShowSampleScheduler::setClock(IReferenceClock *clock)
         m_clock->AddRef();
 }
 
-IMediaSample *DirectShowSampleScheduler::takeSample()
+IMediaSample *DirectShowSampleScheduler::takeSample(bool *eos)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -364,6 +369,8 @@ IMediaSample *DirectShowSampleScheduler::takeSample()
         sample->AddRef();
 
         if (m_state == Running) {
+            *eos =  m_head->isLast();
+
             m_head = m_head->remove();
 
             if (!m_head)
@@ -375,6 +382,19 @@ IMediaSample *DirectShowSampleScheduler::takeSample()
         return sample;
     } else {
         return 0;
+    }
+}
+
+bool DirectShowSampleScheduler::scheduleEndOfStream()
+{
+    QMutexLocker locker(&m_mutex);
+
+    if (m_tail) {
+        m_tail->setLast();
+
+        return true;
+    } else {
+        return false;
     }
 }
 
