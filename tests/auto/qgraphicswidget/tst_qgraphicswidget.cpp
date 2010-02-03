@@ -164,6 +164,7 @@ private slots:
     void polishEvent();
     void polishEvent2();
     void initialShow();
+    void initialShow2();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2877,6 +2878,32 @@ void tst_QGraphicsWidget::initialShow()
     QTest::qWait(100);
     scene.addItem(widget);
     QTest::qWait(100);
+
+    QCOMPARE(widget->repaints, 1);
+}
+
+void tst_QGraphicsWidget::initialShow2()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+        MyGraphicsWidget() : repaints(0) {}
+        int repaints;
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget*) { ++repaints; }
+        void polishEvent() { update(); }
+    };
+
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+    widget->resize(100, 100);
+
+    QGraphicsScene scene(0, 0, 200, 200);
+    scene.addItem(widget);
+
+    QGraphicsView view(&scene);
+    view.show();
+    // Not using QTest::qWaitForWindowShown(&view); on purpose, because there's
+    // a bug in qt_x11_wait_for_window_manager that prevents this test
+    // to pass. Denis is looking into it.
+    QTest::qWait(300);
 
     QCOMPARE(widget->repaints, 1);
 }
