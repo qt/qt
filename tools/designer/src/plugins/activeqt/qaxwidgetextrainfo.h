@@ -77,7 +77,7 @@ class QAxWidgetExtraInfoFactory: public QExtensionFactory
 {
     Q_OBJECT
 public:
-    QAxWidgetExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
+    explicit QAxWidgetExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
 
 protected:
     virtual QObject *createExtension(QObject *object, const QString &iid, QObject *parent) const;

@@ -26,6 +26,7 @@
 #include <QApplication>
 #include <QInputContext>
 #include <QMouseEvent>
+#include <QGraphicsProxyWidget>
 
 namespace WebCore {
 
@@ -35,7 +36,9 @@ QWebPopup::QWebPopup(PopupMenuClient* client)
 {
     Q_ASSERT(m_client);
 
+#if !defined(Q_WS_S60) && !defined(Q_WS_MAEMO_5)
     setFont(m_client->menuStyle().font().font());
+#endif
     connect(this, SIGNAL(activated(int)),
             SLOT(activeChanged(int)), Qt::QueuedConnection);
 }
@@ -43,9 +46,16 @@ QWebPopup::QWebPopup(PopupMenuClient* client)
 
 void QWebPopup::exec()
 {
+    // QCursor::pos() is not a great idea for a touch screen, but we don't need the coordinates
+    // as comboboxes with Qt on Maemo 5 come up in their full width on the screen.
+    // On the other platforms it's okay to use QCursor::pos().
+#if defined(Q_WS_MAEMO_5)
+    showPopup();
+#else
     QMouseEvent event(QEvent::MouseButtonPress, QCursor::pos(), Qt::LeftButton,
                       Qt::LeftButton, Qt::NoModifier);
     QCoreApplication::sendEvent(this, &event);
+#endif
 }
 
 void QWebPopup::showPopup()
@@ -67,6 +77,10 @@ void QWebPopup::hidePopup()
     }
 
     QComboBox::hidePopup();
+    
+    if (QGraphicsProxyWidget* proxy = graphicsProxyWidget())
+        proxy->setVisible(false);
+
     if (!m_popupVisible)
         return;
 

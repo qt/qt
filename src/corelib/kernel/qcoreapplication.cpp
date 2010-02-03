@@ -2267,6 +2267,10 @@ QStringList QCoreApplication::libraryPaths()
     \a paths. All existing paths will be deleted and the path list
     will consist of the paths given in \a paths.
 
+    In Symbian this function is only useful for setting paths for
+    finding Qt extension plugin stubs, since the OS can only
+    load libraries from the \c{/sys/bin} directory.
+
     \sa libraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary
  */
 void QCoreApplication::setLibraryPaths(const QStringList &paths)
@@ -2289,6 +2293,10 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
   directory for plugins.  The default installation directory for plugins
   is \c INSTALL/plugins, where \c INSTALL is the directory where Qt was
   installed.
+
+  In Symbian this function is only useful for adding paths for
+  finding Qt extension plugin stubs, since the OS can only
+  load libraries from the \c{/sys/bin} directory.
 
   \sa removeLibraryPath(), libraryPaths(), setLibraryPaths()
  */

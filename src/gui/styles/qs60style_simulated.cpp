@@ -342,6 +342,11 @@ bool QS60StylePrivate::hasSliderGrooveGraphic()
     return false;
 }
 
+bool QS60StylePrivate::isSingleClickUi()
+{
+    return false;
+}
+
 QFont QS60StylePrivate::s60Font_specific(
         QS60StyleEnums::FontCategories fontCategory,
         int pointSize, bool resolveFontSize)
@@ -362,6 +367,11 @@ QFont QS60StylePrivate::s60Font_specific(
             break;
     }
     return result;
+}
+
+int QS60StylePrivate::currentAnimationFrame(QS60StyleEnums::SkinParts part)
+{
+    return 0;
 }
 
 /*!
