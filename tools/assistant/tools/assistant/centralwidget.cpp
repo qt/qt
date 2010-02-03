@@ -842,7 +842,7 @@ void CentralWidget::showTabBarContextMenu(const QPoint &point)
     }
 
     if (pickedAction == newBookmark)
-        emit addNewBookmark(viewer->documentTitle(), viewer->source().toString());
+        emit addBookmark(viewer->documentTitle(), viewer->source().toString());
 }
 
 bool CentralWidget::eventFilter(QObject *object, QEvent *e)

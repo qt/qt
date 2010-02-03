@@ -38,50 +38,51 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef BOOKMARKDIALOG_H
+#define BOOKMARKDIALOG_H
 
-#ifndef XBELSUPPORT_H
-#define XBELSUPPORT_H
-
-#include <QtXml/QXmlStreamReader>
-#include <QtCore/QPersistentModelIndex>
-
-QT_FORWARD_DECLARE_CLASS(QIODevice)
-QT_FORWARD_DECLARE_CLASS(QModelIndex)
+#include "ui_bookmarkdialog.h"
 
 QT_BEGIN_NAMESPACE
 
 class BookmarkModel;
+class BookmarkFilterModel;
+class BookmarkTreeModel;
 
-class XbelWriter : public QXmlStreamWriter
+class BookmarkDialog : public QDialog
 {
+    Q_OBJECT
 public:
-    XbelWriter(BookmarkModel *model);
-    void writeToFile(QIODevice *device);
+    BookmarkDialog(BookmarkModel *bookmarkModel, const QString &title,
+        const QString &url, QWidget *parent = 0);
+    ~BookmarkDialog();
 
 private:
-    void writeData(const QModelIndex &index);
+    bool eventFilter(QObject *object, QEvent *event);
+
+private slots:
+    void currentIndexChanged(int index);
+    void currentIndexChanged(const QModelIndex &index);
+
+    void accepted();
+    void rejected();
+
+    void addFolder();
+    void toolButtonClicked();
+    void textChanged(const QString& text);
+    void customContextMenuRequested(const QPoint &point);
 
 private:
+    QString m_url;
+    QString m_title;
+    Ui::BookmarkDialog ui;
+    QList<QPersistentModelIndex> cache;
+
     BookmarkModel *bookmarkModel;
-};
-
-class XbelReader : public QXmlStreamReader
-{
-public:
-    XbelReader(BookmarkModel *model);
-    bool readFromFile(QIODevice *device);
-
-private:
-    void readXBEL();
-    void readFolder();
-    void readBookmark();
-    void readUnknownElement();
-
-private:
-    BookmarkModel *bookmarkModel;
-    QList<QPersistentModelIndex> parents;
+    BookmarkTreeModel *bookmarkTreeModel;
+    BookmarkFilterModel *bookmarkProxyModel;
 };
 
 QT_END_NAMESPACE
 
-#endif  // XBELSUPPORT_H
+#endif  // BOOKMARKDIALOG_H
