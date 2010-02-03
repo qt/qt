@@ -42,12 +42,10 @@
 #ifndef QMETADATACONTROLMETAOBJECT_P_H
 #define QMETADATACONTROLMETAOJBECT_P_H
 
+#include <QtCore/qmetaobject.h>
 #include <QtMultimedia/qtmedianamespace.h>
 
-#include <QtCore/qmetaobject.h>
 #include <QtCore/private/qobject_p.h>
-#include <QtDeclarative/private/qmetaobjectbuilder_p.h>
-
 
 QT_BEGIN_HEADER
 
@@ -69,13 +67,11 @@ public:
 private:
     QMetaDataControl *m_control;
     QObject *m_object;
-    QMetaObject *m_mem;
+    char *m_string;
+    uint *m_data;
 
     int m_propertyOffset;
     int m_signalOffset;
-
-    QVector<QtMedia::MetaData> m_keys;
-    QMetaObjectBuilder m_builder;
 };
 
 QT_END_NAMESPACE
