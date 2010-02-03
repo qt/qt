@@ -90,8 +90,6 @@ static QPointF normalize(const QPointF &p)
     return p / qSqrt(p.x() * p.x() + p.y() * p.y());
 }
 
-static bool pathToRect(const QPainterPath &path, QRectF *rect = 0);
-
 struct QIntersection
 {
     qreal alphaA;
@@ -1660,7 +1658,7 @@ static bool fuzzyCompare(qreal a, qreal b)
     return qFuzzyCompare(a, b);
 }
 
-static bool pathToRect(const QPainterPath &path, QRectF *rect)
+bool QPathClipper::pathToRect(const QPainterPath &path, QRectF *rect)
 {
     if (path.elementCount() != 5)
         return false;
