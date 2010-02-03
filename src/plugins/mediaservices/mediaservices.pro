@@ -1,8 +1,8 @@
 TEMPLATE = subdirs
 
-win32:!wince:SUBDIRS += directshow
+win32:!wince: SUBDIRS += directshow
 
-mac:SUBDIRS += qt7
+mac: SUBDIRS += qt7
 
 unix:!mac:!symbian {
     TMP_GST_LIBS = \
