@@ -52,6 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_WMSDK
 namespace
 {
     struct QWMMetaDataKeyLookup
@@ -227,11 +228,14 @@ static QVariant getValue(IWMHeaderInfo *header, const wchar_t *key)
     }
     return QVariant();
 }
+#endif
 
 DirectShowMetaDataControl::DirectShowMetaDataControl(QObject *parent)
     : QMetaDataControl(parent)
     , m_content(0)
+#ifndef QT_NO_WMSDK
     , m_headerInfo(0)
+#endif
 {
 }
 
@@ -246,13 +250,18 @@ bool DirectShowMetaDataControl::isWritable() const
 
 bool DirectShowMetaDataControl::isMetaDataAvailable() const
 {
+#ifndef QT_NO_WMSDK
     return m_content || m_headerInfo;
+#else
+    return m_content;
+#endif
 }
 
 QVariant DirectShowMetaDataControl::metaData(QtMedia::MetaData key) const
 {
     QVariant value;
 
+#ifndef QT_NO_WMSDK
     if (m_headerInfo) {
         static const int  count = sizeof(qt_wmMetaDataKeys) / sizeof(QWMMetaDataKeyLookup);
         for (int i = 0; i < count; ++i) {
@@ -262,6 +271,9 @@ QVariant DirectShowMetaDataControl::metaData(QtMedia::MetaData key) const
             }
         }
     }  else if (m_content) {
+#else
+    if (m_content) {
+#endif
         BSTR string = 0;
 
         switch (key) {
@@ -321,16 +333,19 @@ void DirectShowMetaDataControl::updateGraph(IFilterGraph2 *graph, IBaseFilter *s
     if (m_content)
         m_content->Release();
 
-    if (m_headerInfo)
-        m_headerInfo->Release();
-
     if (!graph || graph->QueryInterface(
             IID_IAMMediaContent, reinterpret_cast<void **>(&m_content)) != S_OK) {
         m_content = 0;
     }
 
-    m_headerInfo = com_cast<IWMHeaderInfo>(source);
+#ifdef QT_NO_WMSDK
+    Q_UNUSED(source);
+#else
+    if (m_headerInfo)
+        m_headerInfo->Release();
 
+    m_headerInfo = com_cast<IWMHeaderInfo>(source);
+#endif
     // DirectShowMediaPlayerService holds a lock at this point so defer emitting signals to a later
     // time.
     QCoreApplication::postEvent(this, new QEvent(QEvent::Type(MetaDataChanged)));
@@ -342,7 +357,11 @@ void DirectShowMetaDataControl::customEvent(QEvent *event)
         event->accept();
 
         emit metaDataChanged();
+#ifndef QT_NO_WMSDK
         emit metaDataAvailableChanged(m_content || m_headerInfo);
+#else
+        emit metaDataAvailableChanged(m_content);
+#endif
     } else {
         QMetaDataControl::customEvent(event);
     }

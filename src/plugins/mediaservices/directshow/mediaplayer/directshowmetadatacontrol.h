@@ -46,7 +46,10 @@
 
 #include <dshow.h>
 #include <qnetwork.h>
+
+#ifndef QT_NO_WMSDK
 #include <wmsdk.h>
+#endif
 
 #include <QtCore/qcoreevent.h>
 
@@ -88,7 +91,9 @@ private:
     };
 
     IAMMediaContent *m_content;
+#ifndef QT_NO_WMSDK
     IWMHeaderInfo *m_headerInfo;
+#endif
 };
 
 QT_END_NAMESPACE
