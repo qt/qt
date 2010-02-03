@@ -2,7 +2,7 @@
 import Qt 4.6
 
 Rectangle {
-    id: Container
+    id: container
 
     signal clicked
     property string text: "Button"
@@ -18,10 +18,10 @@ Rectangle {
         GradientStop { position: 1.0; color: activePalette.button }
     }
 
-    MouseRegion { id: mr; anchors.fill: parent; onClicked: Container.clicked() }
+    MouseRegion { id: mr; anchors.fill: parent; onClicked: container.clicked() }
 
     Text {
-        id: txtItem; text: Container.text; anchors.centerIn: Container; color: activePalette.buttonText
+        id: txtItem; text: container.text; anchors.centerIn: container; color: activePalette.buttonText
     }
 }
 //![0]

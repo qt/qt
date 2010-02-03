@@ -115,12 +115,15 @@ QList<QmlError> QmlCompiler::errors() const
 /*!
     Returns true if \a val is a legal object id, false otherwise.
 
-    Legal ids must start with a letter or underscore, and contain only
+    Legal ids must start with a lower-case letter or underscore, and contain only
     letters, numbers and underscores.
 */
 bool QmlCompiler::isValidId(const QString &val)
 {
     if (val.isEmpty())
+        return false;
+
+    if (val.at(0).isLetter() && !val.at(0).isLower())
         return false;
 
     QChar u(QLatin1Char('_'));

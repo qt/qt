@@ -8,7 +8,7 @@ Rectangle {
         transformOrigin: "Center"
         x: 10; y: 10
         Rectangle {
-            id: MyRect
+            id: myRect
             x: 5
             width: 100; height: 100
             transformOrigin: "BottomLeft"
@@ -16,7 +16,7 @@ Rectangle {
         }
     }
     MouseRegion {
-        id: Clickable
+        id: clickable
         anchors.fill: parent
     }
 
@@ -32,13 +32,13 @@ Rectangle {
 
     states: State {
         name: "moved"
-        when: Clickable.pressed
+        when: clickable.pressed
         ParentChange {
-            target: MyRect
+            target: myRect
             parent: newParent
         }
         PropertyChanges {
-            target: MyRect
+            target: myRect
             rotation: -52
             scale: 1
             color: "blue"

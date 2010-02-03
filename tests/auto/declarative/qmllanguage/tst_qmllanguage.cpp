@@ -528,7 +528,7 @@ void tst_qmllanguage::idProperty()
     MyTypeObject *child = 
         qobject_cast<MyTypeObject *>(object->children()->at(0));
     QVERIFY(child != 0);
-    QCOMPARE(child->id(), QString("MyObjectId"));
+    QCOMPARE(child->id(), QString("myObjectId"));
     QCOMPARE(object->property("object"), QVariant::fromValue((QObject *)child));
 }
 

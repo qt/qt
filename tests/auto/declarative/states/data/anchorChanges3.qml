@@ -1,29 +1,29 @@
 import Qt 4.6
 
 Rectangle {
-    id: Container
+    id: container
     width: 200; height: 200
     Rectangle {
-        id: MyRect
-        objectName: "MyRect"
+        id: myRect
+        objectName: "myRect"
         color: "green";
         anchors.left: parent.left
-        anchors.right: RightGuideline.left
-        anchors.top: TopGuideline.top
-        anchors.bottom: Container.bottom
+        anchors.right: rightGuideline.left
+        anchors.top: topGuideline.top
+        anchors.bottom: container.bottom
     }
-    Item { objectName: "LeftGuideline"; id: LeftGuideline; x: 10 }
-    Item { id: RightGuideline; x: 150 }
-    Item { id: TopGuideline; y: 10 }
-    Item { objectName: "BottomGuideline"; id: BottomGuideline; y: 150 }
+    Item { objectName: "leftGuideline"; id: leftGuideline; x: 10 }
+    Item { id: rightGuideline; x: 150 }
+    Item { id: topGuideline; y: 10 }
+    Item { objectName: "bottomGuideline"; id: bottomGuideline; y: 150 }
     states: State {
         name: "reanchored"
         AnchorChanges {
-            target: MyRect;
-            left: LeftGuideline.left
-            right: Container.right
-            top: Container.top
-            bottom: BottomGuideline.bottom
+            target: myRect;
+            left: leftGuideline.left
+            right: container.right
+            top: container.top
+            bottom: bottomGuideline.bottom
         }
     }
 }

@@ -2,7 +2,7 @@ import Qt.test 1.0
 
 MyQmlObject
 {
-    id: Root
+    id: root
     property int intProperty
     property real realProperty
     property color colorProperty
@@ -12,5 +12,5 @@ MyQmlObject
 
     onMySignal: { intProperty = a; realProperty = b; colorProperty = c; variantProperty = d; }
 
-    onBasicSignal: Root.mySignal(10, 19.2, Qt.rgba(1, 1, 0, 1), Qt.rgba(1, 0, 1, 1))
+    onBasicSignal: root.mySignal(10, 19.2, Qt.rgba(1, 1, 0, 1), Qt.rgba(1, 0, 1, 1))
 }

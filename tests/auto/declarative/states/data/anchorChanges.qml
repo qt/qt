@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    id: Container
+    id: container
     width: 200; height: 200
     Rectangle {
         id: myRect
@@ -14,10 +14,10 @@ Rectangle {
     states: State {
         name: "right"
         AnchorChanges {
-            id: AncCh
+            id: ancCh
             target: myRect;
             reset: "left"
-            right: Container.right
+            right: container.right
         }
     }
 }

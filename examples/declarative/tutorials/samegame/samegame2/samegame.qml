@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    id: Screen
+    id: screen
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
@@ -10,7 +10,7 @@ Rectangle {
 //![2]
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: ToolBar.top
+        width: parent.width; anchors.top: parent.top; anchors.bottom: toolbar.top
 
         Image {
             id: background
@@ -20,10 +20,10 @@ Rectangle {
     }
 
     Rectangle {
-        id: ToolBar
+        id: toolbar
         color: activePalette.window
         height: 32; width: parent.width
-        anchors.bottom: Screen.bottom
+        anchors.bottom: screen.bottom
 
 //![1]
         Button {
@@ -34,7 +34,7 @@ Rectangle {
 //![1]
 
         Text {
-            id: Score
+            id: score
             text: "Score: Who knows?"; font.bold: true
             anchors.right: parent.right; anchors.rightMargin: 3
             anchors.verticalCenter: parent.verticalCenter

@@ -4,9 +4,9 @@ Rectangle {
     color: "blue"
     width: 320
     height: 240
-    id: Page
+    id: page
     Rectangle {
-        id: MyRectangle
+        id: myRectangle
         width: 100
         height: 100
         color: "red"
@@ -16,12 +16,12 @@ Rectangle {
         State {
             name: "hello"
             PropertyChanges {
-                target: MyRectangle
+                target: myRectangle
                 x: 50 + 50
             }
             PropertyChanges {
-                target: MyMouseRegion
-                onClicked: Page.state = ''
+                target: myMouseRegion
+                onClicked: page.state = ''
             }
         }
     ]
@@ -33,8 +33,8 @@ Rectangle {
         }
     ]
     MouseRegion {
-        id: MyMouseRegion
+        id: myMouseRegion
         anchors.fill: parent
-        onClicked: { Page.state= 'hello' }
+        onClicked: { page.state= 'hello' }
     }
 }

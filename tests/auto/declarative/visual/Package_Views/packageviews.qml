@@ -6,9 +6,9 @@ Rectangle {
     height: 200
     color: "black"
 
-    VisualDataModel {
-        id: Model
-        model: ListModel {
+    VisualDatamodel {
+        id: model
+        model: Listmodel {
             ListElement { itemColor: "red" }
             ListElement { itemColor: "green" }
             ListElement { itemColor: "blue" }
@@ -75,7 +75,7 @@ Rectangle {
     ListView {
         width: parent.width/2
         height: parent.height
-        model: Model.parts.list
+        model: model.parts.list
     }
 
     GridView {
@@ -84,6 +84,6 @@ Rectangle {
         cellWidth: 50
         cellHeight: 50
         height: parent.height
-        model: Model.parts.grid
+        model: model.parts.grid
     }
 }

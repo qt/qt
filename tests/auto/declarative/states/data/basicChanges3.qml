@@ -1,15 +1,15 @@
 import Qt 4.6
 Rectangle {
-    id: MyRectangle
+    id: myRectangle
     width: 100; height: 100
     color: "red"
     states: [
         State {
             name: "blue"
-            PropertyChanges { target: MyRectangle; color: "blue" }
+            PropertyChanges { target: myRectangle; color: "blue" }
         },
         State {
             name: "bordered"
-            PropertyChanges { target: MyRectangle; border.width: 2 }
+            PropertyChanges { target: myRectangle; border.width: 2 }
         }]
 }

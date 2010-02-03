@@ -9,8 +9,8 @@ Rectangle {
     id: button; width: 50; height: 30
     border.color: palette.mid; radius: 6
     gradient: Gradient {
-        GradientStop { id: G1; position: 0.0; color: Qt.lighter(palette.button) }
-        GradientStop { id: G2; position: 1.0; color: palette.button }
+        GradientStop { id: gradientStop1; position: 0.0; color: Qt.lighter(palette.button) }
+        GradientStop { id: gradientStop2; position: 1.0; color: palette.button }
     }
 
     Text { id: label; anchors.centerIn: parent; color: palette.buttonText }
@@ -29,13 +29,13 @@ Rectangle {
     states: [
         State {
             name: "Pressed"; when: clickRegion.pressed == true
-            PropertyChanges { target: G1; color: palette.dark }
-            PropertyChanges { target: G2; color: palette.button }
+            PropertyChanges { target: gradientStop1; color: palette.dark }
+            PropertyChanges { target: gradientStop2; color: palette.button }
         },
         State {
             name: "Toggled"; when: button.toggled == true
-            PropertyChanges { target: G1; color: palette.dark }
-            PropertyChanges { target: G2; color: palette.button }
+            PropertyChanges { target: gradientStop1; color: palette.dark }
+            PropertyChanges { target: gradientStop2; color: palette.button }
         }
     ]
 }

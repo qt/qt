@@ -1,6 +1,6 @@
 import Qt 4.6
 Rectangle {
-    id: MyRectangle
+    id: myRectangle
 
     property color sourceColor: "blue"
     width: 100; height: 100
@@ -8,10 +8,10 @@ Rectangle {
     states: [
         State {
             name: "blue"
-            PropertyChanges { target: MyRectangle; color: sourceColor }
+            PropertyChanges { target: myRectangle; color: sourceColor }
         },
         State {
             name: "green"
-            PropertyChanges { target: MyRectangle; color: "green" }
+            PropertyChanges { target: myRectangle; color: "green" }
         }]
 }

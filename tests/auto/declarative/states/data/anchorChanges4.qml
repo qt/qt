@@ -3,20 +3,20 @@ import Qt 4.6
 Rectangle {
     width: 200; height: 200
     Rectangle {
-        id: MyRect
-        objectName: "MyRect"
+        id: myRect
+        objectName: "myRect"
         color: "green";
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
     }
-    Item { objectName: "LeftGuideline"; id: LeftGuideline; x: 10 }
-    Item { objectName: "BottomGuideline"; id: BottomGuideline; y: 150 }
+    Item { objectName: "leftGuideline"; id: leftGuideline; x: 10 }
+    Item { objectName: "bottomGuideline"; id: bottomGuideline; y: 150 }
     states: State {
         name: "reanchored"
         AnchorChanges {
-            target: MyRect;
-            horizontalCenter: BottomGuideline.horizontalCenter
-            verticalCenter: LeftGuideline.verticalCenter
+            target: myRect;
+            horizontalCenter: bottomGuideline.horizontalCenter
+            verticalCenter: leftGuideline.verticalCenter
         }
     }
 }

@@ -1,6 +1,6 @@
 import Test 1.0
 MyQmlObject {
-    id: Hello
-    id: World
+    id: hello
+    id: world
 }
 
