@@ -110,6 +110,7 @@ private slots:
     void onCompleted();
     void scriptString();
     void defaultPropertyListOrder();
+    void declaredPropertyValues();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -1037,6 +1038,13 @@ void tst_qmllanguage::defaultPropertyListOrder()
     QCOMPARE(container->children()->at(3)->property("index"), QVariant(3));
     QCOMPARE(container->children()->at(4)->property("index"), QVariant(4));
     QCOMPARE(container->children()->at(5)->property("index"), QVariant(5));
+}
+
+void tst_qmllanguage::declaredPropertyValues()
+{
+    QmlComponent component(&engine, TEST_FILE("declaredPropertyValues.qml"));
+    QEXPECT_FAIL("", "QTBUG-7860", Abort);
+    VERIFY_ERRORS(0);
 }
 
 // Check that first child of qml is of given type. Empty type insists on error.
