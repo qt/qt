@@ -62,6 +62,9 @@ public:
     
     static bool canRead(QIODevice *device);
     
+    bool supportsOption(ImageOption option) const;
+    QVariant option(ImageOption option) const;
+
 private:
     int m_currentIconIndex;
     ICOReader *m_pICOReader;
