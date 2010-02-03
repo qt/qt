@@ -349,14 +349,14 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 */
 bool QNetworkAccessBackend::start()
 {
-    QHostInfo hostInfo = QHostInfo::fromName(reply->url.host());
-    foreach (const QHostAddress &address, hostInfo.addresses()) {
-        if (address == QHostAddress::LocalHost ||
-            address == QHostAddress::LocalHostIPv6) {
-            // Don't need session for local host access.
-            open();
-            return true;
-        }
+    // This is not ideal.
+    const QString host = reply->url.host();
+    if (host == QLatin1String("localhost") ||
+        QHostAddress(host) == QHostAddress::LocalHost ||
+        QHostAddress(host) == QHostAddress::LocalHostIPv6) {
+        // Don't need an open session for localhost access.
+        open();
+        return true;
     }
 
     if (manager->session->isOpen()) {
