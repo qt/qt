@@ -350,7 +350,6 @@ void QmlGraphicsGridViewPrivate::init()
 
 void QmlGraphicsGridViewPrivate::clear()
 {
-    qDebug() << "clearing items" << visibleItems.count();
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
     visibleItems.clear();
@@ -392,9 +391,6 @@ void QmlGraphicsGridViewPrivate::releaseItem(FxGridItem *item)
         QObject::disconnect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
     }
-    qDebug() << "release" << item;
-    qDebug() << " item" << item->item;
-    qDebug() << " model" << model;
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
