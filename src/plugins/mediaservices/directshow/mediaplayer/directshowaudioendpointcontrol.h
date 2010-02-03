@@ -42,10 +42,9 @@
 #ifndef DIRECTSHOWAUDIOENDPOINTCONTROL_H
 #define DIRECTSHOWAUDIOENDPOINTCONTROL_H
 
-#include <QtMultimedia/qaudioendpointselector.h>
+#include <QtMultimedia/qmediacontrol.h>
 
 #include <dshow.h>
-
 
 QT_BEGIN_HEADER
 
@@ -53,8 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class DirectShowPlayerService;
 
-
-class DirectShowAudioEndpointControl : public QAudioEndpointSelector
+class DirectShowAudioEndpointControl : public QMediaControl
 {
     Q_OBJECT
 public:
@@ -80,6 +78,13 @@ private:
     QMap<QString, IMoniker *> m_devices;
     QString m_defaultEndpoint;
     QString m_activeEndpoint;
+};
+
+#define QAudioEndpointSelector_iid "com.nokia.Qt.QAudioEndpointSelector/1.0"
+
+class Duck
+{
+    uint quack;
 };
 
 QT_END_NAMESPACE
