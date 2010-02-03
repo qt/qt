@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -99,6 +99,10 @@ public:
         Q_Q(QDoubleSpinBox);
         q->setInputMethodHints(Qt::ImhFormattedNumbersOnly);
     }
+
+    // When fiddling with the decimals property, we may lose precision in these properties.
+    double actualMin;
+    double actualMax;
 };
 
 
@@ -762,6 +766,7 @@ double QDoubleSpinBox::minimum() const
 void QDoubleSpinBox::setMinimum(double minimum)
 {
     Q_D(QDoubleSpinBox);
+    d->actualMin = minimum;
     const QVariant m(d->round(minimum));
     d->setRange(m, (d->variantCompare(d->maximum, m) > 0 ? d->maximum : m));
 }
@@ -792,6 +797,7 @@ double QDoubleSpinBox::maximum() const
 void QDoubleSpinBox::setMaximum(double maximum)
 {
     Q_D(QDoubleSpinBox);
+    d->actualMax = maximum;
     const QVariant m(d->round(maximum));
     d->setRange((d->variantCompare(d->minimum, m) < 0 ? d->minimum : m), m);
 }
@@ -813,6 +819,8 @@ void QDoubleSpinBox::setMaximum(double maximum)
 void QDoubleSpinBox::setRange(double minimum, double maximum)
 {
     Q_D(QDoubleSpinBox);
+    d->actualMin = minimum;
+    d->actualMax = maximum;
     d->setRange(QVariant(d->round(minimum)), QVariant(d->round(maximum)));
 }
 
@@ -843,7 +851,7 @@ void QDoubleSpinBox::setDecimals(int decimals)
     Q_D(QDoubleSpinBox);
     d->decimals = qBound(0, decimals, DBL_MAX_10_EXP + DBL_DIG);
 
-    setRange(minimum(), maximum()); // make sure values are rounded
+    setRange(d->actualMin, d->actualMax); // make sure values are rounded
     setValue(value());
 }
 
@@ -1051,8 +1059,10 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 
 QDoubleSpinBoxPrivate::QDoubleSpinBoxPrivate()
 {
-    minimum = QVariant(0.0);
-    maximum = QVariant(99.99);
+    actualMin = 0.0;
+    actualMax = 99.99;
+    minimum = QVariant(actualMin);
+    maximum = QVariant(actualMax);
     value = minimum;
     singleStep = QVariant(1.0);
     decimals = 2;

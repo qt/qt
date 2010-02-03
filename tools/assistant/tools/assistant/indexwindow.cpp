@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -112,18 +112,22 @@ bool IndexWindow::eventFilter(QObject *obj, QEvent *e)
         case Qt::Key_Up:
             idx = m_indexWidget->model()->index(idx.row()-1,
                 idx.column(), idx.parent());
-            if (idx.isValid())
+            if (idx.isValid()) {
                 m_indexWidget->setCurrentIndex(idx);
+                return true;
+            }
             break;
         case Qt::Key_Down:
             idx = m_indexWidget->model()->index(idx.row()+1,
                 idx.column(), idx.parent());
-            if (idx.isValid())
+            if (idx.isValid()) {
                 m_indexWidget->setCurrentIndex(idx);
+                return true;
+            }
             break;
         case Qt::Key_Escape:
             emit escapePressed();
-            break;
+            return true;
         default: ; // stop complaining
         }
     } else if (obj == m_indexWidget && e->type() == QEvent::ContextMenu) {

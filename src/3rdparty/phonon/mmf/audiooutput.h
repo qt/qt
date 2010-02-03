@@ -74,7 +74,9 @@ public:
     };
 
 protected:
-    virtual bool activateOnMediaObject(MediaObject *mo);
+    // MediaNode
+    void connectMediaObject(MediaObject *mediaObject);
+    void disconnectMediaObject(MediaObject *mediaObject);
 
 Q_SIGNALS:
     void volumeChanged(qreal volume);

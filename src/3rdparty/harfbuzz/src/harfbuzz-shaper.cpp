@@ -980,6 +980,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     HB_Stream gdefStream;
 
     gdefStream = getTableStream(font, tableFunc, TTAG_GDEF);
+    error = HB_Err_Not_Covered;
     if (!gdefStream || (error = HB_Load_GDEF_Table(gdefStream, &face->gdef))) {
         //DEBUG("error loading gdef table: %d", error);
         face->gdef = 0;
@@ -987,6 +988,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
 
     //DEBUG() << "trying to load gsub table";
     stream = getTableStream(font, tableFunc, TTAG_GSUB);
+    error = HB_Err_Not_Covered;
     if (!stream || (error = HB_Load_GSUB_Table(stream, &face->gsub, face->gdef, gdefStream))) {
         face->gsub = 0;
         if (error != HB_Err_Not_Covered) {
@@ -998,6 +1000,7 @@ HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
     _hb_close_stream(stream);
 
     stream = getTableStream(font, tableFunc, TTAG_GPOS);
+    error = HB_Err_Not_Covered;
     if (!stream || (error = HB_Load_GPOS_Table(stream, &face->gpos, face->gdef, gdefStream))) {
         face->gpos = 0;
         DEBUG("error loading gpos table: %d", error);

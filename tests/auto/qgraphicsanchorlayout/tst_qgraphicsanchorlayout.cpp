@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,6 +88,9 @@ private slots:
     void spacingPersistency();
     void snakeParallelWithLayout();
     void parallelToHalfLayout();
+    void globalSpacing();
+    void graphicsAnchorHandling();
+    void invalidHierarchyCheck();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1195,7 +1198,7 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
     QSizeF pref(20, 20);
     QSizeF max (50, 50);
 
-    /* 
+    /*
     create this layout, where a,b have controlType QSizePolicy::RadioButton
     c,d have controlType QSizePolicy::PushButton:
     +-------+
@@ -1242,9 +1245,9 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
     scene.addItem(window);
 
     window->show();
-    QGraphicsView *view = new QGraphicsView(&scene);
-    view->resize(200, 200);
-    view->show();
+    QGraphicsView view(&scene);
+    view.resize(200, 200);
+    view.show();
 
     window->adjustSize();
     QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));    //radio
@@ -1263,10 +1266,13 @@ void tst_QGraphicsAnchorLayout::styleDefaults()
     window->setStyle(style);
     window->adjustSize();
     QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));
-    QCOMPARE(b->geometry(), QRectF(21, 25, 20, 20));     
+    QCOMPARE(b->geometry(), QRectF(21, 25, 20, 20));
     QCOMPARE(c->geometry(), QRectF(42, 47, 20, 20));
     QCOMPARE(d->geometry(), QRectF(63, 69, 20, 20));
     QCOMPARE(l->geometry(), QRectF(0,   0, 89, 98));
+
+    window->setStyle(0);
+    delete style;
 }
 
 
@@ -1663,6 +1669,9 @@ void tst_QGraphicsAnchorLayout::floatConflict()
 
 void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
 {
+    if (sizeof(qreal) <= 4) {
+        QSKIP("qreal has too little precision, result will be wrong", SkipAll);
+    }
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
     l->setSpacing(0);
@@ -1775,7 +1784,8 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
     QGraphicsWidget *b = createItem(min, pref, max, "B");
     QGraphicsWidget *c = createItem(min, pref, max, "C");
 
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    QGraphicsWidget frame;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&frame);
 
     // Bulk anchors
     l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
@@ -1800,7 +1810,6 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
 
     l->effectiveSizeHint(Qt::MinimumSize);
     if (hasSimplification) {
-        QEXPECT_FAIL("", "Sequential anchors cannot handle children of opposite directions", Continue);
         QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
         QCOMPARE(usedSimplex(l, Qt::Vertical), false);
     }
@@ -1845,7 +1854,8 @@ void tst_QGraphicsAnchorLayout::simplificationVsRedundance()
     QGraphicsWidget *b = createItem(min, pref, max, "B");
     QGraphicsWidget *c = createItem(min, pref, max, "C");
 
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    QGraphicsWidget frame;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&frame);
 
     l->addCornerAnchors(a, Qt::TopLeftCorner, l, Qt::TopLeftCorner);
     l->addCornerAnchors(a, Qt::BottomLeftCorner, l, Qt::BottomLeftCorner);
@@ -1974,6 +1984,101 @@ void tst_QGraphicsAnchorLayout::parallelToHalfLayout()
     QCOMPARE(minimumSizeHint, QSizeF(200, 100) + overhead);
     QCOMPARE(preferredSizeHint, QSizeF(300, 100) + overhead);
     QCOMPARE(maximumSizeHint, QSizeF(400, 100) + overhead);
+}
+
+void tst_QGraphicsAnchorLayout::globalSpacing()
+{
+    QGraphicsWidget *a = createItem();
+    QGraphicsWidget *b = createItem();
+
+    QGraphicsWidget w;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&w);
+
+    l->addCornerAnchors(l, Qt::TopLeftCorner, a, Qt::TopLeftCorner);
+    l->addCornerAnchors(a, Qt::BottomRightCorner, b, Qt::TopLeftCorner);
+    l->addCornerAnchors(b, Qt::BottomRightCorner, l, Qt::BottomRightCorner);
+
+    w.resize(w.effectiveSizeHint(Qt::PreferredSize));
+    qreal vSpacing = b->geometry().top() - a->geometry().bottom();
+    qreal hSpacing = b->geometry().left() - a->geometry().right();
+
+    // Set spacings manually
+    l->setVerticalSpacing(vSpacing + 10);
+    l->setHorizontalSpacing(hSpacing + 5);
+
+    w.resize(w.effectiveSizeHint(Qt::PreferredSize));
+    qreal newVSpacing = b->geometry().top() - a->geometry().bottom();
+    qreal newHSpacing = b->geometry().left() - a->geometry().right();
+
+    QCOMPARE(newVSpacing, vSpacing + 10);
+    QCOMPARE(newHSpacing, hSpacing + 5);
+
+    // Set a negative spacing. This will unset the previous spacing and
+    // bring back the widget-defined spacing.
+    l->setSpacing(-1);
+
+    w.resize(w.effectiveSizeHint(Qt::PreferredSize));
+    newVSpacing = b->geometry().top() - a->geometry().bottom();
+    newHSpacing = b->geometry().left() - a->geometry().right();
+
+    QCOMPARE(newVSpacing, vSpacing);
+    QCOMPARE(newHSpacing, hSpacing);
+}
+
+void tst_QGraphicsAnchorLayout::graphicsAnchorHandling()
+{
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout();
+    QGraphicsWidget *a = createItem();
+
+    l->addAnchors(l, a);
+
+    QGraphicsAnchor *layoutAnchor = l->anchor(l, Qt::AnchorTop, l, Qt::AnchorBottom);
+    QGraphicsAnchor *itemAnchor = l->anchor(a, Qt::AnchorTop, a, Qt::AnchorBottom);
+    QGraphicsAnchor *invalidAnchor = l->anchor(a, Qt::AnchorTop, l, Qt::AnchorBottom);
+
+    // Ensure none of these anchors are accessible.
+    QVERIFY(layoutAnchor == 0);
+    QVERIFY(itemAnchor == 0);
+    QVERIFY(invalidAnchor == 0);
+
+    // Hook the anchors to a QObject
+    QObject object;
+    QGraphicsAnchor *userAnchor = l->anchor(l, Qt::AnchorTop, a, Qt::AnchorTop);
+    userAnchor->setParent(&object);
+    userAnchor = l->anchor(l, Qt::AnchorBottom, a, Qt::AnchorBottom);
+    userAnchor->setParent(&object);
+    userAnchor = l->anchor(l, Qt::AnchorRight, a, Qt::AnchorRight);
+    userAnchor->setParent(&object);
+    userAnchor = l->anchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    userAnchor->setParent(&object);
+
+    QCOMPARE(object.children().size(), 4);
+
+    // Delete layout, this will cause all anchors to be deleted internally.
+    // We expect the public QGraphicsAnchor instances to be deleted too.
+    delete l;
+    QCOMPARE(object.children().size(), 0);
+
+    delete a;
+}
+
+void tst_QGraphicsAnchorLayout::invalidHierarchyCheck()
+{
+    QGraphicsWidget window(0, Qt::Window);
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    window.setLayout(l);
+
+    QCOMPARE(l->count(), 0);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): "
+                         "You cannot add the parent of the layout to the layout.");
+    QVERIFY(!l->addAnchor(l, Qt::AnchorLeft, &window, Qt::AnchorLeft));
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): "
+                         "You cannot add the parent of the layout to the layout.");
+    l->addAnchors(l, &window);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): "
+                         "You cannot add the parent of the layout to the layout.");
+    l->addCornerAnchors(l, Qt::TopLeftCorner, &window, Qt::TopLeftCorner);
+    QCOMPARE(l->count(), 0);
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

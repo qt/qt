@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -903,7 +903,7 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
         case EBADF:
         case EINVAL:
         case EIO:
-            setError(QAbstractSocket::NetworkError, ReadErrorString);
+            //error string is now set in read(), not here in nativeRead()
             break;
 #ifdef Q_OS_SYMBIAN
         case EPIPE:

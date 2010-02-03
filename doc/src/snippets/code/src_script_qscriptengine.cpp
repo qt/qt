@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,7 +46,7 @@ QScriptValue three = myEngine.evaluate("1 + 2");
 
 
 //! [1]
-QScriptValue fun = myEngine.evaluate("function(a, b) { return a + b; }");
+QScriptValue fun = myEngine.evaluate("(function(a, b) { return a + b; })");
 QScriptValueList args;
 args << 1 << 2;
 QScriptValue threeAgain = fun.call(QScriptValue(), args);

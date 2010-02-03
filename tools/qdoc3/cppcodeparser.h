@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -185,6 +185,7 @@ class CppCodeParser : public CodeParser
     static QStringList exampleFiles;
     static QStringList exampleDirs;
     QString exampleNameFilter;
+    QString exampleImageFilter;
 };
 
 QT_END_NAMESPACE

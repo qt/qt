@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -635,16 +635,17 @@ void QGraphicsSceneBspTreeIndex::updateSceneRect(const QRectF &rect)
     This method react to the \a change of the \a item and use the \a value to
     update the BSP tree if necessary.
 */
-void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const void *const value)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
     switch (change) {
     case QGraphicsItem::ItemFlagsChange: {
         // Handle ItemIgnoresTransformations
+        QGraphicsItem::GraphicsItemFlags newFlags = *static_cast<const QGraphicsItem::GraphicsItemFlags *>(value);
         bool ignoredTransform = item->d_ptr->flags & QGraphicsItem::ItemIgnoresTransformations;
-        bool willIgnoreTransform = value.toUInt() & QGraphicsItem::ItemIgnoresTransformations;
+        bool willIgnoreTransform = newFlags & QGraphicsItem::ItemIgnoresTransformations;
         bool clipsChildren = item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape;
-        bool willClipChildren = value.toUInt() & QGraphicsItem::ItemClipsChildrenToShape;
+        bool willClipChildren = newFlags & QGraphicsItem::ItemClipsChildrenToShape;
         if ((ignoredTransform != willIgnoreTransform) || (clipsChildren != willClipChildren)) {
             QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
             // Remove item and its descendants from the index and append
@@ -661,7 +662,7 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
     case QGraphicsItem::ItemParentChange: {
         d->invalidateSortCache();
         // Handle ItemIgnoresTransformations
-        QGraphicsItem *newParent = qVariantValue<QGraphicsItem *>(value);
+        const QGraphicsItem *newParent = static_cast<const QGraphicsItem *>(value);
         bool ignoredTransform = item->d_ptr->itemIsUntransformable();
         bool willIgnoreTransform = (item->d_ptr->flags & QGraphicsItem::ItemIgnoresTransformations)
                                    || (newParent && newParent->d_ptr->itemIsUntransformable());
@@ -682,7 +683,6 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
     default:
         break;
     }
-    return QGraphicsSceneIndex::itemChange(item, change, value);
 }
 /*!
     \reimp

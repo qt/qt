@@ -42,8 +42,7 @@ class AudioOutput;
 class DummyPlayer : public AbstractPlayer
 {
 public:
-    DummyPlayer();
-    DummyPlayer(const AbstractPlayer& player);
+    DummyPlayer(const AbstractPlayer *player = 0);
 
     // MediaObjectInterface
     virtual void play();
@@ -56,12 +55,9 @@ public:
     virtual Phonon::State state() const;
     virtual Phonon::ErrorType errorType() const;
     virtual qint64 totalTime() const;
-    virtual MediaSource source() const;
-    // virtual void setSource(const MediaSource &);
-    virtual void setFileSource(const Phonon::MediaSource&, RFile&);
-    virtual void setNextSource(const MediaSource &source);
 
     // AbstractPlayer
+    virtual void open(const Phonon::MediaSource&, RFile&);
     virtual void doSetTickInterval(qint32 interval);
 };
 }

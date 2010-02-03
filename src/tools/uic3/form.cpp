@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -100,7 +100,7 @@ QByteArray combinePath(const char *infile, const char *outfile)
 
   \sa createFormImpl()
 */
-void Ui3Reader::createFormDecl(const QDomElement &e, bool implicitIncludes)
+void Ui3Reader::createFormDecl(const QDomElement &e)
 {
     QDomElement body = e;
 
@@ -138,7 +138,7 @@ void Ui3Reader::createFormDecl(const QDomElement &e, bool implicitIncludes)
                         QString tagName = n3.tagName().toLower();
                         if (tagName == QLatin1String("class")) {
                             cl = n3.firstChild().toText().data();
-                            if (!nofwd)
+                            if (m_options & CustomWidgetForwardDeclarations)
                                 forwardDecl << cl;
                             customWidgets.insert(cl, 0);
                         } else if (tagName == QLatin1String("header")) {
@@ -257,10 +257,10 @@ void Ui3Reader::createFormDecl(const QDomElement &e, bool implicitIncludes)
     d.option().copyrightHeader = false;
     d.option().extractImages = m_extractImages;
     d.option().qrcOutputFile = m_qrcOutputFile;
-    d.option().implicitIncludes = implicitIncludes;
+    d.option().implicitIncludes = (m_options & ImplicitIncludes) ? 1 : 0;
     if (trmacro.size())
         d.option().translateFunction = trmacro;
-    DomUI *ui = generateUi4(e, implicitIncludes);
+    DomUI *ui = generateUi4(e);
     d.uic(fileName, ui, &out);
     delete ui;
 

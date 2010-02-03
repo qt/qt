@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -429,7 +429,10 @@ QString QEglContext::extensions()
 
 bool QEglContext::hasExtension(const char* extensionName)
 {
-    return extensions().contains(QLatin1String(extensionName));
+    QList<QByteArray> extensions =
+        QByteArray(reinterpret_cast<const char *>
+            (eglQueryString(QEglContext::defaultDisplay(0), EGL_EXTENSIONS))).split(' ');
+    return extensions.contains(extensionName);
 }
 
 QEglContext *QEglContext::currentContext(QEgl::API api)

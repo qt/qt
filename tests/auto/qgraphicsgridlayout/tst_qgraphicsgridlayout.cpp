@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,6 +108,157 @@ private slots:
     void task236367_maxSizeHint();
 };
 
+class RectWidget : public QGraphicsWidget
+{
+public:
+    RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent){}
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        Q_UNUSED(option);
+        Q_UNUSED(widget);
+        painter->drawRoundRect(rect());
+        painter->drawLine(rect().topLeft(), rect().bottomRight());
+        painter->drawLine(rect().bottomLeft(), rect().topRight());
+    }
+
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
+    {
+        if (m_sizeHints[which].isValid()) {
+            return m_sizeHints[which];
+        }
+        return QGraphicsWidget::sizeHint(which, constraint);
+    }
+
+    void setSizeHint(Qt::SizeHint which, const QSizeF &size) {
+        m_sizeHints[which] = size;
+        updateGeometry();
+    }
+
+    QSizeF m_sizeHints[Qt::NSizeHints];
+};
+
+struct ItemDesc
+{
+    ItemDesc(int row, int col)
+    : m_pos(qMakePair(row, col)),
+      m_rowSpan(1),
+      m_colSpan(1),
+      m_sizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred)),
+      m_align(0)
+    {
+    }
+
+    ItemDesc &rowSpan(int span) {
+        m_rowSpan = span;
+        return (*this);
+    }
+
+    ItemDesc &colSpan(int span) {
+        m_colSpan = span;
+        return (*this);
+    }
+
+    ItemDesc &sizePolicy(const QSizePolicy &sp) {
+        m_sizePolicy = sp;
+        return (*this);
+    }
+
+    ItemDesc &sizePolicy(QSizePolicy::Policy horAndVer) {
+        m_sizePolicy = QSizePolicy(horAndVer, horAndVer);
+        return (*this);
+    }
+
+    ItemDesc &sizePolicyH(QSizePolicy::Policy hor) {
+        m_sizePolicy.setHorizontalPolicy(hor);
+        return (*this);
+    }
+
+    ItemDesc &sizePolicyV(QSizePolicy::Policy ver) {
+        m_sizePolicy.setVerticalPolicy(ver);
+        return (*this);
+    }
+
+    ItemDesc &sizePolicy(QSizePolicy::Policy hor, QSizePolicy::Policy ver) {
+        m_sizePolicy = QSizePolicy(hor, ver);
+        return (*this);
+    }
+
+    ItemDesc &sizeHint(Qt::SizeHint which, const QSizeF &sh) {
+        m_sizeHints[which] = sh;
+        return (*this);
+    }
+
+    ItemDesc &preferredSizeHint(const QSizeF &sh) {
+        m_sizeHints[Qt::PreferredSize] = sh;
+        return (*this);
+    }
+
+    ItemDesc &minSize(const QSizeF &sz) {
+        m_sizes[Qt::MinimumSize] = sz;
+        return (*this);
+    }
+    ItemDesc &preferredSize(const QSizeF &sz) {
+        m_sizes[Qt::PreferredSize] = sz;
+        return (*this);
+    }
+    ItemDesc &maxSize(const QSizeF &sz) {
+        m_sizes[Qt::MaximumSize] = sz;
+        return (*this);
+    }
+
+    ItemDesc &alignment(Qt::Alignment alignment) {
+        m_align = alignment;
+        return (*this);
+    }
+
+    void apply(QGraphicsGridLayout *layout, QGraphicsWidget *item) {
+        item->setSizePolicy(m_sizePolicy);
+        for (int i = 0; i < Qt::NSizeHints; ++i) {
+            if (!m_sizes[i].isValid())
+                continue;
+            switch ((Qt::SizeHint)i) {
+            case Qt::MinimumSize:
+                item->setMinimumSize(m_sizes[i]);
+                break;
+            case Qt::PreferredSize:
+                item->setPreferredSize(m_sizes[i]);
+                break;
+            case Qt::MaximumSize:
+                item->setMaximumSize(m_sizes[i]);
+                break;
+            default:
+                qWarning("not implemented");
+                break;
+            }
+        }
+        layout->addItem(item, m_pos.first, m_pos.second, m_rowSpan, m_colSpan);
+        layout->setAlignment(item, m_align);
+    }
+
+    void apply(QGraphicsGridLayout *layout, RectWidget *item) {
+        for (int i = 0; i < Qt::NSizeHints; ++i)
+            item->setSizeHint((Qt::SizeHint)i, m_sizeHints[i]);
+        apply(layout, static_cast<QGraphicsWidget*>(item));
+    }
+
+//private:
+    QPair<int,int> m_pos; // row,col
+    int m_rowSpan;
+    int m_colSpan;
+    QSizePolicy m_sizePolicy;
+    QSizeF m_sizeHints[Qt::NSizeHints];
+    QSizeF m_sizes[Qt::NSizeHints];
+    Qt::Alignment m_align;
+};
+
+typedef QList<ItemDesc> ItemList;
+Q_DECLARE_METATYPE(ItemList);
+
+typedef QList<QSizeF> SizeList;
+Q_DECLARE_METATYPE(SizeList);
+
+
 // This will be called before the first test function is executed.
 // It is only called once.
 void tst_QGraphicsGridLayout::initTestCase()
@@ -189,36 +340,6 @@ void tst_QGraphicsGridLayout::qgraphicsgridlayout()
     layout.sizeHint(Qt::MinimumSize);
     layout.verticalSpacing();
 }
-
-class RectWidget : public QGraphicsWidget
-{
-public:
-    RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent){}
-
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-    {
-        Q_UNUSED(option);
-        Q_UNUSED(widget);
-        painter->drawRoundRect(rect());
-        painter->drawLine(rect().topLeft(), rect().bottomRight());
-        painter->drawLine(rect().bottomLeft(), rect().topRight());
-    }
-
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const
-    {
-        if (m_sizeHints[which].isValid()) {
-            return m_sizeHints[which];
-        }
-        return QGraphicsWidget::sizeHint(which, constraint);
-    }
-
-    void setSizeHint(Qt::SizeHint which, const QSizeF &size) {
-        m_sizeHints[which] = size;
-        updateGeometry();
-    }
-
-    QSizeF m_sizeHints[Qt::NSizeHints];
-};
 
 static void populateLayout(QGraphicsGridLayout *gridLayout, int width, int height)
 {
@@ -1144,7 +1265,7 @@ void tst_QGraphicsGridLayout::setColumnSpacing()
 }
 
 void tst_QGraphicsGridLayout::setGeometry_data()
-{
+{    
     QTest::addColumn<QRectF>("rect");
     QTest::newRow("null") << QRectF();
     QTest::newRow("normal") << QRectF(0,0, 50, 50);
@@ -1233,28 +1354,84 @@ void tst_QGraphicsGridLayout::setSpacing()
 
 void tst_QGraphicsGridLayout::sizeHint_data()
 {
+    QTest::addColumn<ItemList>("itemDescriptions");
+    QTest::addColumn<QSizeF>("expectedMinimumSizeHint");
+    QTest::addColumn<QSizeF>("expectedPreferredSizeHint");
+    QTest::addColumn<QSizeF>("expectedMaximumSizeHint");
 
-    /*
-    QTest::addColumn<Qt::SizeHint>("which");
-    QTest::addColumn<QSizeF>("constraint");
-    QTest::addColumn<QSizeF>("sizeHint");
-    QTest::newRow("null") << 0;
-    */
+    QTest::newRow("rowSpan_larger_than_rows") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(50,300))
+                                        .maxSize(QSizeF(50,300))
+                                        .rowSpan(2)
+                                    << ItemDesc(0,1)
+                                        .minSize(QSizeF(50,0))
+                                        .preferredSize(QSizeF(50,50))
+                                        .maxSize(QSize(50, 1000))
+                                    << ItemDesc(1,1)
+                                        .minSize(QSizeF(50,0))
+                                        .preferredSize(QSizeF(50,50))
+                                        .maxSize(QSize(50, 1000))
+                                )
+                            << QSizeF(100, 300)
+                            << QSizeF(100, 300)
+                            << QSizeF(100, 2000);
+
+    QTest::newRow("rowSpan_smaller_than_rows") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(50, 0))
+                                        .preferredSize(QSizeF(50, 50))
+                                        .maxSize(QSizeF(50, 300))
+                                        .rowSpan(2)
+                                    << ItemDesc(0,1)
+                                        .minSize(QSizeF(50, 50))
+                                        .preferredSize(QSizeF(50, 50))
+                                        .maxSize(QSize(50, 50))
+                                    << ItemDesc(1,1)
+                                        .minSize(QSizeF(50, 50))
+                                        .preferredSize(QSizeF(50, 50))
+                                        .maxSize(QSize(50, 50))
+                                )
+                            << QSizeF(100, 100)
+                            << QSizeF(100, 100)
+                            << QSizeF(100, 100);
+
 }
 
 // public QSizeF sizeHint(Qt::SizeHint which, QSizeF const& constraint = QSizeF()) const
 void tst_QGraphicsGridLayout::sizeHint()
 {
-    /*
-    QFETCH(Qt::SizeHint, which);
-    QFETCH(QSizeF, constraint);
-    QFETCH(QSizeF, sizeHint);
+    QFETCH(ItemList, itemDescriptions);
+    QFETCH(QSizeF, expectedMinimumSizeHint);
+    QFETCH(QSizeF, expectedPreferredSizeHint);
+    QFETCH(QSizeF, expectedMaximumSizeHint);
 
-    QGraphicsGridLayout layout;
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+    scene.addItem(widget);
+    widget->setLayout(layout);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0.0);
+    widget->setContentsMargins(0, 0, 0, 0);
 
-    layout.sizeHint();
-    */
-    QSKIP("Test unimplemented", SkipSingle);
+    int i;
+    for (i = 0; i < itemDescriptions.count(); ++i) {
+        ItemDesc desc = itemDescriptions.at(i);
+        RectWidget *item = new RectWidget(widget);
+        desc.apply(layout, item);
+    }
+
+    QApplication::sendPostedEvents(0, 0);
+
+    widget->show();
+    view.show();
+    view.resize(400,300);
+    QCOMPARE(layout->sizeHint(Qt::MinimumSize), expectedMinimumSizeHint);
+    QCOMPARE(layout->sizeHint(Qt::PreferredSize), expectedPreferredSizeHint);
+    QCOMPARE(layout->sizeHint(Qt::MaximumSize), expectedMaximumSizeHint);
+
 }
 
 void tst_QGraphicsGridLayout::verticalSpacing_data()
@@ -1372,121 +1549,6 @@ void tst_QGraphicsGridLayout::removeLayout()
     QCOMPARE(textEdit->geometry(), r1);
     QCOMPARE(pushButton->geometry(), r2);
 }
-
-struct ItemDesc
-{
-    ItemDesc(int row, int col)
-    : m_pos(qMakePair(row, col)),
-      m_rowSpan(1),
-      m_colSpan(1),
-      m_sizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred)),
-      m_align(0)
-    {
-    }
-
-    ItemDesc &rowSpan(int span) {
-        m_rowSpan = span;
-        return (*this);
-    }
-
-    ItemDesc &colSpan(int span) {
-        m_colSpan = span;
-        return (*this);
-    }
-
-    ItemDesc &sizePolicy(const QSizePolicy &sp) {
-        m_sizePolicy = sp;
-        return (*this);
-    }
-
-    ItemDesc &sizePolicy(QSizePolicy::Policy horAndVer) {
-        m_sizePolicy = QSizePolicy(horAndVer, horAndVer);
-        return (*this);
-    }
-
-    ItemDesc &sizePolicyH(QSizePolicy::Policy hor) {
-        m_sizePolicy.setHorizontalPolicy(hor);
-        return (*this);
-    }
-
-    ItemDesc &sizePolicyV(QSizePolicy::Policy ver) {
-        m_sizePolicy.setVerticalPolicy(ver);
-        return (*this);
-    }
-
-    ItemDesc &sizePolicy(QSizePolicy::Policy hor, QSizePolicy::Policy ver) {
-        m_sizePolicy = QSizePolicy(hor, ver);
-        return (*this);
-    }
-
-    ItemDesc &sizeHint(Qt::SizeHint which, const QSizeF &sh) {
-        m_sizeHints[which] = sh;
-        return (*this);
-    }
-
-    ItemDesc &preferredSizeHint(const QSizeF &sh) {
-        m_sizeHints[Qt::PreferredSize] = sh;
-        return (*this);
-    }
-
-    ItemDesc &minSize(const QSizeF &sz) {
-        m_sizes[Qt::MinimumSize] = sz;
-        return (*this);
-    }
-    ItemDesc &preferredSize(const QSizeF &sz) {
-        m_sizes[Qt::PreferredSize] = sz;
-        return (*this);
-    }
-    ItemDesc &maxSize(const QSizeF &sz) {
-        m_sizes[Qt::MaximumSize] = sz;
-        return (*this);
-    }
-
-    ItemDesc &alignment(Qt::Alignment alignment) {
-        m_align = alignment;
-        return (*this);
-    }
-
-    void apply(QGraphicsGridLayout *layout, RectWidget *item) {
-        item->setSizePolicy(m_sizePolicy);
-        for (int i = 0; i < Qt::NSizeHints; ++i) {
-            item->setSizeHint((Qt::SizeHint)i, m_sizeHints[i]);
-            if (!m_sizes[i].isValid())
-                continue;
-            switch ((Qt::SizeHint)i) {
-            case Qt::MinimumSize:
-                item->setMinimumSize(m_sizes[i]);
-                break;
-            case Qt::PreferredSize:
-                item->setPreferredSize(m_sizes[i]);
-                break;
-            case Qt::MaximumSize:
-                item->setMaximumSize(m_sizes[i]);
-                break;
-            default:
-                qWarning("not implemented");
-                break;
-            }
-        }
-        layout->addItem(item, m_pos.first, m_pos.second, m_rowSpan, m_colSpan);
-        layout->setAlignment(item, m_align);
-    }
-
-//private:
-    QPair<int,int> m_pos; // row,col
-    int m_rowSpan;
-    int m_colSpan;
-    QSizePolicy m_sizePolicy;
-    QSizeF m_sizeHints[Qt::NSizeHints];
-    QSizeF m_sizes[Qt::NSizeHints];
-    Qt::Alignment m_align;
-};
-
-typedef QList<ItemDesc> ItemList;
-Q_DECLARE_METATYPE(ItemList);
-
-typedef QList<QSizeF> SizeList;
-Q_DECLARE_METATYPE(SizeList);
 
 void tst_QGraphicsGridLayout::defaultStretchFactors_data()
 {

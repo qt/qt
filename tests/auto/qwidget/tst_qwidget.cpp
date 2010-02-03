@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,8 @@
 #include <private/qapplication_p.h>
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
+#include <qdockwidget.h>
+#include <qtoolbar.h>
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 
@@ -356,6 +358,7 @@ private slots:
     void paintOnScreenPossible();
 #endif
     void reparentStaticWidget();
+    void QTBUG6883_reparentStaticWidget2();
 #ifdef Q_WS_QWS
     void updateOutsideSurfaceClip();
 #endif
@@ -5436,26 +5439,24 @@ public:
     QRegion r;
 };
 
-template<typename R, typename C>
-void verifyColor(R const& region, C const& color)
-{
-    const QRegion r = QRegion(region);
-    for (int i = 0; i < r.rects().size(); ++i) {
-        const QRect rect = r.rects().at(i);
-        for (int t = 0; t < 5; t++) {
-            const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(),
-                                                   rect.left(), rect.top(),
-                                                   rect.width(), rect.height());
-            QCOMPARE(pixmap.size(), rect.size());
-            QPixmap expectedPixmap(pixmap); /* ensure equal formats */
-            expectedPixmap.fill(color);
-            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 )
-            { QTest::qWait(200); continue; }
-            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb());
-            QCOMPARE(pixmap, expectedPixmap);
-            break;
-        }
-    }
+#define VERIFY_COLOR(region, color) {                                   \
+    const QRegion r = QRegion(region);                                  \
+    for (int i = 0; i < r.rects().size(); ++i) {                        \
+        const QRect rect = r.rects().at(i);                             \
+        for (int t = 0; t < 5; t++) {                                   \
+            const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(), \
+                                                   rect.left(), rect.top(), \
+                                                   rect.width(), rect.height()); \
+            QCOMPARE(pixmap.size(), rect.size());                       \
+            QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
+            expectedPixmap.fill(color);                                 \
+            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 ) \
+            { QTest::qWait(200); continue; }                            \
+            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb()); \
+            QCOMPARE(pixmap, expectedPixmap);                           \
+            break;                                                      \
+        }                                                               \
+    }                                                                   \
 }
 
 void tst_QWidget::moveChild_data()
@@ -5496,9 +5497,9 @@ void tst_QWidget::moveChild()
 #endif
     QTRY_COMPARE(parent.r, QRegion(parent.rect()) - child.geometry());
     QTRY_COMPARE(child.r, QRegion(child.rect()));
-    verifyColor(child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(child.geometry().translated(tlwOffset),
                  child.color);
-    verifyColor(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
                  parent.color);
     parent.reset();
     child.reset();
@@ -5517,9 +5518,9 @@ void tst_QWidget::moveChild()
     // should be scrolled in backingstore
     QCOMPARE(child.r, QRegion());
 #endif
-    verifyColor(child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(child.geometry().translated(tlwOffset),
                 child.color);
-    verifyColor(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
                 parent.color);
 }
 
@@ -5550,8 +5551,8 @@ void tst_QWidget::showAndMoveChild()
     child.move(desktopDimensions.width()/2, desktopDimensions.height()/2);
     qApp->processEvents();
 
-    verifyColor(child.geometry().translated(tlwOffset), Qt::blue);
-    verifyColor(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
+    VERIFY_COLOR(child.geometry().translated(tlwOffset), Qt::blue);
+    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
 }
 
 void tst_QWidget::subtractOpaqueSiblings()
@@ -8728,6 +8729,31 @@ void tst_QWidget::reparentStaticWidget()
     // Please don't crash.
     paintOnScreen.resize(paintOnScreen.size() + QSize(2, 2));
     QTest::qWait(20);
+
+}
+
+void tst_QWidget::QTBUG6883_reparentStaticWidget2()
+{
+    QMainWindow mw;
+    QDockWidget *one = new QDockWidget("one", &mw);
+    mw.addDockWidget(Qt::LeftDockWidgetArea, one , Qt::Vertical);
+
+    QWidget *child = new QWidget();
+    child->setPalette(Qt::red);
+    child->setAutoFillBackground(true);
+    child->setAttribute(Qt::WA_StaticContents);
+    child->resize(100, 100);
+    one->setWidget(child);
+
+    QToolBar *mainTools = mw.addToolBar("Main Tools");
+    mainTools->addWidget(new QLineEdit);
+
+    mw.show();
+    QTest::qWaitForWindowShown(&mw);
+
+    one->setFloating(true);
+    QTest::qWait(20);
+    //do not crash
 }
 
 #ifdef Q_WS_QWS
@@ -9549,6 +9575,22 @@ void tst_QWidget::setGraphicsEffect()
     delete widget;
     QVERIFY(!blurEffect);
     delete anotherWidget;
+
+    // Ensure the effect is uninstalled when deleting it
+    widget = new QWidget;
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    delete blurEffect;
+    QVERIFY(!widget->graphicsEffect());
+
+    // Ensure the existing effect is uninstalled and deleted when setting a null effect
+    blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    widget->setGraphicsEffect(0);
+    QVERIFY(!widget->graphicsEffect());
+    QVERIFY(!blurEffect);
+
+    delete widget;
 }
 
 void tst_QWidget::activateWindow()
@@ -9710,7 +9752,7 @@ public:
     void deleteBackingStore()
     {
         if (static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;    
+            delete static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore;
             static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStore = 0;
         }
     }

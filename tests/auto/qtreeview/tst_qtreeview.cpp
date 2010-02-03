@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -236,6 +236,7 @@ private slots:
     void task248022_changeSelection();
     void task245654_changeModelAndExpandAll();
     void doubleClickedWithSpans();
+    void taskQTBUG_6450_selectAllWith1stColumnHidden();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3676,6 +3677,27 @@ void tst_QTreeView::doubleClickedWithSpans()
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
     QTRY_COMPARE(spy.count(), 2);
+}
+
+void tst_QTreeView::taskQTBUG_6450_selectAllWith1stColumnHidden()
+{
+    QTreeWidget tree;
+    tree.setSelectionMode(QAbstractItemView::MultiSelection);
+    tree.setColumnCount(2);
+    QList<QTreeWidgetItem *> items;
+    const int nrRows = 10;
+    for (int i = 0; i < nrRows; ++i) {
+        items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("item: %1").arg(i))));
+        items.last()->setText(1, QString("is an item"));
+    }
+    tree.insertTopLevelItems(0, items);
+
+    tree.hideColumn(0);
+    tree.selectAll();
+
+    QVERIFY(tree.selectionModel()->hasSelection());
+    for (int i = 0; i < nrRows; ++i)
+        QVERIFY(tree.selectionModel()->isRowSelected(i, QModelIndex()));
 }
 
 QTEST_MAIN(tst_QTreeView)

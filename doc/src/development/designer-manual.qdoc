@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -371,7 +371,7 @@
     {setValue()} slot.
 
     To do this, you have to switch to \gui{Edit Signals/Slots} mode, either by
-    pressing \key{F4} or something \gui{Edit Signals/Slots} from the \gui{Edit}
+    pressing \key{F4} or selecting \gui{Edit Signals/Slots} from the \gui{Edit}
     menu.
 
     \table
@@ -2776,7 +2776,7 @@ pixmap property in the property editor.
     Designer source code.
 
     \legalese
-    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies). \BR
+    Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies). \BR
     Copyright (C) 2005 Bjoern Bergstroem
 
     Permission is hereby granted, free of charge, to any person obtaining

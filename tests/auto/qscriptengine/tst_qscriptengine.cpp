@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -154,6 +154,7 @@ private slots:
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
+    void collectGarbageAfterConnect();
 
     void qRegExpInport_data();
     void qRegExpInport();
@@ -4441,6 +4442,23 @@ void tst_QScriptEngine::evaluateProgram()
         QScriptValue ret = eng.evaluate(program);
         QVERIFY(!ret.isValid());
     }
+}
+
+void tst_QScriptEngine::collectGarbageAfterConnect()
+{
+    // QTBUG-6366
+    QScriptEngine engine;
+    QPointer<QWidget> widget = new QWidget;
+    engine.globalObject().setProperty(
+        "widget", engine.newQObject(widget, QScriptEngine::ScriptOwnership));
+    QVERIFY(engine.evaluate("widget.customContextMenuRequested.connect(\n"
+                            "  function() { print('hello'); }\n"
+                            ");")
+            .isUndefined());
+    QVERIFY(widget != 0);
+    engine.evaluate("widget = null;");
+    collectGarbage_helper(engine);
+    QVERIFY(widget == 0);
 }
 
 static QRegExp minimal(QRegExp r) { r.setMinimal(true); return r; }

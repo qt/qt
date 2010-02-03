@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,6 +65,8 @@
 #include "qmenubar_p.h"
 #include "qwidgetaction.h"
 #include "qtoolbutton.h"
+#include "qpushbutton.h"
+#include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
 #include <private/qsoftkeymanager_p.h>
 #ifdef QT3_SUPPORT
@@ -417,12 +419,7 @@ void QMenuPrivate::hideUpToMenuBar()
                     hideMenu(m, fadeMenus);
                 if (!fadeMenus) // Mac doesn't clear the action until after hidden.
                     m->d_func()->setCurrentAction(0);
-            } else {
-#ifndef QT_NO_TOOLBUTTON
-                if (qobject_cast<QToolButton*>(caused) == 0)
-#endif
-                    qWarning("QMenu: Internal error");
-                caused = 0;
+            } else {                caused = 0;
             }
         }
 #if defined(Q_WS_MAC)
@@ -1591,10 +1588,9 @@ QAction *QMenu::insertSeparator(QAction *before)
 }
 
 /*!
-  This will set the default action to \a act. The default action may
-  have a visual queue depending on the current QStyle. A default
-  action is usually meant to indicate what will defaultly happen on a
-  drop, as shown in a context menu.
+  This sets the default action to \a act. The default action may have
+  a visual cue, depending on the current QStyle. A default action
+  usually indicates what will happen by default when a drop occurs.
 
   \sa defaultAction()
 */
@@ -1825,8 +1821,15 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     ensurePolished(); // Get the right font
     emit aboutToShow();
+    const bool actionListChanged = d->itemsDirty;
     d->updateActionRects();
-    QPoint pos = p;
+    QPoint pos;
+    QPushButton *causedButton = qobject_cast<QPushButton*>(d->causedPopup.widget);
+    if (actionListChanged && causedButton)
+        pos = QPushButtonPrivate::get(causedButton)->adjustedMenuPosition();
+    else
+        pos = p;
+
     QSize size = sizeHint();
     QRect screen;
 #ifndef QT_NO_GRAPHICSVIEW
@@ -2302,22 +2305,9 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
         if (action->menu())
             action->menu()->d_func()->setFirstActionActive();
         else {
-#if defined(Q_WS_WIN) && !defined(QT_NO_MENUBAR)
+#if defined(Q_WS_WIN)
             //On Windows only context menus can be activated with the right button
-            bool isContextMenu = true;
-            const QWidget *cause = d->causedPopup.widget;
-            while (cause) {
-                //if the popup was caused by either QMenuBar or a QToolButton, it is not a context menu
-                if (qobject_cast<const QMenuBar *>(cause) || qobject_cast<const QToolButton *>(cause)) {
-                    isContextMenu = false;
-                    break;
-                } else if (const QMenu *menu = qobject_cast<const QMenu *>(cause)) {
-                    cause = menu->d_func()->causedPopup.widget;
-                } else {
-                    break;
-                }
-            }
-            if (e->button() == Qt::LeftButton || isContextMenu)
+            if (e->button() == Qt::LeftButton || d->topCausedWidget() == 0)
 #endif
                 d->activateAction(action, QAction::Trigger);
         }

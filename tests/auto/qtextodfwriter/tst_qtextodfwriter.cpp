@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -175,6 +175,10 @@ void tst_QTextOdfWriter::testWriteStyle1_data()
         "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-style=\"italic\" fo:font-family=\"Sans\"/></style:style>";
     QTest::newRow("bold+italic") << text1 << 25 <<
         "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-style=\"italic\" fo:font-weight=\"bold\" fo:font-family=\"Sans\"/></style:style>";
+    QString colorText = "<span style=\"color: #00FF00; background-color: #FF0000;\"> Color Text </span>";
+    QTest::newRow("green/red") << colorText  << 3 <<
+        "<style:style style:name=\"c4\" style:family=\"text\"><style:text-properties fo:font-family=\"Sans\" fo:color=\"#00ff00\" fo:background-color=\"#ff0000\"/></style:style>";
+
 }
 
 void tst_QTextOdfWriter::testWriteStyle1()

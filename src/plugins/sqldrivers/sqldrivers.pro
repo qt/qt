@@ -10,6 +10,4 @@ contains(sql-plugins, sqlite)	: SUBDIRS += sqlite
 contains(sql-plugins, sqlite2)	: SUBDIRS += sqlite2
 contains(sql-plugins, ibase)	: SUBDIRS += ibase
 
-contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
-    symbian:contains(CONFIG, system-sqlite): SUBDIRS += sqlite_symbian
-    }
+symbian:contains(CONFIG, system-sqlite): SUBDIRS += sqlite_symbian

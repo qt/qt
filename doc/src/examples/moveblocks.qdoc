@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,7 +60,7 @@
               states. 
         \o \c StateSwitchTransition is a custom transition that
            triggers on \c{StateSwitchEvent}s.
-        \o \c StateSwitchEvent is a QEvent that trigger \c{StateSwitchTransition}s.
+        \o \c StateSwitchEvent is a QEvent that triggers \c{StateSwitchTransition}s.
         \o \c QGraphicsRectWidget is a QGraphicsWidget that simply
            paints its background in a solid \l{Qt::}{blue} color.
     \endlist
@@ -141,7 +141,7 @@
     Finally, we can create the state machine, add our initial state,
     and start execution of the state graph.
 
-    \section2 The \c createGemetryState() Function
+    \section2 The \c createGeometryState() Function
 
     In \c createGeometryState(), we set up the geometry for each
     graphics item.
@@ -155,7 +155,7 @@
     \section1 The StateSwitcher Class
 
     \c StateSwitcher has state switch transitions to each \l{QState}s
-    we created with \c createGemetryState(). Its job is to transition
+    we created with \c createGeometryState(). Its job is to transition
     to one of these states at random when it is entered.
 
     All functions in \c StateSwitcher are inlined. We'll step through

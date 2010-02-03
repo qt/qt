@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -389,9 +389,13 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
             if (!isOpaque) {
                 RWindow *const window = static_cast<RWindow *>(drawableWindow);
+#ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+                window->SetSurfaceTransparency(true);
+#else
                 const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
                 if (window->SetTransparencyAlphaChannel() == KErrNone)
                     window->SetBackgroundColor(TRgb(255, 255, 255, 0));
+#endif
             }
         }
 
@@ -707,12 +711,16 @@ void QWidgetPrivate::s60UpdateIsOpaque()
 
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
+#ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
+    window->SetSurfaceTransparency(!isOpaque);
+#else
     if (!isOpaque) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
         if (window->SetTransparencyAlphaChannel() == KErrNone)
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
     } else
         window->SetTransparentRegion(TRegionFix<1>());
+#endif
 }
 
 void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
@@ -881,7 +889,9 @@ void QWidgetPrivate::deleteTLSysExtra()
 void QWidgetPrivate::createSysExtra()
 {
     extra->activated = 0;
-    extra->disableBlit = 0;
+    extra->nativePaintMode = QWExtra::Default;
+    extra->receiveNativePaintEvents = 0;
+    extra->inExpose = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -1151,7 +1161,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         if (d->ic) {
             delete d->ic;
         } else {
-            QInputContext *ic = inputContext();
+            QInputContext *ic = QApplicationPrivate::inputContext;
             if (ic) {
                 ic->widgetDestroyed(this);
             }

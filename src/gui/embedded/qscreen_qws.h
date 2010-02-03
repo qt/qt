@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -243,7 +243,9 @@ public:
     int totalSize() const { return mapsize; }
 
     QRgb * clut() { return screenclut; }
+#ifdef QT_DEPRECATED
     QT_DEPRECATED int numCols() { return screencols; }
+#endif
     int colorCount() { return screencols; }
 
     virtual QSize mapToDevice(const QSize &) const;

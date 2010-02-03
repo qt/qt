@@ -33,7 +33,7 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AbstractPlayer::AbstractPlayer()
+MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer *player)
         :   m_videoOutput(0)
         ,   m_volume(InitialVolume)
         ,   m_state(GroundState)
@@ -42,19 +42,13 @@ MMF::AbstractPlayer::AbstractPlayer()
         ,   m_transitionTime(0)
         ,   m_prefinishMark(0)
 {
-
-}
-
-MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player)
-        :   m_videoOutput(player.m_videoOutput)
-        ,   m_volume(player.m_volume)
-        ,   m_state(GroundState)
-        ,   m_error(NoError)
-        ,   m_tickInterval(player.tickInterval())
-        ,   m_transitionTime(player.transitionTime())
-        ,   m_prefinishMark(player.prefinishMark())
-{
-
+    if(player) {
+        m_videoOutput = player->m_videoOutput;
+        m_volume = player->m_volume;
+        m_tickInterval = player->m_tickInterval;
+        m_transitionTime = player->m_transitionTime;
+        m_prefinishMark = player->m_prefinishMark;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -113,17 +107,21 @@ void MMF::AbstractPlayer::videoOutputChanged()
     // Default behaviour is empty - overridden by VideoPlayer
 }
 
-void MMF::AbstractPlayer::setError(Phonon::ErrorType error,
-                                   const QString &errorMessage)
+void MMF::AbstractPlayer::setError(const QString &errorMessage)
 {
     TRACE_CONTEXT(AbstractPlayer::setError, EAudioInternal);
-    TRACE_ENTRY("state %d error %d", m_state, error);
+    TRACE_ENTRY("state %d", m_state);
 
-    m_error = error;
+    m_error = Phonon::NormalError;
     m_errorString = errorMessage;
     changeState(ErrorState);
 
     TRACE_EXIT_0();
+}
+
+void MMF::AbstractPlayer::setError(const QString &errorMessage, int symbianError)
+{
+    setError(errorMessage + ": " + Utils::symbianErrorToString(symbianError));
 }
 
 Phonon::ErrorType MMF::AbstractPlayer::errorType() const

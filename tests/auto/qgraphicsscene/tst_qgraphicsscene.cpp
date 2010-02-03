@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -270,6 +270,7 @@ private slots:
     void initialFocus_data();
     void initialFocus();
     void polishItems();
+    void polishItems2();
     void isActive();
     void siblingIndexAlwaysValid();
 
@@ -280,6 +281,7 @@ private slots:
     void task160653_selectionChanged();
     void task250680_childClip();
     void taskQTBUG_5904_crashWithDeviceCoordinateCache();
+    void taskQT657_paintIntoCacheWithTransparentParts();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -1462,6 +1464,7 @@ void tst_QGraphicsScene::focusItemLostFocus()
 class ClearTestItem : public QGraphicsRectItem
 {
 public:
+    ClearTestItem(QGraphicsItem *parent = 0) : QGraphicsRectItem(parent) {}
     ~ClearTestItem() { qDeleteAll(items); }
     QList<QGraphicsItem *> items;
 };
@@ -1486,6 +1489,11 @@ void tst_QGraphicsScene::clear()
     scene.addItem(secondItem);
     QCOMPARE(scene.items().at(0), firstItem);
     QCOMPARE(scene.items().at(1), secondItem);
+
+    ClearTestItem *thirdItem = new ClearTestItem(firstItem);
+    QGraphicsItem *forthItem = new QGraphicsRectItem(firstItem);
+    thirdItem->items += forthItem;
+
     // must not crash even if firstItem deletes secondItem
     scene.clear();
     QVERIFY(scene.items().isEmpty());
@@ -3935,14 +3943,23 @@ void tst_QGraphicsScene::initialFocus()
 class PolishItem : public QGraphicsTextItem
 {
 public:
-    PolishItem(QGraphicsItem *parent = 0) : QGraphicsTextItem(parent) { }
+    PolishItem(QGraphicsItem *parent = 0)
+        : QGraphicsTextItem(parent), polished(false), deleteChildrenInPolish(true), addChildrenInPolish(false) { }
 
+    bool polished;
+    bool deleteChildrenInPolish;
+    bool addChildrenInPolish;
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant& value)
     {
         if (change == ItemVisibleChange) {
-            if (value.toBool())
+            polished = true;
+            if (deleteChildrenInPolish)
                 qDeleteAll(childItems());
+            if (addChildrenInPolish) {
+                for (int i = 0; i < 10; ++i)
+                    new PolishItem(this);
+            }
         }
         return QGraphicsItem::itemChange(change, value);
     }
@@ -3957,6 +3974,35 @@ void tst_QGraphicsScene::polishItems()
     Q_UNUSED(child)
     // test that QGraphicsScenePrivate::_q_polishItems() doesn't crash
     QMetaObject::invokeMethod(&scene,"_q_polishItems");
+}
+
+void tst_QGraphicsScene::polishItems2()
+{
+    QGraphicsScene scene;
+    PolishItem *item = new PolishItem;
+    item->addChildrenInPolish = true;
+    item->deleteChildrenInPolish = true;
+    // These children should be deleted in the polish.
+    for (int i = 0; i < 20; ++i)
+        new PolishItem(item);
+    scene.addItem(item);
+
+    // Wait for the polish event to be delivered.
+    QVERIFY(!item->polished);
+    QApplication::sendPostedEvents(&scene, QEvent::MetaCall);
+    QVERIFY(item->polished);
+
+    // We deleted the children we added above, but we also
+    // added 10 new children. These should be polished in the next
+    // event loop iteration.
+    QList<QGraphicsItem *> children = item->childItems();
+    QCOMPARE(children.count(), 10);
+    foreach (QGraphicsItem *child, children)
+        QVERIFY(!static_cast<PolishItem *>(child)->polished);
+
+    QApplication::sendPostedEvents(&scene, QEvent::MetaCall);
+    foreach (QGraphicsItem *child, children)
+        QVERIFY(static_cast<PolishItem *>(child)->polished);
 }
 
 void tst_QGraphicsScene::isActive()
@@ -4211,6 +4257,42 @@ void tst_QGraphicsScene::siblingIndexAlwaysValid()
     //If there are in the list that's bad, we crash...
     QVERIFY(!QGraphicsScenePrivate::get(&scene)->topLevelItems.contains(static_cast<QGraphicsItem *>(child)));
 
+    //Other case
+    QGraphicsScene scene2;
+    // works with bsp tree index
+    scene2.setItemIndexMethod(QGraphicsScene::NoIndex);
+
+    QGraphicsView view2(&scene2);
+
+    // first add the blue rect
+    QGraphicsRectItem* const item1 = new QGraphicsRectItem(QRect( 10, 10, 10, 10 ));
+    item1->setPen(QColor(Qt::blue));
+    item1->setBrush(Qt::blue);
+    scene2.addItem(item1);
+
+    // then add the red rect
+    QGraphicsRectItem* const item2 = new QGraphicsRectItem(5, 5, 10, 10);
+    item2->setPen(QColor(Qt::red));
+    item2->setBrush(Qt::red);
+    scene2.addItem(item2);
+
+    // now the blue one is visible on top of the red one -> swap them (important for the bug)
+    item1->setZValue(1.0);
+    item2->setZValue(0.0);
+
+    view2.show();
+
+    // handle events as a real life app would do
+    QApplication::processEvents();
+
+    // now delete the red rect
+    delete item2;
+
+    // handle events as a real life app would do
+     QApplication::processEvents();
+
+     //We should not crash
+
 }
 
 void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
@@ -4226,6 +4308,44 @@ void tst_QGraphicsScene::taskQTBUG_5904_crashWithDeviceCoordinateCache()
     scene.render(&painter);
     painter.end();
     // No crash, then it passed!
+}
+
+void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
+{
+    QWidget *w = new QWidget();
+    w->setPalette(Qt::blue);
+    w->setGeometry(0, 0, 50, 50);
+
+    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsView *view = new QGraphicsView(scene);
+
+    QGraphicsProxyWidget *proxy = scene->addWidget(w);
+    proxy->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    proxy->rotate(15);
+
+    view->show();
+    QTest::qWaitForWindowShown(view);
+    w->update(10,10,10,10);
+    QTest::qWait(50);
+
+    QPixmap pix;
+    QGraphicsItemPrivate* itemp = QGraphicsItemPrivate::get(proxy);
+    QPixmapCache::Key key = itemp->extraItemCache()->deviceData.value(view->viewport()).key;
+    QVERIFY(QPixmapCache::find(key, &pix));
+
+    QTransform t = proxy->sceneTransform();
+    // Map from scene coordinates to pixmap coordinates.
+    // X origin in the pixmap is the most-left point
+    // of the item's boundingRect in the scene.
+    qreal adjust = t.mapRect(proxy->boundingRect().toRect()).left();
+    QRect rect = t.mapRect(QRect(10, 10, 10, 10)).adjusted(-adjust, 0, -adjust + 1, 1);
+    QPixmap subpix = pix.copy(rect);
+
+    QImage im = subpix.toImage();
+    for(int i = 0; i < im.width(); i++) {
+        for(int j = 0; j < im.height(); j++)
+            QCOMPARE(qAlpha(im.pixel(i, j)), 255);
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

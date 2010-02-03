@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #define BROWSERWINDOW_H
 
 #include <QWidget>
-class QTimeLine;
+class QPropertyAnimation;
 class QUrl;
 
 class BrowserView;
@@ -52,28 +52,32 @@ class HomeView;
 class BrowserWindow : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(qreal slideValue READ slideValue WRITE setSlideValue)
 
 public:
     BrowserWindow();
 
 private slots:
-    void initialize();
     void navigate(const QUrl &url);
     void gotoAddress(const QString &address);
+    void animationFinished();
 
 public slots:
     void showBrowserView();
     void showHomeView();
-    void slide(int);
 
 protected:
     void keyReleaseEvent(QKeyEvent *event);
     void resizeEvent(QResizeEvent *event);
 
 private:
+    void setSlideValue(qreal);
+    qreal slideValue() const;
+
+    QWidget *m_slidingSurface;
     HomeView *m_homeView;
     BrowserView *m_browserView;
-    QTimeLine *m_timeLine;
+    QPropertyAnimation *m_animation;
 };
 
 #endif // BROWSERWINDOW_H

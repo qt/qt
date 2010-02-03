@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,10 +39,19 @@
 **
 ****************************************************************************/
 
+#include <QDebug>
+
 #include <private/qgl_p.h>
 #include <private/qegl_p.h>
 #include <private/qeglproperties_p.h>
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include <private/qpaintengineex_opengl2_p.h>
+#endif
+
+#ifndef QT_OPENGL_ES_2
+#include <private/qpaintengine_opengl_p.h>
+#endif
 
 #include "qpixmapdata_x11gl_p.h"
 
@@ -187,7 +196,14 @@ QX11GLPixmapData::~QX11GLPixmapData()
 {
 }
 
-static QGL2PaintEngineEx* qt_gl2_engine_for_pixmaps = 0;
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_pixmap_2_engine)
+#endif
+
+#ifndef QT_OPENGL_ES_2
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_pixmap_engine)
+#endif
+
 
 QPaintEngine* QX11GLPixmapData::paintEngine() const
 {
@@ -202,18 +218,41 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
                                                                 : qPixmapRGBSharedEglContext);
     }
 
-    if (!qt_gl2_engine_for_pixmaps)
-        qt_gl2_engine_for_pixmaps = new QGL2PaintEngineEx();
+    QPaintEngine* engine;
+
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+    engine = qt_gl_pixmap_engine();
+#elif defined(QT_OPENGL_ES_2)
+    engine = qt_gl_pixmap_2_engine();
+#else
+    if (qt_gl_preferGL2Engine())
+        engine = qt_gl_pixmap_2_engine();
+    else
+        engine = qt_gl_pixmap_engine();
+#endif
+
+
 
     // Support multiple painters on multiple pixmaps simultaniously
-    if (qt_gl2_engine_for_pixmaps->isActive()) {
+    if (engine->isActive()) {
         qWarning("Pixmap paint engine already active");
-        QPaintEngine* engine = new QGL2PaintEngineEx();
+
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+        engine = new QOpenGLPaintEngine;
+#elif defined(QT_OPENGL_ES_2)
+        engine = new QGL2PaintEngineEx;
+#else
+        if (qt_gl_preferGL2Engine())
+            engine = new QGL2PaintEngineEx;
+        else
+            engine = new QOpenGLPaintEngine;
+#endif
+
         engine->setAutoDestruct(true);
         return engine;
     }
 
-    return qt_gl2_engine_for_pixmaps;
+    return engine;
 }
 
 void QX11GLPixmapData::beginPaint()

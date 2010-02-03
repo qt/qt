@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,6 +86,7 @@ private slots:
     void connectToBus();
     void connect();
     void send();
+    void sendWithGui();
     void sendAsync();
     void sendSignal();
 
@@ -167,6 +168,22 @@ void tst_QDBusConnection::send()
         "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListNames");
 
     QDBusMessage reply = con.call(msg);
+
+    QCOMPARE(reply.arguments().count(), 1);
+    QCOMPARE(reply.arguments().at(0).typeName(), "QStringList");
+    QVERIFY(reply.arguments().at(0).toStringList().contains(con.baseService()));
+}
+
+void tst_QDBusConnection::sendWithGui()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    QDBusMessage msg = QDBusMessage::createMethodCall("org.freedesktop.DBus",
+        "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListNames");
+
+    QDBusMessage reply = con.call(msg, QDBus::BlockWithGui);
 
     QCOMPARE(reply.arguments().count(), 1);
     QCOMPARE(reply.arguments().at(0).typeName(), "QStringList");

@@ -21,7 +21,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <private/qcore_symbian_p.h>
 #include <e32debug.h>   // for RDebug
-
+#include <QtCore/QCoreApplication> // for Q_DECLARE_TR_FUNCTIONS
 #include <QColor>
 
 #include "defs.h"
@@ -38,35 +38,44 @@ namespace MMF
 enum PanicCode {
     InvalidStatePanic               = 1,
     InvalidMediaTypePanic           = 2,
-    InvalidBackendInterfaceClass    = 3
+    InvalidBackendInterfaceClass    = 3,
+    AudioUtilityUrlNotSupported     = 4
 };
 
-namespace Utils
+class Utils
 {
+    Q_DECLARE_TR_FUNCTIONS(Utils)
+
+public:
 /**
  * Raise a fatal exception
  */
-void panic(PanicCode code);
+static void panic(PanicCode code);
 
 /**
  * Determines whether the provided MIME type is an audio or video
  * type.  If it is neither, the function returns MediaTypeUnknown.
  */
-MediaType mimeTypeToMediaType(const TDesC& mimeType);
+static MediaType mimeTypeToMediaType(const TDesC& mimeType);
+
+/**
+ * Translates a Symbian error code into a user-readable string.
+ */
+static QString symbianErrorToString(int errorCode);
 
 #ifndef QT_NO_DEBUG
 /**
  * Retrieve color of specified pixel from the screen.
  */
-QColor getScreenPixel(const QPoint& pos);
+static QColor getScreenPixel(const QPoint& pos);
 
 /**
  * Samples a small number of pixels from the screen, and dumps their
  * colors to the debug log.
  */
-void dumpScreenPixelSample();
+static void dumpScreenPixelSample();
 #endif
-}
+};
 
 /**
  * Available trace categories;

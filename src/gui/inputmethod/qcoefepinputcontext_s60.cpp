@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,7 +72,8 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_formatRetriever(0),
       m_pointerHandler(0),
       m_longPress(0),
-      m_cursorPos(0)
+      m_cursorPos(0),
+      m_hasTempPreeditString(false)
 {
     m_fepState->SetObjectProvider(this);
     m_fepState->SetFlags(EAknEditorFlagDefault);
@@ -100,6 +101,8 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
 void QCoeFepInputContext::reset()
 {
+    commitTemporaryPreeditString();
+
     CCoeFep* fep = CCoeEnv::Static()->Fep();
     if (fep)
         fep->CancelTransaction();
@@ -139,8 +142,7 @@ void QCoeFepInputContext::widgetDestroyed(QWidget *w)
     // Make sure that the input capabilities of whatever new widget got focused are queried.
     CCoeControl *ctrl = w->effectiveWinId();
     if (ctrl->IsFocused()) {
-        ctrl->SetFocus(false);
-        ctrl->SetFocus(true);
+        queueInputCapabilitiesChanged();
     }
 }
 
@@ -201,7 +203,11 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     if (!focusWidget())
         return false;
 
-    if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
+    switch (event->type()) {
+    case QEvent::KeyPress:
+        commitTemporaryPreeditString();
+        // fall through intended
+    case QEvent::KeyRelease:
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
         switch (keyEvent->key()) {
         case Qt::Key_F20:
@@ -224,6 +230,21 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         default:
             break;
         }
+
+        if (keyEvent->type() == QEvent::KeyPress
+            && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
+            && !keyEvent->text().isEmpty()) {
+            // Send some temporary preedit text in order to make text visible for a moment.
+            m_preeditString = keyEvent->text();
+            QList<QInputMethodEvent::Attribute> attributes;
+            QInputMethodEvent imEvent(m_preeditString, attributes);
+            QApplication::sendEvent(focusWidget(), &imEvent);
+            m_tempPreeditStringTimeout.start(1000, this);
+            m_hasTempPreeditString = true;
+            update();
+            return true;
+        }
+        break;
     }
 
     if (!needsInputPanel())
@@ -252,6 +273,24 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     }
 
     return false;
+}
+
+void QCoeFepInputContext::timerEvent(QTimerEvent *timerEvent)
+{
+    if (timerEvent->timerId() == m_tempPreeditStringTimeout.timerId())
+        commitTemporaryPreeditString();
+}
+
+void QCoeFepInputContext::commitTemporaryPreeditString()
+{
+    if (m_tempPreeditStringTimeout.isActive())
+        m_tempPreeditStringTimeout.stop();
+
+    if (!m_hasTempPreeditString)
+        return;
+
+    commitCurrentString(false);
+    m_hasTempPreeditString = false;
 }
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
@@ -310,6 +349,8 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
 void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 {
     using namespace Qt;
+
+    commitTemporaryPreeditString();
 
     bool numbersOnly = hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
             || hints & ImhDialableCharactersOnly;
@@ -437,6 +478,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 void QCoeFepInputContext::applyFormat(QList<QInputMethodEvent::Attribute> *attributes)
 {
     TCharFormat cFormat;
+    QColor styleTextColor = QApplication::palette("QLineEdit").text().color();
+    TLogicalRgb tontColor(TRgb(styleTextColor.red(), styleTextColor.green(), styleTextColor.blue(), styleTextColor.alpha()));
+    cFormat.iFontPresentation.iTextColor = tontColor;
+
     TInt numChars = 0;
     TInt charPos = 0;
     int oldSize = attributes->size();
@@ -497,6 +542,8 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     QWidget *w = focusWidget();
     if (!w)
         return;
+
+    commitTemporaryPreeditString();
 
     m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
     
@@ -596,6 +643,8 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
     QWidget *w = focusWidget();
     if (!w)
         return;
+
+    commitTemporaryPreeditString();
 
     int pos = aCursorSelection.iAnchorPos;
     int length = aCursorSelection.iCursorPos - pos;

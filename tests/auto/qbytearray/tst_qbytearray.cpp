@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,6 +76,7 @@ private slots:
     void qCompress();
     void qUncompress_data();
     void qUncompress();
+    void qCompressionZeroTermination();
 #endif
     void constByteArray();
     void leftJustified();
@@ -261,6 +262,14 @@ void tst_QByteArray::qUncompress()
     }
     QCOMPARE(res, out);
 }
+
+void tst_QByteArray::qCompressionZeroTermination()
+{
+    QString s = "Hello, I'm a string.";
+    QByteArray ba = ::qUncompress(::qCompress(s.toLocal8Bit()));
+    QVERIFY((int) *(ba.data() + ba.size()) == 0);
+}
+
 #endif
 
 void tst_QByteArray::constByteArray()

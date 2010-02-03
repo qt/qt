@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,5 +43,13 @@
     \example effects/fademessage
     \title Fade Message Effect Example
 
-    \image fademessageeffect-example.png
+    \raw HTML
+    <div style="text-align: center">
+    \endraw
+    \inlineimage fademessageeffect-example.png
+    \inlineimage fademessageeffect-example-faded.png
+    \raw HTML
+    </div>
+    \endraw
+
 */

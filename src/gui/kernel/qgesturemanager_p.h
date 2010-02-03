@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,12 +73,12 @@ public:
     void unregisterGestureRecognizer(Qt::GestureType type);
 
     bool filterEvent(QWidget *receiver, QEvent *event);
-    bool filterEvent(QGesture *receiver, QEvent *event);
+    bool filterEvent(QObject *receiver, QEvent *event);
 #ifndef QT_NO_GRAPHICSVIEW
     bool filterEvent(QGraphicsObject *receiver, QEvent *event);
 #endif //QT_NO_GRAPHICSVIEW
 
-    static QGestureManager* instance();
+    static QGestureManager* instance(); // declared in qapplication.cpp
 
     void cleanupCachedGestures(QObject *target, Qt::GestureType type);
 
@@ -86,7 +86,7 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *event);
-    bool filterEventThroughContexts(const QMultiHash<QObject *, Qt::GestureType> &contexts,
+    bool filterEventThroughContexts(const QMultiMap<QObject *, Qt::GestureType> &contexts,
                                     QEvent *event);
 
 private:
@@ -141,8 +141,6 @@ private:
 
     void cancelGesturesForChildren(QGesture *originatingGesture);
 };
-
-extern QGestureManager *qt_gestureManager;
 
 QT_END_NAMESPACE
 

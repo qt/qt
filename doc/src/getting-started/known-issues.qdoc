@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,16 +45,14 @@
     \ingroup platform-specific
     \brief A summary of known issues in Qt %VERSION% at the time of release.
 
-    This page documents known problems with the packaging and installation in
-    Qt %VERSION%, as well as issues with third party software that we have
-    not been able to work around. For a list of such issues in previous Qt
-    versions refer to this page in the respective documentation.
+    An up-to-date list of known issues with Qt %VERSION% can be found via the
+    \l{http://bugreports.qt.nokia.com/}{Qt Bug Tracker}.
 
     For a list list of known bugs in Qt %VERSION%, see the \l{Task Tracker}
     on the Qt website.
 
     An overview of known issues may also be found at:
-    \l{http://qt.gitorious.org/qt/pages/Qt460BetaKnownIssues}
+    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}
     {Known Issues Wiki}.
 
     \section1 Installation Issues
@@ -134,6 +132,18 @@
         currently calls winId() on widgets, which causes whole widget hierarchies
         to use native window handles. This slows down resizing.
 
+    \o  Compile errors with Intel C++ Compiler.\br
+        There seems to be a bug in the Intel compiler with respect to
+        over-agressive inlining of code.
+        The problem will manifest itself during the link phase of QtGui where
+        it fails with the error that it cannot find QObjectData::~QObjectData().
+        See \l{http://bugreports.qt.nokia.com/browse/QTBUG-5145} for updates on this
+        bug.
+        Also, due to some bugs in WebKit, the QtScript and QtWebKit modules
+        will not compile.
+        See \l{http://bugreports.qt.nokia.com/browse/QTBUG-6297} for a
+        workaround for QtScript.
+        
     \endlist
 
     \section2 Mac OS X

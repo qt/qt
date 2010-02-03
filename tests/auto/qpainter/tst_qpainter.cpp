@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-
+#include "../../shared/util.h"
 
 #include <qpainter.h>
 #include <qapplication.h>
@@ -66,6 +66,11 @@
 #include <qlabel.h>
 
 #include <qqueue.h>
+
+#include <qgraphicsview.h>
+#include <qgraphicsscene.h>
+#include <qgraphicsproxywidget.h>
+#include <qlayout.h>
 
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR "."
@@ -243,6 +248,8 @@ private slots:
     void painterBegin();
     void setPenColorOnImage();
     void setPenColorOnPixmap();
+
+    void QTBUG5939_attachPainterPrivate();
 
 private:
     void fillData();
@@ -4402,6 +4409,55 @@ void tst_QPainter::setPenColorOnPixmap()
     QPixmap pix(10, 10);
     QPainter p(&pix);
     setPenColor(p);
+}
+
+class TestProxy : public QGraphicsProxyWidget
+{
+public:
+    TestProxy() : QGraphicsProxyWidget() {}
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QGraphicsProxyWidget::paint(painter, option, widget);
+        deviceTransform = painter->deviceTransform();
+    }
+    QTransform deviceTransform;
+};
+
+class TestWidget : public QWidget
+{
+Q_OBJECT
+public:
+    TestWidget() : QWidget(), painted(false) {}
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter p(this);
+        deviceTransform = p.deviceTransform();
+        worldTransform = p.worldTransform();
+        painted = true;
+    }
+    QTransform deviceTransform;
+    QTransform worldTransform;
+    bool painted;
+};
+
+void tst_QPainter::QTBUG5939_attachPainterPrivate()
+{
+    QWidget *w = new QWidget();
+    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsView *view = new QGraphicsView(scene, w);
+    view->move(50 ,50);
+    TestProxy *proxy = new TestProxy();
+    TestWidget *widget = new TestWidget();
+    proxy->setWidget(widget);
+    scene->addItem(proxy);
+    proxy->rotate(45);
+    w->resize(scene->sceneRect().size().toSize());
+
+    w->show();
+    QTRY_VERIFY(widget->painted);
+
+    QVERIFY(widget->worldTransform.isIdentity());
+    QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
 }
 
 QTEST_MAIN(tst_QPainter)

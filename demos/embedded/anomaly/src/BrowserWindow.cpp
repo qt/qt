@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,92 +43,44 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <QPropertyAnimation>
+#include <QResizeEvent>
 
 #include "BrowserView.h"
 #include "HomeView.h"
 
 BrowserWindow::BrowserWindow()
-    : QWidget()
-    , m_homeView(0)
-    , m_browserView(0)
+    : m_slidingSurface(new QWidget(this))
+    , m_homeView(new HomeView(m_slidingSurface))
+    , m_browserView(new BrowserView(m_slidingSurface))
+    , m_animation(new QPropertyAnimation(this, "slideValue"))
 {
-    m_timeLine = new QTimeLine(300, this);
-    m_timeLine->setCurveShape(QTimeLine::EaseInOutCurve);
-    QTimer::singleShot(0, this, SLOT(initialize()));
-}
+    m_slidingSurface->setAutoFillBackground(true);
 
-void BrowserWindow::initialize()
-{
-    m_homeView = new HomeView(this);
-    m_browserView = new BrowserView(this);
-
-    m_homeView->hide();
     m_homeView->resize(size());
-    m_homeView->move(0, 0);
 
-    m_browserView->hide();
     m_browserView->resize(size());
-    m_browserView->move(0, 0);
 
     connect(m_homeView, SIGNAL(addressEntered(QString)), SLOT(gotoAddress(QString)));
     connect(m_homeView, SIGNAL(urlActivated(QUrl)), SLOT(navigate(QUrl)));
 
     connect(m_browserView, SIGNAL(menuButtonClicked()), SLOT(showHomeView()));
 
-    m_homeView->setVisible(false);
-    m_browserView->setVisible(false);
-    slide(0);
+    m_animation->setDuration(200);
+    connect(m_animation, SIGNAL(finished()), SLOT(animationFinished()));
 
-    connect(m_timeLine, SIGNAL(frameChanged(int)), SLOT(slide(int)));
-}
-
-
-// from Demo Browser
-QUrl guessUrlFromString(const QString &string)
-{
-    QString urlStr = string.trimmed();
-    QRegExp test(QLatin1String("^[a-zA-Z]+\\:.*"));
-
-    // Check if it looks like a qualified URL. Try parsing it and see.
-    bool hasSchema = test.exactMatch(urlStr);
-    if (hasSchema) {
-        QUrl url = QUrl::fromEncoded(urlStr.toUtf8(), QUrl::TolerantMode);
-        if (url.isValid())
-            return url;
-    }
-
-    // Might be a file.
-    if (QFile::exists(urlStr)) {
-        QFileInfo info(urlStr);
-        return QUrl::fromLocalFile(info.absoluteFilePath());
-    }
-
-    // Might be a shorturl - try to detect the schema.
-    if (!hasSchema) {
-        int dotIndex = urlStr.indexOf(QLatin1Char('.'));
-        if (dotIndex != -1) {
-            QString prefix = urlStr.left(dotIndex).toLower();
-            QString schema = (prefix == QString("ftp")) ? prefix.toLatin1() : QString("http");
-            QString location = schema + "://" + urlStr;
-            QUrl url = QUrl::fromEncoded(location.toUtf8(), QUrl::TolerantMode);
-            if (url.isValid())
-                return url;
-        }
-    }
-
-    // Fall back to QUrl's own tolerant parser.
-    QUrl url = QUrl::fromEncoded(string.toUtf8(), QUrl::TolerantMode);
-
-    // finally for cases where the user just types in a hostname add http
-    if (url.scheme().isEmpty())
-        url = QUrl::fromEncoded("http://" + string.toUtf8(), QUrl::TolerantMode);
-    return url;
+    setSlideValue(0.0f);
 }
 
 void BrowserWindow::gotoAddress(const QString &address)
 {
-    m_browserView->navigate(guessUrlFromString(address));
+    m_browserView->navigate(QUrl::fromUserInput(address));
     showBrowserView();
+}
+
+void BrowserWindow::animationFinished()
+{
+    m_animation->setDirection(QAbstractAnimation::Forward);
 }
 
 void BrowserWindow::navigate(const QUrl &url)
@@ -137,31 +89,44 @@ void BrowserWindow::navigate(const QUrl &url)
     showBrowserView();
 }
 
-void BrowserWindow::slide(int pos)
+void BrowserWindow::setSlideValue(qreal slideRatio)
 {
-    m_browserView->move(pos, 0);
-    m_homeView->move(pos - width(), 0);
-    m_browserView->show();
-    m_homeView->show();
+    // we use a ratio to handle resize corectly
+    const int pos = -qRound(slideRatio * width());
+    m_slidingSurface->scroll(pos - m_homeView->x(), 0);
+
+    if (qFuzzyCompare(slideRatio, static_cast<qreal>(1.0f))) {
+        m_browserView->show();
+        m_homeView->hide();
+    } else if (qFuzzyCompare(slideRatio, static_cast<qreal>(0.0f))) {
+        m_homeView->show();
+        m_browserView->hide();
+    } else {
+        m_browserView->show();
+        m_homeView->show();
+    }
+}
+
+qreal BrowserWindow::slideValue() const
+{
+    Q_ASSERT(m_slidingSurface->x() < width());
+    return static_cast<qreal>(qAbs(m_homeView->x())) / width();
 }
 
 void BrowserWindow::showHomeView()
 {
-    if (m_timeLine->state() != QTimeLine::NotRunning)
-        return;
-
-    m_timeLine->setFrameRange(0, width());
-    m_timeLine->start();
+    m_animation->setStartValue(slideValue());
+    m_animation->setEndValue(0.0f);
+    m_animation->start();
     m_homeView->setFocus();
 }
 
 void BrowserWindow::showBrowserView()
 {
-    if (m_timeLine->state() != QTimeLine::NotRunning)
-        return;
+    m_animation->setStartValue(slideValue());
+    m_animation->setEndValue(1.0f);
+    m_animation->start();
 
-    m_timeLine->setFrameRange(width(), 0);
-    m_timeLine->start();
     m_browserView->setFocus();
 }
 
@@ -170,18 +135,32 @@ void BrowserWindow::keyReleaseEvent(QKeyEvent *event)
     QWidget::keyReleaseEvent(event);
 
     if (event->key() == Qt::Key_F3) {
-        if (m_homeView->isVisible())
-            showBrowserView();
-        else
+        if (m_animation->state() == QAbstractAnimation::Running) {
+            const QAbstractAnimation::Direction direction =  m_animation->direction() == QAbstractAnimation::Forward
+                                                             ? QAbstractAnimation::Forward
+                                                                 : QAbstractAnimation::Backward;
+            m_animation->setDirection(direction);
+        } else if (qFuzzyCompare(slideValue(), static_cast<qreal>(1.0f)))
             showHomeView();
+        else
+            showBrowserView();
+        event->accept();
     }
 }
 
 void BrowserWindow::resizeEvent(QResizeEvent *event)
 {
-    if (m_homeView)
-        m_homeView->resize(size());
+    const QSize oldSize = event->oldSize();
+    const qreal oldSlidingRatio = static_cast<qreal>(qAbs(m_homeView->x())) / oldSize.width();
 
-    if (m_browserView)
-        m_browserView->resize(size());
+    const QSize newSize = event->size();
+    m_slidingSurface->resize(newSize.width() * 2, newSize.height());
+
+    m_homeView->resize(newSize);
+    m_homeView->move(0, 0);
+
+    m_browserView->resize(newSize);
+    m_browserView->move(newSize.width(), 0);
+
+    setSlideValue(oldSlidingRatio);
 }

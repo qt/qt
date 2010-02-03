@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,6 +62,7 @@ private slots:
     void searchPath_data();
     void searchPath();
     void doubleSlashInRoot();
+    void setLocale();
 
 private:
     QString builddir;
@@ -458,6 +459,27 @@ void tst_QResourceEngine::doubleSlashInRoot()
 {
     QVERIFY(QFile::exists(":/secondary_root/runtime_resource/search_file.txt"));
     QVERIFY(QFile::exists("://secondary_root/runtime_resource/search_file.txt"));
+}
+
+void tst_QResourceEngine::setLocale()
+{
+    QLocale::setDefault(QLocale::c());
+
+    // default constructed QResource gets the default locale
+    QResource resource;
+    resource.setFileName("aliasdir/aliasdir.txt");
+    QVERIFY(!resource.isCompressed());
+
+    // change the default locale and make sure it doesn't affect the resource
+    QLocale::setDefault(QLocale("de_CH"));
+    QVERIFY(!resource.isCompressed());
+
+    // then explicitly set the locale on qresource
+    resource.setLocale(QLocale("de_CH"));
+    QVERIFY(resource.isCompressed());
+
+    // the reset the default locale back
+    QLocale::setDefault(QLocale::system());
 }
 
 QTEST_MAIN(tst_QResourceEngine)

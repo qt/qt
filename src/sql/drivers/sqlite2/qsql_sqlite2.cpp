@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -110,10 +110,11 @@ public:
     const char *currentTail;
     sqlite_vm *currentMachine;
 
-    uint skippedStatus: 1; // the status of the fetchNext() that's skipped
-    uint skipRow: 1; // skip the next fetchNext()?
-    uint utf8: 1;
+    bool skippedStatus; // the status of the fetchNext() that's skipped
+    bool skipRow; // skip the next fetchNext()?
+    bool utf8;
     QSqlRecord rInf;
+    QVector<QVariant> firstRow;
 };
 
 static const uint initial_cache_size = 128;
@@ -192,6 +193,8 @@ bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int 
         // already fetched
         Q_ASSERT(!initialFetch);
         skipRow = false;
+        for(int i=0;i<firstRow.count(); i++)
+            values[i] = firstRow[i];
         return skippedStatus;
     }
     skipRow = initialFetch;
@@ -209,6 +212,11 @@ bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int 
 #endif
     }
 
+    if(initialFetch) {
+        firstRow.clear();
+        firstRow.resize(colNum);
+    }
+    
     switch(res) {
     case SQLITE_ROW:
         // check to see if should fill out columns
@@ -299,7 +307,7 @@ bool QSQLite2Result::reset (const QString& query)
     }
     // we have to fetch one row to find out about
     // the structure of the result set
-    d->skippedStatus = d->fetchNext(cache(), 0, true);
+    d->skippedStatus = d->fetchNext(d->firstRow, 0, true);
     if (lastError().isValid()) {
         setSelect(false);
         setActive(false);

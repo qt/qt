@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -229,6 +229,15 @@ void QEglProperties::setRenderableType(QEgl::API api)
 // reductions in complexity are possible.
 bool QEglProperties::reduceConfiguration()
 {
+    // EGL chooses configs with the highest color depth over
+    // those with smaller (but faster) lower color depths. One
+    // way around this is to set EGL_BUFFER_SIZE to 16, which
+    // trumps the others. Of course, there may not be a 16-bit
+    // config avaliable, so it's the first restraint we remove.
+    if (value(EGL_BUFFER_SIZE) == 16) {
+        removeValue(EGL_BUFFER_SIZE);
+        return true;
+    }
     if (removeValue(EGL_SAMPLE_BUFFERS)) {
         removeValue(EGL_SAMPLES);
         return true;

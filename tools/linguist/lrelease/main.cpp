@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "translator.h"
-#include "proreader.h"
+#include "profileevaluator.h"
 
 #ifndef QT_BOOTSTRAPPED
 #include <QtCore/QCoreApplication>
@@ -54,6 +54,8 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QTextStream>
+
+QT_USE_NAMESPACE
 
 #ifdef QT_BOOTSTRAPPED
 static void initBinaryDir(
@@ -109,6 +111,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
         if (!cd.errors().isEmpty())
             printOut(cd.error());
     }
+    cd.clearErrors();
     return ok;
 }
 
@@ -139,11 +142,11 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     if (!ok) {
         qWarning("lrelease error: cannot save '%s': %s\n",
                  qPrintable(qmFileName), qPrintable(cd.error()));
-        return false;
     } else if (!cd.errors().isEmpty()) {
         printOut(cd.error());
     }
-    return true;
+    cd.clearErrors();
+    return ok;
 }
 
 static bool releaseTsFile(const QString& tsFileName,
@@ -243,24 +246,31 @@ int main(int argc, char **argv)
     foreach (const QString &inputFile, inputFiles) {
         if (inputFile.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
             || inputFile.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
-            QHash<QByteArray, QStringList> varMap;
-            bool ok = evaluateProFile(inputFile, cd.isVerbose(), &varMap);
-            if (ok) {
-                QStringList translations = varMap.value("TRANSLATIONS");
-                if (translations.isEmpty()) {
-                    qWarning("lrelease warning: Met no 'TRANSLATIONS' entry in"
-                             " project file '%s'\n",
-                             qPrintable(inputFile));
-                } else {
-                    foreach (const QString &trans, translations)
-                        if (!releaseTsFile(trans, cd, removeIdentical))
-                            return 1;
-                }
+            QFileInfo fi(inputFile);
+            ProFile pro(fi.absoluteFilePath());
+
+            ProFileEvaluator visitor;
+            visitor.setVerbose(cd.isVerbose());
+
+            if (!visitor.queryProFile(&pro)) {
+                qWarning("lrelease error: cannot read project file '%s'.", qPrintable(inputFile));
+                continue;
+            }
+            if (!visitor.accept(&pro)) {
+                qWarning("lrelease error: cannot process project file '%s'.", qPrintable(inputFile));
+                continue;
+            }
+
+            QStringList translations = visitor.values(QLatin1String("TRANSLATIONS"));
+            if (translations.isEmpty()) {
+                qWarning("lrelease warning: Met no 'TRANSLATIONS' entry in"
+                         " project file '%s'\n",
+                         qPrintable(inputFile));
             } else {
-                qWarning("error: lrelease encountered project file functionality that is currently not supported.\n"
-                    "You might want to consider using TS files as input instead of a project file.\n"
-                    "Try the following syntax:\n"
-                    "    lrelease [options] ts-files [-qm qm-file]\n");
+                QDir proDir(fi.absolutePath());
+                foreach (const QString &trans, translations)
+                    if (!releaseTsFile(QFileInfo(proDir, trans).filePath(), cd, removeIdentical))
+                        return 1;
             }
         } else {
             if (outputFile.isEmpty()) {

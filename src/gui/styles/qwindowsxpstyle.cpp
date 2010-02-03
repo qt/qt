@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -623,8 +623,7 @@ void QWindowsXPStylePrivate::drawBackground(XPThemeData &themeData)
 
     painter->save();
 
-    QMatrix m = painter->matrix();
-    bool complexXForm = m.m11() != 1.0 || m.m22() != 1.0 || m.m12() != 0.0 || m.m21() != 0.0;
+    bool complexXForm = painter->deviceTransform().type() > QTransform::TxTranslate;
 
     bool translucentToplevel = false;
     QPaintDevice *pdev = painter->device();
@@ -3780,12 +3779,19 @@ int QWindowsXPStyle::styleHint(StyleHint hint, const QStyleOption *option, const
             QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask *>(returnData);
             const QStyleOptionTitleBar *titlebar = qstyleoption_cast<const QStyleOptionTitleBar *>(option);
             if (mask && titlebar) {
+                // Note certain themes will not return the whole window frame but only the titlebar part when
+                // queried This function needs to return the entire window mask, hence we will only fetch the mask for the
+                // titlebar itself and add the remaining part of the window rect at the bottom.
+                int tbHeight = proxy()->pixelMetric(PM_TitleBarHeight, option, widget);
+                QRect titleBarRect = option->rect;
+                titleBarRect.setHeight(tbHeight);
                 XPThemeData themeData;
                 if (titlebar->titleBarState & Qt::WindowMinimized) {
-                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_MINCAPTION, CS_ACTIVE, option->rect);
+                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_MINCAPTION, CS_ACTIVE, titleBarRect);
                 } else
-                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_CAPTION, CS_ACTIVE, option->rect);
-                mask->region = d->region(themeData);
+                    themeData = XPThemeData(widget, 0, QLatin1String("WINDOW"), WP_CAPTION, CS_ACTIVE, titleBarRect);
+                mask->region = d->region(themeData) +
+                               QRect(0, tbHeight, option->rect.width(), option->rect.height() - tbHeight);
             }
         }
         break;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1212,10 +1212,11 @@ void tst_QSqlRelationalTableModel::psqlSchemaTest()
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373")));
     QVERIFY_SQL(q, exec("create schema "+qTableName("QTBUG_5373_s2")));
-    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373")+"."+qTableName("user")+"(userid int primary key, relatingid int)"));
-    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373_s2")+"."+qTableName("user2")+"(userid2 int primary key, username2 char(40))"));
-    model.setTable(qTableName("QTBUG_5373")+"."+qTableName("user"));
-    model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2")+"."+qTableName("user2"), "userid2", "username2"));
+    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373")+"."+qTableName("document")+"(document_id int primary key, relatingid int, userid int)"));
+    QVERIFY_SQL(q, exec("create table "+qTableName("QTBUG_5373_s2")+"."+qTableName("user")+"(userid int primary key, username char(40))"));
+    model.setTable(qTableName("QTBUG_5373")+"."+qTableName("document"));
+    model.setRelation(1, QSqlRelation(qTableName("QTBUG_5373_s2")+"."+qTableName("user"), "userid", "username"));
+    model.setRelation(2, QSqlRelation(qTableName("QTBUG_5373_s2")+"."+qTableName("user"), "userid", "username"));
     QVERIFY_SQL(model, select());
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -219,7 +219,7 @@ public:
         inline const_iterator &operator--() { i--; return *this; }
         inline const_iterator operator--(int) { T *n = i; i--; return n; }
         inline const_iterator &operator+=(int j) { i+=j; return *this; }
-        inline const_iterator &operator-=(int j) { i+=j; return *this; }
+        inline const_iterator &operator-=(int j) { i-=j; return *this; }
         inline const_iterator operator+(int j) const { return const_iterator(i+j); }
         inline const_iterator operator-(int j) const { return const_iterator(i-j); }
         inline int operator-(const_iterator j) const { return i - j.i; }
@@ -324,7 +324,7 @@ void QVector<T>::detach_helper()
 { realloc(d->size, d->alloc); }
 template <typename T>
 void QVector<T>::reserve(int asize)
-{ if (asize > d->alloc || d->ref != 1) realloc(d->size, asize); d->capacity = 1; }
+{ if (asize > d->alloc) realloc(d->size, asize); if (d->ref == 1) d->capacity = 1; }
 template <typename T>
 void QVector<T>::resize(int asize)
 { realloc(asize, (asize > d->alloc || (!d->capacity && asize < d->size && asize < (d->alloc >> 1))) ?
@@ -441,6 +441,7 @@ void QVector<T>::free(Data *x)
 template <typename T>
 void QVector<T>::realloc(int asize, int aalloc)
 {
+    Q_ASSERT(asize <= aalloc);
     T *pOld;
     T *pNew;
     union { QVectorData *d; Data *p; } x;
@@ -496,7 +497,8 @@ void QVector<T>::realloc(int asize, int aalloc)
             pOld = p->array + x.d->size;
             pNew = x.p->array + x.d->size;
             // copy objects from the old array into the new array
-            while (x.d->size < qMin(asize, d->size)) {
+            const int toMove = qMin(asize, d->size);
+            while (x.d->size < toMove) {
                 new (pNew++) T(*pOld++);
                 x.d->size++;
             }

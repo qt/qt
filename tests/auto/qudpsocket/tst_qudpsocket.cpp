@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,10 +49,7 @@
 #include <qhostaddress.h>
 #include <qhostinfo.h>
 #include <qmap.h>
-#ifdef TEST_QNETWORK_PROXY
-# include <QNetworkProxy>
-#endif
-
+#include <QNetworkProxy>
 
 #include <qstringlist.h>
 #include "../network-settings.h"
@@ -118,32 +115,23 @@ void tst_QUdpSocket::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
-#endif
 }
 
 void tst_QUdpSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         }
-#endif
     }
 }
 
 void tst_QUdpSocket::cleanup()
 {
-    QFETCH_GLOBAL(bool, setProxy);
-    if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
-#endif
-    }
 }
 
 
@@ -204,12 +192,10 @@ void tst_QUdpSocket::broadcasting()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 Broadcast is not supported.", SkipSingle);
         }
-#endif
     }
 #ifdef Q_OS_AIX
     QSKIP("Broadcast does not work on darko", SkipAll);
@@ -539,12 +525,10 @@ void tst_QUdpSocket::bindMode()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QSKIP("With socks5 explicit port binding is not supported.", SkipAll);
         }
-#endif
     }
 
     QUdpSocket socket;

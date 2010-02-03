@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -273,7 +273,7 @@ QResourcePrivate::load(const QString &file)
     QString cleaned = cleanPath(file);
     for(int i = 0; i < list->size(); ++i) {
         QResourceRoot *res = list->at(i);
-        const int node = res->findNode(cleaned);
+        const int node = res->findNode(cleaned, locale);
         if(node != -1) {
             if(related.isEmpty()) {
                 container = res->isContainer(node);
@@ -1285,7 +1285,7 @@ bool QResourceFileEngine::close()
 
 bool QResourceFileEngine::flush()
 {
-    return false;
+    return true;
 }
 
 qint64 QResourceFileEngine::read(char *data, qint64 len)

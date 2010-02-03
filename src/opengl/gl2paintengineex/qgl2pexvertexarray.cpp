@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 void QGL2PEXVertexArray::clear()
 {
     vertexArray.reset();
-    vertexArrayStops.clear();
+    vertexArrayStops.reset();
     boundingRectDirty = true;
 }
 
@@ -101,7 +101,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
         boundingRectDirty = false;
     }
 
-    if (!outline)
+    if (!outline && !path.isConvex())
         addCentroid(path, 0);
 
     int lastMoveTo = vertexArray.size();
@@ -120,15 +120,14 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
 //         qDebug("QVectorPath has element types");
 
         for (int i=1; i<path.elementCount(); ++i) {
-            const QPainterPath::ElementType elementType = elements[i];
-            switch (elementType) {
+            switch (elements[i]) {
             case QPainterPath::MoveToElement:
                 if (!outline)
                     addClosingLine(lastMoveTo);
 //                qDebug("element[%d] is a MoveToElement", i);
-                vertexArrayStops.append(vertexArray.size());
+                vertexArrayStops.add(vertexArray.size());
                 if (!outline) {
-                    addCentroid(path, i);
+                    if (!path.isConvex()) addCentroid(path, i);
                     lastMoveTo = vertexArray.size();
                 }
                 lineToArray(points[i].x(), points[i].y()); // Add the moveTo as a new vertex
@@ -137,11 +136,22 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
 //                qDebug("element[%d] is a LineToElement", i);
                 lineToArray(points[i].x(), points[i].y());
                 break;
-            case QPainterPath::CurveToElement:
-//                qDebug("element[%d] is a CurveToElement", i);
-                curveToArray(points[i], points[i+1], points[i+2], curveInverseScale);
-                i+=2;
-                break;
+            case QPainterPath::CurveToElement: {
+                QBezier b = QBezier::fromPoints(*(((const QPointF *) points) + i - 1),
+                                                points[i],
+                                                points[i+1],
+                                                points[i+2]);
+                QRectF bounds = b.bounds();
+                // threshold based on same algorithm as in qtriangulatingstroker.cpp
+                int threshold = qMin<float>(64, qMax(bounds.width(), bounds.height()) * 3.14f / (curveInverseScale * 6));
+                if (threshold < 3) threshold = 3;
+                qreal one_over_threshold_minus_1 = 1.f / (threshold - 1);
+                for (int t=0; t<threshold; ++t) {
+                    QPointF pt = b.pointAt(t * one_over_threshold_minus_1);
+                    lineToArray(pt.x(), pt.y());
+                }
+                i += 2;
+                break; }
             default:
                 break;
             }
@@ -150,7 +160,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
 
     if (!outline)
         addClosingLine(lastMoveTo);
-    vertexArrayStops.append(vertexArray.size());
+    vertexArrayStops.add(vertexArray.size());
 }
 
 void QGL2PEXVertexArray::lineToArray(const GLfloat x, const GLfloat y)
@@ -165,37 +175,6 @@ void QGL2PEXVertexArray::lineToArray(const GLfloat x, const GLfloat y)
         maxY = y;
     else if (y < minY)
         minY = y;
-}
-
-void QGL2PEXVertexArray::curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, const QGLPoint &ep, GLfloat inverseScale)
-{
-    qreal inverseScaleHalf = inverseScale / 2;
-
-    QBezier beziers[32];
-    beziers[0] = QBezier::fromPoints(vertexArray.last(), cp1, cp2, ep);
-    QBezier *b = beziers;
-    while (b >= beziers) {
-        // check if we can pop the top bezier curve from the stack
-        qreal l = qAbs(b->x4 - b->x1) + qAbs(b->y4 - b->y1);
-        qreal d;
-        if (l > inverseScale) {
-            d = qAbs( (b->x4 - b->x1)*(b->y1 - b->y2) - (b->y4 - b->y1)*(b->x1 - b->x2) )
-                + qAbs( (b->x4 - b->x1)*(b->y1 - b->y3) - (b->y4 - b->y1)*(b->x1 - b->x3) );
-            d /= l;
-        } else {
-            d = qAbs(b->x1 - b->x2) + qAbs(b->y1 - b->y2) +
-                qAbs(b->x1 - b->x3) + qAbs(b->y1 - b->y3);
-        }
-        if (d < inverseScaleHalf || b == beziers + 31) {
-            // good enough, we pop it off and add the endpoint
-            lineToArray(b->x4, b->y4);
-            --b;
-        } else {
-            // split, second half of the polygon goes lower into the stack
-            b->split(b+1, b);
-           ++b;
-        }
-    }
 }
 
 QT_END_NAMESPACE

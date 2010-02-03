@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,6 +119,10 @@ class Generator
                                  CodeMarker *marker, 
                                  bool generate,
                                  int& numGeneratedAtoms);
+    void generateFileList(const FakeNode* fake,
+                          CodeMarker* marker,
+                          Node::SubType subtype,
+                          const QString& tag);
     void generateExampleFiles(const FakeNode *fake, CodeMarker *marker);
     void generateModuleWarning(const ClassNode *classe, CodeMarker *marker);
 
@@ -179,6 +183,8 @@ class Generator
     static QSet<QString> outputFormats;
     static QStringList imageFiles;
     static QStringList imageDirs;
+    static QStringList exampleDirs;
+    static QStringList exampleImgExts;
     static QString outDir;
     static QString project;
 };

@@ -78,7 +78,7 @@
 <context>
     <name>BookmarkManager</name>
     <message>
-        <location line="+434"/>
+        <location line="+435"/>
         <source>Bookmarks</source>
         <translation>Zakładki</translation>
     </message>
@@ -102,7 +102,7 @@
 <context>
     <name>BookmarkWidget</name>
     <message>
-        <location line="-416"/>
+        <location line="-417"/>
         <source>Filter:</source>
         <translation>Filtr:</translation>
     </message>
@@ -150,7 +150,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+238"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+239"/>
         <source>Add new page</source>
         <translation>Dodaj nową stronę</translation>
     </message>
@@ -165,7 +165,7 @@
         <translation>Wydrukuj dokument</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+130"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>nieznany</translation>
@@ -191,7 +191,7 @@
         <translation>Dodaj zakładkę dla tej strony...</translation>
     </message>
     <message>
-        <location line="+255"/>
+        <location line="+235"/>
         <source>Search</source>
         <translation>Wyszukaj</translation>
     </message>
@@ -225,7 +225,7 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-955"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-918"/>
         <source>Previous</source>
         <translation>Poprzedni</translation>
     </message>
@@ -281,7 +281,7 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+492"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+489"/>
         <source>Help</source>
         <translation>Pomoc</translation>
     </message>
@@ -326,7 +326,7 @@
         <translation>Wy&amp;szukaj:</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+72"/>
         <source>Open Link</source>
         <translation>Otwórz odsyłacz</translation>
     </message>
@@ -440,19 +440,19 @@
     <name>MainWindow</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+110"/>
-        <location line="+391"/>
+        <location line="+383"/>
         <source>Index</source>
         <translation>Indeks</translation>
     </message>
     <message>
-        <location line="-385"/>
-        <location line="+383"/>
+        <location line="-377"/>
+        <location line="+375"/>
         <source>Contents</source>
         <translation>Spis treści</translation>
     </message>
     <message>
-        <location line="-378"/>
-        <location line="+382"/>
+        <location line="-370"/>
+        <location line="+374"/>
         <source>Bookmarks</source>
         <translation>Zakładki</translation>
     </message>
@@ -462,14 +462,14 @@
         <translation>Wyszukaj</translation>
     </message>
     <message>
-        <location line="-372"/>
-        <location line="+215"/>
-        <location line="+512"/>
+        <location line="-364"/>
+        <location line="+207"/>
+        <location line="+514"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-544"/>
+        <location line="-546"/>
         <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Nieprzefiltrowany</translation>
@@ -515,7 +515,12 @@
         <translation>Znajdź w &amp;tekście...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>&amp;Find</source>
+        <translation>&amp;Znajdź</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Find &amp;Next</source>
         <translation>Znajdź &amp;następny</translation>
     </message>
@@ -585,7 +590,12 @@
         <translation>Znajdź bieżącą stronę w spisie treści</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+2"/>
+        <source>Sync</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Next Page</source>
         <translation>Następna strona</translation>
     </message>
@@ -635,7 +645,7 @@
         <translation>Przefiltrowane przez:</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+25"/>
         <source>Address Toolbar</source>
         <translation>Pasek adresu</translation>
     </message>
@@ -660,7 +670,7 @@
         <translation>Uaktualnianie indeksu wyszukiwawczego</translation>
     </message>
     <message>
-        <location line="-638"/>
+        <location line="-640"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Szukanie dokumentacji Qt...</translation>
     </message>
@@ -962,7 +972,7 @@
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+217"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+228"/>
         <source>Could not register documentation file
 %1
 
@@ -1024,7 +1034,7 @@ Powód:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+195"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+196"/>
         <source>&amp;Copy</source>
         <translation>S&amp;kopiuj</translation>
     </message>

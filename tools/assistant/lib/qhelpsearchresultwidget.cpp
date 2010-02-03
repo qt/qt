@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -406,6 +406,14 @@ QHelpSearchResultWidget::QHelpSearchResultWidget(QHelpSearchEngine *engine)
 #endif
 
     connect(engine, SIGNAL(searchingFinished(int)), d, SLOT(setResults(int)));
+}
+
+/*! \reimp
+*/
+void QHelpSearchResultWidget::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::LanguageChange)
+        d->setResults(d->searchEngine->hitCount());
 }
 
 /*!

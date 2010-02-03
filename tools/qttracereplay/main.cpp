@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,7 @@ public:
     ReplayWidget(const QString &filename);
 
     void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *event);
 
 public slots:
     void updateRect();
@@ -64,14 +65,15 @@ public:
     int currentIteration;
     QTime timer;
 
+    QList<uint> visibleUpdates;
     QList<uint> iterationTimes;
     QString filename;
 };
 
 void ReplayWidget::updateRect()
 {
-    if (!updates.isEmpty())
-        update(updates.at(currentFrame));
+    if (!visibleUpdates.isEmpty())
+        update(updates.at(visibleUpdates.at(currentFrame)));
 }
 
 void ReplayWidget::paintEvent(QPaintEvent *)
@@ -80,10 +82,10 @@ void ReplayWidget::paintEvent(QPaintEvent *)
 
 //    p.setClipRegion(frames.at(currentFrame).updateRegion);
 
-    buffer.draw(&p, currentFrame);
+    buffer.draw(&p, visibleUpdates.at(currentFrame));
 
     ++currentFrame;
-    if (currentFrame >= buffer.numFrames()) {
+    if (currentFrame >= visibleUpdates.size()) {
         currentFrame = 0;
         ++currentIteration;
 
@@ -119,7 +121,7 @@ void ReplayWidget::paintEvent(QPaintEvent *)
 
                 if (iterationTimes.size() >= 10 || stddev < 4) {
                     printf("%s, iterations: %d, frames: %d, min(ms): %d, median(ms): %d, stddev: %f %%, max(fps): %f\n", qPrintable(filename),
-                            iterationTimes.size(), updates.size(), min, median, stddev, 1000. * updates.size() / min);
+                            iterationTimes.size(), visibleUpdates.size(), min, median, stddev, 1000. * visibleUpdates.size() / min);
                     deleteLater();
                     return;
                 }
@@ -130,6 +132,21 @@ void ReplayWidget::paintEvent(QPaintEvent *)
     QTimer::singleShot(0, this, SLOT(updateRect()));
 }
 
+void ReplayWidget::resizeEvent(QResizeEvent *event)
+{
+    visibleUpdates.clear();
+
+    QRect bounds = rect();
+    for (int i = 0; i < updates.size(); ++i) {
+        if (updates.at(i).intersects(bounds))
+            visibleUpdates << i;
+    }
+
+    if (visibleUpdates.size() != updates.size())
+        printf("Warning: skipped %d frames due to limited resolution\n", updates.size() - visibleUpdates.size());
+
+}
+
 ReplayWidget::ReplayWidget(const QString &filename_)
     : currentFrame(0)
     , currentIteration(0)
@@ -138,7 +155,6 @@ ReplayWidget::ReplayWidget(const QString &filename_)
     setWindowTitle(filename);
     QFile file(filename);
 
-    QRect bounds;
     if (!file.open(QIODevice::ReadOnly)) {
         printf("Failed to load input file '%s'\n", qPrintable(filename_));
         return;

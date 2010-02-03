@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -173,10 +173,11 @@ void QListModel::move(int srcRow, int dstRow)
 {
     if (srcRow == dstRow
         || srcRow < 0 || srcRow >= items.count()
-        || dstRow < 0 || dstRow >= items.count())
+        || dstRow < 0 || dstRow > items.count())
         return;
 
-    beginMoveRows(QModelIndex(), srcRow, srcRow, QModelIndex(), dstRow);
+    if (!beginMoveRows(QModelIndex(), srcRow, srcRow, QModelIndex(), dstRow))
+        return;
     if (srcRow < dstRow)
         --dstRow;
     items.move(srcRow, dstRow);

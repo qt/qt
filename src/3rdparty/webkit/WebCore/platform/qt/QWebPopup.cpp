@@ -26,6 +26,7 @@
 #include <QApplication>
 #include <QInputContext>
 #include <QMouseEvent>
+#include <QGraphicsProxyWidget>
 
 namespace WebCore {
 
@@ -67,6 +68,10 @@ void QWebPopup::hidePopup()
     }
 
     QComboBox::hidePopup();
+    
+    if (QGraphicsProxyWidget* proxy = graphicsProxyWidget())
+        proxy->setVisible(false);
+
     if (!m_popupVisible)
         return;
 

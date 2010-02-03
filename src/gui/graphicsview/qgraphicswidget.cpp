@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1054,7 +1054,7 @@ QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &
         break;
     case ItemParentChange: {
         QGraphicsItem *parent = qVariantValue<QGraphicsItem *>(value);
-        d->fixFocusChainBeforeReparenting((parent && parent->isWidget()) ? static_cast<QGraphicsWidget *>(parent) : 0);
+        d->fixFocusChainBeforeReparenting((parent && parent->isWidget()) ? static_cast<QGraphicsWidget *>(parent) : 0, scene());
 
         // Deliver ParentAboutToChange.
         QEvent event(QEvent::ParentAboutToChange);
@@ -1301,7 +1301,8 @@ bool QGraphicsWidget::event(QEvent *event)
     case QEvent::Polish:
         polishEvent();
         d->polished = true;
-        d->updateFont(d->font);
+        if (!d->font.isCopyOf(QApplication::font()))
+            d->updateFont(d->font);
         break;
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
