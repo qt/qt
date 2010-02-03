@@ -221,6 +221,11 @@ QScriptValue QmlScriptEngine::resolvedUrl(QScriptContext *ctxt, QScriptEngine *e
     return QScriptValue(r.toString());
 }
 
+QNetworkAccessManager *QmlScriptEngine::networkAccessManager()
+{
+    return p->getNetworkAccessManager();
+}
+
 QmlEnginePrivate::~QmlEnginePrivate()
 {
     while (cleanup) {
@@ -412,6 +417,20 @@ QmlNetworkAccessManagerFactory *QmlEngine::networkAccessManagerFactory() const
     return d->networkAccessManagerFactory;
 }
 
+QNetworkAccessManager *QmlEnginePrivate::getNetworkAccessManager() const
+{
+    Q_Q(const QmlEngine);
+
+    if (!networkAccessManager) {
+        if (networkAccessManagerFactory) {
+            networkAccessManager = networkAccessManagerFactory->create(const_cast<QmlEngine*>(q));
+        } else {
+            networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(q));
+        }
+    }
+    return networkAccessManager;
+}
+
 /*!
     Returns a common QNetworkAccessManager which can be used by any QML element
     instantiated by this engine.
@@ -426,14 +445,7 @@ QmlNetworkAccessManagerFactory *QmlEngine::networkAccessManagerFactory() const
 QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
-    if (!d->networkAccessManager) {
-        if (d->networkAccessManagerFactory) {
-            d->networkAccessManager = d->networkAccessManagerFactory->create(const_cast<QmlEngine*>(this));
-        } else {
-            d->networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(this));
-        }
-    }
-    return d->networkAccessManager;
+    return d->getNetworkAccessManager();
 }
 
 /*!
