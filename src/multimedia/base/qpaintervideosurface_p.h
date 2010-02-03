@@ -102,7 +102,7 @@ public:
     bool isReady() const;
     void setReady(bool ready);
 
-    void paint(QPainter *painter, const QRectF &rect);
+    void paint(QPainter *painter, const QRectF &target, const QRectF &source = QRectF(0, 0, 1, 1));
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
     const QGLContext *glContext() const;

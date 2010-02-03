@@ -73,7 +73,7 @@ public:
     virtual QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame) = 0;
 
     virtual QAbstractVideoSurface::Error paint(
-            const QRectF &target, QPainter *painter, const QRect &source) = 0;
+            const QRectF &target, QPainter *painter, const QRectF &source) = 0;
 
     virtual void updateColors(int brightness, int contrast, int hue, int saturation) = 0;
 };
@@ -99,7 +99,7 @@ public:
     QAbstractVideoSurface::Error setCurrentFrame(const QVideoFrame &frame);
 
     QAbstractVideoSurface::Error paint(
-            const QRectF &target, QPainter *painter, const QRect &source);
+            const QRectF &target, QPainter *painter, const QRectF &source);
 
     void updateColors(int brightness, int contrast, int hue, int saturation);
 
@@ -167,7 +167,7 @@ QAbstractVideoSurface::Error QVideoSurfaceRasterPainter::setCurrentFrame(const Q
 }
 
 QAbstractVideoSurface::Error QVideoSurfaceRasterPainter::paint(
-            const QRectF &target, QPainter *painter, const QRect &source)
+            const QRectF &target, QPainter *painter, const QRectF &source)
 {
     if (m_frame.map(QAbstractVideoBuffer::ReadOnly)) {
         QImage image(
@@ -183,7 +183,7 @@ QAbstractVideoSurface::Error QVideoSurfaceRasterPainter::paint(
             painter->scale(1, -1);
             painter->translate(0, -target.bottom());
             painter->drawImage(
-                QRect(target.x(), 0, target.width(), target.height()), image, source);
+                QRectF(target.x(), 0, target.width(), target.height()), image, source);
             painter->setTransform(oldTransform);
         } else {
             painter->drawImage(target, image, source);
@@ -540,7 +540,8 @@ public:
     QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format);
     void stop();
 
-    QAbstractVideoSurface::Error paint(const QRectF &target, QPainter *painter, const QRect &source);
+    QAbstractVideoSurface::Error paint(
+            const QRectF &target, QPainter *painter, const QRectF &source);
 
 private:
     typedef void (APIENTRY *_glProgramStringARB) (GLenum, GLenum, GLsizei, const GLvoid *);
@@ -700,19 +701,19 @@ void QVideoSurfaceArbFpPainter::stop()
 }
 
 QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::paint(
-        const QRectF &target, QPainter *painter, const QRect &source)
+        const QRectF &target, QPainter *painter, const QRectF &source)
 {
     if (m_frame.isValid()) {
         painter->beginNativePainting();
 
-        const float txLeft = float(source.left()) / float(m_frameSize.width());
-        const float txRight = float(source.right()) / float(m_frameSize.width());
+        const float txLeft = source.left() / m_frameSize.width();
+        const float txRight = source.right() / m_frameSize.width();
         const float txTop = m_scanLineDirection == QVideoSurfaceFormat::TopToBottom
-                ? float(source.top()) / float(m_frameSize.height())
-                : float(source.bottom()) / float(m_frameSize.height());
+                ? source.top() / m_frameSize.height()
+                : source.bottom() / m_frameSize.height();
         const float txBottom = m_scanLineDirection == QVideoSurfaceFormat::TopToBottom
-                ? float(source.bottom()) / float(m_frameSize.height())
-                : float(source.top()) / float(m_frameSize.height());
+                ? source.bottom() / m_frameSize.height()
+                : source.top() / m_frameSize.height();
 
 
         const float tx_array[] =
@@ -857,7 +858,8 @@ public:
     QAbstractVideoSurface::Error start(const QVideoSurfaceFormat &format);
     void stop();
 
-    QAbstractVideoSurface::Error paint(const QRectF &target, QPainter *painter, const QRect &source);
+    QAbstractVideoSurface::Error paint(
+            const QRectF &target, QPainter *painter, const QRectF &source);
 
 private:
     QGLShaderProgram m_program;
@@ -975,7 +977,7 @@ void QVideoSurfaceGlslPainter::stop()
 }
 
 QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
-        const QRectF &target, QPainter *painter, const QRect &source)
+        const QRectF &target, QPainter *painter, const QRectF &source)
 {
     if (m_frame.isValid()) {
         painter->beginNativePainting();
@@ -1021,14 +1023,14 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
             target.right() + 1, target.top()
         };
 
-        const GLfloat txLeft = float(source.left()) / float(m_frameSize.width());
-        const GLfloat txRight = float(source.right()) / float(m_frameSize.width());
+        const GLfloat txLeft = source.left() / m_frameSize.width();
+        const GLfloat txRight = source.right() / m_frameSize.width();
         const GLfloat txTop = m_scanLineDirection == QVideoSurfaceFormat::TopToBottom
-                ? float(source.top()) / float(m_frameSize.height())
-                : float(source.bottom()) / float(m_frameSize.height());
+                ? source.top() / m_frameSize.height()
+                : source.bottom() / m_frameSize.height();
         const GLfloat txBottom = m_scanLineDirection == QVideoSurfaceFormat::TopToBottom
-                ? float(source.bottom()) / float(m_frameSize.height())
-                : float(source.top()) / float(m_frameSize.height());
+                ? source.bottom() / m_frameSize.height()
+                : source.top() / m_frameSize.height();
 
         const GLfloat textureCoordArray[] =
         {
@@ -1289,17 +1291,23 @@ void QPainterVideoSurface::setReady(bool ready)
 
 /*!
 */
-void QPainterVideoSurface::paint(QPainter *painter, const QRectF &rect)
+void QPainterVideoSurface::paint(QPainter *painter, const QRectF &target, const QRectF &source)
 {
     if (!isActive()) {
-        painter->fillRect(rect, QBrush(Qt::black));
+        painter->fillRect(target, QBrush(Qt::black));
     } else {
         if (m_colorsDirty) {
             m_painter->updateColors(m_brightness, m_contrast, m_hue, m_saturation);
             m_colorsDirty = false;
         }
 
-        QAbstractVideoSurface::Error error = m_painter->paint(rect, painter, m_sourceRect);
+        const QRectF sourceRect(
+                m_sourceRect.x() + m_sourceRect.width() * source.x(),
+                m_sourceRect.y() + m_sourceRect.height() * source.y(),
+                m_sourceRect.width() * source.width(),
+                m_sourceRect.height() * source.height());
+
+        QAbstractVideoSurface::Error error = m_painter->paint(target, painter, sourceRect);
 
         if (error != QAbstractVideoSurface::NoError) {
             setError(error);
