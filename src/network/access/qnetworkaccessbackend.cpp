@@ -349,6 +349,11 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 */
 bool QNetworkAccessBackend::start()
 {
+    if (!manager->session) {
+        open();
+        return true;
+    }
+
     // This is not ideal.
     const QString host = reply->url.host();
     if (host == QLatin1String("localhost") ||

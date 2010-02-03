@@ -89,13 +89,18 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         // state changes.
         state = WaitingForSession;
 
-        if (!manager->d_func()->session->isOpen())
-            manager->d_func()->session->open();
+        QNetworkSession *session = manager->d_func()->session;
+
+        if (session) {
+            if (!session->isOpen())
+                session->open();
+        } else {
+            qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
+        }
 
         return;
     }
 
-    //backend->open();
     if (state != Finished) {
         if (operation == QNetworkAccessManager::GetOperation)
             pendingNotifications.append(NotifyDownstreamReadyWrite);
@@ -516,8 +521,9 @@ void QNetworkReplyImplPrivate::finished()
 
     pauseNotificationHandling();
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (state == Working && errorCode != QNetworkReply::OperationCanceledError &&
-        manager->d_func()->session->state() == QNetworkSession::Roaming) {
+    QNetworkSession *session = manager->d_func()->session;
+    if (session && session->state() == QNetworkSession::Roaming &&
+        state == Working && errorCode != QNetworkReply::OperationCanceledError) {
         // only content with a known size will fail with a temporary network failure error
         if (!totalSize.isNull()) {
             qDebug() << "Connection broke during download.";

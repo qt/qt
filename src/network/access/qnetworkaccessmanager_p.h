@@ -108,6 +108,8 @@ public:
         emit q->debugMessage(message);
     }
 
+    void createSession(const QNetworkConfiguration &config);
+
     void _q_sessionOpened();
     void _q_sessionClosed();
     void _q_sessionError(QNetworkSession::SessionError error);

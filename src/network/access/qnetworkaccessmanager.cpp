@@ -350,18 +350,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     ensureInitialized();
 
     QNetworkConfigurationManager manager;
-    d_func()->session = new QNetworkSession(manager.defaultConfiguration(), this);
-
-    connect(d_func()->session, SIGNAL(opened()), this, SLOT(_q_sessionOpened()));
-    connect(d_func()->session, SIGNAL(closed()), this, SLOT(_q_sessionClosed()));
-    connect(d_func()->session, SIGNAL(stateChanged(QNetworkSession::State)),
-            this, SLOT(_q_sessionStateChanged(QNetworkSession::State)));
-    connect(d_func()->session, SIGNAL(error(QNetworkSession::SessionError)),
-            this, SLOT(_q_sessionError(QNetworkSession::SessionError)));
-    connect(d_func()->session, SIGNAL(newConfigurationActivated()),
-            this, SLOT(_q_sessionNewConfigurationActivated()));
-    connect(d_func()->session, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
-            this, SLOT(_q_sessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
+    d_func()->createSession(manager.defaultConfiguration());
 }
 
 /*!
@@ -689,8 +678,7 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
 */
 void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config)
 {
-    delete d_func()->session;
-    d_func()->session = new QNetworkSession(config, this);
+    d_func()->createSession(config);
 }
 
 /*!
@@ -702,7 +690,12 @@ void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config
 */
 QNetworkConfiguration QNetworkAccessManager::configuration() const
 {
-    return d_func()->session->configuration();
+    Q_D(const QNetworkAccessManager);
+
+    if (d->session)
+        return d->session->configuration();
+    else
+        return QNetworkConfiguration();
 }
 
 /*!
@@ -714,11 +707,16 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
 */
 QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 {
-    QNetworkConfigurationManager manager;
+    Q_D(const QNetworkAccessManager);
 
-    return manager.configurationFromIdentifier(
-        d_func()->session->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
+    if (d->session) {
+        QNetworkConfigurationManager manager;
 
+        return manager.configurationFromIdentifier(
+            d->session->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
+    } else {
+        return QNetworkConfiguration();
+    }
 }
 
 /*!
@@ -800,11 +798,12 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 void QNetworkAccessManagerPrivate::_q_replyFinished()
 {
     Q_Q(QNetworkAccessManager);
+
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
         emit q->finished(reply);
 
-    if (deferredMigration) {
+    if (session && deferredMigration) {
         foreach (QObject *child, q->children()) {
             if (child == reply)
                 continue;
@@ -1074,6 +1073,32 @@ void QNetworkAccessManagerPrivate::clearCache(QNetworkAccessManager *manager)
 
 QNetworkAccessManagerPrivate::~QNetworkAccessManagerPrivate()
 {
+}
+
+void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &config)
+{
+    Q_Q(QNetworkAccessManager);
+
+    if (session)
+        delete session;
+
+    if (!config.isValid()) {
+        session = 0;
+        return;
+    }
+
+    session = new QNetworkSession(config, q);
+
+    QObject::connect(session, SIGNAL(opened()), q, SLOT(_q_sessionOpened()));
+    QObject::connect(session, SIGNAL(closed()), q, SLOT(_q_sessionClosed()));
+    QObject::connect(session, SIGNAL(stateChanged(QNetworkSession::State)),
+                     q, SLOT(_q_sessionStateChanged(QNetworkSession::State)));
+    QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
+                     q, SLOT(_q_sessionError(QNetworkSession::SessionError)));
+    QObject::connect(session, SIGNAL(newConfigurationActivated()),
+                     q, SLOT(_q_sessionNewConfigurationActivated()));
+    QObject::connect(session, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
+                     q, SLOT(_q_sessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
 }
 
 void QNetworkAccessManagerPrivate::_q_sessionOpened()
