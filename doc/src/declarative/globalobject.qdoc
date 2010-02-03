@@ -43,7 +43,7 @@
 \page qmlglobalobject.html
 \title QML Global Object
 
-Contains all the properties of the ECMAScript global object, plus:
+Contains all the properties of the JavaScript global object, plus:
 
 \tableofcontents
 

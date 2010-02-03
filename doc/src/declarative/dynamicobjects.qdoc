@@ -44,13 +44,13 @@
 \title Dynamic Object Creation
 
 QML has some support for dynamically loading and managing QML objects from
-within ECMAscript blocks. It is preferable to use the existing QML elements for
+within Javascript blocks. It is preferable to use the existing QML elements for
 dynamic object management wherever possible; these are \l{Loader}, 
 \l{Repeater}, \l{ListView}, \l{GridView} and \l{PathView}. It is also possible 
 to dynamically create and manage objects from C++, and this is preferable for 
 hybrid QML/C++ applications - see \l{Using QML in C++ Applications}.
 Dynamically creating and managing objects from 
-within ECMAscript blocks is intended for when none of the existing QML elements 
+within Javascript blocks is intended for when none of the existing QML elements 
 fit the needs of your application, and you do not desire for your application 
 to involve C++ code.
 

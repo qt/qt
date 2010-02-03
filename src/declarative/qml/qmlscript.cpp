@@ -70,7 +70,7 @@
     defining functions that are only executed later once the context is fully
     defined.
 
-    \sa {ECMAScript Blocks}
+    \sa {JavaScript Blocks}
 */
 
 /*!

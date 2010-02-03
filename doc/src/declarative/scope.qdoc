@@ -45,16 +45,16 @@
 
 \tableofcontents
 
-\l {Property Binding}s and \l {ECMAScript Blocks} are executed in a scope chain automatically 
+\l {Property Binding}s and \l {JavaScript Blocks} are executed in a scope chain automatically 
 established by QML when a component instance is constructed.  QML is a \e {dynamically scoped} 
 language.  Different object instances instantiated from the same component can exist in 
 different scope chains.
 
 \image qml-scope.png
 
-\section1 ECMAScript Variable object
+\section1 JavaScript Variable object
 
-Each binding and script block has its own distinct ECMAScript variable object where local 
+Each binding and script block has its own distinct JavaScript variable object where local 
 variables are stored.  That is, local variables from different bindings and script blocks never 
 conflict.
 
@@ -375,6 +375,6 @@ Rectangle {
 
 \section1 QML Global Object
 
-The \l {QML Global Object} contains all the properties of the ECMAScript global object, plus some
+The \l {QML Global Object} contains all the properties of the JavaScript global object, plus some
 QML specific extensions.
 */

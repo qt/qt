@@ -40,23 +40,23 @@
 ****************************************************************************/
 
 /*!
-\page qmlecmascript.html
-\title ECMAScript Blocks
+\page qmljavascript.html
+\title JavaScript Blocks
 
 QML encourages building UIs declaratively, using \l {Property Binding} and the 
 composition of existing \l {QML Elements}.  If imperative code is required to implement 
-more advanced behavior, the \l Script element can be used to add ECMAScript code directly 
-to a QML file, or to include an external ECMAScript file.
+more advanced behavior, the \l Script element can be used to add JavaScript code directly 
+to a QML file, or to include an external JavaScript file.
 
 The \l Script element is a QML language \e intrinsic.  It can be used anywhere in a
 QML file, \e except as the root element of a file or sub-component, but cannot be 
-assigned to an object property or given an id.  The included ECMAScript is evaluated 
+assigned to an object property or given an id.  The included JavaScript is evaluated 
 in a scope chain.  The \l {QML Scope} documentation covers the specifics of scoping 
 in QML.  
 
-A restriction on the ECMAScript used in QML is that you cannot add new members to the
+A restriction on the JavaScript used in QML is that you cannot add new members to the
 global object. This happens transparently when you try to use a variable without
-declaring it, and so declaring local variables is required when using ECMA script in
+declaring it, and so declaring local variables is required when using Java script in
 QML.
 
 The global object in QML has a variety of helper functions added to it, to aid UI
@@ -68,7 +68,7 @@ you do not need the \l Script element. See \l {Extending types from QML#Adding n
 
 \section1 Inline Script
 
-Small blocks of ECMAScript can be included directly inside a \l {QML Document} as
+Small blocks of JavaScript can be included directly inside a \l {QML Document} as
 the body of the \l Script element.
 
 \code
@@ -129,7 +129,7 @@ until the script has been retrieved.
 
 \section1 Running Script at Startup
 
-It is occasionally necessary to run a block of ECMAScript code at application (or
+It is occasionally necessary to run a block of JavaScript code at application (or
 component instance) "startup".  While it is tempting to just include the startup
 script as \e {global code} in an external script file, this can have severe limitations
 as the QML environment may not have been fully established.  For example, some objects 
@@ -160,7 +160,7 @@ execute at startup, they are run sequentially in an undefined order.
 
 \section1 QML Script Restrictions
 
-QML \l Script blocks contain standard ECMAScript code.  QML introduces the following
+QML \l Script blocks contain standard JavaScript code.  QML introduces the following
 restrictions.
 
 \list
@@ -169,8 +169,8 @@ restrictions.
 In QML, the global object is constant - existing properties cannot be modified or 
 deleted, and no new properties may be created.
 
-Most ECMAScript programs do not explicitly modify the global object.  However, 
-ECMAScript's automatic creation of undeclared variables is an implicit modification
+Most JavaScript programs do not explicitly modify the global object.  However, 
+JavaScript's automatic creation of undeclared variables is an implicit modification
 of the global object, and is prohibited in QML.
 
 Assuming that the \c a variable does not exist in the scope chain, the following code 

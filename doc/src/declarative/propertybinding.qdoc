@@ -44,11 +44,11 @@
 \title Property Binding
 
 Property binding is a declarative way of specifying the value of a property.  Binding allows
-a property's value to be expressed as an ECMAScript expression that defines the value relative
+a property's value to be expressed as an JavaScript expression that defines the value relative
 to other property values or data accessible in the application.  The property value is 
 automatically kept up to date if the other properties or data values change.
 
-Property bindings are created implicitly in QML whenever a property is assigned an ECMAScript
+Property bindings are created implicitly in QML whenever a property is assigned an JavaScript
 expression.  The following QML uses two property bindings to connect the size of the rectangle
 to that of \c otherItem.
 
@@ -59,10 +59,10 @@ Rectangle {
 }
 \endcode
 
-QML extends a standards compliant ECMAScript engine, so any valid ECMAScript expression can be 
+QML extends a standards compliant JavaScript engine, so any valid JavaScript expression can be 
 used as a property binding.  Bindings can access object properties, make function calls and even
-use builtin ECMAScript objects like \e {Date} and \e {Math}.  Assigning a constant value to a 
-property can even be thought of as a binding - afterall, a constant is a valid ECMAScript 
+use builtin JavaScript objects like \e {Date} and \e {Math}.  Assigning a constant value to a 
+property can even be thought of as a binding - afterall, a constant is a valid JavaScript 
 expression!  Here are some examples of more complex bindings:
 
 \code
@@ -80,7 +80,7 @@ Rectangle {
 }
 \endcode
 
-Being ECMAScript expressions, bindings are evaluated in a scope chain.  The \l {QML Scope} 
+Being JavaScript expressions, bindings are evaluated in a scope chain.  The \l {QML Scope} 
 documentation covers the specifics of scoping in QML.
 
 \list
