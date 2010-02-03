@@ -115,6 +115,11 @@ void TestHTTPServer::addAlias(const QString &filename, const QString &alias)
     aliases.insert(filename, alias);
 }
 
+void TestHTTPServer::addRedirect(const QString &filename, const QString &redirectName)
+{
+    redirects.insert(filename, redirectName);
+}
+
 bool TestHTTPServer::wait(const QUrl &expect, const QUrl &reply, const QUrl &body)
 {
     m_hasFailed = false;
@@ -230,6 +235,12 @@ void TestHTTPServer::readyRead()
 
 bool TestHTTPServer::reply(QTcpSocket *socket, const QByteArray &fileName)
 {
+    if (redirects.contains(fileName)) {
+        QByteArray response = "HTTP/1.1 302 Found\r\nContent-length: 0\r\nContent-type: text/html; charset=UTF-8\r\nLocation: " + redirects[fileName].toUtf8() + "\r\n\r\n";
+        socket->write(response);
+        return true;
+    }
+
     for (int ii = 0; ii < dirs.count(); ++ii) {
         QString dir = dirs.at(ii).first;
         Mode mode = dirs.at(ii).second;
