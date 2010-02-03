@@ -251,6 +251,7 @@
 #endif
 #include <private/qgraphicseffect_p.h>
 #include <private/qgesturemanager_p.h>
+#include <private/qpathclipper_p.h>
 
 // #define GESTURE_DEBUG
 #ifndef GESTURE_DEBUG
@@ -4765,7 +4766,12 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                 painter->setWorldTransform(*transformPtr * *effectTransform);
             else
                 painter->setWorldTransform(*transformPtr);
-            painter->setClipPath(item->shape(), Qt::IntersectClip);
+            QRectF clipRect;
+            const QPainterPath clipPath(item->shape());
+            if (QPathClipper::pathToRect(clipPath, &clipRect))
+                painter->setClipRect(clipRect, Qt::IntersectClip);
+            else
+                painter->setClipPath(clipPath, Qt::IntersectClip);
         }
 
         // Draw children behind
@@ -4801,8 +4807,14 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                 painter->setWorldTransform(*transformPtr);
         }
 
-        if (itemClipsToShape)
-            painter->setClipPath(item->shape(), Qt::IntersectClip);
+        if (itemClipsToShape) {
+            QRectF clipRect;
+            const QPainterPath clipPath(item->shape());
+            if (QPathClipper::pathToRect(clipPath, &clipRect))
+                painter->setClipRect(clipRect, Qt::IntersectClip);
+            else
+                painter->setClipPath(clipPath, Qt::IntersectClip);
+        }
         painter->setOpacity(opacity);
 
         if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget)
