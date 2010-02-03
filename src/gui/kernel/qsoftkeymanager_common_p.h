@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSOFTKEYMANAGER_P_H
-#define QSOFTKEYMANAGER_P_H
+#ifndef QSOFTKEYMANAGER_COMMON_P_H
+#define QSOFTKEYMANAGER_COMMON_P_H
 
 //
 //  W A R N I N G
@@ -53,63 +53,30 @@
 // We mean it.
 //
 
-#include <QtCore/qobject.h>
-#include "QtGui/qaction.h"
-
 QT_BEGIN_HEADER
 
 #ifndef QT_NO_SOFTKEYMANAGER
+
 QT_BEGIN_NAMESPACE
 
-class QSoftKeyManagerPrivate;
-
-const char MENU_ACTION_PROPERTY[] = "_q_menuaction";
-
-class Q_AUTOTEST_EXPORT QSoftKeyManager : public QObject
+class QSoftKeyManagerPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QSoftKeyManager)
+    Q_DECLARE_PUBLIC(QSoftKeyManager)
 
 public:
-
-    enum StandardSoftKey {
-        OkSoftKey,
-        SelectSoftKey,
-        DoneSoftKey,
-        MenuSoftKey,
-        CancelSoftKey
-    };
-
-    static void updateSoftKeys();
-#ifdef Q_WS_S60
-    static bool handleCommand(int);
-#endif
-
-    static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
-    static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);
+    virtual void updateSoftKeys_sys() {};
 
 protected:
-    bool event(QEvent *e);
+    static QSoftKeyManager *self;
+    QHash<QAction*, Qt::Key> keyedActions;
+    QMultiHash<int, QAction*> requestedSoftKeyActions;
 
-private:
-    QSoftKeyManager();
-    static QSoftKeyManager *instance();
-    static const char *standardSoftKeyText(StandardSoftKey standardKey);
-    bool appendSoftkeys(const QWidget &source, int level);
-    QWidget *softkeySource(QWidget *previousSource, bool& recursiveMerging);
-    bool handleUpdateSoftKeys();
-
-private Q_SLOTS:
-    void cleanupHash(QObject* obj);
-    void sendKeyEvent();
-
-private:
-    Q_DISABLE_COPY(QSoftKeyManager)
 };
 
 QT_END_NAMESPACE
+
 #endif //QT_NO_SOFTKEYMANAGER
 
 QT_END_HEADER
 
-#endif //QSOFTKEYMANAGER_P_H
+#endif // QSOFTKEYMANAGER_COMMON_P_H
