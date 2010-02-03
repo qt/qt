@@ -181,6 +181,7 @@ private:
     DirectShowAudioEndpointControl *m_audioEndpointControl;
 
     QThread *m_taskThread;
+    DirectShowEventLoop *m_loop;
     int m_pendingTasks;
     int m_executingTask;
     int m_executedTasks;
@@ -204,7 +205,6 @@ private:
     QUrl m_url;
     QMediaResourceList m_resources;
     QMutex m_mutex;
-    DirectShowEventLoop m_loop;
 
     friend class DirectShowPlayerServiceThread;
 };

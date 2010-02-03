@@ -58,6 +58,7 @@
 
 #include <uuids.h>
 
+Q_GLOBAL_STATIC(DirectShowEventLoop, qt_directShowEventLoop)
 
 QT_BEGIN_NAMESPACE
 
@@ -85,6 +86,7 @@ DirectShowPlayerService::DirectShowPlayerService(QObject *parent)
     , m_videoRendererControl(0)
     , m_videoWindowControl(0)
     , m_taskThread(0)
+    , m_loop(qt_directShowEventLoop())
     , m_pendingTasks(0)
     , m_executingTask(0)
     , m_executedTasks(0)
@@ -107,7 +109,7 @@ DirectShowPlayerService::DirectShowPlayerService(QObject *parent)
     m_metaDataControl = new DirectShowMetaDataControl(this);
     m_videoOutputControl = new DirectShowVideoOutputControl; 
     m_audioEndpointControl = new DirectShowAudioEndpointControl(this);
-    m_videoRendererControl = new DirectShowVideoRendererControl(&m_loop);
+    m_videoRendererControl = new DirectShowVideoRendererControl(m_loop);
     m_videoWindowControl = new Vmr9VideoWindowControl;
 
     m_taskThread = new DirectShowPlayerServiceThread(this);
@@ -284,7 +286,7 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
 
 void DirectShowPlayerService::doSetStreamSource(QMutexLocker *locker)
 {
-    IBaseFilter *source = new DirectShowIOSource(m_stream, &m_loop);
+    IBaseFilter *source = new DirectShowIOSource(m_stream, m_loop);
 
     if (SUCCEEDED(m_graph->AddFilter(source, L"Source"))) {
         m_executedTasks = SetSource;
@@ -468,7 +470,7 @@ void DirectShowPlayerService::releaseGraph()
 
         ::SetEvent(m_taskHandle);
 
-        m_loop.wait(&m_mutex);
+        m_loop->wait(&m_mutex);
     }
 }
 
@@ -491,7 +493,7 @@ void DirectShowPlayerService::doReleaseGraph(QMutexLocker *locker)
     m_graph->Release();
     m_graph = 0;
 
-    m_loop.wake();
+    m_loop->wake();
 }
 
 int DirectShowPlayerService::findStreamTypes(IBaseFilter *source) const
@@ -665,7 +667,7 @@ void DirectShowPlayerService::stop()
         if (m_executingTask & (Play | Pause | Seek)) {
             m_pendingTasks |= Stop;
 
-            m_loop.wait(&m_mutex);
+            m_loop->wait(&m_mutex);
         }
 
         if (m_executedTasks & (Play | Pause)) {
@@ -830,7 +832,7 @@ void DirectShowPlayerService::setAudioOutput(IBaseFilter *filter)
 
                 ::SetEvent(m_taskHandle);
 
-                m_loop.wait(&m_mutex);
+                m_loop->wait(&m_mutex);
             }
             m_audioOutput->Release();
         } 
@@ -876,7 +878,7 @@ void DirectShowPlayerService::doReleaseAudioOutput(QMutexLocker *locker)
 
     m_executedTasks &= ~SetAudioOutput;
 
-    m_loop.wake();
+    m_loop->wake();
 }
 
 void DirectShowPlayerService::setVideoOutput(IBaseFilter *filter)
@@ -890,7 +892,7 @@ void DirectShowPlayerService::setVideoOutput(IBaseFilter *filter)
 
                 ::SetEvent(m_taskHandle);
 
-                m_loop.wait(&m_mutex);
+                m_loop->wait(&m_mutex);
             }
             m_videoOutput->Release();
         }
@@ -934,7 +936,7 @@ void DirectShowPlayerService::doReleaseVideoOutput(QMutexLocker *locker)
 
     m_executedTasks &= ~SetVideoOutput;
 
-    m_loop.wake();
+    m_loop->wake();
 }
 
 void DirectShowPlayerService::customEvent(QEvent *event)
@@ -1171,7 +1173,7 @@ void DirectShowPlayerService::run()
         } else if (m_pendingTasks & Stop) {
             m_pendingTasks ^= Stop;
 
-            m_loop.wake();
+            m_loop->wake();
         } else if (m_pendingTasks & Pause) {
             m_pendingTasks ^= Pause;
             m_executingTask = Pause;
