@@ -825,6 +825,17 @@ Here are three examples of signal declarations:
     }
 \endcode
 
+Adding a signal to an item automatically adds a signal handler to it.
+The signal hander is named on<Signal name>, with the first letter of the
+signal name being upper cased. The above example item would now have the
+following signal handlers:
+
+\list
+   \o onClicked
+   \o onHovered
+   \o onPerformAction
+\endlist
+
 \section1 Adding new methods
 
 New methods can be added to an existing type.  These new methods are available
