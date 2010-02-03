@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -375,6 +375,9 @@ QNetworkConfiguration QNetworkSession::configuration() const
     This function only returns a valid QNetworkInterface when this session is \l Connected.
 
     The returned interface may change as a result of a roaming process.
+
+    Note: this function does not work in Symbian emulator due to the way the
+    connectivity is emulated on Windows.
 
     \sa state()
 */
