@@ -162,7 +162,7 @@ void QHelpIndexProvider::run()
     QSet<QString> indicesSet;
     m_mutex.unlock();
 
-    foreach (QString dbFileName, m_helpEngine->fileNameReaderMap.keys()) {
+    foreach (const QString &dbFileName, m_helpEngine->fileNameReaderMap.keys()) {
         m_mutex.lock();
         if (m_abort) {
             m_mutex.unlock();
@@ -178,7 +178,7 @@ void QHelpIndexProvider::run()
         QStringList lst = reader.indicesForFilter(atts);
         if (!lst.isEmpty()) {
             m_mutex.lock();
-            foreach (QString s, lst)
+            foreach (const QString &s, lst)
                 indicesSet.insert(s);
             if (m_abort) {
                 m_mutex.unlock();
@@ -317,7 +317,7 @@ QModelIndex QHelpIndexModel::filter(const QString &filter, const QString &wildca
     if (!wildcard.isEmpty()) {
         QRegExp regExp(wildcard, Qt::CaseInsensitive);
         regExp.setPatternSyntax(QRegExp::Wildcard);
-        foreach (QString index, d->indices) {
+        foreach (const QString &index, d->indices) {
             if (index.contains(regExp)) {
                 lst.append(index);
                 if (perfectMatch == -1 && index.startsWith(filter, Qt::CaseInsensitive)) {
@@ -332,7 +332,7 @@ QModelIndex QHelpIndexModel::filter(const QString &filter, const QString &wildca
             }
         }
     } else {
-        foreach (QString index, d->indices) {
+        foreach (const QString &index, d->indices) {
             if (index.contains(filter, Qt::CaseInsensitive)) {
                 lst.append(index);
                 if (perfectMatch == -1 && index.startsWith(filter, Qt::CaseInsensitive)) {

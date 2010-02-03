@@ -73,7 +73,7 @@ public:
 
     void showResultPage(const QList<QHelpSearchEngine::SearchHit> hits)
     {
-        foreach (const QHelpSearchEngine::SearchHit hit, hits)
+        foreach (const QHelpSearchEngine::SearchHit &hit, hits)
             new QTreeWidgetItem(this, QStringList(hit.first) << hit.second);
     }
 
@@ -118,7 +118,7 @@ public:
                     .arg(tr("The search results may not be complete since the "
                             "documentation is still being indexed!"));
 
-            foreach (const QHelpSearchEngine::SearchHit hit, hits) {
+            foreach (const QHelpSearchEngine::SearchHit &hit, hits) {
                 htmlFile += QString(QLatin1String("<div style=\"text-align:left; font-weight:bold\""
                 "><a href=\"%1\">%2</a><div style=\"color:green; font-weight:normal;"
                 " margin:5px\">%1</div></div><p></p>"))
