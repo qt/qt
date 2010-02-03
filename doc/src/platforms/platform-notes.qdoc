@@ -490,7 +490,7 @@
     \section1 Known Issues
 
     Known issues can be found by visiting the
-    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}{wiki page} with an
+    \l{http://qt.gitorious.org/qt/pages/QtKnownIssues}{wiki page} with an
     up-to-date list of known issues, and the list of bugs can be found by
     \l{http://bugreports.qt.nokia.com/browse/QTBUG/component/19171}{browsing} the
     S60 component in Qt's public task tracker, located at

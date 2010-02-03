@@ -1660,13 +1660,7 @@ void QWidgetPrivate::syncBackingStore()
         repaint_sys(dirty);
         dirty = QRegion();
     } else if (QWidgetBackingStore *bs = maybeBackingStore()) {
-#ifdef QT_MAC_USE_COCOA
-        Q_UNUSED(bs);
-        void qt_mac_set_needs_display(QWidget *, QRegion);
-        qt_mac_set_needs_display(q_func(), QRegion());
-#else
         bs->sync();
-#endif
     }
 }
 
@@ -1674,15 +1668,8 @@ void QWidgetPrivate::syncBackingStore(const QRegion &region)
 {
     if (paintOnScreen())
         repaint_sys(region);
-    else if (QWidgetBackingStore *bs = maybeBackingStore()) {
-#ifdef QT_MAC_USE_COCOA
-        Q_UNUSED(bs);
-        void qt_mac_set_needs_display(QWidget *, QRegion);
-        qt_mac_set_needs_display(q_func(), region);
-#else
+    else if (QWidgetBackingStore *bs = maybeBackingStore())
         bs->sync(q_func(), region);
-#endif
-    }
 }
 
 void QWidgetPrivate::setUpdatesEnabled_helper(bool enable)

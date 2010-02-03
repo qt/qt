@@ -520,11 +520,10 @@ extern "C" {
 - (void)drawRect:(NSRect)aRect
 {
     if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore()) {
-            // Drawing is handled on the window level
-            // See qcocoasharedwindowmethods_mac_p.
-            return;
-        }
+        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
+            bs->markDirty(qwidget->rect(), qwidget);
+        qwidgetprivate->syncBackingStore(qwidget->rect());
+        return;
     }
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;

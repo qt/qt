@@ -94,6 +94,11 @@
 
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
+#define MANUFACTURER_NOTE_FILE "manufacturer_note.txt"
+#define DEFAULT_MANUFACTURER_NOTE \
+    "The package is not supported for devices from this manufacturer. Please try the selfsigned " \
+    "version of the package instead."
+
 QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const QDir& parentDir)
 {
     static QString epocRootStr;
@@ -354,6 +359,17 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
         t << endl;
     }
 
+    // Begin Manufacturer block
+    if (!project->values("DEPLOYMENT.manufacturers").isEmpty()) {
+        QString manufacturerStr("IF ");
+        foreach(QString manufacturer, project->values("DEPLOYMENT.manufacturers")) {
+            manufacturerStr.append(QString("(MANUFACTURER)=(%1) OR \n   ").arg(manufacturer));
+        }
+        // Remove the final OR
+        manufacturerStr.chop(8);
+        t << manufacturerStr << endl;
+    }
+
     // Install paths on the phone *** should be dynamic at some point
     QString installPathBin = "!:\\sys\\bin";
     QString installPathResource = "!:\\resource\\apps";
@@ -427,6 +443,30 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
             }
             t << endl;
         }
+    }
+
+    // Close Manufacturer block
+    if (!project->values("DEPLOYMENT.manufacturers").isEmpty()) {
+        QString manufacturerFailNoteFile;
+        if (project->values("DEPLOYMENT.manufacturers.fail_note").isEmpty()) {
+            manufacturerFailNoteFile = QString("%1_" MANUFACTURER_NOTE_FILE).arg(uid3);
+            QFile ft(manufacturerFailNoteFile);
+            if (ft.open(QIODevice::WriteOnly)) {
+                generatedFiles << ft.fileName();
+                QTextStream t2(&ft);
+
+                t2 << QString(DEFAULT_MANUFACTURER_NOTE) << endl;
+            } else {
+                PRINT_FILE_CREATE_ERROR(manufacturerFailNoteFile)
+            }
+        } else {
+            manufacturerFailNoteFile = project->values("DEPLOYMENT.manufacturers.fail_note").join("");
+        }
+
+        t << "ELSEIF NOT(0) ; MANUFACTURER" << endl
+          << "\"" << fileInfo(manufacturerFailNoteFile).absoluteFilePath() << "\""
+          << " - \"\", FILETEXT, TEXTEXIT" << endl
+          << "ENDIF ; MANUFACTURER" << endl;
     }
 }
 

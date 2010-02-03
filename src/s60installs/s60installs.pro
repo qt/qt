@@ -114,6 +114,10 @@ symbian: {
         graphicssystems_plugins.sources += qvggraphicssystem.dll
     }
 
+    contains(QT_CONFIG, multimedia) {
+        qtlibraries.sources += QtMultimedia.dll
+    }
+
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
     BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
 }

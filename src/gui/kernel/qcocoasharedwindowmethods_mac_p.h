@@ -51,9 +51,6 @@
  NSPanel, while QCocoaWindow needs to inherit NSWindow rather than NSPanel).
 ****************************************************************************/
 
-#include <private/qapplication_p.h>
-#include <private/qbackingstore_p.h>
-
 QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
@@ -187,21 +184,4 @@ QT_END_NAMESPACE
         return [QT_MANGLE_NAMESPACE(QCocoaWindowCustomThemeFrame) class];
     return [super frameViewClassForStyleMask:styleMask];
 }
-
-- (void)displayIfNeeded
-{
-
-    QWidget *qwidget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    if (qwidget == 0) {
-        [super displayIfNeeded];
-        return;
-    }
-
-    if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qt_widget_private(qwidget)->maybeBackingStore())
-            bs->sync(qwidget, qwidget->rect());
-    }
-    [super displayIfNeeded];
-}
-
 

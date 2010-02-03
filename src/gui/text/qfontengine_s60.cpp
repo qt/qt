@@ -129,26 +129,62 @@ static inline unsigned int getChar(const QChar *str, int &i, const int len)
     return uc;
 }
 
+CFont *QFontEngineS60::fontWithSize(qreal size) const
+{
+    CFont *result = 0;
+    TFontSpec fontSpec(qt_QString2TPtrC(QFontEngine::fontDef.family), TInt(size));
+    fontSpec.iFontStyle.SetBitmapType(EAntiAliasedGlyphBitmap);
+    fontSpec.iFontStyle.SetPosture(QFontEngine::fontDef.style == QFont::StyleNormal?EPostureUpright:EPostureItalic);
+    fontSpec.iFontStyle.SetStrokeWeight(QFontEngine::fontDef.weight > QFont::Normal?EStrokeWeightBold:EStrokeWeightNormal);
+    const TInt errorCode = S60->screenDevice()->GetNearestFontToDesignHeightInPixels(result, fontSpec);
+    Q_ASSERT(result && (errorCode == 0));
+    return result;
+}
+
+void QFontEngineS60::setFontScale(qreal scale)
+{
+    if (qFuzzyCompare(scale, qreal(1))) {
+        if (!m_originalFont)
+            m_originalFont = fontWithSize(m_originalFontSizeInPixels);
+        m_activeFont = m_originalFont;
+    } else {
+        const qreal scaledFontSizeInPixels = m_originalFontSizeInPixels * scale;
+        if (!m_scaledFont ||
+                (TInt(scaledFontSizeInPixels) != TInt(m_scaledFontSizeInPixels))) {
+            releaseFont(m_scaledFont);
+            m_scaledFontSizeInPixels = scaledFontSizeInPixels;
+            m_scaledFont = fontWithSize(m_scaledFontSizeInPixels);
+        }
+        m_activeFont = m_scaledFont;
+    }
+}
+
+void QFontEngineS60::releaseFont(CFont *&font)
+{
+    if (font) {
+        S60->screenDevice()->ReleaseFont(font);
+        font = 0;
+    }
+}
+
 QFontEngineS60::QFontEngineS60(const QFontDef &request, const QFontEngineS60Extensions *extensions)
     : m_extensions(extensions)
+    , m_originalFont(0)
+    , m_originalFontSizeInPixels((request.pixelSize >= 0)?
+            request.pixelSize:pointsToPixels(request.pointSize))
+    , m_scaledFont(0)
+    , m_scaledFontSizeInPixels(0)
+    , m_activeFont(0)
 {
     QFontEngine::fontDef = request;
-    m_fontSizeInPixels = (request.pixelSize >= 0)?
-            request.pixelSize:pointsToPixels(request.pointSize);
-
-    TFontSpec fontSpec(qt_QString2TPtrC(request.family), m_fontSizeInPixels);
-    fontSpec.iFontStyle.SetBitmapType(EAntiAliasedGlyphBitmap);
-    fontSpec.iFontStyle.SetPosture(request.style == QFont::StyleNormal?EPostureUpright:EPostureItalic);
-    fontSpec.iFontStyle.SetStrokeWeight(request.weight > QFont::Normal?EStrokeWeightBold:EStrokeWeightNormal);
-    const TInt errorCode = S60->screenDevice()->GetNearestFontToDesignHeightInPixels(m_font, fontSpec);
-    Q_ASSERT(errorCode == 0);
-
+    setFontScale(1.0);
     cache_cost = sizeof(QFontEngineS60);
 }
 
 QFontEngineS60::~QFontEngineS60()
 {
-    S60->screenDevice()->ReleaseFont(m_font);
+    releaseFont(m_originalFont);
+    releaseFont(m_scaledFont);
 }
 
 bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
@@ -251,12 +287,12 @@ glyph_metrics_t QFontEngineS60::boundingBox(glyph_t glyph)
 
 QFixed QFontEngineS60::ascent() const
 {
-    return m_font->FontMaxAscent();
+    return m_originalFont->FontMaxAscent();
 }
 
 QFixed QFontEngineS60::descent() const
 {
-    return m_font->FontMaxDescent();
+    return m_originalFont->FontMaxDescent();
 }
 
 QFixed QFontEngineS60::leading() const
@@ -266,7 +302,7 @@ QFixed QFontEngineS60::leading() const
 
 qreal QFontEngineS60::maxCharWidth() const
 {
-    return m_font->MaxCharWidthInPixels();
+    return m_originalFont->MaxCharWidthInPixels();
 }
 
 const char *QFontEngineS60::name() const
@@ -302,11 +338,11 @@ void QFontEngineS60::getCharacterData(glyph_t glyph, TOpenFontCharMetrics& metri
     const TUint specialCode = (TUint)glyph | 0x80000000;
 
     const CFont::TCharacterDataAvailability availability =
-        m_font->GetCharacterData(specialCode, metrics, bitmap, bitmapSize);
+            m_activeFont->GetCharacterData(specialCode, metrics, bitmap, bitmapSize);
     const glyph_t fallbackGlyph = '?';
     if (availability != CFont::EAllCharacterData) {
         const CFont::TCharacterDataAvailability fallbackAvailability =
-            m_font->GetCharacterData(fallbackGlyph, metrics, bitmap, bitmapSize);
+                m_activeFont->GetCharacterData(fallbackGlyph, metrics, bitmap, bitmapSize);
         Q_ASSERT(fallbackAvailability == CFont::EAllCharacterData);
     }
 }

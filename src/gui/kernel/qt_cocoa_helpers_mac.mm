@@ -1162,7 +1162,7 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     CGrafPtr port = GetWindowPort(qt_mac_window_for(widget));
     QDBeginCGContext(port, &context);
 #else
-    CGContextRef context = reinterpret_cast<CGContextRef>([[qt_mac_window_for(widget) graphicsContext] graphicsPort]);
+    CGContextRef context = (CGContextRef)[[NSGraphicsContext graphicsContextWithWindow:qt_mac_window_for(widget)] graphicsPort];
 #endif
     return context;
 }

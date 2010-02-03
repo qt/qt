@@ -40,14 +40,17 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QXmlStreamWriter
+    * [QTBUG-6893] Fixed adding extra Byte Order Marks when writing to a xml file.
 
 QtGui
 -----
 
  - foo
     * bar
+
+ * [QTBUG-7029] Fixed a crash when re-creating QApplication object due to a
+   dangling gesture manager pointer.
 
 QtDBus
 ------
@@ -85,6 +88,12 @@ QtXml
  - foo
     * bar
 
+QtMultimedia
+------------
+
+ - QAudioInput
+    * [QTBUG-7044]: QAudioInput stopped working correctly after suspend()/resume() on linux.
+
 Qt Plugins
 ----------
 
@@ -110,8 +119,11 @@ Qt for Unix (X11 and Mac OS X)
 
 Qt for Linux/X11
 ----------------
+  * Fix a bug where QPixmap::serialNumber was not set on a transformed pixmap
+    in Qt/X11.
 
- -
+  * Fixed a crash when an input method tries to create a widget after the
+    application is destroyed.
 
 Qt for Windows
 --------------
@@ -121,7 +133,10 @@ Qt for Windows
 Qt for Mac OS X
 ---------------
 
- -
+ - [QTBUG-7312]: Menubar and dock disappear after hiding a fullscreen widget on Cocoa.
+ - [QTBUG-7522]: Drawing fake buttons using QMacStyle+QStyleOptionViewItemV4 lead to crash.
+ - [QTBUG-7625]: Calling showFullScreen() then showNormal() on a widget results in top menu hiding.
+
 
 Qt for Embedded Linux
 ---------------------
@@ -130,7 +145,13 @@ Qt for Embedded Linux
 
 DirectFB
 --------
-
+  * Fix a bug where QPixmap::serialNumber was not set on a transformed pixmap
+    in DirectFB.
+  * Reimplement QPixmapData::scroll for QDirectFBPixmapData which optimizes
+    QPixmap::scroll
+  * Fix a rendering issue for semi-transparent top level windows in DirectFB.
+  * Make it possible to fall back to the raster engine for stretch blits in
+    DirectFB using QT_NO_DIRECTFB_STRETCHBLIT
  -
 
 Qt for Windows CE
@@ -143,7 +164,12 @@ Qt for Windows CE
 ****************************************************************************
 
  - Designer
-   * foo
+   * [QTBUG-6965] Enabled editing seconds of QDateTime-type properties
+   * [QTBUG-6757] Fixed bug where selection handles would be affected by
+     a style sheet set on the main form.
+
+ - uic3
+   * [QTBUG-7404] Added option to preserve layout names set by Qt 3 Designer.
 
  - qdoc3
    * bar

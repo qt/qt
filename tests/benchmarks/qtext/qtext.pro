@@ -4,4 +4,11 @@ TARGET = tst_QText
 
 SOURCES += main.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+symbian* {
+   TARGET.CAPABILITY = ALL -TCB
+   addFiles.sources = bidi.txt
+   addFiles.path = .
+   DEPLOYMENT += addFiles
+} else {
+   DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}
