@@ -18,7 +18,7 @@ wince* {
 }
 
 symbian {
-    TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData
+    TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData PowerMgmt
 }
 
 maemo6 {

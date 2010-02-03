@@ -66,6 +66,8 @@ public slots:
     void cleanupTestCase();
 
 private slots:
+
+    void outOfProcessSession();
     void invalidSession();
 
     void sessionProperties_data();
@@ -76,8 +78,6 @@ private slots:
 
     void sessionOpenCloseStop_data();
     void sessionOpenCloseStop();
-
-    void outOfProcessSession();
 
 private:
     QNetworkConfigurationManager manager;
@@ -264,7 +264,10 @@ void tst_QNetworkSession::sessionProperties()
 
     // QNetworkSession::interface() should return an invalid interface unless
     // session is in the connected state.
+#if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
+    // On Symbian emulator, the support for data bearers is limited
     QCOMPARE(session.state() == QNetworkSession::Connected, session.interface().isValid());
+#endif
 
     if (!configuration.isValid()) {
         QVERIFY(configuration.state() == QNetworkConfiguration::Undefined &&
@@ -311,12 +314,13 @@ void tst_QNetworkSession::userChoiceSession()
 
     QNetworkSession session(configuration);
 
+    // Check that configuration was really set
     QVERIFY(session.configuration() == configuration);
 
     QVERIFY(!session.isOpen());
 
+    // Check that session is not active
     QVERIFY(session.sessionProperty("ActiveConfiguration").toString().isEmpty());
-
 
     // The remaining tests require the session to be not NotAvailable.
     if (session.state() == QNetworkSession::NotAvailable)
@@ -367,7 +371,10 @@ void tst_QNetworkSession::userChoiceSession()
                 QTRY_VERIFY(!stateChangedSpy.isEmpty());
 
             QVERIFY(session.state() == QNetworkSession::Connected);
+#if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
+            // On Symbian emulator, the support for data bearers is limited
             QVERIFY(session.interface().isValid());
+#endif
 
             const QString userChoiceIdentifier =
                 session.sessionProperty("UserChoiceConfiguration").toString();
@@ -507,7 +514,10 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             }
 
             QVERIFY(session.state() == QNetworkSession::Connected);
+#if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
+            // On Symbian emulator, the support for data bearers is limited
             QVERIFY(session.interface().isValid());
+#endif
         } else {
             QFAIL("Timeout waiting for session to open.");
         }
@@ -540,7 +550,10 @@ void tst_QNetworkSession::sessionOpenCloseStop()
         QVERIFY(session2.isOpen());
         QVERIFY(session.state() == QNetworkSession::Connected);
         QVERIFY(session2.state() == QNetworkSession::Connected);
+#if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
+        // On Symbian emulator, the support for data bearers is limited
         QVERIFY(session.interface().isValid());
+#endif
         QCOMPARE(session.interface().hardwareAddress(), session2.interface().hardwareAddress());
         QCOMPARE(session.interface().index(), session2.interface().index());
     }
@@ -713,7 +726,10 @@ void tst_QNetworkSession::sessionOpenCloseStop()
             QVERIFY(!session2.isOpen());
             QVERIFY(session.state() == QNetworkSession::Connected);
             QVERIFY(session2.state() == QNetworkSession::Connected);
+#if !(defined(Q_OS_SYMBIAN) && defined(__WINS__))
+            // On Symbian emulator, the support for data bearers is limited
             QVERIFY(session.interface().isValid());
+#endif
             QCOMPARE(session.interface().hardwareAddress(), session2.interface().hardwareAddress());
             QCOMPARE(session.interface().index(), session2.interface().index());
         }
@@ -786,17 +802,23 @@ QDebug operator<<(QDebug debug, const QList<QNetworkConfiguration> &list)
     return debug;
 }
 
+// Note: outOfProcessSession requires that at least one configuration is
+// at Discovered -state (Defined is ok for symbian as well, as long as it is possible to open).
 void tst_QNetworkSession::outOfProcessSession()
 {
+#if defined(Q_OS_SYMBIAN) && defined(__WINS__)
+    QSKIP("Symbian emulator does not support two [QR]PRocesses linking a dll (QtBearer.dll) with global writeable static data.", SkipAll);
+#endif
     QNetworkConfigurationManager manager;
-
+    // Create a QNetworkConfigurationManager to detect configuration changes made in Lackey. This
+    // is actually the essence of this testcase - to check that platform mediates/reflects changes
+    // regardless of process boundaries. The interprocess communication is more like a way to get
+    // this test-case act correctly and timely.
     QList<QNetworkConfiguration> before = manager.allConfigurations(QNetworkConfiguration::Active);
+    QSignalSpy spy(&manager, SIGNAL(configurationChanged(QNetworkConfiguration)));
 
-    QSignalSpy spy(&manager, SIGNAL(configurationChanged(QNetworkConfiguration)));   
- 
     // Cannot read/write to processes on WinCE or Symbian.
     // Easiest alternative is to use sockets for IPC.
-
     QLocalServer oopServer;
     // First remove possible earlier listening address which would cause listen to fail 
     // (e.g. previously abruptly ended unit test might cause this)
@@ -813,19 +835,17 @@ void tst_QNetworkSession::outOfProcessSession()
     do {
         QByteArray output;
 
-        if(oopSocket->waitForReadyRead())
+        if(oopSocket->waitForReadyRead()) {
             output = oopSocket->readLine().trimmed();
+        }
 
         if (output.startsWith("Started session ")) {
-            QString identifier = QString::fromLocal8Bit(output.mid(16).constData());
-
+            QString identifier = QString::fromLocal8Bit(output.mid(20).constData());
             QNetworkConfiguration changed;
 
             do {
                 QTRY_VERIFY(!spy.isEmpty());
-
                 changed = qvariant_cast<QNetworkConfiguration>(spy.takeFirst().at(0));
-
             } while (changed.identifier() != identifier);
 
             QVERIFY((changed.state() & QNetworkConfiguration::Active) ==
@@ -870,10 +890,10 @@ void tst_QNetworkSession::outOfProcessSession()
 
     switch (lackey.exitCode()) {
     case 0:
+        qDebug("Lackey returned exit success (0)");
         break;
     case 1:
         QSKIP("No discovered configurations found.", SkipAll);
-        break;
     case 2:
         QSKIP("Lackey could not start session.", SkipAll);
     default:
