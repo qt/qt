@@ -697,6 +697,8 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 {
     Q_D(QAbstractSlider);
     e->ignore();
+    if (e->orientation() != d->orientation && !rect().contains(e->pos()))
+        return;
 
     int stepsToScroll = 0;
     qreal offset = qreal(e->delta()) / 120;
