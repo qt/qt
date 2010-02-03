@@ -64,8 +64,14 @@ void QmlGraphicsLoaderPrivate::clear()
     }
     source = QUrl();
 
-    delete item;
-    item = 0;
+    if (item) {
+        // We can't delete immediately because our item may have triggered
+        // the Loader to load a different item.
+        item->setVisible(false);
+        static_cast<QGraphicsItem*>(item)->setParentItem(0);
+        item->deleteLater();
+        item = 0;
+    }
 }
 
 void QmlGraphicsLoaderPrivate::initResize()
