@@ -148,6 +148,7 @@ private Q_SLOTS:
     void createdItem(int index, QmlGraphicsItem *item);
     void destroyingItem(QmlGraphicsItem *item);
     void sizeChange();
+    void layout();
 
 private:
     void refill();

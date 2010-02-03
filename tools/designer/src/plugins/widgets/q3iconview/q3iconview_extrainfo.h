@@ -81,7 +81,7 @@ class Q3IconViewExtraInfoFactory: public QExtensionFactory
 {
     Q_OBJECT
 public:
-    Q3IconViewExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
+    explicit Q3IconViewExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
 
 protected:
     virtual QObject *createExtension(QObject *object, const QString &iid, QObject *parent) const;

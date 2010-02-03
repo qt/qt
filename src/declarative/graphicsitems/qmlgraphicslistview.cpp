@@ -2114,12 +2114,14 @@ void QmlGraphicsListView::viewportMoved()
                 const qreal minX = minXExtent();
                 if ((minX - d->_moveX.value() < height()/2 || d->flickTargetX - d->_moveX.value() < height()/2)
                     && minX != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
+                    d->flickX(-d->horizontalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferBefore;
             } else if (d->velocityX < 0) {
                 const qreal maxX = maxXExtent();
                 if ((d->_moveX.value() - maxX < height()/2 || d->_moveX.value() - d->flickTargetX < height()/2)
                     && maxX != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
+                    d->flickX(-d->horizontalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferAfter;
             }
         }
         d->inFlickCorrection = false;
@@ -2399,12 +2401,12 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
             // Special case of appending an item to the model.
             modelIndex = d->visibleIndex + d->visibleItems.count();
         } else {
-            if (modelIndex + count - 1 < d->visibleIndex) {
+            if (modelIndex < d->visibleIndex) {
                 // Insert before visible items
                 d->visibleIndex += count;
                 for (int i = 0; i < d->visibleItems.count(); ++i) {
                     FxListItem *listItem = d->visibleItems.at(i);
-                    if (listItem->index != -1)
+                    if (listItem->index != -1 && listItem->index >= modelIndex)
                         listItem->index += count;
                 }
             }

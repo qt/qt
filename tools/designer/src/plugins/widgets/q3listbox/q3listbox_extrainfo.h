@@ -79,7 +79,7 @@ class Q3ListBoxExtraInfoFactory: public QExtensionFactory
 {
     Q_OBJECT
 public:
-    Q3ListBoxExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
+    explicit Q3ListBoxExtraInfoFactory(QDesignerFormEditorInterface *core, QExtensionManager *parent = 0);
 
 protected:
     virtual QObject *createExtension(QObject *object, const QString &iid, QObject *parent) const;

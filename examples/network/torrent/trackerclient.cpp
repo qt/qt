@@ -105,7 +105,7 @@ void TrackerClient::fetchPeerList()
     QString passkey = "?";
     if (fullUrl.contains("?passkey")) {
         passkey = metaInfo.announceUrl().mid(fullUrl.indexOf("?passkey"), -1);
-        passkey += "&";
+        passkey += '&';
     }
 
     // Percent encode the hash
