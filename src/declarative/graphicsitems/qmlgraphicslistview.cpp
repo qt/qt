@@ -605,6 +605,7 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
             if (listItem->attached->m_prevSection != listItem->attached->m_section)
                 createSection(listItem);
         }
+        unrequestedItems.remove(listItem->item);
     }
     requestedIndex = -1;
 
@@ -731,6 +732,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (footer)
             updateFooter();
         updateViewport();
+        updateUnrequestedPositions();
     } else if (!doBuffer && buffer && bufferMode != NoBuffer) {
         refill(from, to, true);
     }
@@ -765,7 +767,6 @@ void QmlGraphicsListViewPrivate::layout()
         updateHeader();
     if (footer)
         updateFooter();
-    updateUnrequestedPositions();
     updateViewport();
 }
 
@@ -779,14 +780,20 @@ void QmlGraphicsListViewPrivate::updateUnrequestedIndexes()
 
 void QmlGraphicsListViewPrivate::updateUnrequestedPositions()
 {
-    QHash<QmlGraphicsItem*,int>::const_iterator it;
-    for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
-        if (visibleItem(*it))
-            continue;
-        if (orient == QmlGraphicsListView::Vertical)
-            it.key()->setY(positionAt(*it));
-        else
-            it.key()->setX(positionAt(*it));
+    Q_Q(QmlGraphicsListView);
+    if (unrequestedItems.count()) {
+        qreal pos = position();
+        QHash<QmlGraphicsItem*,int>::const_iterator it;
+        for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
+            QmlGraphicsItem *item = it.key();
+            if (orient == QmlGraphicsListView::Vertical) {
+                if (item->y() + item->height() > pos && item->y() < pos + q->height())
+                    item->setY(positionAt(*it));
+            } else {
+                if (item->x() + item->width() > pos && item->x() < pos + q->width())
+                    item->setX(positionAt(*it));
+            }
+        }
     }
 }
 
@@ -2611,6 +2618,7 @@ void QmlGraphicsListView::destroyRemoved()
 void QmlGraphicsListView::itemsMoved(int from, int to, int count)
 {
     Q_D(QmlGraphicsListView);
+    d->updateUnrequestedIndexes();
 
     if (d->visibleItems.isEmpty()) {
         refill();
