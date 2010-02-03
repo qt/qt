@@ -171,6 +171,7 @@ SUBDIRS += \
            qgraphicsscene \
            qgraphicssceneindex \
            qgraphicstransform \
+           qgraphicsvideoitem \
            qgraphicsview \
            qgraphicswidget \
            qgridlayout \
