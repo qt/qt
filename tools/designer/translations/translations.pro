@@ -129,6 +129,7 @@ HEADERS += ../../shared/findwidget/abstractfindwidget.h \
 
 TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
+    $$TR_DIR/designer_cs.ts \
     $$TR_DIR/designer_de.ts \
     $$TR_DIR/designer_fr.ts \
     $$TR_DIR/designer_ja.ts \
