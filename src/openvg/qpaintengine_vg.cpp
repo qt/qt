@@ -188,6 +188,7 @@ public:
 
     bool maskValid;         // True if vgMask() contains valid data.
     bool maskIsSet;         // True if mask would be fully set if it was valid.
+    bool scissorMask;       // True if scissor is used in place of the mask.
     bool rawVG;             // True if processing a raw VG escape.
 
     QRect maskRect;         // Rectangle version of mask if it is simple.
@@ -355,6 +356,7 @@ void QVGPaintEnginePrivate::init()
 
     maskValid = false;
     maskIsSet = false;
+    scissorMask = false;
     rawVG = false;
 
     scissorActive = false;
@@ -1664,12 +1666,12 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         d->maskValid = false;
         d->maskIsSet = true;
+        d->scissorMask = false;
         d->maskRect = QRect();
         vgSeti(VG_MASKING, VG_FALSE);
         return;
     }
 
-#if defined(QVG_NO_RENDER_TO_MASK)
     // We don't have vgRenderToMask(), so handle simple QRectF's only.
     if (path.shape() == QVectorPath::RectangleHint &&
             path.elementCount() == 4 && clipTransformIsSimple(d->transform)) {
@@ -1679,8 +1681,10 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         QRectF rect(points[0], points[1], points[2] - points[0],
                     points[5] - points[1]);
         clip(rect.toRect(), op);
+        return;
     }
-#else
+
+#if !defined(QVG_NO_RENDER_TO_MASK)
     QPaintDevice *pdev = paintDevice();
     int width = pdev->width();
     int height = pdev->height();
@@ -1711,6 +1715,7 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
     d->maskIsSet = false;
+    d->scissorMask = false;
 #endif
 }
 
@@ -1731,6 +1736,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         {
             d->maskValid = false;
             d->maskIsSet = true;
+            d->scissorMask = false;
             d->maskRect = QRect();
             vgSeti(VG_MASKING, VG_FALSE);
         }
@@ -1746,6 +1752,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 // Special case: if the intersection of the system
@@ -1763,6 +1770,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                     if (clip.rectCount() != 1) {
                         d->maskValid = false;
                         d->maskIsSet = false;
+                        d->scissorMask = false;
                         d->maskRect = QRect();
                         d->modifyMask(this, VG_FILL_MASK, r);
                         break;
@@ -1771,6 +1779,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 }
                 d->maskValid = false;
                 d->maskIsSet = false;
+                d->scissorMask = true;
                 d->maskRect = clipRect;
                 vgSeti(VG_MASKING, VG_FALSE);
                 updateScissor();
@@ -1781,13 +1790,30 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         case Qt::IntersectClip:
         {
             QRect r = d->transform.mapRect(rect);
-            if (d->maskIsSet && isDefaultClipRect(r)) {
+            if (!d->maskValid) {
+                // Mask has not been used yet, so intersect with
+                // the previous scissor-based region in maskRect.
+                if (d->scissorMask)
+                    r = r.intersect(d->maskRect);
+                if (isDefaultClipRect(r)) {
+                    // The clip is the full window, so turn off clipping.
+                    d->maskIsSet = true;
+                    d->maskRect = QRect();
+                } else {
+                    // Activate the scissor on a smaller maskRect.
+                    d->maskIsSet = false;
+                    d->maskRect = r;
+                }
+                d->scissorMask = true;
+                updateScissor();
+            } else if (d->maskIsSet && isDefaultClipRect(r)) {
                 // Intersecting a full-window clip with a full-window
                 // region is the same as turning off clipping.
                 if (d->maskValid)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 d->modifyMask(this, VG_INTERSECT_MASK, r);
@@ -1829,6 +1855,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
         {
             d->maskValid = false;
             d->maskIsSet = true;
+            d->scissorMask = false;
             d->maskRect = QRect();
             vgSeti(VG_MASKING, VG_FALSE);
         }
@@ -1844,6 +1871,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 // Special case: if the intersection of the system
@@ -1857,12 +1885,14 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                 if (clip.rectCount() == 1) {
                     d->maskValid = false;
                     d->maskIsSet = false;
+                    d->scissorMask = true;
                     d->maskRect = clip.boundingRect();
                     vgSeti(VG_MASKING, VG_FALSE);
                     updateScissor();
                 } else {
                     d->maskValid = false;
                     d->maskIsSet = false;
+                    d->scissorMask = false;
                     d->maskRect = QRect();
                     d->modifyMask(this, VG_FILL_MASK, r);
                 }
@@ -1887,6 +1917,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 d->modifyMask(this, VG_INTERSECT_MASK, r);
@@ -1965,6 +1996,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         d->maskValid = false;
         d->maskIsSet = true;
+        d->scissorMask = false;
         d->maskRect = QRect();
         vgSeti(VG_MASKING, VG_FALSE);
         return;
@@ -2000,6 +2032,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
     d->maskIsSet = false;
+    d->scissorMask = false;
 #else
     QPaintEngineEx::clip(path, op);
 #endif
@@ -2043,6 +2076,7 @@ void QVGPaintEnginePrivate::modifyMask
     vgSeti(VG_MASKING, VG_TRUE);
     maskValid = true;
     maskIsSet = false;
+    scissorMask = false;
 }
 
 void QVGPaintEnginePrivate::modifyMask
@@ -2064,6 +2098,7 @@ void QVGPaintEnginePrivate::modifyMask
     vgSeti(VG_MASKING, VG_TRUE);
     maskValid = true;
     maskIsSet = false;
+    scissorMask = false;
 }
 
 #endif // !QVG_SCISSOR_CLIP
@@ -2096,7 +2131,7 @@ void QVGPaintEngine::updateScissor()
     {
 #if !defined(QVG_SCISSOR_CLIP)
         // Combine the system clip with the simple mask rectangle.
-        if (!d->maskRect.isNull()) {
+        if (d->scissorMask) {
             if (region.isEmpty())
                 region = d->maskRect;
             else
@@ -2187,6 +2222,7 @@ void QVGPaintEngine::clipEnabledChanged()
         // Replay the entire clip stack to put the mask into the right state.
         d->maskValid = false;
         d->maskIsSet = true;
+        d->scissorMask = false;
         d->maskRect = QRect();
         s->clipRegion = defaultClipRegion();
         d->replayClipOperations();
@@ -2196,6 +2232,7 @@ void QVGPaintEngine::clipEnabledChanged()
         vgSeti(VG_MASKING, VG_FALSE);
         d->maskValid = false;
         d->maskIsSet = false;
+        d->scissorMask = false;
         d->maskRect = QRect();
     }
 #endif
@@ -3398,6 +3435,7 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
                   QPaintEngine::DirtyClipEnabled)) != 0) {
         d->maskValid = false;
         d->maskIsSet = false;
+        d->scissorMask = false;
         d->maskRect = QRect();
         clipEnabledChanged();
     }
