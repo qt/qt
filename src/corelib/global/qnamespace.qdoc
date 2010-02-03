@@ -524,11 +524,11 @@
        	   receiver are in the same thread. Same as QueuedConnection,
        	   if the emitter and receiver are in different threads.
 
-    \value DirectConnection  
+    \value DirectConnection
 	   The slot is invoked immediately, when the signal is
        	   emitted.
 
-    \value QueuedConnection  
+    \value QueuedConnection
     	   The slot is invoked when control returns to the event loop
        	   of the receiver's thread. The slot is executed in the
        	   receiver's thread.
@@ -1242,6 +1242,17 @@
 
     \value WA_TouchPadAcceptSingleTouchEvents Allows touchpad single
     touch events to be sent to the widget.
+
+    \value WA_MergeSoftkeys Allows widget to merge softkeys with parent widget,
+    i.e. widget can set only one softkeys and request softkey implementation
+    to take rest of the softkeys from the parent. Note parents are traversed until
+    WA_MergeSoftkeys is not set. See also Qt::WA_MergeSoftkeysRecursively
+    This attribute currently has effect only on Symbian platforms
+
+    \value WA_MergeSoftkeysRecursively Allows widget to merge softkeys recursively
+    with all parents. If this attribute is set, the widget parents are traversed until
+    window boundary (widget without parent or dialog) is found.
+    This attribute currently has effect only on Symbian platforms
 
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent

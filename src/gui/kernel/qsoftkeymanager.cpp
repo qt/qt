@@ -41,34 +41,18 @@
 
 #include "qapplication.h"
 #include "qevent.h"
-#ifdef Q_WS_S60
-#include "qstyle.h"
-#include "private/qt_s60_p.h"
-#endif
+#include "qbitmap.h"
 #include "private/qsoftkeymanager_p.h"
 #include "private/qobject_p.h"
+#include "private/qsoftkeymanager_common_p.h"
+
+#ifdef Q_WS_S60
+#include "private/qsoftkeymanager_s60_p.h"
+#endif
 
 #ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_WS_S60
-static const int s60CommandStart = 6000;
-#endif
-
-class QSoftKeyManagerPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QSoftKeyManager)
-
-public:
-    static void updateSoftKeys_sys(const QList<QAction*> &softKeys);
-
-private:
-    QHash<QAction*, Qt::Key> keyedActions;
-    static QSoftKeyManager *self;
-    static QWidget *softKeySource;
-};
-
-QWidget *QSoftKeyManagerPrivate::softKeySource = 0;
 QSoftKeyManager *QSoftKeyManagerPrivate::self = 0;
 
 const char *QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
@@ -105,7 +89,12 @@ QSoftKeyManager *QSoftKeyManager::instance()
     return QSoftKeyManagerPrivate::self;
 }
 
-QSoftKeyManager::QSoftKeyManager() : QObject(*(new QSoftKeyManagerPrivate), 0)
+QSoftKeyManager::QSoftKeyManager() :
+#ifdef Q_WS_S60
+    QObject(*(new QSoftKeyManagerPrivateS60), 0)
+#else
+    QObject(*(new QSoftKeyManagerPrivate), 0)
+#endif
 {
 }
 
@@ -115,10 +104,11 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
     QAction *action = new QAction(QSoftKeyManager::tr(text), actionWidget);
     QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
+    case MenuSoftKey: // FALL-THROUGH
+        action->setProperty(MENU_ACTION_PROPERTY, QVariant(true)); // TODO: can be refactored away to use _q_action_menubar
     case OkSoftKey:
     case SelectSoftKey:
     case DoneSoftKey:
-    case MenuSoftKey:
         softKeyRole = QAction::PositiveSoftKey;
         break;
     case CancelSoftKey:
@@ -147,7 +137,7 @@ QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key
 #endif //QT_NO_ACTION
 }
 
-void QSoftKeyManager::cleanupHash(QObject* obj)
+void QSoftKeyManager::cleanupHash(QObject *obj)
 {
     Q_D(QSoftKeyManager);
     QAction *action = qobject_cast<QAction*>(obj);
@@ -175,137 +165,78 @@ void QSoftKeyManager::updateSoftKeys()
     QApplication::postEvent(QSoftKeyManager::instance(), event);
 }
 
+bool QSoftKeyManager::appendSoftkeys(const QWidget &source, int level)
+{
+    Q_D(QSoftKeyManager);
+    bool ret = false;
+    QList<QAction*> actions = source.actions();
+    for (int i = 0; i < actions.count(); ++i) {
+        if (actions.at(i)->softKeyRole() != QAction::NoSoftKey) {
+            d->requestedSoftKeyActions.insert(level, actions.at(i));
+            ret = true;
+        }
+    }
+    return ret;
+}
+
+QWidget *QSoftKeyManager::softkeySource(QWidget *previousSource, bool& recursiveMerging)
+{
+    Q_D(QSoftKeyManager);
+    QWidget *source = NULL;
+    if (!previousSource) {
+        // Initial source is primarily focuswidget and secondarily activeWindow
+        source = QApplication::focusWidget();
+        if (!source)
+            source = QApplication::activeWindow();
+    } else {
+        // Softkey merging is based on four criterias
+        // 1. Implicit merging is used whenever focus widget does not specify any softkeys
+        bool implicitMerging = d->requestedSoftKeyActions.isEmpty();
+        // 2. Explicit merging with parent is used whenever WA_MergeSoftkeys widget attribute is set
+        bool explicitMerging = previousSource->testAttribute(Qt::WA_MergeSoftkeys);
+        // 3. Explicit merging with all parents
+        recursiveMerging |= previousSource->testAttribute(Qt::WA_MergeSoftkeysRecursively);
+        // 4. Implicit and explicit merging always stops at window boundary
+        bool merging = (implicitMerging || explicitMerging || recursiveMerging) && !previousSource->isWindow();
+
+        source = merging ? previousSource->parentWidget() : NULL;
+    }
+    return source;
+}
+
+bool QSoftKeyManager::handleUpdateSoftKeys()
+{
+    Q_D(QSoftKeyManager);
+    int level = 0;
+    d->requestedSoftKeyActions.clear();
+    bool recursiveMerging = false;
+    QWidget *source = softkeySource(NULL, recursiveMerging);
+    do {
+        if (source) {
+            bool added = appendSoftkeys(*source, level);
+            source = softkeySource(source, recursiveMerging);
+            level = added ? ++level : level;
+        }
+    } while (source);
+
+    d->updateSoftKeys_sys();
+    return true;
+}
+
 bool QSoftKeyManager::event(QEvent *e)
 {
 #ifndef QT_NO_ACTION
-    if (e->type() == QEvent::UpdateSoftKeys) {
-        QList<QAction*> softKeys;
-        QWidget *source = QApplication::focusWidget();
-        do {
-            if (source) {
-                QList<QAction*> actions = source->actions();
-                for (int i = 0; i < actions.count(); ++i) {
-                    if (actions.at(i)->softKeyRole() != QAction::NoSoftKey)
-                        softKeys.append(actions.at(i));
-                }
-
-                QWidget *parent = source->parentWidget();
-                if (parent && softKeys.isEmpty() && !source->isWindow())
-                    source = parent;
-                else
-                    break;
-            } else {
-                source = QApplication::activeWindow();
-            }
-        } while (source);
-
-        QSoftKeyManagerPrivate::softKeySource = source;
-        QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
-        return true;
-    }
+    if (e->type() == QEvent::UpdateSoftKeys)
+        return handleUpdateSoftKeys();
 #endif //QT_NO_ACTION
     return false;
 }
 
 #ifdef Q_WS_S60
-void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
-{
-    // lets not update softkeys if s60 native dialog or menu is shown
-    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
-            || CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog())
-        return;
-
-    CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
-    nativeContainer->DrawableWindow()->SetOrdinalPosition(0);
-    nativeContainer->DrawableWindow()->SetPointerCapturePriority(1); //keep softkeys available in modal dialog
-    nativeContainer->DrawableWindow()->SetFaded(EFalse, RWindowTreeNode::EFadeIncludeChildren);
-
-    int position = -1;
-    bool needsExitButton = true;
-    QT_TRAP_THROWING(
-        //Using -1 instead of EAknSoftkeyEmpty to avoid flickering.
-        nativeContainer->SetCommandL(0, -1, KNullDesC);
-        nativeContainer->SetCommandL(2, -1, KNullDesC);
-    );
-
-    for (int index = 0; index < softkeys.count(); index++) {
-        const QAction* softKeyAction = softkeys.at(index);
-        switch (softKeyAction->softKeyRole()) {
-        // Positive Actions on the LSK
-        case QAction::PositiveSoftKey:
-            position = 0;
-            break;
-        case QAction::SelectSoftKey:
-            position = 0;
-            break;
-        // Negative Actions on the RSK
-        case QAction::NegativeSoftKey:
-            needsExitButton = false;
-            position = 2;
-            break;
-        default:
-            break;
-        }
-
-        int command = (softKeyAction->objectName().contains(QLatin1String("_q_menuSoftKeyAction")))
-                    ? EAknSoftkeyOptions
-                    : s60CommandStart + index;
-
-        // _q_menuSoftKeyAction action is set to "invisible" and all invisible actions are by default
-        // disabled. However we never want to dim options softkey, even it is set to "invisible"
-        bool dimmed = (command == EAknSoftkeyOptions) ? false : !softKeyAction->isEnabled();
-
-        if (position != -1) {
-            const int underlineShortCut = QApplication::style()->styleHint(QStyle::SH_UnderlineShortcut);
-            QString iconText = softKeyAction->iconText();
-            TPtrC text = qt_QString2TPtrC( underlineShortCut ? softKeyAction->text() : iconText);
-            QT_TRAP_THROWING(
-                nativeContainer->SetCommandL(position, command, text);
-                nativeContainer->DimCommand(command, dimmed);
-            );
-        }
-    }
-
-    const Qt::WindowType sourceWindowType = QSoftKeyManagerPrivate::softKeySource
-        ?   QSoftKeyManagerPrivate::softKeySource->window()->windowType()
-        :   Qt::Widget;
-
-    if (needsExitButton && sourceWindowType != Qt::Dialog && sourceWindowType != Qt::Popup)
-        QT_TRAP_THROWING(
-            nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QSoftKeyManager::tr("Exit"))));
-
-    nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
-}
-
 bool QSoftKeyManager::handleCommand(int command)
 {
-    if (command >= s60CommandStart && QSoftKeyManagerPrivate::softKeySource) {
-        int index = command - s60CommandStart;
-        const QList<QAction*>& softKeys = QSoftKeyManagerPrivate::softKeySource->actions();
-        for (int i = 0, j = 0; i < softKeys.count(); ++i) {
-            QAction *action = softKeys.at(i);
-            if (action->softKeyRole() != QAction::NoSoftKey) {
-                if (j == index) {
-                    QWidget *parent = action->parentWidget();
-                    if (parent && parent->isEnabled()) {
-                        action->activate(QAction::Trigger);
-                        return true;
-                    }
-                }
-                j++;
-            }
-        }
-    }
-
-    return false;
+    return static_cast<QSoftKeyManagerPrivateS60*>(QSoftKeyManager::instance()->d_func())->handleCommand(command);
 }
-
-#else
-
-void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &)
-{
-}
-
 #endif
 
 QT_END_NAMESPACE
