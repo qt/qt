@@ -221,6 +221,11 @@ QScriptValue QmlScriptEngine::resolvedUrl(QScriptContext *ctxt, QScriptEngine *e
     return QScriptValue(r.toString());
 }
 
+QNetworkAccessManager *QmlScriptEngine::networkAccessManager()
+{
+    return p->getNetworkAccessManager();
+}
+
 QmlEnginePrivate::~QmlEnginePrivate()
 {
     while (cleanup) {
@@ -418,6 +423,27 @@ void QmlEngine::namInvalidated()
     d->accessManagerValid = false;
 }
 
+QNetworkAccessManager *QmlEnginePrivate::getNetworkAccessManager() const
+{
+    Q_Q(const QmlEngine);
+
+    if (!accessManagerValid) {
+        delete networkAccessManagerFactory;
+        networkAccessManagerFactory = 0;
+    }
+    if (!networkAccessManager) {
+        if (networkAccessManagerFactory) {
+            QObject::connect(networkAccessManagerFactory, SIGNAL(invalidated()),
+                             q, SLOT(namInvalidated()), Qt::UniqueConnection);
+            networkAccessManager = networkAccessManagerFactory->create(const_cast<QmlEngine*>(q));
+        } else {
+            networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(q));
+        }
+        accessManagerValid = true;
+    }
+    return networkAccessManager;
+}
+
 /*!
     Returns a common QNetworkAccessManager which can be used by any QML element
     instantiated by this engine.
@@ -432,21 +458,7 @@ void QmlEngine::namInvalidated()
 QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
-    if (!d->accessManagerValid) {
-        delete d->networkAccessManagerFactory;
-        d->networkAccessManagerFactory = 0;
-    }
-    if (!d->networkAccessManager) {
-        if (d->networkAccessManagerFactory) {
-            connect(d->networkAccessManagerFactory, SIGNAL(invalidated())
-                    , this, SLOT(namInvalidated()), Qt::UniqueConnection);
-            d->networkAccessManager = d->networkAccessManagerFactory->create(const_cast<QmlEngine*>(this));
-        } else {
-            d->networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(this));
-        }
-        d->accessManagerValid = true;
-    }
-    return d->networkAccessManager;
+    return d->getNetworkAccessManager();
 }
 
 /*!

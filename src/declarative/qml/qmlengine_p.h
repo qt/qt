@@ -108,8 +108,7 @@ class QmlScriptEngine : public QScriptEngine
 {
 public:
     QmlScriptEngine(QmlEnginePrivate *priv);
-
-    ~QmlScriptEngine();
+    virtual ~QmlScriptEngine();
 
     QUrl resolvedUrl(QScriptContext *context, const QUrl& url); // resolved against p's context, or baseUrl if no p
     static QScriptValue resolvedUrl(QScriptContext *ctxt, QScriptEngine *engine);
@@ -127,6 +126,8 @@ public:
     QScriptClass *nodeListClass;
 
     QUrl baseUrl;
+
+    virtual QNetworkAccessManager *networkAccessManager();
 };
 
 class Q_AUTOTEST_EXPORT QmlEnginePrivate : public QObjectPrivate
@@ -209,6 +210,8 @@ public:
     QmlComponentAttached *componentAttacheds;
 
     bool inBeginCreate;
+
+    QNetworkAccessManager *getNetworkAccessManager() const;
     mutable QNetworkAccessManager *networkAccessManager;
     mutable QmlNetworkAccessManagerFactory *networkAccessManagerFactory;
     mutable bool accessManagerValid;

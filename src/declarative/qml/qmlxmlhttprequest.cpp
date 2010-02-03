@@ -940,7 +940,7 @@ public:
                  Opened = 1, HeadersReceived = 2,
                  Loading = 3, Done = 4 };
 
-    QmlXMLHttpRequest();
+    QmlXMLHttpRequest(QNetworkAccessManager *manager);
     virtual ~QmlXMLHttpRequest();
 
     QScriptValue callback() const;
@@ -993,26 +993,18 @@ private:
     void destroyNetwork();
 
     QNetworkAccessManager *m_nam;
-    QNetworkAccessManager *networkAccessManager()
-    {
-        if (!m_nam) {
-            m_nam = new QNetworkAccessManager;
-            // XXX proxy, etc...
-        }
-        return m_nam;
-    }
+    QNetworkAccessManager *networkAccessManager() { return m_nam; }
 };
 
-QmlXMLHttpRequest::QmlXMLHttpRequest()
+QmlXMLHttpRequest::QmlXMLHttpRequest(QNetworkAccessManager *manager)
 : m_state(Unsent), m_errorFlag(false), m_sendFlag(false),
-  m_redirectCount(0), m_network(0), m_nam(0)
+  m_redirectCount(0), m_network(0), m_nam(manager)
 {
 }
 
 QmlXMLHttpRequest::~QmlXMLHttpRequest()
 {
     destroyNetwork();
-    delete m_nam;
 }
 
 QScriptValue QmlXMLHttpRequest::callback() const
@@ -1568,7 +1560,7 @@ static QScriptValue qmlxmlhttprequest_onreadystatechange(QScriptContext *context
 static QScriptValue qmlxmlhttprequest_new(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->isCalledAsConstructor()) {
-        context->thisObject().setData(engine->newQObject(new QmlXMLHttpRequest(), QScriptEngine::ScriptOwnership));
+        context->thisObject().setData(engine->newQObject(new QmlXMLHttpRequest(QmlScriptEngine::get(engine)->networkAccessManager()), QScriptEngine::ScriptOwnership));
     }
     return engine->undefinedValue();
 }
