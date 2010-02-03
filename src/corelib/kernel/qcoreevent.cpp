@@ -133,10 +133,10 @@ QT_BEGIN_NAMESPACE
     \value GrabKeyboard                     Item gains keyboard grab (QGraphicsItem only).
     \value GrabMouse                        Item gains mouse grab (QGraphicsItem only).
     \value GraphicsSceneContextMenu         Context popup menu over a graphics scene (QGraphicsSceneContextMenuEvent).
-    \value GraphicsSceneDragEnter           The cursor enters a graphics scene during a drag and drop operation.
-    \value GraphicsSceneDragLeave           The cursor leaves a graphics scene during a drag and drop operation.
-    \value GraphicsSceneDragMove            A drag and drop operation is in progress over a scene.
-    \value GraphicsSceneDrop                A drag and drop operation is completed over a scene.
+    \value GraphicsSceneDragEnter           The cursor enters a graphics scene during a drag and drop operation (QGraphicsSceneDragDropEvent).
+    \value GraphicsSceneDragLeave           The cursor leaves a graphics scene during a drag and drop operation (QGraphicsSceneDragDropEvent).
+    \value GraphicsSceneDragMove            A drag and drop operation is in progress over a scene (QGraphicsSceneDragDropEvent).
+    \value GraphicsSceneDrop                A drag and drop operation is completed over a scene (QGraphicsSceneDragDropEvent).
     \value GraphicsSceneHelp                The user requests help for a graphics scene (QHelpEvent).
     \value GraphicsSceneHoverEnter          The mouse cursor enters a hover item in a graphics scene (QGraphicsSceneHoverEvent).
     \value GraphicsSceneHoverLeave          The mouse cursor leaves a hover item in a graphics scene (QGraphicsSceneHoverEvent).
