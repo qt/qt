@@ -83,6 +83,7 @@ private:
 private:
     Q_DISABLE_COPY(QmlPixmapReply)
     Q_DECLARE_PRIVATE(QmlPixmapReply)
+    friend class QmlImageRequestHandler;
     friend class QmlImageReader;
     friend class QmlPixmapCache;
 };

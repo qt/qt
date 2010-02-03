@@ -51,16 +51,12 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QNetworkAccessManager;
-class Q_DECLARATIVE_EXPORT QmlNetworkAccessManagerFactory : public QObject
+class Q_DECLARATIVE_EXPORT QmlNetworkAccessManagerFactory
 {
-    Q_OBJECT
 public:
     virtual ~QmlNetworkAccessManagerFactory();
-    void invalidate();
     virtual QNetworkAccessManager *create(QObject *parent) = 0;
 
-Q_SIGNALS:
-    void invalidated();
 };
 
 QT_END_NAMESPACE

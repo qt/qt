@@ -211,7 +211,6 @@ public:
     bool inBeginCreate;
     mutable QNetworkAccessManager *networkAccessManager;
     mutable QmlNetworkAccessManagerFactory *networkAccessManagerFactory;
-    mutable bool accessManagerValid;
 
     QmlCompositeTypeManager typeManager;
     QStringList fileImportPath;
