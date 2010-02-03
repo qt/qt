@@ -374,6 +374,7 @@ FxGridItem *QmlGraphicsGridViewPrivate::createItem(int modelIndex)
         model->completeItem();
         listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
+        unrequestedItems.remove(listItem->item);
     }
     requestedIndex = 0;
     return listItem;

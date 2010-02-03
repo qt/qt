@@ -57,12 +57,11 @@
 #include <QFile>
 #include <QEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QtCore/qnumeric.h>
 #include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
 #include <qlistmodelinterface_p.h>
-
-#include <math.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2845,7 +2844,7 @@ qreal QmlGraphicsItem::width() const
 void QmlGraphicsItem::setWidth(qreal w)
 {
     Q_D(QmlGraphicsItem);
-    if (isnan(w))
+    if (qIsNaN(w))
         return;
 
     d->widthValid = true;
@@ -2917,7 +2916,7 @@ qreal QmlGraphicsItem::height() const
 void QmlGraphicsItem::setHeight(qreal h)
 {
     Q_D(QmlGraphicsItem);
-    if (isnan(h))
+    if (qIsNaN(h))
         return;
 
     d->heightValid = true;
