@@ -960,7 +960,7 @@ void QDir::setNameFilters(const QStringList &nameFilters)
 {
     Q_D(QDir);
 
-    d->detach();
+    d->reset();
     d->data->nameFilters = nameFilters;
 }
 
@@ -1146,7 +1146,7 @@ void QDir::setFilter(Filters filters)
 {
     Q_D(QDir);
 
-    d->detach();
+    d->reset();
     d->data->filters = filters;
 }
 
@@ -1204,7 +1204,7 @@ void QDir::setSorting(SortFlags sort)
 {
     Q_D(QDir);
 
-    d->detach();
+    d->reset();
     d->data->sort = sort;
 }
 
@@ -2155,7 +2155,7 @@ void QDir::refresh() const
 {
     Q_D(const QDir);
 
-    d->data->clear();
+    const_cast<QDirPrivate *>(d)->reset();
 }
 
 /*!
@@ -2244,6 +2244,8 @@ bool QDir::matchAllDirs() const
 void QDir::setMatchAllDirs(bool on)
 {
     Q_D(QDir);
+
+    d->reset();
     d->matchAllDirs = on;
 }
 

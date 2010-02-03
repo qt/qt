@@ -95,6 +95,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLMETHOD               Doc::alias("qmlmethod")
 #define COMMAND_QMLATTACHEDMETHOD       Doc::alias("qmlattachedmethod")
 #define COMMAND_QMLDEFAULT              Doc::alias("default")
+#define COMMAND_QMLBASICTYPE            Doc::alias("qmlbasictype")
 #endif
 
 QStringList CppCodeParser::exampleFiles;
@@ -536,7 +537,8 @@ QSet<QString> CppCodeParser::topicCommands()
                            << COMMAND_QMLSIGNAL
                            << COMMAND_QMLATTACHEDSIGNAL
                            << COMMAND_QMLMETHOD
-                           << COMMAND_QMLATTACHEDMETHOD;
+                           << COMMAND_QMLATTACHEDMETHOD
+                           << COMMAND_QMLBASICTYPE;
 #else
                            << COMMAND_VARIABLE;
 #endif
@@ -727,6 +729,20 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
                 classNode = static_cast<const ClassNode*>(n);
         }
         return new QmlClassNode(tre->root(), names[0], classNode);
+    }
+    else if (command == COMMAND_QMLBASICTYPE) {
+#if 0        
+        QStringList parts = arg.split(" ");
+        qDebug() << command << parts;
+        if (parts.size() > 1) {
+            FakeNode* pageNode = static_cast<FakeNode*>(tre->root()->findNode(parts[1], Node::Fake));
+            if (pageNode) {
+                qDebug() << "FOUND";
+                return new QmlBasicTypeNode(pageNode, parts[0]);
+            }
+        }
+#endif        
+        return new QmlBasicTypeNode(tre->root(), arg);
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
              (command == COMMAND_QMLMETHOD) ||
