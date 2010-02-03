@@ -40,218 +40,302 @@
 ****************************************************************************/
 
 /*!
-    \page basicqmltypes.html
-    \title Common QML Types
+  \page qmlbasictypes.html
+  \title QML Basic Types
 
-    QML uses a range of property types, which you will see
-    referenced throughout the element documentation. Almost all of them are
-    exactly what you would expect.
+  QML uses a set of property types, which are primitive within QML.
+  These basic types are referenced throughout the documentation of the
+  QML elements. Almost all of them are exactly what you would expect.
 
-    \target basicqmlint
-    \section1 int
+  \annotatedlist qmlbasictypes
+*/
 
-    An integer or \c int is a whole numbers like 0, 10 or -20.  The possible \c int
-    values range from around -2000000000 to around 2000000000, although most
-    elements will only accept a reduced range (which they mention in their
-    documentation).
+/*!
+  \qmlbasictype int
+  \ingroup qmlbasictypes
 
-    Example:
-    \qml
-    Item { width: 100; height: 200 }
-    \endqml
+  \brief An integer is a whole number, e.g. 0, 10, or -20.  
 
-    \target basicqmlbool
-    \section1 bool
+  An integer is a whole number, e.g. 0, 10, or -20.  The possible \c
+  int values range from around -2000000000 to around 2000000000,
+  although most elements will only accept a reduced range (which they
+  mention in their documentation).
 
-    A boolean or \c bool is a binary true/false value.
+  Example:
+  \qml
+  Item { width: 100; height: 200 }
+  \endqml
+*/
 
-    Example:
-    \qml
-    Item { focus: true; clip: false }
-    \endqml
+/*!
+  \qmlbasictype bool
+  \ingroup qmlbasictypes
 
-    \target basicqmlreal
-    \section1 real
+  \brief A boolean is a binary true/false value.
 
-    A \c real is a number - either a whole number like an \c int, or a fractional number
-    like 1.2 or -29.8.
+  A boolean is a binary true/false value.
 
-    Example:
-    \qml
-    Item { width: 100.45; height: 150.82 }
-    \endqml
+  Example:
+  \qml
+  Item { focus: true; clip: false }
+  \endqml
 
-    \note In QML all reals are stored in single precision, \l {http://en.wikipedia.org/wiki/IEEE_754}{IEEE floating point} format.
+*/
 
-    \target basicqmlstring
-    \section1 string
+/*!
+  \qmlbasictype real
+  \ingroup qmlbasictypes
 
-    A string is a free form text, like "Hello world!".
+  \brief A real number has a decimal point, e.g. 1.2 or -29.8.
 
-    Example:
-    \qml
-    Text { text: "Hello world!" }
-    \endqml
+  A real number has a decimal point, e.g. 1.2 or -29.8.
 
-    \target basicqmlurl
-    \section1 url
+  Example:
+  \qml
+  Item { width: 100.45; height: 150.82 }
+  \endqml
 
-    A URL is a resource locator, like a file name. It can be either absolute, like "http://qtsoftware.com",
-    or relative, like "pics/logo.png". A relative URL is resolved relative to the URL of the component where
-    the URL is converted from a JavaScript string expression to a url property value.
+  \note In QML all reals are stored in single precision, \l
+  {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
+  format.
 
-    Example:
-    \qml
-    Image { source: "pics/logo.png" }
-    \endqml
+*/
 
-    \raw HTML
-    \endraw
+/*!
+  \qmlbasictype string
+  \ingroup qmlbasictypes
 
-    \target basicqmlcolor
-    \section1 color
+  \brief A string is a free form text in quotes, e.g. "Hello world!".
 
-    A \c color is most commonly specified as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color name}.  These names include colors like
-    "red", "green" and "lightsteelblue".
+  A string is a free form text in quotes, e.g. "Hello world!".
 
-    If the color you want isn't part of this list, colors can also be specified
-    in hexidecimal triplets or quads that take the form \c "#RRGGBB" and
-    \c "#AARRGGBB" respectively.  For example, the color red corresponds to a
-    triplet of \c "#FF0000" and a slightly transparent blue to a quad of
-    \c "#800000FF".
+  Example:
+  \qml
+  Text { text: "Hello world!" }
+  \endqml
 
-    Example:
-    \qml
-    Rectangle { color: "steelblue" }
-    Rectangle { color: "#FF0000" }
-    Rectangle { color: "#800000FF" }
-    \endqml
+*/
 
-    \target basicqmlpoint
-    \section1 point
+/*!
+  \qmlbasictype url
+  \ingroup qmlbasictypes
 
-    A \c point is specified in \c "x,y" format.
+  \brief A URL is a resource locator, like a file name. 
 
-    Example:
-    \qml
-    Widget { pos: "0,20" }
-    \endqml
+  A URL is a resource locator, like a file name.  It can be either
+  absolute, e.g. "http://qtsoftware.com", or relative, e.g.
+  "pics/logo.png". A relative URL is resolved relative to the URL of
+  the component where the URL is converted from a JavaScript string
+  expression to a url property value.
 
-    \target basicqmlsize
-    \section1 size
+  Example:
+  \qml
+  Image { source: "pics/logo.png" }
+  \endqml
 
-    A \c size is specified in \c "widthxheight" format.
+  \raw HTML
+  \endraw
 
-    Example:
-    \qml
-    Widget { size: "150x50" }
-    \endqml
+*/
 
-    \target basicqmlrectangle
-    \section1 rect
+/*!
+  \qmlbasictype color
+  \ingroup qmlbasictypes
 
-    A \c rect is specified in \c "x,y,widthxheight" format.
+  \brief A color is a standard color name in quotes.
 
-    Example:
-    \qml
-    Widget { geometry: "50,50,100x100" }
-    \endqml
+  A color is a standard color name in quotes. It is normally specified
+  as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords} {SVG
+  color name}.  These names include colors like "red", "green" and
+  "lightsteelblue".
 
-    \target basicqmldate
-    \section1 date
+  If the color you want isn't part of this list, colors can also be
+  specified in hexidecimal triplets or quads that take the form \c
+  "#RRGGBB" and \c "#AARRGGBB" respectively.  For example, the color
+  red corresponds to a triplet of \c "#FF0000" and a slightly
+  transparent blue to a quad of \c "#800000FF".
 
-    A \c date is specified in \c "YYYY-MM-DD" format.
+  Example:
+  \qml
+  Rectangle { color: "steelblue" }
+  Rectangle { color: "#FF0000" }
+  Rectangle { color: "#800000FF" }
+  \endqml
 
-    Example:
-    \qml
-    DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
-    \endqml
+*/
 
-    \target basicqmltime
-    \section1 time
+/*!
+  \qmlbasictype point
+  \ingroup qmlbasictypes
 
-    A \c time is specified in \c "hh:mm:ss" format.
+  \brief A point is specified as "x,y".
 
-    Example:
-    \qml
-    TimePicker { time: "14:22:15" }
-    \endqml
+  A point is specified as "x,y".
 
-    \target basicqmlfont
-    \section1 font
+  Example:
+  \qml
+  Widget { pos: "0,20" }
+  \endqml
 
-    The \c font type has the following properties of a QFont:
-    \list
-    \o \c string font.family
-    \o \c bool font.bold
-    \o \c bool font.italic
-    \o \c bool font.underline
-    \o \c real font.pointSize
-    \o \c int font.pixelSize
-    \endlist
+*/
 
-    Example:
-    \qml
-    Text { font.family: "Helvetica"; font.pointSize: 13; font.bold: true }
-    \endqml
+/*!
+  \qmlbasictype size
+  \ingroup qmlbasictypes
 
-    \target basicqmlaction
-    \section1 action
+  \brief A size is specified as "width x height".
 
-    The action type has all the properties of QAction, in particular:
-    \list
-    \o \c slot action.trigger - invoke the action
-    \o \c bool action.enabled - true if the action is enabled
-    \o \c string action.text - the text associated with the action
-    \endlist
+  A size is specified as "width x height".
 
-    Actions are used like this:
+  Example:
+  \qml
+  Widget { size: "150x50" }
+  \endqml
 
-    \qml
-    MouseRegion { onClicked: MyItem.myaction.trigger() }
-    State { name: "enabled"; when: MyItem.myaction.enabled == true }
-    Text { text: MyItem.someaction.text }
-    \endqml
+*/
 
-    \target basicqmllist
-    \section1 list
+/*!
+  \qmlbasictype rect
+  \ingroup qmlbasictypes
 
-    While not technically a basic type, QML also supports lists of object
-    types. When used from QML, the engine  automatically appends each value to the
-    list.
+  \brief A rect is specified as "x, y, width x height".
 
-    For example, the \l Item class has a children list property
-    that can be used like this:
-    \qml
-    Item {
-        children: [
-            Item { id: child1 },
-            Rectangle { id: child2 },
-            Text { id: child3 }
-        ]
-    }
-    \endqml
-    \c Child1, \c Child2 and \c Child3 will all be added to the children list
-    in the order in which they appear.
+  A rect is specified as "x, y, width x height".
 
-    \target basicqmlvector3d
-    \section1 vector3d
+  Example:
+  \qml
+  Widget { geometry: "50,50,100x100" }
+  \endqml
 
-    A \c vector3d is specified in \c "x,y,z" format:
+*/
 
-    \qml
-    Rotation { angle: 60; axis: "0,1,0" }
-    \endqml
+/*!
+  \qmlbasictype date
+  \ingroup qmlbasictypes
 
-    or with the \c{Qt.vector3d()} helper function:
+  \brief A date is specified as "YYYY-MM-DD".
 
-    \qml
-    Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }
-    \endqml
+  A date is specified as "YYYY-MM-DD".
 
-    or as separate \c x, \c y, and \c z components:
+  Example:
+  \qml
+  DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
+  \endqml
 
-    \qml
-    Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
-    \endqml
+*/
+
+/*!
+  \qmlbasictype time
+  \ingroup qmlbasictypes
+
+  \brief A time is specified as "hh:mm:ss".
+
+  A time is specified as "hh:mm:ss".
+
+  Example:
+  \qml
+  TimePicker { time: "14:22:15" }
+  \endqml
+
+ */
+
+/*!
+  \qmlbasictype font
+  \ingroup qmlbasictypes
+
+  \brief A font type has the properties of a QFont.
+
+  A font type has the properties of a QFont. The properties are:
+
+  \list
+  \o \c string font.family
+  \o \c bool font.bold
+  \o \c bool font.italic
+  \o \c bool font.underline
+  \o \c real font.pointSize
+  \o \c int font.pixelSize
+  \endlist
+
+  Example:
+  \qml
+  Text { font.family: "Helvetica"; font.pointSize: 13; font.bold: true }
+  \endqml
+
+*/
+
+/*!
+  \qmlbasictype action
+  \ingroup qmlbasictypes
+
+  \brief The action type has all the properties of QAction.
+
+  The action type has all the properties of QAction. The properties
+  are:
+
+  \list
+  \o \c slot action.trigger - invoke the action
+  \o \c bool action.enabled - true if the action is enabled
+  \o \c string action.text - the text associated with the action
+  \endlist
+
+  Actions are used like this:
+
+  \qml
+  MouseRegion { onClicked: MyItem.myaction.trigger() }
+  State { name: "enabled"; when: MyItem.myaction.enabled == true }
+  Text { text: MyItem.someaction.text }
+  \endqml
+
+*/
+
+/*!
+  \qmlbasictype list
+  \ingroup qmlbasictypes
+
+  \brief A list of objects.
+
+  A list of objects.  While not technically a basic type, QML also
+  supports lists of object types. When used from QML, the engine
+  automatically appends each value to the list.
+
+  For example, the \l Item class contains a list property named
+  children that can be used like this:
+
+  \qml
+  Item {
+    children: [
+      Item { id: child1 },
+      Rectangle { id: child2 },
+      Text { id: child3 }
+    ]
+  }
+  \endqml
+  \c Child1, \c Child2 and \c Child3 will all be added to the children list
+  in the order in which they appear.
+
+*/
+
+/*!
+  \qmlbasictype vector3d
+  \ingroup qmlbasictypes
+
+  \brief A vector3d is specified as "x,y,z".
+
+  A vector3d is specified as "x,y,z".
+
+  \qml
+  Rotation { angle: 60; axis: "0,1,0" }
+  \endqml
+
+  or with the \c{Qt.vector3d()} helper function:
+
+  \qml
+  Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }
+  \endqml
+
+  or as separate \c x, \c y, and \c z components:
+
+  \qml
+  Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
+  \endqml
 */
