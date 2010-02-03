@@ -71,9 +71,9 @@ static const CLSID QT_CLSID_FileOpenDialog = {0xdc1c5a9c, 0xe88a, 0x4dde, {0xa5,
 #endif
 
 
-typedef LPITEMIDLIST (WINAPI *PtrSHBrowseForFolder)(BROWSEINFO*);
+typedef qt_LPITEMIDLIST (WINAPI *PtrSHBrowseForFolder)(qt_BROWSEINFO*);
 static PtrSHBrowseForFolder ptrSHBrowseForFolder = 0;
-typedef BOOL (WINAPI *PtrSHGetPathFromIDList)(LPITEMIDLIST,LPWSTR);
+typedef BOOL (WINAPI *PtrSHGetPathFromIDList)(qt_LPITEMIDLIST, LPWSTR);
 static PtrSHGetPathFromIDList ptrSHGetPathFromIDList = 0;
 typedef HRESULT (WINAPI *PtrSHGetMalloc)(LPMALLOC *);
 static PtrSHGetMalloc ptrSHGetMalloc = 0;
@@ -687,7 +687,7 @@ static int __stdcall winGetExistDirCallbackProc(HWND hwnd,
         qt_win_resolve_libs();
         if (ptrSHGetPathFromIDList) {
             wchar_t path[MAX_PATH];
-            ptrSHGetPathFromIDList(LPITEMIDLIST(lParam), path);
+            ptrSHGetPathFromIDList(qt_LPITEMIDLIST(lParam), path);
             QString tmpStr = QString::fromWCharArray(path);
             if (!tmpStr.isEmpty())
                 SendMessage(hwnd, BFFM_ENABLEOK, 1, 1);
@@ -723,7 +723,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     path[0] = 0;
     tTitle = args.caption;
 
-    BROWSEINFO bi;
+    qt_BROWSEINFO bi;
 
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
     bi.hwndOwner = (parent ? parent->winId() : 0);
@@ -737,7 +737,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
 
     qt_win_resolve_libs();
     if (ptrSHBrowseForFolder) {
-        LPITEMIDLIST pItemIDList = ptrSHBrowseForFolder(&bi);
+        qt_LPITEMIDLIST pItemIDList = ptrSHBrowseForFolder(&bi);
         if (pItemIDList) {
             ptrSHGetPathFromIDList(pItemIDList, path);
             IMalloc *pMalloc;

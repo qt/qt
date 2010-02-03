@@ -49,9 +49,6 @@
 //and we won't have to declare it ourselves
 
 //declarations
-typedef DWORD SICHINTF;
-typedef ULONG SFGAOF;
-typedef DWORD SHCONTF;
 #define FOS_OVERWRITEPROMPT	   0x2
 #define FOS_STRICTFILETYPES	   0x4
 #define FOS_NOCHANGEDIR	       0x8
@@ -143,32 +140,29 @@ typedef struct {
     LPCWSTR pszName;
     LPCWSTR pszSpec;
 } qt_COMDLG_FILTERSPEC;
-#ifndef PROPERTYKEY_DEFINED
-#define PROPERTYKEY_DEFINED
 typedef struct {
     GUID fmtid;
     DWORD pid;
-} PROPERTYKEY;
-#endif
+} qt_PROPERTYKEY;
 
 typedef struct {
 	USHORT	cb;
 	BYTE	abID[1];
-} SHITEMID, *LPSHITEMID;
+} qt_SHITEMID, *qt_LPSHITEMID;
 typedef struct {
-	SHITEMID mkid;
-} ITEMIDLIST, *LPITEMIDLIST;
-typedef const ITEMIDLIST *LPCITEMIDLIST;
+	qt_SHITEMID mkid;
+} qt_ITEMIDLIST, *qt_LPITEMIDLIST;
+typedef const qt_ITEMIDLIST *qt_LPCITEMIDLIST;
 typedef struct {
     HWND          hwndOwner;
-    LPCITEMIDLIST pidlRoot;
+    qt_LPCITEMIDLIST pidlRoot;
     LPWSTR        pszDisplayName;
     LPCWSTR       lpszTitle;
     UINT          ulFlags;
     BFFCALLBACK   lpfn;
     LPARAM        lParam;
     int           iImage;
-} BROWSEINFO;
+} qt_BROWSEINFO;
 
 DECLARE_INTERFACE(IFileDialogEvents);
 DECLARE_INTERFACE_(IShellItem, IUnknown)
@@ -176,13 +170,13 @@ DECLARE_INTERFACE_(IShellItem, IUnknown)
     STDMETHOD(BindToHandler)(THIS_ IBindCtx *pbc, REFGUID bhid, REFIID riid, void **ppv) PURE;
     STDMETHOD(GetParent)(THIS_ IShellItem **ppsi) PURE;
     STDMETHOD(GetDisplayName)(THIS_ SIGDN sigdnName, LPWSTR *ppszName) PURE;
-    STDMETHOD(GetAttributes)(THIS_ SFGAOF sfgaoMask, SFGAOF *psfgaoAttribs) PURE;
-    STDMETHOD(Compare)(THIS_ IShellItem *psi, SICHINTF hint, int *piOrder) PURE;
+    STDMETHOD(GetAttributes)(THIS_ ULONG sfgaoMask, ULONG *psfgaoAttribs) PURE;
+    STDMETHOD(Compare)(THIS_ IShellItem *psi, DWORD hint, int *piOrder) PURE;
 };
 DECLARE_INTERFACE_(IShellItemFilter, IUnknown)
 {
     STDMETHOD(IncludeItem)(THIS_ IShellItem *psi) PURE;
-    STDMETHOD(GetEnumFlagsForItem)(THIS_ IShellItem *psi, SHCONTF *pgrfFlags) PURE;
+    STDMETHOD(GetEnumFlagsForItem)(THIS_ IShellItem *psi, DWORD *pgrfFlags) PURE;
 };
 DECLARE_INTERFACE_(IEnumShellItems, IUnknown)
 {
@@ -195,8 +189,8 @@ DECLARE_INTERFACE_(IShellItemArray, IUnknown)
 {
     STDMETHOD(BindToHandler)(THIS_ IBindCtx *pbc, REFGUID rbhid, REFIID riid, void **ppvOut) PURE;
     STDMETHOD(GetPropertyStore)(THIS_ GETPROPERTYSTOREFLAGS flags, REFIID riid, void **ppv) PURE;
-    STDMETHOD(GetPropertyDescriptionList)(THIS_ const PROPERTYKEY *keyType, REFIID riid, void **ppv) PURE;
-    STDMETHOD(GetAttributes)(THIS_ SIATTRIBFLAGS dwAttribFlags, SFGAOF sfgaoMask, SFGAOF *psfgaoAttribs) PURE;
+    STDMETHOD(GetPropertyDescriptionList)(THIS_ const qt_PROPERTYKEY *keyType, REFIID riid, void **ppv) PURE;
+    STDMETHOD(GetAttributes)(THIS_ SIATTRIBFLAGS dwAttribFlags, ULONG sfgaoMask, ULONG *psfgaoAttribs) PURE;
     STDMETHOD(GetCount)(THIS_ DWORD *pdwNumItems) PURE;
     STDMETHOD(GetItemAt)(THIS_ DWORD dwIndex, IShellItem **ppsi) PURE;
     STDMETHOD(EnumItems)(THIS_ IEnumShellItems **ppenumShellItems) PURE;
