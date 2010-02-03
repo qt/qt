@@ -668,6 +668,7 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qnumeric.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qpainter.h>
@@ -3439,7 +3440,7 @@ void QGraphicsItem::setX(qreal x)
     if (d_ptr->inDestructor)
         return;
 
-    if (isnan(x))
+    if (qIsNaN(x))
         return;
 
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
@@ -3466,7 +3467,7 @@ void QGraphicsItem::setY(qreal y)
     if (d_ptr->inDestructor)
         return;
 
-    if (isnan(y))
+    if (qIsNaN(y))
         return;
 
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
