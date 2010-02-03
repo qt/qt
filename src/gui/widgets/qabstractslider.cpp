@@ -214,8 +214,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QAbstractSliderPrivate::QAbstractSliderPrivate()
-    : minimum(0), maximum(99), singleStep(1), pageStep(10),
-      value(0), position(0), pressValue(-1), offset_accumulated(0), tracking(true),
+    : minimum(0), maximum(99), pageStep(10), value(0), position(0), pressValue(-1),
+      singleStep(1), offset_accumulated(0), tracking(true),
       blocktracking(false), pressed(false),
       invertedAppearance(false), invertedControls(false),
       orientation(Qt::Horizontal), repeatAction(QAbstractSlider::SliderNoAction)
@@ -697,6 +697,8 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 {
     Q_D(QAbstractSlider);
     e->ignore();
+    if (e->orientation() != d->orientation && !rect().contains(e->pos()))
+        return;
 
     int stepsToScroll = 0;
     qreal offset = qreal(e->delta()) / 120;

@@ -46,8 +46,21 @@ QtCore
 QtGui
 -----
 
- - foo
-    * bar
+ - QAbstractScrollArea
+    * [QTBUG-1760] Reverted horizontal scrolling with mouse wheel when vertical scrollbar is hidden
+
+ - QBmpHandler
+    * [QTBUG-7530] Fixed an infinite loop that could occur when reading invalid BMP images.
+
+ - QGraphicsEffect
+    * [QTBUG-6901] Fixed performance problem when translating items with
+      graphics effects.
+
+ - QImage
+    * [QTBUG-7231] Avoid an unnecessary copy in QImage::scaled().
+
+ - QPDFEngine
+    * [QTBUG-7249] Fixed the encoding of the Tile and Creator tags in the PDF engine.
 
 QtDBus
 ------
@@ -64,8 +77,14 @@ QtNetwork
 QtOpenGL
 --------
 
- - foo
-    * bar
+ - QGLWidget
+    * [QTBUG-7213] Fixed QGLWidget::renderPixmap() on Windows.
+
+ - QGLPixelBuffer
+    * [QTBUG-7476] Fixed a crash under X11 when drawing QPixmaps to QGLPixelBuffers.
+
+ - QGL2PaintEngineEx
+    * [QTBUG-7203] Reset the GL stencil mask, op and function in resetGLState().
 
 QtScript
 --------
@@ -128,7 +147,8 @@ Qt for Windows
 Qt for Mac OS X
 ---------------
 
- -
+ - QPrintPreviewDialog
+    * [QTBUG-7481] Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
 
 Qt for Embedded Linux
 ---------------------
