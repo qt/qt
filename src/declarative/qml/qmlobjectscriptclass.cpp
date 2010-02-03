@@ -70,7 +70,7 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
  */
 QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
 : QmlScriptClass(QmlEnginePrivate::getScriptEngine(bindEngine)), 
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2))
+#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
   methods(bindEngine),
 #endif
   lastData(0), engine(bindEngine)
@@ -231,7 +231,7 @@ QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
         if (lastData->flags & QmlPropertyCache::Data::IsVMEFunction) {
             return Value(scriptEngine, ((QmlVMEMetaObject *)(obj->metaObject()))->vmeMethod(lastData->coreIndex));
         } else {
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2))
+#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
             // Uncomment to use QtScript method call logic
             // QScriptValue sobj = scriptEngine->newQObject(obj);
             // return Value(scriptEngine, sobj.property(toString(name)));
@@ -444,7 +444,7 @@ QStringList QmlObjectScriptClass::propertyNames(Object *object)
     return cache->propertyNames();
 }
 
-#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2))
+#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
 
 struct MethodData : public QScriptDeclarativeClass::Object {
     MethodData(QObject *o, const QmlPropertyCache::Data &d) : object(o), data(d) {}
