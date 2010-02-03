@@ -123,8 +123,11 @@ bool QmlCompiler::isValidId(const QString &val)
     if (val.isEmpty())
         return false;
 
-    if (val.at(0).isLetter() && !val.at(0).isLower())
-        return false;
+    // TODO this will be enforced and return false
+    if (val.at(0).isLetter() && !val.at(0).isLower()) {
+        //return false;
+        qWarning() << "id '" + val + "' is invalid: ids cannot start with uppercase letters. This will be enforced in an upcoming version of QML.";
+    }
 
     QChar u(QLatin1Char('_'));
     for (int ii = 0; ii < val.count(); ++ii)
