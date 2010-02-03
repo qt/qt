@@ -70,7 +70,7 @@ class QDESIGNER_SHARED_EXPORT QDesignerWidgetBox : public QDesignerWidgetBoxInte
 public:
     enum LoadMode { LoadMerge, LoadReplace, LoadCustomWidgetsOnly };
 
-    QDesignerWidgetBox(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit QDesignerWidgetBox(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
     LoadMode loadMode() const;
     void setLoadMode(LoadMode lm);

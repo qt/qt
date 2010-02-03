@@ -128,6 +128,7 @@ public:
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
+    static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
     static inline CEikStatusPane* statusPane();
     static inline CCoeControl* statusPaneSubPane(TInt aPaneId);
@@ -268,6 +269,11 @@ inline CWsScreenDevice* QS60Data::screenDevice()
 inline CCoeAppUi* QS60Data::appUi()
 {
     return CCoeEnv::Static()-> AppUi();
+}
+
+inline CEikMenuBar* QS60Data::menuBar()
+{
+    return CEikonEnv::Static()->AppUiFactory()->MenuBar();
 }
 
 #ifdef Q_WS_S60
