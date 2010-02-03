@@ -3067,7 +3067,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         place[var] = QStringList(pfile);
     } else if(var == QLatin1String("_PRO_FILE_PWD_")) {
         var = ".BUILTIN." + var;
-        place[var] =  QStringList(QFileInfo(pfile).absolutePath());
+        place[var] = QStringList(pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
     } else if(var == QLatin1String("_QMAKE_CACHE_")) {
         var = ".BUILTIN." + var;
         if(Option::mkfile::do_cache)
