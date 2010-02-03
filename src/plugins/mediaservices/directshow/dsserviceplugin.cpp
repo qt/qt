@@ -57,7 +57,6 @@
 
 
 #ifdef QMEDIA_DIRECTSHOW_CAMERA
-#ifdef QMEDIA_DIRECTSHOW_CAMERA
 #ifndef _STRSAFE_H_INCLUDED_
 #include <tchar.h>
 #endif
