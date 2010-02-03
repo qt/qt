@@ -18,7 +18,10 @@ symbian: {
         " "
     webkitlibs.pkg_prerules = vendorinfo
 
-    DEPLOYMENT += webkitlibs
+    webkitbackup.sources = ../WebKit/qt/symbian/backup_registration.xml
+    webkitbackup.path = /private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
+
+    DEPLOYMENT += webkitlibs webkitbackup
 
     TARGET.UID3 = 0x200267C2
     # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
@@ -183,7 +186,7 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 }
 
 # Web Socket support.
-!contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=1
+!contains(DEFINES, ENABLE_WEB_SOCKETS=.): DEFINES += ENABLE_WEB_SOCKETS=0
 
 # XSLT support with QtXmlPatterns
 !contains(DEFINES, ENABLE_XSLT=.) {
@@ -2780,7 +2783,7 @@ unix:!mac:CONFIG += link_pkgconfig
 contains(DEFINES, ENABLE_XSLT=1) {
     FEATURE_DEFINES_JAVASCRIPT += ENABLE_XSLT=1
 
-    QT += xmlpatterns
+    tobe|!tobe: QT += xmlpatterns
 
     SOURCES += \
         bindings/js/JSXSLTProcessorConstructor.cpp \
@@ -3415,14 +3418,8 @@ CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4
 
 symbian {
     shared {
-        contains(MMP_RULES, defBlock) {
-            MMP_RULES -= defBlock
-
-            MMP_RULES += "$${LITERAL_HASH}ifdef WINSCW" \
-                    "DEFFILE ../WebKit/qt/symbian/bwins/$${TARGET}.def" \
-                    "$${LITERAL_HASH}elif defined EABI" \
-                    "DEFFILE ../WebKit/qt/symbian/eabi/$${TARGET}.def" \
-                    "$${LITERAL_HASH}endif"
+        contains(CONFIG, def_files) {
+            defFilePath=../WebKit/qt/symbian
         }
     }
 }

@@ -41,18 +41,22 @@
 
 //! [0]
 cd <anywhere>
-gunzip qt-embedded-linux-commercial-src-%VERSION%.tar.gz
-tar xf qt-embedded-linux-commercial-src-%VERSION%.tar
+gunzip qt-everywhere-opensource-src-%VERSION%.tar.gz
+tar xf qt-everywhere-opensource-src-%VERSION%.tar
 //! [0]
 
 
 //! [1]
-~/qt-embedded-linux-commercial-src-%VERSION%
+~/qt-everywhere-opensource-src-%VERSION%
 //! [1]
 
 
+//! [embedded help]
+./configure -embedded -help
+//! [embedded help]
+
 //! [2]
-cd  ~/qt-embedded-linux-commercial-src-%VERSION%
+cd  ~/qt-everywhere-opensource-src-%VERSION%
 ./configure -embedded [architecture]
 //! [2]
 

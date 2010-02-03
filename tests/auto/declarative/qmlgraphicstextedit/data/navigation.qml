@@ -1,23 +1,23 @@
 import Qt 4.6
 
 Rectangle {
-    property var myInput: Input
+    property var myinput: input
 
     width: 800; height: 600; color: "blue"
 
     Item { 
-        id: FirstItem;
-        KeyNavigation.right: Input
+        id: firstItem;
+        KeyNavigation.right: input
     }
 
-    TextEdit { id: Input; focus: true
-        KeyNavigation.left: FirstItem
-        KeyNavigation.right: LastItem
-        KeyNavigation.up: FirstItem
-        KeyNavigation.down: LastItem
+    TextEdit { id: input; focus: true
+        KeyNavigation.left: firstItem
+        KeyNavigation.right: lastItem
+        KeyNavigation.up: firstItem
+        KeyNavigation.down: lastItem
     }
     Item {
-        id: LastItem 
-        KeyNavigation.left: Input
+        id: lastItem 
+        KeyNavigation.left: input
     }
 }

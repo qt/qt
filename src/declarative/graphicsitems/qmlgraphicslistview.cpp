@@ -210,7 +210,7 @@ class QmlGraphicsListViewPrivate : public QmlGraphicsFlickablePrivate, private Q
 
 public:
     QmlGraphicsListViewPrivate()
-        : model(0), currentItem(0), orient(QmlGraphicsListView::Vertical)
+        : currentItem(0), orient(QmlGraphicsListView::Vertical)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , highlightRangeStart(0), highlightRangeEnd(0)
@@ -495,7 +495,7 @@ public:
     virtual void flickX(qreal velocity);
     virtual void flickY(qreal velocity);
 
-    QmlGraphicsVisualModel *model;
+    QGuard<QmlGraphicsVisualModel> model;
     QVariant modelVariant;
     QList<FxListItem*> visibleItems;
     QHash<QmlGraphicsItem*,int> unrequestedItems;
@@ -605,6 +605,7 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
             if (listItem->attached->m_prevSection != listItem->attached->m_section)
                 createSection(listItem);
         }
+        unrequestedItems.remove(listItem->item);
     }
     requestedIndex = -1;
 
@@ -614,7 +615,7 @@ FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
 void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
 {
     Q_Q(QmlGraphicsListView);
-    if (!item)
+    if (!item || !model)
         return;
     if (trackedItem == item) {
         const char *notifier1 = orient == QmlGraphicsListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
@@ -731,6 +732,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         if (footer)
             updateFooter();
         updateViewport();
+        updateUnrequestedPositions();
     } else if (!doBuffer && buffer && bufferMode != NoBuffer) {
         refill(from, to, true);
     }
@@ -765,7 +767,6 @@ void QmlGraphicsListViewPrivate::layout()
         updateHeader();
     if (footer)
         updateFooter();
-    updateUnrequestedPositions();
     updateViewport();
 }
 
@@ -779,14 +780,20 @@ void QmlGraphicsListViewPrivate::updateUnrequestedIndexes()
 
 void QmlGraphicsListViewPrivate::updateUnrequestedPositions()
 {
-    QHash<QmlGraphicsItem*,int>::const_iterator it;
-    for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
-        if (visibleItem(*it))
-            continue;
-        if (orient == QmlGraphicsListView::Vertical)
-            it.key()->setY(positionAt(*it));
-        else
-            it.key()->setX(positionAt(*it));
+    Q_Q(QmlGraphicsListView);
+    if (unrequestedItems.count()) {
+        qreal pos = position();
+        QHash<QmlGraphicsItem*,int>::const_iterator it;
+        for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
+            QmlGraphicsItem *item = it.key();
+            if (orient == QmlGraphicsListView::Vertical) {
+                if (item->y() + item->height() > pos && item->y() < pos + q->height())
+                    item->setY(positionAt(*it));
+            } else {
+                if (item->x() + item->width() > pos && item->x() < pos + q->width())
+                    item->setX(positionAt(*it));
+            }
+        }
     }
 }
 
@@ -2114,12 +2121,14 @@ void QmlGraphicsListView::viewportMoved()
                 const qreal minX = minXExtent();
                 if ((minX - d->_moveX.value() < height()/2 || d->flickTargetX - d->_moveX.value() < height()/2)
                     && minX != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
+                    d->flickX(-d->horizontalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferBefore;
             } else if (d->velocityX < 0) {
                 const qreal maxX = maxXExtent();
                 if ((d->_moveX.value() - maxX < height()/2 || d->_moveX.value() - d->flickTargetX < height()/2)
                     && maxX != d->flickTargetX)
-                    d->flickX(-d->verticalVelocity.value());
+                    d->flickX(-d->horizontalVelocity.value());
+                d->bufferMode = QmlGraphicsListViewPrivate::BufferAfter;
             }
         }
         d->inFlickCorrection = false;
@@ -2399,12 +2408,12 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
             // Special case of appending an item to the model.
             modelIndex = d->visibleIndex + d->visibleItems.count();
         } else {
-            if (modelIndex + count - 1 < d->visibleIndex) {
+            if (modelIndex < d->visibleIndex) {
                 // Insert before visible items
                 d->visibleIndex += count;
                 for (int i = 0; i < d->visibleItems.count(); ++i) {
                     FxListItem *listItem = d->visibleItems.at(i);
-                    if (listItem->index != -1)
+                    if (listItem->index != -1 && listItem->index >= modelIndex)
                         listItem->index += count;
                 }
             }
@@ -2609,6 +2618,7 @@ void QmlGraphicsListView::destroyRemoved()
 void QmlGraphicsListView::itemsMoved(int from, int to, int count)
 {
     Q_D(QmlGraphicsListView);
+    d->updateUnrequestedIndexes();
 
     if (d->visibleItems.isEmpty()) {
         refill();

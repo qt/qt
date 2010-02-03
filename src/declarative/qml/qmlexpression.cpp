@@ -184,7 +184,7 @@ QScriptValue QmlExpressionPrivate::evalInObjectScope(QmlContext *context, QObjec
 
 /*!
     \class QmlExpression
-    \brief The QmlExpression class evaluates ECMAScript in a QML context.
+    \brief The QmlExpression class evaluates JavaScript in a QML context.
 */
 
 /*!
@@ -212,7 +212,7 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
 /*!
     Create a QmlExpression object.
 
-    The \a expression ECMAScript will be executed in the \a ctxt QmlContext.
+    The \a expression JavaScript will be executed in the \a ctxt QmlContext.
     If specified, the \a scope object's properties will also be in scope during
     the expression's execution.
 */

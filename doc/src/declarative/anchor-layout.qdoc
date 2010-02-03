@@ -87,8 +87,8 @@ By specifying multiple horizontal or vertical anchors you can control the size o
 
 \code
 Rectangle { id: rect1; x: 0; ... }
-Rectangle { id: rect2; anchors.left: rect1.right; anchors.right: Rect3.left; ... }
-Rectangle { id: Rect3; x: 150; ... }
+Rectangle { id: rect2; anchors.left: rect1.right; anchors.right: rect3.left; ... }
+Rectangle { id: rect3; x: 150; ... }
 \endcode
 
 \image edge4.png
@@ -99,11 +99,11 @@ For performance reasons, you can only anchor an item to its siblings and direct 
 
 \badcode
 Item {
-    id: Group1
+    id: group1
     Rectangle { id: rect1; ... }
 }
 Item {
-    id: Group2
+    id: group2
     Rectangle { id: rect2; anchors.left: rect1.right; ... }    // invalid anchor!
 }
 \endcode

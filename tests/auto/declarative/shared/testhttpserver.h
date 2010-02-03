@@ -62,6 +62,7 @@ public:
     bool hasFailed() const;
 
     void addAlias(const QString &filename, const QString &aliasName);
+    void addRedirect(const QString &filename, const QString &redirectName);
 
 private slots:
     void newConnection();
@@ -83,6 +84,7 @@ private:
     bool m_hasFailed;
 
     QHash<QString,QString> aliases;
+    QHash<QString,QString> redirects;
 
     QTcpServer server;
 };

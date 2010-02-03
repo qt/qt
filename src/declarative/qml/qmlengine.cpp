@@ -122,7 +122,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
   globalClass(0), cleanup(0), erroredBindings(0), inProgressCreations(0), 
   scriptEngine(this), workerScriptEngine(0), componentAttacheds(0), inBeginCreate(false), 
-  networkAccessManager(0), networkAccessManagerFactory(0), accessManagerValid(false),
+  networkAccessManager(0), networkAccessManagerFactory(0),
   typeManager(e), uniqueId(1)
 {
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
@@ -219,6 +219,11 @@ QScriptValue QmlScriptEngine::resolvedUrl(QScriptContext *ctxt, QScriptEngine *e
     QString arg = ctxt->argument(0).toString();
     QUrl r = QmlScriptEngine::get(engine)->resolvedUrl(ctxt,QUrl(arg));
     return QScriptValue(r.toString());
+}
+
+QNetworkAccessManager *QmlScriptEngine::networkAccessManager()
+{
+    return p->getNetworkAccessManager();
 }
 
 QmlEnginePrivate::~QmlEnginePrivate()
@@ -412,10 +417,18 @@ QmlNetworkAccessManagerFactory *QmlEngine::networkAccessManagerFactory() const
     return d->networkAccessManagerFactory;
 }
 
-void QmlEngine::namInvalidated()
+QNetworkAccessManager *QmlEnginePrivate::getNetworkAccessManager() const
 {
-    Q_D(QmlEngine);
-    d->accessManagerValid = false;
+    Q_Q(const QmlEngine);
+
+    if (!networkAccessManager) {
+        if (networkAccessManagerFactory) {
+            networkAccessManager = networkAccessManagerFactory->create(const_cast<QmlEngine*>(q));
+        } else {
+            networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(q));
+        }
+    }
+    return networkAccessManager;
 }
 
 /*!
@@ -432,21 +445,7 @@ void QmlEngine::namInvalidated()
 QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
-    if (!d->accessManagerValid) {
-        delete d->networkAccessManagerFactory;
-        d->networkAccessManagerFactory = 0;
-    }
-    if (!d->networkAccessManager) {
-        if (d->networkAccessManagerFactory) {
-            connect(d->networkAccessManagerFactory, SIGNAL(invalidated())
-                    , this, SLOT(namInvalidated()), Qt::UniqueConnection);
-            d->networkAccessManager = d->networkAccessManagerFactory->create(const_cast<QmlEngine*>(this));
-        } else {
-            d->networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(this));
-        }
-        d->accessManagerValid = true;
-    }
-    return d->networkAccessManager;
+    return d->getNetworkAccessManager();
 }
 
 /*!

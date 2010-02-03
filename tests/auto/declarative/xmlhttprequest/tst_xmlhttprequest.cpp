@@ -98,6 +98,7 @@ private slots:
     void responseText();
     void responseXML_invalid();
     void invalidMethodUsage();
+    void redirects();
 
     // Attributes
     void document();
@@ -1158,6 +1159,72 @@ void tst_xmlhttprequest::invalidMethodUsage()
     QCOMPARE(object->property("getAllResponseHeaders").toBool(), true);
 
     delete object;
+}
+
+// Test that XMLHttpRequest transparently redirects
+void tst_xmlhttprequest::redirects()
+{
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        server.addRedirect("redirect.html", "http://127.0.0.1:14445/redirecttarget.html");
+        server.serveDirectory("data");
+
+        QmlComponent component(&engine, TEST_FILE("redirects.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://127.0.0.1:14445/redirect.html");
+        object->setProperty("expectedText", "");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("done").toBool() == true);
+        QCOMPARE(object->property("dataOK").toBool(), true);
+
+        delete object;
+    }
+
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        server.addRedirect("redirect.html", "http://127.0.0.1:14445/redirectmissing.html");
+        server.serveDirectory("data");
+
+        QmlComponent component(&engine, TEST_FILE("redirectError.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://127.0.0.1:14445/redirect.html");
+        object->setProperty("expectedText", "");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("done").toBool() == true);
+        QCOMPARE(object->property("dataOK").toBool(), true);
+
+        delete object;
+    }
+
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        server.addRedirect("redirect.html", "http://127.0.0.1:14445/redirect.html");
+        server.serveDirectory("data");
+
+        QmlComponent component(&engine, TEST_FILE("redirectRecur.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://127.0.0.1:14445/redirect.html");
+        object->setProperty("expectedText", "");
+        component.completeCreate();
+
+        for (int ii = 0; ii < 60; ++ii) { 
+            if (object->property("done").toBool()) break; 
+            QTest::qWait(50); 
+        } 
+        QVERIFY(object->property("done").toBool() == true);
+
+        QCOMPARE(object->property("dataOK").toBool(), true);
+
+        delete object;
+    }
 }
 
 void tst_xmlhttprequest::responseXML_invalid()

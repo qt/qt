@@ -57,6 +57,7 @@
 #include <QFile>
 #include <QEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QtCore/qnumeric.h>
 #include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
@@ -2790,6 +2791,7 @@ void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
     if (origin != d->origin) {
         d->origin = origin;
         QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        emit transformOriginChanged(d->origin);
     }
 }
 
@@ -2842,6 +2844,9 @@ qreal QmlGraphicsItem::width() const
 void QmlGraphicsItem::setWidth(qreal w)
 {
     Q_D(QmlGraphicsItem);
+    if (qIsNaN(w))
+        return;
+
     d->widthValid = true;
     if (d->width == w)
         return;
@@ -2911,6 +2916,9 @@ qreal QmlGraphicsItem::height() const
 void QmlGraphicsItem::setHeight(qreal h)
 {
     Q_D(QmlGraphicsItem);
+    if (qIsNaN(h))
+        return;
+
     d->heightValid = true;
     if (d->height == h)
         return;

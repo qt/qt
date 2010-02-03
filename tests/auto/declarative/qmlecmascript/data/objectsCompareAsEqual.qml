@@ -1,15 +1,15 @@
 import Qt 4.6
 
 Item {
-    id: Root
+    id: root
 
-    property var item: Child
-    Item { id: Child }
+    property var item: child
+    Item { id: child }
 
-    property bool test1: Child == Child
-    property bool test2: Child.parent == Root
-    property bool test3: Root != Child
-    property bool test4: item == Child
-    property bool test5: item != Root
+    property bool test1: child == child
+    property bool test2: child.parent == root
+    property bool test3: root != child
+    property bool test4: item == child
+    property bool test5: item != root
 }
 

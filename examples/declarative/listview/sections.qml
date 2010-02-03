@@ -42,7 +42,7 @@ Rectangle {
     }
     // The list
     ListView {
-        id: List
+        id: myList
         width: 200
         height: parent.height
         model: MyPetsModel

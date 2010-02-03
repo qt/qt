@@ -940,7 +940,7 @@ public:
                  Opened = 1, HeadersReceived = 2,
                  Loading = 3, Done = 4 };
 
-    QmlXMLHttpRequest();
+    QmlXMLHttpRequest(QNetworkAccessManager *manager);
     virtual ~QmlXMLHttpRequest();
 
     QScriptValue callback() const;
@@ -966,12 +966,16 @@ private slots:
     void finished();
 
 private:
+    void requestFromUrl(const QUrl &url);
+
     State m_state;
     bool m_errorFlag;
     bool m_sendFlag;
     QString m_method;
     QUrl m_url;
     QByteArray m_responseEntityBody;
+    QByteArray m_data;
+    int m_redirectCount;
 
     typedef QPair<QByteArray, QByteArray> HeaderPair;
     typedef QList<HeaderPair> HeadersList;
@@ -989,26 +993,18 @@ private:
     void destroyNetwork();
 
     QNetworkAccessManager *m_nam;
-    QNetworkAccessManager *networkAccessManager()
-    {
-        if (!m_nam) {
-            m_nam = new QNetworkAccessManager;
-            // XXX proxy, etc...
-        }
-        return m_nam;
-    }
+    QNetworkAccessManager *networkAccessManager() { return m_nam; }
 };
 
-QmlXMLHttpRequest::QmlXMLHttpRequest()
+QmlXMLHttpRequest::QmlXMLHttpRequest(QNetworkAccessManager *manager)
 : m_state(Unsent), m_errorFlag(false), m_sendFlag(false),
-  m_network(0), m_nam(0)
+  m_redirectCount(0), m_network(0), m_nam(manager)
 {
 }
 
 QmlXMLHttpRequest::~QmlXMLHttpRequest()
 {
     destroyNetwork();
-    delete m_nam;
 }
 
 QScriptValue QmlXMLHttpRequest::callback() const
@@ -1109,16 +1105,10 @@ void QmlXMLHttpRequest::fillHeadersList()
     }
 }
 
-QScriptValue QmlXMLHttpRequest::send(const QByteArray &data)
+void QmlXMLHttpRequest::requestFromUrl(const QUrl &url)
 {
-    m_errorFlag = false;
-    m_sendFlag = true;
-
-    QScriptValue cbv = dispatchCallback();
-    if (cbv.isError()) return cbv;
-
-    m_request.setUrl(m_url);
     QNetworkRequest request = m_request;
+    request.setUrl(url);
     if(m_method == QLatin1String("POST") ||
        m_method == QLatin1String("PUT")) {
         QVariant var = request.header(QNetworkRequest::ContentTypeHeader);
@@ -1153,9 +1143,9 @@ QScriptValue QmlXMLHttpRequest::send(const QByteArray &data)
     else if (m_method == QLatin1String("HEAD"))
         m_network = networkAccessManager()->head(request);
     else if(m_method == QLatin1String("POST"))
-        m_network = networkAccessManager()->post(request, data);
+        m_network = networkAccessManager()->post(request, m_data);
     else if(m_method == QLatin1String("PUT"))
-        m_network = networkAccessManager()->put(request, data);
+        m_network = networkAccessManager()->put(request, m_data);
 
     QObject::connect(m_network, SIGNAL(downloadProgress(qint64,qint64)), 
                      this, SLOT(downloadProgress(qint64)));
@@ -1163,6 +1153,16 @@ QScriptValue QmlXMLHttpRequest::send(const QByteArray &data)
                      this, SLOT(error(QNetworkReply::NetworkError)));
     QObject::connect(m_network, SIGNAL(finished()),
                      this, SLOT(finished()));
+}
+
+QScriptValue QmlXMLHttpRequest::send(const QByteArray &data)
+{
+    m_errorFlag = false;
+    m_sendFlag = true;
+    m_redirectCount = 0;
+    m_data = data;
+
+    requestFromUrl(m_url);
 
     return QScriptValue();
 }
@@ -1224,6 +1224,7 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
     m_responseEntityBody = QByteArray();
 
     m_request = QNetworkRequest();
+    m_data.clear();
     destroyNetwork();
 
     if (error == QNetworkReply::ContentAccessDenied ||
@@ -1243,9 +1244,19 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
     if (cbv.isError()) printError(cbv);
 }
 
+#define XMLHTTPREQUEST_MAXIMUM_REDIRECT_RECURSION 15
 void QmlXMLHttpRequest::finished()
 {
-    // ### We need to transparently redirect as dictated by the spec
+    m_redirectCount++;
+    if (m_redirectCount < XMLHTTPREQUEST_MAXIMUM_REDIRECT_RECURSION) {
+        QVariant redirect = m_network->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirect.isValid()) {
+            QUrl url = redirect.toUrl();
+            destroyNetwork();
+            requestFromUrl(url);
+            return;
+        }
+    }
 
     m_status =
         m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -1259,6 +1270,7 @@ void QmlXMLHttpRequest::finished()
         if (cbv.isError()) printError(cbv);
     }
     m_responseEntityBody.append(m_network->readAll());
+    m_data.clear();
     destroyNetwork();
     if (m_state < Loading) {
         m_state = Loading;
@@ -1548,7 +1560,7 @@ static QScriptValue qmlxmlhttprequest_onreadystatechange(QScriptContext *context
 static QScriptValue qmlxmlhttprequest_new(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->isCalledAsConstructor()) {
-        context->thisObject().setData(engine->newQObject(new QmlXMLHttpRequest(), QScriptEngine::ScriptOwnership));
+        context->thisObject().setData(engine->newQObject(new QmlXMLHttpRequest(QmlScriptEngine::get(engine)->networkAccessManager()), QScriptEngine::ScriptOwnership));
     }
     return engine->undefinedValue();
 }

@@ -580,7 +580,7 @@ bool QDesignerActions::openForm(QWidget *parent)
         return false;
 
     bool atLeastOne = false;
-    foreach (QString fileName, fileNames) {
+    foreach (const QString &fileName, fileNames) {
         if (readInForm(fileName) && !atLeastOne)
             atLeastOne = true;
     }
@@ -869,7 +869,7 @@ bool QDesignerActions::writeOutForm(QDesignerFormWindowInterface *fw, const QStr
             if (f.fileName() != fileName) {
                 removeBackup(backupFile);
                 fi.setFile(fileName);
-                backupFile = QString();
+                backupFile.clear();
                 if (fi.exists())
                     backupFile = createBackup(fileName);
             }

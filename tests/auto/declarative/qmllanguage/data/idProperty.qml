@@ -1,8 +1,8 @@
 import Test 1.0
 MyContainer {
-    property var object : MyObjectId
+    property var object : myObjectId
 
     MyTypeObject {
-        id: "MyObjectId"
+        id: "myObjectId"
     }
 }

@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    id: Root
+    id: root
 
     property int a: 1
     property int binding: a
@@ -16,7 +16,7 @@ Item {
     }
 
     Item {
-        id: NestedObject
+        id: nestedObject
 
         Script {
             function myNestedFunction() {
@@ -32,17 +32,17 @@ Item {
     }
 
     ScopeObject {
-        id: CompObject
+        id: compObject
     }
 
-    property alias test1: Root.binding
-    property alias test2: NestedObject.binding
-    property alias test3: Root.binding2
-    property alias test4: NestedObject.binding2
-    property alias test5: Root.binding3
-    property alias test6: NestedObject.binding3
-    property alias test7: Root.binding4
-    property alias test8: NestedObject.binding4
-    property alias test9: CompObject.binding
-    property alias test10: CompObject.binding2
+    property alias test1: root.binding
+    property alias test2: nestedObject.binding
+    property alias test3: root.binding2
+    property alias test4: nestedObject.binding2
+    property alias test5: root.binding3
+    property alias test6: nestedObject.binding3
+    property alias test7: root.binding4
+    property alias test8: nestedObject.binding4
+    property alias test9: compObject.binding
+    property alias test10: compObject.binding2
 }

@@ -2,7 +2,7 @@ import Qt 4.6
 
 Item {
     ListModel {
-        id: FruitModel
+        id: fruitModel
         ListElement {
             name: "Apple"
             cost: 2.45
@@ -18,21 +18,21 @@ Item {
     }
 
     Component {
-        id: FruitDelegate
+        id: fruitDelegate
         Item {
             width: 200; height: 50
             Text { text: name }
             Text { text: '$'+cost; anchors.right: parent.right }
             MouseRegion {
                 anchors.fill: parent
-                onClicked: FruitModel.remove(index)
+                onClicked: fruitModel.remove(index)
             }
         }
     }
 
     ListView {
-        model: FruitModel
-        delegate: FruitDelegate
+        model: fruitModel
+        delegate: fruitDelegate
         anchors.fill: parent
     }
 }

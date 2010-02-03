@@ -4,9 +4,9 @@ Rectangle {
     color: "blue"
     width: 200
     height: 300
-    id: Page
-    ListModel {
-        id: Model
+    id: page
+    Listmodel {
+        id: model
         ListElement {
             name: "January"
         }
@@ -16,7 +16,7 @@ Rectangle {
     }
     ListView {
         anchors.fill: parent
-        model: Model
+        model: model
         delegate: Rectangle {
             color: "red"
             width: 100

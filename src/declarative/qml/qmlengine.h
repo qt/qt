@@ -95,9 +95,6 @@ public:
 Q_SIGNALS:
     void quit ();
 
-private Q_SLOTS:
-    void namInvalidated();
-
 private:
     Q_DECLARE_PRIVATE(QmlEngine)
 };

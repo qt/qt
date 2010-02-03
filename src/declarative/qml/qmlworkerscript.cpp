@@ -51,6 +51,7 @@
 #include <QtCore/qwaitcondition.h>
 #include <QtScript/qscriptvalueiterator.h>
 #include <QtCore/qfile.h>
+#include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtDeclarative/qmlinfo.h>
 
 QT_BEGIN_NAMESPACE
@@ -107,7 +108,14 @@ public:
     struct ScriptEngine : public QmlScriptEngine 
     {
         ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : QmlScriptEngine(0), p(parent) {}
+        ~ScriptEngine() { delete manager; };
         QmlWorkerScriptEnginePrivate *p;
+        QNetworkAccessManager *manager;
+
+        virtual QNetworkAccessManager *networkAccessManager() { 
+            if (!manager) manager = new QNetworkAccessManager;
+            return manager;
+        }
     };
     ScriptEngine *workerEngine;
     static QmlWorkerScriptEnginePrivate *get(QScriptEngine *e) {
@@ -127,6 +135,9 @@ public:
 
         QScriptValue callback;
     };
+
+    QNetworkAccessManager *networkAccessManager;
+    QNetworkAccessManager *getNetworkAccessManager();
 
     QHash<int, WorkerScript *> workers;
     QScriptValue getWorker(int);
@@ -224,7 +235,7 @@ private:
 Q_DECLARE_METATYPE(QmlWorkerListModelAgent::VariantRef);
 
 QmlWorkerScriptEnginePrivate::QmlWorkerScriptEnginePrivate()
-: workerEngine(0), m_nextId(0)
+: workerEngine(0), networkAccessManager(0), m_nextId(0)
 {
 }
 

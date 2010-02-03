@@ -1,6 +1,6 @@
 import Test 1.0
 MyTypeObject {
-    id: Me
+    id: me
     property int v1: 10
     property int v2: 11
 
@@ -10,9 +10,9 @@ MyTypeObject {
     property int value4
 
     value1: v1
-    value2: Me.v1
+    value2: me.v1
     value3: v1 + v2
     value4: Math.min(v1, v2)
 
-    objectProperty: Me
+    objectProperty: me
 }

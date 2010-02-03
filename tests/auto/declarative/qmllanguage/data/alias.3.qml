@@ -2,9 +2,9 @@ import Qt 4.6
 
 QtObject {
    property var other
-   other: Alias { id: MyAliasObject }
+   other: Alias { id: myAliasObject }
 
-   property alias value: MyAliasObject.aliasValue
-   property alias value2: MyAliasObject.value
+   property alias value: myAliasObject.aliasValue
+   property alias value2: myAliasObject.value
 }
 

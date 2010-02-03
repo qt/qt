@@ -1,8 +1,8 @@
 import Test 1.0
 
 MyQmlObject {
-    id: Root
-    property alias aliasObject: Root.qmlobjectProperty
+    id: root
+    property alias aliasObject: root.qmlobjectProperty
 
     qmlobjectProperty: MyQmlObject { value : 10 }
 }

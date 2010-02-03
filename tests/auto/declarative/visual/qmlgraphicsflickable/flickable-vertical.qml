@@ -15,8 +15,8 @@ Rectangle {
         ListElement { dayColor: "orange" }
     }
 
-    Flickable {
-        id: Flick
+    flickable {
+        id: flick
         height: parent.height-50
         width: parent.width; viewportHeight: column.height
 
@@ -37,10 +37,10 @@ Rectangle {
     }
     Rectangle {
         radius: 3
-        x: Flick.width-8
+        x: flick.width-8
         width: 8
-        y: Flick.visibleArea.yPosition * Flick.height
-        height: Flick.visibleArea.heightRatio * Flick.height
+        y: flick.visibleArea.yPosition * flick.height
+        height: flick.visibleArea.heightRatio * flick.height
     }
 
     // click to toggle interactive flag
@@ -51,7 +51,7 @@ Rectangle {
         color: "red"
         MouseRegion {
             anchors.fill: parent
-            onClicked: Flick.interactive = Flick.interactive ? false : true
+            onClicked: flick.interactive = flick.interactive ? false : true
         }
     }
 
@@ -64,7 +64,7 @@ Rectangle {
         color: "green"
         MouseRegion {
             anchors.fill: parent
-            onClicked: Flick.pressDelay = Flick.pressDelay > 0 ? 0 : 500
+            onClicked: flick.pressDelay = flick.pressDelay > 0 ? 0 : 500
         }
     }
 
@@ -77,12 +77,12 @@ Rectangle {
         color: "yellow"
         MouseRegion {
             anchors.fill: parent
-            onClicked: Flick.overShoot = Flick.overShoot > 0 ? 0 : 30
+            onClicked: flick.overShoot = flick.overShoot > 0 ? 0 : 30
         }
     }
 
     Rectangle {
-        width: Math.abs(Flick.verticalVelocity)/100
+        width: Math.abs(flick.verticalVelocity)/100
         height: 50
         x: 200
         y: parent.height - 50

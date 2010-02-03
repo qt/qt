@@ -55,8 +55,8 @@ language, and a rich set of \l {QML Elements}{QML elements} that can be used
 from QML.
 
 QML is an extension to \l {http://www.ecma-international.org/publications/standards/Ecma-262.htm}
-{ECMAScript}, that provides a mechanism to declaratively build an object tree
-of QML elements.  QML improves the integration between ECMAScript and Qt's
+{JavaScript}, that provides a mechanism to declaratively build an object tree
+of QML elements.  QML improves the integration between JavaScript and Qt's
 existing QObject based type system, adds support for automatic
 \l {Property Binding}{property bindings} and provides \l {Network Transparency}{network transparency} at the language
 level.
@@ -83,7 +83,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \list
 \o \l {QML Documents}
 \o \l {Property Binding}
-\o \l {ECMAScript Blocks}
+\o \l {JavaScript Blocks}
 \o \l {QML Scope}
 \o \l {Network Transparency}
 \o \l {Data Models}

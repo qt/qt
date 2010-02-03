@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Component {
-    id: ListDelegate
+    id: listDelegate
     Item {
         id: wrapper; width: wrapper.ListView.view.width; height: if(txt.height > 58){txt.height+8}else{58}//50+4+4
         Script {

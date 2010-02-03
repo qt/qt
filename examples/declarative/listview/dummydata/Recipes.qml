@@ -1,7 +1,7 @@
 import Qt 4.6
 
 ListModel {
-    id: Recipes
+    id: recipesModel
     ListElement {
         title: "Pancakes"
         picture: "content/pics/pancakes.jpg"

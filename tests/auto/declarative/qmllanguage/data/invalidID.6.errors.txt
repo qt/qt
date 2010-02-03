@@ -1,1 +1,1 @@
-3:9:id conflicts with type name
+3:5:"StartsWithUpperCase" is not a valid object id

@@ -91,7 +91,7 @@ the root context is available to all object instances.
 
 To expose data to a QML component instance, applications set \l {QmlContext::setContextProperty()}
 {context properties} which are then accessible by name from QML  \l {Property Binding}s and 
-\l {ECMAScript Blocks}.  The following example shows how to expose a background color to a QML
+\l {JavaScript Blocks}.  The following example shows how to expose a background color to a QML
 file.
 
 \table

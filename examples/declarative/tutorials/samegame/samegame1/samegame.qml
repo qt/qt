@@ -2,13 +2,13 @@
 import Qt 4.6
 
 Rectangle {
-    id: Screen
+    id: screen
     width: 490; height: 720
 
     SystemPalette { id: activePalette }
 
     Item {
-        width: parent.width; anchors.top: parent.top; anchors.bottom: ToolBar.top
+        width: parent.width; anchors.top: parent.top; anchors.bottom: toolbar.top
 
         Image {
             id: background
@@ -18,10 +18,10 @@ Rectangle {
     }
 
     Rectangle {
-        id: ToolBar
+        id: toolbar
         color: activePalette.window
         height: 32; width: parent.width
-        anchors.bottom: Screen.bottom
+        anchors.bottom: screen.bottom
 
         Button {
             id: btnA; text: "New Game"; onClicked: console.log("Implement me!");
@@ -30,7 +30,7 @@ Rectangle {
         }
 
         Text {
-            id: Score
+            id: score
             text: "Score: Who knows?"; font.bold: true
             anchors.right: parent.right; anchors.rightMargin: 3
             anchors.verticalCenter: parent.verticalCenter
