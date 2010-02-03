@@ -128,6 +128,7 @@ QML_DEFINE_TYPE(Qt,4,6,Image,QmlGraphicsImage)
 QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsItem *parent)
   : QmlGraphicsImageBase(*(new QmlGraphicsImagePrivate), parent)
 {
+    connect(this, SIGNAL(sourceChanged(QUrl)), this, SLOT(updatePaintedGeometry()));
 }
 
 QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent)
@@ -270,6 +271,8 @@ void QmlGraphicsImage::updatePaintedGeometry()
     if (d->fillMode == PreserveAspectFit) {
         qreal widthScale = width() / qreal(d->pix.width());
         qreal heightScale = height() / qreal(d->pix.height());
+        if (!d->pix.width() || !d->pix.height())
+            return;
         if (widthScale <= heightScale) {
             d->paintedWidth = width();
             d->paintedHeight = widthScale * qreal(d->pix.height());

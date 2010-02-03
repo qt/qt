@@ -86,6 +86,8 @@ Q_SIGNALS:
 protected:
     QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent);
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+
+protected Q_SLOTS:
     void updatePaintedGeometry();
 
 private:
