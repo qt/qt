@@ -537,6 +537,7 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
+    uint isGLWidget : 1;
     uint usesDoubleBufferedGLContext : 1;
 
 #ifdef Q_WS_WIN
@@ -593,7 +594,6 @@ public:
 
     // This is new stuff
     uint needWindowChange : 1;
-    uint isGLWidget : 1;
 #endif
 
 #if defined(Q_WS_X11) || defined (Q_WS_WIN) || defined(Q_WS_MAC)

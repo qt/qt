@@ -160,7 +160,9 @@ public:
 #if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
                        , eglSurfaceWindowId(0)
 #endif
-        {}
+    {
+        isGLWidget = 1;
+    }
 
     ~QGLWidgetPrivate() {}
 

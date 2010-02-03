@@ -927,7 +927,11 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     uint style;
     bool icon;
     QString cname;
-    if (flags & Qt::MSWindowsOwnDC) {
+    if (qt_widget_private(w)->isGLWidget) {
+        cname = QLatin1String("QGLWidget");
+        style = CS_DBLCLKS;
+        icon  = true;
+    } else if (flags & Qt::MSWindowsOwnDC) {
         cname = QLatin1String("QWidgetOwnDC");
         style = CS_DBLCLKS;
 #ifndef Q_OS_WINCE
@@ -1011,7 +1015,7 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
 
     ATOM atom;
 #ifndef Q_OS_WINCE
-    HBRUSH bgBrush = (HBRUSH)GetSysColorBrush(COLOR_WINDOW);
+    HBRUSH bgBrush = qt_widget_private(w)->isGLWidget ? 0 : (HBRUSH)GetSysColorBrush(COLOR_WINDOW);
     QT_WA({
         WNDCLASS wc;
         wc.style        = style;
@@ -3626,13 +3630,19 @@ bool QETWidget::translatePaintEvent(const MSG &msg)
         return true;
 
     setAttribute(Qt::WA_PendingUpdate, false);
-    const QRegion dirtyInBackingStore(qt_dirtyRegion(this));
-    // Make sure the invalidated region contains the region we're about to repaint.
-    // BeginPaint will set the clip to the invalidated region and it is impossible
-    // to enlarge it afterwards (only shrink it). Using GetDCEx is not suffient
-    // as it may return an invalid context (especially on Windows Vista).
-    if (!dirtyInBackingStore.isEmpty())
-        InvalidateRgn(internalWinId(), dirtyInBackingStore.handle(), false);
+
+    if (d_func()->isGLWidget) {
+        if (d_func()->usesDoubleBufferedGLContext)
+            InvalidateRect(internalWinId(), 0, false);
+    } else {
+        const QRegion dirtyInBackingStore(qt_dirtyRegion(this));
+        // Make sure the invalidated region contains the region we're about to repaint.
+        // BeginPaint will set the clip to the invalidated region and it is impossible
+        // to enlarge it afterwards (only shrink it). Using GetDCEx is not suffient
+        // as it may return an invalid context (especially on Windows Vista).
+        if (!dirtyInBackingStore.isEmpty())
+            InvalidateRgn(internalWinId(), dirtyInBackingStore.handle(), false);
+    }
     PAINTSTRUCT ps;
     d_func()->hd = BeginPaint(internalWinId(), &ps);
 

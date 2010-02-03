@@ -183,6 +183,7 @@ QWidgetPrivate::QWidgetPrivate(int version) :
         ,inDirtyList(0)
         ,isScrolled(0)
         ,isMoved(0)
+        , isGLWidget(0)
         ,usesDoubleBufferedGLContext(0)
 #ifdef Q_WS_WIN
         ,noPaintOnScreen(0)
@@ -194,7 +195,6 @@ QWidgetPrivate::QWidgetPrivate(int version) :
 #endif
 #ifdef Q_WS_MAC
         ,needWindowChange(0)
-        ,isGLWidget(0)
 #endif
         ,polished(0)
 
