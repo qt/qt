@@ -1853,11 +1853,9 @@ void QHeaderViewPrivate::_q_layoutChanged()
         persistentHiddenSections.clear();
         return;
     }
+
+    QBitArray oldSectionHidden = sectionHidden;
     bool sectionCountChanged = false;
-    for (int i = 0; i < sectionHidden.count(); ++i) {
-        if (sectionHidden.testBit(i))
-            q->setSectionHidden(logicalIndex(i), false);
-    }
 
     for (int i = 0; i < persistentHiddenSections.count(); ++i) {
         QModelIndex index = persistentHiddenSections.at(i);
@@ -1866,12 +1864,18 @@ void QHeaderViewPrivate::_q_layoutChanged()
                                  ? index.column()
                                  : index.row());
             q->setSectionHidden(logical, true);
+            oldSectionHidden.setBit(logical, false);
         } else if (!sectionCountChanged && (modelSectionCount() != sectionCount)) {
             sectionCountChanged = true;
             break;
         }
     }
     persistentHiddenSections.clear();
+
+    for (int i = 0; i < oldSectionHidden.count(); ++i) {
+        if (oldSectionHidden.testBit(i))
+            q->setSectionHidden(logicalIndex(i), false);
+    }
 
     // the number of sections changed; we need to reread the state of the model
     if (sectionCountChanged)
@@ -2300,7 +2304,7 @@ void QHeaderView::mouseReleaseEvent(QMouseEvent *e)
             int section = logicalIndexAt(pos);
             if (section != -1 && section == d->pressed) {
                 d->flipSortIndicator(section);
-                emit sectionClicked(logicalIndexAt(pos));
+                emit sectionClicked(section);
             }
             if (d->pressed != -1)
                 updateSection(d->pressed);
