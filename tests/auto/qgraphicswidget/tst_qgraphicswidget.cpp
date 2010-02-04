@@ -2901,12 +2901,10 @@ void tst_QGraphicsWidget::initialShow2()
     dummyScene.addItem(new QGraphicsRectItem(0, 0, 100, 100));
 
     QGraphicsView *dummyView = new QGraphicsView(&dummyScene);
+    dummyView->setWindowFlags(Qt::X11BypassWindowManagerHint);
     EventSpy paintSpy(dummyView->viewport(), QEvent::Paint);
     dummyView->show();
-    // Not using QTest::qWaitForWindowShown(&view); on purpose, because there's
-    // a bug in qt_x11_wait_for_window_manager that prevents this test
-    // to pass. Denis is looking into it.
-    QTest::qWait(300);
+    QTest::qWaitForWindowShown(dummyView);
     const int expectedRepaintCount = paintSpy.count();
     delete dummyView;
     dummyView = 0;
