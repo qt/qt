@@ -44,6 +44,7 @@
 
 #include <QtCore/qmap.h>
 #include <QtCore/qmetatype.h>
+#include <QtNetwork/qnetworkrequest.h>
 
 
 QT_BEGIN_HEADER
@@ -58,6 +59,7 @@ class Q_MULTIMEDIA_EXPORT QMediaResource
 public:
     QMediaResource();
     QMediaResource(const QUrl &url, const QString &mimeType = QString());
+    QMediaResource(const QNetworkRequest &request, const QString &mimeType = QString());
     QMediaResource(const QMediaResource &other);
     QMediaResource &operator =(const QMediaResource &other);
     ~QMediaResource();
@@ -68,6 +70,7 @@ public:
     bool operator !=(const QMediaResource &other) const;
 
     QUrl url() const;
+    QNetworkRequest request() const;
     QString mimeType() const;
 
     QString language() const;
@@ -103,6 +106,7 @@ private:
     enum Property
     {
         Url,
+        Request,
         MimeType,
         Language,
         AudioCodec,
@@ -112,7 +116,7 @@ private:
         VideoBitRate,
         SampleRate,
         ChannelCount,
-        Resolution,
+        Resolution
     };
     QMap<int, QVariant> values;
 };

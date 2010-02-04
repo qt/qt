@@ -1,4 +1,5 @@
 
+QT += network
 contains(QT_CONFIG, opengl):QT += opengl
 
 HEADERS += \
