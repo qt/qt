@@ -2161,6 +2161,7 @@ QmlGraphicsAnchorLine QmlGraphicsItem::baseline() const
   \qmlproperty Item Item::anchors.fill
   \qmlproperty Item Item::anchors.centerIn
 
+  \qmlproperty real Item::anchors.margins
   \qmlproperty real Item::anchors.topMargin
   \qmlproperty real Item::anchors.bottomMargin
   \qmlproperty real Item::anchors.leftMargin
@@ -2173,6 +2174,7 @@ QmlGraphicsAnchorLine QmlGraphicsItem::baseline() const
   relationship with other items.
 
   Margins apply to top, bottom, left, right, and fill anchors.
+  The margins property can be used to set all of the various margins at once, to the same value.
 
   Offsets apply for horizontal center, vertical center, and baseline anchors.
 

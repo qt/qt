@@ -647,9 +647,15 @@ void QmlGraphicsTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsTextInput);
     if(d->focusOnPress){
+        QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
+        while(p) {
+            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
+                p->setFocus();
+                break;
+            }
+            p = p->parentItem();
+        }
         setFocus(true);
-        setCursorVisible(true);
-        d->focused = true;
     }
     d->control->processEvent(event);
 }

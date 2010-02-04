@@ -784,8 +784,17 @@ Handles the given mouse \a event.
 void QmlGraphicsTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsTextEdit);
-    if (d->focusOnPress)
+    if (d->focusOnPress){
+        QGraphicsItem *p = parentItem();//###Is there a better way to find my focus scope?
+        while(p) {
+            if(p->flags() & QGraphicsItem::ItemIsFocusScope){
+                p->setFocus();
+                break;
+            }
+            p = p->parentItem();
+        }
         setFocus(true);
+    }
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QmlGraphicsPaintedItem::mousePressEvent(event);

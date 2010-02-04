@@ -1762,7 +1762,7 @@ void QmlPropertyAnimation::setTo(const QVariant &t)
 
     \table
     \row
-        \o \c easeNone
+        \o \c easeLinear
         \o Easing curve for a linear (t) function: velocity is constant.
         \o \inlineimage qeasingcurve-linear.png
     \row

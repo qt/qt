@@ -75,4 +75,25 @@
     \endcode
     Any QML can be used in the dummy data files. You could even animate the
     fictional data!
+
+    \section1 Screen Orientation
+
+    A special piece of dummy data which is integrated into the viewer is
+    a simple orientation property. The orientation can be set via the
+    settings menu in the application, or by pressing Ctrl+T to toggle it.
+
+    To use this from within your QML file, import QmlViewer 1.0 and create a
+    Screen object. This object has a property, orientation, which can be either
+    Screen.Lanscape or Screen.Portrait and which can be bound to in your
+    application. An example is below:
+
+\code
+    import QmlViewer 1.0 as QmlViewer
+    
+    Item {
+        QmlViewer.Screen { id: qmlviewerScreen }
+        state: (qmlviewerScreen.orientation == QmlViewer.Screen.Landscape) ? 'landscape' : ''
+    }
+\endcode
+
 */
