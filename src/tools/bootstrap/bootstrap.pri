@@ -42,12 +42,12 @@ hpux-acc*|hpuxi-acc* {
 } else {
     contains(CONFIG, debug_and_release_target) {
         CONFIG(debug, debug|release) {
-            LIBS+=-L$$QT_BUILD_TREE/src/tools/bootstrap/debug
+            QMAKE_LIBDIR += $$QT_BUILD_TREE/src/tools/bootstrap/debug
         } else {
-            LIBS+=-L$$QT_BUILD_TREE/src/tools/bootstrap/release
+            QMAKE_LIBDIR += $QT_BUILD_TREE/src/tools/bootstrap/release
         }
     } else {
-        LIBS += -L$$QT_BUILD_TREE/src/tools/bootstrap
+        QMAKE_LIBDIR += $QT_BUILD_TREE/src/tools/bootstrap
     }
     LIBS += -lbootstrap
 }
