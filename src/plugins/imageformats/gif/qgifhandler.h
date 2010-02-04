@@ -87,8 +87,8 @@ private:
     mutable int nextDelay;
     mutable int loopCnt;
     int frameNumber;
-    mutable QSize nextSize;
-    mutable int imageCnt;
+    mutable QVector<QSize> imageSizes;
+    mutable bool scanIsCached;
 };
 
 QT_END_NAMESPACE
