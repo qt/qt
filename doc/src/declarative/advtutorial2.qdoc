@@ -48,7 +48,7 @@ first thing to do is to generate all of the blocks. Now we need to dynamically
 generate all of these blocks, because you have a new, random set of blocks
 every time. As they are dynamically generated every time the new game button is
 clicked, as opposed to on startup, we will be dynamically generating the blocks
-in the ECMAScript, as opposed to using a \l Repeater.
+in the JavaScript, as opposed to using a \l Repeater.
 
 This adds enough script to justify a new file, \c{samegame.js}, the intial version
 of which is shown below
@@ -62,7 +62,7 @@ The \c createBlock function is a lot bigger, and I'll explain it block by block.
 First we ensure that the component has been constructed. QML elements, including composite ones like the \c Block.qml
 that we've written, are never created directly in script. While there is a function to parse and create an arbitrary QML string,
 in the case where you are repeatedly creating the same item you will want to use the \c createComponent function. \c createComponent is
-a built-in function in the declarative ECMAScript, and returns a component object.
+a built-in function in the declarative JavaScript, and returns a component object.
 A component object prepares and stores a QML element (usually a composite element) for easy and efficient use.
 When the component is ready, you can create a new instance of the loaded QML with the \c createObject method.
 If the component is loaded remotely (over HTTP for example) then you will have to wait for the component to finish loading

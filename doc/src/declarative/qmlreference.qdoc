@@ -74,7 +74,7 @@
     \list
     \o \l {QML Documents}
     \o \l {Property Binding}
-    \o \l {ECMAScript Blocks}
+    \o \l {JavaScript Blocks}
     \o \l {QML Scope}
     \o \l {Network Transparency}
     \o \l {qmlmodels}{Data Models}

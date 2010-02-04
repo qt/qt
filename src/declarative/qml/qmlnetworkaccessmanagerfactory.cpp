@@ -76,18 +76,4 @@ QmlNetworkAccessManagerFactory::~QmlNetworkAccessManagerFactory()
     implementation of this method is reentrant.
 */
 
-/*!
-    Invalidates all currently created QNetworkAccessManager(s) which
-    will cause create() to be called for subsequent network access.
-*/
-void QmlNetworkAccessManagerFactory::invalidate()
-{
-    emit invalidated();
-}
-
-/*!
-    \internal
-    \fn QmlNetworkAccessManagerFactory::invalidated()
-*/
-
 QT_END_NAMESPACE

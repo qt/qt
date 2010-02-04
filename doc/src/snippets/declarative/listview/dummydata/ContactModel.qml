@@ -1,7 +1,7 @@
 import Qt 4.6
 
 ListModel {
-    id: ContactModel
+    id: contactModel
     ListElement {
         name: "Bill Smith"
         number: "555 3264"

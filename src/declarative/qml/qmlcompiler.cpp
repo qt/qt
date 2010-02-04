@@ -115,13 +115,19 @@ QList<QmlError> QmlCompiler::errors() const
 /*!
     Returns true if \a val is a legal object id, false otherwise.
 
-    Legal ids must start with a letter or underscore, and contain only
+    Legal ids must start with a lower-case letter or underscore, and contain only
     letters, numbers and underscores.
 */
 bool QmlCompiler::isValidId(const QString &val)
 {
     if (val.isEmpty())
         return false;
+
+    // TODO this will be enforced and return false
+    if (val.at(0).isLetter() && !val.at(0).isLower()) {
+        //return false;
+        qWarning() << "id '" + val + "' is invalid: ids cannot start with uppercase letters. This will be enforced in an upcoming version of QML.";
+    }
 
     QChar u(QLatin1Char('_'));
     for (int ii = 0; ii < val.count(); ++ii)
@@ -677,6 +683,13 @@ void QmlCompiler::compileTree(Object *tree)
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
 }
 
+static bool ValuePtrLessThan(const Value *t1, const Value *t2) 
+{
+    return t1->location.start.line < t2->location.start.line ||
+           (t1->location.start.line == t2->location.start.line &&
+            t1->location.start.column < t2->location.start.column);
+}
+
 bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 {
     componentStat.objects++;
@@ -736,9 +749,46 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         }
     }
 
+    // Merge 
+    Property *defaultProperty = 0;
+    Property *skipProperty = 0;
+    if (obj->defaultProperty) {
+        const QMetaObject *metaObject = obj->metaObject();
+        Q_ASSERT(metaObject);
+        QMetaProperty p = QmlMetaType::defaultProperty(metaObject);
+        if (p.name()) {
+            Property *explicitProperty = obj->getProperty(p.name(), false);
+            if (explicitProperty && !explicitProperty->value) {
+                skipProperty = explicitProperty;
+
+                defaultProperty = new Property;
+                defaultProperty->parent = obj;
+                defaultProperty->isDefault = true;
+                defaultProperty->location = obj->defaultProperty->location;
+                defaultProperty->listValueRange = obj->defaultProperty->listValueRange;
+                defaultProperty->listCommaPositions = obj->defaultProperty->listCommaPositions;
+
+                defaultProperty->values  = obj->defaultProperty->values;
+                defaultProperty->values += explicitProperty->values;
+                foreach(Value *value, defaultProperty->values)
+                    value->addref();
+                qSort(defaultProperty->values.begin(), defaultProperty->values.end(), ValuePtrLessThan);
+
+            } else {
+                defaultProperty = obj->defaultProperty;
+                defaultProperty->addref();
+            }
+        } else {
+            defaultProperty = obj->defaultProperty;
+            defaultProperty->addref();
+        }
+    }
+
     // Build all explicit properties specified
     foreach(Property *prop, obj->properties) {
 
+        if (prop == skipProperty)
+            continue;
         if (prop->name == "id")
             continue;
 
@@ -768,8 +818,8 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     }
 
     // Build the default property
-    if (obj->defaultProperty)  {
-        Property *prop = obj->defaultProperty;
+    if (defaultProperty)  {
+        Property *prop = defaultProperty;
 
         bool canDefer = false;
         if (isCustomParser) {
@@ -790,6 +840,9 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
             deferredList.contains(QString::fromUtf8(prop->name)))
             prop->isDeferred = true;
     }
+
+    if (defaultProperty) 
+        defaultProperty->release();
 
     // Compile custom parser parts
     if (isCustomParser && !customProps.isEmpty()) {

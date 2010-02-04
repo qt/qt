@@ -268,6 +268,17 @@
 */
 
 /*!
+    \variable QGraphicsItem::Type
+
+    The type value returned by the virtual type() function in standard
+    graphics item classes in Qt. All such standard graphics item
+    classes in Qt are associated with a unique value for Type,
+    e.g. the value returned by QGraphicsPathItem::type() is 2.
+
+    \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 18
+*/
+
+/*!
     \variable QGraphicsItem::UserType
 
     The lowest permitted type value for custom items (subclasses
@@ -276,6 +287,8 @@
     and declaring a Type enum value. Example:
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 1
+
+    \note UserType = 65536
 */
 
 /*!
@@ -655,6 +668,7 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qnumeric.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qpainter.h>
@@ -1558,17 +1572,18 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
 }
 
 /*!
-    Sets this item's parent item to \a parent. If this item already has a
-    parent, it is first removed from the previous parent. If \a parent is 0,
-    this item will become a top-level item.
+  Sets this item's parent item to \a newParent. If this item already
+  has a parent, it is first removed from the previous parent. If \a
+  newParent is 0, this item will become a top-level item.
 
-    Note that this implicitly adds this graphics item to the scene of
-    the parent. You should not \l{QGraphicsScene::addItem()}{add} the
-    item to the scene yourself.
+  Note that this implicitly adds this graphics item to the scene of
+  the parent. You should not \l{QGraphicsScene::addItem()}{add} the
+  item to the scene yourself.
 
-    Calling this function on an item that is an ancestor of \a parent have undefined behaviour.
+  Calling this function on an item that is an ancestor of \a newParent
+  have undefined behaviour.
 
-    \sa parentItem(), childItems()
+  \sa parentItem(), childItems()
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *newParent)
 {
@@ -3425,6 +3440,9 @@ void QGraphicsItem::setX(qreal x)
     if (d_ptr->inDestructor)
         return;
 
+    if (qIsNaN(x))
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3447,6 +3465,9 @@ void QGraphicsItem::setX(qreal x)
 void QGraphicsItem::setY(qreal y)
 {
     if (d_ptr->inDestructor)
+        return;
+
+    if (qIsNaN(y))
         return;
 
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
@@ -7241,7 +7262,9 @@ void QGraphicsItem::prepareGeometryChange()
 
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->index->prepareBoundingRectChange(this);
-        scenePrivate->markDirty(this, QRectF(), /*invalidateChildren=*/true);
+        scenePrivate->markDirty(this, QRectF(), /*invalidateChildren=*/true, /*force=*/false,
+                                /*ignoreOpacity=*/ false, /*removingItemFromScene=*/ false,
+                                /*updateBoundingRect=*/true);
 
         // For compatibility reasons, we have to update the item's old geometry
         // if someone is connected to the changed signal or the scene has no views.

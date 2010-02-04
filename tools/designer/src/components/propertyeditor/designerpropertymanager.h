@@ -102,7 +102,7 @@ class DesignerPropertyManager : public QtVariantPropertyManager
 {
     Q_OBJECT
 public:
-    DesignerPropertyManager(QDesignerFormEditorInterface *core, QObject *parent = 0);
+    explicit DesignerPropertyManager(QDesignerFormEditorInterface *core, QObject *parent = 0);
     ~DesignerPropertyManager();
 
     virtual QStringList attributes(int propertyType) const;

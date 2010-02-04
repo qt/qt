@@ -1,7 +1,7 @@
 import Qt 4.6
 
 ListModel {
-    id: MenuModel
+    id: menuModel
     ListElement {
         name: "Bill Jones"
         icon: "pics/qtlogo-64.png"

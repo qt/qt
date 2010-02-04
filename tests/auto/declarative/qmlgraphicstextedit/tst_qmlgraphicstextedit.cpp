@@ -176,7 +176,6 @@ void tst_qmlgraphicstextedit::text()
         actual.replace(QRegExp(".*<body[^>]*>"),"");
         actual.replace(QRegExp("(<[^>]*>)+"),"<>");
         expected.replace(QRegExp("(<[^>]*>)+"),"<>");
-        expected = "<> <> <> " + expected;
         QCOMPARE(actual.simplified(),expected.simplified());
     }
 }
@@ -631,21 +630,19 @@ void tst_qmlgraphicstextedit::delegateLoading()
     server.serveDirectory("data/httpfail", TestHTTPServer::Disconnect);
     server.serveDirectory("data/httpslow", TestHTTPServer::Delay);
     server.serveDirectory("data/http");
-    QmlView* view= new QmlView(0);
+    QmlView* view = new QmlView(0);
     view->setUrl(QUrl("http://localhost:42332/cursorHttpTestPass.qml"));
     view->execute();
     view->show();
     view->setFocus();
-    QTest::qWait(500);
+    QTRY_VERIFY(view->root());//Wait for loading to finish.
     QmlGraphicsTextEdit *textEditObject = view->root()->findChild<QmlGraphicsTextEdit*>("textEditObject");
-    QEXPECT_FAIL("","QT-2498", Continue);
+    //    view->root()->dumpObjectTree();
     QVERIFY(textEditObject != 0);
-    //textEditObject->setFocus(true);
+    textEditObject->setFocus(true);
     QmlGraphicsItem *delegate;
-    QEXPECT_FAIL("","QT-2498", Continue);
     delegate = view->root()->findChild<QmlGraphicsItem*>("delegateOkay");
     QVERIFY(delegate);
-    QEXPECT_FAIL("","QT-2498", Continue);
     delegate = view->root()->findChild<QmlGraphicsItem*>("delegateSlow");
     QVERIFY(delegate);
     view->setUrl(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
@@ -653,7 +650,7 @@ void tst_qmlgraphicstextedit::delegateLoading()
     view->show();
     view->setFocus();
     delegate = view->root()->findChild<QmlGraphicsItem*>("delegateOkay");
-    QVERIFY(!delegate);
+    QVERIFY(delegate);
     delegate = view->root()->findChild<QmlGraphicsItem*>("delegateFail");
     QVERIFY(!delegate);
     view->setUrl(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
@@ -661,11 +658,12 @@ void tst_qmlgraphicstextedit::delegateLoading()
     view->show();
     view->setFocus();
     delegate = view->root()->findChild<QmlGraphicsItem*>("delegateOkay");
-    QVERIFY(!delegate);
+    QVERIFY(delegate);
     delegate = view->root()->findChild<QmlGraphicsItem*>("delegateErrorA");
     QVERIFY(!delegate);
     //ErrorB should get a component which is ready but component.create() returns null
     //Not sure how to accomplish this with QmlGraphicsTextEdits cursor delegate
+    //###This could be a case of overzealous defensive programming
     //delegate = view->root()->findChild<QmlGraphicsItem*>("delegateErrorB");
     //QVERIFY(!delegate);
 }

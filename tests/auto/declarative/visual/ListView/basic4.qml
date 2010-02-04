@@ -4,9 +4,9 @@ Rectangle {
     color: "blue"
     width: 200
     height: 300
-    id: Page
-    ListModel {
-        id: Model
+    id: page
+    Listmodel {
+        id: model
         ListElement {
             name: "January"
         }
@@ -15,7 +15,7 @@ Rectangle {
         }
     }
     Component {
-        id: Delegate
+        id: delegate
         Rectangle {
             color: "red"
             width: 100
@@ -27,7 +27,7 @@ Rectangle {
     }
     ListView {
         anchors.fill: parent
-        model: Model
-        delegate: Delegate
+        model: model
+        delegate: delegate
     }
 }

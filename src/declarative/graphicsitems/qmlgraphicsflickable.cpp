@@ -819,6 +819,32 @@ void QmlGraphicsFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
+void QmlGraphicsFlickable::wheelEvent(QGraphicsSceneWheelEvent *event)
+{
+    Q_D(QmlGraphicsFlickable);
+    if (!d->interactive) {
+        QmlGraphicsItem::wheelEvent(event);
+    } else if (yflick()) {
+        if (event->delta() > 0)
+            d->velocityY = qMax(event->delta() - d->verticalVelocity.value(), qreal(250.0));
+        else
+            d->velocityY = qMin(event->delta() - d->verticalVelocity.value(), qreal(-250.0));
+        d->flicked = false;
+        d->flickY(d->velocityY);
+        event->accept();
+    } else if (xflick()) {
+        if (event->delta() > 0)
+            d->velocityX = qMax(event->delta() - d->horizontalVelocity.value(), qreal(250.0));
+        else
+            d->velocityX = qMin(event->delta() - d->horizontalVelocity.value(), qreal(-250.0));
+        d->flicked = false;
+        d->flickX(d->velocityX);
+        event->accept();
+    } else {
+        QmlGraphicsItem::wheelEvent(event);
+    }
+}
+
 void QmlGraphicsFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QmlGraphicsFlickable);

@@ -83,7 +83,7 @@ modifies the document prior to presentation to the QML runtime. \c import statem
 do not "include" code in the document, but instead instruct the QML runtime on how to 
 resolve type references found in the document.  Any type reference present in a QML 
 document - such as \c Rectangle and \c ListView - including those made within an 
-\l {ECMAScript Block} or \l {Property Binding}s, are \e resolved based exclusively on the 
+\l {JavaScript Block} or \l {Property Binding}s, are \e resolved based exclusively on the 
 import statements.  QML does not import any modules by default, so at least one \c import
 statement must be present or no elements will be available!
 

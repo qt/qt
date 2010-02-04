@@ -16,13 +16,13 @@ Rectangle {
         }
     }
     MouseRegion {
-        id: Clickable
+        id: clickable
         anchors.fill: parent
     }
 
     states: State {
         name: "reparented"
-        when: Clickable.pressed
+        when: clickable.pressed
         ParentChange {
             target: myRect
             parent: newParent

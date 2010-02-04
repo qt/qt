@@ -349,9 +349,9 @@ public:
         QMutexLocker lock(&mutex);
         QNetworkAccessManager *manager = new QNetworkAccessManager(parent);
         if (!cookieJar)
-            cookieJar = new PersistentCookieJar(this);
+            cookieJar = new PersistentCookieJar(manager);
         manager->setCookieJar(cookieJar);
-        cookieJar->setParent(this);
+        cookieJar->setParent(0);
         setupProxy(manager);
         if (cacheSize > 0) {
             QNetworkDiskCache *cache = new QNetworkDiskCache;
@@ -405,7 +405,6 @@ public:
     void setCacheSize(int size) {
         if (size != cacheSize) {
             cacheSize = size;
-            invalidate();
         }
     }
 
@@ -691,7 +690,6 @@ void QmlViewer::showProxySettings()
 
 void QmlViewer::proxySettingsChanged()
 {
-    namFactory->invalidate();
     reload ();
 }
 

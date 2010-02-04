@@ -57,7 +57,7 @@ Item {
                     id: shadows
                     Image { source: "common/pics/shadow-right.png"; x: whiteRect.width; height: whiteRect.height }
                     Image { source: "common/pics/shadow-bottom.png"; y: whiteRect.height; width: whiteRect.width }
-                    Image { id: Corner; source: "common/pics/shadow-corner.png"; x: whiteRect.width; y: whiteRect.height }
+                    Image { id: corner; source: "common/pics/shadow-corner.png"; x: whiteRect.width; y: whiteRect.height }
                 }
             }
 

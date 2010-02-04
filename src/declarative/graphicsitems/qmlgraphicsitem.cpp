@@ -57,6 +57,7 @@
 #include <QFile>
 #include <QEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QtCore/qnumeric.h>
 #include <QtScript/qscriptengine.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
@@ -2160,6 +2161,7 @@ QmlGraphicsAnchorLine QmlGraphicsItem::baseline() const
   \qmlproperty Item Item::anchors.fill
   \qmlproperty Item Item::anchors.centerIn
 
+  \qmlproperty real Item::anchors.margins
   \qmlproperty real Item::anchors.topMargin
   \qmlproperty real Item::anchors.bottomMargin
   \qmlproperty real Item::anchors.leftMargin
@@ -2172,6 +2174,7 @@ QmlGraphicsAnchorLine QmlGraphicsItem::baseline() const
   relationship with other items.
 
   Margins apply to top, bottom, left, right, and fill anchors.
+  The margins property can be used to set all of the various margins at once, to the same value.
 
   Offsets apply for horizontal center, vertical center, and baseline anchors.
 
@@ -2790,6 +2793,7 @@ void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
     if (origin != d->origin) {
         d->origin = origin;
         QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
+        emit transformOriginChanged(d->origin);
     }
 }
 
@@ -2842,6 +2846,9 @@ qreal QmlGraphicsItem::width() const
 void QmlGraphicsItem::setWidth(qreal w)
 {
     Q_D(QmlGraphicsItem);
+    if (qIsNaN(w))
+        return;
+
     d->widthValid = true;
     if (d->width == w)
         return;
@@ -2911,6 +2918,9 @@ qreal QmlGraphicsItem::height() const
 void QmlGraphicsItem::setHeight(qreal h)
 {
     Q_D(QmlGraphicsItem);
+    if (qIsNaN(h))
+        return;
+
     d->heightValid = true;
     if (d->height == h)
         return;

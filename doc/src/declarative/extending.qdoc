@@ -380,11 +380,11 @@ implement the rsvp attached property.
 \snippet examples/declarative/extending/signal/example.qml 0
 \snippet examples/declarative/extending/signal/example.qml 1
 
-The QML snippet shown above associates the evaluation of a ECMAScript expression
+The QML snippet shown above associates the evaluation of a JavaScript expression
 with the emission of a Qt signal.
 
 All Qt signals on a registered class become available as special "signal
-properties" within QML to which the user can assign a single ECMAScript
+properties" within QML to which the user can assign a single JavaScript
 expression.  The signal property's name is a transformed version of the Qt
 signal name: "on" is prepended, and the first letter of the signal name upper
 cased.  For example, the signal used in the example above has the following
@@ -464,7 +464,7 @@ HappyBirthday's name property remains up to date with the celebrant.
 
 Property binding is a core feature of QML.  In addition to assigning literal
 values, property bindings allow the developer to assign an arbitrarily complex
-ECMAScript expression that may include dependencies on other property values.
+JavaScript expression that may include dependencies on other property values.
 Whenever the expression's result changes - through a change in one of its
 constituent values - the expression is automatically reevaluated and
 the new result assigned to the property.
@@ -824,6 +824,17 @@ Here are three examples of signal declarations:
         signal performAction(string action, var actionArgument)
     }
 \endcode
+
+Adding a signal to an item automatically adds a signal handler to it.
+The signal hander is named on<Signal name>, with the first letter of the
+signal name being upper cased. The above example item would now have the
+following signal handlers:
+
+\list
+   \o onClicked
+   \o onHovered
+   \o onPerformAction
+\endlist
 
 \section1 Adding new methods
 

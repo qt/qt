@@ -4,7 +4,7 @@ Rectangle {
     color: "blue"
     width: 200
     height: 300
-    id: Page
+    id: page
     ListView {
         anchors.fill: parent
         delegate: Rectangle {

@@ -161,10 +161,10 @@ static void dump(ModelNode *node, int ind);
         id: fruitDelegate
         Item {
             width: 200; height: 50
-            Text { id: Name; text: name }
+            Text { id: name; text: name }
             Text { text: '$'+cost; anchors.right: parent.right }
             Row {
-                anchors.top: Name.bottom
+                anchors.top: name.bottom
                 spacing: 5
                 Text { text: "Attributes:" }
                 Repeater {

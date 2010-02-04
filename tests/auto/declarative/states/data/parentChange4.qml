@@ -10,7 +10,7 @@ Rectangle {
         color: "red"
     }
     MouseRegion {
-        id: Clickable
+        id: clickable
         anchors.fill: parent
     }
 
@@ -21,7 +21,7 @@ Rectangle {
 
     states: State {
         name: "reparented"
-        when: Clickable.pressed
+        when: clickable.pressed
         ParentChange {
             target: myRect
             parent: newParent

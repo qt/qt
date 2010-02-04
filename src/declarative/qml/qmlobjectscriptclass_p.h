@@ -65,7 +65,7 @@ class QScriptContext;
 class QScriptEngine;
 class QmlContext;
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
 class Q_AUTOTEST_EXPORT QmlObjectMethodScriptClass : public QScriptDeclarativeClass
 {
 public:
@@ -118,7 +118,7 @@ protected:
     virtual QObject *toQObject(Object *, bool *ok = 0);
 
 private:
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+#if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
     QmlObjectMethodScriptClass methods;
 #endif
 

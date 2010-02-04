@@ -45,6 +45,7 @@
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qset.h>
 #include <QtCore/qbytearray.h>
 
 QT_BEGIN_HEADER
@@ -55,6 +56,7 @@ QT_MODULE(Declarative)
 
 struct Q_DECLARATIVE_EXPORT QmlModuleFactoryInterface : public QFactoryInterface
 {
+    virtual void defineModuleOnce(const QString& uri) = 0;
 };
 
 #define QmlModuleFactoryInterface_iid "com.nokia.Qt.QmlModuleFactoryInterface"
@@ -69,6 +71,12 @@ class Q_DECLARATIVE_EXPORT QmlModulePlugin : public QObject, public QmlModuleFac
 public:
     explicit QmlModulePlugin(QObject *parent = 0);
     ~QmlModulePlugin();
+
+    virtual void defineModule(const QString& uri) = 0;
+
+private:
+    void defineModuleOnce(const QString& uri);
+    QSet<QString> defined;
 };
 
 QT_END_NAMESPACE

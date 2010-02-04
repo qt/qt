@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    Component { id: TestableCursor
+    Component { id: testableCursor
         //Doesn't blink
         Rectangle {
             color:"black"
@@ -13,7 +13,7 @@ Rectangle {
     height:40;
     TextEdit {
         focus: true;
-        cursorDelegate: TestableCursor
+        cursorDelegate: testableCursor
         text: "Jackdaws love my big sphinx of Quartz"
     }
 }

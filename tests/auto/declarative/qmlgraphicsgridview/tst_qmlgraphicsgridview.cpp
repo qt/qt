@@ -729,7 +729,7 @@ void tst_QmlGraphicsGridView::changeFlow()
 
     // Confirm items positioned correctly and indexes correct
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
-    for (int i = 3; i < model.count() && i < itemCount; ++i) {
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
@@ -748,7 +748,7 @@ void tst_QmlGraphicsGridView::changeFlow()
 
     // Confirm items positioned correctly and indexes correct
     itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
-    for (int i = 3; i < model.count() && i < itemCount; ++i) {
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
@@ -952,13 +952,15 @@ QList<T*> tst_QmlGraphicsGridView::findItems(QmlGraphicsItem *parent, const QStr
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
-        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName))
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             items.append(static_cast<T*>(item));
+            //qDebug() << " found:" << item;
+        }
         items += findItems<T>(item, objectName);
     }
 

@@ -6,7 +6,7 @@ Rectangle {
     color: "#ffffff"
     resources: [
         Component {
-            id: Delegate
+            id: delegate
             Rectangle {
                 id: wrapper
                 objectName: "wrapper"
@@ -38,7 +38,7 @@ Rectangle {
         width: 240
         height: 320
         model: testModel
-        delegate: Delegate
+        delegate: delegate
         snapPosition: 0.01
         path: Path {
             startY: 120

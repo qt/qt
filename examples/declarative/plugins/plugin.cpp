@@ -138,7 +138,6 @@ MinuteTimer *Time::timer=0;
 
 
 QML_DECLARE_TYPE(Time);
-QML_DEFINE_TYPE(com.nokia.TimeExample,1,0,Time,Time);
 
 
 class QExampleQmlPlugin : public QmlModulePlugin
@@ -148,6 +147,12 @@ public:
     QStringList keys() const
     {
         return QStringList() << QLatin1String("com.nokia.TimeExample");
+    }
+
+    void defineModule(const QString& uri)
+    {
+        Q_ASSERT(uri == QLatin1String("com.nokia.TimeExample"));
+        qmlRegisterType<Time>("com.nokia.TimeExample", 1, 0, "Time", "Time");
     }
 };
 

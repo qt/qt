@@ -71,9 +71,11 @@ inline qreal qmlMod(qreal x, qreal y)
 class QmlGraphicsPathViewAttached : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(bool onPath READ isOnPath NOTIFY onPathChanged)
 public:
     QmlGraphicsPathViewAttached(QObject *parent)
-    : QObject(parent), mo(new QmlOpenMetaObject(this))
+    : QObject(parent), mo(new QmlOpenMetaObject(this)), onPath(false)
     {
     }
 
@@ -91,9 +93,48 @@ public:
         mo->setValue(name, val);
     }
 
+    bool isOnPath() const { return onPath; }
+    void setOnPath(bool on) {
+        if (on != onPath) {
+            onPath = on;
+            emit onPathChanged();
+        }
+    }
+
+Q_SIGNALS:
+    void onPathChanged();
+
 private:
     QmlOpenMetaObject *mo;
+    bool onPath;
 };
+
+
+QmlGraphicsItem *QmlGraphicsPathViewPrivate::getItem(int modelIndex)
+{
+    Q_Q(QmlGraphicsPathView);
+    requestedIndex = modelIndex;
+    QmlGraphicsItem *item = model->item(modelIndex);
+    if (item) {
+        if (QObject *obj = QmlGraphicsPathView::qmlAttachedProperties(item))
+            static_cast<QmlGraphicsPathViewAttached *>(obj)->setOnPath(true);
+        item->setParentItem(q);
+    }
+    requestedIndex = -1;
+    return item;
+}
+
+void QmlGraphicsPathViewPrivate::releaseItem(QmlGraphicsItem *item)
+{
+    if (!item || !model)
+        return;
+    if (QObject *obj = QmlGraphicsPathView::qmlAttachedProperties(item))
+        static_cast<QmlGraphicsPathViewAttached *>(obj)->setOnPath(false);
+    if (model->release(item) == 0) {
+        if (QObject *obj = QmlGraphicsPathView::qmlAttachedProperties(item))
+            static_cast<QmlGraphicsPathViewAttached *>(obj)->setOnPath(false);
+    }
+}
 
 /*!
     \qmlclass PathView QmlGraphicsPathView
@@ -124,6 +165,26 @@ QmlGraphicsPathView::~QmlGraphicsPathView()
     if (d->ownModel)
         delete d->model;
 }
+
+/*!
+    \qmlattachedproperty bool PathView::onPath
+    This attached property holds whether the item is currently on the path.
+
+    If a pathItemCount has been set, it is possible that some items may
+    be instantiated, but not considered to be currently on the path.
+    Usually, these items would be set invisible, for example:
+
+    \code
+    Component {
+        Rectangle {
+            visible: PathView.onPath
+            ...
+        }
+    }
+    \endcode
+
+    It is attached to each instance of the delegate.
+*/
 
 /*!
     \qmlproperty model PathView::model
