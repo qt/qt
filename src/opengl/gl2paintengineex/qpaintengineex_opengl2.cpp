@@ -1349,7 +1349,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         textureCoordinateArray.clear();
 
 #if defined(QSTATICTEXT_USE_INDEXARRAY)
-        indices.clear();
+        QStaticTextUserData *uData = staticTextItem->userData;
+        QOpenGLStaticTextUserData *openGlUserData = uData != 0
+                                                    && uData->type == QStaticTextUserData::OpenGLUserData
+                                                    ? static_cast<QOpenGLStaticTextUserData *>(uData)
+                                                    : 0;
+        bool updateIndices = openGlUserData == 0
+                             || openGlUserData->indices.size() < staticTextItem->numGlyphs;
         int j=0;
 #endif
 
@@ -1362,8 +1368,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
 
 #if defined(QSTATICTEXT_USE_INDEXARRAY)
-            for (int k=0; k<6; ++k)
-                indices.append(j++);
+            if (updateIndices) {
+                for (int k=0; k<6; ++k)
+                    indices.append(j++);
+            }
 #endif
         }
 
@@ -1390,7 +1398,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
                          textureCoordinateArray.data(), GL_STATIC_DRAW);
 
 #if defined(QSTATICTEXT_USE_INDEXARRAY)
-            userData->indices = indices;
+            if (updateIndices)
+                userData->indices = indices;
 #endif
 
             // If a new user data has been created, make sure we delete the old
