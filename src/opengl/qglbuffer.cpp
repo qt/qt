@@ -272,7 +272,7 @@ bool QGLBuffer::read(int offset, void *data, int count)
 #else
     Q_UNUSED(offset);
     Q_UNUSED(data);
-    Q_UNUSED(size);
+    Q_UNUSED(count);
     return false;
 #endif
 }
