@@ -963,9 +963,9 @@ RSS_RULES += myrssrules
 //! [145]
 
 //! [146]
-BLD_INF_RULES.prj_exports += \
-    "$${LITERAL_HASH}include <platform_paths.hrh>" \
-    "rom/my.iby  APP_LAYER_PUBLIC_EXPORT_PATH(my.iby)" \
-    "inc/myheader.h mycomp/myheader.h" \
-    ":zip my_api.zip my_api"
+DEPLOYMENT.installer_header = 0x12345678
 //! [146]
+
+//! [147]
+DEPLOYMENT.installer_header = "$${LITERAL_HASH}{\"My Application Installer\"},(0x12345678),1,0,0"
+//! [147]

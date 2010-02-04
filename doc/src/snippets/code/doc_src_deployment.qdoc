@@ -475,11 +475,7 @@ default_deployment.pkg_prerules += supported_platforms
 //! [57]
 
 //! [58]
-embedded_deployments = \
-    "; Embed Qt dependencies" \
-    "@\"$$[QT_INSTALL_PREFIX]/qt_installer.sis\",(0x2001E62D)"
-
-default_deployment.pkg_prerules += embedded_deployments
+DEPLOYMENT.installer_header = 0xE2345678
 //! [58]
 
 //! [59]
@@ -489,4 +485,9 @@ make release-gcce
 
 //! [60]
 make sis
+ren wiggly_release-gcce.sis wiggly.sis
 //! [60]
+
+//! [61]
+createpackage wiggly_installer.pkg
+//! [61]
