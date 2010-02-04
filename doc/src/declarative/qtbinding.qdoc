@@ -225,6 +225,101 @@ binding that does not have a NOTIFY signal will cause QML to issue a warning at 
 If an application is too dynamic to structure data as compile-time QObject types, dynamically
 structured data can be constructed at runtime using the QmlPropertyMap class.
 
+
+\section1 Calling C++ methods from QML
+
+It is possible to call methods of QObject derived types by either exposing the
+methods as public slots, or by marking the methods Q_INVOKABLE.
+
+The C++ methods can also have parameters and return values.  QML has support for
+the following types:
+
+\list
+\o bool
+\o unsigned int, int
+\o float, double, qreal
+\o QString
+\o QUrl
+\o QColor
+\o QDate, QTime, QDateTime
+\o QPoint, QPointF
+\o QSize, QSizeF
+\o QRect, QRectF
+\o QVariant
+\endlist
+
+This example toggles the "LED Blinker" when the MouseRegion is clicked:
+
+\table
+\row
+\o
+\code
+// main.cpp
+class LEDBlinker : public QObject
+{
+    Q_OBJECT
+public:
+    LEDBlinker();
+
+    Q_INVOKABLE bool isRunning();
+
+public slots:
+    void start();
+    void stop();
+};
+
+int main(int argc, char **argv)
+{
+    // ...
+
+    QmlContext *context = engine->rootContext();
+    context->setContextProperty("ledBlinker", new LEDBlinker);
+
+    // ...
+}
+\endcode
+\o
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    MouseRegion {
+        anchors.fill: parent
+        onClicked: {
+            if (ledBlinker.isRunning())
+                ledBlinker.stop()
+            else
+                ledBlicker.start();
+        }
+    }
+}
+\endcode
+\endtable
+
+Note that in this particular example a better way to achieve the same result
+is to have a "running" property.  This leads to much nicer QML code:
+
+\table
+\row
+\o
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    MouseRegion {
+        anchors.fill: parent
+        onClicked: ledBlinker.running = !ledBlinker.running
+    }
+}
+\endcode
+\endtable
+
+
+Of course, it is also possible to call \l {Adding new methods}{functions declared in QML from C++}.
+
+
 \section1 Network Components
 
 If the URL passed to QmlComponent is a network resource, or if the QML document references a
