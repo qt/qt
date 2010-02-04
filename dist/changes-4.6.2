@@ -72,6 +72,12 @@ QtGui
  - QPDFEngine
     * [QTBUG-7249] Fixed the encoding of the Tile and Creator tags in the PDF engine.
 
+ - QApplication
+    * [QTBUG-6098] Added a flag to avoid construction of application panes.
+ - QInputContext
+    * [QTBUG-7439] Avoided the loss of preedit text when losing focus on Symbian.
+
+ * [QT-2629] Implemented event filter functions for Symbian.
  * [QTBUG-7029] Fixed a crash when re-creating QApplication object due to a
    dangling gesture manager pointer.
  * [QTBUG-7198] Setting a style sheet could break the checkbox position in item views.
