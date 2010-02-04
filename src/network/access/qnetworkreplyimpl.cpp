@@ -58,7 +58,7 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       copyDevice(0),
       cacheEnabled(false), cacheSaveDevice(0),
       notificationHandlingPaused(false),
-      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
+      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1), preMigrationDownloaded(-1),
       httpStatusCode(0),
       state(Idle)
 {
@@ -152,6 +152,8 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
 
     lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    if (preMigrationDownloaded != Q_INT64_C(-1))
+        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
@@ -475,6 +477,8 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
     QPointer<QNetworkReplyImpl> qq = q;
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    if (preMigrationDownloaded != Q_INT64_C(-1))
+        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
@@ -521,6 +525,8 @@ void QNetworkReplyImplPrivate::finished()
 
     pauseNotificationHandling();
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    if (preMigrationDownloaded != Q_INT64_C(-1))
+        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     QNetworkSession *session = manager->d_func()->session;
     if (session && session->state() == QNetworkSession::Roaming &&
         state == Working && errorCode != QNetworkReply::OperationCanceledError) {
@@ -766,6 +772,68 @@ bool QNetworkReplyImpl::event(QEvent *e)
     }
 
     return QObject::event(e);
+}
+
+void QNetworkReplyImplPrivate::migrateBackend()
+{
+    Q_Q(QNetworkReplyImpl);
+
+    if (state == QNetworkReplyImplPrivate::Finished ||
+        state == QNetworkReplyImplPrivate::Aborted) {
+        qDebug() << "Network reply is already finished/aborted.";
+        return;
+    }
+
+    if (!qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
+        qDebug() << "Resume only support by http backend, not migrating.";
+        return;
+    }
+
+    if (outgoingData) {
+        qDebug() << "Request has outgoing data, not migrating.";
+        return;
+    }
+
+    qDebug() << "Need to check for only cacheable content.";
+
+    // stop both upload and download
+    if (outgoingData)
+        outgoingData->disconnect(q);
+    if (copyDevice)
+        copyDevice->disconnect(q);
+
+    state = QNetworkReplyImplPrivate::Reconnecting;
+
+    if (backend) {
+        backend->deleteLater();
+        backend = 0;
+    }
+
+    RawHeadersList::ConstIterator it = findRawHeader("Accept-Ranges");
+    if (it == rawHeaders.constEnd() || it->second == "none") {
+        qDebug() << "Range header not supported by server/resource.";
+        qFatal("Should fail with TemporaryNetworkFailure.");
+    }
+
+    cookedHeaders.clear();
+    rawHeaders.clear();
+
+    preMigrationDownloaded = bytesDownloaded;
+
+    request.setRawHeader("Range", "bytes=" + QByteArray::number(preMigrationDownloaded) + '-');
+
+    backend = manager->d_func()->findBackend(operation, request);
+
+    if (backend) {
+        backend->setParent(q);
+        backend->reply = this;
+    }
+
+    if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
+        _q_startOperation();
+    } else {
+        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+    }
 }
 
 QT_END_NAMESPACE

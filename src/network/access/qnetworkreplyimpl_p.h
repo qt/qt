@@ -115,7 +115,8 @@ public:
         Working,
         Finished,
         Aborted,
-        WaitingForSession
+        WaitingForSession,
+        Reconnecting
     };
 
     typedef QQueue<InternalNotifications> NotificationQueue;
@@ -162,6 +163,8 @@ public:
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache() const;
 
+    void migrateBackend();
+
     bool cacheEnabled;
     QIODevice *cacheSaveDevice;
 
@@ -178,6 +181,7 @@ public:
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
     qint64 bytesUploaded;
+    qint64 preMigrationDownloaded;
 
     QString httpReasonPhrase;
     int httpStatusCode;

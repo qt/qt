@@ -192,6 +192,7 @@ private:
     friend class QNetworkAccessManager;
     friend class QNetworkAccessManagerPrivate;
     friend class QNetworkAccessBackendUploadIODevice;
+    friend class QNetworkReplyImplPrivate;
     QNetworkAccessManagerPrivate *manager;
     QNetworkReplyImplPrivate *reply;
 };

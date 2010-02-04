@@ -1155,11 +1155,25 @@ void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
     qDebug() << "Accepting new configuration.";
     session->accept();
 
-    // start waiting children
     foreach (QObject *child, q->children()) {
         QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
-        if (reply && reply->d_func()->state == QNetworkReplyImplPrivate::WaitingForSession)
+        if (!reply)
+            continue;
+
+        switch (reply->d_func()->state) {
+        case QNetworkReplyImplPrivate::Buffering:
+        case QNetworkReplyImplPrivate::Working:
+        case QNetworkReplyImplPrivate::Reconnecting:
+            // Migrate existing downloads to new configuration.
+            reply->d_func()->migrateBackend();
+            break;
+        case QNetworkReplyImplPrivate::WaitingForSession:
+            // Start waiting requests.
             QMetaObject::invokeMethod(reply, "_q_startOperation", Qt::QueuedConnection);
+            break;
+        default:
+            qDebug() << "How do we handle replies in state" << reply->d_func()->state;
+        }
     }
 }
 
