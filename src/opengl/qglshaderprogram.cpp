@@ -517,9 +517,6 @@ public:
         , geometryVertexCount(64)
         , geometryInputType(0)
         , geometryOutputType(0)
-        , vertexShader(0)
-        , fragmentShader(0)
-        , geometryShader(0)
     {
     }
     ~QGLShaderProgramPrivate();
@@ -536,9 +533,6 @@ public:
     QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
-    QGLShader *vertexShader;
-    QGLShader *fragmentShader;
-    QGLShader *geometryShader;
 
     bool hasShader(QGLShader::ShaderType type) const;
 };
@@ -562,6 +556,17 @@ bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
 
 #undef ctx
 #define ctx d->programGuard.context()
+
+/*!
+    \enum GeometryTypes
+
+    Defines the geometry types specificed by the GL_EXT_geometry_shader4 extension
+
+    \value LinesWithAdjacencyGeometryType Corresponds to GL_LINES_ADJACENCY.
+    \value LineStripWithAdjacencyGeometryType Corresponds to GL_LINE_STRIP_ADJACENCY.
+    \value TrianglesWithAdjacencyGeometryType Corresponds to GL_TRIANGLES_ADJACENCY.
+    \value TriangleStripWithAdjacencyGeometryType Corresponds to GL_TRIANGLE_STRIP_ADJACENCY.
+ */
 
 /*!
     Constructs a new shader program and attaches it to \a parent.
@@ -2995,7 +3000,7 @@ void QGLShaderProgram::shaderDestroyed()
     The \a context is used to resolve the GLSL extensions.
     If \a context is null, then QGLContext::currentContext() is used.
 */
-bool QGLShader::hasShaders(ShaderType type, const QGLContext *context)
+bool QGLShader::hasOpenGLShaders(ShaderType type, const QGLContext *context)
 {
 #if !defined(QT_OPENGL_ES_2)
     if (!context)
@@ -3006,9 +3011,10 @@ bool QGLShader::hasShaders(ShaderType type, const QGLContext *context)
     bool resolved = qt_resolve_glsl_extensions(const_cast<QGLContext *>(context));
     if (!resolved)
         return false;
-    const QGLContext *ctx = context;
-    if ((type & Geometry) && !glProgramParameteriEXT)
+
+    if ((type & Geometry) && !QByteArray((const char *) glGetString(GL_EXTENSIONS)).contains("GL_EXT_geometry_shader4"))
         return false;
+
     return true;
 }
 

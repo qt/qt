@@ -89,7 +89,7 @@ public:
 
     GLuint shaderId() const;
 
-    static bool hasShaders(ShaderType type, const QGLContext *context = 0);
+    static bool hasOpenGLShaders(ShaderType type, const QGLContext *context = 0);
 
 private:
     friend class QGLShaderProgram;
