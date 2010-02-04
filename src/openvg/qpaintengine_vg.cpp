@@ -1542,7 +1542,28 @@ void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 static inline bool clipTransformIsSimple(const QTransform& transform)
 {
     QTransform::TransformationType type = transform.type();
-    return (type == QTransform::TxNone || type == QTransform::TxTranslate);
+    if (type == QTransform::TxNone || type == QTransform::TxTranslate)
+        return true;
+    if (type == QTransform::TxRotate) {
+        // Check for 0, 90, 180, and 270 degree rotations.
+        // (0 might happen after 4 rotations of 90 degrees).
+        qreal m11 = transform.m11();
+        qreal m12 = transform.m12();
+        qreal m21 = transform.m21();
+        qreal m22 = transform.m22();
+        if (m11 == 0.0f && m22 == 0.0f) {
+            if (m12 == 1.0f && m21 == -1.0f)
+                return true;    // 90 degrees.
+            else if (m12 == -1.0f && m21 == 1.0f)
+                return true;    // 270 degrees.
+        } else if (m12 == 0.0f && m21 == 0.0f) {
+            if (m11 == -1.0f && m22 == -1.0f)
+                return true;    // 180 degrees.
+            else if (m11 == 1.0f && m22 == 1.0f)
+                return true;    // 0 degrees.
+        }
+    }
+    return false;
 }
 
 #if defined(QVG_SCISSOR_CLIP)
@@ -2314,12 +2335,7 @@ bool QVGPaintEngine::clearRect(const QRectF &rect, const QColor &color)
     Q_D(QVGPaintEngine);
     QVGPainterState *s = state();
     if (!s->clipEnabled || s->clipOperation == Qt::NoClip) {
-        // The transform will either be identity or a simple translation,
-        // so do a simpler version of "r = d->transform.map(rect).toRect()".
-        QRect r = QRect(qRound(rect.x() + d->transform.dx()),
-                        qRound(rect.y() + d->transform.dy()),
-                        qRound(rect.width()),
-                        qRound(rect.height()));
+        QRect r = d->transform.mapRect(rect).toRect();
         int height = paintDevice()->height();
         if (d->clearColor != color || d->clearOpacity != s->opacity) {
             VGfloat values[4];
