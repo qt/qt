@@ -1061,7 +1061,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \internal
 */
 
-/*! \fn bool QByteArray::isSharedWith(const QByteArray &other)
+/*! \fn bool QByteArray::isSharedWith(const QByteArray &other) const
 
     \internal
 */
