@@ -165,6 +165,8 @@ public:
     void setAttributeArray
         (int location, const QVector4D *values, int stride = 0);
     void setAttributeArray
+        (int location, GLenum type, const void *values, int tupleSize, int stride = 0);
+    void setAttributeArray
         (const char *name, const GLfloat *values, int tupleSize, int stride = 0);
     void setAttributeArray
         (const char *name, const QVector2D *values, int stride = 0);
@@ -172,6 +174,13 @@ public:
         (const char *name, const QVector3D *values, int stride = 0);
     void setAttributeArray
         (const char *name, const QVector4D *values, int stride = 0);
+    void setAttributeArray
+        (const char *name, GLenum type, const void *values, int tupleSize, int stride = 0);
+
+    void setAttributeBuffer
+        (int location, GLenum type, int offset, int tupleSize, int stride = 0);
+    void setAttributeBuffer
+        (const char *name, GLenum type, int offset, int tupleSize, int stride = 0);
 
     void enableAttributeArray(int location);
     void enableAttributeArray(const char *name);
@@ -216,6 +225,8 @@ public:
     void setUniformValue(int location, const QMatrix4x2& value);
     void setUniformValue(int location, const QMatrix4x3& value);
     void setUniformValue(int location, const QMatrix4x4& value);
+    void setUniformValue(int location, const GLfloat value[2][2]);
+    void setUniformValue(int location, const GLfloat value[3][3]);
     void setUniformValue(int location, const GLfloat value[4][4]);
     void setUniformValue(int location, const QTransform& value);
 
@@ -242,6 +253,8 @@ public:
     void setUniformValue(const char *name, const QMatrix4x2& value);
     void setUniformValue(const char *name, const QMatrix4x3& value);
     void setUniformValue(const char *name, const QMatrix4x4& value);
+    void setUniformValue(const char *name, const GLfloat value[2][2]);
+    void setUniformValue(const char *name, const GLfloat value[3][3]);
     void setUniformValue(const char *name, const GLfloat value[4][4]);
     void setUniformValue(const char *name, const QTransform& value);
 
