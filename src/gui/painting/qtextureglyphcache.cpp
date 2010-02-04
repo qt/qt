@@ -320,13 +320,13 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)
 #ifdef CACHE_DEBUG
 //     QPainter p(&m_image);
 //     p.drawLine(
-    /*QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
+    QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);
     m_image.save(QString::fromLatin1("cache-%1-%2-%3.png")
                  .arg(m_current_textitem->font().family())
                  .arg(m_current_textitem->font().pointSize())
-                 .arg(m_transform.type()));*/
+                 .arg(m_transform.type()));
 #endif
 }
 
