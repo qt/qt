@@ -49,7 +49,7 @@
 #include "private/qsoftkeymanager_p.h"
 #include "private/qsoftkeymanager_s60_p.h"
 #include "private/qobject_p.h"
-//#include <eiksoftkeyimage.h>
+#include <eiksoftkeyimage.h>
 #include <eikcmbut.h>
 
 #ifndef QT_NO_SOFTKEYMANAGER
@@ -64,6 +64,8 @@ QSoftKeyManagerPrivateS60::QSoftKeyManagerPrivateS60()
 {
     cachedCbaIconSize[0] = QSize(0,0);
     cachedCbaIconSize[1] = QSize(0,0);
+    cachedCbaIconSize[2] = QSize(0,0);
+    cachedCbaIconSize[3] = QSize(0,0);
     skipNextUpdate = false;
 }
 
@@ -149,6 +151,39 @@ void QSoftKeyManagerPrivateS60::setNativeSoftkey(CEikButtonGroupContainer &cba,
     QT_TRAP_THROWING(cba.SetCommandL(position, command, text));
 }
 
+QPoint QSoftKeyManagerPrivateS60::softkeyIconPosition(int position, QSize sourceSize, QSize targetSize)
+{
+    QPoint iconPosition(0,0);
+    switch( AknLayoutUtils::CbaLocation() )
+        {
+        case AknLayoutUtils::EAknCbaLocationBottom:
+            // RSK must be moved to right, LSK in on correct position by default
+            if (position == RSK_POSITION)
+                iconPosition.setX(targetSize.width() - sourceSize.width());
+            break;
+        case AknLayoutUtils::EAknCbaLocationRight:
+        case AknLayoutUtils::EAknCbaLocationLeft:
+            // Already in correct position
+        default:
+            break;
+        }
+
+    // Align horizontally to center
+    iconPosition.setY((targetSize.height() - sourceSize.height()) >> 1);
+    return iconPosition;
+}
+
+QPixmap QSoftKeyManagerPrivateS60::prepareSoftkeyPixmap(QPixmap src, int position, QSize targetSize)
+{
+    QPixmap target(targetSize);
+    target.fill(Qt::transparent);
+    QPainter p;
+    p.begin(&target);
+    p.drawPixmap(softkeyIconPosition(position, src.size(), targetSize), src);
+    p.end();
+    return target;
+}
+
 bool QSoftKeyManagerPrivateS60::isOrientationLandscape()
 {
     // Hard to believe that there is no public API in S60 to
@@ -158,14 +193,10 @@ bool QSoftKeyManagerPrivateS60::isOrientationLandscape()
 
 QSize QSoftKeyManagerPrivateS60::cbaIconSize(CEikButtonGroupContainer *cba, int position)
 {
-    Q_UNUSED(cba);
-    Q_UNUSED(position);
 
-    // Will be implemented when EikSoftkeyImage usage license wise is OK
-/*
-    const int index = isOrientationLandscape() ? 0 : 1;
+    int index = position;
+    index += isOrientationLandscape() ? 0 : 1;
     if(cachedCbaIconSize[index].isNull()) {
-        // Only way I figured out to get CBA icon size without RnD SDK, was
         // Only way I figured out to get CBA icon size without RnD SDK, was
         // to set some dummy icon to CBA first and then ask CBA button CCoeControl::Size()
         // The returned value is cached to avoid unnecessary icon setting every time.
@@ -178,38 +209,49 @@ QSize QSoftKeyManagerPrivateS60::cbaIconSize(CEikButtonGroupContainer *cba, int 
             setNativeSoftkey(*cba, position, command, KNullDesC());
             cachedCbaIconSize[index] = qt_TSize2QSize(cba->ControlOrNull(command)->Size());
             EikSoftkeyImage::SetLabel(cba, left);
+
+            if(cachedCbaIconSize[index] == QSize(138,72)) {
+                // Hack for S60 5.0 (5800) landscape orientation, which return wrong icon size
+                cachedCbaIconSize[index] = QSize(60,60);
+            }
         }
     }
 
     return cachedCbaIconSize[index];
-*/
-    return QSize();
 }
 
 bool QSoftKeyManagerPrivateS60::setSoftkeyImage(CEikButtonGroupContainer *cba,
                                             QAction &action, int position)
 {
     bool ret = false;
-    Q_UNUSED(cba);
-    Q_UNUSED(action);
-    Q_UNUSED(position);
 
-    // Will be implemented when EikSoftkeyImage usage license wise is OK
-    /*
     const bool left = (position == LSK_POSITION);
     if(position == LSK_POSITION || position == RSK_POSITION) {
         QIcon icon = action.icon();
         if (!icon.isNull()) {
-            QPixmap pm = icon.pixmap(cbaIconSize(cba, position));
-            pm = pm.scaled(cbaIconSize(cba, position));
-            QBitmap mask = pm.mask();
-            if (mask.isNull()) {
-                mask = QBitmap(pm.size());
-                mask.fill(Qt::color1);
+            // Get size of CBA icon area based on button position and orientation
+            QSize requiredIconSize = cbaIconSize(cba, position);
+            // Get pixmap out of icon based on preferred size, the aspect ratio is kept
+            QPixmap pmWihtAspectRatio = icon.pixmap(requiredIconSize);
+            // Native softkeys require that pixmap size is exactly the same as requiredIconSize
+            // prepareSoftkeyPixmap creates a new pixmap with requiredIconSize and blits the 'pmWihtAspectRatio'
+            // to correct location of it
+            QPixmap softkeyPixmap = prepareSoftkeyPixmap(pmWihtAspectRatio, position, requiredIconSize);
+            QBitmap softkeyMask = softkeyPixmap.mask();
+            if (softkeyMask.isNull()) {
+                softkeyMask = QBitmap(softkeyPixmap.size());
+                softkeyMask.fill(Qt::color1);
             }
 
-            CFbsBitmap* nBitmap = pm.toSymbianCFbsBitmap();
-            CFbsBitmap* nMask = mask.toSymbianCFbsBitmap();
+            // Softkey mask in > SV_S60_5_1 has to be inverted
+            if(QSysInfo::s60Version() > QSysInfo::SV_S60_5_1) {
+                QImage maskImage = softkeyMask.toImage();
+                maskImage.invertPixels();
+                softkeyMask = QPixmap::fromImage(maskImage);
+            }
+
+            CFbsBitmap* nBitmap = softkeyPixmap.toSymbianCFbsBitmap();
+            CFbsBitmap* nMask = softkeyMask.toSymbianCFbsBitmap();
 
             CEikImage* myimage = new (ELeave) CEikImage;
             myimage->SetPicture( nBitmap, nMask ); // nBitmap and nMask ownership transfered
@@ -221,7 +263,6 @@ bool QSoftKeyManagerPrivateS60::setSoftkeyImage(CEikButtonGroupContainer *cba,
             EikSoftkeyImage::SetLabel(cba, left);
         }
     }
-    */
     return ret;
 }
 
@@ -272,6 +313,7 @@ bool QSoftKeyManagerPrivateS60::setRightSoftkey(CEikButtonGroupContainer &cba)
         if (windowType != Qt::Dialog && windowType != Qt::Popup) {
             QString text(QSoftKeyManager::tr("Exit"));
             TPtrC nativeText = qt_QString2TPtrC(text);
+            EikSoftkeyImage::SetLabel(&cba, false);
             setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyExit, nativeText);
             return true;
         }
@@ -303,7 +345,6 @@ void QSoftKeyManagerPrivateS60::setSoftkeys(CEikButtonGroupContainer &cba)
 
 void QSoftKeyManagerPrivateS60::updateSoftKeys_sys()
 {
-    //bool status = CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog();
     if (skipCbaUpdate())
         return;
 
