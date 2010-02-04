@@ -124,7 +124,10 @@ Rectangle {
 
 Context properties work just like normal properties in QML bindings - if the \c backgroundColor
 context property in the previous example was changed to red, the component object instances would
-all be automatically updated.
+all be automatically updated.  Note that it is the responsibility of the creator to delete any
+QmlContext it constructs.  If the \c windowContext in the example above is no longer needed when
+the \c window component instantiation is destroyed, the \c windowContext must be destroyed
+explicitly.  The simplest way to ensure this is to set \c window as \c windowContext's parent.
 
 QmlContexts form a tree - each QmlContext except for the root context has a parent.  Child 
 QmlContexts effectively inherit the context properties present in their parents.  This gives
