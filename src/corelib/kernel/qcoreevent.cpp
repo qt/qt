@@ -272,7 +272,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue MacGLClearDrawable
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
-    \omitvalue CocoaRequestModal
     \omitvalue UpdateSoftKeys
     \omitvalue NativeGesture
 */

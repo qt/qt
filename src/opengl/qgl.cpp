@@ -1085,8 +1085,9 @@ int QGLFormat::stencilBufferSize() const
 /*!
     \since 4.7
 
-    Set the OpenGL version. If a context compatible with the requested OpenGL version
-    cannot be created, a context compatible with version 1.x is created instead.
+    Set the OpenGL version to the \a major and \a minor numbers. If a
+    context compatible with the requested OpenGL version cannot be
+    created, a context compatible with version 1.x is created instead.
 
     \sa majorVersion(), minorVersion()
 */
@@ -1129,8 +1130,9 @@ int QGLFormat::minorVersion() const
     \enum QGLFormat::OpenGLContextProfile
     \since 4.7
 
-    This enum describes the OpenGL context profiles that can be specified for contexts implementing
-    OpenGL version 3.2 or higher. These profiles are different from OpenGL ES profiles.
+    This enum describes the OpenGL context profiles that can be
+    specified for contexts implementing OpenGL version 3.2 or
+    higher. These profiles are different from OpenGL ES profiles.
 
     \value NoProfile            OpenGL version is lower than 3.2.
     \value CoreProfile          Functionality deprecated in OpenGL version 3.0 is not available.
@@ -1140,8 +1142,8 @@ int QGLFormat::minorVersion() const
 /*!
     \since 4.7
 
-    Set the OpenGL context profile. The profile is ignored if the requested OpenGL
-    version is less than 3.2.
+    Set the OpenGL context profile to \a profile. The \a profile is
+    ignored if the requested OpenGL version is less than 3.2.
 
     \sa profile()
 */
