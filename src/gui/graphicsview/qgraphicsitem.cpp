@@ -1356,7 +1356,7 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->removeExtraItemCache();
 
     clearFocus();
-    d_ptr->subFocusItem = 0;
+    d_ptr->subFocusItem = 0;    //### QT-2649
 
     // Update focus scope item ptr.
     QGraphicsItem *p = d_ptr->parent;
