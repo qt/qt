@@ -515,7 +515,7 @@ QVariant QHelpDBReader::metaData(const QString &name) const
 QString QHelpDBReader::mergeList(const QStringList &list) const
 {
     QString str;
-    foreach (QString s, list)
+    foreach (const QString &s, list)
         str.append(QLatin1Char('\'') + quote(s) + QLatin1String("\', "));
     if (str.endsWith(QLatin1String(", ")))
         str = str.left(str.length()-2);
@@ -567,14 +567,14 @@ bool QHelpDBReader::createAttributesCache(const QStringList &attributes,
 
     bool needUpdate = !m_viewAttributes.count();
 
-    foreach (QString s, attributes)
+    foreach (const QString &s, attributes)
         m_viewAttributes.remove(s);
 
     if (m_viewAttributes.count() || needUpdate) {
         m_viewAttributes.clear();
         m_indicesCache = indexIds;        
     }
-    foreach (QString s, attributes)
+    foreach (const QString &s, attributes)
         m_viewAttributes.insert(s);
     m_useAttributesCache = true;
     return true;

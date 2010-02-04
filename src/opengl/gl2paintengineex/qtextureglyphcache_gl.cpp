@@ -42,6 +42,8 @@
 #include "qtextureglyphcache_gl_p.h"
 #include "qpaintengineex_opengl2_p.h"
 
+QT_BEGIN_NAMESPACE
+
 #ifdef Q_WS_WIN
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -243,3 +245,5 @@ int QGLTextureGlyphCache::glyphMargin() const
     return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;
 #endif
 }
+
+QT_END_NAMESPACE
