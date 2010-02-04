@@ -42,6 +42,10 @@ QtCore
 
  - QXmlStreamWriter
     * [QTBUG-6893] Fixed adding extra Byte Order Marks when writing to a xml file.
+ - QFSFileEngine
+    * Fix typo that made realpath() not being used
+ - QIODevice
+    * Optimized readAll()
 
 QtGui
 -----
@@ -63,8 +67,17 @@ QtDBus
 QtNetwork
 ---------
 
- - foo
-    * bar
+ - QNetworkAccessManager
+  * Optimizations
+  * HTTP: Get rid of QAbstractSocket warnings that were sometimes displayed
+  * HTTP: setReadBufferSize() of the QNetworkReply finally is working on all layers
+  * [QTBUG-7713] HTTP: Fix bug related to re-sending a request
+ - QSslCertificate
+  * [QTBUG-6466] Fix issuerInfo() and subjectInfo()
+ - QTcpSocket
+  * [QTBUG-7344] Fix performance degredation with write() on Windows
+  * [QTBUG-7316] Also handle unknown errors from socket engine
+  * [QTBUG-7317] Also handle unknown errors from socket engine
 
 QtOpenGL
 --------
