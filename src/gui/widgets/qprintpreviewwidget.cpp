@@ -151,7 +151,11 @@ class GraphicsView : public QGraphicsView
 public:
     GraphicsView(QWidget* parent = 0)
         : QGraphicsView(parent)
-        {}
+    {
+#ifdef Q_WS_MAC
+        setFrameStyle(QFrame::NoFrame);
+#endif
+    }
 signals:
     void resized();
 

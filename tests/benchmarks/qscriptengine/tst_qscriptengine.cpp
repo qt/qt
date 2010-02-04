@@ -256,8 +256,13 @@ void tst_QScriptEngine::nativeCall()
     QScriptEngine eng;
     eng.globalObject().setProperty("fun", eng.newFunction(native_function));
     QBENCHMARK{
+#if !defined(Q_OS_SYMBIAN)
         eng.evaluate("var w = 0; for (i = 0; i < 100000; ++i) {\n"
                      "  w += fun() + fun(); w -= fun(); fun(); w -= fun(); }");
+#else
+        eng.evaluate("var w = 0; for (i = 0; i < 25000; ++i) {\n"
+                     "  w += fun() + fun(); w -= fun(); fun(); w -= fun(); }");
+#endif
     }
 }
 

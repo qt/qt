@@ -1033,7 +1033,7 @@ static QString qPixmapSerial(quint64 i, bool enabled)
         i >>= 4;
     }
 
-    return QString::fromUtf16(ptr, int(&arr[sizeof(arr) / sizeof(ushort)] - ptr));
+    return QString((const QChar *)ptr, int(&arr[sizeof(arr) / sizeof(ushort)] - ptr));
 }
 
 /*!

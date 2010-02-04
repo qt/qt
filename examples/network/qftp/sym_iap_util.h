@@ -298,7 +298,7 @@ QString qt_TDesC2QStringL(const TDesC& aDescriptor)
 #ifdef QT_NO_UNICODE
     return QString::fromLocal8Bit(aDescriptor.Ptr(), aDescriptor.Length());
 #else
-    return QString::fromUtf16(aDescriptor.Ptr(), aDescriptor.Length());
+    return QString((const QChar *)aDescriptor.Ptr(), aDescriptor.Length());
 #endif
 }
 

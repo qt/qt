@@ -401,7 +401,7 @@ DomUI *Ui3Reader::generateUi4(const QDomElement &widget)
             bool resolved = false;
             if (objName == receiver) {
                 // see if it's a custom slot
-                foreach (QString cs, ui_custom_slots) {
+                foreach (const QString &cs, ui_custom_slots) {
                     if (cs == slot) {
                         resolved = true;
                         break;
@@ -1122,7 +1122,7 @@ void Ui3Reader::createProperties(const QDomElement &n, QList<DomProperty*> *prop
             if (prop->kind() == DomProperty::Set) {
                 QStringList flags = prop->elementSet().split(QLatin1Char('|'));
                 QStringList v;
-                foreach (QString fl, flags) {
+                foreach (const QString &fl, flags) {
                     QString e = WidgetInfo::resolveEnumerator(className, fl);
                     if (e.isEmpty()) {
                         e = m_porting->renameEnumerator(className + QLatin1String("::") + fl);
@@ -1283,7 +1283,7 @@ QString Ui3Reader::fixType(const QString &t) const
     QString newText = t;
     //split type name on <>*& and whitespace
     QStringList typeNames = t.split(QRegExp(QLatin1String("<|>|\\*|&| ")), QString::SkipEmptyParts);
-    foreach(QString typeName , typeNames) {
+    foreach(const QString &typeName , typeNames) {
         QString newName = fixClassName(typeName);
         if( newName != typeName ) {
             newText.replace(typeName, newName);

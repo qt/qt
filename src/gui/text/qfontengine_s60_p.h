@@ -58,9 +58,6 @@
 #include "qsize.h"
 #include <openfont.h>
 
-class CFbsBitmap;
-class CFbsBitmapDevice;
-class CFbsBitGc;
 class CFont;
 
 QT_BEGIN_NAMESPACE
@@ -120,15 +117,21 @@ public:
     Type type() const;
 
     void getCharacterData(glyph_t glyph, TOpenFontCharMetrics& metrics, const TUint8*& bitmap, TSize& bitmapSize) const;
+    void setFontScale(qreal scale);
 
 private:
     friend class QFontPrivate;
 
     QFixed glyphAdvance(HB_Glyph glyph) const;
+    CFont *fontWithSize(qreal size) const;
+    static void releaseFont(CFont *&font);
 
-    CFont* m_font;
     const QFontEngineS60Extensions *m_extensions;
-    qreal m_fontSizeInPixels;
+    CFont* m_originalFont;
+    const qreal m_originalFontSizeInPixels;
+    CFont* m_scaledFont;
+    qreal m_scaledFontSizeInPixels;
+    CFont* m_activeFont;
 };
 
 class QFontEngineMultiS60 : public QFontEngineMulti

@@ -245,9 +245,9 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
                 values[i + idx] = QVariant(QVariant::String);
                 break;
             default:
-                values[i + idx] = QString::fromUtf16(static_cast<const ushort *>(
+                values[i + idx] = QString(reinterpret_cast<const QChar *>(
                             sqlite3_column_text16(stmt, i)),
-                            sqlite3_column_bytes16(stmt, i) / sizeof(ushort));
+                            sqlite3_column_bytes16(stmt, i) / sizeof(QChar));
                 break;
             }
         }

@@ -133,7 +133,7 @@ class Q3DateTimeEditPlugin: public QObject, public QDesignerCustomWidgetInterfac
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3DateTimeEditPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3DateTimeEditPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;
@@ -186,7 +186,7 @@ class Q3GroupBoxPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3GroupBoxPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3GroupBoxPlugin(const QIcon &icon, QObject *parent = 0);
     virtual ~Q3GroupBoxPlugin();
 
     virtual QString name() const;
@@ -239,7 +239,7 @@ class Q3TextBrowserPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3TextBrowserPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3TextBrowserPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;
