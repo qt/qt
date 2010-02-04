@@ -452,7 +452,7 @@ void QmlGraphicsText::setTextFormat(TextFormat format)
     the first string that fits will be used, otherwise the last will be elided.
 
     Multi-length strings are ordered from longest to shortest, separated by the
-    Unicode "String Terminator" character \c U009C (write this in QML with \c{"\\x9C"}).
+    Unicode "String Terminator" character \c U009C (write this in QML with \c{"\u009C"} or \c{"\x9C"}).
 */
 QmlGraphicsText::TextElideMode QmlGraphicsText::elideMode() const
 {
@@ -479,6 +479,15 @@ void QmlGraphicsText::geometryChanged(const QRectF &newGeometry,
     Q_D(QmlGraphicsText);
     if (newGeometry.width() != oldGeometry.width()) {
         if (d->wrap || d->elideMode != QmlGraphicsText::ElideNone) {
+            //re-elide if needed
+            if (d->singleline && d->elideMode != QmlGraphicsText::ElideNone &&
+                isComponentComplete() && widthValid()) {
+
+                QFontMetrics fm(d->font);
+                QString tmp = fm.elidedText(d->text,(Qt::TextElideMode)d->elideMode,width()); // XXX still worth layout...?
+                d->layout.setText(tmp);
+            }
+
             d->imgDirty = true;
             d->updateSize();
         }
