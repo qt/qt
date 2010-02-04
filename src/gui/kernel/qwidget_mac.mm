@@ -569,7 +569,7 @@ inline static void qt_mac_set_window_group_to_popup(OSWindowRef window)
 void qt_mac_set_needs_display(QWidget *widget, QRegion region)
 {
     NSView *theNSView = qt_mac_nativeview_for(widget);
-    if (region.isNull()) {
+    if (region.isEmpty()) {
         [theNSView setNeedsDisplay:YES];
         return;
     }
