@@ -79,7 +79,6 @@ public:
     static StringPropertyParameters textPropertyValidationMode(QDesignerFormEditorInterface *core,
                 const QObject *object, const QString &propertyName, bool isMainContainer);
 
-
 Q_SIGNALS:
     void propertyValueChanged(const QString &name, const QVariant &value, bool enableSubPropertyHandling);
     void resetProperty(const QString &name);
@@ -97,6 +96,13 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void slotPropertyChanged(const QString &name, const QVariant &value);
+
+protected:
+    void emitPropertyValueChanged(const QString &name, const QVariant &value, bool enableSubPropertyHandling);
+
+private:
+    bool m_propertyChangedForwardingBlocked;
+
 };
 
 }  // namespace qdesigner_internal

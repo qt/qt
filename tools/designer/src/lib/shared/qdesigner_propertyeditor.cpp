@@ -92,7 +92,8 @@ static const PropertyNameTypeMap &stringPropertyTypes()
 }
 
 QDesignerPropertyEditor::QDesignerPropertyEditor(QWidget *parent, Qt::WindowFlags flags) :
-    QDesignerPropertyEditorInterface(parent, flags)
+    QDesignerPropertyEditorInterface(parent, flags),
+    m_propertyChangedForwardingBlocked(false)
 {
     // Make old signal work for  compatibility
     connect(this, SIGNAL(propertyChanged(QString,QVariant)), this, SLOT(slotPropertyChanged(QString,QVariant)));
@@ -147,9 +148,20 @@ QDesignerPropertyEditor::StringPropertyParameters QDesignerPropertyEditor::textP
     return StringPropertyParameters(ValidationSingleLine, true);
 }
 
+void QDesignerPropertyEditor::emitPropertyValueChanged(const QString &name, const QVariant &value, bool enableSubPropertyHandling)
+{
+    // Avoid duplicate signal emission - see below
+    m_propertyChangedForwardingBlocked = true;
+    emit propertyValueChanged(name, value, enableSubPropertyHandling);
+    emit propertyChanged(name, value);
+    m_propertyChangedForwardingBlocked = false;
+}
+
 void QDesignerPropertyEditor::slotPropertyChanged(const QString &name, const QVariant &value)
 {
-    emit propertyValueChanged(name, value, true);
+    // Forward signal from Integration using the old interfaces.
+    if (!m_propertyChangedForwardingBlocked)
+        emit propertyValueChanged(name, value, true);
 }
 
 }
