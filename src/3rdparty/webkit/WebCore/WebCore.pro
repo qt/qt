@@ -166,8 +166,8 @@ contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
 
 # HTML5 media support
 !contains(DEFINES, ENABLE_VIDEO=.) {
-    contains(QT_CONFIG, multimedia): DEFINES += ENABLE_VIDEO=1
-    else: DEFINES += ENABLE_VIDEO=0
+    contains(QT_CONFIG, phonon):DEFINES += ENABLE_VIDEO=1
+    else:DEFINES += ENABLE_VIDEO=0
 }
 
 # HTML5 datalist support
@@ -2732,17 +2732,23 @@ contains(DEFINES, ENABLE_VIDEO=1) {
         rendering/RenderMedia.cpp \
         bindings/js/JSAudioConstructor.cpp
 
-    INCLUDEPATH += \
-        $$PWD/../../../multimedia/base
+        HEADERS += \
+            platform/graphics/qt/MediaPlayerPrivatePhonon.h
 
-    HEADERS += \
-        platform/graphics/qt/MediaPlayerPrivateQt.h
+        SOURCES += \
+            platform/graphics/qt/MediaPlayerPrivatePhonon.cpp
 
-    SOURCES += \
-        platform/graphics/qt/MediaPlayerPrivateQt.cpp
+        # Add phonon manually to prevent it from coming first in
+        # the include paths, as Phonon's path.h conflicts with
+        # WebCore's Path.h on case-insensitive filesystems.
+        qtAddLibrary(phonon)
+        INCLUDEPATH -= $$QMAKE_INCDIR_QT/phonon
+        INCLUDEPATH += $$QMAKE_INCDIR_QT/phonon
+        mac {
+            INCLUDEPATH -= $$QMAKE_LIBDIR_QT/phonon.framework/Headers
+            INCLUDEPATH += $$QMAKE_LIBDIR_QT/phonon.framework/Headers
+        }
 
-    QT += multimedia
-    contains(QT_CONFIG, opengl): QT += opengl
 }
 
 contains(DEFINES, ENABLE_XPATH=1) {
