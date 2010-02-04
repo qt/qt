@@ -104,6 +104,7 @@ private slots:
     void setFixedWidth();
     void deleteActionInTriggered();
     void pushButtonPopulateOnAboutToShow();
+    void QTBUG7907_submenus_autoselect();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -929,6 +930,22 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
     QVERIFY(!lastMenu->geometry().intersects(b.geometry()));
 
+}
+void tst_QMenu::QTBUG7907_submenus_autoselect()
+{
+    QMenu menu("Test Menu");
+    QMenu set1("Setting1");
+    QMenu set2("Setting2");
+    QMenu subset("Subsetting");
+    subset.addAction("Values");
+    set1.addMenu(&subset);
+    menu.addMenu(&set1);
+    menu.addMenu(&set2);
+    menu.show();
+    QTest::qWaitForWindowShown(&menu);
+    QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, QPoint(5,5) );
+    QTest::qWait(500);
+    QVERIFY(!subset.isVisible());
 }
 
 
