@@ -1,7 +1,7 @@
 Qt 4.6.2 is a bug-fix release. It maintains both forward and backward
-compatibility (source and binary) with Qt 4.6.0.  For more details,
-refer to the online documentation included in this distribution. The
-documentation is also available online:
+compatibility (source and binary) with Qt 4.6.0 and 4.6.1.  For more
+details, refer to the online documentation included in this
+distribution. The documentation is also available online:
 
   http://qt.nokia.com/doc/4.6
 
@@ -40,18 +40,28 @@ Optimizations
 QtCore
 ------
 
- - QXmlStreamWriter
-    * [QTBUG-6893] Fixed adding extra Byte Order Marks when writing to a xml file.
+ - QAtomicPointer
+    * [QTBUG-7356] Fixed a compilation failure when using the Intel
+    compiler on IA-64
+
  - QFile
     * Fixed double-buffering issue when opening files in buffered mode.
     * [QTBUG-7285] QFile::remove would fail if an unrelated operation on the
       same instance had been previously failed. This manisfested itself in
       QTemporaryFile failing to auto-remove files and QFile::copy leaving
       temporary files behind in certain situations.
+
  - QFSFileEngine
     * Fix typo that made realpath() not being used
+
  - QIODevice
     * Optimized readAll()
+
+ - QReadWriteLock
+    * [MR 426] Fixed documentation
+
+ - QXmlStreamWriter
+    * [QTBUG-6893] Fixed adding extra Byte Order Marks when writing to a xml file.
 
 QtGui
 -----
@@ -85,26 +95,31 @@ QtGui
    with a style other than SolidLine.
 
 
+ * [MR 2077] Integrated merge request 2077
+
 QtDBus
 ------
 
- - foo
-    * bar
+ - QDBusConnection
+    * [QT-2307] Fixed sending of D-Bus method calls with QDBus::BlockWithGui
 
 QtNetwork
 ---------
 
  - QNetworkAccessManager
-  * Optimizations
-  * HTTP: Get rid of QAbstractSocket warnings that were sometimes displayed
-  * HTTP: setReadBufferSize() of the QNetworkReply finally is working on all layers
-  * [QTBUG-7713] HTTP: Fix bug related to re-sending a request
+    * Optimizations
+    * HTTP: Get rid of QAbstractSocket warnings that were sometimes displayed
+    * HTTP: setReadBufferSize() of the QNetworkReply finally is working on all layers
+    * [QTBUG-7713] HTTP: Fix bug related to re-sending a request
+    * [QTBUG-7060] Fixed an issue with parsing of HTTP headers like
+    "private, max-age=300"
+
  - QSslCertificate
-  * [QTBUG-6466] Fix issuerInfo() and subjectInfo()
+    * [QTBUG-6466] Fix issuerInfo() and subjectInfo()
+
  - QTcpSocket
-  * [QTBUG-7344] Fix performance degredation with write() on Windows
-  * [QTBUG-7316] Also handle unknown errors from socket engine
-  * [QTBUG-7317] Also handle unknown errors from socket engine
+    * [QTBUG-7344] Fix performance degredation with write() on Windows
+    * [QTBUG-7316,QTBUG-7317] Also handle unknown errors from socket engine
 
 QtOpenGL
 --------
@@ -155,6 +170,15 @@ Qt Plugins
 
  - foo
     * bar
+
+Examples
+--------
+
+ - QtMultimedia
+    * [MR 418] Fixed the example for QAudioOutput
+
+ - WebKit
+    * [MR 2235] Added the framecapture example to the default build
 
 Third party components
 ----------------------
@@ -265,5 +289,12 @@ Qt for Symbian
 * Important Behavior Changes *
 ****************************************************************************
 
- -
+ - QNetworkAccessManager cache
+    * QNetworkAccessManager will no longer return expired pages, as
+      stated in the documentation
+    * The behaviour of PreferCache and PreferNetwork modes now match
+      the documentation more closely
 
+ - QUrl
+    * QUrl will now accept hostnames ending in dot and will not treat
+      those as invalid hostnames
