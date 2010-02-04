@@ -517,7 +517,7 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
         twf << "\"" << currentPath << "/" << sisName << "\" - \"c:\\adm\\" << sisName << "\"" << endl;
 
         QString bootStrapPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
-        bootStrapPath.append("/src/s60installs/bootstrap.sis");
+        bootStrapPath.append("/bootstrap.sis");
         QFileInfo fi(fileInfo(bootStrapPath));
         twf << "@\"" << fi.absoluteFilePath() << "\",(0x2002CCCD)" << endl;
     }
