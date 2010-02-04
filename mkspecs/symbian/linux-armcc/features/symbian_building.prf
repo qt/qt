@@ -10,6 +10,10 @@ isEmpty(symbianDestdir) {
     symbianDestdir = .
 }
 
+contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb") {
+    DEFINES += __MARM_THUMB__
+}
+
 for(libraries, LIBS) {
     libraries = $$replace(libraries, "\.dll$", ".dso")
     isFullName = $$find(libraries, \.)
