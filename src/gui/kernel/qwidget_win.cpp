@@ -1156,6 +1156,8 @@ void QWidgetPrivate::show_sys()
             data.window_state |= Qt::WindowMinimized;
         if (IsZoomed(q->internalWinId()))
             data.window_state |= Qt::WindowMaximized;
+        if (q->windowType() == Qt::Popup)
+            q->activateWindow();
     }
 
     winSetupGestures();
