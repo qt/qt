@@ -1,0 +1,4 @@
+tst_*
+!tst_*.*
+tst_*.debug
+tst_*~

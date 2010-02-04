@@ -1,0 +1,10 @@
+import Qt 4.6
+
+WebView {
+    url: "test.html"
+    width: 300
+    height: 300
+    settings.standardFontFamily: font.name
+    // WebKit doesn't seem to honour any other FontFamily settings
+    FontLoader { id: font; source: "tarzeau_ocr_a.ttf" }
+}

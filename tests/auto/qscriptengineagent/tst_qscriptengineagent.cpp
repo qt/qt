@@ -2208,6 +2208,89 @@ void tst_QScriptEngineAgent::isEvaluatingInExtension()
     QVERIFY(spy->wasEvaluating);
 }
 
+void tst_QScriptEngineAgent::evaluateProgram()
+{
+    QScriptEngine eng;
+    QScriptProgram program("1 + 2", "foo.js", 123);
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
+    qint64 scriptId = -1;
+    for (int x = 0; x < 10; ++x) {
+        spy->clear();
+        (void)eng.evaluate(program);
+        QCOMPARE(spy->count(), (x == 0) ? 4 : 3);
+
+        if (x == 0) {
+            // script is only loaded on first execution
+            QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
+            scriptId = spy->at(0).scriptId;
+            QVERIFY(scriptId != -1);
+            QCOMPARE(spy->at(0).script, program.sourceCode());
+            QCOMPARE(spy->at(0).fileName, program.fileName());
+            QCOMPARE(spy->at(0).lineNumber, program.lineNumber());
+            spy->removeFirst();
+        }
+
+        QCOMPARE(spy->at(0).type, ScriptEngineEvent::FunctionEntry); // evaluate()
+        QCOMPARE(spy->at(0).scriptId, scriptId);
+
+        QCOMPARE(spy->at(1).type, ScriptEngineEvent::PositionChange);
+        QCOMPARE(spy->at(1).scriptId, scriptId);
+        QCOMPARE(spy->at(1).lineNumber, program.lineNumber());
+
+        QCOMPARE(spy->at(2).type, ScriptEngineEvent::FunctionExit); // evaluate()
+        QCOMPARE(spy->at(2).scriptId, scriptId);
+        QVERIFY(spy->at(2).value.isNumber());
+        QCOMPARE(spy->at(2).value.toNumber(), qsreal(3));
+    }
+}
+
+void tst_QScriptEngineAgent::evaluateProgram_SyntaxError()
+{
+    QScriptEngine eng;
+    QScriptProgram program("this is not valid syntax", "foo.js", 123);
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
+    qint64 scriptId = -1;
+    for (int x = 0; x < 10; ++x) {
+        spy->clear();
+        (void)eng.evaluate(program);
+        QCOMPARE(spy->count(), (x == 0) ? 8 : 7);
+
+        if (x == 0) {
+            // script is only loaded on first execution
+            QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
+            scriptId = spy->at(0).scriptId;
+            QVERIFY(scriptId != -1);
+            QCOMPARE(spy->at(0).script, program.sourceCode());
+            QCOMPARE(spy->at(0).fileName, program.fileName());
+            QCOMPARE(spy->at(0).lineNumber, program.lineNumber());
+            spy->removeFirst();
+        }
+
+        QCOMPARE(spy->at(0).type, ScriptEngineEvent::FunctionEntry); // evaluate()
+        QCOMPARE(spy->at(0).scriptId, scriptId);
+
+        QCOMPARE(spy->at(1).type, ScriptEngineEvent::ContextPush); // SyntaxError constructor
+        QCOMPARE(spy->at(2).type, ScriptEngineEvent::FunctionEntry); // SyntaxError constructor
+        QCOMPARE(spy->at(3).type, ScriptEngineEvent::FunctionExit); // SyntaxError constructor
+        QCOMPARE(spy->at(4).type, ScriptEngineEvent::ContextPop); // SyntaxError constructor
+
+        QCOMPARE(spy->at(5).type, ScriptEngineEvent::ExceptionThrow);
+        QVERIFY(spy->at(5).value.isError());
+        QCOMPARE(spy->at(5).value.toString(), QString::fromLatin1("SyntaxError: Parse error"));
+
+        QCOMPARE(spy->at(6).type, ScriptEngineEvent::FunctionExit); // evaluate()
+        QCOMPARE(spy->at(6).scriptId, scriptId);
+    }
+}
+
+void tst_QScriptEngineAgent::evaluateNullProgram()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
+    (void)eng.evaluate(QScriptProgram());
+    QCOMPARE(spy->count(), 0);
+}
+
 class NewSpy :public QScriptEngineAgent
 {
     bool m_result;

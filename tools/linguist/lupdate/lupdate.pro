@@ -15,6 +15,9 @@ build_all:!build_pass {
 include(../shared/formats.pri)
 include(../shared/proparser.pri)
 
+include($$QT_SOURCE_TREE/src/declarative/qml/parser/parser.pri)
+INCLUDEPATH += $$QT_SOURCE_TREE/src/declarative/qml
+
 SOURCES += \
     main.cpp \
     merge.cpp \
@@ -23,6 +26,7 @@ SOURCES += \
     cpp.cpp \
     java.cpp \
     qscript.cpp \
+    qml.cpp \
     ui.cpp
 
 HEADERS += \
