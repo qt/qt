@@ -40,8 +40,8 @@ Optimizations
 QtCore
 ------
 
- - foo
-    * bar
+ - QXmlStreamWriter
+    * [QTBUG-6893] Fixed adding extra Byte Order Marks when writing to a xml file.
 
 QtGui
 -----
@@ -61,6 +61,9 @@ QtGui
 
  - QPDFEngine
     * [QTBUG-7249] Fixed the encoding of the Tile and Creator tags in the PDF engine.
+
+ * [QTBUG-7029] Fixed a crash when re-creating QApplication object due to a
+   dangling gesture manager pointer.
 
 QtDBus
 ------
@@ -137,7 +140,9 @@ Qt for Linux/X11
 ----------------
   * Fix a bug where QPixmap::serialNumber was not set on a transformed pixmap
     in Qt/X11.
- -
+
+  * Fixed a crash when an input method tries to create a widget after the
+    application is destroyed.
 
 Qt for Windows
 --------------
@@ -148,7 +153,11 @@ Qt for Mac OS X
 ---------------
 
  - QPrintPreviewDialog
-    * [QTBUG-7481] Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
+    * [QTBUG-7312]: Menubar and dock disappear after hiding a fullscreen widget on Cocoa.
+    * [QTBUG-7481]: Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
+    * [QTBUG-7522]: Drawing fake buttons using QMacStyle+QStyleOptionViewItemV4 lead to crash.
+    * [QTBUG-7625]: Calling showFullScreen() then showNormal() on a widget results in top menu hiding.
+
 
 Qt for Embedded Linux
 ---------------------
