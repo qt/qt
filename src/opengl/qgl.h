@@ -57,7 +57,7 @@ QT_BEGIN_HEADER
 #if defined(Q_WS_MAC)
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
-#elif defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#elif defined(QT_OPENGL_ES_1)
 # include <GLES/gl.h>
 #ifndef GL_DOUBLE
 # define GL_DOUBLE GL_FLOAT

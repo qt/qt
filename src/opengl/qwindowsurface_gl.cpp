@@ -82,10 +82,6 @@
 #define GLX_SAMPLES_ARB         100001
 #endif
 
-#ifdef QT_OPENGL_ES_1_CL
-#include "qgl_cl_p.h"
-#endif
-
 #ifdef QT_OPENGL_ES
 #include <private/qegl_p.h>
 #endif
@@ -838,22 +834,22 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
         src.setBottom(src.bottom() / height);
     }
 
-    const q_vertexType tx1 = f2vt(src.left());
-    const q_vertexType tx2 = f2vt(src.right());
-    const q_vertexType ty1 = f2vt(src.top());
-    const q_vertexType ty2 = f2vt(src.bottom());
+    const GLfloat tx1 = src.left();
+    const GLfloat tx2 = src.right();
+    const GLfloat ty1 = src.top();
+    const GLfloat ty2 = src.bottom();
 
-    q_vertexType texCoordArray[4*2] = {
+    GLfloat texCoordArray[4*2] = {
         tx1, ty2, tx2, ty2, tx2, ty1, tx1, ty1
     };
 
-    q_vertexType vertexArray[4*2];
-    extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array); // qpaintengine_opengl.cpp
+    GLfloat vertexArray[4*2];
+    extern void qt_add_rect_to_array(const QRectF &r, GLfloat *array); // qpaintengine_opengl.cpp
     qt_add_rect_to_array(rect, vertexArray);
 
 #if !defined(QT_OPENGL_ES_2)
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
-    glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
+    glTexCoordPointer(2, GL_FLOAT, 0, texCoordArray);
 
     glBindTexture(target, tex_id);
     glEnable(target);

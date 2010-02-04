@@ -1,14 +1,12 @@
 TEMPLATE      = subdirs
 
-contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONFIG, opengles2){
+contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
     contains(QT_CONFIG, opengles2) {
         SUBDIRS   = hellogl_es2
     } else {
         SUBDIRS   = hellogl_es
     }
-    !contains(QT_CONFIG, opengles1cl) {
-        SUBDIRS += textures
-    }
+    SUBDIRS += textures
     contains(QT_CONFIG, opengles1) {
         SUBDIRS += hellogl
     }

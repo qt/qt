@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
+#if !defined(QT_OPENGL_ES_1)
 
 /*!
     \class QGLShaderProgram
@@ -2943,6 +2943,6 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGL
 }
 #endif
 
-#endif // !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
+#endif // !defined(QT_OPENGL_ES_1)
 
 QT_END_NAMESPACE

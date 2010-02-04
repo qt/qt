@@ -64,22 +64,6 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#ifndef QT_OPENGL_ES_1_CL
-#define q_vertexType float
-#define q_vertexTypeEnum GL_FLOAT
-#define f2vt(f)     (f)
-#define vt2f(x)     (x)
-#define i2vt(i)     (float(i))
-#else
-#define FLOAT2X(f)      (int( (f) * (65536)))
-#define X2FLOAT(x)      (float(x) / 65536.0f)
-#define f2vt(f)     FLOAT2X(f)
-#define i2vt(i)     ((i)*65536)
-#define vt2f(x)     X2FLOAT(x)
-#define q_vertexType GLfixed
-#define q_vertexTypeEnum GL_FIXED
-#endif //QT_OPENGL_ES_1_CL
-
 #ifdef QT_OPENGL_ES
 QT_BEGIN_INCLUDE_NAMESPACE
 #if defined(QT_OPENGL_ES_2)
