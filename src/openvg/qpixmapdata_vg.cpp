@@ -46,11 +46,13 @@
 #include "qvgimagepool_p.h"
 
 #ifdef QT_SYMBIAN_SUPPORTS_SGIMAGE
+#include <private/qt_s60_p.h>
+#include <fbs.h>
 #include <graphics/sgimage.h>
 typedef EGLImageKHR (*pfnEglCreateImageKHR)(EGLDisplay, EGLContext, EGLenum, EGLClientBuffer, EGLint*);
 typedef EGLBoolean (*pfnEglDestroyImageKHR)(EGLDisplay, EGLImageKHR);
 typedef VGImage (*pfnVgCreateEGLImageTargetKHR)(VGeglImageKHR);
-#endif
+#endif // QT_SYMBIAN_SUPPORTS_SGIMAGE
 
 QT_BEGIN_NAMESPACE
 
@@ -425,6 +427,34 @@ Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap)
 }
 
 #if defined(Q_OS_SYMBIAN)
+
+static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
+{
+      CFbsBitmap *copy = q_check_ptr(new CFbsBitmap);
+      if(!copy)
+        return 0;
+
+      if (copy->Create(bitmap->SizeInPixels(), bitmap->DisplayMode()) != KErrNone) {
+          delete copy;
+          copy = 0;
+
+          return 0;
+      }
+
+      CFbsBitmapDevice* bitmapDevice = 0;
+      CFbsBitGc *bitmapGc = 0;
+      QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(copy));
+      QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
+      bitmapGc->Activate(bitmapDevice);
+
+      bitmapGc->BitBlt(TPoint(), bitmap);
+
+      delete bitmapGc;
+      delete bitmapDevice;
+
+      return copy;
+}
+
 void QVGPixmapData::cleanup()
 {
     is_null = w = h = 0;
@@ -510,7 +540,49 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         eglDestroyImageKHR(context->display(), eglImage);
         SgDriver::Close();
     } else if (type == QPixmapData::FbsBitmap) {
+        CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
 
+        bool deleteSourceBitmap = false;
+
+#ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
+
+        // Rasterize extended bitmaps
+
+        TUid extendedBitmapType = bitmap->ExtendedBitmapType();
+        if (extendedBitmapType != KNullUid) {
+            bitmap = createBlitCopy(bitmap);
+            deleteSourceBitmap = true;
+        }
+#endif
+
+        if (bitmap->IsCompressedInRAM()) {
+            bitmap = createBlitCopy(bitmap);
+            deleteSourceBitmap = true;
+        }
+
+        TDisplayMode displayMode = bitmap->DisplayMode();
+        QImage::Format format = qt_TDisplayMode2Format(displayMode);
+
+        TSize size = bitmap->SizeInPixels();
+
+        bitmap->BeginDataAccess();
+        uchar *bytes = (uchar*)bitmap->DataAddress();
+        QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+        img = img.copy();
+        bitmap->EndDataAccess();
+
+        if(displayMode == EGray2) {
+            //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
+            //So invert mono bitmaps so that masks work correctly.
+            img.invertPixels();
+        } else if(displayMode == EColor16M) {
+            img = img.rgbSwapped(); // EColor16M is BGR
+        }
+
+        fromImage(img, Qt::AutoColor);
+
+        if(deleteSourceBitmap)
+            delete bitmap;
     }
 #else
     Q_UNUSED(pixmap);
@@ -593,7 +665,25 @@ void* QVGPixmapData::toNativeType(NativeType type)
         SgDriver::Close();
         return reinterpret_cast<void*>(sgImage);
     } else if (type == QPixmapData::FbsBitmap) {
-        return 0;
+        CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);
+
+        if (bitmap) {
+            if (bitmap->Create(TSize(source.width(), source.height()),
+                              EColor16MAP) == KErrNone) {
+                const uchar *sptr = qt_vg_imageBits(source);
+                bitmap->BeginDataAccess();
+
+                uchar *dptr = (uchar*)bitmap->DataAddress();
+                Mem::Copy(dptr, sptr, source.byteCount());
+
+                bitmap->EndDataAccess();
+            } else {
+                delete bitmap;
+                bitmap = 0;
+            }
+        }
+
+        return reinterpret_cast<void*>(bitmap);
     }
 #else
     Q_UNUSED(type);

@@ -529,7 +529,7 @@ configure.
 /* Conditional Debugging */
 /* #undef _CL__CND_DEBUG */
 
-/* debuging option */
+/* debugging option */
 /* #undef _DEBUG */
 
 /* Number of bits in a file offset, on hosts where this is settable. */

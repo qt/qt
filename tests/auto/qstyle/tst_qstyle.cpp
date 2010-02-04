@@ -52,6 +52,7 @@
 #include <qstyleoption.h>
 #include <qscrollbar.h>
 #include <qprogressbar.h>
+#include <qtoolbutton.h>
 
 #include <qplastiquestyle.h>
 #include <qwindowsstyle.h>
@@ -445,6 +446,8 @@ void tst_QStyle::testWindowsVistaStyle()
 
     if (QSysInfo::WindowsVersion == QSysInfo::WV_VISTA)
         testPainting(&vistastyle, "vista");
+    else if (QSysInfo::WindowsVersion == QSysInfo::WV_XP)
+        testPainting(&vistastyle, "xp");
 #endif
 }
 
@@ -460,6 +463,7 @@ void comparePixmap(const QString &filename, const QPixmap &pixmap)
 
 void tst_QStyle::testPainting(QStyle *style, const QString &platform)
 {
+qDebug("TEST PAINTING");
     //Test Menu
     QString fileName = "images/" + platform + "/menu.png";
     QMenu menu;
@@ -538,6 +542,19 @@ void tst_QStyle::testPainting(QStyle *style, const QString &platform)
     pixmap = QPixmap::grabWidget(&mdiArea);
     mdiArea.hide();
     comparePixmap(fileName, pixmap);
+
+    // QToolButton
+    fileName = "images/" + platform + "/toolbutton.png";
+    QToolButton tb;
+    tb.setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    tb.setText("AaQqPpXx");
+    tb.setIcon(style->standardPixmap(QStyle::SP_DirHomeIcon));
+    tb.setStyle(style);
+    tb.show();
+    pixmap = QPixmap::grabWidget(&tb);
+    tb.hide();
+    comparePixmap(fileName, pixmap);
+
 }
 
 void tst_QStyle::testMacStyle()

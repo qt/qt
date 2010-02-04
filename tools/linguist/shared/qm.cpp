@@ -594,7 +594,7 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
                     return false;
                 }
                 m += 4;
-                QString str = QString::fromUtf16((const ushort *)m, len/2);
+                QString str = QString((const QChar *)m, len/2);
                 if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
                     for (int i = 0; i < str.length(); ++i)
                         str[i] = QChar((str.at(i).unicode() >> 8) +

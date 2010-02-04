@@ -42,6 +42,7 @@ HEADERS += ../tools/assistant/aboutdialog.h \
 
 TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
+    $$TR_DIR/assistant_cs.ts \
     $$TR_DIR/assistant_da.ts \
     $$TR_DIR/assistant_de.ts \
     $$TR_DIR/assistant_fr.ts \

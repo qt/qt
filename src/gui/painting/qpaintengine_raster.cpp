@@ -3077,6 +3077,8 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
     QVarLengthArray<glyph_t> glyphs;
     QTransform matrix = s->matrix;
     matrix.translate(p.x(), p.y());
+    if (matrix.type() == QTransform::TxScale)
+        fe->setFontScale(matrix.m11());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     const QFixed aliasDelta = QFixed::fromReal(aliasedCoordinateDelta);
@@ -3092,6 +3094,9 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
 
         alphaPenBlt(glyphBitmapBytes, glyphBitmapSize.iWidth, 8, x, y, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight);
     }
+
+    if (matrix.type() == QTransform::TxScale)
+        fe->setFontScale(1.0);
 
     return;
 }
@@ -3284,7 +3289,9 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     }
 
 #elif defined (Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE) // Q_WS_WIN || Q_WS_MAC
-    if (s->matrix.type() <= QTransform::TxTranslate) {
+    if (s->matrix.type() <= QTransform::TxTranslate
+        || (s->matrix.type() == QTransform::TxScale
+                && (qFuzzyCompare(s->matrix.m11(), s->matrix.m22())))) {
         drawGlyphsS60(p, ti);
         return;
     }
