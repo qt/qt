@@ -42,6 +42,12 @@ QtCore
 
  - QXmlStreamWriter
     * [QTBUG-6893] Fixed adding extra Byte Order Marks when writing to a xml file.
+ - QFile
+    * Fixed double-buffering issue when opening files in buffered mode.
+    * [QTBUG-7285] QFile::remove would fail if an unrelated operation on the
+      same instance had been previously failed. This manisfested itself in
+      QTemporaryFile failing to auto-remove files and QFile::copy leaving
+      temporary files behind in certain situations.
  - QFSFileEngine
     * Fix typo that made realpath() not being used
  - QIODevice
