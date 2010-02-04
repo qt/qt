@@ -2109,19 +2109,6 @@ void QTextEngine::LayoutData::reallocate(int totalGlyphs)
     allocated = newAllocated;
 }
 
-QGlyphLayout QGlyphLayout::clone(char *address) const
-{   
-    QGlyphLayout layout(address, numGlyphs);
-    memmove(layout.offsets, offsets, numGlyphs * sizeof(QFixedPoint));
-    memmove(layout.attributes, attributes, numGlyphs * sizeof(HB_GlyphAttributes));
-    memmove(layout.justifications, justifications, numGlyphs * sizeof(QGlyphJustification));
-    memmove(layout.advances_y, advances_y, numGlyphs * sizeof(QFixed));
-    memmove(layout.advances_x, advances_x, numGlyphs * sizeof(QFixed));
-    memmove(layout.glyphs, glyphs, numGlyphs * sizeof(HB_Glyph));
-
-    return layout;
-}
-
 // grow to the new size, copying the existing data to the new layout
 void QGlyphLayout::grow(char *address, int totalGlyphs)
 {
@@ -2636,51 +2623,6 @@ QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)
 QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format)
     : justified(false), underlineStyle(QTextCharFormat::NoUnderline), charFormat(format),
       num_chars(0), chars(0), logClusters(0), f(0), fontEngine(0)
-{
-    init(si, font, format);
-}
-
-QTextItemInt::QTextItemInt(const QTextItemInt &other)
-        : descent(other.descent), ascent(other.ascent), width(other.width),
-          flags(other.flags), justified(other.justified), underlineStyle(other.underlineStyle),
-          charFormat(other.charFormat), num_chars(other.num_chars), chars(other.chars),
-          fontEngine(other.fontEngine), f(other.f), glyphs(other.glyphs),
-          logClusters(other.logClusters)
-{
-}
-
-
-QTextItemInt QTextItemInt::clone(char *glyphLayoutMemory, unsigned short *logClusterMemory) const
-{
-    QTextItemInt ti(*this);
-
-    ti.glyphs = glyphs.clone(glyphLayoutMemory);
-    ti.logClusters = logClusterMemory;
-    memmove(logClusterMemory, logClusters, glyphs.numGlyphs * sizeof(unsigned short));
-
-    return ti;
-}
-
-QTextItemInt &QTextItemInt::operator=(const QTextItemInt &other)
-{
-    descent = other.descent;
-    ascent = other.ascent;
-    width = other.width;
-    flags = other.flags;
-    justified = other.justified;
-    underlineStyle = other.underlineStyle;
-    charFormat = other.charFormat;
-    num_chars = other.num_chars;
-    chars = other.chars;
-    fontEngine = other.fontEngine;
-    f = other.f;
-    glyphs = other.glyphs;
-    logClusters = other.logClusters;
-
-    return *this;
-}
-
-void QTextItemInt::init(const QScriptItem &si, QFont *font, const QTextCharFormat &format)
 {
     // explicitly initialize flags so that initFontAttributes can be called
     // multiple times on the same TextItem

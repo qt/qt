@@ -262,8 +262,6 @@ struct QGlyphLayout
     }
 
     void grow(char *address, int totalGlyphs);
-
-    QGlyphLayout clone(char *address) const;
 };
 
 class QVarLengthGlyphLayoutArray : private QVarLengthArray<void *>, public QGlyphLayout
@@ -312,18 +310,11 @@ public:
         : justified(false), underlineStyle(QTextCharFormat::NoUnderline), num_chars(0), chars(0),
           logClusters(0), f(0), fontEngine(0)
     {}
-
-    QTextItemInt(const QTextItemInt &other);
     QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format = QTextCharFormat());
-    void init(const QScriptItem &si, QFont *font, const QTextCharFormat &format = QTextCharFormat());
-
-    QTextItemInt clone(char *glyphLayoutMemory, unsigned short *logClusterMemory) const;
 
     /// copy the structure items, adjusting the glyphs arrays to the right subarrays.
     /// the width of the returned QTextItemInt is not adjusted, for speed reasons
     QTextItemInt midItem(QFontEngine *fontEngine, int firstGlyphIndex, int numGlyphs) const;
-
-    QTextItemInt &operator=(const QTextItemInt &other);
 
     QFixed descent;
     QFixed ascent;
@@ -332,7 +323,7 @@ public:
     RenderFlags flags;
     bool justified;
     QTextCharFormat::UnderlineStyle underlineStyle;
-    QTextCharFormat charFormat;
+    const QTextCharFormat charFormat;
     int num_chars;
     const QChar *chars;
     const unsigned short *logClusters;
