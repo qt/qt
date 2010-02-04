@@ -2399,13 +2399,14 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
             break;
 #ifndef QT_NO_COMBOBOX
-        case CT_ComboBox:
-            // Fixing Ui design issues with too wide QComboBoxes and greedy SizeHints
-            // Make sure, that the combobox says within the screen.
-            const QSize desktopContentSize = QApplication::desktop()->availableGeometry().size()
-                    -QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
-            sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
-                    boundedTo(desktopContentSize);
+        case CT_ComboBox: {
+                // Fixing Ui design issues with too wide QComboBoxes and greedy SizeHints
+                // Make sure, that the combobox says within the screen.
+                const QSize desktopContentSize = QApplication::desktop()->availableGeometry().size()
+                        -QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
+                sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
+                        boundedTo(desktopContentSize);
+            }
             break;
 #endif
         default:

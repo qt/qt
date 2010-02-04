@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSOFTKEYMANAGER_P_H
-#define QSOFTKEYMANAGER_P_H
+#ifndef QSOFTKEYMANAGER_S60_P_H
+#define QSOFTKEYMANAGER_S60_P_H
 
 //
 //  W A R N I N G
@@ -53,63 +53,57 @@
 // We mean it.
 //
 
-#include <QtCore/qobject.h>
-#include "QtGui/qaction.h"
+#include "private/qobject_p.h"
+#include "private/qsoftkeymanager_common_p.h"
 
 QT_BEGIN_HEADER
 
 #ifndef QT_NO_SOFTKEYMANAGER
+
 QT_BEGIN_NAMESPACE
 
-class QSoftKeyManagerPrivate;
+class CEikButtonGroupContainer;
+class QAction;
 
-const char MENU_ACTION_PROPERTY[] = "_q_menuaction";
-
-class Q_AUTOTEST_EXPORT QSoftKeyManager : public QObject
+class QSoftKeyManagerPrivateS60 : public QSoftKeyManagerPrivate
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QSoftKeyManager)
+    Q_DECLARE_PUBLIC(QSoftKeyManager)
 
 public:
+    QSoftKeyManagerPrivateS60();
 
-    enum StandardSoftKey {
-        OkSoftKey,
-        SelectSoftKey,
-        DoneSoftKey,
-        MenuSoftKey,
-        CancelSoftKey
-    };
-
-    static void updateSoftKeys();
-#ifdef Q_WS_S60
-    static bool handleCommand(int);
-#endif
-
-    static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
-    static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);
-
-protected:
-    bool event(QEvent *e);
+public:
+    void updateSoftKeys_sys();
+    bool handleCommand(int command);
 
 private:
-    QSoftKeyManager();
-    static QSoftKeyManager *instance();
-    static const char *standardSoftKeyText(StandardSoftKey standardKey);
-    bool appendSoftkeys(const QWidget &source, int level);
-    QWidget *softkeySource(QWidget *previousSource, bool& recursiveMerging);
-    bool handleUpdateSoftKeys();
-
-private Q_SLOTS:
-    void cleanupHash(QObject* obj);
-    void sendKeyEvent();
+    bool skipCbaUpdate();
+    void ensureCbaVisibilityAndResponsiviness(CEikButtonGroupContainer &cba);
+    void clearSoftkeys(CEikButtonGroupContainer &cba);
+    QString softkeyText(QAction &softkeyAction);
+    QAction *highestPrioritySoftkey(QAction::SoftKeyRole role);
+    static bool actionPriorityMoreThan(const QAction* item1, const QAction* item2);
+    void setNativeSoftkey(CEikButtonGroupContainer &cba, TInt position, TInt command, const TDesC& text);
+    bool isOrientationLandscape();
+    QSize cbaIconSize(CEikButtonGroupContainer *cba, int position);
+    bool setSoftkeyImage(CEikButtonGroupContainer *cba, QAction &action, int position);
+    bool setSoftkey(CEikButtonGroupContainer &cba, QAction::SoftKeyRole role, int position);
+    bool setLeftSoftkey(CEikButtonGroupContainer &cba);
+    bool setMiddleSoftkey(CEikButtonGroupContainer &cba);
+    bool setRightSoftkey(CEikButtonGroupContainer &cba);
+    void setSoftkeys(CEikButtonGroupContainer &cba);
 
 private:
-    Q_DISABLE_COPY(QSoftKeyManager)
+    QHash<int, QAction*> realSoftKeyActions;
+    QSize cachedCbaIconSize[2];
+    bool skipNextUpdate;
 };
 
+
 QT_END_NAMESPACE
+
 #endif //QT_NO_SOFTKEYMANAGER
 
 QT_END_HEADER
 
-#endif //QSOFTKEYMANAGER_P_H
+#endif // QSOFTKEYMANAGER_S60_P_H
