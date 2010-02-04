@@ -881,6 +881,7 @@ void tst_QImageReader::gifImageCount()
     {
         QImageReader io(":images/trolltech.gif");
         QVERIFY(io.imageCount() == 34);
+        QVERIFY(io.size() == QSize(128,64));
     }
 }
 #endif

@@ -71,8 +71,8 @@ public:
     ~QGIFFormat();
 
     int decode(QImage *image, const uchar* buffer, int length,
-               int *nextFrameDelay, int *loopCount, QSize *nextSize);
-    static int imageCount(QIODevice *device);
+               int *nextFrameDelay, int *loopCount);
+    static void scan(QIODevice *device, QVector<QSize> *imageSizes);
 
     bool newFrame;
     bool partialNewFrame;
@@ -230,7 +230,7 @@ void QGIFFormat::disposePrevious(QImage *image)
     Returns the number of bytes consumed.
 */
 int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
-                       int *nextFrameDelay, int *loopCount, QSize *nextSize)
+                       int *nextFrameDelay, int *loopCount)
 {
     // We are required to state that
     //    "The Graphics Interchange Format(c) is the Copyright property of
@@ -347,10 +347,6 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                     bpl = image->bytesPerLine();
                     bits = image->bits();
                     memset(bits, 0, image->byteCount());
-
-                    // ### size of the upcoming frame, should rather
-                    // be known before decoding it.
-                    *nextSize = QSize(swidth, sheight);
                 }
 
                 disposePrevious(image);
@@ -647,17 +643,17 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
 }
 
 /*!
-   Returns the number of images that can be read from \a device.
+   Scans through the data stream defined by \a device and returns the image
+   sizes found in the stream in the \a imageSizes vector.
 */
-
-int QGIFFormat::imageCount(QIODevice *device)
+void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes)
 {
     if (!device)
-        return 0;
+        return;
 
     qint64 oldPos = device->pos();
     if (!device->seek(0))
-        return 0;
+        return;
 
     int colorCount = 0;
     int localColorCount = 0;
@@ -667,18 +663,21 @@ int QGIFFormat::imageCount(QIODevice *device)
     bool globalColormap = false;
     int count = 0;
     int blockSize = 0;
+    int imageWidth = 0;
+    int imageHeight = 0;
     bool done = false;
     uchar hold[16];
-    int imageCount = 0;
     State state = Header;
 
     const int readBufferSize = 40960; // 40k read buffer
     QByteArray readBuffer(device->read(readBufferSize));
 
-    if (readBuffer.isEmpty())
-        return 0;
+    if (readBuffer.isEmpty()) {
+        device->seek(oldPos);
+        return;
+    }
 
-    // this is a specialized version of the state machine from decode(),
+    // This is a specialized version of the state machine from decode(),
     // which doesn't do any image decoding or mallocing, and has an
     // optimized way of skipping SkipBlocks, ImageDataBlocks and
     // Global/LocalColorMaps.
@@ -700,6 +699,8 @@ int QGIFFormat::imageCount(QIODevice *device)
             case LogicalScreenDescriptor:
                 hold[count++] = ch;
                 if (count == 7) {
+                    imageWidth = LM(hold[0], hold[1]);
+                    imageHeight = LM(hold[2], hold[3]);
                     globalColormap = !!(hold[4] & 0x80);
                     globalColorCount = 2 << (hold[4] & 0x7);
                     count = 0;
@@ -753,13 +754,29 @@ int QGIFFormat::imageCount(QIODevice *device)
             case ImageDescriptor:
                 hold[count++] = ch;
                 if (count == 10) {
+                    int newLeft = LM(hold[1], hold[2]);
+                    int newTop = LM(hold[3], hold[4]);
+                    int newWidth = LM(hold[5], hold[6]);
+                    int newHeight = LM(hold[7], hold[8]);
+
+                    if (imageWidth/10 > qMax(newWidth,200))
+                        imageWidth = -1;
+                    if (imageHeight/10 > qMax(newHeight,200))
+                        imageHeight = -1;
+
+                    if (imageWidth <= 0)
+                        imageWidth = newLeft + newWidth;
+                    if (imageHeight <= 0)
+                        imageHeight = newTop + newHeight;
+
+                    *imageSizes << QSize(imageWidth, imageHeight);
+
                     localColormap = !!(hold[9] & 0x80);
                     localColorCount = localColormap ? (2 << (hold[9] & 0x7)) : 0;
                     if (localColorCount)
                         colorCount = localColorCount;
                     else
                         colorCount = globalColorCount;
-                    imageCount++;
 
                     count = 0;
                     if (localColormap) {
@@ -865,13 +882,13 @@ int QGIFFormat::imageCount(QIODevice *device)
                 break;
             case Error:
                 device->seek(oldPos);
-                return 0;
+                return;
             }
         }
         readBuffer = device->read(readBufferSize);
     }
     device->seek(oldPos);
-    return imageCount;
+    return;
 }
 
 void QGIFFormat::fillRect(QImage *image, int col, int row, int w, int h, QRgb color)
@@ -994,8 +1011,7 @@ QGifHandler::QGifHandler()
     nextDelay = 0;
     loopCnt = 0;
     frameNumber = -1;
-    nextSize = QSize();
-    imageCnt = -1;
+    scanIsCached = false;
 }
 
 QGifHandler::~QGifHandler()
@@ -1017,7 +1033,7 @@ bool QGifHandler::imageIsComing() const
         }
 
         int decoded = gifFormat->decode(&lastImage, (const uchar *)buffer.constData(), buffer.size(),
-                                        &nextDelay, &loopCnt, &nextSize);
+                                        &nextDelay, &loopCnt);
         if (decoded == -1)
             break;
         buffer.remove(0, decoded);
@@ -1061,7 +1077,7 @@ bool QGifHandler::read(QImage *image)
         }
 
         int decoded = gifFormat->decode(&lastImage, (const uchar *)buffer.constData(), buffer.size(),
-                                        &nextDelay, &loopCnt, &nextSize);
+                                        &nextDelay, &loopCnt);
         if (decoded == -1)
             break;
         buffer.remove(0, decoded);
@@ -1092,8 +1108,18 @@ bool QGifHandler::supportsOption(ImageOption option) const
 QVariant QGifHandler::option(ImageOption option) const
 {
     if (option == Size) {
-        if (imageIsComing())
-            return nextSize;
+        if (!scanIsCached) {
+            QGIFFormat::scan(device(), &imageSizes);
+            scanIsCached = true;
+        }
+        // before the first frame is read, or we have an empty data stream
+        if (frameNumber == -1)
+            return (imageSizes.count() > 0) ? QVariant(imageSizes.at(0)) : QVariant();
+        // after the last frame has been read, the next size is undefined
+        if (frameNumber >= imageSizes.count() - 1)
+            return QVariant();
+        // and the last case: the size of the next frame
+        return imageSizes.at(frameNumber + 1);
     } else if (option == Animation) {
         return true;
     }
@@ -1113,10 +1139,11 @@ int QGifHandler::nextImageDelay() const
 
 int QGifHandler::imageCount() const
 {
-    if (imageCnt != -1)
-        return imageCnt;
-    imageCnt = QGIFFormat::imageCount(device());
-    return imageCnt;
+    if (!scanIsCached) {
+        QGIFFormat::scan(device(), &imageSizes);
+        scanIsCached = true;
+    }
+    return imageSizes.count();
 }
 
 int QGifHandler::loopCount() const
