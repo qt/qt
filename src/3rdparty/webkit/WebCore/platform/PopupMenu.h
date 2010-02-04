@@ -44,7 +44,9 @@ typedef struct HBITMAP__* HBITMAP;
 namespace WebCore {
     class QWebPopup;
 }
+QT_BEGIN_NAMESPACE
 class QGraphicsProxyWidget;
+QT_END_NAMESPACE
 #elif PLATFORM(GTK)
 typedef struct _GtkMenu GtkMenu;
 typedef struct _GtkMenuItem GtkMenuItem;

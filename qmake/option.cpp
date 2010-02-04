@@ -644,8 +644,8 @@ Option::fixString(QString string, uchar flags)
         string = string.replace('/', Option::dir_sep).replace('\\', Option::dir_sep);
     }
 
-    if (string.startsWith("\"") && string.endsWith("\"") ||
-        string.startsWith("\'") && string.endsWith("\'"))
+    if ((string.startsWith("\"") && string.endsWith("\"")) ||
+        (string.startsWith("\'") && string.endsWith("\'")))
         string = string.mid(1, string.length()-2);
 
     //cache

@@ -6,6 +6,7 @@ symbian: {
     TARGET.EPOCALLOWDLLDATA=1
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000 // Min 128kB, Max 32MB
     TARGET.CAPABILITY = All -Tcb
+    TARGET.UID3 = 0x200267C2
 
     webkitlibs.sources = QtWebKit.dll
     webkitlibs.path = /sys/bin
@@ -23,7 +24,6 @@ symbian: {
 
     DEPLOYMENT += webkitlibs webkitbackup
 
-    TARGET.UID3 = 0x200267C2
     # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
     # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
     MMP_RULES += "LINKEROPTION  armcc --rw-base 0xE00000"

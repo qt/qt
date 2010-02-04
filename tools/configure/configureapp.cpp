@@ -317,7 +317,6 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
     dictionary[ "S60" ]             = "yes";
-    dictionary[ "SYMBIAN_DEFFILES" ] = "yes";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
@@ -1472,6 +1471,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "XMLPATTERNS" ]         = "yes";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "S60" ]                 = "yes";
+        dictionary[ "SYMBIAN_DEFFILES" ]    = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
         // iconv_open seems to return -1 always, so something is probably missing from the platform.
         dictionary[ "QT_ICONV" ]            = "no";

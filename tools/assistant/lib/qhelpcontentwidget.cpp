@@ -253,7 +253,7 @@ void QHelpContentProvider::run()
     const QStringList fileNames = m_helpEngine->orderedFileNameList;
     m_mutex.unlock();
 
-    foreach (QString dbFileName, fileNames) {
+    foreach (const QString &dbFileName, fileNames) {
         m_mutex.lock();
         if (m_abort) {
             m_abort = false;
