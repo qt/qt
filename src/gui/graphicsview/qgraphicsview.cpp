@@ -2748,7 +2748,6 @@ bool QGraphicsView::viewportEvent(QEvent *event)
                     }
                 }
             }
-            d->scene->d_func()->updateAll = false;
         }
         break;
     case QEvent::TouchBegin:
