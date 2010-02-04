@@ -274,6 +274,13 @@ void tst_QmlGraphicsLoader::sizeItemToLoader()
     loader->setHeight(30);
     QCOMPARE(rect->width(), 180.0);
     QCOMPARE(rect->height(), 30.0);
+
+    // Switch mode
+    loader->setResizeMode(QmlGraphicsLoader::SizeLoaderToItem);
+    rect->setWidth(160);
+    rect->setHeight(45);
+    QCOMPARE(rect->width(), 160.0);
+    QCOMPARE(rect->height(), 45.0);
 }
 
 void tst_QmlGraphicsLoader::noResize()

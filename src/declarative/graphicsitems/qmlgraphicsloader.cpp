@@ -346,6 +346,12 @@ qreal QmlGraphicsLoader::progress() const
     \o SizeItemToLoader - the item will be sized to the size of the Loader.
     \endlist
 
+    Note that changing from SizeItemToLoader to SizeLoaderToItem
+    after the component is loaded will not return the item or Loader
+    to it's original size.  This is due to the item size being adjusted
+    to the Loader size, thereby losing the original size of the item.
+    Future changes to the item's size will affect the loader, however.
+
     The default resizeMode is SizeLoaderToItem.
 */
 QmlGraphicsLoader::ResizeMode QmlGraphicsLoader::resizeMode() const
