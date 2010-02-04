@@ -3233,10 +3233,10 @@ void QWidget::activateWindow()
             || windowActive) {
 #ifndef QT_MAC_USE_COCOA
         ActivateWindow(win, true);
+        qApp->setActiveWindow(tlw);
 #else
         [win makeKeyWindow];
 #endif
-        qApp->setActiveWindow(tlw);
     } else if(!isMinimized()) {
 #ifndef QT_MAC_USE_COCOA
         SelectWindow(win);
