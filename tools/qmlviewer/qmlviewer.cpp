@@ -344,12 +344,15 @@ class NetworkAccessManagerFactory : public QmlNetworkAccessManagerFactory
 {
 public:
     NetworkAccessManagerFactory() : cookieJar(0), cacheSize(0) {}
+    ~NetworkAccessManagerFactory() {
+        delete cookieJar;
+    }
 
     QNetworkAccessManager *create(QObject *parent) {
         QMutexLocker lock(&mutex);
         QNetworkAccessManager *manager = new QNetworkAccessManager(parent);
         if (!cookieJar)
-            cookieJar = new PersistentCookieJar(manager);
+            cookieJar = new PersistentCookieJar(0);
         manager->setCookieJar(cookieJar);
         cookieJar->setParent(0);
         setupProxy(manager);
