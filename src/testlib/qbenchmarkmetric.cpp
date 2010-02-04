@@ -41,6 +41,29 @@
 
 #include <QtTest/private/qbenchmarkmetric_p.h>
 
+/*!
+  \enum QTest::QBenchmarkMetric
+  \since 4.7
+
+  This enum lists all the things that can be benchmarked.
+  
+  \value FramesPerSecond        Frames per second
+  \value BitsPerSecond          Bits per second
+  \value BytesPerSecond         Bytes per second
+  \value WalltimeMilliseconds   Clock time in milliseconds
+  \value CPUTicks               CPU time
+  \value InstructionReads       Instruction reads
+  \value Events                 Event count
+
+  \sa QTest::benchmarkMetricName(), QTest::benchmarkMetricUnit()
+
+ */
+
+/*!
+  \relates QTest
+  \since 4.7
+  Returns the enum value \a metric as a character string.
+ */
 const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
 {
     switch (metric) {
@@ -63,6 +86,11 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
     }
 };
 
+/*!
+  \relates QTest
+  \since 4.7
+  Retuns the units of measure for the specified \a metric.
+ */
 const char * QTest::benchmarkMetricUnit(QBenchmarkMetric metric)
 {
     switch (metric) {

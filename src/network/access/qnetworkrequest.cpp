@@ -532,13 +532,24 @@ QNetworkRequest::Priority QNetworkRequest::priority() const
     return d->priority;
 }
 
+/*! \enum QNetworkRequest::Priority
+
+  \since 4.7
+  
+  This enum lists the possible network request priorities.
+
+  \value HighPriority   High priority
+  \value NormalPriority Normal priority
+  \value LowPriority    Low priority
+ */
+
 /*!
     \since 4.7
 
-    Set the priority of this request.
+    Set the priority of this request to \a priority.
 
-    \note The priority is only a hint to the network access manager.
-    It can use it or not. Currently it is used for HTTP to
+    \note The \a priority is only a hint to the network access
+    manager.  It can use it or not. Currently it is used for HTTP to
     decide which request should be sent first to a server.
 
     \sa priority()
