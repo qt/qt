@@ -93,7 +93,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_LFLAGS += --symver_soname --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll
 }
 
-contains(TEMPLATE, app) {
+contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     !isEmpty($$QMAKE_POST_LINK):QMAKE_POST_LINK += &&
 
     QMAKE_POST_LINK += $$QMAKE_MOVE $$symbianDestdir/$${TARGET} $$symbianDestdir/$${TARGET}.sym
