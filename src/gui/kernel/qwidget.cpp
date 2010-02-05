@@ -1439,6 +1439,7 @@ QWidget::~QWidget()
     }
 #endif
 
+#ifdef Q_OS_SYMBIAN
     if (d->extra && d->extra->topextra && d->extra->topextra->backingStore) {
         // Okay, we are about to destroy the top-level window that owns
         // the backing store. Make sure we delete the backing store right away
@@ -1449,6 +1450,7 @@ QWidget::~QWidget()
         delete d->extra->topextra->backingStore;
         d->extra->topextra->backingStore = 0;
     }
+#endif
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
         bs->removeDirtyWidget(this);
         if (testAttribute(Qt::WA_StaticContents))
