@@ -72,7 +72,7 @@ public:
 
     int decode(QImage *image, const uchar* buffer, int length,
                int *nextFrameDelay, int *loopCount);
-    static void scan(QIODevice *device, QVector<QSize> *imageSizes);
+    static void scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCount);
 
     bool newFrame;
     bool partialNewFrame;
@@ -646,7 +646,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
    Scans through the data stream defined by \a device and returns the image
    sizes found in the stream in the \a imageSizes vector.
 */
-void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes)
+void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes, int *loopCount)
 {
     if (!device)
         return;
@@ -842,7 +842,10 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes)
                     hold[count] = ch;
                 ++count;
                 if (count == hold[0] + 1) {
-                    state = SkipBlockSize;
+                    if (qstrncmp((char*)(hold+1), "NETSCAPE", 8) == 0)
+                        state=NetscapeExtensionBlockSize;
+                    else
+                        state=SkipBlockSize;
                     count = 0;
                 }
                 break;
@@ -855,7 +858,23 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes)
                     state = SkipBlockSize;
                 }
                 break;
-            case NetscapeExtensionBlockSize: // fallthrough
+            case NetscapeExtensionBlockSize:
+                blockSize = ch;
+                count = 0;
+                if (blockSize)
+                    state = NetscapeExtensionBlock;
+                else
+                    state = Introducer;
+                break;
+            case NetscapeExtensionBlock:
+                if (count < 3)
+                    hold[count] = ch;
+                count++;
+                if (count == blockSize) {
+                    *loopCount = LM(hold[1], hold[2]);
+                    state = SkipBlockSize;
+                }
+                break;
             case SkipBlockSize:
                 blockSize = ch;
                 count = 0;
@@ -871,7 +890,6 @@ void QGIFFormat::scan(QIODevice *device, QVector<QSize> *imageSizes)
                     state = Introducer;
                 }
                 break;
-            case NetscapeExtensionBlock: // fallthrough
             case SkipBlock:
                 ++count;
                 if (count == blockSize)
@@ -1009,7 +1027,7 @@ QGifHandler::QGifHandler()
 {
     gifFormat = new QGIFFormat;
     nextDelay = 0;
-    loopCnt = 0;
+    loopCnt = 1;
     frameNumber = -1;
     scanIsCached = false;
 }
@@ -1109,7 +1127,7 @@ QVariant QGifHandler::option(ImageOption option) const
 {
     if (option == Size) {
         if (!scanIsCached) {
-            QGIFFormat::scan(device(), &imageSizes);
+            QGIFFormat::scan(device(), &imageSizes, &loopCnt);
             scanIsCached = true;
         }
         // before the first frame is read, or we have an empty data stream
@@ -1140,7 +1158,7 @@ int QGifHandler::nextImageDelay() const
 int QGifHandler::imageCount() const
 {
     if (!scanIsCached) {
-        QGIFFormat::scan(device(), &imageSizes);
+        QGIFFormat::scan(device(), &imageSizes, &loopCnt);
         scanIsCached = true;
     }
     return imageSizes.count();
@@ -1148,6 +1166,10 @@ int QGifHandler::imageCount() const
 
 int QGifHandler::loopCount() const
 {
+    if (!scanIsCached) {
+        QGIFFormat::scan(device(), &imageSizes, &loopCnt);
+        scanIsCached = true;
+    }
     return loopCnt-1; // In GIF, loop count is iteration count, so subtract one
 }
 
