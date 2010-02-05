@@ -57,7 +57,7 @@ class QMetaDataControl;
 class QMetaDataControlMetaObject;
 class QmlMediaBaseAnimation;
 
-class QmlMediaBase
+class Q_AUTOTEST_EXPORT QmlMediaBase
 {
 public:
     QmlMediaBase();
@@ -130,6 +130,8 @@ protected:
 
     virtual void seekableChanged() = 0;
     virtual void playbackRateChanged() = 0;
+
+    virtual void errorChanged() = 0;
 
     QMediaService *m_mediaService;
     QMediaPlayerControl *m_playerControl;

@@ -59,9 +59,9 @@ void QmlGraphicsVideo::_q_nativeSizeChanged(const QSizeF &size)
     setImplicitHeight(size.height());
 }
 
-void QmlGraphicsVideo::_q_error(QMediaPlayer::Error errorCode, const QString &errorString)
+void QmlGraphicsVideo::_q_error(int errorCode, const QString &errorString)
 {
-    m_error = errorCode;
+    m_error = QMediaPlayer::Error(errorCode);
     m_errorString = errorString;
 
     emit error(Error(errorCode), errorString);

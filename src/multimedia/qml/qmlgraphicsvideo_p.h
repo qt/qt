@@ -58,7 +58,7 @@ class QTimerEvent;
 class QVideoSurfaceFormat;
 
 
-class QmlGraphicsVideo : public QmlGraphicsItem, public QmlMediaBase
+class Q_AUTOTEST_EXPORT QmlGraphicsVideo : public QmlGraphicsItem, public QmlMediaBase
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
@@ -170,7 +170,7 @@ protected:
 
 private Q_SLOTS:
     void _q_nativeSizeChanged(const QSizeF &size);
-    void _q_error(QMediaPlayer::Error, const QString &);
+    void _q_error(int, const QString &);
 
 private:
     Q_DISABLE_COPY(QmlGraphicsVideo)

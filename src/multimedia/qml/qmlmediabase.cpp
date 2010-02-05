@@ -270,6 +270,8 @@ void QmlMediaBase::setObject(QObject *object)
                 object, SIGNAL(seekableChanged()));
         QObject::connect(m_playerControl, SIGNAL(playbackRateChanged(qreal)),
                 object, SIGNAL(playbackRateChanged()));
+        QObject::connect(m_playerControl, SIGNAL(error(int,QString)),
+                object, SLOT(_q_error(int,QString)));
 
         m_animation = new QmlMediaBaseAnimation(this);
     } else {
@@ -293,6 +295,13 @@ QUrl QmlMediaBase::source() const
 
 void QmlMediaBase::setSource(const QUrl &url)
 {
+    if (m_error != QMediaPlayer::ServiceMissingError && m_error != QMediaPlayer::NoError) {
+        m_error = QMediaPlayer::NoError;
+        m_errorString = QString();
+
+        emit errorChanged();
+    }
+
     m_playerControl->setMedia(QMediaContent(url), 0);
 }
 
