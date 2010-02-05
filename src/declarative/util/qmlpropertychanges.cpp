@@ -113,7 +113,7 @@ QT_BEGIN_NAMESPACE
     This property holds the object which contains the properties to be changed.
 */
 
-class QmlReplaceSignalHandler : public ActionEvent
+class QmlReplaceSignalHandler : public QmlActionEvent
 {
 public:
     QmlReplaceSignalHandler() : expression(0), reverseExpression(0),
@@ -149,7 +149,7 @@ public:
     }
     virtual void saveCurrentValues() { rewindExpression = property.signalExpression(); }
 
-    virtual bool override(ActionEvent*other) {
+    virtual bool override(QmlActionEvent*other) {
         if (other == this)
             return true;
         if (other->typeName() != typeName())
@@ -378,7 +378,7 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
 
         QByteArray property = d->properties.at(ii).first;
 
-        Action a(d->object, QString::fromLatin1(property),
+        QmlAction a(d->object, QString::fromLatin1(property),
                  d->properties.at(ii).second);
 
         if (a.property.isValid()) {
@@ -397,7 +397,7 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
         QmlReplaceSignalHandler *handler = d->signalReplacements.at(ii);
 
         if (handler->property.isValid()) {
-            Action a;
+            QmlAction a;
             a.event = handler;
             list << a;
         }
@@ -409,7 +409,7 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
         QmlMetaProperty prop = d->property(property);
 
         if (prop.isValid()) {
-            Action a;
+            QmlAction a;
             a.restore = restoreEntryValues();
             a.property = prop;
             a.fromValue = a.property.read();

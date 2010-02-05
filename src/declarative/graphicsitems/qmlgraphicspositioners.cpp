@@ -255,9 +255,9 @@ void QmlGraphicsBasePositioner::positionX(int x, const PositionedItem &target)
             target.item->setX(x);
         }else{
             if(target.isNew)
-                d->addActions << Action(target.item, QLatin1String("x"), QVariant(x));
+                d->addActions << QmlAction(target.item, QLatin1String("x"), QVariant(x));
             else
-                d->moveActions << Action(target.item, QLatin1String("x"), QVariant(x));
+                d->moveActions << QmlAction(target.item, QLatin1String("x"), QVariant(x));
         }
     }
 }
@@ -270,9 +270,9 @@ void QmlGraphicsBasePositioner::positionY(int y, const PositionedItem &target)
             target.item->setY(y);
         }else{
             if(target.isNew)
-                d->addActions << Action(target.item, QLatin1String("y"), QVariant(y));
+                d->addActions << QmlAction(target.item, QLatin1String("y"), QVariant(y));
             else
-                d->moveActions << Action(target.item, QLatin1String("y"), QVariant(y));
+                d->moveActions << QmlAction(target.item, QLatin1String("y"), QVariant(y));
         }
     }
 }

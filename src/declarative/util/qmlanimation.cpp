@@ -778,7 +778,7 @@ void QmlScriptAction::transition(QmlStateActions &actions,
 
     d->hasRunScriptScript = false;
     for (int ii = 0; ii < actions.count(); ++ii) {
-        Action &action = actions[ii];
+        QmlAction &action = actions[ii];
 
         if (action.event && action.event->typeName() == QLatin1String("StateChangeScript")
             && static_cast<QmlStateChangeScript*>(action.event)->name() == d->name) {
@@ -1012,7 +1012,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
         virtual void doAction()
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
-                const Action &action = actions.at(ii);
+                const QmlAction &action = actions.at(ii);
                 action.property.write(action.toValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
             }
         }
@@ -1034,14 +1034,14 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
 
     bool hasExplicit = false;
     if (hasTarget && d->value.isValid()) {
-        Action myAction;
+        QmlAction myAction;
         myAction.property = d->createProperty(target(), d->propertyName, this);
         if (myAction.property.isValid()) {
             myAction.toValue = d->value;
             data->actions << myAction;
             hasExplicit = true;
             for (int ii = 0; ii < actions.count(); ++ii) {
-                Action &action = actions[ii];
+                QmlAction &action = actions[ii];
                 if (action.property.object() == myAction.property.object() &&
                     myAction.property.name() == action.property.name()) {
                     modified << action.property;
@@ -1053,7 +1053,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
 
     if (!hasExplicit)
     for (int ii = 0; ii < actions.count(); ++ii) {
-        Action &action = actions[ii];
+        QmlAction &action = actions[ii];
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
@@ -1064,7 +1064,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
         if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName)))) {
-            Action myAction = action;
+            QmlAction myAction = action;
 
             if (d->value.isValid())
                 myAction.toValue = d->value;
@@ -1077,7 +1077,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
             if ((d->userProperty.value.object() == obj || (!same && d->userProperty.value.object() == sObj)) &&
                (d->userProperty.value.name() == propertyName || (!same && d->userProperty.value.name() == sPropertyName))) {
                 //### same as above. merge
-                Action myAction = action;
+                QmlAction myAction = action;
 
                 if (d->value.isValid())
                     myAction.toValue = d->value;
@@ -1258,7 +1258,7 @@ void QmlParentAction::transition(QmlStateActions &actions,
         virtual void doAction()
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
-                const Action &action = actions.at(ii);
+                const QmlAction &action = actions.at(ii);
                 if (reverse)
                     action.event->reverse();
                 else
@@ -1275,12 +1275,12 @@ void QmlParentAction::transition(QmlStateActions &actions,
     }
 
     for (int ii = 0; ii < actions.count(); ++ii) {
-        Action &action = actions[ii];
+        QmlAction &action = actions[ii];
 
         if (action.event && action.event->typeName() == QLatin1String("ParentChange")
             && !d->pcTarget
             && (!d->pcMatchTarget || static_cast<QmlParentChange*>(action.event)->object() == d->pcMatchTarget)) {
-            Action myAction = action;
+            QmlAction myAction = action;
             data->reverse = action.reverseEvent;
             //### this logic differs from PropertyAnimation
             //    (probably a result of modified vs. done)
@@ -1302,7 +1302,7 @@ void QmlParentAction::transition(QmlStateActions &actions,
 
     if (d->pcTarget && d->pcParent) {
         data->reverse = false;
-        Action myAction;
+        QmlAction myAction;
         QmlParentChange *pc = new QmlParentChange;
         pc->setObject(d->pcTarget);
         pc->setParent(d->pcParent);
@@ -2186,7 +2186,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                 v = 1 - v;
             QmlTimeLineValue::setValue(v);
             for (int ii = 0; ii < actions.count(); ++ii) {
-                Action &action = actions[ii];
+                QmlAction &action = actions[ii];
 
                 if (v == 1.)
                     action.property.write(action.toValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
@@ -2235,7 +2235,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     bool hasExplicit = false;
     //an explicit animation has been specified
     if (hasTarget && d->toIsDefined) {
-        Action myAction;
+        QmlAction myAction;
         myAction.property = d->createProperty(target(), d->propertyName, this);
         if (myAction.property.isValid()) {
             if (d->fromIsDefined) {
@@ -2247,7 +2247,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             data->actions << myAction;
             hasExplicit = true;
             for (int ii = 0; ii < actions.count(); ++ii) {
-                Action &action = actions[ii];
+                QmlAction &action = actions[ii];
                 if (action.property.object() == myAction.property.object() &&
                     myAction.property.name() == action.property.name()) {
                     modified << action.property;
@@ -2259,7 +2259,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
     if (!hasExplicit)
     for (int ii = 0; ii < actions.count(); ++ii) {
-        Action &action = actions[ii];
+        QmlAction &action = actions[ii];
 
         QObject *obj = action.property.object();
         QString propertyName = action.property.name();
@@ -2271,7 +2271,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName))
                || (useType && action.property.propertyType() == d->interpolatorType))) {
-            Action myAction = action;
+            QmlAction myAction = action;
 
             if (d->fromIsDefined)
                 myAction.fromValue = d->from;
@@ -2292,7 +2292,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
            if ((d->userProperty.value.object() == obj || (!same && d->userProperty.value.object() == sObj)) &&
               (d->userProperty.value.name() == propertyName || (!same && d->userProperty.value.name() == sPropertyName))) {
                //### same as above. merge
-               Action myAction = action;
+               QmlAction myAction = action;
 
                if (d->fromIsDefined)
                    myAction.fromValue = d->from;
