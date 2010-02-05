@@ -1141,7 +1141,7 @@ void QX11PixmapData::fromImage(const QImage &img,
     }
 }
 
-void QX11PixmapData::bitmapFromImage(const QImage &image)
+Qt::HANDLE QX11PixmapData::createBitmapFromImage(const QImage &image)
 {
     QImage img = image.convertToFormat(QImage::Format_MonoLSB);
     const QRgb c0 = QColor(Qt::black).rgb();
@@ -1154,10 +1154,8 @@ void QX11PixmapData::bitmapFromImage(const QImage &image)
 
     char  *bits;
     uchar *tmp_bits;
-    w = img.width();
-    h = img.height();
-    d = 1;
-    is_null = (w <= 0 || h <= 0);
+    int w = img.width();
+    int h = img.height();
     int bpl = (w + 7) / 8;
     int ibpl = img.bytesPerLine();
     if (bpl != ibpl) {
@@ -1176,18 +1174,26 @@ void QX11PixmapData::bitmapFromImage(const QImage &image)
         bits = (char *)img.bits();
         tmp_bits = 0;
     }
-    hd = (Qt::HANDLE)XCreateBitmapFromData(xinfo.display(),
-                                           RootWindow(xinfo.display(), xinfo.screen()),
+    Qt::HANDLE hd = (Qt::HANDLE)XCreateBitmapFromData(X11->display,
+                                           QX11Info::appRootWindow(),
                                            bits, w, h);
+    if (tmp_bits)                                // Avoid purify complaint
+        delete [] tmp_bits;
+    return hd;
+}
 
+void QX11PixmapData::bitmapFromImage(const QImage &image)
+{
+    w = image.width();
+    h = image.height();
+    d = 1;
+    is_null = (w <= 0 || h <= 0);
+    hd = createBitmapFromImage(image);
 #ifndef QT_NO_XRENDER
     if (X11->use_xrender)
         picture = XRenderCreatePicture(X11->display, hd,
                                        XRenderFindStandardFormat(X11->display, PictStandardA1), 0, 0);
 #endif // QT_NO_XRENDER
-
-    if (tmp_bits)                                // Avoid purify complaint
-        delete [] tmp_bits;
 }
 
 void QX11PixmapData::fill(const QColor &fillColor)
