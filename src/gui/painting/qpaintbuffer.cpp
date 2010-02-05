@@ -966,17 +966,8 @@ void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
 {
     QString text = QString(staticTextItem->chars, staticTextItem->numChars);
 
-    QTransform xform;
-    for (int i=buffer->commands.size()-1; i>=0; --i) {
-        const QPaintBufferCommand &cmd = buffer->commands.at(i);
-        if (cmd.id == QPaintBufferPrivate::Cmd_SetTransform) {
-            xform = qVariantValue<QTransform>(buffer->variants.at(cmd.offset));
-            break;
-        }
-    }
-
     QStaticText staticText(text);
-    staticText.prepare(xform, staticTextItem->font);
+    staticText.prepare(state()->matrix, staticTextItem->font);
 
     QVariantList variants;
     variants << QVariant(staticTextItem->font) << QVariant::fromValue(staticText);
