@@ -127,7 +127,7 @@ public:
 private:
     void DoCommitFepInlineEditL();
     MCoeFepAwareTextEditor_Extension1* Extension1(TBool& aSetToTrue);
-	void ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType);
+    void ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType);
 
     // From MCoeFepAwareTextEditor_Extension1
 public:
