@@ -113,8 +113,8 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs an empty QStaticText
 */
-QStaticText::QStaticText()
-    : d_ptr(new QStaticTextPrivate)
+QStaticText::QStaticText()    
+    : data(new QStaticTextPrivate)
 {
 }
 
@@ -126,11 +126,11 @@ QStaticText::QStaticText()
     the text will be unbounded.         
 */
 QStaticText::QStaticText(const QString &text, const QSizeF &size)
-    : d_ptr(new QStaticTextPrivate) 
+    : data(new QStaticTextPrivate)
 {    
-    d_ptr->text = text;
-    d_ptr->size = size;
-    d_ptr->init();
+    data->text = text;
+    data->size = size;
+    data->init();
 }
 
 /*!
@@ -138,26 +138,24 @@ QStaticText::QStaticText(const QString &text, const QSizeF &size)
 */
 QStaticText::QStaticText(const QStaticText &other)    
 {
-    d_ptr = other.d_ptr;
-    d_ptr->ref.ref();
+    data = other.data;
 }
 
 /*!
     Destroys the QStaticText.
 */
 QStaticText::~QStaticText()
-{    
-    if (!d_ptr->ref.deref())
-        delete d_ptr;        
+{
+    Q_ASSERT(!data || data->ref >= 1);
 }
 
 /*!
     \internal
 */
 void QStaticText::detach()
-{
-    if (d_ptr->ref != 1)
-        qAtomicDetach(d_ptr);    
+{    
+    if (data->ref != 1)
+        data.detach();
 }
 
 /*!
@@ -177,9 +175,9 @@ void QStaticText::detach()
 */
 void QStaticText::prepare(const QTransform &matrix, const QFont &font)
 {
-    d_ptr->matrix = matrix;
-    d_ptr->font = font;
-    d_ptr->init();
+    data->matrix = matrix;
+    data->font = font;
+    data->init();
 }
 
 
@@ -187,8 +185,8 @@ void QStaticText::prepare(const QTransform &matrix, const QFont &font)
     Assigns \a other to this QStaticText.
 */
 QStaticText &QStaticText::operator=(const QStaticText &other)
-{
-    qAtomicAssign(d_ptr, other.d_ptr);
+{    
+    data = other.data;
     return *this;
 }
 
@@ -198,10 +196,10 @@ QStaticText &QStaticText::operator=(const QStaticText &other)
 */
 bool QStaticText::operator==(const QStaticText &other) const
 {
-    return (d_ptr == other.d_ptr
-            || (d_ptr->text == other.d_ptr->text
-                && d_ptr->font == other.d_ptr->font
-                && d_ptr->size == other.d_ptr->size));
+    return (data == other.data
+            || (data->text == other.data->text
+                && data->font == other.data->font
+                && data->size == other.data->size));
 }
 
 /*!
@@ -223,8 +221,8 @@ bool QStaticText::operator!=(const QStaticText &other) const
 void QStaticText::setText(const QString &text) 
 {
     detach();
-    d_ptr->text = text;
-    d_ptr->init();
+    data->text = text;
+    data->init();
 }
 
 /*!
@@ -234,7 +232,7 @@ void QStaticText::setText(const QString &text)
 */
 QString QStaticText::text() const 
 {
-    return d_ptr->text;
+    return data->text;
 }
 
 /*!
@@ -255,13 +253,13 @@ QString QStaticText::text() const
 */
 void QStaticText::setUseBackendOptimizations(bool on)
 {
-    if ((!on && !d_ptr->useBackendOptimizations)
-        || (on && d_ptr->useBackendOptimizations))
+    if ((!on && !data->useBackendOptimizations)
+        || (on && data->useBackendOptimizations))
         return;
 
     detach();
-    d_ptr->useBackendOptimizations = on;
-    d_ptr->init();
+    data->useBackendOptimizations = on;
+    data->init();
 }
 
 /*!
@@ -272,7 +270,7 @@ void QStaticText::setUseBackendOptimizations(bool on)
 */
 bool QStaticText::useBackendOptimizations() const
 {
-    return d_ptr->useBackendOptimizations;
+    return data->useBackendOptimizations;
 }
 
 /*!
@@ -285,8 +283,8 @@ bool QStaticText::useBackendOptimizations() const
 void QStaticText::setMaximumSize(const QSizeF &size)
 {
     detach();
-    d_ptr->size = size;
-    d_ptr->init();
+    data->size = size;
+    data->init();
 }
 
 /*!
@@ -296,7 +294,7 @@ void QStaticText::setMaximumSize(const QSizeF &size)
 */
 QSizeF QStaticText::maximumSize() const
 {
-    return d_ptr->size;
+    return data->size;
 }
 
 /*!
@@ -306,13 +304,22 @@ QSizeF QStaticText::maximumSize() const
 */
 bool QStaticText::isEmpty() const
 {
-    return d_ptr->text.isEmpty();
+    return data->text.isEmpty();
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false)
+        : items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
+          useBackendOptimizations(false)
 {
     ref = 1;    
+}
+
+QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
+    : text(other.text), font(other.font), size(other.size), matrix(other.matrix),
+      items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
+      useBackendOptimizations(false)
+{
+    ref = 1;
 }
 
 QStaticTextPrivate::~QStaticTextPrivate()
@@ -324,9 +331,8 @@ QStaticTextPrivate::~QStaticTextPrivate()
 
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
 {
-    return q->d_ptr;
+    return q->data.data();
 }
-
 
 extern int qt_defaultDpiX();
 extern int qt_defaultDpiY();

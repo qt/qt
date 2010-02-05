@@ -46,6 +46,7 @@
 
 #include <private/qstatictext_p.h>
 #include <private/qstatictext_p_p.h>
+#include <private/qpainter_p.h>
 
 // #define DEBUG_SAVE_IMAGE
 
@@ -112,7 +113,7 @@ void tst_QStaticText::drawToPoint()
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.setUseBackendOptimizations(useBackendOptimizations);
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -143,7 +144,7 @@ void tst_QStaticText::drawToRect()
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", QSizeF(10, 500));
         text.setUseBackendOptimizations(useBackendOptimizations);
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);   
@@ -170,7 +171,7 @@ void tst_QStaticText::prepareToCorrectData()
         p.setTransform(transform);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.prepare(transform, p.font());
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -195,7 +196,7 @@ void tst_QStaticText::prepareToWrongData()
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.prepare(transform, p.font());
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -226,9 +227,9 @@ void tst_QStaticText::setFont()
         QStaticText text;
         text.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
-        p.drawStaticText(0, 0, text);
+        qt_draw_static_text(&p, QPointF(0, 0), text);
         p.setFont(font);
-        p.drawStaticText(11, 120, text);
+        qt_draw_static_text(&p, QPointF(11, 120), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -249,7 +250,7 @@ void tst_QStaticText::setMaximumSize()
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.setMaximumSize(QSizeF(10, 500));
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -273,7 +274,7 @@ void tst_QStaticText::translatedPainter()
         p.translate(100, 200);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -296,7 +297,7 @@ void tst_QStaticText::rotatedPainter()
 
         QPainter p(&imageDrawStaticText);
         p.rotate(30.0);
-        p.drawStaticText(0, 0, text);
+        qt_draw_static_text(&p, QPointF(0, 0), text);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -325,7 +326,7 @@ void tst_QStaticText::scaledPainter()
         p.scale(2.0, 0.2);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -352,7 +353,7 @@ void tst_QStaticText::projectedPainter()
         p.setTransform(transform);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
@@ -381,7 +382,7 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
         p.translate(100, 200);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(11, 12, text);
+        qt_draw_static_text(&p, QPointF(11, 12), text);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -415,10 +416,10 @@ void tst_QStaticText::transformationChanged()
         p.scale(0.5, 0.7);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(0, 0, text);
+        qt_draw_static_text(&p, QPointF(0, 0), text);
 
         p.scale(7.0, 5.0);
-        p.drawStaticText(0, 0, text);
+        qt_draw_static_text(&p, QPointF(0, 0), text);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)

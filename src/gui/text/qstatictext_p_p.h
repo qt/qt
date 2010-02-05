@@ -110,6 +110,7 @@ class Q_AUTOTEST_EXPORT QStaticTextPrivate
 {
 public:
     QStaticTextPrivate();
+    QStaticTextPrivate(const QStaticTextPrivate &other);
     ~QStaticTextPrivate();
 
     void init();

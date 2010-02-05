@@ -78,7 +78,6 @@ class QPolygon;
 class QTextItem;
 class QMatrix;
 class QTransform;
-class QStaticText;
 
 class QPainterPrivateDeleter;
 
@@ -370,10 +369,6 @@ public:
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
 
-    inline void drawStaticText(int x, int y, const QStaticText &staticText);
-    inline void drawStaticText(const QPoint &p, const QStaticText &staticText);
-    void drawStaticText(const QPointF &p, const QStaticText &staticText);
-
     void drawText(const QPointF &p, const QString &s);
     inline void drawText(const QPoint &p, const QString &s);
     inline void drawText(int x, int y, const QString &s);
@@ -527,6 +522,7 @@ private:
     friend class QRasterPaintEngine;
     friend class QAlphaPaintEngine;
     friend class QPreviewPaintEngine;
+    friend class QPainterPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPainter::RenderHints)
@@ -909,16 +905,6 @@ inline void QPainter::drawTextItem(const QPoint &p, const QTextItem &ti)
 inline void QPainter::drawText(const QPoint &p, const QString &s)
 {
     drawText(QPointF(p), s);
-}
-
-inline void QPainter::drawStaticText(const QPoint &p, const QStaticText &staticText)
-{
-    drawStaticText(QPointF(p), staticText);
-}
-
-inline void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
-{
-    drawStaticText(QPointF(x, y), staticText);
 }
 
 inline void QPainter::drawText(int x, int y, int w, int h, int flags, const QString &str, QRect *br)

@@ -5707,36 +5707,23 @@ void QPainter::drawText(const QPointF &p, const QString &str)
     drawText(p, str, 0, 0);
 }
 
-/*!    
-    \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
-
-    \internal
-
-    \overload
-*/
-
-/*!    
-    \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
-
-    \internal
-
-    \overload
-*/
-
-/*!
-    Draws the given \a staticText beginning at the given \a position. 
-
-    \internal
-
-    This function can be used to optimize drawing text if the text and its layout is updated     
-    seldomly.
-
-    \sa QStaticText
-*/
-void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
+QPainterPrivate *QPainterPrivate::get(QPainter *p)
 {
-    Q_D(QPainter);
-    if (!d->engine || staticText.isEmpty() || pen().style() == Qt::NoPen)
+    return p->d_ptr.data();
+}
+
+void qt_draw_static_text(QPainter *p, const QPointF &position, const QStaticText &text)
+{
+    QPainterPrivate *prv = QPainterPrivate::get(p);
+    Q_ASSERT(prv != 0);
+
+    prv->drawStaticText(position, text);
+}
+
+void QPainterPrivate::drawStaticText(const QPointF &position, const QStaticText &staticText)
+{
+    Q_Q(QPainter);
+    if (!engine || staticText.isEmpty() || q->pen().style() == Qt::NoPen)
         return;
 
     QStaticTextPrivate *staticText_d =
@@ -5744,31 +5731,31 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
-    if (d->extended == 0 || !d->state->matrix.isAffine()) {
+    if (extended == 0 || !state->matrix.isAffine()) {
         if (staticText_d->size.isValid())
-            drawText(QRectF(position, staticText_d->size), staticText_d->text);
+            q->drawText(QRectF(position, staticText_d->size), staticText_d->text);
         else
-            drawText(position, staticText_d->text);
+            q->drawText(position, staticText_d->text);
         return;
     }
 
     // Don't recalculate entire layout because of translation, rather add the dx and dy
     // into the position to move each text item the correct distance.
-    QPointF transformedPosition = position * d->state->matrix;
-    QTransform matrix = d->state->matrix;
+    QPointF transformedPosition = position * state->matrix;
+    QTransform matrix = state->matrix;
 
     // The translation has been applied to transformedPosition. Remove translation
     // component from matrix.
-    if (d->state->matrix.isTranslating()) {
-        qreal m11 = d->state->matrix.m11();
-        qreal m12 = d->state->matrix.m12();
-        qreal m13 = d->state->matrix.m13();
-        qreal m21 = d->state->matrix.m21();
-        qreal m22 = d->state->matrix.m22();
-        qreal m23 = d->state->matrix.m23();
-        qreal m33 = d->state->matrix.m33();
+    if (state->matrix.isTranslating()) {
+        qreal m11 = state->matrix.m11();
+        qreal m12 = state->matrix.m12();
+        qreal m13 = state->matrix.m13();
+        qreal m21 = state->matrix.m21();
+        qreal m22 = state->matrix.m22();
+        qreal m23 = state->matrix.m23();
+        qreal m33 = state->matrix.m33();
 
-        d->state->matrix.setMatrix(m11, m12, m13,
+        state->matrix.setMatrix(m11, m12, m13,
                                    m21, m22, m23,
                                    0.0, 0.0, m33);
     }
@@ -5776,21 +5763,21 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     // If the transform is not identical to the text transform,
     // we have to relayout the text (for other transformations than plain translation)
     bool staticTextNeedsReinit = false;
-    if (staticText_d->matrix != d->state->matrix) {
-        staticText_d->matrix = d->state->matrix;
+    if (staticText_d->matrix != state->matrix) {
+        staticText_d->matrix = state->matrix;
         staticTextNeedsReinit = true;
     }
 
     bool restoreWhenFinished = false;
     if (staticText_d->needsClipRect) {
-        save();
-        setClipRect(QRectF(position, staticText_d->size));
+        q->save();
+        q->setClipRect(QRectF(position, staticText_d->size));
 
         restoreWhenFinished = true;
     }
 
-    if (font() != staticText_d->font) {
-        staticText_d->font = font();
+    if (q->font() != staticText_d->font) {
+        staticText_d->font = q->font();
         staticTextNeedsReinit = true;
     }
 
@@ -5817,14 +5804,14 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        d->extended->drawStaticTextItem(item);
+        extended->drawStaticTextItem(item);
     }
 
     if (restoreWhenFinished)
-        restore();
+        q->restore();
 
     if (matrix.isTranslating())
-        d->state->matrix = matrix;
+        state->matrix = matrix;
 }
 
 /*!

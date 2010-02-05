@@ -96,7 +96,7 @@ public:
 private:
     void detach();
 
-    QStaticTextPrivate *d_ptr;
+    QExplicitlySharedDataPointer<QStaticTextPrivate> data;
     friend class QStaticTextPrivate;
 };
 

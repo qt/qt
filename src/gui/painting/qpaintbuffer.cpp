@@ -1448,7 +1448,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
             QStaticText text(variants.at(0).value<QStaticText>());
             
             painter->setFont(font);
-            painter->drawStaticText(QPointF(0, 0), text);
+            qt_draw_static_text(painter, QPointF(0, 0), text);
             
         break; }
 

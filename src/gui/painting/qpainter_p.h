@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 class QPaintEngine;
 class QEmulationPaintEngine;
 class QPaintEngineEx;
+class QStaticText;
 
 struct QTLWExtra;
 
@@ -229,6 +230,8 @@ public:
     void drawStretchedGradient(const QPainterPath &path, DrawOperation operation);
     void drawOpaqueBackground(const QPainterPath &path, DrawOperation operation);
 
+    void drawStaticText(const QPointF &position, const QStaticText &staticText);
+
     void updateMatrix();
     void updateInvMatrix();
 
@@ -242,6 +245,8 @@ public:
     static bool attachPainterPrivate(QPainter *q, QPaintDevice *pdev);
     void detachPainterPrivate(QPainter *q);
 
+    static QPainterPrivate *get(QPainter *p);
+
     QPaintDevice *device;
     QPaintDevice *original_device;
     QPaintDevice *helper_device;
@@ -252,6 +257,7 @@ public:
 };
 
 Q_GUI_EXPORT void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation);
+Q_GUI_EXPORT void qt_draw_static_text(QPainter *p, const QPointF &position, const QStaticText &text);
 
 QString qt_generate_brush_key(const QBrush &brush);
 
