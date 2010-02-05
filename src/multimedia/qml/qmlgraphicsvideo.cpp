@@ -84,7 +84,6 @@ void QmlGraphicsVideo::_q_error(int errorCode, const QString &errorString)
 QmlGraphicsVideo::QmlGraphicsVideo(QmlGraphicsItem *parent)
     : QmlGraphicsItem(parent)
     , m_graphicsItem(0)
-    , m_fillMode(QmlGraphicsVideo::PreserveAspectFit)
 
 {
     m_graphicsItem = new QGraphicsVideoItem(this);
