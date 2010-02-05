@@ -1451,6 +1451,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(pensBrush);
 
+    // When painting a QStaticTextItem, the glyph positions are already in device coordinates,
+    // therefore we temporarily set an identity matrix on the painter for the draw call to
+    // avoid transforming the positions twice.
     QTransform old = s->matrix;
     if (includeMatrixInCache)
         s->matrix = QTransform();
