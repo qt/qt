@@ -1555,8 +1555,8 @@ void QGLShaderProgram::setAttributeArray
     indicates the number of components per vertex: 1, 2, 3, or 4.
 
     The array will become active when enableAttributeArray() is called
-    on the \a location.  Otherwise the value specified with
-    setAttributeValue() for \a location will be used.
+    on the \a name.  Otherwise the value specified with
+    setAttributeValue() for \a name will be used.
 
     The setAttributeBuffer() function can be used to set the attribute
     array to an offset within a vertex buffer.
@@ -1572,15 +1572,16 @@ void QGLShaderProgram::setAttributeArray
 }
 
 /*!
-    Sets an array of vertex values on the attribute at \a location
-    in this shader program, starting at a specific \a offset in the
+    Sets an array of vertex values on the attribute at \a location in
+    this shader program, starting at a specific \a offset in the
     currently bound vertex buffer.  The \a stride indicates the number
     of bytes between vertices.  A default \a stride value of zero
-    indicates that the vertices are densely packed in \a values.
+    indicates that the vertices are densely packed in the value array.
 
-    The \a type indicates the type of elements in the \a values array,
-    usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a tupleSize
-    indicates the number of components per vertex: 1, 2, 3, or 4.
+    The \a type indicates the type of elements in the vertex value
+    array, usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a
+    tupleSize indicates the number of components per vertex: 1, 2, 3,
+    or 4.
 
     The array will become active when enableAttributeArray() is called
     on the \a location.  Otherwise the value specified with
@@ -1607,15 +1608,16 @@ void QGLShaderProgram::setAttributeBuffer
     in this shader program, starting at a specific \a offset in the
     currently bound vertex buffer.  The \a stride indicates the number
     of bytes between vertices.  A default \a stride value of zero
-    indicates that the vertices are densely packed in \a values.
+    indicates that the vertices are densely packed in the value array.
 
-    The \a type indicates the type of elements in the \a values array,
-    usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a tupleSize
-    indicates the number of components per vertex: 1, 2, 3, or 4.
+    The \a type indicates the type of elements in the vertex value
+    array, usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a
+    tupleSize indicates the number of components per vertex: 1, 2, 3,
+    or 4.
 
     The array will become active when enableAttributeArray() is called
-    on the \a location.  Otherwise the value specified with
-    setAttributeValue() for \a location will be used.
+    on the \a name.  Otherwise the value specified with
+    setAttributeValue() for \a name will be used.
 
     \sa setAttributeArray()
     \since 4.7
