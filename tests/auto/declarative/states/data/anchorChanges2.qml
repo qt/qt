@@ -4,7 +4,7 @@ Rectangle {
     width: 200; height: 200
     Rectangle {
         id: myRect
-        objectName: "myRect"
+        objectName: "MyRect"
         width: 50; height: 50
         color: "green";
         anchors.left: parent.left
