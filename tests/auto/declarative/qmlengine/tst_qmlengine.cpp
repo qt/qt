@@ -48,6 +48,7 @@
 #include <QDesktopServices>
 #include <QDebug>
 #include <QmlComponent>
+#include <QmlNetworkAccessManagerFactory>
 
 class tst_qmlengine : public QObject
 {
@@ -74,6 +75,19 @@ void tst_qmlengine::rootContext()
     QVERIFY(engine.rootContext()->parentContext() == 0);
 }
 
+class NetworkAccessManagerFactory : public QmlNetworkAccessManagerFactory
+{
+public:
+    NetworkAccessManagerFactory() : manager(0) {}
+
+    QNetworkAccessManager *create(QObject *parent) {
+        manager = new QNetworkAccessManager(parent);
+        return manager;
+    }
+
+    QNetworkAccessManager *manager;
+};
+
 void tst_qmlengine::networkAccessManager()
 {
     QmlEngine *engine = new QmlEngine;
@@ -81,25 +95,14 @@ void tst_qmlengine::networkAccessManager()
     // Test QmlEngine created manager
     QPointer<QNetworkAccessManager> manager = engine->networkAccessManager();
     QVERIFY(manager != 0);
+    delete engine;
 
-    // Test non-QmlEngine owner manager
-    QNetworkAccessManager localManager;
-    engine->setNetworkAccessManager(&localManager);
-    QVERIFY(manager == 0);
-    QVERIFY(engine->networkAccessManager() == &localManager);
-
-    // Test QmlEngine owned manager
-    QPointer<QNetworkAccessManager> ownedManager = new QNetworkAccessManager(engine);
-    QVERIFY(ownedManager != 0);
-    engine->setNetworkAccessManager(ownedManager);
-    QVERIFY(engine->networkAccessManager() == ownedManager);
-    engine->setNetworkAccessManager(&localManager);
-    QVERIFY(ownedManager == 0);
-    QVERIFY(engine->networkAccessManager() == &localManager);
-
-    // Test setting a null manager
-    engine->setNetworkAccessManager(0);
-    QVERIFY(engine->networkAccessManager() != 0);
+    // Test factory created manager
+    engine = new QmlEngine;
+    NetworkAccessManagerFactory factory;
+    engine->setNetworkAccessManagerFactory(&factory);
+    QVERIFY(engine->networkAccessManager() == factory.manager);
+    delete engine;
 }
 
 void tst_qmlengine::baseUrl()
