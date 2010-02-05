@@ -57,13 +57,13 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-Action::Action()
+QmlAction::QmlAction()
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), fromBinding(0), toBinding(0), event(0),
   specifiedObject(0)
 {
 }
 
-Action::Action(QObject *target, const QString &propertyName,
+QmlAction::QmlAction(QObject *target, const QString &propertyName,
                const QVariant &value)
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), toValue(value), fromBinding(0),
   toBinding(0), event(0), specifiedObject(target),
@@ -74,47 +74,47 @@ Action::Action(QObject *target, const QString &propertyName,
         fromValue = property.read();
 }
 
-ActionEvent::~ActionEvent()
+QmlActionEvent::~QmlActionEvent()
 {
 }
 
-QString ActionEvent::typeName() const
+QString QmlActionEvent::typeName() const
 {
     return QString();
 }
 
-void ActionEvent::execute()
+void QmlActionEvent::execute()
 {
 }
 
-bool ActionEvent::isReversable()
-{
-    return false;
-}
-
-void ActionEvent::reverse()
-{
-}
-
-QList<Action> ActionEvent::extraActions()
-{
-    return QList<Action>();
-}
-
-bool ActionEvent::changesBindings()
+bool QmlActionEvent::isReversable()
 {
     return false;
 }
 
-void ActionEvent::clearForwardBindings()
+void QmlActionEvent::reverse()
 {
 }
 
-void ActionEvent::clearReverseBindings()
+QList<QmlAction> QmlActionEvent::extraActions()
+{
+    return QList<QmlAction>();
+}
+
+bool QmlActionEvent::changesBindings()
+{
+    return false;
+}
+
+void QmlActionEvent::clearForwardBindings()
 {
 }
 
-bool ActionEvent::override(ActionEvent *other)
+void QmlActionEvent::clearReverseBindings()
+{
+}
+
+bool QmlActionEvent::override(QmlActionEvent *other)
 {
     Q_UNUSED(other);
     return false;
@@ -316,7 +316,7 @@ void QmlState::cancel()
     d->transitionManager.cancel();
 }
 
-void Action::deleteFromBinding()
+void QmlAction::deleteFromBinding()
 {
     if (fromBinding) {
         property.setBinding(0);
@@ -351,7 +351,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     QmlStatePrivate::SimpleActionList additionalReverts;
     // First add the reverse of all the applyList actions
     for (int ii = 0; ii < applyList.count(); ++ii) {
-        Action &action = applyList[ii];
+        QmlAction &action = applyList[ii];
 
         bool found = false;
 
@@ -360,7 +360,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             if (!action.event->isReversable())
                 continue;
             for (jj = 0; jj < d->revertList.count(); ++jj) {
-                ActionEvent *event = d->revertList.at(jj).event;
+                QmlActionEvent *event = d->revertList.at(jj).event;
                 if (event && event->typeName() == action.event->typeName()) {
                     if (action.event->override(event)) {
                         found = true;
@@ -389,7 +389,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             } else {
                 // Only need to revert the applyList action if the previous
                 // state doesn't have a higher priority revert already
-                SimpleAction r(action);
+                QmlSimpleAction r(action);
                 additionalReverts << r;
             }
         } else if (d->revertList.at(jj).binding != action.fromBinding) {
@@ -402,11 +402,11 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     for (int ii = 0; ii < d->revertList.count(); ++ii) {
         bool found = false;
         if (d->revertList.at(ii).event) {
-            ActionEvent *event = d->revertList.at(ii).event;
+            QmlActionEvent *event = d->revertList.at(ii).event;
             if (!event->isReversable())
                 continue;
             for (int jj = 0; !found && jj < applyList.count(); ++jj) {
-                const Action &action = applyList.at(jj);
+                const QmlAction &action = applyList.at(jj);
                 if (action.event && action.event->typeName() == event->typeName()) {
                     if (action.event->override(event))
                         found = true;
@@ -414,7 +414,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             }
         } else {
             for (int jj = 0; !found && jj < applyList.count(); ++jj) {
-                const Action &action = applyList.at(jj);
+                const QmlAction &action = applyList.at(jj);
                 if (action.property == d->revertList.at(ii).property)
                     found = true;
             }
@@ -425,7 +425,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
             if (delBinding)
                 delBinding->destroy();
 
-            Action a;
+            QmlAction a;
             a.property = d->revertList.at(ii).property;
             a.fromValue = cur;
             a.toValue = d->revertList.at(ii).value;
@@ -446,11 +446,11 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
 
     // Output for debugging
     if (stateChangeDebug()) {
-        foreach(const Action &action, applyList) {
+        foreach(const QmlAction &action, applyList) {
             if (action.event)
-                qWarning() << "    Action event:" << action.event->typeName();
+                qWarning() << "    QmlAction event:" << action.event->typeName();
             else
-                qWarning() << "    Action:" << action.property.object()
+                qWarning() << "    QmlAction:" << action.property.object()
                            << action.property.name() << "From:" << action.fromValue 
                            << "To:" << action.toValue;
         }

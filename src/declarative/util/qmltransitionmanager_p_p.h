@@ -65,7 +65,7 @@ public:
     QmlTransitionManager();
     ~QmlTransitionManager();
 
-    void transition(const QList<Action> &, QmlTransition *transition);
+    void transition(const QList<QmlAction> &, QmlTransition *transition);
 
     void cancel();
 

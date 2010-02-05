@@ -163,7 +163,7 @@ void QmlBehavior::write(const QVariant &value)
     d->animation->qtAnimation()->stop();
 
     QmlStateOperation::ActionList actions;
-    Action action;
+    QmlAction action;
     action.property = d->property;
     action.fromValue = d->currentValue;
     action.toValue = value;

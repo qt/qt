@@ -64,11 +64,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class SimpleAction
+class QmlSimpleAction
 {
 public:
     enum State { StartState, EndState };
-    SimpleAction(const Action &a, State state = StartState) 
+    QmlSimpleAction(const QmlAction &a, State state = StartState) 
     {
         property = a.property;
         specifiedObject = a.specifiedObject;
@@ -90,7 +90,7 @@ public:
     QmlAbstractBinding *binding;
     QObject *specifiedObject;
     QString specifiedProperty;
-    ActionEvent *event;
+    QmlActionEvent *event;
     bool reverseEvent;
 };
 
@@ -102,7 +102,7 @@ public:
     QmlStatePrivate()
     : when(0), inState(false), group(0) {}
 
-    typedef QList<SimpleAction> SimpleActionList;
+    typedef QList<QmlSimpleAction> SimpleActionList;
 
     QString name;
     QmlBinding *when;

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlParentChangePrivate;
-class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation, public ActionEvent
+class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation, public QmlActionEvent
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlParentChange)
@@ -79,13 +79,13 @@ public:
     virtual bool isReversable();
     virtual void reverse();
     virtual QString typeName() const;
-    virtual bool override(ActionEvent*other);
+    virtual bool override(QmlActionEvent*other);
     virtual void rewind();
     virtual void saveCurrentValues();
 };
 
 class QmlStateChangeScriptPrivate;
-class Q_DECLARATIVE_EXPORT QmlStateChangeScript : public QmlStateOperation, public ActionEvent
+class Q_DECLARATIVE_EXPORT QmlStateChangeScript : public QmlStateOperation, public QmlActionEvent
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlStateChangeScript)
@@ -111,7 +111,7 @@ public:
 };
 
 class QmlAnchorChangesPrivate;
-class Q_DECLARATIVE_EXPORT QmlAnchorChanges : public QmlStateOperation, public ActionEvent
+class Q_DECLARATIVE_EXPORT QmlAnchorChanges : public QmlStateOperation, public QmlActionEvent
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlAnchorChanges)
@@ -163,8 +163,8 @@ public:
     virtual bool isReversable();
     virtual void reverse();
     virtual QString typeName() const;
-    virtual bool override(ActionEvent*other);
-    virtual QList<Action> extraActions();
+    virtual bool override(QmlActionEvent*other);
+    virtual QList<QmlAction> extraActions();
     virtual bool changesBindings();
     virtual void saveOriginals();
     virtual void clearForwardBindings();

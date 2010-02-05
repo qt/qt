@@ -58,6 +58,7 @@ private slots:
     void cppTriggered();
     void loop();
     void colorBehavior();
+    void parentBehavior();
     void replaceBinding();
     //void transitionOverrides();
     void group();
@@ -132,6 +133,23 @@ void tst_behaviors::colorBehavior()
     QTest::qWait(100);
     QColor color = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->color();
     QVERIFY(color != QColor("red") && color != QColor("green"));  //i.e. the behavior has been triggered
+}
+
+void tst_behaviors::parentBehavior()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/parent.qml"));
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+
+    rect->setState("reparented");
+    QTest::qWait(100);
+    QmlGraphicsItem *newParent = rect->findChild<QmlGraphicsItem*>("NewParent");
+    QmlGraphicsItem *parent = rect->findChild<QmlGraphicsRectangle*>("MyRect")->parentItem();
+    QVERIFY(parent != newParent);
+    QTest::qWait(300);
+    parent = rect->findChild<QmlGraphicsRectangle*>("MyRect")->parentItem();
+    QVERIFY(parent == newParent);
 }
 
 void tst_behaviors::replaceBinding()

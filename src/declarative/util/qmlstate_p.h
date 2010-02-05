@@ -52,13 +52,13 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class ActionEvent;
+class QmlActionEvent;
 class QmlBinding;
-class Q_DECLARATIVE_EXPORT Action
+class Q_DECLARATIVE_EXPORT QmlAction
 {
 public:
-    Action();
-    Action(QObject *, const QString &, const QVariant &);
+    QmlAction();
+    QmlAction(QObject *, const QString &, const QVariant &);
 
     bool restore:1;
     bool actionDone:1;
@@ -71,7 +71,7 @@ public:
 
     QmlAbstractBinding *fromBinding;
     QmlAbstractBinding *toBinding;
-    ActionEvent *event;
+    QmlActionEvent *event;
 
     //strictly for matching
     QObject *specifiedObject;
@@ -80,10 +80,10 @@ public:
     void deleteFromBinding();
 };
 
-class ActionEvent
+class QmlActionEvent
 {
 public:
-    virtual ~ActionEvent();
+    virtual ~QmlActionEvent();
     virtual QString typeName() const;
 
     virtual void execute();
@@ -96,12 +96,12 @@ public:
     virtual void saveCurrentValues() {}
 
     //virtual bool hasExtraActions();
-    virtual QList<Action> extraActions();
+    virtual QList<QmlAction> extraActions();
 
     virtual bool changesBindings();
     virtual void clearForwardBindings();
     virtual void clearReverseBindings();
-    virtual bool override(ActionEvent*other);
+    virtual bool override(QmlActionEvent*other);
 };
 
 //### rename to QmlStateChange?
@@ -112,7 +112,7 @@ class Q_DECLARATIVE_EXPORT QmlStateOperation : public QObject
 public:
     QmlStateOperation(QObject *parent = 0)
         : QObject(parent) {}
-    typedef QList<Action> ActionList;
+    typedef QList<QmlAction> ActionList;
 
     virtual ActionList actions();
 

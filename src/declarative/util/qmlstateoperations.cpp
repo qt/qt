@@ -212,7 +212,7 @@ QmlStateOperation::ActionList QmlParentChange::actions()
     if (!d->target || !d->parent)
         return ActionList();
 
-    Action a;
+    QmlAction a;
     a.event = this;
 
     return ActionList() << a;
@@ -259,7 +259,7 @@ QString QmlParentChange::typeName() const
     return QLatin1String("ParentChange");
 }
 
-bool QmlParentChange::override(ActionEvent*other)
+bool QmlParentChange::override(QmlActionEvent*other)
 {
     Q_D(QmlParentChange);
     if (other->typeName() != QLatin1String("ParentChange"))
@@ -381,7 +381,7 @@ void QmlStateChangeScript::execute()
 QmlStateChangeScript::ActionList QmlStateChangeScript::actions()
 {
     ActionList rv;
-    Action a;
+    QmlAction a;
     a.event = this;
     rv << a;
     return rv;
@@ -466,7 +466,7 @@ QmlAnchorChanges::~QmlAnchorChanges()
 
 QmlAnchorChanges::ActionList QmlAnchorChanges::actions()
 {
-    Action a;
+    QmlAction a;
     a.event = this;
     return ActionList() << a;
 }
@@ -650,16 +650,16 @@ QString QmlAnchorChanges::typeName() const
     return QLatin1String("AnchorChanges");
 }
 
-QList<Action> QmlAnchorChanges::extraActions()
+QList<QmlAction> QmlAnchorChanges::extraActions()
 {
     Q_D(QmlAnchorChanges);
-    QList<Action> extra;
+    QList<QmlAction> extra;
 
     //### try to be smarter about which ones we add.
     //    or short-circuit later on if they haven't actually changed.
     //    we shouldn't set explicit width if there wasn't one before.
     if (d->target) {
-        Action a;
+        QmlAction a;
         a.fromValue = d->fromX;
         a.property = QmlMetaProperty(d->target, QLatin1String("x"));
         extra << a;
@@ -781,11 +781,11 @@ void QmlAnchorChanges::clearReverseBindings()
         d->target->anchors()->resetBaseline();
 }
 
-bool QmlAnchorChanges::override(ActionEvent*other)
+bool QmlAnchorChanges::override(QmlActionEvent*other)
 {
     if (other->typeName() != QLatin1String("AnchorChanges"))
         return false;
-    if (static_cast<ActionEvent*>(this) == other)
+    if (static_cast<QmlActionEvent*>(this) == other)
         return true;
     if (static_cast<QmlAnchorChanges*>(other)->object() == object())
         return true;

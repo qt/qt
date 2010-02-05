@@ -57,7 +57,7 @@ public:
     : state(0), transition(0) {}
 
     void applyBindings();
-    typedef QList<SimpleAction> SimpleActionList;
+    typedef QList<QmlSimpleAction> SimpleActionList;
     QmlState *state;
     QmlTransition *transition;
     QmlStateOperation::ActionList bindingsList;
@@ -96,7 +96,7 @@ void QmlTransitionManager::complete()
 
 void QmlTransitionManagerPrivate::applyBindings()
 {
-    foreach(const Action &action, bindingsList) {
+    foreach(const QmlAction &action, bindingsList) {
         if (action.toBinding) {
             action.property.setBinding(action.toBinding);
         } else if (action.event) {
@@ -111,14 +111,14 @@ void QmlTransitionManagerPrivate::applyBindings()
     bindingsList.clear();
 }
 
-void QmlTransitionManager::transition(const QList<Action> &list,
+void QmlTransitionManager::transition(const QList<QmlAction> &list,
                                       QmlTransition *transition)
 {
     cancel();
 
     QmlStateOperation::ActionList applyList = list;
     // Determine which actions are binding changes.
-    foreach(const Action &action, applyList) {
+    foreach(const QmlAction &action, applyList) {
         if (action.toBinding)
             d->bindingsList << action;
         if (action.fromBinding)
@@ -147,7 +147,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
 
         // Apply all the property and binding changes
         for (int ii = 0; ii < applyList.size(); ++ii) {
-            const Action &action = applyList.at(ii);
+            const QmlAction &action = applyList.at(ii);
             if (action.toBinding) {
                 action.property.setBinding(action.toBinding, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
             } else if (!action.event) {
@@ -163,7 +163,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
 
         // Read all the end values for binding changes
         for (int ii = 0; ii < applyList.size(); ++ii) {
-            Action *action = &applyList[ii];
+            QmlAction *action = &applyList[ii];
             if (action->event)
                 continue;
             const QmlMetaProperty &prop = action->property;
@@ -173,7 +173,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
         }
 
         // Revert back to the original values
-        foreach(const Action &action, applyList) {
+        foreach(const QmlAction &action, applyList) {
             if (action.event) {
                 if (action.event->isReversable()) {
                     if (action.reverseEvent) {   //reverse the reverse
@@ -203,7 +203,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
 
         // Modify the action list to remove actions handled in the transition
         for (int ii = 0; ii < applyList.count(); ++ii) {
-            const Action &action = applyList.at(ii);
+            const QmlAction &action = applyList.at(ii);
 
             if (action.event) {
 
@@ -217,7 +217,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
                 if (touched.contains(action.property)) {
                     if (action.toValue != action.fromValue) 
                         d->completeList << 
-                            SimpleAction(action, SimpleAction::EndState);
+                            QmlSimpleAction(action, QmlSimpleAction::EndState);
 
                     applyList.removeAt(ii);
                     --ii;
@@ -231,7 +231,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
     // be applied immediately.  We skip applying bindings, as they are all
     // applied at the end in applyBindings() to avoid any nastiness mid 
     // transition
-    foreach(const Action &action, applyList) {
+    foreach(const QmlAction &action, applyList) {
         if (action.event && !action.event->changesBindings()) {
             if (action.event->isReversable() && action.reverseEvent)
                 action.event->reverse();
@@ -242,7 +242,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
         }
     }
     if (stateChangeDebug()) {
-        foreach(const Action &action, applyList) {
+        foreach(const QmlAction &action, applyList) {
             if (action.event)
                 qWarning() << "    No transition for event:" << action.event->typeName();
             else
@@ -264,7 +264,7 @@ void QmlTransitionManager::cancel()
     }
 
     for(int i = 0; i < d->bindingsList.count(); ++i) {
-        Action action = d->bindingsList[i];
+        QmlAction action = d->bindingsList[i];
         if (action.toBinding && action.deletableToBinding) {
             action.property.setBinding(0);
             action.toBinding->destroy();

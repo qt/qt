@@ -110,7 +110,7 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
             QPair<int, QmlPropertyValueInterceptor*> pair = interceptors.value(id);
             int valueIndex = pair.first;
             QmlPropertyValueInterceptor *vi = pair.second;
-            QVariant::Type type = property(id).type();
+            int type = property(id).userType();
 
             if (type != QVariant::Invalid) {
                 if (valueIndex != -1) {
