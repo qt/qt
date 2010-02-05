@@ -119,8 +119,7 @@ void tst_qmlgraphicsimage::imageSource_data()
         << "Cannot open  QUrl( \"file://" SRCDIR "/data/no-such-file.png\" )  ";
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
-        << "Network error loading \"" SERVER_ADDR "/no-such-file.png\" "
-            "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
+        << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
 }
 
 void tst_qmlgraphicsimage::imageSource()

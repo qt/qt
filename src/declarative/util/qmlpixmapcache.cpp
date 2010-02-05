@@ -82,10 +82,11 @@ class QmlImageReaderEvent : public QEvent
 public:
     enum ReadError { NoError, Loading, Decoding };
 
-    QmlImageReaderEvent(QmlImageReaderEvent::ReadError err, QImage &img)
-        : QEvent(QEvent::User), error(err), image(img) {}
+    QmlImageReaderEvent(QmlImageReaderEvent::ReadError err, const QString &errStr, QImage &img)
+        : QEvent(QEvent::User), error(err), errorString(errStr), image(img) {}
 
     ReadError error;
+    QString errorString;
     QImage image;
 };
 
@@ -225,18 +226,22 @@ void QmlImageRequestHandler::networkRequestDone()
     if (job) {
         QImage image;
         QmlImageReaderEvent::ReadError error;
+        QString errorString;
         if (reply->error()) {
             error = QmlImageReaderEvent::Loading;
+            errorString = reply->errorString();
         } else {
             QImageReader imgio(reply);
             if (imgio.read(&image)) {
                 error = QmlImageReaderEvent::NoError;
             } else {
+                errorString = QLatin1String("Error decoding: ") + reply->url().toString()
+                              + QLatin1String(" \"") + imgio.errorString() + QLatin1String("\"");
                 error = QmlImageReaderEvent::Decoding;
             }
         }
         // send completion event to the QmlPixmapReply
-        QCoreApplication::postEvent(job, new QmlImageReaderEvent(error, image));
+        QCoreApplication::postEvent(job, new QmlImageReaderEvent(error, errorString, image));
     }
     // kick off event loop again if we have dropped below max request count
     if (replies.count() == maxImageRequestCount)
@@ -326,7 +331,7 @@ void QmlImageReader::run()
 
 //===========================================================================
 
-static bool readImage(QIODevice *dev, QPixmap *pixmap)
+static bool readImage(QIODevice *dev, QPixmap *pixmap, QString &errorString)
 {
     QImageReader imgio(dev);
 
@@ -355,7 +360,7 @@ static bool readImage(QIODevice *dev, QPixmap *pixmap)
         *pixmap = QPixmap::fromImage(img);
         return true;
     } else {
-        qWarning() << imgio.errorString();
+        errorString = imgio.errorString();
         return false;
     }
 }
@@ -422,6 +427,8 @@ bool QmlPixmapReply::event(QEvent *event)
             d->status = (de->error == QmlImageReaderEvent::NoError) ? Ready : Error;
             if (d->status == Ready)
                 d->pixmap = QPixmap::fromImage(de->image);
+            else
+                qWarning() << de->errorString;
             QByteArray key = d->url.toEncoded(QUrl::FormattingOption(0x100));
             QString strKey = QString::fromLatin1(key.constData(), key.count());
             QPixmapCache::insert(strKey, d->pixmap); // note: may fail (returns false)
@@ -499,8 +506,11 @@ QmlPixmapReply::Status QmlPixmapCache::get(const QUrl& url, QPixmap *pixmap)
         if (!QPixmapCache::find(lf,pixmap)) {
             QFile f(lf);
             if (f.open(QIODevice::ReadOnly)) {
-                if (!readImage(&f, pixmap)) {
-                    qWarning() << "Format error loading" << url;
+                QString errorString;
+                if (!readImage(&f, pixmap, errorString)) {
+                    errorString = QLatin1String("Error decoding: ") + url.toString()
+                                  + QLatin1String(" \"") + errorString + QLatin1String("\"");
+                    qWarning() << errorString;
                     *pixmap = QPixmap();
                     status = QmlPixmapReply::Error;
                 }
