@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,8 +40,9 @@
 ****************************************************************************/
 
 #if defined(QT_NO_DBUS)
-sjkp //error is no QtDBus
+#error Qt is not configured with DBus support.
 #endif
+
 #include <NetworkManager/NetworkManager.h>
 
 int main(int argc, char** argv)

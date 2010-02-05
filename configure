@@ -7587,7 +7587,9 @@ fi
 echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
 echo "Alsa support ........... $CFG_ALSA"
 echo "NetworkManager support . $CFG_NETWORKMANAGER"
-echo "CoreWlan support ....... $CFG_COREWLAN"
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    echo "CoreWlan support ....... $CFG_COREWLAN"
+fi
 echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"
