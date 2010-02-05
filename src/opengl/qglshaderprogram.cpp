@@ -3078,6 +3078,34 @@ void QGLShaderProgram::shaderDestroyed()
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
 /*! \internal */
+void QGLShaderProgram::setAttributeArray
+    (int location, QMacCompatGLenum type, const void *values, int tupleSize, int stride)
+{
+    setAttributeArray(location, GLenum(type), values, tupleSize, stride);
+}
+
+/*! \internal */
+void QGLShaderProgram::setAttributeArray
+    (const char *name, QMacCompatGLenum type, const void *values, int tupleSize, int stride)
+{
+    setAttributeArray(name, GLenum(type), values, tupleSize, stride);
+}
+
+/*! \internal */
+void QGLShaderProgram::setAttributeBuffer
+    (int location, QMacCompatGLenum type, int offset, int tupleSize, int stride)
+{
+    setAttributeBuffer(location, GLenum(type), offset, tupleSize, stride);
+}
+
+/*! \internal */
+void QGLShaderProgram::setAttributeBuffer
+    (const char *name, QMacCompatGLenum type, int offset, int tupleSize, int stride)
+{
+    setAttributeBuffer(name, GLenum(type), offset, tupleSize, stride);
+}
+
+/*! \internal */
 void QGLShaderProgram::setUniformValue(int location, QMacCompatGLint value)
 {
     setUniformValue(location, GLint(value));
