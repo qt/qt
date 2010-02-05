@@ -924,8 +924,8 @@ void QSymbianControl::PositionChanged()
         cr.moveTopLeft(newPos);
         qwidget->data->crect = cr;
         QTLWExtra *top = qwidget->d_func()->maybeTopData();
-        if (top)
-            top->normalGeometry = cr;
+        if (top && (qwidget->windowState() & (~Qt::WindowActive)) == Qt::WindowNoState)
+            top->normalGeometry.moveTopLeft(newPos);
         if (qwidget->isVisible()) {
             QMoveEvent e(newPos, oldPos);
             qt_sendSpontaneousEvent(qwidget, &e);
@@ -960,15 +960,14 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowIcon_sys(true);
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
-        // If widget is fullscreen, hide status pane and button container
-        // otherwise show them.
+        // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
         CEikStatusPane* statusPane = S60->statusPane();
         CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-        bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (bool)statusPane->IsVisible() == isFullscreen)
-            statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (bool)buttonGroup->IsVisible() == isFullscreen)
-            buttonGroup->MakeVisible(!isFullscreen);
+        TBool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        if (statusPane)
+            statusPane->MakeVisible(visible);
+        if (buttonGroup)
+            buttonGroup->MakeVisible(visible);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {

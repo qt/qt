@@ -1046,96 +1046,48 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         return;
 
     if (isWindow()) {
-#ifdef Q_WS_S60
-        // Change window decoration visibility if switching to or from fullsccreen
-        // In addition decoration visibility is changed when the initial has been
-        // WindowNoState.
-        // The window decoration visibility has to be changed before doing actual
-        // window state change since in that order the availableGeometry will return
-        // directly the right size and we will avoid unnecessarty redraws
-        if ((oldstate & Qt::WindowFullScreen) != (newstate & Qt::WindowFullScreen) ||
-            oldstate == Qt::WindowNoState) {
-            CEikStatusPane* statusPane = S60->statusPane();
-            CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-            if (newstate & Qt::WindowFullScreen) {
-                if (statusPane)
-                    statusPane->MakeVisible(false);
-                if (buttonGroup)
-                    buttonGroup->MakeVisible(false);
-            } else {
-                if (statusPane)
-                    statusPane->MakeVisible(true);
-                if (buttonGroup)
-                    buttonGroup->MakeVisible(true);
-            }
 
+        QSymbianControl *window = static_cast<QSymbianControl *>(effectiveWinId());
+        if (window && newstate & Qt::WindowMinimized) {
+            window->setFocusSafely(false);
+            window->MakeVisible(false);
+        } else if (window && oldstate & Qt::WindowMinimized) {
+            window->setFocusSafely(true);
+            window->MakeVisible(true);
         }
+
+#ifdef Q_WS_S60
+        // Hide window decoration when switching to fullsccreen / minimized otherwise show decoration.
+        // The window decoration visibility has to be changed before doing actual window state 
+        // change since in that order the availableGeometry will return directly the right size and 
+        // we will avoid unnecessarty redraws
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        TBool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized)); 
+        if (statusPane)
+            statusPane->MakeVisible(visible);
+        if (buttonGroup)
+            buttonGroup->MakeVisible(visible);
 #endif // Q_WS_S60
 
         createWinId();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
-        QTLWExtra *top = d->topData();
-
         // Ensure the initial size is valid, since we store it as normalGeometry below.
         if (!testAttribute(Qt::WA_Resized) && !isVisible())
             adjustSize();
 
-        if ((oldstate & Qt::WindowMaximized) != (newstate & Qt::WindowMaximized)) {
-            if ((newstate & Qt::WindowMaximized)) {
-                const QRect normalGeometry = geometry();
+        QTLWExtra *top = d->topData();
+        const QRect normalGeometry = (top->normalGeometry.width() < 0) ? geometry() : top->normalGeometry;
 
-                const QRect r = top->normalGeometry;
-                setGeometry(qApp->desktop()->availableGeometry(this));
-                top->normalGeometry = r;
+        if (newstate & Qt::WindowFullScreen)
+            setGeometry(qApp->desktop()->screenGeometry(this));
+        else if (newstate & Qt::WindowMaximized)
+            setGeometry(qApp->desktop()->availableGeometry(this));
+        else 
+            setGeometry(normalGeometry);
 
-                if (top->normalGeometry.width() < 0)
-                    top->normalGeometry = normalGeometry;
-            } else {
-                // restore original geometry
-                setGeometry(top->normalGeometry);
-            }
-        }
-        if ((oldstate & Qt::WindowFullScreen) != (newstate & Qt::WindowFullScreen)) {
-            if (newstate & Qt::WindowFullScreen) {
-                const QRect normalGeometry = geometry();
-                const QRect r = top->normalGeometry;
-                setGeometry(qApp->desktop()->screenGeometry(this));
-
-                top->normalGeometry = r;
-                if (top->normalGeometry.width() < 0)
-                    top->normalGeometry = normalGeometry;
-            } else {
-                if (newstate & Qt::WindowMaximized) {
-                    const QRect r = top->normalGeometry;
-                    setGeometry(qApp->desktop()->availableGeometry(this));
-                    top->normalGeometry = r;
-                } else {
-                    setGeometry(top->normalGeometry);
-                }
-            }
-        }
-        if ((oldstate & Qt::WindowMinimized) != (newstate & Qt::WindowMinimized)) {
-            if (newstate & Qt::WindowMinimized) {
-                if (isVisible()) {
-                    QSymbianControl *id = static_cast<QSymbianControl *>(effectiveWinId());
-                    if (id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
-                        id->setFocusSafely(false);
-                    id->MakeVisible(false);
-                }
-            } else {
-                if (isVisible()) {
-                    QSymbianControl *id = static_cast<QSymbianControl *>(effectiveWinId());
-                    id->MakeVisible(true);
-                    if (!id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
-                        id->setFocusSafely(true);
-                }
-                const QRect normalGeometry = geometry();
-                const QRect r = top->normalGeometry;
-                top->normalGeometry = r;
-                if (top->normalGeometry.width() < 0)
-                    top->normalGeometry = normalGeometry;
-            }
-        }
+        //restore normal geometry
+        top->normalGeometry = normalGeometry;
     }
 
     data->window_state = newstate;
