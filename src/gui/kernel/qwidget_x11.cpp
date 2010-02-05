@@ -358,6 +358,8 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     if (!w->testAttribute(Qt::WA_WState_Created))
         return;
 
+    WId winid = w->internalWinId();
+
     // first deliver events that are already in the local queue
     QApplication::sendPostedEvents();
 
@@ -379,26 +381,26 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
                 switch (state) {
                 case Initial:
                 case Reparented:
-                    if (ev.type == MapNotify)
+                    if (ev.type == MapNotify && ev.xany.window == winid)
                         state = Mapped;
                     break;
                 case Mapped:
-                    if (ev.type == Expose)
+                    if (ev.type == Expose && ev.xany.window == winid)
                         return;
                     break;
                 }
             } else {
                 switch (state) {
                 case Initial:
-                    if (ev.type == ReparentNotify)
+                    if (ev.type == ReparentNotify && ev.xany.window == winid)
                         state = Reparented;
                     break;
                 case Reparented:
-                    if (ev.type == MapNotify)
+                    if (ev.type == MapNotify && ev.xany.window == winid)
                         state = Mapped;
                     break;
                 case Mapped:
-                    if (ev.type == Expose)
+                    if (ev.type == Expose && ev.xany.window == winid)
                         return;
                     break;
                 }
