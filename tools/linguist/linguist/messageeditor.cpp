@@ -135,12 +135,8 @@ MessageEditor::MessageEditor(MultiDataModel *dataModel, QMainWindow *parent)
 void MessageEditor::setupEditorPage()
 {
     QFrame *editorPage = new QFrame;
-    editorPage->setObjectName(QLatin1String("editorPage"));
 
     editorPage->setStyleSheet(QLatin1String(
-            "QFrame#editorPage { border-image: url(:/images/transbox.png) 12 16 16 12 repeat;"
-            "                    border-width: 12px 16px 16px 12px; }"
-            "QFrame#editorPage { background-color: white; }"
             "QLabel { font-weight: bold; }"
             ));
     editorPage->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
