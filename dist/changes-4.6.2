@@ -66,8 +66,21 @@ QtCore
 QtGui
 -----
 
- - foo
-    * bar
+ - QAbstractScrollArea
+    * [QTBUG-1760] Reverted horizontal scrolling with mouse wheel when vertical scrollbar is hidden
+
+ - QBmpHandler
+    * [QTBUG-7530] Fixed an infinite loop that could occur when reading invalid BMP images.
+
+ - QGraphicsEffect
+    * [QTBUG-6901] Fixed performance problem when translating items with
+      graphics effects.
+
+ - QImage
+    * [QTBUG-7231] Avoid an unnecessary copy in QImage::scaled().
+
+ - QPDFEngine
+    * [QTBUG-7249] Fixed the encoding of the Tile and Creator tags in the PDF engine.
 
  - QApplication
     * [QTBUG-6098] Added a flag to avoid construction of application panes.
@@ -112,6 +125,15 @@ QtOpenGL
 --------
 
  - [QTBUG-7490] Better support for user-generated binary shaders.
+
+ - QGLWidget
+    * [QTBUG-7213] Fixed QGLWidget::renderPixmap() on Windows.
+
+ - QGLPixelBuffer
+    * [QTBUG-7476] Fixed a crash under X11 when drawing QPixmaps to QGLPixelBuffers.
+
+ - QGL2PaintEngineEx
+    * [QTBUG-7203] Reset the GL stencil mask, op and function in resetGLState().
 
 QtOpenVG
 --------
@@ -196,12 +218,14 @@ Qt for Mac OS X
 
  - [QTBUG-7832]: Restored missing margins around non-unified toolbars.
  - [QTBUG-7312]: Menubar and dock disappear after hiding a fullscreen widget on Cocoa.
+ - [QTBUG-7481]: Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
  - [QTBUG-7522]: Drawing fake buttons using QMacStyle+QStyleOptionViewItemV4 lead to crash.
  - [QTBUG-7625]: Calling showFullScreen() then showNormal() on a widget results in top menu hiding.
  - [QTBUG-7086]: QFileDialog now correctly responds to fileMode & acceptMode changes.
  - [QTBUG-7162]: Fixed a crash in Designer when previewing a QMainWindow with native toolbar.
  - [QTBUG-7305]: Fixed a crash when deleting QMainWindow with native toolbar on Cocoa.
  - [QTBUG-6882]: Fixed a text layout issue with QHeaderView in right-to-left mode.
+
 
 Qt for Embedded Linux
 ---------------------

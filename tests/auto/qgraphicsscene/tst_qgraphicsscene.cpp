@@ -2806,14 +2806,14 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
 
     {
         QPoint pos(50, 50);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(event.isAccepted());
     }
     {
         QPoint pos(150, 150);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(!event.isAccepted());
@@ -2821,14 +2821,14 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
     view.scale(1.5, 1.5);
     {
         QPoint pos(25, 25);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(event.isAccepted());
     }
     {
         QPoint pos(55, 55);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(!event.isAccepted());
