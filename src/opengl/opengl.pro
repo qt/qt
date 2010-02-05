@@ -13,7 +13,6 @@ include(../qbase.pri)
 !win32:!embedded:!mac:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
-contains(QT_CONFIG, opengles1cl):CONFIG += opengles1cl
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
 contains(QT_CONFIG, egl):CONFIG += egl
 
@@ -26,6 +25,7 @@ HEADERS += qgl.h \
            qglframebufferobject_p.h  \
            qglextensions_p.h \
            qglpaintdevice_p.h \
+           qglbuffer.h \
 
 
 SOURCES	+= qgl.cpp \
@@ -34,6 +34,7 @@ SOURCES	+= qgl.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
            qglpaintdevice.cpp \
+           qglbuffer.cpp \
 
 
 !contains(QT_CONFIG, opengles2) {
@@ -41,7 +42,7 @@ SOURCES	+= qgl.cpp \
     SOURCES += qpaintengine_opengl.cpp
 }
 
-!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl) {
+!contains(QT_CONFIG, opengles1) {
     HEADERS +=  qglshaderprogram.h \
                 qglpixmapfilter_p.h  \
                 qgraphicsshadereffect_p.h \
@@ -76,7 +77,7 @@ SOURCES	+= qgl.cpp \
 }
 
 x11 {
-    contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONFIG, opengles2) {
+    contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
                     qgl_egl.cpp \
@@ -123,8 +124,7 @@ wince*: {
                qglpixelbuffer_egl.cpp \
                qgl_egl.cpp
 
-    HEADERS += qgl_cl_p.h \
-               qgl_egl_p.h \
+    HEADERS += qgl_egl_p.h
 }
 
 embedded {

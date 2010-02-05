@@ -674,15 +674,8 @@ void QHttpNetworkConnectionChannel::handleStatus()
     case 407: // proxy auth required
         if (connection->d_func()->handleAuthenticateChallenge(socket, reply, (statusCode == 407), resend)) {
             if (resend) {
-                QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
-                if (uploadByteDevice) {
-                    if (uploadByteDevice->reset()) {
-                        written = 0;
-                    } else {
-                        connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
-                        break;
-                    }
-                }
+                if (!resetUploadData())
+                    break;
 
                 reply->d_func()->eraseData();
 
@@ -711,6 +704,22 @@ void QHttpNetworkConnectionChannel::handleStatus()
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
 }
+
+bool QHttpNetworkConnectionChannel::resetUploadData()
+{
+    QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
+    if (!uploadByteDevice)
+        return true;
+
+    if (uploadByteDevice->reset()) {
+        written = 0;
+        return true;
+    } else {
+        connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
+        return false;
+    }
+}
+
 
 void  QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
 {
@@ -872,7 +881,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         break;
     }
     QPointer<QObject> that = connection;
-    QString errorString = connection->d_func()->errorDetail(errorCode, socket);
+    QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
     if (send2Reply) {
         if (reply) {
             reply->d_func()->errorString = errorString;

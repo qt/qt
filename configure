@@ -115,7 +115,7 @@ getQMakeConf1()
 	    inc_file=`echo "$line" | sed -n -e "/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p"`
 	    current_dir=`dirname "$1"`
 	    conf_file="$current_dir/$inc_file"
-	    if [ ! -e  "$conf_file" ]; then
+	    if [ ! -f  "$conf_file" ]; then
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
@@ -1225,7 +1225,7 @@ while [ "$#" -gt 0 ]; do
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
-            [ "$VAL" = "es1cl" ] || [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
+            [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -2282,7 +2282,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 fi
 
 # symlink fonts to be able to run application from build directory
-if [ "$PLATFORM_QWS" = "yes" ] && [ ! -e "${outpath}/lib/fonts" ]; then
+if [ "$PLATFORM_QWS" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
     if [ "$PLATFORM" = "$XPLATFORM" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
@@ -3709,11 +3709,11 @@ Qt/X11 only:
  +  -opengl <api> ...... Enable OpenGL support.
                          With no parameter, this will auto-detect the "best"
                          OpenGL API to use. If desktop OpenGL is available, it
-                         will be used. Use desktop, es1, es1cl or es2 for <api>
+                         will be used. Use desktop, es1, or es2 for <api>
                          to force the use of the Desktop (OpenGL 1.x or 2.x),
-                         OpenGL ES 1.x Common profile, 1.x Common Lite profile
-                         or 2.x APIs instead. On X11, the EGL API will be used
-                         to manage GL contexts in the case of OpenGL ES
+                         OpenGL ES 1.x Common profile, or 2.x APIs instead.
+                         On X11, the EGL API will be used to manage GL
+                         contexts in the case of OpenGL ES
 
      -no-openvg ........ Do not support OpenVG.
  +   -openvg ........... Enable OpenVG support.
@@ -3867,7 +3867,7 @@ Qt for Embedded Linux only:
     -no-opengl .......... Do not support OpenGL.
     -opengl <api> ....... Enable OpenGL ES support
                           With no parameter, this will attempt to auto-detect OpenGL ES 1.x
-                          or 2.x. Use es1, es1cl or es2 for <api> to override auto-detection.
+                          or 2.x. Use es1 or es2 for <api> to override auto-detection.
 
                           NOTE: A QGLScreen driver for the hardware is required to support
                                 OpenGL ES on Qt for Embedded Linux.
@@ -4972,7 +4972,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         CFG_EGL=yes
         CFG_EGL_GLES_INCLUDES=yes
     fi
-    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
+    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
         echo "The EGL functionality test failed!"
         echo " EGL is required for OpenGL ES to manage contexts & surfaces."
         echo " You might need to modify the include and library search paths by editing"
@@ -5072,7 +5072,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         exit 1
     fi
 
-    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es1cl = ES 1.x common lite, es2 = OpenGL ES 2.x)
+    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
             CFG_OPENGL=desktop
@@ -5080,8 +5080,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
             CFG_OPENGL=es2
 	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es1
-	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es1cl
         else
             if [ "$CFG_OPENGL" = "yes" ]; then
                 echo "All the OpenGL functionality tests failed!"
@@ -5105,16 +5103,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
        *)
            ;;
        esac
-    elif [ "$CFG_OPENGL" = "es1cl" ]; then
-        # OpenGL ES 1.x common lite
-	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS
-        if [ $? != "0" ]; then
-	    echo "The OpenGL ES 1.x Common Lite Profile functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL_ES1CL, QMAKE_LIBDIR_OPENGL_ES1CL and QMAKE_LIBS_OPENGL_ES1CL in"
-            echo " ${XQMAKESPEC}."
-            exit 1
-        fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
 	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -5424,14 +5412,12 @@ fi
 # QWS
 if [ "$PLATFORM_QWS" = "yes" ]; then
 
-    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es1cl = ES 1.x common lite, es2 = OpenGL ES 2.x)
+    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
     if [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
 	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es1
-	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es1cl
         else
             echo "All the OpenGL ES functionality tests failed!"
             echo " You might need to modify the include and library search paths by editing"
@@ -6072,7 +6058,7 @@ else
     QT_CONFIG="$QT_CONFIG opengl"
 fi
 
-if [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ]; then
+if [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es2" ]; then
     if [ "$PLATFORM_QWS" = "yes" ]; then
 	QCONFIG_FLAGS="$QCONFIG_FLAGS Q_BACKINGSTORE_SUBSURFACES"
 	QCONFIG_FLAGS="$QCONFIG_FLAGS Q_USE_EGLWINDOWSURFACE"
@@ -6083,11 +6069,6 @@ fi
 if [ "$CFG_OPENGL" = "es1" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_1"
     QT_CONFIG="$QT_CONFIG opengles1"
-fi
-
-if [ "$CFG_OPENGL" = "es1cl" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_1_CL"
-    QT_CONFIG="$QT_CONFIG opengles1cl"
 fi
 
 if [ "$CFG_OPENGL" = "es2" ]; then
@@ -7513,8 +7494,6 @@ if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ...... yes (Desktop OpenGL)"
 elif [ "$CFG_OPENGL" = "es1" ]; then
     echo "OpenGL support ...... yes (OpenGL ES 1.x Common profile)"
-elif [ "$CFG_OPENGL" = "es1cl" ]; then
-    echo "OpenGL support ...... yes (OpenGL ES 1.x Common Lite profile)"
 elif [ "$CFG_OPENGL" = "es2" ]; then
     echo "OpenGL support ...... yes (OpenGL ES 2.x)"
 else
@@ -7567,6 +7546,8 @@ elif [ "$CFG_OPENSSL" = "linked" ]; then
     OPENSSL_LINKAGE="(linked)"
 fi
 echo "OpenSSL support ..... $CFG_OPENSSL $OPENSSL_LINKAGE"
+echo "Alsa support ........ $CFG_ALSA"
+echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........ $CFG_PTMALLOC"
 
@@ -7591,8 +7572,6 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG"
     echo "NOTE: Mac OS X frameworks implicitly build debug and release Qt libraries."
     echo
 fi
-echo "alsa support ........ $CFG_ALSA"
-echo
 
 sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
 PROCS=1

@@ -602,6 +602,8 @@ extern "C" {
 
 - (void)mouseEntered:(NSEvent *)event
 {
+    if (qwidgetprivate->data.in_destructor)
+        return;
     QEvent enterEvent(QEvent::Enter);
     NSPoint windowPoint = [event locationInWindow];
     NSPoint globalPoint = [[event window] convertBaseToScreen:windowPoint];

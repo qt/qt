@@ -51,7 +51,7 @@ class Q3ButtonGroupPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3ButtonGroupPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3ButtonGroupPlugin(const QIcon &icon, QObject *parent = 0);
     virtual ~Q3ButtonGroupPlugin();
 
     virtual QString name() const;
@@ -80,7 +80,7 @@ class Q3ComboBoxPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3ComboBoxPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3ComboBoxPlugin(const QIcon &icon, QObject *parent = 0);
     virtual ~Q3ComboBoxPlugin();
 
     virtual QString name() const;
@@ -109,7 +109,7 @@ class Q3DateEditPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3DateEditPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3DateEditPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;
@@ -133,7 +133,7 @@ class Q3DateTimeEditPlugin: public QObject, public QDesignerCustomWidgetInterfac
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3DateTimeEditPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3DateTimeEditPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;
@@ -157,7 +157,7 @@ class Q3FramePlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3FramePlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3FramePlugin(const QIcon &icon, QObject *parent = 0);
     virtual ~Q3FramePlugin();
 
     virtual QString name() const;
@@ -186,7 +186,7 @@ class Q3GroupBoxPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3GroupBoxPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3GroupBoxPlugin(const QIcon &icon, QObject *parent = 0);
     virtual ~Q3GroupBoxPlugin();
 
     virtual QString name() const;
@@ -215,7 +215,7 @@ class Q3ProgressBarPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3ProgressBarPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3ProgressBarPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;
@@ -239,7 +239,7 @@ class Q3TextBrowserPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3TextBrowserPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3TextBrowserPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;
@@ -263,7 +263,7 @@ class Q3TimeEditPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3TimeEditPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3TimeEditPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;

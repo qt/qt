@@ -1094,6 +1094,21 @@ void QWidgetPrivate::show_sys()
         return;
     }
 
+    if (data.window_flags & Qt::Window) {
+        QTLWExtra *extra = topData();
+        if (!extra->hotkeyRegistered) {
+            // Try to set the hotkey using information from STARTUPINFO
+            STARTUPINFO startupInfo;
+            GetStartupInfo(&startupInfo);
+            // If STARTF_USEHOTKEY is set, hStdInput is the virtual keycode
+            if (startupInfo.dwFlags & 0x00000200) {
+                WPARAM hotKey = (WPARAM)startupInfo.hStdInput;
+                SendMessage(data.winid, WM_SETHOTKEY, hotKey, 0);
+            }
+            extra->hotkeyRegistered = 1;
+        }
+    }
+
     int sm = SW_SHOWNORMAL;
     bool fakedMaximize = false;
     if (q->isWindow()) {
@@ -1141,6 +1156,8 @@ void QWidgetPrivate::show_sys()
             data.window_state |= Qt::WindowMinimized;
         if (IsZoomed(q->internalWinId()))
             data.window_state |= Qt::WindowMaximized;
+        if (q->windowType() == Qt::Popup)
+            q->activateWindow();
     }
 
     winSetupGestures();
@@ -1687,6 +1704,7 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->hotkeyRegistered = 0;
     extra->topextra->savedFlags = 0;
     extra->topextra->winIconBig = 0;
     extra->topextra->winIconSmall = 0;

@@ -781,6 +781,95 @@ Qt::TextInteractionFlags QLabel::textInteractionFlags() const
     return d->textInteractionFlags;
 }
 
+/*!
+    Selects text from position \a start and for \a length characters.
+
+    \sa selectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+void QLabel::setSelection(int start, int length)
+{
+    Q_D(QLabel);
+    if (d->control) {
+        d->ensureTextPopulated();
+        QTextCursor cursor = d->control->textCursor();
+        cursor.setPosition(start);
+        cursor.setPosition(start + length, QTextCursor::KeepAnchor);
+        d->control->setTextCursor(cursor);
+    }
+}
+
+/*!
+    \property QLabel::hasSelectedText
+    \brief whether there is any text selected
+
+    hasSelectedText() returns true if some or all of the text has been
+    selected by the user; otherwise returns false.
+
+    By default, this property is false.
+
+    \sa selectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+bool QLabel::hasSelectedText() const
+{
+    Q_D(const QLabel);
+    if (d->control)
+        return d->control->textCursor().hasSelection();
+    return false;
+}
+
+/*!
+    \property QLabel::selectedText
+    \brief the selected text
+
+    If there is no selected text this property's value is
+    an empty string.
+
+    By default, this property contains an empty string.
+
+    \sa hasSelectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+QString QLabel::selectedText() const
+{
+    Q_D(const QLabel);
+    if (d->control)
+        return d->control->textCursor().selectedText();
+    return QString();
+}
+
+/*!
+    selectionStart() returns the index of the first selected character in the
+    label or -1 if no text is selected.
+
+    \sa selectedText()
+
+    \bold{Note:} The textInteractionFlags set on the label need to include
+    either TextSelectableByMouse or TextSelectableByKeyboard.
+
+    \since 4.7
+*/
+int QLabel::selectionStart() const
+{
+    Q_D(const QLabel);
+    if (d->control && d->control->textCursor().hasSelection())
+        return d->control->textCursor().selectionStart();
+    return -1;
+}
+
 /*!\reimp
 */
 QSize QLabel::sizeHint() const

@@ -564,7 +564,8 @@ bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, 
 }
 
 
-QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket* socket)
+QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket* socket,
+                                                   const QString &extraDetail)
 {
     Q_ASSERT(socket);
 
@@ -581,7 +582,7 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
         errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Connection closed"));
         break;
     case QNetworkReply::TimeoutError:
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "HTTP request failed"));
+        errorString = QLatin1String(QT_TRANSLATE_NOOP("QAbstractSocket", "Socket operation timed out"));
         break;
     case QNetworkReply::ProxyAuthenticationRequiredError:
         errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "Proxy requires authentication"));
@@ -600,7 +601,7 @@ QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError e
         break;
     default:
         // all other errors are treated as QNetworkReply::UnknownNetworkError
-        errorString = QLatin1String(QT_TRANSLATE_NOOP("QHttp", "HTTP request failed"));
+        errorString = extraDetail;
         break;
     }
     return errorString;
@@ -687,8 +688,14 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (channels[i].resendCurrent) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
-            if (channels[i].reply)
+            if (channels[i].reply) {
+
+                // if this is not possible, error will be emitted and connection terminated
+                if (!channels[i].resetUploadData())
+                    continue;
+
                 channels[i].sendRequest();
+            }
         }
     }
 

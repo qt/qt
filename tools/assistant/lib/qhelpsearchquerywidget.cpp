@@ -121,17 +121,17 @@ private:
 
     void retranslate()
     {
-        simpleSearchLabel->setText(tr("Search for:"));
-        prevQueryButton->setToolTip(tr("Previous search"));
-        nextQueryButton->setToolTip(tr("Next search"));
-        searchButton->setText(tr("Search"));
+        simpleSearchLabel->setText(QHelpSearchQueryWidget::tr("Search for:"));
+        prevQueryButton->setToolTip(QHelpSearchQueryWidget::tr("Previous search"));
+        nextQueryButton->setToolTip(QHelpSearchQueryWidget::tr("Next search"));
+        searchButton->setText(QHelpSearchQueryWidget::tr("Search"));
 #ifdef QT_CLUCENE_SUPPORT
-        advancedSearchLabel->setText(tr("Advanced search"));
-        similarLabel->setText(tr("words <B>similar</B> to:"));
-        withoutLabel->setText(tr("<B>without</B> the words:"));
-        exactLabel->setText(tr("with <B>exact phrase</B>:"));
-        allLabel->setText(tr("with <B>all</B> of the words:"));
-        atLeastLabel->setText(tr("with <B>at least one</B> of the words:"));
+        advancedSearchLabel->setText(QHelpSearchQueryWidget::tr("Advanced search"));
+        similarLabel->setText(QHelpSearchQueryWidget::tr("words <B>similar</B> to:"));
+        withoutLabel->setText(QHelpSearchQueryWidget::tr("<B>without</B> the words:"));
+        exactLabel->setText(QHelpSearchQueryWidget::tr("with <B>exact phrase</B>:"));
+        allLabel->setText(QHelpSearchQueryWidget::tr("with <B>all</B> of the words:"));
+        atLeastLabel->setText(QHelpSearchQueryWidget::tr("with <B>at least one</B> of the words:"));
 #endif
     }
 
@@ -290,7 +290,7 @@ private slots:
                 QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList fuzzy;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     fuzzy += buildTermList(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::FUZZY,
                     fuzzy));
@@ -299,7 +299,7 @@ private slots:
             lst = withoutQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList without;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     without.append(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::WITHOUT,
                     without));
@@ -315,7 +315,7 @@ private slots:
             lst = allQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList all;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     all.append(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::ALL, all));
             }
@@ -323,7 +323,7 @@ private slots:
             lst = atLeastQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList atLeast;
-                foreach (const QString term, lst)
+                foreach (const QString &term, lst)
                     atLeast += buildTermList(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::ATLEAST,
                     atLeast));
@@ -512,7 +512,7 @@ QHelpSearchQueryWidget::~QHelpSearchQueryWidget()
 }
 
 /*!
-    Returns a list of querys to use in combination with the search engines
+    Returns a list of queries to use in combination with the search engines
     search(QList<QHelpSearchQuery> &query) function.
 */
 QList<QHelpSearchQuery> QHelpSearchQueryWidget::query() const

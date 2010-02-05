@@ -158,6 +158,7 @@ struct QTLWExtra {
     quint32 newCounterValueLo;
 #endif
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
+    uint hotkeyRegistered: 1; // Hot key from the STARTUPINFO has been registered.
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC

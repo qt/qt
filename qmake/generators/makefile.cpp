@@ -1519,6 +1519,19 @@ MakefileGenerator::replaceExtraCompilerVariables(const QString &orig_var, const 
                         base = fi.fileName();
                     val += base;
                 }
+            } else if(var == QLatin1String("QMAKE_FILE_EXT")) {
+                filePath = true;
+                for(int i = 0; i < in.size(); ++i) {
+                    QFileInfo fi(fileInfo(Option::fixPathToLocalOS(in.at(i))));
+                    QString ext;
+                    // Ensure complementarity with QMAKE_FILE_BASE
+                    int baseLen = fi.completeBaseName().length();
+                    if(baseLen == 0)
+                        ext = fi.fileName();
+                    else
+                        ext = fi.fileName().remove(0, baseLen);
+                    val += ext;
+                }
             } else if(var == QLatin1String("QMAKE_FILE_PATH") || var == QLatin1String("QMAKE_FILE_IN_PATH")) {
                 filePath = true;
                 for(int i = 0; i < in.size(); ++i)
@@ -1830,11 +1843,12 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             cleans.append(files);
                     }
                 }
-                if(!cleans.isEmpty())
+                if(!cleans.isEmpty()) {
                     if (isForSymbian())
                         t << valGlue(cleans, "\n\t" + del_statement, " " NO_STDERR "\n\t" + del_statement, " " NO_STDERR);
                     else
                         t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
+                }
                 if(!wrote_clean_cmds) {
                     for(QStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
                         t << "\n\t" << replaceExtraCompilerVariables(tmp_clean_cmds, (*input),
@@ -2541,6 +2555,7 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
             QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
             if(!ofile.isEmpty())
                 t << "\t-$(DEL_FILE) " << ofile << endl;
+            t << varGlue("QMAKE_DISTCLEAN","\t-$(DEL_FILE) "," ","\n");
         } else if(project->isActiveConfig("no_empty_targets")) {
             t << "\t" << "@cd ." << endl;
         }

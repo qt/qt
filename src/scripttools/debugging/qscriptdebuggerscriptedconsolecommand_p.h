@@ -57,6 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QScriptEngine;
 class QScriptValue;
 
 class QScriptDebuggerScriptedConsoleCommandPrivate;
@@ -72,6 +73,7 @@ protected:
                                           const QStringList &seeAlso,
                                           const QStringList &argumentTypes,
                                           const QStringList &subCommands,
+                                          const QScriptValue &globalObject,
                                           const QScriptValue &execFunction,
                                           const QScriptValue &responseFunction);
 public:
@@ -79,7 +81,7 @@ public:
 
     static QScriptDebuggerScriptedConsoleCommand *parse(
         const QString &program, const QString &fileName,
-        QScriptMessageHandlerInterface *messageHandler);
+        QScriptEngine *engine, QScriptMessageHandlerInterface *messageHandler);
 
     QString name() const;
     QString group() const;

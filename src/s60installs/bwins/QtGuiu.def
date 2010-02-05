@@ -5527,7 +5527,7 @@ EXPORTS
 	?invalidateChildrenSceneTransform@QGraphicsItemPrivate@@QAEXXZ @ 5526 NONAME ; void QGraphicsItemPrivate::invalidateChildrenSceneTransform(void)
 	?invalidateDepthRecursively@QGraphicsItemPrivate@@QAEXXZ @ 5527 NONAME ; void QGraphicsItemPrivate::invalidateDepthRecursively(void)
 	?invalidateFilter@QSortFilterProxyModel@@IAEXXZ @ 5528 NONAME ; void QSortFilterProxyModel::invalidateFilter(void)
-	?invalidateGraphicsEffectsRecursively@QGraphicsItemPrivate@@QAEXXZ @ 5529 NONAME ; void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively(void)
+	?invalidateGraphicsEffectsRecursively@QGraphicsItemPrivate@@QAEXXZ @ 5529 NONAME ABSENT ; void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively(void)
 	?invalidateGraphicsEffectsRecursively@QWidgetPrivate@@QAEXXZ @ 5530 NONAME ; void QWidgetPrivate::invalidateGraphicsEffectsRecursively(void)
 	?invalidateScene@QGraphicsView@@QAEXABVQRectF@@V?$QFlags@W4SceneLayer@QGraphicsScene@@@@@Z @ 5531 NONAME ; void QGraphicsView::invalidateScene(class QRectF const &, class QFlags<enum QGraphicsScene::SceneLayer>)
 	?invalidateSizeCache@QWidgetItemV2@@AAEXXZ @ 5532 NONAME ; void QWidgetItemV2::invalidateSizeCache(void)
@@ -9555,7 +9555,7 @@ EXPORTS
 	?setParent@QWidget@@QAEXPAV1@@Z @ 9554 NONAME ; void QWidget::setParent(class QWidget *)
 	?setParent@QWidget@@QAEXPAV1@V?$QFlags@W4WindowType@Qt@@@@@Z @ 9555 NONAME ; void QWidget::setParent(class QWidget *, class QFlags<enum Qt::WindowType>)
 	?setParentItem@QGraphicsItem@@QAEXPAV1@@Z @ 9556 NONAME ; void QGraphicsItem::setParentItem(class QGraphicsItem *)
-	?setParentItemHelper@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@@Z @ 9557 NONAME ; void QGraphicsItemPrivate::setParentItemHelper(class QGraphicsItem *)
+	?setParentItemHelper@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@@Z @ 9557 NONAME ABSENT ; void QGraphicsItemPrivate::setParentItemHelper(class QGraphicsItem *)
 	?setParentLayoutItem@QGraphicsLayoutItem@@QAEXPAV1@@Z @ 9558 NONAME ; void QGraphicsLayoutItem::setParentLayoutItem(class QGraphicsLayoutItem *)
 	?setParent_sys@QWidgetPrivate@@QAEXPAVQWidget@@V?$QFlags@W4WindowType@Qt@@@@@Z @ 9559 NONAME ; void QWidgetPrivate::setParent_sys(class QWidget *, class QFlags<enum Qt::WindowType>)
 	?setPasswordCharacter@QLineControl@@QAEXABVQChar@@@Z @ 9560 NONAME ; void QLineControl::setPasswordCharacter(class QChar const &)
@@ -10694,10 +10694,10 @@ EXPORTS
 	?swipeAngle@QSwipeGesture@@QBEMXZ @ 10693 NONAME ; float QSwipeGesture::swipeAngle(void) const
 	?symbianEventFilter@QApplication@@UAE_NPBVQSymbianEvent@@@Z @ 10694 NONAME ; bool QApplication::symbianEventFilter(class QSymbianEvent const *)
 	?symbianFilterEvent@QInputContext@@UAE_NPAVQWidget@@PBVQSymbianEvent@@@Z @ 10695 NONAME ; bool QInputContext::symbianFilterEvent(class QWidget *, class QSymbianEvent const *)
-	?symbianHandleCommand@QApplicationPrivate@@QAEHH@Z @ 10696 NONAME ; int QApplicationPrivate::symbianHandleCommand(int)
+	?symbianHandleCommand@QApplicationPrivate@@QAEHH@Z @ 10696 NONAME ABSENT ; int QApplicationPrivate::symbianHandleCommand(int)
 	?symbianProcessEvent@QApplication@@QAEHPBVQSymbianEvent@@@Z @ 10697 NONAME ; int QApplication::symbianProcessEvent(class QSymbianEvent const *)
-	?symbianProcessWsEvent@QApplicationPrivate@@QAEHPBVTWsEvent@@@Z @ 10698 NONAME ; int QApplicationPrivate::symbianProcessWsEvent(class TWsEvent const *)
-	?symbianResourceChange@QApplicationPrivate@@QAEHH@Z @ 10699 NONAME ; int QApplicationPrivate::symbianResourceChange(int)
+	?symbianProcessWsEvent@QApplicationPrivate@@QAEHPBVTWsEvent@@@Z @ 10698 NONAME ABSENT ; int QApplicationPrivate::symbianProcessWsEvent(class TWsEvent const *)
+	?symbianResourceChange@QApplicationPrivate@@QAEHH@Z @ 10699 NONAME ABSENT ; int QApplicationPrivate::symbianResourceChange(int)
 	?symbol@Parser@QCss@@QBEABUSymbol@2@XZ @ 10700 NONAME ; struct QCss::Symbol const & QCss::Parser::symbol(void) const
 	?sync@QPaintEngineEx@@UAEXXZ @ 10701 NONAME ; void QPaintEngineEx::sync(void)
 	?syncBackingStore@QWidgetPrivate@@QAEXABVQRegion@@@Z @ 10702 NONAME ; void QWidgetPrivate::syncBackingStore(class QRegion const &)
@@ -12525,4 +12525,12 @@ EXPORTS
 	??0Tab@QTextOption@@QAE@ABU01@@Z @ 12524 NONAME ; QTextOption::Tab::Tab(struct QTextOption::Tab const &)
 	?effectiveBoundingRect@QGraphicsItemPrivate@@QBE?AVQRectF@@ABV2@@Z @ 12525 NONAME ; class QRectF QGraphicsItemPrivate::effectiveBoundingRect(class QRectF const &) const
 	?glyphCache@QFontEngine@@QBEPAVQFontEngineGlyphCache@@PAXW4Type@2@ABVQTransform@@@Z @ 12526 NONAME ; class QFontEngineGlyphCache * QFontEngine::glyphCache(void *, enum QFontEngineGlyphCache::Type, class QTransform const &) const
+	?qt_blurImage@@YAXAAVQImage@@M_NH@Z @ 12527 NONAME ; void qt_blurImage(class QImage &, float, bool, int)
+	?qt_blurImage@@YAXPAVQPainter@@AAVQImage@@M_N2H@Z @ 12528 NONAME ; void qt_blurImage(class QPainter *, class QImage &, float, bool, bool, int)
+	?qt_halfScaled@@YA?AVQImage@@ABV1@@Z @ 12529 NONAME ; class QImage qt_halfScaled(class QImage const &)
+	?qt_memrotate90@@YAXPBIHHHPAIH@Z @ 12530 NONAME ; void qt_memrotate90(unsigned int const *, int, int, int, unsigned int *, int)
+	?qt_memrotate90_gl@@YAXPBIHHHPAIH@Z @ 12531 NONAME ; void qt_memrotate90_gl(unsigned int const *, int, int, int, unsigned int *, int)
+	?symbianHandleCommand@QApplicationPrivate@@QAEHPBVQSymbianEvent@@@Z @ 12532 NONAME ; int QApplicationPrivate::symbianHandleCommand(class QSymbianEvent const *)
+	?symbianProcessWsEvent@QApplicationPrivate@@QAEHPBVQSymbianEvent@@@Z @ 12533 NONAME ; int QApplicationPrivate::symbianProcessWsEvent(class QSymbianEvent const *)
+	?symbianResourceChange@QApplicationPrivate@@QAEHPBVQSymbianEvent@@@Z @ 12534 NONAME ; int QApplicationPrivate::symbianResourceChange(class QSymbianEvent const *)
 

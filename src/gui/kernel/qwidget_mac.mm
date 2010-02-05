@@ -404,7 +404,7 @@ inline static void qt_mac_set_fullscreen_mode(bool b)
         return;
     qt_mac_app_fullscreen = b;
     if (b) {
-        SetSystemUIMode(kUIModeAllSuppressed, 0);
+        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
     } else {
         SetSystemUIMode(kUIModeNormal, 0);
     }
@@ -3233,10 +3233,10 @@ void QWidget::activateWindow()
             || windowActive) {
 #ifndef QT_MAC_USE_COCOA
         ActivateWindow(win, true);
+        qApp->setActiveWindow(tlw);
 #else
         [win makeKeyWindow];
 #endif
-        qApp->setActiveWindow(tlw);
     } else if(!isMinimized()) {
 #ifndef QT_MAC_USE_COCOA
         SelectWindow(win);
@@ -3579,6 +3579,8 @@ void QWidgetPrivate::hide_sys()
 
     if (!QWidget::mouseGrabber()){
         QWidget *enterWidget = QApplication::widgetAt(QCursor::pos());
+        if (enterWidget && enterWidget->data->in_destructor)
+            enterWidget = 0;
         QApplicationPrivate::dispatchEnterLeave(enterWidget, qt_mouseover);
         qt_mouseover = enterWidget;
     }

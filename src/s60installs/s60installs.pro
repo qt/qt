@@ -78,7 +78,11 @@ symbian: {
         DEPLOYMENT += phonon_backend_plugins
     }
 
-    DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins graphicssystems_plugins
+    # Support backup & restore for Qt libraries
+    qtbackup.sources = backup_registration.xml
+    qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
+
+    DEPLOYMENT += qtresources qtlibraries qtbackup imageformats_plugins codecs_plugins graphicssystems_plugins
 
     contains(QT_CONFIG, svg): {
        qtlibraries.sources += QtSvg.dll
@@ -108,6 +112,10 @@ symbian: {
     contains(QT_CONFIG, openvg) {
         qtlibraries.sources += QtOpenVG.dll
         graphicssystems_plugins.sources += qvggraphicssystem.dll
+    }
+
+    contains(QT_CONFIG, multimedia) {
+        qtlibraries.sources += QtMultimedia.dll
     }
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"

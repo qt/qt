@@ -482,6 +482,7 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";
+            dictionary[ "SYMBIAN_DEFFILES" ] = "no";
         }
         else if( configCmdLine.at(i) == "-opensource" ) {
             dictionary[ "BUILDTYPE" ] = "opensource";
@@ -698,9 +699,6 @@ void Configure::parseCmdLine()
         } else if ( configCmdLine.at(i) == "-opengl-es-cm" ) {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_CM" ]    = "yes";
-        } else if ( configCmdLine.at(i) == "-opengl-es-cl" ) {
-            dictionary[ "OPENGL" ]          = "yes";
-            dictionary[ "OPENGL_ES_CL" ]    = "yes";
         } else if ( configCmdLine.at(i) == "-opengl-es-2" ) {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
@@ -803,7 +801,7 @@ void Configure::parseCmdLine()
         else if( configCmdLine.at(i) == "-no-native-gestures" )
             dictionary[ "NATIVE_GESTURES" ] = "no";
 #if !defined(EVAL)
-        // Others ---------------------------------------------------
+        // Symbian Support -------------------------------------------
         else if (configCmdLine.at(i) == "-fpu" )
         {
             ++i;
@@ -812,12 +810,17 @@ void Configure::parseCmdLine()
             dictionary[ "ARM_FPU_TYPE" ] = configCmdLine.at(i);
         }
 
-        // S60 Support -------------------------------------------
         else if( configCmdLine.at(i) == "-s60" )
             dictionary[ "S60" ]    = "yes";
         else if( configCmdLine.at(i) == "-no-s60" )
             dictionary[ "S60" ]    = "no";
 
+        else if( configCmdLine.at(i) == "-usedeffiles" )
+            dictionary[ "SYMBIAN_DEFFILES" ] = "yes";
+        else if( configCmdLine.at(i) == "-no-usedeffiles" )
+            dictionary[ "SYMBIAN_DEFFILES" ] = "no";
+
+        // Others ---------------------------------------------------
         else if (configCmdLine.at(i) == "-fast" )
             dictionary[ "FAST" ] = "yes";
         else if (configCmdLine.at(i) == "-no-fast" )
@@ -1468,6 +1471,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "XMLPATTERNS" ]         = "yes";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "S60" ]                 = "yes";
+        dictionary[ "SYMBIAN_DEFFILES" ]    = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
         // iconv_open seems to return -1 always, so something is probably missing from the platform.
         dictionary[ "QT_ICONV" ]            = "no";
@@ -1812,7 +1816,6 @@ bool Configure::displayHelp()
         desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application");
         desc(                      "-signature <file>",    "Use file for signing the target project");
         desc("OPENGL_ES_CM", "no", "-opengl-es-cm",        "Enable support for OpenGL ES Common");
-        desc("OPENGL_ES_CL", "no", "-opengl-es-cl",        "Enable support for OpenGL ES Common Lite");
         desc("OPENGL_ES_2",  "no", "-opengl-es-2",         "Enable support for OpenGL ES 2.0");
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
@@ -1822,7 +1825,9 @@ bool Configure::displayHelp()
         desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.");
         desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2");
         desc("S60", "no",          "-no-s60",              "Do not compile in S60 support.");
-        desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework\n");
+        desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework");
+        desc("SYMBIAN_DEFFILES", "no",  "-no-usedeffiles",  "Disable the usage of DEF files.");
+        desc("SYMBIAN_DEFFILES", "yes", "-usedeffiles",     "Enable the usage of DEF files.\n");
         return true;
     }
     return false;
@@ -1998,8 +2003,6 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "IWMMXT")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "OPENGL_ES_CM")
-        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
-    else if (part == "OPENGL_ES_CL")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "OPENGL_ES_2")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
@@ -2478,11 +2481,6 @@ void Configure::generateOutputVars()
         qtConfig += "egl";
     }
 
-    if ( dictionary["OPENGL_ES_CL"] == "yes" ) {
-        qtConfig += "opengles1cl";
-        qtConfig += "egl";
-    }
-
     if ( dictionary["OPENVG"] == "yes" ) {
         qtConfig += "openvg";
         qtConfig += "egl";
@@ -2534,8 +2532,11 @@ void Configure::generateOutputVars()
             qtConfig += "phonon-backend";
     }
 
-    if (dictionary["MULTIMEDIA"] == "yes")
+    if (dictionary["MULTIMEDIA"] == "yes") {
         qtConfig += "multimedia";
+        if (dictionary["AUDIO_BACKEND"] == "yes")
+            qtConfig += "audio-backend";
+    }
 
     if (dictionary["WEBKIT"] == "yes")
         qtConfig += "webkit";
@@ -2752,6 +2753,13 @@ void Configure::generateCachefile()
         if ( dictionary["PLUGIN_MANIFESTS"] == "no" )
             configStream << " no_plugin_manifest";
 
+        if ( dictionary.contains("SYMBIAN_DEFFILES") ) {
+            if(dictionary["SYMBIAN_DEFFILES"] == "yes" ) {
+                configStream << " def_files";
+            } else if ( dictionary["SYMBIAN_DEFFILES"] == "no" ) {
+                configStream << " def_files_disabled";
+            }
+        }
         configStream << endl;
         configStream << "QT_ARCH = " << dictionary[ "ARCHITECTURE" ] << endl;
         if (dictionary["QT_EDITION"].contains("OPENSOURCE"))
@@ -2926,13 +2934,10 @@ void Configure::generateConfigfiles()
         if(dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
-           dictionary["OPENGL_ES_CL"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
         if(dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
-        if(dictionary["OPENGL_ES_CL"] == "yes")     qconfigList += "QT_OPENGL_ES_1_CL";
-
         if(dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
         if(dictionary["SQL_ODBC"] == "yes")         qconfigList += "QT_SQL_ODBC";
         if(dictionary["SQL_OCI"] == "yes")          qconfigList += "QT_SQL_OCI";
@@ -3274,6 +3279,14 @@ void Configure::displayConfig()
 
     if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("symbian"))) {
         cout << "Support for S60............." << dictionary[ "S60" ] << endl;
+    }
+
+    if (dictionary.contains("SYMBIAN_DEFFILES")) {
+        cout << "Symbian DEF files enabled..." << dictionary[ "SYMBIAN_DEFFILES" ] << endl;
+        if(dictionary["SYMBIAN_DEFFILES"] == "no") {
+            cout << "WARNING: Disabling DEF files will mean that Qt is NOT binary compatible with previous versions." << endl;
+            cout << "         This feature is only intended for use during development, NEVER for release builds." << endl;
+        }
     }
 
     if(dictionary["ASSISTANT_WEBKIT"] == "yes")

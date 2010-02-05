@@ -186,7 +186,7 @@
     will appear. Click a sub-item to make its page appear in the \e{Documentation}
     window. Click on the control next to an open item to hide its sub-items.
     \o The \gui{Index} window is used to look up key words or phrases.
-    See \l{The One-Minute Guide to Using Qt Assistant} for how to use this
+    See \l{Qt Assistant Manual#The One-Minute Guide to Using Qt Assistant}{The One-Minute Guide to Using Qt Assistant} for how to use this
     window.
     \o The \gui{Bookmarks} window lists any bookmarks you have made. Double
     click a bookmark to make its page appear in the \e{Documentation} window.

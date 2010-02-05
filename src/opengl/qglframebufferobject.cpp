@@ -44,7 +44,7 @@
 
 #include <qdebug.h>
 #include <private/qgl_p.h>
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #include <private/qpaintengineex_opengl2_p.h>
 #endif
 
@@ -55,10 +55,6 @@
 #include <qglframebufferobject.h>
 #include <qlibrary.h>
 #include <qimage.h>
-
-#ifdef QT_OPENGL_ES_1_CL
-#include "qgl_cl_p.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -980,7 +976,7 @@ QImage QGLFramebufferObject::toImage() const
     return image;
 }
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_2_engine)
 #endif
 
@@ -995,7 +991,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
     if (d->engine)
         return d->engine;
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #if !defined (QT_OPENGL_ES_2)
     if (qt_gl_preferGL2Engine()) {
 #endif

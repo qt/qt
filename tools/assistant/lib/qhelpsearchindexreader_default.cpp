@@ -166,7 +166,7 @@ void Reader::filterFilesForAttributes(const QStringList &attributes)
         const QString fileName = it.key();
         bool containsAll = true;
         QStringList split = fileName.split(QLatin1String("@"));
-        foreach (const QString attribute, attributes) {
+        foreach (const QString &attribute, attributes) {
             if (!split.contains(attribute, Qt::CaseInsensitive)) {
                 containsAll = false;
                 break;
@@ -180,9 +180,9 @@ void Reader::filterFilesForAttributes(const QStringList &attributes)
 
 void Reader::setIndexFile(const QString &namespaceName, const QString &attributes)
 {
-    QString extention = namespaceName + QLatin1String("@") + attributes;
-    indexFile = indexPath + QLatin1String("/indexdb40.") + extention;
-    documentFile = indexPath + QLatin1String("/indexdoc40.") + extention;
+    QString extension = namespaceName + QLatin1String("@") + attributes;
+    indexFile = indexPath + QLatin1String("/indexdb40.") + extension;
+    documentFile = indexPath + QLatin1String("/indexdoc40.") + extension;
 }
 
 bool Reader::splitSearchTerm(const QString &searchTerm, QStringList *terms,
@@ -235,7 +235,7 @@ bool Reader::splitSearchTerm(const QString &searchTerm, QStringList *terms,
 
 void Reader::searchInIndex(const QStringList &terms)
 {
-    foreach (const QString term, terms) {
+    foreach (const QString &term, terms) {
         QVector<Document> documents;
 
         for(IndexTable::ConstIterator it = searchIndexTable.begin();
@@ -254,7 +254,7 @@ void Reader::searchInIndex(const QStringList &terms)
                 DocumentInfo info;
                 QString title, url;
                 QVector<DocumentInfo> documentsInfo;
-                foreach(const Document doc, documents) {
+                foreach(const Document &doc, documents) {
                     info.docNumber = doc.docNumber;
                     info.frequency = doc.frequency;
                     info.documentUrl = documentList.at(doc.docNumber).at(1);
@@ -519,7 +519,7 @@ void QHelpSearchIndexReaderDefault::run()
     mutex.unlock();
 
     QString queryTerm;
-    foreach (const QHelpSearchQuery query, queryList) {
+    foreach (const QHelpSearchQuery &query, queryList) {
         if (query.fieldName == QHelpSearchQuery::DEFAULT) {
             queryTerm = query.wordList.at(0);
             break;
@@ -541,7 +541,7 @@ void QHelpSearchIndexReaderDefault::run()
 
     // setup the reader
     m_reader.setIndexPath(indexPath);
-    foreach(const QString namespaceName, registeredDocs) {
+    foreach(const QString &namespaceName, registeredDocs) {
         mutex.lock();
         if (m_cancel) {
             mutex.unlock();
@@ -553,7 +553,7 @@ void QHelpSearchIndexReaderDefault::run()
         const QList<QStringList> attributeSets =
             engine.filterAttributeSets(namespaceName);
 
-        foreach (QStringList attributes, attributeSets) {
+        foreach (const QStringList &attributes, attributeSets) {
             // read all index files
             m_reader.setIndexFile(namespaceName, attributes.join(QLatin1String("@")));
             if (!m_reader.readIndex()) {
@@ -577,7 +577,7 @@ void QHelpSearchIndexReaderDefault::run()
         QVector<DocumentInfo> hits = m_reader.hits();
         if (!hits.isEmpty()) {
             if (termSeq.isEmpty()) {
-                foreach (const DocumentInfo docInfo, hits) {
+                foreach (const DocumentInfo &docInfo, hits) {
                     mutex.lock();
                     if (m_cancel) {
                         mutex.unlock();
@@ -588,7 +588,7 @@ void QHelpSearchIndexReaderDefault::run()
                     hitList.append(qMakePair(docInfo.documentTitle, docInfo.documentUrl));
                 }
             } else {
-                foreach (const DocumentInfo docInfo, hits) {
+                foreach (const DocumentInfo &docInfo, hits) {
                     mutex.lock();
                     if (m_cancel) {
                         mutex.unlock();

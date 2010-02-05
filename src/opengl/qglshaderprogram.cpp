@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
+#if !defined(QT_OPENGL_ES_1)
 
 /*!
     \class QGLShaderProgram
@@ -105,6 +105,19 @@ QT_BEGIN_NAMESPACE
     as follows:
 
     \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 2
+
+    \section1 Binary shaders and programs
+
+    Binary shaders may be specified using \c{glShaderBinary()} on
+    the return value from QGLShader::shaderId().  The QGLShader instance
+    containing the binary can then be added to the shader program with
+    addShader() and linked in the usual fashion with link().
+
+    Binary programs may be specified using \c{glProgramBinaryOES()}
+    on the return value from programId().  Then the application should
+    call link(), which will notice that the program has already been
+    specified and linked, allowing other operations to be performed
+    on the shader program.
 
     \sa QGLShader
 */
@@ -632,8 +645,6 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
             qWarning("QGLShaderProgram::addShader: Program and shader are not associated with same context.");
             return false;
         }
-        if (!shader->d_func()->compiled)
-            return false;
         if (!shader->d_func()->shaderGuard.id())
             return false;
         glAttachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
@@ -820,8 +831,20 @@ bool QGLShaderProgram::link()
     GLuint program = d->programGuard.id();
     if (!program)
         return false;
+    GLint value;
+    if (d->shaders.isEmpty()) {
+        // If there are no explicit shaders, then it is possible that the
+        // application added a program binary with glProgramBinaryOES(),
+        // or otherwise populated the shaders itself.  Check to see if the
+        // program is already linked and bail out if so.
+        value = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &value);
+        d->linked = (value != 0);
+        if (d->linked)
+            return true;
+    }
     glLinkProgram(program);
-    GLint value = 0;
+    value = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &value);
     d->linked = (value != 0);
     value = 0;
@@ -928,6 +951,15 @@ void QGLShaderProgram::release()
 GLuint QGLShaderProgram::programId() const
 {
     Q_D(const QGLShaderProgram);
+    GLuint id = d->programGuard.id();
+    if (id)
+        return id;
+
+    // Create the identifier if we don't have one yet.  This is for
+    // applications that want to create the attached shader configuration
+    // themselves, particularly those using program binaries.
+    if (!const_cast<QGLShaderProgram *>(this)->init())
+        return 0;
     return d->programGuard.id();
 }
 
@@ -1394,6 +1426,38 @@ void QGLShaderProgram::setAttributeArray
 }
 
 /*!
+    Sets an array of vertex \a values on the attribute at \a location
+    in this shader program.  The \a stride indicates the number of bytes
+    between vertices.  A default \a stride value of zero indicates that
+    the vertices are densely packed in \a values.
+
+    The \a type indicates the type of elements in the \a values array,
+    usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a tupleSize
+    indicates the number of components per vertex: 1, 2, 3, or 4.
+
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    The setAttributeBuffer() function can be used to set the attribute
+    array to an offset within a vertex buffer.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray(), setAttributeBuffer()
+    \since 4.7
+*/
+void QGLShaderProgram::setAttributeArray
+    (int location, GLenum type, const void *values, int tupleSize, int stride)
+{
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
+    if (location != -1) {
+        glVertexAttribPointer(location, tupleSize, type, GL_FALSE,
+                              stride, values);
+    }
+}
+
+/*!
     \overload
 
     Sets an array of vertex \a values on the attribute called \a name
@@ -1476,6 +1540,90 @@ void QGLShaderProgram::setAttributeArray
         (const char *name, const QVector4D *values, int stride)
 {
     setAttributeArray(attributeLocation(name), values, stride);
+}
+
+/*!
+    \overload
+
+    Sets an array of vertex \a values on the attribute called \a name
+    in this shader program.  The \a stride indicates the number of bytes
+    between vertices.  A default \a stride value of zero indicates that
+    the vertices are densely packed in \a values.
+
+    The \a type indicates the type of elements in the \a values array,
+    usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a tupleSize
+    indicates the number of components per vertex: 1, 2, 3, or 4.
+
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    The setAttributeBuffer() function can be used to set the attribute
+    array to an offset within a vertex buffer.
+
+    \sa setAttributeValue(), setUniformValue(), enableAttributeArray()
+    \sa disableAttributeArray(), setAttributeBuffer()
+    \since 4.7
+*/
+void QGLShaderProgram::setAttributeArray
+    (const char *name, GLenum type, const void *values, int tupleSize, int stride)
+{
+    setAttributeArray(attributeLocation(name), type, values, tupleSize, stride);
+}
+
+/*!
+    Sets an array of vertex values on the attribute at \a location
+    in this shader program, starting at a specific \a offset in the
+    currently bound vertex buffer.  The \a stride indicates the number
+    of bytes between vertices.  A default \a stride value of zero
+    indicates that the vertices are densely packed in \a values.
+
+    The \a type indicates the type of elements in the \a values array,
+    usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a tupleSize
+    indicates the number of components per vertex: 1, 2, 3, or 4.
+
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    \sa setAttributeArray()
+    \since 4.7
+*/
+void QGLShaderProgram::setAttributeBuffer
+    (int location, GLenum type, int offset, int tupleSize, int stride)
+{
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
+    if (location != -1) {
+        glVertexAttribPointer(location, tupleSize, type, GL_FALSE, stride,
+                              reinterpret_cast<const void *>(offset));
+    }
+}
+
+/*!
+    \overload
+
+    Sets an array of vertex values on the attribute called \a name
+    in this shader program, starting at a specific \a offset in the
+    currently bound vertex buffer.  The \a stride indicates the number
+    of bytes between vertices.  A default \a stride value of zero
+    indicates that the vertices are densely packed in \a values.
+
+    The \a type indicates the type of elements in the \a values array,
+    usually \c{GL_FLOAT}, \c{GL_UNSIGNED_BYTE}, etc.  The \a tupleSize
+    indicates the number of components per vertex: 1, 2, 3, or 4.
+
+    The array will become active when enableAttributeArray() is called
+    on the \a location.  Otherwise the value specified with
+    setAttributeValue() for \a location will be used.
+
+    \sa setAttributeArray()
+    \since 4.7
+*/
+void QGLShaderProgram::setAttributeBuffer
+    (const char *name, GLenum type, int offset, int tupleSize, int stride)
+{
+    setAttributeBuffer(attributeLocation(name), type, offset, tupleSize, stride);
 }
 
 /*!
@@ -2275,6 +2423,42 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x4& value
     \overload
 
     Sets the uniform variable at \a location in the current context
+    to a 2x2 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.7
+*/
+void QGLShaderProgram::setUniformValue(int location, const GLfloat value[2][2])
+{
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
+    if (location != -1)
+        glUniformMatrix2fv(location, 1, GL_FALSE, value[0]);
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context
+    to a 3x3 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.7
+*/
+void QGLShaderProgram::setUniformValue(int location, const GLfloat value[3][3])
+{
+    Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
+    if (location != -1)
+        glUniformMatrix3fv(location, 1, GL_FALSE, value[0]);
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable at \a location in the current context
     to a 4x4 matrix \a value.  The matrix elements must be specified
     in column-major order.
 
@@ -2286,6 +2470,37 @@ void QGLShaderProgram::setUniformValue(int location, const GLfloat value[4][4])
     Q_UNUSED(d);
     if (location != -1)
         glUniformMatrix4fv(location, 1, GL_FALSE, value[0]);
+}
+
+
+/*!
+    \overload
+
+    Sets the uniform variable called \a name in the current context
+    to a 2x2 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.7
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const GLfloat value[2][2])
+{
+    setUniformValue(uniformLocation(name), value);
+}
+
+/*!
+    \overload
+
+    Sets the uniform variable called \a name in the current context
+    to a 3x3 matrix \a value.  The matrix elements must be specified
+    in column-major order.
+
+    \sa setAttributeValue()
+    \since 4.7
+*/
+void QGLShaderProgram::setUniformValue(const char *name, const GLfloat value[3][3])
+{
+    setUniformValue(uniformLocation(name), value);
 }
 
 /*!
@@ -2911,6 +3126,6 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGL
 }
 #endif
 
-#endif // !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
+#endif // !defined(QT_OPENGL_ES_1)
 
 QT_END_NAMESPACE

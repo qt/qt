@@ -4671,7 +4671,7 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate18setTransformHelperERK10QTransform @ 4670 NONAME
 	_ZN20QGraphicsItemPrivate18subFocusItemChangeEv @ 4671 NONAME
 	_ZN20QGraphicsItemPrivate18updateAncestorFlagEN13QGraphicsItem16GraphicsItemFlagENS_12AncestorFlagEbb @ 4672 NONAME
-	_ZN20QGraphicsItemPrivate19setParentItemHelperEP13QGraphicsItem @ 4673 NONAME
+	_ZN20QGraphicsItemPrivate19setParentItemHelperEP13QGraphicsItem @ 4673 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate20removeExtraItemCacheEv @ 4674 NONAME
 	_ZN20QGraphicsItemPrivate23appendGraphicsTransformEP18QGraphicsTransform @ 4675 NONAME
 	_ZN20QGraphicsItemPrivate25movableAncestorIsSelectedEPK13QGraphicsItem @ 4676 NONAME
@@ -11629,9 +11629,9 @@ EXPORTS
 	_ZN18QTapAndHoldGestureC1EP7QObject @ 11628 NONAME
 	_ZN18QTapAndHoldGestureC2EP7QObject @ 11629 NONAME
 	_ZN19QAbstractScrollArea18setViewportMarginsERK8QMargins @ 11630 NONAME
-	_ZN19QApplicationPrivate20symbianHandleCommandEi @ 11631 NONAME
-	_ZN19QApplicationPrivate21symbianProcessWsEventEPK8TWsEvent @ 11632 NONAME
-	_ZN19QApplicationPrivate21symbianResourceChangeEi @ 11633 NONAME
+	_ZN19QApplicationPrivate20symbianHandleCommandEi @ 11631 NONAME ABSENT
+	_ZN19QApplicationPrivate21symbianProcessWsEventEPK8TWsEvent @ 11632 NONAME ABSENT
+	_ZN19QApplicationPrivate21symbianResourceChangeEi @ 11633 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect12setBlurHintsE6QFlagsINS_8BlurHintEE @ 11634 NONAME
 	_ZN19QGraphicsBlurEffect13setBlurRadiusEf @ 11635 NONAME
 	_ZN19QGraphicsBlurEffect16blurHintsChangedE6QFlagsINS_8BlurHintEE @ 11636 NONAME
@@ -11639,7 +11639,7 @@ EXPORTS
 	_ZN19QGraphicsBlurEffect4drawEP8QPainter @ 11638 NONAME
 	_ZN19QKeyEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11639 NONAME
 	_ZN20QGraphicsItemPrivate18siblingOrderChangeEv @ 11640 NONAME
-	_ZN20QGraphicsItemPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11641 NONAME
+	_ZN20QGraphicsItemPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11641 NONAME ABSENT
 	_ZN21QMouseEventTransition14setHitTestPathERK12QPainterPath @ 11642 NONAME
 	_ZN21QMouseEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11643 NONAME
 	_ZN22QGraphicsOpacityEffect4drawEP8QPainter @ 11644 NONAME
@@ -11784,4 +11784,12 @@ EXPORTS
 	_ZNK14QEglProperties8toStringEv @ 11783 NONAME ABSENT
 	_ZNK11QFontEngine10glyphCacheEPvN21QFontEngineGlyphCache4TypeERK10QTransform @ 11784 NONAME
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectERK6QRectF @ 11785 NONAME
+	_Z12qt_blurImageP8QPainterR6QImagefbbi @ 11786 NONAME
+	_Z12qt_blurImageR6QImagefbi @ 11787 NONAME
+	_Z13qt_halfScaledRK6QImage @ 11788 NONAME
+	_Z14qt_memrotate90PKjiiiPji @ 11789 NONAME
+	_Z17qt_memrotate90_glPKjiiiPji @ 11790 NONAME
+	_ZN19QApplicationPrivate20symbianHandleCommandEPK13QSymbianEvent @ 11791 NONAME
+	_ZN19QApplicationPrivate21symbianProcessWsEventEPK13QSymbianEvent @ 11792 NONAME
+	_ZN19QApplicationPrivate21symbianResourceChangeEPK13QSymbianEvent @ 11793 NONAME
 
