@@ -1281,32 +1281,48 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
 #define QSTATICTEXT_USE_INDEXARRAY
 
-namespace {
-
-    class QOpenGLStaticTextUserData: public QStaticTextUserData
+class QOpenGLStaticTextUserData: public QObject, public QStaticTextUserData
+{
+    Q_OBJECT
+public:
+    QOpenGLStaticTextUserData(QGLContext *glContext)
+        : QStaticTextUserData(OpenGLUserData),
+          vertexCoordVBOId(0), textureCoordVBOId(0), ctx(glContext)
     {
-    public:
-        QOpenGLStaticTextUserData(QGLContext *glContext)
-            : QStaticTextUserData(OpenGLUserData),
-              vertexCoordVBOId(0), textureCoordVBOId(0), ctx(glContext) {}
-        ~QOpenGLStaticTextUserData()
-        {
+        connect(QGLSignalProxy::instance(),
+                SIGNAL(aboutToDestroyContext(const QGLContext*)),
+                SLOT(cleanupGLContextRefs(const QGLContext*)));
+    }
+
+    ~QOpenGLStaticTextUserData()
+    {
+        if (ctx != 0)
+            cleanupGLContextRefs(ctx);
+    }
+
+    QGLContext *ctx;
+    GLuint vertexCoordVBOId;
+    GLuint textureCoordVBOId;       
+
+#if defined(QSTATICTEXT_USE_INDEXARRAY)
+    QVector<GLuint> indices;
+#endif
+
+public Q_SLOTS:
+    void cleanupGLContextRefs(const QGLContext *context)
+    {
+        if (context == ctx) {
             if (vertexCoordVBOId != 0)
                 glDeleteBuffers(1, &vertexCoordVBOId);
 
             if (textureCoordVBOId != 0)
                 glDeleteBuffers(1, &textureCoordVBOId);
+
+            vertexCoordVBOId = 0;
+            textureCoordVBOId = 0;
         }
-
-        QGLContext *ctx;
-        GLuint vertexCoordVBOId;
-        GLuint textureCoordVBOId;
-
-#if defined(QSTATICTEXT_USE_INDEXARRAY)
-        QVector<GLuint> indices;
-#endif
-    };
-}
+    }
+};
 
 void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType,
                                                 QStaticTextItem *staticTextItem,
@@ -2175,3 +2191,5 @@ QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 }
 
 QT_END_NAMESPACE
+
+#include "qpaintengineex_opengl2.moc"
