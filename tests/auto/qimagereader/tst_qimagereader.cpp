@@ -765,6 +765,8 @@ void tst_QImageReader::gifImageCount()
         QVERIFY(io.canRead());
         QImage greenFrame = io.read();
 
+        QVERIFY(io.imageCount() == 4);
+
         QVERIFY(io.canRead());
         QImage blueFrame = io.read();
 
@@ -875,6 +877,11 @@ void tst_QImageReader::gifImageCount()
         QCOMPARE(blueFrame.pixel(0,0), qRgb(0x0, 0x0, 0xff));
         QCOMPARE(blueFrame.size(), QSize(64,64));
         QVERIFY(emptyFrame.isNull());
+    }
+    {
+        QImageReader io(":images/trolltech.gif");
+        QVERIFY(io.imageCount() == 34);
+        QVERIFY(io.size() == QSize(128,64));
     }
 }
 #endif
@@ -1641,10 +1648,16 @@ void tst_QImageReader::pixelCompareWithBaseline()
 {
     QFETCH(QString, fileName);
 
+    static int enteredCount = 0;    // Used for better error diagnostics if something fails. We
+    static int loadFailCount = 0;   // don't know if the reason load() fails is that the plugin
+                                    // does not exist or because of a bug in the plugin. But if at
+                                    // least one file succeeded we know that the plugin was built.
+                                    // The other failures are then real failures.
     QImage icoImg;
     const QString inputFileName(QString::fromAscii("images/%1").arg(fileName));
     QFileInfo fi(inputFileName);
 
+    ++enteredCount;
     // might fail if the plugin does not exist, which is ok.
     if (icoImg.load(inputFileName)) {
         icoImg = icoImg.convertToFormat(QImage::Format_ARGB32_Premultiplied);
@@ -1658,6 +1671,13 @@ void tst_QImageReader::pixelCompareWithBaseline()
         QCOMPARE(int(baseImg.format()), int(icoImg.format()));
         QCOMPARE(baseImg, icoImg);
 #endif
+    } else {
+        ++loadFailCount;
+        if (enteredCount != loadFailCount) {
+            QFAIL("Plugin is built, but some did not load properly");
+        } else {
+            qWarning("loading failed, check if ico plugin is built");
+        }
     }
 }
 

@@ -1439,7 +1439,16 @@ QWidget::~QWidget()
     }
 #endif
 
-    if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
+    if (d->extra && d->extra->topextra && d->extra->topextra->backingStore) {
+        // Okay, we are about to destroy the top-level window that owns
+        // the backing store. Make sure we delete the backing store right away
+        // before the window handle is invalid. This is important because
+        // the backing store will delete its window surface, which may or may
+        // not have a reference to this widget that will be used later to
+        // notify the window it no longer has a surface.
+        delete d->extra->topextra->backingStore;
+        d->extra->topextra->backingStore = 0;
+    } else if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
         bs->removeDirtyWidget(this);
         if (testAttribute(Qt::WA_StaticContents))
             bs->removeStaticWidget(this);
@@ -6414,6 +6423,8 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
         first = fp;
     }
 
+    if (fp == second)
+        return;
 
     if (QWidget *sp = second->focusProxy())
         second = sp;
