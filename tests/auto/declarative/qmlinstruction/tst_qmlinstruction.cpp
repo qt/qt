@@ -65,6 +65,10 @@ void tst_qmlinstruction::dump()
         QmlInstruction i;
         i.line = 0;
         i.type = QmlInstruction::Init;
+        i.init.bindingsSize = 0;
+        i.init.parserStatusSize = 3;
+        i.init.contextCache = -1;
+        i.init.compiledBinding = -1;
         data->bytecode << i;
     }
 
@@ -379,26 +383,17 @@ void tst_qmlinstruction::dump()
     {
         QmlInstruction i;
         i.line = 33;
-        i.type = QmlInstruction::StoreIdOptBinding;
-        i.assignIdOptBinding.property = 27;
-        i.assignIdOptBinding.id = 2;
+        i.type = QmlInstruction::StoreCompiledBinding;
+        i.assignBinding.property = 27;
+        i.assignBinding.value = 2;
+        i.assignBinding.context = 4;
+        i.assignBinding.owner = 0;
         data->bytecode << i;
     }
 
     {
         QmlInstruction i;
         i.line = 34;
-        //i.type = QmlInstruction::StoreObjPropBinding; // removed!
-        i.assignObjPropBinding.property = 28;
-        i.assignObjPropBinding.contextIdx = 3;
-        i.assignObjPropBinding.context = 7;
-        i.assignObjPropBinding.notifyIdx = 4;
-        data->bytecode << i;
-    }
-
-    {
-        QmlInstruction i;
-        i.line = 35;
         i.type = QmlInstruction::StoreValueSource;
         i.assignValueSource.property = 29;
         i.assignValueSource.owner = 1;
@@ -408,7 +403,7 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 36;
+        i.line = 35;
         i.type = QmlInstruction::StoreValueInterceptor;
         i.assignValueInterceptor.property = 30;
         i.assignValueInterceptor.owner = 2;
@@ -418,7 +413,7 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 37;
+        i.line = 36;
         i.type = QmlInstruction::BeginObject;
         i.begin.castValue = 4;
         data->bytecode << i;
@@ -426,28 +421,28 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 38;
+        i.line = 37;
         i.type = QmlInstruction::StoreObjectQmlList;
         data->bytecode << i;
     }
 
     {
         QmlInstruction i;
-        i.line = 39;
+        i.line = 38;
         i.type = QmlInstruction::StoreObjectQList;
         data->bytecode << i;
     }
 
     {
         QmlInstruction i;
-        i.line = 40;
+        i.line = 39;
         i.type = QmlInstruction::AssignObjectList;
         data->bytecode << i;
     }
 
     {
         QmlInstruction i;
-        i.line = 41;
+        i.line = 40;
         i.type = QmlInstruction::FetchAttached;
         i.fetchAttached.id = 23;
         data->bytecode << i;
@@ -455,7 +450,7 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 42;
+        i.line = 41;
         i.type = QmlInstruction::FetchQmlList;
         i.fetchQmlList.property = 31;
         i.fetchQmlList.type = 3;
@@ -464,7 +459,7 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 43;
+        i.line = 42;
         i.type = QmlInstruction::FetchQList;
         i.fetch.property = 32;
         data->bytecode << i;
@@ -472,7 +467,7 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 44;
+        i.line = 43;
         i.type = QmlInstruction::FetchObject;
         i.fetch.property = 33;
         data->bytecode << i;
@@ -480,7 +475,7 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 45;
+        i.line = 44;
         i.type = QmlInstruction::FetchValueType;
         i.fetchValue.property = 34;
         i.fetchValue.type = 6;
@@ -489,21 +484,21 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 46;
+        i.line = 45;
         i.type = QmlInstruction::PopFetchedObject;
         data->bytecode << i;
     }
 
     {
         QmlInstruction i;
-        i.line = 47;
+        i.line = 46;
         i.type = QmlInstruction::PopQList;
         data->bytecode << i;
     }
 
     {
         QmlInstruction i;
-        i.line = 48;
+        i.line = 47;
         i.type = QmlInstruction::PopValueType;
         i.fetchValue.property = 35;
         i.fetchValue.type = 8;
@@ -512,7 +507,7 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 49;
+        i.line = 48;
         i.type = QmlInstruction::Defer;
         i.defer.deferCount = 7;
         data->bytecode << i;
@@ -537,7 +532,7 @@ void tst_qmlinstruction::dump()
     expect 
         << "Index\tLine\tOperation\t\tData1\tData2\tData3\tComments"
         << "-------------------------------------------------------------------------------"
-        << "0\t\t0\tINIT"
+        << "0\t\t0\tINIT\t\t\t0\t3\t-1\t-1"
         << "1\t\t1\tCREATE\t\t\t0\t\t\t\"Test\""
         << "2\t\t2\tSETID\t\t\t0\t\t\t\"testId\""
         << "3\t\t3\tSET_DEFAULT"
@@ -569,26 +564,25 @@ void tst_qmlinstruction::dump()
         << "29\t\t29\tSTORE_SCRIPT_STRING\t24\t3\t1"
         << "30\t\t30\tASSIGN_SIGNAL_OBJECT\t0\t\t\t\"mySignal\""
         << "31\t\t31\tASSIGN_CUSTOMTYPE\t25\t4"
-        << "32\t\t32\tSTORE_COMPILED_BINDING\t26\t3\t2"
-        << "33\t\t33\tSTORE_ID_OPT_BINDING\t27\t2"
-        << "34\t\t34\tSTORE_OBJ_PROP_BINDING\t28\t3\t7\t4"
-        << "35\t\t35\tSTORE_VALUE_SOURCE\t29\t4"
-        << "36\t\t36\tSTORE_VALUE_INTERCEPTOR\t30\t-4"
-        << "37\t\t37\tBEGIN\t\t\t4"
-        << "38\t\t38\tSTORE_OBJECT_QMLLIST"
-        << "39\t\t39\tSTORE_OBJECT_QLIST"
-        << "40\t\t40\tASSIGN_OBJECT_LIST"
-        << "41\t\t41\tFETCH_ATTACHED\t\t23"
-        << "42\t\t42\tFETCH_QMLLIST\t\t31\t3"
-        << "43\t\t43\tFETCH_QLIST\t\t32"
-        << "44\t\t44\tFETCH\t\t\t33"
-        << "45\t\t45\tFETCH_VALUE\t\t34\t6"
-        << "46\t\t46\tPOP"
-        << "47\t\t47\tPOP_QLIST"
-        << "48\t\t48\tPOP_VALUE\t\t35\t8"
-        << "49\t\t49\tDEFER\t\t\t7"
-        << "50\t\tNA\tDEFER\t\t\t7"
-        << "51\t\t50\tXXX UNKOWN INSTRUCTION\t50"
+        << "32\t\t32\tSTORE_BINDING\t26\t3\t2"
+        << "33\t\t33\tSTORE_COMPILED_BINDING\t27\t2\t4"
+        << "34\t\t34\tSTORE_VALUE_SOURCE\t29\t4"
+        << "35\t\t35\tSTORE_VALUE_INTERCEPTOR\t30\t-4"
+        << "36\t\t36\tBEGIN\t\t\t4"
+        << "37\t\t37\tSTORE_OBJECT_QMLLIST"
+        << "38\t\t38\tSTORE_OBJECT_QLIST"
+        << "39\t\t39\tASSIGN_OBJECT_LIST"
+        << "40\t\t40\tFETCH_ATTACHED\t\t23"
+        << "41\t\t41\tFETCH_QMLLIST\t\t31\t3"
+        << "42\t\t42\tFETCH_QLIST\t\t32"
+        << "43\t\t43\tFETCH\t\t\t33"
+        << "44\t\t44\tFETCH_VALUE\t\t34\t6"
+        << "45\t\t45\tPOP"
+        << "46\t\t46\tPOP_QLIST"
+        << "47\t\t47\tPOP_VALUE\t\t35\t8"
+        << "48\t\t48\tDEFER\t\t\t7"
+        << "49\t\tNA\tDEFER\t\t\t7"
+        << "50\t\t50\tXXX UNKOWN INSTRUCTION\t49"
         << "-------------------------------------------------------------------------------";
 
     messages = QStringList();
