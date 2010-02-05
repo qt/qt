@@ -44,6 +44,8 @@
 #include <QtGui/QPainter>
 #include <QtGui/QImage>
 
+#include <QtOpenGl/QGLWidget>
+
 #include <private/qstatictext_p.h>
 #include <private/qstatictext_p_p.h>
 #include <private/qpainter_p.h>
@@ -73,6 +75,11 @@ private slots:
     void projectedPainter();
     void rotatedScaledAndTranslatedPainter();
     void transformationChanged();    
+
+    void drawToGLWidget();
+    void drawToGLWidgetRepeated();
+    void drawToGLWidgetWithCaching();
+    void drawToGLWidgetWithCachingRepeated();
 };
 
 void tst_QStaticText::init()
@@ -429,6 +436,210 @@ void tst_QStaticText::transformationChanged()
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
+
+class MyGLWidget: public QGLWidget
+{
+public:
+    enum PaintEventType {
+        NormalDrawText,
+        NormalDrawStaticText,
+        DrawStaticTextWithCaching
+    };
+
+    MyGLWidget(PaintEventType paintEventType, QWidget *parent = 0)
+        : QGLWidget(parent), m_paintEventType(paintEventType)
+    {
+        m_staticText.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        if (m_paintEventType == DrawStaticTextWithCaching)
+            m_staticText.setUseBackendOptimizations(true);
+        shown = false;
+    }
+
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter painter(this);
+        painter.fillRect(rect(), Qt::white);
+        switch (m_paintEventType) {
+        case NormalDrawStaticText:
+        case DrawStaticTextWithCaching:
+            qt_draw_static_text(&painter, QPointF(11, 12), m_staticText);
+            break;
+        case NormalDrawText:
+            painter.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+            break;
+        };
+        shown = true;
+    }
+
+    bool shown;
+
+private:
+    QStaticText m_staticText;
+    PaintEventType m_paintEventType;
+};
+
+void tst_QStaticText::drawToGLWidget()
+{
+    QImage imageDrawText;
+    {
+        MyGLWidget glWidget(MyGLWidget::NormalDrawText);
+        glWidget.show();
+        while (!glWidget.shown)
+            QApplication::processEvents();
+        imageDrawText = glWidget.grabFrameBuffer();
+    }
+
+    QImage imageDrawStaticText;
+    {
+        MyGLWidget glWidget(MyGLWidget::NormalDrawStaticText);
+        glWidget.show();
+        while (!glWidget.shown)
+            QApplication::processEvents();
+        imageDrawStaticText = glWidget.grabFrameBuffer();
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawToGLWidget_imageDrawText.png");
+    imageDrawStaticText.save("drawToGLWidget_imageDrawStaticText.png");
+#endif
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::drawToGLWidgetWithCaching()
+{
+    QImage imageDrawText;
+    {
+        MyGLWidget glWidget(MyGLWidget::NormalDrawText);
+        glWidget.show();
+        while (!glWidget.shown)
+            QApplication::processEvents();
+        imageDrawText = glWidget.grabFrameBuffer();
+    }
+
+    QImage imageDrawStaticText;
+    {
+        MyGLWidget glWidget(MyGLWidget::DrawStaticTextWithCaching);
+        glWidget.show();
+        while (!glWidget.shown)
+            QApplication::processEvents();
+        imageDrawStaticText = glWidget.grabFrameBuffer();
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawToGLWidgetWithCaching_imageDrawText.png");
+    imageDrawStaticText.save("drawToGLWidgetWithCaching_imageDrawStaticText.png");
+#endif
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::drawToGLWidgetWithCachingRepeated()
+{    
+    QImage imageDrawText;
+    MyGLWidget glWidgetNormal(MyGLWidget::NormalDrawText);
+
+    {
+        glWidgetNormal.show();
+        while (!glWidgetNormal.shown)
+            QApplication::processEvents();
+        imageDrawText = glWidgetNormal.grabFrameBuffer();
+    }
+
+    QImage imageDrawStaticText;
+    MyGLWidget glWidgetAbnormal(MyGLWidget::DrawStaticTextWithCaching);
+    {
+
+        glWidgetAbnormal.show();
+        while (!glWidgetAbnormal.shown)
+            QApplication::processEvents();
+        imageDrawStaticText = glWidgetAbnormal.grabFrameBuffer();
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawToGLWidgetWithCachingRepeated_imageDrawText1.png");
+    imageDrawStaticText.save("drawToGLWidgetWithCachingRepeated_imageDrawStaticText1.png");
+#endif
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+
+    {
+        glWidgetNormal.shown = false;
+        glWidgetNormal.update();
+        while (!glWidgetNormal.shown)
+            QApplication::processEvents();
+        imageDrawText = glWidgetNormal.grabFrameBuffer();
+    }
+
+    {
+        glWidgetAbnormal.shown = false;
+        glWidgetAbnormal.update();
+        while (!glWidgetAbnormal.shown)
+            QApplication::processEvents();
+        imageDrawStaticText = glWidgetAbnormal.grabFrameBuffer();
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawToGLWidgetWithCachingRepeated_imageDrawText2.png");
+    imageDrawStaticText.save("drawToGLWidgetWithCachingRepeated_imageDrawStaticText2.png");
+#endif
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::drawToGLWidgetRepeated()
+{
+    QImage imageDrawText;
+    MyGLWidget glWidgetNormal(MyGLWidget::NormalDrawText);
+
+    {
+        glWidgetNormal.show();
+        while (!glWidgetNormal.shown)
+            QApplication::processEvents();
+        imageDrawText = glWidgetNormal.grabFrameBuffer();
+    }
+
+    QImage imageDrawStaticText;
+    MyGLWidget glWidgetAbnormal(MyGLWidget::NormalDrawStaticText);
+    {
+
+        glWidgetAbnormal.show();
+        while (!glWidgetAbnormal.shown)
+            QApplication::processEvents();
+        imageDrawStaticText = glWidgetAbnormal.grabFrameBuffer();
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawToGLWidgetWithCachingRepeated_imageDrawText1.png");
+    imageDrawStaticText.save("drawToGLWidgetWithCachingRepeated_imageDrawStaticText1.png");
+#endif
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+
+    {
+        glWidgetNormal.shown = false;
+        glWidgetNormal.update();
+        while (!glWidgetNormal.shown)
+            QApplication::processEvents();
+        imageDrawText = glWidgetNormal.grabFrameBuffer();
+    }
+
+    {
+        glWidgetAbnormal.shown = false;
+        glWidgetAbnormal.update();
+        while (!glWidgetAbnormal.shown)
+            QApplication::processEvents();
+        imageDrawStaticText = glWidgetAbnormal.grabFrameBuffer();
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("drawToGLWidgetWithCachingRepeated_imageDrawText2.png");
+    imageDrawStaticText.save("drawToGLWidgetWithCachingRepeated_imageDrawStaticText2.png");
+#endif
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
 
 QTEST_MAIN(tst_QStaticText)
 #include "tst_qstatictext.moc"
