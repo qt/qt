@@ -162,7 +162,9 @@ typedef short INT16;
 #ifndef _BASETSD_H_		/* Microsoft defines it in basetsd.h */
 #ifndef _BASETSD_H		/* MinGW is slightly different */
 #ifndef QGLOBAL_H		/* Qt defines it in qglobal.h */
+#ifndef VXWORKS
 typedef long INT32;
+#endif
 #endif
 #endif
 #endif
@@ -187,6 +189,9 @@ typedef unsigned int JDIMENSION;
  * or code profilers that require it.
  */
 
+#if defined(VXWORKS) && defined(LOCAL)
+#undef LOCAL
+#endif
 /* a function called through method pointers: */
 #define METHODDEF(type)		static type
 /* a function used only in its module: */
@@ -273,7 +278,7 @@ typedef int boolean;
 
 /* Encoder capability options: */
 
-#define C_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
+#undef  C_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
 #define C_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
 #define C_PROGRESSIVE_SUPPORTED	    /* Progressive JPEG? (Requires MULTISCAN)*/
 #define DCT_SCALING_SUPPORTED	    /* Input rescaling via DCT? (Requires DCT_ISLOW)*/
@@ -290,7 +295,7 @@ typedef int boolean;
 
 /* Decoder capability options: */
 
-#define D_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
+#undef  D_ARITH_CODING_SUPPORTED    /* Arithmetic coding back end? */
 #define D_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
 #define D_PROGRESSIVE_SUPPORTED	    /* Progressive JPEG? (Requires MULTISCAN)*/
 #define IDCT_SCALING_SUPPORTED	    /* Output rescaling via IDCT? */
