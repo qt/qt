@@ -51,7 +51,7 @@
 #include "../../../shared/util.h"
 
 /*
-This test case covers QML language issues.  This covers everything that does 
+This test case covers QML language issues.  This covers everything that does not
 involve evaluating ECMAScript expressions and bindings.
 
 Evaluation of expressions and bindings is covered in qmlecmascript
@@ -141,7 +141,7 @@ private:
         QVERIFY(!component.isError()); \
         QVERIFY(component.errors().isEmpty()); \
     } else { \
-        QFile file(QLatin1String("data/") + QLatin1String(errorfile)); \
+        QFile file(QLatin1String(SRCDIR) + QLatin1String("/data/") + QLatin1String(errorfile)); \
         QVERIFY(file.open(QIODevice::ReadOnly)); \
         QByteArray data = file.readAll(); \
         file.close(); \

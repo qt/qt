@@ -1,11 +1,11 @@
 import Qt 4.6
 
 Rectangle {
-    property var myinput: input
+    property var myInput: input
 
     width: 800; height: 600; color: "blue"
 
-    Textinput { id: input; focus: true
+    TextInput { id: input; focus: true
         readOnly: true
         text: "I am the very model of a modern major general.\n"
     }

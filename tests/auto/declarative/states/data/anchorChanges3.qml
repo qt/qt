@@ -5,17 +5,17 @@ Rectangle {
     width: 200; height: 200
     Rectangle {
         id: myRect
-        objectName: "myRect"
+        objectName: "MyRect"
         color: "green";
         anchors.left: parent.left
         anchors.right: rightGuideline.left
         anchors.top: topGuideline.top
         anchors.bottom: container.bottom
     }
-    Item { objectName: "leftGuideline"; id: leftGuideline; x: 10 }
+    Item { objectName: "LeftGuideline"; id: leftGuideline; x: 10 }
     Item { id: rightGuideline; x: 150 }
     Item { id: topGuideline; y: 10 }
-    Item { objectName: "bottomGuideline"; id: bottomGuideline; y: 150 }
+    Item { objectName: "BottomGuideline"; id: bottomGuideline; y: 150 }
     states: State {
         name: "reanchored"
         AnchorChanges {

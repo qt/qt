@@ -627,9 +627,9 @@ void tst_qmlgraphicstextedit::cursorDelegate()
 void tst_qmlgraphicstextedit::delegateLoading()
 {
     TestHTTPServer server(42332);
-    server.serveDirectory("data/httpfail", TestHTTPServer::Disconnect);
-    server.serveDirectory("data/httpslow", TestHTTPServer::Delay);
-    server.serveDirectory("data/http");
+    server.serveDirectory(SRCDIR "/data/httpfail", TestHTTPServer::Disconnect);
+    server.serveDirectory(SRCDIR "/data/httpslow", TestHTTPServer::Delay);
+    server.serveDirectory(SRCDIR "/data/http");
     QmlView* view = new QmlView(0);
     view->setUrl(QUrl("http://localhost:42332/cursorHttpTestPass.qml"));
     view->execute();
