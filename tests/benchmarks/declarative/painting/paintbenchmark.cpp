@@ -54,7 +54,7 @@
 #endif
 
 int iterations = 20;
-const int count = 6;
+const int count = 600;
 const int lines = 12;
 const int spacing = 36;
 QSizeF size(1000, 800);
