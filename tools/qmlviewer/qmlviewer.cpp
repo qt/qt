@@ -364,7 +364,7 @@ public:
         } else {
             manager->setCache(0);
         }
-        qDebug() << "created new manager for" << parent;
+        qDebug() << "created new network access manager for" << parent;
         return manager;
     }
 

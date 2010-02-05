@@ -53,13 +53,13 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QmlEngine;
 class QNetworkReply;
+class QmlImageReader;
 
 class QmlPixmapReplyPrivate;
 class Q_DECLARATIVE_EXPORT QmlPixmapReply : public QObject
 {
     Q_OBJECT
 public:
-    QmlPixmapReply(QmlEngine *engine, const QUrl &url);
     ~QmlPixmapReply();
 
     enum Status { Ready, Error, Unrequested, Loading };
@@ -81,6 +81,7 @@ private:
     void setLoading();
 
 private:
+    QmlPixmapReply(QmlImageReader *reader, const QUrl &url);
     Q_DISABLE_COPY(QmlPixmapReply)
     Q_DECLARE_PRIVATE(QmlPixmapReply)
     friend class QmlImageRequestHandler;

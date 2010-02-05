@@ -113,10 +113,12 @@ private:
     QMutex mutex;
 
     static QHash<QmlEngine *,QmlImageReader*> readers;
+    static QMutex readerMutex;
     friend class QmlImageRequestHandler;
 };
 
 QHash<QmlEngine *,QmlImageReader*> QmlImageReader::readers;
+QMutex QmlImageReader::readerMutex;
 
 
 class QmlImageRequestHandler : public QObject
@@ -252,19 +254,23 @@ QmlImageReader::QmlImageReader(QmlEngine *eng)
 
 QmlImageReader::~QmlImageReader()
 {
+    quit();
+    wait();
+    readerMutex.lock();
+    readers.remove(engine);
+    readerMutex.unlock();
     delete handler;
 }
 
 QmlImageReader *QmlImageReader::instance(QmlEngine *engine)
 {
+    readerMutex.lock();
     QmlImageReader *reader = readers.value(engine);
     if (!reader) {
-        static QMutex rmutex;
-        rmutex.lock();
         reader = new QmlImageReader(engine);
         readers.insert(engine, reader);
-        rmutex.unlock();
     }
+    readerMutex.unlock();
 
     return reader;
 }
@@ -272,7 +278,7 @@ QmlImageReader *QmlImageReader::instance(QmlEngine *engine)
 QmlPixmapReply *QmlImageReader::getImage(const QUrl &url)
 {
     mutex.lock();
-    QmlPixmapReply *reply = new QmlPixmapReply(engine, url);
+    QmlPixmapReply *reply = new QmlPixmapReply(this, url);
     jobs.append(reply);
     if (jobs.count() == 1 && handler)
         QCoreApplication::postEvent(handler, new QEvent(QEvent::User));
@@ -378,8 +384,8 @@ class QmlPixmapReplyPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlPixmapReply)
 
 public:
-    QmlPixmapReplyPrivate(QmlEngine *e, const QUrl &u)
-        : QObjectPrivate(), refCount(1), url(u), status(QmlPixmapReply::Loading), loading(false), engine(e) {
+    QmlPixmapReplyPrivate(QmlImageReader *r, const QUrl &u)
+        : QObjectPrivate(), refCount(1), url(u), status(QmlPixmapReply::Loading), loading(false), reader(r) {
     }
 
     int refCount;
@@ -387,12 +393,12 @@ public:
     QPixmap pixmap; // ensure reference to pixmap so QPixmapCache does not discard
     QmlPixmapReply::Status status;
     bool loading;
-    QmlEngine *engine;
+    QmlImageReader *reader;
 };
 
 
-QmlPixmapReply::QmlPixmapReply(QmlEngine *engine, const QUrl &url)
-  : QObject(*new QmlPixmapReplyPrivate(engine, url), 0)
+QmlPixmapReply::QmlPixmapReply(QmlImageReader *reader, const QUrl &url)
+  : QObject(*new QmlPixmapReplyPrivate(reader, url), 0)
 {
 }
 
@@ -459,7 +465,7 @@ bool QmlPixmapReply::release(bool defer)
     if (d->refCount == 0) {
         qmlActivePixmapReplies()->remove(d->url);
         if (d->status == Loading && !d->loading)
-            QmlImageReader::instance(d->engine)->cancel(this);
+            d->reader->cancel(this);
         if (defer)
             deleteLater();
         else
@@ -468,7 +474,7 @@ bool QmlPixmapReply::release(bool defer)
     } else if (d->refCount == 1 && d->loading) {
         // The only reference left is the reader thread.
         qmlActivePixmapReplies()->remove(d->url);
-        QmlImageReader::instance(d->engine)->cancel(this);
+        d->reader->cancel(this);
     }
 
     return false;

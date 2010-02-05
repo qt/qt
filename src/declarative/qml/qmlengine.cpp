@@ -399,6 +399,8 @@ QmlContext *QmlEngine::rootContext()
     By implementing a factory it is possible to create custom
     QNetworkAccessManager with specialized caching, proxy and
     cookie support.
+
+    The factory must be set before exceuting the engine.
 */
 void QmlEngine::setNetworkAccessManagerFactory(QmlNetworkAccessManagerFactory *factory)
 {
