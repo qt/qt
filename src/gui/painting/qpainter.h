@@ -522,7 +522,6 @@ private:
     friend class QRasterPaintEngine;
     friend class QAlphaPaintEngine;
     friend class QPreviewPaintEngine;
-    friend class QPainterPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QPainter::RenderHints)
