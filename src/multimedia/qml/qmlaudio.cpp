@@ -86,8 +86,13 @@ QmlAudio::~QmlAudio()
 */
 
 void QmlAudio::play()
-{
+{    
     m_playerControl->play();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -99,6 +104,11 @@ void QmlAudio::play()
 void QmlAudio::pause()
 {
     m_playerControl->pause();
+
+    if (!m_paused && m_state == QMediaPlayer::PausedState) {
+        m_paused = true;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -110,6 +120,11 @@ void QmlAudio::pause()
 void QmlAudio::stop()
 {
     m_playerControl->stop();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 /*!

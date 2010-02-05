@@ -132,28 +132,33 @@ private:
 void QmlMediaBase::_q_stateChanged(QMediaPlayer::State state)
 {
     if (state != m_state) {
-        QMediaPlayer::State oldState = state;
+        QMediaPlayer::State oldState = m_state;
 
         m_state = state;
 
-        switch (state) {
-        case QMediaPlayer::PlayingState:
-            if (oldState == QMediaPlayer::StoppedState)
-                emit started();
-            else if (oldState == QMediaPlayer::PausedState)
-                emit resumed();
-            break;
-        case QMediaPlayer::PausedState:
-            emit paused();
-        case QMediaPlayer::StoppedState:
+        if (state == QMediaPlayer::StoppedState) {
             emit stopped();
-            break;
-        default:
-            break;
+            emit playingChanged();
+        } else if (oldState == QMediaPlayer::StoppedState) {
+            emit started();
+            emit playingChanged();
+        } else if (oldState  == QMediaPlayer::PausedState) {
+            m_paused = false;
+
+            emit resumed();
+            emit pausedChanged();
         }
 
-        emit playingChanged();
-        emit pausedChanged();
+        if (state == m_state && state == QMediaPlayer::PausedState) {
+            bool wasPaused = m_paused;
+
+            m_paused = true;
+
+            emit paused();
+
+            if (!wasPaused)
+                emit pausedChanged();
+        }
 
         if (m_state == QMediaPlayer::PlayingState
                 || m_status == QMediaPlayer::BufferingMedia
@@ -218,6 +223,7 @@ QmlMediaBase::QmlMediaBase()
     , m_state(QMediaPlayer::StoppedState)
     , m_status(QMediaPlayer::NoMedia)
     , m_error(QMediaPlayer::NoError)
+    , m_paused(false)
 {
 }
 
@@ -312,23 +318,34 @@ bool QmlMediaBase::isPlaying() const
 
 void QmlMediaBase::setPlaying(bool playing)
 {
-    if (playing && m_state == QMediaPlayer::StoppedState)
-        m_playerControl->play();
-    else if (!playing)
+    if (playing && m_state == QMediaPlayer::StoppedState) {
+        if (m_paused)
+            m_playerControl->pause();
+        else
+            m_playerControl->play();
+    } else if (!playing) {
         m_playerControl->stop();
+    }
 }
 
 bool QmlMediaBase::isPaused() const
 {
-    return m_state == QMediaPlayer::PausedState;
+    return m_paused;
 }
 
 void QmlMediaBase::setPaused(bool paused)
 {
-    if (paused && m_state == QMediaPlayer::PlayingState)
-        m_playerControl->pause();
-    if (!paused && m_state == QMediaPlayer::PausedState)
-        m_playerControl->play();
+    if (m_paused != paused) {
+        if (paused && m_state == QMediaPlayer::PlayingState) {
+            m_playerControl->pause();
+        } else if (!paused && m_state == QMediaPlayer::PausedState) {
+            m_playerControl->play();
+        } else {
+            m_paused = paused;
+
+            emit pausedChanged();
+        }
+    }
 }
 
 int QmlMediaBase::duration() const

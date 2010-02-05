@@ -338,6 +338,11 @@ void QmlGraphicsVideo::setFillMode(FillMode mode)
 void QmlGraphicsVideo::play()
 {
     m_playerControl->play();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -349,6 +354,11 @@ void QmlGraphicsVideo::play()
 void QmlGraphicsVideo::pause()
 {
     m_playerControl->pause();
+
+    if (!m_paused && m_state == QMediaPlayer::PausedState) {
+        m_paused = true;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -360,6 +370,11 @@ void QmlGraphicsVideo::pause()
 void QmlGraphicsVideo::stop()
 {
     m_playerControl->stop();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 void QmlGraphicsVideo::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)

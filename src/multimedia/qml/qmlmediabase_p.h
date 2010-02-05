@@ -145,6 +145,7 @@ protected:
     QMediaPlayer::State m_state;
     QMediaPlayer::MediaStatus m_status;
     QMediaPlayer::Error m_error;
+    bool m_paused;
     QString m_errorString;
 
     friend class QmlMediaBaseAnimation;
