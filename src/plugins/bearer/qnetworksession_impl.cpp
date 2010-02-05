@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,9 +40,9 @@
 ****************************************************************************/
 
 #include "qnetworksession_impl.h"
+#include "qnetworksessionengine_impl.h"
 
 #include <QtNetwork/qnetworksession.h>
-#include <QtNetwork/private/qnetworksessionengine_p.h>
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
 
 #include <QtCore/qstringlist.h>
@@ -53,13 +53,14 @@
 
 QT_BEGIN_NAMESPACE
 
-static QNetworkSessionEngine *getEngineFromId(const QString &id)
+static QNetworkSessionEngineImpl *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
     foreach (QNetworkSessionEngine *engine, priv->sessionEngines) {
-        if (engine->hasIdentifier(id))
-            return engine;
+        QNetworkSessionEngineImpl *engineImpl = qobject_cast<QNetworkSessionEngineImpl *>(engine);
+        if (engineImpl && engineImpl->hasIdentifier(id))
+            return engineImpl;
     }
 
     return 0;
@@ -110,8 +111,8 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
 
-    qRegisterMetaType<QNetworkSessionEngine::ConnectionError>
-        ("QNetworkSessionEngine::ConnectionError");
+    qRegisterMetaType<QNetworkSessionEngineImpl::ConnectionError>
+        ("QNetworkSessionEngineImpl::ConnectionError");
 
     switch (publicConfig.type()) {
     case QNetworkConfiguration::InternetAccessPoint:
@@ -238,14 +239,6 @@ QVariant QNetworkSessionPrivateImpl::sessionProperty(const QString& /*key*/) con
 void QNetworkSessionPrivateImpl::setSessionProperty(const QString& /*key*/, const QVariant& /*value*/)
 {
 }
-
-/*QString QNetworkSessionPrivateImpl::bearerName() const
-{
-    if (!publicConfig.isValid() || !engine)
-        return QString();
-
-    return engine->bearerName(activeConfig.identifier());
-}*/
 
 QString QNetworkSessionPrivateImpl::errorString() const
 {
@@ -414,18 +407,19 @@ void QNetworkSessionPrivateImpl::forcedSessionClose(const QNetworkConfiguration 
     }
 }
 
-void QNetworkSessionPrivateImpl::connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error)
+void QNetworkSessionPrivateImpl::connectionError(const QString &id,
+                                                 QNetworkSessionEngineImpl::ConnectionError error)
 {
     if (activeConfig.identifier() == id) {
         networkConfigurationsChanged();
         switch (error) {
-        case QNetworkSessionEngine::OperationNotSupported:
+        case QNetworkSessionEngineImpl::OperationNotSupported:
             lastError = QNetworkSession::OperationNotSupportedError;
             opened = false;
             break;
-        case QNetworkSessionEngine::InterfaceLookupError:
-        case QNetworkSessionEngine::ConnectError:
-        case QNetworkSessionEngine::DisconnectionError:
+        case QNetworkSessionEngineImpl::InterfaceLookupError:
+        case QNetworkSessionEngineImpl::ConnectError:
+        case QNetworkSessionEngineImpl::DisconnectionError:
         default:
             lastError = QNetworkSession::UnknownSessionError;
         }

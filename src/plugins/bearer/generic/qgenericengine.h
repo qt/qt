@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,7 @@
 #ifndef QGENERICENGINE_H
 #define QGENERICENGINE_H
 
-#include <QtNetwork/private/qnetworksessionengine_p.h>
+#include "../qnetworksessionengine_impl.h"
 
 #include <QMap>
 #include <QTimer>
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkConfigurationPrivate;
 class QNetworkSessionPrivate;
 
-class QGenericEngine : public QNetworkSessionEngine
+class QGenericEngine : public QNetworkSessionEngineImpl
 {
     Q_OBJECT
 

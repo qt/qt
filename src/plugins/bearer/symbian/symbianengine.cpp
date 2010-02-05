@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -156,33 +156,11 @@ SymbianEngine::~SymbianEngine()
     delete ipCommsDB;
 }
 
-QString SymbianEngine::getInterfaceFromId(const QString &id)
-{
-    qFatal("getInterfaceFromId(%s) not implemented\n", qPrintable(id));
-    return QString();
-}
-
 bool SymbianEngine::hasIdentifier(const QString &id)
 {
     return accessPointConfigurations.contains(id) ||
            snapConfigurations.contains(id) ||
            userChoiceConfigurations.contains(id);
-}
-
-void SymbianEngine::connectToId(const QString &id)
-{
-    qFatal("connectToId(%s) not implemented\n", qPrintable(id));
-}
-
-void SymbianEngine::disconnectFromId(const QString &id)
-{
-    qFatal("disconnectFromId(%s) not implemented\n", qPrintable(id));
-}
-
-QNetworkSession::State SymbianEngine::sessionStateForId(const QString &id)
-{
-    qFatal("sessionStateForId(%s) not implemented\n", qPrintable(id));
-    return QNetworkSession::Invalid;
 }
 
 QNetworkConfigurationManager::Capabilities SymbianEngine::capabilities() const

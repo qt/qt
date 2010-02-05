@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,7 @@
 #ifndef QCOREWLANENGINE_H
 #define QCOREWLANENGINE_H
 
-#include <QtNetwork/private/qnetworksessionengine_p.h>
+#include "../qnetworksessionengine_impl.h"
 
 #include <QMap>
 #include <QTimer>
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
 
-class QCoreWlanEngine : public QNetworkSessionEngine
+class QCoreWlanEngine : public QNetworkSessionEngineImpl
 {
     Q_OBJECT
 

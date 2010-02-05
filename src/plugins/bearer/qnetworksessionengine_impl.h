@@ -39,66 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QNATIVEWIFIENGINE_P_H
-#define QNATIVEWIFIENGINE_P_H
+#ifndef QNETWORKSESSIONENGINE_IMPL_H
+#define QNETWORKSESSIONENGINE_IMPL_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "../qnetworksessionengine_impl.h"
-
-#include <QtCore/qtimer.h>
+#include <QtNetwork/private/qnetworksessionengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkConfigurationPrivate;
-struct WLAN_NOTIFICATION_DATA;
-
-class QNativeWifiEngine : public QNetworkSessionEngineImpl
+class QNetworkSessionEngineImpl : public QNetworkSessionEngine
 {
     Q_OBJECT
 
 public:
-    QNativeWifiEngine(QObject *parent = 0);
-    ~QNativeWifiEngine();
+    enum ConnectionError {
+        InterfaceLookupError = 0,
+        ConnectError,
+        OperationNotSupported,
+        DisconnectionError,
+    };
 
-    QString getInterfaceFromId(const QString &id);
-    bool hasIdentifier(const QString &id);
+    QNetworkSessionEngineImpl(QObject *parent = 0) : QNetworkSessionEngine(parent) { }
+    ~QNetworkSessionEngineImpl() { }
 
-    //QString bearerName(const QString &id);
+    virtual void connectToId(const QString &id) = 0;
+    virtual void disconnectFromId(const QString &id) = 0;
 
-    void connectToId(const QString &id);
-    void disconnectFromId(const QString &id);
+    virtual QString getInterfaceFromId(const QString &id) = 0;
 
-    void requestUpdate();
+    virtual QNetworkSession::State sessionStateForId(const QString &id) = 0;
 
-    QNetworkSession::State sessionStateForId(const QString &id);
-
-    QNetworkConfigurationManager::Capabilities capabilities() const;
-
-    QNetworkSessionPrivate *createSessionBackend();
-
-    QNetworkConfigurationPrivatePointer defaultConfiguration();
-
-    inline bool available() const { return handle != 0; }
-
-public Q_SLOTS:
-    void scanComplete();
-
-private:
-    QTimer pollTimer;
-
-    Qt::HANDLE handle;
+Q_SIGNALS:
+    void connectionError(const QString &id, ConnectionError error);
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QNETWORKSESSIONENGINE_IMPL_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,27 +73,12 @@ class Q_NETWORK_EXPORT QNetworkSessionEngine : public QObject
     Q_OBJECT
 
 public:
-    enum ConnectionError {
-        InterfaceLookupError = 0,
-        ConnectError,
-        OperationNotSupported,
-        DisconnectionError,
-    };
-
     QNetworkSessionEngine(QObject *parent = 0);
     virtual ~QNetworkSessionEngine();
 
-    virtual QString getInterfaceFromId(const QString &id) = 0;
     virtual bool hasIdentifier(const QString &id) = 0;
 
-    //virtual QString bearerName(const QString &id) = 0;
-
-    virtual void connectToId(const QString &id) = 0;
-    virtual void disconnectFromId(const QString &id) = 0;
-
     virtual void requestUpdate() = 0;
-
-    virtual QNetworkSession::State sessionStateForId(const QString &id) = 0;
 
     virtual QNetworkConfigurationManager::Capabilities capabilities() const = 0;
 
@@ -115,8 +100,6 @@ Q_SIGNALS:
     void configurationChanged(QNetworkConfigurationPrivatePointer config);
 
     void updateCompleted();
-
-    void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
 };
 
 typedef QNetworkSessionEngine QBearerEngine;

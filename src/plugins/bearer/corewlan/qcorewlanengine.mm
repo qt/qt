@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,7 +106,7 @@ static QString qGetInterfaceType(const QString &interfaceString)
 }
 
 QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
-:   QNetworkSessionEngine(parent)
+:   QNetworkSessionEngineImpl(parent)
 {
     connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
     pollTimer.setInterval(10000);

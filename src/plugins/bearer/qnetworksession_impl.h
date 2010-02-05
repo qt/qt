@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,15 +53,16 @@
 // We mean it.
 //
 
+#include "qnetworksessionengine_impl.h"
+
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
-#include <QtNetwork/private/qnetworksessionengine_p.h>
 #include <QtNetwork/private/qnetworksession_p.h>
 
 #include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkSessionEngine;
+class QNetworkSessionEngineImpl;
 
 class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 {
@@ -109,7 +110,7 @@ private Q_SLOTS:
     void networkConfigurationsChanged();
     void configurationChanged(const QNetworkConfiguration &config);
     void forcedSessionClose(const QNetworkConfiguration &config);
-    void connectionError(const QString &id, QNetworkSessionEngine::ConnectionError error);
+    void connectionError(const QString &id, QNetworkSessionEngineImpl::ConnectionError error);
 
 private:
     QNetworkConfigurationManager manager;
@@ -120,7 +121,7 @@ private:
 
     bool opened;
 
-    QNetworkSessionEngine *engine;
+    QNetworkSessionEngineImpl *engine;
 
     QNetworkSession::SessionError lastError;
 
