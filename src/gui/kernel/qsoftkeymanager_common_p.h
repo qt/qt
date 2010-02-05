@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QSOFTKEYMANAGER_COMMON_P_H
+#define QSOFTKEYMANAGER_COMMON_P_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -50,32 +53,30 @@
 // We mean it.
 //
 
-#ifdef QT_MAC_USE_COCOA
-#include "qmacdefines_mac.h"
-#import <Cocoa/Cocoa.h>
-#include <private/qapplication_p.h>
-#include <private/qbackingstore_p.h>
+QT_BEGIN_HEADER
 
+#ifndef QT_NO_SOFTKEYMANAGER
 
-enum { QtMacCustomizeWindow = 1 << 21 }; // This will one day be run over by
+QT_BEGIN_NAMESPACE
 
-QT_FORWARD_DECLARE_CLASS(QWidget);
-QT_FORWARD_DECLARE_CLASS(QStringList);
+class QSoftKeyManagerPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QSoftKeyManager)
 
-@interface NSWindow (QtCoverForHackWithCategory)
-+ (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
-@end
+public:
+    virtual void updateSoftKeys_sys() {};
 
-@interface NSWindow (QT_MANGLE_NAMESPACE(QWidgetIntegration))
-- (id)QT_MANGLE_NAMESPACE(qt_initWithQWidget):(QWidget *)widget contentRect:(NSRect)rect styleMask:(NSUInteger)mask;
-- (QWidget *)QT_MANGLE_NAMESPACE(qt_qwidget);
-@end
+protected:
+    static QSoftKeyManager *self;
+    QHash<QAction*, Qt::Key> keyedActions;
+    QMultiHash<int, QAction*> requestedSoftKeyActions;
 
-@interface QT_MANGLE_NAMESPACE(QCocoaWindow) : NSWindow {
-    bool leftButtonIsRightButton;
-}
+};
 
-+ (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
-@end
-#endif
+QT_END_NAMESPACE
 
+#endif //QT_NO_SOFTKEYMANAGER
+
+QT_END_HEADER
+
+#endif // QSOFTKEYMANAGER_COMMON_P_H
