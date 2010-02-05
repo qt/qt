@@ -264,6 +264,12 @@ void QmlMediaBase::setObject(QObject *object)
                 object, SIGNAL(volumeChanged()));
         QObject::connect(m_playerControl, SIGNAL(mutedChanged(bool)),
                 object, SIGNAL(mutedChanged()));
+        QObject::connect(m_playerControl, SIGNAL(bufferStatusChanged(int)),
+                object, SIGNAL(bufferProgressChanged()));
+        QObject::connect(m_playerControl, SIGNAL(seekableChanged(bool)),
+                object, SIGNAL(seekableChanged()));
+        QObject::connect(m_playerControl, SIGNAL(playbackRateChanged(qreal)),
+                object, SIGNAL(playbackRateChanged()));
 
         m_animation = new QmlMediaBaseAnimation(this);
     } else {
