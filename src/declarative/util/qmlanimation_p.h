@@ -353,8 +353,7 @@ public:
 
 class Q_AUTOTEST_EXPORT QmlVector3dAnimation : public QmlPropertyAnimation
 {
-
-	Q_OBJECT
+    Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPropertyAnimation)
 
     Q_PROPERTY(QVector3D from READ from WRITE setFrom NOTIFY fromChanged)
