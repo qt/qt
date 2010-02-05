@@ -51,6 +51,18 @@ QGstVideoBuffer::QGstVideoBuffer(GstBuffer *buffer, int bytesPerLine)
     gst_buffer_ref(m_buffer);
 }
 
+QGstVideoBuffer::QGstVideoBuffer(GstBuffer *buffer, int bytesPerLine,
+                QGstVideoBuffer::HandleType handleType,
+                const QVariant &handle)
+    : QAbstractVideoBuffer(handleType)
+    , m_buffer(buffer)
+    , m_bytesPerLine(bytesPerLine)
+    , m_mode(NotMapped)
+    , m_handle(handle)
+{
+    gst_buffer_ref(m_buffer);
+}
+
 QGstVideoBuffer::~QGstVideoBuffer()
 {
     gst_buffer_unref(m_buffer);
