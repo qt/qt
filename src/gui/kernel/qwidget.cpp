@@ -1448,7 +1448,8 @@ QWidget::~QWidget()
         // notify the window it no longer has a surface.
         delete d->extra->topextra->backingStore;
         d->extra->topextra->backingStore = 0;
-    } else if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
+    }
+    if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
         bs->removeDirtyWidget(this);
         if (testAttribute(Qt::WA_StaticContents))
             bs->removeStaticWidget(this);
