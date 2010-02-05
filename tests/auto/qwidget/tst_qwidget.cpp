@@ -9702,50 +9702,50 @@ void tst_QWidget::fullScreenWindowModeTransitions()
     layout->addWidget(button);
     widget.setLayout(layout);
     widget.show();
-    
+
     const QRect normalGeometry = widget.normalGeometry();
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
-    
-    //Enter 
+
+    //Enter
     widget.showNormal();
     widget.showFullScreen();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());    
-    
+    QVERIFY(!statusPane->IsVisible());
+
     widget.showMaximized();
     widget.showFullScreen();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());    
-    
+    QVERIFY(!statusPane->IsVisible());
+
     widget.showMinimized();
     widget.showFullScreen();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());    
-    
-    //Exit 
+    QVERIFY(!statusPane->IsVisible());
+
+    //Exit
     widget.showFullScreen();
     widget.showNormal();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());    
+    QVERIFY(statusPane->IsVisible());
 
     widget.showFullScreen();
     widget.showMaximized();
     QCOMPARE(widget.geometry(), maximumScreenGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());    
+    QVERIFY(statusPane->IsVisible());
 
     widget.showFullScreen();
     widget.showMinimized();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());    
+    QVERIFY(!statusPane->IsVisible());
 }
 
 void tst_QWidget::maximizedWindowModeTransitions()
@@ -9762,38 +9762,38 @@ void tst_QWidget::maximizedWindowModeTransitions()
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
-    
+
     //Enter
     widget.showNormal();
     widget.showMaximized();
     QCOMPARE(widget.geometry(), maximumScreenGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible()); 
-    
+    QVERIFY(statusPane->IsVisible());
+
     widget.showFullScreen();
     widget.showMaximized();
     QCOMPARE(widget.geometry(), maximumScreenGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible()); 
-    
+    QVERIFY(statusPane->IsVisible());
+
     widget.showMinimized();
     widget.showMaximized();
     QCOMPARE(widget.geometry(), maximumScreenGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible()); 
-    
+    QVERIFY(statusPane->IsVisible());
+
     //Exit
     widget.showMaximized();
     widget.showNormal();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible()); 
+    QVERIFY(statusPane->IsVisible());
 
     widget.showMaximized();
     widget.showFullScreen();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible()); 
+    QVERIFY(!statusPane->IsVisible());
 
     widget.showMaximized();
     widget.showMinimized();
@@ -9801,7 +9801,7 @@ void tst_QWidget::maximizedWindowModeTransitions()
     // than with decoration visible. Altual size does not really matter since widget is invisible.
     QCOMPARE(widget.geometry(), qApp->desktop()->availableGeometry(&widget));
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible()); 
+    QVERIFY(!statusPane->IsVisible());
 }
 
 void tst_QWidget::minimizedWindowModeTransitions()
@@ -9812,52 +9812,52 @@ void tst_QWidget::minimizedWindowModeTransitions()
     layout->addWidget(button);
     widget.setLayout(layout);
     widget.show();
-    
+
     const QRect normalGeometry = widget.normalGeometry();
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
-    
+
     //Enter
     widget.showNormal();
     widget.showMinimized();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible()); 
-    
+    QVERIFY(!statusPane->IsVisible());
+
     widget.showFullScreen();
     widget.showMinimized();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible()); 
-    
+    QVERIFY(!statusPane->IsVisible());
+
     widget.showMaximized();
     widget.showMinimized();
     // Since showMinimized hides window decoration availableGeometry gives different value
     // than with decoration visible. Altual size does not really matter since widget is invisible.
     QCOMPARE(widget.geometry(), qApp->desktop()->availableGeometry(&widget));
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible()); 
+    QVERIFY(!statusPane->IsVisible());
 
     //Exit
     widget.showMinimized();
     widget.showNormal();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible()); 
+    QVERIFY(statusPane->IsVisible());
 
     widget.showMinimized();
     widget.showFullScreen();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible()); 
+    QVERIFY(!statusPane->IsVisible());
 
     widget.showMinimized();
     widget.showMaximized();
     QCOMPARE(widget.geometry(), maximumScreenGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());    
+    QVERIFY(statusPane->IsVisible());
 }
 
 void tst_QWidget::normalWindowModeTransitions()
@@ -9868,50 +9868,50 @@ void tst_QWidget::normalWindowModeTransitions()
     layout->addWidget(button);
     widget.setLayout(layout);
     widget.show();
-    
+
     const QRect normalGeometry = widget.normalGeometry();
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
-    
+
     //Enter
     widget.showMaximized();
     widget.showNormal();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());    
-    
+    QVERIFY(statusPane->IsVisible());
+
     widget.showFullScreen();
     widget.showNormal();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());    
-    
+    QVERIFY(statusPane->IsVisible());
+
     widget.showMinimized();
     widget.showNormal();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());    
-    
+    QVERIFY(statusPane->IsVisible());
+
     //Exit
     widget.showNormal();
     widget.showMaximized();
     QCOMPARE(widget.geometry(), maximumScreenGeometry);
     QVERIFY(buttonGroup->IsVisible());
-    QVERIFY(statusPane->IsVisible());    
+    QVERIFY(statusPane->IsVisible());
 
     widget.showNormal();
     widget.showFullScreen();
     QCOMPARE(widget.geometry(), fullScreenGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());    
-    
+    QVERIFY(!statusPane->IsVisible());
+
     widget.showNormal();
     widget.showMinimized();
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(!buttonGroup->IsVisible());
-    QVERIFY(!statusPane->IsVisible());    
+    QVERIFY(!statusPane->IsVisible());
 }
 #endif
 
