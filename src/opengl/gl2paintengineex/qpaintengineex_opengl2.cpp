@@ -1345,9 +1345,17 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QVector<GLuint> indices;
 #endif
 
-    if (staticTextItem->userData == 0
-        || staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData
-        || staticTextItem->userDataNeedsUpdate) {
+    bool recreateVertexArrays = false;
+    if (staticTextItem->userDataNeedsUpdate)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData == 0)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
+        recreateVertexArrays = true;
+    else if (static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData)->ctx != ctx)
+        recreateVertexArrays = true;
+
+    if (recreateVertexArrays) {
         vertexCoordinateArray.clear();
         textureCoordinateArray.clear();
 
