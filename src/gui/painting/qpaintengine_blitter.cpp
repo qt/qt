@@ -19,12 +19,6 @@
 #define STATE_CLIPSYS_COMPLEX   0x00010000
 #define STATE_CLIP_COMPLEX      0x00020000
 
-//#define RASTEROVERLAY
-
-#ifdef RASTEROVERLAY
-QColor rasterColor(255,0,0,100);
-QBrush rasterBrush(rasterColor);
-#endif
 
 static inline void updateStateBits(uint *state, uint mask, bool on)
 {
@@ -107,9 +101,10 @@ public:
         updateStateBits(&fillRectMask, STATE_BRUSH_PATTERN, false);
         updateStateBits(&fillRectMask, STATE_BRUSH_ALPHA, false);
 
-        updateStateBits(&fillRectMask, STATE_PEN_ENABLED, false);
+        updateStateBits(&fillRectMask, STATE_PEN_ENABLED, true);
 
-        updateStateBits(&fillRectMask, STATE_ANTIALIASING, false);
+        //Sub-pixel aliasing should not be sent to the blitter
+        updateStateBits(&fillRectMask, STATE_ANTIALIASING, true);
         updateStateBits(&fillRectMask, STATE_ALPHA, false);
         updateStateBits(&fillRectMask, STATE_BLENDING_COMPLEX, false);
 
@@ -152,30 +147,31 @@ class QBlitterPaintEnginePrivate : public QPaintEngineExPrivate
 public:
     QBlitterPaintEnginePrivate(QBlittablePixmapData *p)
             : QPaintEngineExPrivate(),
+              pmData(p),
               isBlitterLocked(false),
               hasXForm(false)
 
     {
-        blitter= p->blittable();
         raster = new QRasterPaintEngine(p->buffer());
-        capabillities = new CapabilitiesToStateMask(blitter->capabilities());
+        capabillities = new CapabilitiesToStateMask(pmData->blittable()->capabilities());
     }
 
     inline void lock() {
         if (!isBlitterLocked) {
-            raster->d_func()->rasterBuffer->prepare(blitter->lock());
+            raster->d_func()->rasterBuffer->prepare(pmData->blittable()->lock());
             isBlitterLocked = true;
         }
     }
 
     inline void unlock() {
         if (isBlitterLocked) {
-            blitter->unlock();
+            pmData->blittable()->unlock();
             isBlitterLocked = false;
         }
     }
 
     void fillRect(const QRectF &rect, const QColor &color) {
+        pmData->unmarkRasterOverlay(rect);
         QRectF targetRect = rect;
         if (hasXForm) {
             targetRect = state->matrix.mapRect(rect);
@@ -184,14 +180,14 @@ public:
         if (clipData) {
             if (clipData->hasRectClip) {
                 unlock();
-                blitter->fillRect(targetRect & clipData->clipRect, color);
+                pmData->blittable()->fillRect(targetRect & clipData->clipRect, color);
             } else if (clipData->hasRegionClip) {
                 QVector<QRect> rects = clipData->clipRegion.rects();
                 for ( int i = 0; i < rects.size(); i++ ) {
                     QRect intersectRect = rects.at(i).intersected(targetRect.toRect());
                     if (!intersectRect.isEmpty()) {
                         unlock();
-                        blitter->fillRect(intersectRect,color);
+                        pmData->blittable()->fillRect(intersectRect,color);
                     }
                 }
             }
@@ -200,11 +196,11 @@ public:
                 && targetRect.width() <= raster->paintDevice()->width()
                 && targetRect.height() <= raster->paintDevice()->height()) {
                 unlock();
-                blitter->fillRect(targetRect,color);
+                pmData->blittable()->fillRect(targetRect,color);
             } else {
                 QRectF deviceRect(0,0,raster->paintDevice()->width(), raster->paintDevice()->height());
                 unlock();
-                blitter->fillRect(deviceRect&targetRect,color);
+                pmData->blittable()->fillRect(deviceRect&targetRect,color);
             }
         }
     }
@@ -222,7 +218,8 @@ public:
             qreal deltaRight = target.right() - intersectedRect.right();
             source.adjust(-deltaLeft,-deltaTop,deltaRight,deltaBottom);
         }
-        blitter->drawPixmap(intersectedRect, pm, source);
+        pmData->unmarkRasterOverlay(intersectedRect);
+        pmData->blittable()->drawPixmap(intersectedRect, pm, source);
     }
 
     void updateClip() {
@@ -235,11 +232,10 @@ public:
         raster->d_func()->systemStateChanged();
     }
 
-    QPixmap pixmap;
     QRasterPaintEngine *raster;
     QRasterPaintEngineState *state;
 
-    QBlittable *blitter;
+    QBlittablePixmapData *pmData;
     bool isBlitterLocked;
 
     CapabilitiesToStateMask *capabillities;
@@ -268,8 +264,11 @@ bool QBlitterPaintEngine::begin(QPaintDevice *pdev)
 
     d->raster->setSystemRect(systemRect());
     d->raster->setSystemClip(systemClip());
-
+    setActive(true);
     bool ok = d->raster->begin(pdev);
+#ifdef QT_BLITTER_RASTEROVERLAY
+    d->pmData->unmergeOverlay();
+#endif
     return ok;
 }
 
@@ -280,6 +279,10 @@ bool QBlitterPaintEngine::end()
 
     d->raster->setPaintDevice(0);
     d->raster->setActive(false);
+    setActive(false);
+#ifdef QT_BLITTER_RASTEROVERLAY
+    d->pmData->mergeOverlay();
+#endif
     return d->raster->end();
 }
 
@@ -287,16 +290,13 @@ bool QBlitterPaintEngine::end()
 void QBlitterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 {
     Q_D(QBlitterPaintEngine);
-
     if (path.shape() == QVectorPath::RectangleHint) {
         QRectF rect(((QPointF *) path.points())[0], ((QPointF *) path.points())[2]);
         fillRect(rect, brush);
     } else {
         d->lock();
+        d->pmData->markRasterOverlay(path);
         d->raster->fill(path, brush);
-#ifdef RASTEROVERLAY
-        d->raster->fill(path,rasterBrush);
-#endif
     }
 }
 
@@ -307,10 +307,8 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QColor &color)
         d->fillRect(rect, color);
     } else {
         d->lock();
+        d->pmData->markRasterOverlay(rect);
         d->raster->fillRect(rect, color);
-#ifdef RASTEROVERLAY
-        d->raster->fillRect(rect,rasterColor);
-#endif
     }
 }
 
@@ -354,7 +352,7 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                     int tmpSrcX  = srcX + (targetRect.x() - x);
                     int tmpSrcY = srcY + (targetRect.y() - y);
                     QRect srcRect(tmpSrcX,tmpSrcY,targetRect.width(),targetRect.height());
-                    d->blitter->drawPixmap(targetRect,pm,srcRect);
+                    d->pmData->blittable()->drawPixmap(targetRect,pm,srcRect);
                 }
             } else if (clipData->hasRegionClip) {
                 QVector<QRect> clipRects = clipData->clipRegion.rects();
@@ -368,9 +366,9 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
                     int tmpSrcX = srcX + (targetRect.x() - x);
                     int tmpSrcY = srcY + (targetRect.y() - y);
                     QRect srcRect(tmpSrcX,tmpSrcY,targetRect.width(),targetRect.height());
-                    d->blitter->drawPixmap(targetRect,pm,srcRect);
+                    d->pmData->blittable()->drawPixmap(targetRect,pm,srcRect);
                 }
-            } else Q_ASSERT(false);//should never happen
+            }
             x+=blitWidth;
             if (x>=transformedRect.right()) {
                 x = transformedRect.x();
@@ -382,13 +380,10 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             } else
                 srcX = 0;
         }
-
     } else {
         d->lock();
+        d->pmData->markRasterOverlay(rect);
         d->raster->fillRect(rect, brush);
-#ifdef RASTEROVERLAY
-        d->raster->fillRect(rect,rasterBrush);
-#endif
     }
 
 }
@@ -397,10 +392,8 @@ void QBlitterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QBlitterPaintEngine);
     d->lock();
+    d->pmData->markRasterOverlay(path.convertToPainterPath().boundingRect());
     d->raster->stroke(path, pen);
-#ifdef RASTEROVERLAY
-    d->raster->stroke(path,QPen(rasterColor));
-#endif
 }
 
 void QBlitterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
@@ -509,10 +502,8 @@ void QBlitterPaintEngine::drawRects(const QRect *rects, int rectCount)
             d->fillRect(rects[i], qbrush_color(d->state->brush));
         }
     } else {
+        d->pmData->markRasterOverlay(rects,rectCount);
         QPaintEngineEx::drawRects(rects, rectCount);
-#ifdef RASTEROVERLAY
-        d->raster->drawRects(rects,rectCount);
-#endif
     }
 }
 
@@ -524,10 +515,8 @@ void QBlitterPaintEngine::drawRects(const QRectF *rects, int rectCount)
             d->fillRect(rects[i], qbrush_color(d->state->brush));
         }
     } else {
+        d->pmData->markRasterOverlay(rects,rectCount);
         QPaintEngineEx::drawRects(rects, rectCount);
-#ifdef RASTEROVERLAY
-        d->raster->drawRects(rects,rectCount);
-#endif
     }
 }
 
@@ -557,10 +546,8 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
         }
     }else {
         d->lock();
+        d->pmData->markRasterOverlay(r);
         d->raster->drawPixmap(r, pm, sr);
-#ifdef RASTEROVERLAY
-        d->raster->fillRect(r,rasterColor);
-#endif
     }
 }
 
@@ -569,10 +556,8 @@ void QBlitterPaintEngine::drawImage(const QRectF &r, const QImage &pm, const QRe
 {
     Q_D(QBlitterPaintEngine);
     d->lock();
+    d->pmData->markRasterOverlay(r);
     d->raster->drawImage(r, pm, sr, flags);
-#ifdef RASTEROVERLAY
-    d->raster->fillRect(r,rasterColor);
-#endif
 }
 
 
@@ -581,18 +566,14 @@ void QBlitterPaintEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
     Q_D(QBlitterPaintEngine);
     d->lock();
     d->raster->drawTextItem(pos, ti);
-#ifdef RASTEROVERLAY
-    QFontMetricsF fm(ti.font());
-    QRectF rect = fm.tightBoundingRect(ti.text());
-    rect.moveBottomLeft(pos);
-    d->raster->fillRect(rect, rasterColor);
-#endif
+    d->pmData->markRasterOverlay(pos,ti);
 }
 
 void QBlitterPaintEngine::drawEllipse(const QRectF &r)
 {
     Q_D(QBlitterPaintEngine);
     d->lock();
+    d->pmData->markRasterOverlay(r);
     d->raster->drawEllipse(r);
 }
 
@@ -614,6 +595,12 @@ void QBlitterPaintEngine::setState(QPainterState *s)
     transformChanged();
 
     d->updateClip();
+}
+
+inline QRasterPaintEngine *QBlitterPaintEngine::raster() const
+{
+    Q_D(const QBlitterPaintEngine);
+    return d->raster;
 }
 
 class QBlittablePrivate

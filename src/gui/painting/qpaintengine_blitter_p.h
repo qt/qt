@@ -2,8 +2,8 @@
 #define QPAINTENGINE_BLITTER_P_H
 
 #include "private/qpaintengineex_p.h"
+#include "private/qpaintengine_raster_p.h"
 
-class QRasterPaintEngine;
 class QBlittablePrivate;
 class QBlitterPaintEnginePrivate;
 class QBlittablePixmapData;
@@ -89,8 +89,12 @@ public:
 
     virtual void setState(QPainterState *s);
 
-    inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
-    inline const QPainterState *state() const { return static_cast<const QPainterState *>(QPaintEngine::state); }
+    inline QPainterState *state() { return raster()->state(); }
+    inline const QPainterState *state() const { const QPainterState *state = raster()->state(); return state;}
+    inline const QClipData *clip(){return raster()->d_func()->clip();}
+
+private:
+    QRasterPaintEngine *raster() const;
 
 };
 
