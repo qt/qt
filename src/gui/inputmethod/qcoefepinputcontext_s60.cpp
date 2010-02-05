@@ -100,7 +100,7 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
 void QCoeFepInputContext::reset()
 {
-    commitCurrentString(false);
+    commitCurrentString(true);
 }
 
 void QCoeFepInputContext::ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType)
@@ -125,7 +125,7 @@ void QCoeFepInputContext::update()
 
 void QCoeFepInputContext::setFocusWidget(QWidget *w)
 {
-    commitCurrentString(false);
+    commitCurrentString(true);
 
     QInputContext::setFocusWidget(w);
 
@@ -218,7 +218,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             break;
         case Qt::Key_Select:
             if (!m_preeditString.isEmpty()) {
-                commitCurrentString(false);
+                commitCurrentString(true);
                 return true;
             }
             break;
@@ -230,6 +230,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
             && !keyEvent->text().isEmpty()) {
             // Send some temporary preedit text in order to make text visible for a moment.
+            m_cursorPos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
             m_preeditString = keyEvent->text();
             QList<QInputMethodEvent::Attribute> attributes;
             QInputMethodEvent imEvent(m_preeditString, attributes);
@@ -292,7 +293,7 @@ void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
     Q_ASSERT(focusWidget());
 
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
-        commitCurrentString(false);
+        commitCurrentString(true);
         int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 
         QList<QInputMethodEvent::Attribute> attributes;
@@ -738,16 +739,16 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
 
 void QCoeFepInputContext::DoCommitFepInlineEditL()
 {
-    commitCurrentString(true);
+    commitCurrentString(false);
 }
 
-void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
+void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
 {
     int longPress = 0;
 
     if (m_preeditString.size() == 0) {
         QWidget *w = focusWidget();
-        if (triggeredBySymbian && w) {
+        if (!cancelFepTransaction && w) {
             // We must replace the last character only if the input box has already accepted one 
             if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
                 longPress = 1;
@@ -764,7 +765,7 @@ void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
     m_hasTempPreeditString = false;
     longPress = 0;
 
-    if (!triggeredBySymbian) {
+    if (cancelFepTransaction) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();
         if (fep)
             fep->CancelTransaction();

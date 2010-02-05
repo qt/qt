@@ -96,7 +96,7 @@ protected:
     void timerEvent(QTimerEvent *timerEvent);
 
 private:
-    void commitCurrentString(bool triggeredBySymbian);
+    void commitCurrentString(bool cancelFepTransaction);
     void updateHints(bool mustUpdateInputCapabilities);
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
