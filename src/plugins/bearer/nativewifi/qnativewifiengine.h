@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "../qnetworksessionengine_impl.h"
+#include "../qbearerengine_impl.h"
 
 #include <QtCore/qtimer.h>
 
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkConfigurationPrivate;
 struct WLAN_NOTIFICATION_DATA;
 
-class QNativeWifiEngine : public QNetworkSessionEngineImpl
+class QNativeWifiEngine : public QBearerEngineImpl
 {
     Q_OBJECT
 

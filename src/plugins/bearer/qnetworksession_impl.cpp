@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qnetworksession_impl.h"
-#include "qnetworksessionengine_impl.h"
+#include "qbearerengine_impl.h"
 
 #include <QtNetwork/qnetworksession.h>
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
@@ -53,12 +53,12 @@
 
 QT_BEGIN_NAMESPACE
 
-static QNetworkSessionEngineImpl *getEngineFromId(const QString &id)
+static QBearerEngineImpl *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
-    foreach (QNetworkSessionEngine *engine, priv->sessionEngines) {
-        QNetworkSessionEngineImpl *engineImpl = qobject_cast<QNetworkSessionEngineImpl *>(engine);
+    foreach (QBearerEngine *engine, priv->sessionEngines) {
+        QBearerEngineImpl *engineImpl = qobject_cast<QBearerEngineImpl *>(engine);
         if (engineImpl && engineImpl->hasIdentifier(id))
             return engineImpl;
     }
@@ -111,16 +111,16 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
 
-    qRegisterMetaType<QNetworkSessionEngineImpl::ConnectionError>
-        ("QNetworkSessionEngineImpl::ConnectionError");
+    qRegisterMetaType<QBearerEngineImpl::ConnectionError>
+        ("QBearerEngineImpl::ConnectionError");
 
     switch (publicConfig.type()) {
     case QNetworkConfiguration::InternetAccessPoint:
         activeConfig = publicConfig;
         engine = getEngineFromId(activeConfig.identifier());
         if (engine) {
-            connect(engine, SIGNAL(connectionError(QString,QNetworkSessionEngine::ConnectionError)),
-                    this, SLOT(connectionError(QString,QNetworkSessionEngine::ConnectionError)),
+            connect(engine, SIGNAL(connectionError(QString,QBearerEngine::ConnectionError)),
+                    this, SLOT(connectionError(QString,QBearerEngine::ConnectionError)),
                     Qt::QueuedConnection);
         }
         break;
@@ -322,15 +322,15 @@ void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
 
         if (activeConfig != config) {
             if (engine) {
-                disconnect(engine, SIGNAL(connectionError(QString,QNetworkSessionEngine::ConnectionError)),
-                           this, SLOT(connectionError(QString,QNetworkSessionEngine::ConnectionError)));
+                disconnect(engine, SIGNAL(connectionError(QString,QBearerEngine::ConnectionError)),
+                           this, SLOT(connectionError(QString,QBearerEngine::ConnectionError)));
             }
 
             activeConfig = config;
             engine = getEngineFromId(activeConfig.identifier());
             if (engine) {
-                connect(engine, SIGNAL(connectionError(QString,QNetworkSessionEngine::ConnectionError)),
-                        this, SLOT(connectionError(QString,QNetworkSessionEngine::ConnectionError)),
+                connect(engine, SIGNAL(connectionError(QString,QBearerEngine::ConnectionError)),
+                        this, SLOT(connectionError(QString,QBearerEngine::ConnectionError)),
                         Qt::QueuedConnection);
             }
             emit newConfigurationActivated();
@@ -408,18 +408,18 @@ void QNetworkSessionPrivateImpl::forcedSessionClose(const QNetworkConfiguration 
 }
 
 void QNetworkSessionPrivateImpl::connectionError(const QString &id,
-                                                 QNetworkSessionEngineImpl::ConnectionError error)
+                                                 QBearerEngineImpl::ConnectionError error)
 {
     if (activeConfig.identifier() == id) {
         networkConfigurationsChanged();
         switch (error) {
-        case QNetworkSessionEngineImpl::OperationNotSupported:
+        case QBearerEngineImpl::OperationNotSupported:
             lastError = QNetworkSession::OperationNotSupportedError;
             opened = false;
             break;
-        case QNetworkSessionEngineImpl::InterfaceLookupError:
-        case QNetworkSessionEngineImpl::ConnectError:
-        case QNetworkSessionEngineImpl::DisconnectionError:
+        case QBearerEngineImpl::InterfaceLookupError:
+        case QBearerEngineImpl::ConnectError:
+        case QBearerEngineImpl::DisconnectionError:
         default:
             lastError = QNetworkSession::UnknownSessionError;
         }

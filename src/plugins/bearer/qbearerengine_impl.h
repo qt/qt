@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONENGINE_IMPL_H
-#define QNETWORKSESSIONENGINE_IMPL_H
+#ifndef QBEARERENGINE_IMPL_H
+#define QBEARERENGINE_IMPL_H
 
-#include <QtNetwork/private/qnetworksessionengine_p.h>
+#include <QtNetwork/private/qbearerengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkSessionEngineImpl : public QNetworkSessionEngine
+class QBearerEngineImpl : public QBearerEngine
 {
     Q_OBJECT
 
@@ -58,8 +58,8 @@ public:
         DisconnectionError,
     };
 
-    QNetworkSessionEngineImpl(QObject *parent = 0) : QNetworkSessionEngine(parent) { }
-    ~QNetworkSessionEngineImpl() { }
+    QBearerEngineImpl(QObject *parent = 0) : QBearerEngine(parent) { }
+    ~QBearerEngineImpl() { }
 
     virtual void connectToId(const QString &id) = 0;
     virtual void disconnectFromId(const QString &id) = 0;
@@ -74,4 +74,4 @@ Q_SIGNALS:
 
 QT_END_NAMESPACE
 
-#endif // QNETWORKSESSIONENGINE_IMPL_H
+#endif

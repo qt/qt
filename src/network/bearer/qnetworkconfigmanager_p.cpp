@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -176,7 +176,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         foreach (const QString &key, l->keys()) {
             QBearerEnginePlugin *plugin = qobject_cast<QBearerEnginePlugin *>(l->instance(key));
             if (plugin) {
-                QNetworkSessionEngine *engine = plugin->create(key);
+                QBearerEngine *engine = plugin->create(key);
                 if (!engine)
                     continue;
 
@@ -195,7 +195,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         }
     }
 
-    QNetworkSessionEngine *engine = qobject_cast<QNetworkSessionEngine *>(sender());
+    QBearerEngine *engine = qobject_cast<QBearerEngine *>(sender());
     if (!updatingEngines.isEmpty() && engine) {
         int index = sessionEngines.indexOf(engine);
         if (index >= 0)
@@ -219,7 +219,7 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 */
 QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration()
 {
-    foreach (QNetworkSessionEngine *engine, sessionEngines) {
+    foreach (QBearerEngine *engine, sessionEngines) {
         QNetworkConfigurationPrivatePointer ptr = engine->defaultConfiguration();
 
         if (ptr) {

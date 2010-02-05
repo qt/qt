@@ -506,7 +506,7 @@ void QNlaThread::fetchConfigurations()
 }
 
 QNlaEngine::QNlaEngine(QObject *parent)
-:   QNetworkSessionEngineImpl(parent), nlaThread(0)
+:   QBearerEngineImpl(parent), nlaThread(0)
 {
     nlaThread = new QNlaThread(this);
     connect(nlaThread, SIGNAL(networksChanged()),

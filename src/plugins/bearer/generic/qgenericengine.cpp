@@ -141,7 +141,7 @@ static QString qGetInterfaceType(const QString &interface)
 }
 
 QGenericEngine::QGenericEngine(QObject *parent)
-:   QNetworkSessionEngineImpl(parent)
+:   QBearerEngineImpl(parent)
 {
     connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
     pollTimer.setInterval(10000);

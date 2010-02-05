@@ -42,7 +42,7 @@
 #ifndef QCOREWLANENGINE_H
 #define QCOREWLANENGINE_H
 
-#include "../qnetworksessionengine_impl.h"
+#include "../qbearerengine_impl.h"
 
 #include <QMap>
 #include <QTimer>
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
 
-class QCoreWlanEngine : public QNetworkSessionEngineImpl
+class QCoreWlanEngine : public QBearerEngineImpl
 {
     Q_OBJECT
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,7 @@
 #include "qnetworkconfigmanager.h"
 
 #include "qnetworkconfigmanager_p.h"
-#include "qnetworksessionengine_p.h"
+#include "qbearerengine_p.h"
 
 #include <QtCore/qstringlist.h>
 
@@ -232,7 +232,7 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
     QList<QNetworkConfiguration> result;
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
 
-    foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
+    foreach (QBearerEngine *engine, conPriv->sessionEngines) {
         QStringList cpsIdents = engine->accessPointConfigurations.keys();
 
         //find all InternetAccessPoints
@@ -274,7 +274,7 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 
     QNetworkConfiguration item;
 
-    foreach (QNetworkSessionEngine *engine, conPriv->sessionEngines) {
+    foreach (QBearerEngine *engine, conPriv->sessionEngines) {
         if (engine->accessPointConfigurations.contains(identifier))
             item.d = engine->accessPointConfigurations.value(identifier);
         else if (engine->snapConfigurations.contains(identifier))

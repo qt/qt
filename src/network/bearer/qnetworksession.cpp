@@ -43,7 +43,7 @@
 #include <QTimer>
 
 #include "qnetworksession.h"
-#include "qnetworksessionengine_p.h"
+#include "qbearerengine_p.h"
 #include "qnetworkconfigmanager_p.h"
 
 #if Q_WS_MAEMO_6
@@ -228,7 +228,7 @@ QT_BEGIN_NAMESPACE
 QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, QObject* parent)
 :   QObject(parent), d(0)
 {
-    foreach (QNetworkSessionEngine *engine, qNetworkConfigurationManagerPrivate()->sessionEngines) {
+    foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->sessionEngines) {
         if (engine->hasIdentifier(connectionConfig.identifier())) {
             d = engine->createSessionBackend();
             d->q = this;

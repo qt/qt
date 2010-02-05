@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "../qnetworksessionengine_impl.h"
+#include "../qbearerengine_impl.h"
 
 #include <QtNetwork/private/qnativesocketengine_p.h>
 
@@ -72,7 +72,7 @@ public:
     int version;
 };
 
-class QNlaEngine : public QNetworkSessionEngineImpl
+class QNlaEngine : public QBearerEngineImpl
 {
     Q_OBJECT
 

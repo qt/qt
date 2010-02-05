@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "qnetworksessionengine_p.h"
+#include "qbearerengine_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QNetworkSessionEngine::QNetworkSessionEngine(QObject *parent)
+QBearerEngine::QBearerEngine(QObject *parent)
 :   QObject(parent)
 {
 }
 
-QNetworkSessionEngine::~QNetworkSessionEngine()
+QBearerEngine::~QBearerEngine()
 {
     foreach (const QString &oldIface, snapConfigurations.keys()) {
         QNetworkConfigurationPrivatePointer priv = snapConfigurations.take(oldIface);
@@ -69,6 +69,6 @@ QNetworkSessionEngine::~QNetworkSessionEngine()
     }
 }
 
-#include "moc_qnetworksessionengine_p.cpp"
-QT_END_NAMESPACE
+#include "moc_qbearerengine_p.cpp"
 
+QT_END_NAMESPACE

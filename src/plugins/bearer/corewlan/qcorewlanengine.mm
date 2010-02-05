@@ -106,7 +106,7 @@ static QString qGetInterfaceType(const QString &interfaceString)
 }
 
 QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
-:   QNetworkSessionEngineImpl(parent)
+:   QBearerEngineImpl(parent)
 {
     connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
     pollTimer.setInterval(10000);

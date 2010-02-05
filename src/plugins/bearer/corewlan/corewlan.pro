@@ -13,7 +13,7 @@ contains(QT_CONFIG, corewlan) {
 
 HEADERS += qcorewlanengine.h \
            ../qnetworksession_impl.h \
-           ../qnetworksessionengine_impl.h
+           ../qbearerengine_impl.h
 
 SOURCES += main.cpp \
            qcorewlanengine.mm \

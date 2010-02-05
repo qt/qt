@@ -77,7 +77,7 @@ void qNotificationCallback(WLAN_NOTIFICATION_DATA *data, QNativeWifiEngine *d)
 }
 
 QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
-:   QNetworkSessionEngineImpl(parent), handle(0)
+:   QBearerEngineImpl(parent), handle(0)
 {
     DWORD clientVersion;
 

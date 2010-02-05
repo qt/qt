@@ -42,7 +42,7 @@
 #ifndef QGENERICENGINE_H
 #define QGENERICENGINE_H
 
-#include "../qnetworksessionengine_impl.h"
+#include "../qbearerengine_impl.h"
 
 #include <QMap>
 #include <QTimer>
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkConfigurationPrivate;
 class QNetworkSessionPrivate;
 
-class QGenericEngine : public QNetworkSessionEngineImpl
+class QGenericEngine : public QBearerEngineImpl
 {
     Q_OBJECT
 

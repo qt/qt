@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
-:   QNetworkSessionEngineImpl(parent),
+:   QBearerEngineImpl(parent),
     interface(new QNetworkManagerInterface(this)),
     systemSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE_SYSTEM_SETTINGS, this)),
     userSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE_USER_SETTINGS, this))

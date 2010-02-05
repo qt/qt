@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONENGINE_P_H
-#define QNETWORKSESSIONENGINE_P_H
+#ifndef QBEARERENGINE_P_H
+#define QBEARERENGINE_P_H
 
 //
 //  W A R N I N G
@@ -68,13 +68,13 @@ QT_BEGIN_NAMESPACE
 
 class QNetworkConfiguration;
 
-class Q_NETWORK_EXPORT QNetworkSessionEngine : public QObject
+class Q_NETWORK_EXPORT QBearerEngine : public QObject
 {
     Q_OBJECT
 
 public:
-    QNetworkSessionEngine(QObject *parent = 0);
-    virtual ~QNetworkSessionEngine();
+    QBearerEngine(QObject *parent = 0);
+    virtual ~QBearerEngine();
 
     virtual bool hasIdentifier(const QString &id) = 0;
 
@@ -101,8 +101,6 @@ Q_SIGNALS:
 
     void updateCompleted();
 };
-
-typedef QNetworkSessionEngine QBearerEngine;
 
 QT_END_NAMESPACE
 

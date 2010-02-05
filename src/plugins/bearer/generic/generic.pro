@@ -5,7 +5,7 @@ QT += network
 
 HEADERS += qgenericengine.h \
            ../qnetworksession_impl.h \
-           ../qnetworksessionengine_impl.h \
+           ../qbearerengine_impl.h \
            ../platformdefs_win.h
 SOURCES += qgenericengine.cpp \
            ../qnetworksession_impl.cpp \

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qnetworksessionengine_impl.h"
+#include "qbearerengine_impl.h"
 
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
 #include <QtNetwork/private/qnetworksession_p.h>
@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkSessionEngineImpl;
+class QBearerEngineImpl;
 
 class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 {
@@ -110,7 +110,7 @@ private Q_SLOTS:
     void networkConfigurationsChanged();
     void configurationChanged(const QNetworkConfiguration &config);
     void forcedSessionClose(const QNetworkConfiguration &config);
-    void connectionError(const QString &id, QNetworkSessionEngineImpl::ConnectionError error);
+    void connectionError(const QString &id, QBearerEngineImpl::ConnectionError error);
 
 private:
     QNetworkConfigurationManager manager;
@@ -121,7 +121,7 @@ private:
 
     bool opened;
 
-    QNetworkSessionEngineImpl *engine;
+    QBearerEngineImpl *engine;
 
     QNetworkSession::SessionError lastError;
 

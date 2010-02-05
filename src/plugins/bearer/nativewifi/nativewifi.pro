@@ -6,7 +6,7 @@ QT += network
 HEADERS += qnativewifiengine.h \
            platformdefs.h \
            ../qnetworksession_impl.h \
-           ../qnetworksessionengine_impl.h
+           ../qbearerengine_impl.h
 
 SOURCES += main.cpp \
            qnativewifiengine.cpp \

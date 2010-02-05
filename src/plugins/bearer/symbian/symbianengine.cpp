@@ -98,7 +98,7 @@ QString SymbianNetworkConfigurationPrivate::bearerName() const
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
-:   QNetworkSessionEngine(parent), CActive(CActive::EPriorityIdle), iInitOk(true)
+:   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iInitOk(true)
 {
     CActiveScheduler::Add(this);
 

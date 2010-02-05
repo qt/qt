@@ -9,7 +9,7 @@ HEADERS += qnmdbushelper.h \
            qnetworkmanagerservice.h \
            qnetworkmanagerengine.h \
            ../qnetworksession_impl.h \
-           ../qnetworksessionengine_impl.h
+           ../qbearerengine_impl.h
 
 SOURCES += main.cpp \
            qnmdbushelper.cpp \

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "../qnetworksessionengine_impl.h"
+#include "../qbearerengine_impl.h"
 
 #include "qnetworkmanagerservice.h"
 
@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkManagerEngine : public QNetworkSessionEngineImpl
+class QNetworkManagerEngine : public QBearerEngineImpl
 {
     Q_OBJECT
 

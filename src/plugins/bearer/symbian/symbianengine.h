@@ -42,7 +42,7 @@
 #ifndef SYMBIANENGINE_H
 #define SYMBIANENGINE_H
 
-#include <QtNetwork/private/qnetworksessionengine_p.h>
+#include <QtNetwork/private/qbearerengine_p.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
 
 #include <QHash>
@@ -97,7 +97,7 @@ inline SymbianNetworkConfigurationPrivate *toSymbianConfig(QNetworkConfiguration
     return static_cast<SymbianNetworkConfigurationPrivate *>(ptr.data());
 }
 
-class SymbianEngine : public QNetworkSessionEngine, public CActive,
+class SymbianEngine : public QBearerEngine, public CActive,
                       public MConnectionMonitorObserver
 {
     Q_OBJECT
