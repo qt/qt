@@ -151,7 +151,6 @@ private:
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
-    int m_longPress;
     int m_cursorPos;
     QBasicTimer m_tempPreeditStringTimeout;
     bool m_hasTempPreeditString;

@@ -71,7 +71,6 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_inlinePosition(0),
       m_formatRetriever(0),
       m_pointerHandler(0),
-      m_longPress(0),
       m_cursorPos(0),
       m_hasTempPreeditString(false)
 {
@@ -744,24 +743,26 @@ void QCoeFepInputContext::DoCommitFepInlineEditL()
 
 void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
 {
+    int longPress = 0;
+
     if (m_preeditString.size() == 0) {
         QWidget *w = focusWidget();
         if (triggeredBySymbian && w) {
             // We must replace the last character only if the input box has already accepted one 
             if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
-                m_longPress = 1;
+                longPress = 1;
         }
         return;
     }
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
-    event.setCommitString(m_preeditString, 0-m_longPress, m_longPress);
+    event.setCommitString(m_preeditString, 0-longPress, longPress);
     m_preeditString.clear();
     sendEvent(event);
 
     m_hasTempPreeditString = false;
-    m_longPress = 0;
+    longPress = 0;
 
     if (!triggeredBySymbian) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();
