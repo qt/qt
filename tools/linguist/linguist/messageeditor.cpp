@@ -135,10 +135,6 @@ MessageEditor::MessageEditor(MultiDataModel *dataModel, QMainWindow *parent)
 void MessageEditor::setupEditorPage()
 {
     QFrame *editorPage = new QFrame;
-
-    editorPage->setStyleSheet(QLatin1String(
-            "QLabel { font-weight: bold; }"
-            ));
     editorPage->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
 
     m_source = new FormWidget(tr("Source text"), false);
