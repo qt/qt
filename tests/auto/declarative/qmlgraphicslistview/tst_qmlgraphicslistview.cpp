@@ -93,6 +93,7 @@ private:
     T *findItem(QmlGraphicsItem *parent, const QString &id, int index=-1);
     template<typename T>
     QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
+    void dumpTree(QmlGraphicsItem *parent, int depth = 0);
 };
 
 class TestObject : public QObject
@@ -363,6 +364,9 @@ void tst_QmlGraphicsListView::items()
     // set an empty model and confirm that items are destroyed
     T model2;
     ctxt->setContextProperty("testModel", &model2);
+
+    // Allow deleteLaters to process
+    QTest::qWait(500);
 
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     QVERIFY(itemCount == 0);
@@ -874,7 +878,7 @@ void tst_QmlGraphicsListView::spacing()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QVERIFY(item->y() == i*20);
+        QCOMPARE(item->y(), i*20.0);
     }
 
     delete canvas;
@@ -886,7 +890,7 @@ void tst_QmlGraphicsListView::sections()
 
     TestModel model;
     for (int i = 0; i < 30; i++)
-        model.addItem("Item" + QString::number(i), QString::number(i));
+        model.addItem("Item" + QString::number(i), QString::number(i/5));
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
@@ -916,7 +920,7 @@ void tst_QmlGraphicsListView::sections()
     QVERIFY(item);
     QCOMPARE(item->height(), 40.0);
 
-    model.insertItem(3, "New Item", "3");
+    model.insertItem(3, "New Item", "0");
 
     // Section header moved
     item = findItem<QmlGraphicsItem>(viewport, "wrapper", 5);
@@ -928,7 +932,7 @@ void tst_QmlGraphicsListView::sections()
     QCOMPARE(item->height(), 40.0);
 
     // insert item which will become a section header
-    model.insertItem(6, "Replace header", "5");
+    model.insertItem(6, "Replace header", "1");
 
     item = findItem<QmlGraphicsItem>(viewport, "wrapper", 6);
     QVERIFY(item);
@@ -938,13 +942,13 @@ void tst_QmlGraphicsListView::sections()
     QVERIFY(item);
     QCOMPARE(item->height(), 20.0);
 
-    QVERIFY(listview->currentSection() == "0");
+    QCOMPARE(listview->currentSection(), QString("0"));
 
     listview->setViewportY(140);
-    QVERIFY(listview->currentSection() == "1");
+    QCOMPARE(listview->currentSection(), QString("1"));
 
     listview->setViewportY(20);
-    QVERIFY(listview->currentSection() == "0");
+    QCOMPARE(listview->currentSection(), QString("0"));
 
     item = findItem<QmlGraphicsItem>(viewport, "wrapper", 1);
     QVERIFY(item);
@@ -1314,8 +1318,8 @@ T *tst_QmlGraphicsListView::findItem(QmlGraphicsItem *parent, const QString &obj
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
@@ -1343,8 +1347,8 @@ QList<T*> tst_QmlGraphicsListView::findItems(QmlGraphicsItem *parent, const QStr
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
@@ -1354,6 +1358,18 @@ QList<T*> tst_QmlGraphicsListView::findItems(QmlGraphicsItem *parent, const QStr
     }
 
     return items;
+}
+
+void tst_QmlGraphicsListView::dumpTree(QmlGraphicsItem *parent, int depth)
+{
+    static QString padding("                       ");
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
+        if(!item)
+            continue;
+        qDebug() << padding.left(depth*2) << item;
+        dumpTree(item, depth+1);
+    }
 }
 
 

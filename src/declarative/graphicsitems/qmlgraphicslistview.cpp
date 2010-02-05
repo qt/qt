@@ -531,7 +531,7 @@ public:
     QmlComponent *headerComponent;
     FxListItem *header;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
-    BufferMode bufferMode;
+    int bufferMode;
     mutable qreal minExtent;
     mutable qreal maxExtent;
 
@@ -675,7 +675,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     FxListItem *item = 0;
     int pos = itemEnd + 1;
     while (modelIndex < model->count() && pos <= fillTo) {
-        //qDebug() << "refill: append item" << modelIndex;
+        //qDebug() << "refill: append item" << modelIndex << "pos" << pos;
         if (!(item = createItem(modelIndex)))
             break;
         item->setPosition(pos);
@@ -969,7 +969,7 @@ void QmlGraphicsListViewPrivate::updateSections()
 
 void QmlGraphicsListViewPrivate::updateCurrentSection()
 {
-    if (sectionCriteria || visibleItems.isEmpty()) {
+    if (!sectionCriteria || visibleItems.isEmpty()) {
         currentSection = QString();
         return;
     }
@@ -1903,8 +1903,10 @@ void QmlGraphicsListView::setCacheBuffer(int b)
     Q_D(QmlGraphicsListView);
     if (d->buffer != b) {
         d->buffer = b;
-        if (isComponentComplete())
+        if (isComponentComplete()) {
+            d->bufferMode = QmlGraphicsListViewPrivate::BufferBefore | QmlGraphicsListViewPrivate::BufferAfter;
             refill();
+        }
     }
 }
 
