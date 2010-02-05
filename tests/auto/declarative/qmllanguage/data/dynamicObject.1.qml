@@ -1,0 +1,8 @@
+import Test 1.0
+import Qt 4.6
+PropertyChanges {
+    propa: a + 10
+    propb: Math.min(a, 10)
+    propc: MyPropertyValueSource {}
+    onPropA: a
+}
