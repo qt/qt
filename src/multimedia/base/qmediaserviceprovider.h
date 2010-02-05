@@ -115,6 +115,10 @@ public:
     virtual QString deviceDescription(const QByteArray &serviceType, const QByteArray &device);
 
     static QMediaServiceProvider* defaultServiceProvider();
+
+#ifdef QT_BUILD_INTERNAL
+    static void setDefaultServiceProvider(QMediaServiceProvider *provider);
+#endif
 };
 
 /*!
