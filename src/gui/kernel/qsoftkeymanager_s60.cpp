@@ -237,21 +237,18 @@ bool QSoftKeyManagerPrivateS60::setSoftkeyImage(CEikButtonGroupContainer *cba,
             // prepareSoftkeyPixmap creates a new pixmap with requiredIconSize and blits the 'pmWihtAspectRatio'
             // to correct location of it
             QPixmap softkeyPixmap = prepareSoftkeyPixmap(pmWihtAspectRatio, position, requiredIconSize);
-            QBitmap softkeyMask = softkeyPixmap.mask();
-            if (softkeyMask.isNull()) {
-                softkeyMask = QBitmap(softkeyPixmap.size());
-                softkeyMask.fill(Qt::color1);
-            }
 
-            // Softkey mask in > SV_S60_5_1 has to be inverted
-            if(QSysInfo::s60Version() > QSysInfo::SV_S60_5_1) {
-                QImage maskImage = softkeyMask.toImage();
-                maskImage.invertPixels();
-                softkeyMask = QPixmap::fromImage(maskImage);
+            QPixmap softkeyAlpha = softkeyPixmap.alphaChannel();
+            // Alpha channel in 5.1 and older devices need to be inverted
+            // TODO: Switch to use toSymbianCFbsBitmap with invert when available
+            if(QSysInfo::s60Version() <= QSysInfo::SV_S60_5_1) {
+                QImage alphaImage = softkeyAlpha.toImage();
+                alphaImage.invertPixels();
+                softkeyAlpha = QPixmap::fromImage(alphaImage);
             }
 
             CFbsBitmap* nBitmap = softkeyPixmap.toSymbianCFbsBitmap();
-            CFbsBitmap* nMask = softkeyMask.toSymbianCFbsBitmap();
+            CFbsBitmap* nMask = softkeyAlpha.toSymbianCFbsBitmap();
 
             CEikImage* myimage = new (ELeave) CEikImage;
             myimage->SetPicture( nBitmap, nMask ); // nBitmap and nMask ownership transfered
