@@ -21,13 +21,14 @@ $$unixstyle {
 }
 ADP_DOCS_QDOCCONF_FILE = qt-build-docs.qdocconf
 QT_DOCUMENTATION = ($$QDOC qt-api-only.qdocconf assistant.qdocconf designer.qdocconf \
-                    linguist.qdocconf qmake.qdocconf) && \
+                    linguist.qdocconf qmake.qdocconf qml.qdocconf) && \
                (cd $$QT_BUILD_TREE && \
                     $$GENERATOR doc-build/html-qt/qt.qhp -o doc/qch/qt.qch && \
                     $$GENERATOR doc-build/html-assistant/assistant.qhp -o doc/qch/assistant.qch && \
                     $$GENERATOR doc-build/html-designer/designer.qhp -o doc/qch/designer.qch && \
                     $$GENERATOR doc-build/html-linguist/linguist.qhp -o doc/qch/linguist.qch && \
-                    $$GENERATOR doc-build/html-qmake/qmake.qhp -o doc/qch/qmake.qch \
+                    $$GENERATOR doc-build/html-qmake/qmake.qhp -o doc/qch/qmake.qch && \
+                    $$GENERATOR doc-build/html-qml/qml.qhp -o doc/qch/qml.qch \
                )
 
 win32-g++:isEmpty(QMAKE_SH) {

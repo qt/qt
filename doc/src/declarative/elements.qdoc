@@ -1,0 +1,201 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qmlelements.html
+\target elements
+\title QML Elements
+
+The following table lists the QML elements provided by the Qt Declarative module.
+
+\bold {Standard Qt Declarative Elements}
+
+\table 80%
+\header
+\o \bold {States}
+\o \bold {Animation and Transitions}
+\o \bold {Working with Data}
+\o \bold {Utility}
+\row
+
+\o
+\list
+\o \l State
+\o \l PropertyChanges
+\o \l StateGroup
+\o \l ParentChange (Item-specific)
+\o \l StateChangeScript (Item-specific)
+\o \l AnchorChanges (Item-specific)
+\endlist
+
+\o
+\list
+\o \l PropertyAnimation
+\o \l NumberAnimation
+\o \l ColorAnimation
+\o \l SequentialAnimation
+\o \l ParallelAnimation
+\o \l PauseAnimation
+\o \l PropertyAction
+\o \l ParentAction
+\o \l ScriptAction
+\o \l Transition
+\o \l SpringFollow
+\o \l EaseFollow
+\o \l Behavior
+\endlist
+
+\o
+\list
+\o \l Binding
+\o \l ListModel, \l ListElement
+\o \l VisualItemModel
+\o \l XmlListModel and XmlRole
+\o \l DateTimeFormatter
+\o \l NumberFormatter
+\endlist
+
+\o
+\list
+\o \l Script
+\o \l Connection
+\o \l Component
+\o \l Timer
+\endlist
+\endtable
+
+\bold {QML Items}
+
+\table 80%
+\header
+\o \bold {Basic Visual Items}
+\o \bold {Basic Interaction Items}
+\o \bold {Widgets}
+\o \bold {Utility}
+
+\row
+\o
+\list
+\o \l Item
+\o \l Rectangle
+\o \l Image
+\o \l BorderImage
+\o \l Text
+\o \l TextInput
+\o \l TextEdit
+\endlist
+
+\o
+\list
+\o \l MouseRegion
+\o \l FocusScope
+\endlist
+
+\o
+\list
+\o \l Flickable
+\o \l Flipable
+\o \l WebView
+\endlist
+
+\o
+\list
+\o \l Loader
+\o \l Repeater
+\o \l SystemPalette
+\o \l GraphicsObjectContainer
+\endlist
+
+\header
+\o \bold {Views}
+\o \bold {Positioners}
+\o \bold {Transforms}
+\o \bold {Effects}
+
+\row
+\o
+
+\target xmlViews
+\list
+\o \l ListView
+\o \l GridView
+\o \l PathView
+    \list
+    \o \l Path
+        \list
+        \o \l PathLine
+        \o \l PathQuad
+        \o \l PathCubic
+        \o \l PathAttribute
+        \o \l PathPercent
+        \endlist
+    \endlist
+\endlist
+
+\o
+\list
+\o \l Column
+\o \l Row
+\o \l Grid
+\endlist
+
+\o
+\list
+\o \l Scale
+\o \l Rotation
+\endlist
+
+\o
+\list
+\o \l Blur
+\o \l Colorize
+\o \l DropShadow
+\o \l Opacity
+\o \l Particles
+    \list
+    \o \l ParticleMotionLinear
+    \o \l ParticleMotionGravity
+    \o \l ParticleMotionWander
+    \endlist
+\endlist
+\endtable
+
+*/
