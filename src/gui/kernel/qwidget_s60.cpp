@@ -1083,7 +1083,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             setGeometry(qApp->desktop()->screenGeometry(this));
         else if (newstate & Qt::WindowMaximized)
             setGeometry(qApp->desktop()->availableGeometry(this));
-        else 
+        else
             setGeometry(normalGeometry);
 
         //restore normal geometry
