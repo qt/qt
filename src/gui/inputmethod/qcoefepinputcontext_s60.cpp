@@ -233,7 +233,7 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             m_preeditString = keyEvent->text();
             QList<QInputMethodEvent::Attribute> attributes;
             QInputMethodEvent imEvent(m_preeditString, attributes);
-            QApplication::sendEvent(focusWidget(), &imEvent);
+            sendEvent(imEvent);
             m_tempPreeditStringTimeout.start(1000, this);
             m_hasTempPreeditString = true;
             update();
