@@ -58,9 +58,9 @@ QML_DEFINE_TYPE(Qt,4,6,Audio,QmlAudio);
     \brief The QmlAudio class provides a audio item that you can add to a QmlView.
 */
 
-void QmlAudio::_q_error(QMediaPlayer::Error errorCode, const QString &errorString)
+void QmlAudio::_q_error(int errorCode, const QString &errorString)
 {
-    m_error = errorCode;
+    m_error = QMediaPlayer::Error(errorCode);
     m_errorString = errorString;
 
     emit error(Error(errorCode), errorString);
@@ -86,8 +86,13 @@ QmlAudio::~QmlAudio()
 */
 
 void QmlAudio::play()
-{
+{    
     m_playerControl->play();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -99,6 +104,11 @@ void QmlAudio::play()
 void QmlAudio::pause()
 {
     m_playerControl->pause();
+
+    if (!m_paused && m_state == QMediaPlayer::PausedState) {
+        m_paused = true;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -110,6 +120,11 @@ void QmlAudio::pause()
 void QmlAudio::stop()
 {
     m_playerControl->stop();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 /*!

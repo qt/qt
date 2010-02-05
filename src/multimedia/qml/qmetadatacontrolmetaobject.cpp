@@ -213,8 +213,8 @@ namespace
 QMetaDataControlMetaObject::QMetaDataControlMetaObject(QMetaDataControl *control, QObject *object)
     : m_control(control)
     , m_object(object)
-    , m_data(0)
     , m_string(0)
+    , m_data(0)
     , m_propertyOffset(0)
     , m_signalOffset(0)
 {
@@ -342,8 +342,6 @@ int QMetaDataControlMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
         int propId = id - m_propertyOffset;
 
         m_control->setMetaData(qt_metaDataKeys[propId].key, *reinterpret_cast<QVariant *>(a[0]));
-
-        activate(m_object, m_signalOffset, 0);
 
         return -1;
     } else {

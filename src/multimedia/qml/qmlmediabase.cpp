@@ -78,7 +78,7 @@ public:
     qint64 duration() const { return 0; }
     qint64 position() const { return 0; }
     void setPosition(qint64) {}
-    int volume() const { return 100; }
+    int volume() const { return 0; }
     void setVolume(int) {}
     bool isMuted() const { return false; }
     void setMuted(bool) {}
@@ -132,28 +132,33 @@ private:
 void QmlMediaBase::_q_stateChanged(QMediaPlayer::State state)
 {
     if (state != m_state) {
-        QMediaPlayer::State oldState = state;
+        QMediaPlayer::State oldState = m_state;
 
         m_state = state;
 
-        switch (state) {
-        case QMediaPlayer::PlayingState:
-            if (oldState == QMediaPlayer::StoppedState)
-                emit started();
-            else if (oldState == QMediaPlayer::PausedState)
-                emit resumed();
-            break;
-        case QMediaPlayer::PausedState:
-            emit paused();
-        case QMediaPlayer::StoppedState:
+        if (state == QMediaPlayer::StoppedState) {
             emit stopped();
-            break;
-        default:
-            break;
+            emit playingChanged();
+        } else if (oldState == QMediaPlayer::StoppedState) {
+            emit started();
+            emit playingChanged();
+        } else if (oldState  == QMediaPlayer::PausedState) {
+            m_paused = false;
+
+            emit resumed();
+            emit pausedChanged();
         }
 
-        emit playingChanged();
-        emit pausedChanged();
+        if (state == m_state && state == QMediaPlayer::PausedState) {
+            bool wasPaused = m_paused;
+
+            m_paused = true;
+
+            emit paused();
+
+            if (!wasPaused)
+                emit pausedChanged();
+        }
 
         if (m_state == QMediaPlayer::PlayingState
                 || m_status == QMediaPlayer::BufferingMedia
@@ -218,6 +223,7 @@ QmlMediaBase::QmlMediaBase()
     , m_state(QMediaPlayer::StoppedState)
     , m_status(QMediaPlayer::NoMedia)
     , m_error(QMediaPlayer::NoError)
+    , m_paused(false)
 {
 }
 
@@ -264,9 +270,19 @@ void QmlMediaBase::setObject(QObject *object)
                 object, SIGNAL(volumeChanged()));
         QObject::connect(m_playerControl, SIGNAL(mutedChanged(bool)),
                 object, SIGNAL(mutedChanged()));
+        QObject::connect(m_playerControl, SIGNAL(bufferStatusChanged(int)),
+                object, SIGNAL(bufferProgressChanged()));
+        QObject::connect(m_playerControl, SIGNAL(seekableChanged(bool)),
+                object, SIGNAL(seekableChanged()));
+        QObject::connect(m_playerControl, SIGNAL(playbackRateChanged(qreal)),
+                object, SIGNAL(playbackRateChanged()));
+        QObject::connect(m_playerControl, SIGNAL(error(int,QString)),
+                object, SLOT(_q_error(int,QString)));
 
         m_animation = new QmlMediaBaseAnimation(this);
     } else {
+        m_error = QMediaPlayer::ServiceMissingError;
+
         m_playerControl = new QmlMediaBasePlayerControl(object);
     }
 
@@ -285,6 +301,13 @@ QUrl QmlMediaBase::source() const
 
 void QmlMediaBase::setSource(const QUrl &url)
 {
+    if (m_error != QMediaPlayer::ServiceMissingError && m_error != QMediaPlayer::NoError) {
+        m_error = QMediaPlayer::NoError;
+        m_errorString = QString();
+
+        emit errorChanged();
+    }
+
     m_playerControl->setMedia(QMediaContent(url), 0);
 }
 
@@ -295,23 +318,34 @@ bool QmlMediaBase::isPlaying() const
 
 void QmlMediaBase::setPlaying(bool playing)
 {
-    if (playing && m_state == QMediaPlayer::StoppedState)
-        m_playerControl->play();
-    else if (!playing)
+    if (playing && m_state == QMediaPlayer::StoppedState) {
+        if (m_paused)
+            m_playerControl->pause();
+        else
+            m_playerControl->play();
+    } else if (!playing) {
         m_playerControl->stop();
+    }
 }
 
 bool QmlMediaBase::isPaused() const
 {
-    return m_state == QMediaPlayer::PausedState;
+    return m_paused;
 }
 
 void QmlMediaBase::setPaused(bool paused)
 {
-    if (paused && m_state == QMediaPlayer::PlayingState)
-        m_playerControl->pause();
-    if (!paused && m_state == QMediaPlayer::PausedState)
-        m_playerControl->play();
+    if (m_paused != paused) {
+        if (paused && m_state == QMediaPlayer::PlayingState) {
+            m_playerControl->pause();
+        } else if (!paused && m_state == QMediaPlayer::PausedState) {
+            m_playerControl->play();
+        } else {
+            m_paused = paused;
+
+            emit pausedChanged();
+        }
+    }
 }
 
 int QmlMediaBase::duration() const
@@ -337,7 +371,7 @@ qreal QmlMediaBase::volume() const
 
 void QmlMediaBase::setVolume(qreal volume)
 {
-    m_playerControl->setVolume(volume * 100);
+    m_playerControl->setVolume(qRound(volume * 100));
 }
 
 bool QmlMediaBase::isMuted() const

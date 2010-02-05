@@ -59,9 +59,9 @@ void QmlGraphicsVideo::_q_nativeSizeChanged(const QSizeF &size)
     setImplicitHeight(size.height());
 }
 
-void QmlGraphicsVideo::_q_error(QMediaPlayer::Error errorCode, const QString &errorString)
+void QmlGraphicsVideo::_q_error(int errorCode, const QString &errorString)
 {
-    m_error = errorCode;
+    m_error = QMediaPlayer::Error(errorCode);
     m_errorString = errorString;
 
     emit error(Error(errorCode), errorString);
@@ -84,7 +84,6 @@ void QmlGraphicsVideo::_q_error(QMediaPlayer::Error errorCode, const QString &er
 QmlGraphicsVideo::QmlGraphicsVideo(QmlGraphicsItem *parent)
     : QmlGraphicsItem(parent)
     , m_graphicsItem(0)
-    , m_fillMode(QmlGraphicsVideo::PreserveAspectFit)
 
 {
     m_graphicsItem = new QGraphicsVideoItem(this);
@@ -338,6 +337,11 @@ void QmlGraphicsVideo::setFillMode(FillMode mode)
 void QmlGraphicsVideo::play()
 {
     m_playerControl->play();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -349,6 +353,11 @@ void QmlGraphicsVideo::play()
 void QmlGraphicsVideo::pause()
 {
     m_playerControl->pause();
+
+    if (!m_paused && m_state == QMediaPlayer::PausedState) {
+        m_paused = true;
+        emit pausedChanged();
+    }
 }
 
 /*!
@@ -360,6 +369,11 @@ void QmlGraphicsVideo::pause()
 void QmlGraphicsVideo::stop()
 {
     m_playerControl->stop();
+
+    if (m_paused) {
+        m_paused = false;
+        emit pausedChanged();
+    }
 }
 
 void QmlGraphicsVideo::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)

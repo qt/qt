@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Mobility Components.
+** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -57,7 +57,7 @@ class QMetaDataControl;
 class QMetaDataControlMetaObject;
 class QmlMediaBaseAnimation;
 
-class QmlMediaBase
+class Q_AUTOTEST_EXPORT QmlMediaBase
 {
 public:
     QmlMediaBase();
@@ -131,6 +131,8 @@ protected:
     virtual void seekableChanged() = 0;
     virtual void playbackRateChanged() = 0;
 
+    virtual void errorChanged() = 0;
+
     QMediaService *m_mediaService;
     QMediaPlayerControl *m_playerControl;
 
@@ -143,6 +145,7 @@ protected:
     QMediaPlayer::State m_state;
     QMediaPlayer::MediaStatus m_status;
     QMediaPlayer::Error m_error;
+    bool m_paused;
     QString m_errorString;
 
     friend class QmlMediaBaseAnimation;

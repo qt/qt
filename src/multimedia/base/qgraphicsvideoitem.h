@@ -63,13 +63,6 @@ class Q_MULTIMEDIA_EXPORT QGraphicsVideoItem : public QGraphicsObject
     Q_PROPERTY(QSizeF size READ size WRITE setSize)
     Q_PROPERTY(QSizeF nativeSize READ nativeSize NOTIFY nativeSizeChanged)
 public:
-    enum FillMode
-    {
-        Stretch,
-        PreserveAspectFit,
-        PreserveAspectCrop
-    };
-
     QGraphicsVideoItem(QGraphicsItem *parent = 0);
     ~QGraphicsVideoItem();
 
