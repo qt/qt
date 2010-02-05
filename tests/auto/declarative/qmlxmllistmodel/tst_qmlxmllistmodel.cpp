@@ -171,6 +171,8 @@ void tst_qmlxmllistmodel::roleErrors()
     QCOMPARE(data.value(Qt::UserRole), QVariant());
     QCOMPARE(data.value(Qt::UserRole+1), QVariant());
     QCOMPARE(data.value(Qt::UserRole+2), QVariant());
+
+    QEXPECT_FAIL("", "QT-2456", Continue);
     QCOMPARE(data.value(Qt::UserRole+3), QVariant());
 
     delete listModel;
