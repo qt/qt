@@ -130,6 +130,7 @@ static const XvFormatYuv qt_xvYuvLookup[] =
     { QVideoFrame::Format_YUV420P, 12, XvPlanar, 3, 8, 8, 8, 1, 2, 2, 1, 2, 2, "YUV"  },
     { QVideoFrame::Format_YV12   , 12, XvPlanar, 3, 8, 8, 8, 1, 2, 2, 1, 2, 2, "YVU"  },
     { QVideoFrame::Format_UYVY   , 16, XvPacked, 1, 8, 8, 8, 1, 2, 2, 1, 1, 1, "UYVY" },
+    { QVideoFrame::Format_YUYV   , 16, XvPacked, 1, 8, 8, 8, 1, 2, 2, 1, 1, 1, "YUY2" },
     { QVideoFrame::Format_YUYV   , 16, XvPacked, 1, 8, 8, 8, 1, 2, 2, 1, 1, 1, "YUYV" },
     { QVideoFrame::Format_NV12   , 12, XvPlanar, 2, 8, 8, 8, 1, 2, 2, 1, 2, 2, "YUV"  },
     { QVideoFrame::Format_NV12   , 12, XvPlanar, 2, 8, 8, 8, 1, 2, 2, 1, 2, 2, "YVU"  },
