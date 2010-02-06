@@ -1017,6 +1017,8 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
     If the button has already been added, it is removed and added again with the
     new role.
 
+    \note The button box takes ownership of the button.
+
     \sa removeButton(), clear()
 */
 void QDialogButtonBox::addButton(QAbstractButton *button, ButtonRole role)
