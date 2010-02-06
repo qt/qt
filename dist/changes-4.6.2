@@ -64,6 +64,8 @@ QtGui
 
  * [QTBUG-7029] Fixed a crash when re-creating QApplication object due to a
    dangling gesture manager pointer.
+ * [QTBUG-7198] Setting a style sheet could break the checkbox position in item views.
+
 
 QtDBus
 ------
@@ -152,20 +154,25 @@ Qt for Linux/X11
   * Fixed a crash when an input method tries to create a widget after the
     application is destroyed.
 
+  - [QTBUG-6952] Fixed a problem using NoButtons in spinbox with QGtkStyle
+  - [QTBUG-7504] Fixed missing focus rect on check- and radiobutton with
+     some GTK+ themes.
+  - [QTBUG-6522] Fixed missing menu separator in some GTK+ themes.
+
 Qt for Windows
 --------------
-
- -
 
 Qt for Mac OS X
 ---------------
 
+ - [QTBUG-7832]: Restored missing margins around non-unified toolbars.
  - [QTBUG-7312]: Menubar and dock disappear after hiding a fullscreen widget on Cocoa.
  - [QTBUG-7522]: Drawing fake buttons using QMacStyle+QStyleOptionViewItemV4 lead to crash.
  - [QTBUG-7625]: Calling showFullScreen() then showNormal() on a widget results in top menu hiding.
  - [QTBUG-7086]: QFileDialog now correctly responds to fileMode & acceptMode changes.
  - [QTBUG-7162]: Fixed a crash in Designer when previewing a QMainWindow with native toolbar.
  - [QTBUG-7305]: Fixed a crash when deleting QMainWindow with native toolbar on Cocoa.
+ - [QTBUG-6882]: Fixed a text layout issue with QHeaderView in right-to-left mode.
 
  - QPrintPreviewDialog
     * [QTBUG-7481] Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
