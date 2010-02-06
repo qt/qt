@@ -251,6 +251,14 @@ Qt for Windows CE
 Qt for Symbian
 --------------
 
+  * [QTBUG-6556] Improve the DEF file handling scheme, to allow simple enable/
+    disable of DEF file usage (for use _during development only_ to decouple
+    the need to update the DEF files at the precise point that symbols are
+    removed, therefore allowing builds by CI systems to succeed even if symbols
+    have been removed.  This does not remove the need to update the DEF files
+    before release.  NOTE: Builds generated using this flag are not binary
+    compatible with previous versions of Qt.)
+
 - QProcess
     * [QTBUG-7667] Fixed no-timeout case for QProcess::waitForFinished.
 
