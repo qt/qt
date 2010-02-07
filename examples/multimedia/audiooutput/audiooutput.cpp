@@ -179,6 +179,9 @@ AudioTest::AudioTest()
 
     if(settings.sampleSize() != 16) {
         qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
+        button->setDisabled(true);
+        button2->setDisabled(true);
+        audioOutput = 0;
         return;
     }
 
