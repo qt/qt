@@ -145,9 +145,11 @@ private slots:
     void fromWinHICON();
 #endif
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
     void fromSymbianCFbsBitmap_data();
     void fromSymbianCFbsBitmap();
+    void toSymbianCFbsBitmap_data();
+    void toSymbianCFbsBitmap();
 #endif
 
     void onlyNullPixmapsOutsideGuiThread();
@@ -1110,7 +1112,7 @@ void tst_QPixmap::fromWinHICON()
 
 #endif // Q_WS_WIN
 
-#if defined(Q_WS_S60)
+#if defined(Q_OS_SYMBIAN)
 Q_DECLARE_METATYPE(TDisplayMode)
 
 void tst_QPixmap::fromSymbianCFbsBitmap_data()
@@ -1205,6 +1207,45 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
     __UHEAP_MARKEND;
 
     CleanupStack::PopAndDestroy(3);
+}
+
+void tst_QPixmap::toSymbianCFbsBitmap_data()
+{
+    QTest::addColumn<int>("red");
+    QTest::addColumn<int>("green");
+    QTest::addColumn<int>("blue");
+
+    QTest::newRow("red")   << 255 << 0 << 0;
+    QTest::newRow("green") << 0 << 255 << 0;
+    QTest::newRow("blue")  << 0 << 0 << 255;
+}
+
+void tst_QPixmap::toSymbianCFbsBitmap()
+{
+    QFETCH(int, red);
+    QFETCH(int, green);
+    QFETCH(int, blue);
+
+    QPixmap pm(100, 100);
+    pm.fill(QColor(red, green, blue));
+
+    CFbsBitmap *bitmap = pm.toSymbianCFbsBitmap();
+
+    QVERIFY(bitmap != 0);
+
+    // Verify size
+    QCOMPARE(100, (int) bitmap->SizeInPixels().iWidth);
+    QCOMPARE(100, (int) bitmap->SizeInPixels().iHeight);
+
+    // Verify pixel color
+    TRgb pixel;
+    bitmap->GetPixel(pixel, TPoint(0,0));
+    QCOMPARE((int)pixel.Red(), red);
+    QCOMPARE((int)pixel.Green(), green);
+    QCOMPARE((int)pixel.Blue(), blue);
+
+    // Clean up
+    delete bitmap;
 }
 #endif
 

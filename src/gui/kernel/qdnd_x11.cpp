@@ -617,7 +617,7 @@ QVariant QX11Data::xdndMimeConvertToFormat(Atom a, const QByteArray &data, const
             // so it should be safe to check that the second char is 0
             // to verify that it is utf16
             if (data.size() > 1 && data.at(1) == 0)
-                return QString::fromUtf16(reinterpret_cast<const ushort *>(data.constData()),
+                return QString::fromRawData((const QChar *)data.constData(),
                                 data.size() / 2).split(QLatin1Char('\n')).first().toLatin1();
         }
     }

@@ -2219,7 +2219,8 @@ QStringList QCoreApplication::libraryPaths()
             TFindFile finder(fs);
             TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
             while (err == KErrNone) {
-                QString foundDir = QString::fromUtf16(finder.File().Ptr(), finder.File().Length());
+                QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
+                                 finder.File().Length());
                 foundDir = QDir(foundDir).canonicalPath();
                 if (!app_libpaths->contains(foundDir))
                     app_libpaths->append(foundDir);
