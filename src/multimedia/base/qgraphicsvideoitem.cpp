@@ -203,18 +203,6 @@ void QGraphicsVideoItemPrivate::_q_mediaObjectDestroyed()
 */
 
 /*!
-    \enum QGraphicsVideoItem::FillMode
-
-    Enumerates the methods of scaling a video to fit a graphics item.
-
-    \value Stretch The video is stretched to fit the item's size.
-    \value PreserveAspectFit The video is uniformly scaled to fix the item's
-    size without cropping.
-    \value PreserveAspectCrop The video is uniformly scaled to fill the item's
-    size, cropping if necessary.
-*/
-
-/*!
     Constructs a graphics item that displays video.
 
     The \a parent is passed to QGraphicsItem.
