@@ -66,7 +66,7 @@ void tst_QmlListModel::static_i18n()
     QString componentStr = "import Qt 4.6\nListModel { ListElement { prop1: \""+expect+"\" } }";
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(componentStr.toUtf8(), QUrl("file://"));
+    component.setData(componentStr.toUtf8(), QUrl::fromLocalFile(""));
     QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
     QVERIFY(obj != 0);
     QString prop = obj->get(0).property(QLatin1String("prop1")).toString();
@@ -96,7 +96,7 @@ void tst_QmlListModel::static_nestedElements()
 
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(componentStr.toUtf8(), QUrl("file://"));
+    component.setData(componentStr.toUtf8(), QUrl::fromLocalFile(""));
 
     QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
     QVERIFY(obj != 0);

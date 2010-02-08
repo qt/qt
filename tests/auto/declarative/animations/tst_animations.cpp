@@ -255,7 +255,7 @@ void tst_animations::badTypes()
     //don't crash
     {
         QmlView *view = new QmlView;
-        view->setUrl(QUrl("file://" SRCDIR "/data/badtype1.qml"));
+        view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/badtype1.qml"));
 
         view->execute();
         qApp->processEvents();
@@ -266,7 +266,7 @@ void tst_animations::badTypes()
     //make sure we get a compiler error
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badtype2.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/badtype2.qml"));
         QTest::ignoreMessage(QtWarningMsg, "QmlComponent: Component is not ready");
         c.create();
 
@@ -277,7 +277,7 @@ void tst_animations::badTypes()
     //make sure we get a compiler error
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badtype3.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/badtype3.qml"));
         QTest::ignoreMessage(QtWarningMsg, "QmlComponent: Component is not ready");
         c.create();
 
@@ -288,7 +288,7 @@ void tst_animations::badTypes()
     //don't crash
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badtype4.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/badtype4.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -306,15 +306,15 @@ void tst_animations::badProperties()
     {
         QmlEngine engine;
 
-        QmlComponent c1(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
-        QByteArray message = "QML ColorAnimation (file://" SRCDIR "/data/badproperty1.qml:18:9) Cannot animate non-existant property \"border.colr\"";
+        QmlComponent c1(&engine, QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml"));
+        QByteArray message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml").toString().toUtf8() + ":18:9) Cannot animate non-existant property \"border.colr\"";
         QTest::ignoreMessage(QtWarningMsg, message);
         QTest::ignoreMessage(QtWarningMsg, message); // why twice?
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c1.create());
         QVERIFY(rect);
 
-        QmlComponent c2(&engine, QUrl("file://" SRCDIR "/data/badproperty2.qml"));
-        message = "QML ColorAnimation (file://" SRCDIR "/data/badproperty2.qml:18:9) Cannot animate read-only property \"border\"";
+        QmlComponent c2(&engine, QUrl::fromLocalFile(SRCDIR "/data/badproperty2.qml"));
+        message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty2.qml").toString().toUtf8() + ":18:9) Cannot animate read-only property \"border\"";
         QTest::ignoreMessage(QtWarningMsg, message);
         QTest::ignoreMessage(QtWarningMsg, message); // why twice?
         rect = qobject_cast<QmlGraphicsRectangle*>(c2.create());
@@ -332,7 +332,7 @@ void tst_animations::mixedTypes()
     //assumes border.width stats a real -- not real robust
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/mixedtype1.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/mixedtype1.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -348,7 +348,7 @@ void tst_animations::mixedTypes()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/mixedtype2.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/mixedtype2.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -368,7 +368,7 @@ void tst_animations::properties()
     const int waitDuration = 300;
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/properties.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -380,7 +380,7 @@ void tst_animations::properties()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties2.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/properties2.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -392,7 +392,7 @@ void tst_animations::properties()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties3.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/properties3.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -404,7 +404,7 @@ void tst_animations::properties()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties4.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/properties4.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -417,7 +417,7 @@ void tst_animations::properties()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties5.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/properties5.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -434,7 +434,7 @@ void tst_animations::propertiesTransition()
     const int waitDuration = 300;
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -447,7 +447,7 @@ void tst_animations::propertiesTransition()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition2.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition2.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -462,33 +462,33 @@ void tst_animations::propertiesTransition()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition3.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition3.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (file://" SRCDIR "/data/propertiesTransition4.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition4.qml").toString().toUtf8() + ":22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition4.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition4.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (file://" SRCDIR "/data/propertiesTransition5.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition5.qml").toString().toUtf8() + ":22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition5.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition5.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -568,7 +568,7 @@ void tst_animations::attached()
 {
     QmlEngine engine;
 
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/attached.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/attached.qml"));
     QTest::ignoreMessage(QtDebugMsg, "off");
     QTest::ignoreMessage(QtDebugMsg, "on");
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());

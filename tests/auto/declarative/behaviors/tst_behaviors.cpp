@@ -71,7 +71,7 @@ private slots:
 void tst_behaviors::simpleBehavior()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/simple.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/simple.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
     QVERIFY(qobject_cast<QmlBehavior*>(rect->findChild<QmlBehavior*>("MyBehavior"))->animation());
@@ -85,7 +85,7 @@ void tst_behaviors::simpleBehavior()
 void tst_behaviors::scriptTriggered()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/scripttrigger.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/scripttrigger.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
 
@@ -98,7 +98,7 @@ void tst_behaviors::scriptTriggered()
 void tst_behaviors::cppTriggered()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/cpptrigger.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/cpptrigger.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
 
@@ -114,7 +114,7 @@ void tst_behaviors::cppTriggered()
 void tst_behaviors::loop()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/loop.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/loop.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
 
@@ -125,7 +125,7 @@ void tst_behaviors::loop()
 void tst_behaviors::colorBehavior()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/color.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/color.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
 
@@ -138,7 +138,7 @@ void tst_behaviors::colorBehavior()
 void tst_behaviors::parentBehavior()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/parent.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/parent.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
 
@@ -155,7 +155,7 @@ void tst_behaviors::parentBehavior()
 void tst_behaviors::replaceBinding()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/binding.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/binding.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
 
@@ -190,7 +190,7 @@ void tst_behaviors::group()
 {
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/groupProperty.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/groupProperty.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -202,7 +202,7 @@ void tst_behaviors::group()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/groupProperty2.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/groupProperty2.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -216,7 +216,7 @@ void tst_behaviors::group()
 void tst_behaviors::emptyBehavior()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/empty.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/empty.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
 
@@ -229,7 +229,7 @@ void tst_behaviors::nonSelectingBehavior()
 {
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/nonSelecting.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -240,7 +240,7 @@ void tst_behaviors::nonSelectingBehavior()
 
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/nonSelecting2.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting2.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
@@ -253,8 +253,8 @@ void tst_behaviors::nonSelectingBehavior()
 void tst_behaviors::reassignedAnimation()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/reassignedAnimation.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML Behavior (file://" SRCDIR "/data/reassignedAnimation.qml:9:12) Can't change the animation assigned to a Behavior.");
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml"));
+    QTest::ignoreMessage(QtWarningMsg, QString("QML Behavior (" + QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:12) Can't change the animation assigned to a Behavior.").toUtf8().constData());
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
     QCOMPARE(qobject_cast<QmlNumberAnimation*>(
@@ -265,7 +265,7 @@ void tst_behaviors::reassignedAnimation()
 void tst_behaviors::disabled()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/disabled.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/disabled.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
     QCOMPARE(rect->findChild<QmlBehavior*>("MyBehavior")->enabled(), false);

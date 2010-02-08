@@ -78,7 +78,7 @@ private slots:
 void tst_animatedimage::play()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickman.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickman.qml"));
     QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
@@ -89,7 +89,7 @@ void tst_animatedimage::play()
 void tst_animatedimage::pause()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickmanpause.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanpause.qml"));
     QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
@@ -101,7 +101,7 @@ void tst_animatedimage::pause()
 void tst_animatedimage::stopped()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickmanstopped.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanstopped.qml"));
     QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(!anim->isPlaying());
@@ -113,7 +113,7 @@ void tst_animatedimage::stopped()
 void tst_animatedimage::setFrame()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickmanpause.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanpause.qml"));
     QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
@@ -125,7 +125,7 @@ void tst_animatedimage::setFrame()
 void tst_animatedimage::frameCount()
 {
     QmlEngine engine;
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/colors.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/colors.qml"));
     QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
@@ -174,7 +174,7 @@ void tst_animatedimage::invalidSource()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData("import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl("file://"));
+    component.setData("import Qt 4.6\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
     QVERIFY(component.isReady());
 
     QTest::ignoreMessage(QtWarningMsg, "Error Reading Animated Image File  QUrl( \"file:no-such-file.gif\" )  ");

@@ -108,7 +108,7 @@ void tst_QmlGraphicsItem::keys()
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setUrl(QUrl("file://" SRCDIR "/data/keys.qml"));
+    canvas->setUrl(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
 
     KeysTestObject *testObject = new KeysTestObject;
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
@@ -190,7 +190,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setUrl(QUrl("file://" SRCDIR "/data/keynavigation.qml"));
+    canvas->setUrl(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
     canvas->execute();
     canvas->show();
     qApp->processEvents();

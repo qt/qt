@@ -52,7 +52,7 @@ class tst_qmlpixmapcache : public QObject
     Q_OBJECT
 public:
     tst_qmlpixmapcache() :
-        thisfile("file://" __FILE__)
+        thisfile(QUrl::fromLocalFile(__FILE__))
     {
     }
 

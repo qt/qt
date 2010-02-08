@@ -352,4 +352,64 @@ QStringList QmlPropertyCache::propertyNames() const
     return stringCache.keys();
 }
 
+QmlPropertyCache::Data *QmlPropertyCache::property(QmlEngine *engine, QObject *obj, 
+                                                   const QScriptDeclarativeClass::Identifier &name, Data &local)
+{
+    QmlPropertyCache::Data *rv = 0;
+
+    QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(engine);
+
+    QmlPropertyCache *cache = 0;
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
+    if (ddata && ddata->propertyCache && ddata->propertyCache->qmlEngine() == engine)
+        cache = ddata->propertyCache;
+    if (!cache) {
+        cache = enginePrivate->cache(obj);
+        if (cache && ddata && !ddata->propertyCache) { cache->addref(); ddata->propertyCache = cache; }
+    }
+
+    if (cache) {
+        rv = cache->property(name);
+    } else {
+        local = QmlPropertyCache::create(obj->metaObject(), enginePrivate->objectClass->toString(name));
+        if (local.isValid())
+            rv = &local;
+    }
+
+    return rv;
+}
+
+QmlPropertyCache::Data *QmlPropertyCache::property(QmlEngine *engine, QObject *obj, 
+                                                   const QString &name, Data &local)
+{
+    QmlPropertyCache::Data *rv = 0;
+
+    if (!engine) {
+        local = QmlPropertyCache::create(obj->metaObject(), name);
+        if (local.isValid())
+            rv = &local;
+    } else {
+        QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(engine);
+
+        QmlPropertyCache *cache = 0;
+        QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
+        if (ddata && ddata->propertyCache && ddata->propertyCache->qmlEngine() == engine)
+            cache = ddata->propertyCache;
+        if (!cache) {
+            cache = enginePrivate->cache(obj);
+            if (cache && ddata && !ddata->propertyCache) { cache->addref(); ddata->propertyCache = cache; }
+        }
+
+        if (cache) {
+            rv = cache->property(name);
+        } else {
+            local = QmlPropertyCache::create(obj->metaObject(), name);
+            if (local.isValid())
+                rv = &local;
+        }
+    }
+
+    return rv;
+}
+
 QT_END_NAMESPACE

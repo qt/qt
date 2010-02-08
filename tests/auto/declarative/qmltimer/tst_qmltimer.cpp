@@ -92,7 +92,7 @@ void tst_qmltimer::notRepeating()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true }"), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true }"), QUrl::fromLocalFile(""));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(timer->isRunning());
@@ -113,7 +113,7 @@ void tst_qmltimer::notRepeatingStart()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100 }"), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100 }"), QUrl::fromLocalFile(""));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(!timer->isRunning());
@@ -138,7 +138,7 @@ void tst_qmltimer::repeat()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; repeat: true; running: true }"), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; repeat: true; running: true }"), QUrl::fromLocalFile(""));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -168,7 +168,7 @@ void tst_qmltimer::triggeredOnStart()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true }"), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true }"), QUrl::fromLocalFile(""));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(timer->triggeredOnStart());
@@ -191,7 +191,7 @@ void tst_qmltimer::triggeredOnStartRepeat()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true; repeat: true }"), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true; repeat: true }"), QUrl::fromLocalFile(""));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -220,7 +220,7 @@ void tst_qmltimer::noTriggerIfNotRunning()
             "Timer { id: t1; interval: 100; repeat: true; running: true; onTriggered: if (!running) ok=false }"
             "Timer { interval: 10; running: true; onTriggered: t1.running=false }"
         "}"
-    ), QUrl("file://"));
+    ), QUrl::fromLocalFile(""));
     QObject *item = component.create();
     QVERIFY(item != 0);
     QTest::qWait(TIMEOUT_TIMEOUT);
@@ -233,7 +233,7 @@ void tst_qmltimer::changeDuration()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 200; repeat: true; running: true }"), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 200; repeat: true; running: true }"), QUrl::fromLocalFile(""));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -257,7 +257,7 @@ void tst_qmltimer::restart()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 500; repeat: true; running: true }"), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\nTimer { interval: 500; repeat: true; running: true }"), QUrl::fromLocalFile(""));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
 

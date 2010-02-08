@@ -68,7 +68,7 @@ private:
 
 void tst_qmlxmllistmodel::buildModel()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/model.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
     QTRY_COMPARE(listModel->count(), 9);
@@ -87,7 +87,7 @@ void tst_qmlxmllistmodel::buildModel()
 
 void tst_qmlxmllistmodel::missingFields()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/model2.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model2.qml"));
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
     QTRY_COMPARE(listModel->count(), 9);
@@ -108,7 +108,7 @@ void tst_qmlxmllistmodel::missingFields()
 
 void tst_qmlxmllistmodel::cdata()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/recipes.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/recipes.qml"));
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
     QTRY_COMPARE(listModel->count(), 5);
@@ -124,7 +124,7 @@ void tst_qmlxmllistmodel::cdata()
 
 void tst_qmlxmllistmodel::attributes()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/recipes.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/recipes.qml"));
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
     QTRY_COMPARE(listModel->count(), 5);
@@ -140,7 +140,7 @@ void tst_qmlxmllistmodel::attributes()
 
 void tst_qmlxmllistmodel::roles()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/model.qml"));
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
     QTRY_COMPARE(listModel->count(), 9);
@@ -157,8 +157,8 @@ void tst_qmlxmllistmodel::roles()
 
 void tst_qmlxmllistmodel::roleErrors()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/roleErrors.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML XmlRole (file://" SRCDIR "/data/roleErrors.qml:6:5) An XmlRole query must not start with '/'");
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml"));
+    QTest::ignoreMessage(QtWarningMsg, QString("QML XmlRole (" + QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml").toString() + ":6:5) An XmlRole query must not start with '/'").toUtf8().constData());
     //### make sure we receive all expected warning messages.
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
@@ -182,8 +182,8 @@ void tst_qmlxmllistmodel::roleErrors()
 
 void tst_qmlxmllistmodel::uniqueRoleNames()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/unique.qml"));
-    QTest::ignoreMessage(QtWarningMsg, "QML XmlRole (file://" SRCDIR "/data/unique.qml:7:5) \"name\" duplicates a previous role name and will be disabled.");
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/unique.qml"));
+    QTest::ignoreMessage(QtWarningMsg, QString("QML XmlRole (" + QUrl::fromLocalFile(SRCDIR "/data/unique.qml").toString() + ":7:5) \"name\" duplicates a previous role name and will be disabled.").toUtf8().constData());
     QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
     QVERIFY(listModel != 0);
     QTRY_COMPARE(listModel->count(), 9);

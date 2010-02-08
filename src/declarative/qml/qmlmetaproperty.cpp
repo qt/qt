@@ -188,24 +188,11 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
     } 
 
     // Property
-    QmlPropertyCache *cache = 0;
-    QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
-    if (ddata)
-        cache = ddata->propertyCache;
-    if (!cache)
-        cache = enginePrivate?enginePrivate->cache(obj):0;
-
-    if (cache) {
-        QmlPropertyCache::Data *data = cache->property(name);
-
-        if (data && !(data->flags & QmlPropertyCache::Data::IsFunction)) 
-            core = *data;
-
-    } else {
-        // No cache available
-        QMetaProperty p = QmlMetaType::property(obj, name.toUtf8().constData());
-        core.load(p);
-    }
+    QmlPropertyCache::Data local;
+    QmlPropertyCache::Data *property = 
+        QmlPropertyCache::property(context?context->engine():0, obj, name, local);
+    if (property && !(property->flags & QmlPropertyCache::Data::IsFunction)) 
+        core = *property;
 }
 
 /*!

@@ -144,23 +144,7 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         return 0;
 
     QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(engine);
-
-    QmlPropertyCache *cache = 0;
-    QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
-    if (ddata)
-        cache = ddata->propertyCache;
-    if (!cache) {
-        cache = enginePrivate->cache(obj);
-        if (cache && ddata) { cache->addref(); ddata->propertyCache = cache; }
-    }
-
-    if (cache) {
-        lastData = cache->property(name);
-    } else {
-        local = QmlPropertyCache::create(obj->metaObject(), toString(name));
-        if (local.isValid())
-            lastData = &local;
-    }
+    lastData = QmlPropertyCache::property(engine, obj, name, local);
 
     if (lastData)
         return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess; 

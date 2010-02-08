@@ -52,6 +52,9 @@ class tst_states : public QObject
 public:
     tst_states() {}
 
+private:
+    static QByteArray fullDataPath(const QString &path);
+
 private slots:
     void basicChanges();
     void basicExtension();
@@ -77,6 +80,11 @@ private slots:
     void illegalTempState();
     void nonExistantProperty();
 };
+
+QByteArray tst_states::fullDataPath(const QString &path)
+{
+    return QUrl::fromLocalFile(SRCDIR + path).toString().toUtf8();    
+}
 
 void tst_states::basicChanges()
 {
@@ -463,7 +471,7 @@ void tst_states::parentChangeErrors()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
-        QTest::ignoreMessage(QtWarningMsg, "QML ParentChange (file://" SRCDIR "/data/parentChange4.qml:25:9) Unable to preserve appearance under non-uniform scale");
+        QTest::ignoreMessage(QtWarningMsg, QByteArray("QML ParentChange (" + fullDataPath("/data/parentChange4.qml") + ":25:9) Unable to preserve appearance under non-uniform scale").constData());
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
@@ -479,7 +487,7 @@ void tst_states::parentChangeErrors()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
-        QTest::ignoreMessage(QtWarningMsg, "QML ParentChange (file://" SRCDIR "/data/parentChange5.qml:25:9) Unable to preserve appearance under complex transform");
+        QTest::ignoreMessage(QtWarningMsg, QByteArray("QML ParentChange (" + fullDataPath("/data/parentChange5.qml") + ":25:9) Unable to preserve appearance under complex transform").constData());
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
@@ -720,8 +728,8 @@ void tst_states::propertyErrors()
 
     QCOMPARE(rect->color(),QColor("red"));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML PropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to non-existant property \"colr\"");
-    QTest::ignoreMessage(QtWarningMsg, "QML PropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to read-only property \"wantsFocus\"");
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to non-existant property \"colr\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to read-only property \"wantsFocus\"").constData());
     rect->setState("blue");
 }
 
@@ -866,7 +874,7 @@ void tst_states::nonExistantProperty()
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 
-    QTest::ignoreMessage(QtWarningMsg, "QML PropertyChanges (file://" SRCDIR "/data/nonExistantProp.qml:9:9) Cannot assign to non-existant property \"colr\"");
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/nonExistantProp.qml") + ":9:9) Cannot assign to non-existant property \"colr\"").constData());
     rect->setState("blue");
     QCOMPARE(rect->state(), QLatin1String("blue"));
 }

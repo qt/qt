@@ -580,7 +580,7 @@ void tst_QmlDebug::queryObject()
 
     // check source as defined in main()
     QmlDebugFileReference source = obj.source();
-    QCOMPARE(source.url(), QUrl("file://"));
+    QCOMPARE(source.url(), QUrl::fromLocalFile(""));
     QCOMPARE(source.lineNumber(), 2);
     QCOMPARE(source.columnNumber(), 1);
 

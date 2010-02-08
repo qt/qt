@@ -67,7 +67,7 @@ tst_qmleasefollow::tst_qmleasefollow()
 void tst_qmleasefollow::defaultValues()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/easefollow1.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow1.qml"));
     QmlEaseFollow *obj = qobject_cast<QmlEaseFollow*>(c.create());
 
     QVERIFY(obj != 0);
@@ -85,7 +85,7 @@ void tst_qmleasefollow::defaultValues()
 void tst_qmleasefollow::values()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/easefollow2.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow2.qml"));
     QmlEaseFollow *obj = qobject_cast<QmlEaseFollow*>(c.create());
 
     QVERIFY(obj != 0);
@@ -103,7 +103,7 @@ void tst_qmleasefollow::values()
 void tst_qmleasefollow::disabled()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/easefollow3.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow3.qml"));
     QmlEaseFollow *obj = qobject_cast<QmlEaseFollow*>(c.create());
 
     QVERIFY(obj != 0);

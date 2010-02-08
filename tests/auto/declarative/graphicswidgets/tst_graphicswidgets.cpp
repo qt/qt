@@ -62,7 +62,7 @@ tst_graphicswidgets::tst_graphicswidgets()
 void tst_graphicswidgets::widgets()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/graphicswidgets.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/graphicswidgets.qml"));
     QGraphicsView *obj = qobject_cast<QGraphicsView*>(c.create());
 
     QVERIFY(obj != 0);

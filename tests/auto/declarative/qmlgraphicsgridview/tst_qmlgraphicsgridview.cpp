@@ -769,7 +769,7 @@ void tst_QmlGraphicsGridView::changeFlow()
 void tst_QmlGraphicsGridView::defaultValues()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/gridview3.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview3.qml"));
     QmlGraphicsGridView *obj = qobject_cast<QmlGraphicsGridView*>(c.create());
 
     QVERIFY(obj != 0);
@@ -792,7 +792,7 @@ void tst_QmlGraphicsGridView::defaultValues()
 void tst_QmlGraphicsGridView::properties()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/gridview2.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview2.qml"));
     QmlGraphicsGridView *obj = qobject_cast<QmlGraphicsGridView*>(c.create());
 
     QVERIFY(obj != 0);

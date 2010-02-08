@@ -102,7 +102,7 @@ T *tst_anchors::findItem(QmlGraphicsItem *parent, const QString &objectName)
 void tst_anchors::basicAnchors()
 {
     QmlView *view = new QmlView;
-    view->setUrl(QUrl("file://" SRCDIR "/data/anchors.qml"));
+    view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/anchors.qml"));
 
     view->execute();
     qApp->processEvents();
@@ -173,7 +173,7 @@ void tst_anchors::loops()
     {
         QmlView *view = new QmlView;
 
-        view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
+        view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/loop1.qml"));
 
         QString expect = "QML Text (" + view->url().toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -188,7 +188,7 @@ void tst_anchors::loops()
     {
         QmlView *view = new QmlView;
 
-        view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
+        view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/loop2.qml"));
 
         QString expect = "QML Image (" + view->url().toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -208,7 +208,7 @@ void tst_anchors::illegalSets()
 
     QmlEngine engine;
     QmlComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.6\n" + qml.toUtf8()), QUrl("file://"));
+    component.setData(QByteArray("import Qt 4.6\n" + qml.toUtf8()), QUrl::fromLocalFile(""));
     if (!component.isReady())
         qWarning() << "Test errors:" << component.errors();
     QVERIFY(component.isReady());
@@ -372,7 +372,7 @@ void tst_anchors::crash1()
 {
     QmlView *view = new QmlView;
 
-    view->setUrl(QUrl("file://" SRCDIR "/data/crash1.qml"));
+    view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/crash1.qml"));
 
     QString expect = "QML Text (" + view->url().toString() + ":4:5" + ") Possible anchor loop detected on fill.";
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -387,7 +387,7 @@ void tst_anchors::fill()
 {
     QmlView *view = new QmlView;
 
-    view->setUrl(QUrl("file://" SRCDIR "/data/fill.qml"));
+    view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/fill.qml"));
 
     view->execute();
     qApp->processEvents();
@@ -413,7 +413,7 @@ void tst_anchors::centerIn()
 {
     QmlView *view = new QmlView;
 
-    view->setUrl(QUrl("file://" SRCDIR "/data/centerin.qml"));
+    view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/centerin.qml"));
 
     view->execute();
     qApp->processEvents();
@@ -433,7 +433,7 @@ void tst_anchors::margins()
 {
     QmlView *view = new QmlView;
 
-    view->setUrl(QUrl("file://" SRCDIR "/data/margins.qml"));
+    view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/margins.qml"));
 
     view->execute();
     qApp->processEvents();

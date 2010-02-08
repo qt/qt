@@ -137,7 +137,7 @@ void tst_QmlPropertyMap::changed()
     ctxt->setContextProperty(QLatin1String("testdata"), &map);
     QmlComponent component(&engine);
     component.setData("import Qt 4.6\nText { text: { testdata.key1 = 'Hello World'; 'X' } }",
-            QUrl("file://"));
+            QUrl::fromLocalFile(""));
     QVERIFY(component.isReady());
     QmlGraphicsText *txt = qobject_cast<QmlGraphicsText*>(component.create());
     QVERIFY(txt);

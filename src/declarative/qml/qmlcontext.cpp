@@ -461,16 +461,13 @@ QVariant QmlContext::contextProperty(const QString &name) const
         QByteArray utf8Name = name.toUtf8();
         for (int ii = d->defaultObjects.count() - 1; ii >= 0; --ii) {
             QObject *obj = d->defaultObjects.at(ii);
-            QmlDeclarativeData *data = QmlDeclarativeData::get(obj);
-            if (data && data->propertyCache) {
-                QmlPropertyCache::Data *property = data->propertyCache->property(name);
-                if (property)
-                    value = obj->metaObject()->property(property->coreIndex).read(obj);
-            } else {
-                value = obj->property(utf8Name);
-            }
-            if (value.isValid())
+            QmlPropertyCache::Data local;
+            QmlPropertyCache::Data *property = QmlPropertyCache::property(d->engine, obj, name, local);
+
+            if (property) {
+                value = obj->metaObject()->property(property->coreIndex).read(obj);
                 break;
+            }
         }
         if (!value.isValid() && parentContext())
             value = parentContext()->contextProperty(name);

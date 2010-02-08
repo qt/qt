@@ -67,7 +67,7 @@ tst_qmlspringfollow::tst_qmlspringfollow()
 void tst_qmlspringfollow::defaultValues()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/springfollow1.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow1.qml"));
     QmlSpringFollow *obj = qobject_cast<QmlSpringFollow*>(c.create());
 
     QVERIFY(obj != 0);
@@ -89,7 +89,7 @@ void tst_qmlspringfollow::defaultValues()
 void tst_qmlspringfollow::values()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/springfollow2.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow2.qml"));
     QmlSpringFollow *obj = qobject_cast<QmlSpringFollow*>(c.create());
 
     QVERIFY(obj != 0);
@@ -112,7 +112,7 @@ void tst_qmlspringfollow::values()
 void tst_qmlspringfollow::disabled()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/springfollow3.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow3.qml"));
     QmlSpringFollow *obj = qobject_cast<QmlSpringFollow*>(c.create());
 
     QVERIFY(obj != 0);

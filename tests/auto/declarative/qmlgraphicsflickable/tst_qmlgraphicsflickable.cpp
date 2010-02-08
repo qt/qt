@@ -68,7 +68,7 @@ tst_qmlgraphicsflickable::tst_qmlgraphicsflickable()
 void tst_qmlgraphicsflickable::create()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/flickable01.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable01.qml"));
     QmlGraphicsFlickable *obj = qobject_cast<QmlGraphicsFlickable*>(c.create());
 
     QVERIFY(obj != 0);
@@ -94,7 +94,7 @@ void tst_qmlgraphicsflickable::create()
 void tst_qmlgraphicsflickable::horizontalViewportSize()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/flickable02.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable02.qml"));
     QmlGraphicsFlickable *obj = qobject_cast<QmlGraphicsFlickable*>(c.create());
 
     QVERIFY(obj != 0);
@@ -111,7 +111,7 @@ void tst_qmlgraphicsflickable::horizontalViewportSize()
 void tst_qmlgraphicsflickable::verticalViewportSize()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/flickable03.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable03.qml"));
     QmlGraphicsFlickable *obj = qobject_cast<QmlGraphicsFlickable*>(c.create());
 
     QVERIFY(obj != 0);
@@ -128,7 +128,7 @@ void tst_qmlgraphicsflickable::verticalViewportSize()
 void tst_qmlgraphicsflickable::properties()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/flickable04.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable04.qml"));
     QmlGraphicsFlickable *obj = qobject_cast<QmlGraphicsFlickable*>(c.create());
 
     QVERIFY(obj != 0);
