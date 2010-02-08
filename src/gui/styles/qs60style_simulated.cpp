@@ -95,7 +95,7 @@ bool saveThemeToBlob(const QString &themeBlob,
     }
 
     dataOut << partPictures.count();
-    QHashIterator i(partPictures);
+    QHashIterator<QString, QPicture> i(partPictures);
     while (i.hasNext()) {
         i.next();
         dataOut << i.key();
