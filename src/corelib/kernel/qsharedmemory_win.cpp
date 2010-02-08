@@ -99,18 +99,17 @@ HANDLE QSharedMemoryPrivate::handle()
 {
     if (!hand) {
         QString function = QLatin1String("QSharedMemory::handle");
-        QString safeKey = makePlatformSafeKey(key);
-        if (safeKey.isEmpty()) {
+        if (nativeKey.isEmpty()) {
             error = QSharedMemory::KeyError;
             errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
             return false;
         }
 #ifndef Q_OS_WINCE
-        hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false, (wchar_t*)safeKey.utf16());
+        hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false, (wchar_t*)nativeKey.utf16());
 #else
         // This works for opening a mapping too, but always opens it with read/write access in
         // attach as it seems.
-        hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, 0, (wchar_t*)safeKey.utf16());
+        hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, 0, (wchar_t*)nativeKey.utf16());
 #endif
         if (!hand) {
             setErrorString(function);
@@ -133,17 +132,15 @@ bool QSharedMemoryPrivate::cleanHandle()
 
 bool QSharedMemoryPrivate::create(int size)
 {
-    // Get a windows acceptable key
-    QString safeKey = makePlatformSafeKey(key);
     QString function = QLatin1String("QSharedMemory::create");
-    if (safeKey.isEmpty()) {
+    if (nativeKey.isEmpty()) {
         error = QSharedMemory::KeyError;
         errorString = QSharedMemory::tr("%1: key error").arg(function);
         return false;
     }
 
     // Create the file mapping.
-    hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)safeKey.utf16());
+    hand = CreateFileMapping(INVALID_HANDLE_VALUE, 0, PAGE_READWRITE, 0, size, (wchar_t*)nativeKey.utf16());
     setErrorString(function);
 
     // hand is valid when it already exists unlike unix so explicitly check
