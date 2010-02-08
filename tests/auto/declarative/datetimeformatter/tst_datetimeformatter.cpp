@@ -61,7 +61,7 @@ void tst_datetimeformatter::date()
     QmlEngine engine;
     QmlComponent formatterComponent(&engine);
     formatterComponent.setData(QByteArray("import Qt 4.6\n DateTimeFormatter { date: \"2008-12-24\" }"),
-                               QUrl("file://"));
+                               QUrl::fromLocalFile(""));
     QmlDateTimeFormatter *formatter = qobject_cast<QmlDateTimeFormatter*>(formatterComponent.create());
     if(formatterComponent.isError())
         qDebug() << formatterComponent.errors();
@@ -90,7 +90,7 @@ void tst_datetimeformatter::time()
 {
     QmlEngine engine;
     QmlComponent formatterComponent(&engine);
-    formatterComponent.setData("import Qt 4.6\n DateTimeFormatter { time: \"14:15:38.200\" }", QUrl("file://"));
+    formatterComponent.setData("import Qt 4.6\n DateTimeFormatter { time: \"14:15:38.200\" }", QUrl::fromLocalFile(""));
     QmlDateTimeFormatter *formatter = qobject_cast<QmlDateTimeFormatter*>(formatterComponent.create());
     if(formatterComponent.isError())
         qDebug() << formatterComponent.errors();
@@ -123,7 +123,7 @@ void tst_datetimeformatter::dateTime()
 {
     QmlEngine engine;
     QmlComponent formatterComponent(&engine);
-    formatterComponent.setData("import Qt 4.6\n DateTimeFormatter { dateTime: \"1978-03-04T09:13:54\" }", QUrl("file://"));
+    formatterComponent.setData("import Qt 4.6\n DateTimeFormatter { dateTime: \"1978-03-04T09:13:54\" }", QUrl::fromLocalFile(""));
     QmlDateTimeFormatter *formatter = qobject_cast<QmlDateTimeFormatter*>(formatterComponent.create());
     if(formatterComponent.isError())
         qDebug() << formatterComponent.errors();

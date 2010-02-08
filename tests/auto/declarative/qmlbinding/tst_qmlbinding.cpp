@@ -67,7 +67,7 @@ tst_qmlbinding::tst_qmlbinding()
 void tst_qmlbinding::binding()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-binding.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-binding.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
 
     QVERIFY(rect != 0);
@@ -89,7 +89,7 @@ void tst_qmlbinding::binding()
 void tst_qmlbinding::whenAfterValue()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-binding2.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-binding2.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
 
     QVERIFY(rect != 0);

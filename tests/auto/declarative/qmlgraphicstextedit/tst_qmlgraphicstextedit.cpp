@@ -266,7 +266,7 @@ void tst_qmlgraphicstextedit::textFormat()
 {
     {
         QmlComponent textComponent(&engine);
-        textComponent.setData("import Qt 4.6\nTextEdit { text: \"Hello\"; textFormat: Text.RichText }", QUrl("file://"));
+        textComponent.setData("import Qt 4.6\nTextEdit { text: \"Hello\"; textFormat: Text.RichText }", QUrl::fromLocalFile(""));
         QmlGraphicsTextEdit *textObject = qobject_cast<QmlGraphicsTextEdit*>(textComponent.create());
 
         QVERIFY(textObject != 0);
@@ -274,7 +274,7 @@ void tst_qmlgraphicstextedit::textFormat()
     }
     {
         QmlComponent textComponent(&engine);
-        textComponent.setData("import Qt 4.6\nTextEdit { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl("file://"));
+        textComponent.setData("import Qt 4.6\nTextEdit { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl::fromLocalFile(""));
         QmlGraphicsTextEdit *textObject = qobject_cast<QmlGraphicsTextEdit*>(textComponent.create());
 
         QVERIFY(textObject != 0);

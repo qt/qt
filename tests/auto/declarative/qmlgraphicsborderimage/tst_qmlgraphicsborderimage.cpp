@@ -101,7 +101,7 @@ void tst_qmlgraphicsborderimage::noSource()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"\" }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->source(), QUrl());
@@ -121,7 +121,7 @@ void tst_qmlgraphicsborderimage::imageSource_data()
 
     QTest::newRow("local") << SRCDIR "/data/colors.png" << false << "";
     QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false
-        << "Cannot open  QUrl( \"file://" SRCDIR "/data/no-such-file.png\" )  ";
+        << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
         << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
@@ -145,7 +145,7 @@ void tst_qmlgraphicsborderimage::imageSource()
 
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\" }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     
@@ -174,7 +174,7 @@ void tst_qmlgraphicsborderimage::clearSource()
     QmlContext *ctxt = engine.rootContext();
     ctxt->setContextProperty("srcImage", SRCDIR "/data/colors.png");
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     QVERIFY(obj->status() == QmlGraphicsBorderImage::Ready);
@@ -192,7 +192,7 @@ void tst_qmlgraphicsborderimage::resized()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 300 }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->width(), 300.);
@@ -207,7 +207,7 @@ void tst_qmlgraphicsborderimage::smooth()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->width(), 300.);
@@ -224,7 +224,7 @@ void tst_qmlgraphicsborderimage::tileModes()
     {
         QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 100; height: 300; horizontalTileMode: BorderImage.Repeat; verticalTileMode: BorderImage.Repeat }";
         QmlComponent component(&engine);
-        component.setData(componentStr.toLatin1(), QUrl("file://"));
+        component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
         QVERIFY(obj != 0);
         QCOMPARE(obj->width(), 100.);
@@ -237,7 +237,7 @@ void tst_qmlgraphicsborderimage::tileModes()
     {
         QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 150; horizontalTileMode: BorderImage.Round; verticalTileMode: BorderImage.Round }";
         QmlComponent component(&engine);
-        component.setData(componentStr.toLatin1(), QUrl("file://"));
+        component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
         QVERIFY(obj != 0);
         QCOMPARE(obj->width(), 300.);
@@ -264,7 +264,7 @@ void tst_qmlgraphicsborderimage::sciSource()
 
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\"; width: 300; height: 300 }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     
@@ -309,7 +309,7 @@ void tst_qmlgraphicsborderimage::invalidSciFile()
 
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/invalid.sci\"; width: 300; height: 300 }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->width(), 300.);
@@ -327,7 +327,7 @@ void tst_qmlgraphicsborderimage::pendingRemoteRequest()
 
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + source + "\" }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
     QCOMPARE(obj->status(), QmlGraphicsBorderImage::Loading);

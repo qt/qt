@@ -70,7 +70,7 @@ tst_qmlconnection::tst_qmlconnection()
 void tst_qmlconnection::defaultValues()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-connection3.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection3.qml"));
     QmlConnection *item = qobject_cast<QmlConnection*>(c.create());
 
     QVERIFY(item != 0);
@@ -84,7 +84,7 @@ void tst_qmlconnection::defaultValues()
 void tst_qmlconnection::properties()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-connection2.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection2.qml"));
     QmlConnection *item = qobject_cast<QmlConnection*>(c.create());
 
     QVERIFY(item != 0);
@@ -100,7 +100,7 @@ void tst_qmlconnection::properties()
 void tst_qmlconnection::connection()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-connection.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection.qml"));
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(c.create());
 
     QVERIFY(item != 0);
@@ -117,7 +117,7 @@ void tst_qmlconnection::connection()
 void tst_qmlconnection::trimming()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/trimming.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/trimming.qml"));
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(c.create());
 
     QVERIFY(item != 0);

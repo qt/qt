@@ -97,7 +97,7 @@ void tst_QmlGraphicsLoader::url()
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
-    QVERIFY(loader->source() == QUrl("file://" SRCDIR "/data/Rect120x60.qml"));
+    QVERIFY(loader->source() == QUrl::fromLocalFile(SRCDIR "/data/Rect120x60.qml"));
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(loader->status(), QmlGraphicsLoader::Ready);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
@@ -123,7 +123,7 @@ void tst_QmlGraphicsLoader::component()
 
 void tst_QmlGraphicsLoader::invalidUrl()
 {
-    QTest::ignoreMessage(QtWarningMsg, "(:-1: File error for URL file://" SRCDIR "/data/IDontExist.qml) ");
+    QTest::ignoreMessage(QtWarningMsg, QString("(:-1: File error for URL " + QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString() + ") ").toUtf8().constData());
 
     QmlComponent component(&engine);
     component.setData(QByteArray("import Qt 4.6\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));

@@ -69,7 +69,7 @@ tst_qmlgraphicsflipable::tst_qmlgraphicsflipable()
 void tst_qmlgraphicsflipable::create()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-flipable.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-flipable.qml"));
     QmlGraphicsFlipable *obj = qobject_cast<QmlGraphicsFlipable*>(c.create());
 
     QVERIFY(obj != 0);
@@ -79,7 +79,7 @@ void tst_qmlgraphicsflipable::create()
 void tst_qmlgraphicsflipable::checkFrontAndBack()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-flipable.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-flipable.qml"));
     QmlGraphicsFlipable *obj = qobject_cast<QmlGraphicsFlipable*>(c.create());
 
     QVERIFY(obj != 0);
@@ -91,7 +91,7 @@ void tst_qmlgraphicsflipable::checkFrontAndBack()
 void tst_qmlgraphicsflipable::setFrontAndBack()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-flipable.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-flipable.qml"));
     QmlGraphicsFlipable *obj = qobject_cast<QmlGraphicsFlipable*>(c.create());
 
     QVERIFY(obj != 0);

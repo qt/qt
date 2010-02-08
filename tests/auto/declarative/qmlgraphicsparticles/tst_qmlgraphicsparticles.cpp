@@ -67,8 +67,8 @@ void tst_QmlGraphicsParticles::properties()
     QmlGraphicsParticles* particles = canvas->root()->findChild<QmlGraphicsParticles*>("particles");
     QVERIFY(particles);
 
-    particles->setSource(QUrl("file://" SRCDIR "/data/particle.png"));
-    QCOMPARE(particles->source(), QUrl("file://" SRCDIR "/data/particle.png"));
+    particles->setSource(QUrl::fromLocalFile(SRCDIR "/data/particle.png"));
+    QCOMPARE(particles->source(), QUrl::fromLocalFile(SRCDIR "/data/particle.png"));
 
     particles->setLifeSpanDeviation(1000);
     QCOMPARE(particles->lifeSpanDeviation(), 1000);
