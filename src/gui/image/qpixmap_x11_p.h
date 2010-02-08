@@ -92,6 +92,8 @@ public:
     Qt::HANDLE handle() const { return hd; }
     Qt::HANDLE x11ConvertToDefaultDepth();
 
+    static Qt::HANDLE createBitmapFromImage(const QImage &image);
+
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
 
