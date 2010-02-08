@@ -278,10 +278,12 @@ void CmdLineParser::showMessage(const QString &msg, bool error)
         return;
 #ifdef Q_OS_WIN
     QString s = QLatin1String("<pre>") + msg + QLatin1String("</pre>");
+    const QString &message
+        = QCoreApplication::translate("Assistant", "Qt Assistant"), s);
     if (error)
-        QMessageBox::critical(0, QObject::tr("Qt Assistant"), s);
+        QMessageBox::critical(0, message);
     else
-        QMessageBox::information(0, QObject::tr("Qt Assistant"), s);
+        QMessageBox::information(0, message);
 #else
     fprintf(error ? stderr : stdout, "%s\n", qPrintable(msg));
 #endif

@@ -160,8 +160,10 @@ void PreferencesDialog::updateFilterPage()
     m_ui.attributeWidget->clear();
 
     m_filterMapBackup.clear();
-    const QStringList filters = helpEngine.customFilters();
+    const QStringList &filters = helpEngine.customFilters();
     foreach (const QString &filter, filters) {
+        if (filter == HelpEngineWrapper::TrUnfiltered)
+            continue;
         QStringList atts = helpEngine.filterAttributes(filter);
         m_filterMapBackup.insert(filter, atts);
         if (!m_filterMap.contains(filter))

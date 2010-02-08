@@ -101,10 +101,6 @@ public:
     const QStringList filterAttributes(const QString &filterName) const;
     QString	error() const;   
 
-    // Access to a collection's custom values.
-    bool unfilteredInserted() const;
-    void setUnfilteredInserted();
-
     const QStringList qtDocInfo(const QString &component) const;
     void setQtDocInfo(const QString &component, const QStringList &doc);
 
@@ -185,6 +181,8 @@ public:
     QFontDatabase::WritingSystem browserWritingSystem() const;
     void setBrowserWritingSystem(QFontDatabase::WritingSystem system);
 
+    static const QString TrUnfiltered;
+
 signals:
 
     // For asynchronous doc updates triggered by external actions.
@@ -194,6 +192,9 @@ signals:
     // Forwarded from QHelpEngineCore.
     void currentFilterChanged(const QString &currentFilter);
     void setupFinished();
+
+private slots:
+    void handleCurrentFilterChanged(const QString &filter);
 
 private:
     HelpEngineWrapper(const QString &collectionFile);
