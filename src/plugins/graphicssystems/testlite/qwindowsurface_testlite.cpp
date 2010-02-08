@@ -86,7 +86,6 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
     //   qDebug() << "QTestLiteWindowSurface::flush:" << (long)this;
 
-    xw->painted = true; //there is content in the buffer
     xw->paintEvent();
 }
 
@@ -169,11 +168,13 @@ bool QTestLiteWindowSurface::scroll(const QRegion &area, int dx, int dy)
 void QTestLiteWindowSurface::beginPaint(const QRegion &region)
 {
     Q_UNUSED(region);
+    xw->resizeBuffer(geometry().size());
 }
 
 void QTestLiteWindowSurface::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
+    xw->painted = true; //there is content in the buffer
 }
 
 

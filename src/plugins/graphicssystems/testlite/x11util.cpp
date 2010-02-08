@@ -599,10 +599,22 @@ void MyWindow::resizeShmImage(int width, int height)
     Q_ASSERT(shm_attach_status == True);
 
     shm_img = QImage( (uchar*) image->data, image->width, image->height, image->bytes_per_line, QImage::Format_RGB32 );
-
-    painted = false;
 #endif
+    painted = false;
 }
+
+
+void MyWindow::resizeBuffer(QSize s)
+{
+    if (shm_img.size() != s)
+        resizeShmImage(s.width(), s.height());
+}
+
+QSize MyWindow::bufferSize() const
+{
+    return shm_img.size();
+}
+
 
 void MyWindow::resizeEvent(XConfigureEvent *e)
 {
@@ -620,8 +632,6 @@ void MyWindow::resizeEvent(XConfigureEvent *e)
 #ifdef MYX11_DEBUG
     qDebug() << hex << window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height << "img:" << shm_img.size();
 #endif
-    if (shm_img.size() != QSize(width, height))
-        resizeShmImage(width, height);
 
     windowSurface->handleGeometryChange(xpos, ypos, width, height);
 }
@@ -639,10 +649,6 @@ void MyWindow::setGeometry(int x, int y, int w, int h)
     qDebug() << "MyWindow::setGeometry" << hex << window << dec << x << y << w << h << "img:" << shm_img.size();
 #endif
     XMoveResizeWindow(xd->display, window, x, y, w, h);
-
-    if (shm_img.size() != QSize(w, h)) {
-        resizeShmImage(w, h);
-    }
 }
 
 

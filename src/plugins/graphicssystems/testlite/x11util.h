@@ -137,6 +137,8 @@ public: //###
 
     int currentCursor;
     bool painted;
+    void resizeBuffer(QSize);
+    QSize bufferSize() const;
 
 private:
     void resizeShmImage(int width, int height);
