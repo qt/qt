@@ -200,7 +200,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
             }
         }
 
-        sessionEngines.append(generic);
+        if (generic)
+            sessionEngines.append(generic);
     }
 
     QBearerEngine *engine = qobject_cast<QBearerEngine *>(sender());
