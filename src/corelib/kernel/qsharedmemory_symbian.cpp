@@ -107,16 +107,14 @@ bool QSharedMemoryPrivate::cleanHandle()
 
 bool QSharedMemoryPrivate::create(int size)
 {
-    // Get a windows acceptable key
-    QString safeKey = makePlatformSafeKey(key);
     QString function = QLatin1String("QSharedMemory::create");
-    if (safeKey.isEmpty()) {
+    if (nativeKey.isEmpty()) {
         error = QSharedMemory::KeyError;
         errorString = QSharedMemory::tr("%1: key error").arg(function);
         return false;
     }
 
-    TPtrC ptr(qt_QString2TPtrC(safeKey));
+    TPtrC ptr(qt_QString2TPtrC(nativeKey));
 
     TInt err = chunk.CreateGlobal(ptr, size, size);
 
@@ -136,14 +134,13 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode /* mode */)
     // Grab a pointer to the memory block
     if (!chunk.Handle()) {
         QString function = QLatin1String("QSharedMemory::handle");
-        QString safeKey = makePlatformSafeKey(key);
-        if (safeKey.isEmpty()) {
+        if (nativeKey.isEmpty()) {
             error = QSharedMemory::KeyError;
             errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
             return false;
         }
 
-        TPtrC ptr(qt_QString2TPtrC(safeKey));
+        TPtrC ptr(qt_QString2TPtrC(nativeKey));
 
         TInt err = KErrNoMemory;
 
