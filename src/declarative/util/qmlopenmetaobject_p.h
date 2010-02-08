@@ -42,7 +42,7 @@
 #ifndef QMLOPENMETAOBJECT_H
 #define QMLOPENMETAOBJECT_H
 
-#include <qmlrefcount_p.h>
+#include <private/qmlrefcount_p.h>
 #include <QtCore/QMetaObject>
 #include <QtCore/QObject>
 
