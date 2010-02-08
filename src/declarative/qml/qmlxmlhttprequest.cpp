@@ -943,21 +943,19 @@ public:
     QmlXMLHttpRequest(QNetworkAccessManager *manager);
     virtual ~QmlXMLHttpRequest();
 
-    QScriptValue callback() const;
-    void setCallback(const QScriptValue &);
-
     bool sendFlag() const;
     bool errorFlag() const;
     quint32 readyState() const;
     int replyStatus() const;
     QString replyStatusText() const;
 
-    QScriptValue open(const QString &, const QUrl &);
+    QScriptValue open(QScriptValue *me, const QString &, const QUrl &);
+
     void addHeader(const QString &, const QString &);
     QString header(const QString &name);
     QString headers();
-    QScriptValue send(const QByteArray &);
-    QScriptValue abort();
+    QScriptValue send(QScriptValue *me, const QByteArray &);
+    QScriptValue abort(QScriptValue *me);
 
     QString responseBody() const;
 private slots:
@@ -982,8 +980,9 @@ private:
     HeadersList m_headersList;
     void fillHeadersList();
 
-    QScriptValue dispatchCallback();
-    QScriptValue m_callback;
+    QScriptValue m_me; // Set to the data object while a send() is ongoing (to access the callback)
+
+    QScriptValue dispatchCallback(QScriptValue *me);
     void printError(const QScriptValue&);
 
     int m_status;
@@ -1005,16 +1004,6 @@ QmlXMLHttpRequest::QmlXMLHttpRequest(QNetworkAccessManager *manager)
 QmlXMLHttpRequest::~QmlXMLHttpRequest()
 {
     destroyNetwork();
-}
-
-QScriptValue QmlXMLHttpRequest::callback() const
-{
-    return m_callback;
-}
-
-void QmlXMLHttpRequest::setCallback(const QScriptValue &c)
-{
-    m_callback = c;
 }
 
 bool QmlXMLHttpRequest::sendFlag() const
@@ -1042,7 +1031,7 @@ QString QmlXMLHttpRequest::replyStatusText() const
     return m_statusText;
 }
 
-QScriptValue QmlXMLHttpRequest::open(const QString &method, const QUrl &url)
+QScriptValue QmlXMLHttpRequest::open(QScriptValue *me, const QString &method, const QUrl &url)
 {
     destroyNetwork();
     m_sendFlag = false;
@@ -1051,7 +1040,7 @@ QScriptValue QmlXMLHttpRequest::open(const QString &method, const QUrl &url)
     m_method = method;
     m_url = url;
     m_state = Opened;
-    return dispatchCallback();
+    return dispatchCallback(me);
 }
 
 void QmlXMLHttpRequest::addHeader(const QString &name, const QString &value)
@@ -1155,19 +1144,20 @@ void QmlXMLHttpRequest::requestFromUrl(const QUrl &url)
                      this, SLOT(finished()));
 }
 
-QScriptValue QmlXMLHttpRequest::send(const QByteArray &data)
+QScriptValue QmlXMLHttpRequest::send(QScriptValue *me, const QByteArray &data)
 {
     m_errorFlag = false;
     m_sendFlag = true;
     m_redirectCount = 0;
     m_data = data;
+    m_me = *me;
 
     requestFromUrl(m_url);
 
     return QScriptValue();
 }
 
-QScriptValue QmlXMLHttpRequest::abort()
+QScriptValue QmlXMLHttpRequest::abort(QScriptValue *me)
 {
     destroyNetwork();
     m_responseEntityBody = QByteArray();
@@ -1180,7 +1170,7 @@ QScriptValue QmlXMLHttpRequest::abort()
 
         m_state = Done;
         m_sendFlag = false;
-        QScriptValue cbv = dispatchCallback();
+        QScriptValue cbv = dispatchCallback(me);
         if (cbv.isError()) return cbv;
     }
 
@@ -1200,7 +1190,7 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
         fillHeadersList ();
-        QScriptValue cbv = dispatchCallback();
+        QScriptValue cbv = dispatchCallback(&m_me);
         if (cbv.isError()) printError(cbv);
     }
 
@@ -1208,7 +1198,7 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
     m_responseEntityBody.append(m_network->readAll());
     if (wasEmpty && !m_responseEntityBody.isEmpty()) {
         m_state = Loading;
-        QScriptValue cbv = dispatchCallback();
+        QScriptValue cbv = dispatchCallback(&m_me);
         if (cbv.isError()) printError(cbv);
     }
 }
@@ -1233,14 +1223,14 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
         error == QNetworkReply::AuthenticationRequiredError ||
         error == QNetworkReply::ContentReSendError) {
         m_state = Loading;
-        QScriptValue cbv = dispatchCallback();
+        QScriptValue cbv = dispatchCallback(&m_me);
         if (cbv.isError()) printError(cbv);
     } else {
         m_errorFlag = true;
     } 
 
     m_state = Done;
-    QScriptValue cbv = dispatchCallback();
+    QScriptValue cbv = dispatchCallback(&m_me);
     if (cbv.isError()) printError(cbv);
 }
 
@@ -1266,7 +1256,7 @@ void QmlXMLHttpRequest::finished()
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
         fillHeadersList ();
-        QScriptValue cbv = dispatchCallback();
+        QScriptValue cbv = dispatchCallback(&m_me);
         if (cbv.isError()) printError(cbv);
     }
     m_responseEntityBody.append(m_network->readAll());
@@ -1274,12 +1264,14 @@ void QmlXMLHttpRequest::finished()
     destroyNetwork();
     if (m_state < Loading) {
         m_state = Loading;
-        QScriptValue cbv = dispatchCallback();
+        QScriptValue cbv = dispatchCallback(&m_me);
         if (cbv.isError()) printError(cbv);
     }
     m_state = Done;
-    QScriptValue cbv = dispatchCallback();
+    QScriptValue cbv = dispatchCallback(&m_me);
     if (cbv.isError()) printError(cbv);
+
+    m_me = QScriptValue();
 }
 
 
@@ -1288,9 +1280,10 @@ QString QmlXMLHttpRequest::responseBody() const
     return QString::fromUtf8(m_responseEntityBody);
 }
 
-QScriptValue QmlXMLHttpRequest::dispatchCallback()
+QScriptValue QmlXMLHttpRequest::dispatchCallback(QScriptValue *me)
 {
-    return m_callback.call();
+    QScriptValue v = me->property(QLatin1String("callback"));
+    return v.call();
 }
 
 void QmlXMLHttpRequest::printError(const QScriptValue& sv)
@@ -1312,7 +1305,8 @@ void QmlXMLHttpRequest::destroyNetwork()
 // XMLHttpRequest methods
 static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngine *engine)
 {
-    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
+    QScriptValue dataObject = context->thisObject().data();
+    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(dataObject.toQObject());
     if (!request) 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
@@ -1354,7 +1348,7 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
     if (!username.isNull()) url.setUserName(username);
     if (!password.isNull()) url.setPassword(password);
 
-    return request->open(method, url);
+    return request->open(&dataObject, method, url);
 }
 
 static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, QScriptEngine *engine)
@@ -1405,9 +1399,10 @@ static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, 
     return engine->undefinedValue();
 }
 
-static QScriptValue qmlxmlhttprequest_send(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue qmlxmlhttprequest_send(QScriptContext *context, QScriptEngine *)
 {
-    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
+    QScriptValue dataObject = context->thisObject().data();
+    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(dataObject.toQObject());
     if (!request) 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
@@ -1421,16 +1416,17 @@ static QScriptValue qmlxmlhttprequest_send(QScriptContext *context, QScriptEngin
     if (context->argumentCount() > 0)
         data = context->argument(0).toString().toUtf8();
 
-    return request->send(data);
+    return request->send(&dataObject, data);
 }
 
 static QScriptValue qmlxmlhttprequest_abort(QScriptContext *context, QScriptEngine *)
 {
-    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
+    QScriptValue dataObject = context->thisObject().data();
+    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(dataObject.toQObject());
     if (!request) 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
-    return request->abort();
+    return request->abort(&dataObject);
 }
 
 static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context, QScriptEngine *engine)
@@ -1545,15 +1541,19 @@ static QScriptValue qmlxmlhttprequest_responseXML(QScriptContext *context, QScri
 
 static QScriptValue qmlxmlhttprequest_onreadystatechange(QScriptContext *context, QScriptEngine *engine)
 {
-    Q_UNUSED(engine)
-    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
+    Q_UNUSED(engine);
+    QScriptValue dataObject = context->thisObject().data();
+    QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(dataObject.toQObject());
     if (!request) 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
-    if (context->argumentCount())
-        request->setCallback(context->argument(0));
-
-    return request->callback();
+    if (context->argumentCount()) {
+        QScriptValue v = context->argument(0);
+        dataObject.setProperty(QLatin1String("callback"), v);
+        return v;
+    } else {
+        return dataObject.property(QLatin1String("callback"));
+    }
 }
 
 // Constructor

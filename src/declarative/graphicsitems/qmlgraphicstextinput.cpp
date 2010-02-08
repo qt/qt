@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,TextInput,QmlGraphicsTextInput);
 QML_DEFINE_NOCREATE_TYPE(QValidator);
 QML_DEFINE_TYPE(Qt,4,6,QIntValidator,QIntValidator);
+QML_DEFINE_TYPE(Qt,4,6,QDoubleValidator,QDoubleValidator);
+QML_DEFINE_TYPE(Qt,4,6,QRegExpValidator,QRegExpValidator);
 
 /*!
     \qmlclass TextInput QmlGraphicsTextInput
@@ -437,6 +439,25 @@ void QmlGraphicsTextInput::setFocusOnPress(bool b)
     an acceptable or intermediate state. The accepted signal will only be sent
     if the text is in an acceptable state when enter is pressed.
 
+    Currently supported validators are QIntValidator, QDoubleValidator and
+    QRegExpValidator. For details, refer to their C++ documentation and remember
+    that all Q_PROPERTIES are accessible from Qml. A brief usage guide follows:
+
+    QIntValidator and QDoubleValidator both are controllable through two properties,
+    top and bottom. The difference is that for QIntValidator the top and bottom properties
+    should be integers, and for QDoubleValidator they should be doubles. QRegExpValidator
+    has a single string property, regExp, which should be set to the regular expression to
+    be used for validation. An example of using validators is shown below, which allows
+    input of integers between 11 and 31 into the text input:
+
+    \code
+    import Qt 4.6
+    TextInput{
+        validator: QIntValidator{bottom: 11; top: 31;}
+        focus: true
+    }
+    \endcode
+
     \sa acceptableInput, inputMask
 */
 QValidator* QmlGraphicsTextInput::validator() const
@@ -660,6 +681,19 @@ void QmlGraphicsTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
 }
 
+/*!
+\overload
+Handles the given mouse \a event.
+*/
+void QmlGraphicsTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QmlGraphicsTextInput);
+    QWidget *widget = event->widget();
+    if (widget && !d->control->isReadOnly() && boundingRect().contains(event->pos()))
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->focusOnPress);
+    d->control->processEvent(event);
+}
+
 bool QmlGraphicsTextInput::event(QEvent* ev)
 {
     Q_D(QmlGraphicsTextInput);
@@ -669,6 +703,7 @@ bool QmlGraphicsTextInput::event(QEvent* ev)
         case QEvent::KeyPress:
         case QEvent::KeyRelease://###Should the control be doing anything with release?
         case QEvent::GraphicsSceneMousePress:
+        case QEvent::GraphicsSceneMouseRelease:
             break;
         default:
             handled = d->control->processEvent(ev);
@@ -719,6 +754,36 @@ void QmlGraphicsTextInput::drawContents(QPainter *p, const QRect &r)
     d->control->draw(p, offset, clipRect, flags);
 
     p->restore();
+}
+
+/*!
+\overload
+Returns the value of the given \a property.
+*/
+QVariant QmlGraphicsTextInput::inputMethodQuery(Qt::InputMethodQuery property) const
+{
+    Q_D(const QmlGraphicsTextInput);
+    switch(property) {
+    case Qt::ImFont:
+        return font();
+    case Qt::ImCursorPosition:
+        return QVariant(d->control->cursor());
+    case Qt::ImSurroundingText:
+        return QVariant(text());
+    case Qt::ImCurrentSelection:
+        return QVariant(selectedText());
+    case Qt::ImMaximumTextLength:
+        return QVariant(maxLength());
+    case Qt::ImAnchorPosition:
+        if (d->control->selectionStart() == d->control->selectionEnd())
+            return QVariant(d->control->cursor());
+        else if (d->control->selectionStart() == d->control->cursor())
+            return QVariant(d->control->selectionEnd());
+        else
+            return QVariant(d->control->selectionStart());
+    default:
+        return QVariant();
+    }
 }
 
 void QmlGraphicsTextInput::selectAll()

@@ -126,13 +126,13 @@ QML_DEFINE_TYPE(Qt,4,6,Image,QmlGraphicsImage)
 */
 
 QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsItem *parent)
-  : QmlGraphicsImageBase(*(new QmlGraphicsImagePrivate), parent)
+    : QmlGraphicsImageBase(*(new QmlGraphicsImagePrivate), parent)
 {
     connect(this, SIGNAL(sourceChanged(QUrl)), this, SLOT(updatePaintedGeometry()));
 }
 
 QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsImageBase(dd, parent)
+    : QmlGraphicsImageBase(dd, parent)
 {
 }
 
@@ -343,12 +343,18 @@ void QmlGraphicsImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
                     scale.translate(0, (height() - heightScale * d->pix.height()) / 2);
                 }
             }
-
+            if (clip()) {
+                p->save();
+                p->setClipRect(boundingRect(), Qt::IntersectClip);
+            }
             scale.scale(widthScale, heightScale);
             QTransform old = p->transform();
             p->setWorldTransform(scale * old);
             p->drawPixmap(0, 0, d->pix);
             p->setWorldTransform(old);
+            if (clip()) {
+                p->restore();
+            }
         }
     } else {
         p->drawPixmap(0, 0, d->pix);

@@ -45,6 +45,8 @@
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicstextinput_p.h>
 #include <QDebug>
+#include <QStyle>
+#include <QInputContext>
 
 class tst_qmlgraphicstextinput : public QObject
 
@@ -67,6 +69,8 @@ private slots:
     void cursorDelegate();
     void navigation();
     void readOnly();
+
+    void sendRequestSoftwareInputPanelEvent();
 
 private:
     void simulateKey(QmlView *, int key);
@@ -393,13 +397,96 @@ void tst_qmlgraphicstextinput::masks()
 
 void tst_qmlgraphicstextinput::validators()
 {
-    QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
-    QmlComponent textinputComponent(&engine);
-    textinputComponent.setData(componentStr.toLatin1(), QUrl());
-    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
-    QVERIFY(textinputObject != 0);
+    // Note that this test assumes that the validators are working properly
+    // so you may need to run their tests first. All validators are checked
+    // here to ensure that their exposure to QML is working.
 
-    //TODO: Me
+    QmlView *canvas = createView(SRCDIR "/data/validators.qml");
+    canvas->execute();
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->root() != 0);
+
+    QmlGraphicsTextInput *intInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("intInput")));
+    QVERIFY(intInput);
+    intInput->setFocus(true);
+    QTRY_VERIFY(intInput->hasFocus());
+    QTest::keyPress(canvas, Qt::Key_1);
+    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QCOMPARE(intInput->text(), QLatin1String("1"));
+    QCOMPARE(intInput->hasAcceptableInput(), false);
+    QTest::keyPress(canvas, Qt::Key_2);
+    QTest::keyRelease(canvas, Qt::Key_2, Qt::NoModifier ,10);
+    QCOMPARE(intInput->text(), QLatin1String("1"));
+    QCOMPARE(intInput->hasAcceptableInput(), false);
+    QTest::keyPress(canvas, Qt::Key_1);
+    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QCOMPARE(intInput->text(), QLatin1String("11"));
+    QCOMPARE(intInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_0);
+    QTest::keyRelease(canvas, Qt::Key_0, Qt::NoModifier ,10);
+    QCOMPARE(intInput->text(), QLatin1String("11"));
+    QCOMPARE(intInput->hasAcceptableInput(), true);
+
+    QmlGraphicsTextInput *dblInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("dblInput")));
+    QTRY_VERIFY(dblInput);
+    dblInput->setFocus(true);
+    QVERIFY(dblInput->hasFocus() == true);
+    QTest::keyPress(canvas, Qt::Key_1);
+    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QCOMPARE(dblInput->text(), QLatin1String("1"));
+    QCOMPARE(dblInput->hasAcceptableInput(), false);
+    QTest::keyPress(canvas, Qt::Key_2);
+    QTest::keyRelease(canvas, Qt::Key_2, Qt::NoModifier ,10);
+    QCOMPARE(dblInput->text(), QLatin1String("12"));
+    QCOMPARE(dblInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_Period);
+    QTest::keyRelease(canvas, Qt::Key_Period, Qt::NoModifier ,10);
+    QCOMPARE(dblInput->text(), QLatin1String("12."));
+    QCOMPARE(dblInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_1);
+    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QCOMPARE(dblInput->text(), QLatin1String("12.1"));
+    QCOMPARE(dblInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_1);
+    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QCOMPARE(dblInput->text(), QLatin1String("12.11"));
+    QCOMPARE(dblInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_1);
+    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QCOMPARE(dblInput->text(), QLatin1String("12.11"));
+    QCOMPARE(dblInput->hasAcceptableInput(), true);
+
+    QmlGraphicsTextInput *strInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("strInput")));
+    QTRY_VERIFY(strInput);
+    strInput->setFocus(true);
+    QVERIFY(strInput->hasFocus() == true);
+    QTest::keyPress(canvas, Qt::Key_1);
+    QTest::keyRelease(canvas, Qt::Key_1, Qt::NoModifier ,10);
+    QEXPECT_FAIL("","Will not work until QTBUG-8025 is resolved", Abort);
+    QCOMPARE(strInput->text(), QLatin1String(""));
+    QCOMPARE(strInput->hasAcceptableInput(), false);
+    QTest::keyPress(canvas, Qt::Key_A);
+    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QCOMPARE(strInput->text(), QLatin1String("a"));
+    QCOMPARE(strInput->hasAcceptableInput(), false);
+    QTest::keyPress(canvas, Qt::Key_A);
+    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QCOMPARE(strInput->text(), QLatin1String("aa"));
+    QCOMPARE(strInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_A);
+    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QCOMPARE(strInput->text(), QLatin1String("aaa"));
+    QCOMPARE(strInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_A);
+    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QCOMPARE(strInput->text(), QLatin1String("aaaa"));
+    QCOMPARE(strInput->hasAcceptableInput(), true);
+    QTest::keyPress(canvas, Qt::Key_A);
+    QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
+    QCOMPARE(strInput->text(), QLatin1String("aaaa"));
+    QCOMPARE(strInput->hasAcceptableInput(), true);
 }
 
 /*
@@ -499,6 +586,52 @@ QmlView *tst_qmlgraphicstextinput::createView(const QString &filename)
     canvas->setQml(xml, filename);
 
     return canvas;
+}
+
+class MyInputContext : public QInputContext
+{
+public:
+    MyInputContext() : softwareInputPanelEventReceived(false) {}
+    ~MyInputContext() {}
+
+    QString identifierName() { return QString(); }
+    QString language() { return QString(); }
+
+    void reset() {}
+
+    bool isComposing() const { return false; }
+
+    bool filterEvent( const QEvent *event )
+    {
+        if (event->type() == QEvent::RequestSoftwareInputPanel)
+            softwareInputPanelEventReceived = true;
+        return QInputContext::filterEvent(event);
+    }
+    bool softwareInputPanelEventReceived;
+};
+
+void tst_qmlgraphicstextinput::sendRequestSoftwareInputPanelEvent()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.viewport()->setInputContext(&ic);
+    QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
+            view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
+    if ((behavior != QStyle::RSIP_OnMouseClick))
+        QSKIP("This test need to have a style with RSIP_OnMouseClick", SkipSingle);
+    QmlGraphicsTextInput input;
+    input.setText("Hello world");
+    input.setPos(0, 0);
+    scene.addItem(&input);
+    view.show();
+    qApp->setAutoSipEnabled(true);
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(input.scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(ic.softwareInputPanelEventReceived, true);
 }
 
 QTEST_MAIN(tst_qmlgraphicstextinput)

@@ -51,9 +51,28 @@ have items modified, inserted, removed or moved dynamically.
 
 Data is provided to the delegate via named data roles which the
 delegate may bind to.  The roles are exposed as properties of the
-\e model property, though this property is set as a default property
+\e model context property, though this property is set as a default property
 of the delegate so, unless there is a naming clash with a
-property in the delegate, the roles are usually accessed unqualified.
+property in the delegate, the roles are usually accessed unqualified.  The
+example below would  have a clash between he \e color role of the model and
+the \e color property of the Rectangle.  The clash is avoided by referencing
+the \e color property of the model by its full name: \e model.color.
+
+\code
+ListModel {
+    id: myModel
+    ListElement { color: "red" }
+    ListElement { color: "green" }
+}
+
+Component {
+    id: myDelegate
+    Rectangle {
+        width: 20; height: 20
+        color: model.color
+    }
+}
+\endcode
 
 A special \e index role containing the index of the item in the model
 is also available.
@@ -176,7 +195,42 @@ QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNam
 
 \section2 QStringList
 
-QStringList provides the contents of the list via the \e modelData role.
+QStringList provides the contents of the list via the \e modelData role:
+
+\table
+\o
+\code
+// main.cpp
+QStringList dataList;
+dataList.append("Fred");
+dataList.append("Ginger");
+dataList.appenf("Skipper");
+
+QmlContext *ctxt = view.rootContext();
+ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));
+\endcode
+
+\o
+\code
+// main.qml
+ListView {
+   width: 100
+   height: 100
+   anchors.fill: parent
+   model: myModel
+   delegate: Component {
+       Rect {
+            height: 25
+            Text { text: modelData }
+       }
+   }
+}
+\endcode
+\endtable
+
+Note: There is no way for the view to know that the contents of a QStringList
+have changed.  If the QStringList is changed, it will be necessary to reset
+the model by calling QmlContext::setContextProperty() again.
 
 
 \section2 QList<QObject*>
@@ -222,6 +276,10 @@ ListView {
 }
 \endcode
 
+Note: There is no way for the view to know that the contents of a QList
+have changed.  If the QList is changed, it will be necessary to reset
+the model by calling QmlContext::setContextProperty() again.
+
 
 \section1 Other Data Models
 
@@ -250,8 +308,8 @@ An Object Instance specifies a model with a single Object element.  The
 properties of the object are provided as roles.
 
 The example below creates a list with one item, showing the color of the
-\e myText text.  Note the use of the \e model property to specify the model
-data rather than the \e color property of the Text element in the delegate.
+\e myText text.  Note the use of the fully qualified \e model.color property
+to avoid clashing with \e color property of the Text element in the delegate.
 
 \code
 Rectangle {
