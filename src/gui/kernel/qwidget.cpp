@@ -7573,23 +7573,21 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     if (isMain)
         QApplication::quit();
 #endif
-    // Attempt to close the application only if this widget has the
-    // WA_QuitOnClose flag set set and has a non-visible parent
-    quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible() || parentWidget->testAttribute(Qt::WA_DontShowOnScreen));
+    // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
+    quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible());
 
     if (quitOnClose) {
-        // If there is no non-withdrawn primary window left (except
-        // the ones without QuitOnClose or with WA_DontShowOnScreen),
-        // we emit the lastWindowClosed signal
+        /* if there is no non-withdrawn primary window left (except
+           the ones without QuitOnClose), we emit the lastWindowClosed
+           signal */
         QWidgetList list = QApplication::topLevelWidgets();
         bool lastWindowClosed = true;
         for (int i = 0; i < list.size(); ++i) {
             QWidget *w = list.at(i);
-            if ((w->isVisible() && !w->testAttribute(Qt::WA_DontShowOnScreen))
-                    && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose)) {
-                lastWindowClosed = false;
-                break;
-            }
+            if (!w->isVisible() || w->parentWidget() || !w->testAttribute(Qt::WA_QuitOnClose))
+                continue;
+            lastWindowClosed = false;
+            break;
         }
         if (lastWindowClosed)
             QApplicationPrivate::emitLastWindowClosed();

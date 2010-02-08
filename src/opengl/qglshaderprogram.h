@@ -182,6 +182,17 @@ public:
     void setAttributeBuffer
         (const char *name, GLenum type, int offset, int tupleSize, int stride = 0);
 
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setAttributeArray
+        (int location, QMacCompatGLenum type, const void *values, int tupleSize, int stride = 0);
+    void setAttributeArray
+        (const char *name, QMacCompatGLenum type, const void *values, int tupleSize, int stride = 0);
+    void setAttributeBuffer
+        (int location, QMacCompatGLenum type, int offset, int tupleSize, int stride = 0);
+    void setAttributeBuffer
+        (const char *name, QMacCompatGLenum type, int offset, int tupleSize, int stride = 0);
+#endif
+
     void enableAttributeArray(int location);
     void enableAttributeArray(const char *name);
     void disableAttributeArray(int location);
