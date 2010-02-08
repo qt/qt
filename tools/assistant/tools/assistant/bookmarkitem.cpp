@@ -136,3 +136,5 @@ BookmarkItem::dumpTree(int indent) const
     foreach (BookmarkItem *item, m_children)
         item->dumpTree(indent + 4);
 }
+
+QT_END_NAMESPACE

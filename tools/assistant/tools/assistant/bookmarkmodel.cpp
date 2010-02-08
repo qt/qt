@@ -149,7 +149,7 @@ BookmarkModel::removeItem(const QModelIndex &index)
         return false;
 
     QModelIndexList indexes;
-    if (index.rowCount() > 0)
+    if (rowCount(index) > 0)
         indexes = collectItems(index);
     indexes.append(index);
 
@@ -220,13 +220,12 @@ BookmarkModel::flags(const QModelIndex &index) const
     if (m_editable)
         defaultFlags |= Qt::ItemIsEditable;
 
-    if (BookmarkItem *item = itemFromIndex(index)) {
-        if (index.data(UserRoleFolder).toBool()) {
-            if (index.column() > 0)
-                defaultFlags &= ~Qt::ItemIsEditable;
-            return defaultFlags | Qt::ItemIsDropEnabled;
-        }
+    if (itemFromIndex(index) && index.data(UserRoleFolder).toBool()
+        && index.column() > 0) {
+        defaultFlags &= ~Qt::ItemIsEditable;
+        return defaultFlags | Qt::ItemIsDropEnabled;
     }
+
     return defaultFlags | Qt::ItemIsDragEnabled;
 }
 
