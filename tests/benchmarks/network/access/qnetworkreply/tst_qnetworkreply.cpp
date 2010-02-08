@@ -48,7 +48,7 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qtcpsocket.h>
 #include <QtNetwork/qtcpserver.h>
-#include "../../auto/network-settings.h"
+#include "../../../../auto/network-settings.h"
 
 
 class TimedSender: public QThread

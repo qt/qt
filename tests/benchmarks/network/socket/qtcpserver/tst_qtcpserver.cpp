@@ -58,7 +58,7 @@
 Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 
-#include "../../auto/network-settings.h"
+#include "../../../../auto/network-settings.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=

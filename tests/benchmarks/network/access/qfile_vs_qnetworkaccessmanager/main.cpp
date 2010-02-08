@@ -46,7 +46,7 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtCore/QTemporaryFile>
 #include <QtCore/QFile>
-#include "../../auto/network-settings.h"
+#include "../../../../auto/network-settings.h"
 
 class qfile_vs_qnetworkaccessmanager : public QObject
 {
