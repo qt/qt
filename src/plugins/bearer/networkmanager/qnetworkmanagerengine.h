@@ -82,6 +82,10 @@ public:
 
     QNetworkSession::State sessionStateForId(const QString &id);
 
+    quint64 bytesWritten(const QString &id);
+    quint64 bytesReceived(const QString &id);
+    quint64 startTime(const QString &id);
+
     QNetworkConfigurationManager::Capabilities capabilities() const;
 
     QNetworkSessionPrivate *createSessionBackend();

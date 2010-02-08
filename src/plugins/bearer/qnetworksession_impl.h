@@ -68,8 +68,8 @@ class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 {
     Q_OBJECT
 public:
-    QNetworkSessionPrivateImpl() :
-        tx_data(0), rx_data(0), m_activeTime(0)
+    QNetworkSessionPrivateImpl()
+    :   startTime(0)
     {
     }
 
@@ -115,20 +115,13 @@ private Q_SLOTS:
 private:
     QNetworkConfigurationManager manager;
 
-    quint64 tx_data;
-    quint64 rx_data;
-    quint64 m_activeTime;
-
     bool opened;
 
     QBearerEngineImpl *engine;
 
     QNetworkSession::SessionError lastError;
 
-#if defined(BACKEND_NM)
-    QDateTime startTime;
-    void setActiveTimeStamp();
-#endif
+    quint64 startTime;
 };
 
 QT_END_NAMESPACE

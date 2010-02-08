@@ -3,8 +3,6 @@ include(../../qpluginbase.pri)
 
 QT += network dbus
 
-DEFINES += BACKEND_NM
-
 HEADERS += qnmdbushelper.h \
            qnetworkmanagerservice.h \
            qnetworkmanagerengine.h \

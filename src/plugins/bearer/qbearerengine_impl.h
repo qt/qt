@@ -68,6 +68,10 @@ public:
 
     virtual QNetworkSession::State sessionStateForId(const QString &id) = 0;
 
+    virtual quint64 bytesWritten(const QString &) { return Q_UINT64_C(0); }
+    virtual quint64 bytesReceived(const QString &) { return Q_UINT64_C(0); }
+    virtual quint64 startTime(const QString &) { return Q_UINT64_C(0); }
+
 Q_SIGNALS:
     void connectionError(const QString &id, ConnectionError error);
 };

@@ -266,50 +266,26 @@ QNetworkSession::SessionError QNetworkSessionPrivateImpl::error() const
 
 quint64 QNetworkSessionPrivateImpl::bytesWritten() const
 {
-#if defined(BACKEND_NM) && 0
-    if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
-        if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
-            foreach (const QNetworkConfiguration &config, publicConfig.children()) {
-                if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-                    return static_cast<QNmWifiEngine*>(getEngineFromId(config.d->id))->sentDataForId(config.d->id);
-                }
-            }
-        } else {
-            return static_cast<QNmWifiEngine*>(getEngineFromId(activeConfig.d->id))->sentDataForId(activeConfig.d->id);
-        }
-    }
-#endif
-    return tx_data;
+    if (engine && state == QNetworkSession::Connected)
+        return engine->bytesWritten(activeConfig.identifier());
+    else
+        return Q_UINT64_C(0);
 }
 
 quint64 QNetworkSessionPrivateImpl::bytesReceived() const
 {
-#if defined(BACKEND_NM) && 0
-    if( NetworkManagerAvailable() && state == QNetworkSession::Connected ) {
-        if (publicConfig.type() == QNetworkConfiguration::ServiceNetwork) {
-            foreach (const QNetworkConfiguration &config, publicConfig.children()) {
-                if ((config.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-                    return static_cast<QNmWifiEngine*>(getEngineFromId(activeConfig.d->id))->receivedDataForId(config.d->id);
-                }
-            }
-        } else {
-            return static_cast<QNmWifiEngine*>(getEngineFromId(activeConfig.d->id))->receivedDataForId(activeConfig.d->id);
-        }
-    }
-#endif
-    return rx_data;
+    if (engine && state == QNetworkSession::Connected)
+        return engine->bytesReceived(activeConfig.identifier());
+    else
+        return Q_UINT64_C(0);
 }
 
 quint64 QNetworkSessionPrivateImpl::activeTime() const
 {
-#if defined(BACKEND_NM)
-    if (startTime.isNull()) {
-        return 0;
-    }
-    if(state == QNetworkSession::Connected )
-        return startTime.secsTo(QDateTime::currentDateTime());
-#endif
-    return m_activeTime;
+    if (state == QNetworkSession::Connected && startTime != Q_UINT64_C(0))
+        return QDateTime::currentDateTime().toTime_t() - startTime;
+    else
+        return Q_UINT64_C(0);
 }
 
 void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
@@ -381,9 +357,8 @@ void QNetworkSessionPrivateImpl::networkConfigurationsChanged()
         updateStateFromServiceNetwork();
     else
         updateStateFromActiveConfig();
-#if defined(BACKEND_NM) && 0
-        setActiveTimeStamp();
-#endif
+
+    startTime = engine->startTime(activeConfig.identifier());
 }
 
 void QNetworkSessionPrivateImpl::configurationChanged(const QNetworkConfiguration &config)
@@ -428,52 +403,5 @@ void QNetworkSessionPrivateImpl::connectionError(const QString &id,
         emit QNetworkSessionPrivate::error(lastError);
     }
 }
-
-#if defined(BACKEND_NM) && 0
-void QNetworkSessionPrivateImpl::setActiveTimeStamp()
-{
-    if(NetworkManagerAvailable()) {
-        startTime = QDateTime();
-        return;
-    }
-    QString connectionIdent = q->configuration().identifier();
-    QString interface = currentInterface().hardwareAddress().toLower();
-    QString devicePath = "/org/freedesktop/Hal/devices/net_" + interface.replace(":","_");
-
-    QString path;
-    QString serviceName;
-    QNetworkManagerInterface * ifaceD;
-    ifaceD = new QNetworkManagerInterface();
-
-    QList<QDBusObjectPath> connections = ifaceD->activeConnections();
-    foreach(QDBusObjectPath conpath, connections) {
-        QNetworkManagerConnectionActive *conDetails;
-        conDetails = new QNetworkManagerConnectionActive(conpath.path());
-        QDBusObjectPath connection = conDetails->connection();
-        serviceName = conDetails->serviceName();
-        QList<QDBusObjectPath> so = conDetails->devices();
-        foreach(QDBusObjectPath device, so) {
-
-            if(device.path() == devicePath) {
-                path = connection.path();
-            }
-            break;
-        }
-    }
-if(serviceName.isEmpty())
-    return;
-    QNetworkManagerSettings *settingsiface;
-    settingsiface = new QNetworkManagerSettings(serviceName);
-    QList<QDBusObjectPath> list = settingsiface->listConnections();
-    foreach(QDBusObjectPath path, list) {
-        QNetworkManagerSettingsConnection *sysIface;
-        sysIface = new QNetworkManagerSettingsConnection(serviceName, path.path());
-        startTime = QDateTime::fromTime_t(sysIface->getTimestamp());
-        //                    isOpen = (publicConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
-    }
-    if(startTime.isNull())
-        startTime = QDateTime::currentDateTime();
-}
-#endif
 
 QT_END_NAMESPACE

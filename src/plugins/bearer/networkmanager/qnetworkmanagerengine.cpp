@@ -680,6 +680,67 @@ QNetworkSession::State QNetworkManagerEngine::sessionStateForId(const QString &i
     return QNetworkSession::Invalid;
 }
 
+quint64 QNetworkManagerEngine::bytesWritten(const QString &id)
+{
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+    if (ptr && (ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        const QString networkInterface = getInterfaceFromId(id);
+        if (!networkInterface.isEmpty()) {
+            const QString devFile = QLatin1String("/sys/class/net/") +
+                                    networkInterface +
+                                    QLatin1String("/statistics/tx_bytes");
+
+            quint64 result = Q_UINT64_C(0);
+
+            QFile tx(devFile);
+            if (tx.exists() && tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                QTextStream in(&tx);
+                in >> result;
+                tx.close();
+            }
+
+            return result;
+        }
+    }
+
+    return Q_UINT64_C(0);
+}
+
+quint64 QNetworkManagerEngine::bytesReceived(const QString &id)
+{
+    QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
+    if (ptr && (ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        const QString networkInterface = getInterfaceFromId(id);
+        if (!networkInterface.isEmpty()) {
+            const QString devFile = QLatin1String("/sys/class/net/") +
+                                    networkInterface +
+                                    QLatin1String("/statistics/rx_bytes");
+
+            quint64 result = Q_UINT64_C(0);
+
+            QFile tx(devFile);
+            if (tx.exists() && tx.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                QTextStream in(&tx);
+                in >> result;
+                tx.close();
+            }
+
+            return result;
+        }
+    }
+
+    return Q_UINT64_C(0);
+}
+
+quint64 QNetworkManagerEngine::startTime(const QString &id)
+{
+    QNetworkManagerSettingsConnection *connection = connectionFromId(id);
+    if (connection)
+        return connection->getTimestamp();
+    else
+        return Q_UINT64_C(0);
+}
+
 QNetworkConfigurationManager::Capabilities QNetworkManagerEngine::capabilities() const
 {
     return QNetworkConfigurationManager::ForcedRoaming |

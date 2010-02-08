@@ -46,7 +46,5 @@ maemo {
     SOURCES += bearer/qnetworkconfigmanager_p.cpp \
                bearer/qbearerengine.cpp \
                bearer/qbearerplugin.cpp
-
-    contains(QT_CONFIG, networkmanager):DEFINES += BACKEND_NM
 }
 
