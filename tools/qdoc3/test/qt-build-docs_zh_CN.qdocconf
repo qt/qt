@@ -10,7 +10,7 @@ url                     = http://qt.nokia.com/doc/zh_CN/4.7
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
-naturallanguage         = cn-ZH
+naturallanguage         = zh-Hans
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 
@@ -27,8 +27,14 @@ qhp.projects            = Qt
 qhp.Qt.file                = qt.qhp
 qhp.Qt.namespace           = com.trolltech.qt.470
 qhp.Qt.virtualFolder       = qdoc
-qhp.Qt.indexTitle          = Qt Reference Documentation
-qhp.Qt.indexRoot           =
+qhp.Qt.title               = Tutorials
+qhp.Qt.indexTitle          = Tutorials
+qhp.Qt.indexRoot           = tutorials.html
+qhp.Qt.selectors           = fake:example
+
+qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc zh_CN
+qhp.Qt.customFilters.Qt.name = Qt 4.7.0
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
@@ -38,14 +44,6 @@ qhp.Qt.extraFiles          = classic.css \
                              images/coloreditorfactoryimage.png \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
-
-qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc zh_CN
-qhp.Qt.customFilters.Qt.name = Qt 4.7.0
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
-qhp.Qt.subprojects         = tutorials
-qhp.Qt.subprojects.tutorials.title = Tutorials
-qhp.Qt.subprojects.tutorials.indexTitle = Tutorials
-qhp.Qt.subprojects.tutorials.selectors = fake:example
 
 language                = Cpp
 
