@@ -136,6 +136,7 @@ public: //###
     QTestLiteWindowSurface *windowSurface;
 
     int currentCursor;
+    bool painted;
 
 private:
     void resizeShmImage(int width, int height);

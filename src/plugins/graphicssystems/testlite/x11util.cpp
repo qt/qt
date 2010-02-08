@@ -468,7 +468,7 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
     currentCursor = -1;
 
     image_info = 0;
-
+    painted = false;
 }
 
 
@@ -517,8 +517,11 @@ void MyWindow::closeEvent()
 void MyWindow::paintEvent()
 {
 #ifdef MYX11_DEBUG
-    qDebug() << "MyWindow::paintEvent" << shm_img.size();
+    qDebug() << "MyWindow::paintEvent" << shm_img.size() << painted;
 #endif
+    if (!painted)
+        return;
+
 #ifdef DONT_USE_MIT_SHM
     // just convert the image every time...
     if (!shm_img.isNull()) {
@@ -596,6 +599,8 @@ void MyWindow::resizeShmImage(int width, int height)
     Q_ASSERT(shm_attach_status == True);
 
     shm_img = QImage( (uchar*) image->data, image->width, image->height, image->bytes_per_line, QImage::Format_RGB32 );
+
+    painted = false;
 #endif
 }
 

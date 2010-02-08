@@ -86,6 +86,7 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
 
     //   qDebug() << "QTestLiteWindowSurface::flush:" << (long)this;
 
+    xw->painted = true; //there is content in the buffer
     xw->paintEvent();
 }
 
