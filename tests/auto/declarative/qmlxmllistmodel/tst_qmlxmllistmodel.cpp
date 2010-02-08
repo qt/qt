@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+
+#ifdef QTEST_XMLPATTERNS
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlxmllistmodel_p.h>
@@ -195,3 +197,7 @@ void tst_qmlxmllistmodel::uniqueRoleNames()
 QTEST_MAIN(tst_qmlxmllistmodel)
 
 #include "tst_qmlxmllistmodel.moc"
+
+#else
+QTEST_NOOP_MAIN
+#endif
