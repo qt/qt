@@ -140,7 +140,7 @@ namespace
         { QtMedia::AverageLevel, "averageLevel" },
         { QtMedia::ChannelCount, "channelCount" },
         { QtMedia::PeakValue, "peakValue" },
-        { QtMedia::SampleRate, "frequency" },
+        { QtMedia::SampleRate, "sampleRate" },
 
         // Music
         { QtMedia::AlbumTitle, "albumTitle" },
