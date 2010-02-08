@@ -57,13 +57,16 @@ QT_MODULE(Declarative)
 class QmlEngine;
 class QMetaPropertyBuilder;
 class QmlOpenMetaObjectTypePrivate;
-class QmlOpenMetaObjectType : public QmlRefCount
+class Q_DECLARATIVE_EXPORT QmlOpenMetaObjectType : public QmlRefCount
 {
 public:
     QmlOpenMetaObjectType(const QMetaObject *base, QmlEngine *engine);
     ~QmlOpenMetaObjectType();
 
     int createProperty(const QByteArray &name);
+
+    int propertyOffset() const;
+    int signalOffset() const;
 
 protected:
     virtual void propertyCreated(int, QMetaPropertyBuilder &);
@@ -107,6 +110,8 @@ protected:
     virtual void propertyRead(int);
     virtual void propertyWrite(int);
     virtual void propertyCreated(int, QMetaPropertyBuilder &);
+
+    QAbstractDynamicMetaObject *parent() const;
 
 private:
     QmlOpenMetaObjectPrivate *d;

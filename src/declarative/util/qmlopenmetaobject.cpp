@@ -81,6 +81,17 @@ QmlOpenMetaObjectType::~QmlOpenMetaObjectType()
     delete d;
 }
 
+
+int QmlOpenMetaObjectType::propertyOffset() const
+{
+    return d->propertyOffset;
+}
+
+int QmlOpenMetaObjectType::signalOffset() const
+{
+    return d->signalOffset;
+}
+
 int QmlOpenMetaObjectType::createProperty(const QByteArray &name)
 {
     int id = d->mob.propertyCount();
@@ -226,6 +237,11 @@ int QmlOpenMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
     }
 }
 
+QAbstractDynamicMetaObject *QmlOpenMetaObject::parent() const
+{
+    return d->parent;
+}
+
 QVariant QmlOpenMetaObject::value(int id) const
 {
     return d->getData(id);
@@ -292,6 +308,7 @@ void QmlOpenMetaObject::setCached(bool c)
         qmldata->propertyCache = 0;
     }
 }
+
 
 int QmlOpenMetaObject::createProperty(const char *name, const char *)
 {

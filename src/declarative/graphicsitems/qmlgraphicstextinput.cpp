@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,TextInput,QmlGraphicsTextInput);
 QML_DEFINE_NOCREATE_TYPE(QValidator);
 QML_DEFINE_TYPE(Qt,4,6,QIntValidator,QIntValidator);
+QML_DEFINE_TYPE(Qt,4,6,QDoubleValidator,QDoubleValidator);
+QML_DEFINE_TYPE(Qt,4,6,QRegExpValidator,QRegExpValidator);
 
 /*!
     \qmlclass TextInput QmlGraphicsTextInput
@@ -436,6 +438,25 @@ void QmlGraphicsTextInput::setFocusOnPress(bool b)
     the TextInput will only accept input which leaves the text property in
     an acceptable or intermediate state. The accepted signal will only be sent
     if the text is in an acceptable state when enter is pressed.
+
+    Currently supported validators are QIntValidator, QDoubleValidator and
+    QRegExpValidator. For details, refer to their C++ documentation and remember
+    that all Q_PROPERTIES are accessible from Qml. A brief usage guide follows:
+
+    QIntValidator and QDoubleValidator both are controllable through two properties,
+    top and bottom. The difference is that for QIntValidator the top and bottom properties
+    should be integers, and for QDoubleValidator they should be doubles. QRegExpValidator
+    has a single string property, regExp, which should be set to the regular expression to
+    be used for validation. An example of using validators is shown below, which allows
+    input of integers between 11 and 31 into the text input:
+
+    \code
+    import Qt 4.6
+    TextInput{
+        validator: QIntValidator{bottom: 11; top: 31;}
+        focus: true
+    }
+    \endcode
 
     \sa acceptableInput, inputMask
 */
