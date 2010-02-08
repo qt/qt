@@ -94,6 +94,8 @@
 #include <QUrl>
 #include <QWhatsThis>
 
+#include <ctype.h>
+
 QT_BEGIN_NAMESPACE
 
 static const int MessageMS = 2500;
@@ -2356,13 +2358,28 @@ void MainWindow::updatePhraseDicts()
 
 static bool haveMnemonic(const QString &str)
 {
-    QString mnemonic = QKeySequence::mnemonic(str);
-    if (mnemonic == QLatin1String("Alt+Space")) {
-        // "Nobody" ever really uses these, and they are highly annoying
-        // because we get a lot of false positives.
-        return false;
+    for (const ushort *p = (ushort *)str.constData();; ) { // Assume null-termination
+        ushort c = *p++;
+        if (!c)
+            break;
+        if (c == '&') {
+            c = *p++;
+            if (!c)
+                return false;
+            // "Nobody" ever really uses these alt-space, and they are highly annoying
+            // because we get a lot of false positives.
+            if (c != '&' && c != ' ' && QChar(c).isPrint()) {
+                const ushort *pp = p;
+                for (; ::isalpha(*p); p++) ;
+                if (pp == p || *p != ';')
+                    return true;
+                // This looks like a HTML &entity;, so ignore it. As a HTML string
+                // won't contain accels anyway, we can stop scanning here.
+                break;
+            }
+        }
     }
-    return !mnemonic.isEmpty();
+    return false;
 }
 
 void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)

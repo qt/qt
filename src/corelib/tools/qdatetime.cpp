@@ -75,7 +75,6 @@
 
 #if defined(Q_OS_SYMBIAN)
 #include <e32std.h>
-#include <tz.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -3722,32 +3721,23 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
 #elif defined(Q_OS_SYMBIAN)
     // months and days are zero index based
     _LIT(KUnixEpoch, "19700000:000000.000000");
+    TTimeIntervalSeconds utcOffset = User::UTCOffset();
     TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
     TTime epochTTime;
     TInt err = epochTTime.Set(KUnixEpoch);
     tm res;
     if(err == KErrNone) {
         TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
-        TRAP(err,
-            RTz tz;
-            User::LeaveIfError(tz.Connect());
-            CleanupClosePushL(tz);
-            res.tm_isdst = tz.IsDaylightSavingOnL(*tz.GetTimeZoneIdL(),utcTTime);
-            User::LeaveIfError(tz.ConvertToLocalTime(utcTTime));
-            CleanupStack::PopAndDestroy(&tz));
-        if (KErrNone == err) {
-            TDateTime localDateTime = utcTTime.DateTime();
-            res.tm_sec = localDateTime.Second();
-            res.tm_min = localDateTime.Minute();
-            res.tm_hour = localDateTime.Hour();
-            res.tm_mday = localDateTime.Day() + 1; // non-zero based index for tm struct
-            res.tm_mon = localDateTime.Month();
-            res.tm_year = localDateTime.Year() - 1900;
-            // Symbian's timezone server doesn't know how to handle DST before year 1997
-            if (res.tm_year < 97)
-                res.tm_isdst = -1;
-            brokenDown = &res;
-        }
+        utcTTime = utcTTime + utcOffset;
+        TDateTime utcDateTime = utcTTime.DateTime();
+        res.tm_sec = utcDateTime.Second();
+        res.tm_min = utcDateTime.Minute();
+        res.tm_hour = utcDateTime.Hour();
+        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
+        res.tm_mon = utcDateTime.Month();
+        res.tm_year = utcDateTime.Year() - 1900;
+        res.tm_isdst = 0;
+        brokenDown = &res;
     }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
@@ -3822,27 +3812,23 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
 #elif defined(Q_OS_SYMBIAN)
     // months and days are zero index based
     _LIT(KUnixEpoch, "19700000:000000.000000");
+    TTimeIntervalSeconds utcOffset = TTimeIntervalSeconds(0 - User::UTCOffset().Int());
     TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
     TTime epochTTime;
     TInt err = epochTTime.Set(KUnixEpoch);
     tm res;
     if(err == KErrNone) {
-        TTime localTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
-        RTz tz;
-        if (KErrNone == tz.Connect()) {
-            if (KErrNone == tz.ConvertToUniversalTime(localTTime)) {
-                TDateTime utcDateTime = localTTime.DateTime();
-                res.tm_sec = utcDateTime.Second();
-                res.tm_min = utcDateTime.Minute();
-                res.tm_hour = utcDateTime.Hour();
-                res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
-                res.tm_mon = utcDateTime.Month();
-                res.tm_year = utcDateTime.Year() - 1900;
-                res.tm_isdst = (int)isdst;
-                brokenDown = &res;
-            }
-        tz.Close();
-        }
+        TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
+        utcTTime = utcTTime + utcOffset;
+        TDateTime utcDateTime = utcTTime.DateTime();
+        res.tm_sec = utcDateTime.Second();
+        res.tm_min = utcDateTime.Minute();
+        res.tm_hour = utcDateTime.Hour();
+        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
+        res.tm_mon = utcDateTime.Month();
+        res.tm_year = utcDateTime.Year() - 1900;
+        res.tm_isdst = (int)isdst;
+        brokenDown = &res;
     }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of gmtime() where available

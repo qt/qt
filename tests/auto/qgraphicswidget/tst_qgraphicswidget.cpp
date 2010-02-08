@@ -2892,6 +2892,24 @@ void tst_QGraphicsWidget::initialShow2()
         void polishEvent() { update(); }
     };
 
+    // Don't let paint events triggered by the windowing system
+    // influence our test case. We're only interested in knowing
+    // whether a QGraphicsWidget generates an additional repaint
+    // on the inital show. Hence create a dummy scenario to find out
+    // how many repaints we should expect.
+    QGraphicsScene dummyScene(0, 0, 200, 200);
+    dummyScene.addItem(new QGraphicsRectItem(0, 0, 100, 100));
+
+    QGraphicsView *dummyView = new QGraphicsView(&dummyScene);
+    dummyView->setWindowFlags(Qt::X11BypassWindowManagerHint);
+    EventSpy paintSpy(dummyView->viewport(), QEvent::Paint);
+    dummyView->show();
+    QTest::qWaitForWindowShown(dummyView);
+    const int expectedRepaintCount = paintSpy.count();
+    delete dummyView;
+    dummyView = 0;
+    QTest::qWait(200);
+
     MyGraphicsWidget *widget = new MyGraphicsWidget;
     widget->resize(100, 100);
 
@@ -2899,13 +2917,11 @@ void tst_QGraphicsWidget::initialShow2()
     scene.addItem(widget);
 
     QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     view.show();
-    // Not using QTest::qWaitForWindowShown(&view); on purpose, because there's
-    // a bug in qt_x11_wait_for_window_manager that prevents this test
-    // to pass. Denis is looking into it.
-    QTest::qWait(300);
+    QTest::qWaitForWindowShown(&view);
 
-    QCOMPARE(widget->repaints, 1);
+    QCOMPARE(widget->repaints, expectedRepaintCount);
 }
 
 void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()

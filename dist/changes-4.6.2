@@ -1,7 +1,7 @@
 Qt 4.6.2 is a bug-fix release. It maintains both forward and backward
-compatibility (source and binary) with Qt 4.6.0.  For more details,
-refer to the online documentation included in this distribution. The
-documentation is also available online:
+compatibility (source and binary) with Qt 4.6.0 and 4.6.1.  For more
+details, refer to the online documentation included in this
+distribution. The documentation is also available online:
 
   http://qt.nokia.com/doc/4.6
 
@@ -40,6 +40,26 @@ Optimizations
 QtCore
 ------
 
+ - QAtomicPointer
+    * [QTBUG-7356] Fixed a compilation failure when using the Intel
+    compiler on IA-64
+
+ - QFile
+    * Fixed double-buffering issue when opening files in buffered mode.
+    * [QTBUG-7285] QFile::remove would fail if an unrelated operation on the
+      same instance had been previously failed. This manisfested itself in
+      QTemporaryFile failing to auto-remove files and QFile::copy leaving
+      temporary files behind in certain situations.
+
+ - QFSFileEngine
+    * Fix typo that made realpath() not being used
+
+ - QIODevice
+    * Optimized readAll()
+
+ - QReadWriteLock
+    * [MR 426] Fixed documentation
+
  - QXmlStreamWriter
     * [QTBUG-6893] Fixed adding extra Byte Order Marks when writing to a xml file.
 
@@ -62,20 +82,44 @@ QtGui
  - QPDFEngine
     * [QTBUG-7249] Fixed the encoding of the Tile and Creator tags in the PDF engine.
 
+ - QApplication
+    * [QTBUG-6098] Added a flag to avoid construction of application panes.
+ - QInputContext
+    * [QTBUG-7439] Avoided the loss of preedit text when losing focus on Symbian.
+
+ * [QT-2629] Implemented event filter functions for Symbian.
  * [QTBUG-7029] Fixed a crash when re-creating QApplication object due to a
    dangling gesture manager pointer.
+ * [QTBUG-7198] Setting a style sheet could break the checkbox position in item views.
+ * [QTBUG-7253] Fixed wrong stroke clipping with the raster engine when using a QPen
+   with a style other than SolidLine.
+
+
+ * [MR 2077] Integrated merge request 2077
 
 QtDBus
 ------
 
- - foo
-    * bar
+ - QDBusConnection
+    * [QT-2307] Fixed sending of D-Bus method calls with QDBus::BlockWithGui
 
 QtNetwork
 ---------
 
- - foo
-    * bar
+ - QNetworkAccessManager
+    * Optimizations
+    * HTTP: Get rid of QAbstractSocket warnings that were sometimes displayed
+    * HTTP: setReadBufferSize() of the QNetworkReply finally is working on all layers
+    * [QTBUG-7713] HTTP: Fix bug related to re-sending a request
+    * [QTBUG-7060] Fixed an issue with parsing of HTTP headers like
+    "private, max-age=300"
+
+ - QSslCertificate
+    * [QTBUG-6466] Fix issuerInfo() and subjectInfo()
+
+ - QTcpSocket
+    * [QTBUG-7344] Fix performance degredation with write() on Windows
+    * [QTBUG-7316,QTBUG-7317] Also handle unknown errors from socket engine
 
 QtOpenGL
 --------
@@ -127,6 +171,15 @@ Qt Plugins
  - foo
     * bar
 
+Examples
+--------
+
+ - QtMultimedia
+    * [MR 418] Fixed the example for QAudioOutput
+
+ - WebKit
+    * [MR 2235] Added the framecapture example to the default build
+
 Third party components
 ----------------------
 
@@ -142,7 +195,7 @@ Third party components
 Qt for Unix (X11 and Mac OS X)
 ------------------------------
 
- - 
+ -
 
 Qt for Linux/X11
 ----------------
@@ -152,19 +205,26 @@ Qt for Linux/X11
   * Fixed a crash when an input method tries to create a widget after the
     application is destroyed.
 
+  - [QTBUG-6952] Fixed a problem using NoButtons in spinbox with QGtkStyle
+  - [QTBUG-7504] Fixed missing focus rect on check- and radiobutton with
+     some GTK+ themes.
+  - [QTBUG-6522] Fixed missing menu separator in some GTK+ themes.
+
 Qt for Windows
 --------------
-
- -
 
 Qt for Mac OS X
 ---------------
 
- - QPrintPreviewDialog
-    * [QTBUG-7312]: Menubar and dock disappear after hiding a fullscreen widget on Cocoa.
-    * [QTBUG-7481]: Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
-    * [QTBUG-7522]: Drawing fake buttons using QMacStyle+QStyleOptionViewItemV4 lead to crash.
-    * [QTBUG-7625]: Calling showFullScreen() then showNormal() on a widget results in top menu hiding.
+ - [QTBUG-7832]: Restored missing margins around non-unified toolbars.
+ - [QTBUG-7312]: Menubar and dock disappear after hiding a fullscreen widget on Cocoa.
+ - [QTBUG-7481]: Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
+ - [QTBUG-7522]: Drawing fake buttons using QMacStyle+QStyleOptionViewItemV4 lead to crash.
+ - [QTBUG-7625]: Calling showFullScreen() then showNormal() on a widget results in top menu hiding.
+ - [QTBUG-7086]: QFileDialog now correctly responds to fileMode & acceptMode changes.
+ - [QTBUG-7162]: Fixed a crash in Designer when previewing a QMainWindow with native toolbar.
+ - [QTBUG-7305]: Fixed a crash when deleting QMainWindow with native toolbar on Cocoa.
+ - [QTBUG-6882]: Fixed a text layout issue with QHeaderView in right-to-left mode.
 
 
 Qt for Embedded Linux
@@ -188,6 +248,24 @@ Qt for Windows CE
 
  -
 
+Qt for Symbian
+--------------
+
+- QProcess
+    * [QTBUG-7667] Fixed no-timeout case for QProcess::waitForFinished.
+
+- qmake
+    * [QTBUG-7695] Added support for ifdeffing for manufacturer in generated
+    pkg files.
+    * [QTBUG-7908] Smart installer package generation support
+
+- Patch_capabilities script
+    * Added support for embedded sis name/uid patching.
+
+- Qt deployment
+    * [QTBUG-7518] Backup and restore support for Qt libs
+
+
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
@@ -210,5 +288,12 @@ Qt for Windows CE
 * Important Behavior Changes *
 ****************************************************************************
 
- -
+ - QNetworkAccessManager cache
+    * QNetworkAccessManager will no longer return expired pages, as
+      stated in the documentation
+    * The behaviour of PreferCache and PreferNetwork modes now match
+      the documentation more closely
 
+ - QUrl
+    * QUrl will now accept hostnames ending in dot and will not treat
+      those as invalid hostnames

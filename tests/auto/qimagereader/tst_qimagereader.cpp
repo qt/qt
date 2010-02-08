@@ -142,6 +142,7 @@ private slots:
     void gifHandlerBugs();
     void animatedGif();
     void gifImageCount();
+    void gifLoopCount();
 #endif
 
     void readCorruptImage_data();
@@ -881,8 +882,22 @@ void tst_QImageReader::gifImageCount()
     {
         QImageReader io(":images/trolltech.gif");
         QVERIFY(io.imageCount() == 34);
+        QVERIFY(io.size() == QSize(128,64));
     }
 }
+
+void tst_QImageReader::gifLoopCount()
+{
+    {
+        QImageReader io(":images/qt-gif-anim.gif");
+        QCOMPARE(io.loopCount(), -1); // infinite loop
+    }
+    {
+        QImageReader io(":images/qt-gif-noanim.gif");
+        QCOMPARE(io.loopCount(), 0); // no loop
+    }
+}
+
 #endif
 
 class Server : public QObject

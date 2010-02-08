@@ -53,6 +53,9 @@
 #ifdef QT_MAC_USE_COCOA
 #include "qmacdefines_mac.h"
 #import <Cocoa/Cocoa.h>
+#include <private/qapplication_p.h>
+#include <private/qbackingstore_p.h>
+
 
 enum { QtMacCustomizeWindow = 1 << 21 }; // This will one day be run over by
 

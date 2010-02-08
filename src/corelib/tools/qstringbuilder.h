@@ -71,7 +71,7 @@ public:
 
 private:
     const int m_size;
-    const char *m_data;
+    const char * const m_data;
 };
 
 struct Q_CORE_EXPORT QAbstractConcatenable
