@@ -2572,15 +2572,15 @@ void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
         d->updateCurrent(qMin(modelIndex, d->model->count()-1));
     }
 
-    if (removedVisible) {
-        // update visibleIndex
-        for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
-            if ((*it)->index != -1) {
-                d->visibleIndex = (*it)->index;
-                break;
-            }
+    // update visibleIndex
+    for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
+        if ((*it)->index != -1) {
+            d->visibleIndex = (*it)->index;
+            break;
         }
+    }
 
+    if (removedVisible) {
         if (d->visibleItems.isEmpty()) {
             d->visibleIndex = 0;
             d->visiblePos = d->header ? d->header->size() : 0;
