@@ -1,0 +1,120 @@
+
+
+Listview: sectionExpression has been replaced by section.property, section.criteria
+
+
+=============================================================================
+The changes below are pre-4.6.0 release.
+
+QML API Review
+==============
+
+The QML API is being reviewed.  This file documents the changes.
+Note that the changes are incremental, so a rename A->B for example may be followed
+by another subsequent rename B->C, if later reviews override earlier reviews.
+
+API Changes
+===========
+
+Renamed Elements:
+LineEdit         -> TextInput
+VerticalLayout   -> Column
+HorizontalLayout -> Row
+VerticalPositioner -> Column
+HorizontalPositioner -> Row
+GridLayout       -> Grid
+GridPositioner   -> Grid
+Rect             -> Rectangle
+FocusRealm       -> FocusScope
+FontFamily       -> FontLoader
+Palette          -> SystemPalette
+Bind             -> Binding
+SetProperties    -> PropertyChanges
+RunScript        -> StateChangeScript
+SetAnchors       -> AnchorChanges
+SetPropertyAction  -> PropertyAction
+RunScriptAction    -> ScriptAction
+ParentChangeAction -> ParentAction
+VisualModel        -> VisualDataModel
+Follow             -> SpringFollow
+
+Renamed properties:
+Item: contents         -> childrenRect
+MouseRegion: xmin      -> minimumX
+MouseRegion: xmax      -> maximumX
+MouseRegion: ymin      -> minimumY
+MouseRegion: ymin      -> maximumY
+Text elements: hAlign  -> horizontalAlignment
+Text elements: vAlign  -> verticalAlignment
+Text elements: highlightColor -> selectionColor
+Text elements: highlightedTextColor -> selectedTextColor
+Text elements: preserveSelection -> persistentSelection
+State: operations      -> changes
+Transition: operations -> animations
+Transition: fromState  -> from
+Transition: toState    -> to
+Follow: followValue    -> value
+Flickable: xPosition   -> viewportX
+Flickable: yPosition   -> viewportY
+Flickable: xVelocity   -> horizontalVelocity
+Flickable: yVelocity   -> verticalVelocity
+Flickable: velocityDecay -> reportedVelocitySmoothing
+Flickable: locked      -> interactive (note reversal of meaning)
+Flickable: pageXPosition -> visibleArea.xPosition
+Flickable: pageYPosition -> visibleArea.yPosition
+Flickable: pageWidth    -> visibleArea.widthRatio
+Flickable: pageHeight   -> visibleArea.heightRatio
+WebView: idealWidth    -> preferredWidth
+WebView: idealHeight   -> preferredHeight
+WebView: status        -> statusText
+WebView: mouseX        -> clickX (parameter to onDoubleClick)
+WebView: mouseY        -> clickY (parameter to onDoubleClick)
+WebView: cacheSize     -> pixelCacheSize
+Repeater: component    -> delegate
+Repeater: dataSource   -> model
+ListView: current      -> currentItem
+GridView: current      -> currentItem
+ListView: wrap         -> keyNavigationWraps
+ListView: autoHighlight -> highlightFollowsCurrentItem
+GridView: wrap         -> keyNavigationWraps
+GridView: autoHighlight -> highlightFollowsCurrentItem
+Animation: targets -> matchTargets
+Animation: properties -> matchProperties
+
+Additions:
+MouseRegion: add "acceptedButtons" property
+MouseRegion: add "hoverEnabled" property
+MouseRegion: add "pressedButtons" property
+Timer: add start() and stop() slots
+WebView: add newWindowComponent and newWindowParent properties
+Loader: add status() and progress() properties
+Loader: add sourceComponent property
+Loader: add resizeMode property
+ListView: preferredHighlightBegin, preferredHighlightEnd
+ListView: strictlyEnforceHighlightRange
+Particles: Added emissionRate, emissionVariance and burst()
+
+Deletions:
+Column/VerticalPositioner: lost "margins" property
+Row/HorizontalPositioner: lost "margins" property
+Grid/Positioner/Layout: lost "margins" property
+WebView: lost "interactive" property (always true now)
+Flickable: removed "dragMode" property
+ComponentInstance: removed.  Replaced by Loader.sourceComponent
+ListView: removed currentItemMode.  Replaced by highligh range.
+ListView: removed snapPos.
+Particles: removed streamIn. Replaced by emissionRate
+
+Other Changes:
+ids must be lowercase: Text { id: foo }, not Text { id: Foo }
+Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
+Image: scaleGrid property removed. New item called BorderImage instead.
+KeyActions: changed to a Keys attached property on any item.
+KeyProxy: changed to a Keys.forwardTo property on any item.
+Script: now an intrinsic type in the language
+ - cannot be assigned to properties
+ - good: Item { Script { ... } }
+ - bad:  Item { resources: Script { ... } }
+Script: delay-loaded of the QML file until their source has been loaded (this only effects QML files loaded across the network.)
+Scope: declared properties shadow a property of the same name (was previously the reverse)
+ScriptAction and StateChangeScript: the script property now takes script rather than a string containing script (script: doSomething() rather than script: "doSomething()")
