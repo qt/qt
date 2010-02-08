@@ -394,6 +394,7 @@ void QGLBlurTextureCache::insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTe
     static bool hookAdded = false;
     if (!hookAdded) {
         QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(pixmapDestroyed);
+        QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(pixmapDestroyed);
         hookAdded = true;
     }
 
