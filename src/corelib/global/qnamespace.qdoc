@@ -2508,6 +2508,15 @@
                           operations that allow the user to interact with
                           the application while they are performed in the
                           background.
+    \value DragMoveCursor
+                          A cursor that is usually used when dragging an item.
+    \value DragCopyCursor
+                          A cursor that is usually used when dragging an item
+                          to copy it.
+    \value DragLinkCursor
+                          A cursor that is usually used when dragging an item
+                          to make a link to it.
+
     \value BitmapCursor
     \omitvalue LastCursor
     \omitvalue CustomCursor
