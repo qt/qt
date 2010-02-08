@@ -51,6 +51,8 @@
 #include <private/qmlgraphicstextedit_p.h>
 #include <QFontMetrics>
 #include <QmlView>
+#include <QStyle>
+#include <QInputContext>
 
 class tst_qmlgraphicstextedit : public QObject
 
@@ -79,6 +81,7 @@ private slots:
     void delegateLoading();
     void navigation();
     void readOnly();
+    void sendRequestSoftwareInputPanelEvent();
 
 private:
     void simulateKey(QmlView *, int key);
@@ -735,11 +738,54 @@ QmlView *tst_qmlgraphicstextedit::createView(const QString &filename)
     file.open(QFile::ReadOnly);
     QString xml = file.readAll();
     canvas->setQml(xml, filename);
-
     return canvas;
 }
 
+class MyInputContext : public QInputContext
+{
+public:
+    MyInputContext() : softwareInputPanelEventReceived(false) {}
+    ~MyInputContext() {}
 
+    QString identifierName() { return QString(); }
+    QString language() { return QString(); }
+
+    void reset() {}
+
+    bool isComposing() const { return false; }
+
+    bool filterEvent( const QEvent *event )
+    {
+        if (event->type() == QEvent::RequestSoftwareInputPanel)
+            softwareInputPanelEventReceived = true;
+        return QInputContext::filterEvent(event);
+    }
+    bool softwareInputPanelEventReceived;
+};
+
+void tst_qmlgraphicstextedit::sendRequestSoftwareInputPanelEvent()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    MyInputContext ic;
+    view.viewport()->setInputContext(&ic);
+    QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
+            view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
+    if ((behavior != QStyle::RSIP_OnMouseClick))
+        QSKIP("This test need to have a style with RSIP_OnMouseClick", SkipSingle);
+    QmlGraphicsTextEdit edit;
+    edit.setText("Hello world");
+    edit.setPos(0, 0);
+    scene.addItem(&edit);
+    view.show();
+    qApp->setAutoSipEnabled(true);
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(edit.scenePos()));
+    QApplication::processEvents();
+    QCOMPARE(ic.softwareInputPanelEventReceived, true);
+}
 QTEST_MAIN(tst_qmlgraphicstextedit)
 
 #include "tst_qmlgraphicstextedit.moc"

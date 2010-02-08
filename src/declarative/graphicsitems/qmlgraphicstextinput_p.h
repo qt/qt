@@ -164,6 +164,8 @@ public:
     bool hasAcceptableInput() const;
 
     void drawContents(QPainter *p,const QRect &r);
+    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+
 Q_SIGNALS:
     void textChanged();
     void cursorPositionChanged();
@@ -191,6 +193,7 @@ protected:
                                  const QRectF &oldGeometry);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void keyPressEvent(QKeyEvent* ev);
     bool event(QEvent *e);
 

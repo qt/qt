@@ -807,6 +807,10 @@ Handles the given mouse \a event.
 void QmlGraphicsTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QmlGraphicsTextEdit);
+    QWidget *widget = event->widget();
+    if (widget && (d->control->textInteractionFlags() & Qt::TextEditable) && boundingRect().contains(event->pos()))
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->focusOnPress);
+
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QmlGraphicsPaintedItem::mousePressEvent(event);

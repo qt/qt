@@ -660,6 +660,19 @@ void QmlGraphicsTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
 }
 
+/*!
+\overload
+Handles the given mouse \a event.
+*/
+void QmlGraphicsTextInput::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QmlGraphicsTextInput);
+    QWidget *widget = event->widget();
+    if (widget && !d->control->isReadOnly() && boundingRect().contains(event->pos()))
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), d->focusOnPress);
+    d->control->processEvent(event);
+}
+
 bool QmlGraphicsTextInput::event(QEvent* ev)
 {
     Q_D(QmlGraphicsTextInput);
@@ -669,6 +682,7 @@ bool QmlGraphicsTextInput::event(QEvent* ev)
         case QEvent::KeyPress:
         case QEvent::KeyRelease://###Should the control be doing anything with release?
         case QEvent::GraphicsSceneMousePress:
+        case QEvent::GraphicsSceneMouseRelease:
             break;
         default:
             handled = d->control->processEvent(ev);
@@ -719,6 +733,36 @@ void QmlGraphicsTextInput::drawContents(QPainter *p, const QRect &r)
     d->control->draw(p, offset, clipRect, flags);
 
     p->restore();
+}
+
+/*!
+\overload
+Returns the value of the given \a property.
+*/
+QVariant QmlGraphicsTextInput::inputMethodQuery(Qt::InputMethodQuery property) const
+{
+    Q_D(const QmlGraphicsTextInput);
+    switch(property) {
+    case Qt::ImFont:
+        return font();
+    case Qt::ImCursorPosition:
+        return QVariant(d->control->cursor());
+    case Qt::ImSurroundingText:
+        return QVariant(text());
+    case Qt::ImCurrentSelection:
+        return QVariant(selectedText());
+    case Qt::ImMaximumTextLength:
+        return QVariant(maxLength());
+    case Qt::ImAnchorPosition:
+        if (d->control->selectionStart() == d->control->selectionEnd())
+            return QVariant(d->control->cursor());
+        else if (d->control->selectionStart() == d->control->cursor())
+            return QVariant(d->control->selectionEnd());
+        else
+            return QVariant(d->control->selectionStart());
+    default:
+        return QVariant();
+    }
 }
 
 void QmlGraphicsTextInput::selectAll()
