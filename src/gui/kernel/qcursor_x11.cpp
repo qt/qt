@@ -39,9 +39,11 @@
 **
 ****************************************************************************/
 
+#include <qdebug.h>
 #include <qdatastream.h>
 #include <private/qcursor_p.h>
 #include <private/qt_x11_p.h>
+#include <private/qapplication_p.h>
 #include <qbitmap.h>
 #include <qcursor.h>
 #include <X11/cursorfont.h>
@@ -57,6 +59,7 @@
 #endif // QT_NO_XFIXES
 
 #include "qx11info_x11.h"
+#include <private/qpixmap_x11_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -262,12 +265,31 @@ void QCursorData::update()
         "whats_this",
         "left_ptr_watch",
         "openhand",
-        "closedhand"
+        "closedhand",
+        "copy",
+        "move",
+        "link"
     };
 
 #ifndef QT_NO_XCURSOR
-    if (X11->ptrXcursorLibraryLoadCursor)
-        hcurs = X11->ptrXcursorLibraryLoadCursor(dpy, cursorNames[cshape]);
+    if (X11->ptrXcursorLibraryLoadCursor) {
+        // special case for non-standard dnd-* cursors
+        switch (cshape) {
+        case Qt::DragCopyCursor:
+            hcurs = X11->ptrXcursorLibraryLoadCursor(dpy, "dnd-copy");
+            break;
+        case Qt::DragMoveCursor:
+            hcurs = X11->ptrXcursorLibraryLoadCursor(dpy, "dnd-move");
+            break;
+        case Qt::DragLinkCursor:
+            hcurs = X11->ptrXcursorLibraryLoadCursor(dpy, "dnd-link");
+            break;
+        default:
+            break;
+        }
+        if (!hcurs)
+            hcurs = X11->ptrXcursorLibraryLoadCursor(dpy, cursorNames[cshape]);
+    }
     if (hcurs)
         return;
 #endif // QT_NO_XCURSOR
@@ -504,6 +526,19 @@ void QCursorData::update()
         pm  = XCreateBitmapFromData(dpy, rootwin, open ? openhand_bits : closedhand_bits, 16, 16);
         pmm = XCreateBitmapFromData(dpy, rootwin, open ? openhandm_bits : closedhandm_bits, 16, 16);
         hcurs = XCreatePixmapCursor(dpy, pm, pmm, &fg, &bg, 8, 8);
+    } else if (cshape == Qt::DragCopyCursor || cshape == Qt::DragMoveCursor
+               || cshape == Qt::DragLinkCursor) {
+        XColor bg, fg;
+        bg.red   = 255 << 8;
+        bg.green = 255 << 8;
+        bg.blue  = 255 << 8;
+        fg.red   = 0;
+        fg.green = 0;
+        fg.blue  = 0;
+        QImage image = QApplicationPrivate::instance()->getPixmapCursor(cshape).toImage();
+        pm = QX11PixmapData::createBitmapFromImage(image);
+        pmm = QX11PixmapData::createBitmapFromImage(image.createAlphaMask().convertToFormat(QImage::Format_MonoLSB));
+        hcurs = XCreatePixmapCursor(dpy, pm, pmm, &fg, &bg, 8, 8);
     }
 
     if (hcurs)
@@ -576,6 +611,15 @@ void QCursorData::update()
         break;
     case Qt::BusyCursor:
         sh = XC_watch;
+        break;
+    case Qt::DragCopyCursor:
+        sh = XC_tcross;
+        break;
+    case Qt::DragLinkCursor:
+        sh = XC_center_ptr;
+        break;
+    case Qt::DragMoveCursor:
+        sh = XC_top_left_arrow;
         break;
 #endif /* QT_USE_APPROXIMATE_CURSORS */
     default:

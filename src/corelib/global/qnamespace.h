@@ -1235,7 +1235,10 @@ public:
         BusyCursor,
         OpenHandCursor,
         ClosedHandCursor,
-        LastCursor = ClosedHandCursor,
+        DragCopyCursor,
+        DragMoveCursor,
+        DragLinkCursor,
+        LastCursor = DragLinkCursor,
         BitmapCursor = 24,
         CustomCursor = 25
 

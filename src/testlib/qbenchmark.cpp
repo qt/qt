@@ -282,6 +282,8 @@ quint64 QTest::endBenchmarkMeasurement()
 
     Note that the -iterations command line argument has no effect
     on test functions without the QBENCHMARK macro.
+
+    \since 4.7
 */
 void QTest::setBenchmarkResult(qreal result, QTest::QBenchmarkMetric metric)
 {
