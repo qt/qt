@@ -321,11 +321,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // Note: EXTENSION_CLEAN will get called many times when doing reallyclean
         //       This is why the "2> NUL" gets appended to generated clean targets in makefile.cpp.
         t << EXTENSION_CLEAN ": " COMPILER_CLEAN_TARGET << endl;
-#ifdef Q_OS_WIN32
-        generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_DIR"), " /S /Q ", "", "");
-#else
-        generateCleanCommands(t, dirsToClean, "rm", " -rf ", "", "");
-#endif
+        generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_TREE"), "", "", "");
         t << endl;
 
         t << PRE_TARGETDEPS_TARGET ":"
