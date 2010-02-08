@@ -44,10 +44,10 @@ hpux-acc*|hpuxi-acc* {
         CONFIG(debug, debug|release) {
             QMAKE_LIBDIR += $$QT_BUILD_TREE/src/tools/bootstrap/debug
         } else {
-            QMAKE_LIBDIR += $QT_BUILD_TREE/src/tools/bootstrap/release
+            QMAKE_LIBDIR += $$QT_BUILD_TREE/src/tools/bootstrap/release
         }
     } else {
-        QMAKE_LIBDIR += $QT_BUILD_TREE/src/tools/bootstrap
+        QMAKE_LIBDIR += $$QT_BUILD_TREE/src/tools/bootstrap
     }
     LIBS += -lbootstrap
 }
