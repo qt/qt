@@ -88,7 +88,9 @@
 #define MMP_END_RESOURCE "END"
 
 #define SIS_TARGET "sis"
+#define INSTALLER_SIS_TARGET "installer_sis"
 #define OK_SIS_TARGET "ok_sis"
+#define OK_INSTALLER_SIS_TARGET "ok_installer_sis"
 #define FAIL_SIS_NOPKG_TARGET "fail_sis_nopkg"
 #define FAIL_SIS_NOCACHE_TARGET "fail_sis_nocache"
 
@@ -294,6 +296,9 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
     QTextStream t(&pkgFile);
 
     QString installerSisHeader = project->values("DEPLOYMENT.installer_header").join("\n");
+    if (installerSisHeader.isEmpty())
+        installerSisHeader = "0xA000D7CE"; // Use default self-signable UID if not defined
+
     QString wrapperStreamBuffer;
     QTextStream tw(&wrapperStreamBuffer);
 
@@ -516,7 +521,7 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
         twf << "\"" << currentPath << "/" << sisName << "\" - \"c:\\adm\\" << sisName << "\"" << endl;
 
         QString bootStrapPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
-        bootStrapPath.append("/bootstrap.sis");
+        bootStrapPath.append("/smartinstaller.sis");
         QFileInfo fi(fileInfo(bootStrapPath));
         twf << "@\"" << fi.absoluteFilePath() << "\",(0x2002CCCD)" << endl;
     }
@@ -1900,8 +1905,34 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
     t << pkgcommand << endl;
     t << endl;
 
+    QString sisName = fixedTarget;
+    sisName += ".sis";
+
+    t << sisName << ":" << endl;
+    t << "\t$(MAKE) -s -f $(MAKEFILE) " SIS_TARGET << endl << endl;
+
+    t << INSTALLER_SIS_TARGET ": " << sisName << endl;
+    siscommand = QString("\t$(if $(wildcard %1_installer.%2)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %3," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %4)")
+                          .arg(fixedTarget)
+                          .arg("pkg")
+                          .arg(OK_INSTALLER_SIS_TARGET)
+                          .arg(FAIL_SIS_NOPKG_TARGET);
+    t << siscommand << endl;
+    t << endl;
+
+    t << OK_INSTALLER_SIS_TARGET ": " << endl;
+
+    pkgcommand = QString("\tcreatepackage.bat $(QT_SIS_OPTIONS) %1_installer.%2 - " \
+                         "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
+                  .arg(fixedTarget)
+                  .arg("pkg");
+    t << pkgcommand << endl;
+    t << endl;
+
     t << FAIL_SIS_NOPKG_TARGET ":" << endl;
-    t << "\t$(error PKG file does not exist, 'SIS' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;
+    t << "\t$(error PKG file does not exist, '" SIS_TARGET "' and '" INSTALLER_SIS_TARGET "' target are only supported for executables or projects with DEPLOYMENT statement)" << endl;
     t << endl;
 
     t << FAIL_SIS_NOCACHE_TARGET ":" << endl;

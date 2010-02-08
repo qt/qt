@@ -127,6 +127,10 @@
     \row \o \c run           \o Run the application on the emulator.
     \row \o \c runonphone    \o Run the application on a device.
     \row \o \c sis           \o Create signed \c .sis file for project.
+    \row \o \c installer_sis \o Create signed smart installer \c .sis file for project.
+                                Smart installer will attempt to download
+                                missing dependencies in addition to
+                                just installing the application.
     \endtable
 
     The following lines perform a debug build for the emulator
