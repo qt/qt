@@ -109,8 +109,6 @@
     \row
         \o \l {Phonon Module}{Phonon}
         \o \l {Qt3Support}
-        \o \l {}
-        \o \l {}
     \endtable
 
     Since Qt is not a system library, it has to be redistributed along

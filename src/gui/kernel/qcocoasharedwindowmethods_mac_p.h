@@ -95,7 +95,8 @@ QT_END_NAMESPACE
 
     bool isToolTip = (widget->windowType() == Qt::ToolTip);
     bool isPopup = (widget->windowType() == Qt::Popup);
-    return !(isPopup || isToolTip);
+    bool isTool = (widget->windowType() == Qt::Tool);
+    return !(isPopup || isToolTip || isTool);
 }
 
 - (void)orderWindow:(NSWindowOrderingMode)orderingMode relativeTo:(NSInteger)otherWindowNumber

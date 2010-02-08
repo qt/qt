@@ -570,8 +570,6 @@ void InnerNode::addChild(Node *child)
     else {
         if (child->type() == Enum)
             enumChildren.append(child);
-        if (childMap.contains(child->name()))
-            qDebug() << "Duplicate child" << child->name();
         childMap.insert(child->name(), child);
     }
 }

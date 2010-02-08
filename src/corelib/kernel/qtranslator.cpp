@@ -633,7 +633,7 @@ static QString getMessage(const uchar *m, const uchar *end, const char *context,
 end:
     if (!tn)
         return QString();
-    QString str = QString::fromUtf16((const ushort *)tn, tn_length/2);
+    QString str = QString((const QChar *)tn, tn_length/2);
     if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
         for (int i = 0; i < str.length(); ++i)
             str[i] = QChar((str.at(i).unicode() >> 8) + ((str.at(i).unicode() << 8) & 0xff00));

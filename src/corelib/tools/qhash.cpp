@@ -68,8 +68,8 @@ static uint hash(const uchar *p, int n)
 
     while (n--) {
         h = (h << 4) + *p++;
-        if ((g = (h & 0xf0000000)) != 0)
-            h ^= g >> 23;
+        g = h & 0xf0000000;
+        h ^= g >> 23;
         h &= ~g;
     }
     return h;
@@ -82,8 +82,8 @@ static uint hash(const QChar *p, int n)
 
     while (n--) {
         h = (h << 4) + (*p++).unicode();
-        if ((g = (h & 0xf0000000)) != 0)
-            h ^= g >> 23;
+        g = h & 0xf0000000;
+        h ^= g >> 23;
         h &= ~g;
     }
     return h;

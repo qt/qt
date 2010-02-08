@@ -533,6 +533,15 @@ QByteArray QNetworkReply::rawHeader(const QByteArray &headerName) const
     return QByteArray();
 }
 
+/*! \typedef QNetworkReply::RawHeaderPair
+
+  RawHeaderPair is a QPair<QByteArray, QByteArray> where the first
+  QByteArray is the header name and the second is the header.
+ */
+
+/*!
+  Returns a list of raw header pairs.
+ */
 const QList<QNetworkReply::RawHeaderPair>& QNetworkReply::rawHeaderPairs() const
 {
     Q_D(const QNetworkReply);

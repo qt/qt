@@ -136,7 +136,7 @@ static QString qFieldSerial(int i)
         i >>= 4;
     }
 
-    return QString::fromUtf16(arr, int(ptr - arr) + 1);
+    return QString(reinterpret_cast<const QChar *>(arr), int(ptr - arr) + 1);
 }
 
 static bool qIsAlnum(QChar ch)
