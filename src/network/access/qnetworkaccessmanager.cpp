@@ -802,27 +802,6 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
     if (reply)
         emit q->finished(reply);
-
-    if (session && deferredMigration) {
-        foreach (QObject *child, q->children()) {
-            if (child == reply)
-                continue;
-
-            QNetworkReplyImpl *replyImpl = qobject_cast<QNetworkReplyImpl *>(child);
-            if (!replyImpl)
-                continue;
-
-            QNetworkReplyImplPrivate::State state = replyImpl->d_func()->state;
-            if (state == QNetworkReplyImplPrivate::Buffering ||
-                state == QNetworkReplyImplPrivate::Working) {
-                return;
-            }
-        }
-
-        deferredMigration = false;
-        qDebug() << "Migrating as there are no pending replies.";
-        session->migrate();
-    }
 }
 
 void QNetworkAccessManagerPrivate::_q_replySslErrors(const QList<QSslError> &errors)
@@ -1136,6 +1115,7 @@ void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
 {
     Q_Q(QNetworkAccessManager);
 
+#if 0
     foreach (QObject *child, q->children()) {
         QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
         if (reply) {
@@ -1151,6 +1131,7 @@ void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
             }
         }
     }
+#endif
 
     qDebug() << "Accepting new configuration.";
     session->accept();
@@ -1183,18 +1164,10 @@ void QNetworkAccessManagerPrivate::_q_sessionPreferredConfigurationChanged(const
 
     foreach (QObject *child, q->children()) {
         QNetworkReplyImpl *replyImpl = qobject_cast<QNetworkReplyImpl *>(child);
-        if (replyImpl) {
-            QNetworkReplyImplPrivate::State state = replyImpl->d_func()->state;
-            if (state == QNetworkReplyImplPrivate::Buffering ||
-                state == QNetworkReplyImplPrivate::Working) {
-                deferredMigration = true;
-                return;
-            }
-        }
+        if (replyImpl)
+            replyImpl->migrateBackend();
     }
 
-    deferredMigration = false;
-    qDebug() << "Migrating as there are no pending replies.";
     session->migrate();
 }
 

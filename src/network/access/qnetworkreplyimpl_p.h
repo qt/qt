@@ -165,7 +165,7 @@ public:
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache() const;
 
-    void migrateBackend();
+    bool migrateBackend();
 
     bool cacheEnabled;
     QIODevice *cacheSaveDevice;
