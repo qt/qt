@@ -4843,6 +4843,14 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             fi
             ;;
         sqlite)
+            if [ "$CFG_SQL_sqlite" = "auto" ]; then # the default
+                case "$XPLATFORM" in
+                    symbian*)
+                    # sqlite on symbian is typically not build in Qt but deployed as a pre-existing sis file.
+                    CFG_SQL_sqlite=no
+                    ;;
+                esac
+            fi
             if [ "$CFG_SQL_sqlite" != "no" ]; then
                 SQLITE_AUTODETECT_FAILED="no"
                 if [ "$CFG_SQLITE" = "system" ]; then

@@ -1,7 +1,5 @@
 TARGET	 = qsqlite
 
-symbian:TARGET.UID3=0x2001E631
-
 HEADERS		= ../../../sql/drivers/sqlite/qsql_sqlite.h
 SOURCES		= smain.cpp \
 		  ../../../sql/drivers/sqlite/qsql_sqlite.cpp
