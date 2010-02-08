@@ -807,36 +807,6 @@ static QObject *variantToQObject(const QVariant &value, bool *ok)
     }
 }
 
-QmlPropertyCache::Data *
-QmlCompiledBindingsPrivate::findproperty(QObject *obj, 
-                                         const QScriptDeclarativeClass::Identifier &name,
-                                         QmlEnginePrivate *enginePriv,
-                                         QmlPropertyCache::Data &local)
-{
-    QmlPropertyCache *cache = 0;
-    QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
-    if (ddata)
-        cache = ddata->propertyCache;
-    if (!cache) {
-        cache = enginePriv->cache(obj);
-        if (cache && ddata) { cache->addref(); ddata->propertyCache = cache; }
-    }
-
-    QmlPropertyCache::Data *property = 0;
-
-    if (cache) {
-        property = cache->property(name);
-    } else {
-        qWarning() << "QmlBindingVME: Slow search" << enginePriv->objectClass->toString(name);
-        local = QmlPropertyCache::create(obj->metaObject(),  
-                                         enginePriv->objectClass->toString(name));
-        if (local.isValid())
-            property = &local;
-    }
-
-    return property;
-}
-
 bool QmlCompiledBindingsPrivate::findproperty(QObject *obj, Register *output, 
                                               QmlEnginePrivate *enginePriv,
                                               int subIdx, const QScriptDeclarativeClass::Identifier &name,
@@ -848,7 +818,8 @@ bool QmlCompiledBindingsPrivate::findproperty(QObject *obj, Register *output,
     }
 
     QmlPropertyCache::Data local;
-    QmlPropertyCache::Data *property = findproperty(obj, name, enginePriv, local);
+    QmlPropertyCache::Data *property = 
+        QmlPropertyCache::property(QmlEnginePrivate::get(enginePriv), obj, name, local);
 
     if (property) {
         if (subIdx != -1)
