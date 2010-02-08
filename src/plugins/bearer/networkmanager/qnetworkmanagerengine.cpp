@@ -499,19 +499,21 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
     }
 
     // Check if configuration exists for connection.
-    for (int i = 0; i < connections.count(); ++i) {
-        QNetworkManagerSettingsConnection *connection = connections.at(i);
+    if (!accessPoint->ssid().isEmpty()) {
+        for (int i = 0; i < connections.count(); ++i) {
+            QNetworkManagerSettingsConnection *connection = connections.at(i);
 
-        if (accessPoint->ssid() == connection->getSsid()) {
-            const QString service = connection->connectionInterface()->service();
-            const QString settingsPath = connection->connectionInterface()->path();
-            const QString connectionId = QString::number(qHash(service + ' ' + settingsPath));
+            if (accessPoint->ssid() == connection->getSsid()) {
+                const QString service = connection->connectionInterface()->service();
+                const QString settingsPath = connection->connectionInterface()->path();
+                const QString connectionId = QString::number(qHash(service + ' ' + settingsPath));
 
-            QNetworkConfigurationPrivatePointer ptr =
-                accessPointConfigurations.value(connectionId);
-            ptr->state = QNetworkConfiguration::Discovered;
-            emit configurationChanged(ptr);
-            return;
+                QNetworkConfigurationPrivatePointer ptr =
+                    accessPointConfigurations.value(connectionId);
+                ptr->state = QNetworkConfiguration::Discovered;
+                emit configurationChanged(ptr);
+                return;
+            }
         }
     }
 
@@ -544,11 +546,31 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
             if (configuredAccessPoints.contains(accessPoint)) {
                 // find connection and change state to Defined
                 configuredAccessPoints.removeOne(accessPoint);
-                qDebug() << "At least one connection is no longer discovered.";
+                for (int i = 0; i < connections.count(); ++i) {
+                    QNetworkManagerSettingsConnection *connection = connections.at(i);
+
+                    if (accessPoint->ssid() == connection->getSsid()) {
+                        const QString service = connection->connectionInterface()->service();
+                        const QString settingsPath = connection->connectionInterface()->path();
+                        const QString connectionId =
+                            QString::number(qHash(service + ' ' + settingsPath));
+
+                        QNetworkConfigurationPrivatePointer ptr =
+                            accessPointConfigurations.value(connectionId);
+                        ptr->state = QNetworkConfiguration::Defined;
+                        emit configurationChanged(ptr);
+                        return;
+                    }
+                }
             } else {
-                // emit configurationRemoved(cpPriv);
-                qDebug() << "An unconfigured wifi access point was removed.";
+                QNetworkConfigurationPrivatePointer ptr =
+                    accessPointConfigurations.take(QString::number(qHash(objectPath.path())));
+
+                if (ptr)
+                    emit configurationRemoved(ptr);
             }
+
+            delete accessPoint;
 
             break;
         }
@@ -564,7 +586,21 @@ void QNetworkManagerEngine::updateAccessPoint(const QMap<QString, QVariant> &map
     if (!accessPoint)
         return;
 
-    qDebug() << "update access point" << accessPoint;
+    for (int i = 0; i < connections.count(); ++i) {
+        QNetworkManagerSettingsConnection *connection = connections.at(i);
+
+        if (accessPoint->ssid() == connection->getSsid()) {
+            const QString service = connection->connectionInterface()->service();
+            const QString settingsPath = connection->connectionInterface()->path();
+            const QString connectionId = QString::number(qHash(service + ' ' + settingsPath));
+
+            QNetworkConfigurationPrivatePointer ptr =
+                accessPointConfigurations.value(connectionId);
+            ptr->state = QNetworkConfiguration::Discovered;
+            emit configurationChanged(ptr);
+            return;
+        }
+    }
 }
 
 QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QString &service,
