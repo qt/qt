@@ -558,17 +558,6 @@ bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
 #define ctx d->programGuard.context()
 
 /*!
-    \enum GeometryTypes
-
-    Defines the geometry types specificed by the GL_EXT_geometry_shader4 extension
-
-    \value LinesWithAdjacencyGeometryType Corresponds to GL_LINES_ADJACENCY.
-    \value LineStripWithAdjacencyGeometryType Corresponds to GL_LINE_STRIP_ADJACENCY.
-    \value TrianglesWithAdjacencyGeometryType Corresponds to GL_TRIANGLES_ADJACENCY.
-    \value TriangleStripWithAdjacencyGeometryType Corresponds to GL_TRIANGLE_STRIP_ADJACENCY.
- */
-
-/*!
     Constructs a new shader program and attaches it to \a parent.
     The program will be invalid until addShader() is called.
 
@@ -612,6 +601,7 @@ bool QGLShaderProgram::init()
         context = QGLContext::currentContext();
         d->programGuard.setContext(context);
     }
+
     if (!context)
         return false;
     if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
@@ -3002,12 +2992,14 @@ void QGLShaderProgram::shaderDestroyed()
 */
 bool QGLShader::hasOpenGLShaders(ShaderType type, const QGLContext *context)
 {
-#if !defined(QT_OPENGL_ES_2)
     if (!context)
         context = QGLContext::currentContext();
     if (!context)
         return false;
-#endif
+
+    if ((type & ~(Geometry | Vertex | Fragment)) || type == 0)
+        return false;
+
     bool resolved = qt_resolve_glsl_extensions(const_cast<QGLContext *>(context));
     if (!resolved)
         return false;

@@ -103,18 +103,18 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)
 
 class QGLShaderProgramPrivate;
 
+#ifndef GL_EXT_geometry_shader4
+#  define GL_LINES_ADJACENCY_EXT 0xA
+#  define GL_LINE_STRIP_ADJACENCY_EXT 0xB
+#  define GL_TRIANGLES_ADJACENCY_EXT 0xC
+#  define GL_TRIANGLE_STRIP_ADJACENCY_EXT 0xD
+#endif
+
+
 class Q_OPENGL_EXPORT QGLShaderProgram : public QObject
 {
     Q_OBJECT
 public:
-    enum GeometryTypes
-    {
-        LinesWithAdjacencyGeometryType          = 0xa,
-        LineStripWithAdjacencyGeometryType      = 0xb,
-        TrianglesWithAdjacencyGeometryType      = 0xc,
-        TriangleStripWithAdjacencyGeometryType  = 0xd
-    };
-
     explicit QGLShaderProgram(QObject *parent = 0);
     explicit QGLShaderProgram(const QGLContext *context, QObject *parent = 0);
     virtual ~QGLShaderProgram();
