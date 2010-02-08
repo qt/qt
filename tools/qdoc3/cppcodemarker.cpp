@@ -1129,7 +1129,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                 "signal",
                                 "signals");
 	    FastSection qmlattachedsignals(qmlClassNode,
-                                           "QML Attached Signals",
+                                           "Attached Signals",
                                            "signal",
                                            "signals");
 	    FastSection qmlmethods(qmlClassNode,
@@ -1137,7 +1137,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                    "method",
                                    "methods");
 	    FastSection qmlattachedmethods(qmlClassNode,
-                                           "QML Attached Methods",
+                                           "Attached Methods",
                                            "method",
                                            "methods");
 
