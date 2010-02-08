@@ -73,7 +73,7 @@ public:
     virtual quint64 startTime(const QString &) { return Q_UINT64_C(0); }
 
 Q_SIGNALS:
-    void connectionError(const QString &id, ConnectionError error);
+    void connectionError(const QString &id, QBearerEngineImpl::ConnectionError error);
 };
 
 QT_END_NAMESPACE

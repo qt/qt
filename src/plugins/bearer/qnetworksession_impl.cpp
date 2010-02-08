@@ -119,8 +119,8 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
         activeConfig = publicConfig;
         engine = getEngineFromId(activeConfig.identifier());
         if (engine) {
-            connect(engine, SIGNAL(connectionError(QString,QBearerEngine::ConnectionError)),
-                    this, SLOT(connectionError(QString,QBearerEngine::ConnectionError)),
+            connect(engine, SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
+                    this, SLOT(connectionError(QString,QBearerEngineImpl::ConnectionError)),
                     Qt::QueuedConnection);
         }
         break;
@@ -298,15 +298,18 @@ void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
 
         if (activeConfig != config) {
             if (engine) {
-                disconnect(engine, SIGNAL(connectionError(QString,QBearerEngine::ConnectionError)),
-                           this, SLOT(connectionError(QString,QBearerEngine::ConnectionError)));
+                disconnect(engine,
+                           SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
+                           this,
+                           SLOT(connectionError(QString,QBearerEngineImpl::ConnectionError)));
             }
 
             activeConfig = config;
             engine = getEngineFromId(activeConfig.identifier());
             if (engine) {
-                connect(engine, SIGNAL(connectionError(QString,QBearerEngine::ConnectionError)),
-                        this, SLOT(connectionError(QString,QBearerEngine::ConnectionError)),
+                connect(engine,
+                        SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
+                        this, SLOT(connectionError(QString,QBearerEngineImpl::ConnectionError)),
                         Qt::QueuedConnection);
             }
             emit newConfigurationActivated();
