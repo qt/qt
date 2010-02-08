@@ -303,19 +303,16 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // generate command lines like this ...
         // -@ if NOT EXIST  ".\somedir"         mkdir ".\somedir"
         QStringList dirsToClean;
+        QString dirExists = var("QMAKE_CHK_DIR_EXISTS");
+        QString mkdir = var("QMAKE_MKDIR");
         for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
             QStringList values = it.value();
             for (int i = 0; i < values.size(); ++i) {
                 if (values.at(i).endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
                     QString fixedValue(QDir::toNativeSeparators(values.at(i)));
                     dirsToClean << fixedValue;
-#ifdef Q_OS_WIN32
-                    t << "\t-@ if NOT EXIST \""  << fixedValue << "\" mkdir \""
-                      << fixedValue << "\"" << endl;
-#else
-                    t << "\t-@ if test ! -d \""  << fixedValue << "\"; then mkdir \""
-                      << fixedValue << "\"" << "; fi" <<endl;
-#endif
+                    t << "\t-@ " << dirExists << " \""  << fixedValue << "\" "
+                      << mkdir << " \"" << fixedValue << "\"" << endl;
                 }
             }
         }
