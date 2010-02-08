@@ -235,7 +235,7 @@ QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd)
 
 QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
 {
-    foreach (int id, pathToID.values())
+    foreach (int id, pathToID)
         inotify_rm_watch(inotifyFd, id < 0 ? -id : id);
 
     ::close(inotifyFd);

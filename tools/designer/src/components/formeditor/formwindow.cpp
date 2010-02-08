@@ -484,6 +484,7 @@ void FormWindow::setMainContainer(QWidget *w)
         sheet->setVisible(sheet->indexOf(QLatin1String("windowTitle")), true);
         sheet->setVisible(sheet->indexOf(QLatin1String("windowIcon")), true);
         sheet->setVisible(sheet->indexOf(QLatin1String("windowModality")), true);
+        sheet->setVisible(sheet->indexOf(QLatin1String("windowOpacity")), true);
         sheet->setVisible(sheet->indexOf(QLatin1String("windowFilePath")), true);
         // ### generalize
     }

@@ -170,7 +170,7 @@ signals:
     void highlighted(const QString &link);
     void forwardAvailable(bool available);
     void backwardAvailable(bool available);
-    void addNewBookmark(const QString &title, const QString &url);
+    void addBookmark(const QString &title, const QString &url);
 
 protected:
     void keyPressEvent(QKeyEvent *);

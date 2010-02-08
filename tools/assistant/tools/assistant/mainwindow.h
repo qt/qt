@@ -58,8 +58,6 @@ class QHelpEngineCore;
 class QHelpEngine;
 class CentralWidget;
 class ContentWindow;
-class BookmarkManager;
-class BookmarkWidget;
 class CmdLineParser;
 class QtDocInstaller;
 
@@ -97,10 +95,8 @@ public slots:
 private slots:
     void showContents();
     void showIndex();
-    void showBookmarks();
     void showSearch();
     void insertLastPages();
-    void addBookmark();
     void gotoAddress();
     void showPreferences();
     void showNewAddress();
@@ -109,7 +105,6 @@ private slots:
     void updateNavigationItems();
     void updateTabCloseAction();
     void showNewAddress(const QUrl &url);
-    void addNewBookmark(const QString &title, const QString &url);
     void showTopicChooser(const QMap<QString, QUrl> &links, const QString &keyword);
     void updateApplicationFont();
     void filterDocumentation(const QString &customFilter);
@@ -119,17 +114,11 @@ private slots:
     void indexingFinished();
     void qtDocumentationInstalled(bool newDocsInstalled);
     void registerDocumentation(const QString &component,
-                               const QString &absFileName);
+        const QString &absFileName);
     void resetQtDocInfo(const QString &component);
     void checkInitState();
     void documentationRemoved(const QString &namespaceName);
     void documentationUpdated(const QString &namespaceName);
-
-    void updateBookmarkMenu();
-    void showBookmark(QAction *action);
-
-    void importBookmarks();
-    void exportBookmarks();
 
 private:
     bool initHelpDB();
@@ -140,17 +129,21 @@ private:
     void setupFilterToolbar();
     void setupAddressToolbar();
     QMenu *toolBarMenu();
-    QWidget *setupBookmarkWidget();
     void hideContents();
     void hideIndex();
-    void hideBookmarks();
     void hideSearch();
 
+private slots:
+    void showBookmarksDockWidget();
+    void hideBookmarksDockWidget();
+
+private:
+    QWidget *m_bookmarkWidget;
+
+private:
     CentralWidget *m_centralWidget;
     IndexWindow *m_indexWindow;
     ContentWindow *m_contentWindow;
-    BookmarkWidget *m_bookmarkWidget;
-    BookmarkManager *m_bookmarkManager;
     QLineEdit *m_addressLineEdit;
     QComboBox *m_filterCombo;
 
@@ -172,10 +165,6 @@ private:
 
     QMenu *m_viewMenu;
     QMenu *m_toolBarMenu;
-    QMenu *m_bookmarkMenu;
-    QAction *m_bookmarkMenuAction;
-    QAction *m_importBookmarkAction;
-    QAction *m_exportBookmarkAction;
 
     CmdLineParser *m_cmdLine;
 

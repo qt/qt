@@ -67,7 +67,8 @@ int main(int argc, char *argv[])
                 QFileInfo fi(QString::fromLocal8Bit(argv[i]));
                 compressedFile = fi.absoluteFilePath();
             } else {
-                error = QObject::tr("Missing output file name!");
+                error = QCoreApplication::translate("QHelpGenerator",
+                            "Missing output file name!");
             }
         } else if (arg == QLatin1String("-v")) {
             showVersion = true;
@@ -83,14 +84,16 @@ int main(int argc, char *argv[])
     }
 
     if (showVersion) {
-        fprintf(stdout, "Qt Help Generator version 1.0 (Qt %s)\n", QT_VERSION_STR);
+        fprintf(stdout, "Qt Help Generator version 1.0 (Qt %s)\n",
+                QT_VERSION_STR);
         return 0;
     }
 
     if (projectFile.isEmpty() && !showHelp)
-        error = QObject::tr("Missing Qt help project file!");
+        error = QCoreApplication::translate("QHelpGenerator",
+                                            "Missing Qt help project file!");
 
-    QString help = QObject::tr("\nUsage:\n\n"
+    QString help = QCoreApplication::translate("QHelpGenerator", "\nUsage:\n\n"
         "qhelpgenerator <help-project-file> [options]\n\n"
         "  -o <compressed-file>   Generates a Qt compressed help\n"
         "                         file called <compressed-file>.\n"
