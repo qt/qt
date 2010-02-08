@@ -5707,7 +5707,6 @@ QGestureManager* QGestureManager::instance()
     return qAppPriv->gestureManager;
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
 // These pixmaps approximate the images in the Windows User Interface Guidelines.
 
 // XPM
@@ -5929,7 +5928,6 @@ QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
     }
     return QPixmap();
 }
-#endif
 
 QT_END_NAMESPACE
 

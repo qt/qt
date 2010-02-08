@@ -244,9 +244,7 @@ public:
     bool willDrop;
     QEventLoop *eventLoop;
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
     QPixmap dragCursor(Qt::DropAction action) const;
-#endif
 
     bool hasCustomDragCursors() const;
 
