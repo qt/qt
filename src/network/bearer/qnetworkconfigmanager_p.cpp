@@ -173,6 +173,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
 
         QFactoryLoader *l = loader();
 
+        QBearerEngine *generic = 0;
+
         foreach (const QString &key, l->keys()) {
             QBearerEnginePlugin *plugin = qobject_cast<QBearerEnginePlugin *>(l->instance(key));
             if (plugin) {
@@ -180,7 +182,11 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 if (!engine)
                     continue;
 
-                sessionEngines.append(engine);
+                if (key == QLatin1String("generic"))
+                    generic = engine;
+                else
+                    sessionEngines.append(engine);
+
                 connect(engine, SIGNAL(updateCompleted()),
                         this, SLOT(updateConfigurations()));
                 connect(engine, SIGNAL(configurationAdded(QNetworkConfigurationPrivatePointer)),
@@ -193,6 +199,8 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
                 capFlags |= engine->capabilities();
             }
         }
+
+        sessionEngines.append(generic);
     }
 
     QBearerEngine *engine = qobject_cast<QBearerEngine *>(sender());
@@ -227,6 +235,58 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
             config.d = ptr;
             return config;
         }
+    }
+
+    // Engines don't have a default configuration.
+
+    // Return first active snap
+    QNetworkConfigurationPrivatePointer firstDiscovered;
+
+    foreach (QBearerEngine *engine, sessionEngines) {
+        foreach (const QString &id, engine->snapConfigurations.keys()) {
+            QNetworkConfigurationPrivatePointer ptr = engine->snapConfigurations.value(id);
+
+            if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+                QNetworkConfiguration config;
+                config.d = ptr;
+                return config;
+            } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+                       QNetworkConfiguration::Discovered) {
+                firstDiscovered = ptr;
+            }
+        }
+    }
+
+    // No Active SNAPs return first Discovered SNAP.
+    if (firstDiscovered) {
+        QNetworkConfiguration config;
+        config.d = firstDiscovered;
+        return config;
+    }
+
+    // No Active or Discovered SNAPs, do same for InternetAccessPoints.
+    firstDiscovered.reset();
+
+    foreach (QBearerEngine *engine, sessionEngines) {
+        foreach (const QString &id, engine->accessPointConfigurations.keys()) {
+            QNetworkConfigurationPrivatePointer ptr = engine->accessPointConfigurations.value(id);
+
+            if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+                QNetworkConfiguration config;
+                config.d = ptr;
+                return config;
+            } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+                       QNetworkConfiguration::Discovered) {
+                firstDiscovered = ptr;
+            }
+        }
+    }
+
+    // No Active InternetAccessPoint return first Discovered InternetAccessPoint.
+    if (firstDiscovered) {
+        QNetworkConfiguration config;
+        config.d = firstDiscovered;
+        return config;
     }
 
     return QNetworkConfiguration();
