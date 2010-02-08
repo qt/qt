@@ -739,8 +739,6 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 {
     Q_D(QAbstractSlider);
     e->ignore();
-    if (e->orientation() != d->orientation && !rect().contains(e->pos()))
-        return;
     int delta = e->delta();
     if (d->scrollByDelta(e->orientation(), e->modifiers(), delta))
         e->accept();
