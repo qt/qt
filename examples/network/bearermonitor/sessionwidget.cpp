@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,7 @@
 #include "qnetworkconfigmanager.h"
 
 SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *parent)
-:   QWidget(parent)
+:   QWidget(parent), statsTimer(-1)
 {
     setupUi(this);
 
@@ -75,10 +75,24 @@ SessionWidget::~SessionWidget()
     delete session;
 }
 
+void SessionWidget::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == statsTimer) {
+        rxData->setText(QString::number(session->bytesReceived()));
+        txData->setText(QString::number(session->bytesWritten()));
+        activeTime->setText(QString::number(session->activeTime()));
+    }
+}
+
 void SessionWidget::updateSession()
 {
     updateSessionState(session->state());
     updateSessionError(session->error());
+
+    if (session->state() == QNetworkSession::Connected)
+        statsTimer = startTimer(1000);
+    else
+        killTimer(statsTimer);
 
     if (session->configuration().type() == QNetworkConfiguration::InternetAccessPoint)
         bearer->setText(session->configuration().bearerName());
