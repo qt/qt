@@ -110,6 +110,25 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
 QML_DEFINE_TYPE(Qt,4,6,QtObject,QObject)
+/*!
+    \qmlclass QtObject QObject
+    \brief The QtObject element is the most basic element in QML
+
+    The QtObject element is a non-visual element which contains only
+    the objectName property. It is useful for when you need an extremely
+    lightweight element to place your own custom properties in.
+
+    It can also be useful for C++ integration, as it is just a plain QObject. See
+    the QObject documentation for further details.
+*/
+/*!
+  \qmlproperty string QtObject::objectName
+  This property allows you to give a name to this specific object instance.
+
+  See \l{scripting.html#accessing-child-qobjects}{Accessing Child QObjects}
+  in the scripting documentation for details how objectName can be used from
+  scripts.
+*/
 
 struct StaticQtMetaObject : public QObject
 {

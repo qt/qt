@@ -84,7 +84,7 @@
 
     To use this from within your QML file, import QmlViewer 1.0 and create a
     Screen object. This object has a property, orientation, which can be either
-    Screen.Lanscape or Screen.Portrait and which can be bound to in your
+    Screen.Landscape or Screen.Portrait and which can be bound to in your
     application. An example is below:
 
 \code
