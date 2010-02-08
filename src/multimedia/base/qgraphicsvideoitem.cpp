@@ -408,21 +408,7 @@ void QGraphicsVideoItem::paint(
 */
 QVariant QGraphicsVideoItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    Q_D(QGraphicsVideoItem);
-
-    if (change == ItemVisibleChange && d->outputControl != 0 && d->rendererControl != 0) {
-        if (value.toBool()) {
-            d->outputControl->setOutput(QVideoOutputControl::RendererOutput);
-
-            return d->outputControl->output() == QVideoOutputControl::RendererOutput;
-        } else {
-            d->outputControl->setOutput(QVideoOutputControl::NoOutput);
-
-            return value;
-        }
-    } else {
-        return QGraphicsItem::itemChange(change, value);
-    }
+    return QGraphicsItem::itemChange(change, value);
 }
 
 QT_END_NAMESPACE
