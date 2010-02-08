@@ -7791,6 +7791,7 @@ for file in .projects .projects.3; do
 
         case $a in
         *winmain/winmain.pro) continue ;;
+        *s60main/s60main.pro) continue ;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
