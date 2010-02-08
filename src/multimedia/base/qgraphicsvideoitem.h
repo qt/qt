@@ -85,7 +85,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 Q_SIGNALS:
-    void nativeSizeChanged(const QSizeF &size) const;
+    void nativeSizeChanged(const QSizeF &size);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
