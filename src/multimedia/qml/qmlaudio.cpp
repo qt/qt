@@ -49,13 +49,19 @@ QML_DEFINE_TYPE(Qt,4,6,Audio,QmlAudio);
 
 /*!
     \qmlclass Audio QmlAudio
-    \brief The Audio element allows you to add audio to a scene.
+    \brief The Audio element allows you to add audio playback to a scene.
+
+    \qml
+    Audio { source: "audio/song.mp3" }
+    \endqml
+
+    \sa Video
 */
 
 /*!
     \internal
     \class QmlAudio
-    \brief The QmlAudio class provides a audio item that you can add to a QmlView.
+    \brief The QmlAudio class provides an audio item that you can add to a QmlView.
 */
 
 void QmlAudio::_q_error(int errorCode, const QString &errorString)
@@ -82,7 +88,9 @@ QmlAudio::~QmlAudio()
 /*!
     \qmlmethod Audio::play()
 
-    Starts playback of the audio.
+    Starts playback of the media.
+
+    Sets the \l playing property to true, and the \l paused property to false.
 */
 
 void QmlAudio::play()
@@ -98,7 +106,9 @@ void QmlAudio::play()
 /*!
     \qmlmethod Audio::pause()
 
-    Pauses playback of the audio.
+    Pauses playback of the media.
+
+    Sets the \l playing and \l paused properties to true.
 */
 
 void QmlAudio::pause()
@@ -114,7 +124,9 @@ void QmlAudio::pause()
 /*!
     \qmlmethod Audio::stop()
 
-    Stops playback of the audio.
+    Stops playback of the media.
+
+    Sets the \l playing and \l paused properties to false.
 */
 
 void QmlAudio::stop()
@@ -130,19 +142,23 @@ void QmlAudio::stop()
 /*!
     \qmlproperty url Audio::source
 
-    This property holds the source URL of the audio.
+    This property holds the source URL of the media.
 */
 
 /*!
     \qmlproperty bool Audio::playing
 
-    This property holds whether the audio is playing.
+    This property holds whether the media is playing.
+
+    Defaults to false, and can be set to true to start playback.
 */
 
 /*!
     \qmlproperty bool Audio::paused
 
-    This property holds whether the audio is paused.
+    This property holds whether the media is paused.
+
+    Defaults to false, and can be set to true to pause playback.
 */
 
 /*!
@@ -172,18 +188,18 @@ void QmlAudio::stop()
 /*!
     \qmlproperty enum Audio::status
 
-    This property holds the status of audio loading. It can be one of:
+    This property holds the status of media loading. It can be one of:
 
     \list
-    \o NoMedia - no audio has been set.
-    \o Loading - the audio is currently being loaded.
-    \o Loaded - the audio has been loaded.
-    \o Buffering - the audio is buffering data.
-    \o Stalled - playback has been interrupted while the audio is buffering data.
-    \o Buffered - the audio has buffered data.
-    \o EndOfMedia - the audio has played to the end.
-    \o InvalidMedia - the audio cannot be played.
-    \o UnknownStatus - the status of the audio is unknown.
+    \o NoMedia - no media has been set.
+    \o Loading - the media is currently being loaded.
+    \o Loaded - the media has been loaded.
+    \o Buffering - the media is buffering data.
+    \o Stalled - playback has been interrupted while the media is buffering data.
+    \o Buffered - the media has buffered data.
+    \o EndOfMedia - the media has played to the end.
+    \o InvalidMedia - the media cannot be played.
+    \o UnknownStatus - the status of the media is unknown.
     \endlist
 */
 
@@ -195,44 +211,46 @@ QmlAudio::Status QmlAudio::status() const
 /*!
     \qmlsignal Audio::onLoaded()
 
-    This handler is called when the video source has been loaded.
+    This handler is called when the media source has been loaded.
 */
 
 /*!
     \qmlsignal Audio::onBuffering()
 
-    This handler is called when the video stream starts buffering.
+    This handler is called when the media  starts buffering.
 */
 
 /*!
     \qmlsignal Audio::onStalled()
 
-    This handler is called when playback has stalled while the video stream buffers.
+    This handler is called when playback has stalled while the media buffers.
 */
 
 /*!
     \qmlsignal Audio::onBuffered()
 
-    This handler is called when the video stream has finished buffering.
+    This handler is called when the media has finished buffering.
 */
 
 /*!
-    \qmlsignal Audio::onEndOfMedia
+    \qmlsignal Audio::onEndOfMedia()
 
-    This handler is called when playback stops because end of the video has been reached.
+    This handler is called when playback stops because end of the media has been reached.
 */
 /*!
     \qmlproperty int Audio::duration
 
-    This property holds the duration of the audio in milliseconds.
+    This property holds the duration of the media in milliseconds.
 
-    If the audio doesn't have a fixed duration (a live stream for example) this will be 0.
+    If the media doesn't have a fixed duration (a live stream for example) this will be 0.
 */
 
 /*!
     \qmlproperty int Audio::position
 
     This property holds the current playback position in milliseconds.
+
+    If the \l seekable property is true, this property can be set to seek to a new position.
 */
 
 /*!
@@ -258,6 +276,8 @@ QmlAudio::Status QmlAudio::status() const
     \qmlproperty bool Audio::seekable
 
     This property holds whether position of the audio can be changed.
+
+    If true; setting a \l position value will cause playback to seek to the new position.
 */
 
 /*!
