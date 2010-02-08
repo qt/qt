@@ -587,3 +587,11 @@ contains(QT_CONFIG, declarative): SUBDIRS += declarative
            xmlpatternsview \
            xmlpatternsxqts \
            xmlpatternsxslts
+
+
+############### make check recursively for testcases ##################
+check.CONFIG = recursive
+check.recurse = $$SUBDIRS
+check.recurse_target = check
+QMAKE_EXTRA_TARGETS += check
+###########################################################
