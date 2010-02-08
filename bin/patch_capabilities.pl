@@ -131,9 +131,13 @@ if (@ARGV)
                 }
             }
 
-            # Remove all dependencies to other packages to reduce unnecessary error messages
-            # from depended packages that are also patched and therefore have different UID.
-            if ($line =~ m/^\(0x[0-9|a-f|A-F]*\).*\{.*\}$/)
+            # Remove dependencies to known problem packages (i.e. packages that are likely to be patched, also)
+            # to reduce unnecessary error messages.
+            if ($line =~ m/^\(0x2002af5f\).*\{.*\}$/)
+            {
+                $newLine = "\n"
+            }
+            if ($line =~ m/^\(0x2001E61C\).*\{.*\}$/)
             {
                 $newLine = "\n"
             }
