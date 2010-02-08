@@ -119,7 +119,7 @@ QML_DEFINE_TYPE(Qt,4,6,Rotation,QGraphicsRotation)
 /*!
     \qmlproperty real Scale::xScale
 
-    The scaling factor for the X axis.    
+    The scaling factor for the X axis.
 */
 
 /*!
@@ -1408,7 +1408,7 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
 
 /*!
     \fn void QmlGraphicsItem::widthChanged()
-    \internal 
+    \internal
 */
 
 /*!
@@ -1443,7 +1443,7 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
 
 // ### Must fix
 struct RegisterAnchorLineAtStartup {
-    RegisterAnchorLineAtStartup() { 
+    RegisterAnchorLineAtStartup() {
         qRegisterMetaType<QmlGraphicsAnchorLine>("QmlGraphicsAnchorLine");
     }
 };
@@ -1508,16 +1508,16 @@ QmlGraphicsItem::~QmlGraphicsItem()
 
     \image declarative-transformorigin.png
 
-    This example scales an image about its center.
+    This example rotates an image around its bottom-right corner.
     \qml
     Image {
         source: "myimage.png"
-        transformOrigin: Item.Center
-        scale: 4
+        transformOrigin: Item.BottomRight
+        rotate: 45
     }
     \endqml
 
-    The default transform origin is \c TopLeft.
+    The default transform origin is \c Center.
 */
 
 /*!
@@ -2586,7 +2586,7 @@ void QmlGraphicsItem::setState(const QString &state)
 
 /*!
   \property QmlGraphicsItem::transform
-  \internal 
+  \internal
 */
 
 /*! \internal */
@@ -2813,7 +2813,7 @@ void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
     smooth pixmap filtering, false otherwise.
 
     The default is false.
-    
+
     \sa setSmooth()
 */
 bool QmlGraphicsItem::smooth() const
@@ -3050,16 +3050,16 @@ QDebug operator<<(QDebug debug, QmlGraphicsItem *item)
 }
 
 int QmlGraphicsItemPrivate::consistentTime = -1;
-void QmlGraphicsItemPrivate::setConsistentTime(int t) 
-{ 
-    consistentTime = t; 
+void QmlGraphicsItemPrivate::setConsistentTime(int t)
+{
+    consistentTime = t;
 }
 
 QTime QmlGraphicsItemPrivate::currentTime()
 {
     if (consistentTime == -1)
         return QTime::currentTime();
-    else 
+    else
         return QTime(0, 0).addMSecs(consistentTime);
 }
 

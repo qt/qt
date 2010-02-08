@@ -110,7 +110,7 @@ public:
     : _anchors(0), _contents(0),
       _baselineOffset(0),
       _anchorLines(0),
-      _stateGroup(0), origin(QmlGraphicsItem::TopLeft),
+      _stateGroup(0), origin(QmlGraphicsItem::Center),
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
       smooth(false), keyHandler(0),
