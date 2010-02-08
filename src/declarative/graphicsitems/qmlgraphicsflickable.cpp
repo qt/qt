@@ -119,8 +119,8 @@ void QmlGraphicsFlickableVisibleArea::updateVisible()
 
     // Vertical
     const qreal viewheight = flickable->height();
-    const qreal maxyextent = -flickable->maxYExtent();
-    qreal pagePos = -p->_moveY.value() / (maxyextent + viewheight);
+    const qreal maxyextent = -flickable->maxYExtent() + flickable->minYExtent();
+    qreal pagePos = (-p->_moveY.value() + flickable->minYExtent()) / (maxyextent + viewheight);
     qreal pageSize = viewheight / (maxyextent + viewheight);
 
     if (pageSize != m_heightRatio) {
@@ -134,8 +134,8 @@ void QmlGraphicsFlickableVisibleArea::updateVisible()
 
     // Horizontal
     const qreal viewwidth = flickable->width();
-    const qreal maxxextent = -flickable->maxXExtent();
-    pagePos = -p->_moveX.value() / (maxxextent + viewwidth);
+    const qreal maxxextent = -flickable->maxXExtent() + flickable->minXExtent();
+    pagePos = (-p->_moveX.value() + flickable->minXExtent()) / (maxxextent + viewwidth);
     pageSize = viewwidth / (maxxextent + viewwidth);
 
     if (pageSize != m_widthRatio) {
@@ -322,7 +322,7 @@ void QmlGraphicsFlickablePrivate::updateBeginningEnd()
     // Vertical
     const int maxyextent = int(-q->maxYExtent());
     const qreal ypos = -_moveY.value();
-    bool atBeginning = (ypos <= 0.0);
+    bool atBeginning = (ypos <= -q->minYExtent());
     bool atEnd = (maxyextent <= ypos);
 
     if (atBeginning != atYBeginning) {
@@ -337,7 +337,7 @@ void QmlGraphicsFlickablePrivate::updateBeginningEnd()
     // Horizontal
     const int maxxextent = int(-q->maxXExtent());
     const qreal xpos = -_moveX.value();
-    atBeginning = (xpos <= 0.0);
+    atBeginning = (xpos <= -q->minXExtent());
     atEnd = (maxxextent <= xpos);
 
     if (atBeginning != atXBeginning) {
