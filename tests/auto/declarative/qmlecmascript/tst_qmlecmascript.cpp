@@ -119,6 +119,7 @@ private slots:
     void jsObject();
     void undefinedResetsProperty();
     void listToVariant();
+    void multiEngineObject();
 
     void bug1();
 
@@ -1610,7 +1611,30 @@ void tst_qmlecmascript::listToVariant()
     QCOMPARE(object->property("test"), QVariant::fromValue(container.children()));
 
     delete object;
+}
 
+// QTBUG-7957
+void tst_qmlecmascript::multiEngineObject()
+{
+    MyQmlObject obj;
+    obj.setStringProperty("Howdy planet");
+
+    QmlEngine e1;
+    e1.rootContext()->setContextProperty("thing", &obj);
+    QmlComponent c1(&e1, TEST_FILE("multiEngineObject.qml"));
+
+    QmlEngine e2;
+    e2.rootContext()->setContextProperty("thing", &obj);
+    QmlComponent c2(&e2, TEST_FILE("multiEngineObject.qml"));
+
+    QObject *o1 = c1.create();
+    QObject *o2 = c2.create();
+
+    QCOMPARE(o1->property("test").toString(), QString("Howdy planet"));
+    QCOMPARE(o2->property("test").toString(), QString("Howdy planet"));
+
+    delete o2;
+    delete o1;
 }
 
 QTEST_MAIN(tst_qmlecmascript)

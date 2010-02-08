@@ -132,6 +132,9 @@ public:
     Data *property(int) const;
     QStringList propertyNames() const;
 
+    inline QmlEngine *qmlEngine() const;
+    static Data *property(QmlEngine *, QObject *, const QScriptDeclarativeClass::Identifier &, Data &);
+    static Data *property(QmlEngine *, QObject *, const QString &, Data &);
 protected:
     virtual void clear();
 
@@ -179,6 +182,11 @@ bool QmlPropertyCache::ValueTypeData::operator==(const ValueTypeData &o)
 { 
     return valueTypeCoreIdx == o.valueTypeCoreIdx &&
            valueTypePropType == o.valueTypePropType; 
+}
+
+QmlEngine *QmlPropertyCache::qmlEngine() const
+{
+    return engine;
 }
 
 QT_END_NAMESPACE

@@ -73,6 +73,7 @@ private:
     T *findItem(QmlGraphicsItem *parent, const QString &id, int index=-1);
     template<typename T>
     QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
+    void dumpTree(QmlGraphicsItem *parent, int depth = 0);
 };
 
 class TestModel : public QAbstractListModel
@@ -768,7 +769,7 @@ void tst_QmlGraphicsGridView::changeFlow()
 void tst_QmlGraphicsGridView::defaultValues()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/gridview3.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview3.qml"));
     QmlGraphicsGridView *obj = qobject_cast<QmlGraphicsGridView*>(c.create());
 
     QVERIFY(obj != 0);
@@ -791,7 +792,7 @@ void tst_QmlGraphicsGridView::defaultValues()
 void tst_QmlGraphicsGridView::properties()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/gridview2.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview2.qml"));
     QmlGraphicsGridView *obj = qobject_cast<QmlGraphicsGridView*>(c.create());
 
     QVERIFY(obj != 0);
@@ -923,17 +924,19 @@ T *tst_QmlGraphicsGridView::findItem(QmlGraphicsItem *parent, const QString &obj
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
-                QmlExpression e(qmlContext(item), "index", item);
-                e.setTrackChange(false);
-                if (e.value().toInt() == index)
-                    return static_cast<T*>(item);
+                QmlContext *context = QmlEngine::contextForObject(item);
+                if (context) {
+                    if (context->contextProperty("index").toInt() == index) {
+                        return static_cast<T*>(item);
+                    }
+                }
             } else {
                 return static_cast<T*>(item);
             }
@@ -965,6 +968,19 @@ QList<T*> tst_QmlGraphicsGridView::findItems(QmlGraphicsItem *parent, const QStr
     }
 
     return items;
+}
+
+void tst_QmlGraphicsGridView::dumpTree(QmlGraphicsItem *parent, int depth)
+{
+    static QString padding("                       ");
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
+        if(!item)
+            continue;
+        QmlContext *context = QmlEngine::contextForObject(item);
+        qDebug() << padding.left(depth*2) << item << (context ? context->contextProperty("index").toInt() : -1);
+        dumpTree(item, depth+1);
+    }
 }
 
 

@@ -171,7 +171,7 @@ tst_QmlGraphicsPathView::tst_QmlGraphicsPathView()
 void tst_QmlGraphicsPathView::initValues()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/pathview1.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/pathview1.qml"));
     QmlGraphicsPathView *obj = qobject_cast<QmlGraphicsPathView*>(c.create());
 
     QVERIFY(obj != 0);
@@ -189,7 +189,7 @@ void tst_QmlGraphicsPathView::initValues()
 void tst_QmlGraphicsPathView::pathview2()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/pathview2.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/pathview2.qml"));
     QmlGraphicsPathView *obj = qobject_cast<QmlGraphicsPathView*>(c.create());
 
     QVERIFY(obj != 0);
@@ -207,7 +207,7 @@ void tst_QmlGraphicsPathView::pathview2()
 void tst_QmlGraphicsPathView::pathview3()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/pathview3.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/pathview3.qml"));
     QmlGraphicsPathView *obj = qobject_cast<QmlGraphicsPathView*>(c.create());
 
     QVERIFY(obj != 0);
@@ -225,7 +225,7 @@ void tst_QmlGraphicsPathView::pathview3()
 void tst_QmlGraphicsPathView::path()
 {
     QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/path.qml"));
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/path.qml"));
     QmlGraphicsPath *obj = qobject_cast<QmlGraphicsPath*>(c.create());
 
     QVERIFY(obj != 0);

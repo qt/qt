@@ -72,7 +72,7 @@ void tst_qmlsystempalette::activePalette()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlSystemPalette *object = qobject_cast<QmlSystemPalette*>(component.create());
 
     QVERIFY(object != 0);
@@ -101,7 +101,7 @@ void tst_qmlsystempalette::inactivePalette()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { colorGroup: SystemPalette.Inactive }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlSystemPalette *object = qobject_cast<QmlSystemPalette*>(component.create());
 
     QVERIFY(object != 0);
@@ -131,7 +131,7 @@ void tst_qmlsystempalette::disabledPalette()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { colorGroup: SystemPalette.Disabled }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlSystemPalette *object = qobject_cast<QmlSystemPalette*>(component.create());
 
     QVERIFY(object != 0);
@@ -161,7 +161,7 @@ void tst_qmlsystempalette::paletteChanged()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { }";
     QmlComponent component(&engine);
-    component.setData(componentStr.toLatin1(), QUrl("file://"));
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlSystemPalette *object = qobject_cast<QmlSystemPalette*>(component.create());
 
     QVERIFY(object != 0);

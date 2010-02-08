@@ -204,7 +204,7 @@ void tst_numberformat::text()
 
     QmlEngine engine;
     QmlComponent formatterComponent(&engine);
-    formatterComponent.setData(componentStr.toUtf8(), QUrl("file:///"));
+    formatterComponent.setData(componentStr.toUtf8(), QUrl::fromLocalFile(""));
     if(formatterComponent.isError())
         qDebug() << formatterComponent.errors();
     QVERIFY(formatterComponent.isReady());
