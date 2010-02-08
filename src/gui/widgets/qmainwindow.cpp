@@ -1393,6 +1393,7 @@ bool QMainWindow::event(QEvent *event)
 #endif // QT_NO_STATUSTIP
 
         case QEvent::StyleChange:
+            d->layout->layoutState.dockAreaLayout.styleChangedEvent();
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
