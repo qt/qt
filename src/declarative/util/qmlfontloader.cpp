@@ -126,10 +126,16 @@ void QmlFontLoader::setSource(const QUrl &url)
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = toLocalFileOrQrc(d->url);
     if (!lf.isEmpty()) {
-        QFile file(lf);
-        file.open(QIODevice::ReadOnly);
-        QByteArray ba = file.readAll();
-        d->addFontToDatabase(ba);
+        int id = QFontDatabase::addApplicationFont(lf);
+        if (id != -1) {
+            d->name = QFontDatabase::applicationFontFamilies(id).at(0);
+            emit nameChanged();
+            d->status = QmlFontLoader::Ready;
+        } else {
+            d->status = QmlFontLoader::Error;
+            qWarning() << "Cannot load font:" << url;
+        }
+        emit statusChanged();
     } else
 #endif
     {
