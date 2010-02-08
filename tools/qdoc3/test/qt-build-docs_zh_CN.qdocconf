@@ -27,9 +27,8 @@ qhp.projects            = Qt
 qhp.Qt.file                = qt.qhp
 qhp.Qt.namespace           = com.trolltech.qt.470
 qhp.Qt.virtualFolder       = qdoc
-qhp.Qt.title               = Tutorials
-qhp.Qt.indexTitle          = Tutorials
-qhp.Qt.indexRoot           = tutorials.html
+qhp.Qt.title               = 教程
+qhp.Qt.indexTitle          = 教程
 qhp.Qt.selectors           = fake:example
 
 qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc zh_CN

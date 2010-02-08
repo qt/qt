@@ -41,14 +41,11 @@
 
 /*!
     \page tutorials.html
-    \title Tutorials
+    \title 教程
 
-    \contentspage How to Learn Qt
-    \nextpage Qt Examples
+    \contentspage 如何学习 Qt
 
     \brief Tutorials, guides and overviews to help you learn Qt.
-
-    \nextpage Qt Examples
 
     A collection of tutorials and "walkthrough" guides are provided with Qt to
     help new users get started with Qt development. These documents cover a

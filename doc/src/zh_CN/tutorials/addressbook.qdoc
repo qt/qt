@@ -43,7 +43,7 @@
     \page tutorials-addressbook.html
 
     \startpage {index.html}{Qt Reference Documentation}
-    \contentspage Tutorials
+    \contentspage 教程
     \nextpage {tutorials/addressbook/part1}{第一章}
 
     \title 地址簿教程
@@ -176,7 +176,7 @@
 
 /*!
     \page tutorials-addressbook-part2.html
-    \previouspage 地址簿 1 — 设计用户接口
+    \previouspage 地址簿 1 — 设计用户界面
     \contentspage {地址簿教程}{目录}
     \nextpage {tutorials/addressbook/part3}{第三章}
     \example tutorials/addressbook/part2

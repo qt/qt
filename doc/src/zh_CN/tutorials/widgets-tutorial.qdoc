@@ -46,7 +46,7 @@
     they are used to build GUI applications.
 
     \startpage {index.html}{Qt Reference Documentation}
-    \contentspage Tutorials
+    \contentspage 教程
     \nextpage {Widgets 教程 — 创建窗口}
 
 
@@ -197,7 +197,7 @@
     \contentspage {Widgets 教程}{目录}
     \previouspage {Widgets 教程 — 使用布局}
     \example tutorials/widgets/nestedlayouts
-    \title Widgets 教程 - Nested Layouts
+    \title Widgets 教程 — Nested Layouts
 
     由于 widget 可包含其他 widget，布局可用来提供按不同层次分组的 widget。这里，我们要在显示查询结果的表视图上方、窗口顶部的行编辑框旁，显示一个标签。
 
