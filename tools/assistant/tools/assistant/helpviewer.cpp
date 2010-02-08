@@ -67,8 +67,9 @@ QT_BEGIN_NAMESPACE
 
 namespace {
     const QString PageNotFoundMessage =
-        QObject::tr("<title>Error 404...</title><div align=\"center\"><br><br>"
-        "<h1>The page could not be found</h1><br><h3>'%1'</h3></div>");
+        QCoreApplication::translate("HelpViewer",
+            "<title>Error 404...</title><div align=\"center\"><br><br>"
+            "<h1>The page could not be found</h1><br><h3>'%1'</h3></div>");
 }
 
 #if !defined(QT_NO_WEBKIT)
