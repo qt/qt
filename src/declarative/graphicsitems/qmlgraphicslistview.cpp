@@ -448,9 +448,11 @@ public:
     void updateViewport() {
         Q_Q(QmlGraphicsListView);
         if (orient == QmlGraphicsListView::Vertical) {
-            q->setViewportHeight(q->minYExtent() - q->maxYExtent());
+            qreal vpHeight = -q->maxYExtent() + q->minYExtent() + q->height();
+            q->setViewportHeight(vpHeight);
         } else {
-            q->setViewportWidth(q->minXExtent() - q->maxXExtent());
+            qreal vpWidth = -q->maxXExtent() + q->minXExtent() + q->width();
+            q->setViewportWidth(qMin(vpWidth, q->width()));
         }
     }
 
