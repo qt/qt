@@ -69,6 +69,9 @@ class QNetworkAccessManagerPrivate;
 class Q_NETWORK_EXPORT QNetworkAccessManager: public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(bool networkAccess READ networkAccessEnabled WRITE setNetworkAccessEnabled NOTIFY networkAccessChanged)
+
 public:
     enum Operation {
         HeadOperation = 1,
@@ -108,6 +111,9 @@ public:
     QNetworkConfiguration configuration() const;
     QNetworkConfiguration activeConfiguration() const;
 
+    void setNetworkAccessEnabled(bool enabled);
+    bool networkAccessEnabled() const;
+
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
@@ -117,6 +123,8 @@ Q_SIGNALS:
 #ifndef QT_NO_OPENSSL
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
+
+    void networkAccessChanged(bool enabled);
 
     void debugMessage(const QString &message);
 

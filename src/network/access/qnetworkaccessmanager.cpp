@@ -57,6 +57,7 @@
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qvector.h"
+#include "QtCore/qcoreapplication.h"
 #include "QtNetwork/qauthenticator.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
@@ -159,6 +160,29 @@ static void ensureInitialized()
     \omitvalue UnknownOperation
 
     \sa QNetworkReply::operation()
+*/
+
+/*!
+    \property QNetworkAccessManager::networkAccess
+    \brief wheather network access is enabled or disabled through this network access manager.
+    \since 4.7
+
+    Network access is enabled by default.
+
+    When network access is disabled the network access manager will not process any new network
+    requests, all such requests will fail with an error. Requests with URLs with the file:// scheme
+    will still be processed.
+
+    This property can be used to enable and disable network access for all clients of a single
+    network access manager instance.
+*/
+
+/*!
+    \fn void QNetworkAccessManager::networkAccessChanged(bool enabled)
+
+    This signal is emitted when the value of the \l networkAccess property changes. If \a enabled
+    is true new requests that access the network will be processed; otherwise new network requests
+    that require network access will fail with an error.
 */
 
 /*!
@@ -719,6 +743,63 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
     }
 }
 
+void QNetworkAccessManager::setNetworkAccessEnabled(bool enabled)
+{
+    Q_D(QNetworkAccessManager);
+
+    if (d->networkAccessEnabled != enabled) {
+        d->networkAccessEnabled = enabled;
+        emit networkAccessChanged(enabled);
+    }
+}
+
+bool QNetworkAccessManager::networkAccessEnabled() const
+{
+    Q_D(const QNetworkAccessManager);
+
+    return d->networkAccessEnabled;
+}
+
+class QDisabledNetworkReply : public QNetworkReply
+{
+    Q_OBJECT
+
+public:
+    QDisabledNetworkReply(QObject *parent, const QNetworkRequest &req,
+                          const QNetworkAccessManager::Operation op);
+    ~QDisabledNetworkReply();
+
+    void abort() { }
+protected:
+    qint64 readData(char *, qint64) { return 0; }
+};
+
+QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
+                                             const QNetworkRequest &req,
+                                             QNetworkAccessManager::Operation op)
+:   QNetworkReply(parent)
+{
+    setRequest(req);
+    setUrl(req.url());
+    setOperation(op);
+
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+
+    QString msg = QCoreApplication::translate("QNetworkAccessManager",
+                                              "Network access is disabled.");
+    setError(UnknownNetworkError, msg);
+
+    QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+        Q_ARG(QNetworkReply::NetworkError, UnknownNetworkError));
+    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
+}
+
+QDisabledNetworkReply::~QDisabledNetworkReply()
+{
+}
+
+#include "qnetworkaccessmanager.moc"
+
 /*!
     Returns a new QNetworkReply object to handle the operation \a op
     and request \a req. The device \a outgoingData is always 0 for Get and
@@ -747,6 +828,9 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
              || req.url().scheme().isEmpty())) {
         return new QFileNetworkReply(this, req, op);
     }
+
+    if (!d->networkAccessEnabled)
+        return new QDisabledNetworkReply(this, req, op);
 
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
