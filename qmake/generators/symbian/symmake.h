@@ -66,8 +66,6 @@ protected:
     QMap<QString, QStringList> makmakeCommands;
     QStringList overriddenMmpKeywords;
 
-    QHash<QString, QString> qt2S60LangMapTable;
-
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
     QString canonizePath(const QString& origPath);
 
@@ -109,14 +107,6 @@ protected:
     void writeMmpFileRulesPart(QTextStream& t);
 
     void writeCustomDefFile();
-
-    void writeRegRssFile(QStringList &useritems);
-    void writeRssFile(QString &numberOfIcons, QString &iconfile);
-    void writeLocFile(QStringList &symbianLangCodes);
-    void readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules);
-
-    QStringList symbianLangCodesFromTsFiles();
-    void fillQt2S60LangMapTable();
 
     void appendIfnotExist(QStringList &list, QString value);
     void appendIfnotExist(QStringList &list, QStringList values);

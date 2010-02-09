@@ -63,10 +63,20 @@ public:
 
     virtual void init();
 
+protected:
+
     QString removePathSeparators(QString &file);
     void removeSpecialCharacters(QString& str);
     void generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild);
     bool containsStartWithItem(const QChar &c, const QStringList& src);
+
+    void writeRegRssFile(QStringList &useritems);
+    void writeRssFile(QString &numberOfIcons, QString &iconfile);
+    void writeLocFile(QStringList &symbianLangCodes);
+    void readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules);
+
+    QStringList symbianLangCodesFromTsFiles();
+    void fillQt2S60LangMapTable();
 
 protected:
     MakefileGenerator *generator;
@@ -77,6 +87,8 @@ protected:
     QString privateDirUid;
     QString uid3;
     TargetType targetType;
+
+    QHash<QString, QString> qt2S60LangMapTable;
 };
 
 #endif // SYMBIANCOMMON_H

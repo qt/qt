@@ -59,13 +59,26 @@ public:
 
     bool writeMakefile(QTextStream &t)
     {
-        bool ret = T::writeMakefile(t);
-
+        QString numberOfIcons;
         QString iconFile;
+        QStringList userRssRules;
+        readRssRules(numberOfIcons, iconFile, userRssRules);
+
         DeploymentList depList;
         generatePkgFile(iconFile, depList, false);
 
-        return ret;
+        // Get the application translations and convert to symbian OS lang code, i.e. decical number
+        QStringList symbianLangCodes = symbianLangCodesFromTsFiles();
+
+        if (targetType == TypeExe) {
+            if (!this->project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
+                writeRegRssFile(userRssRules);
+                writeRssFile(numberOfIcons, iconFile);
+                writeLocFile(symbianLangCodes);
+            }
+        }
+
+        return T::writeMakefile(t);
     }
 };
 
