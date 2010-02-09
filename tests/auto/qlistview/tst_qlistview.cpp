@@ -1834,6 +1834,23 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
         QVERIFY(index.isValid());
         QCOMPARE(index.row(), 2 * i + 1);
     }
+
+    //QTBUG-7929  should not crash
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QScrollBar *bar = view.flow() == QListView::TopToBottom
+            ? view.verticalScrollBar() : view.horizontalScrollBar();
+
+    int nbVisibleItem = rowCount / 2 - bar->maximum();
+
+    bar->setValue(bar->maximum());
+    QApplication::processEvents();
+    for (int i = rowCount; i > rowCount / 2; i--) {
+        view.setRowHidden(i, true);
+    }
+    QApplication::processEvents();
+    QCOMPARE(bar->value(), bar->maximum());
+    QCOMPARE(bar->maximum(), rowCount/4 - nbVisibleItem);
 }
 
 void tst_QListView::taskQTBUG_633_changeModelData()
