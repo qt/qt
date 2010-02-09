@@ -146,36 +146,30 @@ struct QMMXCommonIntrinsics
   result = 0
   d = d * cia
 */
+#define comp_func_Clear_impl(dest, length, const_alpha)\
+{\
+    if (const_alpha == 255) {\
+        qt_memfill(static_cast<quint32*>(dest), quint32(0), length);\
+    } else {\
+        C_FF; C_80; C_00;\
+        m64 ia = MM::negate(MM::load_alpha(const_alpha));\
+        for (int i = 0; i < length; ++i) {\
+            dest[i] = MM::store(MM::byte_mul(MM::load(dest[i]), ia));\
+        }\
+        MM::end();\
+    }\
+}
+
 template <class MM>
 static void QT_FASTCALL comp_func_solid_Clear(uint *dest, int length, uint, uint const_alpha)
 {
-    if (!length)
-        return;
-
-    if (const_alpha == 255) {
-        qt_memfill(static_cast<quint32*>(dest), quint32(0), length);
-    } else {
-        C_FF; C_80; C_00;
-        m64 ia = MM::negate(MM::load_alpha(const_alpha));
-        for (int i = 0; i < length; ++i) {
-            dest[i] = MM::store(MM::byte_mul(MM::load(dest[i]), ia));
-        }
-    }
-    MM::end();
+    comp_func_Clear_impl(dest, length, const_alpha);
 }
 
 template <class MM>
 static void QT_FASTCALL comp_func_Clear(uint *dest, const uint *, int length, uint const_alpha)
 {
-    if (const_alpha == 255) {
-        qt_memfill(static_cast<quint32*>(dest), quint32(0), length);
-    } else {
-        C_FF; C_80; C_00;
-        m64 ia = MM::negate(MM::load_alpha(const_alpha));
-        for (int i = 0; i < length; ++i)
-            dest[i] = MM::store(MM::byte_mul(MM::load(dest[i]), ia));
-    }
-    MM::end();
+    comp_func_Clear_impl(dest, length, const_alpha);
 }
 
 /*
