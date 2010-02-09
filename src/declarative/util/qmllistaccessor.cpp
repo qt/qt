@@ -89,7 +89,7 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
                (enginePrivate && enginePrivate->isQmlList(d.userType()))) {
         m_type = QmlList;
     } else if (QmlMetaType::isList(d.userType())) {
-        m_type = QListPtr;
+        m_type = ListProperty;
     } else {
         m_type = Instance;
     }
@@ -107,10 +107,11 @@ int QmlListAccessor::count() const
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
             return li->count();
         }
-    case QListPtr:
+    case ListProperty:
         {
-            QList<void *> *li = *(QList<void *> **)d.constData();
-            return li->count();
+            QmlListProperty<void> *li = (QmlListProperty<void>*)d.constData();
+            if (li->count) return li->count(li);
+            else return 0;
         }
     case Instance:
         return 1;
@@ -137,11 +138,11 @@ QVariant QmlListAccessor::at(int idx) const
             li->at(idx, ptr);
             return QVariant::fromValue((QObject*)ptr[0]);
         }
-    case QListPtr:
+    case ListProperty:
         {
-            QList<void *> *li = *(QList<void *> **)d.constData();
-            void *ptr = li->at(idx);
-            return QVariant::fromValue((QObject*)ptr);
+            QmlListProperty<void> *li = (QmlListProperty<void>*)d.constData();
+            if (li->at) return QVariant::fromValue((QObject *)li->at(li, idx));
+            else return QVariant();
         }
     case Instance:
         return d;
@@ -162,10 +163,10 @@ bool QmlListAccessor::append(const QVariant &value)
             li->append(const_cast<void *>(value.constData()));  //XXX Typesafety
             return true;
         }
-    case QListPtr:
+    case ListProperty:
         {
-            QList<void *> *li = *(QList<void *> **)d.constData();
-            li->append(*reinterpret_cast<void **>(const_cast<void *>(value.constData())));  //XXX Typesafety
+            QmlListProperty<void> *li = (QmlListProperty<void>*)d.constData();
+            if (li->append) li->append(li, *(void **)value.constData()); // XXX Typesafety
             return true;
         }
     case StringList:
@@ -187,10 +188,10 @@ bool QmlListAccessor::insert(int index, const QVariant &value)
             li->insert(index, const_cast<void *>(value.constData()));   //XXX Typesafety
             return true;
         }
-    case QListPtr:
+    case ListProperty:
         {
-            QList<void *> *li = *(QList<void *>**)d.constData();
-            li->insert(index, *reinterpret_cast<void **>(const_cast<void *>(value.constData())));  //XXX Typesafety
+            QmlListProperty<void> *li = (QmlListProperty<void>*)d.constData();
+            if (li->insert) li->insert(li, index, *(void **)value.constData()); // XXX Typesafety
             return true;
         }
     case StringList:
@@ -212,10 +213,10 @@ bool QmlListAccessor::removeAt(int index)
             li->removeAt(index);
             return true;
         }
-    case QListPtr:
+    case ListProperty:
         {
-            QList<void *> *li = *(QList<void *>**)d.constData();
-            li->removeAt(index);
+            QmlListProperty<void> *li = (QmlListProperty<void>*)d.constData();
+            if (li->removeAt) li->removeAt(li, index);
             return true;
         }
     case StringList:
@@ -237,10 +238,10 @@ bool QmlListAccessor::clear()
             li->clear();
             return true;
         }
-    case QListPtr:
+    case ListProperty:
         {
-            QList<void *> *li = *(QList<void *>**)d.constData();
-            li->clear();
+            QmlListProperty<void> *li = (QmlListProperty<void>*)d.constData();
+            if (li->clear) li->clear(li);
             return true;
         }
     case StringList:

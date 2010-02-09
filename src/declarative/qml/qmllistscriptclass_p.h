@@ -64,7 +64,7 @@ public:
     QmlListScriptClass(QmlEngine *);
     ~QmlListScriptClass();
 
-    enum ListCategory { QListPtr, QmlListPtr };
+    enum ListCategory { ListProperty, QmlListPtr };
     QScriptValue newList(QObject *, int, ListCategory, int);
 
 protected:
