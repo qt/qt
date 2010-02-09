@@ -193,6 +193,8 @@ sub classNames {
         push @ret, "QtConcurrentFilter"
     } elsif(basename($iheader) eq "qtconcurrentrun.h") {
         push @ret, "QtConcurrentRun"
+    } elsif(basename($iheader) eq "qaudio.h") {
+        push @ret, "QAudio"
     }
 
     my $parsable = "";

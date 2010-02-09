@@ -441,8 +441,7 @@ void QToolBarPrivate::plug(const QRect &r)
     When a QToolBar is not a child of a QMainWindow, it looses the ability
     to populate the extension pop up with widgets added to the toolbar using
     addWidget(). Please use widget actions created by inheriting QWidgetAction
-    and implementing QWidgetAction::createWidget() instead. This is a known
-    issue which will be fixed in a future release.
+    and implementing QWidgetAction::createWidget() instead.
 
     \sa QToolButton, QMenu, QAction, {Application Example}
 */

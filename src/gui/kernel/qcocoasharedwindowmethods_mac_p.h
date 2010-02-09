@@ -51,6 +51,9 @@
  NSPanel, while QCocoaWindow needs to inherit NSWindow rather than NSPanel).
 ****************************************************************************/
 
+// WARNING: Don't include any header files from within this file. Put them
+// directly into qcocoawindow_mac_p.h and qcocoapanel_mac_p.h
+
 QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
@@ -205,7 +208,7 @@ QT_END_NAMESPACE
                 qt_button_down = widget;
             handled = qt_mac_handleMouseEvent(view, event, QEvent::MouseButtonPress, mouseButton);
             // Don't call super here. This prevents us from getting the mouseUp event,
-            // which we need to send even if the mouseDown event was not accepted. 
+            // which we need to send even if the mouseDown event was not accepted.
             // (this is standard Qt behavior.)
             break;
         case NSRightMouseDown:
@@ -303,9 +306,9 @@ QT_END_NAMESPACE
 {
     // The user dragged something into the window. Send a draggingEntered message
     // to the QWidget under the mouse. As the drag moves over the window, and over
-    // different widgets, we will handle enter and leave events from within 
+    // different widgets, we will handle enter and leave events from within
     // draggingUpdated below. The reason why we handle this ourselves rather than
-    // subscribing for drag events directly in QCocoaView is that calling 
+    // subscribing for drag events directly in QCocoaView is that calling
     // registerForDraggedTypes on the views will severly degrade initialization time
     // for an application that uses a lot of drag subscribing widgets.
 
@@ -369,3 +372,18 @@ QT_END_NAMESPACE
     return dropResult;
 }
 
+- (void)displayIfNeeded
+{
+
+    QWidget *qwidget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
+    if (qwidget == 0) {
+        [super displayIfNeeded];
+        return;
+    }
+
+    if (QApplicationPrivate::graphicsSystem() != 0) {
+        if (QWidgetBackingStore *bs = qt_widget_private(qwidget)->maybeBackingStore())
+            bs->sync(qwidget, qwidget->rect());
+    }
+    [super displayIfNeeded];
+}

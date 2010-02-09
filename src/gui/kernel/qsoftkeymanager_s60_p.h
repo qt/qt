@@ -84,6 +84,8 @@ private:
     QAction *highestPrioritySoftkey(QAction::SoftKeyRole role);
     static bool actionPriorityMoreThan(const QAction* item1, const QAction* item2);
     void setNativeSoftkey(CEikButtonGroupContainer &cba, TInt position, TInt command, const TDesC& text);
+    QPoint softkeyIconPosition(int position, QSize sourceSize, QSize targetSize);
+    QPixmap prepareSoftkeyPixmap(QPixmap src, int position, QSize targetSize);
     bool isOrientationLandscape();
     QSize cbaIconSize(CEikButtonGroupContainer *cba, int position);
     bool setSoftkeyImage(CEikButtonGroupContainer *cba, QAction &action, int position);
@@ -95,7 +97,7 @@ private:
 
 private:
     QHash<int, QAction*> realSoftKeyActions;
-    QSize cachedCbaIconSize[2];
+    QSize cachedCbaIconSize[4];
     bool skipNextUpdate;
 };
 
