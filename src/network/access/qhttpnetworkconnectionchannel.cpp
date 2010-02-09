@@ -305,9 +305,12 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
     while (socket->bytesAvailable()) {
         QHttpNetworkReplyPrivate::ReplyState state = reply ? reply->d_func()->state : QHttpNetworkReplyPrivate::AllDoneState;
         switch (state) {
-        case QHttpNetworkReplyPrivate::NothingDoneState:
-        case QHttpNetworkReplyPrivate::ReadingStatusState: {
+        case QHttpNetworkReplyPrivate::NothingDoneState: {
+            // only eat whitespace on the first call
             eatWhitespace();
+            state = reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
+        }
+        case QHttpNetworkReplyPrivate::ReadingStatusState: {
             qint64 statusBytes = reply->d_func()->readStatus(socket);
             if (statusBytes == -1 && reconnectAttempts <= 0) {
                 // too many errors reading/receiving/parsing the status, close the socket and emit error
