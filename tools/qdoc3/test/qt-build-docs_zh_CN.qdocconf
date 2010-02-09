@@ -1,16 +1,18 @@
 include(compat.qdocconf)
 include(macros.qdocconf)
 include(qt-cpp-ignore.qdocconf)
-include(qt-html-templates.qdocconf)
+include(qt-html-templates_zh_CN.qdocconf)
 include(qt-defines.qdocconf)
 
 project                 = Qt
 description             = Qt Reference Documentation
-url                     = http://qt.nokia.com/doc/4.7
+url                     = http://qt.nokia.com/doc/zh_CN/4.7
 
 sourceencoding          = UTF-8
 outputencoding          = UTF-8
-naturallanguage         = en_US
+naturallanguage         = zh-Hans
+
+indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 
 edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript \
                           QtScriptTools QtSql QtSvg QtWebKit QtXml QtXmlPatterns \
@@ -25,8 +27,13 @@ qhp.projects            = Qt
 qhp.Qt.file                = qt.qhp
 qhp.Qt.namespace           = com.trolltech.qt.470
 qhp.Qt.virtualFolder       = qdoc
-qhp.Qt.indexTitle          = Qt Reference Documentation
-qhp.Qt.indexRoot           =
+qhp.Qt.title               = 教程
+qhp.Qt.indexTitle          = 教程
+qhp.Qt.selectors           = fake:example
+
+qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc zh_CN
+qhp.Qt.customFilters.Qt.name = Qt 4.7.0
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
@@ -37,44 +44,9 @@ qhp.Qt.extraFiles          = classic.css \
                              images/dynamiclayouts-example.png \
                              images/stylesheet-coffee-plastique.png
 
-qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc
-qhp.Qt.customFilters.Qt.name = Qt 4.7.0
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
-qhp.Qt.subprojects         = classes overviews examples
-qhp.Qt.subprojects.classes.title = Classes
-qhp.Qt.subprojects.classes.indexTitle = Qt's Classes
-qhp.Qt.subprojects.classes.selectors = class fake:headerfile
-qhp.Qt.subprojects.classes.sortPages = true
-qhp.Qt.subprojects.overviews.title = Overviews
-qhp.Qt.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.Qt.subprojects.overviews.selectors = fake:page,group,module
-qhp.Qt.subprojects.examples.title = Tutorials and Examples
-qhp.Qt.subprojects.examples.indexTitle = Qt Examples
-qhp.Qt.subprojects.examples.selectors = fake:example
-
 language                = Cpp
 
-headerdirs              = $QT_SOURCE_TREE/src \
-                          $QT_SOURCE_TREE/extensions/activeqt \
-                          $QT_SOURCE_TREE/tools/assistant/lib \
-                          $QT_SOURCE_TREE/tools/assistant/compat/lib \
-                          $QT_SOURCE_TREE/tools/designer/src/uitools \
-                          $QT_SOURCE_TREE/tools/designer/src/lib/extension \
-                          $QT_SOURCE_TREE/tools/designer/src/lib/sdk \
-                          $QT_SOURCE_TREE/tools/designer/src/lib/uilib \
-                          $QT_SOURCE_TREE/tools/qtestlib/src \
-                          $QT_SOURCE_TREE/tools/qdbus/src
-sourcedirs              = $QT_SOURCE_TREE/src \
-                          $QT_SOURCE_TREE/doc/src \
-                          $QT_SOURCE_TREE/extensions/activeqt \
-                          $QT_SOURCE_TREE/tools/assistant/lib \
-                          $QT_SOURCE_TREE/tools/assistant/compat/lib \
-                          $QT_SOURCE_TREE/tools/designer/src/uitools \
-                          $QT_SOURCE_TREE/tools/designer/src/lib/extension \
-                          $QT_SOURCE_TREE/tools/designer/src/lib/sdk \
-                          $QT_SOURCE_TREE/tools/designer/src/lib/uilib \
-                          $QT_SOURCE_TREE/tools/qtestlib/src \
-                          $QT_SOURCE_TREE/tools/qdbus
+sourcedirs              = $QT_SOURCE_TREE/doc/src/zh_CN
 
 excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/des \
@@ -94,13 +66,12 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/webkit/WebCore \
                           $QT_SOURCE_TREE/src/3rdparty/wintab \
                           $QT_SOURCE_TREE/src/3rdparty/zlib \
+                          $QT_SOURCE_TREE/doc/src/snippets \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/gstreamer \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/ds9 \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/qt7 \
                           $QT_SOURCE_TREE/src/3rdparty/phonon/mmf \
-                          $QT_SOURCE_TREE/src/3rdparty/phonon/waveout \
-                          $QT_SOURCE_TREE/doc/src/snippets \
-                          $QT_SOURCE_TREE/doc/src/zh_CN
+                          $QT_SOURCE_TREE/src/3rdparty/phonon/waveout
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
 examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
@@ -114,8 +85,8 @@ exampledirs             = $QT_SOURCE_TREE/doc/src \
                           $QT_SOURCE_TREE/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QT_SOURCE_TREE/doc/src/images \
                           $QT_SOURCE_TREE/examples
-outputdir               = $QT_BUILD_TREE/doc/html
-tagfile                 = $QT_BUILD_TREE/doc/html/qt.tags
-base                    = file:$QT_BUILD_TREE/doc/html
+outputdir               = $QT_BUILD_TREE/doc/html_zh_CN
+tagfile                 = $QT_BUILD_TREE/doc/html_zh_CN/qt.tags
+base                    = file:$QT_BUILD_TREE/doc/html_zh_CN
 
 HTML.generatemacrefs    = "true"
