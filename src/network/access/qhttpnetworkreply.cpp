@@ -425,11 +425,19 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
 {
     qint64 bytes = 0;
     char c;
+    qint64 haveRead = 0;
 
-    while (socket->bytesAvailable()) {
+    do {
+        haveRead = socket->read(&c, 1);
+        if (haveRead == -1)
+            return -1; // unexpected EOF
+        else if (haveRead == 0)
+            break; // read more later
+
+        bytes++;
+
         // allow both CRLF & LF (only) line endings
-        if (socket->peek(&c, 1) == 1 && c == '\n') {
-            bytes += socket->read(&c, 1); // read the "n"
+        if (c == '\n') {
             // remove the CR at the end
             if (fragment.endsWith('\r')) {
                 fragment.truncate(fragment.length()-1);
@@ -442,11 +450,6 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             }
             break;
         } else {
-            c = 0;
-            int haveRead = socket->read(&c, 1);
-            if (haveRead == -1)
-                return -1;
-            bytes += haveRead;
             fragment.append(c);
         }
 
@@ -456,8 +459,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             fragment.clear();
             return -1;
         }
-
-    }
+    } while (haveRead == 1);
 
     return bytes;
 }
