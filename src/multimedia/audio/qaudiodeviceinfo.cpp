@@ -260,6 +260,8 @@ QStringList QAudioDeviceInfo::supportedCodecs() const
 
 /*!
     Returns a list of supported sample rates.
+
+    \since 4.7
 */
 
 QList<int> QAudioDeviceInfo::supportedSampleRates() const
@@ -280,6 +282,8 @@ QList<int> QAudioDeviceInfo::supportedFrequencies() const
 
 /*!
     Returns a list of supported channel counts.
+
+    \since 4.7
 */
 
 QList<int> QAudioDeviceInfo::supportedChannelCounts() const

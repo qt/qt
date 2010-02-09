@@ -518,6 +518,13 @@ public:
 
     QGestureManager *gestureManager;
     QWidget *gestureWidget;
+    QPixmap *move_cursor;
+    QPixmap *copy_cursor;
+    QPixmap *link_cursor;
+#if defined(Q_WS_WIN)
+    QPixmap *ignore_cursor;
+#endif
+    QPixmap getPixmapCursor(Qt::CursorShape cshape);
 
     QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;

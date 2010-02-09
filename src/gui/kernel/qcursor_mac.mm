@@ -424,6 +424,18 @@ void QCursorData::update()
         type = QCursorData::TYPE_ThemeCursor;
         curs.cp.nscursor = [NSCursor closedHandCursor];
         break;
+    case Qt::DragCopyCursor:
+        type = QCursorData::TYPE_ThemeCursor;
+        curs.cp.nscursor = [NSCursor dragCopyCursor];
+        break;
+    case Qt::DragMoveCursor:
+        type = QCursorData::TYPE_ThemeCursor;
+        curs.cp.nscursor = [NSCursor arrowCursor];
+        break;
+    case Qt::DragLinkCursor:
+        type = QCursorData::TYPE_ThemeCursor;
+        curs.cp.nscursor = [NSCursor dragLinkCursor];
+        break;
 #define QT_USE_APPROXIMATE_CURSORS
 #ifdef QT_USE_APPROXIMATE_CURSORS
     case Qt::SizeVerCursor:
@@ -518,6 +530,18 @@ void QCursorData::update()
     case Qt::ClosedHandCursor:
         type = QCursorData::TYPE_ThemeCursor;
         curs.tc.curs = kThemeClosedHandCursor;
+        break;
+    case Qt::DragMoveCursor:
+        type = QCursorData::TYPE_ThemeCursor;
+        curs.tc.curs = kThemeArrowCursor;
+        break;
+    case Qt::DragCopyCursor:
+        type = QCursorData::TYPE_ThemeCursor;
+        curs.tc.curs = kThemeCopyArrowCursor;
+        break;
+    case Qt::DragLinkCursor:
+        type = QCursorData::TYPE_ThemeCursor;
+        curs.tc.curs = kThemeAliasArrowCursor;
         break;
 #define QT_USE_APPROXIMATE_CURSORS
 #ifdef QT_USE_APPROXIMATE_CURSORS
