@@ -1372,11 +1372,26 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
             int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
 
-            vertexCoordinates->addRect(QRectF(x, y, c.w, c.h));
-            textureCoordinates->addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
+            vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
+            textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
         }
 
         staticTextItem->userDataNeedsUpdate = false;
+    }
+
+    if (elementIndices.size() < staticTextItem->numGlyphs*6) {
+        Q_ASSERT(elementIndices.size() % 6 == 0);
+        int j = elementIndices.size() / 6 * 4;
+        while (j < staticTextItem->numGlyphs*4) {
+            elementIndices.append(j + 0);
+            elementIndices.append(j + 0);
+            elementIndices.append(j + 1);
+            elementIndices.append(j + 2);
+            elementIndices.append(j + 3);
+            elementIndices.append(j + 3);
+
+            j += 4;
+        }
     }
 
     setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinates->data());
@@ -1454,7 +1469,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
-            glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
+            glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 
             shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass2);
 
@@ -1485,7 +1500,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
-    glDrawArrays(GL_TRIANGLES, 0, 6 * staticTextItem->numGlyphs);
+    glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 
     if (includeMatrixInCache)
         s->matrix = old;

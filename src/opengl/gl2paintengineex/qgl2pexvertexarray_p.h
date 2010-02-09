@@ -118,6 +118,20 @@ public:
                     << QGLPoint(left, top);        
     }
 
+    inline void addQuad(const QRectF &rect)
+    {
+        qreal top = rect.top();
+        qreal left = rect.left();
+        qreal bottom = rect.bottom();
+        qreal right = rect.right();
+
+        vertexArray << QGLPoint(left, top)
+                    << QGLPoint(right, top)
+                    << QGLPoint(left, bottom)
+                    << QGLPoint(right, bottom);
+
+    }
+
     void addPath(const QVectorPath &path, GLfloat curveInverseScale, bool outline = true);
     void clear();
 

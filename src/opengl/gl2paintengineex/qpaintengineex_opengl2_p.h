@@ -267,6 +267,7 @@ public:
 
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
+    QVector<GLushort> elementIndices;
     QDataBuffer<GLfloat> opacityArray;
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
