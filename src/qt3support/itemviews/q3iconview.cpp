@@ -132,14 +132,21 @@ static QPixmap *qiv_selection = 0;
 #endif
 static bool optimize_layout = false;
 
-static Q3CleanupHandler<QPixmap> qiv_cleanup_pixmap;
 
+static void qt_cleanup_iv_pixmaps();
+typedef QList<QPixmap *> IVPixmaps;
+Q_GLOBAL_STATIC_WITH_INITIALIZER(IVPixmaps, qiv_pixmaps, qAddPostRoutine(qt_cleanup_iv_pixmaps))
+
+static void qt_cleanup_iv_pixmaps()
+{
+    qDeleteAll(*qiv_pixmaps());
+}
 
 static QPixmap *get_qiv_buffer_pixmap(const QSize &s)
 {
     if (!qiv_buffer_pixmap) {
         qiv_buffer_pixmap = new QPixmap(s);
-        qiv_cleanup_pixmap.add(&qiv_buffer_pixmap);
+        qiv_pixmaps()->append(qiv_buffer_pixmap);
         return qiv_buffer_pixmap;
     }
 
@@ -2580,7 +2587,7 @@ Q3IconView::Q3IconView(QWidget *parent, const char *name, Qt::WindowFlags f)
 {
     if (!unknown_icon) {
         unknown_icon = new QPixmap((const char **)unknown_xpm);
-        qiv_cleanup_pixmap.add(&unknown_icon);
+        qiv_pixmaps()->append(unknown_icon);
     }
 
     d = new Q3IconViewPrivate;

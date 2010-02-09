@@ -207,7 +207,7 @@ QString generate_uid(const QString& target)
         return tmp;
     }
 
-    unsigned long hash = 5381;
+    quint32 hash = 5381;
     int c;
 
     for (int i = 0; i < target.size(); ++i) {
