@@ -1,0 +1,9 @@
+import Qt 4.6
+import Test 1.0
+
+MyTypeObject {
+    property int valuePre;
+    property int valuePost;
+
+    Component.onCompleted: { valuePre = rect.x; rect.x = 19; valuePost = rect.x; }
+}
