@@ -51,6 +51,9 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
+#ifdef Q_OS_WIN32
+#include <QtCore/QVarLengthArray>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -278,53 +281,38 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QM
     return indexNode;
 }
 
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
 static QString qt_GetLongPathName(const QString &strShortPath)
 {
-    QString longPath;
-    int i = 0;
-    if (strShortPath == QLatin1String(".")
-        || (strShortPath.startsWith(QLatin1String("//")))
-        || (strShortPath.startsWith(QLatin1String("\\\\")))) // unc
+    if (strShortPath.isEmpty()
+        || strShortPath == QLatin1String(".") || strShortPath == QLatin1String(".."))
         return strShortPath;
-    QString::const_iterator it = strShortPath.constBegin();
-    QString::const_iterator constEnd = strShortPath.constEnd();
-    do {
-        bool isSep = (*it == QLatin1Char('\\') || *it == QLatin1Char('/'));
-        if (isSep || it == constEnd) {
-            QString section = (it == constEnd ? strShortPath : strShortPath.left(i));
-            // FindFirstFile does not handle volumes ("C:"), so we have to catch that ourselves.
-            if (section.endsWith(QLatin1Char(':'))) {
-                longPath.append(section.toUpper());
-            } else {
-                HANDLE h;
-#ifndef Q_OS_WINCE
-                //We add the extend length prefix to handle long path
-                QString longSection = QLatin1String("\\\\?\\")+QDir::toNativeSeparators(section);
-#else
-                QString longSection = QDir::toNativeSeparators(section);
-#endif
-                WIN32_FIND_DATA findData;
-                h = ::FindFirstFile((wchar_t*)longSection.utf16(), &findData);
-                if (h != INVALID_HANDLE_VALUE) {
-                    longPath.append(QString::fromWCharArray(findData.cFileName));
-                    ::FindClose(h);
-                } else {
-                    longPath.append(section);
-                    break;
-                }
-            }
-            if (it != constEnd)
-                longPath.append(*it);
-            else
-                break;
-        }
-        ++it;
-        if (isSep && it == constEnd)    // break out if the last character is a separator
-            break;
-        ++i;
-    } while (true);
-    return longPath;
+    if (strShortPath.length() == 2 && strShortPath.endsWith(QLatin1Char(':')))
+        return strShortPath.toUpper();
+    const QString absPath = QDir(strShortPath).absolutePath();
+    if (absPath.startsWith(QLatin1String("//"))
+        || absPath.startsWith(QLatin1String("\\\\"))) // unc
+        return QDir::fromNativeSeparators(absPath);
+    if (absPath.startsWith(QLatin1Char('/')))
+        return QString();
+    const QString inputString = QLatin1String("\\\\?\\") + QDir::toNativeSeparators(absPath);
+    QVarLengthArray<TCHAR, MAX_PATH> buffer(MAX_PATH);
+    DWORD result = ::GetLongPathName((wchar_t*)inputString.utf16(),
+                                     buffer.data(),
+                                     buffer.size());
+    if (result > DWORD(buffer.size())) {
+        buffer.resize(result);
+        result = ::GetLongPathName((wchar_t*)inputString.utf16(),
+                                   buffer.data(),
+                                   buffer.size());
+    }
+    if (result > 4) {
+        QString longPath = QString::fromWCharArray(buffer.data() + 4); // ignoring prefix
+        longPath[0] = longPath.at(0).toUpper(); // capital drive letters
+        return QDir::fromNativeSeparators(longPath);
+    } else {
+        return QDir::fromNativeSeparators(strShortPath);
+    }
 }
 #endif
 
@@ -342,7 +330,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
 
     // Construct the nodes up to the new root path if they need to be built
     QString absolutePath;
-#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN32
     QString longPath = qt_GetLongPathName(path);
 #else
     QString longPath = path;
@@ -1357,7 +1345,11 @@ QModelIndex QFileSystemModel::setRootPath(const QString &newPath)
 {
     Q_D(QFileSystemModel);
 #ifdef Q_OS_WIN
-    QString longNewPath = QDir::fromNativeSeparators(qt_GetLongPathName(newPath));
+#ifdef Q_OS_WIN32
+    QString longNewPath = qt_GetLongPathName(newPath);
+#else
+    QString longNewPath = QDir::fromNativeSeparators(newPath);
+#endif
 #else
     QString longNewPath = newPath;
 #endif

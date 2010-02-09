@@ -28,60 +28,56 @@
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
 **
-**
-**
-**
-**
-**
-**
-**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef BOOKMARKITEM_H
+#define BOOKMARKITEM_H
 
-#ifndef XBELSUPPORT_H
-#define XBELSUPPORT_H
-
-#include <QtXml/QXmlStreamReader>
-#include <QtCore/QPersistentModelIndex>
-
-QT_FORWARD_DECLARE_CLASS(QIODevice)
-QT_FORWARD_DECLARE_CLASS(QModelIndex)
+#include <QtCore/QVariant>
+#include <QtCore/QVector>
 
 QT_BEGIN_NAMESPACE
 
-class BookmarkModel;
-
-class XbelWriter : public QXmlStreamWriter
-{
-public:
-    XbelWriter(BookmarkModel *model);
-    void writeToFile(QIODevice *device);
-
-private:
-    void writeData(const QModelIndex &index);
-
-private:
-    BookmarkModel *bookmarkModel;
+enum {
+    UserRoleUrl = Qt::UserRole + 50,
+    UserRoleFolder = Qt::UserRole + 100,
+    UserRoleExpanded = Qt::UserRole + 150
 };
 
-class XbelReader : public QXmlStreamReader
+typedef QVector<QVariant> DataVector;
+
+class BookmarkItem
 {
 public:
-    XbelReader(BookmarkModel *model);
-    bool readFromFile(QIODevice *device);
+    BookmarkItem(const DataVector &data, BookmarkItem *parent = 0);
+    ~BookmarkItem();
+
+    BookmarkItem *parent() const;
+    void setParent(BookmarkItem *parent);
+
+    void addChild(BookmarkItem *child);
+    BookmarkItem *child(int number) const;
+
+    int childCount() const;
+    int childNumber() const;
+
+    QVariant data(int column) const;
+    void setData(const DataVector &data);
+    bool setData(int column, const QVariant &value);
+
+    bool insertChildren(bool isFolder, int position, int count);
+    bool removeChildren(int position, int count);
+
+    void dumpTree(int indent) const;
 
 private:
-    void readXBEL();
-    void readFolder();
-    void readBookmark();
-    void readUnknownElement();
+    DataVector m_data;
 
-private:
-    BookmarkModel *bookmarkModel;
-    QList<QPersistentModelIndex> parents;
+    BookmarkItem *m_parent;
+    QList<BookmarkItem*> m_children;
 };
 
 QT_END_NAMESPACE
 
-#endif  // XBELSUPPORT_H
+#endif // BOOKMARKITEM_H
