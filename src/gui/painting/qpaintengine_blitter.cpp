@@ -392,7 +392,7 @@ void QBlitterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QBlitterPaintEngine);
     d->lock();
-    d->pmData->markRasterOverlay(path.convertToPainterPath().boundingRect());
+    d->pmData->markRasterOverlay(path);
     d->raster->stroke(path, pen);
 }
 
