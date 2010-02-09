@@ -423,6 +423,11 @@ int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteA
 
 qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
 {
+    if (fragment.isEmpty()) {
+        // reserve bytes for the status line. This is better than always append() which reallocs the byte array
+        fragment.reserve(32);
+    }
+
     qint64 bytes = 0;
     char c;
     qint64 haveRead = 0;
@@ -502,6 +507,13 @@ bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
 
 qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
 {
+    if (fragment.isEmpty()) {
+        // according to http://dev.opera.com/articles/view/mama-http-headers/ the average size of the header
+        // block is 381 bytes.
+        // reserve bytes. This is better than always append() which reallocs the byte array.
+        fragment.reserve(512);
+    }
+
     qint64 bytes = 0;
     char c = 0;
     bool allHeaders = false;
