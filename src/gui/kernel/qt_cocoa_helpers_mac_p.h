@@ -114,6 +114,12 @@ typedef struct CGPoint NSPoint;
 #endif
 
 QT_BEGIN_NAMESPACE
+
+enum {
+    QtCocoaEventSubTypeWakeup       = SHRT_MAX,
+    QtCocoaEventSubTypePostMessage  = SHRT_MAX-1
+};
+
 Qt::MouseButtons qt_mac_get_buttons(int buttons);
 Qt::MouseButton qt_mac_get_button(EventMouseButton button);
 void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds = 0.15);
@@ -181,6 +187,22 @@ inline QString qt_mac_NSStringToQString(const NSString *nsstr)
 
 inline NSString *qt_mac_QStringToNSString(const QString &qstr)
 { return [reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr)) autorelease]; }
+
+class QCocoaPostCallArgs {
+    public:
+    id target;
+    SEL selector;
+    QCocoaPostCallArgs(id target, SEL selector) : target(target), selector(selector)
+    {
+        [target retain];
+    }
+
+    ~QCocoaPostCallArgs()
+    {
+        [target release];
+    }
+};
+bool qt_cocoaPostMessage(id target, SEL selector);
 
 @interface DebugNSApplication : NSApplication {}
 @end

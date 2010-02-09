@@ -1281,6 +1281,30 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
 }
 #endif
 
+bool qt_cocoaPostMessage(id target, SEL selector)
+{
+    if (!target)
+        return false;
+    NSWindow *nswin = [NSApp mainWindow];
+    if (!nswin) {
+        nswin = [NSApp keyWindow];
+        if (!nswin)
+            return false;
+    }
+
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+    // That is why we need to split the address in two parts:
+    QCocoaPostCallArgs *args = new QCocoaPostCallArgs(target, selector);
+    quint32 lower = quintptr(args);
+    quint32 upper = quintptr(args) >> 32;
+    NSEvent *e = [NSEvent otherEventWithType:NSApplicationDefined
+        location:NSZeroPoint modifierFlags:0 timestamp:0
+        windowNumber:[nswin windowNumber]
+        context:nil subtype:QtCocoaEventSubTypePostMessage data1:lower data2:upper];
+    [NSApp postEvent:e atStart:NO];
+    return true;
+}
+
 @implementation DebugNSApplication {
 }
 - (void)sendEvent:(NSEvent *)event

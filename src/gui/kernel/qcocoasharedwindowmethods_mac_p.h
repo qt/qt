@@ -178,8 +178,26 @@ QT_END_NAMESPACE
     [NSApp terminate:sender];
 }
 
+- (void)sendPostedMessage:(NSEvent *)event
+{
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+    // That is why we need to split the address in two parts:
+    quint64 lower = [event data1];
+    quint64 upper = [event data2];
+    QCocoaPostCallArgs *args = reinterpret_cast<QCocoaPostCallArgs *>(lower | (upper << 32));
+    if (args != 0) {
+        [args->target performSelector:args->selector];
+        delete args;
+    }
+}
+
 - (void)sendEvent:(NSEvent *)event
 {
+    if ([event type] == NSApplicationDefined) {
+        if ([event subtype] == QtCocoaEventSubTypePostMessage)
+            [self sendPostedMessage:event];
+        return;
+    }
     QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
 
     // Cocoa can hold onto the window after we've disavowed its knowledge. So,
