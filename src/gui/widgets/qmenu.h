@@ -162,7 +162,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
     void mouseMoveEvent(QMouseEvent *);
+#ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *);
+#endif
     void enterEvent(QEvent *);
     void leaveEvent(QEvent *);
     void hideEvent(QHideEvent *);
