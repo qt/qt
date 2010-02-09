@@ -41,6 +41,7 @@
 
 #include "trkdevice.h"
 #include "trkutils.h"
+#include "trkutils_p.h"
 
 #include <QtCore/QString>
 #include <QtCore/QDebug>
@@ -516,7 +517,7 @@ static inline bool overlappedSyncWrite(HANDLE file,
 bool WriterThread::write(const QByteArray &data, QString *errorMessage)
 {
     if (verboseTrk)
-        qDebug() << "Write raw data: " << data.toHex();
+        qDebug() << "Write raw data: " << stringFromArray(data).toLatin1();
     QMutexLocker locker(&m_context->mutex);
 #ifdef Q_OS_WIN
     DWORD charsWritten;
@@ -856,8 +857,8 @@ void UnixReaderThread::terminate()
 {
     // Trigger select() by writing to the pipe
     char c = 0;
-    int written = write(m_terminatePipeFileDescriptors[1], &c, 1);
-    // FIXME: Use result.
+    const int written = write(m_terminatePipeFileDescriptors[1], &c, 1);
+    Q_UNUSED(written)
     wait();
 }
 
@@ -919,7 +920,7 @@ bool TrkDevice::open(const QString &port, QString *errorMessage)
         qDebug() << "Opening" << port << "is open: " << isOpen() << " serialFrame=" << serialFrame();
     close();
 #ifdef Q_OS_WIN
-    d->deviceContext->device = CreateFile(port.toStdWString().c_str(),
+    d->deviceContext->device = CreateFile(QString("\\\\.\\").append(port).toStdWString().c_str(),
                            GENERIC_READ | GENERIC_WRITE,
                            0,
                            NULL,
@@ -1061,8 +1062,13 @@ void TrkDevice::sendTrkMessage(byte code, TrkCallback callback,
      const QByteArray &data, const QVariant &cookie)
 {
     if (!d->writerThread.isNull()) {
-        if (d->verbose > 1)
-            qDebug() << "Sending " << code << data.toHex();
+        if (d->verbose > 1) {
+            QByteArray msg = "Sending:  ";
+            msg += QByteArray::number(code, 16);
+            msg += ": ";
+            msg += stringFromArray(data).toLatin1();
+            qDebug("%s", msg.data());
+        }
         d->writerThread->queueTrkMessage(code, callback, data, cookie);
     }
 }

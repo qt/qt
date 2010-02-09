@@ -42,6 +42,8 @@
 #ifndef BLUETOOTHLISTENER_H
 #define BLUETOOTHLISTENER_H
 
+#include "symbianutils_global.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QProcess>
 
@@ -53,7 +55,7 @@ struct BluetoothListenerPrivate;
  * The rfcomm command is used. It process can be started in the background
  * while connection attempts (TrkDevice::open()) are made in the foreground. */
 
-class BluetoothListener : public QObject
+class SYMBIANUTILS_EXPORT BluetoothListener : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(BluetoothListener)

@@ -42,6 +42,8 @@
 #ifndef COMMUNICATIONSTARTER_H
 #define COMMUNICATIONSTARTER_H
 
+#include "symbianutils_global.h"
+
 #include <QtCore/QSharedPointer>
 #include <QtCore/QObject>
 
@@ -60,7 +62,7 @@ struct BaseCommunicationStarterPrivate;
  * The base class can be used as is to prompt the user to launch App TRK for a
  * serial communication as this requires no further resource setup. */
 
-class BaseCommunicationStarter : public QObject {
+class SYMBIANUTILS_EXPORT BaseCommunicationStarter : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY(BaseCommunicationStarter)
 public:
@@ -117,7 +119,7 @@ private:
  * implement as a factory function that creates and sets up the
  * listener (mode, message connection, etc). */
 
-class AbstractBluetoothStarter : public BaseCommunicationStarter {
+class SYMBIANUTILS_EXPORT AbstractBluetoothStarter : public BaseCommunicationStarter {
     Q_OBJECT
     Q_DISABLE_COPY(AbstractBluetoothStarter)
 public:
@@ -134,7 +136,7 @@ protected:
 /* ConsoleBluetoothStarter: Convenience class for console processes. Creates a
  * listener in "Listen" mode with the messages redirected to standard output. */
 
-class ConsoleBluetoothStarter : public AbstractBluetoothStarter {
+class SYMBIANUTILS_EXPORT ConsoleBluetoothStarter : public AbstractBluetoothStarter {
     Q_OBJECT
     Q_DISABLE_COPY(ConsoleBluetoothStarter)
 public:

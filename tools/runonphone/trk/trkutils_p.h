@@ -39,51 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef BLUETOOTHLISTENER_GUI_H
-#define BLUETOOTHLISTENER_GUI_H
+#ifndef DEBUGGER_TRK_PRIVATE_UTILS
+#define DEBUGGER_TRK_PRIVATE_UTILS
 
+#include "trkutils.h"
 #include "symbianutils_global.h"
 
-#include <QtCore/QtGlobal>
-
 QT_BEGIN_NAMESPACE
-class QWidget;
+class QDateTime;
 QT_END_NAMESPACE
 
 namespace trk {
-class BaseCommunicationStarter;
 
-/* promptStartCommunication(): Convenience functions that
- * prompt the user to start a communication (launching or
- * connecting TRK) using a modal message box in which they can cancel.
- * Pass in the starter with device and parameters set up.  */
+void appendDateTime(QByteArray *ba, QDateTime dateTime, Endianness = TargetByteOrder);
+// returns a QByteArray containing optionally
+// the serial frame [0x01 0x90 <len>] and 0x7e encoded7d(ba) 0x7e
+QByteArray frameMessage(byte command, byte token, const QByteArray &data, bool serialFrame);
+bool extractResult(QByteArray *buffer, bool serialFrame, TrkResult *r, QByteArray *rawData = 0);
 
-enum PromptStartCommunicationResult {
-    PromptStartCommunicationConnected,
-    PromptStartCommunicationCanceled,
-    PromptStartCommunicationError
-};
-
-SYMBIANUTILS_EXPORT PromptStartCommunicationResult
-        promptStartCommunication(BaseCommunicationStarter &starter,
-                                 const QString &msgBoxTitle,
-                                 const QString &msgBoxText,
-                                 QWidget *msgBoxParent,
-                                 QString *errorMessage);
-
-// Convenience to start a serial connection (messages prompting
-// to launch Trk).
-SYMBIANUTILS_EXPORT PromptStartCommunicationResult
-        promptStartSerial(BaseCommunicationStarter &starter,
-                          QWidget *msgBoxParent,
-                          QString *errorMessage);
-
-// Convenience to start blue tooth connection (messages
-// prompting to connect).
-SYMBIANUTILS_EXPORT PromptStartCommunicationResult
-        promptStartBluetooth(BaseCommunicationStarter &starter,
-                             QWidget *msgBoxParent,
-                             QString *errorMessage);
 } // namespace trk
 
-#endif // BLUETOOTHLISTENER_GUI_H
+#endif // DEBUGGER_TRK_PRIVATE_UTILS
