@@ -3455,10 +3455,8 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     completer.setCompletionMode(QCompleter::InlineCompletion);
     lineEdit.setCompleter(&completer);
     lineEdit.show();
-#ifdef Q_WS_X11
-    // to be safe and avoid failing setFocus with window managers
-    qt_x11_wait_for_window_manager(&lineEdit);
-#endif
+    QTest::qWaitForWindowShown(&lineEdit);
+    QApplication::setActiveWindow(&lineEdit);
     lineEdit.setFocus();
     QTRY_VERIFY(lineEdit.hasFocus());
     QTest::keyPress(&lineEdit, 'a');
@@ -3651,10 +3649,11 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
     le.addAction(&action);
 
     le.show();
-    QApplication::setActiveWindow(&le);
     QTest::qWaitForWindowShown(&le);
+    QApplication::setActiveWindow(&le);
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
+
     QTest::keyClick(0, Qt::Key_P);
     QCOMPARE(spy.count(), 1);
 }
