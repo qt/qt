@@ -963,14 +963,14 @@
 
     \title Deploying an Application on Mac OS X
 
-    Starting with version 4.5, Qt now includes a \l {macdeploy}{deployment tool}
-    that automates the prodecures described in this document.
+    Beginning with Qt 4.5, a \l {macdeploy}{deployment tool} is
+    included that automates the prodecures described here.
 
-    This documentation will describe how to create a bundle, and how
-    to make sure that the application will find the resources it needs
-    at run-time. We will demonstrate the procedures in terms of
-    deploying the \l {tools/plugandpaint}{Plug & Paint} application
-    that is provided in Qt's examples directory.
+    This document describes how to create a bundle and how to make
+    sure that the application will find the resources it needs at
+    run-time. We demonstrate the procedures in terms of deploying the
+    \l {tools/plugandpaint}{Plug & Paint} application that is provided
+    in Qt's examples directory.
     
     \tableofcontents
 
@@ -1380,63 +1380,38 @@
 
     \section2 Mac OS X Version Dependencies
 
-    Qt 4.2 has been designed to be built and deployed on Mac OS X 10.3
-    up until the current version as of this writing, Mac OS X 10.4 and
-    all their minor releases. Qt achieves this by using "weak
-    linking." This means that Qt tests if a function added in newer
-    versions of Mac OS X is available on the computer it is running on
-    before it uses it. This results in getting access to newer
-    features when running on newer versions of OS X while still
-    remaining compatible on older versions.
+    From Qt 4.6, Mac OS X 10.3 (Panther) is no longer supported.  Qt
+    4.6 applications can be built and deployed on Mac OS X 10.4
+    (Tiger) and higher. This is achieved using \e{weak linking}. In
+    \e{weak linking}, Qt tests whether a function added in a newer
+    version of Mac OS X is available on the computer it is running
+    on. This allows Qt to use newer features, when it runs on a newer
+    version of OS X, while remaining compatible on the older versions.
 
     For more information about cross development issues on Mac OS X,
     see \l
     {http://developer.apple.com/documentation/DeveloperTools/Conceptual/cross_development/index.html}{Apple's Developer Website}.
 
-    Since the linker is set to be compatible with all OS X version, you have to
-    change the \c MACOSX_DEPLOYMENT_TARGET environment variable to get weak
-    linking to work for your application. You can add:
+    Since the linker is set to be compatible with all OS X versions,
+    you must change the \c MACOSX_DEPLOYMENT_TARGET environment
+    variable to get \e{weak linking} to work for your application. You
+    can add:
 
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 51
 
-    to your .pro file and qmake will take care of this for you.
-
-    However, there is a bit of a wrinkle to keep in mind when your are
-    deploying. Mac OS X 10.4 ("Tiger") ships GCC 4.0 as its default
-    compiler. This is also the GCC compiler we use for building the
-    binary Qt package. If you use GCC 4.0 to build your application,
-    it will link against a dynamic libstdc++ that is only available on
-    Mac OS X 10.4 and Mac OS X 10.3.9.  The application will refuse to
-    run on older versions of the operating system.
+    to your .pro file, and qmake will take care of this for you.
 
     For more information about C++ runtime environment, see \l
     {http://developer.apple.com/documentation/DeveloperTools/Conceptual/CppRuntimeEnv/index.html}{Apple's Developer Website}
 
-    If you want to deploy to versions of Mac OS X earlier than 10.3.9,
-    you must build with GCC 3.3 which is the default on Mac OS X
-    10.3. GCC 3.3 is also available on the Mac OS X 10.4 "Xcode Tools"
-    CD and as a download for earlier versions of Mac OS X from Apple
-    (\l {https://connect.apple.com/}{connect.apple.com}). You can use
-    Apple's \c gcc_select(1) command line tool to switch the default
-    complier on your system.
-
     \section3 Deploying Phonon Applications on Mac OS X
 
     \list
-        \o If you build your Phonon application on Tiger, it will work on
-           Tiger, Leopard and Panther.
-        \o If you build your application on Leopard, it will \bold not work
-        on Panther unless you rename the libraries with the following command
-        after you have built your application:
 
-        \snippet doc/src/snippets/code/doc_src_deployment.qdoc 51a
+        \o If you build your Qt 4.6 Phonon application on OS X 10.4
+           (Tiger), it will run on OS X 10.4 and higher.
 
-        This command must be invoked in the directory where
-        \c{libphonon_qt7.dylib} is located, usually in 
-        \c{yourapp.app/Contents/plugins/phonon_backend/}.
-        \o The \l {macdeploy}{deployment tool} will perform this step for you.
-
-        \o If you are using Leopard, but would like to build your application
+        \o If you are using Leopard but would like to build your application
         against Tiger, you can use:
 
         \snippet doc/src/snippets/code/doc_src_deployment.qdoc 51b
@@ -1444,12 +1419,13 @@
 
     \section2 Architecture Dependencies
 
-    The Qt for Mac OS X libraries, tools, and examples can be built "universal"
-    (i.e. they run natively on both Intel and PowerPC machines).  This
-    is accomplished by passing \c -universal on the \c configure line
-    of the source package, and requires that you use GCC 4.0.x. On
-    PowerPC hardware you will need to pass the universal SDK as a
-    command line argument to the Qt configure command. For example:
+    The Qt for Mac OS X libraries, tools, and examples can be built
+    "universal" (i.e. they run natively on both Intel and PowerPC
+    machines).  This is accomplished by passing \c -universal on the
+    \c configure line of the source package, and requires that you use
+    GCC 4.0.x. On PowerPC hardware you will need to pass the universal
+    SDK as a command line argument to the Qt configure command. For
+    example:
 
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 52
 
