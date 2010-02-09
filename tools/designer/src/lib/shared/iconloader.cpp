@@ -70,8 +70,7 @@ QDESIGNER_SHARED_EXPORT QIcon createIconSet(const QString &name)
 
 QDESIGNER_SHARED_EXPORT QIcon emptyIcon()
 {
-    static const QIcon empty_icon(QLatin1String(":/trolltech/formeditor/images/emptyicon.png"));
-    return  empty_icon;
+    return QIcon(QLatin1String(":/trolltech/formeditor/images/emptyicon.png"));
 }
 
 } // namespace qdesigner_internal
