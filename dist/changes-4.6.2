@@ -218,13 +218,14 @@ Qt for Mac OS X
 
  - [QTBUG-7832]: Restored missing margins around non-unified toolbars.
  - [QTBUG-7312]: Menubar and dock disappear after hiding a fullscreen widget on Cocoa.
- - [QTBUG-7481] Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
+ - [QTBUG-7481]: Re-added the Close button in QPrintPreviewDialog for Mac/Carbon.
  - [QTBUG-7522]: Drawing fake buttons using QMacStyle+QStyleOptionViewItemV4 lead to crash.
  - [QTBUG-7625]: Calling showFullScreen() then showNormal() on a widget results in top menu hiding.
  - [QTBUG-7086]: QFileDialog now correctly responds to fileMode & acceptMode changes.
  - [QTBUG-7162]: Fixed a crash in Designer when previewing a QMainWindow with native toolbar.
  - [QTBUG-7305]: Fixed a crash when deleting QMainWindow with native toolbar on Cocoa.
  - [QTBUG-6882]: Fixed a text layout issue with QHeaderView in right-to-left mode.
+
 
 Qt for Embedded Linux
 ---------------------
@@ -249,6 +250,14 @@ Qt for Windows CE
 
 Qt for Symbian
 --------------
+
+  * [QTBUG-6556] Improve the DEF file handling scheme, to allow simple enable/
+    disable of DEF file usage (for use _during development only_ to decouple
+    the need to update the DEF files at the precise point that symbols are
+    removed, therefore allowing builds by CI systems to succeed even if symbols
+    have been removed.  This does not remove the need to update the DEF files
+    before release.  NOTE: Builds generated using this flag are not binary
+    compatible with previous versions of Qt.)
 
 - QProcess
     * [QTBUG-7667] Fixed no-timeout case for QProcess::waitForFinished.
