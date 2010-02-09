@@ -505,17 +505,31 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
     qint64 bytes = 0;
     char c = 0;
     bool allHeaders = false;
-    while (!allHeaders && socket->bytesAvailable()) {
-        if (socket->peek(&c, 1) == 1 && c == '\n') {
-            // check for possible header endings. As per HTTP rfc,
-            // the header endings will be marked by CRLFCRLF. But
-            // we will allow CRLFLF, LFLF & CRLFCRLF
-            if (fragment.endsWith("\n\r") || fragment.endsWith('\n'))
-                allHeaders = true;
+    qint64 haveRead = 0;
+    do {
+        haveRead = socket->read(&c, 1);
+        if (haveRead == 0) {
+            // read more later
+            break;
+        } else if (haveRead == -1) {
+            // connection broke down
+            return -1;
+        } else {
+            fragment.append(c);
+            bytes++;
+
+            if (c == '\n') {
+                // check for possible header endings. As per HTTP rfc,
+                // the header endings will be marked by CRLFCRLF. But
+                // we will allow CRLFCRLF, CRLFLF, LFLF
+                if (fragment.endsWith("\r\n\r\n")
+                    || fragment.endsWith("\r\n\n")
+                    || fragment.endsWith("\n\n"))
+                    allHeaders = true;
+            }
         }
-        bytes += socket->read(&c, 1);
-        fragment.append(c);
-    }
+    } while (!allHeaders && haveRead > 0);
+
     // we received all headers now parse them
     if (allHeaders) {
         parseHeader(fragment);
@@ -565,7 +579,7 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
         } while (i < header.count() && (header.at(i) == ' ' || header.at(i) == '\t'));
         if (i == -1)
             break; // something is wrong
-
+        qDebug() << "added header" << field << value;
         fields.append(qMakePair(field, value));
     }
 }
