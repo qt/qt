@@ -70,8 +70,12 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
     }
 }
 
-void QGLTextureGlyphCache::createTextureData(int width, int height)
+void QGLTextureGlyphCache::createTextureData(int width, int unalteredHeight)
 {
+    extern int qt_next_power_of_two(int v);
+    // Set height to lowest POT number which is higher than or equal to height
+    int height = qt_next_power_of_two(unalteredHeight);
+
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
