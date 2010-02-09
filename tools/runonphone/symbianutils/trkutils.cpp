@@ -143,6 +143,7 @@ QString Session::deviceDescription(unsigned verbose) const
     return msg.arg(formatTrkVersion(trkAppVersion));
 }
 
+// --------------
 
 QByteArray decode7d(const QByteArray &ba)
 {
