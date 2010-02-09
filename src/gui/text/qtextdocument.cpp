@@ -436,6 +436,23 @@ void QTextDocument::redo(QTextCursor *cursor)
 }
 
 /*!
+    \since 4.7
+    Clears the specified stacks.
+
+    This method clears any commands on the undo stack, the redo stack, or both (the
+    default). If any commands got cleared, the appropriate signals
+    (\a QTextDocument::undoAvailable or \a QTextDocument::redoAvailable) get
+    emitted.
+
+    \sa QTextDocument::undoAvailable QTextDocument::redoAvailable
+*/
+void QTextDocument::clearUndoRedoStacks(Stacks stacksToClear)
+{
+    Q_D(QTextDocument);
+    d->clearUndoRedoStacks(stacksToClear, true);
+}
+
+/*!
     \overload
 
 */
