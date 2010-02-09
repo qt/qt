@@ -1555,11 +1555,15 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
 
 #ifndef QT_NO_MENU
     QMenu *popup = createPopupMenu();
-    if (popup && !popup->isEmpty()) {
-        popup->exec(event->globalPos());
-        event->accept();
+    if (popup) {
+        if (!popup->isEmpty()) {
+            popup->setAttribute(Qt::WA_DeleteOnClose);
+            popup->popup(event->globalPos());
+            event->accept();
+        } else {
+            delete popup;
+        }
     }
-    delete popup;
 #endif
 }
 #endif // QT_NO_CONTEXTMENU
