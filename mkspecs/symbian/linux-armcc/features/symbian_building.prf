@@ -74,7 +74,6 @@ count(splitVersion, 1) {
 }
 #error ("hexVersion: $$hexVersion, decVersion: $$decVersion")
 
-isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_uid("$${OUT_PWD}/$${TARGET}")
 intUid3 = $$lower($$replace(TARGET.UID3, "^0x", ""))
 isEmpty(TARGET.SID):TARGET.SID = $$TARGET.UID3
 isEmpty(TARGET.UID2):TARGET.UID2 = 0x00000000
@@ -99,6 +98,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     QMAKE_POST_LINK += $$QMAKE_MOVE $$symbianDestdir/$${TARGET} $$symbianDestdir/$${TARGET}.sym
     # the tee and grep at the end work around the issue that elf2e32 doesn't return non-null on error
     QMAKE_POST_LINK += && elf2e32  --version $$decVersion --sid=$$TARGET.SID  --uid1=0x1000007a --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --capability=None --fpu=softvfp --targettype=EXE --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.exe --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log
+    QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.exe
 
     QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
@@ -118,7 +118,7 @@ symbian_resources_INCLUDES += "-I $$symbian_resources_RCC_DIR"
 for(symbian_resource, SYMBIAN_RESOURCES) {
     symbian_resource = $$basename(symbian_resource)
     symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rsc")
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${symbian_resource_clean}
+    QMAKE_DISTCLEAN += $${symbianDestdir}/$${symbian_resource_clean}
     symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rpp")
     QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${symbian_resource_clean}
 }
@@ -132,13 +132,47 @@ symbianresources.commands = cpp -nostdinc -undef \
                             -o $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             && rcomp -u -m045,046,047 \
                             -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
-                            -o$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsc \
+                            -o$${symbianDestdir}/${QMAKE_FILE_BASE}.rsc \
                             -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsg \
                             -i${QMAKE_FILE_NAME}
 symbianresources.dependency_type = TYPE_C
-symbianresources.CONFIG = no_link
+symbianresources.CONFIG = no_link target_predeps
 
 QMAKE_EXTRA_COMPILERS += symbianresources
+
+contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
+    baseTarget = $$basename(TARGET)
+    baseTarget = $$replace(baseTarget, -,_)
+    baseTarget = $$replace(baseTarget, :,_)
+    baseTarget = $$replace(baseTarget, \.,_)
+    baseTarget = $$replace(baseTarget, " ",_)
+
+    # Make our own extra compiler target in order to get dependencies for generated
+    # files right. This also avoids the warning about files not found.
+    symbianGenResource.inputFile = $${baseTarget}.rss
+    symbianGenResource.input = symbianGenResource.inputFile
+    # Reuse the command from earlier.
+    symbianGenResource.commands = $$symbianresources.commands
+    symbianGenResource.output = $$symbianresources.output
+    symbianGenResource.CONFIG = no_link target_predeps
+
+    symbianGenRegResource.inputFile = $${baseTarget}_reg.rss
+    symbianGenRegResource.input = symbianGenRegResource.inputFile
+    symbianGenRegResource.commands = $$symbianresources.commands
+    symbianGenRegResource.output = $$symbianresources.output
+    symbianGenRegResource.CONFIG = no_link target_predeps
+    symbianGenRegResource.depends = $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+
+    QMAKE_EXTRA_COMPILERS += symbianGenResource symbianGenRegResource
+
+    QMAKE_DISTCLEAN += $${TARGET}.rss
+    QMAKE_DISTCLEAN += $${TARGET}_reg.rss
+    QMAKE_DISTCLEAN += $${TARGET}.loc
+}
+
+# Generated pkg files
+
+QMAKE_DISTCLEAN += $${TARGET}_template.pkg
 
 # Pre 2.6.23 Linux kernels have a limit on the environment size that can be passed to
 # a forked process. We quite easily overstep this boundary when building big projects
@@ -149,3 +183,9 @@ execve_sanity_test = $$system("echo testing")
 !contains(execve_sanity_test, "testing") {
     error("Running system() failed. Maybe your kernel is too old? (Linux kernels need at least version 2.6.23)")
 }
+
+# ### FIXME! TODO! Remove this after icons have been fixed.
+QMAKE_EXTRA_COMPILERS -= mifconv
+RSS_RULES.number_of_icons =
+RSS_RULES.icon_file =
+PRE_TARGETDEPS -= $$mifconv.output

@@ -365,7 +365,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     // Write winscw deployment rules
     QString remoteTestPath = epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
     DeploymentList depList;
-    initProjectDeploySymbian(project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
 
     t << "#if defined(WINSCW)" << endl;
     for (int i = 0; i < depList.size(); ++i) {

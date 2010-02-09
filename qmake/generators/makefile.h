@@ -248,6 +248,11 @@ public:
     virtual bool mergeBuildProject(MakefileGenerator * /*other*/) { return false; }
     virtual bool openOutput(QFile &, const QString &build) const;
     virtual bool isWindowsShell() const { return Option::target_mode == Option::TARG_WIN_MODE; }
+
+    // This is to avoid having SymbianCommonGenerator as a virtually inherited class
+    // of this class. Instead it is without a base class (avoiding the virtual
+    // inheritance problem), and is allowed to use functions defined in here.
+    friend class SymbianCommonGenerator;
 };
 
 inline void MakefileGenerator::setNoIO(bool o)

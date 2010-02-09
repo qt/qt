@@ -436,6 +436,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "msvc_vcproj.h"
 #include "symmake_abld.h"
 #include "symmake_sbsv2.h"
+#include "symbian_makefile.h"
 QT_END_INCLUDE_NAMESPACE
 
 MakefileGenerator *
@@ -476,6 +477,8 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
         mkfile = new SymbianAbldMakefileGenerator;
     } else if(gen == "SYMBIAN_SBSV2") {
         mkfile = new SymbianSbsv2MakefileGenerator;
+    } else if(gen == "UNIX_SYMBIAN") {
+        mkfile = new SymbianMakefileTemplate<UnixMakefileGenerator>;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
     }
