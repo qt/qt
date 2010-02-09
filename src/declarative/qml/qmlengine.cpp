@@ -1276,14 +1276,12 @@ public:
         QmlEnginePrivate::ImportedNamespace *s = 0;
         int slash = type.indexOf('/');
         if (slash >= 0) {
-            while (!s) {
-                s = set.value(QString::fromUtf8(type.left(slash)));
-                int nslash = type.indexOf('/',slash+1);
-                if (nslash > 0)
-                    slash = nslash;
-                else
-                    break;
-            }
+            s = set.value(QString::fromUtf8(type.left(slash)));
+            if (!s)
+                return false; // qualifier must be a namespace
+            int nslash = type.indexOf('/',slash+1);
+            if (nslash > 0)
+                return false; // only single qualification allowed
         } else {
             s = &unqualifiedset;
         }

@@ -1187,6 +1187,17 @@ void tst_qmllanguage::importsLocal_data()
         << "import Qt 4.6\nimport \"subdir\"\n"
            "Test {}"
         << "QmlGraphicsRectangle";
+    QTest::newRow("local import subsubdir")
+        << "import Qt 4.6\nimport \"subdir/subsubdir\"\n"
+           "SubTest {}"
+        << "QmlGraphicsRectangle";
+    QTest::newRow("local import QTBUG-7721 A")
+        << "subdir.Test {}" // no longer allowed (QTBUG-7721)
+        << "";
+    QTest::newRow("local import QTBUG-7721 B")
+        << "import \"subdir\" as X\n"
+           "X.subsubdir.SubTest {}" // no longer allowed (QTBUG-7721)
+        << "";
     QTest::newRow("local import as")
         << "import \"subdir\" as T\n"
            "T.Test {}"
