@@ -221,7 +221,10 @@ QGraphicsSystemFbWindowSurface::QGraphicsSystemFbWindowSurface(QGraphicsSystemFb
       mScreen(screen),
       visibleFlag(false)
 {
+    static QAtomicInt winIdGenerator(1);
+
     mImage = QImage(window->size(), mScreen->format());
+    windowId = winIdGenerator.fetchAndAddRelaxed(1);
 }
 
 QGraphicsSystemFbWindowSurface::~QGraphicsSystemFbWindowSurface()

@@ -64,12 +64,15 @@ public:
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;
 
+    WId winId() const { return windowId; }
 protected:
     QGraphicsSystemFbScreen *mScreen;
     QRect oldGeometry;
     QImage mImage;
     bool visibleFlag;
     Qt::WindowFlags flags;
+
+    WId windowId;
 };
 
 class QGraphicsSystemFbScreen : public QGraphicsSystemScreen
