@@ -80,11 +80,12 @@ private slots:
 void tst_QPacketProtocol::init()
 {
     m_server = new QTcpServer(this);
-    QVERIFY(m_server->listen());
-    
+    m_serverConn = 0;
+    QVERIFY(m_server->listen(QHostAddress("127.0.0.1")));
+	
     m_client = new QTcpSocket(this);
     m_client->connectToHost(m_server->serverAddress(), m_server->serverPort());
-
+	
     QVERIFY(m_client->waitForConnected());
     QVERIFY(m_server->waitForNewConnection());
     m_serverConn = m_server->nextPendingConnection();
