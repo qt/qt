@@ -45,28 +45,55 @@ Compiling:
 
     and then wait for a while.
 
- 4. Compile some helloworld application (I leave the details to you
+ 4. Package and install Qt
+
+        cd s60installs
+
+    Edit Qt_template.pkg and change the first 0x2xxxxxxx to
+    0xExxxxxxx. Then execute:
+
+        makesis Qt_template.pkg
+        signsis Qt_template.sis Qt_template.sisx selfsigned.cer selfsigned.key
+
+    Then put Qt_template.sisx on a memory card and install it from
+    the phone file manager.
+
+    Alternatively, you can use the runonphone tool found in the tools
+    directory of Qt. To build, this requires a separately configured
+    Qt installation for Linux, unfortunately. To use it, you also
+    need have App TRK running on the phone. At the time of writing,
+    only bleeding edge Linux kernels are able to autodetect the USB
+    serial port on the phone, but you can force detection by running:
+
+        modprobe usbserial vendor=0xXXXX product=0xXXXX
+
+    The XXXXs should be replaced with the two values listed for your
+    device when executing "lsusb". In most distributions, this will
+    lead to the creation of two devices: /dev/ttyUSB0 and
+    /dev/ttyUSB1. The latter is usually the one that App TRK responds
+    to. Then execute:
+
+        runonphone -p /dev/ttyUSB1 -s Qt_template.sisx dummy.exe
+
+    The dummy.exe argument is irrelevant, since we are not executing
+    anything yet.
+
+ 5. Compile some helloworld application (I leave the details to you
     ;-)
 
         qmake
         make
 
- 5. Package and run on the phone. This is unfortunately a bit of a
-    manual step at the moment. Your best bet is to look at a Windows
-    build of the same application, and manually grab the .rsc files
-    that it refers to and put them in the application directory on
-    Linux. Then you can take the pkg_template.pkg file provided in
-    the repository and tweak it to include the files you want. Note
-    that due to limitations on how the makesis tool interprets file
-    paths, all the files included need to be in the current directory
-    (or a link from there).
+ 6. Package, install and run application.
 
-    Assuming that all the files are in place, do this:
+        makesis helloworld_template.pkg
+        signsis helloworld_template.sis helloworld_template.sisx \
+            <QTDIR>/src/s60installs/selfsigned.cer \
+            <QTDIR>/src/s60installs/selfsigned.key
 
-        cp <qt-root>/src/s60installs/selfsigned.* .
-        winewrapper makesis.exe MyApp.pkg MyApp_unsigned.sis
-        winewrapper signsis.exe MyApp_unsigned.sis MyApp.sis \
-            selfsigned.cer selfsigned.key
+    Then either install by memory card, or install and run like this:
 
- 7. Enjoy QObjects and "hello world" on the phone!
+        runonphone -p /dev/ttyUSB1 -s helloworld_template.sisx \
+            helloworld.exe
 
+ 7. Enjoy "hello world" on the phone!
