@@ -591,7 +591,7 @@ void QHttpNetworkReplyPrivate::parseHeader(const QByteArray &header)
         } while (i < header.count() && (header.at(i) == ' ' || header.at(i) == '\t'));
         if (i == -1)
             break; // something is wrong
-        qDebug() << "added header" << field << value;
+
         fields.append(qMakePair(field, value));
     }
 }
