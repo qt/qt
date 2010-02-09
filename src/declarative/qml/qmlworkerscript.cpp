@@ -53,6 +53,7 @@
 #include <QtCore/qfile.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtDeclarative/qmlinfo.h>
+#include "qmlnetworkaccessmanagerfactory.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -103,24 +104,32 @@ private:
 class QmlWorkerScriptEnginePrivate : public QObject
 {
 public:
-    QmlWorkerScriptEnginePrivate();
+    QmlWorkerScriptEnginePrivate(QmlEngine *eng);
 
     struct ScriptEngine : public QmlScriptEngine 
     {
-        ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : QmlScriptEngine(0), p(parent) {}
-        ~ScriptEngine() { delete manager; };
+        ScriptEngine(QmlWorkerScriptEnginePrivate *parent) : QmlScriptEngine(0), p(parent), accessManager(0) {}
+        ~ScriptEngine() { delete accessManager; }
         QmlWorkerScriptEnginePrivate *p;
-        QNetworkAccessManager *manager;
+        QNetworkAccessManager *accessManager;
 
         virtual QNetworkAccessManager *networkAccessManager() { 
-            if (!manager) manager = new QNetworkAccessManager;
-            return manager;
+            if (!accessManager) {
+                if (p->qmlengine && p->qmlengine->networkAccessManagerFactory()) {
+                    accessManager = p->qmlengine->networkAccessManagerFactory()->create(this);
+                } else {
+                    accessManager = new QNetworkAccessManager(this);
+                }
+            }
+            return accessManager;
         }
     };
     ScriptEngine *workerEngine;
     static QmlWorkerScriptEnginePrivate *get(QScriptEngine *e) {
         return static_cast<ScriptEngine *>(e)->p;
     }
+
+    QmlEngine *qmlengine;
 
     QMutex m_lock;
     QWaitCondition m_wait;
@@ -135,9 +144,6 @@ public:
 
         QScriptValue callback;
     };
-
-    QNetworkAccessManager *networkAccessManager;
-    QNetworkAccessManager *getNetworkAccessManager();
 
     QHash<int, WorkerScript *> workers;
     QScriptValue getWorker(int);
@@ -234,8 +240,8 @@ private:
 };
 Q_DECLARE_METATYPE(QmlWorkerListModelAgent::VariantRef);
 
-QmlWorkerScriptEnginePrivate::QmlWorkerScriptEnginePrivate()
-: workerEngine(0), networkAccessManager(0), m_nextId(0)
+QmlWorkerScriptEnginePrivate::QmlWorkerScriptEnginePrivate(QmlEngine *engine)
+: workerEngine(0), qmlengine(engine), m_nextId(0)
 {
 }
 
@@ -485,8 +491,8 @@ int WorkerRemoveEvent::workerId() const
     return m_id;
 }
 
-QmlWorkerScriptEngine::QmlWorkerScriptEngine(QObject *parent)
-: QThread(parent), d(new QmlWorkerScriptEnginePrivate)
+QmlWorkerScriptEngine::QmlWorkerScriptEngine(QmlEngine *parent)
+: QThread(parent), d(new QmlWorkerScriptEnginePrivate(parent))
 {
     d->m_lock.lock();
     start(QThread::LowPriority);

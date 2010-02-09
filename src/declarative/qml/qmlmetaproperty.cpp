@@ -892,7 +892,8 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             QVariant listVar = prop.read(object);
             QmlMetaType::clear(listVar);
             for (int ii = 0; ii < list.count(); ++ii) {
-                QVariant v = QmlMetaType::fromObject(list.at(ii), listType);
+                QObject *o = list.at(ii);
+                QVariant v = QVariant(listType, &o);
                 QmlMetaType::append(listVar, v);
             }
 

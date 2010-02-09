@@ -69,7 +69,7 @@ class QmlWorkerScriptEngine : public QThread
 {
 Q_OBJECT
 public:
-    QmlWorkerScriptEngine(QObject *parent = 0);
+    QmlWorkerScriptEngine(QmlEngine *parent = 0);
     virtual ~QmlWorkerScriptEngine();
 
     int registerWorkerScript(QmlWorkerScript *);

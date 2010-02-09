@@ -512,14 +512,18 @@ int QmlCompositeTypeManager::resolveTypes(QmlCompositeTypeData *unit)
         int majorVersion;
         int minorVersion;
         QmlEnginePrivate::ImportedNamespace *typeNamespace = 0;
-        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, &typeNamespace)) {
-            // XXX could produce error message here.
-        }
-
-        if (typeNamespace) {
+        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, &typeNamespace)
+                || typeNamespace)
+        {
+            // Known to not be a type:
+            //  - known to be a namespace (Namespace {})
+            //  - type with unknown namespace (UnknownNamespace.SomeType {})
             QmlError error;
             error.setUrl(unit->imports.baseUrl());
-            error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QString::fromUtf8(typeName)));
+            if (typeNamespace)
+                error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QString::fromUtf8(typeName)));
+            else
+                error.setDescription(tr("%1 is not a type").arg(QString::fromUtf8(typeName)));
             if (!parserRef->refObjects.isEmpty()) {
                 QmlParser::Object *obj = parserRef->refObjects.first();
                 error.setLine(obj->location.start.line);

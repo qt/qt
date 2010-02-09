@@ -91,14 +91,15 @@ QmlVME::QmlVME()
 
 struct ListInstance
 {
-    ListInstance() {}
-    ListInstance(QList<void *> *q, int t)
-        : type(t), qListInterface(q), qmlListInterface(0) {}
+    ListInstance() 
+        : type(0), qmlListInterface(0) {}
+    ListInstance(int t) 
+        : type(t), qmlListInterface(0) {}
     ListInstance(QmlPrivate::ListInterface *q, int t)
-        : type(t), qListInterface(0), qmlListInterface(q) {}
+        : type(t), qmlListInterface(q) {}
 
     int type;
-    QList<void *> *qListInterface;
+    QmlListProperty<void> qListProperty;
     QmlPrivate::ListInterface *qmlListInterface;
 };
 
@@ -669,7 +670,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *assign = stack.pop();
 
                 const ListInstance &list = qliststack.top();
-                list.qListInterface->append((void *)assign);
+                list.qListProperty.append((QmlListProperty<void>*)&list.qListProperty, assign);
             }
             break;
 
@@ -694,7 +695,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                     void *d = (void *)&ptr;
                     list.qmlListInterface->append(d);
                 } else {
-                    list.qListInterface->append(ptr);
+                    list.qListProperty.append((QmlListProperty<void>*)&list.qListProperty, ptr);
                 }
             }
             break;
@@ -772,17 +773,12 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
             {
                 QObject *target = stack.top();
 
+                qliststack.push(ListInstance(instr.fetchQmlList.type));
+
                 void *a[1];
-                // We know that QList<T *>* can be converted to 
-                // QList<void *>*
-                QList<void *> *list = 0;
-                a[0] = &list;
+                a[0] = (void *)&(qliststack.top().qListProperty);
                 QMetaObject::metacall(target, QMetaObject::ReadProperty, 
                                       instr.fetchQmlList.property, a);
-                if (!list) 
-                    VME_EXCEPTION(QCoreApplication::translate("QmlVME","Cannot assign to null list"));
-
-                qliststack.push(ListInstance(list, instr.fetchQmlList.type));
             }
             break;
 
