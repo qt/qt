@@ -7,7 +7,7 @@
 #include <QMouseEvent>
 #include <QEvent>
 
-#include <directfb/directfb.h>
+#include <directfb.h>
 
 InputSocketWaiter::InputSocketWaiter(IDirectFBEventBuffer *eventBuffer, QObject *parent)
     : QThread(parent), m_eventBuffer(eventBuffer),m_shouldStop(false)
