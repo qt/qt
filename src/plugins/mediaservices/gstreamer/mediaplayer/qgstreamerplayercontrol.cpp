@@ -86,6 +86,8 @@ QGstreamerPlayerControl::QGstreamerPlayerControl(QGstreamerPlayerSession *sessio
             this, SIGNAL(videoAvailableChanged(bool)));
     connect(m_session, SIGNAL(seekableChanged(bool)),
             this, SIGNAL(seekableChanged(bool)));
+    connect(m_session, SIGNAL(error(int,QString)),
+            this, SIGNAL(error(int,QString)));
 }
 
 QGstreamerPlayerControl::~QGstreamerPlayerControl()

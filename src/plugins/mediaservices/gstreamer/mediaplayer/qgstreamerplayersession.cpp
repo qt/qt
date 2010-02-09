@@ -266,6 +266,8 @@ void QGstreamerPlayerSession::play()
 
             emit stateChanged(m_state);
             emit mediaStatusChanged(m_mediaStatus);
+
+            emit error(int(QMediaPlayer::ResourceError), tr("Unable to play %1").arg(m_url.path()));
         }
     }
 }
@@ -525,7 +527,18 @@ void QGstreamerPlayerSession::busMessage(const QGstreamerMessage &message)
             case GST_MESSAGE_TAG:
             case GST_MESSAGE_STREAM_STATUS:
             case GST_MESSAGE_UNKNOWN:
+                break;
             case GST_MESSAGE_ERROR:
+                {
+                    GError *err;
+                    gchar *debug;
+                    gst_message_parse_error (gm, &err, &debug);
+                    emit error(int(QMediaPlayer::ResourceError), QString::fromUtf8(err->message));
+                    qWarning() << "Error:" << QString::fromUtf8(err->message);
+                    g_error_free (err);
+                    g_free (debug);
+                }
+                break;
             case GST_MESSAGE_WARNING:
             case GST_MESSAGE_INFO:
                 break;
