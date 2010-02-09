@@ -878,6 +878,7 @@ void QWidgetPrivate::registerDropSite(bool /* on */)
 void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->backingStore = 0;
+    extra->topextra->inExpose = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
@@ -891,7 +892,6 @@ void QWidgetPrivate::createSysExtra()
     extra->activated = 0;
     extra->nativePaintMode = QWExtra::Default;
     extra->receiveNativePaintEvents = 0;
-    extra->inExpose = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
