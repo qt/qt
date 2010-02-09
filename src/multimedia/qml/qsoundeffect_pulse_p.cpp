@@ -181,7 +181,7 @@ private:
         m_prepared = false;
     }
 
-#if(QWS_MAEMO_5)
+#if(Q_WS_MAEMO_5)
     static void context_state_callback(pa_context *c, void *userdata)
     {
         PulseDaemon *self = reinterpret_cast<PulseDaemon*>(userdata);
