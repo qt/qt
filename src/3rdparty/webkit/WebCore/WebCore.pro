@@ -24,14 +24,7 @@ symbian: {
     # RO text (code) section in qtwebkit.dll exceeds allocated space for gcce udeb target.
     # Move RW-section base address to start from 0xE00000 instead of the toolchain default 0x400000.
     QMAKE_LFLAGS.ARMCC += --rw-base 0xE00000
-    symbian-abld|symbian-sbsv2 {
-        MMP_RULES += ALWAYS_BUILD_AS_ARM
-    } else:linux-armcc {
-        QMAKE_CFLAGS -= --thumb
-        QMAKE_CFLAGS += --arm
-        QMAKE_CXXFLAGS -= --thumb
-        QMAKE_CXXFLAGS += --arm
-    }
+    CONFIG += do_not_build_as_thumb
 }
 
 include($$PWD/../WebKit.pri)
