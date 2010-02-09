@@ -46,347 +46,14 @@ Q_DECLARE_METATYPE(QScriptContext*)
 Q_DECLARE_METATYPE(QScriptValue)
 Q_DECLARE_METATYPE(QScriptValueList)
 
-//TESTED_FILES=
-
-class TestClass : public QScriptClass
-{
-public:
-    struct CustomProperty {
-        QueryFlags qflags;
-        uint id;
-        QScriptValue::PropertyFlags pflags;
-        QScriptValue value;
-
-        CustomProperty(QueryFlags qf, uint i, QScriptValue::PropertyFlags pf,
-                       const QScriptValue &val)
-            : qflags(qf), id(i), pflags(pf), value(val) { }
-    };
-
-    enum CallableMode {
-        NotCallable,
-        CallableReturnsSum,
-        CallableReturnsArgument,
-        CallableReturnsInvalidVariant
-    };
-
-    TestClass(QScriptEngine *engine);
-    ~TestClass();
-
-    void addCustomProperty(const QScriptString &name, QueryFlags qflags,
-                           uint id, QScriptValue::PropertyFlags pflags,
-                           const QScriptValue &value);
-    void removeCustomProperty(const QScriptString &name);
-
-    QueryFlags queryProperty(const QScriptValue &object,
-                             const QScriptString &name,
-                             QueryFlags flags, uint *id);
-
-    QScriptValue property(const QScriptValue &object,
-                          const QScriptString &name, uint id);
-
-    void setProperty(QScriptValue &object, const QScriptString &name,
-                     uint id, const QScriptValue &value);
-
-    QScriptValue::PropertyFlags propertyFlags(
-        const QScriptValue &object, const QScriptString &name, uint id);
-
-    QScriptClassPropertyIterator *newIterator(const QScriptValue &object);
-
-    QScriptValue prototype() const;
-
-    QString name() const;
-
-    bool supportsExtension(Extension extension) const;
-    QVariant extension(Extension extension,
-                       const QVariant &argument = QVariant());
-
-    void setIterationEnabled(bool enable);
-    bool isIterationEnabled() const;
-
-    void setCallableMode(CallableMode mode);
-    CallableMode callableMode() const;
-
-    void setHasInstance(bool hasInstance);
-    bool hasInstance() const;
-
-private:
-    inline CustomProperty *findCustomProperty(const QScriptString &name);
-
-    QHash<QScriptString, CustomProperty*> customProperties;
-
-    QScriptValue m_prototype;
-    bool m_iterationEnabled;
-    CallableMode m_callableMode;
-    bool m_hasInstance;
-};
-
-class TestClassPropertyIterator : public QScriptClassPropertyIterator
-{
-public:
-    TestClassPropertyIterator(const QHash<QScriptString, TestClass::CustomProperty*> &props,
-                      const QScriptValue &object);
-    ~TestClassPropertyIterator();
-
-    bool hasNext() const;
-    void next();
-
-    bool hasPrevious() const;
-    void previous();
-
-    void toFront();
-    void toBack();
-
-    QScriptString name() const;
-    uint id() const;
-    QScriptValue::PropertyFlags flags() const;
-
-private:
-    int m_index;
-    int m_last;
-    QHash<QScriptString, TestClass::CustomProperty*> m_props;
-};
-
-TestClass::TestClass(QScriptEngine *engine)
-    : QScriptClass(engine), m_iterationEnabled(true),
-      m_callableMode(NotCallable), m_hasInstance(false)
-{
-    m_prototype = engine->newObject();
-}
-
-TestClass::~TestClass()
-{
-    qDeleteAll(customProperties);
-}
-
-TestClass::CustomProperty* TestClass::findCustomProperty(const QScriptString &name)
-{
-    QHash<QScriptString, CustomProperty*>::const_iterator it;
-    it = customProperties.constFind(name);
-    if (it == customProperties.constEnd())
-        return 0;
-    return it.value();
-
-}
-
-void TestClass::addCustomProperty(const QScriptString &name, QueryFlags qflags,
-                                  uint id, QScriptValue::PropertyFlags pflags,
-                                  const QScriptValue &value)
-{
-    customProperties.insert(name, new CustomProperty(qflags, id, pflags, value));
-}
-
-void TestClass::removeCustomProperty(const QScriptString &name)
-{
-    CustomProperty *prop = customProperties.take(name);
-    if (prop)
-        delete prop;
-}
-
-QScriptClass::QueryFlags TestClass::queryProperty(const QScriptValue &/*object*/,
-                                    const QScriptString &name,
-                                    QueryFlags flags, uint *id)
-{
-    CustomProperty *prop = findCustomProperty(name);
-    if (!prop)
-        return 0;
-    *id = prop->id;
-    return prop->qflags & flags;
-}
-
-QScriptValue TestClass::property(const QScriptValue &/*object*/,
-                                 const QScriptString &name, uint /*id*/)
-{
-    CustomProperty *prop = findCustomProperty(name);
-    if (!prop)
-        return QScriptValue();
-    return prop->value;
-}
-
-void TestClass::setProperty(QScriptValue &/*object*/, const QScriptString &name,
-                            uint /*id*/, const QScriptValue &value)
-{
-    CustomProperty *prop = findCustomProperty(name);
-    if (!prop)
-        return;
-    prop->value = value;
-}
-
-QScriptValue::PropertyFlags TestClass::propertyFlags(
-    const QScriptValue &/*object*/, const QScriptString &name, uint /*id*/)
-{
-    CustomProperty *prop = findCustomProperty(name);
-    if (!prop)
-        return 0;
-    return prop->pflags;
-}
-
-QScriptClassPropertyIterator *TestClass::newIterator(const QScriptValue &object)
-{
-    if (!m_iterationEnabled)
-        return 0;
-    return new TestClassPropertyIterator(customProperties, object);
-}
-
-QScriptValue TestClass::prototype() const
-{
-    return m_prototype;
-}
-
-QString TestClass::name() const
-{
-    return QLatin1String("TestClass");
-}
-
-bool TestClass::supportsExtension(Extension extension) const
-{
-    if (extension == Callable)
-        return (m_callableMode != NotCallable);
-    if (extension == HasInstance)
-        return m_hasInstance;
-    return false;
-}
-
-QVariant TestClass::extension(Extension extension,
-                              const QVariant &argument)
-{
-    if (extension == Callable) {
-        Q_ASSERT(m_callableMode != NotCallable);
-        QScriptContext *ctx = qvariant_cast<QScriptContext*>(argument);
-        if (m_callableMode == CallableReturnsSum) {
-            qsreal sum = 0;
-            for (int i = 0; i < ctx->argumentCount(); ++i)
-                sum += ctx->argument(i).toNumber();
-            QScriptValueIterator it(ctx->thisObject());
-            while (it.hasNext()) {
-                it.next();
-                sum += it.value().toNumber();
-            }
-            return sum;
-        } else if (m_callableMode == CallableReturnsArgument) {
-            return qVariantFromValue(ctx->argument(0));
-        } else if (m_callableMode == CallableReturnsInvalidVariant) {
-            return QVariant();
-        }
-    } else if (extension == HasInstance) {
-        Q_ASSERT(m_hasInstance);
-        QScriptValueList args = qvariant_cast<QScriptValueList>(argument);
-        QScriptValue obj = args.at(0);
-        QScriptValue value = args.at(1);
-        return value.property("foo").equals(obj.property("foo"));
-    }
-    return QVariant();
-}
-
-void TestClass::setIterationEnabled(bool enable)
-{
-    m_iterationEnabled = enable;
-}
-
-bool TestClass::isIterationEnabled() const
-{
-    return m_iterationEnabled;
-}
-
-void TestClass::setCallableMode(CallableMode mode)
-{
-    m_callableMode = mode;
-}
-
-TestClass::CallableMode TestClass::callableMode() const
-{
-    return m_callableMode;
-}
-
-void TestClass::setHasInstance(bool hasInstance)
-{
-    m_hasInstance = hasInstance;
-}
-
-bool TestClass::hasInstance() const
-{
-    return m_hasInstance;
-}
-
-TestClassPropertyIterator::TestClassPropertyIterator(const QHash<QScriptString, TestClass::CustomProperty*> &props,
-                                     const QScriptValue &object)
-    : QScriptClassPropertyIterator(object)
-{
-    m_props = props;
-    toFront();
-}
-
-TestClassPropertyIterator::~TestClassPropertyIterator()
-{
-}
-
-bool TestClassPropertyIterator::hasNext() const
-{
-    return m_index < m_props.size();
-}
-
-void TestClassPropertyIterator::next()
-{
-    m_last = m_index;
-    ++m_index;
-}
-
-bool TestClassPropertyIterator::hasPrevious() const
-{
-    return m_index > 0;
-}
-
-void TestClassPropertyIterator::previous()
-{
-    --m_index;
-    m_last = m_index;
-}
-
-void TestClassPropertyIterator::toFront()
-{
-    m_index = 0;
-    m_last = -1;
-}
-
-void TestClassPropertyIterator::toBack()
-{
-    m_index = m_props.size();
-    m_last = -1;
-}
-
-QScriptString TestClassPropertyIterator::name() const
-{
-    return m_props.keys().value(m_last);
-}
-
-uint TestClassPropertyIterator::id() const
-{
-    QScriptString key = m_props.keys().value(m_last);
-    if (!key.isValid())
-        return 0;
-    TestClass::CustomProperty *prop = m_props.value(key);
-    return prop->id;
-}
-
-QScriptValue::PropertyFlags TestClassPropertyIterator::flags() const
-{
-    QScriptString key = m_props.keys().value(m_last);
-    if (!key.isValid())
-        return 0;
-    TestClass::CustomProperty *prop = m_props.value(key);
-    return prop->pflags;
-}
+// We want reliable numbers so we don't want to rely too much
+// on the number of iterations done by testlib.
+// this also make the results of valgrind more interesting
+const int iterationNumber = 5000;
 
 class tst_QScriptClass : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QScriptClass();
-    virtual ~tst_QScriptClass();
-
-public slots:
-    void init();
-    void cleanup();
 
 private slots:
     void noSuchProperty();
@@ -398,111 +65,218 @@ private slots:
     void iterate();
 };
 
-tst_QScriptClass::tst_QScriptClass()
-{
-}
-
-tst_QScriptClass::~tst_QScriptClass()
-{
-}
-
-void tst_QScriptClass::init()
-{
-}
-
-void tst_QScriptClass::cleanup()
-{
-}
-
+// Test the overhead of checking for an inexisting property of a QScriptClass
 void tst_QScriptClass::noSuchProperty()
 {
     QScriptEngine eng;
-    TestClass cls(&eng);
+    QScriptClass cls(&eng);
     QScriptValue obj = eng.newObject(&cls);
     QString propertyName = QString::fromLatin1("foo");
     QBENCHMARK {
-        (void)obj.property(propertyName);
+        for (int i = 0; i < iterationNumber; ++i)
+            (void)obj.property(propertyName);
     }
+    Q_ASSERT(!obj.property(propertyName).isValid());
 }
 
+
+class FooScriptClass : public QScriptClass
+{
+public:
+    FooScriptClass(QScriptEngine *engine)
+        : QScriptClass(engine)
+    {
+        foo = engine->toStringHandle("foo");
+    }
+
+    QueryFlags queryProperty(const QScriptValue &,
+                             const QScriptString &,
+                             QueryFlags flags,
+                             uint *id)
+    {
+        *id = 1;
+        return flags;
+    }
+
+    QScriptValue property(const QScriptValue &,
+                          const QScriptString &,
+                          uint)
+    {
+        return QScriptValue(engine(), 35);
+    }
+
+    void setProperty(QScriptValue &, const QScriptString &,
+                     uint, const QScriptValue &)
+    {}
+
+    QScriptValue::PropertyFlags propertyFlags(const QScriptValue &, const QScriptString &, uint)
+    {
+        return QScriptValue::Undeletable;
+    }
+private:
+    QScriptString foo;
+};
+
+// Test the overhead of getting a value of QScriptClass accross the Javascript engine
 void tst_QScriptClass::property()
 {
     QScriptEngine eng;
-    TestClass cls(&eng);
-    QScriptString foo = eng.toStringHandle("foo");
-    cls.addCustomProperty(foo, QScriptClass::HandlesReadAccess, /*id=*/1, /*attributes=*/0, /*value=*/123);
+    FooScriptClass cls(&eng);
     QScriptValue obj = eng.newObject(&cls);
+    QScriptString foo = eng.toStringHandle("foo");
     QBENCHMARK {
-        (void)obj.property(foo);
+        for (int i = 0; i < iterationNumber; ++i)
+            (void)obj.property(foo);
     }
 }
 
+// Test the overhead of setting a value on QScriptClass accross the Javascript engine
 void tst_QScriptClass::setProperty()
 {
     QScriptEngine eng;
-    TestClass cls(&eng);
-    QScriptString foo = eng.toStringHandle("foo");
-    cls.addCustomProperty(foo, QScriptClass::HandlesWriteAccess, /*id=*/1, /*attributes=*/0, /*value=*/123);
+    FooScriptClass cls(&eng);
     QScriptValue obj = eng.newObject(&cls);
     QScriptValue value(456);
+    QScriptString foo = eng.toStringHandle("foo");
     QBENCHMARK {
-        obj.setProperty(foo, value);
+        for (int i = 0; i < iterationNumber; ++i)
+            obj.setProperty(foo, value);
     }
 }
 
+// Test the time taken to get the propeties flags accross the engine
 void tst_QScriptClass::propertyFlags()
 {
     QScriptEngine eng;
-    TestClass cls(&eng);
-    QScriptString foo = eng.toStringHandle("foo");
-    cls.addCustomProperty(foo, QScriptClass::HandlesReadAccess, /*id=*/1, QScriptValue::ReadOnly, /*value=*/123);
+    FooScriptClass cls(&eng);
     QScriptValue obj = eng.newObject(&cls);
+    QScriptString foo = eng.toStringHandle("foo");
     QBENCHMARK {
-        (void)obj.propertyFlags(foo);
+        for (int i = 0; i < iterationNumber; ++i)
+            (void)obj.propertyFlags(foo);
     }
 }
 
+
+
+class ExtensionScriptClass : public QScriptClass
+{
+public:
+    ExtensionScriptClass(QScriptEngine *engine)
+        : QScriptClass(engine)
+    {
+    }
+
+    bool supportsExtension(Extension) const
+    {
+        return true;
+    }
+
+    QVariant extension(Extension, const QVariant &argument = QVariant())
+    {
+        Q_UNUSED(argument);
+        return QVariant();
+    }
+};
+
+// Check the overhead of the extension "call"
 void tst_QScriptClass::call()
 {
     QScriptEngine eng;
-    TestClass cls(&eng);
-    cls.setCallableMode(TestClass::CallableReturnsArgument);
+    ExtensionScriptClass cls(&eng);
     QScriptValue obj = eng.newObject(&cls);
     QScriptValue thisObject;
     QScriptValueList args;
     args.append(123);
     QBENCHMARK {
-        (void)obj.call(thisObject, args);
+        for (int i = 0; i < iterationNumber; ++i)
+            (void)obj.call(thisObject, args);
     }
 }
 
+// Check the overhead of the extension "instanceOf"
 void tst_QScriptClass::hasInstance()
 {
     QScriptEngine eng;
-    TestClass cls(&eng);
-    cls.setHasInstance(true);
+    ExtensionScriptClass cls(&eng);
     QScriptValue obj = eng.newObject(&cls);
     obj.setProperty("foo", 123);
     QScriptValue plain = eng.newObject();
     plain.setProperty("foo", obj.property("foo"));
     QBENCHMARK {
-        (void)plain.instanceOf(obj);
+        for (int i = 0; i < iterationNumber; ++i)
+            (void)plain.instanceOf(obj);
     }
 }
 
+
+
+static const int iteratorValuesNumber = 100;
+class TestClassPropertyIterator : public QScriptClassPropertyIterator
+{
+public:
+    TestClassPropertyIterator(const QScriptValue &object, QVector<QScriptString> names)
+        : QScriptClassPropertyIterator(object)
+        , m_index(0)
+        , names(names)
+    {
+    }
+
+    bool hasNext() const
+    {
+        return m_index < iteratorValuesNumber - 1;
+    }
+    void next() { ++m_index; }
+
+    bool hasPrevious() const { return m_index > 0; }
+    void previous() { --m_index; }
+
+    void toFront() { m_index = 0; }
+    void toBack() { m_index = iteratorValuesNumber - 1; }
+
+    QScriptString name() const { return names[m_index]; }
+    uint id() const { return m_index; }
+    QScriptValue::PropertyFlags flags() const { return 0; }
+
+private:
+    int m_index;
+    QVector<QScriptString> names;
+};
+
+
+class IteratorScriptClass : public QScriptClass
+{
+public:
+    IteratorScriptClass(QScriptEngine *engine)
+        : QScriptClass(engine)
+    {
+        for (int i = 0; i < iteratorValuesNumber; ++i)
+            names.append(engine->toStringHandle(QString("property%1").arg(i)));
+    }
+
+    QScriptClassPropertyIterator *newIterator(const QScriptValue &object)
+    {
+        return new TestClassPropertyIterator(object, names);
+    }
+private:
+    QVector<QScriptString> names;
+    friend class TestClassPropertyIterator;
+};
+
+// Measure the performance of the interface to iterate over QScriptClassPropertyIterator
 void tst_QScriptClass::iterate()
 {
     QScriptEngine eng;
-    TestClass cls(&eng);
-    cls.setIterationEnabled(true);
-    cls.addCustomProperty(eng.toStringHandle("foo"), QScriptClass::HandlesReadAccess, /*id=*/1, /*attributes=*/0, /*value=*/123);
-    cls.addCustomProperty(eng.toStringHandle("bar"), QScriptClass::HandlesReadAccess, /*id=*/2, /*attributes=*/0, /*value=*/456);
+    IteratorScriptClass cls(&eng);
     QScriptValue obj = eng.newObject(&cls);
+    int iterationNumberIterate = iterationNumber / iteratorValuesNumber;
     QBENCHMARK {
-        QScriptValueIterator it(obj);
-        while (it.hasNext()) {
-            it.next();
-            (void)it.scriptName();
+        for (int i = 0; i < iterationNumberIterate; ++i) {
+            QScriptValueIterator it(obj);
+            while (it.hasNext()) {
+                it.next();
+                (void)it.scriptName();
+            }
         }
     }
 }
