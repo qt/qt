@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -217,7 +217,7 @@ void FontPanel::updateFamily(const QString &family)
     const QString normalStyle = QLatin1String("Normal");
 
     if (hasStyles) {
-        foreach (QString style, styles) {
+        foreach (const QString &style, styles) {
             // try to maintain selection or select 'normal' preferably
             const int newIndex = m_styleComboBox->count();
             m_styleComboBox->addItem(style);

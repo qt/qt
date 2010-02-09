@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -553,6 +553,12 @@ void QSslSocketBackendPrivate::transmit()
 #endif
                 writeBuffer.free(writtenBytes);
                 totalBytesWritten += writtenBytes;
+
+                if (writtenBytes < nextDataBlockSize) {
+                    // break out of the writing loop and try again after we had read
+                    transmitting = true;
+                    break;
+                }
             }
 
             if (totalBytesWritten > 0) {
@@ -586,12 +592,26 @@ void QSslSocketBackendPrivate::transmit()
             while ((pendingBytes = plainSocket->bytesAvailable()) > 0) {
                 // Read encrypted data from the socket into a buffer.
                 data.resize(pendingBytes);
-                int decryptedBytesRead = plainSocket->read(data.data(), pendingBytes);
+                // just peek() here because q_BIO_write could write less data than expected
+                int encryptedBytesRead = plainSocket->peek(data.data(), pendingBytes);
 #ifdef QSSLSOCKET_DEBUG
-                qDebug() << "QSslSocketBackendPrivate::transmit: read" << decryptedBytesRead << "encrypted bytes from the socket";
+                qDebug() << "QSslSocketBackendPrivate::transmit: read" << encryptedBytesRead << "encrypted bytes from the socket";
 #endif
                 // Write encrypted data from the buffer into the read BIO.
-                q_BIO_write(readBio, data.constData(), decryptedBytesRead);
+                int writtenToBio = q_BIO_write(readBio, data.constData(), encryptedBytesRead);
+
+                // do the actual read() here and throw away the results.
+                if (writtenToBio > 0) {
+                    // ### TODO: make this cheaper by not making it memcpy. E.g. make it work with data=0x0 or make it work with seek
+                    plainSocket->read(data.data(), writtenToBio);
+                } else {
+                    // ### Better error handling.
+                    q->setErrorString(QSslSocket::tr("Unable to decrypt data: %1").arg(SSL_ERRORSTR()));
+                    q->setSocketError(QAbstractSocket::UnknownSocketError);
+                    emit q->error(QAbstractSocket::UnknownSocketError);
+                    return;
+                }
+
                 transmitting = true;
             }
 
@@ -798,7 +818,7 @@ bool QSslSocketBackendPrivate::startHandshake()
             QRegExp regexp(commonName, Qt::CaseInsensitive, QRegExp::Wildcard);
             if (!regexp.exactMatch(peerName)) {
                 bool matched = false;
-                foreach (QString altName, configuration.peerCertificate
+                foreach (const QString &altName, configuration.peerCertificate
                          .alternateSubjectNames().values(QSsl::DnsEntry)) {
                     regexp.setPattern(altName);
                     if (regexp.exactMatch(peerName)) {

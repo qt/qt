@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,9 +89,9 @@ private:
     {
 //![1]
         QAudioFormat format;
-        format.setSampleRate(44100);
+        format.setFrequency(44100);
 //![1]
-        format.setChannelCount(2);
+        format.setChannels(2);
         format.setSampleSize(16);
         format.setCodec("audio/pcm");
         format.setByteOrder(QAudioFormat::LittleEndian);
@@ -112,7 +112,7 @@ public slots:
         switch (newState) {
             case QAudio::StopState:
                 if (output->error() != QAudio::NoError) {
-                    // Do your error handlin
+                    // Perform error handling
                 } else {
                     // Normal stop
                 }

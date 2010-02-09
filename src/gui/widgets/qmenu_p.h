@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_MENU
 
 #ifdef Q_WS_S60
+void qt_symbian_next_menu_from_action(QWidget* actionContainer);
 void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
 void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
 #endif // Q_WS_S60
@@ -87,7 +88,7 @@ QT_BEGIN_NAMESPACE
 typedef void NSMenuItem;
 #  endif //__OBJC__
 struct QMacMenuAction {
-    QMacMenuAction() 
+    QMacMenuAction()
 #ifndef QT_MAC_USE_COCOA
        : command(0)
 #else
@@ -124,7 +125,7 @@ typedef QList<QMenuMergeItem> QMenuMergeList;
 
 #ifdef Q_WS_WINCE
 struct QWceMenuAction {
-    uint command;    
+    uint command;
     QPointer<QAction> action;
     HMENU menuHandle;
     QWceMenuAction() : menuHandle(0), command(0) {}
@@ -340,7 +341,7 @@ public:
         QList<QWceMenuAction*> actionItems;
         HMENU menuHandle;
         QWceMenuPrivate();
-        ~QWceMenuPrivate();        
+        ~QWceMenuPrivate();
         void addAction(QAction *, QWceMenuAction* =0);
         void addAction(QWceMenuAction *, QWceMenuAction* =0);
         void syncAction(QWceMenuAction *);

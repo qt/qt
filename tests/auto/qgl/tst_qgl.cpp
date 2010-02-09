@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,7 @@
 
 #ifdef QT_BUILD_INTERNAL
 #include <QtOpenGL/private/qgl_p.h>
+#include <QtGui/private/qpixmapdata_p.h>
 #endif
 
 //TESTED_CLASS=
@@ -91,6 +92,8 @@ private slots:
     void clipTest();
     void destroyFBOAfterContext();
     void shareRegister();
+    void qglContextDefaultBindTexture();
+    void textureCleanup();
 };
 
 tst_QGL::tst_QGL()
@@ -1935,6 +1938,243 @@ void tst_QGL::shareRegister()
     QVERIFY(guard.id() == 0);
     QVERIFY(guard3.context() == 0);
     QVERIFY(guard3.id() == 0);
+#endif
+}
+
+// Tests QGLContext::bindTexture with default options
+void tst_QGL::qglContextDefaultBindTexture()
+{
+#ifdef QT_BUILD_INTERNAL
+    QGLWidget w;
+    w.makeCurrent();
+
+    QGLContext *ctx = const_cast<QGLContext*>(w.context());
+
+    QImage *boundImage = new QImage(256, 256, QImage::Format_RGB32);
+    boundImage->fill(0xFFFFFFFF);
+    QPixmap *boundPixmap = new QPixmap(256, 256);
+    boundPixmap->fill(Qt::red);
+
+    // Check that calling QGLContext::bindTexture with default args adds textures to cache
+    int startCacheItemCount = QGLTextureCache::instance()->size();
+    GLuint boundImageTextureId = ctx->bindTexture(*boundImage);
+    GLuint boundPixmapTextureId = ctx->bindTexture(*boundPixmap);
+    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+    // Make sure the texture IDs returned are valid:
+    QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_TRUE);
+    QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_TRUE);
+
+    // Make sure the textures are still there after we delete the image/pixmap:
+    delete boundImage;
+    boundImage = 0;
+    delete boundPixmap;
+    boundPixmap = 0;
+    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+    // Make sure the textures are deleted from the cache after calling QGLContext::deleteTexture()
+    ctx->deleteTexture(boundImageTextureId);
+    ctx->deleteTexture(boundPixmapTextureId);
+    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+
+    // Finally, make sure QGLContext::deleteTexture also deleted the texture IDs:
+    QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_FALSE);
+    QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_FALSE);
+#endif
+}
+
+void tst_QGL::textureCleanup()
+{
+#ifdef QT_BUILD_INTERNAL
+    QGLWidget w;
+    w.resize(200,200);
+    w.show();
+    w.makeCurrent();
+
+    // Test pixmaps which have been loaded via QPixmapCache are removed from the texture cache
+    // when the pixmap cache is cleared
+    {
+        int startCacheItemCount = QGLTextureCache::instance()->size();
+        QPainter p(&w);
+
+        QPixmap boundPixmap(":designer.png");
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+
+        p.drawPixmap(0, 0, boundPixmap);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        // Need to call end for the GL2 paint engine to release references to pixmap if using tfp
+        p.end();
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        // Check that the texture doesn't get removed from the cache when the pixmap is cleared
+        // as it should still be in the cache:
+        boundPixmap = QPixmap();
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        QPixmapCache::clear();
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+    }
+
+    // Test pixmaps which have been loaded via QPixmapCache are removed from the texture cache
+    // when they are explicitly removed from the pixmap cache
+    {
+        int startCacheItemCount = QGLTextureCache::instance()->size();
+        QPainter p(&w);
+
+        QPixmap boundPixmap(128, 128);
+        QString cacheKey = QString::fromLatin1("myPixmap");
+        QPixmapCache::insert(cacheKey, boundPixmap);
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+
+        p.drawPixmap(0, 0, boundPixmap);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        // Need to call end for the GL2 paint engine to release references to pixmap if using tfp
+        p.end();
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        // Check that the texture doesn't get removed from the cache when the pixmap is cleared
+        // as it should still be in the cache:
+        boundPixmap = QPixmap();
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        // Finally, we check that the texture cache entry is removed when we remove the
+        // pixmap cache entry, which should hold the last reference:
+        QPixmapCache::remove(cacheKey);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+    }
+
+    // Check images & pixmaps are removed from the cache when they are deleted
+    {
+        int startCacheItemCount = QGLTextureCache::instance()->size();
+        QPainter p(&w);
+
+        QImage *boundImage = new QImage(256, 256, QImage::Format_RGB32);
+        boundImage->fill(0xFFFFFFFF);
+        QPixmap *boundPixmap = new QPixmap(256, 256);
+        boundPixmap->fill(Qt::red);
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+
+        p.drawImage(0, 0, *boundImage);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        p.drawPixmap(0, 0, *boundPixmap);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+        // Need to call end for the GL2 paint engine to release references to pixmap if using tfp
+        p.end();
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+        delete boundImage;
+        boundImage = 0;
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        delete boundPixmap;
+        boundPixmap = 0;
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+    }
+
+    // Check images & pixmaps are removed from the cache when they are assigned to
+    {
+        int startCacheItemCount = QGLTextureCache::instance()->size();
+        QPainter p(&w);
+
+        QImage boundImage(256, 256, QImage::Format_RGB32);
+        boundImage.fill(0xFFFFFFFF);
+        QPixmap boundPixmap(256, 256);
+        boundPixmap.fill(Qt::red);
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+
+        p.drawImage(0, 0, boundImage);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        p.drawPixmap(0, 0, boundPixmap);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+        // Need to call end for the GL2 paint engine to release references to pixmap if using tfp
+        p.end();
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+        boundImage = QImage(64, 64, QImage::Format_RGB32);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        boundPixmap = QPixmap(64, 64);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+    }
+
+    // Check images & pixmaps are removed from the cache when they are modified (detached)
+    {
+        int startCacheItemCount = QGLTextureCache::instance()->size();
+        QPainter p(&w);
+
+        QImage boundImage(256, 256, QImage::Format_RGB32);
+        boundImage.fill(0xFFFFFFFF);
+        QPixmap boundPixmap(256, 256);
+        boundPixmap.fill(Qt::red);
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+
+        p.drawImage(0, 0, boundImage);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        p.drawPixmap(0, 0, boundPixmap);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+        // Need to call end for the GL2 paint engine to release references to pixmap if using tfp
+        p.end();
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+        boundImage.fill(0x00000000);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        boundPixmap.fill(Qt::blue);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+    }
+
+    // Check that images/pixmaps aren't removed from the cache if a shallow copy has been made
+    QImage copyOfImage;
+    QPixmap copyOfPixmap;
+    int startCacheItemCount = QGLTextureCache::instance()->size();
+    {
+        QPainter p(&w);
+
+        QImage boundImage(256, 256, QImage::Format_RGB32);
+        boundImage.fill(0xFFFFFFFF);
+        QPixmap boundPixmap(256, 256);
+        boundPixmap.fill(Qt::red);
+
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
+
+        p.drawImage(0, 0, boundImage);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+        p.drawPixmap(0, 0, boundPixmap);
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+        // Need to call end for the GL2 paint engine to release references to pixmap if using tfp
+        p.end();
+
+        copyOfImage = boundImage;
+        copyOfPixmap = boundPixmap;
+        QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+    } // boundImage & boundPixmap would have been deleted when they went out of scope
+    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+    copyOfImage = QImage();
+    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
+
+    copyOfPixmap = QPixmap();
+    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
 #endif
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,10 +103,10 @@ int Generator::fillData(char *start, int frequency, int seconds)
 qint64 Generator::readData(char *data, qint64 maxlen)
 {
     int len = maxlen;
-    if(len > 16384)
+    if (len > 16384)
         len = 16384;
 
-    if(len < (SECONDS*SYSTEM_FREQ*2)-pos) {
+    if (len < (SECONDS*SYSTEM_FREQ*2)-pos) {
         // Normal
         memcpy(data,t+pos,len);
         pos+=len;
@@ -164,8 +164,8 @@ AudioTest::AudioTest()
 
     gen->start();
 
-    settings.setSampleRate(SYSTEM_FREQ);
-    settings.setChannelCount(1);
+    settings.setFrequency(SYSTEM_FREQ);
+    settings.setChannels(1);
     settings.setSampleSize(16);
     settings.setCodec("audio/pcm");
     settings.setByteOrder(QAudioFormat::LittleEndian);
@@ -179,6 +179,9 @@ AudioTest::AudioTest()
 
     if(settings.sampleSize() != 16) {
         qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
+        button->setDisabled(true);
+        button2->setDisabled(true);
+        audioOutput = 0;
         return;
     }
 
@@ -212,15 +215,15 @@ void AudioTest::deviceChanged(int idx)
 
 void AudioTest::status()
 {
-    qWarning()<<"byteFree = "<<audioOutput->bytesFree()<<" bytes, elapsedUSecs = "<<audioOutput->elapsedUSecs()<<", processedUSecs = "<<audioOutput->processedUSecs();
+    qWarning() << "byteFree = " << audioOutput->bytesFree() << " bytes, elapsedUSecs = " << audioOutput->elapsedUSecs() << ", processedUSecs = " << audioOutput->processedUSecs();
 }
 
 void AudioTest::writeMore()
 {
-    if(!audioOutput)
+    if (!audioOutput)
         return;
 
-    if(audioOutput->state() == QAudio::StoppedState)
+    if (audioOutput->state() == QAudio::StoppedState)
         return;
 
     int    l;
@@ -229,9 +232,9 @@ void AudioTest::writeMore()
     int chunks = audioOutput->bytesFree()/audioOutput->periodSize();
     while(chunks) {
        l = gen->read(buffer,audioOutput->periodSize());
-       if(l > 0)
+       if (l > 0)
            out = output->write(buffer,l);
-       if(l != audioOutput->periodSize())
+       if (l != audioOutput->periodSize())
 	   break;
        chunks--;
     }
@@ -259,24 +262,24 @@ void AudioTest::toggle()
 void AudioTest::togglePlay()
 {
     // toggle suspend/resume
-    if(audioOutput->state() == QAudio::SuspendedState) {
-        qWarning()<<"status: Suspended, resume()";
+    if (audioOutput->state() == QAudio::SuspendedState) {
+        qWarning() << "status: Suspended, resume()";
         audioOutput->resume();
         button2->setText("Click To Suspend");
     } else if (audioOutput->state() == QAudio::ActiveState) {
-        qWarning()<<"status: Active, suspend()";
+        qWarning() << "status: Active, suspend()";
         audioOutput->suspend();
         button2->setText("Click To Resume");
     } else if (audioOutput->state() == QAudio::StoppedState) {
-        qWarning()<<"status: Stopped, resume()";
+        qWarning() << "status: Stopped, resume()";
         audioOutput->resume();
         button2->setText("Click To Suspend");
     } else if (audioOutput->state() == QAudio::IdleState) {
-        qWarning()<<"status: IdleState";
+        qWarning() << "status: IdleState";
     }
 }
 
 void AudioTest::state(QAudio::State state)
 {
-    qWarning()<<" state="<<state;
+    qWarning() << " state=" << state;
 }

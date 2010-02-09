@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,7 +71,7 @@ Q_CORE_EXPORT QString qt_TDesC2QString(const TDesC& aDescriptor)
 #ifdef QT_NO_UNICODE
     return QString::fromLocal8Bit(aDescriptor.Ptr(), aDescriptor.Length());
 #else
-    return QString::fromUtf16(aDescriptor.Ptr(), aDescriptor.Length());
+    return QString(reinterpret_cast<const QChar *>(aDescriptor.Ptr()), aDescriptor.Length());
 #endif
 }
 

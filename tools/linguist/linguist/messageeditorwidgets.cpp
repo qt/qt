@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,6 +171,9 @@ FormWidget::FormWidget(const QString &label, bool isEditable, QWidget *parent)
     layout->setMargin(0);
 
     m_label = new QLabel(this);
+    QFont fnt;
+    fnt.setBold(true);
+    m_label->setFont(fnt);
     m_label->setText(label);
     layout->addWidget(m_label);
 
@@ -249,6 +252,9 @@ FormMultiWidget::FormMultiWidget(const QString &label, QWidget *parent)
           m_minusIcon(QIcon(QLatin1String(":/images/minus.png")))
 {
     m_label = new QLabel(this);
+    QFont fnt;
+    fnt.setBold(true);
+    m_label->setFont(fnt);
     m_label->setText(label);
 
     m_plusButtons.append(

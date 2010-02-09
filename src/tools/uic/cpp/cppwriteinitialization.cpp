@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -721,8 +721,9 @@ void WriteInitialization::acceptWidget(DomWidget *node)
             m_output << m_indent << parentWidget << "->addDockWidget(" << area << varName << ");\n";
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"))) {
             m_output << m_indent << parentWidget << "->setStatusBar(" << varName << ");\n";
-        } else {
-            m_output << m_indent << parentWidget << "->setCentralWidget(" << varName << ");\n";
+        } else if (!m_uic->customWidgetsInfo()->extends(className, QLatin1String("Q3DockWindow"))
+                   && !m_uic->customWidgetsInfo()->extends(className, QLatin1String("Q3ToolBar"))) {
+                m_output << m_indent << parentWidget << "->setCentralWidget(" << varName << ");\n";
         }
     }
 
@@ -2787,8 +2788,8 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
         return;
 
     QMap<QString, bool> map; // bool is dummy. The idea is to sort that (always generate in the same order) by putting a set into a map
-    foreach (QString str, directives)
-        map[str] = true;
+    foreach (const QString &str, directives)
+        map.insert(str, true);
 
     if (map.size() == 1) {
         outputStream << "#ifndef " << map.constBegin().key() << endl;
@@ -2797,7 +2798,7 @@ static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QS
 
     outputStream << "#if";
     bool doOr = false;
-    foreach (QString str, map.keys()) {
+    foreach (const QString &str, map.keys()) {
         if (doOr)
             outputStream << " ||";
         outputStream << " !defined(" << str << ')';

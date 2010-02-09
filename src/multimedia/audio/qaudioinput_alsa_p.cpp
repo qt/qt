@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -256,7 +256,7 @@ bool QAudioInputPrivate::open()
     int dir;
     int err=-1;
     int count=0;
-    unsigned int freakuency=settings.sampleRate();
+    unsigned int freakuency=settings.frequency();
 
     QString dev = QString(QLatin1String(m_device.constData()));
     QList<QByteArray> devices = QAudioDeviceInfoInternal::availableDevices(QAudio::AudioInput);
@@ -332,7 +332,7 @@ bool QAudioInputPrivate::open()
         }
     }
     if ( !fatal ) {
-        err = snd_pcm_hw_params_set_channels( handle, hwparams, (unsigned int)settings.channelCount() );
+        err = snd_pcm_hw_params_set_channels( handle, hwparams, (unsigned int)settings.channels() );
         if ( err < 0 ) {
             fatal = true;
             errMessage = QString::fromLatin1("QAudioInput: snd_pcm_hw_params_set_channels: err = %1").arg(err);
@@ -505,7 +505,7 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
             errorState = QAudio::NoError;
             deviceState = QAudio::IdleState;
         } else {
-            totalTimeValue += snd_pcm_bytes_to_frames(handle, err)*1000000/settings.sampleRate();
+            totalTimeValue += snd_pcm_bytes_to_frames(handle, err)*1000000/settings.frequency();
             resuming = false;
             errorState = QAudio::NoError;
             deviceState = QAudio::ActiveState;
@@ -702,7 +702,7 @@ qint64 InputPrivate::readData( char* data, qint64 len)
         count++;
     }
     if(err > 0 && readFrames > 0) {
-        audioDevice->totalTimeValue += readFrames*1000/audioDevice->settings.sampleRate()*1000;
+        audioDevice->totalTimeValue += readFrames*1000/audioDevice->settings.frequency()*1000;
         audioDevice->deviceState = QAudio::ActiveState;
         return err;
     }

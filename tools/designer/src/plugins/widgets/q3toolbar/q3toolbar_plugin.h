@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,7 +51,7 @@ class Q3ToolBarPlugin: public QObject, public QDesignerCustomWidgetInterface
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 public:
-    Q3ToolBarPlugin(const QIcon &icon, QObject *parent = 0);
+    explicit Q3ToolBarPlugin(const QIcon &icon, QObject *parent = 0);
 
     virtual QString name() const;
     virtual QString group() const;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -105,7 +105,7 @@ void TrackerClient::fetchPeerList()
     QString passkey = "?";
     if (fullUrl.contains("?passkey")) {
         passkey = metaInfo.announceUrl().mid(fullUrl.indexOf("?passkey"), -1);
-        passkey += "&";
+        passkey += '&';
     }
 
     // Percent encode the hash

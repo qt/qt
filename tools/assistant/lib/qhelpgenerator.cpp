@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -203,7 +203,7 @@ bool QHelpGenerator::generate(QHelpDataInterface *helpData,
     addProgress(1.0);
 
     emit statusChanged(tr("Insert custom filters..."));
-    foreach (QHelpDataCustomFilter f, helpData->customFilters()) {
+    foreach (const QHelpDataCustomFilter &f, helpData->customFilters()) {
         if (!registerCustomFilter(f.name, f.filterAttributes, true)) {
             cleanupDB();
             return false;
@@ -367,7 +367,7 @@ bool QHelpGenerator::createTables()
             "Name Text, "
             "Value BLOB )");
 
-    foreach (QString q, tables) {
+    foreach (const QString &q, tables) {
         if (!d->query->exec(q)) {
             d->error = tr("Cannot create tables!");
             return false;
@@ -629,7 +629,7 @@ bool QHelpGenerator::registerCustomFilter(const QString &filterName,
             idsToInsert.removeAll(d->query->value(1).toString());
     }
 
-    foreach (QString id, idsToInsert) {
+    foreach (const QString &id, idsToInsert) {
         d->query->prepare(QLatin1String("INSERT INTO FilterAttributeTable VALUES(NULL, ?)"));
         d->query->bindValue(0, id);
         d->query->exec();
@@ -664,7 +664,7 @@ bool QHelpGenerator::registerCustomFilter(const QString &filterName,
     d->query->bindValue(0, nameId);
     d->query->exec();
 
-    foreach (QString att, filterAttribs) {
+    foreach (const QString &att, filterAttribs) {
         d->query->prepare(QLatin1String("INSERT INTO FilterTable VALUES(?, ?)"));
         d->query->bindValue(0, nameId);
         d->query->bindValue(1, attributeMap[att]);
@@ -687,7 +687,7 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
         indexId = d->query->value(0).toInt() + 1;
 
     QList<int> filterAtts;
-    foreach (QString filterAtt, filterAttributes) {
+    foreach (const QString &filterAtt, filterAttributes) {
         d->query->prepare(QLatin1String("SELECT Id FROM FilterAttributeTable WHERE Name=?"));
         d->query->bindValue(0, filterAtt);
         d->query->exec();
@@ -704,7 +704,7 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> keywords,
 
     int i = 0;
     d->query->exec(QLatin1String("BEGIN"));
-    foreach (QHelpDataIndexItem itm, keywords) {
+    foreach (const QHelpDataIndexItem &itm, keywords) {
         pos = itm.reference.indexOf(QLatin1Char('#'));
         fileName = itm.reference.left(pos);
         if (pos > -1)
@@ -773,7 +773,7 @@ bool QHelpGenerator::insertContents(const QByteArray &ba,
     }
 
     // associate the filter attributes
-    foreach (QString filterAtt, filterAttributes) {
+    foreach (const QString &filterAtt, filterAttributes) {
         d->query->prepare(QLatin1String("INSERT INTO ContentsFilterTable (FilterAttributeId, ContentsId) "
             "SELECT Id, ? FROM FilterAttributeTable WHERE Name=?"));
         d->query->bindValue(0, contentId);
@@ -798,7 +798,7 @@ bool QHelpGenerator::insertFilterAttributes(const QStringList &attributes)
     while (d->query->next())
         atts.insert(d->query->value(0).toString());
 
-    foreach (QString s, attributes) {
+    foreach (const QString &s, attributes) {
         if (!atts.contains(s)) {
             d->query->prepare(QLatin1String("INSERT INTO FilterAttributeTable VALUES(NULL, ?)"));
             d->query->bindValue(0, s);

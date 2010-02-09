@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,6 +163,8 @@ private slots:
     void addChildInpolishEvent();
     void polishEvent();
     void polishEvent2();
+    void initialShow();
+    void initialShow2();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2854,6 +2856,72 @@ void tst_QGraphicsWidget::polishEvent2()
 
     // Make sure the item got polish event.
     QVERIFY(widget->events.contains(QEvent::Polish));
+}
+
+void tst_QGraphicsWidget::initialShow()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+        MyGraphicsWidget() : repaints(0) {}
+        int repaints;
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget*) { ++repaints; }
+        void polishEvent() { update(); }
+    };
+
+    QGraphicsScene scene;
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QTest::qWait(100);
+    scene.addItem(widget);
+    QTest::qWait(100);
+
+    QCOMPARE(widget->repaints, 1);
+}
+
+void tst_QGraphicsWidget::initialShow2()
+{
+    class MyGraphicsWidget : public QGraphicsWidget
+    { public:
+        MyGraphicsWidget() : repaints(0) {}
+        int repaints;
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget*) { ++repaints; }
+        void polishEvent() { update(); }
+    };
+
+    // Don't let paint events triggered by the windowing system
+    // influence our test case. We're only interested in knowing
+    // whether a QGraphicsWidget generates an additional repaint
+    // on the inital show. Hence create a dummy scenario to find out
+    // how many repaints we should expect.
+    QGraphicsScene dummyScene(0, 0, 200, 200);
+    dummyScene.addItem(new QGraphicsRectItem(0, 0, 100, 100));
+
+    QGraphicsView *dummyView = new QGraphicsView(&dummyScene);
+    dummyView->setWindowFlags(Qt::X11BypassWindowManagerHint);
+    EventSpy paintSpy(dummyView->viewport(), QEvent::Paint);
+    dummyView->show();
+    QTest::qWaitForWindowShown(dummyView);
+    const int expectedRepaintCount = paintSpy.count();
+    delete dummyView;
+    dummyView = 0;
+    QTest::qWait(200);
+
+    MyGraphicsWidget *widget = new MyGraphicsWidget;
+    widget->resize(100, 100);
+
+    QGraphicsScene scene(0, 0, 200, 200);
+    scene.addItem(widget);
+
+    QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QCOMPARE(widget->repaints, expectedRepaintCount);
 }
 
 void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()

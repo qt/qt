@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -87,7 +87,7 @@ public:
     class EndPoint {
     public:
         enum Type { Source, Target };
-        EndPoint(Connection *_con = 0, Type _type = Source) : con(_con), type(_type) {}
+        explicit EndPoint(Connection *_con = 0, Type _type = Source) : con(_con), type(_type) {}
         bool isNull() const { return con == 0; }
         bool operator == (const EndPoint &other) const { return con == other.con && type == other.type; }
         bool operator != (const EndPoint &other) const { return !operator == (other); }

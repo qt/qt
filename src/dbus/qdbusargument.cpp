@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -535,7 +535,6 @@ QDBusArgument &QDBusArgument::operator<<(const QByteArray &arg)
 
 /*!
     \internal
-    Returns the type signature of the D-Bus type this QDBusArgument
     \since 4.5
 
     Appends the variant \a v.

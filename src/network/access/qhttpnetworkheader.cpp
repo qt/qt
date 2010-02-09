@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,7 +80,7 @@ QByteArray QHttpNetworkHeaderPrivate::headerField(const QByteArray &name, const 
 
     QByteArray result;
     bool first = true;
-    foreach (QByteArray value, allValues) {
+    foreach (const QByteArray &value, allValues) {
         if (!first)
             result += ", ";
         first = false;

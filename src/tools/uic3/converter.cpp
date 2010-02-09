@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,7 +121,7 @@ static inline bool isKDEClass(const QString &className)
     return className.at(1) .isUpper() && className.at(2).isLower();
 }
 
-DomUI *Ui3Reader::generateUi4(const QDomElement &widget, bool implicitIncludes)
+DomUI *Ui3Reader::generateUi4(const QDomElement &widget)
 {
     QDomNodeList nl;
     candidateCustomWidgets.clear();
@@ -401,7 +401,7 @@ DomUI *Ui3Reader::generateUi4(const QDomElement &widget, bool implicitIncludes)
             bool resolved = false;
             if (objName == receiver) {
                 // see if it's a custom slot
-                foreach (QString cs, ui_custom_slots) {
+                foreach (const QString &cs, ui_custom_slots) {
                     if (cs == slot) {
                         resolved = true;
                         break;
@@ -474,7 +474,7 @@ DomUI *Ui3Reader::generateUi4(const QDomElement &widget, bool implicitIncludes)
 
         // Magic header generation feature for legacy KDE forms
         // (for example, filesharing/advanced/kcm_sambaconf/share.ui)
-        if (implicitIncludes && isKDEClass(customClass)) {
+        if ((m_options & ImplicitIncludes) && isKDEClass(customClass)) {
             QString header = customClass.toLower();
             header += QLatin1String(".h");
             DomHeader *domHeader = new DomHeader;
@@ -710,10 +710,13 @@ DomWidget *Ui3Reader::createWidget(const QDomElement &w, const QString &widgetCl
             ui_action_list.append(a);
         } else if (t == QLatin1String("property")) {
             // skip the property it is already handled by createProperties
-
-            QString name = e.attribute(QLatin1String("name"));  // change the varname this widget
-            if (name == QLatin1String("name"))
-                ui_widget->setAttributeName(DomTool::readProperty(w, QLatin1String("name"), QVariant()).toString());
+            const QString name = e.attribute(QLatin1String("name"));  // change the varname this widget
+            if (name == QLatin1String("name")) {
+                // Do not name QLayoutWidget if layout names are to be used.
+                const bool applyName = !(m_options & PreserveLayoutNames) || className != QLatin1String("QLayoutWidget");
+                if (applyName)
+                    ui_widget->setAttributeName(DomTool::readProperty(w, QLatin1String("name"), QVariant()).toString());
+            }
         } else if (t == QLatin1String("row")) {
             DomRow *row = new DomRow();
             row->read(e);
@@ -797,6 +800,11 @@ DomLayout *Ui3Reader::createLayout(const QDomElement &w)
 
     createProperties(w, &ui_property_list, className);
     createAttributes(w, &ui_attribute_list, className);
+    if (m_options & PreserveLayoutNames) {
+        const QString layoutName = getLayoutName(w);
+        if (!layoutName.isEmpty())
+            lay->setAttributeName(layoutName);
+    }
 
     QDomElement e = w.firstChild().toElement();
     while (!e.isNull()) {
@@ -1114,7 +1122,7 @@ void Ui3Reader::createProperties(const QDomElement &n, QList<DomProperty*> *prop
             if (prop->kind() == DomProperty::Set) {
                 QStringList flags = prop->elementSet().split(QLatin1Char('|'));
                 QStringList v;
-                foreach (QString fl, flags) {
+                foreach (const QString &fl, flags) {
                     QString e = WidgetInfo::resolveEnumerator(className, fl);
                     if (e.isEmpty()) {
                         e = m_porting->renameEnumerator(className + QLatin1String("::") + fl);
@@ -1275,7 +1283,7 @@ QString Ui3Reader::fixType(const QString &t) const
     QString newText = t;
     //split type name on <>*& and whitespace
     QStringList typeNames = t.split(QRegExp(QLatin1String("<|>|\\*|&| ")), QString::SkipEmptyParts);
-    foreach(QString typeName , typeNames) {
+    foreach(const QString &typeName , typeNames) {
         QString newName = fixClassName(typeName);
         if( newName != typeName ) {
             newText.replace(typeName, newName);

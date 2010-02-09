@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -202,6 +202,8 @@ private slots:
     void sqlStatementUseIsNull_189093_data() { generic_data(); }
     void sqlStatementUseIsNull_189093();
 
+    void sqlite_enable_cache_mode_data() { generic_data("QSQLITE"); }
+    void sqlite_enable_cache_mode();
 
 private:
     void createTestTables(QSqlDatabase db);
@@ -2483,6 +2485,24 @@ void tst_QSqlDatabase::oci_tables()
     QVERIFY_SQL(q, exec("CREATE TABLE "+systemTableName+"(name VARCHAR(20))"));
     QVERIFY(!db.tables().contains(systemTableName.toUpper()));
     QVERIFY(db.tables(QSql::SystemTables).contains(systemTableName.toUpper()));
+}
+
+void tst_QSqlDatabase::sqlite_enable_cache_mode()
+{
+    QFETCH(QString, dbName);
+    if(dbName.endsWith(":memory:"))
+        QSKIP( "cache mode is meaningless for :memory: databases", SkipSingle );
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    db.close();
+    db.setConnectOptions("QSQLITE_ENABLE_SHARED_CACHE");
+    QVERIFY_SQL(db, open());
+    QSqlDatabase db2 = QSqlDatabase::cloneDatabase(db, dbName+":cachemodeconn2");
+    db2.setConnectOptions("QSQLITE_ENABLE_SHARED_CACHE");
+    QVERIFY_SQL(db2, open());
+    QSqlQuery q(db), q2(db2);
+    QVERIFY_SQL(q, exec("select * from "+qTableName("qtest")));
+    QVERIFY_SQL(q2, exec("select * from "+qTableName("qtest")));
 }
 
 QTEST_MAIN(tst_QSqlDatabase)

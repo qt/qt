@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,6 @@
 
 #include <translator.h>
 #include <profileevaluator.h>
-#include <proreader.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -118,21 +117,26 @@ static void printUsage()
         "    -disable-heuristic {sametext|similartext|number}\n"
         "           Disable the named merge heuristic. Can be specified multiple times.\n"
         "    -pro <filename>\n"
-        "           Name of a .pro file. Useful for files with .pro\n"
-        "           file syntax but different file suffix\n"
+        "           Name of a .pro file. Useful for files with .pro file syntax but\n"
+        "           different file suffix. Projects are recursed into and merged.\n"
         "    -source-language <language>[_<region>]\n"
         "           Specify the language of the source strings for new files.\n"
         "           Defaults to POSIX if not specified.\n"
         "    -target-language <language>[_<region>]\n"
         "           Specify the language of the translations for new files.\n"
         "           Guessed from the file name if not specified.\n"
+        "    -ts <ts-file>...\n"
+        "           Specify the output file(s). This will override the TRANSLATIONS\n"
+        "           and nullify the CODECFORTR from possibly specified project files.\n"
+        "    -codecfortr <codec>\n"
+        "           Specify the codec assumed for tr() calls. Effective only with -ts.\n"
         "    -version\n"
         "           Display the version of lupdate and exit.\n"
     ).arg(m_defaultExtensions));
 }
 
 static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFileNames,
-    const QByteArray &codecForTr, const QString &sourceLanguage, const QString &targetLanguage,
+    bool setCodec, const QString &sourceLanguage, const QString &targetLanguage,
     UpdateOptions options, bool *fail)
 {
     QDir dir;
@@ -150,10 +154,10 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
             }
             tor.resolveDuplicates();
             cd.clearErrors();
-            if (!codecForTr.isEmpty() && codecForTr != tor.codecName())
+            if (setCodec && fetchedTor.codec() != tor.codec())
                 qWarning("lupdate warning: Codec for tr() '%s' disagrees with "
                          "existing file's codec '%s'. Expect trouble.",
-                         codecForTr.constData(), tor.codecName().constData());
+                         fetchedTor.codecName().constData(), tor.codecName().constData());
             if (!targetLanguage.isEmpty() && targetLanguage != tor.languageCode())
                 qWarning("lupdate warning: Specified target language '%s' disagrees with "
                          "existing file's language '%s'. Ignoring.",
@@ -163,8 +167,8 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
                          "existing file's language '%s'. Ignoring.",
                          qPrintable(sourceLanguage), qPrintable(tor.sourceLanguageCode()));
         } else {
-            if (!codecForTr.isEmpty())
-                tor.setCodecName(codecForTr);
+            if (setCodec)
+                tor.setCodec(fetchedTor.codec());
             if (!targetLanguage.isEmpty())
                 tor.setLanguageCode(targetLanguage);
             else
@@ -186,8 +190,8 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         if (tor.locationsType() == Translator::NoLocations) // Could be set from file
             theseOptions |= NoLocations;
         Translator out = merge(tor, fetchedTor, theseOptions, err);
-        if (!codecForTr.isEmpty())
-            out.setCodecName(codecForTr);
+        if (setCodec)
+            out.setCodec(fetchedTor.codec());
 
         if ((options & Verbose) && !err.isEmpty()) {
             printOut(err);
@@ -214,16 +218,196 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
     }
 }
 
+static QStringList getSources(const char *var, const char *vvar, const QStringList &baseVPaths,
+                              const QString &projectDir, const ProFileEvaluator &visitor)
+{
+    QStringList vPaths = visitor.absolutePathValues(QLatin1String(vvar), projectDir);
+    vPaths += baseVPaths;
+    vPaths.removeDuplicates();
+    return visitor.absoluteFileValues(QLatin1String(var), projectDir, vPaths, 0);
+}
+
+static QStringList getSources(const ProFileEvaluator &visitor, const QString &projectDir)
+{
+    QStringList baseVPaths;
+    baseVPaths += visitor.absolutePathValues(QLatin1String("VPATH"), projectDir);
+    baseVPaths << projectDir; // QMAKE_ABSOLUTE_SOURCE_PATH
+    baseVPaths += visitor.absolutePathValues(QLatin1String("DEPENDPATH"), projectDir);
+    baseVPaths.removeDuplicates();
+
+    QStringList sourceFiles;
+
+    // app/lib template
+    sourceFiles += getSources("SOURCES", "VPATH_SOURCES", baseVPaths, projectDir, visitor);
+
+    sourceFiles += getSources("FORMS", "VPATH_FORMS", baseVPaths, projectDir, visitor);
+    sourceFiles += getSources("FORMS3", "VPATH_FORMS3", baseVPaths, projectDir, visitor);
+
+    QStringList vPathsInc = baseVPaths;
+    vPathsInc += visitor.absolutePathValues(QLatin1String("INCLUDEPATH"), projectDir);
+    vPathsInc.removeDuplicates();
+    sourceFiles += visitor.absoluteFileValues(QLatin1String("HEADERS"), projectDir, vPathsInc, 0);
+
+    sourceFiles.removeDuplicates();
+    sourceFiles.sort();
+
+    return sourceFiles;
+}
+
+static void processSources(Translator &fetchedTor,
+                           const QStringList &sourceFiles, ConversionData &cd)
+{
+    QStringList sourceFilesCpp;
+    for (QStringList::const_iterator it = sourceFiles.begin(); it != sourceFiles.end(); ++it) {
+        if (it->endsWith(QLatin1String(".java"), Qt::CaseInsensitive))
+            loadJava(fetchedTor, *it, cd);
+        else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive)
+                 || it->endsWith(QLatin1String(".jui"), Qt::CaseInsensitive))
+            loadUI(fetchedTor, *it, cd);
+        else if (it->endsWith(QLatin1String(".js"), Qt::CaseInsensitive)
+                 || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive))
+            loadQScript(fetchedTor, *it, cd);
+        else
+            sourceFilesCpp << *it;
+    }
+    loadCPP(fetchedTor, sourceFilesCpp, cd);
+    if (!cd.error().isEmpty())
+        printOut(cd.error());
+}
+
+static void processProjects(
+        bool topLevel, bool nestComplain, const QStringList &proFiles,
+        UpdateOptions options, const QByteArray &codecForSource,
+        const QString &targetLanguage, const QString &sourceLanguage,
+        Translator *parentTor, bool *fail);
+
+static void processProject(
+        bool nestComplain, const QFileInfo &pfi, ProFileEvaluator &visitor,
+        UpdateOptions options, const QByteArray &_codecForSource,
+        const QString &targetLanguage, const QString &sourceLanguage,
+        Translator *fetchedTor, bool *fail)
+{
+    QByteArray codecForSource = _codecForSource;
+    QStringList tmp = visitor.values(QLatin1String("CODECFORSRC"));
+    if (!tmp.isEmpty()) {
+        codecForSource = tmp.last().toLatin1();
+        if (!QTextCodec::codecForName(codecForSource)) {
+            qWarning("lupdate warning: Codec for source '%s' is invalid. "
+                     "Falling back to codec for tr().", codecForSource.constData());
+            codecForSource.clear();
+        }
+    }
+    if (visitor.templateType() == ProFileEvaluator::TT_Subdirs) {
+        QStringList subProFiles;
+        QDir proDir(pfi.absoluteDir());
+        foreach (const QString &subdir, visitor.values(QLatin1String("SUBDIRS"))) {
+            QString subPro = QDir::cleanPath(proDir.absoluteFilePath(subdir));
+            QFileInfo subInfo(subPro);
+            if (subInfo.isDir())
+                subProFiles << (subPro + QLatin1Char('/')
+                                + subInfo.fileName() + QLatin1String(".pro"));
+            else
+                subProFiles << subPro;
+        }
+        processProjects(false, nestComplain, subProFiles, options, codecForSource,
+                        targetLanguage, sourceLanguage, fetchedTor, fail);
+    } else {
+        ConversionData cd;
+        cd.m_noUiLines = options & NoUiLines;
+        cd.m_codecForSource = codecForSource;
+        cd.m_includePath = visitor.values(QLatin1String("INCLUDEPATH"));
+        QStringList sourceFiles = getSources(visitor, pfi.absolutePath());
+        QSet<QString> sourceDirs;
+        sourceDirs.insert(QDir::cleanPath(pfi.absolutePath()) + QLatin1Char('/'));
+        foreach (const QString &sf, sourceFiles)
+            sourceDirs.insert(sf.left(sf.lastIndexOf(QLatin1Char('/')) + 1));
+        QStringList rootList = sourceDirs.toList();
+        rootList.sort();
+        for (int prev = 0, curr = 1; curr < rootList.length(); )
+            if (rootList.at(curr).startsWith(rootList.at(prev)))
+                rootList.removeAt(curr);
+            else
+                prev = curr++;
+        cd.m_projectRoots = QSet<QString>::fromList(rootList);
+        processSources(*fetchedTor, sourceFiles, cd);
+    }
+}
+
+static void processProjects(
+        bool topLevel, bool nestComplain, const QStringList &proFiles,
+        UpdateOptions options, const QByteArray &codecForSource,
+        const QString &targetLanguage, const QString &sourceLanguage,
+        Translator *parentTor, bool *fail)
+{
+    foreach (const QString &proFile, proFiles) {
+        ProFileEvaluator visitor;
+        visitor.setVerbose(options & Verbose);
+
+        QFileInfo pfi(proFile);
+        ProFile pro(pfi.absoluteFilePath());
+        if (!visitor.queryProFile(&pro) || !visitor.accept(&pro)) {
+            if (topLevel)
+                *fail = true;
+            continue;
+        }
+
+        if (visitor.contains(QLatin1String("TRANSLATIONS"))) {
+            if (parentTor) {
+                if (topLevel) {
+                    std::cerr << "lupdate warning: TS files from command line "
+                            "will override TRANSLATIONS in " << qPrintable(proFile) << ".\n";
+                    goto noTrans;
+                } else if (nestComplain) {
+                    std::cerr << "lupdate warning: TS files from command line "
+                            "prevent recursing into " << qPrintable(proFile) << ".\n";
+                    continue;
+                }
+            }
+            QStringList tsFiles;
+            QDir proDir(pfi.absolutePath());
+            foreach (const QString &tsFile, visitor.values(QLatin1String("TRANSLATIONS")))
+                tsFiles << QFileInfo(proDir, tsFile).filePath();
+            if (tsFiles.isEmpty()) {
+                // This might mean either a buggy PRO file or an intentional detach -
+                // we can't know without seeing the actual RHS of the assignment ...
+                // Just assume correctness and be silent.
+                continue;
+            }
+            Translator tor;
+            bool setCodec = false;
+            QStringList tmp = visitor.values(QLatin1String("CODEC"))
+                              + visitor.values(QLatin1String("DEFAULTCODEC"))
+                              + visitor.values(QLatin1String("CODECFORTR"));
+            if (!tmp.isEmpty()) {
+                tor.setCodecName(tmp.last().toLatin1());
+                setCodec = true;
+            }
+            processProject(false, pfi, visitor, options, codecForSource,
+                           targetLanguage, sourceLanguage, &tor, fail);
+            updateTsFiles(tor, tsFiles, setCodec, sourceLanguage, targetLanguage, options, fail);
+            continue;
+        }
+      noTrans:
+        if (!parentTor) {
+            if (topLevel)
+                std::cerr << "lupdate warning: no TS files specified. Only diagnostics "
+                        "will be produced for '" << qPrintable(proFile) << "'.\n";
+            Translator tor;
+            processProject(nestComplain, pfi, visitor, options, codecForSource,
+                           targetLanguage, sourceLanguage, &tor, fail);
+        } else {
+            processProject(nestComplain, pfi, visitor, options, codecForSource,
+                           targetLanguage, sourceLanguage, parentTor, fail);
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
     m_defaultExtensions = QLatin1String("ui,c,c++,cc,cpp,cxx,ch,h,h++,hh,hpp,hxx");
 
     QStringList args = app.arguments();
-    QString defaultContext; // This was QLatin1String("@default") before.
-    Translator fetchedTor;
-    QByteArray codecForTr;
-    QByteArray codecForSource;
     QStringList tsFileNames;
     QStringList proFiles;
     QMultiHash<QString, QString> allCSources;
@@ -232,22 +416,17 @@ int main(int argc, char **argv)
     QStringList includePath;
     QString targetLanguage;
     QString sourceLanguage;
+    QByteArray codecForTr;
 
     UpdateOptions options =
         Verbose | // verbose is on by default starting with Qt 4.2
         HeuristicSameText | HeuristicSimilarText | HeuristicNumber;
     int numFiles = 0;
-    bool standardSyntax = true;
     bool metTsFlag = false;
     bool recursiveScan = true;
 
     QString extensions = m_defaultExtensions;
     QSet<QString> extensionsNameFilters;
-
-    for (int  i = 1; i < argc; ++i) {
-        if (args.at(i) == QLatin1String("-ts"))
-            standardSyntax = false;
-    }
 
     for (int i = 1; i < argc; ++i) {
         QString arg = args.at(i);
@@ -336,6 +515,14 @@ int main(int argc, char **argv)
         } else if (arg == QLatin1String("-version")) {
             printOut(QObject::tr("lupdate version %1\n").arg(QLatin1String(QT_VERSION_STR)));
             return 0;
+        } else if (arg == QLatin1String("-codecfortr")) {
+            ++i;
+            if (i == argc) {
+                qWarning("The -codecfortr option should be followed by a codec name.");
+                return 1;
+            }
+            codecForTr = args[i].toLatin1();
+            continue;
         } else if (arg == QLatin1String("-ts")) {
             metTsFlag = true;
             continue;
@@ -373,13 +560,6 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        numFiles++;
-
-        QString fullText;
-
-        codecForTr.clear();
-        codecForSource.clear();
-
         if (metTsFlag) {
             bool found = false;
             foreach (const Translator::FileFormat &fmt, Translator::registeredFileFormats()) {
@@ -403,6 +583,7 @@ int main(int argc, char **argv)
         } else if (arg.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
                 || arg.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
             proFiles << arg;
+            numFiles++;
         } else {
             QFileInfo fi(arg);
             if (!fi.exists()) {
@@ -447,105 +628,53 @@ int main(int argc, char **argv)
             } else {
                 sourceFiles << QDir::cleanPath(fi.absoluteFilePath());;
             }
+            numFiles++;
         }
     } // for args
-
-    foreach (const QString &proFile, proFiles)
-        projectRoots.insert(QDir::cleanPath(QFileInfo(proFile).absolutePath()) + QLatin1Char('/'));
-
-    bool firstPass = true;
-    bool fail = false;
-    while (firstPass || !proFiles.isEmpty()) {
-        ConversionData cd;
-        cd.m_defaultContext = defaultContext;
-        cd.m_noUiLines = options & NoUiLines;
-        cd.m_projectRoots = projectRoots;
-        cd.m_includePath = includePath;
-        cd.m_allCSources = allCSources;
-
-        QStringList tsFiles = tsFileNames;
-        if (proFiles.count() > 0) {
-            QFileInfo pfi(proFiles.takeFirst());
-            QHash<QByteArray, QStringList> variables;
-
-            ProFileEvaluator visitor;
-            visitor.setVerbose(options & Verbose);
-
-            ProFile pro(pfi.absoluteFilePath());
-            if (!visitor.queryProFile(&pro))
-                return 2;
-            if (!visitor.accept(&pro))
-                return 2;
-
-            if (visitor.templateType() == ProFileEvaluator::TT_Subdirs) {
-                QDir proDir(pfi.absoluteDir());
-                foreach (const QString &subdir, visitor.values(QLatin1String("SUBDIRS"))) {
-                    QString subPro = QDir::cleanPath(proDir.absoluteFilePath(subdir));
-                    QFileInfo subInfo(subPro);
-                    if (subInfo.isDir())
-                        proFiles << (subPro + QLatin1Char('/')
-                                     + subInfo.fileName() + QLatin1String(".pro"));
-                    else
-                        proFiles << subPro;
-                }
-                continue;
-            }
-
-            cd.m_includePath += visitor.values(QLatin1String("INCLUDEPATH"));
-
-            evaluateProFile(visitor, &variables, pfi.absolutePath());
-
-            sourceFiles = variables.value("SOURCES");
-
-            QStringList tmp = variables.value("CODECFORTR");
-            if (!tmp.isEmpty() && !tmp.first().isEmpty()) {
-                codecForTr = tmp.first().toLatin1();
-                fetchedTor.setCodecName(codecForTr);
-                cd.m_outputCodec = codecForTr;
-            }
-            tmp = variables.value("CODECFORSRC");
-            if (!tmp.isEmpty() && !tmp.first().isEmpty()) {
-                codecForSource = tmp.first().toLatin1();
-                if (!QTextCodec::codecForName(codecForSource))
-                    qWarning("lupdate warning: Codec for source '%s' is invalid. Falling back to codec for tr().",
-                             codecForSource.constData());
-                else
-                    cd.m_codecForSource = codecForSource;
-            }
-
-            tsFiles += variables.value("TRANSLATIONS");
-        }
-
-        QStringList sourceFilesCpp;
-        for (QStringList::iterator it = sourceFiles.begin(); it != sourceFiles.end(); ++it) {
-            if (it->endsWith(QLatin1String(".java"), Qt::CaseInsensitive))
-                loadJava(fetchedTor, *it, cd);
-            else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive)
-                     || it->endsWith(QLatin1String(".jui"), Qt::CaseInsensitive))
-                loadUI(fetchedTor, *it, cd);
-            else if (it->endsWith(QLatin1String(".js"), Qt::CaseInsensitive)
-                     || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive))
-                loadQScript(fetchedTor, *it, cd);
-            else
-                sourceFilesCpp << *it;
-        }
-        loadCPP(fetchedTor, sourceFilesCpp, cd);
-        if (!cd.error().isEmpty())
-            printOut(cd.error());
-
-        tsFiles.sort();
-        tsFiles.removeDuplicates();
-
-        if (!tsFiles.isEmpty())
-            updateTsFiles(fetchedTor, tsFiles, codecForTr, sourceLanguage, targetLanguage, options, &fail);
-
-        firstPass = false;
-    }
 
     if (numFiles == 0) {
         printUsage();
         return 1;
     }
 
+    if (!targetLanguage.isEmpty() && tsFileNames.count() != 1)
+        std::cerr << "lupdate warning: -target-language usually only "
+                     "makes sense with exactly one TS file.\n";
+    if (!codecForTr.isEmpty() && tsFileNames.isEmpty())
+        std::cerr << "lupdate warning: -codecfortr has no effect without -ts.\n";
+
+    bool fail = false;
+    if (proFiles.isEmpty()) {
+        if (tsFileNames.isEmpty())
+            std::cerr << "lupdate warning: no TS files specified. "
+                         "Only diagnostics will be produced.\n";
+
+        Translator fetchedTor;
+        ConversionData cd;
+        cd.m_noUiLines = options & NoUiLines;
+        cd.m_projectRoots = projectRoots;
+        cd.m_includePath = includePath;
+        cd.m_allCSources = allCSources;
+        fetchedTor.setCodecName(codecForTr);
+        processSources(fetchedTor, sourceFiles, cd);
+        updateTsFiles(fetchedTor, tsFileNames, !codecForTr.isEmpty(),
+                      sourceLanguage, targetLanguage, options, &fail);
+    } else {
+        if (!sourceFiles.isEmpty() || !includePath.isEmpty()) {
+            qWarning("lupdate error: Both project and source files / include paths specified.\n");
+            return 1;
+        }
+        if (!tsFileNames.isEmpty()) {
+            Translator fetchedTor;
+            fetchedTor.setCodecName(codecForTr);
+            processProjects(true, true, proFiles, options, QByteArray(),
+                            targetLanguage, sourceLanguage, &fetchedTor, &fail);
+            updateTsFiles(fetchedTor, tsFileNames, !codecForTr.isEmpty(),
+                          sourceLanguage, targetLanguage, options, &fail);
+        } else {
+            processProjects(true, false, proFiles, options, QByteArray(),
+                            targetLanguage, sourceLanguage, 0, &fail);
+        }
+    }
     return fail ? 1 : 0;
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 15;
+const TInt KPMMinorVersion = 16;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -855,19 +855,26 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_FocusFrameHMargin:
         case QStyle::PM_FocusFrameVMargin:
             {
-            TAknLayoutRect gridRect;
-            gridRect.LayoutRect(mainPaneRect, AknLayoutScalable_Avkon::grid_highlight_pane(0));
-            TAknLayoutRect gridRectCenter;
-            gridRectCenter.LayoutRect(mainPaneRect, AknLayoutScalable_Avkon::cell_highlight_pane_g1());
+            TAknLayoutRect listScrollPane;
+            listScrollPane.LayoutRect(mainPaneRect, AknLayoutScalable_Avkon::listscroll_gen_pane(0));
+            TAknLayoutRect listGenPane;
+            listGenPane.LayoutRect(listScrollPane.Rect(), AknLayoutScalable_Avkon::list_gen_pane(0));
+            TAknLayoutRect listSinglePane;
+            listSinglePane.LayoutRect(listGenPane.Rect(), AknLayoutScalable_Avkon::list_single_pane(0));
+            TAknLayoutText listSinglePaneText;
+            listSinglePaneText.LayoutText(listSinglePane.Rect(), AknLayoutScalable_Avkon::list_single_pane_t1(0));
+            TAknLayoutRect highlightRect;
+            highlightRect.LayoutRect(listSinglePane.Rect(), AknLayoutScalable_Avkon::list_highlight_pane_cp1().LayoutLine());
 
             // The difference of center piece from border tell the frame width.
             if ( value == QStyle::PM_FocusFrameHMargin)
                 {
-                value = gridRect.Rect().iBr.iX - gridRectCenter.Rect().iBr.iX;
+				//use topleft for horizontal as S60 uses different values for right and left borders
+                 value = listSinglePaneText.TextRect().iTl.iX - highlightRect.Rect().iTl.iX;
                 }
             else
                 {
-                value = gridRect.Rect().iBr.iY - gridRectCenter.Rect().iBr.iY;
+                 value = highlightRect.Rect().iBr.iY - listSinglePaneText.TextRect().iBr.iY;
                 }
             }
             break;

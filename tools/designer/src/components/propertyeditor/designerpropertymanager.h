@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,7 +102,7 @@ class DesignerPropertyManager : public QtVariantPropertyManager
 {
     Q_OBJECT
 public:
-    DesignerPropertyManager(QDesignerFormEditorInterface *core, QObject *parent = 0);
+    explicit DesignerPropertyManager(QDesignerFormEditorInterface *core, QObject *parent = 0);
     ~DesignerPropertyManager();
 
     virtual QStringList attributes(int propertyType) const;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -395,7 +395,7 @@ static QStringList styleSheetParameters(const QGradient &gradient)
 static QStringList styleSheetStops(const QGradient &gradient)
 {
     QStringList result;
-    foreach (QGradientStop stop, gradient.stops()) {
+    foreach (const QGradientStop &stop, gradient.stops()) {
         const QColor color = stop.second;
 
         const QString stopDescription = QLatin1String("stop:") + QString::number(stop.first) + QLatin1String(" rgba(")

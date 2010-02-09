@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -569,7 +569,7 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
             // in cocoa. [NSApp run] should be called at least once for any cocoa app.
             if (NSModalSession session = d->currentModalSession()) {
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
-                while (!d->interrupt && [NSApp runModalSession:session] == NSRunContinuesResponse)
+                while ([NSApp runModalSession:session] == NSRunContinuesResponse && !d->interrupt)
                     qt_mac_waitForMoreModalSessionEvents();
                 if (!d->interrupt && session == d->currentModalSessionCached) {
                     // INVARIANT: Someone called e.g. [NSApp stopModal:] from outside the event

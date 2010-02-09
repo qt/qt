@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -919,34 +919,41 @@ bool QProcessPrivate::waitForFinished(int msecs)
     Q_Q(QProcess);
     QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished(%d)", msecs);
 
-    TRequestStatus timerStatus = 0;
-    TRequestStatus logonStatus = 0;
+    TRequestStatus timerStatus = KErrNone;
+    TRequestStatus logonStatus = KErrNone;
     bool timeoutOccurred = false;
 
     // Logon to process to observe its death
     if (qt_rprocess_running(symbianProcess)) {
         symbianProcess->Logon(logonStatus);
 
-        // Create timer
-        RTimer timer;
-        timer.CreateLocal();
-        TTimeIntervalMicroSeconds32 interval(msecs*1000);
-        timer.After(timerStatus, interval);
+        if (msecs < 0) {
+            // If timeout is negative, there is no timeout
+            QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Waiting (just logon)...");
+            User::WaitForRequest(logonStatus);
+            QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Wait completed");
+        } else {
+            // Create timer
+            RTimer timer;
+            timer.CreateLocal();
+            TTimeIntervalMicroSeconds32 interval(msecs*1000);
+            timer.After(timerStatus, interval);
 
-        QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Waiting...");
-        User::WaitForRequest(logonStatus, timerStatus);
-        QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Wait completed");
+            QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Waiting (logon + timer)...");
+            User::WaitForRequest(logonStatus, timerStatus);
+            QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Wait completed");
 
-        if (timerStatus == KErrNone)
-            timeoutOccurred = true;
+            if (timerStatus == KErrNone)
+                timeoutOccurred = true;
 
-        timer.Cancel();
-        timer.Close();
+            timer.Cancel();
+            timer.Close();
 
-        symbianProcess->LogonCancel(logonStatus);
+            symbianProcess->LogonCancel(logonStatus);
 
-        // Eat cancel request completion so that it won't mess up main thread scheduling later
-        User::WaitForRequest(logonStatus, timerStatus);
+            // Eat cancel request completion so that it won't mess up main thread scheduling later
+            User::WaitForRequest(logonStatus, timerStatus);
+        }
     } else {
         QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished(), qt_rprocess_running returned false");
     }

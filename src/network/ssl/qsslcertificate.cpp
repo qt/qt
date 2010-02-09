@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -304,6 +304,7 @@ static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 */
 QString QSslCertificate::issuerInfo(SubjectInfo info) const
 {
+    // lazy init
     if (d->issuerInfo.isEmpty() && d->x509)
         d->issuerInfo =
                 _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
@@ -320,7 +321,11 @@ QString QSslCertificate::issuerInfo(SubjectInfo info) const
 */
 QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 {
-    // ### Use a QByteArray for the keys in the map
+    // lazy init
+    if (d->issuerInfo.isEmpty() && d->x509)
+        d->issuerInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+
     return d->issuerInfo.value(QString::fromLatin1(tag));
 }
 
@@ -335,6 +340,7 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 */
 QString QSslCertificate::subjectInfo(SubjectInfo info) const
 {
+    // lazy init
     if (d->subjectInfo.isEmpty() && d->x509)
         d->subjectInfo =
                 _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
@@ -350,7 +356,11 @@ QString QSslCertificate::subjectInfo(SubjectInfo info) const
 */
 QString QSslCertificate::subjectInfo(const QByteArray &tag) const
 {
-    // ### Use a QByteArray for the keys in the map
+    // lazy init
+    if (d->subjectInfo.isEmpty() && d->x509)
+        d->subjectInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+
     return d->subjectInfo.value(QString::fromLatin1(tag));
 }
 
@@ -624,11 +634,11 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     QByteArray tmp;
     for (int i = 0; i <= array.size() - 64; i += 64) {
         tmp += QByteArray::fromRawData(array.data() + i, 64);
-        tmp += "\n";
+        tmp += '\n';
     }
     if (int remainder = array.size() % 64) {
         tmp += QByteArray::fromRawData(array.data() + array.size() - remainder, remainder);
-        tmp += "\n";
+        tmp += '\n';
     }
 
     return BEGINCERTSTRING "\n" + tmp + ENDCERTSTRING "\n";
@@ -686,11 +696,11 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
 
 static bool matchLineFeed(const QByteArray &pem, int *offset)
 {
-    char ch = pem.at(*offset);
+    char ch;
 
     // ignore extra whitespace at the end of the line
-    while (ch == ' ' && *offset < pem.size())
-        ch = pem.at(++*offset);
+    while (*offset < pem.size() && (ch = pem.at(*offset)) == ' ')
+        ++*offset;
 
     if (ch == '\n') {
         *offset += 1;
@@ -722,7 +732,7 @@ QList<QSslCertificate> QSslCertificatePrivate::certificatesFromPem(const QByteAr
             break;
 
         offset = endPos + sizeof(ENDCERTSTRING) - 1;
-        if (!matchLineFeed(pem, &offset))
+        if (offset < pem.size() && !matchLineFeed(pem, &offset))
             break;
 
         QByteArray decoded = QByteArray::fromBase64(

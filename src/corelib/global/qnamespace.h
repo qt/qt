@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -496,6 +496,9 @@ public:
         WA_AcceptTouchEvents = 121,
         WA_WState_AcceptedTouchBeginEvent = 122,
         WA_TouchPadAcceptSingleTouchEvents = 123,
+
+        WA_MergeSoftkeys =  124,
+        WA_MergeSoftkeysRecursively =  125,
 
         // Add new attributes before this line
         WA_AttributeCount

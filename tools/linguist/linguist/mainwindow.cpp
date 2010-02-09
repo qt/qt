@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,6 +93,8 @@
 #include <QToolBar>
 #include <QUrl>
 #include <QWhatsThis>
+
+#include <ctype.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1358,7 +1360,7 @@ void MainWindow::about()
     box.setText(tr("<center><img src=\":/images/splash.png\"/></img><p>%1</p></center>"
                     "<p>Qt Linguist is a tool for adding translations to Qt "
                     "applications.</p>"
-                    "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
+                    "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)."
                    ).arg(version));
 
     box.setWindowTitle(QApplication::translate("AboutDialog", "Qt Linguist"));
@@ -2356,13 +2358,28 @@ void MainWindow::updatePhraseDicts()
 
 static bool haveMnemonic(const QString &str)
 {
-    QString mnemonic = QKeySequence::mnemonic(str);
-    if (mnemonic == QLatin1String("Alt+Space")) {
-        // "Nobody" ever really uses these, and they are highly annoying
-        // because we get a lot of false positives.
-        return false;
+    for (const ushort *p = (ushort *)str.constData();; ) { // Assume null-termination
+        ushort c = *p++;
+        if (!c)
+            break;
+        if (c == '&') {
+            c = *p++;
+            if (!c)
+                return false;
+            // "Nobody" ever really uses these alt-space, and they are highly annoying
+            // because we get a lot of false positives.
+            if (c != '&' && c != ' ' && QChar(c).isPrint()) {
+                const ushort *pp = p;
+                for (; ::isalpha(*p); p++) ;
+                if (pp == p || *p != ';')
+                    return true;
+                // This looks like a HTML &entity;, so ignore it. As a HTML string
+                // won't contain accels anyway, we can stop scanning here.
+                break;
+            }
+        }
     }
-    return !mnemonic.isEmpty();
+    return false;
 }
 
 void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)

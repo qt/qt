@@ -1,5 +1,1 @@
-TEMPLATE = app
-LANGUAGE = C++
-
-SOURCES +=  main_unix.cpp
-
+SOURCES += main_unix.cpp

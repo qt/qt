@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,7 +177,7 @@ void SslClient::socketReadyRead()
 void SslClient::sendData()
 {
     QString input = form->sessionInput->text();
-    appendString(input + "\n");
+    appendString(input + '\n');
     socket->write(input.toUtf8() + "\r\n");
     form->sessionInput->clear();
 }

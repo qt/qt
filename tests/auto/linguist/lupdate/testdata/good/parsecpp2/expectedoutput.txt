@@ -5,3 +5,4 @@
 .*/lupdate/testdata/good/parsecpp2/main.cpp:61: Excess closing brace .*
 
 .*/lupdate/testdata/good/parsecpp2/main.cpp:65: Excess closing brace .*
+

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #############################################################################
 ##
-## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
@@ -108,15 +108,61 @@ if (@ARGV)
         open (NEW_PKG, ">>".$tempPkgFileName);
         open (PKG, "<".$pkgFileName);
 
+        my $manufacturerElseBlock = 0;
+
         # Parse each line.
         while (<PKG>)
         {
+            # Patch pkg UID
             my $line = $_;
             my $newLine = $line;
-            if ( $line =~ m/^\#.*\(0x[0-9|a-f|A-F]*\).*$/)
+            if ($line =~ m/^\#.*\(0x[0-9|a-f|A-F]*\).*$/)
             {
                 $newLine =~ s/\(0x./\(0xE/;
             }
+
+            # Patch embedded sis name and UID
+            if ($line =~ m/^@.*\.sis.*\(0x[0-9|a-f|A-F]*\).*$/)
+            {
+                $newLine =~ s/\(0x./\(0xE/;
+                if ($line !~ m/^.*_selfsigned.sis.*$/)
+                {
+                    $newLine =~ s/\.sis/_selfsigned\.sis/i;
+                }
+            }
+
+            # Remove dependencies to known problem packages (i.e. packages that are likely to be patched, also)
+            # to reduce unnecessary error messages.
+            if ($line =~ m/^\(0x2002af5f\).*\{.*\}$/)
+            {
+                $newLine = "\n"
+            }
+            if ($line =~ m/^\(0x2001E61C\).*\{.*\}$/)
+            {
+                $newLine = "\n"
+            }
+
+            # Remove manufacturer ifdef
+            if ($line =~ m/^.*\(MANUFACTURER\)\=\(.*\).*$/)
+            {
+                $newLine = "\n";
+            }
+
+            if ($line =~ m/^ELSEIF.*MANUFACTURER$/)
+            {
+                $manufacturerElseBlock = 1;
+            }
+
+            if ($manufacturerElseBlock eq 1)
+            {
+                $newLine = "\n";
+            }
+
+            if ($line =~ m/^ENDIF.*MANUFACTURER$/)
+            {
+                $manufacturerElseBlock = 0;
+            }
+
             print NEW_PKG $newLine;
 
             chomp ($line);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -513,7 +513,7 @@ int main(int argc, char **argv)
 //! [47]
 QScriptEngine eng;
 QLineEdit *edit = new QLineEdit(...);
-QScriptValue handler = eng.evaluate("function(text) { print('text was changed to', text); }");
+QScriptValue handler = eng.evaluate("(function(text) { print('text was changed to', text); })");
 qScriptConnect(edit, SIGNAL(textChanged(const QString &)), QScriptValue(), handler);
 //! [47]
 
@@ -521,7 +521,7 @@ qScriptConnect(edit, SIGNAL(textChanged(const QString &)), QScriptValue(), handl
 QLineEdit *edit1 = new QLineEdit(...);
 QLineEdit *edit2 = new QLineEdit(...);
 
-QScriptValue handler = eng.evaluate("function() { print('I am', this.name); }");
+QScriptValue handler = eng.evaluate("(function() { print('I am', this.name); })");
 QScriptValue obj1 = eng.newObject();
 obj1.setProperty("name", "the walrus");
 QScriptValue obj2 = eng.newObject();
@@ -790,7 +790,7 @@ QScriptValue counter_hybrid(QScriptContext *ctx, QScriptEngine *eng)
 {
     QScriptValue act = ctx->activationObject();
     act.setProperty("count", 0);
-    return eng->evaluate("function() { return count++; }");
+    return eng->evaluate("(function() { return count++; })");
 }
 //! [74]
 

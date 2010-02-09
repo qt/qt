@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,6 +50,9 @@
  resolve to method overriding, is that QCocoaPanel needs to inherit from
  NSPanel, while QCocoaWindow needs to inherit NSWindow rather than NSPanel).
 ****************************************************************************/
+
+// WARNING: Don't include any header files from within this file. Put them
+// directly into qcocoawindow_mac_p.h and qcocoapanel_mac_p.h
 
 QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
@@ -184,4 +187,21 @@ QT_END_NAMESPACE
         return [QT_MANGLE_NAMESPACE(QCocoaWindowCustomThemeFrame) class];
     return [super frameViewClassForStyleMask:styleMask];
 }
+
+- (void)displayIfNeeded
+{
+
+    QWidget *qwidget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
+    if (qwidget == 0) {
+        [super displayIfNeeded];
+        return;
+    }
+
+    if (QApplicationPrivate::graphicsSystem() != 0) {
+        if (QWidgetBackingStore *bs = qt_widget_private(qwidget)->maybeBackingStore())
+            bs->sync(qwidget, qwidget->rect());
+    }
+    [super displayIfNeeded];
+}
+
 

@@ -8,7 +8,8 @@ HEADERS += src/BrowserWindow.h \
     src/BookmarksView.h \
     src/flickcharm.h \
     src/ZoomStrip.h \
-    src/ControlStrip.h
+    src/ControlStrip.h \
+    src/webview.h
 SOURCES += src/Main.cpp \
     src/BrowserWindow.cpp \
     src/BrowserView.cpp \
@@ -18,7 +19,8 @@ SOURCES += src/Main.cpp \
     src/BookmarksView.cpp \
     src/flickcharm.cpp \
     src/ZoomStrip.cpp \
-    src/ControlStrip.cpp
+    src/ControlStrip.cpp \
+    src/webview.cpp
 RESOURCES += src/anomaly.qrc
 
 symbian {

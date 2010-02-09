@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -248,7 +248,7 @@ void tst_Selftests::doRunSubTest(QString &subdir, QStringList &arguments )
             continue;
 
         const QString output(QString::fromLatin1(line));
-        const QString expected(QString::fromLatin1(exp.at(i)));
+        const QString expected(QString::fromLatin1(exp.at(i)).replace("<INSERT_QT_VERSION_HERE>", QT_VERSION_STR));
 
         if (line.contains("ASSERT") && output != expected)
             QEXPECT_FAIL("assert", "QTestLib prints out the absolute path.", Continue);

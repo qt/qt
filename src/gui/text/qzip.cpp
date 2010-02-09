@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,10 +54,13 @@
 #include <zlib.h>
 
 #if defined(Q_OS_WIN)
-#undef S_IFREG
-#define S_IFREG 0100000
+#  undef S_IFREG
+#  define S_IFREG 0100000
+#  ifndef S_IFDIR
+#    define S_IFDIR 0040000
+#  endif
 #  ifndef S_ISDIR
-#    define S_ISDIR(x) ((x) & 0040000) > 0
+#    define S_ISDIR(x) ((x) & S_IFDIR) > 0
 #  endif
 #  ifndef S_ISREG
 #    define S_ISREG(x) ((x) & 0170000) == S_IFREG

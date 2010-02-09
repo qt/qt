@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -271,6 +271,7 @@ private slots:
     void taskQTBUG_4401_enterKeyClearsPassword();
     void taskQTBUG_4679_moveToStartEndOfBlock();
     void taskQTBUG_4679_selectToStartEndOfBlock();
+    void taskQTBUG_7395_readOnlyShortcut();
 
 protected slots:
 #ifdef QT3_SUPPORT
@@ -3636,6 +3637,26 @@ void tst_QLineEdit::taskQTBUG_4679_selectToStartEndOfBlock()
     QVERIFY(testWidget->hasSelectedText());
     QCOMPARE(testWidget->selectedText(), text.mid(5));
 #endif // Q_OS_MAC
+}
+
+void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
+{
+    //ReadOnly QLineEdit should not intercept shortcut.
+    QLineEdit le;
+    le.setReadOnly(true);
+
+    QAction action(QString::fromLatin1("hello"), &le);
+    action.setShortcut(QString::fromLatin1("p"));
+    QSignalSpy spy(&action, SIGNAL(triggered()));
+    le.addAction(&action);
+
+    le.show();
+    QApplication::setActiveWindow(&le);
+    QTest::qWaitForWindowShown(&le);
+    le.setFocus();
+    QTRY_VERIFY(le.hasFocus());
+    QTest::keyClick(0, Qt::Key_P);
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QLineEdit)

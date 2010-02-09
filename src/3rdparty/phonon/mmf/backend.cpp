@@ -45,6 +45,7 @@ using namespace Phonon::MMF;
 Backend::Backend(QObject *parent)
     : QObject(parent)
     , m_ancestorMoveMonitor(new AncestorMoveMonitor(this))
+    , m_effectFactory(new EffectFactory(this))
 {
     TRACE_CONTEXT(Backend::Backend, EBackend);
     TRACE_ENTRY_0();
@@ -81,9 +82,9 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
     {
         Q_ASSERT(args.count() == 1);
         Q_ASSERT(args.first().type() == QVariant::Int);
-        const AbstractAudioEffect::Type effect = AbstractAudioEffect::Type(args.first().toInt());
-
-        return EffectFactory::createAudioEffect(effect, parent);
+        const EffectFactory::Type type =
+            static_cast<EffectFactory::Type>(args.first().toInt());
+        return m_effectFactory->createAudioEffect(type, parent);
     }
     case VideoWidgetClass:
         result = new VideoWidget(m_ancestorMoveMonitor.data(), qobject_cast<QWidget *>(parent));
@@ -105,7 +106,7 @@ QList<int> Backend::objectDescriptionIndexes(ObjectDescriptionType type) const
     switch(type)
     {
         case EffectType:
-            retval.append(EffectFactory::effectIndexes());
+            retval.append(m_effectFactory->effectIndexes());
             break;
         case AudioOutputDeviceType:
             // We only have one possible output device, but we need at least
@@ -126,7 +127,7 @@ QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescripti
 
     switch (type) {
         case EffectType:
-            return EffectFactory::audioEffectDescriptions(AbstractAudioEffect::Type(index));
+            return m_effectFactory->audioEffectDescriptions(EffectFactory::Type(index));
         case AudioOutputDeviceType:
             return AudioOutput::audioOutputDescription(index);
         default:

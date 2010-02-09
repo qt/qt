@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -182,16 +182,16 @@ private slots:
     void printPreview(QPrinter *printer);
     void setSourceFromSearch(const QUrl &url);
     void setSourceFromSearchInNewTab(const QUrl &url);
+    void highlightSearchTerms();
 
 private:
     void connectSignals();
     bool eventFilter(QObject *object, QEvent *e);
-    void find(const QString &ttf, bool forward, bool backward);
-    bool findInTextBrowser(QTextBrowser* browser, const QString &ttf,
-        bool forward, bool backward);
+    void find(const QString &ttf, bool forward);
+    bool findInWebPage(const QString &ttf, bool forward);
+    bool findInTextBrowser(const QString &ttf, bool forward);
     void initPrinter();
     QString quoteTabTitle(const QString &title) const;
-    void highlightSearchTerms();
     void setLastShownPages();
 
     void getBrowserFontFor(QWidget* viewer, QFont *font);

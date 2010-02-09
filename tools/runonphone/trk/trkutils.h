@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,7 +119,8 @@ struct Library
     uint dataseg;
 };
 
-struct TrkAppVersion {
+struct TrkAppVersion
+{
     TrkAppVersion();
     void reset();    
 
@@ -152,6 +153,10 @@ struct Session
 
     typedef QList<Library> Libraries;
     Libraries libraries;
+
+    typedef uint Thread;
+    typedef QList<Thread> Threads;
+    Threads threads;
 
     // Gdb request
     uint currentThread;

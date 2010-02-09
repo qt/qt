@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,7 +102,7 @@ void FindFileDialog::openFile(QTreeWidgetItem *item)
     if (file.open(QIODevice::ReadOnly)) {
         QString data(file.readAll());
 
-        if (fileName.endsWith(".html"))
+        if (fileName.endsWith(QLatin1String(".html")))
             currentEditor->setHtml(data);
         else
             currentEditor->setPlainText(data);
@@ -119,7 +119,7 @@ void FindFileDialog::update()
 
 void FindFileDialog::findFiles()
 {
-    QRegExp filePattern(fileNameComboBox->currentText() + "*");
+    QRegExp filePattern(fileNameComboBox->currentText() + '*');
     filePattern.setPatternSyntax(QRegExp::Wildcard);
 
     QDir directory(directoryComboBox->currentText());
@@ -127,7 +127,7 @@ void FindFileDialog::findFiles()
     QStringList allFiles = directory.entryList(QDir::Files | QDir::NoSymLinks);
     QStringList matchingFiles;
 
-    foreach (QString file, allFiles) {
+    foreach (const QString &file, allFiles) {
         if (filePattern.exactMatch(file))
             matchingFiles << file;
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,8 +71,8 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_inlinePosition(0),
       m_formatRetriever(0),
       m_pointerHandler(0),
-      m_longPress(0),
-      m_cursorPos(0)
+      m_cursorPos(0),
+      m_hasTempPreeditString(false)
 {
     m_fepState->SetObjectProvider(this);
     m_fepState->SetFlags(EAknEditorFlagDefault);
@@ -100,9 +100,7 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
 void QCoeFepInputContext::reset()
 {
-    CCoeFep* fep = CCoeEnv::Static()->Fep();
-    if (fep)
-        fep->CancelTransaction();
+    commitCurrentString(true);
 }
 
 void QCoeFepInputContext::ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType)
@@ -127,7 +125,7 @@ void QCoeFepInputContext::update()
 
 void QCoeFepInputContext::setFocusWidget(QWidget *w)
 {
-    commitCurrentString(false);
+    commitCurrentString(true);
 
     QInputContext::setFocusWidget(w);
 
@@ -200,7 +198,11 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     if (!focusWidget())
         return false;
 
-    if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
+    switch (event->type()) {
+    case QEvent::KeyPress:
+        commitTemporaryPreeditString();
+        // fall through intended
+    case QEvent::KeyRelease:
         const QKeyEvent *keyEvent = static_cast<const QKeyEvent *>(event);
         switch (keyEvent->key()) {
         case Qt::Key_F20:
@@ -216,13 +218,29 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
             break;
         case Qt::Key_Select:
             if (!m_preeditString.isEmpty()) {
-                commitCurrentString(false);
+                commitCurrentString(true);
                 return true;
             }
             break;
         default:
             break;
         }
+
+        if (keyEvent->type() == QEvent::KeyPress
+            && focusWidget()->inputMethodHints() & Qt::ImhHiddenText
+            && !keyEvent->text().isEmpty()) {
+            // Send some temporary preedit text in order to make text visible for a moment.
+            m_cursorPos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
+            m_preeditString = keyEvent->text();
+            QList<QInputMethodEvent::Attribute> attributes;
+            QInputMethodEvent imEvent(m_preeditString, attributes);
+            sendEvent(imEvent);
+            m_tempPreeditStringTimeout.start(1000, this);
+            m_hasTempPreeditString = true;
+            update();
+            return true;
+        }
+        break;
     }
 
     if (!needsInputPanel())
@@ -253,12 +271,29 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
     return false;
 }
 
+void QCoeFepInputContext::timerEvent(QTimerEvent *timerEvent)
+{
+    if (timerEvent->timerId() == m_tempPreeditStringTimeout.timerId())
+        commitTemporaryPreeditString();
+}
+
+void QCoeFepInputContext::commitTemporaryPreeditString()
+{
+    if (m_tempPreeditStringTimeout.isActive())
+        m_tempPreeditStringTimeout.stop();
+
+    if (!m_hasTempPreeditString)
+        return;
+
+    commitCurrentString(false);
+}
+
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
 {
     Q_ASSERT(focusWidget());
 
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
-        commitCurrentString(false);
+        commitCurrentString(true);
         int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 
         QList<QInputMethodEvent::Attribute> attributes;
@@ -309,6 +344,8 @@ void QCoeFepInputContext::updateHints(bool mustUpdateInputCapabilities)
 void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
 {
     using namespace Qt;
+
+    commitTemporaryPreeditString();
 
     bool numbersOnly = hints & ImhDigitsOnly || hints & ImhFormattedNumbersOnly
             || hints & ImhDialableCharactersOnly;
@@ -501,6 +538,8 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     if (!w)
         return;
 
+    commitTemporaryPreeditString();
+
     m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
     
     QList<QInputMethodEvent::Attribute> attributes;
@@ -600,6 +639,8 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
     if (!w)
         return;
 
+    commitTemporaryPreeditString();
+
     int pos = aCursorSelection.iAnchorPos;
     int length = aCursorSelection.iCursorPos - pos;
 
@@ -698,30 +739,33 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
 
 void QCoeFepInputContext::DoCommitFepInlineEditL()
 {
-    commitCurrentString(true);
+    commitCurrentString(false);
 }
 
-void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
+void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
 {
+    int longPress = 0;
+
     if (m_preeditString.size() == 0) {
         QWidget *w = focusWidget();
-        if (triggeredBySymbian && w) {
+        if (!cancelFepTransaction && w) {
             // We must replace the last character only if the input box has already accepted one 
             if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
-                m_longPress = 1;
+                longPress = 1;
         }
         return;
     }
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
-    event.setCommitString(m_preeditString, 0-m_longPress, m_longPress);
+    event.setCommitString(m_preeditString, 0-longPress, longPress);
     m_preeditString.clear();
     sendEvent(event);
 
-    m_longPress = 0;
+    m_hasTempPreeditString = false;
+    longPress = 0;
 
-    if (!triggeredBySymbian) {
+    if (cancelFepTransaction) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();
         if (fep)
             fep->CancelTransaction();

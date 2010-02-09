@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -270,7 +270,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
         break;
     case Ntlm:
         // #### extract from header
-        realm = QString();
+        realm.clear();
         break;
     case DigestMd5: {
         realm = QString::fromLatin1(options.value("realm"));
@@ -281,7 +281,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpResponseHeader &header,
         break;
     }
     default:
-        realm = QString();
+        realm.clear();
         challenge = QByteArray();
         phase = Invalid;
     }

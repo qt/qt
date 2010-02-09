@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,8 +147,10 @@ typedef void   (*Ptr_gtk_paint_vline) (GtkStyle *, GdkWindow *, GtkStateType, co
 typedef void (*Ptr_gtk_menu_item_set_submenu) (GtkMenuItem *, GtkWidget *);
 typedef void (*Ptr_gtk_container_forall) (GtkContainer *, GtkCallback, gpointer);
 typedef void (*Ptr_gtk_widget_size_allocate) (GtkWidget *, GtkAllocation*);
+typedef void (*Ptr_gtk_widget_size_request) (GtkWidget *widget, GtkRequisition *requisition);
 typedef void (*Ptr_gtk_widget_set_direction) (GtkWidget *, GtkTextDirection);
 typedef void (*Ptr_gtk_widget_path) (GtkWidget *, guint *, gchar **, gchar**);
+
 typedef void (*Ptr_gtk_toolbar_insert) (GtkToolbar *toolbar, GtkToolItem *item, int pos);
 typedef void (*Ptr_gtk_menu_shell_append)(GtkMenuShell *, GtkWidget *);
 typedef GtkType (*Ptr_gtk_container_get_type) (void);
@@ -365,6 +367,7 @@ public:
     static Ptr_gtk_settings_get_default gtk_settings_get_default;
     static Ptr_gtk_separator_menu_item_new gtk_separator_menu_item_new;
     static Ptr_gtk_widget_size_allocate gtk_widget_size_allocate;
+    static Ptr_gtk_widget_size_request gtk_widget_size_request;
     static Ptr_gtk_widget_set_direction gtk_widget_set_direction;
     static Ptr_gtk_widget_path gtk_widget_path;
     static Ptr_gtk_container_get_type gtk_container_get_type;

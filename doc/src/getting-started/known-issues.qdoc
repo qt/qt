@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,7 @@
     on the Qt website.
 
     An overview of known issues may also be found at:
-    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}
+    \l{http://qt.gitorious.org/qt/pages/QtKnownIssues}
     {Known Issues Wiki}.
 
     \section1 Installation Issues
@@ -160,6 +160,6 @@
 
     \list
     \o  Check known issues for Symbian at
-    \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues} {Known Issues Wiki}.
+    \l{http://qt.gitorious.org/qt/pages/QtKnownIssues} {Known Issues Wiki}.
     \endlist
 */

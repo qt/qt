@@ -44,6 +44,9 @@ typedef struct HBITMAP__* HBITMAP;
 namespace WebCore {
     class QWebPopup;
 }
+QT_BEGIN_NAMESPACE
+class QGraphicsProxyWidget;
+QT_END_NAMESPACE
 #elif PLATFORM(GTK)
 typedef struct _GtkMenu GtkMenu;
 typedef struct _GtkMenuItem GtkMenuItem;
@@ -147,6 +150,7 @@ private:
     void clear();
     void populate(const IntRect&);
     QWebPopup* m_popup;
+    QGraphicsProxyWidget* m_proxy;
 #elif PLATFORM(WIN)
     // ScrollBarClient
     virtual void valueChanged(Scrollbar*);

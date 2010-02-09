@@ -36,7 +36,7 @@ symbian: {
 
     sqlitedeployment = \
         "; Deploy sqlite onto phone that does not have it already" \
-        "@\"sqlite3.sis\", (0x2002af5f)"
+        "@\"$$PWD/sqlite3.sis\", (0x2002af5f)"
     qtlibraries.pkg_postrules += sqlitedeployment
 
     qtlibraries.path = c:/sys/bin
@@ -78,7 +78,11 @@ symbian: {
         DEPLOYMENT += phonon_backend_plugins
     }
 
-    DEPLOYMENT += qtresources qtlibraries imageformats_plugins codecs_plugins graphicssystems_plugins
+    # Support backup & restore for Qt libraries
+    qtbackup.sources = backup_registration.xml
+    qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
+
+    DEPLOYMENT += qtresources qtlibraries qtbackup imageformats_plugins codecs_plugins graphicssystems_plugins
 
     contains(QT_CONFIG, svg): {
        qtlibraries.sources += QtSvg.dll
@@ -110,11 +114,10 @@ symbian: {
         graphicssystems_plugins.sources += qvggraphicssystem.dll
     }
 
+    contains(QT_CONFIG, multimedia) {
+        qtlibraries.sources += QtMultimedia.dll
+    }
+
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
     BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CORE_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
-    PLUGIN_STUBS = $$files(qmakepluginstubs/*)
-    for(STUB, PLUGIN_STUBS) {
-        STUB_FILENAME = $$basename(STUB)
-        BLD_INF_RULES.prj_exports += "qmakepluginstubs/$${STUB_FILENAME} /epoc32/data/qt/qtlibspluginstubs/$${STUB_FILENAME}"
-    }
 }

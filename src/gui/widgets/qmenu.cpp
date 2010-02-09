@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1588,10 +1588,9 @@ QAction *QMenu::insertSeparator(QAction *before)
 }
 
 /*!
-  This will set the default action to \a act. The default action may
-  have a visual queue depending on the current QStyle. A default
-  action is usually meant to indicate what will defaultly happen on a
-  drop, as shown in a context menu.
+  This sets the default action to \a act. The default action may have
+  a visual cue, depending on the current QStyle. A default action
+  usually indicates what will happen by default when a drop occurs.
 
   \sa defaultAction()
 */

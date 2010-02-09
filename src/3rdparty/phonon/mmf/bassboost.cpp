@@ -24,31 +24,34 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+// Define functions which depend on concrete native effect class name
+PHONON_MMF_DEFINE_EFFECT_FUNCTIONS(BassBoost)
+
 /*! \class MMF::BassBoost
   \internal
 */
 
-BassBoost::BassBoost(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect(parent,
-                                                                                QList<EffectParameter>())
+BassBoost::BassBoost(QObject *parent, const QList<EffectParameter> &parameters)
+    :   AbstractAudioEffect::AbstractAudioEffect(parent, parameters)
 {
+
 }
 
-void BassBoost::parameterChanged(const int,
-                                 const QVariant &)
+//-----------------------------------------------------------------------------
+// Static functions
+//-----------------------------------------------------------------------------
+
+const char* BassBoost::description()
 {
-    Q_ASSERT_X(false, Q_FUNC_INFO, "BassBoost has not parameters");
+    return "Bass boost";
 }
 
-void BassBoost::connectAudioPlayer(AudioPlayer::NativePlayer *player)
+bool BassBoost::getParameters(CMdaAudioOutputStream *stream,
+    QList<EffectParameter> &parameters)
 {
-    CBassBoost *ptr = 0;
-    QT_TRAP_THROWING(ptr = CBassBoost::NewL(*player));
-    m_effect.reset(ptr);
-}
-
-void BassBoost::applyParameters()
-{
-    // No parameters to apply
+    QScopedPointer<CBassBoost> effect;
+    TRAPD(err, effect.reset(CBassBoost::NewL(*stream)));
+    return (KErrNone == err);
 }
 
 QT_END_NAMESPACE

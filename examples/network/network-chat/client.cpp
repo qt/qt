@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,8 +69,8 @@ void Client::sendMessage(const QString &message)
 
 QString Client::nickName() const
 {
-    return QString(peerManager->userName()) + "@" + QHostInfo::localHostName()
-           + ":" + QString::number(server.serverPort());
+    return QString(peerManager->userName()) + '@' + QHostInfo::localHostName()
+           + ':' + QString::number(server.serverPort());
 }
 
 bool Client::hasConnection(const QHostAddress &senderIp, int senderPort) const

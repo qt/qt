@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -264,13 +264,13 @@ private:
 #endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
 
     inline void ensureBrush(const QBrush &brush) {
-        if (!qbrush_fast_equals(state()->lastBrush, brush) || state()->fillFlags)
+        if (!qbrush_fast_equals(state()->lastBrush, brush) || (brush.style() != Qt::NoBrush && state()->fillFlags))
             updateBrush(brush);
     }
     inline void ensureBrush() { ensureBrush(state()->brush); }
 
     inline void ensurePen(const QPen &pen) {
-        if (!qpen_fast_equals(state()->lastPen, pen) || state()->strokeFlags)
+        if (!qpen_fast_equals(state()->lastPen, pen) || (pen.style() != Qt::NoPen && state()->strokeFlags))
             updatePen(pen);
     }
     inline void ensurePen() { ensurePen(state()->pen); }

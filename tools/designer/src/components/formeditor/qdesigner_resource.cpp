@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1446,7 +1446,7 @@ void QDesignerResource::applyTabStops(QWidget *widget, DomTabStops *tabStops)
         return;
 
     QList<QWidget*> tabOrder;
-    foreach (QString widgetName, tabStops->elementTabStop()) {
+    foreach (const QString &widgetName, tabStops->elementTabStop()) {
         if (QWidget *w = qFindChild<QWidget*>(widget, widgetName)) {
             tabOrder.append(w);
         }
@@ -2418,7 +2418,7 @@ DomResources *QDesignerResource::saveResources(const QStringList &qrcPaths)
     QList<DomResource*> dom_include;
     if (resourceSet) {
         const QStringList activePaths = resourceSet->activeQrcPaths();
-        foreach (QString path, activePaths) {
+        foreach (const QString &path, activePaths) {
             if (qrcPaths.contains(path)) {
                 DomResource *dom_res = new DomResource;
                 QString conv_path = path;

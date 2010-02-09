@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,9 +50,6 @@
 #include <QtCore/QTextCodec>
 #include <QtCore/QVector>
 
-typedef QList<TranslatorMessage> TML;
-typedef QMap<QString, TranslatorMessage> TMM;
-
 
 QT_BEGIN_NAMESPACE
 
@@ -63,7 +60,7 @@ static bool isDigitFriendly(QChar c)
 
 static int numberLength(const QString &s, int i)
 {
-    if (i < s.size() || !s.at(i).isDigit())
+    if (i >= s.size() || !s.at(i).isDigit())
         return 0;
 
     int pos = i;
@@ -90,7 +87,7 @@ static QString zeroKey(const QString &key)
     QString zeroed;
     bool metSomething = false;
 
-    for (int i = 0; i != key.size(); ++i) {
+    for (int i = 0; i < key.size(); ++i) {
         int len = numberLength(key, i);
         if (len > 0) {
             i += len;
@@ -225,31 +222,36 @@ static QString translationAttempt(const QString &oldTranslation,
 */
 int applyNumberHeuristic(Translator &tor)
 {
-    TMM translated, untranslated;
-    TMM::Iterator t, u;
-    TML all = tor.messages();
-    TML::Iterator it;
+    QMap<QString, QPair<QString, QString> > translated;
+    QVector<bool> untranslated(tor.messageCount());
     int inserted = 0;
 
-    for (it = all.begin(); it != all.end(); ++it) {
-        bool hasTranslation = it->isTranslated();
-        if (it->type() == TranslatorMessage::Unfinished) {
+    for (int i = 0; i < tor.messageCount(); ++i) {
+        const TranslatorMessage &msg = tor.message(i);
+        bool hasTranslation = msg.isTranslated();
+        if (msg.type() == TranslatorMessage::Unfinished) {
             if (!hasTranslation)
-                untranslated.insert(it->context() + QLatin1Char('\n')
-                    + it->sourceText() + QLatin1Char('\n')
-                    + it->comment(), *it);
-        } else if (hasTranslation && it->translations().count() == 1) {
-            translated.insert(zeroKey(it->sourceText()), *it);
+                untranslated[i] = true;
+        } else if (hasTranslation && msg.translations().count() == 1) {
+            const QString &key = zeroKey(msg.sourceText());
+            if (!key.isEmpty())
+                translated.insert(key, qMakePair(msg.sourceText(), msg.translation()));
         }
     }
 
-    for (u = untranslated.begin(); u != untranslated.end(); ++u) {
-        t = translated.find(zeroKey((*u).sourceText()));
-        if (t != translated.end() && !t.key().isEmpty()
-            && t->sourceText() != u->sourceText()) {
-            u->setTranslation(translationAttempt(t->translation(), t->sourceText(),
-                                                 u->sourceText()));
-            inserted++;
+    for (int i = 0; i < tor.messageCount(); ++i) {
+        if (untranslated[i]) {
+            TranslatorMessage &msg = tor.message(i);
+            const QString &key = zeroKey(msg.sourceText());
+            if (!key.isEmpty()) {
+                QMap<QString, QPair<QString, QString> >::ConstIterator t =
+                        translated.constFind(key);
+                if (t != translated.constEnd() && t->first != msg.sourceText()) {
+                    msg.setTranslation(translationAttempt(t->second, t->first,
+                                                          msg.sourceText()));
+                    inserted++;
+                }
+            }
         }
     }
     return inserted;
@@ -268,43 +270,42 @@ int applyNumberHeuristic(Translator &tor)
 
 int applySameTextHeuristic(Translator &tor)
 {
-    TMM translated;
-    TMM avoid;
-    TMM::Iterator t;
-    TML untranslated;
-    TML::Iterator u;
-    TML all = tor.messages();
-    TML::Iterator it;
+    QMap<QString, QStringList> translated;
+    QMap<QString, bool> avoid; // Want a QTreeSet, in fact
+    QVector<bool> untranslated(tor.messageCount());
     int inserted = 0;
 
-    for (it = all.begin(); it != all.end(); ++it) {
-        if (!it->isTranslated()) {
-            if (it->type() == TranslatorMessage::Unfinished)
-                untranslated.append(*it);
+    for (int i = 0; i < tor.messageCount(); ++i) {
+        const TranslatorMessage &msg = tor.message(i);
+        if (!msg.isTranslated()) {
+            if (msg.type() == TranslatorMessage::Unfinished)
+                untranslated[i] = true;
         } else {
-            QString key = it->sourceText();
-            t = translated.find(key);
-            if (t != translated.end()) {
+            const QString &key = msg.sourceText();
+            QMap<QString, QStringList>::ConstIterator t = translated.constFind(key);
+            if (t != translated.constEnd()) {
                 /*
                   The same source text is translated at least two
                   different ways. Do nothing then.
                 */
-                if (t->translations() != it->translations()) {
+                if (*t != msg.translations()) {
                     translated.remove(key);
-                    avoid.insert(key, *it);
+                    avoid.insert(key, true);
                 }
             } else if (!avoid.contains(key)) {
-                translated.insert(key, *it);
+                translated.insert(key, msg.translations());
             }
         }
     }
 
-    for (u = untranslated.begin(); u != untranslated.end(); ++u) {
-        QString key = u->sourceText();
-        t = translated.find(key);
-        if (t != translated.end()) {
-            u->setTranslations(t->translations());
-            ++inserted;
+    for (int i = 0; i < tor.messageCount(); ++i) {
+        if (untranslated[i]) {
+            TranslatorMessage &msg = tor.message(i);
+            QMap<QString, QStringList>::ConstIterator t = translated.constFind(msg.sourceText());
+            if (t != translated.constEnd()) {
+                msg.setTranslations(*t);
+                ++inserted;
+            }
         }
     }
     return inserted;

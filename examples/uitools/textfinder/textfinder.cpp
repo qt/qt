@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -116,7 +116,7 @@ void TextFinder::on_findButton_clicked()
     if (isFirstTime == false)
         document->undo();
 
-    if (searchString == "") {
+    if (searchString.isEmpty()) {
         QMessageBox::information(this, tr("Empty Search Field"),
                 "The search field is empty. Please enter a word and click Find.");
     } else {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,9 +80,9 @@ namespace qdesigner_internal {
     class NewPromotedClassPanel : public QGroupBox {
         Q_OBJECT
     public:
-        NewPromotedClassPanel(const QStringList &baseClasses,
-                              int selectedBaseClass = -1,
-                               QWidget *parent = 0);
+        explicit NewPromotedClassPanel(const QStringList &baseClasses,
+                                       int selectedBaseClass = -1,
+                                       QWidget *parent = 0);
 
         signals:
         void newPromotedClass(const PromotionParameters &, bool *ok);
@@ -114,10 +114,10 @@ namespace qdesigner_internal {
     public:
         enum Mode { ModeEdit, ModeEditChooseClass };
 
-        QDesignerPromotionDialog(QDesignerFormEditorInterface *core,
-                                 QWidget *parent = 0,
-                                 const QString &promotableWidgetClassName = QString(),
-                                 QString *promoteTo = 0);
+        explicit QDesignerPromotionDialog(QDesignerFormEditorInterface *core,
+                                          QWidget *parent = 0,
+                                          const QString &promotableWidgetClassName = QString(),
+                                          QString *promoteTo = 0);
         // Return an alphabetically ordered list of base class names for adding new classes.
         static const QStringList &baseClassNames(const QDesignerPromotionInterface *promotion);
 

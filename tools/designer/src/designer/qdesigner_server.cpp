@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,7 +83,7 @@ void QDesignerServer::sendOpenRequest(int port, const QStringList &files)
     sSocket->connectToHost(QHostAddress::LocalHost, port);
     if(sSocket->waitForConnected(3000))
     {
-        foreach(QString file, files)
+        foreach(const QString &file, files)
         {
             QFileInfo fi(file);
             sSocket->write(fi.absoluteFilePath().toUtf8() + '\n');
@@ -96,9 +96,8 @@ void QDesignerServer::sendOpenRequest(int port, const QStringList &files)
 
 void QDesignerServer::readFromClient()
 {
-    QString file = QString();
     while (m_socket->canReadLine()) {
-        file = QString::fromUtf8(m_socket->readLine());
+        QString file = QString::fromUtf8(m_socket->readLine());
         if (!file.isNull()) {
             file.remove(QLatin1Char('\n'));
             file.remove(QLatin1Char('\r'));
@@ -143,7 +142,6 @@ QDesignerClient::~QDesignerClient()
 
 void QDesignerClient::readFromSocket()
 {
-    QString file = QString();
     while (m_socket->canReadLine()) {
         QString file = QString::fromUtf8(m_socket->readLine());
         if (!file.isNull()) {

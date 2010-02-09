@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -151,7 +151,11 @@ class GraphicsView : public QGraphicsView
 public:
     GraphicsView(QWidget* parent = 0)
         : QGraphicsView(parent)
-        {}
+    {
+#ifdef Q_WS_MAC
+        setFrameStyle(QFrame::NoFrame);
+#endif
+    }
 signals:
     void resized();
 

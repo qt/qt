@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -120,7 +120,7 @@ public:
         \row
             \o Sample size
             \o How much data is stored in each sample (typically 8
-               or 16)
+               or 16 bits)
         \row
             \o Sample type
             \o Numerical representation of sample (typically signed integer,
@@ -144,7 +144,7 @@ public:
     Values are initialized as follows:
     \list
     \o frequency()  = -1
-    \o channelCount() = -1
+    \o channels()   = -1
     \o sampleSize() = -1
     \o byteOrder()  = QAudioFormat::Endian(QSysInfo::ByteOrder)
     \o sampleType() = QAudioFormat::Unknown
@@ -224,16 +224,7 @@ bool QAudioFormat::isValid() const
 }
 
 /*!
-   Sets the sample rate to \a samplerate Hertz.
-*/
-
-void QAudioFormat::setSampleRate(int samplerate)
-{
-    d->frequency = samplerate;
-}
-
-/*!
-   \internal
+   Sets the frequency to \a frequency.
 */
 
 void QAudioFormat::setFrequency(int frequency)
@@ -242,16 +233,7 @@ void QAudioFormat::setFrequency(int frequency)
 }
 
 /*!
-    Returns the current sample rate in Hertz.
-*/
-
-int QAudioFormat::sampleRate() const
-{
-    return d->frequency;
-}
-
-/*!
-   \internal
+    Returns the current frequency value.
 */
 
 int QAudioFormat::frequency() const
@@ -260,16 +242,7 @@ int QAudioFormat::frequency() const
 }
 
 /*!
-   Sets the channel count to \a channels.
-*/
-
-void QAudioFormat::setChannelCount(int channels)
-{
-    d->channels = channels;
-}
-
-/*!
-   \internal
+   Sets the channels to \a channels.
 */
 
 void QAudioFormat::setChannels(int channels)
@@ -278,16 +251,7 @@ void QAudioFormat::setChannels(int channels)
 }
 
 /*!
-    Returns the current channel count value.
-*/
-
-int QAudioFormat::channelCount() const
-{
-    return d->channels;
-}
-
-/*!
-    \internal
+    Returns the current channel value.
 */
 
 int QAudioFormat::channels() const
@@ -296,7 +260,7 @@ int QAudioFormat::channels() const
 }
 
 /*!
-   Sets the sampleSize to \a sampleSize.
+   Sets the sample size to the \a sampleSize specified.
 */
 
 void QAudioFormat::setSampleSize(int sampleSize)
@@ -305,7 +269,7 @@ void QAudioFormat::setSampleSize(int sampleSize)
 }
 
 /*!
-    Returns the current sampleSize value.
+    Returns the current sample size value.
 */
 
 int QAudioFormat::sampleSize() const

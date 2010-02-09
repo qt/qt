@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -431,8 +431,8 @@ QVariant QMacPasteboardMimeUnicodeText::convertToMime(const QString &mimetype, Q
                                              firstData.size(), CFStringGetSystemEncoding(), false));
         ret = QString(str);
     } else if (flavor == QLatin1String("public.utf16-plain-text")) {
-        ret = QString::fromUtf16(reinterpret_cast<const ushort *>(firstData.constData()),
-                                 firstData.size() / sizeof(ushort));
+        ret = QString(reinterpret_cast<const QChar *>(firstData.constData()),
+                      firstData.size() / sizeof(QChar));
     } else {
         qWarning("QMime::convertToMime: unhandled mimetype: %s", qPrintable(mimetype));
     }

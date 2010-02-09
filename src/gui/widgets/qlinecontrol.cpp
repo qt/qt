@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -510,10 +510,12 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
             o.format.setForeground(m_palette.brush(QPalette::HighlightedText));
         } else {
             // mask selection
-            o.start = m_cursor;
-            o.length = 1;
-            o.format.setBackground(m_palette.brush(QPalette::Text));
-            o.format.setForeground(m_palette.brush(QPalette::Window));
+            if(!m_blinkPeriod || m_blinkStatus){
+                o.start = m_cursor;
+                o.length = 1;
+                o.format.setBackground(m_palette.brush(QPalette::Text));
+                o.format.setForeground(m_palette.brush(QPalette::Window));
+            }
         }
         selections.append(o);
     }
@@ -522,8 +524,11 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
         m_textLayout.draw(painter, offset, selections, clip);
 
     if (flags & DrawCursor){
+        int cursor = m_cursor;
+        if (m_preeditCursor != -1)
+            cursor += m_preeditCursor;
         if(!m_blinkPeriod || m_blinkStatus)
-            m_textLayout.drawCursor(painter, offset, m_cursor, m_cursorWidth);
+            m_textLayout.drawCursor(painter, offset, cursor, m_cursorWidth);
     }
 }
 
@@ -1366,6 +1371,8 @@ bool QLineControl::processEvent(QEvent* ev)
             processInputMethodEvent(static_cast<QInputMethodEvent*>(ev)); break;
 #ifndef QT_NO_SHORTCUT
         case QEvent::ShortcutOverride:{
+            if (isReadOnly())
+                return false;
             QKeyEvent* ke = static_cast<QKeyEvent*>(ev);
             if (ke == QKeySequence::Copy
                 || ke == QKeySequence::Paste

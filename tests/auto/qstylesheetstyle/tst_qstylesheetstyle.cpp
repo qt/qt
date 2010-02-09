@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1114,7 +1114,10 @@ class ProxyStyle : public QStyle
                              const QStyleOption* opt,
                              const QWidget* w) const
         {
-            return style->subElementRect(se, opt, w);
+            Q_UNUSED(se);
+            Q_UNUSED(opt);
+            Q_UNUSED(w);
+            return QRect(0, 0, 3, 3);
         }
 
         void drawComplexControl(QStyle::ComplexControl cc,
@@ -1232,7 +1235,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     pb4->setStyleSheet(styleSheet);
 
     // We are creating our Proxy based on current style...
-    // In this case it would be the QStyleSheetStyle that is delete
+    // In this case it would be the QStyleSheetStyle that is deleted
     // later on. We need to get access to the "real" QStyle to be able to
     // draw correctly.
     ProxyStyle* newProxy = new ProxyStyle(qApp->style());
@@ -1248,6 +1251,13 @@ void tst_QStyleSheetStyle::proxyStyle()
     w->show();
 
     QTest::qWait(100);
+
+    // Test for QTBUG-7198 - style sheet overrides custom element size
+    QStyleOptionViewItemV4 opt;
+    opt.initFrom(w);
+    opt.features |= QStyleOptionViewItemV2::HasCheckIndicator;
+    QVERIFY(pb5->style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, 
+            &opt, pb5).width() == 3);
     delete w;
     delete proxy;
     delete newProxy;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,7 +64,7 @@ Message::Message(const QString &body, const QStringList &headers)
 }
 
 //! [custom type streaming operator]
-QDebug &operator<<(QDebug &dbg, const Message &message)
+QDebug operator<<(QDebug dbg, const Message &message)
 {
     QStringList pieces = message.body().split("\r\n", QString::SkipEmptyParts);
     if (pieces.isEmpty())

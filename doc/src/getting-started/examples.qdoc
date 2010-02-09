@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,13 +74,12 @@
     \l{Qt Demonstrations}{selection of demos} that deliberately show off
     Qt's features. You might want to look at these as well.
 
-    \table
-    \row
-    \o{2,1} \l{Widgets Examples}{\bold Widgets}
-    \o{2,1} \l{Dialog Examples}{\bold Dialogs}
-    \row
-    \o \image widget-examples.png
-    \o 
+    \section1 \l{Widgets Examples}{Widgets}
+    \beginfloatleft
+    \l{Widgets Examples}{\inlineimage widget-examples.png
+    }
+
+    \endfloat
     Qt comes with a large range of standard widgets that users of modern
     applications have come to expect. You can also develop your own custom
     widgets and controls, and use them alongside standard widgets.
@@ -89,28 +88,39 @@
     be used to change the appearance of standard widgets and appropriately
     written custom widgets.
 
-    \o \image dialog-examples.png Dialogs
-    \o 
+    \clearfloat
+    \section1 \l{Dialog Examples}{Dialogs}
+    \beginfloatleft
+    \l{Dialog Examples}{\inlineimage dialog-examples.png
+    }
+
+    \endfloat
     Qt includes standard dialogs for many common operations, such as file
     selection, printing, and color selection.
 
     Custom dialogs can also be created for specialized modal or modeless
     interactions with users.
 
-    \row
-    \o{2,1} \l{Main Window Examples}{\bold{Main Windows}}
-    \o{2,1} \l{Layout Examples}{\bold Layouts}
+    \clearfloat
+    \section1 \l{Main Window Examples}{Main Windows}
+    \beginfloatleft
+    \l{Main Window Examples}{\inlineimage mainwindow-examples.png
+    }
 
-    \row
-    \o \image mainwindow-examples.png MainWindows
-    \o All the standard features of application main windows are provided by Qt.
+    \endfloat
+    All the standard features of application main windows are provided by Qt.
 
     Main windows can have pull down menus, tool bars, and dock windows. These
     separate forms of user input are unified in an integrated action system that
     also supports keyboard shortcuts and accelerator keys in menu items.
 
-    \o \image layout-examples.png Layouts
-    \o 
+    \clearfloat
+    \section1 \l{Layout Examples}{Layouts}
+    \beginfloatleft
+    \l{Layout Examples}{\inlineimage layout-examples.png
+    }
+
+    \endfloat
     Qt uses a layout-based approach to widget management. Widgets are arranged in
     the optimal positions in windows based on simple layout rules, leading to a
     consistent look and feel.
@@ -118,45 +128,58 @@
     Custom layouts can be used to provide more control over the positions and
     sizes of child widgets.
 
-    \row
-    \o{2,1} \l{Item Views Examples}{\bold{Item Views}}
-    \o{2,1} \l{Graphics View Examples}{\bold{Graphics View}}
-    \row
-    \o \image itemview-examples.png ItemViews
-    \o
+    \clearfloat
+    \section1 \l{Item Views Examples}{Item Views}
+    \beginfloatleft
+    \l{Item Views Examples}{\inlineimage itemview-examples.png
+    }
+
+    \endfloat
     Item views are widgets that typically display data sets. Qt 4's model/view
     framework lets you handle large data sets by separating the underlying data
     from the way it is represented to the user, and provides support for
     customized rendering through the use of delegates.
 
-    \o \image graphicsview-examples.png GraphicsView
-    \o
+    \clearfloat
+    \section1 \l{Graphics View Examples}{Graphics View}
+    \beginfloatleft
+    \l{Graphics View Examples}{\inlineimage graphicsview-examples.png
+    }
+
+    \endfloat
     Qt is provided with a comprehensive canvas through the GraphicsView
     classes.
 
-    \row
-    \o{2,1} \l{Painting Examples}{\bold{Painting}}
-    \o{2,1} \l{Rich Text Examples}{\bold{Rich Text}}
-    \row
-    \o \image painting-examples.png Painting
-    \o
+    \clearfloat
+    \section1 \l{Painting Examples}{Painting}
+    \beginfloatleft
+    \l{Painting Examples}{\inlineimage painting-examples.png
+    }
+
+    \endfloat
     Qt's painting system is able to render vector graphics, images, and outline
     font-based text with sub-pixel accuracy accuracy using anti-aliasing to
     improve rendering quality.
 
-    \o \image richtext-examples.png RichText
-    \o
+    \clearfloat
+    \section1 \l{Rich Text Examples}{Rich Text}
+    \beginfloatleft
+    \l{Rich Text Examples}{\inlineimage richtext-examples.png
+    }
+
+    \endfloat
     Qt provides powerful document-oriented rich text engine that supports Unicode
     and right-to-left scripts. Documents can be manipulated using a cursor-based
     API, and their contents can be imported and exported as both HTML and in a
     custom XML format.
 
-    \row
-    \o{2,1} \l{Desktop Examples}{\bold Desktop}
-    \o{2,1} \l{Drag and Drop Examples}{\bold{Drag and Drop}}
-    \row
-    \o \image desktop-examples.png
-    \o
+    \clearfloat
+    \section1 \l{Desktop Examples}{Desktop}
+    \beginfloatleft
+    \l{Desktop Examples}{\inlineimage desktop-examples.png
+    }
+
+    \endfloat
     Qt provides features to enable applications to integrate with the user's
     preferred desktop environment.
 
@@ -164,20 +187,26 @@
     support for desktop services can be used to improve the appearance of
     applications and take advantage of underlying desktop facilities.
 
-    \o \image draganddrop-examples.png DragAndDrop
-    \o
+    \clearfloat
+    \section1 \l{Drag and Drop Examples}{Drag and Drop}
+    \beginfloatleft
+    \l{Drag and Drop Examples}{\inlineimage draganddrop-examples.png
+    }
+
+    \endfloat
     Qt supports native drag and drop on all platforms via an extensible
     MIME-based system that enables applications to send data to each other in the
     most appropriate formats.
 
     Drag and drop can also be implemented for internal use by applications.
 
-    \row
-    \o{2,1} \l{Threading and Concurrent Programming Examples}{\bold{Threading and Concurrent Programming}}
-    \o{2,1} \l{Tools Examples}{\bold{Tools}}
-    \row
-    \o \image thread-examples.png
-    \o
+    \clearfloat
+    \section1 \l{Threading and Concurrent Programming Examples}{Threading and Concurrent Programming}
+    \beginfloatleft
+    \l{Threading and Concurrent Programming Examples}{\inlineimage thread-examples.png
+    }
+
+    \endfloat
     Qt 4 makes it easier than ever to write multithreaded applications. More
     classes have been made usable from non-GUI threads, and the signals and slots
     mechanism can now be used to communicate between threads.
@@ -185,32 +214,46 @@
     The QtConcurrent namespace includes a collection of classes and functions
     for straightforward concurrent programming.
 
-    \o \image tool-examples.png Tools
-    \o
+    \clearfloat
+    \section1 \l{Tools Examples}{Tools}
+    \beginfloatleft
+    \l{Tools Examples}{\inlineimage tool-examples.png
+    }
+
+    \endfloat
     Qt is equipped with a range of capable tool classes, from containers and
     iterators to classes for string handling and manipulation.
 
     Other classes provide application infrastructure support, handling plugin
     loading and managing configuration files.
 
-    \row
-    \o{2,1} \l{Network Examples}{\bold{Network}}
-    \o{2,1} \l{Inter-Process Communication Examples}{\bold{Inter-Process Communication}}
-    \row
-    \o \image network-examples.png Network
-    \o
+    \clearfloat
+    \section1 \l{Network Examples}{Network}
+    \beginfloatleft
+    \l{Network Examples}{\inlineimage network-examples.png
+    }
+
+    \endfloat
     Qt is provided with an extensive set of network classes to support both
     client-based and server side network programming.
 
-    \o \image ipc-examples.png IPC
-    \o
+    \clearfloat
+    \section1 \l{Inter-Process Communication Examples}{Inter-Process Communication}
+    \beginfloatleft
+    \l{Inter-Process Communication Examples}{\inlineimage ipc-examples.png
+    }
 
-    \row
-    \o{2,1} \l{OpenGL Examples}{\bold{OpenGL}}\bold{ and }\l{OpenVG Examples}{\bold{OpenVG}}\bold{ Examples}
-    \o{2,1} \l{Multimedia Examples}{\bold{Multimedia Framework}}
-    \row
-    \o \image opengl-examples.png OpenGL
-    \o
+    \endfloat
+    Simple, lightweight inter-process communication can be performed using shared
+    memory and local sockets.
+
+    \clearfloat
+    \section1 \l{OpenGL Examples}{OpenGL} and \l{OpenVG Examples}{OpenVG} Examples
+    \beginfloatleft
+    \l{OpenGL Examples}{\inlineimage opengl-examples.png
+    }
+
+    \endfloat
     Qt provides support for integration with OpenGL implementations on all
     platforms, giving developers the opportunity to display hardware accelerated
     3D graphics alongside a more conventional user interface.
@@ -218,137 +261,191 @@
     Qt provides support for integration with OpenVG implementations on
     platforms with suitable drivers.
 
-    \o \image phonon-examples.png
-    \o
+    \clearfloat
+    \section1 \l{Multimedia Examples}{Multimedia Framework}
+    \beginfloatleft
+    \l{Multimedia Examples}{\inlineimage phonon-examples.png
+    }
+
+    \endfloat
     Qt provides low-level audio support on linux,windows and mac platforms by default and
     an audio plugin API to allow developers to implement there own audio support for
     custom devices and platforms.
 
     The Phonon Multimedia Framework brings multimedia support to Qt applications.
 
-    \row
-    \o{2,1} \l{SQL Examples}{\bold{SQL}}
-    \o{2,1} \l{XML Examples}{\bold{XML}}
-    \row
-    \o \image sql-examples.png SQL
-    \o
+    \clearfloat
+    \section1 \l{SQL Examples}{SQL}
+    \beginfloatleft
+    \l{SQL Examples}{\inlineimage sql-examples.png
+    }
+
+    \endfloat
     Qt provides extensive database interoperability, with support for products
     from both open source and proprietary vendors.
 
     SQL support is integrated with Qt's model/view architecture, making it easier
     to provide GUI integration for your database applications.
 
-    \o \image xml-examples.png XML
-    \o
+    \clearfloat
+    \section1 \l{XML Examples}{XML}
+    \beginfloatleft
+    \l{XML Examples}{\inlineimage xml-examples.png
+    }
+
+    \endfloat
     XML parsing and handling is supported through SAX and DOM compliant APIs
     as well as streaming classes.
 
     The XQuery/XPath and XML Schema engines in the QtXmlPatterns modules
     provide classes for querying XML files and custom data models.
 
-    \row
-    \o{2,1} \l{Qt Designer Examples}{\bold{Qt Designer}}
-    \o{2,1} \l{UiTools Examples}{\bold UiTools}
-    \row
-    \o \image designer-examples.png Designer
-    \o
+    \clearfloat
+    \section1 \l{Qt Designer Examples}{Qt Designer}
+    \beginfloatleft
+    \l{Qt Designer Examples}{\inlineimage designer-examples.png
+    }
+
+    \endfloat
     Qt Designer is a capable graphical user interface designer that lets you
     create and configure forms without writing code. GUIs created with
     Qt Designer can be compiled into an application or created at run-time.
 
-    \o \image uitools-examples.png UiTools
-    \o
+    \clearfloat
+    \section1 \l{UiTools Examples}{UiTools}
+    \beginfloatleft
+    \l{UiTools Examples}{\inlineimage uitools-examples.png
+    }
 
-    \row
-    \o{2,1} \l{Qt Linguist Examples}{\bold{Qt Linguist}}
-    \o{2,1} \l{Qt Script Examples}{\bold{Qt Script}}
-    \row
-    \o \image linguist-examples.png QtLinguist
-    \o
+    \endfloat
+    User interfaces created with Qt Designer can be loaded and displayed at
+    run-time using the facilities of the QtUiTools module without the need
+    to generate code in advance.
+
+    \clearfloat
+    \section1 \l{Qt Linguist Examples}{Qt Linguist}
+    \beginfloatleft
+    \l{Qt Linguist Examples}{\inlineimage linguist-examples.png
+    }
+
+    \endfloat
     Internationalization is a core feature of Qt.
 
-    \o \image qtscript-examples.png
-    \o
+    \clearfloat
+    \section1 \l{Qt Script Examples}{Qt Script}
+    \beginfloatleft
+    \l{Qt Script Examples}{\inlineimage qtscript-examples.png
+    }
+
+    \endfloat
     Qt is provided with a powerful embedded scripting environment through the QtScript
     classes.
 
-    \row
-    \o{2,1} \l{WebKit Examples}{\bold WebKit}
-    \o{2,1} \l{Help System Examples}{\bold{Help System}}
-    \row
-    \o \image webkit-examples.png
-    \o
+    \clearfloat
+    \section1 \l{WebKit Examples}{WebKit}
+    \beginfloatleft
+    \l{WebKit Examples}{\inlineimage webkit-examples.png
+    }
+
+    \endfloat
     Qt provides an integrated Web browser component based on WebKit, the popular
     open source browser engine.
 
-    \o \image assistant-examples.png HelpSystem
-    \o
+    \clearfloat
+    \section1 \l{Help System Examples}{Help System}
+    \beginfloatleft
+    \l{Help System Examples}{\inlineimage assistant-examples.png
+    }
+
+    \endfloat
     Support for interactive help is provided by the Qt Assistant application.
     Developers can take advantages of the facilities it offers to display
     specially-prepared documentation to users of their applications.
 
-    \row
-    \o{2,1} \l{State Machine Examples}{\bold{State Machine}}
-    \o{2,1} \l{Animation Framework Examples}{\bold{Animation Framework}}
-    \row
-    \o \image statemachine-examples.png
-    \o
+    \clearfloat
+    \section1 \l{State Machine Examples}{State Machine}
+    \beginfloatleft
+    \l{State Machine Examples}{\inlineimage statemachine-examples.png
+    }
+
+    \endfloat
     Qt provides a powerful hierarchical finite state machine through the Qt State
     Machine classes.
 
-    \o \image animation-examples.png
-    \o
+    \clearfloat
+    \section1 \l{Animation Framework Examples}{Animation Framework}
+    \beginfloatleft
+    \l{Animation Framework Examples}{\inlineimage animation-examples.png
+    }
+
+    \endfloat
     These examples show to to use the \l{The Animation Framework}{animation framework}
     to build highly animated, high-performance GUIs.
 
-    \row
-    \o{2,1} \l{Multi-Touch Examples}{\bold{Multi-Touch Framework}}
-    \o{2,1} \l{Gestures Examples}{\bold{Gestures}}
+    \clearfloat
+    \section1 \l{Multi-Touch Examples}{Multi-Touch Framework}
+    \beginfloatleft
+    \l{Multi-Touch Examples}{\inlineimage multitouch-examples.png
+    }
 
-    \row
-    \o \image multitouch-examples.png
-    \o
+    \endfloat
     Support for multi-touch input makes it possible for developers to create
     extensible and intuitive user interfaces.
 
-    \o \image gestures-examples.png
-    \o
+    \clearfloat
+    \section1 \l{Gestures Examples}{Gestures}
+    \beginfloatleft
+    \l{Gestures Examples}{\inlineimage gestures-examples.png
+    }
+
+    \endfloat
     Applications can be written to respond to gestures as a natural input method.
     These examples show how to enable support for standard and custom gestures in
     applications.
 
-    \row
-    \o{2,1} \l{D-Bus Examples}{\bold{D-Bus}}
-    \o{2,1} \l{Qt for Embedded Linux Examples}{\bold{Qt for Embedded Linux}}
+    \clearfloat
+    \section1 \l{D-Bus Examples}{D-Bus}
+    \beginfloatleft
+    \l{D-Bus Examples}{\inlineimage dbus-examples.png
+    }
 
-    \row
-    \o \image qt-embedded-examples.png
-    \o
+    \endfloat
     Systems with limited resources, specialized hardware, and small
     screens require special attention.
 
-    \o \image dbus-examples.png D-Bus
-    \o
+    \clearfloat
+    \section1 \l{Qt for Embedded Linux Examples}{Qt for Embedded Linux}
+    \beginfloatleft
+    \l{Qt for Embedded Linux Examples}{\inlineimage qt-embedded-examples.png
+    }
+
+    \endfloat
     D-Bus is an inter-process communication protocol for Unix/Linux systems.
     These examples demonstrate how to write application that communicate with
     each other.
 
-    \row
-    \o{2,1} \l{ActiveQt Examples}{\bold ActiveQt}
-    \o{2,1} \l{Qt Quarterly}{\bold{Qt Quarterly}}
+    \clearfloat
+    \section1 \l{ActiveQt Examples}{ActiveQt}
+    \beginfloatleft
+    \l{ActiveQt Examples}{\inlineimage activeqt-examples.png
+    }
 
-    \row
-    \o \image activeqt-examples.png ActiveQt
-    \o
+    \endfloat
     These examples demonstrate how to write ActiveX controls and control servers
     with Qt, and how to use ActiveX controls and COM objects in a Qt application.
 
-    \o \image qq-thumbnail.png QtQuarterly
-    \o
-    One more valuable source for examples and explanations of Qt
-    features is the archive of the \l {Qt Quarterly}.
+    \clearfloat
+    \section1 \l{Qt Quarterly}{Qt Quarterly}
+    \beginfloatleft
+    \l{Qt Quarterly}{\inlineimage qq-thumbnail.png
+    }
 
-    \endtable
+    \endfloat
+    One more valuable source for examples and explanations of Qt
+    features is the archive of \l{Qt Quarterly}, a newsletter for
+    Qt developers.
+
+    \clearfloat
 */
 
 /*!
@@ -385,12 +482,14 @@
     \o \l{widgets/scribble}{Scribble}\raisedaster
     \o \l{widgets/shapedclock}{Shaped Clock}\raisedaster
     \o \l{widgets/sliders}{Sliders}\raisedaster
+    \o \l{widgets/softkeys}{Soft Keys}
     \o \l{widgets/spinboxes}{Spin Boxes}\raisedaster
     \o \l{widgets/styles}{Styles}\raisedaster
     \o \l{widgets/stylesheet}{Style Sheet}\raisedaster
     \o \l{widgets/tablet}{Tablet}\raisedaster
     \o \l{widgets/tetrix}{Tetrix}\raisedaster
     \o \l{widgets/tooltips}{Tooltips}\raisedaster
+    \o \l{widgets/validators}{Validators}
     \o \l{widgets/wiggly}{Wiggly}\raisedaster
     \o \l{widgets/windowflags}{Window Flags}\raisedaster
     \endlist
@@ -544,6 +643,15 @@
     \o \l{graphicsview/elasticnodes}{Elastic Nodes}
     \o \l{graphicsview/portedasteroids}{Ported Asteroids}
     \o \l{graphicsview/portedcanvas}{Ported Canvas}
+    \endlist
+
+    These examples show the use of graphics widgets and layouts.
+
+    \list
+    \o \l{graphicsview/anchorlayout}{Anchor Layout}
+    \o \l{graphicsview/flowlayout}{Flow Layout}
+    \o \l{graphicsview/simpleanchorlayout}{Simple Anchor Layout}
+    \o \l{graphicsview/weatheranchorlayout}{Weather Anchor Layout}
     \endlist
 
     Some examples demonstrate the use of graphics effects with canvas items.
@@ -761,6 +869,8 @@
     \o  \l{network/blockingfortuneclient}{Blocking Fortune Client}\raisedaster
     \o  \l{network/broadcastreceiver}{Broadcast Receiver}
     \o  \l{network/broadcastsender}{Broadcast Sender}
+    \o  \l{network/download}{Download}
+    \o  \l{network/downloadmanager}{Download Manager}
     \o  \l{network/network-chat}{Network Chat}
     \o  \l{network/fortuneclient}{Fortune Client}\raisedaster
     \o  \l{network/fortuneserver}{Fortune Server}\raisedaster
@@ -1043,6 +1153,9 @@
     \o \l{script/context2d}{Context2D}\raisedaster
     \o \l{script/defaultprototypes}{Default Prototypes}\raisedaster
     \o \l{script/helloscript}{Hello Script}\raisedaster
+    \o \l{script/marshal}{Qt Script Marshalling}
+    \o \l{script/qscript}{Qt Script Interpreter}
+    \o \l{script/qsdbg}{Qt Script Debugging}
     \o \l{script/qstetrix}{Qt Script Tetrix}\raisedaster
     \o \l{script/customclass}{Custom Script Class}\raisedaster
     \endlist
@@ -1073,6 +1186,8 @@
     \o A more advanced browser example, showing the use of jQuery to perform effects.
     \row \o \l{webkit/formextractor}{Form Extractor}
     \o How to use JavaScript and C++ together to read page content.
+    \row \o \l{webkit/framecapture}{Frame Capture}
+    \o How to use the WebKit browser engine to obtain images of Web pages.
     \row \o \l{webkit/googlechat}{Google Chat}
     \o A real-world example that shows how an existing Web-based service can be accessed
     using QtWebKit.

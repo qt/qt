@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -539,6 +539,7 @@ bool QLibraryPrivate::loadPlugin()
     \row \i AIX  \i \c .a
     \row \i HP-UX       \i \c .sl, \c .so (HP-UXi)
     \row \i Mac OS X    \i \c .dylib, \c .bundle, \c .so
+    \row \i Symbian     \i \c .dll
     \endtable
 
     Trailing versioning numbers on Unix are ignored.

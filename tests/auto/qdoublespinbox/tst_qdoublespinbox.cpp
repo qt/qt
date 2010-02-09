@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -149,6 +149,7 @@ private slots:
 
     void taskQTBUG_5008_textFromValueAndValidate();
     void taskQTBUG_6670_selectAllWithPrefix();
+    void taskQTBUG_6496_fiddlingWithPrecision();
 
 public slots:
     void valueChangedHelper(const QString &);
@@ -1094,6 +1095,18 @@ void tst_QDoubleSpinBox::taskQTBUG_6670_selectAllWithPrefix()
     QCOMPARE(spin.value(), 1.);
     QTest::keyClick(spin.lineEdit(), Qt::Key_2);
     QCOMPARE(spin.value(), 12.);
+}
+
+void tst_QDoubleSpinBox::taskQTBUG_6496_fiddlingWithPrecision()
+{
+    QDoubleSpinBox dsb;
+    dsb.setRange(0, 0.991);
+    dsb.setDecimals(1);
+    QCOMPARE(dsb.maximum(), 1.0);
+    dsb.setDecimals(2);
+    QCOMPARE(dsb.maximum(), 0.99);
+    dsb.setDecimals(3);
+    QCOMPARE(dsb.maximum(), 0.991);
 }
 
 QTEST_MAIN(tst_QDoubleSpinBox)

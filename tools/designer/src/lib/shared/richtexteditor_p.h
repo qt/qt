@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,7 +72,7 @@ class QDESIGNER_SHARED_EXPORT RichTextEditorDialog : public QDialog
 {
     Q_OBJECT
 public:
-    RichTextEditorDialog(QDesignerFormEditorInterface *core, QWidget *parent = 0);
+    explicit RichTextEditorDialog(QDesignerFormEditorInterface *core, QWidget *parent = 0);
     ~RichTextEditorDialog();
 
     int showDialog();

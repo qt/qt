@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -144,10 +144,10 @@ QAudioFormat QAudioDeviceInfoInternal::nearestFormat(const QAudioFormat& format)
 
     rc.setCodec(QString::fromLatin1("audio/pcm"));
 
-    if (rc.sampleRate() != target.sampleRate())
-        rc.setSampleRate(target.sampleRate());
-    if (rc.channelCount() != target.channelCount())
-        rc.setChannelCount(target.channelCount());
+    if (rc.frequency() != target.frequency())
+        rc.setFrequency(target.frequency());
+    if (rc.channels() != target.channels())
+        rc.setChannels(target.channels());
     if (rc.sampleSize() != target.sampleSize())
         rc.setSampleSize(target.sampleSize());
     if (rc.byteOrder() != target.byteOrder())

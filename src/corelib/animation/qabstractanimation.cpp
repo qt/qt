@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -299,8 +299,6 @@ void QUnifiedTimer::registerRunningAnimation(QAbstractAnimation *animation)
         return;
 
     if (QAbstractAnimationPrivate::get(animation)->isPause) {
-        if (animation->duration() == -1)
-            qDebug() << "toto";
         runningPauseAnimations << animation;
     } else
         runningLeafAnimations++;

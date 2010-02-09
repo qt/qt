@@ -216,7 +216,6 @@
 #include "JSWebKitCSSTransformValue.h"
 #include "JSWebKitPoint.h"
 #include "JSWebKitTransitionEvent.h"
-#include "JSWebSocket.h"
 #include "JSWheelEvent.h"
 #include "JSWorker.h"
 #include "JSXMLHttpRequest.h"
@@ -247,7 +246,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow);
 
 /* Hash table */
 
-static const HashTableValue JSDOMWindowTableValues[297] =
+static const HashTableValue JSDOMWindowTableValues[296] =
 {
     { "screen", DontDelete|ReadOnly, (intptr_t)jsDOMWindowScreen, (intptr_t)0 },
     { "history", DontDelete|ReadOnly, (intptr_t)jsDOMWindowHistory, (intptr_t)0 },
@@ -540,7 +539,6 @@ static const HashTableValue JSDOMWindowTableValues[297] =
     { "MessageChannel", DontDelete, (intptr_t)jsDOMWindowMessageChannelConstructor, (intptr_t)setJSDOMWindowMessageChannelConstructor },
     { "Worker", DontDelete, (intptr_t)jsDOMWindowWorkerConstructor, (intptr_t)setJSDOMWindowWorkerConstructor },
     { "SharedWorker", DontDelete, (intptr_t)jsDOMWindowSharedWorkerConstructor, (intptr_t)setJSDOMWindowSharedWorkerConstructor },
-    { "WebSocket", DontDelete, (intptr_t)jsDOMWindowWebSocketConstructor, (intptr_t)setJSDOMWindowWebSocketConstructor },
     { "Plugin", DontDelete, (intptr_t)jsDOMWindowPluginConstructor, (intptr_t)setJSDOMWindowPluginConstructor },
     { "PluginArray", DontDelete, (intptr_t)jsDOMWindowPluginArrayConstructor, (intptr_t)setJSDOMWindowPluginArrayConstructor },
     { "MimeType", DontDelete, (intptr_t)jsDOMWindowMimeTypeConstructor, (intptr_t)setJSDOMWindowMimeTypeConstructor },
@@ -588,7 +586,7 @@ static JSC_CONST_HASHTABLE HashTable JSDOMWindowTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 65535, JSDOMWindowTableValues, 0 };
 #else
-    { 1068, 1023, JSDOMWindowTableValues, 0 };
+    { 1067, 1023, JSDOMWindowTableValues, 0 };
 #endif
 
 /* Hash table for prototype */
@@ -3275,14 +3273,6 @@ JSValue jsDOMWindowSharedWorkerConstructor(ExecState* exec, const Identifier&, c
     return castedThis->sharedWorker(exec);
 }
 
-JSValue jsDOMWindowWebSocketConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slot.slotBase()));
-    if (!castedThis->allowsAccessFrom(exec))
-        return jsUndefined();
-    return castedThis->webSocket(exec);
-}
-
 JSValue jsDOMWindowPluginConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slot.slotBase()));
@@ -5676,14 +5666,6 @@ void setJSDOMWindowSharedWorkerConstructor(ExecState* exec, JSObject* thisObject
         return;
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SharedWorker"), value);
-}
-
-void setJSDOMWindowWebSocketConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
-{
-    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
-        return;
-    // Shadowing a built-in constructor
-    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebSocket"), value);
 }
 
 void setJSDOMWindowPluginConstructor(ExecState* exec, JSObject* thisObject, JSValue value)

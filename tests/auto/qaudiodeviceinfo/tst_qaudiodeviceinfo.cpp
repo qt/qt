@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -128,7 +128,7 @@ void tst_QAudioDeviceInfo::codecs()
 void tst_QAudioDeviceInfo::channels()
 {
     if(available) {
-        QList<int> avail = device->supportedChannelCounts();
+        QList<int> avail = device->supportedChannels();
         QVERIFY(avail.size() > 0);
     }
 }
@@ -160,7 +160,7 @@ void tst_QAudioDeviceInfo::sampleTypes()
 void tst_QAudioDeviceInfo::frequencies()
 {
     if(available) {
-        QList<int> avail = device->supportedSampleRates();
+        QList<int> avail = device->supportedFrequencies();
         QVERIFY(avail.size() > 0);
     }
 }
@@ -169,8 +169,8 @@ void tst_QAudioDeviceInfo::isformat()
 {
     if(available) {
         QAudioFormat     format;
-        format.setSampleRate(44100);
-        format.setChannelCount(2);
+        format.setFrequency(44100);
+        format.setChannels(2);
         format.setSampleType(QAudioFormat::SignedInt);
         format.setByteOrder(QAudioFormat::LittleEndian);
         format.setSampleSize(16);
@@ -185,8 +185,8 @@ void tst_QAudioDeviceInfo::preferred()
 {
     if(available) {
         QAudioFormat format = device->preferredFormat();
-        QVERIFY(format.sampleRate() == 44100);
-        QVERIFY(format.channelCount() == 2);
+        QVERIFY(format.frequency() == 44100);
+        QVERIFY(format.channels() == 2);
     }
 }
 
@@ -194,9 +194,9 @@ void tst_QAudioDeviceInfo::nearest()
 {
     if(available) {
         QAudioFormat format1, format2;
-        format1.setSampleRate(8000);
+        format1.setFrequency(8000);
         format2 = device->nearestFormat(format1);
-        QVERIFY(format2.sampleRate() == 44100);
+        QVERIFY(format2.frequency() == 44100);
     }
 }
 

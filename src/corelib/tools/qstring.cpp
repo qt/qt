@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -885,7 +885,7 @@ int QString::grow(int size)
 QString QString::fromWCharArray(const wchar_t *string, int size)
 {
     if (sizeof(wchar_t) == sizeof(QChar)) {
-        return fromUtf16((ushort *)string, size);
+        return fromUtf16((const ushort *)string, size);
     } else {
         return fromUcs4((uint *)string, size);
     }
@@ -3857,6 +3857,12 @@ QString QString::fromUtf8(const char *str, int size)
     If \a size is -1 (default), \a unicode must be terminated
     with a 0.
 
+    This function checks for a Byte Order Mark (BOM). If it is missing,
+    host byte order is assumed.
+
+    This function is comparatively slow.
+    Use QString(const ushort *, int) if possible.
+
     QString makes a deep copy of the Unicode data.
 
     \sa utf16(), setUtf16()
@@ -3922,6 +3928,9 @@ QString& QString::setUnicode(const QChar *unicode, int size)
 
     If \a unicode is 0, nothing is copied, but the string is still
     resized to \a size.
+
+    Note that unlike fromUtf16(), this function does not consider BOMs and
+    possibly differing byte ordering.
 
     \sa utf16(), setUnicode()
 */
@@ -4668,6 +4677,8 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 
     Returns the QString as a '\\0\'-terminated array of unsigned
     shorts. The result remains valid until the string is modified.
+
+    The returned string is in host byte order.
 
     \sa unicode()
 */
@@ -7740,7 +7751,7 @@ QString QStringRef::toString() const {
         return QString();
     if (m_size && m_position == 0 && m_size == m_string->size())
         return *m_string;
-    return QString::fromUtf16(reinterpret_cast<const ushort*>(m_string->unicode() + m_position), m_size);
+    return QString(m_string->unicode() + m_position, m_size);
 }
 
 

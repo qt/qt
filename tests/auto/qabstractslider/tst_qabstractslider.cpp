@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -768,7 +768,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << true                          // inverted controls
                                         << 20                            // wheel scroll lines
                                         << false                         // with modifiers
-                                        << 1                             // delta
+                                        << -1                            // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Horizontal)           // orientation of wheel
                                         << 30                            // expected position after
@@ -782,7 +782,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << false                         // inverted controls
                                         << 1                             // wheel scroll lines
                                         << false                         // with modifiers
-                                        << 2                             // delta
+                                        << -2                            // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Horizontal)           // orientation of wheel
                                         << 100                           // expected position after
@@ -796,7 +796,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << false                         // inverted controls
                                         << 1                             // wheel scroll lines
                                         << false                         // with modifiers
-                                        << -2                             // delta
+                                        << 2                             // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Horizontal)           // orientation of wheel
                                         << 0                             // expected position after
@@ -810,7 +810,7 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << false                         // inverted controls
                                         << 20                            // wheel scroll lines
                                         << true                          // with modifiers
-                                        << 1                             // delta
+                                        << -1                            // delta
                                         << int(Qt::Horizontal)           // orientation of slider
                                         << int(Qt::Horizontal)           // orientation of wheel
                                         << 90                            // expected position after

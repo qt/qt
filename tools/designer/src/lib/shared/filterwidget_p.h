@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,7 +66,7 @@ class QPushButton;
 namespace qdesigner_internal {
 
 /* A line edit that displays a grayed hintText (like "Type Here to Filter")
- * when not focussed and empty. When connecting to the changed signals and
+ * when not focused and empty. When connecting to the changed signals and
  * querying text, one has to be aware that the text is set to that hint
  * text if isShowingHintText() returns true (that is, does not contain
  * valid user input). This widget should never have initial focus

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -452,8 +452,16 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                             else
                                 return false;
                         } else if (file.isFile()) {
-                            const bool arc = addFile(alias, RCCFileInfo(alias.section(slash, -1), file, language, country,
-                                                                        RCCFileInfo::NoFlags, compressLevel, compressThreshold));
+                            const bool arc =
+                                addFile(alias,
+                                        RCCFileInfo(alias.section(slash, -1),
+                                                    file,
+                                                    language,
+                                                    country,
+                                                    RCCFileInfo::NoFlags,
+                                                    compressLevel,
+                                                    compressThreshold)
+                                        );
                             if (!arc)
                                 m_failedResources.push_back(absFileName);
                         } else {
@@ -473,9 +481,16 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                                 it.next();
                                 QFileInfo child(it.fileInfo());
                                 if (child.fileName() != QLatin1String(".") && child.fileName() != QLatin1String("..")) {
-                                    const bool arc = addFile(alias + child.fileName(),
-                                                             RCCFileInfo(child.fileName(), child, language, country,
-                                                             RCCFileInfo::NoFlags, compressLevel, compressThreshold));
+                                    const bool arc =
+                                        addFile(alias + child.fileName(),
+                                                RCCFileInfo(child.fileName(),
+                                                            child,
+                                                            language,
+                                                            country,
+                                                            RCCFileInfo::NoFlags,
+                                                            compressLevel,
+                                                            compressThreshold)
+                                                );
                                     if (!arc)
                                         m_failedResources.push_back(child.fileName());
                                 }
@@ -529,6 +544,8 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
     const QString filename = nodes.at(nodes.size()-1);
     RCCFileInfo *s = new RCCFileInfo(file);
     s->m_parent = parent;
+    if (parent->m_children.contains(filename))
+        qWarning("potential duplicate alias detected: '%s'", qPrintable(filename));
     parent->m_children.insertMulti(filename, s);
     return true;
 }

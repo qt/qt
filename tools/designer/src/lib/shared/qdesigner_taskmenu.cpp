@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -675,7 +675,7 @@ void QDesignerTaskMenu::navigateToSlot(QDesignerFormEditorInterface *core,
         const QString signalSignature = selectedItem->text(0);
         const QStringList parameterNames = qVariantValue<QStringList>(selectedItem->data(0, Qt::UserRole));
 
-        // TODO: Check wether signal is connected to slot
+        // TODO: Check whether signal is connected to slot
         integr->emitNavigateToSlot(objectName, signalSignature, parameterNames);
     }
 }

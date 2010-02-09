@@ -37,18 +37,24 @@ using namespace Phonon::MMF;
 
 AbstractAudioEffect::AbstractAudioEffect(QObject *parent,
                                          const QList<EffectParameter> &params)
-    :   MediaNode::MediaNode(parent)
-    ,   m_player(0)
+    :   MediaNode(parent)
     ,   m_params(params)
+    ,   m_player(0)
 {
+
 }
 
-QList<EffectParameter> AbstractAudioEffect::parameters() const
+QList<Phonon::EffectParameter> AbstractAudioEffect::parameters() const
 {
-    return m_params;
+    // Convert from QList<MMF::EffectParameter> to QList<Phonon::EffectParameter>
+    QList<Phonon::EffectParameter> result;
+    EffectParameter param;
+    foreach (param, m_params)
+        result += param;
+    return result;
 }
 
-QVariant AbstractAudioEffect::parameterValue(const EffectParameter &queriedParam) const
+QVariant AbstractAudioEffect::parameterValue(const Phonon::EffectParameter &queriedParam) const
 {
     const QVariant &val = m_values.value(queriedParam.id());
 
@@ -58,13 +64,31 @@ QVariant AbstractAudioEffect::parameterValue(const EffectParameter &queriedParam
         return val;
 }
 
-void AbstractAudioEffect::setParameterValue(const EffectParameter &param,
+void AbstractAudioEffect::setParameterValue(const Phonon::EffectParameter &param,
                                             const QVariant &newValue)
 {
     m_values.insert(param.id(), newValue);
-    parameterChanged(param.id(), newValue);
-    // TODO: handle audio effect errors
-    TRAP_IGNORE(m_effect->ApplyL());
+
+    if (m_effect.data()) {
+        const EffectParameter& internalParam = internalParameter(param.id());
+        int err = parameterChanged(internalParam, newValue);
+        // TODO: handle audio effect errors
+        Q_UNUSED(err);
+    }
+}
+
+void AbstractAudioEffect::abstractPlayerChanged(AbstractPlayer *player)
+{
+    m_player = qobject_cast<AbstractMediaPlayer *>(player);
+    m_effect.reset();
+}
+
+void AbstractAudioEffect::stateChanged(Phonon::State newState,
+                                       Phonon::State oldState)
+{
+    if (Phonon::LoadingState == oldState
+        && Phonon::LoadingState != newState)
+        createEffect();
 }
 
 void AbstractAudioEffect::connectMediaObject(MediaObject *mediaObject)
@@ -72,26 +96,99 @@ void AbstractAudioEffect::connectMediaObject(MediaObject *mediaObject)
     Q_ASSERT_X(!m_player, Q_FUNC_INFO, "Player already connected");
     Q_ASSERT_X(!m_effect.data(), Q_FUNC_INFO, "Effect already created");
 
-    AbstractMediaPlayer *const player =
-        qobject_cast<AbstractMediaPlayer *>(mediaObject->abstractPlayer());
+    abstractPlayerChanged(mediaObject->abstractPlayer());
 
-    if (player) {
-        m_player = player;
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)),
+            SLOT(stateChanged(Phonon::State, Phonon::State)));
 
-        if (AudioPlayer *audioPlayer = qobject_cast<AudioPlayer *>(player)) {
-            connectAudioPlayer(audioPlayer->nativePlayer());
-            applyParameters();
-            // TODO: handle audio effect errors
-            TRAP_IGNORE(m_effect->EnableL());
+    connect(mediaObject, SIGNAL(abstractPlayerChanged(AbstractPlayer *)),
+            SLOT(abstractPlayerChanged(AbstractPlayer *)));
+
+    if (mediaObject->state() != Phonon::LoadingState)
+        createEffect();
+}
+
+void AbstractAudioEffect::disconnectMediaObject(MediaObject *mediaObject)
+{
+    mediaObject->disconnect(this);
+    abstractPlayerChanged(0);
+}
+
+void AbstractAudioEffect::setEnabled(bool enabled)
+{
+    TInt err = KErrNone;
+
+    if (enabled)
+        // TODO: handle audio effect errors
+        TRAP(err, m_effect->EnableL())
+    else
+        // TODO: handle audio effect errors
+        TRAP(err, m_effect->DisableL())
+
+    Q_UNUSED(err);
+}
+
+void AbstractAudioEffect::createEffect()
+{
+    Q_ASSERT_X(m_player, Q_FUNC_INFO, "Invalid media player pointer");
+
+    if (AudioPlayer *audioPlayer = qobject_cast<AudioPlayer *>(m_player)) {
+        createEffect(audioPlayer->nativePlayer());
+    }
+
+    if (m_effect.data()) {
+        EffectParameter param;
+	int err = 0;
+        foreach (param, m_params) {
+            const QVariant value = parameterValue(param);
+            err = parameterChanged(param, value);
         }
+	Q_UNUSED(err)
     }
 }
 
-void AbstractAudioEffect::disconnectMediaObject(MediaObject * /*mediaObject*/)
+const MMF::EffectParameter& AbstractAudioEffect::internalParameter(int id) const
 {
-    m_player = 0;
-    m_effect.reset();
+    const EffectParameter *result = 0;
+    for (int i=0; i<m_params.count() && !result; ++i) {
+        if (m_params[i].id() == id)
+            result = &m_params[i];
+    }
+    Q_ASSERT_X(result, Q_FUNC_INFO, "Parameter not found");
+    return *result;
 }
+
+int AbstractAudioEffect::parameterChanged(const EffectParameter &param,
+            const QVariant &value)
+{
+    int err = 0;
+
+    switch (param.id()) {
+    case ParameterEnable:
+        setEnabled(value.toBool());
+        break;
+    default:
+        {
+        const EffectParameter& internalParam = internalParameter(param.id());
+        err = effectParameterChanged(internalParam, value);
+        }
+        break;
+    }
+
+    if (!err)
+        TRAP(err, m_effect->ApplyL());
+
+    return err;
+}
+
+int AbstractAudioEffect::effectParameterChanged(
+    const EffectParameter &param, const QVariant &value)
+{
+    // Default implementation
+    Q_ASSERT_X(false, Q_FUNC_INFO, "Effect has no parameters");
+    return 0;
+}
+
 
 QT_END_NAMESPACE
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,9 @@
 #import <private/qcocoawindowdelegate_mac_p.h>
 #import <private/qcocoaview_mac_p.h>
 #import <private/qcocoawindowcustomthemeframe_mac_p.h>
+#include <private/qapplication_p.h>
+#include <private/qbackingstore_p.h>
+
 
 #include <QtGui/QWidget>
 

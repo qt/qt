@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -298,7 +298,7 @@ class QDESIGNER_SHARED_EXPORT DesignerIconCache : public QObject
 {
     Q_OBJECT
 public:
-    DesignerIconCache(DesignerPixmapCache *pixmapCache, QObject *parent = 0);
+    explicit DesignerIconCache(DesignerPixmapCache *pixmapCache, QObject *parent = 0);
     QIcon icon(const PropertySheetIconValue &value) const;
     void clear();
 signals:
@@ -313,7 +313,7 @@ private:
 class QDESIGNER_SHARED_EXPORT PropertySheetStringValue
 {
 public:
-    PropertySheetStringValue(const QString &value = QString(),
+    explicit PropertySheetStringValue(const QString &value = QString(),
                              bool translatable = true,
                              const QString &disambiguation = QString(),
                              const QString &comment = QString());
@@ -345,11 +345,11 @@ private:
 class QDESIGNER_SHARED_EXPORT PropertySheetKeySequenceValue
 {
 public:
-    PropertySheetKeySequenceValue(const QKeySequence &value = QKeySequence(),
+    explicit PropertySheetKeySequenceValue(const QKeySequence &value = QKeySequence(),
                                   bool translatable = true,
                                   const QString &disambiguation = QString(),
                                   const QString &comment = QString());
-    PropertySheetKeySequenceValue(const QKeySequence::StandardKey &standardKey,
+    explicit PropertySheetKeySequenceValue(const QKeySequence::StandardKey &standardKey,
                                   bool translatable = true,
                                   const QString &disambiguation = QString(),
                                   const QString &comment = QString());

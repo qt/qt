@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2408,7 +2408,11 @@ static inline int soft_light_op(int dst, int src, int da, int sa)
     else if (4 * dst <= da)
         return (dst * sa * 255 + da * (src2 - sa) * ((((16 * dst_np - 12 * 255) * dst_np + 3 * 65025) * dst_np) / 65025) + temp) / 65025;
     else {
+#   ifdef Q_CC_RVCT // needed to avoid compiler crash in RVCT 2.2
+        return (dst * sa * 255 + da * (src2 - sa) * (qIntSqrtInt(dst_np * 255) - dst_np) + temp) / 65025;
+#   else
         return (dst * sa * 255 + da * (src2 - sa) * (int(sqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
+#   endif
     }
 }
 

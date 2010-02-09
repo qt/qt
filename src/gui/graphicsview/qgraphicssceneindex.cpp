@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -279,7 +279,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
         return;
 
     const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     const bool itemHasChildren = !item->d_ptr->children.isEmpty();
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity()))
         return;
@@ -554,7 +554,7 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateTopLevelItems(const QRectF &
 
 /*!
     \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::DescendingOrder) const
-    
+
     This pure virtual function all items in the index and sort them using
     \a order.
 */
@@ -624,7 +624,7 @@ void QGraphicsSceneIndex::deleteItem(QGraphicsItem *item)
 
     \sa QGraphicsItem::GraphicsItemChange
 */
-void QGraphicsSceneIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+void QGraphicsSceneIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const void *const value)
 {
     Q_UNUSED(item);
     Q_UNUSED(change);

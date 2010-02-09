@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -87,7 +87,8 @@ private:
     mutable int nextDelay;
     mutable int loopCnt;
     int frameNumber;
-    mutable QSize nextSize;
+    mutable QVector<QSize> imageSizes;
+    mutable bool scanIsCached;
 };
 
 QT_END_NAMESPACE

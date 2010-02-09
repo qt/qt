@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,7 @@ PeerManager::PeerManager(Client *client)
     foreach (QString string, envVariables) {
         int index = environment.indexOf(QRegExp(string));
         if (index != -1) {
-            QStringList stringList = environment.at(index).split("=");
+            QStringList stringList = environment.at(index).split('=');
             if (stringList.size() == 2) {
                 username = stringList.at(1).toUtf8();
                 break;

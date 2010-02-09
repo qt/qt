@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,6 +165,8 @@ private slots:
     void ace_testsuite();
     void std3violations_data();
     void std3violations();
+    void std3deviations_data();
+    void std3deviations();
     void tldRestrictions_data();
     void tldRestrictions();
     void emptyQueryOrFragment();
@@ -3238,6 +3240,8 @@ void tst_QUrl::std3violations_data()
     QTest::newRow("bang") << "foo!" << false;
     QTest::newRow("plus") << "foo+bar" << false;
     QTest::newRow("dot") << "foo.bar";
+    QTest::newRow("startingdot") << ".bar" << false;
+    QTest::newRow("startingdot2") << ".example.com" << false;
     QTest::newRow("slash") << "foo/bar" << true;
     QTest::newRow("colon") << "foo:80" << true;
     QTest::newRow("question") << "foo?bar" << true;
@@ -3280,6 +3284,24 @@ void tst_QUrl::std3violations()
 
     url = QUrl("http://" + source + "/some/path");
     QVERIFY(!url.isValid());
+}
+
+void tst_QUrl::std3deviations_data()
+{
+    QTest::addColumn<QString>("source");
+
+    QTest::newRow("ending-dot") << "example.com.";
+    QTest::newRow("ending-dot3002") << QString("example.com") + QChar(0x3002);
+}
+
+void tst_QUrl::std3deviations()
+{
+    QFETCH(QString, source);
+    QVERIFY(!QUrl::toAce(source).isEmpty());
+
+    QUrl url;
+    url.setHost(source);
+    QVERIFY(!url.host().isEmpty());
 }
 
 void tst_QUrl::tldRestrictions_data()

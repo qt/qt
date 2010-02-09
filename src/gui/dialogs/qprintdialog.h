@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,9 +97,9 @@ public:
     void done(int result);
 
 #if defined (Q_OS_UNIX) && defined (QT3_SUPPORT)
-    void setPrinter(QPrinter *, bool = false);
-    QPrinter *printer() const;
-    void addButton(QPushButton *button);
+    QT3_SUPPORT void setPrinter(QPrinter *, bool = false);
+    QT3_SUPPORT QPrinter *printer() const;
+    QT3_SUPPORT void addButton(QPushButton *button);
 #endif
 
     void setOption(PrintDialogOption option, bool on = true);

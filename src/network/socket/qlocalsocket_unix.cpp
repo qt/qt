@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -109,8 +109,8 @@ void QLocalSocketPrivate::_q_stateChanged(QAbstractSocket::SocketState newState)
     switch(newState) {
     case QAbstractSocket::UnconnectedState:
         state = QLocalSocket::UnconnectedState;
-        serverName = QString();
-        fullServerName = QString();
+        serverName.clear();
+        fullServerName.clear();
         break;
     case QAbstractSocket::ConnectingState:
         state = QLocalSocket::ConnectingState;
@@ -225,7 +225,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
         || state() == ConnectingState)
         return;
 
-    d->errorString = QString();
+    d->errorString.clear();
     d->unixSocket.setSocketState(QAbstractSocket::ConnectingState);
     d->state = ConnectingState;
     emit stateChanged(d->state);
@@ -341,7 +341,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
         errorOccurred(QLocalSocket::UnknownSocketError, function);
     }
     connectingSocket = -1;
-    connectingName = QString();
+    connectingName.clear();
     connectingOpenMode = 0;
 }
 
@@ -438,10 +438,10 @@ void QLocalSocket::close()
     if (d->connectingSocket != -1)
         ::close(d->connectingSocket);
     d->connectingSocket = -1;
-    d->connectingName = QString();
+    d->connectingName.clear();
     d->connectingOpenMode = 0;
-    d->serverName = QString();
-    d->fullServerName = QString();
+    d->serverName.clear();
+    d->fullServerName.clear();
     QIODevice::close();
 }
 

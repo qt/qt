@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -214,8 +214,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QAbstractSliderPrivate::QAbstractSliderPrivate()
-    : minimum(0), maximum(99), singleStep(1), pageStep(10),
-      value(0), position(0), pressValue(-1), offset_accumulated(0), tracking(true),
+    : minimum(0), maximum(99), pageStep(10), value(0), position(0), pressValue(-1),
+      singleStep(1), offset_accumulated(0), tracking(true),
       blocktracking(false), pressed(false),
       invertedAppearance(false), invertedControls(false),
       orientation(Qt::Horizontal), repeatAction(QAbstractSlider::SliderNoAction)
@@ -688,6 +688,48 @@ void QAbstractSlider::sliderChange(SliderChange)
     update();
 }
 
+bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::KeyboardModifiers modifiers, int delta)
+{
+    Q_Q(QAbstractSlider);
+    int stepsToScroll = 0;
+    // in Qt scrolling to the right gives negative values.
+    if (orientation == Qt::Horizontal)
+        delta = -delta;
+    qreal offset = qreal(delta) / 120;
+
+    if ((modifiers & Qt::ControlModifier) || (modifiers & Qt::ShiftModifier)) {
+        // Scroll one page regardless of delta:
+        stepsToScroll = qBound(-pageStep, int(offset * pageStep), pageStep);
+        offset_accumulated = 0;
+    } else {
+        // Calculate how many lines to scroll. Depending on what delta is (and 
+        // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
+        // only scroll whole lines, so we keep the reminder until next event.
+        qreal stepsToScrollF = offset * QApplication::wheelScrollLines() * effectiveSingleStep();
+        // Check if wheel changed direction since last event:
+        if (offset_accumulated != 0 && (offset / offset_accumulated) < 0)
+            offset_accumulated = 0;
+
+        offset_accumulated += stepsToScrollF;
+        stepsToScroll = qBound(-pageStep, int(offset_accumulated), pageStep);
+        offset_accumulated -= int(offset_accumulated);
+        if (stepsToScroll == 0)
+            return false;
+    }
+
+    if (invertedControls)
+        stepsToScroll = -stepsToScroll;
+
+    int prevValue = value;
+    position = overflowSafeAdd(stepsToScroll); // value will be updated by triggerAction()
+    q->triggerAction(QAbstractSlider::SliderMove);
+
+    if (prevValue == value) {
+        offset_accumulated = 0;
+        return false;
+    }
+    return true;
+}
 
 /*!
     \reimp
@@ -697,42 +739,11 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 {
     Q_D(QAbstractSlider);
     e->ignore();
-
-    int stepsToScroll = 0;
-    qreal offset = qreal(e->delta()) / 120;
-
-    if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier)) {
-        // Scroll one page regardless of delta:
-        stepsToScroll = qBound(-d->pageStep, int(offset * d->pageStep), d->pageStep);
-        d->offset_accumulated = 0;
-    } else {
-        // Calculate how many lines to scroll. Depending on what delta is (and 
-        // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
-        // only scroll whole lines, so we keep the reminder until next event.
-        qreal stepsToScrollF = offset * QApplication::wheelScrollLines() * d->effectiveSingleStep();
-        // Check if wheel changed direction since last event:
-        if (d->offset_accumulated != 0 && (offset / d->offset_accumulated) < 0)
-            d->offset_accumulated = 0;
-
-        d->offset_accumulated += stepsToScrollF;
-        stepsToScroll = qBound(-d->pageStep, int(d->offset_accumulated), d->pageStep);
-        d->offset_accumulated -= int(d->offset_accumulated);
-        if (stepsToScroll == 0)
-            return;
-    }
-
-    if (d->invertedControls)
-        stepsToScroll = -stepsToScroll;
-
-    int prevValue = d->value;
-    d->position = d->overflowSafeAdd(stepsToScroll); // value will be updated by triggerAction()
-    triggerAction(SliderMove);
-
-    if (prevValue == d->value)
-        d->offset_accumulated = 0;
-    else
+    int delta = e->delta();
+    if (d->scrollByDelta(e->orientation(), e->modifiers(), delta))
         e->accept();
 }
+
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
 /*!

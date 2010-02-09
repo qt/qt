@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -246,8 +246,8 @@ static void initializeDb()
     QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
     
     const int numTypeFaces = QS60Data::screenDevice()->NumTypefaces();
-    const QFontDatabaseS60StoreImplementation *store = dynamic_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
-    Q_ASSERT(store);
+    const QFontDatabaseS60StoreImplementation *store =
+            static_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
     bool fontAdded = false;
     for (int i = 0; i < numTypeFaces; i++) {
         TTypefaceSupport typefaceSupport;
@@ -258,8 +258,7 @@ static void initializeDb()
             continue;
         if (font->TypeUid() == KCFbsFontUid) {
             TOpenFontFaceAttrib faceAttrib;
-            const CFbsFont *cfbsFont = dynamic_cast<const CFbsFont *>(font);
-            Q_ASSERT(cfbsFont);
+            const CFbsFont *cfbsFont = static_cast<const CFbsFont *>(font);
             cfbsFont->GetFaceAttrib(faceAttrib);
 
             QtFontStyle::Key styleKey;
@@ -390,8 +389,8 @@ QFontEngine *QFontDatabase::findFont(int script, const QFontPrivate *, const QFo
         QFontDef request = req;
         request.family = fontFamily;
 #if defined(QT_NO_FREETYPE)
-        const QFontDatabaseS60StoreImplementation *store = dynamic_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
-        Q_ASSERT(store);
+        const QFontDatabaseS60StoreImplementation *store =
+                static_cast<const QFontDatabaseS60StoreImplementation*>(db->s60Store);
         const QFontEngineS60Extensions *extension = store->extension(fontFamily);
         fe = new QFontEngineS60(request, extension);
 #else

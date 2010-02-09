@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1267,6 +1267,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \list
     \i QSQLITE_BUSY_TIMEOUT
     \i QSQLITE_OPEN_READONLY
+    \i QSQLITE_ENABLE_SHARED_CACHE
     \endlist
 
     \i

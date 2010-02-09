@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -85,7 +85,7 @@ class QDESIGNER_SHARED_EXPORT QDesignerObjectInspector: public QDesignerObjectIn
 {
     Q_OBJECT
 public:
-    QDesignerObjectInspector(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit QDesignerObjectInspector(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
     // Select a qobject unmanaged by form window
     virtual bool selectObject(QObject *o) = 0;

@@ -59,7 +59,7 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
 
     # No platform specific paths provided, use default paths
 
-    exists($${EPOCROOT}epoc32/include/platform) { # New SF structure
+    exists($${EPOCROOT}epoc32/include/mw) { # New SF structure
     
         # ---------------------------------------
         # Location, where the applications layer specific public headers are exported

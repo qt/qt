@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -221,7 +221,7 @@ static void qt_format_to_attrib_list(bool has_render_texture, const QGLFormat &f
     }
     if ((f.redBufferSize() > 8 || f.greenBufferSize() > 8
          || f.blueBufferSize() > 8 || f.alphaBufferSize() > 8)
-        && (QGLExtensions::glExtensions & QGLExtensions::NVFloatBuffer))
+        && (QGLExtensions::glExtensions() & QGLExtensions::NVFloatBuffer))
     {
         attribs[i++] = WGL_FLOAT_COMPONENTS_NV;
         attribs[i++] = TRUE;
@@ -368,11 +368,9 @@ void QGLPixelBuffer::releaseFromDynamicTexture()
 bool QGLPixelBuffer::hasOpenGLPbuffers()
 {
     bool ret = false;
-    QGLWidget *dmy = 0;
-    if (!QGLContext::currentContext()) {
-        dmy = new QGLWidget;
-        dmy->makeCurrent();
-    }
+    QGLTemporaryContext *tmpContext = 0;
+    if (!QGLContext::currentContext())
+        tmpContext = new QGLTemporaryContext;
     PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
         (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
     if (wglGetExtensionsStringARB) {
@@ -382,8 +380,8 @@ bool QGLPixelBuffer::hasOpenGLPbuffers()
             ret = true;
         }
     }
-    if (dmy)
-        delete dmy;
+    if (tmpContext)
+        delete tmpContext;
     return ret;
 }
 

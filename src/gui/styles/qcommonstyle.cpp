@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1149,10 +1149,10 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
     int vpadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
     if (opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth)
         verticalShift = -verticalShift;
-    tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
+    tr.adjust(hpadding, verticalShift - vpadding, horizontalShift - hpadding, vpadding);
     bool selected = opt->state & QStyle::State_Selected;
     if (selected) {
-        tr.setBottom(tr.bottom() - verticalShift);
+        tr.setTop(tr.top() - verticalShift);
         tr.setRight(tr.right() - horizontalShift);
     }
 
@@ -1608,7 +1608,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                     if (toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
                         pr.setHeight(pmSize.height() + 6);
-                        tr.adjust(0, pr.height() - 1, 0, -3);
+                        tr.adjust(0, pr.height() - 1, 0, -2);
                         pr.translate(shiftX, shiftY);
                         if (!hasArrow) {
                             proxy()->drawItemPixmap(p, pr, Qt::AlignCenter, pm);

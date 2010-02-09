@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,7 +83,7 @@ public:
             if(stream->message_output) {
                 QT_TRY {
                     qt_message_output(stream->type, stream->buffer.toLocal8Bit().data());
-                } QT_CATCH(std::bad_alloc) { /* We're out of memory - give up. */ }
+                } QT_CATCH(std::bad_alloc&) { /* We're out of memory - give up. */ }
             }
             delete stream;
         }

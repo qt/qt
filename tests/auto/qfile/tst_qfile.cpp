@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -131,6 +131,7 @@ private slots:
     void readLineNullInLine();
     void readAll_data();
     void readAll();
+    void readAllBuffer();
     void readAllStdin();
     void readLineStdin();
     void readLineStdin_lineByLine();
@@ -390,6 +391,7 @@ void tst_QFile::cleanupTestCase()
     QFile::remove("myLink2.lnk");
     QFile::remove("resources");
     QFile::remove("qfile_map_testfile");
+    QFile::remove("readAllBuffer.txt");
 }
 
 //------------------------------------------
@@ -791,6 +793,38 @@ void tst_QFile::readAll()
     b.append(file.readAll());
 
     QCOMPARE(a, b);
+}
+
+void tst_QFile::readAllBuffer()
+{
+    QString fileName = QLatin1String("readAllBuffer.txt");
+
+    QFile::remove(fileName);
+
+    QFile writer(fileName);
+    QFile reader(fileName);
+
+    QByteArray data1("This is arguably a very simple text.");
+    QByteArray data2("This is surely not as simple a test.");
+
+    QVERIFY( writer.open(QIODevice::ReadWrite | QIODevice::Unbuffered) );
+    QVERIFY( reader.open(QIODevice::ReadOnly) );
+
+    QCOMPARE( writer.write(data1), qint64(data1.size()) );
+    QVERIFY( writer.seek(0) );
+
+    QByteArray result;
+    result = reader.read(18);
+    QCOMPARE( result.size(), 18 );
+
+    QCOMPARE( writer.write(data2), qint64(data2.size()) ); // new data, old version buffered in reader
+    QCOMPARE( writer.write(data2), qint64(data2.size()) ); // new data, unbuffered in reader
+
+    result += reader.readAll();
+
+    QCOMPARE( result, data1 + data2 );
+
+    QFile::remove(fileName);
 }
 
 void tst_QFile::readAllStdin()
@@ -2085,15 +2119,17 @@ void tst_QFile::fullDisk()
     file.write(&c, 0);
     QVERIFY(!file.flush());
     QCOMPARE(file.error(), QFile::ResourceError);
-    file.write(&c, 1);
+    QCOMPARE(file.write(&c, 1), qint64(1));
     QVERIFY(!file.flush());
     QCOMPARE(file.error(), QFile::ResourceError);
 
     file.close();
     QVERIFY(!file.isOpen());
     QCOMPARE(file.error(), QFile::ResourceError);
+
     file.open(QIODevice::WriteOnly);
     QCOMPARE(file.error(), QFile::NoError);
+    QVERIFY(file.flush()); // Shouldn't inherit write buffer
     file.close();
     QCOMPARE(file.error(), QFile::NoError);
 

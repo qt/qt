@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,7 +78,7 @@ public:
     bool filterEvent(QGraphicsObject *receiver, QEvent *event);
 #endif //QT_NO_GRAPHICSVIEW
 
-    static QGestureManager* instance();
+    static QGestureManager* instance(); // declared in qapplication.cpp
 
     void cleanupCachedGestures(QObject *target, Qt::GestureType type);
 
@@ -141,8 +141,6 @@ private:
 
     void cancelGesturesForChildren(QGesture *originatingGesture);
 };
-
-extern QGestureManager *qt_gestureManager;
 
 QT_END_NAMESPACE
 

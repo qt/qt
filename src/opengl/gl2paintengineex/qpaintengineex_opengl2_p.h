@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -252,8 +252,6 @@ public:
     bool compositionModeDirty;
     bool brushTextureDirty;
     bool brushUniformsDirty;
-    bool simpleShaderMatrixUniformDirty;
-    bool shaderMatrixUniformDirty;
     bool opacityUniformDirty;
 
     bool stencilClean; // Has the stencil not been used for clipping so far?

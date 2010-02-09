@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -467,11 +467,12 @@ void Win32MakefileGenerator::processRcFileVar()
 
         resFile.replace(".rc", Option::res_ext);
         project->values("RES_FILE").prepend(fileInfo(resFile).fileName());
-        if (!project->values("OBJECTS_DIR").isEmpty())
+        if (!project->values("OBJECTS_DIR").isEmpty()) {
             if(project->isActiveConfig("staticlib"))
                 project->values("RES_FILE").first().prepend(fileInfo(project->values("DESTDIR").first()).absoluteFilePath() + Option::dir_sep);
             else
               project->values("RES_FILE").first().prepend(project->values("OBJECTS_DIR").first() + Option::dir_sep);
+        }
         project->values("RES_FILE").first() = Option::fixPathToTargetOS(project->values("RES_FILE").first(), false, false);
 	project->values("POST_TARGETDEPS") += project->values("RES_FILE");
         project->values("CLEAN_FILES") += project->values("RES_FILE");

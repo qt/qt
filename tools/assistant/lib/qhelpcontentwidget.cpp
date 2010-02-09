@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -253,7 +253,7 @@ void QHelpContentProvider::run()
     const QStringList fileNames = m_helpEngine->orderedFileNameList;
     m_mutex.unlock();
 
-    foreach (QString dbFileName, fileNames) {
+    foreach (const QString &dbFileName, fileNames) {
         m_mutex.lock();
         if (m_abort) {
             m_abort = false;

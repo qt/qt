@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,6 +53,7 @@
 #include <QtGui/QImage>
 #include <QtCore/QFile>
 #include <QtCore/QBuffer>
+#include <qvariant.h>
 // These next two structs represent how the icon information is stored
 // in an ICO file.
 typedef struct
@@ -556,7 +557,11 @@ QImage ICOReader::iconAt(int index)
                 else                    // # colors used
                     icoAttrib.ncolors = header.biClrUsed ? header.biClrUsed : 1 << icoAttrib.nbits;
                 icoAttrib.w = iconEntry.bWidth;
+                if (icoAttrib.w == 0)
+                    icoAttrib.w = header.biWidth;
                 icoAttrib.h = iconEntry.bHeight;
+                if (icoAttrib.h == 0)
+                    icoAttrib.h = header.biHeight/2;
 
                 QImage::Format format = QImage::Format_ARGB32;
                 if (icoAttrib.nbits == 24)
@@ -766,6 +771,29 @@ QtIcoHandler::QtIcoHandler(QIODevice *device)
 QtIcoHandler::~QtIcoHandler()
 {
     delete m_pICOReader;
+}
+
+QVariant QtIcoHandler::option(ImageOption option) const
+{
+    if (option == Size) {
+        QIODevice *device = QImageIOHandler::device();
+        qint64 oldPos = device->pos();
+        ICONDIRENTRY iconEntry;
+        if (device->seek(oldPos + ICONDIR_SIZE + (m_currentIconIndex * ICONDIRENTRY_SIZE))) {
+            if (readIconDirEntry(device, &iconEntry)) {
+                device->seek(oldPos);
+                return QSize(iconEntry.bWidth, iconEntry.bHeight);
+            }
+        }
+        if (!device->isSequential())
+            device->seek(oldPos);
+    }
+    return QVariant();
+}
+
+bool QtIcoHandler::supportsOption(ImageOption option) const
+{
+    return option == Size;
 }
 
 /*!

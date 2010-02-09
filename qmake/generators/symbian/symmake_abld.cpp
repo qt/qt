@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -172,7 +172,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     releasePlatforms.removeAll("winscw"); // No release for emulator
 
     QString testClause;
-    if (project->values("CONFIG").contains("symbian_test", Qt::CaseInsensitive))
+    if (project->isActiveConfig("symbian_test"))
         testClause = QLatin1String(" test");
     else
         testClause = QLatin1String("");

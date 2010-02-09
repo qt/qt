@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,7 +83,7 @@ bool Connection::sendMessage(const QString &message)
         return false;
 
     QByteArray msg = message.toUtf8();
-    QByteArray data = "MESSAGE " + QByteArray::number(msg.size()) + " " + msg;
+    QByteArray data = "MESSAGE " + QByteArray::number(msg.size()) + ' ' + msg;
     return write(data) == data.size();
 }
 
@@ -118,7 +118,7 @@ void Connection::processReadyRead()
             return;
         }
 
-        username = QString(buffer) + "@" + peerAddress().toString() + ":"
+        username = QString(buffer) + '@' + peerAddress().toString() + ':'
                    + QString::number(peerPort());
         currentDataType = Undefined;
         numBytesForCurrentDataType = 0;
@@ -162,7 +162,7 @@ void Connection::sendPing()
 void Connection::sendGreetingMessage()
 {
     QByteArray greeting = greetingMessage.toUtf8();
-    QByteArray data = "GREETING " + QByteArray::number(greeting.size()) + " " + greeting;
+    QByteArray data = "GREETING " + QByteArray::number(greeting.size()) + ' ' + greeting;
     if (write(data) == data.size())
         isGreetingMessageSent = true;
 }

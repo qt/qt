@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -245,9 +245,9 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
                 values[i + idx] = QVariant(QVariant::String);
                 break;
             default:
-                values[i + idx] = QString::fromUtf16(static_cast<const ushort *>(
+                values[i + idx] = QString(reinterpret_cast<const QChar *>(
                             sqlite3_column_text16(stmt, i)),
-                            sqlite3_column_bytes16(stmt, i) / sizeof(ushort));
+                            sqlite3_column_bytes16(stmt, i) / sizeof(QChar));
                 break;
             }
         }
@@ -500,32 +500,6 @@ bool QSQLiteDriver::hasFeature(DriverFeature f) const
     return false;
 }
 
-static int qGetSqliteTimeout(QString opts)
-{
-    enum { DefaultTimeout = 5000 };
-
-    opts.remove(QLatin1Char(' '));
-    foreach(QString option, opts.split(QLatin1Char(';'))) {
-        if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT="))) {
-            bool ok;
-            int nt = option.mid(21).toInt(&ok);
-            if (ok)
-                return nt;
-        }
-    }
-    return DefaultTimeout;
-}
-
-static int qGetSqliteOpenMode(QString opts)
-{
-    opts.remove(QLatin1Char(' '));
-    foreach(QString option, opts.split(QLatin1Char(';'))) {
-        if (option == QLatin1String("QSQLITE_OPEN_READONLY"))
-                return SQLITE_OPEN_READONLY;
-    }
-    return SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-}
-
 /*
    SQLite dbs have no user name, passwords, hosts or ports.
    just file names.
@@ -537,9 +511,26 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 
     if (db.isEmpty())
         return false;
+    bool sharedCache = false;
+    int openMode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, timeOut=5000;
+    QStringList opts=QString(conOpts).remove(QLatin1Char(' ')).split(QLatin1Char(';'));
+    foreach(const QString &option, opts) {
+        if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT="))) {
+            bool ok;
+            int nt = option.mid(21).toInt(&ok);
+            if (ok)
+                timeOut = nt;
+        }
+        if (option == QLatin1String("QSQLITE_OPEN_READONLY"))
+            openMode = SQLITE_OPEN_READONLY;
+        if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE"))
+            sharedCache = true;
+    }
 
-    if (sqlite3_open_v2(db.toUtf8().constData(), &d->access, qGetSqliteOpenMode(conOpts), NULL) == SQLITE_OK) {
-        sqlite3_busy_timeout(d->access, qGetSqliteTimeout(conOpts));
+    sqlite3_enable_shared_cache(sharedCache);
+
+    if (sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, NULL) == SQLITE_OK) {
+        sqlite3_busy_timeout(d->access, timeOut);
         setOpen(true);
         setOpenError(false);
         return true;

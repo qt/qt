@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -513,6 +513,10 @@ bool QTcpServer::hasPendingConnections() const
     0 is returned if this function is called when there are no pending
     connections.
 
+    \note The returned QTcpSocket object cannot be used from another
+    thread. If you want to use an incoming connection from another thread,
+    you need to override incomingConnection().
+
     \sa hasPendingConnections()
 */
 QTcpSocket *QTcpServer::nextPendingConnection()
@@ -542,6 +546,11 @@ QTcpSocket *QTcpServer::nextPendingConnection()
     If this server is using QNetworkProxy then the \a socketDescriptor
     may not be usable with native socket functions, and should only be
     used with QTcpSocket::setSocketDescriptor().
+
+    \note If you want to handle an incoming connection as a new QTcpSocket
+    object in another thread you have to pass the socketDescriptor
+    to the other thread and create the QTcpSocket object there and
+    use its setSocketDescriptor() method.
 
     \sa newConnection(), nextPendingConnection()
 */

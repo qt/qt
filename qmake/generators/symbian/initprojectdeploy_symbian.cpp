@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,7 +46,6 @@
 #include <qsettings.h>
 #include <qdebug.h>
 
-#define PLUGIN_STUB_DIR "qmakepluginstubs"
 #define SYSBIN_DIR "\\sys\\bin"
 
 #define SUFFIX_DLL "dll"
@@ -208,7 +207,7 @@ QString generate_uid(const QString& target)
         return tmp;
     }
 
-    unsigned long hash = 5381;
+    quint32 hash = 5381;
     int c;
 
     for (int i = 0; i < target.size(); ++i) {

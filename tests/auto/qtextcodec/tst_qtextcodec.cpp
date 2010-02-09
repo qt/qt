@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,8 @@
 #include <qtextdocument.h>
 #include <time.h>
 #include <qprocess.h>
+#include <QtConcurrentMap>
+#include <QThreadPool>
 
 #ifdef Q_OS_SYMBIAN
 #define SRCDIR ""
@@ -58,6 +60,9 @@ class tst_QTextCodec : public QObject
     Q_OBJECT
 
 private slots:
+
+    void threadSafety();
+
     void toUnicode_data();
     void toUnicode();
     void codecForName_data();
@@ -1903,6 +1908,47 @@ void tst_QTextCodec::toLocal8Bit()
 #endif
 }
 #endif
+
+static QByteArray loadAndConvert(const QByteArray &codecName)
+{
+    QTextCodec *c = QTextCodec::codecForName(codecName);
+    if (!c) {
+        qDebug() << "WARNING " << codecName << " not found? ";
+        return QByteArray();
+    }
+    QString str = QString::fromLatin1(codecName);
+    QByteArray b = c->fromUnicode(str);
+    c->toUnicode(b);
+    return codecName;
+}
+
+static int loadAndConvertMIB(int mib)
+{
+    QTextCodec *c = QTextCodec::codecForMib(mib);
+    if (!c) {
+        qDebug() << "WARNING " << mib << " not found? ";
+        return 0;
+    }
+    QString str = QString::number(mib);
+    QByteArray b = c->fromUnicode(str);
+    c->toUnicode(b);
+    return mib;
+}
+
+
+void tst_QTextCodec::threadSafety()
+{
+    QThreadPool::globalInstance()->setMaxThreadCount(12);
+    
+    QList<QByteArray> codecList = QTextCodec::availableCodecs();
+    QFuture<QByteArray> res = QtConcurrent::mapped(codecList, loadAndConvert);
+
+    QList<int> mibList = QTextCodec::availableMibs();
+    QFuture<int> res2 = QtConcurrent::mapped(mibList, loadAndConvertMIB);
+
+    QCOMPARE(res.results(), codecList);
+    QCOMPARE(res2.results(), mibList);
+}
 
 QTEST_MAIN(tst_QTextCodec)
 #include "tst_qtextcodec.moc"

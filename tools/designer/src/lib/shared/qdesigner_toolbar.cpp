@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -440,7 +440,7 @@ QAction *ToolBarEventFilter::actionAt(const QToolBar *tb, const QPoint &pos)
     return tb->actions().at(index);
 }
 
-//that's a trick to get acces to the initStyleOption which is a protected member
+//that's a trick to get access to the initStyleOption which is a protected member
 class FriendlyToolBar : public QToolBar {
 public:
     friend class ToolBarEventFilter;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,8 +89,6 @@ static QPointF normalize(const QPointF &p)
 {
     return p / qSqrt(p.x() * p.x() + p.y() * p.y());
 }
-
-static bool pathToRect(const QPainterPath &path, QRectF *rect = 0);
 
 struct QIntersection
 {
@@ -1660,7 +1658,7 @@ static bool fuzzyCompare(qreal a, qreal b)
     return qFuzzyCompare(a, b);
 }
 
-static bool pathToRect(const QPainterPath &path, QRectF *rect)
+bool QPathClipper::pathToRect(const QPainterPath &path, QRectF *rect)
 {
     if (path.elementCount() != 5)
         return false;
@@ -1693,7 +1691,7 @@ static bool pathToRect(const QPainterPath &path, QRectF *rect)
         return false;
 
     if (rect)
-        *rect = QRectF(QPointF(x1, y1), QPointF(x2, y2));
+        rect->setCoords(x1, y1, x2, y2);
 
     return true;
 }
