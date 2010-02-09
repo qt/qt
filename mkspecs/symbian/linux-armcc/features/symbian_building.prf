@@ -130,7 +130,7 @@ symbianresources.commands = cpp -nostdinc -undef \
                             -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsg \
                             -i${QMAKE_FILE_NAME}
 symbianresources.dependency_type = TYPE_C
-symbianresources.CONFIG = no_link
+symbianresources.CONFIG = no_link target_predeps
 
 QMAKE_EXTRA_COMPILERS += symbianresources
 
