@@ -42,6 +42,7 @@
 #ifndef QMLXMLHTTPREQUEST_P_H
 #define QMLXMLHTTPREQUEST_P_H
 
+#include <QtScript/qscriptengine.h>
 //
 //  W A R N I N G
 //  -------------
@@ -52,9 +53,12 @@
 //
 // We mean it.
 //
+QT_BEGIN_NAMESPACE
 
 class QScriptEngine;
 void qt_add_qmlxmlhttprequest(QScriptEngine *engine);
+
+QT_END_NAMESPACE
 
 #endif // QMLXMLHTTPREQUEST_P_H
 

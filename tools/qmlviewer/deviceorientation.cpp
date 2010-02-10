@@ -41,6 +41,8 @@
 
 #include "deviceorientation.h"
 
+QT_USE_NAMESPACE
+
 class DefaultDeviceOrientation : public DeviceOrientation
 {
     Q_OBJECT

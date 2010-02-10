@@ -47,6 +47,8 @@
 #include <QTranslator>
 #include <QDebug>
 
+QT_USE_NAMESPACE
+
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
 #include <sys/types.h>

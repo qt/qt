@@ -600,6 +600,6 @@ int QmlPixmapCache::pendingRequests()
     return qmlActivePixmapReplies()->count();
 }
 
-#include <qmlpixmapcache.moc>
-
 QT_END_NAMESPACE
+
+#include <qmlpixmapcache.moc>

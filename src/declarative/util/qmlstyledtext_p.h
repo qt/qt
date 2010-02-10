@@ -44,10 +44,13 @@
 
 #include <QSizeF>
 
+QT_BEGIN_NAMESPACE
+
 class QPainter;
 class QPointF;
 class QString;
 class QmlStyledTextPrivate;
+
 class Q_DECLARATIVE_EXPORT QmlStyledText
 {
 public:
@@ -59,5 +62,7 @@ private:
 
     QmlStyledTextPrivate *d;
 };
+
+QT_END_NAMESPACE
 
 #endif

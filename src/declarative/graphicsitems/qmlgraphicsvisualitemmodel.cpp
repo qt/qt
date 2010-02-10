@@ -62,8 +62,6 @@
 
 #include <private/qobject_p.h>
 
-QML_DECLARE_TYPE(QListModelInterface)
-
 QT_BEGIN_NAMESPACE
 
 QHash<QObject*, QmlGraphicsVisualItemModelAttached*> QmlGraphicsVisualItemModelAttached::attachedProperties;
@@ -1109,5 +1107,7 @@ void QmlGraphicsVisualDataModel::_q_destroyingPackage(QmlPackage *package)
 }
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QListModelInterface)
 
 #include <qmlgraphicsvisualitemmodel.moc>
