@@ -433,7 +433,9 @@ void tst_states::parentChange()
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(15));
         QCOMPARE(innerRect->scale(), qreal(.5));
+        QEXPECT_FAIL("", "QTBUG-2919", Continue);
         QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(12.4148145657));
+        QEXPECT_FAIL("", "QTBUG-2919", Continue);
         QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(10.6470476128));
     }
 
@@ -455,6 +457,7 @@ void tst_states::parentChange()
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
         QCOMPARE(innerRect->x(), qreal(5));
+        QEXPECT_FAIL("", "QTBUG-2919", Continue);
         QCOMPARE(innerRect->y(), qreal(0));
     }
 }

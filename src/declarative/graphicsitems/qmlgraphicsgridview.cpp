@@ -158,7 +158,8 @@ public:
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
     , bufferMode(NoBuffer)
     , ownModel(false), wrap(false), autoHighlight(true)
-    , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false) {}
+    , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
+    , deferredRelease(false) {}
 
     void init();
     void clear();
@@ -337,6 +338,7 @@ public:
     bool fixCurrentVisibility : 1;
     bool lazyRelease : 1;
     bool layoutScheduled : 1;
+    bool deferredRelease : 1;
 };
 
 void QmlGraphicsGridViewPrivate::init()
@@ -484,7 +486,7 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
             break;
     }
 
-    if (!lazyRelease || !changed) { // avoid destroying items in the same frame that we create
+    if (!lazyRelease || !changed || deferredRelease) { // avoid destroying items in the same frame that we create
         while (visibleItems.count() > 1
                && (item = visibleItems.first())
                     && item->endRowPos() < bufferFrom - rowSize()*(item->colPos()/colSize()+1)/(columns+1)) {
@@ -507,6 +509,9 @@ void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
             releaseItem(item);
             changed = true;
         }
+        deferredRelease = false;
+    } else {
+        deferredRelease = true;
     }
     if (changed) {
         if (flow == QmlGraphicsGridView::LeftToRight)
@@ -1416,7 +1421,7 @@ void QmlGraphicsGridView::componentComplete()
 void QmlGraphicsGridView::trackedPositionChanged()
 {
     Q_D(QmlGraphicsGridView);
-    if (!d->trackedItem)
+    if (!d->trackedItem || !d->currentItem)
         return;
     if (!isFlicking() && !d->moving && d->moveReason == QmlGraphicsGridViewPrivate::SetIndex) {
         const qreal viewPos = d->position();

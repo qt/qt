@@ -223,7 +223,7 @@ public:
         , bufferMode(NoBuffer)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
         , correctFlick(true), inFlickCorrection(false), lazyRelease(false)
-        , minExtentDirty(true), maxExtentDirty(true)
+        , deferredRelease(false), minExtentDirty(true), maxExtentDirty(true)
     {}
 
     void init();
@@ -448,11 +448,9 @@ public:
     void updateViewport() {
         Q_Q(QmlGraphicsListView);
         if (orient == QmlGraphicsListView::Vertical) {
-            qreal vpHeight = -q->maxYExtent() + q->minYExtent() + q->height();
-            q->setViewportHeight(vpHeight);
+            q->setViewportHeight(endPosition() - startPosition() + 1);
         } else {
-            qreal vpWidth = -q->maxXExtent() + q->minXExtent() + q->width();
-            q->setViewportWidth(qMin(vpWidth, q->width()));
+            q->setViewportWidth(endPosition() - startPosition() + 1);
         }
     }
 
@@ -544,6 +542,7 @@ public:
     bool correctFlick : 1;
     bool inFlickCorrection : 1;
     bool lazyRelease : 1;
+    bool deferredRelease : 1;
     mutable bool minExtentDirty : 1;
     mutable bool maxExtentDirty : 1;
 };
@@ -701,7 +700,7 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
             break;
     }
 
-    if (!lazyRelease || !changed) { // avoid destroying items in the same frame that we create
+    if (!lazyRelease || !changed || deferredRelease) { // avoid destroying items in the same frame that we create
         while (visibleItems.count() > 1 && (item = visibleItems.first()) && item->endPosition() < bufferFrom) {
             if (item->attached->delayRemove())
                 break;
@@ -720,6 +719,9 @@ void QmlGraphicsListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
             releaseItem(item);
             changed = true;
         }
+        deferredRelease = false;
+    } else {
+        deferredRelease = true;
     }
     if (changed) {
         minExtentDirty = true;
