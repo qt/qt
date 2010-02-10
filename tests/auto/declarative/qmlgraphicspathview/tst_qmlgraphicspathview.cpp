@@ -268,7 +268,7 @@ void tst_QmlGraphicsPathView::path()
     QCOMPARE(obj->startY(), 100.);
     QVERIFY(obj->path() != QPainterPath());
 
-    QList<QmlGraphicsPathElement*> *list = static_cast<QList<QmlGraphicsPathElement*> *>(obj->pathElements().data);
+    QList<QmlGraphicsPathElement*> *list = obj->pathElements();
     QCOMPARE(list->count(), 5);
 
     QmlGraphicsPathAttribute* attr = qobject_cast<QmlGraphicsPathAttribute*>(list->at(0));
