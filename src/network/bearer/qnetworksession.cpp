@@ -45,12 +45,7 @@
 #include "qnetworksession.h"
 #include "qbearerengine_p.h"
 #include "qnetworkconfigmanager_p.h"
-
-#if Q_WS_MAEMO_6
-#include "qnetworksession_maemo_p.h"
-#else
 #include "qnetworksession_p.h"
-#endif
 
 QT_BEGIN_NAMESPACE
 

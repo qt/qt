@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKSESSIONPRIVATE_H
-#define QNETWORKSESSIONPRIVATE_H
+#ifndef QNETWORKSESSION_IMPL_H
+#define QNETWORKSESSION_IMPL_H
 
 //
 //  W A R N I N G
@@ -52,36 +52,36 @@
 //
 // We mean it.
 //
-#include "qnetworkconfigmanager_maemo_p.h"
-#include "qnetworksession.h"
 
-#include <qnetworksession.h>
-#include <QNetworkInterface>
-#include <QDateTime>
+#include <QtNetwork/private/qnetworksession_p.h>
+#include <QtNetwork/qnetworkconfigmanager.h>
 
-#ifdef Q_WS_MAEMO_6
+//#include "qnetworkconfigmanager_maemo_p.h"
+//#include "qnetworksession.h"
+
+//#include <qnetworksession.h>
+//#include <QNetworkInterface>
+#include <QtCore/qdatetime.h>
+
 #include <icd/dbus_api.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkSessionPrivate : public QObject
+class QIcdEngine;
+
+class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 {
     Q_OBJECT
+
 public:
-    QNetworkSessionPrivate() : 
-        tx_data(0), rx_data(0), m_activeTime(0), isOpen(false),
-#ifdef Q_WS_MAEMO_6
-        connectFlags(ICD_CONNECTION_FLAG_USER_EVENT)
-#else
-        connectFlags(0)
-#endif
+    QNetworkSessionPrivateImpl(QIcdEngine *engine)
+    :   engine(engine), connectFlags(ICD_CONNECTION_FLAG_USER_EVENT)
     {
     }
 
-    ~QNetworkSessionPrivate()
+    ~QNetworkSessionPrivateImpl()
     {
-	cleanupSession();
+        cleanupSession();
     }
 
     //called by QNetworkSession constructor and ensures
@@ -97,6 +97,7 @@ public:
     void open();
     void close();
     void stop();
+
     void migrate();
     void accept();
     void ignore();
@@ -113,10 +114,6 @@ private:
     void updateStateFromServiceNetwork();
     void updateStateFromActiveConfig();
 
-Q_SIGNALS:
-    //releases any pending waitForOpened() calls
-    void quitPendingWaitsForOpened();
-
 private Q_SLOTS:
     void do_open();
     void networkConfigurationsChanged();
@@ -124,36 +121,16 @@ private Q_SLOTS:
 
 private:
     QNetworkConfigurationManager manager;
-
-    quint64 tx_data;
-    quint64 rx_data;
-    quint64 m_activeTime;
-
-    // The config set on QNetworkSession.
-    QNetworkConfiguration publicConfig;
-
-    // If publicConfig is a ServiceNetwork this is a copy of publicConfig.
-    // If publicConfig is an UserChoice that is resolved to a ServiceNetwork this is the actual
-    // ServiceNetwork configuration.
-    QNetworkConfiguration serviceConfig;
-
-    // This is the actual active configuration currently in use by the session.
-    // Either a copy of publicConfig or one of serviceConfig.children().
-    QNetworkConfiguration activeConfig;
+    QIcdEngine *engine;
 
     QNetworkConfiguration& copyConfig(QNetworkConfiguration &fromConfig, QNetworkConfiguration &toConfig, bool deepCopy = true);
     void clearConfiguration(QNetworkConfiguration &config);
     void cleanupAnyConfiguration();
 
-    QNetworkSession::State state;
-    bool isOpen;
     bool opened;
     icd_connection_flags connectFlags;
 
     QNetworkSession::SessionError lastError;
-
-    QNetworkSession* q;
-    friend class QNetworkSession;
 
     QDateTime startTime;
     QString currentNetworkInterface;
