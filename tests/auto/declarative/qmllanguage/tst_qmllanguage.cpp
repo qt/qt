@@ -327,6 +327,9 @@ void tst_qmllanguage::errors()
     QFETCH(QString, errorFile);
     QFETCH(bool, create);
 
+    if (file == "invalidID.6.qml")
+        QSKIP("Test disabled until we strictly disallow ids from beginning with uppercase letters", SkipSingle);
+
     QmlComponent component(&engine, TEST_FILE(file));
 
     if(create) {
