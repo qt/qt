@@ -61,7 +61,7 @@ private slots:
 private:
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QObject *parent, const QString &id);
+    T *findItem(QmlGraphicsItem *parent, const QString &id);
 };
 
 class TestObject : public QObject
@@ -332,13 +332,16 @@ QmlView *tst_QmlGraphicsRepeater::createView(const QString &filename)
 }
 
 template<typename T>
-T *tst_QmlGraphicsRepeater::findItem(QObject *parent, const QString &objectName)
+T *tst_QmlGraphicsRepeater::findItem(QmlGraphicsItem *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     if (mo.cast(parent) && (objectName.isEmpty() || parent->objectName() == objectName))
         return static_cast<T*>(parent);
-    for (int i = 0; i < parent->children().count(); ++i) {
-        QmlGraphicsItem *item = findItem<T>(parent->children().at(i), objectName);
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
+        if (!child)
+            continue;
+        QmlGraphicsItem *item = findItem<T>(child, objectName);
         if (item)
             return static_cast<T*>(item);
     }
