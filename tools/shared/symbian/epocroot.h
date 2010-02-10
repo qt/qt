@@ -39,13 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef EPOCROOT_H
-#define EPOCROOT_H
+#ifndef SYMBIAN_EPOCROOT_H
+#define SYMBIAN_EPOCROOT_H
 
-#include <qstring.h>
+#include <QtCore/qstring.h>
 
-// Implementation of epocRoot method is in initprojectdeploy_symbian.cpp
-// Defined in separate header for inclusion clarity
-extern QString epocRoot();
+/**
+ * Determine the epoc root for the currently active SDK.
+ *
+ * The algorithm used is as follows:
+ * 1. If environment variable EPOCROOT is set and points to an existent
+ *    directory, this is returned.
+ * 2. The location of devices.xml is specified by a registry key.  If this
+ *    file exists, it is parsed.
+ * 3. If the EPOCDEVICE environment variable is set and a corresponding
+ *    entry is found in devices.xml, and its epocroot value points to an
+ *    existent directory, it is returned.
+ * 4. If a device element marked as default is found in devices.xml and its
+ *    epocroot value points to an existent directory, this is returned.
+ * 5. An empty string is returned.
+ *
+ * Any return value other than the empty string therefore is guaranteed to
+ * point to an existent directory.
+ */
+QString epocRoot();
 
 #endif // EPOCROOT_H
