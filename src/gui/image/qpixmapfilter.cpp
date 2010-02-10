@@ -710,7 +710,8 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
         radius *= qreal(0.5);
 
     Q_ASSERT(img.format() == QImage::Format_ARGB32_Premultiplied
-             || img.format() == QImage::Format_RGB32);
+             || img.format() == QImage::Format_RGB32
+             || img.format() == QImage::Format_Indexed8);
 
     // choose the alpha such that pixels at radius distance from a fully
     // saturated pixel will have an alpha component of no greater than
