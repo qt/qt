@@ -767,9 +767,9 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
 
     if (image.colorCount()) {
         // Paletted
-        int num_palette = image.colorCount();
-        png_color palette[num_palette];
-        png_byte trans[num_palette];
+        int num_palette = qMin(256, image.colorCount());
+        png_color palette[256];
+        png_byte trans[256];
         int num_trans = 0;
         for (int i=0; i<num_palette; i++) {
             QRgb rgba=image.color(i);
