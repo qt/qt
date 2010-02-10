@@ -118,9 +118,9 @@ void SymbianCommonGenerator::removeSpecialCharacters(QString& str)
 void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild)
 {
     QMakeProject *project = generator->project;
-    QString pkgFilename = QString("%1_template.%2")
-                          .arg(fixedTarget)
-                          .arg("pkg");
+    QString pkgFilename = QString("%1/%2_template.%3")
+        .arg(Option::output_dir).arg(fixedTarget).arg("pkg");
+
     QFile pkgFile(pkgFilename);
     if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         PRINT_FILE_CREATE_ERROR(pkgFilename);
