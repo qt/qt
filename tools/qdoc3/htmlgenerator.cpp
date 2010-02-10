@@ -4364,7 +4364,7 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     if (node->pageType() == Node::NoPageType)
         return false;
     if (node->name().isEmpty())
-        return false;
+        return true;
     if (node->access() == Node::Private)
         return false;
 
