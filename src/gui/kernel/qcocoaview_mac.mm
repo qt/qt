@@ -1404,7 +1404,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
     // setup the data
     QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacPasteboardMime::MIME_DND);
-    dragPrivate()->data->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray());
+    dragPrivate()->data->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
     dragBoard.setMimeData(dragPrivate()->data);
 
     // create the image
