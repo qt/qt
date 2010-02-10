@@ -244,6 +244,10 @@ void tst_QmlListModel::error_data()
         << "import Qt 4.6\nListModel { ListElement { foo:123 } }"
         << "";
 
+    QTest::newRow("bindings not allowed in ListElement")
+        << "import Qt 4.6\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
+        << "QTBUG-6203 ListElement should not allow binding its data to something";
+
     QTest::newRow("random object list properties allowed in ListElement")
         << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
         << "";

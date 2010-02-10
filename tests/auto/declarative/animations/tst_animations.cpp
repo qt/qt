@@ -424,6 +424,7 @@ void tst_animations::properties()
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
         QTest::qWait(waitDuration);
+        QEXPECT_FAIL("", "QTBUG-8072", Continue);
         QTIMED_COMPARE(myRect->x(),qreal(100));
         QTIMED_COMPARE(myRect->y(),qreal(100));
     }
