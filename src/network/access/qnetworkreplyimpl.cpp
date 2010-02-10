@@ -226,6 +226,26 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
     }
 }
 
+void QNetworkReplyImplPrivate::_q_networkSessionOnline()
+{
+    Q_Q(QNetworkReplyImpl);
+
+    switch (state) {
+    case QNetworkReplyImplPrivate::Buffering:
+    case QNetworkReplyImplPrivate::Working:
+    case QNetworkReplyImplPrivate::Reconnecting:
+        // Migrate existing downloads to new network connection.
+        migrateBackend();
+        break;
+    case QNetworkReplyImplPrivate::WaitingForSession:
+        // Start waiting requests.
+        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+        break;
+    default:
+        qDebug() << "How do we handle replies in state" << state;
+    }
+}
+
 void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const QNetworkRequest &req,
                                      QIODevice *data)
 {

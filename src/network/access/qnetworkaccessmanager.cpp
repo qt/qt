@@ -811,6 +811,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     // first step: create the reply
     QUrl url = request.url();
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
+    if (req.url().scheme() != QLatin1String("file") && !req.url().scheme().isEmpty())
+        connect(this, SIGNAL(networkSessionOnline()), reply, SLOT(_q_networkSessionOnline()));
     QNetworkReplyImplPrivate *priv = reply->d_func();
     priv->manager = this;
 
@@ -1131,12 +1133,7 @@ void QNetworkAccessManagerPrivate::_q_sessionOpened()
 {
     Q_Q(QNetworkAccessManager);
 
-    // start waiting children
-    foreach (QObject *child, q->children()) {
-        QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
-        if (reply && reply->d_func()->state == QNetworkReplyImplPrivate::WaitingForSession)
-            QMetaObject::invokeMethod(reply, "_q_startOperation", Qt::QueuedConnection);
-    }
+    emit q->networkSessionOnline();
 }
 
 void QNetworkAccessManagerPrivate::_q_sessionClosed()
@@ -1183,37 +1180,14 @@ void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
     qDebug() << "Accepting new configuration.";
     session->accept();
 
-    foreach (QObject *child, q->children()) {
-        QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
-        if (!reply)
-            continue;
-
-        switch (reply->d_func()->state) {
-        case QNetworkReplyImplPrivate::Buffering:
-        case QNetworkReplyImplPrivate::Working:
-        case QNetworkReplyImplPrivate::Reconnecting:
-            // Migrate existing downloads to new configuration.
-            reply->d_func()->migrateBackend();
-            break;
-        case QNetworkReplyImplPrivate::WaitingForSession:
-            // Start waiting requests.
-            QMetaObject::invokeMethod(reply, "_q_startOperation", Qt::QueuedConnection);
-            break;
-        default:
-            qDebug() << "How do we handle replies in state" << reply->d_func()->state;
-        }
-    }
+    emit q->networkSessionOnline();
 }
 
 void QNetworkAccessManagerPrivate::_q_sessionPreferredConfigurationChanged(const QNetworkConfiguration &, bool)
 {
     Q_Q(QNetworkAccessManager);
 
-    foreach (QObject *child, q->children()) {
-        QNetworkReplyImpl *replyImpl = qobject_cast<QNetworkReplyImpl *>(child);
-        if (replyImpl)
-            replyImpl->migrateBackend();
-    }
+    emit q->networkSessionOnline();
 
     session->migrate();
 }
