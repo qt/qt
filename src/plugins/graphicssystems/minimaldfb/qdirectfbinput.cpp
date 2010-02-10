@@ -3,9 +3,10 @@
 
 #include <QThread>
 #include <QDebug>
-#include <private/qapplication_p.h>
+#include <QWindowSystemInterface>
 #include <QMouseEvent>
 #include <QEvent>
+#include <QApplication>
 
 #include <directfb.h>
 
@@ -65,7 +66,7 @@ QDirectFbInput::QDirectFbInput()
     m_inputHandler = new InputSocketWaiter(eventBuffer,this);
     connect(m_inputHandler,SIGNAL(newEvent()),this,SLOT(handleEvents()));
 
-    connect(qApp,SIGNAL(aboutToQuit()),SLOT(applicationEnd()));
+    connect(QApplication::instance(),SIGNAL(aboutToQuit()),SLOT(applicationEnd()));
 }
 
 void QDirectFbInput::addWindow(DFBWindowID id, QWidget *tlw)
@@ -127,42 +128,23 @@ void QDirectFbInput::handleEvents()
 
 void QDirectFbInput::handleMouseEvents(const DFBEvent &event)
 {
-    QEvent::Type type = QDirectFbConvenience::eventType(event.window.type);
     QPoint p(event.window.x, event.window.y);
     QPoint globalPos = globalPoint(event);
     Qt::MouseButtons buttons = QDirectFbConvenience::mouseButtons(event.window.buttons);
-    QWidget *tlw = tlwMap.value(event.window.window_id);
 
     IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
     IDirectFBWindow *window;
     layer->GetWindow(layer,event.window.window_id,&window);
 
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
-    timestamp /= 1000;
 
     if (event.window.type == DWET_BUTTONDOWN) {
-        static long prevTime = 0;
-        static QWidget *prevWindow;
-        static int prevX = -999;
-        static int prevY = -999;
-
-        if (tlw == prevWindow && timestamp - prevTime < QApplication::doubleClickInterval()
-            && qAbs(event.window.cx - prevX) < 5 && qAbs(event.window.cy - prevY) < 5) {
-            type = QEvent::MouseButtonDblClick;
-            prevTime = timestamp - QApplication::doubleClickInterval(); //no double click next time
-        } else {
-            prevTime = timestamp;
-        }
-        prevWindow = tlw;
-        prevX = event.window.cx;
-        prevY = event.window.cy;
-
         window->GrabPointer(window);
     } else if (event.window.type == DWET_BUTTONUP) {
         window->UngrabPointer(window);
     }
-
-    QApplicationPrivate::handleMouseEvent(event.window.window_id, timestamp, p, globalPos, buttons);
+    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QWindowSystemInterface::handleMouseEvent(tlw, timestamp, p, globalPos, buttons);
 }
 
 void QDirectFbInput::applicationEnd()
@@ -176,9 +158,8 @@ void QDirectFbInput::handleWheelEvent(const DFBEvent &event)
     QPoint p(event.window.cx, event.window.cy);
     QPoint globalPos = globalPoint(event);
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
-    timestamp /= 1000;
-
-    QApplicationPrivate::handleWheelEvent(event.window.window_id, timestamp, p, globalPos,
+    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QWindowSystemInterface::handleWheelEvent(tlw, timestamp, p, globalPos,
                                           event.window.step*120,
                                           Qt::Vertical);
 }
@@ -190,13 +171,12 @@ void QDirectFbInput::handleKeyEvents(const DFBEvent &event)
     Qt::KeyboardModifiers modifiers = QDirectFbConvenience::keyboardModifiers(event.window.modifiers);
 
     long timestamp = (event.window.timestamp.tv_sec*1000) + (event.window.timestamp.tv_usec/1000);
-    timestamp /= 1000;
 
     QChar character;
     if (DFB_KEY_TYPE(event.window.key_symbol) == DIKT_UNICODE)
         character = QChar(event.window.key_symbol);
-
-    QApplicationPrivate::handleKeyEvent(event.window.window_id, timestamp, type, key, modifiers, character);
+    QWidget *tlw = tlwMap.value(event.window.window_id);
+    QWindowSystemInterface::handleKeyEvent(tlw, timestamp, type, key, modifiers, character);
 }
 
 void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
@@ -204,10 +184,10 @@ void QDirectFbInput::handleEnterLeaveEvents(const DFBEvent &event)
     QWidget *tlw = tlwMap.value(event.window.window_id);
     switch (event.window.type) {
     case DWET_ENTER:
-        QApplicationPrivate::handleEnterEvent(tlw);
+        QWindowSystemInterface::handleEnterEvent(tlw);
         break;
     case DWET_LEAVE:
-        QApplicationPrivate::handleLeaveEvent(tlw);
+        QWindowSystemInterface::handleLeaveEvent(tlw);
         break;
     default:
         break;

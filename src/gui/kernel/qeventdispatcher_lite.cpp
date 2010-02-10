@@ -47,6 +47,7 @@
 #ifndef QT_NO_THREAD
 #  include "qmutex.h"
 #endif
+#include <QWindowSystemInterface>
 
 #include <errno.h>
 QT_BEGIN_NAMESPACE
@@ -83,11 +84,11 @@ bool QEventDispatcherLite::processEvents(QEventLoop::ProcessEventsFlags flags)
     QApplication::sendPostedEvents();
 
     while (!d->interrupt) {        // also flushes output buffer ###can be optimized
-        QApplicationPrivate::UserEvent *event;
+        QWindowSystemInterface::UserEvent *event;
         if (!(flags & QEventLoop::ExcludeUserInputEvents)
-            && QApplicationPrivate::userEventsQueued() > 0) {
+            && QWindowSystemInterface::userEventsQueued() > 0) {
             // process a pending user input event
-            event = QApplicationPrivate::getUserEvent();
+            event = QWindowSystemInterface::getUserEvent();
         } else {
             break;
         }
@@ -112,7 +113,7 @@ bool QEventDispatcherLite::processEvents(QEventLoop::ProcessEventsFlags flags)
 bool QEventDispatcherLite::hasPendingEvents()
 {
     extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
-    return qGlobalPostedEventsCount() || QApplicationPrivate::userEventsQueued();;
+    return qGlobalPostedEventsCount() || QWindowSystemInterface::userEventsQueued();;
 }
 
 void QEventDispatcherLite::startingUp()

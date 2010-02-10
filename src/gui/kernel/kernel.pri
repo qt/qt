@@ -201,7 +201,8 @@ embedded_lite {
 	HEADERS += \
 		kernel/qgenericpluginfactory_lite.h \
                 kernel/qgenericplugin_lite.h \
-                kernel/qeventdispatcher_lite_p.h
+                kernel/qeventdispatcher_lite_p.h \
+                kernel/qwindowsysteminterface.h \
 		
 	SOURCES += \
 		kernel/qapplication_lite.cpp \
@@ -214,7 +215,8 @@ embedded_lite {
 		kernel/qkeymapper_qws.cpp \
 		kernel/qsound_lite.cpp \
                 kernel/qwidget_lite.cpp \
-                kernel/qeventdispatcher_lite.cpp
+                kernel/qeventdispatcher_lite.cpp \
+                kernel/qwindowsysteminterface.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \

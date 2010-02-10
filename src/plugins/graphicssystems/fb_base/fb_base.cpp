@@ -1,10 +1,10 @@
 #include "fb_base.h"
 
 #include <qpainter.h>
-#include <private/qapplication_p.h>
 #include <qdebug.h>
 #include <qbitmap.h>
 #include <qgraphicssystemcursor.h>
+#include <QWindowSystemInterface>
 
 QGraphicsSystemSoftwareCursor::QGraphicsSystemSoftwareCursor(QGraphicsSystemScreen *scr)
         : QGraphicsSystemCursor(scr), currentRect(QRect()), prevRect(QRect())
@@ -261,7 +261,7 @@ void QGraphicsSystemFbWindowSurface::setGeometry(const QRect &rect)
     if (mImage.size() != rect.size())
         mImage = QImage(rect.size(), mScreen->format());
 
-    QApplicationPrivate::handleGeometryChange(this->window(), rect);
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QWindowSurface::setGeometry(rect);
 }

@@ -48,7 +48,7 @@
 #include <QtGui/qpainter.h>
 
 #include <QtGui/qevent.h>
-#include <private/qapplication_p.h>
+#include <QWindowSystemInterface>
 
 #include <qplatformdefs.h>
 
@@ -844,7 +844,7 @@ void QVNCServer::pointerEvent()
             bool isPress;
             if (buttonChange(buttons, ev.buttons, &button, &isPress))
                 type = isPress ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
-            QApplicationPrivate::handleMouseEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), ev.buttons);
+            QWindowSystemInterface::handleMouseEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), ev.buttons);
         } else {
             // No buttons or motion reported at the same time as wheel events
             Qt::Orientation orientation;
@@ -853,7 +853,7 @@ void QVNCServer::pointerEvent()
             else
                 orientation = Qt::Vertical;
             int delta = 120 * ((ev.wheelDirection == ev.WheelLeft || ev.wheelDirection == ev.WheelUp) ? 1 : -1);
-            QApplicationPrivate::handleWheelEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), delta, orientation);
+            QWindowSystemInterface::handleWheelEvent(0, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), delta, orientation);
         }
         handleMsg = false;
     }
@@ -879,7 +879,7 @@ void QVNCServer::keyEvent()
             QString str;
             if (ev.unicode && ev.unicode != 0xffff)
                 str = QString(ev.unicode);
-            QApplicationPrivate::handleKeyEvent(0, type, ev.keycode, keymod, str);
+            QWindowSystemInterface::handleKeyEvent(0, type, ev.keycode, keymod, str);
         }
         handleMsg = false;
     }

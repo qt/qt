@@ -54,7 +54,7 @@
 #endif
 
 #ifdef Q_WS_LITE
-#include <private/qapplication_p.h>
+#include <QWindowSystemInterface>
 #include <QKeyEvent>
 #endif
 
@@ -367,7 +367,7 @@ void QWSKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardM
     QString str;
     if (unicode != 0xffff)
         str = QString(unicode);
-    QApplicationPrivate::handleKeyEvent(0, type, keycode, modifiers, str);
+    QWindowSystemInterface::handleKeyEvent(0, type, keycode, modifiers, str);
 #endif
 }
 

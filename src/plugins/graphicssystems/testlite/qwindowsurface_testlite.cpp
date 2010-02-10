@@ -43,7 +43,7 @@
 #include "qgraphicssystem_testlite.h"
 
 #include <QtCore/qdebug.h>
-#include <private/qapplication_p.h>
+#include <QWindowSystemInterface>
 
 #include "x11util.h"
 
@@ -245,7 +245,7 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
                 bool hor = (((e->button == Button4 || e->button == Button5)
                              && (modifiers & Qt::AltModifier))
                             || (e->button == 6 || e->button == 7));
-                QApplicationPrivate::handleWheelEvent(winId(), e->time,
+                QWindowSystemInterface::handleWheelEvent(window(), e->time,
                                                       QPoint(e->x, e->y),
                                                       QPoint(e->x_root, e->y_root),
                                                       delta, hor ? Qt::Horizontal : Qt::Vertical);
@@ -258,7 +258,7 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
-    QApplicationPrivate::handleMouseEvent(winId(), e->time, QPoint(e->x, e->y),
+    QWindowSystemInterface::handleMouseEvent(window(), e->time, QPoint(e->x, e->y),
                                           QPoint(e->x_root, e->y_root),
                                           buttons);
 
@@ -267,24 +267,24 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
 
 void QTestLiteWindowSurface::handleGeometryChange(int x, int y, int w, int h)
 {
-    QApplicationPrivate::handleGeometryChange(window(), QRect(x,y,w,h));
+    QWindowSystemInterface::handleGeometryChange(window(), QRect(x,y,w,h));
 }
 
 
 void QTestLiteWindowSurface::handleCloseEvent()
 {
-    QApplicationPrivate::handleCloseEvent(window());
+    QWindowSystemInterface::handleCloseEvent(window());
 }
 
 
 void QTestLiteWindowSurface::handleEnterEvent()
 {
-    QApplicationPrivate::handleEnterEvent(window());
+    QWindowSystemInterface::handleEnterEvent(window());
 }
 
 void QTestLiteWindowSurface::handleLeaveEvent()
 {
-    QApplicationPrivate::handleLeaveEvent(window());
+    QWindowSystemInterface::handleLeaveEvent(window());
 }
 
 
@@ -592,12 +592,12 @@ void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
     modifiers ^= modifierFromKeyCode(qtcode);
 
     if (qtcode) {
-        QApplicationPrivate::handleKeyEvent(winId(), e->time, type, qtcode, modifiers);
+        QWindowSystemInterface::handleKeyEvent(window(), e->time, type, qtcode, modifiers);
     } else if (chars[0]) {
         int qtcode = chars.toUpper()[0]; //Not exactly right...
 	if (modifiers & Qt::ControlModifier && qtcode < ' ')
 	  qtcode = chars[0] + '@';
-        QApplicationPrivate::handleKeyEvent(winId(), e->time, type, qtcode, modifiers, QString::fromLatin1(chars));
+        QWindowSystemInterface::handleKeyEvent(window(), e->time, type, qtcode, modifiers, QString::fromLatin1(chars));
     } else {
         qWarning() << "unknown X keycode" << hex << e->keycode << keySym;
     }

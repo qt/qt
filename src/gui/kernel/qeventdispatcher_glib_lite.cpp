@@ -64,7 +64,7 @@ static gboolean userEventSourcePrepare(GSource *s, gint *timeout)
     Q_UNUSED(s)
     Q_UNUSED(timeout)
 
-    return QApplicationPrivate::userEventsQueued() > 0;
+    return QWindowSystemInterface::userEventsQueued() > 0;
 }
 
 static gboolean userEventSourceCheck(GSource *source)
@@ -76,9 +76,9 @@ static gboolean userEventSourceDispatch(GSource *s, GSourceFunc, gpointer)
 {
     GUserEventSource * source = reinterpret_cast<GUserEventSource *>(s);
 
-    QApplicationPrivate::UserEvent * event;
-    while (QApplicationPrivate::userEventsQueued()) {
-        event = QApplicationPrivate::getUserEvent();
+    QWindowSystemInterface::UserEvent * event;
+    while (QWindowSystemInterface::userEventsQueued()) {
+        event = QWindowSystemInterface::getUserEvent();
 
         // send through event filter
         if (source->q->filterEvent(event)) {

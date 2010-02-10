@@ -46,7 +46,7 @@
 #include <QSocketNotifier>
 #include <QStringList>
 #include <QPoint>
-#include <private/qapplication_p.h>
+#include <QWindowSystemInterface>
 
 #include <qkbd_qws.h>
 
@@ -141,13 +141,13 @@ void QLinuxInputMouseHandler::readMouseData()
             } else if (data->code == ABS_WHEEL) { // vertical scroll
                 // data->value: 1 == up, -1 == down
                 int delta = 120 * data->value;
-                QApplicationPrivate::handleWheelEvent(0, QPoint(m_x, m_y),
+                QWindowSystemInterface::handleWheelEvent(0, QPoint(m_x, m_y),
                                                       QPoint(m_x, m_y),
                                                       delta, Qt::Vertical);
             } else if (data->code == ABS_THROTTLE) { // horizontal scroll
                 // data->value: 1 == right, -1 == left
                 int delta = 120 * -data->value;
-                QApplicationPrivate::handleWheelEvent(0, QPoint(m_x, m_y),
+                QWindowSystemInterface::handleWheelEvent(0, QPoint(m_x, m_y),
                                                       QPoint(m_x, m_y),
                                                       delta, Qt::Horizontal);
             } else {
@@ -167,7 +167,7 @@ void QLinuxInputMouseHandler::readMouseData()
             else
                 m_buttons &= ~button;
 
-            QApplicationPrivate::handleMouseEvent(0, QPoint(m_x, m_y),
+            QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
                                                   QPoint(m_x, m_y), m_buttons);
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
             if (!posChanged)
@@ -175,7 +175,7 @@ void QLinuxInputMouseHandler::readMouseData()
             posChanged = false;
             QPoint pos(m_x, m_y);
 
-            QApplicationPrivate::handleMouseEvent(0, pos, pos, m_buttons);
+            QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
 
             // pos = m_handler->transform(pos);
             //m_handler->limitToScreen(pos);
