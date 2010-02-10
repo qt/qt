@@ -205,6 +205,7 @@ private:
     QMediaTimeRange m_playbackRange;
     QUrl m_url;
     QMediaResourceList m_resources;
+    QString m_errorString;
     QMutex m_mutex;
 
     friend class DirectShowPlayerServiceThread;

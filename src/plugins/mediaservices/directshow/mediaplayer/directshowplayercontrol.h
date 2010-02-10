@@ -101,8 +101,7 @@ public:
     void updateMediaInfo(qint64 duration, int streamTypes, bool seekable);
     void updatePlaybackRate(qreal rate);
     void updateAudioOutput(IBaseFilter *filter);
-
-    using QMediaPlayerControl::error;
+    void updateError(QMediaPlayer::Error error, const QString &errorString);
 
 protected:
     void customEvent(QEvent *event);
@@ -115,7 +114,8 @@ private:
         StreamTypesProperty  = 0x04,
         DurationProperty     = 0x08,
         PlaybackRateProperty = 0x10,
-        SeekableProperty     = 0x20
+        SeekableProperty     = 0x20,
+        ErrorProperty        = 0x40
     };
 
     enum Event
@@ -124,6 +124,7 @@ private:
     };
 
     void scheduleUpdate(int properties);
+    void emitPropertyChanges();
 
     DirectShowPlayerService *m_service;
     IBasicAudio *m_audio;
@@ -131,12 +132,14 @@ private:
     int m_updateProperties;
     QMediaPlayer::State m_state;
     QMediaPlayer::MediaStatus m_status;
+    QMediaPlayer::Error m_error;
     int m_streamTypes;
     int m_muteVolume;
     qint64 m_duration;
     qreal m_playbackRate;
     bool m_seekable;
     QMediaContent m_media;
+    QString m_errorString;
     
 };
 

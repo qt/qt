@@ -182,6 +182,8 @@ void DirectShowPlayerService::load(const QMediaContent &media, QIODevice *stream
 
     m_resources = media.resources();
     m_stream = stream;
+    m_error = QMediaPlayer::NoError;
+    m_errorString = QString();
     m_duration = 0;
     m_streamTypes = 0;
     m_executedTasks = 0;
@@ -195,6 +197,10 @@ void DirectShowPlayerService::load(const QMediaContent &media, QIODevice *stream
         m_graphStatus = NoMedia;
 
         m_url.clear();
+    } else if (stream && (!stream->isReadable() || stream->isSequential())) {
+        m_pendingTasks = 0;
+        m_graphStatus = InvalidMedia;
+        m_error = QMediaPlayer::ResourceError;
     } else {
         m_graphStatus = Loading;
 
@@ -208,6 +214,7 @@ void DirectShowPlayerService::load(const QMediaContent &media, QIODevice *stream
         ::SetEvent(m_taskHandle);
     }
 
+    m_playerControl->updateError(m_error, m_errorString);
     m_playerControl->updateMediaInfo(m_duration, m_streamTypes, m_seekable);
     m_playerControl->updateState(QMediaPlayer::StoppedState);
     updateStatus();
@@ -273,13 +280,16 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
         switch (hr) {
         case VFW_E_UNKNOWN_FILE_TYPE:
             m_error = QMediaPlayer::FormatError;
+            m_errorString = QString();
             break;
         case E_OUTOFMEMORY:
         case VFW_E_CANNOT_LOAD_SOURCE_FILTER:
         case VFW_E_NOT_FOUND:
             m_error = QMediaPlayer::ResourceError;
+            m_errorString = QString();
         default:
             m_error = QMediaPlayer::ResourceError;
+            m_errorString = QString();
             qWarning("DirectShowPlayerService::doSetUrlSource: Unresolved error code %x", hr);
             break;
         }
@@ -312,6 +322,7 @@ void DirectShowPlayerService::doSetStreamSource(QMutexLocker *locker)
         m_graphStatus = InvalidMedia;
 
         m_error = QMediaPlayer::ResourceError;
+        m_errorString = QString();
 
         QCoreApplication::postEvent(this, new QEvent(QEvent::Type(Error)));
     }
@@ -415,14 +426,17 @@ void DirectShowPlayerService::doRender(QMutexLocker *locker)
 
             if (!m_audioOutput && !m_videoOutput) {
                 m_error = QMediaPlayer::ResourceError;
+                m_errorString = QString();
             } else {
                 switch (renderHr) {
                 case VFW_E_UNSUPPORTED_AUDIO:
                 case VFW_E_UNSUPPORTED_VIDEO:
                 case VFW_E_UNSUPPORTED_STREAM:
                     m_error = QMediaPlayer::FormatError;
+                    m_errorString = QString();
                 default:
                     m_error = QMediaPlayer::ResourceError;
+                    m_errorString = QString();
                     qWarning("DirectShowPlayerService::doRender: Unresolved error code %x",
                              renderHr);
                 }
@@ -619,6 +633,7 @@ void DirectShowPlayerService::doPlay(QMutexLocker *locker)
             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(StatusChange)));
         } else {
             m_error = QMediaPlayer::ResourceError;
+            m_errorString = QString();
             qWarning("DirectShowPlayerService::doPlay: Unresolved error code %x", hr);
 
             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(Error)));
@@ -660,6 +675,7 @@ void DirectShowPlayerService::doPause(QMutexLocker *locker)
             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(StatusChange)));
         } else {
             m_error = QMediaPlayer::ResourceError;
+            m_errorString = QString();
             qWarning("DirectShowPlayerService::doPause: Unresolved error code %x", hr);
 
             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(Error)));
@@ -994,18 +1010,14 @@ void DirectShowPlayerService::customEvent(QEvent *event)
 
         updateStatus();
     } else if (event->type() == QEvent::Type(Error)) {
-        QMediaPlayer::Error error;
-        {
-            QMutexLocker locker(&m_mutex);
-            error = m_error;
+        QMutexLocker locker(&m_mutex);
 
-            if (error != QMediaPlayer::NoError) {
-                m_playerControl->updateMediaInfo(m_duration, m_streamTypes, m_seekable);
-                m_playerControl->updateState(QMediaPlayer::StoppedState);
-                updateStatus();
-            }
+        if (m_error != QMediaPlayer::NoError) {
+            m_playerControl->updateError(m_error, m_errorString);
+            m_playerControl->updateMediaInfo(m_duration, m_streamTypes, m_seekable);
+            m_playerControl->updateState(QMediaPlayer::StoppedState);
+            updateStatus();
         }
-        m_playerControl->error(error, QString());
     } else if (event->type() == QEvent::Type(RateChange)) {
         QMutexLocker locker(&m_mutex);
 
