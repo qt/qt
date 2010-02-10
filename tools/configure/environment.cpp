@@ -60,6 +60,7 @@ using namespace std;
 #include <qt_windows.h>
 #endif
 
+#include <symbian/epocroot.h> // from tools/shared
 #include <windows/registry.h> // from tools/shared
 
 QT_BEGIN_NAMESPACE
@@ -458,6 +459,12 @@ bool Environment::rmdir(const QString &name)
     }
     result &= dir.rmdir(cleanName);
     return result;
+}
+
+QString Environment::symbianEpocRoot()
+{
+    // Call function defined in tools/shared/symbian/epocroot.h
+    return ::epocRoot();
 }
 
 QT_END_NAMESPACE

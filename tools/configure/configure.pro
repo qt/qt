@@ -3,8 +3,8 @@ DESTDIR   = ../..
 
 CONFIG   += console flat
 CONFIG   -= moc qt
-DEFINES  = UNICODE QT_NODLL QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_STL QT_NO_COMPRESS QT_BUILD_QMAKE QT_NO_THREAD QT_NO_QOBJECT _CRT_SECURE_NO_DEPRECATE
-
+DEFINES  = UNICODE QT_NODLL QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_STL QT_NO_COMPRESS QT_NO_THREAD QT_NO_QOBJECT _CRT_SECURE_NO_DEPRECATE
+DEFINES  += QT_BOOTSTRAPPED
 
 win32 : LIBS += -lole32 -ladvapi32
 win32-msvc.net | win32-msvc2* : QMAKE_CXXFLAGS += /EHsc
@@ -60,6 +60,9 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringmatcher.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables_p.h \
+           $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.h \
+           $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils_p.h \
+           $$QT_SOURCE_TREE/tools/shared/symbian/epocroot.h \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.h
 
 
@@ -105,6 +108,9 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qrect.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qmetatype.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qmalloc.cpp \
+           $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.cpp \
+           $$QT_SOURCE_TREE/src/corelib/xml/qxmlutils.cpp \
+           $$QT_SOURCE_TREE/tools/shared/symbian/epocroot.cpp \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
 
 win32:SOURCES += $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp

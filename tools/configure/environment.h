@@ -71,6 +71,8 @@ public:
     static bool cpdir(const QString &srcDir, const QString &destDir);
     static bool rmdir(const QString &name);
 
+    static QString symbianEpocRoot();
+
 private:
     static Compiler detectedCompiler;
 
