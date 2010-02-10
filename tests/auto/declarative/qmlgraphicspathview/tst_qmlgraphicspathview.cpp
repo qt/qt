@@ -47,6 +47,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
 #include <QtDeclarative/private/qmlgraphicstext_p.h>
+#include <QtDeclarative/private/qmlgraphicsrectangle_p.h>
 #include <QAbstractListModel>
 #include <QFile>
 #include <private/qmlvaluetype_p.h>
@@ -60,10 +61,12 @@ public:
 
 private slots:
     void initValues();
+    void items();
     void dataModel();
     void pathview2();
     void pathview3();
     void path();
+    void pathMoved();
 
 private:
     QmlView *createView(const QString &filename);
@@ -184,6 +187,38 @@ void tst_QmlGraphicsPathView::initValues()
     QCOMPARE(obj->dragMargin(), 0.);
     QCOMPARE(obj->count(), 0);
     QCOMPARE(obj->pathItemCount(), -1);
+}
+
+void tst_QmlGraphicsPathView::items()
+{
+    QmlView *canvas = createView(SRCDIR "/data/pathview.qml");
+
+    TestModel model;
+    model.addItem("Fred", "12345");
+    model.addItem("John", "2345");
+    model.addItem("Bob", "54321");
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->root(), "view");
+    QVERIFY(pathview != 0);
+
+    QCOMPARE(pathview->childItems().count(), model.count()); // assumes all are visible
+
+    for (int i = 0; i < model.count(); ++i) {
+        QmlGraphicsText *name = findItem<QmlGraphicsText>(pathview, "textName", i);
+        QVERIFY(name != 0);
+        QCOMPARE(name->text(), model.name(i));
+        QmlGraphicsText *number = findItem<QmlGraphicsText>(pathview, "textNumber", i);
+        QVERIFY(number != 0);
+        QCOMPARE(number->text(), model.number(i));
+    }
+
+    delete canvas;
 }
 
 void tst_QmlGraphicsPathView::pathview2()
@@ -323,6 +358,11 @@ void tst_QmlGraphicsPathView::dataModel()
     itemCount = findItems<QmlGraphicsItem>(pathview, "wrapper").count();
     QCOMPARE(itemCount, 5);
 
+    QmlGraphicsRectangle *testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 4);
+    QVERIFY(testItem != 0);
+    testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 5);
+    QVERIFY(testItem == 0);
+
     model.insertItem(2, "pink", "2");
 
     itemCount = findItems<QmlGraphicsItem>(pathview, "wrapper").count();
@@ -338,6 +378,49 @@ void tst_QmlGraphicsPathView::dataModel()
     text = findItem<QmlGraphicsText>(pathview, "myText", 3);
     QVERIFY(text);
     QCOMPARE(text->text(), model.name(3));
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsPathView::pathMoved()
+{
+    QmlView *canvas = createView(SRCDIR "/data/pathview.qml");
+
+    TestModel model;
+    model.addItem("Ben", "12345");
+    model.addItem("Bohn", "2345");
+    model.addItem("Bob", "54321");
+    model.addItem("Bill", "4321");
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->root(), "view");
+    QVERIFY(pathview != 0);
+
+    QmlGraphicsRectangle *firstItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 0);
+    QVERIFY(firstItem);
+    QmlGraphicsPath *path = qobject_cast<QmlGraphicsPath*>(pathview->path());
+    QVERIFY(path);
+    QPointF start = path->pointAt(0.0);
+    QPointF offset;//Center of item is at point, but pos is from corner
+    offset.setX(firstItem->width()/2);
+    offset.setY(firstItem->height()/2);
+    QCOMPARE(firstItem->pos() + offset, start);
+    pathview->setOffset(10);
+    QTest::qWait(1000);//Moving is animated?
+
+    for(int i=0; i<model.count(); i++){
+        QmlGraphicsRectangle *curItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", i);
+        QCOMPARE(curItem->pos() + offset, path->pointAt(0.1 + i*0.25));
+    }
+
+    pathview->setOffset(100);
+    QTest::qWait(1000);//Moving is animated?
+    QCOMPARE(firstItem->pos() + offset, start);
 
     delete canvas;
 }
@@ -363,9 +446,9 @@ template<typename T>
 T *tst_QmlGraphicsPathView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    //qDebug() << parent->childItems().count() << "children";
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
@@ -393,8 +476,8 @@ QList<T*> tst_QmlGraphicsPathView::findItems(QmlGraphicsItem *parent, const QStr
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
