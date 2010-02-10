@@ -251,6 +251,7 @@
 #endif
 #include <private/qgraphicseffect_p.h>
 #include <private/qgesturemanager_p.h>
+#include <private/qpathclipper_p.h>
 
 // #define GESTURE_DEBUG
 #ifndef GESTURE_DEBUG
@@ -372,7 +373,10 @@ void QGraphicsScenePrivate::_q_emitUpdated()
             }
         }
     } else {
-        updateAll = false;
+        if (views.isEmpty()) {
+            updateAll = false;
+            return;
+        }
         for (int i = 0; i < views.size(); ++i)
             views.at(i)->d_func()->processPendingUpdates();
         // It's important that we update all views before we dispatch, hence two for-loops.
@@ -4605,6 +4609,7 @@ void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const
     if (!unpolishedItems.isEmpty())
         _q_polishItems();
 
+    updateAll = false;
     QRectF exposedSceneRect;
     if (exposedRegion && indexMethod != QGraphicsScene::NoIndex) {
         exposedSceneRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
@@ -4632,7 +4637,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         return; // Item has neither contents nor children!(?)
 
     const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity()))
         return;
 
@@ -4752,7 +4757,7 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                                  qreal opacity, const QTransform *effectTransform,
                                  bool wasDirtyParentSceneTransform, bool drawItem)
 {
-    const bool itemIsFullyTransparent = (opacity < 0.0001);
+    const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
     const bool itemHasChildren = !item->d_ptr->children.isEmpty();
 
@@ -4767,7 +4772,12 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                 painter->setWorldTransform(*transformPtr * *effectTransform);
             else
                 painter->setWorldTransform(*transformPtr);
-            painter->setClipPath(item->shape(), Qt::IntersectClip);
+            QRectF clipRect;
+            const QPainterPath clipPath(item->shape());
+            if (QPathClipper::pathToRect(clipPath, &clipRect))
+                painter->setClipRect(clipRect, Qt::IntersectClip);
+            else
+                painter->setClipPath(clipPath, Qt::IntersectClip);
         }
 
         // Draw children behind
@@ -4803,8 +4813,14 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                 painter->setWorldTransform(*transformPtr);
         }
 
-        if (itemClipsToShape)
-            painter->setClipPath(item->shape(), Qt::IntersectClip);
+        if (itemClipsToShape) {
+            QRectF clipRect;
+            const QPainterPath clipPath(item->shape());
+            if (QPathClipper::pathToRect(clipPath, &clipRect))
+                painter->setClipRect(clipRect, Qt::IntersectClip);
+            else
+                painter->setClipPath(clipPath, Qt::IntersectClip);
+        }
         painter->setOpacity(opacity);
 
         if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget)
@@ -4982,7 +4998,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     }
 
     const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-    const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity && opacity < 0.0001;
+    const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity
+                                        && QGraphicsItemPrivate::isOpacityNull(opacity);
     if (itemIsFullyTransparent && (!itemHasChildren || item->d_ptr->childrenCombineOpacity())) {
         resetDirtyItem(item, /*recursive=*/itemHasChildren);
         return;
@@ -5155,6 +5172,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     if (!d->unpolishedItems.isEmpty())
         d->_q_polishItems();
 
+    d->updateAll = false;
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 

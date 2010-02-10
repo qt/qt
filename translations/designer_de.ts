@@ -517,12 +517,12 @@
     </message>
     <message>
         <location line="+89"/>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+907"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+915"/>
         <source>Move action</source>
         <translation>Aktion verschieben</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-424"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="-432"/>
         <source>Change Title</source>
         <translation>Titel ändern</translation>
     </message>
@@ -1027,7 +1027,7 @@
 <context>
     <name>FormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+359"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilderextra.cpp" line="+375"/>
         <source>Invalid stretch value for &apos;%1&apos;: &apos;%2&apos;</source>
         <extracomment>Parsing layout stretch values</extracomment>
         <translation>Ungültiger Stretch-Wert für &apos;%1&apos;: &apos;%2&apos;</translation>
@@ -1412,7 +1412,7 @@
         <translation>Fehler beim Lesen der ui-Datei: Das Wurzelelement &lt;ui&gt; fehlt.</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+104"/>
         <source>The creation of a widget of the class &apos;%1&apos; failed.</source>
         <translation>Es konnte kein Widget der Klasse &apos;%1&apos; erzeugt werden.</translation>
     </message>
@@ -2273,7 +2273,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+163"/>
+        <location filename="../tools/designer/src/lib/uilib/formbuilder.cpp" line="+168"/>
         <source>An empty class name was passed on to %1 (object name: &apos;%2&apos;).</source>
         <extracomment>Empty class name passed to widget factory method</extracomment>
         <translation>Der Methode %1 wurde ein leerer Klassennamen übergeben (Name &apos;%2&apos;).</translation>
@@ -2312,6 +2312,16 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <location line="+266"/>
         <source>The property %1 could not be written. The type %2 is not supported yet.</source>
         <translation>Die Eigenschaft %1 konnte nicht geschrieben werden, da der Typ %2 nicht unterstützt wird.</translation>
+    </message>
+    <message>
+        <location filename="../tools/designer/src/lib/uilib/properties_p.h" line="+132"/>
+        <source>The enumeration-value &apos;%1&apos; is invalid. The default value &apos;%2&apos; will be used instead.</source>
+        <translation>Der Aufzählungswert &apos;%1&apos; ist ungültig. Es wird der Vorgabewert &apos;%2&apos; verwendet.</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>The flag-value &apos;%1&apos; is invalid. Zero will be used instead.</source>
+        <translation>Der Flag-Wert &apos;%1&apos; ist ungültig. Es wird der Wert 0 verwendet.</translation>
     </message>
 </context>
 <context>
@@ -2446,7 +2456,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtBoolEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+226"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+247"/>
         <location line="+10"/>
         <location line="+25"/>
         <source>True</source>
@@ -2475,7 +2485,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtCharEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1581"/>
+        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1584"/>
         <source>Clear Char</source>
         <translation>Zeichen löschen</translation>
     </message>
@@ -2491,7 +2501,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4743"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4750"/>
         <source>Red</source>
         <translation>Rot</translation>
     </message>
@@ -2514,7 +2524,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtCursorDatabase</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-206"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-226"/>
         <source>Arrow</source>
         <translation>Pfeil</translation>
     </message>
@@ -3062,6 +3072,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
     <name>QtGradientViewDialog</name>
     <message>
         <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.ui"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientviewdialog.h" line="+62"/>
         <source>Select Gradient</source>
         <translation>Gradienten auswählen</translation>
     </message>
@@ -3069,7 +3080,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtKeySequenceEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+221"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+241"/>
         <source>Clear Shortcut</source>
         <translation>Tastenkürzel löschen</translation>
     </message>
@@ -3131,7 +3142,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtPropertyBrowserUtils</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-136"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-156"/>
         <source>[%1, %2, %3] (%4)</source>
         <translation>[%1, %2, %3] (%4)</translation>
     </message>
@@ -3904,7 +3915,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>VersionDialog</name>
     <message>
-        <location filename="../tools/designer/src/designer/versiondialog.cpp" line="+171"/>
+        <location filename="../tools/designer/src/designer/versiondialog.cpp" line="+170"/>
         <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;&lt;br/&gt;Version %2</source>
         <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;&lt;br/&gt;Version %2</translation>
     </message>
@@ -4742,7 +4753,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Fehler beim Einfügen</translation>
     </message>
     <message>
-        <location line="+445"/>
+        <location line="+450"/>
         <source>Lay out</source>
         <translation>Layout</translation>
     </message>
@@ -4753,7 +4764,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Widget einfügen</translation>
     </message>
     <message numerus="yes">
-        <location line="-1058"/>
+        <location line="-1063"/>
         <source>Paste %n action(s)</source>
         <translation>
             <numerusform>Eine Aktion einfügen</numerusform>
@@ -4794,12 +4805,12 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Übergeordnetes Widget auswählen</translation>
     </message>
     <message>
-        <location line="+576"/>
+        <location line="+581"/>
         <source>A QMainWindow-based form does not contain a central widget.</source>
         <translation>Ein auf QMainWindow basierendes Formular enthält kein zentrales Widget.</translation>
     </message>
     <message>
-        <location line="-797"/>
+        <location line="-802"/>
         <source>Raise widgets</source>
         <translation>Widgets nach vorn bringen</translation>
     </message>
@@ -4825,7 +4836,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::FormWindowManager</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+364"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindowmanager.cpp" line="+365"/>
         <source>Cu&amp;t</source>
         <translation>&amp;Ausschneiden</translation>
     </message>

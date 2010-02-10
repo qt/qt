@@ -171,7 +171,7 @@ void tst_QGraphicsView::paintSingleItem()
 }
 
 #ifdef Q_OS_SYMBIAN
-#  define DEEP_STACKING_COUNT 200
+#  define DEEP_STACKING_COUNT 85
 #else
 #  define DEEP_STACKING_COUNT 1000
 #endif
