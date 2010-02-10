@@ -86,6 +86,8 @@ public:
     bool intersect();
     bool contains();
 
+    static bool pathToRect(const QPainterPath &path, QRectF *rect = 0);
+
 private:
     Q_DISABLE_COPY(QPathClipper)
 

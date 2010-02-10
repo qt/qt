@@ -1006,6 +1006,9 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     Returns the child of the model index that is stored in the given \a row and
     \a column.
 
+    \note This function does not work for an invalid model index which is often
+    used as the root index.
+
     \sa parent(), sibling()
 */
 

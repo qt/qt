@@ -958,8 +958,8 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
         if (nameMatch(cursor->name(), name))
             return cursor;
         QList<QByteArray> aliases = cursor->aliases();
-        for (int i = 0; i < aliases.size(); ++i)
-            if (nameMatch(aliases.at(i), name))
+        for (int y = 0; y < aliases.size(); ++y)
+            if (nameMatch(aliases.at(y), name))
                 return cursor;
     }
 
