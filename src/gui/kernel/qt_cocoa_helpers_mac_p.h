@@ -188,24 +188,23 @@ inline QString qt_mac_NSStringToQString(const NSString *nsstr)
 inline NSString *qt_mac_QStringToNSString(const QString &qstr)
 { return [reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr)) autorelease]; }
 
-class QCocoaPostCallArgs {
-    public:
+#ifdef QT_MAC_USE_COCOA
+class QCocoaPostMessageArgs {
+public:
     id target;
     SEL selector;
-    QCocoaPostCallArgs(id target, SEL selector) : target(target), selector(selector)
+    QCocoaPostMessageArgs(id target, SEL selector) : target(target), selector(selector)
     {
         [target retain];
     }
 
-    ~QCocoaPostCallArgs()
+    ~QCocoaPostMessageArgs()
     {
         [target release];
     }
 };
 bool qt_cocoaPostMessage(id target, SEL selector);
-
-@interface DebugNSApplication : NSApplication {}
-@end
+#endif
 
 #endif
 
