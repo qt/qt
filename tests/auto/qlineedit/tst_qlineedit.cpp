@@ -271,6 +271,7 @@ private slots:
     void taskQTBUG_4401_enterKeyClearsPassword();
     void taskQTBUG_4679_moveToStartEndOfBlock();
     void taskQTBUG_4679_selectToStartEndOfBlock();
+    void taskQTBUG_7395_readOnlyShortcut();
 
 protected slots:
 #ifdef QT3_SUPPORT
@@ -3454,10 +3455,8 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     completer.setCompletionMode(QCompleter::InlineCompletion);
     lineEdit.setCompleter(&completer);
     lineEdit.show();
-#ifdef Q_WS_X11
-    // to be safe and avoid failing setFocus with window managers
-    qt_x11_wait_for_window_manager(&lineEdit);
-#endif
+    QTest::qWaitForWindowShown(&lineEdit);
+    QApplication::setActiveWindow(&lineEdit);
     lineEdit.setFocus();
     QTRY_VERIFY(lineEdit.hasFocus());
     QTest::keyPress(&lineEdit, 'a');
@@ -3636,6 +3635,27 @@ void tst_QLineEdit::taskQTBUG_4679_selectToStartEndOfBlock()
     QVERIFY(testWidget->hasSelectedText());
     QCOMPARE(testWidget->selectedText(), text.mid(5));
 #endif // Q_OS_MAC
+}
+
+void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
+{
+    //ReadOnly QLineEdit should not intercept shortcut.
+    QLineEdit le;
+    le.setReadOnly(true);
+
+    QAction action(QString::fromLatin1("hello"), &le);
+    action.setShortcut(QString::fromLatin1("p"));
+    QSignalSpy spy(&action, SIGNAL(triggered()));
+    le.addAction(&action);
+
+    le.show();
+    QTest::qWaitForWindowShown(&le);
+    QApplication::setActiveWindow(&le);
+    le.setFocus();
+    QTRY_VERIFY(le.hasFocus());
+
+    QTest::keyClick(0, Qt::Key_P);
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QLineEdit)
