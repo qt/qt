@@ -225,6 +225,8 @@ bool QAudioFormat::isValid() const
 
 /*!
    Sets the sample rate to \a samplerate Hertz.
+
+   \since 4.7
 */
 
 void QAudioFormat::setSampleRate(int samplerate)
@@ -245,6 +247,8 @@ void QAudioFormat::setFrequency(int frequency)
 
 /*!
     Returns the current sample rate in Hertz.
+
+    \since 4.7
 */
 
 int QAudioFormat::sampleRate() const
@@ -265,6 +269,8 @@ int QAudioFormat::frequency() const
 
 /*!
    Sets the channel count to \a channels.
+
+   \since 4.7
 */
 
 void QAudioFormat::setChannelCount(int channels)
@@ -285,6 +291,8 @@ void QAudioFormat::setChannels(int channels)
 
 /*!
     Returns the current channel count value.
+
+    \since 4.7
 */
 
 int QAudioFormat::channelCount() const

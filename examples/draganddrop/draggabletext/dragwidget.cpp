@@ -82,7 +82,7 @@ DragWidget::DragWidget(QWidget *parent)
 void DragWidget::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasText()) {
-        if (children().contains(event->source())) {
+        if (event->source() == this) {
             event->setDropAction(Qt::MoveAction);
             event->accept();
         } else {
