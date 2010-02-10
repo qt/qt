@@ -779,6 +779,7 @@ void tst_QListView::batchedMode()
     view.resize(200,400);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTest::qWait(100);
 
 #if defined(Q_OS_WINCE)
     QTest::qWait(2000);
@@ -1846,6 +1847,7 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
         view.setRowHidden(i, true);
     }
     QApplication::processEvents();
+    QTest::qWait(50);
     QCOMPARE(bar->value(), bar->maximum());
     QCOMPARE(bar->maximum(), rowCount/4 - nbVisibleItem);
 }
