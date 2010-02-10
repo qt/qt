@@ -260,7 +260,7 @@ void QTextDocumentPrivate::clear()
 
         title.clear();
         undoState = 0;
-        clearUndoRedoStacks(QTextDocument::UndoStack);
+        clearUndoRedoStacks(QTextDocument::RedoStack);
         text = QString();
         unreachableCharacterCount = 0;
         modifiedState = 0;
@@ -292,7 +292,7 @@ QTextDocumentPrivate::~QTextDocumentPrivate()
     cursors.clear();
     undoState = 0;
     undoEnabled = true;
-    clearUndoRedoStacks(QTextDocument::UndoStack);
+    clearUndoRedoStacks(QTextDocument::RedoStack);
 }
 
 void QTextDocumentPrivate::setLayout(QAbstractTextDocumentLayout *layout)
@@ -1027,7 +1027,7 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
     if (!undoEnabled)
         return;
     if (undoState < undoStack.size())
-        clearUndoRedoStacks(QTextDocument::UndoStack);
+        clearUndoRedoStacks(QTextDocument::RedoStack);
 
     if (!undoStack.isEmpty() && modified) {
         QTextUndoCommand &last = undoStack[undoState - 1];
@@ -1117,7 +1117,7 @@ void QTextDocumentPrivate::enableUndoRedo(bool enable)
 
     if (!enable) {
         undoState = 0;
-        clearUndoRedoStacks(QTextDocument::UndoStack);
+        clearUndoRedoStacks(QTextDocument::RedoStack);
         emitUndoAvailable(false);
         emitRedoAvailable(false);
     }
