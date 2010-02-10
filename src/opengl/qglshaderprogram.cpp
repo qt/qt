@@ -143,6 +143,8 @@ QT_BEGIN_NAMESPACE
 
     \value Vertex Vertex shader written in the OpenGL Shading Language (GLSL).
     \value Fragment Fragment shader written in the OpenGL Shading Language (GLSL).
+    \value Geometry Geometry shaders written in the OpenGL Shading
+           Language (GLSL), based on the GL_EXT_geometry_shader4 extension.
 */
 
 #ifndef GL_FRAGMENT_SHADER
