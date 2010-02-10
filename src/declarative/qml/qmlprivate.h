@@ -85,8 +85,26 @@ namespace QmlPrivate
         virtual void clear() = 0;
     };
 
+    enum ListOp { Append, Set, Insert, Prepend, Length, FromObject, 
+                  Object, Create, Value, Clear };
+
     template<typename T>
-    QObject *create() { return new T; }
+    int list_op(ListOp op, int val, 
+                const QVariant &vlist, 
+                const QVariant &value, 
+                void **out);
+
+    template<typename T>
+    int list_nocreate_op(ListOp op, int val, 
+                         const QVariant &vlist, 
+                         const QVariant &value, 
+                         void **out);
+
+    template<typename T>
+    int list_interface_op(ListOp op, int val, 
+                          const QVariant &vlist, 
+                          const QVariant &value, 
+                          void **out);
 
     template<class From, class To, int N>
     struct StaticCastSelectorClass
@@ -185,6 +203,7 @@ namespace QmlPrivate
         int listId;
         int qmlListId;
     };
+    typedef int (*Func)(QmlPrivate::ListOp, int, const QVariant &, const QVariant &, void **);
     typedef QObject *(*CreateFunc)(QObject *);
 
     template<typename T>
@@ -217,6 +236,148 @@ namespace QmlPrivate
         }
     };
 }
+
+template<typename T>
+int QmlPrivate::list_op(QmlPrivate::ListOp op, int val, 
+                        const QVariant &vlist, 
+                        const QVariant &value, 
+                        void **out) 
+{ 
+    if (op == QmlPrivate::Create) { 
+        QObject *obj = static_cast<QObject *>(new T);
+        *((QObject **)out) = obj; 
+        return 0; 
+    } 
+    QList<T *> *list = vlist.value<QList<T *> *>(); 
+    switch(op) { 
+    case QmlPrivate::Append: 
+        list->append(value.value<T *>()); 
+        break; 
+    case QmlPrivate::Set: 
+        (*list)[val] = value.value<T *>(); 
+        break; 
+    case QmlPrivate::Insert: 
+        list->insert(val, value.value<T *>()); 
+        break; 
+    case QmlPrivate::Prepend: 
+        list->prepend(value.value<T *>()); 
+        break; 
+    case QmlPrivate::Length: 
+        return list->count(); 
+        break; 
+    case QmlPrivate::Clear: 
+        list->clear(); 
+        return 0; 
+        break; 
+    case QmlPrivate::Create: 
+        break; 
+    case QmlPrivate::Object: 
+        *out =  static_cast<QObject *>(value.value<T *>()); 
+        break; 
+    case QmlPrivate::FromObject: 
+        { 
+            QObject *fromObj = value.value<QObject *>(); 
+            T *me = qobject_cast<T *>(fromObj); 
+            if (me) { 
+                *((QVariant *)*out) = QVariant::fromValue(me); 
+            } 
+        } 
+        break; 
+    case QmlPrivate::Value: 
+        if (list->count() <= val) *((QVariant *)*out) = QVariant();
+        else *((QVariant *)*out) = QVariant::fromValue(list->at(val)); 
+        break; 
+    } 
+    return 0; 
+} 
+
+template<typename T>
+int QmlPrivate::list_nocreate_op(QmlPrivate::ListOp op, int val, 
+                                 const QVariant &vlist, 
+                                 const QVariant &value, 
+                                 void **out) 
+{ 
+    QList<T *> *list = vlist.value<QList<T *> *>(); 
+    switch(op) { 
+    case QmlPrivate::Append: 
+        list->append(value.value<T *>()); 
+        break; 
+    case QmlPrivate::Set: 
+        (*list)[val] = value.value<T *>(); 
+        break; 
+    case QmlPrivate::Insert: 
+        list->insert(val, value.value<T *>()); 
+        break; 
+    case QmlPrivate::Prepend: 
+        list->prepend(value.value<T *>()); 
+        break; 
+    case QmlPrivate::Length: 
+        return list->count(); 
+        break; 
+    case QmlPrivate::Clear: 
+        list->clear(); 
+        return 0; 
+        break; 
+    case QmlPrivate::Create: 
+        break; 
+    case QmlPrivate::Object: 
+        *out =  static_cast<QObject *>(value.value<T *>()); 
+        break; 
+    case QmlPrivate::FromObject: 
+        { 
+            QObject *fromObj = value.value<QObject *>(); 
+            T *me = qobject_cast<T *>(fromObj); 
+            if (me) { 
+                *((QVariant *)*out) = QVariant::fromValue(me); 
+            } 
+        } 
+        break; 
+    case QmlPrivate::Value: 
+        *((QVariant *)*out) = QVariant::fromValue(list->at(val)); 
+        break; 
+    } 
+    return 0; 
+} 
+
+template<typename T>
+int QmlPrivate::list_interface_op(QmlPrivate::ListOp op, int val, 
+                                  const QVariant &vlist, 
+                                  const QVariant &value, 
+                                  void **out) 
+{ 
+    QList<T *> *list = vlist.value<QList<T *> *>(); 
+    switch(op) { 
+    case QmlPrivate::Append: 
+        list->append(value.value<T *>()); 
+        break; 
+    case QmlPrivate::Set: 
+        (*list)[val] = value.value<T *>(); 
+        break; 
+    case QmlPrivate::Insert: 
+        list->insert(val, value.value<T *>()); 
+        break; 
+    case QmlPrivate::Prepend: 
+        list->prepend(value.value<T *>()); 
+        break; 
+    case QmlPrivate::Length: 
+        return list->count(); 
+        break; 
+    case QmlPrivate::Clear: 
+        list->clear(); 
+        return 0; 
+        break; 
+    case QmlPrivate::Create: 
+        break; 
+    case QmlPrivate::Object: 
+        break; 
+    case QmlPrivate::FromObject: 
+        break; 
+    case QmlPrivate::Value: 
+        *((QVariant *)*out) = QVariant::fromValue(list->at(val)); 
+        break; 
+    } 
+    return 0; 
+} 
 
 QT_END_NAMESPACE
 

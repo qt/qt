@@ -52,7 +52,7 @@ public:
 private slots:
     void invalid();
     void qmllist();
-    void listproperty();
+    void qlist();
     void qstringlist();
     void qvariantlist();
     void qobject();
@@ -149,7 +149,7 @@ void tst_QmlListAccessor::qmllist()
     QCOMPARE(list.count(), 0);
 }
 
-void tst_QmlListAccessor::listproperty()
+void tst_QmlListAccessor::qlist()
 {
     QList<QObject*> list;
     QObject *obj = new QObject(this);
@@ -161,11 +161,11 @@ void tst_QmlListAccessor::listproperty()
     QCOMPARE(list.at(0), obj);
 
     QmlListAccessor accessor;
-    accessor.setList(qVariantFromValue(QmlListProperty<QObject>(this, list)));
-    QVERIFY(qvariant_cast<QmlListProperty<QObject> >(accessor.list()) == QmlListProperty<QObject>(this, list));
+    accessor.setList(qVariantFromValue((QList<QObject*>*)&list));
+    QCOMPARE(accessor.list(), qVariantFromValue((QList<QObject*>*)&list));
 
     // type
-    QCOMPARE(accessor.type(), QmlListAccessor::ListProperty);
+    QCOMPARE(accessor.type(), QmlListAccessor::QListPtr);
 
     // isValid
     QVERIFY(accessor.isValid());

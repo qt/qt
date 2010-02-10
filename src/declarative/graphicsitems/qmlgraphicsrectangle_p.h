@@ -107,14 +107,14 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsGradient : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QmlListProperty<QmlGraphicsGradientStop> stops READ stops)
+    Q_PROPERTY(QList<QmlGraphicsGradientStop *> *stops READ stops)
     Q_CLASSINFO("DefaultProperty", "stops")
 
 public:
     QmlGraphicsGradient(QObject *parent=0) : QObject(parent), m_gradient(0) {}
     ~QmlGraphicsGradient() { delete m_gradient; }
 
-    QmlListProperty<QmlGraphicsGradientStop> stops() { return QmlListProperty<QmlGraphicsGradientStop>(this, m_stops); }
+    QList<QmlGraphicsGradientStop *> *stops() { return &m_stops; }
 
     const QGradient *gradient() const;
 

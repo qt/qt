@@ -111,31 +111,27 @@ QmlListScriptClass::ScriptValue QmlListScriptClass::property(Object *obj, const 
     if (!data->object) 
         return Value();
 
-    if (data->type == ListProperty) {
-        QmlListProperty<QObject> list;
-        void *args[] = { &list, 0 };
+    void *list = 0;
+    void *args[] = { &list, 0 };
+    QMetaObject::metacall(data->object, QMetaObject::ReadProperty, 
+                          data->propertyIdx, args);
 
-        QMetaObject::metacall(data->object, QMetaObject::ReadProperty, 
-                data->propertyIdx, args);
+    if (!list)
+        return Value();
 
-        quint32 count = list.count(&list);
+    if (data->type == QListPtr) {
+        const QList<QObject *> &qlist = *((QList<QObject *>*)list);
+
+        quint32 count = qlist.count();
 
         if (name == m_lengthId.identifier)
             return Value(scriptEngine, count);
         else if (lastIndex < count)
-            return Value(scriptEngine, enginePriv->objectClass->newQObject(list.at(&list, lastIndex)));
+            return Value(scriptEngine, enginePriv->objectClass->newQObject(qlist.at(lastIndex)));
         else
             return Value();
 
     } else {
-        void *list = 0;
-        void *args[] = { &list, 0 };
-        QMetaObject::metacall(data->object, QMetaObject::ReadProperty, 
-                data->propertyIdx, args);
-
-        if (!list)
-            return Value();
-
         Q_ASSERT(data->type == QmlListPtr);
         const QmlList<QObject *> &qmllist = *((QmlList<QObject *>*)list);
 
@@ -159,29 +155,18 @@ QVariant QmlListScriptClass::toVariant(Object *obj, bool *ok)
         return QVariant();
     }
 
-    if (data->type == QmlListScriptClass::QmlListPtr) {
-        void *list = 0;
-        void *args[] = { &list, 0 };
-        QMetaObject::metacall(data->object, QMetaObject::ReadProperty, 
-                              data->propertyIdx, args);
+    void *list = 0;
+    void *args[] = { &list, 0 };
+    QMetaObject::metacall(data->object, QMetaObject::ReadProperty, 
+                          data->propertyIdx, args);
 
-        if (!list) {
-            if (ok) *ok = false;
-            return QVariant();
-        }
-
-        if (ok) *ok = true;
-        return QVariant(data->propertyType, &list);
-    } else {
-        QmlListProperty<QObject> list;
-        void *args[] = { &list, 0 };
-
-        QMetaObject::metacall(data->object, QMetaObject::ReadProperty, 
-                              data->propertyIdx, args);
-
-        if (ok) *ok = true;
-        return QVariant(data->propertyType, &list);
+    if (!list) {
+        if (ok) *ok = false;
+        return QVariant();
     }
+
+    if (ok) *ok = true;
+    return QVariant(data->propertyType, &list);
 }
 
 QT_END_NAMESPACE
