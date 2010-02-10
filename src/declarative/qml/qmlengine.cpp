@@ -542,6 +542,8 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 
     data->context = context;
     data->nextContextObject = context->d_func()->contextObjects;
+    if (data->nextContextObject) 
+        data->nextContextObject->prevContextObject = &data->nextContextObject;
     data->prevContextObject = &context->d_func()->contextObjects;
     context->d_func()->contextObjects = data;
 }
