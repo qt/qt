@@ -2143,6 +2143,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             }
 
             if (wheel_deltaX || wheel_deltaY) {
+#ifndef QT_NO_WHEELEVENT
                 if (wheel_deltaX) {
                     QWheelEvent qwe(plocal, p, wheel_deltaX, buttons, modifiers, Qt::Horizontal);
                     QApplication::sendSpontaneousEvent(widget, &qwe);
@@ -2165,6 +2166,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                             handled_event = false;
                     }
                 }
+#endif // QT_NO_WHEELEVENT
             } else {
 #ifdef QMAC_SPEAK_TO_ME
                 const int speak_keys = Qt::AltModifier | Qt::ShiftModifier;
@@ -2717,6 +2719,7 @@ int QApplication::keyboardInputInterval()
     return QApplicationPrivate::keyboard_input_time;
 }
 
+#ifndef QT_NO_WHEELEVENT
 void QApplication::setWheelScrollLines(int n)
 {
     QApplicationPrivate::wheel_scroll_lines = n;
@@ -2726,6 +2729,7 @@ int QApplication::wheelScrollLines()
 {
     return QApplicationPrivate::wheel_scroll_lines;
 }
+#endif
 
 void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 {
@@ -2888,9 +2892,11 @@ bool QApplicationPrivate::qt_mac_apply_settings()
                             QApplication::cursorFlashTime()).toInt();
         QApplication::setCursorFlashTime(num);
 
+#ifndef QT_NO_WHEELEVENT
         num = settings.value(QLatin1String("wheelScrollLines"),
                             QApplication::wheelScrollLines()).toInt();
         QApplication::setWheelScrollLines(num);
+#endif
 
         QString colorspec = settings.value(QLatin1String("colorSpec"),
                                             QVariant(QLatin1String("default"))).toString();
