@@ -41,34 +41,26 @@
 #include "tracer.h"
 
 #include "centralwidget.h"
+#include "findwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
-#include "preferencesdialog.h"
 #include "../shared/collectionconfiguration.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QEvent>
 #include <QtCore/QTimer>
 
-#include <QtGui/QMenu>
-#include <QtGui/QLabel>
+#include <QtGui/QApplication>
+#include <QtGui/QKeyEvent>
 #include <QtGui/QLayout>
+#include <QtGui/QMenu>
 #include <QtGui/QPrinter>
-#include <QtGui/QLineEdit>
-#include <QtGui/QCheckBox>
 #include <QtGui/QTabBar>
 #include <QtGui/QTabWidget>
 #include <QtGui/QToolButton>
-#include <QtGui/QMouseEvent>
-#include <QtGui/QSpacerItem>
-#include <QtGui/QTextCursor>
-#include <QtGui/QPrintDialog>
-#include <QtGui/QApplication>
-#include <QtGui/QTextDocumentFragment>
-#include <QtGui/QPrintPreviewDialog>
 #include <QtGui/QPageSetupDialog>
+#include <QtGui/QPrintDialog>
+#include <QtGui/QPrintPreviewDialog>
 
 #include <QtHelp/QHelpSearchEngine>
 
@@ -88,135 +80,13 @@ namespace {
     CentralWidget *staticCentralWidget = 0;
 }
 
-FindWidget::FindWidget(QWidget *parent)
-    : QWidget(parent)
-    , appPalette(qApp->palette())
-{
-    TRACE_OBJ
-    QHBoxLayout *hboxLayout = new QHBoxLayout(this);
-    QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 
-#ifndef Q_OS_MAC
-    hboxLayout->setMargin(0);
-    hboxLayout->setSpacing(6);
-    resourcePath.append(QLatin1String("win"));
-#else
-    resourcePath.append(QLatin1String("mac"));
-#endif
-
-    toolClose = setupToolButton(QLatin1String(""),
-        resourcePath + QLatin1String("/closetab.png"));
-    hboxLayout->addWidget(toolClose);
-
-    editFind = new QLineEdit(this);
-    hboxLayout->addWidget(editFind);
-    editFind->setMinimumSize(QSize(150, 0));
-    connect(editFind, SIGNAL(textChanged(QString)), this, SLOT(updateButtons()));
-
-    toolPrevious = setupToolButton(tr("Previous"),
-        resourcePath + QLatin1String("/previous.png"));
-    hboxLayout->addWidget(toolPrevious);
-
-    toolNext = setupToolButton(tr("Next"),
-        resourcePath + QLatin1String("/next.png"));
-    hboxLayout->addWidget(toolNext);
-
-    checkCase = new QCheckBox(tr("Case Sensitive"), this);
-    hboxLayout->addWidget(checkCase);
-
-    checkWholeWords = new QCheckBox(tr("Whole words"), this);
-    hboxLayout->addWidget(checkWholeWords);
-#if !defined(QT_NO_WEBKIT)
-    checkWholeWords->hide();
-#endif
-
-    labelWrapped = new QLabel(this);
-    labelWrapped->setScaledContents(true);
-    labelWrapped->setTextFormat(Qt::RichText);
-    labelWrapped->setMinimumSize(QSize(0, 20));
-    labelWrapped->setMaximumSize(QSize(105, 20));
-    labelWrapped->setAlignment(Qt::AlignLeading | Qt::AlignLeft | Qt::AlignVCenter);
-    labelWrapped->setText(tr("<img src=\":/trolltech/assistant/images/wrap.png\""
-        ">&nbsp;Search wrapped"));
-    hboxLayout->addWidget(labelWrapped);
-
-    QSpacerItem *spacerItem = new QSpacerItem(20, 20, QSizePolicy::Expanding,
-        QSizePolicy::Minimum);
-    hboxLayout->addItem(spacerItem);
-    setMinimumWidth(minimumSizeHint().width());
-    labelWrapped->hide();
-
-    updateButtons();
-}
-
-FindWidget::~FindWidget()
-{
-    TRACE_OBJ
-}
-
-void FindWidget::hideEvent(QHideEvent* event)
-{
-    TRACE_OBJ
-#if !defined(QT_NO_WEBKIT)
-    // TODO: remove this once webkit supports setting the palette
-    if (!event->spontaneous())
-        qApp->setPalette(appPalette);
-#else
-    Q_UNUSED(event);
-#endif
-}
-
-void FindWidget::showEvent(QShowEvent* event)
-{
-    TRACE_OBJ
-#if !defined(QT_NO_WEBKIT)
-    // TODO: remove this once webkit supports setting the palette
-    if (!event->spontaneous()) {
-        QPalette p = appPalette;
-        p.setColor(QPalette::Inactive, QPalette::Highlight,
-            p.color(QPalette::Active, QPalette::Highlight));
-        p.setColor(QPalette::Inactive, QPalette::HighlightedText,
-            p.color(QPalette::Active, QPalette::HighlightedText));
-        qApp->setPalette(p);
-    }
-#else
-    Q_UNUSED(event);
-#endif
-}
-
-void FindWidget::updateButtons()
-{
-    TRACE_OBJ
-    if (editFind->text().isEmpty()) {
-        toolPrevious->setEnabled(false);
-        toolNext->setEnabled(false);
-    } else {
-        toolPrevious->setEnabled(true);
-        toolNext->setEnabled(true);
-    }
-}
-
-QToolButton* FindWidget::setupToolButton(const QString &text, const QString &icon)
-{
-    TRACE_OBJ
-    QToolButton *toolButton = new QToolButton(this);
-
-    toolButton->setText(text);
-    toolButton->setAutoRaise(true);
-    toolButton->setIcon(QIcon(icon));
-    toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-
-    return toolButton;
-}
-
-
-// --
+// -- CentralWidget
 
 
 CentralWidget::CentralWidget(MainWindow *parent)
     : QWidget(parent)
     , lastTabPage(0)
-    , findBar(0)
     , tabWidget(0)
     , findWidget(0)
     , printer(0)
@@ -260,20 +130,15 @@ CentralWidget::CentralWidget(MainWindow *parent)
 
     vboxLayout->addWidget(tabWidget);
 
-    findBar = new QWidget(this);
-    findWidget = new FindWidget(findBar);
-    findBar->setMinimumHeight(findWidget->minimumSizeHint().height());
-    findWidget->move(0, 0);
-    vboxLayout->addWidget(findBar);
-    findBar->hide();
-    findWidget->editFind->installEventFilter(this);
+    findWidget = new FindWidget(this);
+    vboxLayout->addWidget(findWidget);
+    findWidget->hide();
 
-    connect(findWidget->toolClose, SIGNAL(clicked()), findBar, SLOT(hide()));
-    connect(findWidget->toolNext, SIGNAL(clicked()), this, SLOT(findNext()));
-    connect(findWidget->editFind, SIGNAL(returnPressed()), this, SLOT(findNext()));
-    connect(findWidget->editFind, SIGNAL(textChanged(QString)), this,
-        SLOT(findCurrentText(QString)));
-    connect(findWidget->toolPrevious, SIGNAL(clicked()), this, SLOT(findPrevious()));
+    connect(findWidget, SIGNAL(findNext()), this, SLOT(findNext()));
+    connect(findWidget, SIGNAL(findPrevious()), this, SLOT(findPrevious()));
+    connect(findWidget, SIGNAL(find(QString, bool)), this,
+        SLOT(find(QString, bool)));
+    connect(findWidget, SIGNAL(escapePressed()), this, SLOT(activateTab()));
 
     QTabBar *tabBar = qFindChild<QTabBar*>(tabWidget);
     if (tabBar) {
@@ -360,12 +225,6 @@ void CentralWidget::zoomOut()
         m_searchWidget->zoomOut();
 }
 
-void CentralWidget::findNext()
-{
-    TRACE_OBJ
-    find(findWidget->editFind->text(), true);
-}
-
 void CentralWidget::nextPage()
 {
     TRACE_OBJ
@@ -393,12 +252,6 @@ void CentralWidget::previousPage()
     if (index < 0)
         index = tabWidget->count() -1;
     tabWidget->setCurrentIndex(index);
-}
-
-void CentralWidget::findPrevious()
-{
-    TRACE_OBJ
-    find(findWidget->editFind->text(), false);
 }
 
 void CentralWidget::closeTab()
@@ -527,9 +380,7 @@ void CentralWidget::copySelection()
 void CentralWidget::showTextSearch()
 {
     TRACE_OBJ
-    findBar->show();
-    findWidget->editFind->selectAll();
-    findWidget->editFind->setFocus(Qt::ShortcutFocusReason);
+    findWidget->show();
 }
 
 void CentralWidget::initPrinter()
@@ -708,12 +559,6 @@ HelpViewer *CentralWidget::newEmptyTab()
     return viewer;
 }
 
-void CentralWidget::findCurrentText(const QString &text)
-{
-    TRACE_OBJ
-    find(text, true);
-}
-
 void CentralWidget::connectSignals()
 {
     TRACE_OBJ
@@ -855,14 +700,6 @@ bool CentralWidget::eventFilter(QObject *object, QEvent *e)
                 return QWidget::eventFilter(object, e);
             }   break;
 
-            case Qt::Key_Escape: {
-                if (findWidget->editFind == object) {
-                    findBar->hide();
-                    if (HelpViewer *viewer = currentHelpViewer())
-                        viewer->setFocus();
-                }
-            }   break;
-
             case Qt::Key_Backspace: {
                 HelpViewer *viewer = currentHelpViewer();
                 if (viewer == object) {
@@ -906,38 +743,43 @@ void CentralWidget::keyPressEvent(QKeyEvent *e)
     TRACE_OBJ
     const QString &text = e->text();
     if (text.startsWith(QLatin1Char('/'))) {
-        if (!findBar->isVisible()) {
-            findBar->show();
-            findWidget->editFind->clear();
+        if (!findWidget->isVisible()) {
+            findWidget->showAndClear();
         } else {
-            findWidget->editFind->selectAll();
+            findWidget->show();
         }
-        findWidget->editFind->setFocus();
-        return;
+    } else {
+        QWidget::keyPressEvent(e);
     }
-    QWidget::keyPressEvent(e);
+}
+
+void CentralWidget::findNext()
+{
+    find(findWidget->text(), true);
+}
+
+void CentralWidget::findPrevious()
+{
+    TRACE_OBJ
+    find(findWidget->text(), false);
 }
 
 void CentralWidget::find(const QString &ttf, bool forward)
 {
     TRACE_OBJ
-    QPalette p = findWidget->editFind->palette();
-    p.setColor(QPalette::Active, QPalette::Base, Qt::white);
-
     bool found = false;
-
 #if defined(QT_NO_WEBKIT)
     found = findInTextBrowser(ttf, forward);
 #else
     found = findInWebPage(ttf, forward);
 #endif
 
-    if (!found && !ttf.isEmpty())
-        p.setColor(QPalette::Active, QPalette::Base, QColor(255, 102, 102));
+    if (!found && ttf.isEmpty())
+        found = true;   // the line edit is empty, no need to mark it red...
 
     if (!findWidget->isVisible())
         findWidget->show();
-    findWidget->editFind->setPalette(p);
+    findWidget->setPalette(found);
 }
 
 bool CentralWidget::findInWebPage(const QString &ttf, bool forward)
@@ -951,21 +793,23 @@ bool CentralWidget::findInWebPage(const QString &ttf, bool forward)
             if (!forward)
                 options |= QWebPage::FindBackward;
 
-            if (findWidget->checkCase->isChecked())
+            if (findWidget->caseSensitive())
                 options |= QWebPage::FindCaseSensitively;
 
             found = viewer->findText(ttf, options);
-            findWidget->labelWrapped->hide();
+            findWidget->setTextWrappedVisible(false);
 
             if (!found) {
                 options |= QWebPage::FindWrapsAroundDocument;
                 found = viewer->findText(ttf, options);
                 if (found)
-                    findWidget->labelWrapped->show();
+                    findWidget->setTextWrappedVisible(true);
             }
         }
         // force highlighting of all other matches, also when empty (clear)
         options = QWebPage::HighlightAllOccurrences;
+        if (findWidget->caseSensitive())
+            options |= QWebPage::FindCaseSensitively;
         viewer->findText(QLatin1String(""), options);
         viewer->findText(ttf, options);
         return found;
@@ -1006,13 +850,10 @@ bool CentralWidget::findInTextBrowser(const QString &ttf, bool forward)
     if (!forward)
         options |= QTextDocument::FindBackward;
 
-    if (findWidget->checkCase->isChecked())
+    if (findWidget->caseSensitive())
         options |= QTextDocument::FindCaseSensitively;
 
-    if (findWidget->checkWholeWords->isChecked())
-        options |= QTextDocument::FindWholeWords;
-
-    findWidget->labelWrapped->hide();
+    findWidget->setTextWrappedVisible(false);
 
     bool found = true;
     QTextCursor newCursor = doc->find(ttf, cursor, options);
@@ -1025,7 +866,7 @@ bool CentralWidget::findInTextBrowser(const QString &ttf, bool forward)
             found = false;
             newCursor = cursor;
         } else {
-            findWidget->labelWrapped->show();
+            findWidget->setTextWrappedVisible(true);
         }
     }
     browser->setTextCursor(newCursor);
@@ -1046,6 +887,11 @@ void CentralWidget::updateBrowserFont()
     getBrowserFontFor(tabWidget->widget(i), &font);
     for ( ; i < tabWidget->count(); ++i)
         setBrowserFontFor(tabWidget->widget(i), font);
+}
+
+bool CentralWidget::searchWidgetAttached() const
+{
+    return m_searchWidget && m_searchWidget->isAttached();
 }
 
 void CentralWidget::createSearchWidget(QHelpSearchEngine *searchEngine)
