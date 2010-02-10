@@ -82,7 +82,7 @@ QString LinguistGenerator::format()
     return "Linguist";
 }
 
-QString LinguistGenerator::fileExtension(const Node * /* node */)
+QString LinguistGenerator::fileExtension(const Node * /* node */) const
 {
     return "ts";
 }

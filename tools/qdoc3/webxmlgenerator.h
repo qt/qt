@@ -69,7 +69,7 @@ protected:
                              const Node *relative, CodeMarker *marker );
     virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
-    virtual QString fileExtension(const Node *node);
+    virtual QString fileExtension(const Node *node) const;
 
     virtual const Atom *addAtomElements(QXmlStreamWriter &writer, const Atom *atom,
                                  const Node *relative, CodeMarker *marker);
