@@ -1748,6 +1748,7 @@ void QmlGraphicsListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     }
 }
 
+//###Possibly rename these properties, since they are very useful even without a highlight?
 /*!
     \qmlproperty real ListView::preferredHighlightBegin
     \qmlproperty real ListView::preferredHighlightEnd
@@ -1755,6 +1756,15 @@ void QmlGraphicsListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 
     These properties set the preferred range of the highlight (current item)
     within the view.
+
+    Note that this is the correct way to influence where the
+    current item ends up when the list scrolls. For example, if you want the
+    currently selected item to be in the middle of the list, then set the
+    highlight range to be where the middle item would go. Then, when the list scrolls,
+    the currently selected item will be the item at that spot. This also applies to
+    when the currently selected item changes - it will scroll to within the preferred
+    highlight range. Furthermore, the behaviour of the current item index will occur
+    whether or not a highlight exists.
 
     If highlightRangeMode is set to \e ApplyRange the view will
     attempt to maintain the highlight within the range, however
