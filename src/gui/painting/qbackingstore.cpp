@@ -98,6 +98,21 @@ static inline void qt_flush(QWidget *widget, const QRegion &region, QWindowSurfa
         QWidgetBackingStore::showYellowThing(widget, region, flushUpdate * 10, false);
 #endif
 
+    //The performance hit by doing this should be negligible. However, be aware that
+    //using this FPS when you have > 1 windowsurface can give you inaccurate FPS
+    static bool fpsDebug = qgetenv("QT_DEBUG_FPS").toInt();
+    if (fpsDebug) {
+        static QTime time = QTime::currentTime();
+        static int frames = 0;
+
+        frames++;
+
+        if(time.elapsed() > 5000) {
+            double fps = double(frames * 1000) /time.restart();
+            fprintf(stderr,"FPS: %.1f\n",fps);
+            frames = 0;
+        }
+    }
     if (widget != tlw)
         windowSurface->flush(widget, region, tlwOffset + widget->mapTo(tlw, QPoint()));
     else
