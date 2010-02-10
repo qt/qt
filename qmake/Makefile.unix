@@ -11,7 +11,8 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
      borland_bmake.o msvc_dsp.o msvc_vcproj.o msvc_nmake.o msvc_objectmodel.o \
      symmake.o initprojectdeploy_symbian.o symmake_abld.o symmake_sbsv2.o \
-     registry.o
+     registry.o \
+     epocroot.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
@@ -22,6 +23,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qgl
       qmap.o qmetatype.o qsettings.o qlibraryinfo.o qvariant.o qvsnprintf.o \
       qlocale.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o qxmlstream.o qxmlutils.o \
       registry.o \
+      epocroot.o \
       $(QTOBJS)
 
 
@@ -35,6 +37,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   generators/win32/msvc_objectmodel.cpp generators/win32/msvc_nmake.cpp generators/win32/borland_bmake.cpp \
 	   generators/symbian/symmake.cpp generators/symbian/initprojectdeploy_symbian.cpp \
 	   $(SOURCE_PATH)/tools/shared/windows/registry.cpp \
+	   $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp \
 	   generators/symbian/symmake_abld.cpp generators/symbian/symmake_sbsv2.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
@@ -288,6 +291,9 @@ initprojectdeploy_symbian.o: generators/symbian/initprojectdeploy_symbian.cpp
 registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
+epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+
 projectgenerator.o: generators/projectgenerator.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/projectgenerator.cpp
 
@@ -296,6 +302,7 @@ qxmlstream.o: $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
 
 qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
+
 #default rules
 .cpp.o:
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
