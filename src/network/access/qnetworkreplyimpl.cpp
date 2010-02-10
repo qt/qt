@@ -805,13 +805,6 @@ bool QNetworkReplyImpl::event(QEvent *e)
     return QObject::event(e);
 }
 
-void QNetworkReplyImpl::migrateBackend()
-{
-    Q_D(QNetworkReplyImpl);
-
-    d->migrateBackend();
-}
-
 bool QNetworkReplyImplPrivate::migrateBackend()
 {
     Q_Q(QNetworkReplyImpl);

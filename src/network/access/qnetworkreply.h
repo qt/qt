@@ -138,8 +138,6 @@ public:
     void ignoreSslErrors(const QList<QSslError> &errors);
 #endif
 
-    virtual void migrateBackend() { qWarning("Your backend doesn't support migration!"); }   // Testing
-
 public Q_SLOTS:
     virtual void ignoreSslErrors();
 
