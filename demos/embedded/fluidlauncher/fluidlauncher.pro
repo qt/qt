@@ -213,5 +213,7 @@ symbian {
     DEPLOYMENT += config files executables viewerimages saxbookmarks reg_resource resource \
         mifs desktopservices_music desktopservices_images fluidbackup
 
+    DEPLOYMENT.installer_header = 0xA000D7CD
+
     TARGET.EPOCHEAPSIZE = 100000 20000000
 }

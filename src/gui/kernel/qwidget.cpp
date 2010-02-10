@@ -1439,6 +1439,18 @@ QWidget::~QWidget()
     }
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    if (d->extra && d->extra->topextra && d->extra->topextra->backingStore) {
+        // Okay, we are about to destroy the top-level window that owns
+        // the backing store. Make sure we delete the backing store right away
+        // before the window handle is invalid. This is important because
+        // the backing store will delete its window surface, which may or may
+        // not have a reference to this widget that will be used later to
+        // notify the window it no longer has a surface.
+        delete d->extra->topextra->backingStore;
+        d->extra->topextra->backingStore = 0;
+    }
+#endif
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
         bs->removeDirtyWidget(this);
         if (testAttribute(Qt::WA_StaticContents))
@@ -1660,7 +1672,13 @@ void QWidgetPrivate::syncBackingStore()
         repaint_sys(dirty);
         dirty = QRegion();
     } else if (QWidgetBackingStore *bs = maybeBackingStore()) {
+#ifdef QT_MAC_USE_COCOA
+        Q_UNUSED(bs);
+        void qt_mac_set_needs_display(QWidget *, QRegion);
+        qt_mac_set_needs_display(q_func(), QRegion());
+#else
         bs->sync();
+#endif
     }
 }
 
@@ -1668,8 +1686,15 @@ void QWidgetPrivate::syncBackingStore(const QRegion &region)
 {
     if (paintOnScreen())
         repaint_sys(region);
-    else if (QWidgetBackingStore *bs = maybeBackingStore())
+    else if (QWidgetBackingStore *bs = maybeBackingStore()) {
+#ifdef QT_MAC_USE_COCOA
+        Q_UNUSED(bs);
+        void qt_mac_set_needs_display(QWidget *, QRegion);
+        qt_mac_set_needs_display(q_func(), region);
+#else
         bs->sync(q_func(), region);
+#endif
+    }
 }
 
 void QWidgetPrivate::setUpdatesEnabled_helper(bool enable)
@@ -6422,6 +6447,8 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
         first = fp;
     }
 
+    if (fp == second)
+        return;
 
     if (QWidget *sp = second->focusProxy())
         second = sp;

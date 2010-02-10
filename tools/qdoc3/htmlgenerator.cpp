@@ -59,6 +59,7 @@
 QT_BEGIN_NAMESPACE
 
 #define COMMAND_VERSION                 Doc::alias("version")
+int HtmlGenerator::id = 0;
 
 QString HtmlGenerator::sinceTitles[] =
     {
@@ -399,9 +400,9 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
                 "qmake Manual",
                 dcfQmakeRoot);
 
-    generateIndex(project.toLower().simplified().replace(" ", "-"),
-                  projectUrl,
-                  projectDescription);
+    QString fileBase = project.toLower().simplified().replace(" ", "-");
+    generateIndex(fileBase, projectUrl, projectDescription);
+    generatePageIndex(outputDir() + "/" + fileBase + ".pageindex", marker);
 
     helpProjectWriter->generate(myTree);
 }
@@ -1629,7 +1630,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     }
 }
 
-QString HtmlGenerator::fileExtension(const Node * /* node */)
+QString HtmlGenerator::fileExtension(const Node * /* node */) const
 {
     return "html";
 }
@@ -4367,6 +4368,115 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
             out() << "</p>";
         }
     }
+}
+
+/*!
+  Generate the <page> element for the given \a node using the \a writer.
+  Return true if a <page> element was written; otherwise return false.
+ */
+bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
+                                        const Node* node,
+                                        CodeMarker* marker) const
+{
+    if (node->pageType() == Node::NoPageType)
+        return false;
+    if (node->name().isEmpty())
+        return true;
+    if (node->access() == Node::Private)
+        return false;
+
+    QString title;
+    QString rawTitle;
+    QString fullTitle;
+        
+    writer.writeStartElement("page");
+    QXmlStreamAttributes attributes;
+    QString t;
+    t.setNum(id++);
+    switch (node->type()) {
+    case Node::Fake:
+        const FakeNode* fake = static_cast<const FakeNode*>(node);
+        title = fake->fullTitle();
+        break;
+    case Node::Class:
+        title = node->name() + " Class Reference";
+        break;
+    case Node::Namespace:
+        const InnerNode* inner = static_cast<const InnerNode*>(node);
+        rawTitle = marker->plainName(inner);
+        fullTitle = marker->plainFullName(inner);
+        title = rawTitle + " Namespace Reference";
+        break;
+    default:
+        title = node->name();
+        break;
+    }
+    writer.writeAttribute("id",t);
+    writer.writeStartElement("pageWords");
+    writer.writeCharacters(title);
+    writer.writeEndElement();
+    writer.writeStartElement("pageTitle");
+    writer.writeCharacters(title);
+    writer.writeEndElement();
+    writer.writeStartElement("pageUrl");
+    writer.writeCharacters(PageGenerator::fileName(node));
+    writer.writeEndElement();
+    writer.writeStartElement("pageType");
+    switch (node->pageType()) {
+    case Node::ApiPage:
+        writer.writeCharacters("APIPage");
+        break;
+    case Node::ArticlePage:
+        writer.writeCharacters("Article");
+        break;
+    case Node::ExamplePage:
+        writer.writeCharacters("Example");
+        break;
+    default:
+        break;
+    }
+    writer.writeEndElement();
+    writer.writeEndElement();
+    return true;
+}
+
+/*!
+  Traverse the tree recursively and generate the <keyword>
+  elements.
+ */
+void HtmlGenerator::generatePageElements(QXmlStreamWriter& writer, const Node* node, CodeMarker* marker) const
+{
+    if (generatePageElement(writer, node, marker)) {
+
+        if (node->isInnerNode()) {
+            const InnerNode *inner = static_cast<const InnerNode *>(node);
+
+            // Recurse to write an element for this child node and all its children.
+            foreach (const Node *child, inner->childNodes())
+                generatePageElements(writer, child, marker);
+        }
+    }
+}
+
+/*!
+  Outputs the file containing the index used for searching the html docs.
+ */
+void HtmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* marker) const
+{
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+        return ;
+
+    QXmlStreamWriter writer(&file);
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument();
+    writer.writeStartElement("qtPageIndex");
+
+    generatePageElements(writer, myTree->root(), marker);
+
+    writer.writeEndElement(); // qtPageIndex
+    writer.writeEndDocument();
+    file.close();
 }
 
 #endif

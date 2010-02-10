@@ -50,6 +50,7 @@
 
 #include <qmap.h>
 #include <qregexp.h>
+#include <QXmlStreamWriter>
 
 #include "codemarker.h"
 #include "config.h"
@@ -116,7 +117,7 @@ class HtmlGenerator : public PageGenerator
                              CodeMarker *marker);
     virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
-    virtual QString fileExtension(const Node *node);
+    virtual QString fileExtension(const Node *node) const;
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
     virtual QString refForAtom(Atom *atom, const Node *node);
@@ -262,6 +263,14 @@ class HtmlGenerator : public PageGenerator
                    const Node *relative, 
                    CodeMarker *marker);
     void endLink();
+    bool generatePageElement(QXmlStreamWriter& writer, 
+                             const Node* node, 
+                             CodeMarker* marker) const;
+    void generatePageElements(QXmlStreamWriter& writer, 
+                              const Node* node, 
+                              CodeMarker* marker) const;
+    void generatePageIndex(const QString& fileName, 
+                           CodeMarker* marker) const;
 
 #if 0
     NavigationBar currentNavigationBar;
@@ -316,6 +325,7 @@ class HtmlGenerator : public PageGenerator
     NewSinceMaps newSinceMaps;
     static QString sinceTitles[];
     NewClassMaps newClassMaps;
+    static int id;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"

@@ -41,6 +41,7 @@
 #include "tracer.h"
 
 #include <QtCore/QFileInfo>
+#include <QtCore/QStringBuilder>
 #include <QtGui/QMessageBox>
 
 #include "cmdlineparser.h"
@@ -277,11 +278,11 @@ void CmdLineParser::showMessage(const QString &msg, bool error)
     if (m_quiet)
         return;
 #ifdef Q_OS_WIN
-    QString s = QLatin1String("<pre>") + msg + QLatin1String("</pre>");
+    QString message = QLatin1String("<pre>") % msg % QLatin1String("</pre>");
     if (error)
-        QMessageBox::critical(0, QObject::tr("Qt Assistant"), s);
+        QMessageBox::critical(0, tr("Error"), message);
     else
-        QMessageBox::information(0, QObject::tr("Qt Assistant"), s);
+        QMessageBox::information(0, tr("Notice"), message);
 #else
     fprintf(error ? stderr : stdout, "%s\n", qPrintable(msg));
 #endif
