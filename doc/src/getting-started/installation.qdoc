@@ -677,7 +677,7 @@ If you are using pre-built binaries, follow the instructions given in the
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 30
 
-        This will create a self-signed \c fluidlauncher_armv5_urel.sis and
+        This will create a self-signed \c fluidlauncher.sis and
         install it to your device.
 
         To run the demos on the emulator simply navigate to the directory of the demo
@@ -1038,8 +1038,9 @@ If you are using pre-built binaries, follow the instructions given in the
            \list
            \o \bold{Note:} This is not required if you are using pre-built binary package.
            \endlist
-        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 686] or later,
-           which is not available free of charge.
+        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} version 2.2 (build 686 or later),
+           which is not available free of charge.  Usage of later versions of RVCT, including the 3.x and 4.x series, is not supported
+           in this release.
     \endlist
 
     Running Qt on real device requires the Open C to be installed on the device.

@@ -96,7 +96,7 @@ protected:
     void timerEvent(QTimerEvent *timerEvent);
 
 private:
-    void commitCurrentString(bool triggeredBySymbian);
+    void commitCurrentString(bool cancelFepTransaction);
     void updateHints(bool mustUpdateInputCapabilities);
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
@@ -127,7 +127,7 @@ public:
 private:
     void DoCommitFepInlineEditL();
     MCoeFepAwareTextEditor_Extension1* Extension1(TBool& aSetToTrue);
-	void ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType);
+    void ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType);
 
     // From MCoeFepAwareTextEditor_Extension1
 public:
@@ -151,7 +151,6 @@ private:
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
-    int m_longPress;
     int m_cursorPos;
     QBasicTimer m_tempPreeditStringTimeout;
     bool m_hasTempPreeditString;
