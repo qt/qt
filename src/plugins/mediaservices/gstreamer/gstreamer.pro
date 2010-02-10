@@ -33,7 +33,9 @@ HEADERS += \
     qgstreamervideorenderer.h \
     qgstvideobuffer.h \
     qvideosurfacegstsink.h \
-    qx11videosurface.h
+    qx11videosurface.h \
+    qgstxvimagebuffer.h
+
 
 SOURCES += \
     qgstreamermessage.cpp \
@@ -48,7 +50,8 @@ SOURCES += \
     qgstreamervideorenderer.cpp \
     qgstvideobuffer.cpp \
     qvideosurfacegstsink.cpp \
-    qx11videosurface.cpp
+    qx11videosurface.cpp \
+    qgstxvimagebuffer.cpp
 
 include(mediaplayer/mediaplayer.pri)
 
