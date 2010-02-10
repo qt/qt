@@ -183,9 +183,3 @@ execve_sanity_test = $$system("echo testing")
 !contains(execve_sanity_test, "testing") {
     error("Running system() failed. Maybe your kernel is too old? (Linux kernels need at least version 2.6.23)")
 }
-
-# ### FIXME! TODO! Remove this after icons have been fixed.
-QMAKE_EXTRA_COMPILERS -= mifconv
-RSS_RULES.number_of_icons =
-RSS_RULES.icon_file =
-PRE_TARGETDEPS -= $$mifconv.output
