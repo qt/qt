@@ -45,8 +45,8 @@
 #include <private/qfontengine_p.h>
 #include <private/qemulationpaintengine_p.h>
 #include <private/qimage_p.h>
+#include <qstatictext.h>
 #include <private/qstatictext_p.h>
-#include <private/qstatictext_p_p.h>
 
 #include <QDebug>
 
@@ -1448,9 +1448,10 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
             QStaticText text(variants.at(0).value<QStaticText>());
             
             painter->setFont(font);
-            qt_draw_static_text(painter, QPointF(0, 0), text);
+            painter->drawStaticText(QPointF(0, 0), text);
             
-        break; }
+        break;
+    }
 
     case QPaintBufferPrivate::Cmd_DrawText: {
         QPointF pos(d->floats.at(cmd.extra), d->floats.at(cmd.extra+1));

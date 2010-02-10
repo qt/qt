@@ -53,7 +53,7 @@
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
-#include <QtGui/private/qstatictext_p_p.h>
+#include <QtGui/private/qstatictext_p.h>
 #include <QDebug>
 #include <QSet>
 

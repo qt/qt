@@ -38,8 +38,8 @@ HEADERS += \
 	text/qzipreader_p.h \
 	text/qzipwriter_p.h \
 	text/qtextodfwriter_p.h \
-	text/qstatictext_p_p.h \
-	text/qstatictext_p.h
+	text/qstatictext_p.h \
+	text/qstatictext.h
 
 SOURCES += \
 	text/qfont.cpp \

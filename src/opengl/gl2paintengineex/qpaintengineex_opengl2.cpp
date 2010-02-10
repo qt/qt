@@ -77,7 +77,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qdatabuffer_p.h>
-#include <private/qstatictext_p_p.h>
+#include <private/qstatictext_p.h>
 
 #include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"

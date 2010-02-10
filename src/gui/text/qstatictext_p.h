@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATICTEXT_H
-#define QSTATICTEXT_H
+#ifndef QSTATICTEXT_P_H
+#define QSTATICTEXT_P_H
 
 //
 //  W A R N I N G
@@ -53,57 +53,89 @@
 // We mean it.
 //
 
-#include <QtCore/qsize.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qmetatype.h>
-
-#include <QtGui/qtransform.h>
-#include <QtGui/qfont.h>
-
-
-QT_BEGIN_HEADER
+#include <private/qtextureglyphcache_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-class QStaticTextPrivate;
-class Q_GUI_EXPORT QStaticText
-{    
+class QStaticTextUserData
+{
 public:
-    QStaticText();
-    QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
-    QStaticText(const QStaticText &other);
-    ~QStaticText();
+    enum Type {
+        NoUserData,
+        OpenGLUserData
+    };
 
-    void setText(const QString &text);
-    QString text() const;
+    QStaticTextUserData(Type t) : type(t) {}
+    virtual ~QStaticTextUserData() {}
 
-    void setMaximumSize(const QSizeF &maximumSize);
-    QSizeF maximumSize() const;
-
-    void prepare(const QTransform &matrix, const QFont &font);
-
-    void setUseBackendOptimizations(bool on);
-    bool useBackendOptimizations() const;
-
-    QStaticText &operator=(const QStaticText &);
-    bool operator==(const QStaticText &) const;
-    bool operator!=(const QStaticText &) const;
-
-    bool isEmpty() const;
-
-private:
-    void detach();
-
-    QExplicitlySharedDataPointer<QStaticTextPrivate> data;
-    friend class QStaticTextPrivate;
+    Type type;
 };
 
-Q_DECLARE_METATYPE(QStaticText)
+class Q_GUI_EXPORT QStaticTextItem
+{
+public:    
+    QStaticTextItem() : chars(0), numChars(0), fontEngine(0), userData(0),
+                        useBackendOptimizations(false), userDataNeedsUpdate(0) {}
+    ~QStaticTextItem() { delete userData; }
+
+    void setUserData(QStaticTextUserData *newUserData)
+    {
+        if (userData == newUserData)
+            return;
+
+        delete userData;
+        userData = newUserData;
+    }
+
+    QFixedPoint *glyphPositions;                 // 8 bytes per glyph
+    glyph_t *glyphs;                             // 4 bytes per glyph
+    const QChar *chars;                          // 2 bytes per glyph
+                                                 // =================
+                                                 // 14 bytes per glyph
+
+                                                 // 12 bytes for pointers
+    int numGlyphs;                               // 4 bytes per item
+    int numChars;                                // 4 bytes per item
+    QFontEngine *fontEngine;                     // 4 bytes per item
+    QFont font;                                  // 8 bytes per item
+    QStaticTextUserData *userData;               // 8 bytes per item
+    char useBackendOptimizations : 1;            // 1 byte per item
+    char userDataNeedsUpdate : 1;                //
+                                                 // ================
+                                                 // 41 bytes per item
+};
+
+class QStaticText;
+class Q_AUTOTEST_EXPORT QStaticTextPrivate
+{
+public:
+    QStaticTextPrivate();
+    QStaticTextPrivate(const QStaticTextPrivate &other);
+    ~QStaticTextPrivate();
+
+    void init();
+
+    QAtomicInt ref;                      // 4 bytes per text
+
+    QString text;                        // 4 bytes per text
+    QFont font;                          // 8 bytes per text
+    QSizeF size;                         // 16 bytes per text
+    QPointF position;                    // 16 bytes per text
+
+    QTransform matrix;                   // 80 bytes per text
+    QStaticTextItem *items;              // 4 bytes per text
+    int itemCount;                       // 4 bytes per text
+    glyph_t *glyphPool;                  // 4 bytes per text
+    QFixedPoint *positionPool;           // 4 bytes per text
+
+    char needsClipRect           : 1;    // 1 byte per text
+    char useBackendOptimizations : 1;
+                                         // ================
+                                         // 145 bytes per text
+
+    static QStaticTextPrivate *get(const QStaticText *q);
+};
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QSTATICTEXT_H
+#endif // QSTATICTEXT_P_H

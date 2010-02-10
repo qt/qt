@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qstatictext.h"
 #include "qstatictext_p.h"
-#include "qstatictext_p_p.h"
 #include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
 
