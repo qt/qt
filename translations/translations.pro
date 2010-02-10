@@ -11,6 +11,7 @@ contains(TEMPLATE_PREFIX, vc):vcproj = 1
 TEMPLATE = app
 TARGET = qm_phony_target
 CONFIG -= qt separate_debug_info
+CONFIG += no_icon
 QT =
 LIBS =
 
