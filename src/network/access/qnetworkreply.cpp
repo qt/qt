@@ -127,7 +127,8 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 
     \value TemporaryNetworkFailureError the connection was broken due
     to disconnection from the network, however the system has initiated
-    roaming to another access point. The request should be resubmitted.
+    roaming to another access point. The request should be resubmitted
+    and will be processed as soon as the connection is re-established.
 
     \value ProxyConnectionRefusedError the connection to the proxy
     server was refused (the proxy server is not accepting requests)
