@@ -86,6 +86,7 @@ public:
     static int listType(int);
     static bool clear(const QVariant &);
     static bool append(const QVariant &, const QVariant &);
+    static QVariant fromObject(QObject *, int type);
     static const QMetaObject *rawMetaObjectForType(int);
     static const QMetaObject *metaObjectForType(int);
     static int attachedPropertiesFuncId(const QMetaObject *);
@@ -141,6 +142,7 @@ public:
     const QMetaObject *attachedPropertiesType() const;
 
     int parserStatusCast() const;
+    QVariant fromObject(QObject *) const;
     const char *interfaceIId() const;
     int propertyValueSourceCast() const;
     int propertyValueInterceptorCast() const;
