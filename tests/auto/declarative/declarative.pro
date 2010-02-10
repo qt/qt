@@ -10,7 +10,6 @@ SUBDIRS += \
            layouts \                # Cover
            numberformatter \        # Cover
            parserstress \           # Cover
-           pathview \               # Cover
            qmetaobjectbuilder \     # Cover
            qmlbinding \             # Cover
            qmlconnection \          # Cover
