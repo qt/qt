@@ -122,9 +122,7 @@ void tst_qmlpixmapcache::single()
     QFETCH(bool, neterror);
 
     if (neterror) {
-        QString expected = "Network error loading \""
-                +target.toString()+"\" \"Error downloading "
-                +target.toString()+" - server replied: Not Found\" ";
+        QString expected = "\"Error downloading " + target.toString() + " - server replied: Not Found\" ";
         QTest::ignoreMessage(QtWarningMsg, expected.toLatin1());
     } else if (!exists) {
         QString expected = "Cannot open  QUrl( \"" + target.toString() + "\" )  ";
