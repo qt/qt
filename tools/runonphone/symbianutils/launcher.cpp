@@ -41,6 +41,7 @@
 
 #include "launcher.h"
 #include "trkutils.h"
+#include "trkutils_p.h"
 #include "trkdevice.h"
 #include "bluetoothlistener.h"
 
@@ -66,7 +67,6 @@ struct LauncherPrivate {
     explicit LauncherPrivate(const TrkDevicePtr &d);
 
     TrkDevicePtr m_device;
-    QString m_trkServerName;
     QByteArray m_trkReadBuffer;
     Launcher::State m_state;
 
@@ -130,12 +130,12 @@ void Launcher::addStartupActions(trk::Launcher::Actions startupActions)
 
 void Launcher::setTrkServerName(const QString &name)
 {
-    d->m_trkServerName = name;
+    d->m_device->setPort(name);
 }
 
 QString Launcher::trkServerName() const
 {
-    return d->m_trkServerName;
+    return d->m_device->port();
 }
 
 TrkDevicePtr Launcher::trkDevice() const
@@ -190,7 +190,7 @@ bool Launcher::startServer(QString *errorMessage)
     errorMessage->clear();
     if (d->m_verbose) {
         const QString msg = QString::fromLatin1("Port=%1 Executable=%2 Arguments=%3 Package=%4 Remote Package=%5 Install file=%6")
-                            .arg(d->m_trkServerName, d->m_fileName,
+                            .arg(trkServerName(), d->m_fileName,
                                  d->m_commandLineArgs.join(QString(QLatin1Char(' '))),
                                  d->m_copyState.sourceFileName, d->m_copyState.destinationFileName, d->m_installFileName);
         logMessage(msg);
@@ -212,7 +212,7 @@ bool Launcher::startServer(QString *errorMessage)
         qWarning("No remote executable given for running.");
         return false;
     }
-    if (!d->m_device->isOpen() && !d->m_device->open(d->m_trkServerName, errorMessage))
+    if (!d->m_device->isOpen() && !d->m_device->open(errorMessage))
         return false;
     if (d->m_closeDevice) {
         connect(this, SIGNAL(finished()), d->m_device.data(), SLOT(close()));
@@ -595,16 +595,18 @@ void Launcher::handleSupportMask(const TrkResult &result)
         return;
     const char *data = result.data.data() + 1;
 
-    QByteArray str;
+    QString str = QLatin1String("SUPPORTED: ");
     for (int i = 0; i < 32; ++i) {
         //str.append("  [" + formatByte(data[i]) + "]: ");
-        for (int j = 0; j < 8; ++j)
-        if (data[i] & (1 << j))
-            str.append(QByteArray::number(i * 8 + j, 16) + " ");
+        for (int j = 0; j < 8; ++j) {
+            if (data[i] & (1 << j)) {
+                str.append(QString::number(i * 8 + j, 16));
+                str.append(QLatin1Char(' '));
+            }
+        }
     }
-    logMessage("SUPPORTED: " + str);
+    logMessage(str);
 }
-
 
 void Launcher::cleanUp()
 {
@@ -614,9 +616,7 @@ void Launcher::cleanUp()
     //  Sub Cmd: Delete Process
     //ProcessID: 0x0000071F (1823)
     // [41 24 00 00 00 00 07 1F]
-    QByteArray ba;
-    appendByte(&ba, 0x00);
-    appendByte(&ba, 0x00);
+    QByteArray ba(2, char(0));
     appendInt(&ba, d->m_session.pid);
     d->m_device->sendTrkMessage(TrkDeleteItem, TrkCallback(), ba, "Delete process");
 
@@ -669,7 +669,7 @@ void Launcher::copyFileToRemote()
 {
     emit copyingStarted();
     QByteArray ba;
-    appendByte(&ba, 0x10);
+    ba.append(char(10));
     appendString(&ba, d->m_copyState.destinationFileName.toLocal8Bit(), TargetByteOrder, false);
     d->m_device->sendTrkMessage(TrkOpenFile, TrkCallback(this, &Launcher::handleFileCreation), ba);
 }
@@ -678,7 +678,7 @@ void Launcher::installRemotePackageSilently()
 {
     emit installingStarted();
     QByteArray ba;
-    appendByte(&ba, 'C');
+    ba.append('C');
     appendString(&ba, d->m_installFileName.toLocal8Bit(), TargetByteOrder, false);
     d->m_device->sendTrkMessage(TrkInstallFile, TrkCallback(this, &Launcher::handleInstallPackageFinished), ba);
 }
@@ -705,7 +705,7 @@ QByteArray Launcher::startProcessMessage(const QString &executable,
     // It's not started yet
     QByteArray ba;
     appendShort(&ba, 0, TargetByteOrder); // create new process
-    appendByte(&ba, 0); // options - currently unused
+    ba.append(char(0)); // options - currently unused
     if(arguments.isEmpty()) {
         appendString(&ba, executable.toLocal8Bit(), TargetByteOrder);
         return ba;

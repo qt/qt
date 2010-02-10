@@ -1557,7 +1557,12 @@
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 58
 
     If everything compiled and linked without any errors, we are now ready to create
-    an application installation package (\c wiggly_installer.sis):
+    an application installation package (\c wiggly_installer.sis).
+
+    If you haven't done so already, download the latest release of the Smart Installer
+    from \l{http://get.qt.nokia.com/nokiasmartinstaller/}, and install it on top of the Qt package
+
+    Then use this command to create the installer sis package:
 
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 59
 

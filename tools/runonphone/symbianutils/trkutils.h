@@ -42,18 +42,19 @@
 #ifndef DEBUGGER_TRK_UTILS
 #define DEBUGGER_TRK_UTILS
 
+#include "symbianutils_global.h"
 #include <QtCore/QByteArray>
 #include <QtCore/QHash>
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
-
-typedef unsigned char byte;
 
 QT_BEGIN_NAMESPACE
 class QDateTime;
 QT_END_NAMESPACE
 
 namespace trk {
+
+typedef unsigned char byte;
 
 enum Command {
     TrkPing = 0x00,
@@ -85,17 +86,14 @@ enum Command {
     TrkNotifyProcessorReset = 0xa7
 };
 
-QByteArray decode7d(const QByteArray &ba);
-QByteArray encode7d(const QByteArray &ba);
-
 inline byte extractByte(const char *data) { return *data; }
-ushort extractShort(const char *data);
-uint extractInt(const char *data);
+SYMBIANUTILS_EXPORT ushort extractShort(const char *data);
+SYMBIANUTILS_EXPORT uint extractInt(const char *data);
 
-QString quoteUnprintableLatin1(const QByteArray &ba);
+SYMBIANUTILS_EXPORT QString quoteUnprintableLatin1(const QByteArray &ba);
 
 // produces "xx xx xx "
-QString stringFromArray(const QByteArray &ba, int maxLen = - 1);
+SYMBIANUTILS_EXPORT QString stringFromArray(const QByteArray &ba, int maxLen = - 1);
 
 enum Endianness
 {
@@ -104,13 +102,11 @@ enum Endianness
     TargetByteOrder = BigEndian,
 };
 
-void appendByte(QByteArray *ba, byte b);
-void appendShort(QByteArray *ba, ushort s, Endianness = TargetByteOrder);
-void appendInt(QByteArray *ba, uint i, Endianness = TargetByteOrder);
-void appendString(QByteArray *ba, const QByteArray &str, Endianness = TargetByteOrder, bool appendNullTerminator = true);
-void appendDateTime(QByteArray *ba, QDateTime dateTime, Endianness = TargetByteOrder);
+SYMBIANUTILS_EXPORT void appendShort(QByteArray *ba, ushort s, Endianness = TargetByteOrder);
+SYMBIANUTILS_EXPORT void appendInt(QByteArray *ba, uint i, Endianness = TargetByteOrder);
+SYMBIANUTILS_EXPORT void appendString(QByteArray *ba, const QByteArray &str, Endianness = TargetByteOrder, bool appendNullTerminator = true);
 
-struct Library
+struct SYMBIANUTILS_EXPORT Library
 {
     Library() {}
 
@@ -119,7 +115,7 @@ struct Library
     uint dataseg;
 };
 
-struct TrkAppVersion
+struct SYMBIANUTILS_EXPORT TrkAppVersion
 {
     TrkAppVersion();
     void reset();    
@@ -130,7 +126,7 @@ struct TrkAppVersion
     int protocolMinor;
 };
 
-struct Session
+struct SYMBIANUTILS_EXPORT Session
 {
     Session();
     void reset();
@@ -163,7 +159,7 @@ struct Session
     QStringList modules;
 };
 
-struct TrkResult
+struct SYMBIANUTILS_EXPORT TrkResult
 {
     TrkResult();
     void clear();
@@ -179,15 +175,10 @@ struct TrkResult
     bool isDebugOutput;
 };
 
-// returns a QByteArray containing optionally
-// the serial frame [0x01 0x90 <len>] and 0x7e encoded7d(ba) 0x7e
-QByteArray frameMessage(byte command, byte token, const QByteArray &data, bool serialFrame);
-ushort isValidTrkResult(const QByteArray &buffer, bool serialFrame);
-bool extractResult(QByteArray *buffer, bool serialFrame, TrkResult *r, QByteArray *rawData = 0);
-QByteArray errorMessage(byte code);
-QByteArray hexNumber(uint n, int digits = 0);
-QByteArray hexxNumber(uint n, int digits = 0); // prepends '0x', too
-uint swapEndian(uint in);
+SYMBIANUTILS_EXPORT QByteArray errorMessage(byte code);
+SYMBIANUTILS_EXPORT QByteArray hexNumber(uint n, int digits = 0);
+SYMBIANUTILS_EXPORT QByteArray hexxNumber(uint n, int digits = 0); // prepends '0x', too
+SYMBIANUTILS_EXPORT uint swapEndian(uint in);
 
 } // namespace trk
 

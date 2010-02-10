@@ -42,6 +42,8 @@
 #ifndef BLUETOOTHLISTENER_GUI_H
 #define BLUETOOTHLISTENER_GUI_H
 
+#include "symbianutils_global.h"
+
 #include <QtCore/QtGlobal>
 
 QT_BEGIN_NAMESPACE
@@ -62,7 +64,7 @@ enum PromptStartCommunicationResult {
     PromptStartCommunicationError
 };
 
-PromptStartCommunicationResult
+SYMBIANUTILS_EXPORT PromptStartCommunicationResult
         promptStartCommunication(BaseCommunicationStarter &starter,
                                  const QString &msgBoxTitle,
                                  const QString &msgBoxText,
@@ -71,14 +73,14 @@ PromptStartCommunicationResult
 
 // Convenience to start a serial connection (messages prompting
 // to launch Trk).
-PromptStartCommunicationResult
+SYMBIANUTILS_EXPORT PromptStartCommunicationResult
         promptStartSerial(BaseCommunicationStarter &starter,
                           QWidget *msgBoxParent,
                           QString *errorMessage);
 
 // Convenience to start blue tooth connection (messages
 // prompting to connect).
-PromptStartCommunicationResult
+SYMBIANUTILS_EXPORT PromptStartCommunicationResult
         promptStartBluetooth(BaseCommunicationStarter &starter,
                              QWidget *msgBoxParent,
                              QString *errorMessage);

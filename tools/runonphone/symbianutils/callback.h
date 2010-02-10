@@ -42,7 +42,7 @@
 #ifndef DEBUGGER_CALLBACK_H
 #define DEBUGGER_CALLBACK_H
 
-#include <QtCore/QtGlobal>
+#include "symbianutils_global.h"
 
 namespace trk {
 namespace Internal {

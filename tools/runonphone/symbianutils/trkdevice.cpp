@@ -41,6 +41,7 @@
 
 #include "trkdevice.h"
 #include "trkutils.h"
+#include "trkutils_p.h"
 
 #include <QtCore/QString>
 #include <QtCore/QDebug>
@@ -516,7 +517,7 @@ static inline bool overlappedSyncWrite(HANDLE file,
 bool WriterThread::write(const QByteArray &data, QString *errorMessage)
 {
     if (verboseTrk)
-        qDebug() << "Write raw data: " << data.toHex();
+        qDebug() << "Write raw data: " << stringFromArray(data).toLatin1();
     QMutexLocker locker(&m_context->mutex);
 #ifdef Q_OS_WIN
     DWORD charsWritten;
@@ -856,8 +857,8 @@ void UnixReaderThread::terminate()
 {
     // Trigger select() by writing to the pipe
     char c = 0;
-    int written = write(m_terminatePipeFileDescriptors[1], &c, 1);
-    // FIXME: Use result.
+    const int written = write(m_terminatePipeFileDescriptors[1], &c, 1);
+    Q_UNUSED(written)
     wait();
 }
 
@@ -882,6 +883,7 @@ struct TrkDevicePrivate
     QByteArray trkReadBuffer;
     int verbose;
     QString errorString;
+    QString port;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -913,13 +915,19 @@ TrkDevice::~TrkDevice()
     delete d;
 }
 
-bool TrkDevice::open(const QString &port, QString *errorMessage)
+bool TrkDevice::open(QString *errorMessage)
 {
     if (d->verbose)
-        qDebug() << "Opening" << port << "is open: " << isOpen() << " serialFrame=" << serialFrame();
+        qDebug() << "Opening" << port() << "is open: " << isOpen() << " serialFrame=" << serialFrame();
+    if (d->port.isEmpty()) {
+        *errorMessage = QLatin1String("Internal error: No port set on TrkDevice");
+        return false;
+    }
+
     close();
 #ifdef Q_OS_WIN
-    d->deviceContext->device = CreateFile(port.toStdWString().c_str(),
+    const QString fullPort = QLatin1String("\\\\.\\") + d->port;
+    d->deviceContext->device = CreateFile(reinterpret_cast<const WCHAR*>(fullPort.utf16()),
                            GENERIC_READ | GENERIC_WRITE,
                            0,
                            NULL,
@@ -928,7 +936,7 @@ bool TrkDevice::open(const QString &port, QString *errorMessage)
                            NULL);
 
     if (INVALID_HANDLE_VALUE == d->deviceContext->device) {
-        *errorMessage = QString::fromLatin1("Could not open device '%1': %2").arg(port, winErrorMessage(GetLastError()));
+        *errorMessage = QString::fromLatin1("Could not open device '%1': %2").arg(port(), winErrorMessage(GetLastError()));
         return false;
     }
     memset(&d->deviceContext->readOverlapped, 0, sizeof(OVERLAPPED));
@@ -940,9 +948,9 @@ bool TrkDevice::open(const QString &port, QString *errorMessage)
         return false;
     }
 #else
-    d->deviceContext->file.setFileName(port);
+    d->deviceContext->file.setFileName(d->port);
     if (!d->deviceContext->file.open(QIODevice::ReadWrite|QIODevice::Unbuffered)) {
-        *errorMessage = QString::fromLatin1("Cannot open %1: %2").arg(port, d->deviceContext->file.errorString());
+        *errorMessage = QString::fromLatin1("Cannot open %1: %2").arg(d->port, d->deviceContext->file.errorString());
         return false;
     }
 
@@ -981,7 +989,7 @@ bool TrkDevice::open(const QString &port, QString *errorMessage)
     d->writerThread->start();    
 
     if (d->verbose)
-        qDebug() << "Opened" << port;
+        qDebug() << "Opened" << d->port;
     return true;
 }
 
@@ -1013,6 +1021,16 @@ bool TrkDevice::isOpen() const
 #else
     return d->deviceContext->file.isOpen();
 #endif
+}
+
+QString TrkDevice::port() const
+{
+    return d->port;
+}
+
+void TrkDevice::setPort(const QString &p)
+{
+    d->port = p;
 }
 
 QString TrkDevice::errorString() const
@@ -1061,8 +1079,13 @@ void TrkDevice::sendTrkMessage(byte code, TrkCallback callback,
      const QByteArray &data, const QVariant &cookie)
 {
     if (!d->writerThread.isNull()) {
-        if (d->verbose > 1)
-            qDebug() << "Sending " << code << data.toHex();
+        if (d->verbose > 1) {
+            QByteArray msg = "Sending:  ";
+            msg += QByteArray::number(code, 16);
+            msg += ": ";
+            msg += stringFromArray(data).toLatin1();
+            qDebug("%s", msg.data());
+        }
         d->writerThread->queueTrkMessage(code, callback, data, cookie);
     }
 }

@@ -86,7 +86,7 @@ void Session::reset()
     trkAppVersion.reset();
 }
 
-QString formatCpu(int major, int minor)
+static QString formatCpu(int major, int minor)
 {
     //: CPU description of an S60 device
     //: %1 major verison, %2 minor version
@@ -143,14 +143,46 @@ QString Session::deviceDescription(unsigned verbose) const
     return msg.arg(formatTrkVersion(trkAppVersion));
 }
 
+// --------------
 
-// FIXME: Use the QByteArray based version below?
-QString stringFromByte(byte c)
+QByteArray decode7d(const QByteArray &ba)
 {
-    return QString("%1 ").arg(c, 2, 16, QChar('0'));
+    QByteArray res;
+    res.reserve(ba.size());
+    for (int i = 0; i < ba.size(); ++i) {
+        byte c = byte(ba.at(i));
+        if (c == 0x7d) {
+            ++i;
+            c = 0x20 ^ byte(ba.at(i));
+        }
+        res.append(c);
+    }
+    return res;
 }
 
-QString stringFromArray(const QByteArray &ba, int maxLen)
+QByteArray encode7d(const QByteArray &ba)
+{
+    QByteArray res;
+    res.reserve(ba.size() + 2);
+    for (int i = 0; i < ba.size(); ++i) {
+        byte c = byte(ba.at(i));
+        if (c == 0x7e || c == 0x7d) {
+            res.append(0x7d);
+            res.append(0x20 ^ c);
+        } else {
+            res.append(c);
+        }
+    }
+    return res;
+}
+
+// FIXME: Use the QByteArray based version below?
+static inline QString stringFromByte(byte c)
+{
+    return QString::fromLatin1("%1").arg(c, 2, 16, QChar('0'));
+}
+
+SYMBIANUTILS_EXPORT QString stringFromArray(const QByteArray &ba, int maxLen)
 {
     QString str;
     QString ascii;
@@ -170,7 +202,7 @@ QString stringFromArray(const QByteArray &ba, int maxLen)
     return str + "  " + ascii;
 }
 
-QByteArray hexNumber(uint n, int digits)
+SYMBIANUTILS_EXPORT QByteArray hexNumber(uint n, int digits)
 {
     QByteArray ba = QByteArray::number(n, 16);
     if (digits == 0 || ba.size() == digits)
@@ -178,7 +210,7 @@ QByteArray hexNumber(uint n, int digits)
     return QByteArray(digits - ba.size(), '0') + ba;
 }
 
-QByteArray hexxNumber(uint n, int digits)
+SYMBIANUTILS_EXPORT QByteArray hexxNumber(uint n, int digits)
 {
     return "0x" + hexNumber(n, digits);
 }
@@ -200,9 +232,13 @@ void TrkResult::clear()
 
 QString TrkResult::toString() const
 {
-    QString res = stringFromByte(code) + "[" + stringFromByte(token);
-    res.chop(1);
-    return res + "] " + stringFromArray(data);
+    QString res = stringFromByte(code);
+    res += QLatin1String(" [");
+    res += stringFromByte(token);
+    res += QLatin1Char(']');
+    res += QLatin1Char(' ');
+    res += stringFromArray(data);
+    return res;
 }
 
 QByteArray frameMessage(byte command, byte token, const QByteArray &data, bool serialFrame)
@@ -303,12 +339,12 @@ bool extractResult(QByteArray *buffer, bool serialFrame, TrkResult *result, QByt
     return true;
 }
 
-ushort extractShort(const char *data)
+SYMBIANUTILS_EXPORT ushort extractShort(const char *data)
 {
     return byte(data[0]) * 256 + byte(data[1]);
 }
 
-uint extractInt(const char *data)
+SYMBIANUTILS_EXPORT uint extractInt(const char *data)
 {
     uint res = byte(data[0]);
     res *= 256; res += byte(data[1]);
@@ -317,7 +353,7 @@ uint extractInt(const char *data)
     return res;
 }
 
-QString quoteUnprintableLatin1(const QByteArray &ba)
+SYMBIANUTILS_EXPORT QString quoteUnprintableLatin1(const QByteArray &ba)
 {
     QString res;
     char buf[10];
@@ -333,49 +369,7 @@ QString quoteUnprintableLatin1(const QByteArray &ba)
     return res;
 }
 
-QByteArray decode7d(const QByteArray &ba)
-{
-    QByteArray res;
-    res.reserve(ba.size());
-    for (int i = 0; i < ba.size(); ++i) {
-        byte c = byte(ba.at(i));
-        if (c == 0x7d) {
-            ++i;
-            c = 0x20 ^ byte(ba.at(i));
-        }
-        res.append(c);
-    }
-    //if (res != ba)
-    //    logMessage("DECODED: " << stringFromArray(ba)
-    //        << " -> " << stringFromArray(res));
-    return res;
-}
-
-QByteArray encode7d(const QByteArray &ba)
-{
-    QByteArray res;
-    res.reserve(ba.size() + 2);
-    for (int i = 0; i < ba.size(); ++i) {
-        byte c = byte(ba.at(i));
-        if (c == 0x7e || c == 0x7d) {
-            res.append(0x7d);
-            res.append(0x20 ^ c);
-        } else {
-            res.append(c);
-        }
-    }
-    //if (res != ba)
-    //    logMessage("ENCODED: " << stringFromArray(ba)
-    //        << " -> " << stringFromArray(res));
-    return res;
-}
-
-void appendByte(QByteArray *ba, byte b)
-{
-    ba->append(b);
-}
-
-void appendShort(QByteArray *ba, ushort s, Endianness endian)
+SYMBIANUTILS_EXPORT void appendShort(QByteArray *ba, ushort s, Endianness endian)
 {
     if (endian == BigEndian) {
         ba->append(s / 256);
@@ -386,7 +380,7 @@ void appendShort(QByteArray *ba, ushort s, Endianness endian)
     }
 }
 
-void appendInt(QByteArray *ba, uint i, Endianness endian)
+SYMBIANUTILS_EXPORT void appendInt(QByteArray *ba, uint i, Endianness endian)
 {
     const uchar b3 = i % 256; i /= 256;
     const uchar b2 = i % 256; i /= 256;
