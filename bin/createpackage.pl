@@ -64,7 +64,7 @@ sub Usage() {
 ==============================================================================================
 Convenience script for creating signed packages you can install on your phone.
 
-Usage: createpackage.pl [options] templatepkg target-platform [certificate key [passphrase]]
+Usage: createpackage.pl [options] templatepkg [target]-[platform] [certificate key [passphrase]]
 
 Where supported optiobns are as follows:
      [-i|install]            = Install the package right away using PC suite
@@ -72,9 +72,10 @@ Where supported optiobns are as follows:
      [-c|certfile=<file>]    = The file containing certificate information for signing.
                                The file can have several certificates, each specified in
                                separate line. The certificate, key and passphrase in line
-                               must be ';' separated. Lines starting with '#' are treated 
-                               as a comments. Also empty lines are ignored. The paths in 
+                               must be ';' separated. Lines starting with '#' are treated
+                               as a comments. Also empty lines are ignored. The paths in
                                <file> can be absolute or relative to <file>.
+     [-u|unsigned]           = Preserves the unsigned package
 Where parameters are as follows:
      templatepkg             = Name of .pkg file template
      target                  = Either debug or release
@@ -86,10 +87,10 @@ Where parameters are as follows:
 
 Example:
      createpackage.pl fluidlauncher_template.pkg release-armv5
-     
+
 Example with certfile:
      createpackage.pl -c=mycerts.txt fluidlauncher_template.pkg release-armv5
-     
+
      Content of 'mycerts.txt' must be something like this:
         # This is comment line, also the empty lines are ignored
         rd.cer;rd-key.pem
@@ -109,8 +110,12 @@ ENDUSAGESTRING
 my $install = "";
 my $preprocessonly = "";
 my $certfile = "";
+my $preserveUnsigned = "";
 
-unless (GetOptions('i|install' => \$install, 'p|preprocess' => \$preprocessonly, 'c|certfile=s' => \$certfile)){
+unless (GetOptions('i|install' => \$install,
+                   'p|preprocess' => \$preprocessonly,
+                   'c|certfile=s' => \$certfile,
+                   'u|unsigned' => \$preserveUnsigned,)){
     Usage();
 }
 
@@ -134,7 +139,12 @@ my $passphrase = $ARGV[4];
 
 # Generate output pkg basename (i.e. file name without extension)
 my $pkgoutputbasename = $templatepkg;
-$pkgoutputbasename =~ s/_template\.pkg/_$targetplatform/g;
+my $preservePkgOutput = "";
+$pkgoutputbasename =~ s/_template/_$targetplatform/g;
+if ($pkgoutputbasename eq $templatepkg) {
+    $preservePkgOutput = "1";
+}
+$pkgoutputbasename =~ s/\.pkg//g;
 $pkgoutputbasename = lc($pkgoutputbasename);
 
 # Store output file names to variables
@@ -148,10 +158,18 @@ my $certtext = $certificate;
 # certificates are one step up in hierarchy
 my $certpath = File::Spec->catdir($scriptpath, File::Spec->updir(), "src/s60installs/");
 
-# Check some pre-conditions and print error messages if needed
-unless (length($templatepkg) && length($platform) && length($target)) {
-    print "\nError: Template PKG filename, platform or target is not defined!\n";
+# Check some pre-conditions and print error messages if needed.
+unless (length($templatepkg)) {
+    print "\nError: Template PKG filename is not defined!\n";
     Usage();
+}
+
+# If the pkg file is not actually a template, there is no need for plaform or target.
+if ($templatepkg =~ m/_template\.pkg/i) {
+    unless (length($platform) && length($target)) {
+        print "\nError: Platform or target is not defined!\n";
+        Usage();
+    }
 }
 
 # Check template exist
@@ -190,18 +208,18 @@ if (length($certfile)) {
         next if /^(\s)*$/;                  # skip blank lines
         chomp;                              # remove trailing newline characters
         my @certinfo = split(';', $_);      # split row to certinfo
-        
+
         # Trim spaces
         for(@certinfo) {
             s/^\s+//;
             s/\s+$//;
-        }        
-        
+        }
+
         # Do some validation
-        unless(scalar(@certinfo) >= 2 && scalar(@certinfo) <= 3 && length($certinfo[0]) && length($certinfo[1]) ) {    
+        unless(scalar(@certinfo) >= 2 && scalar(@certinfo) <= 3 && length($certinfo[0]) && length($certinfo[1]) ) {
             print "\nError: $certfile line '$_' does not contain valid information!\n";
-            Usage();            
-        }   
+            Usage();
+        }
 
         push @certificates, [@certinfo];    # push data to two dimensional array
     }
@@ -210,7 +228,9 @@ if (length($certfile)) {
 # Remove any existing .sis packages
 unlink $unsigned_sis_name;
 unlink $signed_sis_name;
-unlink $pkgoutput;
+if (!$preservePkgOutput) {
+    unlink $pkgoutput;
+}
 
 # Preprocess PKG
 local $/;
@@ -252,10 +272,14 @@ if( -e _ ) {
         system ("signsis $signed_sis_name $signed_sis_name $abscert $abskey $row->[2]");
         print ("\tAdditionally signed the SIS with certificate: $row->[0]!\n");
     }
-    
+
     # remove temporary pkg and unsigned sis
-    unlink $pkgoutput;
-    unlink $unsigned_sis_name;
+    if (!$preservePkgOutput) {
+        unlink $pkgoutput;
+    }
+    if (!$preserveUnsigned) {
+        unlink $unsigned_sis_name;
+    }
 
     # Install the sis if requested
     if ($install) {

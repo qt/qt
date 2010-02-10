@@ -1149,10 +1149,10 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
     int vpadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
     if (opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth)
         verticalShift = -verticalShift;
-    tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
+    tr.adjust(hpadding, verticalShift - vpadding, horizontalShift - hpadding, vpadding);
     bool selected = opt->state & QStyle::State_Selected;
     if (selected) {
-        tr.setBottom(tr.bottom() - verticalShift);
+        tr.setTop(tr.top() - verticalShift);
         tr.setRight(tr.right() - horizontalShift);
     }
 

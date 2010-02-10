@@ -358,14 +358,20 @@ public:
         return o;
     }
 
+    inline bool isOpacityNull() const
+    { return (opacity < qreal(0.001)); }
+
+    static inline bool isOpacityNull(qreal opacity)
+    { return (opacity < qreal(0.001)); }
+
     inline bool isFullyTransparent() const
     {
-        if (opacity < 0.001)
+        if (isOpacityNull())
             return true;
         if (!parent)
             return false;
 
-        return calcEffectiveOpacity() < 0.001;
+        return isOpacityNull(calcEffectiveOpacity());
     }
 
     inline qreal effectiveOpacity() const {

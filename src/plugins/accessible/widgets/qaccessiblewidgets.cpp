@@ -176,7 +176,7 @@ static inline QWidget *mdiAreaNavigate(QWidget *area,
 
     int minimumDistance = INT_MAX;
     QWidget *target = 0;
-    foreach (QWidget *candidate, candidates.values()) {
+    foreach (QWidget *candidate, candidates) {
         switch (relation) {
         case QAccessible::Up:
         case QAccessible::Down:

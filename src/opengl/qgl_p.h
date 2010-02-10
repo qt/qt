@@ -520,7 +520,7 @@ public:
     QSize bindCompressedTexturePVR(const char *buf, int len);
 };
 
-class QGLTextureCache {
+class Q_AUTOTEST_EXPORT QGLTextureCache {
 public:
     QGLTextureCache();
     ~QGLTextureCache();
@@ -537,11 +537,8 @@ public:
     static QGLTextureCache *instance();
     static void deleteIfEmpty();
     static void imageCleanupHook(qint64 cacheKey);
-    static void cleanupTextures(QPixmap* pixmap);
-#ifdef Q_WS_X11
-    // X11 needs to catch pixmap data destruction to delete EGL/GLX pixmap surfaces
-    static void cleanupPixmapSurfaces(QPixmap* pixmap);
-#endif
+    static void cleanupTextures(QPixmapData* pixmap);
+    static void cleanupBeforePixmapDestruction(QPixmapData* pixmap);
 
 private:
     QCache<qint64, QGLTexture> m_cache;

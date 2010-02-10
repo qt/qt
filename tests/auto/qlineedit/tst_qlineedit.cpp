@@ -271,6 +271,9 @@ private slots:
     void taskQTBUG_4401_enterKeyClearsPassword();
     void taskQTBUG_4679_moveToStartEndOfBlock();
     void taskQTBUG_4679_selectToStartEndOfBlock();
+#ifndef QT_NO_CONTEXTMENU
+    void taskQTBUG_7902_contextMenuCrash();
+#endif
 
 protected slots:
 #ifdef QT3_SUPPORT
@@ -3637,6 +3640,26 @@ void tst_QLineEdit::taskQTBUG_4679_selectToStartEndOfBlock()
     QCOMPARE(testWidget->selectedText(), text.mid(5));
 #endif // Q_OS_MAC
 }
+
+#ifndef QT_NO_CONTEXTMENU
+void tst_QLineEdit::taskQTBUG_7902_contextMenuCrash()
+{
+    // Would pass before the associated commit, but left as a guard.
+    QLineEdit *w = new QLineEdit;
+    w->show();
+    QTest::qWaitForWindowShown(w);
+
+    QTimer ti;
+    w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));
+    ti.start(200);
+
+    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center());
+    qApp->postEvent(w, cme);
+
+    QTest::qWait(300);
+    // No crash, it's allright.
+}
+#endif
 
 QTEST_MAIN(tst_QLineEdit)
 #include "tst_qlineedit.moc"
