@@ -193,6 +193,20 @@ public:
     Q_DECLARE_PUBLIC(QNetworkReplyImpl)
 };
 
+class QDisabledNetworkReply : public QNetworkReply
+{
+    Q_OBJECT
+
+public:
+    QDisabledNetworkReply(QObject *parent, const QNetworkRequest &req,
+                          const QNetworkAccessManager::Operation op);
+    ~QDisabledNetworkReply();
+
+    void abort() { }
+protected:
+    qint64 readData(char *, qint64) { return -1; }
+};
+
 QT_END_NAMESPACE
 
 #endif

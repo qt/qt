@@ -57,7 +57,6 @@
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
 #include "QtCore/qvector.h"
-#include "QtCore/qcoreapplication.h"
 #include "QtNetwork/qauthenticator.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
@@ -760,46 +759,6 @@ bool QNetworkAccessManager::networkAccessEnabled() const
     return d->networkAccessEnabled;
 }
 
-class QDisabledNetworkReply : public QNetworkReply
-{
-    Q_OBJECT
-
-public:
-    QDisabledNetworkReply(QObject *parent, const QNetworkRequest &req,
-                          const QNetworkAccessManager::Operation op);
-    ~QDisabledNetworkReply();
-
-    void abort() { }
-protected:
-    qint64 readData(char *, qint64) { return 0; }
-};
-
-QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
-                                             const QNetworkRequest &req,
-                                             QNetworkAccessManager::Operation op)
-:   QNetworkReply(parent)
-{
-    setRequest(req);
-    setUrl(req.url());
-    setOperation(op);
-
-    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
-
-    QString msg = QCoreApplication::translate("QNetworkAccessManager",
-                                              "Network access is disabled.");
-    setError(UnknownNetworkError, msg);
-
-    QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
-        Q_ARG(QNetworkReply::NetworkError, UnknownNetworkError));
-    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
-}
-
-QDisabledNetworkReply::~QDisabledNetworkReply()
-{
-}
-
-#include "qnetworkaccessmanager.moc"
-
 /*!
     Returns a new QNetworkReply object to handle the operation \a op
     and request \a req. The device \a outgoingData is always 0 for Get and
@@ -829,8 +788,12 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QFileNetworkReply(this, req, op);
     }
 
-    if (!d->networkAccessEnabled)
+    // Return a disabled network reply if network access is disabled.
+    // Except if the scheme is empty or file://.
+    if (!d->networkAccessEnabled && !(req.url().scheme() == QLatin1String("file") ||
+                                      req.url().scheme().isEmpty())) {
         return new QDisabledNetworkReply(this, req, op);
+    }
 
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
