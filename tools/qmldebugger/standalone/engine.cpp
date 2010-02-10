@@ -88,7 +88,7 @@ EnginePane::EnginePane(QmlDebugConnection *conn, QWidget *parent)
     Q_ASSERT(enginesFile.isOpen());
 
     m_engineView = new QmlView(this);
-    m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(QmlListProperty<QObject>(this, m_engineItems)));
+    m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
     m_engineView->setContentResizable(true);
     m_engineView->setQml(enginesFile.readAll());
     m_engineView->execute();
@@ -205,7 +205,7 @@ void EnginePane::enginesChanged()
         m_engineItems << new DebuggerEngineItem(engines.at(ii).name(),
                                                 engines.at(ii).debugId());
 
-    m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(QmlListProperty<QObject>(this, m_engineItems)));
+    m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
 
     m_engineView->setVisible(m_engineItems.count() > 1);
     if (m_engineItems.count() == 1)
