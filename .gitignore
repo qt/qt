@@ -5,15 +5,20 @@ examples/*/*/*
 !examples/*/*/*[.]*
 !examples/*/*/README
 examples/*/*/*[.]app
+!examples/declarative/*
 demos/*/*
 !demos/*/*[.]*
 demos/*/*[.]app
+!demos/declarative/*
 config.tests/*/*/*
 !config.tests/*/*/*[.]*
 config.tests/*/*/*[.]app
 
+callgrind.out.*
+pcviewer.cfg
 *~
 *.a
+*.la
 *.core
 *.moc
 *.o
@@ -42,10 +47,12 @@ Makefile*
 *.prl
 *.app
 *.pro.user
+*.gcov
 bin/Qt*.dll
 bin/assistant*
 bin/designer*
 bin/dumpcpp*
+bin/duiviewer*
 bin/idc*
 bin/linguist*
 bin/lrelease*
@@ -72,6 +79,12 @@ bin/cetest*
 bin/collectiongenerator
 bin/helpconverter
 bin/helpgenerator
+bin/kmap2qmap*
+bin/qlalr*
+bin/qmlconv*
+bin/qmldebugger*
+bin/qmlviewer*
+bin/qttracereplay*
 configure.cache
 config.status
 mkspecs/default
@@ -94,6 +107,7 @@ tests/auto/qprocess/fileWriterProcess.txt
 .com.apple.timemachine.supported
 tests/auto/qlibrary/libmylib.so*
 tests/auto/qresourceengine/runtime_resource.rcc
+tools/qtestlib/chart/chart*
 tools/qtestlib/updater/updater*
 tools/activeqt/testcon/testcon.tlb
 translations/*.qm
