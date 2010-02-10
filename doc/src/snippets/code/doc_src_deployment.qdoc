@@ -475,18 +475,10 @@ default_deployment.pkg_prerules += supported_platforms
 //! [57]
 
 //! [58]
-embedded_deployments = \
-    "; Embed Qt dependencies" \
-    "@\"$$[QT_INSTALL_PREFIX]/qt_installer.sis\",(0x2001E62D)"
-
-default_deployment.pkg_prerules += embedded_deployments
+qmake
+make release-gcce
 //! [58]
 
 //! [59]
-qmake
-make release-gcce
+make installer_sis
 //! [59]
-
-//! [60]
-make sis
-//! [60]

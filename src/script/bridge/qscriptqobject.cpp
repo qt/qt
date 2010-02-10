@@ -978,7 +978,8 @@ JSC::JSValue QtFunction::execute(JSC::ExecState *exec, JSC::JSValue thisValue,
     QScriptObjectDelegate *delegate = scriptObject->delegate();
     Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
     QObject *qobj = static_cast<QScript::QObjectDelegate*>(delegate)->value();
-    Q_ASSERT_X(qobj != 0, "QtFunction::call", "handle the case when QObject has been deleted");
+    if (!qobj)
+        return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("cannot call function of deleted QObject"));
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
 
     const QMetaObject *meta = qobj->metaObject();
@@ -2219,7 +2220,14 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     JSC::call(exec, slot, callType, callData, thisObject, jscArgs);
 
     if (exec->hadException()) {
-        engine->emitSignalHandlerException();
+        if (slot.inherits(&QtFunction::info) && !static_cast<QtFunction*>(JSC::asObject(slot))->qobject()) {
+            // The function threw an error because the target QObject has been deleted.
+            // The connections list is stale; remove the signal handler and ignore the exception.
+            removeSignalHandler(sender(), signalIndex, receiver, slot);
+            exec->clearException();
+        } else {
+            engine->emitSignalHandlerException();
+        }
     }
 }
 

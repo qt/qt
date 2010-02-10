@@ -640,23 +640,44 @@ If you are using pre-built binaries, follow the instructions given in the
 
         Congratulations, Qt is now ready to use.
 
-    \o  Running Qt demos
+    \o  Installing Qt libraries on the device
 
-        We've included a subset of the Qt demos in this package for you
-        to try out. An excellent starting point is the "fluidlauncher"
-        demo. To run the demo on a real device, you first have to install
+        To run the demo on a real device, you first have to install
         the Qt libraries on the device:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
-        \note You will need to supply certificate that allows installation
-        of binaries with "All -Tcb" capability to your device.
+        The Qt libraries are built with "All -Tcb" capability, so that
+        they can support all types of application.
+        If you don't have a suitable certificate, it is possible to patch
+        the binaries as follows:
+
+    \list A
+        \o Installing Qt without a certificate
+
+            If you have no certificate, build a self signed Qt:
+
+            \snippet doc/src/snippets/code/doc_src_installation.qdoc 34
+
+        \o Installing Qt with a Symbian developer certificate
+
+            If you have a symbian-signed developer certificate, specify the
+            capabilities you can sign for, for example:
+
+            \snippet doc/src/snippets/code/doc_src_installation.qdoc 35
+    \endlist
+
+    \o  Running Qt demos
+
+        We've included a subset of the Qt demos in this package for you
+        to try out. An excellent starting point is the "fluidlauncher"
+        demo.
 
         Similarly, install fluidlauncher to the device:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 30
 
-        This will create a self-signed \c fluidlauncher_armv5_urel.sis and
+        This will create a self-signed \c fluidlauncher.sis and
         install it to your device.
 
         To run the demos on the emulator simply navigate to the directory of the demo
@@ -1017,8 +1038,9 @@ If you are using pre-built binaries, follow the instructions given in the
            \list
            \o \bold{Note:} This is not required if you are using pre-built binary package.
            \endlist
-        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 686] or later,
-           which is not available free of charge.
+        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} version 2.2 (build 686 or later),
+           which is not available free of charge.  Usage of later versions of RVCT, including the 3.x and 4.x series, is not supported
+           in this release.
     \endlist
 
     Running Qt on real device requires the Open C to be installed on the device.

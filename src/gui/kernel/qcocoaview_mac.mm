@@ -510,7 +510,7 @@ extern "C" {
     }
 
     // Make sure the opengl context is updated on resize.
-    if (0 && qwidgetprivate->isGLWidget) {
+    if (qwidgetprivate->isGLWidget) {
         qwidgetprivate->needWindowChange = true;
         QEvent event(QEvent::MacGLWindowChange);
         qApp->sendEvent(qwidget, &event);
@@ -520,10 +520,11 @@ extern "C" {
 - (void)drawRect:(NSRect)aRect
 {
     if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
-            bs->markDirty(qwidget->rect(), qwidget);
-        qwidgetprivate->syncBackingStore(qwidget->rect());
-        return;
+        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore()) {
+            // Drawing is handled on the window level
+            // See qcocoasharedwindowmethods_mac_p.
+            return;
+        }
     }
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
@@ -644,6 +645,8 @@ extern "C" {
 
 - (void)mouseEntered:(NSEvent *)event
 {
+    if (qwidgetprivate->data.in_destructor)
+        return;
     QEvent enterEvent(QEvent::Enter);
     NSPoint windowPoint = [event locationInWindow];
     NSPoint globalPoint = [[event window] convertBaseToScreen:windowPoint];

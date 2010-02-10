@@ -4398,4 +4398,5 @@ EXPORTS
 	?object@WrappedEvent@QStateMachine@@QBEPAVQObject@@XZ @ 4397 NONAME ; class QObject * QStateMachine::WrappedEvent::object(void) const
 	?sender@SignalEvent@QStateMachine@@QBEPAVQObject@@XZ @ 4398 NONAME ; class QObject * QStateMachine::SignalEvent::sender(void) const
 	?signalIndex@SignalEvent@QStateMachine@@QBEHXZ @ 4399 NONAME ; int QStateMachine::SignalEvent::signalIndex(void) const
+	?disconnectOne@QMetaObject@@SA_NPBVQObject@@H0H@Z @ 4400 NONAME ; bool QMetaObject::disconnectOne(class QObject const *, int, class QObject const *, int)
 

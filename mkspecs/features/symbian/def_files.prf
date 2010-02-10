@@ -1,0 +1,34 @@
+# With DEF files enabled, removed exported symbols are treated as errors
+# and there is binary compatibility between successive builds.
+
+CONFIG -= def_files_disabled
+
+# Firstly, if the MMP_RULES already contain a defBlock variable, don't generate another one
+# (this bit is slightly magic, because it depends upon everyone creating their DEFFILE statements
+# in a defBlock variable; but otherwise we have to expand MMP_RULES then scan for the DEFFILE keyword)
+!contains(MMP_RULES, defBlock) {
+    # Apps are executables on Symbian, so don't have exports, and therefore don't have DEF files
+    # Plugins use standard DEF files, which qmake generates, so shouldn't be using these DEFFILE
+    # statements - they use the qmake generated statements instead
+    # Static libraries obviously don't have DEF files, as they don't take part in dynamic linkage
+    !contains(TEMPLATE, app):!contains(CONFIG, plugin):!contains(CONFIG, staticlib): {
+        !isEmpty(defFilePath) {
+            defBlock = \
+            "$${LITERAL_HASH}ifdef WINSCW" \
+            "DEFFILE $$defFilePath/bwins/$${TARGET}.def" \
+            "$${LITERAL_HASH}elif defined EABI" \
+            "DEFFILE $$defFilePath/eabi/$${TARGET}.def" \
+            "$${LITERAL_HASH}endif"
+        } else {
+            # If defFilePath is not defined, then put the folders containing the DEF files at the
+            # same level as the .pro (and generated MMP) file(s)
+            defBlock = \
+            "$${LITERAL_HASH}ifdef WINSCW" \
+            "DEFFILE ./bwins/$${TARGET}.def" \
+            "$${LITERAL_HASH}elif defined EABI" \
+            "DEFFILE ./eabi/$${TARGET}.def" \
+            "$${LITERAL_HASH}endif"
+        }
+        MMP_RULES += defBlock
+    }
+}

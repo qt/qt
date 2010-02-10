@@ -675,7 +675,7 @@ void QDesignerTaskMenu::navigateToSlot(QDesignerFormEditorInterface *core,
         const QString signalSignature = selectedItem->text(0);
         const QStringList parameterNames = qVariantValue<QStringList>(selectedItem->data(0, Qt::UserRole));
 
-        // TODO: Check wether signal is connected to slot
+        // TODO: Check whether signal is connected to slot
         integr->emitNavigateToSlot(objectName, signalSignature, parameterNames);
     }
 }

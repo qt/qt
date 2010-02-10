@@ -173,6 +173,8 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
+#elif defined(Q_OS_SYMBIAN)
+    uint inExpose : 1; // Prevents drawing recursion
 #endif
 };
 

@@ -121,12 +121,14 @@ public:
     int virtualMouseRequired : 1;
     int qtOwnsS60Environment : 1;
     int supportsPremultipliedAlpha : 1;
+    int avkonComponentsSupportTransparency : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
     static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
+    static inline CEikMenuBar* menuBar();
 #ifdef Q_WS_S60
     static inline CEikStatusPane* statusPane();
     static inline CCoeControl* statusPaneSubPane(TInt aPaneId);
@@ -267,6 +269,11 @@ inline CWsScreenDevice* QS60Data::screenDevice()
 inline CCoeAppUi* QS60Data::appUi()
 {
     return CCoeEnv::Static()-> AppUi();
+}
+
+inline CEikMenuBar* QS60Data::menuBar()
+{
+    return CEikonEnv::Static()->AppUiFactory()->MenuBar();
 }
 
 #ifdef Q_WS_S60

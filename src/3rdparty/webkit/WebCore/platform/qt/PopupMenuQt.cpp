@@ -1,6 +1,7 @@
 /*
  * This file is part of the popup menu implementation for <select> elements in WebCore.
  *
+ * Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2006 Apple Computer, Inc.
  * Copyright (C) 2006 Michael Emmel mike.emmel@gmail.com 
@@ -35,6 +36,10 @@
 
 #include <QAction>
 #include <QDebug>
+#include <QGraphicsProxyWidget>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsWebView>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMenu>
@@ -46,13 +51,17 @@ namespace WebCore {
 
 PopupMenu::PopupMenu(PopupMenuClient* client)
     : m_popupClient(client)
+    , m_proxy(0)
 {
     m_popup = new QWebPopup(client);
 }
 
 PopupMenu::~PopupMenu()
 {
-    delete m_popup;
+    // If we create a proxy, then the deletion of the proxy and the
+    // combo will be done by the proxy's parent (QGraphicsWebView)
+    if (!m_proxy)
+        delete m_popup;
 }
 
 void PopupMenu::clear()
@@ -92,8 +101,18 @@ void PopupMenu::show(const IntRect& r, FrameView* v, int index)
     rect.moveTopLeft(v->contentsToWindow(r.topLeft()));
     rect.setHeight(m_popup->sizeHint().height());
 
-    m_popup->setParent(client->ownerWidget());
-    m_popup->setGeometry(rect);
+    if (QGraphicsView* view = qobject_cast<QGraphicsView*>(client->ownerWidget())) {
+        if (!m_proxy) {
+            m_proxy = new QGraphicsProxyWidget(qobject_cast<QGraphicsWebView*>(client->pluginParent()));
+            m_proxy->setWidget(m_popup);
+        } else
+            m_proxy->setVisible(true);
+        m_proxy->setGeometry(rect);
+    } else {
+        m_popup->setParent(client->ownerWidget());
+        m_popup->setGeometry(rect);
+    }
+
     m_popup->setCurrentIndex(index);
     m_popup->exec();
 }

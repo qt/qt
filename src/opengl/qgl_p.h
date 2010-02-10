@@ -261,6 +261,60 @@ private:
 // "ctx" is destroyed.  Returns null if nothing is sharing with ctx.
 Q_OPENGL_EXPORT const QGLContext *qt_gl_transfer_context(const QGLContext *);
 
+// GL extension definitions
+class QGLExtensions {
+public:
+    enum Extension {
+        TextureRectangle        = 0x00000001,
+        SampleBuffers           = 0x00000002,
+        GenerateMipmap          = 0x00000004,
+        TextureCompression      = 0x00000008,
+        FragmentProgram         = 0x00000010,
+        MirroredRepeat          = 0x00000020,
+        FramebufferObject       = 0x00000040,
+        StencilTwoSide          = 0x00000080,
+        StencilWrap             = 0x00000100,
+        PackedDepthStencil      = 0x00000200,
+        NVFloatBuffer           = 0x00000400,
+        PixelBufferObject       = 0x00000800,
+        FramebufferBlit         = 0x00001000,
+        NPOTTextures            = 0x00002000,
+        BGRATextureFormat       = 0x00004000,
+        DDSTextureCompression   = 0x00008000,
+        ETC1TextureCompression  = 0x00010000,
+        PVRTCTextureCompression = 0x00020000,
+        FragmentShader          = 0x00040000
+    };
+    Q_DECLARE_FLAGS(Extensions, Extension)
+
+    static Extensions glExtensions();
+
+private:
+    static Extensions currentContextExtensions();
+};
+
+/*
+    QGLTemporaryContext - the main objective of this class is to have a way of
+    creating a GL context and making it current, without going via QGLWidget
+    and friends. At certain points during GL initialization we need a current
+    context in order decide what GL features are available, and to resolve GL
+    extensions. Having a light-weight way of creating such a context saves
+    initial application startup time, and it doesn't wind up creating recursive
+    conflicts.
+    The class currently uses a private d pointer to hide the platform specific
+    types. This could possibly been done inline with #ifdef'ery, but it causes
+    major headaches on e.g. X11 due to namespace pollution.
+*/
+class QGLTemporaryContextPrivate;
+class QGLTemporaryContext {
+public:
+    QGLTemporaryContext(bool directRendering = true, QWidget *parent = 0);
+    ~QGLTemporaryContext();
+
+private:
+    QScopedPointer<QGLTemporaryContextPrivate> d;
+};
+
 class QGLTexture;
 
 // This probably needs to grow to GL_MAX_VERTEX_ATTRIBS, but 3 is ok for now as that's
@@ -333,10 +387,12 @@ public:
     uint crWin : 1;
     uint internal_context : 1;
     uint version_flags_cached : 1;
+    uint extension_flags_cached : 1;
     QPaintDevice *paintDevice;
     QColor transpColor;
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
+    QGLExtensions::Extensions extension_flags;
 
     QGLContextGroup *group;
     GLint max_texture_size;
@@ -375,40 +431,7 @@ Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
 };
 
-// GL extension definitions
-class QGLExtensions {
-public:
-    enum Extension {
-        TextureRectangle        = 0x00000001,
-        SampleBuffers           = 0x00000002,
-        GenerateMipmap          = 0x00000004,
-        TextureCompression      = 0x00000008,
-        FragmentProgram         = 0x00000010,
-        MirroredRepeat          = 0x00000020,
-        FramebufferObject       = 0x00000040,
-        StencilTwoSide          = 0x00000080,
-        StencilWrap             = 0x00000100,
-        PackedDepthStencil      = 0x00000200,
-        NVFloatBuffer           = 0x00000400,
-        PixelBufferObject       = 0x00000800,
-        FramebufferBlit         = 0x00001000,
-        NPOTTextures            = 0x00002000,
-        BGRATextureFormat       = 0x00004000,
-        DDSTextureCompression   = 0x00008000,
-        ETC1TextureCompression  = 0x00010000,
-        PVRTCTextureCompression = 0x00020000,
-        FragmentShader          = 0x00040000
-    };
-    Q_DECLARE_FLAGS(Extensions, Extension)
-
-    static Extensions glExtensions;
-    static bool nvidiaFboNeedsFinish;
-    static void init(); // sys dependent
-    static void init_extensions(); // general: called by init()
-};
-
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
-
 
 // Temporarily make a context current if not already current or
 // shared with the current contex.  The previous context is made
@@ -499,7 +522,7 @@ public:
     QSize bindCompressedTexturePVR(const char *buf, int len);
 };
 
-class QGLTextureCache {
+class Q_AUTOTEST_EXPORT QGLTextureCache {
 public:
     QGLTextureCache();
     ~QGLTextureCache();
@@ -516,11 +539,8 @@ public:
     static QGLTextureCache *instance();
     static void deleteIfEmpty();
     static void imageCleanupHook(qint64 cacheKey);
-    static void cleanupTextures(QPixmap* pixmap);
-#ifdef Q_WS_X11
-    // X11 needs to catch pixmap data destruction to delete EGL/GLX pixmap surfaces
-    static void cleanupPixmapSurfaces(QPixmap* pixmap);
-#endif
+    static void cleanupTextures(QPixmapData* pixmap);
+    static void cleanupBeforePixmapDestruction(QPixmapData* pixmap);
 
 private:
     QCache<qint64, QGLTexture> m_cache;
@@ -533,7 +553,7 @@ bool qt_gl_preferGL2Engine();
 
 inline GLenum qt_gl_preferredTextureFormat()
 {
-    return (QGLExtensions::glExtensions & QGLExtensions::BGRATextureFormat) && QSysInfo::ByteOrder == QSysInfo::LittleEndian
+    return (QGLExtensions::glExtensions() & QGLExtensions::BGRATextureFormat) && QSysInfo::ByteOrder == QSysInfo::LittleEndian
         ? GL_BGRA : GL_RGBA;
 }
 
@@ -542,7 +562,7 @@ inline GLenum qt_gl_preferredTextureTarget()
 #if defined(QT_OPENGL_ES_2)
     return GL_TEXTURE_2D;
 #else
-    return (QGLExtensions::glExtensions & QGLExtensions::TextureRectangle)
+    return (QGLExtensions::glExtensions() & QGLExtensions::TextureRectangle)
            && !qt_gl_preferGL2Engine()
            ? GL_TEXTURE_RECTANGLE_NV
            : GL_TEXTURE_2D;
@@ -614,7 +634,7 @@ private:
 };
 
 
-// This class can be used to match GL extensions with doing any mallocs. The
+// This class can be used to match GL extensions without doing any mallocs. The
 // class assumes that the GL extension string ends with a space character,
 // which it should do on all conformant platforms. Create the object and pass
 // in a pointer to the extension string, then call match() on each extension

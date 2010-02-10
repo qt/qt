@@ -260,7 +260,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         // ensure we try to receive a reply in all cases, even if _q_readyRead_ hat not been called
         // this is needed if the sends an reply before we have finished sending the request. In that
         // case receiveReply had been called before but ignored the server reply
-        QMetaObject::invokeMethod(connection, "_q_receiveReply", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, "_q_receiveReply", Qt::QueuedConnection);
         break;
     }
     case QHttpNetworkConnectionChannel::ReadingState:
@@ -305,9 +305,12 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
     while (socket->bytesAvailable()) {
         QHttpNetworkReplyPrivate::ReplyState state = reply ? reply->d_func()->state : QHttpNetworkReplyPrivate::AllDoneState;
         switch (state) {
-        case QHttpNetworkReplyPrivate::NothingDoneState:
-        case QHttpNetworkReplyPrivate::ReadingStatusState: {
+        case QHttpNetworkReplyPrivate::NothingDoneState: {
+            // only eat whitespace on the first call
             eatWhitespace();
+            state = reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
+        }
+        case QHttpNetworkReplyPrivate::ReadingStatusState: {
             qint64 statusBytes = reply->d_func()->readStatus(socket);
             if (statusBytes == -1 && reconnectAttempts <= 0) {
                 // too many errors reading/receiving/parsing the status, close the socket and emit error
@@ -674,15 +677,8 @@ void QHttpNetworkConnectionChannel::handleStatus()
     case 407: // proxy auth required
         if (connection->d_func()->handleAuthenticateChallenge(socket, reply, (statusCode == 407), resend)) {
             if (resend) {
-                QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
-                if (uploadByteDevice) {
-                    if (uploadByteDevice->reset()) {
-                        written = 0;
-                    } else {
-                        connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
-                        break;
-                    }
-                }
+                if (!resetUploadData())
+                    break;
 
                 reply->d_func()->eraseData();
 
@@ -711,6 +707,22 @@ void QHttpNetworkConnectionChannel::handleStatus()
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
 }
+
+bool QHttpNetworkConnectionChannel::resetUploadData()
+{
+    QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
+    if (!uploadByteDevice)
+        return true;
+
+    if (uploadByteDevice->reset()) {
+        written = 0;
+        return true;
+    } else {
+        connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
+        return false;
+    }
+}
+
 
 void  QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
 {
@@ -872,7 +884,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         break;
     }
     QPointer<QObject> that = connection;
-    QString errorString = connection->d_func()->errorDetail(errorCode, socket);
+    QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
     if (send2Reply) {
         if (reply) {
             reply->d_func()->errorString = errorString;

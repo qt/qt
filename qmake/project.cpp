@@ -79,7 +79,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_SIZE };
+                  E_SIZE, E_GENERATE_UID };
 QMap<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -111,6 +111,7 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("prompt", E_PROMPT);
         qmake_expand_functions->insert("replace", E_REPLACE);
         qmake_expand_functions->insert("size", E_SIZE);
+        qmake_expand_functions->insert("generate_uid", E_GENERATE_UID);
     }
     return *qmake_expand_functions;
 }
@@ -1864,6 +1865,9 @@ QMakeProject::doProjectExpand(QString func, QStringList args,
     return doProjectExpand(func, args_list, place);
 }
 
+// defined in symbian generator
+extern QString generate_test_uid(const QString& target);
+
 QStringList
 QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                               QMap<QString, QStringList> &place)
@@ -2301,6 +2305,14 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret += QString::number(size);
         }
         break; }
+    case E_GENERATE_UID:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d: generate_uid(var) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            ret += generate_test_uid(args.first());
+        }
+        break;
     default: {
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
                 parser.file.toLatin1().constData(), parser.line_no,
@@ -3055,7 +3067,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         place[var] = QStringList(pfile);
     } else if(var == QLatin1String("_PRO_FILE_PWD_")) {
         var = ".BUILTIN." + var;
-        place[var] =  QStringList(QFileInfo(pfile).absolutePath());
+        place[var] = QStringList(pfile.isEmpty() ? qmake_getpwd() : QFileInfo(pfile).absolutePath());
     } else if(var == QLatin1String("_QMAKE_CACHE_")) {
         var = ".BUILTIN." + var;
         if(Option::mkfile::do_cache)

@@ -229,11 +229,10 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
     \value ReadOnly Indicates that the model is readonly.
 
     \value HideNameFilterDetails Indicates if the is hidden or not.
-    This value is obsolete and does nothing since Qt 4.5:
 
     \value DontUseSheet In previous versions of Qt, the static
     functions would create a sheet by default if the static function
-    was given a parent. This is no longer supported in Qt 4.5, The
+    was given a parent. This is no longer supported and does nothing in Qt 4.5, The
     static functions will always be an application modal dialog. If
     you want to use sheets, use QFileDialog::open() instead.
 
@@ -1222,12 +1221,6 @@ QFileDialog::ViewMode QFileDialog::viewMode() const
 void QFileDialog::setFileMode(QFileDialog::FileMode mode)
 {
     Q_D(QFileDialog);
-    if (d->nativeDialogInUse){
-        d->model->setFilter(d->filterForMode(filter()));
-        d->setFilter_sys();
-        return;
-    }
-
     d->fileMode = mode;
     d->retranslateWindowTitle();
 
@@ -1263,6 +1256,11 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
         }
     }
     setLabelText(Accept, buttonText);
+    if (d->nativeDialogInUse){
+        d->setFilter_sys();
+        return;
+    }
+
     d->qFileDialogUi->fileTypeCombo->setEnabled(!testOption(ShowDirsOnly));
     d->_q_updateOkButton();
 }
@@ -1300,6 +1298,10 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
+#if defined(Q_WS_MAC)
+    d->deleteNativeDialog_sys();
+    setAttribute(Qt::WA_DontShowOnScreen, false);
+#endif
 }
 
 /*

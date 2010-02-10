@@ -783,7 +783,7 @@ bool QProcessPrivate::processStarted()
 
     // did we read an error message?
     if (i > 0)
-        q_func()->setErrorString(QString::fromUtf16(buf, i / sizeof(QChar)));
+        q_func()->setErrorString(QString((const QChar *)buf, i / sizeof(QChar)));
 
     return i <= 0;
 }

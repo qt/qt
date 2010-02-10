@@ -544,6 +544,8 @@ bool RCCResourceLibrary::addFile(const QString &alias, const RCCFileInfo &file)
     const QString filename = nodes.at(nodes.size()-1);
     RCCFileInfo *s = new RCCFileInfo(file);
     s->m_parent = parent;
+    if (parent->m_children.contains(filename))
+        qWarning("potential duplicate alias detected: '%s'", qPrintable(filename));
     parent->m_children.insertMulti(filename, s);
     return true;
 }

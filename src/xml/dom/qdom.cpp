@@ -2596,11 +2596,15 @@ QDomNode QDomNode::removeChild(const QDomNode& oldChild)
     already has an element node as a child, \a newChild is not added as
     a child and a null node is returned.
 
-    Calling this function on a null node(created, for example, with the
-    default constructor) does nothing.
+    Returns a new reference to \a newChild on success or a \link
+    isNull() null node\endlink on failure.
 
-    The DOM specification disallow inserting attribute nodes, but due
-    to historical reasons QDom accept them nevertheless.
+    Calling this function on a null node(created, for example, with
+    the default constructor) does nothing and returns a \link isNull()
+    null node\endlink.
+
+    The DOM specification disallow inserting attribute nodes, but for
+    historical reasons, QDom accepts them anyway.
 
     \sa insertBefore() insertAfter() replaceChild() removeChild()
 */
@@ -2969,7 +2973,7 @@ QDomElement QDomNode::lastChildElement(const QString &tagName) const
 }
 
 /*!
-    Returns the next sibilng element with tag name \a tagName if \a tagName
+    Returns the next sibling element with tag name \a tagName if \a tagName
     is non-empty; otherwise returns any next sibling element.
     Returns a null element if no such sibling exists.
 

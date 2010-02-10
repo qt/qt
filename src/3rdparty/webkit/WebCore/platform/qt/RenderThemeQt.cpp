@@ -44,6 +44,7 @@
 #include "Page.h"
 #include "RenderBox.h"
 #include "RenderTheme.h"
+#include "ScrollbarThemeQt.h"
 #include "UserAgentStyleSheets.h"
 #include "QWebPageClient.h"
 #include "qwebpage.h"
@@ -66,17 +67,17 @@ namespace WebCore {
 using namespace HTMLNames;
 
 
-StylePainter::StylePainter(const RenderObject::PaintInfo& paintInfo)
+StylePainter::StylePainter(RenderThemeQt* theme, const RenderObject::PaintInfo& paintInfo)
 {
-    init(paintInfo.context ? paintInfo.context : 0);
+    init(paintInfo.context ? paintInfo.context : 0, theme->qStyle());
 }
 
-StylePainter::StylePainter(GraphicsContext* context)
+StylePainter::StylePainter(ScrollbarThemeQt* theme, GraphicsContext* context)
 {
-    init(context);
+    init(context, theme->style());
 }
 
-void StylePainter::init(GraphicsContext* context)
+void StylePainter::init(GraphicsContext* context, QStyle* themeStyle)
 {
     painter = static_cast<QPainter*>(context->platformContext());
     widget = 0;
@@ -85,7 +86,7 @@ void StylePainter::init(GraphicsContext* context)
         dev = painter->device();
     if (dev && dev->devType() == QInternal::Widget)
         widget = static_cast<QWidget*>(dev);
-    style = (widget ? widget->style() : QApplication::style());
+    style = themeStyle;
 
     if (painter) {
         // the styles often assume being called with a pristine painter where no brush is set,
@@ -125,7 +126,6 @@ PassRefPtr<RenderTheme> RenderTheme::themeForPage(Page* page)
 RenderThemeQt::RenderThemeQt(Page* page)
     : RenderTheme()
     , m_page(page)
-    , m_fallbackStyle(0)
 {
     QPushButton button;
     button.setAttribute(Qt::WA_MacSmallSize);
@@ -135,6 +135,8 @@ RenderThemeQt::RenderThemeQt(Page* page)
 #ifdef Q_WS_MAC
     m_buttonFontPixelSize = fontInfo.pixelSize();
 #endif
+
+    m_fallbackStyle = QStyleFactory::create(QLatin1String("windows"));
 }
 
 RenderThemeQt::~RenderThemeQt()
@@ -143,19 +145,17 @@ RenderThemeQt::~RenderThemeQt()
 }
 
 // for some widget painting, we need to fallback to Windows style
-QStyle* RenderThemeQt::fallbackStyle()
+QStyle* RenderThemeQt::fallbackStyle() const
 {
-    if (!m_fallbackStyle)
-        m_fallbackStyle = QStyleFactory::create(QLatin1String("windows"));
-
-    if (!m_fallbackStyle)
-        m_fallbackStyle = QApplication::style();
-
-    return m_fallbackStyle;
+    return (m_fallbackStyle) ? m_fallbackStyle : QApplication::style();
 }
 
 QStyle* RenderThemeQt::qStyle() const
 {
+#ifdef Q_WS_MAEMO_5
+    return fallbackStyle();
+#endif
+
     if (m_page) {
         ChromeClientQt* client = static_cast<ChromeClientQt*>(m_page->chrome()->client());
 
@@ -465,7 +465,7 @@ void RenderThemeQt::setButtonPadding(RenderStyle* style) const
 
 bool RenderThemeQt::paintButton(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
 {
-    StylePainter p(i);
+    StylePainter p(this, i);
     if (!p.isValid())
        return true;
 
@@ -498,7 +498,7 @@ void RenderThemeQt::adjustTextFieldStyle(CSSStyleSelector*, RenderStyle* style, 
 
 bool RenderThemeQt::paintTextField(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
 {
-    StylePainter p(i);
+    StylePainter p(this, i);
     if (!p.isValid())
         return true;
 
@@ -567,7 +567,7 @@ void RenderThemeQt::setPopupPadding(RenderStyle* style) const
 
 bool RenderThemeQt::paintMenuList(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
 {
-    StylePainter p(i);
+    StylePainter p(this, i);
     if (!p.isValid())
         return true;
 
@@ -607,7 +607,7 @@ void RenderThemeQt::adjustMenuListButtonStyle(CSSStyleSelector*, RenderStyle* st
 bool RenderThemeQt::paintMenuListButton(RenderObject* o, const RenderObject::PaintInfo& i,
                                         const IntRect& r)
 {
-    StylePainter p(i);
+    StylePainter p(this, i);
     if (!p.isValid())
         return true;
 
@@ -758,6 +758,10 @@ ControlPart RenderThemeQt::applyTheme(QStyleOption& option, RenderObject* o) con
     if (result == RadioPart || result == CheckboxPart)
         option.state |= (isChecked(o) ? QStyle::State_On : QStyle::State_Off);
 
+#ifdef Q_WS_MAEMO_5
+    static QPalette lightGrayPalette(Qt::lightGray);
+    option.palette = lightGrayPalette;
+#else
     // If the owner widget has a custom palette, use it
     Page* page = o->document()->page();
     if (page) {
@@ -766,6 +770,7 @@ ControlPart RenderThemeQt::applyTheme(QStyleOption& option, RenderObject* o) con
         if (pageClient)
             option.palette = pageClient->palette();
     }
+#endif
 
     return result;
 }
@@ -833,7 +838,7 @@ bool RenderThemeQt::paintMediaMuteButton(RenderObject* o, const RenderObject::Pa
     if (!mediaElement)
         return false;
 
-    StylePainter p(paintInfo);
+    StylePainter p(this, paintInfo);
     if (!p.isValid())
         return true;
 
@@ -862,7 +867,7 @@ bool RenderThemeQt::paintMediaPlayButton(RenderObject* o, const RenderObject::Pa
     if (!mediaElement)
         return false;
 
-    StylePainter p(paintInfo);
+    StylePainter p(this, paintInfo);
     if (!p.isValid())
         return true;
 
@@ -901,7 +906,7 @@ bool RenderThemeQt::paintMediaSliderTrack(RenderObject* o, const RenderObject::P
     if (!mediaElement)
         return false;
 
-    StylePainter p(paintInfo);
+    StylePainter p(this, paintInfo);
     if (!p.isValid())
         return true;
 
@@ -928,7 +933,7 @@ bool RenderThemeQt::paintMediaSliderThumb(RenderObject* o, const RenderObject::P
     if (!mediaElement)
         return false;
 
-    StylePainter p(paintInfo);
+    StylePainter p(this, paintInfo);
     if (!p.isValid())
         return true;
 

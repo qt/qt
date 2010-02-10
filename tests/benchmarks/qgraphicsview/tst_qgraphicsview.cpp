@@ -171,7 +171,7 @@ void tst_QGraphicsView::paintSingleItem()
 }
 
 #ifdef Q_OS_SYMBIAN
-#  define DEEP_STACKING_COUNT 200
+#  define DEEP_STACKING_COUNT 85
 #else
 #  define DEEP_STACKING_COUNT 1000
 #endif
@@ -555,7 +555,11 @@ void tst_QGraphicsView::imageRiver()
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
+#if defined(Q_OS_SYMBIAN)
+    for (int i = 0; i < 50; ++i) {
+#else
     for (int i = 0; i < 100; ++i) {
+#endif
         AnimatedPixmapItem *item;
         if (direction == 0) item = new AnimatedPixmapItem((i % 4) + 1, 0, rotation, scale);
         if (direction == 1) item = new AnimatedPixmapItem(0, (i % 4) + 1, rotation, scale);
@@ -574,7 +578,11 @@ void tst_QGraphicsView::imageRiver()
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
+#if defined(Q_OS_SYMBIAN)
+        for (int i = 0; i < 50; ++i) {
+#else
         for (int i = 0; i < 100; ++i) {
+#endif
             scene.advance();
             while (view.count < (i+1))
                 qApp->processEvents();
@@ -669,7 +677,11 @@ void tst_QGraphicsView::textRiver()
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
+#if defined(Q_OS_SYMBIAN)
+    for (int i = 0; i < 50; ++i) {
+#else
     for (int i = 0; i < 100; ++i) {
+#endif
         AnimatedTextItem *item;
         if (direction == 0) item = new AnimatedTextItem((i % 4) + 1, 0, rotation, scale);
         if (direction == 1) item = new AnimatedTextItem(0, (i % 4) + 1, rotation, scale);
@@ -687,7 +699,11 @@ void tst_QGraphicsView::textRiver()
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
+#if defined(Q_OS_SYMBIAN)
+        for (int i = 0; i < 50; ++i) {
+#else
         for (int i = 0; i < 100; ++i) {
+#endif
             scene.advance();
             while (view.count < (i+1))
                 qApp->processEvents();
@@ -771,7 +787,11 @@ void tst_QGraphicsView::moveItemCache()
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
+#if defined(Q_OS_SYMBIAN)
+    for (int i = 0; i < 5; ++i) {
+#else
     for (int i = 0; i < 50; ++i) {
+#endif
         AnimatedPixmapCacheItem *item;
         if (direction == 0) item = new AnimatedPixmapCacheItem((i % 4) + 1, 0);
         if (direction == 1) item = new AnimatedPixmapCacheItem(0, (i % 4) + 1);
@@ -793,7 +813,11 @@ void tst_QGraphicsView::moveItemCache()
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
+#if defined(Q_OS_SYMBIAN)
+        for (int i = 0; i < 50; ++i) {
+#else
         for (int i = 0; i < 100; ++i) {
+#endif
             scene.advance();
             while (view.count < (i+1))
                 qApp->processEvents();
@@ -893,7 +917,11 @@ void tst_QGraphicsView::paintItemCache()
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
+#if defined(Q_OS_SYMBIAN)
+        for (int i = 0; i < 5; ++i) {
+#else
         for (int i = 0; i < 50; ++i) {
+#endif
             scene.advance();
             while (view.count < (i+1))
                 qApp->processEvents();

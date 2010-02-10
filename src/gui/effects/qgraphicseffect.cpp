@@ -374,13 +374,18 @@ QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
     invalidateCache();
 }
 
+void QGraphicsEffectSourcePrivate::setCachedOffset(const QPoint &offset)
+{
+    m_cachedOffset = offset;
+}
+
 void QGraphicsEffectSourcePrivate::invalidateCache(InvalidateReason reason) const
 {
     if (m_cachedMode != QGraphicsEffect::PadToEffectiveBoundingRect
         && (reason == EffectRectChanged
-            || reason == TransformChanged
-               && m_cachedSystem == Qt::LogicalCoordinates))
+            || (reason == TransformChanged && m_cachedSystem == Qt::LogicalCoordinates))) {
         return;
+    }
 
     QPixmapCache::remove(m_cacheKey);
 }
