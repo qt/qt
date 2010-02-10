@@ -27,6 +27,7 @@ INCPATH += $$QT_SOURCE_TREE/src/corelib/arch/generic \
            $$QT_SOURCE_TREE/src/corelib/global \
            $$QT_BUILD_TREE/include \
            $$QT_BUILD_TREE/include/QtCore \
+           $$QT_BUILD_TREE/tools/shared
 
 HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.h \
@@ -58,7 +59,8 @@ HEADERS  = configureapp.h environment.h tools.h\
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.h \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringmatcher.h \
-           $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables_p.h
+           $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables_p.h \
+           $$QT_SOURCE_TREE/tools/shared/windows/registry.h
 
 
 SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
@@ -102,7 +104,8 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qpoint.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qrect.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qmetatype.cpp \
-           $$QT_SOURCE_TREE/src/corelib/global/qmalloc.cpp
+           $$QT_SOURCE_TREE/src/corelib/global/qmalloc.cpp \
+           $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
 
 win32:SOURCES += $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp
 
