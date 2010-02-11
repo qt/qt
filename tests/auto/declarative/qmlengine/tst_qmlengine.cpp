@@ -178,7 +178,7 @@ void tst_qmlengine::offlineStoragePath()
     dir.mkpath("OfflineStorage");
     dir.cd("OfflineStorage");
 
-    QCOMPARE(engine.offlineStoragePath(), dir.path());
+    QCOMPARE(QDir::fromNativeSeparators(engine.offlineStoragePath()), dir.path());
 
     engine.setOfflineStoragePath(QDir::homePath());
     QCOMPARE(engine.offlineStoragePath(), QDir::homePath());
