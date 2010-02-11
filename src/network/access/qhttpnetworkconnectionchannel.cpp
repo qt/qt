@@ -286,7 +286,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         if (!socket->bytesAvailable()) {
             if (reply && reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
                 reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
-                this->state = QHttpNetworkConnectionChannel::IdleState;
                 allDone();
             } else {
                 // try to reconnect/resend before sending an error.
@@ -347,7 +346,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                     emit reply->headerChanged();
                 if (!replyPrivate->expectContent()) {
                     replyPrivate->state = QHttpNetworkReplyPrivate::AllDoneState;
-                    this->state = QHttpNetworkConnectionChannel::IdleState;
                     allDone();
                     return;
                 }
@@ -424,7 +422,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
             // everything done, fall through
             }
       case QHttpNetworkReplyPrivate::AllDoneState:
-            this->state = QHttpNetworkConnectionChannel::IdleState;
             allDone();
             break;
         default:
@@ -569,6 +566,9 @@ void QHttpNetworkConnectionChannel::allDone()
     // reset the reconnection attempts after we receive a complete reply.
     // in case of failures, each channel will attempt two reconnects before emitting error.
     reconnectAttempts = 2;
+
+    // now the channel can be seen as free/idle again, all signal emissions for the reply have been done
+    this->state = QHttpNetworkConnectionChannel::IdleState;
 
     detectPipeliningSupport();
 
