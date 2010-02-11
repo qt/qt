@@ -128,8 +128,6 @@ Q_SIGNALS:
 
     void networkAccessChanged(bool enabled);
 
-    void debugMessage(const QString &message);
-
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,
                                          QIODevice *outgoingData = 0);
