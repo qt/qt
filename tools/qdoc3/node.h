@@ -183,6 +183,7 @@ class Node
     QString since() const { return sinc; }
     QString templateStuff() const { return tpl; }
     PageType pageType() const { return pageTyp; }
+    virtual void addPageKeywords(const QString& ) { }
 
     void clearRelated() { rel = 0; }
 
@@ -256,6 +257,8 @@ class InnerNode : public Node
 
     QStringList primaryKeys();
     QStringList secondaryKeys();
+    QStringList pageKeywords() { return pageKeywds; }
+    virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
 
  protected:
     InnerNode(Type type, InnerNode *parent, const QString& name);
@@ -268,6 +271,7 @@ class InnerNode : public Node
     void removeChild(Node *child);
     void removeRelated(Node *pseudoChild);
 
+    QStringList pageKeywds;
     QStringList inc;
     NodeList children;
     NodeList enumChildren;

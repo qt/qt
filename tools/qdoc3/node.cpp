@@ -415,7 +415,7 @@ void InnerNode::deleteChildren()
 }
 
 /*!
-  Returns true.
+  Returns true because this is an inner node.
  */
 bool InnerNode::isInnerNode() const
 {

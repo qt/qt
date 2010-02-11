@@ -4378,18 +4378,24 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     t.setNum(id++);
     switch (node->type()) {
     case Node::Fake:
-        const FakeNode* fake = static_cast<const FakeNode*>(node);
-        title = fake->fullTitle();
-        break;
+        {
+            const FakeNode* fake = static_cast<const FakeNode*>(node);
+            title = fake->fullTitle();
+            break;
+        }
     case Node::Class:
-        title = node->name() + " Class Reference";
-        break;
+        {
+            title = node->name() + " Class Reference";
+            break;
+        }
     case Node::Namespace:
-        const InnerNode* inner = static_cast<const InnerNode*>(node);
-        rawTitle = marker->plainName(inner);
-        fullTitle = marker->plainFullName(inner);
-        title = rawTitle + " Namespace Reference";
-        break;
+        {
+            const InnerNode* inner = static_cast<const InnerNode*>(node);
+            rawTitle = marker->plainName(inner);
+            fullTitle = marker->plainFullName(inner);
+            title = rawTitle + " Namespace Reference";
+            break;
+        }
     default:
         title = node->name();
         break;
