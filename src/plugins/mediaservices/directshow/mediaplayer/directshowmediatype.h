@@ -60,9 +60,9 @@ public:
     DirectShowMediaType(const AM_MEDIA_TYPE &type) { copy(this, type); }
     DirectShowMediaType(const DirectShowMediaType &other) { copy(this, other); }
     DirectShowMediaType &operator =(const AM_MEDIA_TYPE &type) {
-        free(this); copy(this, type); return *this; }
+        freeData(this); copy(this, type); return *this; }
     DirectShowMediaType &operator =(const DirectShowMediaType &other) {
-        free(this); copy(this, other); return *this; }
+        freeData(this); copy(this, other); return *this; }
     ~DirectShowMediaType() { freeData(this); }
 
     void clear() { freeData(this); memset(this, 0, sizeof(DirectShowMediaType)); }
