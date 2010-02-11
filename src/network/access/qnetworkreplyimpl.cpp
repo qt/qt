@@ -89,7 +89,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         // state changes.
         state = WaitingForSession;
 
-        QNetworkSession *session = manager->d_func()->session;
+        QNetworkSession *session = manager->d_func()->networkSession;
 
         if (session) {
             if (!session->isOpen())
@@ -559,7 +559,7 @@ void QNetworkReplyImplPrivate::finished()
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
-    QNetworkSession *session = manager->d_func()->session;
+    QNetworkSession *session = manager->d_func()->networkSession;
     if (session && session->state() == QNetworkSession::Roaming &&
         state == Working && errorCode != QNetworkReply::OperationCanceledError) {
         // only content with a known size will fail with a temporary network failure error

@@ -349,7 +349,7 @@ void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 */
 bool QNetworkAccessBackend::start()
 {
-    if (!manager->session) {
+    if (!manager->networkSession) {
         open();
         return true;
     }
@@ -364,7 +364,8 @@ bool QNetworkAccessBackend::start()
         return true;
     }
 
-    if (manager->session->isOpen() && manager->session->state() == QNetworkSession::Connected) {
+    if (manager->networkSession->isOpen() &&
+        manager->networkSession->state() == QNetworkSession::Connected) {
         open();
         return true;
     }

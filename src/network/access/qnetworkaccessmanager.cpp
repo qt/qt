@@ -715,8 +715,8 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->session)
-        return d->session->configuration();
+    if (d->networkSession)
+        return d->networkSession->configuration();
     else
         return QNetworkConfiguration();
 }
@@ -732,11 +732,11 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
 {
     Q_D(const QNetworkAccessManager);
 
-    if (d->session) {
+    if (d->networkSession) {
         QNetworkConfigurationManager manager;
 
         return manager.configurationFromIdentifier(
-            d->session->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
+            d->networkSession->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
     } else {
         return QNetworkConfiguration();
     }
@@ -1107,89 +1107,41 @@ void QNetworkAccessManagerPrivate::createSession(const QNetworkConfiguration &co
 {
     Q_Q(QNetworkAccessManager);
 
-    if (session)
-        delete session;
+    if (networkSession)
+        delete networkSession;
 
     if (!config.isValid()) {
-        session = 0;
+        networkSession = 0;
         return;
     }
 
-    session = new QNetworkSession(config, q);
+    networkSession = new QNetworkSession(config, q);
 
-    QObject::connect(session, SIGNAL(opened()), q, SLOT(_q_sessionOpened()));
-    QObject::connect(session, SIGNAL(closed()), q, SLOT(_q_sessionClosed()));
-    QObject::connect(session, SIGNAL(stateChanged(QNetworkSession::State)),
-                     q, SLOT(_q_sessionStateChanged(QNetworkSession::State)));
-    QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
-                     q, SLOT(_q_sessionError(QNetworkSession::SessionError)));
-    QObject::connect(session, SIGNAL(newConfigurationActivated()),
-                     q, SLOT(_q_sessionNewConfigurationActivated()));
-    QObject::connect(session, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
-                     q, SLOT(_q_sessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
+    QObject::connect(networkSession, SIGNAL(opened()), q, SIGNAL(networkSessionOnline()));
+    QObject::connect(networkSession, SIGNAL(newConfigurationActivated()),
+                     q, SLOT(_q_networkSessionNewConfigurationActivated()));
+    QObject::connect(networkSession,
+                     SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
+                     q,
+                     SLOT(_q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool)));
 }
 
-void QNetworkAccessManagerPrivate::_q_sessionOpened()
+void QNetworkAccessManagerPrivate::_q_networkSessionNewConfigurationActivated()
 {
     Q_Q(QNetworkAccessManager);
+
+    networkSession->accept();
 
     emit q->networkSessionOnline();
 }
 
-void QNetworkAccessManagerPrivate::_q_sessionClosed()
-{
-    Q_Q(QNetworkAccessManager);
-
-    emit q->debugMessage(QLatin1String("Session Closed"));
-}
-
-void QNetworkAccessManagerPrivate::_q_sessionError(QNetworkSession::SessionError error)
-{
-    Q_Q(QNetworkAccessManager);
-
-    emit q->debugMessage(QString::fromLatin1("Session error %1").arg(error));
-}
-
-void QNetworkAccessManagerPrivate::_q_sessionStateChanged(QNetworkSession::State state)
-{
-    qDebug() << "session state changed to" << state;
-}
-
-void QNetworkAccessManagerPrivate::_q_sessionNewConfigurationActivated()
-{
-    Q_Q(QNetworkAccessManager);
-
-#if 0
-    foreach (QObject *child, q->children()) {
-        QNetworkReplyImpl *reply = qobject_cast<QNetworkReplyImpl *>(child);
-        if (reply) {
-            switch (reply->d_func()->state) {
-            case QNetworkReplyImplPrivate::Buffering:
-            case QNetworkReplyImplPrivate::Working:
-                emit q->debugMessage(QString::fromLatin1("Unexpected reply for %1")
-                                        .arg(reply->url().toString()));
-                break;
-            default:
-                qDebug() << "Testing new interface for" << reply->url();
-                ;
-            }
-        }
-    }
-#endif
-
-    qDebug() << "Accepting new configuration.";
-    session->accept();
-
-    emit q->networkSessionOnline();
-}
-
-void QNetworkAccessManagerPrivate::_q_sessionPreferredConfigurationChanged(const QNetworkConfiguration &, bool)
+void QNetworkAccessManagerPrivate::_q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &, bool)
 {
     Q_Q(QNetworkAccessManager);
 
     emit q->networkSessionOnline();
 
-    session->migrate();
+    networkSession->migrate();
 }
 
 QT_END_NAMESPACE
