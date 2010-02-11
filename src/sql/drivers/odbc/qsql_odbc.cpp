@@ -144,7 +144,6 @@ public:
 
     QSqlRecord rInf;
     QVector<QVariant> fieldCache;
-    QVector<wchar_t *> paramCache;
     int fieldCacheIdx;
     int disconnectCount;
     bool hasSQLFetchScroll;
@@ -203,7 +202,7 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
                 *nativeCode = nativeCode_;
             QString tmpstore;
 #ifdef UNICODE
-            tmpstore = QString::fromWCharArray((const wchar_t*)description_, msgLen);
+            tmpstore = QString((const QChar*)description_.data(), msgLen);
 #else
             tmpstore = QString::fromLocal8Bit((const char*)description_.data(), msgLen);
 #endif
@@ -333,7 +332,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
     } else {
         colSize++; // make sure there is room for more than the 0 termination
         if (unicode) {
-            colSize *= sizeof(wchar_t); // a tiny bit faster, since it saves a SQLGetData() call
+            colSize *= 2; // a tiny bit faster, since it saves a SQLGetData() call
         }
     }
     QVarLengthArray<char> buf(colSize);
@@ -354,9 +353,9 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
             // contain the number of bytes returned - it contains the
             // total number of bytes that CAN be fetched
             // colSize-1: remove 0 termination when there is more data to fetch
-            int rSize = (r == SQL_SUCCESS_WITH_INFO) ? (unicode ? colSize-sizeof(wchar_t) : colSize-1) : lengthIndicator;
+            int rSize = (r == SQL_SUCCESS_WITH_INFO) ? (unicode ? colSize-2 : colSize-1) : lengthIndicator;
             if (unicode) {
-                fieldVal += QString::fromWCharArray((wchar_t*)buf.constData(), rSize / sizeof(wchar_t));
+                fieldVal += QString((const QChar*) buf.constData(), rSize / 2);
             } else {
                 fieldVal += QString::fromAscii(buf.constData(), rSize);
             }
@@ -552,7 +551,7 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
     }
 
 #ifdef UNICODE
-    QString qColName = QString::fromWCharArray((const wchar_t*)colName, colNameLen);
+    QString qColName((const QChar*)colName, colNameLen);
 #else
     QString qColName = QString::fromLocal8Bit((const char*)colName);
 #endif
@@ -1271,12 +1270,9 @@ bool QODBCResult::exec()
 
     // bind parameters - only positional binding allowed
     QVector<QVariant>& values = boundValues();
-    QVector<wchar_t *> wcharstorage;
-
     int i;
     SQLRETURN r;
     for (i = 0; i < values.count(); ++i) {
-        wcharstorage.append(NULL);
         if (bindValueType(i) & QSql::Out)
             values[i].detach();
         const QVariant &val = values.at(i);
@@ -1439,14 +1435,13 @@ bool QODBCResult::exec()
 #ifndef Q_ODBC_VERSION_2
                 if (d->unicode) {
                     QString str = val.toString();
-                    int strSize = str.length() * sizeof(wchar_t);
+                    str.utf16();
                     if (*ind != SQL_NULL_DATA)
-                        *ind = strSize;
+                        *ind = str.length() * sizeof(QChar);
+                    int strSize = str.length() * sizeof(QChar);
 
                     if (bindValueType(i) & QSql::Out) {
-                        wchar_t *temp=new wchar_t[str.capacity()*sizeof(wchar_t)];
-                        str.toWCharArray(temp);
-                        QByteArray ba((char*)temp, str.capacity() * sizeof(wchar_t));
+                        QByteArray ba((char*)str.constData(), str.capacity() * sizeof(QChar));
                         r = SQLBindParameter(d->hStmt,
                                             i + 1,
                                             qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
@@ -1458,13 +1453,9 @@ bool QODBCResult::exec()
                                             ba.size(),
                                             ind);
                         tmpStorage.append(ba);
-                        wcharstorage.replace(i,temp);
                         break;
                     }
 
-                    wchar_t *temp=new wchar_t[(1+str.length())*sizeof(wchar_t)];
-                    str.toWCharArray(temp);
-                    temp[str.length()]=0;
                     r = SQLBindParameter(d->hStmt,
                                           i + 1,
                                           qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
@@ -1472,10 +1463,9 @@ bool QODBCResult::exec()
                                           strSize > 254 ? SQL_WLONGVARCHAR : SQL_WVARCHAR,
                                           strSize,
                                           0,
-                                          (void *)temp,
+                                          (void *)str.constData(),
                                           strSize,
                                           ind);
-                    wcharstorage.replace(i,temp);
                     break;
                 }
                 else
@@ -1525,13 +1515,6 @@ bool QODBCResult::exec()
         }
     }
     r = SQLExecute(d->hStmt);
-
-    for(int i=0;i<wcharstorage.size();i++)
-    {
-        if(wcharstorage.at(i))
-            delete [](wcharstorage.at(i));
-    }
-
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
         qWarning() << "QODBCResult::exec: Unable to execute statement:" << qODBCWarn(d);
         setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
