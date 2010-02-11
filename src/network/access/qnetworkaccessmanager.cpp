@@ -1139,8 +1139,6 @@ void QNetworkAccessManagerPrivate::_q_networkSessionPreferredConfigurationChange
 {
     Q_Q(QNetworkAccessManager);
 
-    emit q->networkSessionOnline();
-
     networkSession->migrate();
 }
 

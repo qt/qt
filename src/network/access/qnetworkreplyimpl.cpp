@@ -574,7 +574,7 @@ void QNetworkReplyImplPrivate::finished()
 
                 if (migrateBackend()) {
                     // either we are migrating or the request is finished/aborted
-                    if (state == Reconnecting) {
+                    if (state == Reconnecting || state == WaitingForSession) {
                         resumeNotificationHandling();
                         return; // exit early if we are migrating.
                     }
