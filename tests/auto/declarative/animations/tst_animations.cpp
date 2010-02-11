@@ -68,6 +68,7 @@ private slots:
     void easingStringConversion();
     void invalidDuration();
     void attached();
+    void propertyValueSourceDefaultStart();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -574,6 +575,35 @@ void tst_animations::attached()
     QTest::ignoreMessage(QtDebugMsg, "on");
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
+}
+
+void tst_animations::propertyValueSourceDefaultStart()
+{
+    {
+        QmlEngine engine;
+
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/valuesource.qml"));
+
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+        QVERIFY(myAnim);
+        QVERIFY(myAnim->isRunning());
+    }
+
+    {
+        QmlEngine engine;
+
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/valuesource2.qml"));
+
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+        QVERIFY(myAnim);
+        QVERIFY(myAnim->isRunning() == false);
+    }
 }
 
 QTEST_MAIN(tst_animations)

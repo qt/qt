@@ -201,7 +201,8 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     Animations can also be started and stopped imperatively from JavaScript
     using the \c start() and \c stop() methods.
 
-    By default, animations are not running.
+    By default, animations are not running. Though, when the animations are assigned to properties,
+    as property value sources, they are set to running by default.
 */
 bool QmlAbstractAnimation::isRunning() const
 {
@@ -237,6 +238,10 @@ QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const 
 void QmlAbstractAnimation::setRunning(bool r)
 {
     Q_D(QmlAbstractAnimation);
+
+    if (r == false)
+        d->avoidPropertyValueSourceStart = true;
+
     if (d->running == r)
         return;
 
@@ -531,6 +536,9 @@ void QmlAbstractAnimation::setTarget(const QmlMetaProperty &p)
     Q_D(QmlAbstractAnimation);
     if (d->userProperty.isNull)
         d->userProperty = p;
+
+    if (!d->avoidPropertyValueSourceStart)
+        setRunning(true);
 }
 
 //prepare is called before an animation begins
