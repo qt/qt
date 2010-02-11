@@ -4384,10 +4384,13 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
         return true;
     if (node->access() == Node::Private)
         return false;
+    if (!node->isInnerNode())
+        return false;
 
     QString title;
     QString rawTitle;
     QString fullTitle;
+    const InnerNode* inner = static_cast<const InnerNode*>(node);
         
     writer.writeStartElement("page");
     QXmlStreamAttributes attributes;
@@ -4407,7 +4410,6 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
         }
     case Node::Namespace:
         {
-            const InnerNode* inner = static_cast<const InnerNode*>(node);
             rawTitle = marker->plainName(inner);
             fullTitle = marker->plainFullName(inner);
             title = rawTitle + " Namespace Reference";
@@ -4420,6 +4422,13 @@ bool HtmlGenerator::generatePageElement(QXmlStreamWriter& writer,
     writer.writeAttribute("id",t);
     writer.writeStartElement("pageWords");
     writer.writeCharacters(title);
+    if (!inner->pageKeywords().isEmpty()) {
+        const QStringList& w = inner->pageKeywords();
+        for (int i = 0; i < w.size(); ++i) {
+            writer.writeCharacters(" ");
+            writer.writeCharacters(w.at(i).toLocal8Bit().constData());
+        }
+    }
     writer.writeEndElement();
     writer.writeStartElement("pageTitle");
     writer.writeCharacters(title);

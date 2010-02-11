@@ -257,7 +257,7 @@ class InnerNode : public Node
 
     QStringList primaryKeys();
     QStringList secondaryKeys();
-    QStringList pageKeywords() { return pageKeywds; }
+    const QStringList& pageKeywords() const { return pageKeywds; }
     virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
 
  protected:
