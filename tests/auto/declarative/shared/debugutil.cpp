@@ -138,7 +138,7 @@ void tst_QmlDebug_Thread::run()
     Q_ASSERT(m_factory);
     QObject *test = m_factory->createTest(m_data);
     Q_ASSERT(test);
-    int code = QTest::qExec(test); 
+    int code = QTest::qExec(test, QCoreApplication::arguments()); 
     emit testsFinished(code);
 }
 
