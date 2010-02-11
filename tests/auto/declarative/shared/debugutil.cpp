@@ -169,6 +169,8 @@ int QmlDebugTest::runTests(QmlTestFactory *factory, const QList<QByteArray> &qml
 
     loop.exec();
 
+    thread.wait();
+
     return data.exitCode;
 }
 

@@ -2973,7 +2973,7 @@ QDomElement QDomNode::lastChildElement(const QString &tagName) const
 }
 
 /*!
-    Returns the next sibilng element with tag name \a tagName if \a tagName
+    Returns the next sibling element with tag name \a tagName if \a tagName
     is non-empty; otherwise returns any next sibling element.
     Returns a null element if no such sibling exists.
 

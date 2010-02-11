@@ -129,8 +129,6 @@ void tst_animatedimage::frameCount()
     QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
-    QCOMPARE(anim->frameCount(), 0); // GIF doesn't support frameCount until first pass through
-    QTest::qWait(600 + 100);
     QCOMPARE(anim->frameCount(), 3);
 
     delete anim;

@@ -13,23 +13,19 @@ symbian:{
 # prefix test binary with tst_
 !contains(TARGET, ^tst_.*):TARGET = $$join(TARGET,,"tst_")
 
-########################################################################
-# Use install rule to run test application.
-# This lets you do 'make install' on a test to both build and run it,
-# and lets you easily build and run all tests from the parent directory.
-# ----------------------------------------------------------------------
 
-runme.files                =
-runme.path                 = .
-!isEmpty(DESTDIR): runme.commands = cd ./$(DESTDIR) &&
-macx:      runme.commands += ./$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
-else:unix: runme.commands += ./$(QMAKE_TARGET)
+check.files                =
+check.path                 = .
+!isEmpty(DESTDIR): check.commands = cd ./$(DESTDIR) &&
+macx:      check.commands += ./$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
+else:unix: check.commands += ./$(QMAKE_TARGET)
 else:win32: {
-    CONFIG(debug, debug|release):runme.commands += debug\\$(QMAKE_TARGET)
-    else:runme.commands += release\\$(QMAKE_TARGET)
+    CONFIG(debug, debug|release):check.commands += debug\\$(QMAKE_TARGET)
+    else:check.commands += release\\$(QMAKE_TARGET)
 }
-embedded:  runme.commands += -qws
-INSTALLS += runme
+embedded:  check.commands += -qws
+QMAKE_EXTRA_TARGETS += check
 
 
-########################################################################
+target.path += $$[QT_INSTALL_PREFIX]/tests/qt4
+INSTALLS += target

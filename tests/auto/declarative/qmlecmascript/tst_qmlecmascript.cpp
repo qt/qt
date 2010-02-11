@@ -120,6 +120,7 @@ private slots:
     void undefinedResetsProperty();
     void listToVariant();
     void multiEngineObject();
+    void deletedObject();
 
     void bug1();
 
@@ -848,8 +849,12 @@ void tst_qmlecmascript::dynamicDestruction()
     QTest::qWait(0);
     QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
     QVERIFY(createdQmlObject);
-    QTest::qWait(100);
-    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
+    for (int ii = 0; createdQmlObject && ii < 10; ++ii) {
+        if (createdQmlObject) {
+            QTest::qWait(100);
+            QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
+        }
+    }
     QVERIFY(!createdQmlObject);
 
     QMetaObject::invokeMethod(object, "killMe");
@@ -1635,6 +1640,22 @@ void tst_qmlecmascript::multiEngineObject()
 
     delete o2;
     delete o1;
+}
+
+// Test that references to QObjects are cleanup when the object is destroyed
+void tst_qmlecmascript::deletedObject()
+{
+    QmlComponent component(&engine, TEST_FILE("deletedObject.qml"));
+
+    QObject *object = component.create();
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QEXPECT_FAIL("", "QTBUG-8077", Continue);
+    QCOMPARE(object->property("test4").toBool(), true);
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qmlecmascript)

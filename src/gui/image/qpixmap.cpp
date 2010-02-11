@@ -320,8 +320,6 @@ QPixmap::QPixmap(const char * const xpm[])
 QPixmap::~QPixmap()
 {
     Q_ASSERT(!data || data->ref >= 1); // Catch if ref-counting changes again
-    if (data && data->is_cached && data->ref == 1) // ref will be decrememnted after destructor returns
-        QImagePixmapCleanupHooks::executePixmapDestructionHooks(this);
 }
 
 /*!
@@ -1025,12 +1023,8 @@ qint64 QPixmap::cacheKey() const
     if (isNull())
         return 0;
 
-    int classKey = data->classId();
-    if (classKey >= 1024)
-        classKey = -(classKey >> 10);
-    return ((((qint64) classKey) << 56)
-            | (((qint64) data->serialNumber()) << 32)
-            | ((qint64) (data->detach_no)));
+    Q_ASSERT(data);
+    return data->cacheKey();
 }
 
 static void sendResizeEvents(QWidget *target)
@@ -1963,7 +1957,7 @@ void QPixmap::detach()
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapModificationHooks(this);
+        QImagePixmapCleanupHooks::executePixmapDataModificationHooks(data.data());
 
 #if defined(Q_WS_MAC)
     QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;

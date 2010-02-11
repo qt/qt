@@ -921,7 +921,7 @@ void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
                          qPrintable(flip));
         }
     } else {
-        flipFlags = DSFLIP_BLIT;
+        flipFlags = DSFLIP_BLIT|DSFLIP_ONSYNC;
     }
 }
 

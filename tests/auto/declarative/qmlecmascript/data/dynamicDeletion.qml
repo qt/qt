@@ -10,7 +10,7 @@ MyQmlObject{
 
     function killOther()
     {
-        obj.objectProperty.destroy(100);
+        obj.objectProperty.destroy(500);
     }
 
     function killMe()

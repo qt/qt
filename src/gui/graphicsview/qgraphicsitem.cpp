@@ -2570,6 +2570,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
     if (newOpacity == d_ptr->opacity)
         return;
 
+    bool wasFullyTransparent = d_ptr->isOpacityNull();
     d_ptr->opacity = newOpacity;
 
     // Notify change.
@@ -2585,7 +2586,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*force=*/false,
-                                          /*ignoreOpacity=*/true);
+                                          /*ignoreOpacity=*/d_ptr->isOpacityNull());
+        if (wasFullyTransparent)
+            d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
     }
 
     if (d_ptr->isObject)
