@@ -278,6 +278,7 @@ public:
 
     bool needsSync;
     bool multisamplingAlwaysEnabled;
+    bool deviceHasAlpha;
 
     GLfloat depthRange[2];
 
