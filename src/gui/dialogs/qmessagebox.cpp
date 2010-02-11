@@ -92,8 +92,8 @@ public:
         {
 #ifndef QT_NO_CONTEXTMENU
             QMenu *menu = createStandardContextMenu();
-            menu->exec(e->globalPos());
-            delete menu;
+            menu->setAttribute(Qt::WA_DeleteOnClose);
+            menu->popup(e->globalPos());
 #else
             Q_UNUSED(e);
 #endif
