@@ -70,7 +70,7 @@ public:
     };
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
-    AbstractFindWidget(FindFlags flags = FindFlags(), QWidget *parent = 0);
+    explicit AbstractFindWidget(FindFlags flags = FindFlags(), QWidget *parent = 0);
     virtual ~AbstractFindWidget();
 
     bool eventFilter(QObject *object, QEvent *e);

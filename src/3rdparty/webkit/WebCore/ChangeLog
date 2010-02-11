@@ -1,3 +1,126 @@
+2010-01-14  Diego Gonzalez  <diego.gonzalez@openbossa.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        [Qt] Missing fileSystemPath() method in Qt KURL implementation
+        https://bugs.webkit.org/show_bug.cgi?id=33614
+
+        No new tests.
+
+        * platform/qt/KURLQt.cpp:
+        (WebCore::KURL::fileSystemPath):
+
+2010-02-01  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] In the StyledPainter determine the style from the Render and Scrollbar theme instead of from the paint device
+        https://bugs.webkit.org/show_bug.cgi?id=34054
+
+        Getting the style from the painter's paint device is a hack that breaks when
+        the paint device's style is different than the style that is used when
+        calculating the metries earlier when there is no painter available.
+
+        This change moves us closer to always using the same style.
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::StylePainter::StylePainter):
+        (WebCore::StylePainter::init):
+        (WebCore::RenderThemeQt::paintButton):
+        (WebCore::RenderThemeQt::paintTextField):
+        (WebCore::RenderThemeQt::paintMenuList):
+        (WebCore::RenderThemeQt::paintMenuListButton):
+        (WebCore::RenderThemeQt::paintSliderTrack):
+        (WebCore::RenderThemeQt::paintMediaMuteButton):
+        (WebCore::RenderThemeQt::paintMediaPlayButton):
+        (WebCore::RenderThemeQt::paintMediaSliderTrack):
+        (WebCore::RenderThemeQt::paintMediaSliderThumb):
+        * platform/qt/RenderThemeQt.h:
+        * platform/qt/ScrollbarThemeQt.cpp:
+        (WebCore::ScrollbarThemeQt::paint):
+        (WebCore::ScrollbarThemeQt::hitTest):
+        (WebCore::ScrollbarThemeQt::shouldCenterOnThumb):
+        (WebCore::ScrollbarThemeQt::scrollbarThickness):
+        (WebCore::ScrollbarThemeQt::thumbLength):
+        (WebCore::ScrollbarThemeQt::trackPosition):
+        (WebCore::ScrollbarThemeQt::trackLength):
+        (WebCore::ScrollbarThemeQt::paintScrollCorner):
+        (WebCore::ScrollbarThemeQt::style):
+        * platform/qt/ScrollbarThemeQt.h:
+
+2010-01-25  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Use the fallback style on Maemo 5
+
+        https://bugs.webkit.org/show_bug.cgi?id=34376
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::RenderThemeQt):
+        (WebCore::RenderThemeQt::fallbackStyle):
+        (WebCore::RenderThemeQt::qStyle):
+        (WebCore::RenderThemeQt::setPaletteFromPageClientIfExists):
+        * platform/qt/RenderThemeQt.h:
+
+2010-01-29  Oswald Buddenhagen <oswald.buddenhagen@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Speed up the WebCore::String -> QString conversion
+
+        Use QString(const QChar *, int len) constructor instead of QString::fromUtf16 to
+        avoid BOM checks and byteswapping.
+
+        * bridge/qt/qt_class.cpp:
+        (JSC::Bindings::QtClass::fieldNamed):
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::convertValueToQVariant):
+
+2010-01-14  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        [Qt] Enable scrolling optimization for pages with embedded widgets
+
+        https://bugs.webkit.org/show_bug.cgi?id=33373
+
+        Added a basic manual test for scrolling of embedded QWidgets.
+
+        * manual-tests/qt/qtplugin-scrolling.html: Added.
+        * platform/ScrollView.cpp:
+        (WebCore::ScrollView::scrollContents):
+        (WebCore::ScrollView::setParent):
+        * platform/ScrollView.h:
+        * platform/qt/ScrollViewQt.cpp:
+        (WebCore::ScrollView::platformInit):
+        (WebCore::ScrollView::platformAddChild):
+        (WebCore::ScrollView::platformRemoveChild):
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::PluginView::updatePluginWidget):
+        (WebCore::PluginView::invalidateRect):
+
+2010-01-29  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Turn off websocket support by default for Qt 4.6.x
+        https://bugs.webkit.org/show_bug.cgi?id=34284
+
+        * WebCore.pro:
+
+2010-01-26  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] JavaScript prompt is currently broken.
+        https://bugs.webkit.org/show_bug.cgi?id=30914
+
+        Remove the manual test case in favor of an automated
+        test case in WebKit/qt/tests/qwebpage.
+
+        * manual-tests/qt/java-script-prompt.html: Removed.
+
 2010-01-25  Janne Koskinen  <janne.p.koskinen@digia.com>
 
         Reviewed by Simon Hausmann.

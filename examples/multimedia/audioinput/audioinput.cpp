@@ -213,6 +213,9 @@ InputTest::InputTest()
 
     if(format.sampleSize() != 16) {
         qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
+        audioInput = 0;
+        button->setDisabled(true);
+        button2->setDisabled(true);
         return;
     }
 

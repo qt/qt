@@ -117,6 +117,14 @@ public:
     inline int colorCount() const { return metric(QPaintDevice::PdmNumColors); }
     inline int depth() const { return d; }
     inline bool isNull() const { return is_null; }
+    inline qint64 cacheKey() const {
+        int classKey = id;
+        if (classKey >= 1024)
+            classKey = -(classKey >> 10);
+        return ((((qint64) classKey) << 56)
+                | (((qint64) ser_no) << 32)
+                | ((qint64) detach_no));
+    }
 
 #if defined(Q_OS_SYMBIAN)
     virtual void* toNativeType(NativeType type);

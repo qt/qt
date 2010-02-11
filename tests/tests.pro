@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = auto
+SUBDIRS = auto \
+        benchmarks

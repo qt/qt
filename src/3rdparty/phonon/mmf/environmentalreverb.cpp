@@ -139,57 +139,68 @@ bool EnvironmentalReverb::getParameters(CMdaAudioOutputStream *stream,
         TInt32 min, max;
         TUint32 umin, umax;
 
-        // DecayHFRatio
         effect->DecayHFRatioRange(umin, umax);
+        //: DecayHFRatio: Ratio of high-frequency decay time to the value specified by
+        //: DecayTime.
         parameters.append(createParameter(
             DecayHFRatio, tr("Decay HF ratio (%)"), effect->DecayHFRatio(),
             umin, umax));
 
-        // DecayTime
         effect->DecayTimeRange(umin, umax);
+        //: DecayTime: Time over which reverberation is diminished.
         parameters.append(createParameter(
             DecayTime, tr("Decay time (ms)"), effect->DecayTime(),
             umin, umax));
 
-        // Density
+        //: Density Delay between first and subsequent reflections.
+        //: Note that the S60 platform documentation does not make clear
+        //: the distinction between this value and the Diffusion value.
         parameters.append(createParameter(
             Density, tr("Density (%)"), effect->Density(), 0, 100));
 
-        // Diffusion
+        //: Diffusion: Delay between first and subsequent reflections.
+        //: Note that the S60 platform documentation does not make clear
+        //: the distinction between this value and the Density value.
         parameters.append(createParameter(
             Diffusion, tr("Diffusion (%)"), effect->Diffusion(), 0, 100));
 
-        // ReflectionsDelay
+        //: ReflectionsDelay: Amount of delay between the arrival the direct
+        //: path from the source and the arrival of the first reflection.
         parameters.append(createParameter(
             ReflectionsDelay, tr("Reflections delay (ms)"),
             effect->ReflectionsDelay(), 0, effect->ReflectionsDelayMax()));
 
-        // ReflectionsLevel
         effect->ReflectionLevelRange(min, max);
+        //: ReflectionsLevel: Amplitude of reflections. This value is
+        //: corrected by the RoomLevel to give the final reflection amplitude.
         parameters.append(createParameter(
             ReflectionsLevel, tr("Reflections level (mB)"),
             effect->ReflectionsLevel(),
             min, max, EffectParameter::LogarithmicHint));
 
-        // ReverbDelay
+        //: ReverbDelay: Amount of time between arrival of the first
+        //: reflection and start of the late reverberation.
         parameters.append(createParameter(
             ReverbDelay, tr("Reverb delay (ms)"), effect->ReverbDelay(),
             0, effect->ReverbDelayMax()));
 
-        // ReverbLevel
         effect->ReverbLevelRange(min, max);
+        //: ReverbLevel Amplitude of reverberations.  This value is
+        //: corrected by the RoomLevel to give the final reverberation
+        //: amplitude.
         parameters.append(createParameter(
             ReverbLevel, tr("Reverb level (mB)"), effect->ReverbLevel(),
             min, max, EffectParameter::LogarithmicHint));
 
-        // RoomHFLevel
         effect->RoomHFLevelRange(min, max);
+        //: RoomHFLevel: Amplitude of low-pass filter used to attenuate the
+        //: high frequency component of reflected sound.
         parameters.append(createParameter(
             RoomHFLevel, tr("Room HF level"), effect->RoomHFLevel(),
             min, max));
 
-        // RoomLevel
         effect->RoomLevelRange(min, max);
+        //: RoomLevel: Master volume control for all reflected sound.
         parameters.append(createParameter(
             RoomLevel, tr("Room level (mB)"), effect->RoomLevel(),
             min, max, EffectParameter::LogarithmicHint));

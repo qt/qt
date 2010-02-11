@@ -173,6 +173,8 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
+#elif defined(Q_OS_SYMBIAN)
+    uint inExpose : 1; // Prevents drawing recursion
 #endif
 };
 
@@ -229,7 +231,6 @@ struct QWExtra {
 #endif
 #elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
     uint activated : 1; // RWindowBase::Activated has been called
-    uint inExpose : 1; // Prevents drawing recursion
 
     /**
      * Defines the behaviour of QSymbianControl::Draw.
@@ -682,6 +683,7 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
+    uint isGLWidget : 1;
     uint usesDoubleBufferedGLContext : 1;
 
     // *************************** Platform specific ************************************
@@ -713,7 +715,6 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
-    uint isGLWidget : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent

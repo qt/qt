@@ -88,24 +88,20 @@ QDesktopWidgetPrivate::~QDesktopWidgetPrivate()
 
 void QDesktopWidgetPrivate::init(QDesktopWidget *that)
 {
-    int screenCount=0;
+//    int screenCount=0;
 
-    if (HAL::Get(0, HALData::EDisplayNumberOfScreens, screenCount) == KErrNone)
-        QDesktopWidgetPrivate::screenCount = screenCount;
-    else
-        QDesktopWidgetPrivate::screenCount = 0;
+    // ### TODO: Implement proper multi-display support
+	QDesktopWidgetPrivate::screenCount = 1;
+//    if (HAL::Get(0, HALData::EDisplayNumberOfScreens, screenCount) == KErrNone)
+//        QDesktopWidgetPrivate::screenCount = screenCount;
+//    else
+//        QDesktopWidgetPrivate::screenCount = 0;
 
     rects = new QVector<QRect>();
     workrects = new QVector<QRect>();
 
     rects->resize(QDesktopWidgetPrivate::screenCount);
     workrects->resize(QDesktopWidgetPrivate::screenCount);
-
-    // ### TODO: Implement proper multi-display support
-    rects->resize(1);
-    rects->replace(0, that->rect());
-    workrects->resize(1);
-    workrects->replace(0, that->rect());
 }
 
 void QDesktopWidgetPrivate::cleanup()

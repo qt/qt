@@ -2411,7 +2411,12 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_ToolBarFrameWidth:
-        ret = 0;
+        ret = 1;
+        if (widget) {
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(widget->parent()))
+                if (mainWindow->unifiedTitleAndToolBarOnMac())
+                    ret = 0;
+        }
         break;
     default:
         ret = QWindowsStyle::pixelMetric(metric, opt, widget);
@@ -3375,8 +3380,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
                             needText = true;
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                                pr.setHeight(pixmap.size().height());
-                                cr.adjust(0, pr.bottom() + 1, 0, 1);
+                                QMainWindow *mw = qobject_cast<QMainWindow *>(w->window());
+                                if (mw && mw->unifiedTitleAndToolBarOnMac()) {
+                                    pr.setHeight(pixmap.size().height());
+                                    cr.adjust(0, pr.bottom() + 1, 0, 1);
+                                } else {
+                                    pr.setHeight(pixmap.size().height() + 6);
+                                    cr.adjust(0, pr.bottom(), 0, -3);
+                                }       
                                 alignment |= Qt::AlignCenter;
                             } else {
                                 pr.setWidth(pixmap.width() + 8);
@@ -4341,8 +4352,6 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 rect.setY(0);
                 rect.setHeight(widget->height());
             }
-            if (opt->direction == Qt::RightToLeft)
-                rect.adjust(15, 0, -20, 0);
         }
         break;
     case SE_ProgressBarGroove:
@@ -5717,12 +5726,16 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
     case CT_ToolButton:
         if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
-            sz.rwidth() += 4;
-            if (sz.height() <= 32) {
-                // Workaround strange HIToolBar bug when getting constraints.
-                sz.rheight() += 1;
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(widget->parent())) {
+                if (mainWindow->unifiedTitleAndToolBarOnMac()) {
+                    sz.rwidth() += 4;
+                    if (sz.height() <= 32) {
+                        // Workaround strange HIToolBar bug when getting constraints.
+                        sz.rheight() += 1;
+                    }
+                    return sz;
+                }
             }
-            return sz;
         }
         sz.rwidth() += 10;
         sz.rheight() += 10;

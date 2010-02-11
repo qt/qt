@@ -688,8 +688,14 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (channels[i].resendCurrent) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
-            if (channels[i].reply)
+            if (channels[i].reply) {
+
+                // if this is not possible, error will be emitted and connection terminated
+                if (!channels[i].resetUploadData())
+                    continue;
+
                 channels[i].sendRequest();
+            }
         }
     }
 

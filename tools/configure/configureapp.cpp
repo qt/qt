@@ -317,7 +317,6 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
     dictionary[ "S60" ]             = "yes";
-    dictionary[ "SYMBIAN_DEFFILES" ] = "yes";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
@@ -483,7 +482,9 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";
-            dictionary[ "SYMBIAN_DEFFILES" ] = "no";
+            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
+                dictionary[ "SYMBIAN_DEFFILES" ] = "no";
+            }
         }
         else if( configCmdLine.at(i) == "-opensource" ) {
             dictionary[ "BUILDTYPE" ] = "opensource";
@@ -1475,6 +1476,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "XMLPATTERNS" ]         = "yes";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "S60" ]                 = "yes";
+        dictionary[ "SYMBIAN_DEFFILES" ]    = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
         // iconv_open seems to return -1 always, so something is probably missing from the platform.
         dictionary[ "QT_ICONV" ]            = "no";
@@ -2535,8 +2537,11 @@ void Configure::generateOutputVars()
             qtConfig += "phonon-backend";
     }
 
-    if (dictionary["MULTIMEDIA"] == "yes")
+    if (dictionary["MULTIMEDIA"] == "yes") {
         qtConfig += "multimedia";
+        if (dictionary["AUDIO_BACKEND"] == "yes")
+            qtConfig += "audio-backend";
+    }
 
     if (dictionary["WEBKIT"] == "yes")
         qtConfig += "webkit";
