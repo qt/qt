@@ -5,7 +5,6 @@ SUBDIRS += \
            animations \             # Cover
            behaviors \              # Cover
            datetimeformatter \      # Cover
-           examples \
            graphicswidgets \        # Cover
            layouts \                # Cover
            numberformatter \        # Cover
@@ -58,7 +57,6 @@ SUBDIRS += \
            sql \                    # Cover
            states \                 # Cover
            valuetypes \             # Cover
-           visual \                 # Cover
            xmlhttprequest           # Cover
 
 

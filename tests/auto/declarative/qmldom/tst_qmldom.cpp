@@ -486,7 +486,7 @@ void tst_qmldom::loadDynamicProperty()
         DP_TEST(7, h, QVariant::Date, 168, 15, "date");
         DP_TEST(8, i, qMetaTypeId<QVariant>(), 188, 14, "var");
         DP_TEST(9, j, qMetaTypeId<QVariant>(), 207, 18, "variant");
-        DP_TEST(10, k, -1, 230, 17, "QtObject");
+        DP_TEST(10, k, -1, 230, 19, "QtObject");
     }
 
     {

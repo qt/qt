@@ -87,8 +87,8 @@ QStringList tst_parserstress::findJSFiles(const QDir &d)
 void tst_parserstress::ecmascript_data()
 {
     QDir dir(SRCDIR);
-    dir.cdUp(); 
-    dir.cdUp(); 
+    dir.cdUp();
+    dir.cdUp();
     dir.cd("qscriptjstestsuite");
     dir.cd("tests");
 
@@ -132,6 +132,16 @@ void tst_parserstress::ecmascript()
 
     QmlComponent component(&engine);
     component.setData(qmlData, QUrl::fromLocalFile(SRCDIR + QString("/dummy.qml")));
+    QSet<QString> failingTests;
+    failingTests << "uc-003.js" << "uc-005.js" << "regress-352044-02-n.js"
+                 << "regress-334158.js" << "regress-58274.js" << "dowhile-006.js" << "dowhile-005.js";
+    QFileInfo info(file);
+    foreach (const QString &failing, failingTests) {
+        if (info.fileName().endsWith(failing)) {
+            QEXPECT_FAIL("", "QTBUG-8108", Continue);
+            break;
+        }
+    }
     QVERIFY(!component.isError());
 }
 

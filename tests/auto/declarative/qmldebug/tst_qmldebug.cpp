@@ -330,9 +330,11 @@ void tst_QmlDebug::watch_object()
     QmlDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
     
+    Q_ASSERT(q_engines->engines().count() > 0);
     QmlDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
 
+    Q_ASSERT(q_context->rootContext().objects().count() > 0);
     QmlDebugObjectQuery *q_obj = m_dbg->queryObject(q_context->rootContext().objects()[0], this);
     waitForQuery(q_obj);
 

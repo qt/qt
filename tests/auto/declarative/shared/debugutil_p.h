@@ -60,8 +60,8 @@ public:
 
     ~QmlDebugTestData();
 
-    QmlEngine *engine;
     QmlDebugConnection *conn;
+    QmlEngine *engine;
 
     int exitCode;
     QEventLoop *loop;
