@@ -610,19 +610,19 @@ void QHttpNetworkConnectionChannel::allDone()
 void QHttpNetworkConnectionChannel::detectPipeliningSupport()
 {
     // detect HTTP Pipelining support
-    QByteArray serverHeaderField = reply->headerField("Server");
+    QByteArray serverHeaderField;
     if (
-            // check for broken servers in server reply header
-            // this is adapted from http://mxr.mozilla.org/firefox/ident?i=SupportsPipelining
-            (!serverHeaderField.contains("Microsoft-IIS/4."))
-            && (!serverHeaderField.contains("Microsoft-IIS/5."))
-            && (!serverHeaderField.contains("Netscape-Enterprise/3."))
             // check for HTTP/1.1
-            && (reply->d_func()->majorVersion == 1 && reply->d_func()->minorVersion == 1)
+            (reply->d_func()->majorVersion == 1 && reply->d_func()->minorVersion == 1)
             // check for not having connection close
             && (!reply->d_func()->isConnectionCloseEnabled())
             // check if it is still connected
             && (socket->state() == QAbstractSocket::ConnectedState)
+            // check for broken servers in server reply header
+            // this is adapted from http://mxr.mozilla.org/firefox/ident?i=SupportsPipelining
+            && (serverHeaderField = reply->headerField("Server"), !serverHeaderField.contains("Microsoft-IIS/4."))
+            && (!serverHeaderField.contains("Microsoft-IIS/5."))
+            && (!serverHeaderField.contains("Netscape-Enterprise/3."))
             ) {
         pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningProbablySupported;
     } else {
