@@ -1762,8 +1762,8 @@ void QTextControlPrivate::contextMenuEvent(const QPoint &screenPos, const QPoint
     QMenu *menu = q->createStandardContextMenu(docPos, contextWidget);
     if (!menu)
         return;
-    menu->exec(screenPos);
-    delete menu;
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->popup(screenPos);
 #endif
 }
 

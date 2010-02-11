@@ -121,6 +121,10 @@ private slots:
     void mnemonic();
     void selection();
 
+#ifndef QT_NO_CONTEXTMENU
+    void taskQTBUG_7902_contextMenuCrash();
+#endif
+
 private:
     QLabel *testWidget;
     QPointer<Widget> test_box;
@@ -581,6 +585,26 @@ void tst_QLabel::selection()
     QCOMPARE(label.selectedText(), QString::fromLatin1("world"));
     QCOMPARE(label.selectionStart(), 6);
 }
+
+#ifndef QT_NO_CONTEXTMENU
+void tst_QLabel::taskQTBUG_7902_contextMenuCrash()
+{
+    QLabel *w = new QLabel("Test or crash?");
+    w->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    w->show();
+    QTest::qWaitForWindowShown(w);
+
+    QTimer ti;
+    w->connect(&ti, SIGNAL(timeout()), w, SLOT(deleteLater()));
+    ti.start(300);
+
+    QContextMenuEvent *cme = new QContextMenuEvent(QContextMenuEvent::Mouse, w->rect().center());
+    qApp->postEvent(w, cme);
+
+    QTest::qWait(350);
+    // No crash, it's allright.
+}
+#endif
 
 QTEST_MAIN(tst_QLabel)
 #include "tst_qlabel.moc"
