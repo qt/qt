@@ -163,7 +163,9 @@ static void ensureInitialized()
 
 /*!
     \property QNetworkAccessManager::networkAccess
-    \brief wheather network access is enabled or disabled through this network access manager.
+    \brief states whether network access is enabled or disabled through this network access
+    manager.
+
     \since 4.7
 
     Network access is enabled by default.
@@ -742,6 +744,12 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
     }
 }
 
+/*!
+    \since 4.7
+
+    Enables network access via this QNetworkAccessManager if \a enabled is true; otherwise disables
+    access.
+*/
 void QNetworkAccessManager::setNetworkAccessEnabled(bool enabled)
 {
     Q_D(QNetworkAccessManager);
@@ -752,6 +760,12 @@ void QNetworkAccessManager::setNetworkAccessEnabled(bool enabled)
     }
 }
 
+/*!
+    \since 4.7
+
+    Returns true if network access via this QNetworkAccessManager is enabled; otherwise returns
+    false.
+*/
 bool QNetworkAccessManager::networkAccessEnabled() const
 {
     Q_D(const QNetworkAccessManager);
