@@ -38,26 +38,72 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HELPVIEWER_H
-#define HELPVIEWER_H
+#if defined(QT_NO_WEBKIT)
 
-#include <QtCore/QString>
+#ifndef HELPVIEWERQTB_H
+#define HELPVIEWERQTB_H
+
+#include "helpviewer.h"
+
+#include <QtCore/QUrl>
+#include <QtCore/QVariant>
+
+#include <QtGui/QTextBrowser>
 
 QT_BEGIN_NAMESPACE
 
-class QUrl;
+class CentralWidget;
+class HelpEngineWrapper;
+class QContextMenuEvent;
+class QKeyEvent;
+class QMouseEvent;
 
-class AbstractHelpViewer
+class HelpViewer : public QTextBrowser, public AbstractHelpViewer
 {
-public:
-    AbstractHelpViewer();
-    ~AbstractHelpViewer();
+    Q_OBJECT
 
-    static QString PageNotFoundMessage;
-    static bool isLocalUrl(const QUrl &url);
-    static bool canOpenPage(const QString &url);
+public:
+    HelpViewer(CentralWidget *parent);
+    void setSource(const QUrl &url);
+
+    void resetZoom();
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
+    int zoom() const { return zoomCount; }
+    void setZoom(int zoom) { zoomCount = zoom; }
+
+    inline bool hasSelection() const
+    { return textCursor().hasSelection(); }
+
+    bool launchedWithExternalApp(const QUrl &url);
+
+public Q_SLOTS:
+    void home();
+
+protected:
+    void wheelEvent(QWheelEvent *e);
+
+private:
+    QVariant loadResource(int type, const QUrl &name);
+    void openLinkInNewTab(const QString &link);
+    bool hasAnchorAt(const QPoint& pos);
+    void contextMenuEvent(QContextMenuEvent *e);
+    void mouseReleaseEvent(QMouseEvent *e);
+    void keyPressEvent(QKeyEvent *e);
+
+private slots:
+    void openLinkInNewTab();
+
+private:
+    int zoomCount;
+    bool controlPressed;
+    QString lastAnchor;
+    CentralWidget* parentWidget;
+    HelpEngineWrapper &helpEngine;
 };
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWER_H
+#endif  // HELPVIEWERQTB_H
+
+#endif  // QT_NO_WEBKIT

@@ -38,14 +38,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "helpviewer.h"
+#if !defined(QT_NO_WEBKIT)
+
 #include "helpviewer_qwv.h"
 
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "tracer.h"
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
 #include <QtCore/QString>
 #include <QtCore/QStringBuilder>
@@ -60,15 +60,6 @@
 #include <QtNetwork/QNetworkRequest>
 
 QT_BEGIN_NAMESPACE
-
-#if !defined(QT_NO_WEBKIT)
-
-namespace {
-const QString PageNotFoundMessage =
-    QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
-    "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
-    "</h3></div>");
-}
 
 class HelpNetworkReply : public QNetworkReply
 {
@@ -159,7 +150,7 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
     const QByteArray &data = helpEngine.findFile(url).isValid()
         ? helpEngine.fileData(url)
-        : PageNotFoundMessage.arg(url.toString()).toUtf8();
+        : AbstractHelpViewer::PageNotFoundMessage.arg(url.toString()).toUtf8();
     return new HelpNetworkReply(request, data, mimeType);
 }
 
@@ -224,9 +215,9 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     const bool closeNewTab = closeNewTabIfNeeded;
     closeNewTabIfNeeded = false;
 
-    if (HelpViewer::isLocalUrl(url)) {
+    if (AbstractHelpViewer::isLocalUrl(url)) {
         const QString& path = url.path();
-        if (!HelpViewer::canOpenPage(path)) {
+        if (!AbstractHelpViewer::canOpenPage(path)) {
             QTemporaryFile tmpTmpFile;
             if (!tmpTmpFile.open())
                 return false;
@@ -392,6 +383,6 @@ void HelpViewer::setLoadFinished(bool ok)
     emit sourceChanged(url());
 }
 
-#endif
-
 QT_END_NAMESPACE
+
+#endif  // !QT_NO_WEBKIT

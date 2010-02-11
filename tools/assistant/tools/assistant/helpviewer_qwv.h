@@ -38,10 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#if !defined(QT_NO_WEBKIT)
+
 #ifndef HELPVIEWERQWV_H
 #define HELPVIEWERQWV_H
 
-#if !defined(QT_NO_WEBKIT)
+#include "helpviewer.h"
 
 #include <QtGui/QAction>
 #include <QtWebKit/QWebView>
@@ -52,7 +54,7 @@ class CentralWidget;
 class HelpEngineWrapper;
 class QMouseEvent;
 
-class HelpViewer : public QWebView
+class HelpViewer : public QWebView, public AbstractHelpViewer
 {
     Q_OBJECT
 
@@ -85,9 +87,6 @@ public:
     inline qreal zoom() const
     { return textSizeMultiplier(); }
 
-    static bool canOpenPage(const QString &url);
-    static bool isLocalUrl(const QUrl &url);
-
 public Q_SLOTS:
     void home();
     void backward() { back(); }
@@ -114,8 +113,8 @@ private:
     HelpEngineWrapper &helpEngine;
 };
 
-#endif
-
 QT_END_NAMESPACE
 
 #endif  // HELPVIEWERQWV_H
+
+#endif  // !QT_NO_WEBKIT

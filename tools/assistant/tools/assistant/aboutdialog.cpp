@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 #include "helpviewer.h"
-#include "helpviewer_qwv.h"
 #include "tracer.h"
 
 #include <QtCore/QBuffer>
@@ -71,7 +70,7 @@ void AboutLabel::setText(const QString &text, const QByteArray &resources)
     TRACE_OBJ
     QDataStream in(resources);
     in >> m_resourceMap;
-    
+
     QTextBrowser::setText(text);
 }
 
@@ -97,34 +96,34 @@ QVariant AboutLabel::loadResource(int type, const QUrl &name)
 void AboutLabel::setSource(const QUrl &url)
 {
     TRACE_OBJ
-    if (url.isValid() && (!HelpViewer::isLocalUrl(url)
-        || !HelpViewer::canOpenPage(url.path()))) {
+    if (url.isValid() && (!AbstractHelpViewer::isLocalUrl(url)
+    || !AbstractHelpViewer::canOpenPage(url.path()))) {
         if (!QDesktopServices::openUrl(url)) {
             QMessageBox::warning(this, tr("Warning"),
-                         tr("Unable to launch external application.\n"),
-                         tr("OK"));
+                tr("Unable to launch external application.\n"), tr("OK"));
         }
     }
 }
 
 AboutDialog::AboutDialog(QWidget *parent)
-    : QDialog(parent, Qt::MSWindowsFixedSizeDialogHint|Qt::WindowTitleHint|Qt::WindowSystemMenuHint)
+    : QDialog(parent, Qt::MSWindowsFixedSizeDialogHint |
+        Qt::WindowTitleHint|Qt::WindowSystemMenuHint)
 {
     TRACE_OBJ
     m_pixmapLabel = 0;
     m_aboutLabel = new AboutLabel();
-    
+
     m_closeButton = new QPushButton();
     m_closeButton->setText(tr("&Close"));
-    connect(m_closeButton, SIGNAL(clicked()),
-        this, SLOT(close()));
+    connect(m_closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
     m_layout = new QGridLayout(this);
     m_layout->addWidget(m_aboutLabel, 1, 0, 1, -1);
-    m_layout->addItem(new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed), 2, 1, 1, 1);
+    m_layout->addItem(new QSpacerItem(20, 10, QSizePolicy::Minimum,
+        QSizePolicy::Fixed), 2, 1, 1, 1);
     m_layout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding), 3, 0, 1, 1);
     m_layout->addWidget(m_closeButton, 3, 1, 1, 1);
-    m_layout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding), 3, 2, 1, 1);    
+    m_layout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding), 3, 2, 1, 1);
 }
 
 void AboutDialog::setText(const QString &text, const QByteArray &resources)
@@ -154,7 +153,8 @@ QString AboutDialog::documentTitle() const
 void AboutDialog::updateSize()
 {
     TRACE_OBJ
-    QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
+    QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos())
+        .size();
     int limit = qMin(screenSize.width()/2, 500);
 
 #ifdef Q_WS_MAC
@@ -166,7 +166,7 @@ void AboutDialog::updateSize()
 
     if (width > limit)
         width = limit;
-    
+
     QFontMetrics fm(qApp->font("QWorkspaceTitleBar"));
     int windowTitleWidth = qMin(fm.width(windowTitle()) + 50, limit);
     if (windowTitleWidth > width)
@@ -174,8 +174,8 @@ void AboutDialog::updateSize()
 
     layout()->activate();
     int height = (layout()->hasHeightForWidth())
-                     ? layout()->totalHeightForWidth(width)
-                     : layout()->totalMinimumSize().height();
+        ? layout()->totalHeightForWidth(width)
+        : layout()->totalMinimumSize().height();
     setFixedSize(width, height);
     QCoreApplication::removePostedEvents(this, QEvent::LayoutRequest);
 }

@@ -39,36 +39,30 @@
 **
 ****************************************************************************/
 #include "helpviewer.h"
-#include "helpviewer_qwv.h"
-
-#include "centralwidget.h"
-#include "helpenginewrapper.h"
 #include "tracer.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QStringBuilder>
-
-#include <QtGui/QContextMenuEvent>
-#include <QtGui/QMenu>
-#include <QtGui/QClipboard>
-#include <QtGui/QApplication>
-#include <QtGui/QMessageBox>
-#include <QtGui/QDesktopServices>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 
-bool HelpViewer::canOpenPage(const QString &url)
+QString AbstractHelpViewer::PageNotFoundMessage =
+    QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
+    "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
+    "</h3></div>");
+
+AbstractHelpViewer::AbstractHelpViewer()
 {
-    TRACE_OBJ
-    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
-        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
-        || url == QLatin1String("blank");
 }
 
-bool HelpViewer::isLocalUrl(const QUrl &url)
+AbstractHelpViewer::~AbstractHelpViewer()
+{
+}
+
+bool AbstractHelpViewer::isLocalUrl(const QUrl &url)
 {
     TRACE_OBJ
-    const QString scheme = url.scheme();
+    const QString &scheme = url.scheme();
     return scheme.isEmpty()
         || scheme == QLatin1String("file")
         || scheme == QLatin1String("qrc")
@@ -77,243 +71,12 @@ bool HelpViewer::isLocalUrl(const QUrl &url)
         || scheme == QLatin1String("about");
 }
 
-#if defined(QT_NO_WEBKIT)
-
-namespace {
-const QString PageNotFoundMessage =
-    QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
-    "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
-    "</h3></div>");
-}
-
-HelpViewer::HelpViewer(CentralWidget *parent)
-    : QTextBrowser(parent)
-    , zoomCount(0)
-    , controlPressed(false)
-    , lastAnchor(QString())
-    , parentWidget(parent)
-    , helpEngine(HelpEngineWrapper::instance())
+bool AbstractHelpViewer::canOpenPage(const QString &url)
 {
     TRACE_OBJ
-   document()->setDocumentMargin(8);
+    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
+        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
+        || url == QLatin1String("blank");
 }
-
-void HelpViewer::setSource(const QUrl &url)
-{
-    TRACE_OBJ
-    bool help = url.toString() == QLatin1String("help");
-    if (url.isValid() && !help) {
-        if (launchedWithExternalApp(url))
-            return;
-
-        QUrl u = helpEngine.findFile(url);
-        if (u.isValid()) {
-            QTextBrowser::setSource(u);
-            return;
-        }
-    }
-
-    if (help) {
-        QTextBrowser::setSource(QUrl(QLatin1String("qthelp://com.trolltech.com."
-            "assistantinternal-1.0.0/assistant/assistant.html")));
-    } else {
-        QTextBrowser::setSource(url);
-        setHtml(PageNotFoundMessage.arg(url.toString()));
-        emit sourceChanged(url);
-    }
-}
-
-void HelpViewer::resetZoom()
-{
-    TRACE_OBJ
-    if (zoomCount == 0)
-        return;
-
-    QTextBrowser::zoomOut(zoomCount);
-    zoomCount = 0;
-}
-
-void HelpViewer::zoomIn(int range)
-{
-    TRACE_OBJ
-    if (zoomCount == 10)
-        return;
-
-    QTextBrowser::zoomIn(range);
-    zoomCount++;
-}
-
-void HelpViewer::zoomOut(int range)
-{
-    TRACE_OBJ
-    if (zoomCount == -5)
-        return;
-
-    QTextBrowser::zoomOut(range);
-    zoomCount--;
-}
-
-bool HelpViewer::launchedWithExternalApp(const QUrl &url)
-{
-    TRACE_OBJ
-    const bool canOpen = canOpenPage(url.path());
-    if (!isLocalUrl(url) || !canOpen) {
-        bool launched = false;
-        if (!canOpen && url.scheme() == QLatin1String("qthelp")) {
-            const QString& path = url.path();
-            const int lastDash = path.lastIndexOf(QChar('/'));
-            QString fileName = QDir::tempPath() + QDir::separator();
-            if (lastDash < 0)
-                fileName += path;
-            else
-                fileName += path.mid(lastDash + 1, path.length());
-
-            QFile tmpFile(QDir::cleanPath(fileName));
-            if (tmpFile.open(QIODevice::ReadWrite)) {
-                tmpFile.write(helpEngine.fileData(url));
-                tmpFile.close();
-            }
-            launched = QDesktopServices::openUrl(QUrl(tmpFile.fileName()));
-        } else {
-            launched = QDesktopServices::openUrl(url);
-        }
-
-        if (!launched) {
-            QMessageBox::information(this, tr("Help"),
-                tr("Unable to launch external application.\n"), tr("OK"));
-        }
-        return true;
-    }
-    return false;
-}
-
-QVariant HelpViewer::loadResource(int type, const QUrl &name)
-{
-    TRACE_OBJ
-    QByteArray ba;
-    if (type < 4) {
-        ba = helpEngine.fileData(name);
-        if (name.toString().endsWith(QLatin1String(".svg"), Qt::CaseInsensitive)) {
-            QImage image;
-            image.loadFromData(ba, "svg");
-            if (!image.isNull())
-                return image;
-        }
-    }
-    return ba;
-}
-
-void HelpViewer::openLinkInNewTab()
-{
-    TRACE_OBJ
-    if(lastAnchor.isEmpty())
-        return;
-
-    parentWidget->setSourceInNewTab(QUrl(lastAnchor));
-    lastAnchor.clear();
-}
-
-void HelpViewer::openLinkInNewTab(const QString &link)
-{
-    TRACE_OBJ
-    lastAnchor = link;
-    openLinkInNewTab();
-}
-
-bool HelpViewer::hasAnchorAt(const QPoint& pos)
-{
-    TRACE_OBJ
-    lastAnchor = anchorAt(pos);
-    if (lastAnchor.isEmpty())
-        return false;
-
-    lastAnchor = source().resolved(lastAnchor).toString();
-    if (lastAnchor.at(0) == QLatin1Char('#')) {
-        QString src = source().toString();
-        int hsh = src.indexOf(QLatin1Char('#'));
-        lastAnchor = (hsh>=0 ? src.left(hsh) : src) + lastAnchor;
-    }
-
-    return true;
-}
-
-void HelpViewer::contextMenuEvent(QContextMenuEvent *e)
-{
-    TRACE_OBJ
-    QMenu menu(QLatin1String(""), 0);
-
-    QUrl link;
-    QAction *copyAnchorAction = 0;
-    if (hasAnchorAt(e->pos())) {
-        link = anchorAt(e->pos());
-        if (link.isRelative())
-            link = source().resolved(link);
-        copyAnchorAction = menu.addAction(tr("Copy &Link Location"));
-        copyAnchorAction->setEnabled(!link.isEmpty() && link.isValid());
-
-        menu.addAction(tr("Open Link in New Tab\tCtrl+LMB"), this,
-            SLOT(openLinkInNewTab()));
-        menu.addSeparator();
-    }
-    menu.addActions(parentWidget->globalActions());
-    QAction *action = menu.exec(e->globalPos());
-    if (action == copyAnchorAction)
-        QApplication::clipboard()->setText(link.toString());
-}
-
-void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
-{
-    TRACE_OBJ
-    if (e->button() == Qt::XButton1) {
-        QTextBrowser::backward();
-        return;
-    }
-
-    if (e->button() == Qt::XButton2) {
-        QTextBrowser::forward();
-        return;
-    }
-
-    controlPressed = e->modifiers() & Qt::ControlModifier;
-    if ((controlPressed && hasAnchorAt(e->pos())) ||
-        (e->button() == Qt::MidButton && hasAnchorAt(e->pos()))) {
-        openLinkInNewTab();
-        return;
-    }
-
-    QTextBrowser::mouseReleaseEvent(e);
-}
-
-void HelpViewer::keyPressEvent(QKeyEvent *e)
-{
-    TRACE_OBJ
-    if ((e->key() == Qt::Key_Home && e->modifiers() != Qt::NoModifier)
-        || (e->key() == Qt::Key_End && e->modifiers() != Qt::NoModifier)) {
-        QKeyEvent* event = new QKeyEvent(e->type(), e->key(), Qt::NoModifier,
-            e->text(), e->isAutoRepeat(), e->count());
-        e = event;
-    }
-    QTextBrowser::keyPressEvent(e);
-}
-
-void HelpViewer::home()
-{
-    TRACE_OBJ
-    setSource(helpEngine.homePage());
-}
-
-void HelpViewer::wheelEvent(QWheelEvent *e)
-{
-    TRACE_OBJ
-    if (e->modifiers() == Qt::CTRL) {
-        e->accept();
-        (e->delta() > 0) ? zoomIn() : zoomOut();
-    } else {
-        e->ignore();
-        QTextBrowser::wheelEvent(e);
-    }
-}
-
-#endif
 
 QT_END_NAMESPACE

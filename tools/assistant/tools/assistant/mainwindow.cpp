@@ -44,7 +44,6 @@
 
 #include "bookmarkmanager.h"
 #include "centralwidget.h"
-#include "helpviewer.h"
 #include "indexwindow.h"
 #include "topicchooser.h"
 #include "contentwindow.h"

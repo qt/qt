@@ -43,7 +43,7 @@
 #include "centralwidget.h"
 #include "findwidget.h"
 #include "helpenginewrapper.h"
-#include "helpviewer.h"
+#include "helpviewer_qtb.h"
 #include "helpviewer_qwv.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
@@ -82,9 +82,7 @@ namespace {
     CentralWidget *staticCentralWidget = 0;
 }
 
-
 // -- CentralWidget
-
 
 CentralWidget::CentralWidget(MainWindow *parent)
     : QWidget(parent)
