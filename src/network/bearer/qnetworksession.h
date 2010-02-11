@@ -47,8 +47,7 @@
 #include <QtCore/qstring.h>
 #include <QtNetwork/qnetworkinterface.h>
 #include <QtCore/qvariant.h>
-#include "qnetworkconfiguration.h"
-
+#include <QtNetwork/qnetworkconfiguration.h>
 
 QT_BEGIN_HEADER
 

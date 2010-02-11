@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qnetworkconfigmanager_p.h"
-#include "qbearerplugin.h"
+#include "qbearerplugin_p.h"
 
 #include <QtCore/private/qfactoryloader_p.h>
 

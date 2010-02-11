@@ -43,7 +43,7 @@
 #define QNETWORKCONFIGURATIONMANAGER_H
 
 #include <QtCore/qobject.h>
-#include "qnetworkconfiguration.h"
+#include <QtNetwork/qnetworkconfiguration.h>
 
 QT_BEGIN_HEADER
 

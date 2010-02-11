@@ -41,7 +41,7 @@
 
 #include "symbianengine.h"
 
-#include <QtNetwork/qbearerplugin.h>
+#include <QtNetwork/private/qbearerplugin_p.h>
 
 #include <QtCore/qdebug.h>
 

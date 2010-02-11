@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qbearerplugin.h"
+#include "qbearerplugin_p.h"
 
 #include <QtCore/qdebug.h>
 

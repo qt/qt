@@ -46,7 +46,7 @@
 #include <QtCore/private/qmutexpool_p.h>
 #include <QtCore/qlibrary.h>
 
-#include <QtNetwork/qbearerplugin.h>
+#include <QtNetwork/private/qbearerplugin_p.h>
 
 #include <QtCore/qdebug.h>
 

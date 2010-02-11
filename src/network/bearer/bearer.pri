@@ -7,7 +7,7 @@ HEADERS += bearer/qnetworkconfiguration.h \
            bearer/qnetworkconfiguration_p.h \
            bearer/qnetworksession_p.h \
            bearer/qbearerengine_p.h \
-           bearer/qbearerplugin.h
+           bearer/qbearerplugin_p.h
 
 SOURCES += bearer/qnetworksession.cpp \
            bearer/qnetworkconfigmanager.cpp \
