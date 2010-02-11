@@ -57,7 +57,7 @@ SymbianCommonGenerator::SymbianCommonGenerator(MakefileGenerator *generator)
 void SymbianCommonGenerator::init()
 {
     QMakeProject *project = generator->project;
-    fixedTarget = generator->escapeFilePath(generator->fileFixify(project->first("TARGET")));
+    fixedTarget = generator->escapeFilePath(project->first("TARGET"));
     fixedTarget = removePathSeparators(fixedTarget);
     removeSpecialCharacters(fixedTarget);
 
@@ -118,8 +118,9 @@ void SymbianCommonGenerator::removeSpecialCharacters(QString& str)
 void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild)
 {
     QMakeProject *project = generator->project;
-    QString pkgFilename = QString("%1/%2_template.%3")
-        .arg(Option::output_dir).arg(fixedTarget).arg("pkg");
+    QString pkgFilename = QString("%1_template.%2").arg(fixedTarget).arg("pkg");
+    if (!Option::output_dir.isEmpty())
+        pkgFilename = Option::output_dir + '/' + pkgFilename;
 
     QFile pkgFile(pkgFilename);
     if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -311,6 +312,8 @@ void SymbianCommonGenerator::writeRegRssFile(QStringList &userItems)
 {
     QString filename(fixedTarget);
     filename.append("_reg.rss");
+    if (!Option::output_dir.isEmpty())
+        filename = Option::output_dir + '/' + filename;
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
         generatedFiles << ft.fileName();
@@ -344,6 +347,8 @@ void SymbianCommonGenerator::writeRegRssFile(QStringList &userItems)
 void SymbianCommonGenerator::writeRssFile(QString &numberOfIcons, QString &iconFile)
 {
     QString filename(fixedTarget);
+    if (!Option::output_dir.isEmpty())
+        filename = Option::output_dir + '/' + filename;
     filename.append(".rss");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -390,6 +395,8 @@ void SymbianCommonGenerator::writeRssFile(QString &numberOfIcons, QString &iconF
 void SymbianCommonGenerator::writeLocFile(QStringList &symbianLangCodes)
 {
     QString filename(fixedTarget);
+    if (!Option::output_dir.isEmpty())
+        filename = Option::output_dir + '/' + filename;
     filename.append(".loc");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
