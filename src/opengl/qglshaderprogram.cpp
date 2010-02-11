@@ -3080,6 +3080,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
     Returns the hardware limit for how many vertices a geometry shader
     can output.
 
+    \since 4.7
+
     \sa setGeometryShaderOutputVertexCount
 */
 int QGLShaderProgram::maxGeometryOutputVertices() const
@@ -3094,6 +3096,8 @@ int QGLShaderProgram::maxGeometryOutputVertices() const
 /*!
     Sets the maximum number of vertices the current geometry shader
     program will produce, if active.
+
+    \since 4.7
 
     This parameter takes effect the next time the program is linked.
 */
@@ -3113,6 +3117,8 @@ void QGLShaderProgram::setGeometryOutputVertexCount(int count)
 /*!
     Returns the maximum number of vertices the current geometry shader
     program will produce, if active.
+
+    \since 4.7
 
     This parameter takes effect the ntext time the program is linked.
 */
@@ -3137,6 +3143,8 @@ void QGLShaderProgram::setGeometryInputType(GLenum inputType)
     Returns the geometry shader input type, if active.
 
     This parameter takes effect the next time the program is linked.
+
+    \since 4.7
  */
 
 GLenum QGLShaderProgram::geometryInputType() const
@@ -3149,6 +3157,8 @@ GLenum QGLShaderProgram::geometryInputType() const
     Sets the output type from the geometry shader, if active.
 
     This parameter takes effect the next time the program is linked.
+
+    \since 4.7
 */
 void QGLShaderProgram::setGeometryOutputType(GLenum outputType)
 {
@@ -3160,6 +3170,8 @@ void QGLShaderProgram::setGeometryOutputType(GLenum outputType)
     Returns the geometry shader output type, if active.
 
     This parameter takes effect the next time the program is linked.
+
+    \since 4.7
  */
 GLenum QGLShaderProgram::geometryOutputType() const
 {
@@ -3209,6 +3221,8 @@ void QGLShaderProgram::shaderDestroyed()
 
     The \a context is used to resolve the GLSL extensions.
     If \a context is null, then QGLContext::currentContext() is used.
+
+    \since 4.7
 */
 bool QGLShader::hasOpenGLShaders(ShaderType type, const QGLContext *context)
 {
