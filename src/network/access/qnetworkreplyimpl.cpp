@@ -829,6 +829,12 @@ bool QNetworkReplyImplPrivate::migrateBackend()
         return false;
     }
 
+    RawHeadersList::ConstIterator it = findRawHeader("Accept-Ranges");
+    if (it == rawHeaders.constEnd() || it->second == "none") {
+        qDebug() << "Range header not supported by server/resource.";
+        return false;
+    }
+
     qDebug() << "Need to check for only cacheable content.";
 
     // stop both upload and download
@@ -842,12 +848,6 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     if (backend) {
         delete backend;
         backend = 0;
-    }
-
-    RawHeadersList::ConstIterator it = findRawHeader("Accept-Ranges");
-    if (it == rawHeaders.constEnd() || it->second == "none") {
-        qDebug() << "Range header not supported by server/resource.";
-        return false;
     }
 
     cookedHeaders.clear();
