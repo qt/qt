@@ -374,7 +374,7 @@ QDebug operator<<(QDebug dbg, const QPoint &p) {
 QDebug operator<<(QDebug d, const QPointF &p)
 {
     d.nospace() << "QPointF(" << p.x() << ", " << p.y() << ')';
-    return d;
+    return d.space();
 }
 #endif
 
