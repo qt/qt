@@ -179,7 +179,7 @@ HRESULT DirectShowIOReader::Request(IMediaSample *pSample, DWORD_PTR dwUser)
             return VFW_E_SAMPLE_TIME_NOT_SET;
         } else {
             LONGLONG position = startTime / 10000000;
-            LONG length = ((endTime - startTime) / 10000000) + 1;
+            LONG length = (endTime - startTime) / 10000000;
 
             DirectShowSampleRequest *request = new DirectShowSampleRequest(
                     pSample, dwUser, position, length, buffer);
@@ -251,7 +251,7 @@ HRESULT DirectShowIOReader::SyncReadAligned(IMediaSample *pSample)
             return VFW_E_SAMPLE_TIME_NOT_SET;
         } else {
             LONGLONG position = startTime / 10000000;
-            LONG length = ((endTime - startTime) / 10000000) + 1;
+            LONG length = (endTime - startTime) / 10000000;
 
             QMutexLocker locker(&m_mutex);
 
