@@ -829,6 +829,11 @@ bool QNetworkReplyImplPrivate::migrateBackend()
         return false;
     }
 
+    if (copyDevice) {
+        qDebug() << "Request is serviced from cache, not migrating.";
+        return true;
+    }
+
     RawHeadersList::ConstIterator it = findRawHeader("Accept-Ranges");
     if (it == rawHeaders.constEnd() || it->second == "none") {
         qDebug() << "Range header not supported by server/resource.";
@@ -836,12 +841,6 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     }
 
     qDebug() << "Need to check for only cacheable content.";
-
-    // stop both upload and download
-    if (outgoingData)
-        outgoingData->disconnect(q);
-    if (copyDevice)
-        copyDevice->disconnect(q);
 
     state = QNetworkReplyImplPrivate::Reconnecting;
 
