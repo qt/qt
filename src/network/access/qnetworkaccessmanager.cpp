@@ -187,6 +187,18 @@ static void ensureInitialized()
 */
 
 /*!
+    \fn void QNetworkAccessManager::networkSessionOnline()
+
+    \since 4.7
+
+    \internal
+
+    This signal is emitted when the status of the network session changes into a usable state.
+    It is used to signal QNetworkReply's to start or migrate their network operation once the
+    network session has been opened / roamed.
+*/
+
+/*!
     \fn void QNetworkAccessManager::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator)
 
     This signal is emitted whenever a proxy requests authentication
