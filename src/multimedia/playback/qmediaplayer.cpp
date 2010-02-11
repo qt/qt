@@ -308,8 +308,6 @@ QMediaPlayer::~QMediaPlayer()
     Q_D(QMediaPlayer);
 
     d->provider->releaseService(d->service);
-    d->videoWidget = 0;
-    d->videoItem = 0;
 }
 
 QMediaContent QMediaPlayer::media() const

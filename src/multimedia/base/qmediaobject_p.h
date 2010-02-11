@@ -76,6 +76,7 @@ class QMediaObjectPrivate
 
 public:
     QMediaObjectPrivate():metaDataControl(0), notifyTimer(0) {}
+    virtual ~QMediaObjectPrivate() {}
 
     void _q_notify();
 
