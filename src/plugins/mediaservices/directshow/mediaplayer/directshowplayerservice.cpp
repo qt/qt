@@ -247,6 +247,13 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
 
             fileSource->Release();
         }
+    } else if (url.scheme() == QLatin1String("qrc")) {
+        DirectShowRcSource *rcSource = new DirectShowRcSource(m_loop);
+
+        if (rcSource->open(url) && SUCCEEDED(hr = m_graph->AddFilter(rcSource, L"Source")))
+            source = rcSource;
+        else
+            rcSource->Release();
     }
 
     if (!SUCCEEDED(hr)) {
@@ -300,7 +307,8 @@ void DirectShowPlayerService::doSetUrlSource(QMutexLocker *locker)
 
 void DirectShowPlayerService::doSetStreamSource(QMutexLocker *locker)
 {
-    IBaseFilter *source = new DirectShowIOSource(m_stream, m_loop);
+    DirectShowIOSource *source = new DirectShowIOSource(m_loop);
+    source->setDevice(m_stream);
 
     if (SUCCEEDED(m_graph->AddFilter(source, L"Source"))) {
         m_executedTasks = SetSource;

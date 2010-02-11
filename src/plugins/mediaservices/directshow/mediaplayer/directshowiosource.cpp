@@ -45,6 +45,8 @@
 #include "directshowmediatype.h"
 #include "directshowpinenum.h"
 
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,15 +57,16 @@ static const GUID directshow_subtypes[] =
     MEDIASUBTYPE_NULL
 };
 
-DirectShowIOSource::DirectShowIOSource(QIODevice *device, DirectShowEventLoop *loop)
+DirectShowIOSource::DirectShowIOSource(DirectShowEventLoop *loop)
     : m_ref(1)
     , m_state(State_Stopped)
+    , m_reader(0)
+    , m_loop(loop)
     , m_graph(0)
     , m_clock(0)
     , m_allocator(0)
     , m_peerPin(0)
     , m_pinId(QLatin1String("Data"))
-    , m_reader(device, this, loop)
 {
     QVector<AM_MEDIA_TYPE> mediaTypes;
 
@@ -93,6 +96,15 @@ DirectShowIOSource::DirectShowIOSource(QIODevice *device, DirectShowEventLoop *l
 DirectShowIOSource::~DirectShowIOSource()
 {
     Q_ASSERT(m_ref == 0);
+
+    delete m_reader;
+}
+
+void DirectShowIOSource::setDevice(QIODevice *device)
+{
+    Q_ASSERT(!m_reader);
+
+    m_reader = new DirectShowIOReader(device, this, m_loop);
 }
 
 void DirectShowIOSource::setAllocator(IMemAllocator *allocator)
@@ -121,7 +133,7 @@ HRESULT DirectShowIOSource::QueryInterface(REFIID riid, void **ppvObject)
     } else if (riid == IID_IPin) {
         *ppvObject = static_cast<IPin *>(this);
     } else if (riid == IID_IAsyncReader) {
-        *ppvObject = static_cast<IAsyncReader *>(&m_reader);
+        *ppvObject = static_cast<IAsyncReader *>(m_reader);
     } else {
         *ppvObject = 0;
 
@@ -571,12 +583,12 @@ HRESULT DirectShowIOSource::EndOfStream()
 
 HRESULT DirectShowIOSource::BeginFlush()
 {
-    return m_reader.BeginFlush();
+    return m_reader->BeginFlush();
 }
 
 HRESULT DirectShowIOSource::EndFlush()
 {
-    return m_reader.EndFlush();
+    return m_reader->EndFlush();
 }
 
 HRESULT DirectShowIOSource::NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop, double dRate)
@@ -601,3 +613,27 @@ HRESULT DirectShowIOSource::QueryDirection(PIN_DIRECTION *pPinDir)
 
 QT_END_NAMESPACE
 
+DirectShowRcSource::DirectShowRcSource(DirectShowEventLoop *loop)
+    : DirectShowIOSource(loop)
+{
+}
+
+bool DirectShowRcSource::open(const QUrl &url)
+{
+    m_file.moveToThread(QCoreApplication::instance()->thread());
+
+    m_file.setFileName(QLatin1Char(':') + url.path());
+
+    qDebug("qrc file %s", qPrintable(m_file.fileName()));
+
+    if (m_file.open(QIODevice::ReadOnly)) {
+        qDebug("Size %d", m_file.size());
+        qDebug("Sequential %d", int(m_file.isSequential()));
+
+        setDevice(&m_file);
+
+        return true;
+    } else {
+        return false;
+    }
+}
