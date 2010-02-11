@@ -63,6 +63,7 @@
 QT_BEGIN_NAMESPACE
 
 class QmlContext;
+class QmlEnginePrivate;
 class QmlMetaPropertyPrivate
 {
 public:
@@ -102,6 +103,8 @@ public:
 
     QVariant readValueProperty();
     bool writeValueProperty(const QVariant &, QmlMetaProperty::WriteFlags);
+
+    static const QMetaObject *rawMetaObjectForType(QmlEnginePrivate *, int);
     static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, const QVariant &value, int flags);
     static bool write(QObject *, const QmlPropertyCache::Data &, const QVariant &, QmlContext *,
                       QmlMetaProperty::WriteFlags flags = 0);

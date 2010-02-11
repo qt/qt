@@ -268,7 +268,8 @@ public:
 
     void registerCompositeType(QmlCompiledData *);
     bool isQmlList(int) const;
-    bool isObject(int);
+    bool isQObject(int);
+    QObject *toQObject(const QVariant &, bool *ok = 0) const;
     int qmlListType(int) const;
     QmlMetaType::TypeCategory typeCategory(int) const;
     const QMetaObject *rawMetaObjectForType(int) const;

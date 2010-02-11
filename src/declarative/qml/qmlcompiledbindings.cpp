@@ -1682,7 +1682,7 @@ bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
         } else if (type.type == destination->type) {
         } else {
             const QMetaObject *from = type.metaObject;
-            const QMetaObject *to = QmlMetaType::rawMetaObjectForType(destination->type);
+            const QMetaObject *to = engine->rawMetaObjectForType(destination->type);
 
             if (QmlMetaPropertyPrivate::canConvert(from, to))
                 type.type = destination->type;
@@ -2420,7 +2420,7 @@ bool QmlBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo, int reg
     fetch.fetch.exceptionId = exceptionId(node);
 
     rv.type = prop.userType();
-    rv.metaObject = QmlMetaType::metaObjectForType(rv.type);
+    rv.metaObject = engine->metaObjectForType(rv.type);
     rv.reg = reg;
 
     if (rv.type == QMetaType::QString) {

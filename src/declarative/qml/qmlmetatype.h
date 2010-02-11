@@ -72,23 +72,19 @@ public:
 
     static QmlType *qmlType(const QByteArray &, int, int);
     static QmlType *qmlType(const QMetaObject *);
+    static QmlType *qmlType(int);
 
     static QMetaProperty defaultProperty(const QMetaObject *);
     static QMetaProperty defaultProperty(QObject *);
     static QMetaMethod defaultMethod(const QMetaObject *);
     static QMetaMethod defaultMethod(QObject *);
-    static QMetaProperty property(QObject *, const QByteArray &);
-    static QMetaProperty property(QObject *, const char *);
-    static QObject *toQObject(const QVariant &);
-    static int qmlParserStatusCast(int);
-    static int qmlPropertyValueSourceCast(int);
-    static int qmlPropertyValueInterceptorCast(int);
+
+    static bool isQObject(int);
+    static QObject *toQObject(const QVariant &, bool *ok = 0);
+
     static int listType(int);
     static bool clear(const QVariant &);
     static bool append(const QVariant &, const QVariant &);
-    static QVariant fromObject(QObject *, int type);
-    static const QMetaObject *rawMetaObjectForType(int);
-    static const QMetaObject *metaObjectForType(int);
     static int attachedPropertiesFuncId(const QMetaObject *);
     static QmlAttachedPropertiesFunc attachedPropertiesFuncById(int);
 
@@ -97,7 +93,6 @@ public:
         
     static bool isInterface(int);
     static const char *interfaceIId(int);
-    static bool isObject(int);
     static bool isList(int);
     static bool isList(const QVariant &);
     static bool isQmlList(int);

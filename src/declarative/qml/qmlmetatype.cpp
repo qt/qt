@@ -43,6 +43,7 @@
 
 #include "qmlproxymetaobject_p.h"
 #include "qmlcustomparser_p.h"
+#include "qmlguard_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
@@ -490,48 +491,26 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     return index;
 }
 
-int QmlMetaType::qmlParserStatusCast(int userType)
+QObject *QmlMetaType::toQObject(const QVariant &v, bool *ok)
 {
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(userType);
-    if (type && type->typeId() == userType)
-        return type->parserStatusCast();
-    else
-        return -1;
-}
-
-int QmlMetaType::qmlPropertyValueSourceCast(int userType)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(userType);
-    if (type && type->typeId() == userType)
-        return type->propertyValueSourceCast();
-    else
-        return -1;
-}
-
-int QmlMetaType::qmlPropertyValueInterceptorCast(int userType)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(userType);
-    if (type && type->typeId() == userType)
-        return type->propertyValueInterceptorCast();
-    else
-        return -1;
-}
-
-QObject *QmlMetaType::toQObject(const QVariant &v)
-{
-    if (!isObject(v.userType()))
+    if (!isQObject(v.userType())) {
+        if (ok) *ok = false;
         return 0;
+    }
 
-    // NOTE: This assumes a cast to QObject does not alter the
-    // object pointer
-    QObject *rv = *(QObject **)v.constData();
-    return rv;
+    if (ok) *ok = true;
+
+    return *(QObject **)v.constData();
+}
+
+bool QmlMetaType::isQObject(int userType)
+{
+    if (userType == QMetaType::QObjectStar)
+        return true;
+
+    QReadLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
+    return userType >= 0 && userType < data->objects.size() && data->objects.testBit(userType);
 }
 
 /*
@@ -591,46 +570,6 @@ bool QmlMetaType::append(const QVariant &list, const QVariant &item)
     } else {
         return false;
     }
-}
-
-QVariant QmlMetaType::fromObject(QObject *obj, int typeId)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-
-    QmlType *type = data->idToType.value(typeId);
-    if (type && type->typeId() == typeId)
-        return type->fromObject(obj);
-    else
-        return QVariant();
-}
-
-const QMetaObject *QmlMetaType::rawMetaObjectForType(int id)
-{
-    if (id == QMetaType::QObjectStar)
-        return &QObject::staticMetaObject;
-
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-
-    QmlType *type = data->idToType.value(id);
-    if (type && type->typeId() == id)
-        return type->baseMetaObject();
-    else
-        return 0;
-}
-
-const QMetaObject *QmlMetaType::metaObjectForType(int id)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(id);
-    lock.unlock();
-
-    if (type && type->typeId() == id)
-        return type->metaObject();
-    else
-        return 0;
 }
 
 int QmlMetaType::attachedPropertiesFuncId(const QMetaObject *mo)
@@ -706,29 +645,6 @@ QMetaMethod QmlMetaType::defaultMethod(QObject *obj)
     return defaultMethod(metaObject);
 }
 
-/*!
- */
-QMetaProperty QmlMetaType::property(QObject *obj, const QByteArray &bname)
-{
-    return property(obj, bname.constData());
-}
-
-/*!
- */
-QMetaProperty QmlMetaType::property(QObject *obj, const char *name)
-{
-    if (!obj)
-        return QMetaProperty();
-
-    const QMetaObject *metaObject = obj->metaObject();
-
-    int idx = metaObject->indexOfProperty(name);
-    if (-1 == idx)
-        return QMetaProperty();
-
-    return metaObject->property(idx);
-}
-
 QmlMetaType::TypeCategory QmlMetaType::typeCategory(int userType)
 {
     if (userType < 0)
@@ -746,16 +662,6 @@ QmlMetaType::TypeCategory QmlMetaType::typeCategory(int userType)
         return List;
     else
         return Unknown;
-}
-
-bool QmlMetaType::isObject(int userType)
-{
-    if (userType == QMetaType::QObjectStar)
-        return true;
-
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    return userType >= 0 && userType < data->objects.size() && data->objects.testBit(userType);
 }
 
 bool QmlMetaType::isInterface(int userType)
@@ -884,6 +790,10 @@ QmlType *QmlMetaType::qmlType(const QByteArray &name, int version_major, int ver
     return 0;
 }
 
+/*!
+    Returns the type (if any) that corresponds to the \a metaObject.  Returns null if no
+    type is registered.
+*/
 QmlType *QmlMetaType::qmlType(const QMetaObject *metaObject)
 {
     QReadLocker lock(metaTypeDataLock());
@@ -892,6 +802,25 @@ QmlType *QmlMetaType::qmlType(const QMetaObject *metaObject)
     return data->metaObjectToType.value(metaObject);
 }
 
+/*!
+    Returns the type (if any) that corresponds to the QVariant::Type \a userType.  
+    Returns null if no type is registered.
+*/
+QmlType *QmlMetaType::qmlType(int userType)
+{
+    QReadLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
+
+    QmlType *type = data->idToType.value(userType);
+    if (type && type->typeId() == userType)
+        return type;
+    else
+        return 0;
+}
+
+/*!
+    Returns the list of registered QML type names.
+*/
 QList<QByteArray> QmlMetaType::qmlTypeNames()
 {
     QReadLocker lock(metaTypeDataLock());
@@ -900,6 +829,9 @@ QList<QByteArray> QmlMetaType::qmlTypeNames()
     return data->nameToType.keys();
 }
 
+/*!
+    Returns the list of registered QML types.
+*/
 QList<QmlType*> QmlMetaType::qmlTypes()
 {
     QReadLocker lock(metaTypeDataLock());

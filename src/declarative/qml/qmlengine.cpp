@@ -1085,9 +1085,10 @@ QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 
 QScriptValue QmlEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
-    if (QmlMetaType::isObject(val.userType())) {
-        QObject *rv = *(QObject **)val.constData();
-        return objectClass->newQObject(rv);
+    bool objOk;
+    QObject *obj = QmlMetaType::toQObject(val, &objOk);
+    if (objOk) {
+        return objectClass->newQObject(obj);
     } else {
         return qScriptValueFromValue(&scriptEngine, val);
     }
@@ -1598,9 +1599,20 @@ bool QmlEnginePrivate::isQmlList(int t) const
     return m_qmlLists.contains(t) || QmlMetaType::isQmlList(t);
 }
 
-bool QmlEnginePrivate::isObject(int t)
+bool QmlEnginePrivate::isQObject(int t)
 {
-    return m_compositeTypes.contains(t) || QmlMetaType::isObject(t);
+    return m_compositeTypes.contains(t) || QmlMetaType::isQObject(t);
+}
+
+QObject *QmlEnginePrivate::toQObject(const QVariant &v, bool *ok) const
+{
+    int t = v.userType();
+    if (m_compositeTypes.contains(t)) {
+        if (ok) *ok = true;
+        return *(QObject **)(v.constData());
+    } else {
+        return QmlMetaType::toQObject(v, ok);
+    }
 }
 
 int QmlEnginePrivate::qmlListType(int t) const
@@ -1628,7 +1640,8 @@ const QMetaObject *QmlEnginePrivate::rawMetaObjectForType(int t) const
     if (iter != m_compositeTypes.end()) {
         return (*iter)->root;
     } else {
-        return QmlMetaType::rawMetaObjectForType(t);
+        QmlType *type = QmlMetaType::qmlType(t);
+        return type?type->baseMetaObject():0;
     }
 }
 
@@ -1638,7 +1651,8 @@ const QMetaObject *QmlEnginePrivate::metaObjectForType(int t) const
     if (iter != m_compositeTypes.end()) {
         return (*iter)->root;
     } else {
-        return QmlMetaType::metaObjectForType(t);
+        QmlType *type = QmlMetaType::qmlType(t);
+        return type?type->metaObject():0;
     }
 }
 

@@ -283,11 +283,14 @@ void tst_qmlmetatype::copy()
 
 void tst_qmlmetatype::qmlParserStatusCast()
 {
-    QCOMPARE(QmlMetaType::qmlParserStatusCast(QVariant::Int), -1);
-    QCOMPARE(QmlMetaType::qmlParserStatusCast(qMetaTypeId<TestType *>()), -1);
-    QCOMPARE(QmlMetaType::qmlParserStatusCast(qMetaTypeId<ValueSourceTestType *>()), -1);
-
-    int cast = QmlMetaType::qmlParserStatusCast(qMetaTypeId<ParserStatusTestType *>());
+    QVERIFY(QmlMetaType::qmlType(QVariant::Int) == 0);
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<TestType *>()) != 0);
+    QCOMPARE(QmlMetaType::qmlType(qMetaTypeId<TestType *>())->parserStatusCast(), -1);
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<ValueSourceTestType *>()) != 0);
+    QCOMPARE(QmlMetaType::qmlType(qMetaTypeId<ValueSourceTestType *>())->parserStatusCast(), -1);
+            
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<ParserStatusTestType *>()) != 0);
+    int cast = QmlMetaType::qmlType(qMetaTypeId<ParserStatusTestType *>())->parserStatusCast();
     QVERIFY(cast != -1);
     QVERIFY(cast != 0);
 
@@ -300,11 +303,14 @@ void tst_qmlmetatype::qmlParserStatusCast()
 
 void tst_qmlmetatype::qmlPropertyValueSourceCast()
 {
-    QCOMPARE(QmlMetaType::qmlPropertyValueSourceCast(QVariant::Int), -1);
-    QCOMPARE(QmlMetaType::qmlPropertyValueSourceCast(qMetaTypeId<TestType *>()), -1);
-    QCOMPARE(QmlMetaType::qmlPropertyValueSourceCast(qMetaTypeId<ParserStatusTestType *>()), -1);
-
-    int cast = QmlMetaType::qmlPropertyValueSourceCast(qMetaTypeId<ValueSourceTestType *>());
+    QVERIFY(QmlMetaType::qmlType(QVariant::Int) == 0);
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<TestType *>()) != 0);
+    QCOMPARE(QmlMetaType::qmlType(qMetaTypeId<TestType *>())->propertyValueSourceCast(), -1);
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<ParserStatusTestType *>()) != 0);
+    QCOMPARE(QmlMetaType::qmlType(qMetaTypeId<ParserStatusTestType *>())->propertyValueSourceCast(), -1);
+            
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<ValueSourceTestType *>()) != 0);
+    int cast = QmlMetaType::qmlType(qMetaTypeId<ValueSourceTestType *>())->propertyValueSourceCast();
     QVERIFY(cast != -1);
     QVERIFY(cast != 0);
 
@@ -317,11 +323,14 @@ void tst_qmlmetatype::qmlPropertyValueSourceCast()
 
 void tst_qmlmetatype::qmlPropertyValueInterceptorCast()
 {
-    QCOMPARE(QmlMetaType::qmlPropertyValueInterceptorCast(QVariant::Int), -1);
-    QCOMPARE(QmlMetaType::qmlPropertyValueInterceptorCast(qMetaTypeId<TestType *>()), -1);
-    QCOMPARE(QmlMetaType::qmlPropertyValueInterceptorCast(qMetaTypeId<ParserStatusTestType *>()), -1);
-
-    int cast = QmlMetaType::qmlPropertyValueInterceptorCast(qMetaTypeId<ValueInterceptorTestType *>());
+    QVERIFY(QmlMetaType::qmlType(QVariant::Int) == 0);
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<TestType *>()) != 0);
+    QCOMPARE(QmlMetaType::qmlType(qMetaTypeId<TestType *>())->propertyValueInterceptorCast(), -1);
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<ParserStatusTestType *>()) != 0);
+    QCOMPARE(QmlMetaType::qmlType(qMetaTypeId<ParserStatusTestType *>())->propertyValueInterceptorCast(), -1);
+            
+    QVERIFY(QmlMetaType::qmlType(qMetaTypeId<ValueInterceptorTestType *>()) != 0);
+    int cast = QmlMetaType::qmlType(qMetaTypeId<ValueInterceptorTestType *>())->propertyValueInterceptorCast();
     QVERIFY(cast != -1);
     QVERIFY(cast != 0);
 

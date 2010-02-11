@@ -117,7 +117,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
     if (QVariant::Type(prop.userType()) < QVariant::UserType) {
         rv.type = QmlObjectProperty::Basic;
-    } else if (QmlMetaType::isObject(prop.userType()))  {
+    } else if (QmlMetaType::isQObject(prop.userType()))  {
         rv.type = QmlObjectProperty::Object;
     } else if (QmlMetaType::isList(prop.userType()) ||
                QmlMetaType::isQmlList(prop.userType())) {
@@ -140,7 +140,7 @@ QVariant QmlEngineDebugServer::valueContents(const QVariant &value) const
         for (int i=0; i<count; i++)
             contents << valueContents(QmlMetaType::listAt(value, i));
         return contents;
-    } else if (QmlMetaType::isObject(userType)) {
+    } else if (QmlMetaType::isQObject(userType)) {
         QObject *o = QmlMetaType::toQObject(value);
         if (o) {
             QString name = o->objectName();

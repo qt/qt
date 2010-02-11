@@ -383,23 +383,26 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
     if (d->notifyIndex == -1)
         d->notifyIndex = this->metaObject()->methodCount();
 
-    if (d->engine && QmlEnginePrivate::get(d->engine)->isObject(value.userType())) {
-        QObject *o = *(QObject **)value.constData();
-        setContextProperty(name, o);
-    } else {
-
-        if (!d->propertyNames) d->propertyNames = new QmlIntegerCache(d->engine);
-
-        int idx = d->propertyNames->value(name);
-        if (idx == -1) {
-            d->propertyNames->add(name, d->idValueCount + d->propertyValues.count());
-            d->propertyValues.append(value);
-
-            d->refreshExpressions();
-        } else {
-            d->propertyValues[idx] = value;
-            QMetaObject::activate(this, idx + d->notifyIndex, 0);
+    if (d->engine) {
+        bool ok;
+        QObject *o = QmlEnginePrivate::get(d->engine)->toQObject(value, &ok);
+        if (ok) {
+            setContextProperty(name, o);
+            return;
         }
+    }
+
+    if (!d->propertyNames) d->propertyNames = new QmlIntegerCache(d->engine);
+
+    int idx = d->propertyNames->value(name);
+    if (idx == -1) {
+        d->propertyNames->add(name, d->idValueCount + d->propertyValues.count());
+        d->propertyValues.append(value);
+
+        d->refreshExpressions();
+    } else {
+        d->propertyValues[idx] = value;
+        QMetaObject::activate(this, idx + d->notifyIndex, 0);
     }
 }
 

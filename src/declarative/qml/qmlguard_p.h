@@ -94,6 +94,8 @@ private:
     inline void remGuard();
 };
 
+Q_DECLARE_METATYPE(QmlGuard<QObject>);
+
 QT_END_NAMESPACE
 
 #include "qmldeclarativedata_p.h"

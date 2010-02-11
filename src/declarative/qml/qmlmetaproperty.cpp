@@ -852,17 +852,13 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
 
     } else if (property.flags & QmlPropertyCache::Data::IsQObjectDerived) {
 
-        const QMetaObject *valMo = 0;
-        if (enginePriv) valMo = enginePriv->rawMetaObjectForType(value.userType());
-        else valMo = QmlMetaType::rawMetaObjectForType(value.userType());
+        const QMetaObject *valMo = rawMetaObjectForType(enginePriv, value.userType());
         
         if (!valMo)
             return false;
 
         QObject *o = *(QObject **)value.constData();
-        const QMetaObject *propMo = 0;
-        if (enginePriv) propMo = enginePriv->rawMetaObjectForType(t);
-        else propMo = QmlMetaType::rawMetaObjectForType(t);
+        const QMetaObject *propMo = rawMetaObjectForType(enginePriv, t);
 
         if (o) valMo = o->metaObject();
 
@@ -892,7 +888,7 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             QVariant listVar = prop.read(object);
             QmlMetaType::clear(listVar);
             for (int ii = 0; ii < list.count(); ++ii) {
-                QVariant v = QmlMetaType::fromObject(list.at(ii), listType);
+                QVariant v = QmlMetaType::qmlType(listType)->fromObject(list.at(ii)); 
                 QmlMetaType::append(listVar, v);
             }
 
@@ -913,8 +909,7 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
         int type = li->type();
 
         if (QObject *obj = QmlMetaType::toQObject(value)) {
-            const QMetaObject *mo =
-                QmlMetaType::rawMetaObjectForType(type);
+            const QMetaObject *mo = rawMetaObjectForType(enginePriv, type);
 
             const QMetaObject *objMo = obj->metaObject();
             bool found = false;
@@ -964,6 +959,16 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
     }
 
     return true;
+}
+
+const QMetaObject *QmlMetaPropertyPrivate::rawMetaObjectForType(QmlEnginePrivate *engine, int userType)
+{
+    if (engine) {
+        return engine->rawMetaObjectForType(userType);
+    } else {
+        QmlType *type = QmlMetaType::qmlType(userType);
+        return type?type->baseMetaObject():0;
+    }
 }
 
 /*!

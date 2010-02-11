@@ -214,7 +214,7 @@ QmlBoundSignalParameters::QmlBoundSignalParameters(const QMetaMethod &method,
         }
 
         QVariant::Type t = (QVariant::Type)QMetaType::type(type.constData());
-        if (QmlMetaType::isObject(t)) {
+        if (QmlMetaType::isQObject(t)) {
             types[ii] = QMetaType::QObjectStar;
             QMetaPropertyBuilder prop = mob.addProperty(name, "QObject*");
             prop.setWritable(false);

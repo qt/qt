@@ -79,10 +79,9 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
         m_type = VariantList;
     } else if (d.canConvert(QVariant::Int)) {
         m_type = Integer;
-    } else if ((!enginePrivate && QmlMetaType::isObject(d.userType())) ||
-               (enginePrivate && enginePrivate->isObject(d.userType()))) {
-        QObject *data = 0;
-        data = *(QObject **)v.constData();
+    } else if ((!enginePrivate && QmlMetaType::isQObject(d.userType())) ||
+               (enginePrivate && enginePrivate->isQObject(d.userType()))) {
+        QObject *data = enginePrivate?enginePrivate->toQObject(v):QmlMetaType::toQObject(v);
         d = QVariant::fromValue(data);
         m_type = Instance;
     } else if ((!enginePrivate && QmlMetaType::isQmlList(d.userType())) ||
