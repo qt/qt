@@ -62,7 +62,7 @@
 
     \snippet doc/src/snippets/code/src_gui_util_qcompleter.cpp 0
 
-    A QDirModel can be used to provide auto completion of file names.
+    A QFileSystemModel can be used to provide auto completion of file names.
     For example:
 
     \snippet doc/src/snippets/code/src_gui_util_qcompleter.cpp 1
@@ -120,7 +120,7 @@
     completion is then performed one level at a time.
 
     Let's take the example of a user typing in a file system path.
-    The model is a (hierarchical) QDirModel. The completion
+    The model is a (hierarchical) QFileSystemModel. The completion
     occurs for every element in the path. For example, if the current
     text is \c C:\Wind, QCompleter might suggest \c Windows to
     complete the current path element. Similarly, if the current text
@@ -130,12 +130,12 @@
     split the path into a list of strings that are matched at each level.
     For \c C:\Windows\Sy, it needs to be split as "C:", "Windows" and "Sy".
     The default implementation of splitPath(), splits the completionPrefix
-    using QDir::separator() if the model is a QDirModel.
+    using QDir::separator() if the model is a QFileSystemModel.
 
     To provide completions, QCompleter needs to know the path from an index.
     This is provided by pathFromIndex(). The default implementation of
     pathFromIndex(), returns the data for the \l{Qt::EditRole}{edit role}
-    for list models and the absolute file path if the mode is a QDirModel.
+    for list models and the absolute file path if the mode is a QFileSystemModel.
 
     \sa QAbstractItemModel, QLineEdit, QComboBox, {Completer Example}
 */
@@ -147,6 +147,7 @@
 #include "QtGui/qscrollbar.h"
 #include "QtGui/qstringlistmodel.h"
 #include "QtGui/qdirmodel.h"
+#include "QtGui/qfilesystemmodel.h"
 #include "QtGui/qheaderview.h"
 #include "QtGui/qlistview.h"
 #include "QtGui/qapplication.h"
@@ -470,9 +471,13 @@ QMatchData QCompletionEngine::filterHistory()
     QAbstractItemModel *source = c->proxy->sourceModel();
     if (curParts.count() <= 1 || c->proxy->showAll || !source)
         return QMatchData();
-    bool dirModel = false;
+    bool isDirModel = false;
+    bool isFsModel = false;
 #ifndef QT_NO_DIRMODEL
-    dirModel = (qobject_cast<QDirModel *>(source) != 0);
+    isDirModel = (qobject_cast<QDirModel *>(source) != 0);
+#endif
+#ifndef QT_NO_FILESYSTEMMODEL
+    isFsModel = (qobject_cast<QFileSystemModel *>(source) != 0);
 #endif
     QVector<int> v;
     QIndexMapper im(v);
@@ -482,7 +487,7 @@ QMatchData QCompletionEngine::filterHistory()
         QString str = source->index(i, c->column).data().toString();
         if (str.startsWith(c->prefix, c->cs)
 #if (!defined(Q_OS_WIN) || defined(Q_OS_WINCE)) && !defined(Q_OS_SYMBIAN)
-            && (!dirModel || QDir::toNativeSeparators(str) != QDir::separator())
+            && ((!isFsModel && !isDirModel) || QDir::toNativeSeparators(str) != QDir::separator())
 #endif
             )
             m.indices.append(i);
@@ -838,6 +843,13 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
                 completion += QDir::separator();
         }
 #endif
+#ifndef QT_NO_FILESYSTEMMODEL
+        // add a trailing separator in inline
+        if (mode == QCompleter::InlineCompletion) {
+            if (qobject_cast<QFileSystemModel *>(proxy->sourceModel()) && QFileInfo(completion).isDir())
+                completion += QDir::separator();
+        }
+#endif
     }
 
     if (highlighted) {
@@ -889,6 +901,14 @@ void QCompleterPrivate::showPopup(const QRect& rect)
 
     if (!popup->isVisible())
         popup->show();
+}
+
+void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
+{
+    Q_Q(QCompleter);
+    //the path given by QFileSystemModel does not end with /
+    if (q->completionPrefix() != path + QLatin1Char('/'))
+        q->complete();
 }
 
 /*!
@@ -971,7 +991,7 @@ QWidget *QCompleter::widget() const
     be list model or a tree model. If a model has been already previously set
     and it has the QCompleter as its parent, it is deleted.
 
-    For convenience, if \a model is a QDirModel, QCompleter switches its
+    For convenience, if \a model is a QFileSystemModel, QCompleter switches its
     caseSensitivity to Qt::CaseInsensitive on Windows and Qt::CaseSensitive
     on other platforms.
 
@@ -995,6 +1015,18 @@ void QCompleter::setModel(QAbstractItemModel *model)
 #endif
     }
 #endif // QT_NO_DIRMODEL
+#ifndef QT_NO_FILESYSTEMMODEL
+    QFileSystemModel *fsModel = qobject_cast<QFileSystemModel *>(model);
+    if (fsModel) {
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+        setCaseSensitivity(Qt::CaseInsensitive);
+#else
+        setCaseSensitivity(Qt::CaseSensitive);
+#endif
+        setCompletionRole(QFileSystemModel::FileNameRole);
+        connect(fsModel, SIGNAL(directoryLoaded(QString)), this, SLOT(_q_fileSystemModelDirectoryLoaded(QString)));
+    }
+#endif // QT_NO_FILESYSTEMMODEL
 }
 
 /*!
@@ -1626,10 +1658,11 @@ QAbstractItemModel *QCompleter::completionModel() const
 
     The default implementation returns the \l{Qt::EditRole}{edit role} of the
     item for list models. It returns the absolute file path if the model is a
-    QDirModel.
+    QFileSystemModel.
 
     \sa splitPath()
 */
+
 QString QCompleter::pathFromIndex(const QModelIndex& index) const
 {
     Q_D(const QCompleter);
@@ -1639,16 +1672,25 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     QAbstractItemModel *sourceModel = d->proxy->sourceModel();
     if (!sourceModel)
         return QString();
+    bool isDirModel = false;
+    bool isFsModel = false;
 #ifndef QT_NO_DIRMODEL
-    QDirModel *dirModel = qobject_cast<QDirModel *>(sourceModel);
-    if (!dirModel)
+    isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
 #endif
+#ifndef QT_NO_FILESYSTEMMODEL
+    isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != 0;
+#endif
+    if (!isDirModel && !isFsModel)
         return sourceModel->data(index, d->role).toString();
 
     QModelIndex idx = index;
     QStringList list;
     do {
-        QString t = sourceModel->data(idx, Qt::EditRole).toString();
+        QString t;
+        if (isDirModel)
+            t = sourceModel->data(idx, Qt::EditRole).toString();
+        else
+            t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
         list.prepend(t);
         QModelIndex parent = idx.parent();
         idx = parent.sibling(parent.row(), index.column());
@@ -1668,7 +1710,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
     in the model().
 
     The default implementation of splitPath() splits a file system path based on
-    QDir::separator() when the sourceModel() is a QDirModel.
+    QDir::separator() when the sourceModel() is a QFileSystemModel.
 
     When used with list models, the first item in the returned list is used for
     matching.
@@ -1678,12 +1720,19 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
 QStringList QCompleter::splitPath(const QString& path) const
 {
     bool isDirModel = false;
+    bool isFsModel = false;
 #ifndef QT_NO_DIRMODEL
     Q_D(const QCompleter);
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
 #endif
+#ifndef QT_NO_FILESYSTEMMODEL
+#ifdef QT_NO_DIRMODEL
+    Q_D(const QCompleter);
+#endif
+    isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != 0;
+#endif
 
-    if (!isDirModel || path.isEmpty())
+    if ((!isDirModel && !isFsModel) || path.isEmpty())
         return QStringList(completionPrefix());
 
     QString pathCopy = QDir::toNativeSeparators(path);

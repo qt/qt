@@ -118,7 +118,9 @@ void QPropertyAnimationPrivate::updateMetaProperty()
         propertyType = QVariant::Invalid;
         if (!targetValue->dynamicPropertyNames().contains(propertyName))
             qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
-    }
+    } else if (!targetValue->metaObject()->property(propertyIndex).isWritable()) {
+        qWarning("QPropertyAnimation: you're trying to animate the non-writable property %s of your QObject", propertyName.constData());
+	}
 }
 
 void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
@@ -265,7 +267,9 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
 
     QPropertyAnimation *animToStop = 0;
     {
+#ifndef QT_NO_THREAD
         QMutexLocker locker(QMutexPool::globalInstanceGet(&staticMetaObject));
+#endif
         typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
         static QPropertyAnimationHash hash;

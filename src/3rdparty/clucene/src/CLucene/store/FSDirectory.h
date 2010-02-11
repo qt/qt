@@ -147,7 +147,7 @@ private:
 
         void close();
         IndexInput* clone() const;
-                
+
         int64_t length()
         { return handle->_length; }
 
@@ -174,7 +174,7 @@ private:
             int64_t _length;
             
             QFile fhandle;
-            DEFINE_MUTEX(THIS_LOCK)
+            DEFINE_MUTEX(*THIS_LOCK)
         };
         SharedHandle* handle;
         int64_t _pos;

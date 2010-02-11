@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
-#if !defined(QT_OPENGL_ES_1_CL) && !defined(QT_OPENGL_ES_1)
+#if !defined(QT_OPENGL_ES_1)
 
 class QGLShaderProgram;
 class QGLShaderPrivate;
@@ -165,6 +165,8 @@ public:
     void setAttributeArray
         (int location, const QVector4D *values, int stride = 0);
     void setAttributeArray
+        (int location, GLenum type, const void *values, int tupleSize, int stride = 0);
+    void setAttributeArray
         (const char *name, const GLfloat *values, int tupleSize, int stride = 0);
     void setAttributeArray
         (const char *name, const QVector2D *values, int stride = 0);
@@ -172,6 +174,24 @@ public:
         (const char *name, const QVector3D *values, int stride = 0);
     void setAttributeArray
         (const char *name, const QVector4D *values, int stride = 0);
+    void setAttributeArray
+        (const char *name, GLenum type, const void *values, int tupleSize, int stride = 0);
+
+    void setAttributeBuffer
+        (int location, GLenum type, int offset, int tupleSize, int stride = 0);
+    void setAttributeBuffer
+        (const char *name, GLenum type, int offset, int tupleSize, int stride = 0);
+
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setAttributeArray
+        (int location, QMacCompatGLenum type, const void *values, int tupleSize, int stride = 0);
+    void setAttributeArray
+        (const char *name, QMacCompatGLenum type, const void *values, int tupleSize, int stride = 0);
+    void setAttributeBuffer
+        (int location, QMacCompatGLenum type, int offset, int tupleSize, int stride = 0);
+    void setAttributeBuffer
+        (const char *name, QMacCompatGLenum type, int offset, int tupleSize, int stride = 0);
+#endif
 
     void enableAttributeArray(int location);
     void enableAttributeArray(const char *name);
@@ -216,6 +236,8 @@ public:
     void setUniformValue(int location, const QMatrix4x2& value);
     void setUniformValue(int location, const QMatrix4x3& value);
     void setUniformValue(int location, const QMatrix4x4& value);
+    void setUniformValue(int location, const GLfloat value[2][2]);
+    void setUniformValue(int location, const GLfloat value[3][3]);
     void setUniformValue(int location, const GLfloat value[4][4]);
     void setUniformValue(int location, const QTransform& value);
 
@@ -242,6 +264,8 @@ public:
     void setUniformValue(const char *name, const QMatrix4x2& value);
     void setUniformValue(const char *name, const QMatrix4x3& value);
     void setUniformValue(const char *name, const QMatrix4x4& value);
+    void setUniformValue(const char *name, const GLfloat value[2][2]);
+    void setUniformValue(const char *name, const GLfloat value[3][3]);
     void setUniformValue(const char *name, const GLfloat value[4][4]);
     void setUniformValue(const char *name, const QTransform& value);
 

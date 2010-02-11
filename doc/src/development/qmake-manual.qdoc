@@ -1989,7 +1989,7 @@ distinction between shared and
     \section1 QMAKE_CFLAGS_WARN_OFF
 
     This variable is not empty if the warn_off
-    \l{#TEMPLATE}{TEMPLATE} option is specified.  The value of this
+    \l{#CONFIG}{CONFIG} option is specified.  The value of this
     variable is typically handled by \c qmake or \l{#QMAKESPEC}{qmake.conf}
     and rarely needs to be modified.
 
@@ -1997,7 +1997,7 @@ distinction between shared and
     \section1 QMAKE_CFLAGS_WARN_ON
 
     This variable is not empty if the warn_on
-    \l{#TEMPLATE}{TEMPLATE} option is specified.
+    \l{#CONFIG}{CONFIG} option is specified.
     The value of this variable is typically handled by
     \c qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs
     to be modified.
@@ -2264,11 +2264,11 @@ For example:
     If the OpenGL implementation uses EGL (most OpenGL/ES systems),
     then QMAKE_INCDIR_EGL may also need to be set.
 
-    \section1 QMAKE_INCDIR_OPENGL_ES1, QMAKE_INCDIR_OPENGL_ES1CL, QMAKE_INCDIR_OPENGL_ES2
+    \section1 QMAKE_INCDIR_OPENGL_ES1, QMAKE_INCDIR_OPENGL_ES2
 
     These variables contain the location of OpenGL headers files to be added
-    to INCLUDEPATH when building an application with OpenGL ES 1, OpenGL ES 1 Common
-    Lite or OpenGL ES 2 support respectively.
+    to INCLUDEPATH when building an application with OpenGL ES 1
+    or OpenGL ES 2 support respectively.
 
     The value of this variable is typically handled by \c qmake or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
@@ -2522,10 +2522,10 @@ For example:
     variable is typically handled by \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
-    \section1 QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL, QMAKE_LIBS_OPENGL_ES2
+    \section1 QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES2
 
-    These variables contain all the OpenGL libraries for OpenGL ES 1,
-    OpenGL ES 1 Common Lite profile and OpenGL ES 2.
+    These variables contain all the OpenGL libraries for OpenGL ES 1
+    and OpenGL ES 2.
 
     The value of these variables is typically handled by \c qmake or
     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.

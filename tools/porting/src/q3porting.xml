@@ -1626,10 +1626,6 @@
         <Name>Q3Wizard</Name>
     </item>
     <item Type="Qt4Class" >
-        <Library>QtAssistant</Library>
-        <Name>QAssistantClient</Name>
-    </item>
-    <item Type="Qt4Class" >
         <Library>QtCore</Library>
         <Name>QAbstractEventDispatcher</Name>
     </item>

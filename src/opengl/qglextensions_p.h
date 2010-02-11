@@ -71,6 +71,7 @@
 #include <QtCore/qglobal.h>
 
 #ifndef GL_ARB_vertex_buffer_object
+typedef ptrdiff_t GLintptrARB;
 typedef ptrdiff_t GLsizeiptrARB;
 #endif
 
@@ -78,13 +79,25 @@ typedef ptrdiff_t GLsizeiptrARB;
 typedef char GLchar;
 #endif
 
-// ARB_pixel_buffer_object
+// ARB_vertex_buffer_object
 typedef void (APIENTRY *_glBindBuffer) (GLenum, GLuint);
 typedef void (APIENTRY *_glDeleteBuffers) (GLsizei, const GLuint *);
 typedef void (APIENTRY *_glGenBuffers) (GLsizei, GLuint *);
 typedef void (APIENTRY *_glBufferData) (GLenum, GLsizeiptrARB, const GLvoid *, GLenum);
+typedef void (APIENTRY *_glBufferSubData) (GLenum, GLintptrARB, GLsizeiptrARB, const GLvoid *);
+typedef void (APIENTRY *_glGetBufferSubData) (GLenum, GLintptrARB, GLsizeiptrARB, GLvoid *);
+typedef void (APIENTRY *_glGetBufferParameteriv) (GLenum, GLenum, GLint *);
 typedef GLvoid* (APIENTRY *_glMapBufferARB) (GLenum, GLenum);
 typedef GLboolean (APIENTRY *_glUnmapBufferARB) (GLenum);
+// We can call the buffer functions directly in OpenGL/ES 1.1 or higher,
+// but all other platforms need to resolve the extensions.
+#if defined(QT_OPENGL_ES)
+#if defined(GL_OES_VERSION_1_0) && !defined(GL_OES_VERSION_1_1)
+#define QGL_RESOLVE_BUFFER_FUNCS 1
+#endif
+#else
+#define QGL_RESOLVE_BUFFER_FUNCS 1
+#endif
 
 // ARB_fragment_program
 typedef void (APIENTRY *_glProgramStringARB) (GLenum, GLenum, GLsizei, const GLvoid *);
@@ -285,11 +298,14 @@ struct QGLExtensionFuncs
         qt_glRenderbufferStorageMultisampleEXT = 0;
 
         // Buffer objects:
-#if !defined(QT_OPENGL_ES_2)
+#if defined(QGL_RESOLVE_BUFFER_FUNCS)
         qt_glBindBuffer = 0;
         qt_glDeleteBuffers = 0;
         qt_glGenBuffers = 0;
         qt_glBufferData = 0;
+        qt_glBufferSubData = 0;
+        qt_glGetBufferSubData = 0;
+        qt_glGetBufferParameteriv = 0;
 #endif
         qt_glMapBufferARB = 0;
         qt_glUnmapBufferARB = 0;
@@ -397,11 +413,14 @@ struct QGLExtensionFuncs
     _glRenderbufferStorageMultisampleEXT qt_glRenderbufferStorageMultisampleEXT;
 
     // Buffer objects
-#if !defined(QT_OPENGL_ES_2)
+#if defined(QGL_RESOLVE_BUFFER_FUNCS)
     _glBindBuffer qt_glBindBuffer;
     _glDeleteBuffers qt_glDeleteBuffers;
     _glGenBuffers qt_glGenBuffers;
     _glBufferData qt_glBufferData;
+    _glBufferSubData qt_glBufferSubData;
+    _glGetBufferSubData qt_glGetBufferSubData;
+    _glGetBufferParameteriv qt_glGetBufferParameteriv;
 #endif
     _glMapBufferARB qt_glMapBufferARB;
     _glUnmapBufferARB qt_glUnmapBufferARB;
@@ -599,6 +618,20 @@ struct QGLExtensionFuncs
 #define GL_DECR_WRAP 0x8508
 #endif
 
+#ifndef GL_VERSION_1_5
+#define GL_ARRAY_BUFFER                                         0x8892
+#define GL_ELEMENT_ARRAY_BUFFER                                 0x8893
+#define GL_STREAM_DRAW                                          0x88E0
+#define GL_STREAM_READ                                          0x88E1
+#define GL_STREAM_COPY                                          0x88E2
+#define GL_STATIC_DRAW                                          0x88E4
+#define GL_STATIC_READ                                          0x88E5
+#define GL_STATIC_COPY                                          0x88E6
+#define GL_DYNAMIC_DRAW                                         0x88E8
+#define GL_DYNAMIC_READ                                         0x88E9
+#define GL_DYNAMIC_COPY                                         0x88EA
+#endif
+
 #ifndef GL_VERSION_2_0
 #define GL_FRAGMENT_SHADER 0x8B30
 #define GL_VERTEX_SHADER 0x8B31
@@ -667,11 +700,14 @@ struct QGLExtensionFuncs
 
 
 // Buffer objects
-#if !defined(QT_OPENGL_ES_2)
+#if defined(QGL_RESOLVE_BUFFER_FUNCS)
 #define glBindBuffer QGLContextPrivate::extensionFuncs(ctx).qt_glBindBuffer
 #define glDeleteBuffers QGLContextPrivate::extensionFuncs(ctx).qt_glDeleteBuffers
 #define glGenBuffers QGLContextPrivate::extensionFuncs(ctx).qt_glGenBuffers
 #define glBufferData QGLContextPrivate::extensionFuncs(ctx).qt_glBufferData
+#define glBufferSubData QGLContextPrivate::extensionFuncs(ctx).qt_glBufferSubData
+#define glGetBufferSubData QGLContextPrivate::extensionFuncs(ctx).qt_glGetBufferSubData
+#define glGetBufferParameteriv QGLContextPrivate::extensionFuncs(ctx).qt_glGetBufferParameteriv
 #endif
 #define glMapBufferARB QGLContextPrivate::extensionFuncs(ctx).qt_glMapBufferARB
 #define glUnmapBufferARB QGLContextPrivate::extensionFuncs(ctx).qt_glUnmapBufferARB

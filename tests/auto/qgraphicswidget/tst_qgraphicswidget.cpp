@@ -163,6 +163,7 @@ private slots:
     void addChildInpolishEvent();
     void polishEvent();
     void polishEvent2();
+    void autoFillBackground();
     void initialShow();
     void initialShow2();
 
@@ -2856,6 +2857,32 @@ void tst_QGraphicsWidget::polishEvent2()
 
     // Make sure the item got polish event.
     QVERIFY(widget->events.contains(QEvent::Polish));
+}
+
+void tst_QGraphicsWidget::autoFillBackground()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QCOMPARE(widget->autoFillBackground(), false);
+    widget->setAutoFillBackground(true);
+    QCOMPARE(widget->autoFillBackground(), true);
+
+    const QColor color(Qt::red);
+    const QRect rect(0, 0, 1, 1);
+
+    QGraphicsScene scene;
+    scene.addItem(widget);
+    widget->setGeometry(rect);
+
+    QPalette palette = widget->palette();
+    palette.setColor(QPalette::Window, color);
+    widget->setPalette(palette);
+
+    QImage image(rect.size(), QImage::Format_RGB32);
+    QPainter painter;
+    painter.begin(&image);
+    scene.render(&painter, rect, rect);
+    painter.end();
+    QCOMPARE(image.pixel(0, 0), color.rgb());
 }
 
 void tst_QGraphicsWidget::initialShow()

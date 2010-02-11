@@ -47,6 +47,7 @@
 
 #include <qimage.h>
 #include <qt_windows.h>
+#include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -469,6 +470,12 @@ void QCursorData::update()
         Q_UNUSED(h);
 #endif
         return;
+    }
+    case Qt::DragCopyCursor:
+    case Qt::DragMoveCursor:
+    case Qt::DragLinkCursor: {
+        QPixmap pixmap = QApplicationPrivate::instance()->getPixmapCursor(cshape);
+        hcurs = create32BitCursor(pixmap, hx, hy);
     }
     default:
         qWarning("QCursor::update: Invalid cursor shape %d", cshape);

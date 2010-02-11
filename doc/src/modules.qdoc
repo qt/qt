@@ -1080,13 +1080,3 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
     \endlegalese
 */
-
-/*!
-    \page qtassistant.html
-    \title QtAssistant
-
-    This module is no longer needed. Use the QtHelp module to integrate documentation
-    into your application.
-
-    \sa {QtHelp}
-*/

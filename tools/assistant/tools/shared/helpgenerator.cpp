@@ -61,6 +61,11 @@ bool HelpGenerator::generate(QHelpDataInterface *helpData,
     return generator->generate(helpData, outputFileName);
 }
 
+bool HelpGenerator::checkLinks(const QHelpDataInterface &helpData)
+{
+    return generator->checkLinks(helpData);
+}
+
 QString HelpGenerator::error() const
 {
     return generator->error();

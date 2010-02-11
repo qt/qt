@@ -533,6 +533,14 @@ void QToolBarPrivate::plug(const QRect &r)
 
 
 /*!
+    \fn void QToolBar::visibilityChanged(bool visible)
+    \since 4.7
+
+    This signal is emitted when the toolbar becomes \a visible (or
+    invisible). This happens when the widget is hidden or shown.
+*/
+
+/*!
     Constructs a QToolBar with the given \a parent.
 */
 QToolBar::QToolBar(QWidget *parent)
@@ -1122,6 +1130,7 @@ bool QToolBar::event(QEvent *event)
         // fallthrough intended
     case QEvent::Show:
         d->toggleViewAction->setChecked(event->type() == QEvent::Show);
+        emit visibilityChanged(event->type() == QEvent::Show);
 #if defined(Q_WS_MAC)
         if (toolbarInUnifiedToolBar(this)) {
              // I can static_cast because I did the qobject_cast in the if above, therefore

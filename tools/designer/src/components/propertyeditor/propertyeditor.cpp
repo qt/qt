@@ -1175,11 +1175,11 @@ void PropertyEditor::slotValueChanged(QtProperty *property, const QVariant &valu
         Q_ASSERT(ok);
         QVariant v;
         qVariantSetValue(v, e);
-        emit propertyValueChanged(property->propertyName(), v, true);
+        emitPropertyValueChanged(property->propertyName(), v, true);
         return;
     }
 
-    emit propertyValueChanged(property->propertyName(), value, enableSubPropertyHandling);
+    emitPropertyValueChanged(property->propertyName(), value, enableSubPropertyHandling);
 }
 
 bool PropertyEditor::isDynamicProperty(const QtBrowserItem* item) const

@@ -89,6 +89,12 @@ public:
         AlwaysCache
     };
 
+    enum Priority {
+        HighPriority = 1,
+        NormalPriority = 3,
+        LowPriority = 5
+    };
+
     explicit QNetworkRequest(const QUrl &url = QUrl());
     QNetworkRequest(const QNetworkRequest &other);
     ~QNetworkRequest();
@@ -122,6 +128,9 @@ public:
 
     void setOriginatingObject(QObject *object);
     QObject *originatingObject() const;
+
+    Priority priority() const;
+    void setPriority(Priority priority);
 
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;

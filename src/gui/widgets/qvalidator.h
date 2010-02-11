@@ -105,6 +105,7 @@ public:
     ~QIntValidator();
 
     QValidator::State validate(QString &, int &) const;
+    void fixup(QString &input) const;
 
     void setBottom(int);
     void setTop(int);

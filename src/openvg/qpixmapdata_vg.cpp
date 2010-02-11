@@ -231,14 +231,6 @@ QPaintEngine* QVGPixmapData::paintEngine() const
     return source.paintEngine();
 }
 
-// This function works around QImage::bits() making a deep copy if the
-// QImage is not const.  We force it to be const and then get the bits.
-// XXX: Should add a QImage::constBits() in the future to replace this.
-const uchar *qt_vg_imageBits(const QImage& image)
-{
-    return image.bits();
-}
-
 VGImage QVGPixmapData::toVGImage()
 {
     if (!isValid())
@@ -271,7 +263,7 @@ VGImage QVGPixmapData::toVGImage()
     if (!source.isNull() && recreate) {
         vgImageSubData
             (vgImage,
-             qt_vg_imageBits(source), source.bytesPerLine(),
+             source.constBits(), source.bytesPerLine(),
              VG_sARGB_8888_PRE, 0, 0, w, h);
     }
 
@@ -670,7 +662,7 @@ void* QVGPixmapData::toNativeType(NativeType type)
         if (bitmap) {
             if (bitmap->Create(TSize(source.width(), source.height()),
                               EColor16MAP) == KErrNone) {
-                const uchar *sptr = qt_vg_imageBits(source);
+                const uchar *sptr = source.constBits();
                 bitmap->BeginDataAccess();
 
                 uchar *dptr = (uchar*)bitmap->DataAddress();

@@ -65,6 +65,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef Q_OS_WIN32
+#define NO_STDERR "2> NUL"
+#else
+#define NO_STDERR "2>/dev/null"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // Well, Windows doesn't have this, so here's the macro
@@ -1809,7 +1815,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
                 t << "\n\t" << "-$(DEL_FILE) " << tmp_clean;
                 if (isForSymbian())
-                    t << " 2> NUL"; // Eliminate unnecessary warnings
+                    t << " " << NO_STDERR; // Eliminate unnecessary warnings
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
@@ -1839,7 +1845,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 }
                 if(!cleans.isEmpty()) {
                     if (isForSymbian())
-                        t << valGlue(cleans, "\n\t" + del_statement, " 2> NUL\n\t" + del_statement, " 2> NUL");
+                        t << valGlue(cleans, "\n\t" + del_statement, " " NO_STDERR "\n\t" + del_statement, " " NO_STDERR);
                     else
                         t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
                 }

@@ -21,51 +21,62 @@ CL_NS_USE(analysis)
 
 CL_NS_DEF(queryParser)
 
-MultiFieldQueryParser::MultiFieldQueryParser(const TCHAR** fields, CL_NS(analysis)::Analyzer* a, BoostMap* boosts):
-	QueryParser(NULL,a)
+MultiFieldQueryParser::MultiFieldQueryParser(const TCHAR** fields,
+    CL_NS(analysis)::Analyzer* analyzer, BoostMap* boosts)
+    : QueryParser(NULL, analyzer)
 {
 	this->fields = fields;
     this->boosts = boosts;
 }
-MultiFieldQueryParser::~MultiFieldQueryParser(){
+
+MultiFieldQueryParser::~MultiFieldQueryParser()
+{
 }
 
 //static 
-Query* MultiFieldQueryParser::parse(const TCHAR* query, const TCHAR** fields, Analyzer* analyzer)
+Query* MultiFieldQueryParser::parse(const TCHAR* query, const TCHAR** fields,
+    Analyzer* analyzer)
 {
     BooleanQuery* bQuery = _CLNEW BooleanQuery();
     int32_t i = 0;
-    while ( fields[i] != NULL ){
-		   Query* q = QueryParser::parse(query, fields[i], analyzer);
-			bQuery->add(q, true, false, false);
-
+    while (fields[i] != NULL){
+        Query* q = QueryParser::parse(query, fields[i], analyzer);
+        if (q && (q->getQueryName() != _T("BooleanQuery")
+          || ((BooleanQuery*)q)->getClauseCount() > 0)) {
+            bQuery->add(q , true, false, false);
+        } else {
+            _CLDELETE(q);
+        }
         i++;
     }
     return bQuery;
 }
 
 //static 
-Query* MultiFieldQueryParser::parse(const TCHAR* query, const TCHAR** fields, const uint8_t* flags, Analyzer* analyzer)
+Query* MultiFieldQueryParser::parse(const TCHAR* query, const TCHAR** fields,
+    const uint8_t* flags, Analyzer* analyzer)
 {
     BooleanQuery* bQuery = _CLNEW BooleanQuery();
     int32_t i = 0;
-    while ( fields[i] != NULL )
-    {
-		Query* q = QueryParser::parse(query, fields[i], analyzer);
-        uint8_t flag = flags[i];
-        switch (flag)
-        {
-			case MultiFieldQueryParser::REQUIRED_FIELD:
-                bQuery->add(q, true, true, false);
-                break;
-            case MultiFieldQueryParser::PROHIBITED_FIELD:
-                bQuery->add(q, true, false, true);
-                break;
-            default:
-                bQuery->add(q, true, false, false);
-                break;
+    while ( fields[i] != NULL ) {
+        Query* q = QueryParser::parse(query, fields[i], analyzer);
+        if (q && (q->getQueryName() != _T("BooleanQuery")
+          || ((BooleanQuery*)q)->getClauseCount() > 0)) {
+            uint8_t flag = flags[i];
+            switch (flag) {
+                case MultiFieldQueryParser::REQUIRED_FIELD:
+                    bQuery->add(q, true, true, false);
+                    break;
+                case MultiFieldQueryParser::PROHIBITED_FIELD:
+                    bQuery->add(q, true, false, true);
+                    break;
+                default:
+                    bQuery->add(q, true, false, false);
+                    break;
+            }
+        } else {
+            _CLDELETE(q);
         }
-
         i++;
     }
     return bQuery;

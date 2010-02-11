@@ -60,7 +60,7 @@
         <ul>
             <li><a href="installation.html">Installation</a> and <a href="how-to-learn-qt.html">First Steps with Qt</a></li>
             <li><a href="tutorials.html">Tutorials</a> and <a href="examples.html">Examples</a></li>
-            <li><a href="demos.html">Demonstrations</a> and <a href="qt4-6-intro.html"><b>New in Qt 4.6</b></a></li>
+            <li><a href="demos.html">Demonstrations</a> and <a href="qt4-7-intro.html"><b>New in Qt 4.7</b></a></li>
         </ul>
         </td>
         <td valign="top">

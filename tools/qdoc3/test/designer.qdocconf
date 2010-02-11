@@ -6,18 +6,18 @@ include(qt-defines.qdocconf)
 
 project                 = Qt Designer
 description             = Qt Designer Manual
-url                     = http://qt.nokia.com/doc/4.6
+url                     = http://qt.nokia.com/doc/4.7
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 
 qhp.projects            = Designer
 
 qhp.Designer.file                = designer.qhp
-qhp.Designer.namespace           = com.trolltech.designer.460
+qhp.Designer.namespace           = com.trolltech.designer.470
 qhp.Designer.virtualFolder       = qdoc
 qhp.Designer.indexTitle          = Qt Designer Manual
 qhp.Designer.extraFiles          = classic.css images/qt-logo.png images/trolltech-logo.png
-qhp.Designer.filterAttributes    = qt 4.6.2 tools designer
+qhp.Designer.filterAttributes    = qt 4.7.0 tools designer
 qhp.Designer.customFilters.Designer.name = Qt Designer Manual
 qhp.Designer.customFilters.Designer.filterAttributes = qt tools designer
 qhp.Designer.subprojects         = manual examples

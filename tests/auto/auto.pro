@@ -465,7 +465,7 @@ SUBDIRS += \
            rcc \
            windowsmobile
 
-contains(QT_CONFIG,opengl):SUBDIRS += qgl
+contains(QT_CONFIG,opengl):SUBDIRS += qgl qglbuffer
 
 contains(QT_CONFIG,qt3support):!wince*:SUBDIRS += $$Q3SUBDIRS
 

@@ -160,10 +160,11 @@ QVariant DynamicTreeModel::data(const QModelIndex &index, int role) const
 
 void DynamicTreeModel::clear()
 {
+  beginResetModel();
   m_items.clear();
   m_childItems.clear();
   nextId = 1;
-  reset();
+  endResetModel();
 }
 
 

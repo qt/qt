@@ -45,7 +45,7 @@
 #include <private/qegl_p.h>
 #include <private/qeglproperties_p.h>
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #include <private/qpaintengineex_opengl2_p.h>
 #endif
 
@@ -196,7 +196,7 @@ QX11GLPixmapData::~QX11GLPixmapData()
 {
 }
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_pixmap_2_engine)
 #endif
 
@@ -220,7 +220,7 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
 
     QPaintEngine* engine;
 
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
     engine = qt_gl_pixmap_engine();
 #elif defined(QT_OPENGL_ES_2)
     engine = qt_gl_pixmap_2_engine();
@@ -237,7 +237,7 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
     if (engine->isActive()) {
         qWarning("Pixmap paint engine already active");
 
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
         engine = new QOpenGLPaintEngine;
 #elif defined(QT_OPENGL_ES_2)
         engine = new QGL2PaintEngineEx;

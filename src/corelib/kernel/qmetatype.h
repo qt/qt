@@ -108,6 +108,8 @@ public:
     typedef void (*LoadOperator)(QDataStream &, void *);
     static void registerStreamOperators(const char *typeName, SaveOperator saveOp,
                                         LoadOperator loadOp);
+    static void registerStreamOperators(int type, SaveOperator saveOp,
+                                        LoadOperator loadOp);
 #endif
     static int registerType(const char *typeName, Destructor destructor,
                             Constructor constructor);
@@ -223,6 +225,24 @@ inline int qRegisterMetaType(
     return qMetaTypeId(dummy);
 #endif
 }
+
+#ifndef QT_NO_DATASTREAM
+template <typename T>
+inline int qRegisterMetaTypeStreamOperators()
+{
+    typedef void(*SavePtr)(QDataStream &, const T *);
+    typedef void(*LoadPtr)(QDataStream &, T *);
+    SavePtr sptr = qMetaTypeSaveHelper<T>;
+    LoadPtr lptr = qMetaTypeLoadHelper<T>;
+
+    register int id = qMetaTypeId<T>();
+    QMetaType::registerStreamOperators(id,
+                                       reinterpret_cast<QMetaType::SaveOperator>(sptr),
+                                       reinterpret_cast<QMetaType::LoadOperator>(lptr));
+
+    return id;
+}
+#endif
 
 #define Q_DECLARE_METATYPE(TYPE)                                        \
     QT_BEGIN_NAMESPACE                                                  \
