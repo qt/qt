@@ -884,4 +884,4 @@ void tst_states::nonExistantProperty()
 
 QTEST_MAIN(tst_states)
 
-#include "tst_states.moc"
+#include "tst_qmlstates.moc"

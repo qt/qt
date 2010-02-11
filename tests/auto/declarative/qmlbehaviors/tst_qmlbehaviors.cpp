@@ -278,4 +278,4 @@ void tst_behaviors::disabled()
 
 QTEST_MAIN(tst_behaviors)
 
-#include "tst_behaviors.moc"
+#include "tst_qmlbehaviors.moc"

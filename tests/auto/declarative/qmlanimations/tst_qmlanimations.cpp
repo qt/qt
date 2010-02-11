@@ -608,4 +608,4 @@ void tst_animations::propertyValueSourceDefaultStart()
 
 QTEST_MAIN(tst_animations)
 
-#include "tst_animations.moc"
+#include "tst_qmlanimations.moc"

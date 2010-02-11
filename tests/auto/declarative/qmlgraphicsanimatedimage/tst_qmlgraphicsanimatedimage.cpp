@@ -188,4 +188,4 @@ void tst_animatedimage::invalidSource()
 
 QTEST_MAIN(tst_animatedimage)
 
-#include "tst_animatedimage.moc"
+#include "tst_qmlgraphicsanimatedimage.moc"

@@ -456,4 +456,4 @@ void tst_anchors::margins()
 
 QTEST_MAIN(tst_anchors)
 
-#include "tst_anchors.moc"
+#include "tst_qmlgraphicsanchors.moc"

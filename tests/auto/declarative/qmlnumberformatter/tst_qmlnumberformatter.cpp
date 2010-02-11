@@ -219,4 +219,4 @@ void tst_numberformat::text()
 
 QTEST_MAIN(tst_numberformat)
 
-#include "tst_numberformatter.moc"
+#include "tst_qmlnumberformatter.moc"

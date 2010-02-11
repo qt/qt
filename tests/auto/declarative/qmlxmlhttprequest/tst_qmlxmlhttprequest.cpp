@@ -1312,4 +1312,4 @@ void tst_xmlhttprequest::cdata()
 
 QTEST_MAIN(tst_xmlhttprequest)
 
-#include "tst_xmlhttprequest.moc"
+#include "tst_qmlxmlhttprequest.moc"

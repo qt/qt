@@ -585,4 +585,4 @@ void tst_valuetypes::cppClasses()
 }
 QTEST_MAIN(tst_valuetypes)
 
-#include "tst_valuetypes.moc"
+#include "tst_qmlvaluetypes.moc"

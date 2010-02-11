@@ -147,4 +147,4 @@ void tst_datetimeformatter::dateTime()
 
 QTEST_MAIN(tst_datetimeformatter)
 
-#include "tst_datetimeformatter.moc"
+#include "tst_qmldatetimeformatter.moc"
