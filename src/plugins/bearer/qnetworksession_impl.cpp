@@ -316,7 +316,6 @@ void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
         }
 
         state = QNetworkSession::Connected;
-        qDebug() << oldState << "->" << state;
         if (state != oldState)
             emit stateChanged(state);
 
@@ -328,7 +327,6 @@ void QNetworkSessionPrivateImpl::updateStateFromServiceNetwork()
     else
         state = QNetworkSession::Disconnected;
 
-    qDebug() << oldState << "->" << state;
     if (state != oldState)
         emit stateChanged(state);
 }

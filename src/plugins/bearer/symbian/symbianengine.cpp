@@ -663,7 +663,6 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
     
     startCommsDatabaseNotifications();
     
-    qDebug() << Q_FUNC_INFO << "updateCompleted()";
     emit updateCompleted();
 }
 

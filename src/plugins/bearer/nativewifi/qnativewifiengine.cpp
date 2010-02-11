@@ -72,7 +72,7 @@ void qNotificationCallback(WLAN_NOTIFICATION_DATA *data, QNativeWifiEngine *d)
         QMetaObject::invokeMethod(d, "scanComplete", Qt::QueuedConnection);
         break;
     default:
-        qDebug() << "wlan unknown notification";
+        ;
     }
 }
 

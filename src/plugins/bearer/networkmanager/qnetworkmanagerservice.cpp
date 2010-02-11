@@ -723,7 +723,6 @@ bool QNetworkManagerSettingsConnection::setConnections()
         allOk = true;
     } else {
         QDBusError error = dbusConnection.lastError();
-        qDebug() << error.name() << error.message() << error.type();
     }
 
     if (nmDBusHelper)

@@ -134,9 +134,6 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
             if (devices.isEmpty())
                 continue;
 
-            if (devices.count() > 1)
-                qDebug() << "multiple network interfaces for" << id;
-
             QNetworkManagerInterfaceDevice device(devices.at(0).path());
             return device.interface().name();
         }
@@ -328,8 +325,6 @@ void QNetworkManagerEngine::activeConnectionPropertiesChanged(const QString &pat
 void QNetworkManagerEngine::devicePropertiesChanged(const QString &path,
                                                     const QMap<QString, QVariant> &properties)
 {
-    qDebug() << Q_FUNC_INFO << path;
-    qDebug() << properties;
 }
 
 void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
@@ -428,7 +423,6 @@ void QNetworkManagerEngine::updateConnection(const QNmSettingsMap &settings)
     const QString service = connection->connectionInterface()->service();
     const QString settingsPath = connection->connectionInterface()->path();
 
-    qDebug() << "Should parse connection directly into existing configuration";
     QNetworkConfigurationPrivate *cpPriv = parseConnection(service, settingsPath, settings);
 
     // Check if connection is active.
@@ -457,9 +451,7 @@ void QNetworkManagerEngine::updateConnection(const QNmSettingsMap &settings)
 void QNetworkManagerEngine::activationFinished(QDBusPendingCallWatcher *watcher)
 {
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
-    if (reply.isError()) {
-        qDebug() << "error connecting NM connection";
-    } else {
+    if (!reply.isError()) {
         QDBusObjectPath result = reply.value();
 
         QNetworkManagerConnectionActive activeConnection(result.path());

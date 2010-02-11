@@ -242,7 +242,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionOnline()
         QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         break;
     default:
-        qDebug() << "How do we handle replies in state" << state;
+        ;
     }
 }
 
@@ -503,8 +503,6 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
             int index = it->second.lastIndexOf('/');
             if (index != -1)
                 totalSize = it->second.mid(index + 1).toLongLong() - preMigrationDownloaded;
-        } else {
-            qDebug() << "Could not find Content-Length or Content-Range header";
         }
     }
 
@@ -564,14 +562,7 @@ void QNetworkReplyImplPrivate::finished()
         state == Working && errorCode != QNetworkReply::OperationCanceledError) {
         // only content with a known size will fail with a temporary network failure error
         if (!totalSize.isNull()) {
-            qDebug() << "Connection broke during download.";
-            qDebug() << "Don't worry, we've already started roaming :)";
-
-            if (bytesDownloaded == totalSize) {
-                qDebug() << "Luckily download has already finished.";
-            } else {
-                qDebug() << "Download hasn't finished";
-
+            if (bytesDownloaded != totalSize) {
                 if (migrateBackend()) {
                     // either we are migrating or the request is finished/aborted
                     if (state == Reconnecting || state == WaitingForSession) {
@@ -579,8 +570,8 @@ void QNetworkReplyImplPrivate::finished()
                         return; // exit early if we are migrating.
                     }
                 } else {
-                    qDebug() << "Could not migrate backend, application needs to send another requeset.";
-                    error(QNetworkReply::TemporaryNetworkFailureError, q->tr("Temporary network failure."));
+                    error(QNetworkReply::TemporaryNetworkFailureError,
+                          q->tr("Temporary network failure."));
                 }
             }
         }
@@ -809,38 +800,34 @@ bool QNetworkReplyImpl::event(QEvent *e)
     return QObject::event(e);
 }
 
+/*
+    Migrates the backend of the QNetworkReply to a new network connection if required.  Returns
+    true if the reply is migrated or it is not required; otherwise returns false.
+*/
 bool QNetworkReplyImplPrivate::migrateBackend()
 {
     Q_Q(QNetworkReplyImpl);
 
-    if (state == QNetworkReplyImplPrivate::Finished ||
-        state == QNetworkReplyImplPrivate::Aborted) {
-        qDebug() << "Network reply is already finished/aborted.";
+    // Network reply is already finished or aborted, don't need to migrate.
+    if (state == Finished || state == Aborted)
         return true;
-    }
 
-    if (!qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
-        qDebug() << "Resume only support by http backend, not migrating.";
+    // Resume only supported by http backend, not migrating.
+    if (!qobject_cast<QNetworkAccessHttpBackend *>(backend))
         return false;
-    }
 
-    if (outgoingData) {
-        qDebug() << "Request has outgoing data, not migrating.";
+    // Request has outgoing data, not migrating.
+    if (outgoingData)
         return false;
-    }
 
-    if (copyDevice) {
-        qDebug() << "Request is serviced from cache, not migrating.";
+    // Request is serviced from the cache, don't need to migrate.
+    if (copyDevice)
         return true;
-    }
 
+    // Range header is not supported by server/resource, can't migrate.
     RawHeadersList::ConstIterator it = findRawHeader("Accept-Ranges");
-    if (it == rawHeaders.constEnd() || it->second == "none") {
-        qDebug() << "Range header not supported by server/resource.";
+    if (it == rawHeaders.constEnd() || it->second == "none")
         return false;
-    }
-
-    qDebug() << "Need to check for only cacheable content.";
 
     state = QNetworkReplyImplPrivate::Reconnecting;
 

@@ -480,10 +480,8 @@ void QNlaThread::fetchConfigurations()
             if (error == WSA_E_NO_MORE)
                 break;
 
-            if (error == WSAEFAULT) {
-                qDebug() << "buffer not big enough" << bufferLength;
+            if (error == WSAEFAULT)
                 break;
-            }
 
             qWarning("WSALookupServiceNext error %d", WSAGetLastError());
             break;
