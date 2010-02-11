@@ -44,7 +44,7 @@
 #include "qglobal.h"
 #include <private/qapplication_p.h>
 #include "qimage.h"
-#include "qt_s60_p.h"
+#include <private/qt_s60_p.h>
 
 #include <e32base.h>
 #include <e32std.h>
