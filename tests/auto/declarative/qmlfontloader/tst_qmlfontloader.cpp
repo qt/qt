@@ -112,7 +112,7 @@ void tst_qmlfontloader::localFont()
 
 void tst_qmlfontloader::failLocalFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/dummy.ttf\" }";
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/dummy.ttf").toString() + "\" }";
     QTest::ignoreMessage(QtWarningMsg, QString("Cannot load font:  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/dummy.ttf").toString() + "\" )  ").toUtf8().constData());
     QmlComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
