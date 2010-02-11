@@ -38,360 +38,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
-
 #include "helpviewer.h"
+#include "helpviewer_qwv.h"
+
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
+#include "tracer.h"
 
 #include <QtCore/QDir>
-#include <QtCore/QEvent>
-#include <QtCore/QVariant>
-#include <QtCore/QByteArray>
 #include <QtCore/QStringBuilder>
-#include <QtCore/QTemporaryFile>
-#include <QtCore/QTimer>
 
+#include <QtGui/QContextMenuEvent>
 #include <QtGui/QMenu>
-#include <QtGui/QKeyEvent>
 #include <QtGui/QClipboard>
 #include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
 #include <QtGui/QDesktopServices>
 
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-
 QT_BEGIN_NAMESPACE
 
+bool HelpViewer::canOpenPage(const QString &url)
+{
+    TRACE_OBJ
+    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
+        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
+        || url == QLatin1String("blank");
+}
+
+bool HelpViewer::isLocalUrl(const QUrl &url)
+{
+    TRACE_OBJ
+    const QString scheme = url.scheme();
+    return scheme.isEmpty()
+        || scheme == QLatin1String("file")
+        || scheme == QLatin1String("qrc")
+        || scheme == QLatin1String("data")
+        || scheme == QLatin1String("qthelp")
+        || scheme == QLatin1String("about");
+}
+
+#if defined(QT_NO_WEBKIT)
+
 namespace {
-    const QString PageNotFoundMessage =
-        QCoreApplication::translate("HelpViewer",
-            "<title>Error 404...</title><div align=\"center\"><br><br>"
-            "<h1>The page could not be found</h1><br><h3>'%1'</h3></div>");
+const QString PageNotFoundMessage =
+    QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
+    "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
+    "</h3></div>");
 }
-
-#if !defined(QT_NO_WEBKIT)
-
-class HelpNetworkReply : public QNetworkReply
-{
-public:
-    HelpNetworkReply(const QNetworkRequest &request, const QByteArray &fileData,
-        const QString &mimeType);
-
-    virtual void abort();
-
-    virtual qint64 bytesAvailable() const
-        { return data.length() + QNetworkReply::bytesAvailable(); }
-
-protected:
-    virtual qint64 readData(char *data, qint64 maxlen);
-
-private:
-    QByteArray data;
-    qint64 origLen;
-};
-
-HelpNetworkReply::HelpNetworkReply(const QNetworkRequest &request,
-        const QByteArray &fileData, const QString& mimeType)
-    : data(fileData), origLen(fileData.length())
-{
-    TRACE_OBJ
-    setRequest(request);
-    setOpenMode(QIODevice::ReadOnly);
-
-    setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
-    setHeader(QNetworkRequest::ContentLengthHeader, QByteArray::number(origLen));
-    QTimer::singleShot(0, this, SIGNAL(metaDataChanged()));
-    QTimer::singleShot(0, this, SIGNAL(readyRead()));
-}
-
-void HelpNetworkReply::abort()
-{
-    TRACE_OBJ
-    // nothing to do
-}
-
-qint64 HelpNetworkReply::readData(char *buffer, qint64 maxlen)
-{
-    TRACE_OBJ
-    qint64 len = qMin(qint64(data.length()), maxlen);
-    if (len) {
-        qMemCopy(buffer, data.constData(), len);
-        data.remove(0, len);
-    }
-    if (!data.length())
-        QTimer::singleShot(0, this, SIGNAL(finished()));
-    return len;
-}
-
-class HelpNetworkAccessManager : public QNetworkAccessManager
-{
-public:
-    HelpNetworkAccessManager(QObject *parent);
-
-protected:
-    virtual QNetworkReply *createRequest(Operation op,
-        const QNetworkRequest &request, QIODevice *outgoingData = 0);
-};
-
-HelpNetworkAccessManager::HelpNetworkAccessManager(QObject *parent)
-    : QNetworkAccessManager(parent)
-{
-    TRACE_OBJ
-}
-
-QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
-    const QNetworkRequest &request, QIODevice* /*outgoingData*/)
-{
-    TRACE_OBJ
-    const QUrl& url = request.url();
-    QString mimeType = url.toString();
-    if (mimeType.endsWith(QLatin1String(".svg"))
-        || mimeType.endsWith(QLatin1String(".svgz"))) {
-            mimeType = QLatin1String("image/svg+xml");
-    } else if (mimeType.endsWith(QLatin1String(".css"))) {
-        mimeType = QLatin1String("text/css");
-    } else if (mimeType.endsWith(QLatin1String(".js"))) {
-        mimeType = QLatin1String("text/javascript");
-    } else if (mimeType.endsWith(QLatin1String(".txt"))) {
-        mimeType = QLatin1String("text/plain");
-    } else {
-        mimeType = QLatin1String("text/html");
-    }
-
-    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-    const QByteArray &data = helpEngine.findFile(url).isValid()
-        ? helpEngine.fileData(url)
-        : PageNotFoundMessage.arg(url.toString()).toUtf8();
-    return new HelpNetworkReply(request, data, mimeType);
-}
-
-class HelpPage : public QWebPage
-{
-public:
-    HelpPage(CentralWidget *central, QObject *parent);
-
-protected:
-    virtual QWebPage *createWindow(QWebPage::WebWindowType);
-    virtual void triggerAction(WebAction action, bool checked = false);
-
-    virtual bool acceptNavigationRequest(QWebFrame *frame,
-        const QNetworkRequest &request, NavigationType type);
-
-private:
-    CentralWidget *centralWidget;
-    bool closeNewTabIfNeeded;
-
-    friend class HelpViewer;
-    Qt::MouseButtons m_pressedButtons;
-    Qt::KeyboardModifiers m_keyboardModifiers;
-};
-
-HelpPage::HelpPage(CentralWidget *central, QObject *parent)
-    : QWebPage(parent)
-    , centralWidget(central)
-    , closeNewTabIfNeeded(false)
-    , m_pressedButtons(Qt::NoButton)
-    , m_keyboardModifiers(Qt::NoModifier)
-{
-    TRACE_OBJ
-}
-
-QWebPage *HelpPage::createWindow(QWebPage::WebWindowType)
-{
-    TRACE_OBJ
-    HelpPage* newPage = static_cast<HelpPage*>(centralWidget->newEmptyTab()->page());
-    if (newPage)
-        newPage->closeNewTabIfNeeded = closeNewTabIfNeeded;
-    closeNewTabIfNeeded = false;
-    return newPage;
-}
-
-void HelpPage::triggerAction(WebAction action, bool checked)
-{
-    TRACE_OBJ
-    switch (action) {
-        case OpenLinkInNewWindow:
-            closeNewTabIfNeeded = true;
-        default:        // fall through
-            QWebPage::triggerAction(action, checked);
-            break;
-    }
-}
-
-bool HelpPage::acceptNavigationRequest(QWebFrame *,
-    const QNetworkRequest &request, QWebPage::NavigationType type)
-{
-    TRACE_OBJ
-    const QUrl &url = request.url();
-    const bool closeNewTab = closeNewTabIfNeeded;
-    closeNewTabIfNeeded = false;
-
-    if (HelpViewer::isLocalUrl(url)) {
-        const QString& path = url.path();
-        if (!HelpViewer::canOpenPage(path)) {
-            QTemporaryFile tmpTmpFile;
-            if (!tmpTmpFile.open())
-                return false;
-            const QString extension = QFileInfo(path).completeSuffix();
-            QFile actualTmpFile(tmpTmpFile.fileName() % QLatin1String(".")
-                                % extension);
-            if (actualTmpFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
-                actualTmpFile.write(HelpEngineWrapper::instance().fileData(url));
-                actualTmpFile.close();
-                QDesktopServices::openUrl(QUrl(actualTmpFile.fileName()));
-            }
-
-            if (closeNewTab)
-                QMetaObject::invokeMethod(CentralWidget::instance(), "closeTab");
-            return false;
-        }
-
-        if (type == QWebPage::NavigationTypeLinkClicked
-            && (m_keyboardModifiers & Qt::ControlModifier
-            || m_pressedButtons == Qt::MidButton)) {
-                HelpViewer* viewer = centralWidget->newEmptyTab();
-                if (viewer)
-                    CentralWidget::instance()->setSource(url);
-                m_pressedButtons = Qt::NoButton;
-                m_keyboardModifiers = Qt::NoModifier;
-                return false;
-        }
-        return true;
-    }
-
-    QDesktopServices::openUrl(url);
-    return false;
-}
-
-HelpViewer::HelpViewer(CentralWidget *parent)
-    : QWebView(parent)
-    , parentWidget(parent)
-    , loadFinished(false)
-    , helpEngine(HelpEngineWrapper::instance())
-{
-    TRACE_OBJ
-    setAcceptDrops(false);
-
-    setPage(new HelpPage(parent, this));
-
-    page()->setNetworkAccessManager(new HelpNetworkAccessManager(this));
-
-    QAction* action = pageAction(QWebPage::OpenLinkInNewWindow);
-    action->setText(tr("Open Link in New Tab"));
-    if (!parent)
-        action->setVisible(false);
-
-    pageAction(QWebPage::DownloadLinkToDisk)->setVisible(false);
-    pageAction(QWebPage::DownloadImageToDisk)->setVisible(false);
-    pageAction(QWebPage::OpenImageInNewWindow)->setVisible(false);
-
-    connect(pageAction(QWebPage::Copy), SIGNAL(changed()), this,
-        SLOT(actionChanged()));
-    connect(pageAction(QWebPage::Back), SIGNAL(changed()), this,
-        SLOT(actionChanged()));
-    connect(pageAction(QWebPage::Forward), SIGNAL(changed()), this,
-        SLOT(actionChanged()));
-    connect(page(), SIGNAL(linkHovered(QString,QString,QString)), this,
-        SIGNAL(highlighted(QString)));
-    connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
-    connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
-}
-
-void HelpViewer::setSource(const QUrl &url)
-{
-    TRACE_OBJ
-    loadFinished = false;
-    if (url.toString() == QLatin1String("help")) {
-        load(QUrl(QLatin1String("qthelp://com.trolltech.com."
-            "assistantinternal-1.0.0/assistant/assistant.html")));
-    } else {
-        load(url);
-    }
-}
-
-void HelpViewer::resetZoom()
-{
-    TRACE_OBJ
-    setTextSizeMultiplier(1.0);
-}
-
-void HelpViewer::zoomIn(qreal range)
-{
-    TRACE_OBJ
-    setTextSizeMultiplier(textSizeMultiplier() + range / 10.0);
-}
-
-void HelpViewer::zoomOut(qreal range)
-{
-    TRACE_OBJ
-    setTextSizeMultiplier(qMax(0.0, textSizeMultiplier() - range / 10.0));
-}
-
-void HelpViewer::wheelEvent(QWheelEvent *e)
-{
-    TRACE_OBJ
-    if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->delta();
-        if (delta > 0)
-            zoomIn(delta / 120);
-        else if (delta < 0)
-            zoomOut(-delta / 120);
-        e->accept();
-        return;
-    }
-    QWebView::wheelEvent(e);
-}
-
-void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
-{
-    TRACE_OBJ
-    if (e->button() == Qt::XButton1) {
-        triggerPageAction(QWebPage::Back);
-        return;
-    }
-
-    if (e->button() == Qt::XButton2) {
-        triggerPageAction(QWebPage::Forward);
-        return;
-    }
-
-    QWebView::mouseReleaseEvent(e);
-}
-
-void HelpViewer::actionChanged()
-{
-    TRACE_OBJ
-    QAction *a = qobject_cast<QAction *>(sender());
-    if (a == pageAction(QWebPage::Copy))
-        emit copyAvailable(a->isEnabled());
-    else if (a == pageAction(QWebPage::Back))
-        emit backwardAvailable(a->isEnabled());
-    else if (a == pageAction(QWebPage::Forward))
-        emit forwardAvailable(a->isEnabled());
-}
-
-void HelpViewer::mousePressEvent(QMouseEvent *event)
-{
-    TRACE_OBJ
-    HelpPage *currentPage = static_cast<HelpPage*>(page());
-    if (currentPage) {
-        currentPage->m_pressedButtons = event->buttons();
-        currentPage->m_keyboardModifiers = event->modifiers();
-    }
-    QWebView::mousePressEvent(event);
-}
-
-void HelpViewer::setLoadFinished(bool ok)
-{
-    TRACE_OBJ
-    loadFinished = ok;
-    emit sourceChanged(url());
-}
-
-#else  // !defined(QT_NO_WEBKIT)
 
 HelpViewer::HelpViewer(CentralWidget *parent)
     : QTextBrowser(parent)
@@ -603,6 +296,12 @@ void HelpViewer::keyPressEvent(QKeyEvent *e)
     QTextBrowser::keyPressEvent(e);
 }
 
+void HelpViewer::home()
+{
+    TRACE_OBJ
+    setSource(helpEngine.homePage());
+}
+
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
     TRACE_OBJ
@@ -615,33 +314,6 @@ void HelpViewer::wheelEvent(QWheelEvent *e)
     }
 }
 
-#endif  // !defined(QT_NO_WEBKIT)
-
-void HelpViewer::home()
-{
-    TRACE_OBJ
-    setSource(helpEngine.homePage());
-}
-
-bool HelpViewer::canOpenPage(const QString &url)
-{
-    TRACE_OBJ
-    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
-        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
-        || url == QLatin1String("blank");
-}
-
-bool HelpViewer::isLocalUrl(const QUrl &url)
-{
-    TRACE_OBJ
-    const QString scheme = url.scheme();
-    return scheme.isEmpty()
-        || scheme == QLatin1String("file")
-        || scheme == QLatin1String("qrc")
-        || scheme == QLatin1String("data")
-        || scheme == QLatin1String("qthelp")
-        || scheme == QLatin1String("about");
-}
-
+#endif
 
 QT_END_NAMESPACE

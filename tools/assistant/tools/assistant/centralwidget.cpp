@@ -44,6 +44,7 @@
 #include "findwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer.h"
+#include "helpviewer_qwv.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
 #include "../shared/collectionconfiguration.h"
@@ -57,6 +58,7 @@
 #include <QtGui/QPrinter>
 #include <QtGui/QTabBar>
 #include <QtGui/QTabWidget>
+#include <QtGui/QTextBrowser>
 #include <QtGui/QToolButton>
 #include <QtGui/QPageSetupDialog>
 #include <QtGui/QPrintDialog>

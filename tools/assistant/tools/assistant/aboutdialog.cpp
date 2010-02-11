@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include "helpviewer.h"
+#include "helpviewer_qwv.h"
 #include "tracer.h"
 
 #include <QtCore/QBuffer>

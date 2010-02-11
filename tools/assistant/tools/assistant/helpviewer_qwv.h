@@ -38,26 +38,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef HELPVIEWERQWV_H
+#define HELPVIEWERQWV_H
 
-#ifndef HELPVIEWER_H
-#define HELPVIEWER_H
+#if !defined(QT_NO_WEBKIT)
 
-#include <QtCore/QUrl>
-#include <QtCore/QVariant>
-
-#if defined(QT_NO_WEBKIT)
-
-#include <QtGui/QTextBrowser>
+#include <QtGui/QAction>
+#include <QtWebKit/QWebView>
 
 QT_BEGIN_NAMESPACE
 
 class CentralWidget;
 class HelpEngineWrapper;
-class QContextMenuEvent;
-class QKeyEvent;
 class QMouseEvent;
 
-class HelpViewer : public QTextBrowser
+class HelpViewer : public QWebView
 {
     Q_OBJECT
 
@@ -65,41 +60,57 @@ public:
     HelpViewer(CentralWidget *parent);
     void setSource(const QUrl &url);
 
-    void resetZoom();
-    void zoomIn(int range = 1);
-    void zoomOut(int range = 1);
-    int zoom() const { return zoomCount; }
-    void setZoom(int zoom) { zoomCount = zoom; }
+    inline QUrl source() const
+    { return url(); }
+
+    inline QString documentTitle() const
+    { return title(); }
 
     inline bool hasSelection() const
-    { return textCursor().hasSelection(); }
+    { return !selectedText().isEmpty(); } // ### this is suboptimal
 
-    bool launchedWithExternalApp(const QUrl &url);
+    void resetZoom();
+    void zoomIn(qreal range = 1);
+    void zoomOut(qreal range = 1);
+
+    inline void copy()
+    { return triggerPageAction(QWebPage::Copy); }
+
+    inline bool isForwardAvailable() const
+    { return pageAction(QWebPage::Forward)->isEnabled(); }
+    inline bool isBackwardAvailable() const
+    { return pageAction(QWebPage::Back)->isEnabled(); }
+    inline bool hasLoadFinished() const
+    { return loadFinished; }
+    inline qreal zoom() const
+    { return textSizeMultiplier(); }
+
     static bool canOpenPage(const QString &url);
     static bool isLocalUrl(const QUrl &url);
 
 public Q_SLOTS:
     void home();
+    void backward() { back(); }
+
+Q_SIGNALS:
+    void copyAvailable(bool enabled);
+    void forwardAvailable(bool enabled);
+    void backwardAvailable(bool enabled);
+    void highlighted(const QString &);
+    void sourceChanged(const QUrl &);
 
 protected:
-    void wheelEvent(QWheelEvent *e);
-
-private:
-    QVariant loadResource(int type, const QUrl &name);
-    void openLinkInNewTab(const QString &link);
-    bool hasAnchorAt(const QPoint& pos);
-    void contextMenuEvent(QContextMenuEvent *e);
+    virtual void wheelEvent(QWheelEvent *);
     void mouseReleaseEvent(QMouseEvent *e);
-    void keyPressEvent(QKeyEvent *e);
+    void mousePressEvent(QMouseEvent *event);
 
-private slots:
-    void openLinkInNewTab();
+private Q_SLOTS:
+    void actionChanged();
+    void setLoadFinished(bool ok);
 
 private:
-    int zoomCount;
-    bool controlPressed;
-    QString lastAnchor;
     CentralWidget* parentWidget;
+    bool loadFinished;
     HelpEngineWrapper &helpEngine;
 };
 
@@ -107,4 +118,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWER_H
+#endif  // HELPVIEWERQWV_H

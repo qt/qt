@@ -44,6 +44,7 @@
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer.h"
+#include "helpviewer_qwv.h"
 #include "topicchooser.h"
 
 #include <QtGui/QLayout>
