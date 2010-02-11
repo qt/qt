@@ -573,7 +573,11 @@ void QNetworkReplyImplPrivate::finished()
                 qDebug() << "Download hasn't finished";
 
                 if (migrateBackend()) {
-                    return;
+                    // either we are migrating or the request is finished/aborted
+                    if (state == Reconnecting) {
+                        resumeNotificationHandling();
+                        return; // exit early if we are migrating.
+                    }
                 } else {
                     qDebug() << "Could not migrate backend, application needs to send another requeset.";
                     error(QNetworkReply::TemporaryNetworkFailureError, q->tr("Temporary network failure."));
@@ -812,7 +816,7 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     if (state == QNetworkReplyImplPrivate::Finished ||
         state == QNetworkReplyImplPrivate::Aborted) {
         qDebug() << "Network reply is already finished/aborted.";
-        return false;
+        return true;
     }
 
     if (!qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
