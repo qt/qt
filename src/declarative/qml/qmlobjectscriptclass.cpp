@@ -377,7 +377,7 @@ QScriptValue QmlObjectScriptClass::tostring(QScriptContext *context, QScriptEngi
 
         ret += QString::fromUtf8(obj->metaObject()->className());
         ret += QLatin1String("(0x");
-        ret += QString::number((quintptr)obj,16);
+        ret += QString::number((intptr_t)obj,16);
 
         if (!objectName.isEmpty()) {
             ret += QLatin1String(", \"");
