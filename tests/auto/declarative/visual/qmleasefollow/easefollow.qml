@@ -7,7 +7,7 @@ Rectangle {
         id: rect
         width: 50; height: 20; y: 30; color: "black"
         x: SequentialAnimation {
-            running: true; repeat: true
+            repeat: true
             NumberAnimation { from: 50; to: 700; duration: 2000 }
             NumberAnimation { from: 700; to: 50; duration: 2000 }
         }

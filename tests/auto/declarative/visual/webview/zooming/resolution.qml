@@ -7,7 +7,6 @@ WebView {
     url: "resolution.html"
     zoomFactor:
         SequentialAnimation {
-            running: true
             repeat: true
             NumberAnimation { from: 1; to: 0.25; duration: 2000 }
             NumberAnimation { from: 0.25; to: 1; duration: 2000 }

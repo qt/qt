@@ -11,7 +11,6 @@ Rectangle {
         x: 60-width/2
         y: 200-height
         y: SequentialAnimation {
-            running: true
             repeat: true
             NumberAnimation {
                 to: 0; duration: 500

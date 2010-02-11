@@ -105,7 +105,7 @@ Item {
                 focusOnPress: true
                 font.pixelSize: 16
                 
-                text: "import Qt 4.6\nImage { id: smile;\n  x: 500*Math.random();\n  y: 200*Math.random(); \n  source: 'images/face-smile.png';\n  opacity: NumberAnimation{ \n    running:true; to: 0; duration: 1500;\n  }\n   Component.onCompleted: smile.destroy(1500);\n}"
+                text: "import Qt 4.6\nImage { id: smile;\n  x: 500*Math.random();\n  y: 200*Math.random(); \n  source: 'images/face-smile.png';\n  opacity: NumberAnimation{ \n    to: 0; duration: 1500;\n  }\n   Component.onCompleted: smile.destroy(1500);\n}"
             }
             Button {
                 text: "Create"

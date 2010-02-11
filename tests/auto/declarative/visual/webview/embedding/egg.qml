@@ -20,7 +20,6 @@ Item {
             from: 0
             to: 360
             repeat: true
-            running: true
             duration: root.period
         }
     }

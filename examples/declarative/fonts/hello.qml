@@ -10,7 +10,7 @@ Rectangle {
             text: "Hello world!"; font.pixelSize: 60
 
             font.letterSpacing: SequentialAnimation {
-                repeat: true; running: true
+                repeat: true;
                 NumberAnimation { from: 100; to: 300; easing: "easeInQuad"; duration: 3000 }
                 ScriptAction { script: {
                     container.y = (screen.height / 4) + (Math.random() * screen.height / 2)
@@ -18,7 +18,7 @@ Rectangle {
                 } }
             }
             opacity: SequentialAnimation {
-                repeat: true; running: true
+                repeat: true;
                 NumberAnimation { from: 1; to: 0; duration: 2600 }
                 PauseAnimation { duration: 400 }
             }

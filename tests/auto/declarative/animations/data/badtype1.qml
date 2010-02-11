@@ -7,6 +7,6 @@ Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
-        x: PropertyAnimation { from: "blue"; to: "green"; running: true; }
+        x: PropertyAnimation { from: "blue"; to: "green"; }
     }
 }

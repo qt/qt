@@ -5,7 +5,6 @@ Image {
     height: 250
     source: "face.png"
     fillMode: SequentialAnimation {
-        running: true
         repeat: true
         PropertyAction { value: Image.Stretch }
         PropertyAction { target: label; property: "text"; value: "Stretch" }

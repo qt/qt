@@ -14,9 +14,9 @@ Rectangle {
                 ProgressBar {
                     property int r: Math.floor(Math.random() * 5000 + 1000)
                     width: main.width - 20
-                    value: NumberAnimation { duration: r; from: 0; to: 100; running: true; repeat: true }
-                    color: ColorAnimation { duration: r; from: "lightsteelblue"; to: "thistle"; running: true; repeat: true }
-                    secondColor: ColorAnimation { duration: r; from: "steelblue"; to: "#CD96CD"; running: true; repeat: true }
+                    value: NumberAnimation { duration: r; from: 0; to: 100; repeat: true }
+                    color: ColorAnimation { duration: r; from: "lightsteelblue"; to: "thistle"; repeat: true }
+                    secondColor: ColorAnimation { duration: r; from: "steelblue"; to: "#CD96CD"; repeat: true }
                 }
             }
         }

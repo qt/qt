@@ -25,7 +25,7 @@ Item {
         // Animate the y property. Setting repeat to true makes the
         // animation repeat indefinitely, otherwise it would only run once.
         y: SequentialAnimation {
-            running: true; repeat: true
+            repeat: true
 
             // Move from minHeight to maxHeight in 300ms, using the easeOutExpo easing function
             NumberAnimation {

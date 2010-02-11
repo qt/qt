@@ -9,7 +9,6 @@ Rectangle {
         width: 400
         url: "renderControl.html"
         x: SequentialAnimation {
-                running: true
                 repeat: true
                 NumberAnimation { from: 100; to: 0; duration: 200 }
                 PropertyAction { target: webview; property: "renderingEnabled"; value: false }

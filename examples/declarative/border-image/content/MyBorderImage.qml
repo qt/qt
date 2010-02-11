@@ -18,13 +18,13 @@ Item {
         id: image; x: container.width / 2 - width / 2; y: container.height / 2 - height / 2
 
         width: SequentialAnimation {
-            running: true; repeat: true
+            repeat: true
             NumberAnimation { from: container.minWidth; to: container.maxWidth; duration: 2000; easing: "easeInOutQuad"}
             NumberAnimation { from: container.maxWidth; to: container.minWidth; duration: 2000; easing: "easeInOutQuad" }
         }
 
         height: SequentialAnimation {
-            running: true; repeat: true
+            repeat: true
             NumberAnimation { from: container.minHeight; to: container.maxHeight; duration: 2000; easing: "easeInOutQuad"}
             NumberAnimation { from: container.maxHeight; to: container.minHeight; duration: 2000; easing: "easeInOutQuad" }
         }

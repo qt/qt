@@ -9,6 +9,6 @@ Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
-        x: NumberAnimation { target: theRect; property: "x"; to: 300; running: true }
+        x: NumberAnimation { target: theRect; property: "x"; to: 300; }
     }
 }
