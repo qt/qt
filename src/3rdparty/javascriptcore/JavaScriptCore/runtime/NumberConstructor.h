@@ -29,7 +29,7 @@ namespace JSC {
 
     class NumberConstructor : public InternalFunction {
     public:
-        NumberConstructor(ExecState*, PassRefPtr<Structure>, NumberPrototype*);
+        NumberConstructor(ExecState*, NonNullPassRefPtr<Structure>, NumberPrototype*);
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
         virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
@@ -39,10 +39,13 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue proto) 
         { 
-            return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance | HasDefaultMark | HasDefaultGetPropertyNames)); 
+            return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
         }
 
         enum { NaNValue, NegInfinity, PosInfinity, MaxValue, MinValue };
+
+    protected:
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | InternalFunction::StructureFlags;
 
     private:
         virtual ConstructType getConstructData(ConstructData&);

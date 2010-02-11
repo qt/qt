@@ -140,7 +140,6 @@
 #else
 #define NO_ERRNO
 #endif
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -148,6 +147,7 @@
 #include <wtf/AlwaysInline.h>
 #include <wtf/Assertions.h>
 #include <wtf/FastMalloc.h>
+#include <wtf/MathExtras.h>
 #include <wtf/Vector.h>
 #include <wtf/Threading.h>
 
@@ -159,9 +159,9 @@
 #pragma warning(disable: 4554)
 #endif
 
-#if PLATFORM(BIG_ENDIAN)
+#if CPU(BIG_ENDIAN)
 #define IEEE_MC68k
-#elif PLATFORM(MIDDLE_ENDIAN)
+#elif CPU(MIDDLE_ENDIAN)
 #define IEEE_ARM
 #else
 #define IEEE_8087
@@ -262,7 +262,8 @@ typedef union { double d; uint32_t L[2]; } U;
 #define Pack_32
 #endif
 
-#if PLATFORM(PPC64) || PLATFORM(X86_64)
+#if CPU(PPC64) || CPU(X86_64)
+// FIXME: should we enable this on all 64-bit CPUs?
 // 64-bit emulation provided by the compiler is likely to be slower than dtoa own code on 32-bit hardware.
 #define USE_LONG_LONG
 #endif
@@ -560,7 +561,7 @@ static void mult(BigInt& aRef, const BigInt& bRef)
     aRef = c;
 }
 
-struct P5Node {
+struct P5Node : Noncopyable {
     BigInt val;
     P5Node* next;
 };
@@ -1869,7 +1870,7 @@ static ALWAYS_INLINE int quorem(BigInt& b, BigInt& S)
  *       calculation.
  */
 
-void dtoa(char* result, double dd, int ndigits, int* decpt, int* sign, char** rve)
+void dtoa(DtoaBuffer result, double dd, int ndigits, int* decpt, int* sign, char** rve)
 {
     /*
         Arguments ndigits, decpt, sign are similar to those
@@ -1908,16 +1909,23 @@ void dtoa(char* result, double dd, int ndigits, int* decpt, int* sign, char** rv
     {
         /* Infinity or NaN */
         *decpt = 9999;
-        if (!word1(&u) && !(word0(&u) & 0xfffff))
+        if (!word1(&u) && !(word0(&u) & 0xfffff)) {
             strcpy(result, "Infinity");
-        else 
+            if (rve)
+                *rve = result + 8;
+        } else {
             strcpy(result, "NaN");
+            if (rve)
+                *rve = result + 3;
+        }
         return;
     }
     if (!dval(&u)) {
         *decpt = 1;
         result[0] = '0';
         result[1] = '\0';
+        if (rve)
+            *rve = result + 1;
         return;
     }
 
@@ -2374,6 +2382,85 @@ ret:
     *decpt = k + 1;
     if (rve)
         *rve = s;
+}
+
+static ALWAYS_INLINE void append(char*& next, const char* src, unsigned size)
+{
+    for (unsigned i = 0; i < size; ++i)
+        *next++ = *src++;
+}
+
+void doubleToStringInJavaScriptFormat(double d, DtoaBuffer buffer, unsigned* resultLength)
+{
+    ASSERT(buffer);
+
+    // avoid ever printing -NaN, in JS conceptually there is only one NaN value
+    if (isnan(d)) {
+        append(buffer, "NaN", 3);
+        if (resultLength)
+            *resultLength = 3;
+        return;
+    }
+    // -0 -> "0"
+    if (!d) {
+        buffer[0] = '0';
+        if (resultLength)
+            *resultLength = 1;
+        return;
+    }
+
+    int decimalPoint;
+    int sign;
+
+    DtoaBuffer result;
+    char* resultEnd = 0;
+    WTF::dtoa(result, d, 0, &decimalPoint, &sign, &resultEnd);
+    int length = resultEnd - result;
+
+    char* next = buffer;
+    if (sign)
+        *next++ = '-';
+
+    if (decimalPoint <= 0 && decimalPoint > -6) {
+        *next++ = '0';
+        *next++ = '.';
+        for (int j = decimalPoint; j < 0; j++)
+            *next++ = '0';
+        append(next, result, length);
+    } else if (decimalPoint <= 21 && decimalPoint > 0) {
+        if (length <= decimalPoint) {
+            append(next, result, length);
+            for (int j = 0; j < decimalPoint - length; j++)
+                *next++ = '0';
+        } else {
+            append(next, result, decimalPoint);
+            *next++ = '.';
+            append(next, result + decimalPoint, length - decimalPoint);
+        }
+    } else if (result[0] < '0' || result[0] > '9')
+        append(next, result, length);
+    else {
+        *next++ = result[0];
+        if (length > 1) {
+            *next++ = '.';
+            append(next, result + 1, length - 1);
+        }
+
+        *next++ = 'e';
+        *next++ = (decimalPoint >= 0) ? '+' : '-';
+        // decimalPoint can't be more than 3 digits decimal given the
+        // nature of float representation
+        int exponential = decimalPoint - 1;
+        if (exponential < 0)
+            exponential = -exponential;
+        if (exponential >= 100)
+            *next++ = static_cast<char>('0' + exponential / 100);
+        if (exponential >= 10)
+            *next++ = static_cast<char>('0' + (exponential % 100) / 10);
+        *next++ = static_cast<char>('0' + exponential % 10);
+    }
+    if (resultLength)
+        *resultLength = next - buffer;
 }
 
 } // namespace WTF

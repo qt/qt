@@ -91,8 +91,7 @@ public:
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(object.engine());
         JSC::ExecState *exec = eng_p->globalExec();
         JSC::PropertyNameArray propertyNamesArray(exec);
-        propertyNamesArray.setShouldCache(false);
-        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getOwnPropertyNames(exec, propertyNamesArray, /*includeNonEnumerable=*/true);
+        JSC::asObject(QScriptValuePrivate::get(object)->jscValue)->getOwnPropertyNames(exec, propertyNamesArray, JSC::IncludeDontEnumProperties);
 
         JSC::PropertyNameArray::const_iterator propertyNamesIt = propertyNamesArray.begin();
         for(; propertyNamesIt != propertyNamesArray.end(); ++propertyNamesIt) {

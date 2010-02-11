@@ -898,6 +898,8 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    JSC::setCurrentIdentifierTable(globalData->identifierTable);
+
     //disconnect all loadedScripts and generate all jsc::debugger::scriptUnload events
     QHash<intptr_t,QScript::UStringSourceProviderWithFeedback*>::const_iterator it;
     for (it = loadedScripts.constBegin(); it != loadedScripts.constEnd(); ++it)
@@ -988,8 +990,7 @@ JSC::JSValue QScriptEnginePrivate::objectFromVariantMap(JSC::ExecState *exec, co
 QVariantMap QScriptEnginePrivate::variantMapFromObject(JSC::ExecState *exec, JSC::JSValue obj)
 {
     JSC::PropertyNameArray propertyNames(exec);
-    propertyNames.setShouldCache(false);
-    JSC::asObject(obj)->getOwnPropertyNames(exec, propertyNames, /*includeNonEnumerable=*/true);
+    JSC::asObject(obj)->getOwnPropertyNames(exec, propertyNames, JSC::IncludeDontEnumProperties);
     QVariantMap vmap;
     JSC::PropertyNameArray::const_iterator it = propertyNames.begin();
     for( ; it != propertyNames.end(); ++it)
@@ -1187,7 +1188,8 @@ bool QScriptEnginePrivate::isCollecting() const
 void QScriptEnginePrivate::collectGarbage()
 {
     JSC::JSLock lock(false);
-    globalData->heap.collect();
+    QScript::APIShim shim(this);
+    globalData->heap.collectAllGarbage();
 }
 
 QScript::TimeoutCheckerProxy *QScriptEnginePrivate::timeoutChecker() const
@@ -1218,7 +1220,7 @@ JSC::JSValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, intptr_t
         debugger->evaluateStart(sourceId);
 
     q->clearExceptions();
-    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
+    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject);
 
     if (compile) {
         JSC::JSObject* error = executable->compile(exec, exec->scopeChain());
@@ -1670,15 +1672,15 @@ void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue object
             // deleting getter/setter
             if ((flags & QScriptValue::PropertyGetter) && (flags & QScriptValue::PropertySetter)) {
                 // deleting both: just delete the property
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+                thisObject->deleteProperty(exec, id);
             } else if (flags & QScriptValue::PropertyGetter) {
                 // preserve setter, if there is one
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+                thisObject->deleteProperty(exec, id);
                 if (setter && setter.isObject())
                     thisObject->defineSetter(exec, id, JSC::asObject(setter));
             } else { // flags & QScriptValue::PropertySetter
                 // preserve getter, if there is one
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+                thisObject->deleteProperty(exec, id);
                 if (getter && getter.isObject())
                     thisObject->defineGetter(exec, id, JSC::asObject(getter));
             }
@@ -1708,10 +1710,10 @@ void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue object
         }
         if (!value) {
             // ### check if it's a getter/setter property
-            thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+            thisObject->deleteProperty(exec, id);
         } else if (flags != QScriptValue::KeepExistingFlags) {
             if (thisObject->hasOwnProperty(exec, id))
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false); // ### hmmm - can't we just update the attributes?
+                thisObject->deleteProperty(exec, id); // ### hmmm - can't we just update the attributes?
             unsigned attribs = 0;
             if (flags & QScriptValue::ReadOnly)
                 attribs |= JSC::ReadOnly;
@@ -1732,7 +1734,7 @@ void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue object
                                        JSC::JSValue value, const QScriptValue::PropertyFlags &flags)
 {
     if (!value) {
-        JSC::asObject(objectValue)->deleteProperty(exec, index, /*checkDontDelete=*/false);
+        JSC::asObject(objectValue)->deleteProperty(exec, index);
     } else {
         if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
             // fall back to string-based setProperty(), since there is no
@@ -1766,7 +1768,7 @@ QScriptValue::PropertyFlags QScriptEnginePrivate::propertyFlags(JSC::ExecState *
     JSC::PropertyDescriptor descriptor;
     if (object->getOwnPropertyDescriptor(exec, id, descriptor))
         attribs = descriptor.attributes();
-    else if (!object->getPropertyAttributes(exec, id, attribs)) {
+    else {
         if ((mode & QScriptValue::ResolvePrototype) && object->prototype() && object->prototype().isObject()) {
             JSC::JSValue proto = object->prototype();
             return propertyFlags(exec, proto, id, mode);
@@ -2466,15 +2468,16 @@ QScriptSyntaxCheckResult QScriptEnginePrivate::checkSyntax(const QString &progra
 QScriptValue QScriptEngine::evaluate(const QString &program, const QString &fileName, int lineNumber)
 {
     Q_D(QScriptEngine);
+    QScript::APIShim shim(d);
     WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
             = QScript::UStringSourceProviderWithFeedback::create(program, fileName, lineNumber, d);
     intptr_t sourceId = provider->asID();
     JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
 
     JSC::ExecState* exec = d->currentFrame;
-    JSC::EvalExecutable executable(exec, source);
+    WTF::RefPtr<JSC::EvalExecutable> executable = JSC::EvalExecutable::create(exec, source);
     bool compile = true;
-    return d->scriptValueFromJSCValue(d->evaluateHelper(exec, sourceId, &executable, compile));
+    return d->scriptValueFromJSCValue(d->evaluateHelper(exec, sourceId, executable.get(), compile));
 }
 
 /*!
@@ -2491,6 +2494,7 @@ QScriptValue QScriptEngine::evaluate(const QScriptProgram &program)
     if (!program_d)
         return QScriptValue();
 
+    QScript::APIShim shim(d);
     JSC::ExecState* exec = d->currentFrame;
     JSC::EvalExecutable *executable = program_d->executable(exec, d);
     bool compile = !program_d->isCompiled;
@@ -2603,7 +2607,7 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
             newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags | ShouldRestoreCallFrame, argc, callee);
         } else {
             JSC::JSObject *jscObject = originalGlobalObject();
-            JSC::ScopeChainNode *scn = new JSC::ScopeChainNode(0, jscObject, &exec->globalData(), jscObject);
+            JSC::ScopeChainNode *scn = new JSC::ScopeChainNode(0, jscObject, &exec->globalData(), exec->lexicalGlobalObject(), jscObject);
             newCallFrame->init(0, /*vPC=*/0, scn, exec, flags | ShouldRestoreCallFrame, argc, callee);
         }
     } else {
@@ -2935,7 +2939,7 @@ JSC::JSValue QScriptEnginePrivate::create(JSC::ExecState *exec, int type, const 
         }
     }
     if (result && result.isObject() && info && info->prototype
-        && JSC::JSValue::strictEqual(JSC::asObject(result)->prototype(), eng->originalGlobalObject()->objectPrototype())) {
+        && JSC::JSValue::strictEqual(exec, JSC::asObject(result)->prototype(), eng->originalGlobalObject()->objectPrototype())) {
         JSC::asObject(result)->setPrototype(info->prototype);
     }
     return result;

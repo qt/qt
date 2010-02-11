@@ -383,6 +383,23 @@ public:
 namespace QScript
 {
 
+class APIShim
+{
+public:
+    APIShim(QScriptEnginePrivate *engine)
+        : m_engine(engine), m_oldTable(JSC::setCurrentIdentifierTable(engine->globalData->identifierTable))
+    {
+    }
+    ~APIShim()
+    {
+        JSC::setCurrentIdentifierTable(m_oldTable);
+    }
+
+private:
+    QScriptEnginePrivate *m_engine;
+    JSC::IdentifierTable *m_oldTable;
+};
+
 /*Helper class. Main purpose is to give debugger feedback about unloading and loading scripts.
   It keeps pointer to JSGlobalObject assuming that it is always the same - there is no way to update
   this data. Class is internal and used as an implementation detail in and only in QScriptEngine::evaluate.*/
@@ -779,6 +796,7 @@ inline void QScriptEnginePrivate::unregisterScriptString(QScriptStringPrivate *v
         registeredScriptStrings = value->next;
     value->prev = 0;
     value->next = 0;
+    JSC::setCurrentIdentifierTable(globalData->identifierTable);
 }
 
 inline QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
