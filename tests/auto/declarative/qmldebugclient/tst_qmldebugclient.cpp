@@ -62,11 +62,9 @@ public:
     tst_QmlDebugClient(QmlDebugTestData *data)
     {
         m_conn = data->conn;
-        m_engine = data->engine;
     }
 
     QmlDebugConnection *m_conn;
-    QmlEngine *m_engine;
 
 private slots:
     void name();
@@ -145,6 +143,9 @@ public:
     QObject *createTest(QmlDebugTestData *data) { return new tst_QmlDebugClient(data); }
 };
 
+
+// This does not use QTEST_MAIN because the test has to be created and run
+// in a separate thread.
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
