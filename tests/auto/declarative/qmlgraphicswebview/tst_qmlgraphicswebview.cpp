@@ -114,6 +114,10 @@ void tst_qmlgraphicswebview::cleanupTestCase()
 
 void tst_qmlgraphicswebview::checkNoErrors(const QmlComponent& component)
 {
+    // Wait until the component is ready
+    QTRY_VERIFY(component.isReady());
+
+
     if (component.isError()) {
         QList<QmlError> errors = component.errors();
         for (int ii = 0; ii < errors.count(); ++ii) {

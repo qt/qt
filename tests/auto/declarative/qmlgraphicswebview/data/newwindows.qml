@@ -21,7 +21,7 @@ Grid {
                 newWindowParent: pages
                 url: "newwindows.html"
                 Timer {
-                    interval: 10; running: total<4; repeat: false;
+                    interval: 10; running: webView.status==WebView.Ready && total<4; repeat: false;
                     onTriggered: {total++; webView.evaluateJavaScript("clickTheLink()")}
                 }
             }
