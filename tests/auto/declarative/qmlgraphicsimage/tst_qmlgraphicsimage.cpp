@@ -114,8 +114,8 @@ void tst_qmlgraphicsimage::imageSource_data()
     QTest::addColumn<bool>("remote");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow("local") << SRCDIR "/data/colors.png" << false << "";
-    QTest::newRow("local not found") << SRCDIR "/data/no-such-file.png" << false
+    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << false << "";
+    QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << false
         << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
     QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
@@ -146,7 +146,7 @@ void tst_qmlgraphicsimage::imageSource()
     if (remote)
         TRY_WAIT(obj->status() == QmlGraphicsImage::Loading);
 
-    QCOMPARE(obj->source(), remote ? source : QUrl::fromLocalFile(source));
+    QCOMPARE(obj->source(), remote ? source : QUrl(source));
 
     if (error.isEmpty()) {
         TRY_WAIT(obj->status() == QmlGraphicsImage::Ready);
@@ -165,7 +165,7 @@ void tst_qmlgraphicsimage::clearSource()
 {
     QString componentStr = "import Qt 4.6\nImage { source: srcImage }";
     QmlContext *ctxt = engine.rootContext();
-    ctxt->setContextProperty("srcImage", SRCDIR "/data/colors.png");
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
     QmlComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QmlGraphicsImage *obj = qobject_cast<QmlGraphicsImage*>(component.create());
