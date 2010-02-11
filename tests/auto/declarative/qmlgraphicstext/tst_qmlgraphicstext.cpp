@@ -46,7 +46,7 @@
 #include <private/qmlvaluetype_p.h>
 #include <QFontMetrics>
 #include <QGraphicsSceneMouseEvent>
-#include <math.h>
+#include <qmath.h>
 
 class tst_qmlgraphicstext : public QObject
 
@@ -212,7 +212,7 @@ void tst_qmlgraphicstext::width()
         QFont f;
         QFontMetricsF fm(f);
         qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
-        metricWidth = floor(metricWidth);
+        metricWidth = qCeil(metricWidth);
 
         QString componentStr = "import Qt 4.6\nText { text: \"" + standard.at(i) + "\" }";
         QmlComponent textComponent(&engine);
