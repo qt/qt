@@ -1,0 +1,196 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QMLGRAPHICSANCHORS_H
+#define QMLGRAPHICSANCHORS_H
+
+#include "qmlgraphicsitem.h"
+
+#include <qml.h>
+
+#include <QtCore/QObject>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+class QmlGraphicsAnchorsPrivate;
+class QmlGraphicsAnchorLine;
+class Q_DECLARATIVE_EXPORT QmlGraphicsAnchors : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QmlGraphicsAnchorLine left READ left WRITE setLeft RESET resetLeft NOTIFY leftChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine right READ right WRITE setRight RESET resetRight NOTIFY rightChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter NOTIFY horizontalCenterChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine top READ top WRITE setTop RESET resetTop NOTIFY topChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom NOTIFY bottomChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter NOTIFY verticalCenterChanged)
+    Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline NOTIFY baselineChanged)
+    Q_PROPERTY(qreal margins READ margins WRITE setMargins NOTIFY marginsChanged)
+    Q_PROPERTY(qreal leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
+    Q_PROPERTY(qreal rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
+    Q_PROPERTY(qreal horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
+    Q_PROPERTY(qreal topMargin READ topMargin WRITE setTopMargin NOTIFY topMarginChanged)
+    Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
+    Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
+    Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged())
+    Q_PROPERTY(QmlGraphicsItem *fill READ fill WRITE setFill RESET resetFill NOTIFY fillChanged)
+    Q_PROPERTY(QmlGraphicsItem *centerIn READ centerIn WRITE setCenterIn RESET resetCenterIn NOTIFY centerInChanged)
+
+public:
+    QmlGraphicsAnchors(QObject *parent=0);
+    QmlGraphicsAnchors(QmlGraphicsItem *item, QObject *parent=0);
+    virtual ~QmlGraphicsAnchors();
+
+    enum UsedAnchor { 
+        HasLeftAnchor = 0x01,
+        HasRightAnchor = 0x02,
+        HasTopAnchor = 0x04,
+        HasBottomAnchor = 0x08,
+        HasHCenterAnchor = 0x10,
+        HasVCenterAnchor = 0x20,
+        HasBaselineAnchor = 0x40,
+        Horizontal_Mask = HasLeftAnchor | HasRightAnchor | HasHCenterAnchor,
+        Vertical_Mask = HasTopAnchor | HasBottomAnchor | HasVCenterAnchor | HasBaselineAnchor
+    };
+    Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor)
+
+    QmlGraphicsAnchorLine left() const;
+    void setLeft(const QmlGraphicsAnchorLine &edge);
+    void resetLeft();
+
+    QmlGraphicsAnchorLine right() const;
+    void setRight(const QmlGraphicsAnchorLine &edge);
+    void resetRight();
+
+    QmlGraphicsAnchorLine horizontalCenter() const;
+    void setHorizontalCenter(const QmlGraphicsAnchorLine &edge);
+    void resetHorizontalCenter();
+
+    QmlGraphicsAnchorLine top() const;
+    void setTop(const QmlGraphicsAnchorLine &edge);
+    void resetTop();
+
+    QmlGraphicsAnchorLine bottom() const;
+    void setBottom(const QmlGraphicsAnchorLine &edge);
+    void resetBottom();
+
+    QmlGraphicsAnchorLine verticalCenter() const;
+    void setVerticalCenter(const QmlGraphicsAnchorLine &edge);
+    void resetVerticalCenter();
+
+    QmlGraphicsAnchorLine baseline() const;
+    void setBaseline(const QmlGraphicsAnchorLine &edge);
+    void resetBaseline();
+
+    qreal leftMargin() const;
+    void setLeftMargin(qreal);
+
+    qreal rightMargin() const;
+    void setRightMargin(qreal);
+
+    qreal horizontalCenterOffset() const;
+    void setHorizontalCenterOffset(qreal);
+
+    qreal topMargin() const;
+    void setTopMargin(qreal);
+
+    qreal bottomMargin() const;
+    void setBottomMargin(qreal);
+
+    qreal margins() const;
+    void setMargins(qreal);
+
+    qreal verticalCenterOffset() const;
+    void setVerticalCenterOffset(qreal);
+
+    qreal baselineOffset() const;
+    void setBaselineOffset(qreal);
+
+    QmlGraphicsItem *fill() const;
+    void setFill(QmlGraphicsItem *);
+    void resetFill();
+
+    QmlGraphicsItem *centerIn() const;
+    void setCenterIn(QmlGraphicsItem *);
+    void resetCenterIn();
+
+    UsedAnchors usedAnchors() const;
+
+    void classBegin();
+    void componentComplete();
+
+Q_SIGNALS:
+    void leftChanged();
+    void rightChanged();
+    void topChanged();
+    void bottomChanged();
+    void verticalCenterChanged();
+    void horizontalCenterChanged();
+    void baselineChanged();
+    void fillChanged();
+    void centerInChanged();
+    void leftMarginChanged();
+    void rightMarginChanged();
+    void topMarginChanged();
+    void bottomMarginChanged();
+    void marginsChanged();
+    void verticalCenterOffsetChanged();
+    void horizontalCenterOffsetChanged();
+    void baselineOffsetChanged();
+
+private:
+    friend class QmlGraphicsItem;
+    Q_DISABLE_COPY(QmlGraphicsAnchors)
+    Q_DECLARE_PRIVATE(QmlGraphicsAnchors)
+};
+Q_DECLARE_OPERATORS_FOR_FLAGS(QmlGraphicsAnchors::UsedAnchors)
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsAnchors)
+
+QT_END_HEADER
+
+#endif
