@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
     \brief The QNetworkConfiguration class provides an abstraction of one or more access point configurations.
 
+    \since 4.7
+
     \inmodule QtNetwork
     \ingroup bearer
 

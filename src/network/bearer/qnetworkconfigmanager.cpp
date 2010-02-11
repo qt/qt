@@ -61,6 +61,8 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
     \brief The QNetworkConfigurationManager class manages the network configurations provided
     by the system.
 
+    \since 4.7
+
     \inmodule QtNetwork
     \ingroup bearer
 

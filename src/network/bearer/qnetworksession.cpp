@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
     \brief The QNetworkSession class provides control over the system's access points
     and enables session management for cases when multiple clients access the same access point.
 
+    \since 4.7
+
     \inmodule QtNetwork
     \ingroup bearer
 
