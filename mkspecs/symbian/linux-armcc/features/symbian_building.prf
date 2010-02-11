@@ -170,7 +170,9 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
     QMAKE_EXTRA_COMPILERS += symbianGenResource symbianGenRegResource
 
     QMAKE_DISTCLEAN += $${TARGET}.rss
+    QMAKE_DISTCLEAN += $${TARGET}.rsc
     QMAKE_DISTCLEAN += $${TARGET}_reg.rss
+    QMAKE_DISTCLEAN += $${TARGET}_reg.rsc
     QMAKE_DISTCLEAN += $${TARGET}.loc
 }
 
