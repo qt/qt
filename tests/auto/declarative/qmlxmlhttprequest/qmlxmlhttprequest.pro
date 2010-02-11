@@ -5,7 +5,7 @@ macx:CONFIG -= app_bundle
 INCLUDEPATH += ../shared/
 HEADERS += ../shared/testhttpserver.h
 
-SOURCES += tst_xmlhttprequest.cpp \
+SOURCES += tst_qmlxmlhttprequest.cpp \
            ../shared/testhttpserver.cpp
 
 

@@ -1,18 +1,15 @@
 TEMPLATE = subdirs
 SUBDIRS += \
-           anchors \                # Cover
-           animatedimage \          # Cover
-           animations \             # Cover
-           behaviors \              # Cover
-           datetimeformatter \      # Cover
            graphicswidgets \        # Cover
            layouts \                # Cover
-           numberformatter \        # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
+           qmlanimations \          # Cover
+           qmlbehaviors \           # Cover
            qmlbinding \             # Cover
            qmlconnection \          # Cover
            qmlcontext \             # Cover
+           qmldatetimeformatter \   # Cover
            qmldebug \               # Cover
            qmldebugclient \         # Cover
            qmldebugservice \        # Cover
@@ -22,6 +19,8 @@ SUBDIRS += \
            qmlengine     \          # Cover
            qmlerror \               # Cover
            qmlfontloader \          # Cover
+           qmlgraphicsanchors \     # Cover
+           qmlgraphicsanimatedimage \ # Cover
            qmlgraphicsimage \       # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsflickable   \ # Cover
@@ -45,19 +44,20 @@ SUBDIRS += \
            qmllistmodel \           # Cover
            qmlmetaproperty \        # Cover
            qmlmetatype \            # Cover
+           qmlnumberformatter \     # Cover
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover
            qmlqt \                  # Cover
            qmlspringfollow \        # Cover
+           qmlstates \              # Cover
            qmlsystempalette \       # Cover
            qmltimer \               # Cover
            qmlxmllistmodel \        # Cover
            qpacketprotocol \        # Cover
            qmlgraphicsrepeater \    # Cover
-           sql \                    # Cover
-           states \                 # Cover
-           valuetypes \             # Cover
-           xmlhttprequest           # Cover
+           qmlvaluetypes \          # Cover
+           qmlxmlhttprequest \      # Cover
+           sql                      # Cover
 
 
 # Tests which should run in Pulse

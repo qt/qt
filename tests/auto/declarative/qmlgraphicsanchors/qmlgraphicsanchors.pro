@@ -1,10 +1,6 @@
 load(qttest_p4)
 contains(QT_CONFIG,declarative): QT += declarative
+SOURCES += tst_qmlgraphicsanchors.cpp
 macx:CONFIG -= app_bundle
-
-HEADERS += testtypes.h
-
-SOURCES += tst_valuetypes.cpp \
-           testtypes.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD\\\"
