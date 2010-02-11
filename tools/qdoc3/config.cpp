@@ -671,7 +671,9 @@ void Config::load(Location location, const QString& fileName)
             location.fatal(tr("Cannot open file '%1': %2").arg(fileName).arg(fin.errorString()));
     }
 
-    QString text = fin.readAll();
+    QTextStream stream(&fin);
+    stream.setCodec("UTF-8");
+    QString text = stream.readAll();
     text += QLatin1String("\n\n");
     text += QChar('\0');
     fin.close();

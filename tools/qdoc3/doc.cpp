@@ -3056,7 +3056,8 @@ QString Doc::canonicalTitle(const QString &title)
             slurping = true;
         }
         else {
-            // !alnum && slurping -> nothin
+            result += title[i];
+            lastAlnum = result.size();
         }
     }
     result.truncate(lastAlnum);
