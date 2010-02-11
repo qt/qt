@@ -99,7 +99,7 @@ excludedirs             = $QTDIR/src/3rdparty/clucene \
                           $QTDIR/src/3rdparty/phonon/waveout
 
 sources.fileextensions  = "*.cpp *.qdoc *.mm"
-examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp"
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml"
 examples.imageextensions = "*.png"
 
 exampledirs             = $QTDIR/doc/src \
@@ -109,7 +109,8 @@ exampledirs             = $QTDIR/doc/src \
                           $QTDIR/qmake/examples \
                           $QTDIR/src/3rdparty/webkit/WebKit/qt/docs
 imagedirs               = $QTDIR/doc/src/images \
-                          $QTDIR/examples
+                          $QTDIR/examples \
+                          $QTDIR/doc/src/declarative/pics
 outputdir               = $QTDIR/doc/html
 tagfile                 = $QTDIR/doc/html/qt.tags
 base                    = file:$QTDIR/doc/html

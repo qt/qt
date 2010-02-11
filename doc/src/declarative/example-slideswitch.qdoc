@@ -1,0 +1,137 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qmlexampletoggleswitch.html
+\title QML Example - Toggle Switch
+
+This example shows how to create a reusable switch component in QML.
+
+The code for this example can be found in the \c $QTDIR/examples/declarative/slideswitch directory.
+
+\section1 Overview
+
+The elements that composed the switch are:
+
+\list
+\o a \c on property (the interface to interact with the switch),
+\o two images (the background image and the knob),
+\o two mouse regions for user interation (on the background image and on the knob),
+\o two states (a \e on state and a \e off state),
+\o two functions or slots to react to the user interation (\c toggle() and \c dorelease()),
+\o and a transition that describe how to go from one state to the other.
+\endlist
+
+\section1 Switch.qml
+\snippet examples/declarative/slideswitch/content/Switch.qml 0
+
+\section1 Walkthrough
+
+\section2 Interface
+\snippet examples/declarative/slideswitch/content/Switch.qml 1
+
+This property is the interface of the switch. By default, the switch is off and this property is \c false.
+It can be used to activate/disactivate the switch or to query its current state.
+
+In this example:
+
+\qml
+Switch { id: mySwitch; on: true }
+Text { text: "The switch is on"; visible: mySwitch.on == true }
+\endqml
+
+the text will only be visible when the switch is on.
+
+\section2 Images and user interaction
+\snippet examples/declarative/slideswitch/content/Switch.qml 4
+
+First, we create the background image of the switch.
+In order for the switch to toggle when the user clicks on the background, we add a \l{MouseRegion} as a child item of the image.
+A \c MouseRegion has a \c onClicked property that is triggered when the item is clicked. For the moment we will just call a
+\c toggle() function. We will see what this function does in a moment.
+
+\snippet examples/declarative/slideswitch/content/Switch.qml 5
+
+Then, we place the image of the knob on top of the background.
+The interaction here is a little more complex. We want the knob to move with the finger when it is clicked. That is what the \c drag
+property of the \c MouseRegion is for. We also want to toggle the switch if the knob is released between state. We handle this case
+in the \c dorelease() function that is called in the \c onReleased property.
+
+\section2 States
+\snippet examples/declarative/slideswitch/content/Switch.qml 6
+
+We define the two states of the switch:
+\list
+\o In the \e on state the knob is on the right (\c x position is 78) and the \c on property is \c true.
+\o In the \e off state the knob is on the left (\c x position is 1) and the \c on property is \c false.
+\endlist
+
+For more information on states see \l{qmlstates}{QML States}.
+
+\section2 Functions
+
+We add two JavaScript functions to our switch:
+
+\snippet examples/declarative/slideswitch/content/Switch.qml 2
+
+This first function is called when the background image or the knob are clicked. We simply want the switch to toggle between the two
+states (\e on and \e off).
+
+
+\snippet examples/declarative/slideswitch/content/Switch.qml 3
+
+This second function is called when the knob is released and we want to make sure that the knob does not end up between states
+(neither \e on nor \e off). If it is the case call the \c toggle() function otherwise we do nothing.
+
+For more information on scripts see \l{qmlecmascript.html}{JavaScript Blocks}.
+
+\section2 Transition
+\snippet examples/declarative/slideswitch/content/Switch.qml 7
+
+At this point, when the switch toggles between the two states the knob will instantly change its \c x position between 1 and 78.
+In order for the the knob to move smoothly we add a transition that will animate the \c x property with an easing curve for a duration of 200ms.
+
+For more information on transitions see \l{state-transitions}{QML Transitions}.
+
+\section1 Usage
+The switch can be used in a QML file, like this:
+\snippet examples/declarative/slideswitch/slideswitch.qml 0
+*/

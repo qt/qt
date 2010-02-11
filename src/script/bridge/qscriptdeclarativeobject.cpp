@@ -74,9 +74,9 @@ bool DeclarativeObjectDelegate::getOwnPropertySlot(QScriptObject* object,
     QScriptClass::QueryFlags flags = 
         m_class->queryProperty(m_object, identifier, QScriptClass::HandlesReadAccess);
     if (flags & QScriptClass::HandlesReadAccess) {
-        QScriptValue value = m_class->property(m_object, identifier);
+        QScriptDeclarativeClass::Value val = m_class->property(m_object, identifier);
         p->context = 0;
-        slot.setValue(engine->scriptValueToJSCValue(value));
+        slot.setValue((const JSC::JSValue &)val);
         return true;
     }
     p->context = 0;
@@ -155,7 +155,36 @@ void DeclarativeObjectDelegate::getOwnPropertyNames(QScriptObject* object, JSC::
 
 JSC::CallType DeclarativeObjectDelegate::getCallData(QScriptObject *object, JSC::CallData &callData)
 {
-    return QScriptObjectDelegate::getCallData(object, callData);
+    if (!QScriptDeclarativeClassPrivate::get(m_class)->supportsCall) 
+        return JSC::CallTypeNone;
+    callData.native.function = call;
+    return JSC::CallTypeHost;
+}
+
+JSC::JSValue DeclarativeObjectDelegate::call(JSC::ExecState *exec, JSC::JSObject *callee,
+                                             JSC::JSValue thisValue, const JSC::ArgList &args)
+{
+    if (!callee->inherits(&QScriptObject::info))
+        return JSC::throwError(exec, JSC::TypeError, "callee is not a DeclarativeObject object");
+    QScriptObject *obj = static_cast<QScriptObject*>(callee);
+    QScriptObjectDelegate *delegate = obj->delegate();
+    if (!delegate || (delegate->type() != QScriptObjectDelegate::DeclarativeClassObject))
+        return JSC::throwError(exec, JSC::TypeError, "callee is not a DeclarativeObject object");
+
+    QScriptDeclarativeClass *scriptClass = static_cast<DeclarativeObjectDelegate*>(delegate)->m_class;
+    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
+
+    JSC::ExecState *oldFrame = eng_p->currentFrame;
+    eng_p->pushContext(exec, thisValue, args, callee);
+    QScriptContext *ctxt = eng_p->contextForFrame(eng_p->currentFrame);
+
+    QScriptValue scriptObject = eng_p->scriptValueFromJSCValue(obj);
+    QScriptDeclarativeClass::Value result = 
+        scriptClass->call(static_cast<DeclarativeObjectDelegate*>(delegate)->m_object, ctxt);
+
+    eng_p->popContext();
+    eng_p->currentFrame = oldFrame;
+    return (JSC::JSValue &)(result);
 }
 
 JSC::ConstructType DeclarativeObjectDelegate::getConstructData(QScriptObject* object, JSC::ConstructData &constructData)

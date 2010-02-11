@@ -1,0 +1,340 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\target qmlfocus
+\page qmlfocus.html
+\title Keyboard Focus in QML
+
+When a key is pressed or released, a key event is generated and delivered to the
+focused QML \l Item.  To facilitate the construction of reusable components
+and to address some of the cases unique to fluid user interfaces, the QML items add a
+\e scope based extension to Qt's traditional keyboard focus model.
+
+\tableofcontents
+
+\section1 Key Handling Overview
+
+When the user presses or releases a key, the following occurs:
+\list 1
+\o Qt receives the key action and generates a key event.
+\o If the Qt widget containing the \l QmlView has focus, the key event is delivered to it. Otherwise, regular Qt key handling continues.
+\o The key event is delivered by the scene to the QML \l Item with \e {active focus}.  If no \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
+\o If the QML \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
+
+If the \c {Rectangle} element in the following example has active focus and the \e A key is pressed,
+it will bubble up to its parent.  However, pressing the \e B key will bubble up to the root
+item and thus subsequently be \l {QEvent::ignore()}{ignored}.
+
+\code
+Item {
+    Item {
+        Keys.onPressed: if (event.key == Qt.Key_A) { console.log('Key A was pressed'); event.accepted = true }
+        Rectangle {}
+    }
+}
+\endcode
+
+\o If the root \l Item is reached, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
+
+\endlist
+
+See also the \l {Keys}{Keys attached property} and \l {KeyNavigation}{KeyNavigation attached property}.
+
+\section1 Querying the Active Focus Item
+
+Whether or not an \l Item has \e {active focus} can be queried through the
+property \c {Item::focus}.  For example, here we have a \l Text
+element whose text is determined by whether or not it has \e {active focus}.
+
+\code
+Text {
+    text: focus ? "I have active focus!" : "I do not have active focus"
+}
+\endcode
+
+\section1 Acquiring Focus and Focus Scopes
+
+An \l Item requests focus by setting the \c {Item::focus} property to true.
+
+For very simple cases simply setting the \c {Item::focus} property is sometimes
+sufficient.  If we run the following example in the \c qmlviewer, we see that
+the \c {keyHandler} element has \e {active focus} and pressing the 'A', 'B'
+or 'C' keys modifies the text appropriately.
+
+\table
+\row
+\o \code
+    Rectangle {
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: myText }
+        Item {
+            id: keyHandler
+            focus: true
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
+        }
+    }
+\endcode
+\o \image declarative-qmlfocus1.png
+\endtable
+
+However, were the above example to be used as a self-contained component, this
+simple use of the \c {Item::focus} property is no longer sufficient.  The left
+hand side of the following table shows what we would like to be able to write.
+Here we create two instances of our previously defined component, and set the
+second one to have focus.  The intention is that when the \e A, \e B, or \e C
+keys are pressed, the second of the two components receives the event and
+reponds accordingly.
+
+\table
+\row
+\o \code
+Rectangle {
+    color: "red"; width: 240; height: 55
+    MyWidget {}
+    MyWidget { y: 30; focus: true }
+}
+\endcode
+\o \code
+Rectangle {
+    color: "red"; width: 240; height: 55
+    Rectangle {
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: myText }
+        Item {
+            id: keyHandler
+            focus: true
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
+        }
+    }
+    Rectangle {
+        y: 30; focus: true
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: myText }
+        Item {
+            id: keyHandler
+            focus: true
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
+        }
+    }
+}
+\endcode
+\endtable
+
+The right hand side of the example shows the expanded code - the equivalent QML
+without the use of the component \c {MyWidget}.  From this, the problem is
+evident - there are no less than three elements that have the \c {Item::focus}
+property set to true.  Ultimately only one element can have focus, and the
+system has to decide which on.  In this case the first appearance of the
+\c {Item::focus} property being set to true on line 4 is selected, and the value
+of \c {Item::focus} in the other two instances is reverted back to false.  This
+is exactly the opposite of what was wanted!
+
+This problem is fundamentally one of visibility.  The \c {MyWidget}
+components each set their \c {keyHandler} Items as focused as that is all they can
+do - they don't know how they are going to be used, but they do know that when
+they're in use their \c {keyHandler} element is what needs focus.  Likewise
+the code that uses the two \c {MyWidgets} sets the second \c {MyWidget} as
+focused. While it doesn't know exactly how the \c {MyWidget} is
+implemented, it knows that it wants the second one to be focused.  This allows us
+to achieve encapsulation, allowing each widget to focus on it's appropriate behaviour
+itself.
+
+To solve this problem - allowing components to care about what they know about
+and ignore everything else - the QML items introduce a concept known as a
+\e {focus scope}.  For existing Qt users, a \e {focus scope} is like an
+automatic focus proxy.  A \e {focus scope} is created using the \l FocusScope
+element.
+
+In the next example, a \l FocusScope is added to the component, and the visual
+result shown.
+
+\table
+\row
+\o \code
+FocusScope {
+    width: 240; height: 25
+    Rectangle {
+        color: "lightsteelblue"; width: 240; height: 25
+        Text { id: myText }
+        Item {
+            id: keyHandler
+            focus: true
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
+        }
+    }
+}
+\endcode
+\o \image declarative-qmlfocus2.png
+\endtable
+
+Conceptually \e {focus scopes} are quite simple.
+\list
+\o Within each \e {focus scope} one element may have \c {Item::focus} set to true.
+If more than one \l Item has the \c {Item::focus} property set, the first is selected
+and the others are unset, just like when there are no \e {focus scopes}.
+\o When a \e {focus scope} receives \e {active focus}, the contained element with
+\c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
+also a \l FocusScope, the proxying behaviour continues.  Both the
+\e {focus scope} and the sub-focused item will have \c {Item::focus} set.
+\endlist
+
+So far the example has the second component statically selected.  It is trivial
+now to extend this component to make it clickable, and add it to the original
+application.  We still set a one of the widgets as focused by default, but from
+then on clicking the either one gives it focus.
+
+\table
+\row
+\o \code
+Rectangle {
+    color: "red"; width: 240; height: 55
+    MyClickableWidget {}
+    MyClickableWidget { y: 30; focus: true }
+}
+\endcode
+\o \code
+FocusScope {
+    id: page; width: 240; height: 25
+    MyWidget { focus: true }
+    MouseRegion { anchors.fill: parent; onClicked: { page.focus = true } }
+}
+\endcode
+\endtable
+
+\image declarative-qmlfocus3.png
+
+When a QML item explicitly relinquishes focus (by setting its
+\c {Item::focus} property to false while it has \e {active focus}), the system
+does not automatically select another element to receive focus.  That is, it
+is possible for there to be no currently \e {active focus}.
+
+\section1 Advanced uses of Focus Scopes
+
+Focus scopes allow focus to allocation to be easily partitioned.  Several
+QML items use it to this effect.
+
+\l ListView, for example, is itself a focus scope.  Generally this isn't
+noticable as \l ListView doesn't usually have manually added visual children.
+By being a focus scope, \l ListView can focus the current list item without
+worrying about how that will effect the rest of the application.  This allows
+the current item delegate to react to key presses.
+
+This contrived example shows how this works.  Pressing the \c Return key will
+print the name of the current list item.
+
+\table
+\row
+\o \code
+Rectangle {
+    color: "lightsteelblue"; width: 240; height: 320
+
+    ListView {
+        id: myView; anchors.fill: parent; focus: true
+        model: ListModel {
+            ListElement { name: "Bob" }
+            ListElement { name: "John" }
+            ListElement { name: "Michael" }
+        }
+        delegate: FocusScope {
+            width: contents.width; height: contents.height
+            Text {
+                focus: true
+                text: name
+                Keys.onReturnPressed: console.log(name)
+            }
+        }
+    }
+}
+\endcode
+\o \image declarative-qmlfocus4.png
+\endtable
+
+While the example is simple, there's a lot going on behind the scenes.  Whenever
+the current item changes, the \l ListView sets the delegate's \c {Item::focus}
+property.  As the \l ListView is a \e {focus scope}, this doesn't effect the
+rest of the application.  However, if the \l ListView itself has
+\e {active focus} this causes the delegate itself to receive \e {active focus}.
+In this example, the root element of the delegate is also a \e {focus scope},
+which in turn gives \e {active focus} to the \c {Text} element that
+actually performs the work of handling the \e {Return} key.
+
+All of the QML view classes, such as \l PathView and \l GridView, behave
+in a similar mannor to allow key handling in their respective delegates.
+
+\section1 Focus Panels
+
+Traditional UIs are composed of many top-level windows.  Windows actually
+perform two tasks - they act as the visual bounds for a widget, and they segment
+focus.  Each window has a separate focused widget, that becomes (to mix
+terminologies) the \e {active focus} widget when the window is the active
+window.
+
+### Focus panels do basically the same thing.
+*/
