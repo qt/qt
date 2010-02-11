@@ -105,7 +105,8 @@ class HtmlGenerator : public PageGenerator
     virtual QString format();
     virtual void generateTree(const Tree *tree, CodeMarker *marker);
 
-    static QString protect(const QString& string);
+    QString protectEnc(const QString &string);
+    static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
     static QString cleanRef(const QString& ref);
     static QString sinceTitle(int i) { return sinceTitles[i]; }
 

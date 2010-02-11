@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QTextCodec;
+
 class ClassNode;
 class InnerNode;
 class NamespaceNode;
@@ -75,6 +77,10 @@ class PageGenerator : public Generator
     void endSubPage();
     virtual void generateInnerNode(const InnerNode *node, CodeMarker *marker);
     QTextStream& out();
+
+    QString naturalLanguage;
+    QString outputEncoding;
+    QTextCodec *outputCodec;
 
  private:
     QStack<QTextStream *> outStreamStack;
