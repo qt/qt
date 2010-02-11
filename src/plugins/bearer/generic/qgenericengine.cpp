@@ -224,8 +224,7 @@ void QGenericEngine::doRequestUpdate()
             state |= QNetworkConfiguration::Active;
 
         if (accessPointConfigurations.contains(id)) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
-                accessPointConfigurations.value(id);
+            QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
             bool changed = false;
 
@@ -269,7 +268,7 @@ void QGenericEngine::doRequestUpdate()
     }
 
     while (!previous.isEmpty()) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
+        QNetworkConfigurationPrivatePointer ptr =
             accessPointConfigurations.take(previous.takeFirst());
 
         configurationInterface.remove(ptr->id);

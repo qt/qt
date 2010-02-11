@@ -121,7 +121,7 @@ void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
         serviceNetwork->state = QNetworkConfiguration::Defined;
         serviceNetwork->type = QNetworkConfiguration::ServiceNetwork;
 
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr(serviceNetwork);
+        QNetworkConfigurationPrivatePointer ptr(serviceNetwork);
 
         generic->snapConfigurations.insert(serviceNetwork->id, ptr);
 
@@ -132,17 +132,17 @@ void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
         }
     }
 
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> ptr =
+    QNetworkConfigurationPrivatePointer ptr =
         generic->snapConfigurations.value(QLatin1String("Internet Service Network"));
 
-    QList<QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > serviceNetworkMembers;
+    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
 
-    QHash<QString, QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> >::const_iterator i =
+    QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
         generic->accessPointConfigurations.constBegin();
 
     QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Defined;
     while (i != generic->accessPointConfigurations.constEnd()) {
-        QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> child = i.value();
+        QNetworkConfigurationPrivatePointer child = i.value();
 
         if (child.data()->internet && ((child.data()->state & QNetworkConfiguration::Defined)
                     == QNetworkConfiguration::Defined)) {

@@ -239,8 +239,7 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
 
         //find all InternetAccessPoints
         foreach (const QString &ii, cpsIdents) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
-                    engine->accessPointConfigurations.value(ii);
+            QNetworkConfigurationPrivatePointer p = engine->accessPointConfigurations.value(ii);
             if ((p->state & filter) == filter) {
                 QNetworkConfiguration pt;
                 pt.d = engine->accessPointConfigurations.value(ii);
@@ -251,8 +250,7 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
         //find all service networks
         cpsIdents = engine->snapConfigurations.keys();
         foreach (const QString &ii, cpsIdents) {
-            QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p =
-                    engine->snapConfigurations.value(ii);
+            QNetworkConfigurationPrivatePointer p = engine->snapConfigurations.value(ii);
             if ((p->state & filter) == filter) {
                 QNetworkConfiguration pt;
                 pt.d = engine->snapConfigurations.value(ii);

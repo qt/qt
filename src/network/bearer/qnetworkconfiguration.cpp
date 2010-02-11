@@ -326,10 +326,9 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
     if (type() != QNetworkConfiguration::ServiceNetwork || !isValid() )
         return results;
 
-    QMutableListIterator<QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> > iter(d->serviceNetworkMembers);
-    QExplicitlySharedDataPointer<QNetworkConfigurationPrivate> p(0);
+    QMutableListIterator<QNetworkConfigurationPrivatePointer> iter(d->serviceNetworkMembers);
     while(iter.hasNext()) {
-        p = iter.next();
+        QNetworkConfigurationPrivatePointer p = iter.next();
         //if we have an invalid member get rid of it -> was deleted earlier on
         if (!p->isValid)
             iter.remove();
