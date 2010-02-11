@@ -153,10 +153,11 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         if (!evalContext && context()) {
             // Global object, QScriptContext activation object, QmlContext object
             QScriptValue scopeNode = scopeChainValue(context(), -3);         
-            Q_ASSERT(scopeNode.isValid());
-            Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
+            if (scopeNode.isValid()) {
+                Q_ASSERT(scriptClass(scopeNode) == enginePrivate->contextClass);
 
-            evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
+                evalContext = enginePrivate->contextClass->contextFromValue(scopeNode);
+            }
         }
 
         if (evalContext) {
@@ -332,10 +333,11 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     if (!evalContext && context()) {
         // Global object, QScriptContext activation object, QmlContext object
         QScriptValue scopeNode = scopeChainValue(context(), -3);         
-        Q_ASSERT(scopeNode.isValid());
-        Q_ASSERT(scriptClass(scopeNode) == enginePriv->contextClass);
+        if (scopeNode.isValid()) {
+            Q_ASSERT(scriptClass(scopeNode) == enginePriv->contextClass);
 
-        evalContext = enginePriv->contextClass->contextFromValue(scopeNode);
+            evalContext = enginePriv->contextClass->contextFromValue(scopeNode);
+        }
     }
 
     QmlAbstractBinding *delBinding = QmlMetaPropertyPrivate::setBinding(obj, *lastData, 0);
