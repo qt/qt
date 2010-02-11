@@ -3084,7 +3084,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
 */
 int QGLShaderProgram::maxGeometryOutputVertices() const
 {
-    int n;
+    GLint n;
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
     return n;
 }
