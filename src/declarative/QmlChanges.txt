@@ -118,3 +118,5 @@ Script: now an intrinsic type in the language
 Script: delay-loaded of the QML file until their source has been loaded (this only effects QML files loaded across the network.)
 Scope: declared properties shadow a property of the same name (was previously the reverse)
 ScriptAction and StateChangeScript: the script property now takes script rather than a string containing script (script: doSomething() rather than script: "doSomething()")
+QmlGraphicsItem::transformOrigin default changed from TopLeft to Center
+Animations used as PropertySourceValues are set to 'running: true' as default
