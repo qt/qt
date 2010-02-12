@@ -102,6 +102,7 @@ public:
     void updatePlaybackRate(qreal rate);
     void updateAudioOutput(IBaseFilter *filter);
     void updateError(QMediaPlayer::Error error, const QString &errorString);
+    void updatePosition(qint64 position);
 
 protected:
     void customEvent(QEvent *event);
@@ -115,7 +116,8 @@ private:
         DurationProperty     = 0x08,
         PlaybackRateProperty = 0x10,
         SeekableProperty     = 0x20,
-        ErrorProperty        = 0x40
+        ErrorProperty        = 0x40,
+        PositionProperty     = 0x80
     };
 
     enum Event
@@ -135,6 +137,7 @@ private:
     QMediaPlayer::Error m_error;
     int m_streamTypes;
     int m_muteVolume;
+    qint64 m_position;
     qint64 m_duration;
     qreal m_playbackRate;
     bool m_seekable;

@@ -85,6 +85,7 @@ DirectShowPlayerControl::DirectShowPlayerControl(DirectShowPlayerService *servic
     , m_error(QMediaPlayer::NoError)
     , m_streamTypes(0)
     , m_muteVolume(-1)
+    , m_position(0)
     , m_duration(0)
     , m_playbackRate(0)
     , m_seekable(false)
@@ -114,7 +115,7 @@ qint64 DirectShowPlayerControl::duration() const
 
 qint64 DirectShowPlayerControl::position() const
 {
-    return m_service->position();
+    return const_cast<qint64 &>(m_position) = m_service->position();
 }
 
 void DirectShowPlayerControl::setPosition(qint64 position)
@@ -289,6 +290,9 @@ void DirectShowPlayerControl::emitPropertyChanges()
         emit videoAvailableChanged(m_streamTypes & DirectShowPlayerService::VideoStream);
     }
 
+    if (properties & PositionProperty)
+        emit positionChanged(m_position);
+
     if (properties & DurationProperty)
         emit durationChanged(m_duration);
 
@@ -377,6 +381,15 @@ void DirectShowPlayerControl::updateError(QMediaPlayer::Error error, const QStri
 
     if (m_error != QMediaPlayer::NoError)
         scheduleUpdate(ErrorProperty);
+}
+
+void DirectShowPlayerControl::updatePosition(qint64 position)
+{
+    if (m_position != position) {
+        m_position = position;
+
+        scheduleUpdate(PositionProperty);
+    }
 }
 
 QT_END_NAMESPACE
