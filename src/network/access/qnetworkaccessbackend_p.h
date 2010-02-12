@@ -54,7 +54,6 @@
 //
 
 #include "qnetworkreplyimpl_p.h"
-#include "QtNetwork/qnetworksession.h"
 #include "QtCore/qobject.h"
 
 QT_BEGIN_NAMESPACE

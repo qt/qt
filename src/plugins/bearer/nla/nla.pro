@@ -12,7 +12,7 @@ QT += network
 HEADERS += qnlaengine.h \
            ../platformdefs_win.h \
            ../qnetworksession_impl.h \
-           ../qbeaerengine_impl.h
+           ../qbearerengine_impl.h
 
 SOURCES += main.cpp \
            qnlaengine.cpp \
