@@ -63,7 +63,6 @@
 
 
 QT_BEGIN_NAMESPACE
-QList<QWindowSystemInterface::UserEvent *> userEventQueue;
 
 static QString appName;
 static const char *appFont = 0;                  // application font
@@ -534,7 +533,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterface::MouseEvent *
     Qt::MouseButtons stateChange = e->buttons ^ buttons;
     if (e->globalPos != QPoint(qt_last_x, qt_last_y) && (stateChange != Qt::NoButton)) {
         QWindowSystemInterface::MouseEvent * newMouseEvent = new QWindowSystemInterface::MouseEvent(e->widget.data(), e->timestamp, e->localPos, e->globalPos, e->buttons);
-        userEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
+        QWindowSystemInterfacePrivate::userEventQueue.prepend(newMouseEvent); // just in case the move triggers a new event loop
         stateChange = Qt::NoButton;
     }
 

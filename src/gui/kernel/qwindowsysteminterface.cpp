@@ -51,7 +51,7 @@ QTime QWindowSystemInterface::eventTime;
 // Callback functions for plugins:
 //
 
-QList<QWindowSystemInterface::UserEvent *> QWindowSystemInterface::userEventQueue;
+QList<QWindowSystemInterface::UserEvent *> QWindowSystemInterfacePrivate::userEventQueue;
 
 extern QPointer<QWidget> qt_last_mouse_receiver;
 /*!
@@ -94,19 +94,19 @@ void QWindowSystemInterface::handleCloseEvent(QWidget *tlw)
 void QWindowSystemInterface::handleMouseEvent(QWidget *tlw, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b)
 {
     MouseEvent * e = new MouseEvent(tlw, timestamp, local, global, b);
-    queueUserEvent(e);
+    QWindowSystemInterfacePrivate::queueUserEvent(e);
 }
 
 void QWindowSystemInterface::handleKeyEvent(QWidget *tlw, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text, bool autorep, ushort count)
 {
     KeyEvent * e = new KeyEvent(tlw, timestamp, t, k, mods, text, autorep, count);
-    queueUserEvent(e);
+    QWindowSystemInterfacePrivate::queueUserEvent(e);
 }
 
 void QWindowSystemInterface::handleWheelEvent(QWidget *tlw, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o)
 {
     WheelEvent *e = new WheelEvent(tlw, timestamp, local, global, d, o);
-    queueUserEvent(e);
+    QWindowSystemInterfacePrivate::queueUserEvent(e);
 }
 
 QT_END_NAMESPACE

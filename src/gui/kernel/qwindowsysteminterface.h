@@ -48,9 +48,35 @@
 #include <QWeakPointer>
 
 QT_BEGIN_NAMESPACE
+
 class Q_GUI_EXPORT QWindowSystemInterface
 {
 public:
+    static void handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b) {
+        handleMouseEvent(w, eventTime.elapsed(), local, global, b);
+    }
+
+    static void handleMouseEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b);
+
+    static void handleKeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1) {
+        handleKeyEvent(w, eventTime.elapsed(), t, k, mods, text, autorep, count);
+    }
+
+    static void handleKeyEvent(QWidget *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
+
+    static void handleWheelEvent(QWidget *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o) {
+        handleWheelEvent(w, eventTime.elapsed(), local, global, d, o);
+    }
+
+    static void handleWheelEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o);
+
+    // delivered directly by the plugin via spontaneous events
+    static void handleGeometryChange(QWidget *w, const QRect &newRect);
+    static void handleCloseEvent(QWidget *w);
+    static void handleEnterEvent(QWidget *w);
+    static void handleLeaveEvent(QWidget *w);
+
+
     class UserEvent {
     public:
         UserEvent(QWidget * w, ulong time, QEvent::Type t)
@@ -90,40 +116,18 @@ public:
         Qt::KeyboardModifiers modifiers;
     };
 
+private:
     static QTime eventTime;
 
-    static int userEventsQueued() { return userEventQueue.count(); }
-    static UserEvent * getUserEvent() { return userEventQueue.takeFirst(); }
-    static void queueUserEvent(UserEvent *ev) { userEventQueue.append(ev); }
-
-
-public:
-    static QList<UserEvent *> userEventQueue;
-
-    static void handleMouseEvent(QWidget *w, const QPoint & local, const QPoint & global, Qt::MouseButtons b) {
-        handleMouseEvent(w, eventTime.elapsed(), local, global, b);
-    }
-
-    static void handleMouseEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, Qt::MouseButtons b);
-
-    static void handleKeyEvent(QWidget *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1) {
-        handleKeyEvent(w, eventTime.elapsed(), t, k, mods, text, autorep, count);
-    }
-
-    static void handleKeyEvent(QWidget *w, ulong timestamp, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
-
-    static void handleWheelEvent(QWidget *w, const QPoint & local, const QPoint & global, int d, Qt::Orientation o) {
-        handleWheelEvent(w, eventTime.elapsed(), local, global, d, o);
-    }
-
-    static void handleWheelEvent(QWidget *w, ulong timestamp, const QPoint & local, const QPoint & global, int d, Qt::Orientation o);
-
-    // delivered directly by the plugin via spontaneous events
-    static void handleGeometryChange(QWidget *w, const QRect &newRect);
-    static void handleCloseEvent(QWidget *w);
-    static void handleEnterEvent(QWidget *w);
-    static void handleLeaveEvent(QWidget *w);
 };
 
+class QWindowSystemInterfacePrivate {
+public:
+    static QList<QWindowSystemInterface::UserEvent *> userEventQueue;
+
+    static int userEventsQueued() { return userEventQueue.count(); }
+    static QWindowSystemInterface::UserEvent * getUserEvent() { return userEventQueue.takeFirst(); }
+    static void queueUserEvent(QWindowSystemInterface::UserEvent *ev) { userEventQueue.append(ev); }
+};
 QT_END_NAMESPACE
 #endif // QWINDOWSYSTEMINTERFACE_H

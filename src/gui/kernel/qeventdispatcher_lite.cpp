@@ -86,9 +86,9 @@ bool QEventDispatcherLite::processEvents(QEventLoop::ProcessEventsFlags flags)
     while (!d->interrupt) {        // also flushes output buffer ###can be optimized
         QWindowSystemInterface::UserEvent *event;
         if (!(flags & QEventLoop::ExcludeUserInputEvents)
-            && QWindowSystemInterface::userEventsQueued() > 0) {
+            && QWindowSystemInterfacePrivate::userEventsQueued() > 0) {
             // process a pending user input event
-            event = QWindowSystemInterface::getUserEvent();
+            event = QWindowSystemInterfacePrivate::getUserEvent();
         } else {
             break;
         }
@@ -113,7 +113,7 @@ bool QEventDispatcherLite::processEvents(QEventLoop::ProcessEventsFlags flags)
 bool QEventDispatcherLite::hasPendingEvents()
 {
     extern uint qGlobalPostedEventsCount(); // from qapplication.cpp
-    return qGlobalPostedEventsCount() || QWindowSystemInterface::userEventsQueued();;
+    return qGlobalPostedEventsCount() || QWindowSystemInterfacePrivate::userEventsQueued();;
 }
 
 void QEventDispatcherLite::startingUp()
