@@ -922,7 +922,6 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
 bool QmlListModelParser::definesEmptyList(const QString &s)
 {
     if (s.startsWith(QLatin1Char('[')) && s.endsWith(QLatin1Char(']'))) {
-        bool isEmptyList = true;
         for (int i=1; i<s.length()-1; i++) {
             if (!s[i].isSpace())
                 return false;

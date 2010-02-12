@@ -93,7 +93,6 @@ void QmlGraphicsLoaderPrivate::clear()
 void QmlGraphicsLoaderPrivate::initResize()
 {
     Q_Q(QmlGraphicsLoader);
-    QmlGraphicsItem *resizeItem = 0;
     if (QmlGraphicsItem *qmlItem = qobject_cast<QmlGraphicsItem*>(item)) {
         if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem) {
             QmlGraphicsItemPrivate *p =
@@ -389,7 +388,6 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
     if (mode == d->resizeMode)
         return;
 
-    QmlGraphicsItem *resizeItem = 0;
     if (QmlGraphicsItem *qmlItem = qobject_cast<QmlGraphicsItem*>(d->item)) {
         if (d->resizeMode == SizeLoaderToItem) {
             QmlGraphicsItemPrivate *p =
@@ -397,7 +395,6 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
             p->removeItemChangeListener(d, QmlGraphicsItemPrivate::Geometry);
         }
     } else if (d->item && d->item->isWidget()) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(d->item);
         if (d->resizeMode == SizeLoaderToItem)
             d->item->removeEventFilter(this);
     }
