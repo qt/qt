@@ -80,6 +80,7 @@
 #endif // QT_NO_CODECS
 #include "qlocale.h"
 #include "qmutex.h"
+#include "qhash.h"
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -172,6 +173,7 @@ static QTextCodec *createForMib(int mib)
 }
 
 static QList<QTextCodec*> *all = 0;
+static int clearCaches = 0;  // flags specifying if caches should be invalided: 0x1 codecForName, 0x2 codecForMib
 #ifdef Q_DEBUG_TEXTCODEC
 static bool destroying_is_ok = false;
 #endif
@@ -935,6 +937,7 @@ QTextCodec::~QTextCodec()
         QMutexLocker locker(textCodecsMutex());
 #endif
         all->removeAll(this);
+        clearCaches = 0x1 | 0x2;
     }
 }
 
@@ -961,17 +964,31 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 #endif
     setup();
 
+    static QHash <QByteArray, QTextCodec *> cache;
+    if (clearCaches & 0x1) {
+        cache.clear();
+        clearCaches &= ~0x1;
+    }
+    QTextCodec *codec = cache.value(name);
+    if (codec)
+        return codec;
+
     for (int i = 0; i < all->size(); ++i) {
         QTextCodec *cursor = all->at(i);
         if (nameMatch(cursor->name(), name))
             return cursor;
         QList<QByteArray> aliases = cursor->aliases();
         for (int y = 0; y < aliases.size(); ++y)
-            if (nameMatch(aliases.at(y), name))
+            if (nameMatch(aliases.at(y), name)) {
+                cache.insert(name, cursor);
                 return cursor;
+            }
     }
 
-    return createForName(name);
+    codec = createForName(name);
+    if (codec)
+        cache.insert(name, codec);
+    return codec;
 }
 
 
@@ -986,19 +1003,34 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 #endif
     setup();
 
-    // Qt 3 used 1000 (mib for UCS2) as its identifier for the utf16 codec. Map
-    // this correctly for compatibility.
-    if (mib == 1000)
-        mib = 1015;
+    static QHash <int, QTextCodec *> cache;
+    if (clearCaches & 0x2) {
+        cache.clear();
+        clearCaches &= ~0x2;
+    }
+    QTextCodec *codec = cache.value(mib);
+    if (codec)
+        return codec;
 
     QList<QTextCodec*>::ConstIterator i;
     for (int i = 0; i < all->size(); ++i) {
         QTextCodec *cursor = all->at(i);
-        if (cursor->mibEnum() == mib)
+        if (cursor->mibEnum() == mib) {
+            cache.insert(mib, cursor);
             return cursor;
+        }
     }
 
-    return createForMib(mib);
+    codec = createForMib(mib);
+
+    // Qt 3 used 1000 (mib for UCS2) as its identifier for the utf16 codec. Map
+    // this correctly for compatibility.
+    if (!codec && mib == 1000)
+        return codecForMib(1015);
+
+    if (codec)
+        cache.insert(mib, codec);
+    return codec;
 }
 
 /*!
