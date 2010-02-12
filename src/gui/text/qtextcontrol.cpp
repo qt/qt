@@ -441,7 +441,6 @@ void QTextControlPrivate::setContent(Qt::TextFormat format, const QString &text,
         QObject::connect(doc, SIGNAL(documentLayoutChanged()), q, SLOT(_q_documentLayoutChanged()));
 
         // convenience signal forwards
-        QObject::connect(doc, SIGNAL(contentsChanged()), q, SIGNAL(textChanged()));
         QObject::connect(doc, SIGNAL(undoAvailable(bool)), q, SIGNAL(undoAvailable(bool)));
         QObject::connect(doc, SIGNAL(redoAvailable(bool)), q, SIGNAL(redoAvailable(bool)));
         QObject::connect(doc, SIGNAL(modificationChanged(bool)), q, SIGNAL(modificationChanged(bool)));
@@ -452,8 +451,11 @@ void QTextControlPrivate::setContent(Qt::TextFormat format, const QString &text,
     if (!document)
         doc->setUndoRedoEnabled(false);
 
+    //Saving the index save some time.
+    static int contentsChangedIndex = QTextDocument::staticMetaObject.indexOfSignal("contentsChanged()");
+    static int textChangedIndex = QTextControl::staticMetaObject.indexOfSignal("textChanged()");
     // avoid multiple textChanged() signals being emitted
-    QObject::disconnect(doc, SIGNAL(contentsChanged()), q, SIGNAL(textChanged()));
+    QMetaObject::disconnect(doc, contentsChangedIndex, q, textChangedIndex);
 
     if (!text.isEmpty()) {
         // clear 'our' cursor for insertion to prevent
@@ -488,7 +490,7 @@ void QTextControlPrivate::setContent(Qt::TextFormat format, const QString &text,
     }
     cursor.setCharFormat(charFormatForInsertion);
 
-    QObject::connect(doc, SIGNAL(contentsChanged()), q, SIGNAL(textChanged()));
+    QMetaObject::connect(doc, contentsChangedIndex, q, textChangedIndex);
     emit q->textChanged();
     if (!document)
         doc->setUndoRedoEnabled(previousUndoRedoState);
