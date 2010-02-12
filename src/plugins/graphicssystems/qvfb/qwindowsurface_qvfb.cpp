@@ -81,7 +81,7 @@ void QVFbWindowSurface::setGeometry(const QRect &)
 // any size you like as long as it's full-screen...
 
     QRect rect(mScreen->availableGeometry());
-    QApplicationPrivate::handleGeometryChange(this->window(), rect);
+    QWindowSystemInterface::handleGeometryChange(this->window(), rect);
 
     QWindowSurface::setGeometry(rect);
 }

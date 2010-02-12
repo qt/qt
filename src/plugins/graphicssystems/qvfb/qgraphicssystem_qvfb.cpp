@@ -59,7 +59,8 @@
 #include <QMouseEvent>
 
 #include <qsocketnotifier.h>
-#include <private/qapplication_p.h>
+#include <QApplication>
+#include <QWindowSystemInterface>
 
 QT_BEGIN_NAMESPACE
 
@@ -147,8 +148,7 @@ void QVFbGraphicsSystemScreenKeyboardHandler::readKeyboardData()
 
 //        qDebug() << "readKeyboardData" << type << hex << kd->keycode << kd->modifiers << text;
 
-        QKeyEvent ke(type, kd->keycode, kd->modifiers, text, kd->repeat, int(text.length()));
-        QApplicationPrivate::handleKeyEvent(0, &ke);
+        QWindowSystemInterface::handleKeyEvent(0, type, kd->keycode, kd->modifiers, text, kd->repeat, int(text.length()));
         idx += sizeof(QVFbKeyData);
     }
 
@@ -237,9 +237,7 @@ void QVFbGraphicsSystemScreenMouseHandler::readMouseData()
         if (button) {
             type = (button & bstate) ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
         }
-        QMouseEvent me(type, mousePos, mousePos,
-                       Qt::MouseButton(button), Qt::MouseButtons(bstate), Qt::NoModifier);
-        QApplicationPrivate::handleMouseEvent(0, me);
+        QWindowSystemInterface::handleMouseEvent(0, mousePos, mousePos, Qt::MouseButtons(bstate));
 
 //        qDebug() << "readMouseData" << mousePos << button << bstate << oldButtonState << type;
 
