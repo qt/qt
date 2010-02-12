@@ -63,7 +63,7 @@ static inline const char *data(const QByteArray &arr)
 QDBusMessagePrivate::QDBusMessagePrivate()
     : msg(0), reply(0), type(DBUS_MESSAGE_TYPE_INVALID),
       timeout(-1), localReply(0), ref(1), delayedReply(false), localMessage(false),
-      parametersValidated(false)
+      parametersValidated(false), autoStart(true)
 {
 }
 
@@ -129,6 +129,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
         msg = q_dbus_message_new_method_call(data(d_ptr->service.toUtf8()), d_ptr->path.toUtf8(),
                                              data(d_ptr->interface.toUtf8()), d_ptr->name.toUtf8());
+        q_dbus_message_set_auto_start( msg, d_ptr->autoStart );
         break;
     case DBUS_MESSAGE_TYPE_METHOD_RETURN:
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN);
@@ -641,6 +642,30 @@ void QDBusMessage::setDelayedReply(bool enable) const
 bool QDBusMessage::isDelayedReply() const
 {
     return d_ptr->delayedReply;
+}
+
+/*!
+    Sets whether this message will have the auto start flag.
+    This flag only makes sense for method call messages. For
+    these messages it tells the dbus server to either auto
+    start the service responsible for the service name, or
+    not to auto start it.
+
+    This flag is true by default.
+*/
+void QDBusMessage::setAutoStart(bool enable) const
+{
+    d_ptr->autoStart = enable;
+}
+
+/*!
+    Returns the auto start flag, as set by setAutoStart(). By default, this
+    flag is true, which means QtDBus will auto start a service, if it is
+    not running already.
+*/
+bool QDBusMessage::isAutoStart() const
+{
+    return d_ptr->autoStart;
 }
 
 /*!
