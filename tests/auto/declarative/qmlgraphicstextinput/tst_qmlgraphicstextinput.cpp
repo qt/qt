@@ -492,7 +492,7 @@ void tst_qmlgraphicstextinput::validators()
 
 void tst_qmlgraphicstextinput::inputMethodHints()
 {
-    QmlView *canvas = createView(SRCDIR "/data/inputMethodHints.qml");
+    QmlView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
     canvas->execute();
     canvas->show();
     canvas->setFocus();

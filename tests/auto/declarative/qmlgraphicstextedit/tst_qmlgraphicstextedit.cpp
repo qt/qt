@@ -603,7 +603,7 @@ void tst_qmlgraphicstextedit::selection()
 
 void tst_qmlgraphicstextedit::inputMethodHints()
 {
-    QmlView *canvas = createView(SRCDIR "/data/inputMethodHints.qml");
+    QmlView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
     canvas->execute();
     canvas->show();
     canvas->setFocus();
