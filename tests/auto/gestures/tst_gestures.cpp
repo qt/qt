@@ -333,6 +333,8 @@ private slots:
     void unregisterRecognizer();
     void autoCancelGestures();
     void autoCancelGestures2();
+    void panelPropagation();
+    void panelStacksBehindParent();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1457,9 +1459,7 @@ void tst_Gestures::autoCancelGestures2()
     event.serial = CustomGesture::SerialStartedThreshold;
     event.hasHotSpot = true;
     event.hotSpot = mapToGlobal(QPointF(5, 5), child, &view);
-    // qDebug() << event.hotSpot;
     scene.sendEvent(child, &event);
-    //QEventLoop().exec();
     QCOMPARE(parent->events.all.count(), 1);
     QCOMPARE(child->events.started.count(), 1);
     QCOMPARE(child->events.canceled.count(), 1);
@@ -1469,6 +1469,173 @@ void tst_Gestures::autoCancelGestures2()
     event.serial = CustomGesture::SerialFinishedThreshold;
     scene.sendEvent(child, &event);
     QCOMPARE(parent->events.all.count(), 2);
+}
+
+void tst_Gestures::panelPropagation()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+
+    GestureItem *item0 = new GestureItem("item0");
+    scene.addItem(item0);
+    item0->setPos(0, 0);
+    item0->size = QRectF(0, 0, 200, 200);
+    item0->grabGesture(CustomGesture::GestureType);
+    item0->setZValue(1);
+
+    GestureItem *item1 = new GestureItem("item1");
+    item1->grabGesture(CustomGesture::GestureType);
+    scene.addItem(item1);
+    item1->setPos(10, 10);
+    item1->size = QRectF(0, 0, 180, 180);
+    item1->setZValue(2);
+
+    GestureItem *item1_child1 = new GestureItem("item1_child1[panel]");
+    item1_child1->setFlags(QGraphicsItem::ItemIsPanel);
+    item1_child1->setParentItem(item1);
+    item1_child1->grabGesture(CustomGesture::GestureType);
+    item1_child1->setPos(10, 10);
+    item1_child1->size = QRectF(0, 0, 160, 160);
+    item1_child1->setZValue(5);
+
+    GestureItem *item1_child1_child1 = new GestureItem("item1_child1_child1");
+    item1_child1_child1->setParentItem(item1_child1);
+    item1_child1_child1->grabGesture(CustomGesture::GestureType);
+    item1_child1_child1->setPos(10, 10);
+    item1_child1_child1->size = QRectF(0, 0, 140, 140);
+    item1_child1_child1->setZValue(10);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+    static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
+
+    CustomEvent event;
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item1_child1_child1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item0, &scene);
+
+    QCOMPARE(item0->customEventsReceived, TotalCustomEventsCount);
+    QCOMPARE(item1_child1_child1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1_child1_child1->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item1_child1->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item0->gestureEventsReceived, 0);
+    QCOMPARE(item0->gestureOverrideEventsReceived, 0);
+
+    item0->reset(); item1->reset(); item1_child1->reset(); item1_child1_child1->reset();
+
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item1, &scene);
+
+    QCOMPARE(item1_child1_child1->gestureEventsReceived, 0);
+    QCOMPARE(item1_child1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1_child1->gestureEventsReceived, 0);
+    QCOMPARE(item1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item0->gestureEventsReceived, 0);
+    QCOMPARE(item0->gestureOverrideEventsReceived, 1);
+
+    item0->reset(); item1->reset(); item1_child1->reset(); item1_child1_child1->reset();
+    // try with a modal panel
+    item1_child1->setPanelModality(QGraphicsItem::PanelModal);
+
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item1, &scene);
+
+    QCOMPARE(item1_child1_child1->gestureEventsReceived, 0);
+    QCOMPARE(item1_child1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1_child1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item0->gestureEventsReceived, 0);
+    QCOMPARE(item0->gestureOverrideEventsReceived, 0);
+
+    item0->reset(); item1->reset(); item1_child1->reset(); item1_child1_child1->reset();
+    // try with a modal panel, however set the hotspot to be outside of the
+    // panel and its parent
+    item1_child1->setPanelModality(QGraphicsItem::PanelModal);
+
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item0, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item1, &scene);
+
+    QCOMPARE(item1_child1_child1->gestureEventsReceived, 0);
+    QCOMPARE(item1_child1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1_child1->gestureEventsReceived, 0);
+    QCOMPARE(item1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item0->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item0->gestureOverrideEventsReceived, 0);
+
+    item0->reset(); item1->reset(); item1_child1->reset(); item1_child1_child1->reset();
+    // try with a scene modal panel
+    item1_child1->setPanelModality(QGraphicsItem::SceneModal);
+
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item0, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item0, &scene);
+
+    QCOMPARE(item1_child1_child1->gestureEventsReceived, 0);
+    QCOMPARE(item1_child1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1_child1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item0->gestureEventsReceived, 0);
+    QCOMPARE(item0->gestureOverrideEventsReceived, 0);
+}
+
+void tst_Gestures::panelStacksBehindParent()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+
+    GestureItem *item1 = new GestureItem("item1");
+    item1->grabGesture(CustomGesture::GestureType);
+    scene.addItem(item1);
+    item1->setPos(10, 10);
+    item1->size = QRectF(0, 0, 180, 180);
+    item1->setZValue(2);
+
+    GestureItem *panel = new GestureItem("panel");
+    panel->setFlags(QGraphicsItem::ItemIsPanel | QGraphicsItem::ItemStacksBehindParent);
+    panel->setPanelModality(QGraphicsItem::PanelModal);
+    panel->setParentItem(item1);
+    panel->grabGesture(CustomGesture::GestureType);
+    panel->setPos(-10, -10);
+    panel->size = QRectF(0, 0, 200, 200);
+    panel->setZValue(5);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+
+    CustomEvent event;
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item1, &scene);
+
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(panel->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(panel->gestureOverrideEventsReceived, 0);
 }
 
 QTEST_MAIN(tst_Gestures)
