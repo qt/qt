@@ -95,9 +95,9 @@ private slots:
         QBENCHMARK {
             QDirIterator dit(testdir.path(), QDir::Files);
             while (dit.hasNext()) {
+                dit.next();
                 dit.fileInfo().isDir();
                 dit.fileInfo().size();
-                dit.next();
             }
         }
     }
@@ -116,9 +116,9 @@ private slots:
         QBENCHMARK {
             QDirIterator dit(testdir.path());
             while (dit.hasNext()) {
+                dit.next();
                 dit.fileInfo().isDir();
                 dit.fileInfo().size();
-                dit.next();
             }
         }
     }
