@@ -8092,20 +8092,43 @@ void qInitDrawhelperAsm()
             qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_sse3dnow;
         }
 #endif // 3DNOW
-        extern void qt_blend_rgb32_on_rgb32_sse(uchar *destPixels, int dbpl,
-                                                const uchar *srcPixels, int sbpl,
-                                                int w, int h,
-                                                int const_alpha);
-        extern void qt_blend_argb32_on_argb32_sse(uchar *destPixels, int dbpl,
-                                                  const uchar *srcPixels, int sbpl,
-                                                  int w, int h,
-                                                  int const_alpha);
 
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse;
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse;
-    }
+
+#ifdef QT_HAVE_SSE2
+        if (features & SSE2) {
+            extern void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
+                                                     const uchar *srcPixels, int sbpl,
+                                                     int w, int h,
+                                                     int const_alpha);
+            extern void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
+                                                       const uchar *srcPixels, int sbpl,
+                                                       int w, int h,
+                                                       int const_alpha);
+
+
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+        } else
+#endif
+        {
+            extern void qt_blend_rgb32_on_rgb32_sse(uchar *destPixels, int dbpl,
+                                                    const uchar *srcPixels, int sbpl,
+                                                    int w, int h,
+                                                    int const_alpha);
+            extern void qt_blend_argb32_on_argb32_sse(uchar *destPixels, int dbpl,
+                                                      const uchar *srcPixels, int sbpl,
+                                                      int w, int h,
+                                                      int const_alpha);
+
+
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse;
+            qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse;
+            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse;
+        }
+}
 #endif // SSE
 
 #ifdef QT_HAVE_IWMMXT
