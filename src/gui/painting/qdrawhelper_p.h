@@ -1549,6 +1549,9 @@ template<> inline void qt_memfill(quint8 *dest, quint8 color, int count)
 template <class T>
 inline void qt_memfill(T *dest, T value, int count)
 {
+    if (!count)
+        return;
+
     int n = (count + 7) / 8;
     switch (count & 0x07)
     {

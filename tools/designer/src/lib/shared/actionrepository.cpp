@@ -77,18 +77,12 @@ static inline QAction *actionOfItem(const QStandardItem* item)
     return qvariant_cast<QAction*>(item->data(qdesigner_internal::ActionModel::ActionRole));
 }
 
-static QIcon fixActionIcon(const QIcon &icon)
-{
-    if (icon.isNull())
-        return qdesigner_internal::emptyIcon();
-    return icon;
-}
-
 namespace qdesigner_internal {
 
 // ----------- ActionModel
 ActionModel::ActionModel(QWidget *parent ) :
     QStandardItemModel(parent),
+    m_emptyIcon(emptyIcon()),
     m_core(0)
 {
     QStringList headers;
@@ -127,7 +121,7 @@ void ActionModel::update(int row)
     for (int i = 0; i < NumColumns; i++)
        list += item(row, i);
 
-    setItems(m_core, actionOfItem(list.front()), list);
+    setItems(m_core, actionOfItem(list.front()), m_emptyIcon, list);
 }
 
 void ActionModel::remove(int row)
@@ -150,7 +144,7 @@ QModelIndex ActionModel::addAction(QAction *action)
         item->setFlags(flags);
         items.push_back(item);
     }
-    setItems(m_core, action, items);
+    setItems(m_core, action, m_emptyIcon, items);
     appendRow(items);
     return indexFromItem(items.front());
 }
@@ -185,7 +179,9 @@ PropertySheetKeySequenceValue ActionModel::actionShortCut(const QDesignerPropert
     return qvariant_cast<PropertySheetKeySequenceValue>(sheet->property(index));
 }
 
-void  ActionModel::setItems(QDesignerFormEditorInterface *core, QAction *action, QStandardItemList &sl)
+void  ActionModel::setItems(QDesignerFormEditorInterface *core, QAction *action,
+                            const QIcon &defaultIcon,
+                            QStandardItemList &sl)
 {
 
     // Tooltip, mostly for icon view mode
@@ -200,7 +196,10 @@ void  ActionModel::setItems(QDesignerFormEditorInterface *core, QAction *action,
 
     QStandardItem *item =  sl[NameColumn];
     item->setText(action->objectName());
-    item->setIcon(fixActionIcon(action->icon()));
+    QIcon icon = action->icon();
+    if (icon.isNull())
+        icon = defaultIcon;
+    item->setIcon(icon);
     item->setToolTip(firstTooltip);
     item->setWhatsThis(firstTooltip);
     // Used

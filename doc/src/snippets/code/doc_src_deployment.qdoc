@@ -475,19 +475,10 @@ default_deployment.pkg_prerules += supported_platforms
 //! [57]
 
 //! [58]
-DEPLOYMENT.installer_header = 0xE2345678
+qmake
+make release-gcce
 //! [58]
 
 //! [59]
-qmake
-make release-gcce
+make installer_sis
 //! [59]
-
-//! [60]
-make sis
-ren wiggly_release-gcce.sis wiggly.sis
-//! [60]
-
-//! [61]
-createpackage wiggly_installer.pkg
-//! [61]

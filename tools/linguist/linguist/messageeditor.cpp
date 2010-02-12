@@ -98,14 +98,8 @@ MessageEditor::MessageEditor(MultiDataModel *dataModel, QMainWindow *parent)
 {
     setObjectName(QLatin1String("scroll area"));
 
-    // Use white explicitly as the background color for the editor page.
     QPalette p;
-    p.setColor(QPalette::Active,   QPalette::Base,   Qt::white);
-    p.setColor(QPalette::Inactive, QPalette::Base,   Qt::white);
-    p.setColor(QPalette::Disabled, QPalette::Base,   Qt::white);
-    p.setColor(QPalette::Active,   QPalette::Window, Qt::white);
-    p.setColor(QPalette::Inactive, QPalette::Window, Qt::white);
-    p.setColor(QPalette::Disabled, QPalette::Window, Qt::white);
+    p.setBrush(QPalette::Window, p.brush(QPalette::Active, QPalette::Base));
     setPalette(p);
 
     setupEditorPage();

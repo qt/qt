@@ -1633,6 +1633,35 @@ void tst_QImageReader::autoDetectImageFormat()
         QVERIFY(reader.canRead());
         QVERIFY(!reader.read().isNull());
     }
+
+#ifdef QTEST_HAVE_JPEG
+    {
+        QImageReader io(prefix + "YCbCr_rgb.jpg");
+        io.setAutoDetectImageFormat(false);
+        // This should fail since no format string is given
+        QImage image;
+        QVERIFY(!io.read(&image));
+    }
+    {
+        QImageReader io(prefix + "YCbCr_rgb.jpg", "jpg");
+        io.setAutoDetectImageFormat(false);
+        QImage image;
+        QVERIFY(io.read(&image));
+    }
+#endif
+    {
+        QImageReader io(prefix + "tst7.png");
+        io.setAutoDetectImageFormat(false);
+        // This should fail since no format string is given
+        QImage image;
+        QVERIFY(!io.read(&image));
+    }
+    {
+        QImageReader io(prefix + "tst7.png", "png");
+        io.setAutoDetectImageFormat(false);
+        QImage image;
+        QVERIFY(io.read(&image));
+    }
 }
 
 void tst_QImageReader::fileNameProbing()

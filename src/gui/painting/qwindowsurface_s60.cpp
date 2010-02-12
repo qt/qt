@@ -145,12 +145,15 @@ QImage* QS60WindowSurface::buffer(const QWidget *widget)
 
 void QS60WindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &)
 {
-    QWExtra *extra = widget->d_func()->extraData();
-    if (extra && !extra->inExpose) {
-        extra->inExpose = true; // Prevent DrawNow() from calling syncBackingStore() again
+    QWidget *window = widget->window();
+    Q_ASSERT(window);
+    QTLWExtra *topExtra = window->d_func()->maybeTopData();
+    Q_ASSERT(topExtra);
+    if (!topExtra->inExpose) {
+        topExtra->inExpose = true; // Prevent DrawNow() from calling syncBackingStore() again
         TRect tr = qt_QRect2TRect(region.boundingRect());
         widget->winId()->DrawNow(tr);
-        extra->inExpose = false;
+        topExtra->inExpose = false;
     }
 }
 

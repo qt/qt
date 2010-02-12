@@ -90,6 +90,8 @@ Q_DECLARE_METATYPE(QRectF)
 #define COMPARE_REGIONS QTRY_COMPARE
 #endif
 
+static QGraphicsRectItem staticItem; //QTBUG-7629, we should not crash at exit.
+
 static void sendMousePress(QGraphicsScene *scene, const QPointF &point, Qt::MouseButton button = Qt::LeftButton)
 {
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);

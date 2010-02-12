@@ -46,7 +46,7 @@
 #include <QtCore/QUrl>
 
 // ### Qt5 remove this include
-#include "qnetworkcookie.h"
+#include <QtNetwork/QNetworkCookie>
 
 QT_BEGIN_HEADER
 
