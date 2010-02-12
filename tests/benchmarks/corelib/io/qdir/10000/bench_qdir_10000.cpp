@@ -50,7 +50,7 @@
 #   include <unistd.h>
 #endif
 
-class Test : public QObject{
+class bench_QDir_10000 : public QObject{
   Q_OBJECT
 public slots:
     void initTestCase() {
@@ -194,5 +194,5 @@ private slots:
     }
 };
 
-QTEST_MAIN(Test)
-#include "tst_qdir.moc"
+QTEST_MAIN(bench_QDir_10000)
+#include "bench_qdir_10000.moc"
