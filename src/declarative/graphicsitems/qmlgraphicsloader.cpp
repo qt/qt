@@ -55,6 +55,14 @@ QmlGraphicsLoaderPrivate::~QmlGraphicsLoaderPrivate()
 {
 }
 
+void QmlGraphicsLoaderPrivate::itemGeometryChanged(QmlGraphicsItem *resizeItem, const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    if (resizeItem == item && resizeMode == QmlGraphicsLoader::SizeLoaderToItem) {
+        _q_updateSize();
+    }
+    QmlGraphicsItemChangeListener::itemGeometryChanged(resizeItem, newGeometry, oldGeometry);
+}
+
 void QmlGraphicsLoaderPrivate::clear()
 {
     if (ownComponent) {
@@ -65,10 +73,18 @@ void QmlGraphicsLoaderPrivate::clear()
     source = QUrl();
 
     if (item) {
+        if (QmlGraphicsItem *qmlItem = qobject_cast<QmlGraphicsItem*>(item)) {
+            if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem) {
+                QmlGraphicsItemPrivate *p =
+                    static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
+                p->removeItemChangeListener(this, QmlGraphicsItemPrivate::Geometry);
+            }
+        }
+
         // We can't delete immediately because our item may have triggered
         // the Loader to load a different item.
         item->setVisible(false);
-        static_cast<QGraphicsItem*>(item)->setParentItem(0);
+        item->setParentItem(0);
         item->deleteLater();
         item = 0;
     }
@@ -77,19 +93,21 @@ void QmlGraphicsLoaderPrivate::clear()
 void QmlGraphicsLoaderPrivate::initResize()
 {
     Q_Q(QmlGraphicsLoader);
-
     QmlGraphicsItem *resizeItem = 0;
-    if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem)
-        resizeItem = item;
-    else if (resizeMode == QmlGraphicsLoader::SizeItemToLoader)
-        resizeItem = q;
-    if (resizeItem) {
-        QObject::connect(resizeItem, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
-        QObject::connect(resizeItem, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
+    if (QmlGraphicsItem *qmlItem = qobject_cast<QmlGraphicsItem*>(item)) {
+        if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem) {
+            QmlGraphicsItemPrivate *p =
+                static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
+            p->addItemChangeListener(this, QmlGraphicsItemPrivate::Geometry);
+        }
+    } else if (item && item->isWidget()) {
+        QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(item);
+        if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem) {
+            widget->installEventFilter(q);
+        }
     }
     _q_updateSize();
 }
-
 
 QML_DEFINE_TYPE(Qt,4,6,Loader,QmlGraphicsLoader)
 
@@ -270,9 +288,14 @@ void QmlGraphicsLoaderPrivate::_q_sourceLoaded()
         QObject *obj = component->create(ctxt);
         if (obj) {
             ctxt->setParent(obj);
-            item = qobject_cast<QmlGraphicsItem *>(obj);
+            item = qobject_cast<QGraphicsObject *>(obj);
             if (item) {
-                item->setParentItem(q);
+                if (QmlGraphicsItem* qmlItem = qobject_cast<QmlGraphicsItem *>(item)) {
+                    qmlItem->setParentItem(q);
+                } else {
+                    item->setParentItem(q);
+                    item->setParent(q);
+                }
 //                item->setFocus(true);
                 initResize();
             }
@@ -366,16 +389,17 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
     if (mode == d->resizeMode)
         return;
 
-    if (d->item) {
-        QmlGraphicsItem *resizeItem = 0;
-        if (d->resizeMode == SizeLoaderToItem)
-            resizeItem = d->item;
-        else if (d->resizeMode == SizeItemToLoader)
-            resizeItem = this;
-        if (resizeItem) {
-            disconnect(resizeItem, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
-            disconnect(resizeItem, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
+    QmlGraphicsItem *resizeItem = 0;
+    if (QmlGraphicsItem *qmlItem = qobject_cast<QmlGraphicsItem*>(d->item)) {
+        if (d->resizeMode == SizeLoaderToItem) {
+            QmlGraphicsItemPrivate *p =
+                static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
+            p->removeItemChangeListener(d, QmlGraphicsItemPrivate::Geometry);
         }
+    } else if (d->item && d->item->isWidget()) {
+        QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(d->item);
+        if (d->resizeMode == SizeLoaderToItem)
+            d->item->removeEventFilter(this);
     }
 
     d->resizeMode = mode;
@@ -387,17 +411,32 @@ void QmlGraphicsLoaderPrivate::_q_updateSize()
     Q_Q(QmlGraphicsLoader);
     if (!item)
         return;
-    switch (resizeMode) {
-    case QmlGraphicsLoader::SizeLoaderToItem:
-        q->setImplicitWidth(item->width());
-        q->setImplicitHeight(item->height());
-        break;
-    case QmlGraphicsLoader::SizeItemToLoader:
-        item->setWidth(q->width());
-        item->setHeight(q->height());
-        break;
-    default:
-        break;
+    if (QmlGraphicsItem *qmlItem = qobject_cast<QmlGraphicsItem*>(item)) {
+        if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem) {
+            q->setWidth(qmlItem->width());
+            q->setHeight(qmlItem->height());
+        } else if (resizeMode == QmlGraphicsLoader::SizeItemToLoader) {
+            qmlItem->setWidth(q->width());
+            qmlItem->setHeight(q->height());
+        }
+    } else if (item && item->isWidget()) {
+        QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(item);
+        if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem) {
+            QSizeF newSize = widget->size();
+            if (newSize.isValid()) {
+                q->setWidth(newSize.width());
+                q->setHeight(newSize.height());
+            }
+        } else if (resizeMode == QmlGraphicsLoader::SizeItemToLoader) {
+            QSizeF oldSize = widget->size();
+            QSizeF newSize = oldSize;
+            if (q->heightValid())
+                newSize.setHeight(q->height());
+            if (q->widthValid())
+                newSize.setWidth(q->width());
+            if (oldSize != newSize)
+                widget->resize(newSize);
+        }
     }
 }
 
@@ -405,10 +444,46 @@ void QmlGraphicsLoaderPrivate::_q_updateSize()
     \qmlproperty Item Loader::item
     This property holds the top-level item created from source.
 */
-QmlGraphicsItem *QmlGraphicsLoader::item() const
+QGraphicsObject *QmlGraphicsLoader::item() const
 {
     Q_D(const QmlGraphicsLoader);
     return d->item;
+}
+
+void QmlGraphicsLoader::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    Q_D(QmlGraphicsLoader);
+    if (newGeometry != oldGeometry) {
+        if (d->resizeMode == SizeItemToLoader) {
+            d->_q_updateSize();
+        }
+    }
+    QmlGraphicsItem::geometryChanged(newGeometry, oldGeometry);
+}
+
+QVariant QmlGraphicsLoader::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    Q_D(QmlGraphicsLoader);
+    if (change == ItemSceneHasChanged) {
+        if (d->item && d->item->isWidget()) {
+            if (d->resizeMode == SizeLoaderToItem) {
+                d->item->removeEventFilter(this);
+                d->item->installEventFilter(this);
+            }
+        }
+    }
+    return QmlGraphicsItem::itemChange(change, value);
+}
+
+bool QmlGraphicsLoader::eventFilter(QObject *watched, QEvent *e)
+{
+    Q_D(QmlGraphicsLoader);
+    if (watched == d->item && e->type() == QEvent::GraphicsSceneResize) {
+        if (d->item && d->item->isWidget() && d->resizeMode == SizeLoaderToItem) {
+            d->_q_updateSize();
+       }
+    }
+    return QmlGraphicsItem::eventFilter(watched, e);
 }
 
 #include <moc_qmlgraphicsloader_p.cpp>

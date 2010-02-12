@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtGui/QGraphicsWidget>
+#include <QtGui/QGraphicsScene>
+
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicsloader_p.h>
@@ -77,6 +80,9 @@ private slots:
     void sizeLoaderToItem();
     void sizeItemToLoader();
     void noResize();
+    void sizeLoaderToGraphicsWidget();
+    void sizeGraphicsWidgetToLoader();
+    void noResizeGraphicsWidget();
     void networkRequestUrl();
     void failNetworkRequest();
 //    void networkComponent();
@@ -240,7 +246,7 @@ void tst_QmlGraphicsLoader::sizeLoaderToItem()
     QCOMPARE(loader->height(), 60.0);
 
     // Check resize
-    QmlGraphicsItem *rect = loader->item();
+    QmlGraphicsItem *rect = qobject_cast<QmlGraphicsItem*>(loader->item());
     QVERIFY(rect);
     rect->setWidth(150);
     rect->setHeight(45);
@@ -264,7 +270,7 @@ void tst_QmlGraphicsLoader::sizeItemToLoader()
     QCOMPARE(loader->width(), 200.0);
     QCOMPARE(loader->height(), 80.0);
 
-    QmlGraphicsItem *rect = loader->item();
+    QmlGraphicsItem *rect = qobject_cast<QmlGraphicsItem*>(loader->item());
     QVERIFY(rect);
     QCOMPARE(rect->width(), 200.0);
     QCOMPARE(rect->height(), 80.0);
@@ -279,8 +285,8 @@ void tst_QmlGraphicsLoader::sizeItemToLoader()
     loader->setResizeMode(QmlGraphicsLoader::SizeLoaderToItem);
     rect->setWidth(160);
     rect->setHeight(45);
-    QCOMPARE(rect->width(), 160.0);
-    QCOMPARE(rect->height(), 45.0);
+    QCOMPARE(loader->width(), 160.0);
+    QCOMPARE(loader->height(), 45.0);
 }
 
 void tst_QmlGraphicsLoader::noResize()
@@ -291,10 +297,84 @@ void tst_QmlGraphicsLoader::noResize()
     QCOMPARE(loader->width(), 200.0);
     QCOMPARE(loader->height(), 80.0);
 
-    QmlGraphicsItem *rect = loader->item();
+    QmlGraphicsItem *rect = qobject_cast<QmlGraphicsItem*>(loader->item());
     QVERIFY(rect);
     QCOMPARE(rect->width(), 120.0);
     QCOMPARE(rect->height(), 60.0);
+}
+
+void tst_QmlGraphicsLoader::sizeLoaderToGraphicsWidget()
+{
+    QmlComponent component(&engine, TEST_FILE("/SizeLoaderToGraphicsWidget.qml"));
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
+    QGraphicsScene scene;
+    scene.addItem(loader);
+
+    QVERIFY(loader != 0);
+    QVERIFY(loader->resizeMode() == QmlGraphicsLoader::SizeLoaderToItem);
+    QCOMPARE(loader->width(), 250.0);
+    QCOMPARE(loader->height(), 250.0);
+
+    // Check resize
+    QGraphicsWidget *widget = qobject_cast<QGraphicsWidget*>(loader->item());
+    QVERIFY(widget);
+    widget->resize(QSizeF(150,45));
+    QCOMPARE(loader->width(), 150.0);
+    QCOMPARE(loader->height(), 45.0);
+
+    // Switch mode
+    loader->setResizeMode(QmlGraphicsLoader::SizeItemToLoader);
+    loader->setWidth(180);
+    loader->setHeight(30);
+    QCOMPARE(widget->size().width(), 180.0);
+    QCOMPARE(widget->size().height(), 30.0);
+}
+
+void tst_QmlGraphicsLoader::sizeGraphicsWidgetToLoader()
+{
+    QmlComponent component(&engine, TEST_FILE("/SizeGraphicsWidgetToLoader.qml"));
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
+    QGraphicsScene scene;
+    scene.addItem(loader);
+
+    QVERIFY(loader != 0);
+    QVERIFY(loader->resizeMode() == QmlGraphicsLoader::SizeItemToLoader);
+    QCOMPARE(loader->width(), 200.0);
+    QCOMPARE(loader->height(), 80.0);
+
+    QGraphicsWidget *widget = qobject_cast<QGraphicsWidget*>(loader->item());
+    QVERIFY(widget);
+    QCOMPARE(widget->size().width(), 200.0);
+    QCOMPARE(widget->size().height(), 80.0);
+
+    // Check resize
+    loader->setWidth(180);
+    loader->setHeight(30);
+    QCOMPARE(widget->size().width(), 180.0);
+    QCOMPARE(widget->size().height(), 30.0);
+
+    // Switch mode
+    loader->setResizeMode(QmlGraphicsLoader::SizeLoaderToItem);
+    widget->resize(QSizeF(160,45));
+    QCOMPARE(loader->width(), 160.0);
+    QCOMPARE(loader->height(), 45.0);
+}
+
+void tst_QmlGraphicsLoader::noResizeGraphicsWidget()
+{
+    QmlComponent component(&engine, TEST_FILE("/NoResizeGraphicsWidget.qml"));
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
+    QGraphicsScene scene;
+    scene.addItem(loader);
+
+    QVERIFY(loader != 0);
+    QCOMPARE(loader->width(), 200.0);
+    QCOMPARE(loader->height(), 80.0);
+
+    QGraphicsWidget *widget = qobject_cast<QGraphicsWidget*>(loader->item());
+    QVERIFY(widget);
+    QCOMPARE(widget->size().width(), 250.0);
+    QCOMPARE(widget->size().height(), 250.0);
 }
 
 void tst_QmlGraphicsLoader::networkRequestUrl()

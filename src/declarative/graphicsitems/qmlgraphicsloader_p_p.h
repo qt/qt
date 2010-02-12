@@ -56,11 +56,12 @@
 #include "qmlgraphicsloader_p.h"
 
 #include "qmlgraphicsitem_p.h"
+#include "qmlgraphicsitemchangelistener_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QmlContext;
-class QmlGraphicsLoaderPrivate : public QmlGraphicsItemPrivate
+class QmlGraphicsLoaderPrivate : public QmlGraphicsItemPrivate, public QmlGraphicsItemChangeListener
 {
     Q_DECLARE_PUBLIC(QmlGraphicsLoader)
 
@@ -68,11 +69,12 @@ public:
     QmlGraphicsLoaderPrivate();
     ~QmlGraphicsLoaderPrivate();
 
+    void itemGeometryChanged(QmlGraphicsItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
     void clear();
     void initResize();
 
     QUrl source;
-    QmlGraphicsItem *item;
+    QGraphicsObject *item;
     QmlComponent *component;
     bool ownComponent : 1;
     QmlGraphicsLoader::ResizeMode resizeMode;

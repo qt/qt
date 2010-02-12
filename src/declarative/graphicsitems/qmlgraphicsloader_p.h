@@ -60,7 +60,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsLoader : public QmlGraphicsItem
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QmlComponent *sourceComponent READ sourceComponent WRITE setSourceComponent NOTIFY sourceChanged)
     Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
-    Q_PROPERTY(QmlGraphicsItem *item READ item NOTIFY itemChanged)
+    Q_PROPERTY(QGraphicsObject *item READ item NOTIFY itemChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
@@ -82,14 +82,17 @@ public:
     ResizeMode resizeMode() const;
     void setResizeMode(ResizeMode mode);
 
-    QmlGraphicsItem *item() const;
+    QGraphicsObject *item() const;
 
 Q_SIGNALS:
     void itemChanged();
     void sourceChanged();
     void statusChanged();
     void progressChanged();
-
+protected:
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    bool eventFilter(QObject *watched, QEvent *e);
 private:
     Q_DISABLE_COPY(QmlGraphicsLoader)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsLoader)
