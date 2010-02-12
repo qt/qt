@@ -274,7 +274,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
         t << "; DEPLOYMENT" << endl;
     for (int i = 0; i < depList.size(); ++i)  {
         t << QString("\"%1\"    - \"%2\"")
-             .arg(QString(depList.at(i).from).replace('\\','/'))
+             .arg(depList.at(i).from)
              .arg(depList.at(i).to) << endl;
     }
     t << endl;

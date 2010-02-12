@@ -477,7 +477,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
         mkfile = new SymbianAbldMakefileGenerator;
     } else if(gen == "SYMBIAN_SBSV2") {
         mkfile = new SymbianSbsv2MakefileGenerator;
-    } else if(gen == "UNIX_SYMBIAN") {
+    } else if(gen == "SYMBIAN_UNIX") {
         mkfile = new SymbianMakefileTemplate<UnixMakefileGenerator>;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
