@@ -1163,8 +1163,6 @@ void QNetworkAccessManagerPrivate::_q_networkSessionNewConfigurationActivated()
 
 void QNetworkAccessManagerPrivate::_q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &, bool)
 {
-    Q_Q(QNetworkAccessManager);
-
     networkSession->migrate();
 }
 
