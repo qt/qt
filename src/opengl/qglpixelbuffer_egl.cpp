@@ -65,13 +65,6 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     ctx = new QEglContext();
     ctx->setApi(QEgl::OpenGL);
 
-    // Open the EGL display.
-    if (!ctx->openDisplay(0)) {
-        delete ctx;
-        ctx = 0;
-        return false;
-    }
-
     // Find the shared context.
     QEglContext *shareContext = 0;
     if (shareWidget && shareWidget->d_func()->glcx)
@@ -215,7 +208,7 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
 bool QGLPixelBuffer::hasOpenGLPbuffers()
 {
     // See if we have at least 1 configuration that matches the default format.
-    EGLDisplay dpy = QEglContext::defaultDisplay(0);
+    EGLDisplay dpy = QEglContext::display();
     if (dpy == EGL_NO_DISPLAY)
         return false;
     QEglProperties configProps;
