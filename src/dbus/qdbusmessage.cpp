@@ -63,7 +63,7 @@ static inline const char *data(const QByteArray &arr)
 QDBusMessagePrivate::QDBusMessagePrivate()
     : msg(0), reply(0), type(DBUS_MESSAGE_TYPE_INVALID),
       timeout(-1), localReply(0), ref(1), delayedReply(false), localMessage(false),
-      parametersValidated(false), autoStart(true)
+      parametersValidated(false), autoStartService(true)
 {
 }
 
@@ -129,7 +129,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
         msg = q_dbus_message_new_method_call(data(d_ptr->service.toUtf8()), d_ptr->path.toUtf8(),
                                              data(d_ptr->interface.toUtf8()), d_ptr->name.toUtf8());
-        q_dbus_message_set_auto_start( msg, d_ptr->autoStart );
+        q_dbus_message_set_auto_start( msg, d_ptr->autoStartService );
         break;
     case DBUS_MESSAGE_TYPE_METHOD_RETURN:
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN);
@@ -647,25 +647,41 @@ bool QDBusMessage::isDelayedReply() const
 /*!
     Sets whether this message will have the auto start flag.
     This flag only makes sense for method call messages. For
-    these messages it tells the dbus server to either auto
+    these messages it tells the D-Bus server to either auto
     start the service responsible for the service name, or
     not to auto start it.
 
-    This flag is true by default.
+    By default this flag is true, i.e. a service is autostarted.
+    This means:
+
+    When the service that this method call is sent to is already
+    running, the method call is sent to it. If the service is not
+    running yet, the D-Bus daemon is requested to autostart the
+    service that is assigned to this service name. This is
+    handled by .service files that are placed in a directory known
+    to the D-Bus server. These files then each contain a service
+    name and the path to a program that should be executed when
+    this service name is requested.
+
+    \since 4.7
 */
-void QDBusMessage::setAutoStart(bool enable) const
+void QDBusMessage::setAutoStartService(bool enable)
 {
-    d_ptr->autoStart = enable;
+    d_ptr->autoStartService = enable;
 }
 
 /*!
-    Returns the auto start flag, as set by setAutoStart(). By default, this
+    Returns the auto start flag, as set by setAutoStartService(). By default, this
     flag is true, which means QtDBus will auto start a service, if it is
     not running already.
+
+    \sa setAutoStartService()
+
+    \since 4.7
 */
-bool QDBusMessage::isAutoStart() const
+bool QDBusMessage::autoStartService() const
 {
-    return d_ptr->autoStart;
+    return d_ptr->autoStartService;
 }
 
 /*!

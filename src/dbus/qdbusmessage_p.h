@@ -85,8 +85,7 @@ public:
     mutable uint delayedReply : 1;
     uint localMessage : 1;
     mutable uint parametersValidated : 1;
-
-    mutable uint autoStart : 1;
+    uint autoStartService : 1;
 
     static void setParametersValidated(QDBusMessage &msg, bool enable)
     { msg.d_ptr->parametersValidated = enable; }
