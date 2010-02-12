@@ -43,6 +43,8 @@
 
 #include <QtCore/QString>
 
+#include <QtGui/QFont>
+
 QT_BEGIN_NAMESPACE
 
 class QUrl;
@@ -52,6 +54,15 @@ class AbstractHelpViewer
 public:
     AbstractHelpViewer();
     ~AbstractHelpViewer();
+
+    virtual QFont viewerFont() const = 0;
+    virtual void setViewerFont(const QFont &font) = 0;
+
+    virtual void scaleUp() = 0;
+    virtual void scaleDown() = 0;
+    
+    virtual void resetScale() = 0;
+    virtual qreal scale() const = 0;
 
     static QString PageNotFoundMessage;
     static bool isLocalUrl(const QUrl &url);

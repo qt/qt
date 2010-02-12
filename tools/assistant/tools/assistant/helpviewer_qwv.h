@@ -59,21 +59,25 @@ class HelpViewer : public QWebView, public AbstractHelpViewer
     Q_OBJECT
 
 public:
-    HelpViewer(CentralWidget *parent);
-    void setSource(const QUrl &url);
+    HelpViewer(CentralWidget *parent, qreal zoom = 0.0);
+    ~HelpViewer();
 
-    inline QUrl source() const
-    { return url(); }
+    QFont viewerFont() const;
+    void setViewerFont(const QFont &font);
+
+    void scaleUp();
+    void scaleDown();
+    void resetScale();
+    qreal scale() const { return textSizeMultiplier(); }
+
+    void setSource(const QUrl &url);
+    inline QUrl source() const { return url(); }
 
     inline QString documentTitle() const
     { return title(); }
 
     inline bool hasSelection() const
     { return !selectedText().isEmpty(); } // ### this is suboptimal
-
-    void resetZoom();
-    void zoomIn(qreal range = 1);
-    void zoomOut(qreal range = 1);
 
     inline void copy()
     { return triggerPageAction(QWebPage::Copy); }
@@ -84,8 +88,6 @@ public:
     { return pageAction(QWebPage::Back)->isEnabled(); }
     inline bool hasLoadFinished() const
     { return loadFinished; }
-    inline qreal zoom() const
-    { return textSizeMultiplier(); }
 
 public Q_SLOTS:
     void home();

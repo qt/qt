@@ -63,14 +63,18 @@ class HelpViewer : public QTextBrowser, public AbstractHelpViewer
     Q_OBJECT
 
 public:
-    HelpViewer(CentralWidget *parent);
-    void setSource(const QUrl &url);
+    HelpViewer(CentralWidget *parent, qreal zoom = 0.0);
+    ~HelpViewer();
 
-    void resetZoom();
-    void zoomIn(int range = 1);
-    void zoomOut(int range = 1);
-    int zoom() const { return zoomCount; }
-    void setZoom(int zoom) { zoomCount = zoom; }
+    QFont viewerFont() const;
+    void setViewerFont(const QFont &font);
+
+    void scaleUp();
+    void scaleDown();
+    void resetScale();
+    qreal scale() const { return zoomCount; }
+
+    void setSource(const QUrl &url);
 
     inline bool hasSelection() const
     { return textCursor().hasSelection(); }
@@ -82,6 +86,7 @@ public Q_SLOTS:
 
 protected:
     void wheelEvent(QWheelEvent *e);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private:
     QVariant loadResource(int type, const QUrl &name);
@@ -100,6 +105,8 @@ private:
     QString lastAnchor;
     CentralWidget* parentWidget;
     HelpEngineWrapper &helpEngine;
+
+    bool forceFont;
 };
 
 QT_END_NAMESPACE

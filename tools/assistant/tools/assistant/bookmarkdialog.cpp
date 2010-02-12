@@ -38,12 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
-
 #include "bookmarkdialog.h"
 #include "bookmarkfiltermodel.h"
 #include "bookmarkitem.h"
 #include "bookmarkmodel.h"
+#include "helpenginewrapper.h"
+#include "tracer.h"
 
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMenu>
@@ -94,6 +94,10 @@ BookmarkDialog::BookmarkDialog(BookmarkModel *sourceModel, const QString &title,
 
     ui.bookmarkFolders->setCurrentIndex(0);
     ui.treeView->setCurrentIndex(ui.treeView->indexAt(QPoint(2, 2)));
+
+    const HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    if (helpEngine.usesAppFont())
+        setFont(helpEngine.appFont());
 }
 
 BookmarkDialog::~BookmarkDialog()

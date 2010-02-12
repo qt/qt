@@ -59,16 +59,78 @@
 
 QT_BEGIN_NAMESPACE
 
-HelpViewer::HelpViewer(CentralWidget *parent)
+HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
     : QTextBrowser(parent)
-    , zoomCount(0)
+    , zoomCount(zoom)
     , controlPressed(false)
     , lastAnchor(QString())
     , parentWidget(parent)
     , helpEngine(HelpEngineWrapper::instance())
+    , forceFont(false)
 {
     TRACE_OBJ
-   document()->setDocumentMargin(8);
+    installEventFilter(this);
+    document()->setDocumentMargin(8);
+
+    QFont font = viewerFont();
+    font.setPointSize(int(font.pointSize() + zoom));
+    setViewerFont(font);
+}
+
+HelpViewer::~HelpViewer()
+{
+    TRACE_OBJ
+}
+
+QFont HelpViewer::viewerFont() const
+{
+    TRACE_OBJ
+    if (HelpEngineWrapper::instance().usesBrowserFont())
+        return helpEngine.browserFont();
+    return qApp->font();
+}
+
+void HelpViewer::setViewerFont(const QFont &newFont)
+{
+    TRACE_OBJ
+    if (font() != newFont) {
+        forceFont = true;
+        setFont(newFont);
+        forceFont = false;
+    }
+}
+
+void HelpViewer::scaleUp()
+{
+    TRACE_OBJ
+    if (zoomCount < 10) {
+        ++zoomCount;
+        forceFont = true;
+        zoomIn();
+        forceFont = false;
+    }
+}
+
+void HelpViewer::scaleDown()
+{
+    TRACE_OBJ
+    if (zoomCount > -5) {
+        --zoomCount;
+        forceFont = true;
+        zoomOut();
+        forceFont = false;
+    }
+}
+
+void HelpViewer::resetScale()
+{
+    TRACE_OBJ
+    if (zoomCount != 0) {
+        forceFont = true;
+        zoomOut(zoomCount);
+        forceFont = false;
+    }
+    zoomCount = 0;
 }
 
 void HelpViewer::setSource(const QUrl &url)
@@ -94,36 +156,6 @@ void HelpViewer::setSource(const QUrl &url)
         setHtml(PageNotFoundMessage.arg(url.toString()));
         emit sourceChanged(url);
     }
-}
-
-void HelpViewer::resetZoom()
-{
-    TRACE_OBJ
-    if (zoomCount == 0)
-        return;
-
-    QTextBrowser::zoomOut(zoomCount);
-    zoomCount = 0;
-}
-
-void HelpViewer::zoomIn(int range)
-{
-    TRACE_OBJ
-    if (zoomCount == 10)
-        return;
-
-    QTextBrowser::zoomIn(range);
-    zoomCount++;
-}
-
-void HelpViewer::zoomOut(int range)
-{
-    TRACE_OBJ
-    if (zoomCount == -5)
-        return;
-
-    QTextBrowser::zoomOut(range);
-    zoomCount--;
 }
 
 bool HelpViewer::launchedWithExternalApp(const QUrl &url)
@@ -278,13 +310,20 @@ void HelpViewer::home()
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
     TRACE_OBJ
-    if (e->modifiers() == Qt::CTRL) {
+    if (e->modifiers() == Qt::ControlModifier) {
         e->accept();
-        (e->delta() > 0) ? zoomIn() : zoomOut();
+        e->delta() > 0 ? scaleUp() : scaleDown();
     } else {
-        e->ignore();
         QTextBrowser::wheelEvent(e);
     }
+}
+
+bool HelpViewer::eventFilter(QObject *obj, QEvent *event)
+{
+    TRACE_OBJ
+    if (event->type() == QEvent::FontChange && !forceFont)
+        return true;
+    return QTextBrowser::eventFilter(obj, event);
 }
 
 QT_END_NAMESPACE

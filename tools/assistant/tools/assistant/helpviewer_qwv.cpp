@@ -252,7 +252,9 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     return false;
 }
 
-HelpViewer::HelpViewer(CentralWidget *parent)
+// -- HelpViewer
+
+HelpViewer::HelpViewer(CentralWidget *parent, qreal zoom)
     : QWebView(parent)
     , parentWidget(parent)
     , loadFinished(false)
@@ -284,6 +286,51 @@ HelpViewer::HelpViewer(CentralWidget *parent)
         SIGNAL(highlighted(QString)));
     connect(this, SIGNAL(urlChanged(QUrl)), this, SIGNAL(sourceChanged(QUrl)));
     connect(this, SIGNAL(loadFinished(bool)), this, SLOT(setLoadFinished(bool)));
+
+    setFont(viewerFont());
+    setTextSizeMultiplier(zoom == 0.0 ? 1.0 : zoom);
+}
+
+HelpViewer::~HelpViewer()
+{
+    TRACE_OBJ
+}
+
+QFont HelpViewer::viewerFont() const
+{
+    TRACE_OBJ
+    if (helpEngine.usesBrowserFont())
+        return helpEngine.browserFont();
+
+    QWebSettings *webSettings = QWebSettings::globalSettings();
+    return QFont(webSettings->fontFamily(QWebSettings::StandardFont),
+        webSettings->fontSize(QWebSettings::DefaultFontSize));
+}
+
+void HelpViewer::setViewerFont(const QFont &font)
+{
+    TRACE_OBJ
+    QWebSettings *webSettings = settings();
+    webSettings->setFontFamily(QWebSettings::StandardFont, font.family());
+    webSettings->setFontSize(QWebSettings::DefaultFontSize, font.pointSize());
+}
+
+void HelpViewer::scaleUp()
+{
+    TRACE_OBJ
+    setTextSizeMultiplier(textSizeMultiplier() + 0.1);
+}
+
+void HelpViewer::scaleDown()
+{
+    TRACE_OBJ
+    setTextSizeMultiplier(qMax(0.0, textSizeMultiplier() - 0.1));
+}
+
+void HelpViewer::resetScale()
+{
+    TRACE_OBJ
+    setTextSizeMultiplier(1.0);
 }
 
 void HelpViewer::setSource(const QUrl &url)
@@ -298,24 +345,6 @@ void HelpViewer::setSource(const QUrl &url)
     }
 }
 
-void HelpViewer::resetZoom()
-{
-    TRACE_OBJ
-    setTextSizeMultiplier(1.0);
-}
-
-void HelpViewer::zoomIn(qreal range)
-{
-    TRACE_OBJ
-    setTextSizeMultiplier(textSizeMultiplier() + range / 10.0);
-}
-
-void HelpViewer::zoomOut(qreal range)
-{
-    TRACE_OBJ
-    setTextSizeMultiplier(qMax(0.0, textSizeMultiplier() - range / 10.0));
-}
-
 void HelpViewer::home()
 {
     TRACE_OBJ
@@ -325,16 +354,12 @@ void HelpViewer::home()
 void HelpViewer::wheelEvent(QWheelEvent *e)
 {
     TRACE_OBJ
-    if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->delta();
-        if (delta > 0)
-            zoomIn(delta / 120);
-        else if (delta < 0)
-            zoomOut(-delta / 120);
+    if (e->modifiers()& Qt::ControlModifier) {
         e->accept();
-        return;
+        e->delta() > 0 ? scaleUp() : scaleDown();
+    } else {
+        QWebView::wheelEvent(e);
     }
-    QWebView::wheelEvent(e);
 }
 
 void HelpViewer::mouseReleaseEvent(QMouseEvent *e)
