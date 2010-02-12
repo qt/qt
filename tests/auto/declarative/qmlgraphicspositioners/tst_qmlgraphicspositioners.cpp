@@ -125,7 +125,6 @@ void tst_QmlGraphicsPositioners::test_horizontal_animated()
     canvas->execute();
     qApp->processEvents();
 
-    QTest::qWait(0);//Let the animation start
     //Note that they animate in
     QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
