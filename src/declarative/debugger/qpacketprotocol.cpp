@@ -165,7 +165,7 @@ public Q_SLOTS:
     {
         if(-1 == inProgressSize) {
             // We need a size header of sizeof(qint32)
-            if(sizeof(qint32) > dev->bytesAvailable())
+            if(sizeof(qint32) > (uint)dev->bytesAvailable())
                 return;
 
             // Read size header
