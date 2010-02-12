@@ -259,8 +259,7 @@ void QTextDocumentPrivate::clear()
         objects.clear();
 
         title.clear();
-        undoState = 0;
-        clearUndoRedoStacks(QTextDocument::RedoStack);
+        clearUndoRedoStacks(QTextDocument::UndoAndRedoStacks);
         text = QString();
         unreachableCharacterCount = 0;
         modifiedState = 0;
@@ -1077,7 +1076,7 @@ void QTextDocumentPrivate::clearUndoRedoStacks(QTextDocument::Stacks stacksToCle
         if (emitSignals)
             emitRedoAvailable(false);
     } else if (stacksToClear == QTextDocument::UndoAndRedoStacks
-               && (undoCommandsAvailable || redoCommandsAvailable)) {
+               && !undoStack.isEmpty()) {
         for (int i = 0; i < undoStack.size(); ++i) {
             QTextUndoCommand c = undoStack[i];
             if (c.command & QTextUndoCommand::Custom)
