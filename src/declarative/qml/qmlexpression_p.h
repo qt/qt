@@ -114,6 +114,7 @@ public:
 
     QmlExpressionPrivate *q;
 
+    QmlRefCount *dataRef;
     QString expression;
     bool expressionFunctionValid:1;
     bool expressionRewritten:1;

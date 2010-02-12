@@ -71,7 +71,7 @@ bool QmlDelayedError::addError(QmlEnginePrivate *e)
 }
 
 QmlExpressionData::QmlExpressionData()
-: expressionFunctionValid(false), expressionRewritten(false), me(0), 
+: q(0), dataRef(0), expressionFunctionValid(false), expressionRewritten(false), me(0), 
   trackChange(true), isShared(false), line(-1), guardList(0), guardListLength(0)
 {
 }
@@ -79,6 +79,7 @@ QmlExpressionData::QmlExpressionData()
 QmlExpressionData::~QmlExpressionData()
 {
     if (guardList) { delete [] guardList; guardList = 0; }
+    if (dataRef) dataRef->release();
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate()
@@ -112,6 +113,10 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 {
     data->url = url;
     data->line = lineNumber;
+
+    if (data->dataRef) data->dataRef->release();
+    data->dataRef = rc;
+    if (data->dataRef) data->dataRef->addref();
 
     quint32 *exprData = (quint32 *)expr;
     QmlCompiledData *dd = (QmlCompiledData *)rc;
