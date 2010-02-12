@@ -76,6 +76,7 @@ private slots:
     void persistentSelection();
     void focusOnPress();
     void selection();
+    void inputMethodHints();
 
     void cursorDelegate();
     void delegateLoading();
@@ -598,6 +599,21 @@ void tst_qmlgraphicstextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
     textEditObject->setSelectionEnd(100);
     QVERIFY(textEditObject->selectedText().size() == 10);
+}
+
+void tst_qmlgraphicstextedit::inputMethodHints()
+{
+    QmlView *canvas = createView(SRCDIR "/data/inputMethodHints.qml");
+    canvas->execute();
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->root() != 0);
+    QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit *>(canvas->root());
+    QVERIFY(textEditObject != 0);
+    QVERIFY(textEditObject->inputMethodHints() & Qt::ImhNoPredictiveText);
+    textEditObject->setInputMethodHints(Qt::ImhUppercaseOnly);
+    QVERIFY(textEditObject->inputMethodHints() & Qt::ImhUppercaseOnly);
 }
 
 void tst_qmlgraphicstextedit::cursorDelegate()

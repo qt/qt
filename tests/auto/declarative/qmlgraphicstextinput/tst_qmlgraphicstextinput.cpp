@@ -65,6 +65,7 @@ private slots:
     void maxLength();
     void masks();
     void validators();
+    void inputMethodHints();
 
     void cursorDelegate();
     void navigation();
@@ -487,6 +488,21 @@ void tst_qmlgraphicstextinput::validators()
     QTest::keyRelease(canvas, Qt::Key_A, Qt::NoModifier ,10);
     QCOMPARE(strInput->text(), QLatin1String("aaaa"));
     QCOMPARE(strInput->hasAcceptableInput(), true);
+}
+
+void tst_qmlgraphicstextinput::inputMethodHints()
+{
+    QmlView *canvas = createView(SRCDIR "/data/inputMethodHints.qml");
+    canvas->execute();
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->root() != 0);
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->root());
+    QVERIFY(textinputObject != 0);
+    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhNoPredictiveText);
+    textinputObject->setInputMethodHints(Qt::ImhUppercaseOnly);
+    QVERIFY(textinputObject->inputMethodHints() & Qt::ImhUppercaseOnly);
 }
 
 /*

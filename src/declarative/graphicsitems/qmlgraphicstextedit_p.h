@@ -84,6 +84,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsTextEdit : public QmlGraphicsPaintedItem
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress NOTIFY focusOnPressChanged)
     Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection NOTIFY persistentSelectionChanged)
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
+    Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
 public:
     QmlGraphicsTextEdit(QmlGraphicsItem *parent=0);
