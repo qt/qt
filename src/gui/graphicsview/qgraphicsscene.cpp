@@ -5712,8 +5712,15 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             item->d_ptr->acceptedTouchBeginEvent = true;
             bool res = sendTouchBeginEvent(item, &touchEvent)
                        && touchEvent.isAccepted();
-            if (!res)
+            if (!res) {
+                // forget about these touch points, we didn't handle them
+                for (int i = 0; i < touchEvent.touchPoints().count(); ++i) {
+                    const QTouchEvent::TouchPoint &touchPoint = touchEvent.touchPoints().at(i);
+                    itemForTouchPointId.remove(touchPoint.id());
+                    sceneCurrentTouchPoints.remove(touchPoint.id());
+                }
                 ignoreSceneTouchEvent = false;
+            }
             break;
         }
         default:
