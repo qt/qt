@@ -111,7 +111,7 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeBind>("Qt",4,6,"Binding");
     qmlRegisterType<QDeclarativeColorAnimation>("Qt",4,6,"ColorAnimation");
     qmlRegisterType<QDeclarativeConnections>("Qt",4,6,"Connections");
-    qmlRegisterType<QDeclarativeEaseFollow>("Qt",4,6,"EaseFollow");
+    qmlRegisterType<QDeclarativeSmoothedAnimation>("Qt",4,6,"SmoothedAnimation");
     qmlRegisterType<QDeclarativeFontLoader>("Qt",4,6,"FontLoader");
     qmlRegisterType<QDeclarativeListElement>("Qt",4,6,"ListElement");
     qmlRegisterType<QDeclarativeNumberAnimation>("Qt",4,6,"NumberAnimation");

@@ -48,9 +48,12 @@ Rectangle {
         flickableData: [
             Rectangle {
                 color: "transparent"; border.color: "white"; border.width: 8; z: 3000
-                height: 100; width: 100; x: 4; y: 4
-                EaseFollow on x { source: gridView.currentItem.x; velocity: 500 }
-                EaseFollow on y { source: gridView.currentItem.y; velocity: 500 }
+                height: 100; width: 100
+                x: gridView.currentItem.x
+                y: gridView.currentItem.y
+
+                Behavior on x { SmoothedAnimation { velocity: 500 } }
+                Behavior on y { SmoothedAnimation { velocity: 500 } }
             }
         ]
     }

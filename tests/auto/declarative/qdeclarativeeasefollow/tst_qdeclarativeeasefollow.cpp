@@ -42,6 +42,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativeeasefollow_p.h>
+#include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativevaluetype_p.h>
 #include "../../../shared/util.h"
 
@@ -55,6 +56,9 @@ private slots:
     void defaultValues();
     void values();
     void disabled();
+    void simpleAnimation();
+    void valueSource();
+    void behavior();
 
 private:
     QDeclarativeEngine engine;
@@ -68,16 +72,15 @@ void tst_qdeclarativeeasefollow::defaultValues()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow1.qml"));
-    QDeclarativeEaseFollow *obj = qobject_cast<QDeclarativeEaseFollow*>(c.create());
+    QDeclarativeSmoothedAnimation *obj = qobject_cast<QDeclarativeSmoothedAnimation*>(c.create());
 
     QVERIFY(obj != 0);
 
-    QCOMPARE(obj->sourceValue(), 0.);
+    QCOMPARE(obj->to(), 0.);
     QCOMPARE(obj->velocity(), 200.);
-    QCOMPARE(obj->enabled(), true);
-    QCOMPARE(obj->duration(), -1.);
-    QCOMPARE(obj->maximumEasingTime(), -1.);
-    QCOMPARE(obj->reversingMode(), QDeclarativeEaseFollow::Eased);
+    QCOMPARE(obj->duration(), -1);
+    QCOMPARE(obj->maximumEasingTime(), -1);
+    QCOMPARE(obj->reversingMode(), QDeclarativeSmoothedAnimation::Eased);
 
     delete obj;
 }
@@ -86,16 +89,15 @@ void tst_qdeclarativeeasefollow::values()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow2.qml"));
-    QDeclarativeEaseFollow *obj = qobject_cast<QDeclarativeEaseFollow*>(c.create());
+    QDeclarativeSmoothedAnimation *obj = qobject_cast<QDeclarativeSmoothedAnimation*>(c.create());
 
     QVERIFY(obj != 0);
 
-    QCOMPARE(obj->sourceValue(), 10.);
+    QCOMPARE(obj->to(), 10.);
     QCOMPARE(obj->velocity(), 200.);
-    QCOMPARE(obj->enabled(), true);
-    QCOMPARE(obj->duration(), 300.);
-    QCOMPARE(obj->maximumEasingTime(), -1.);
-    QCOMPARE(obj->reversingMode(), QDeclarativeEaseFollow::Immediate);
+    QCOMPARE(obj->duration(), 300);
+    QCOMPARE(obj->maximumEasingTime(), -1);
+    QCOMPARE(obj->reversingMode(), QDeclarativeSmoothedAnimation::Immediate);
 
     delete obj;
 }
@@ -104,17 +106,100 @@ void tst_qdeclarativeeasefollow::disabled()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow3.qml"));
-    QDeclarativeEaseFollow *obj = qobject_cast<QDeclarativeEaseFollow*>(c.create());
+    QDeclarativeSmoothedAnimation *obj = qobject_cast<QDeclarativeSmoothedAnimation*>(c.create());
 
     QVERIFY(obj != 0);
 
-    QCOMPARE(obj->sourceValue(), 10.);
+    QCOMPARE(obj->to(), 10.);
     QCOMPARE(obj->velocity(), 250.);
-    QCOMPARE(obj->enabled(), false);
-    QCOMPARE(obj->maximumEasingTime(), 150.);
-    QCOMPARE(obj->reversingMode(), QDeclarativeEaseFollow::Sync);
+    QCOMPARE(obj->maximumEasingTime(), 150);
+    QCOMPARE(obj->reversingMode(), QDeclarativeSmoothedAnimation::Sync);
 
     delete obj;
+}
+
+void tst_qdeclarativeeasefollow::simpleAnimation()
+{
+    QDeclarativeRectangle rect;
+    QDeclarativeSmoothedAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("x");
+    animation.setTo(200);
+    animation.setDuration(250);
+    QVERIFY(animation.target() == &rect);
+    QVERIFY(animation.property() == "x");
+    QVERIFY(animation.to() == 200);
+    animation.start();
+    QVERIFY(animation.isRunning());
+    QTest::qWait(animation.duration());
+    QTRY_COMPARE(rect.x(), qreal(200));
+
+    rect.setX(0);
+    animation.start();
+    animation.pause();
+    QVERIFY(animation.isRunning());
+    QVERIFY(animation.isPaused());
+    animation.setCurrentTime(125);
+    QVERIFY(animation.currentTime() == 125);
+    QCOMPARE(rect.x(), qreal(100));
+}
+
+void tst_qdeclarativeeasefollow::valueSource()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollowValueSource.qml"));
+
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QDeclarativeRectangle *theRect = rect->findChild<QDeclarativeRectangle*>("theRect");
+    QVERIFY(theRect);
+
+    QDeclarativeSmoothedAnimation *easeX = rect->findChild<QDeclarativeSmoothedAnimation*>("easeX");
+    QVERIFY(easeX);
+    QVERIFY(easeX->isRunning());
+
+    QDeclarativeSmoothedAnimation *easeY = rect->findChild<QDeclarativeSmoothedAnimation*>("easeY");
+    QVERIFY(easeY);
+    QVERIFY(easeY->isRunning());
+
+    // XXX get the proper duration
+    QTest::qWait(100);
+
+    QTRY_VERIFY(!easeX->isRunning());
+    QTRY_VERIFY(!easeY->isRunning());
+
+    QTRY_COMPARE(theRect->x(), qreal(200));
+    QTRY_COMPARE(theRect->y(), qreal(200));
+}
+
+void tst_qdeclarativeeasefollow::behavior()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollowBehavior.qml"));
+
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QDeclarativeRectangle *theRect = rect->findChild<QDeclarativeRectangle*>("theRect");
+    QVERIFY(theRect);
+
+    QDeclarativeSmoothedAnimation *easeX = rect->findChild<QDeclarativeSmoothedAnimation*>("easeX");
+    QVERIFY(easeX);
+
+    QDeclarativeSmoothedAnimation *easeY = rect->findChild<QDeclarativeSmoothedAnimation*>("easeY");
+    QVERIFY(easeY);
+
+    // XXX get the proper duration
+    QTest::qWait(400);
+
+    QTRY_VERIFY(!easeX->isRunning());
+    QTRY_VERIFY(!easeY->isRunning());
+
+    QTRY_COMPARE(theRect->x(), qreal(200));
+    QTRY_COMPARE(theRect->y(), qreal(200));
 }
 
 QTEST_MAIN(tst_qdeclarativeeasefollow)

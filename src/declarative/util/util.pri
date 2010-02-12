@@ -38,6 +38,7 @@ HEADERS += \
     $$PWD/qdeclarativesystempalette_p.h \
     $$PWD/qdeclarativespringfollow_p.h \
     $$PWD/qdeclarativeeasefollow_p.h \
+    $$PWD/qdeclarativeeasefollow_p_p.h \
     $$PWD/qdeclarativestate_p.h\
     $$PWD/qdeclarativestateoperations_p.h \
     $$PWD/qdeclarativepropertychanges_p.h \

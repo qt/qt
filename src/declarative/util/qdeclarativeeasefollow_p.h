@@ -43,7 +43,7 @@
 #define QDECLARATIVEEASEFOLLOW_H
 
 #include <qdeclarative.h>
-#include <qdeclarativepropertyvaluesource.h>
+#include "qdeclarativeanimation_p.h"
 
 #include <QtCore/qobject.h>
 
@@ -54,60 +54,50 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeProperty;
-class QDeclarativeEaseFollowPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeEaseFollow : public QObject, 
-                                           public QDeclarativePropertyValueSource
+class QDeclarativeSmoothedAnimationPrivate;
+class Q_DECLARATIVE_EXPORT QDeclarativeSmoothedAnimation : public QDeclarativeNumberAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeEaseFollow)
-    Q_INTERFACES(QDeclarativePropertyValueSource)
+    Q_DECLARE_PRIVATE(QDeclarativeSmoothedAnimation)
     Q_ENUMS(ReversingMode)
 
-    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue NOTIFY sourceChanged)
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity NOTIFY velocityChanged)
-    Q_PROPERTY(qreal duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(ReversingMode reversingMode READ reversingMode WRITE setReversingMode NOTIFY reversingModeChanged)
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(qreal maximumEasingTime READ maximumEasingTime WRITE setMaximumEasingTime NOTIFY maximumEasingTimeChanged)
 
 public:
     enum ReversingMode { Eased, Immediate, Sync };
 
-    QDeclarativeEaseFollow(QObject *parent = 0);
-    ~QDeclarativeEaseFollow();
+    QDeclarativeSmoothedAnimation(QObject *parent = 0);
+    ~QDeclarativeSmoothedAnimation();
 
     ReversingMode reversingMode() const;
     void setReversingMode(ReversingMode);
 
-    qreal sourceValue() const;
-    void setSourceValue(qreal);
+    virtual int duration() const;
+    virtual void setDuration(int);
 
     qreal velocity() const;
     void setVelocity(qreal);
 
-    qreal duration() const;
-    void setDuration(qreal);
+    int maximumEasingTime() const;
+    void setMaximumEasingTime(int);
 
-    bool enabled() const;
-    void setEnabled(bool enabled);
-
-    qreal maximumEasingTime() const;
-    void setMaximumEasingTime(qreal);
-
-    virtual void setTarget(const QDeclarativeProperty &);
+public:
+    virtual void transition(QDeclarativeStateActions &actions,
+                            QDeclarativeProperties &modified,
+                            TransitionDirection direction);
+    QAbstractAnimation* qtAnimation();
 
 Q_SIGNALS:
-    void sourceChanged();
     void velocityChanged();
-    void durationChanged();
     void reversingModeChanged();
-    void enabledChanged();
     void maximumEasingTimeChanged();
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeEaseFollow);
+QML_DECLARE_TYPE(QDeclarativeSmoothedAnimation);
 
 QT_END_HEADER
 

@@ -116,9 +116,9 @@ void QDeclarativeTransitionPrivate::append_animation(QDeclarativeListProperty<QD
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
 {
     QParallelAnimationGroup::updateState(newState, oldState);
-    if (newState == Stopped &&
-        ((direction() == QAbstractAnimation::Forward && currentLoopTime() == duration()) ||
-         (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))
+    if (newState == Stopped && (duration() == -1
+        || (direction() == QAbstractAnimation::Forward && currentLoopTime() == duration())
+        || (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))
     {
         trans->complete();
     }

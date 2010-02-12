@@ -44,7 +44,7 @@
 #include "qdeclarativeflickable_p_p.h"
 #include "qdeclarativevisualitemmodel_p.h"
 
-#include <qdeclarativeeasefollow_p.h>
+#include "qdeclarativeeasefollow_p_p.h"
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeengine.h>
 #include <qdeclarativeguard_p.h>
@@ -455,8 +455,8 @@ public:
     enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
     int buffer;
-    QDeclarativeEaseFollow *highlightPosAnimator;
-    QDeclarativeEaseFollow *highlightSizeAnimator;
+    QSmoothedAnimation *highlightPosAnimator;
+    QSmoothedAnimation *highlightSizeAnimator;
     QDeclarativeViewSection *sectionCriteria;
     QString currentSection;
     static const int sectionCacheSize = 3;
@@ -825,15 +825,15 @@ void QDeclarativeListViewPrivate::createHighlight()
                 }
             }
             const QLatin1String posProp(orient == QDeclarativeListView::Vertical ? "y" : "x");
-            highlightPosAnimator = new QDeclarativeEaseFollow(q);
-            highlightPosAnimator->setTarget(QDeclarativeProperty(highlight->item, posProp));
-            highlightPosAnimator->setVelocity(highlightMoveSpeed);
-            highlightPosAnimator->setEnabled(autoHighlight);
+            highlightPosAnimator = new QSmoothedAnimation(q);
+            highlightPosAnimator->target = QDeclarativeProperty(highlight->item, posProp);
+            highlightPosAnimator->velocity = highlightMoveSpeed;
+            highlightPosAnimator->restart();
             const QLatin1String sizeProp(orient == QDeclarativeListView::Vertical ? "height" : "width");
-            highlightSizeAnimator = new QDeclarativeEaseFollow(q);
-            highlightSizeAnimator->setVelocity(highlightResizeSpeed);
-            highlightSizeAnimator->setTarget(QDeclarativeProperty(highlight->item, sizeProp));
-            highlightSizeAnimator->setEnabled(autoHighlight);
+            highlightSizeAnimator = new QSmoothedAnimation(q);
+            highlightSizeAnimator->velocity = highlightResizeSpeed;
+            highlightSizeAnimator->target = QDeclarativeProperty(highlight->item, sizeProp);
+            highlightSizeAnimator->restart();
             changed = true;
         }
     }
@@ -847,8 +847,8 @@ void QDeclarativeListViewPrivate::updateHighlight()
         createHighlight();
     if (currentItem && autoHighlight && highlight && !moving) {
         // auto-update highlight
-        highlightPosAnimator->setSourceValue(currentItem->position());
-        highlightSizeAnimator->setSourceValue(currentItem->size());
+        highlightPosAnimator->to = currentItem->position();
+        highlightSizeAnimator->to = currentItem->size();
         if (orient == QDeclarativeListView::Vertical) {
             if (highlight->item->width() == 0)
                 highlight->item->setWidth(currentItem->item->width());
@@ -856,6 +856,8 @@ void QDeclarativeListViewPrivate::updateHighlight()
             if (highlight->item->height() == 0)
                 highlight->item->setHeight(currentItem->item->height());
         }
+        highlightPosAnimator->restart();
+        highlightSizeAnimator->restart();
     }
     updateTrackedItem();
 }
@@ -1604,10 +1606,6 @@ void QDeclarativeListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     Q_D(QDeclarativeListView);
     if (d->autoHighlight != autoHighlight) {
         d->autoHighlight = autoHighlight;
-        if (d->highlightPosAnimator) {
-            d->highlightPosAnimator->setEnabled(d->autoHighlight);
-            d->highlightSizeAnimator->setEnabled(d->autoHighlight);
-        }
         d->updateHighlight();
         emit highlightFollowsCurrentItemChanged();
     }
@@ -1867,7 +1865,7 @@ void QDeclarativeListView::setHighlightMoveSpeed(qreal speed)
     if (d->highlightMoveSpeed != speed) {
         d->highlightMoveSpeed = speed;
         if (d->highlightPosAnimator)
-            d->highlightPosAnimator->setVelocity(d->highlightMoveSpeed);
+            d->highlightPosAnimator->velocity = d->highlightMoveSpeed;
         emit highlightMoveSpeedChanged();
     }
 }
@@ -1884,7 +1882,7 @@ void QDeclarativeListView::setHighlightResizeSpeed(qreal speed)
     if (d->highlightResizeSpeed != speed) {
         d->highlightResizeSpeed = speed;
         if (d->highlightSizeAnimator)
-            d->highlightSizeAnimator->setVelocity(d->highlightResizeSpeed);
+            d->highlightSizeAnimator->velocity = d->highlightResizeSpeed;
         emit highlightResizeSpeedChanged();
     }
 }
