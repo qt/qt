@@ -329,6 +329,13 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
     } else if (attachment == QGLFramebufferObject::Depth) {
         fboFormat.setDepth(true);
     }
+
+    GLenum format = f->format().internalTextureFormat();
+    reqAlpha = (format != GL_RGB
+#ifndef QT_OPENGL_ES
+                && format != GL_RGB5 && format != GL_RGB8
+#endif
+    );
 }
 
 QGLContext *QGLFBOGLPaintDevice::context() const
