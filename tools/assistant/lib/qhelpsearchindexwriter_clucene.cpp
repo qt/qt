@@ -613,67 +613,69 @@ void QHelpSearchIndexWriter::optimizeIndex()
 
 void QHelpSearchIndexWriter::run()
 {
-    QMutexLocker mutexLocker(&mutex);
-
-    if (m_cancel)
-        return;
-
-    const bool reindex = this->m_reindex;
-    const QString collectionFile(this->m_collectionFile);
-
-    mutexLocker.unlock();
-
-    QHelpEngineCore engine(collectionFile, 0);
-    if (!engine.setupData())
-        return;
-
-    const QLatin1String key("CluceneIndexedNamespaces");
-    if (reindex)
-        engine.setCustomValue(key, QLatin1String(""));
-
-    QMap<QString, QDateTime> indexMap;
-    const QLatin1String oldKey("CluceneSearchNamespaces");
-    if (!engine.customValue(oldKey, QString()).isNull()) {
-        // old style qhc file < 4.4.2, need to convert...
-        const QStringList indexedNamespaces = engine.customValue(oldKey).
-            toString().split(QLatin1String("|"), QString::SkipEmptyParts);
-        foreach (const QString &nameSpace, indexedNamespaces)
-            indexMap.insert(nameSpace, QDateTime());
-        engine.removeCustomValue(oldKey);
-    } else {
-        QDataStream dataStream(engine.customValue(key).toByteArray());
-        dataStream >> indexMap;
-    }
-
-    QString indexPath = m_indexFilesFolder;
-
-    QFileInfo fInfo(indexPath);
-    if (fInfo.exists() && !fInfo.isWritable()) {
-        qWarning("Full Text Search, could not create index (missing permissions for '%s').", qPrintable(indexPath));
-        return;
-    }
-
-    emit indexingStarted();
-
-    QCLuceneIndexWriter *writer = 0;
-    QCLuceneStandardAnalyzer analyzer;
-    const QStringList registeredDocs = engine.registeredDocumentations();
-
-    QLocalSocket localSocket;
-    localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))
-        .arg(QLatin1String(QT_VERSION_STR)));
-
-    QLocalServer localServer;
-    bool otherInstancesRunning = true;
-    if (!localSocket.waitForConnected()) {
-        otherInstancesRunning = false;
-        localServer.listen(QString(QLatin1String("QtAssistant%1"))
-            .arg(QLatin1String(QT_VERSION_STR)));
-    }
-
 #if !defined(QT_NO_EXCEPTIONS)
     try {
 #endif
+        QMutexLocker mutexLocker(&mutex);
+
+        if (m_cancel)
+            return;
+
+        const bool reindex = this->m_reindex;
+        const QString collectionFile(this->m_collectionFile);
+
+        mutexLocker.unlock();
+
+        QHelpEngineCore engine(collectionFile, 0);
+        if (!engine.setupData())
+            return;
+
+        const QLatin1String key("CluceneIndexedNamespaces");
+        if (reindex)
+            engine.setCustomValue(key, QLatin1String(""));
+
+        QMap<QString, QDateTime> indexMap;
+        const QLatin1String oldKey("CluceneSearchNamespaces");
+        if (!engine.customValue(oldKey, QString()).isNull()) {
+            // old style qhc file < 4.4.2, need to convert...
+            const QStringList indexedNamespaces
+                = engine.customValue(oldKey).toString()
+                  .split(QLatin1String("|"), QString::SkipEmptyParts);
+            foreach (const QString &nameSpace, indexedNamespaces)
+                indexMap.insert(nameSpace, QDateTime());
+            engine.removeCustomValue(oldKey);
+        } else {
+            QDataStream dataStream(engine.customValue(key).toByteArray());
+            dataStream >> indexMap;
+        }
+
+        QString indexPath = m_indexFilesFolder;
+
+        QFileInfo fInfo(indexPath);
+        if (fInfo.exists() && !fInfo.isWritable()) {
+            qWarning("Full Text Search, could not create index (missing permissions for '%s').",
+                     qPrintable(indexPath));
+            return;
+        }
+
+        emit indexingStarted();
+
+        QCLuceneIndexWriter *writer = 0;
+        QCLuceneStandardAnalyzer analyzer;
+        const QStringList registeredDocs = engine.registeredDocumentations();
+
+        QLocalSocket localSocket;
+        localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))
+                                    .arg(QLatin1String(QT_VERSION_STR)));
+
+        QLocalServer localServer;
+        bool otherInstancesRunning = true;
+        if (!localSocket.waitForConnected()) {
+            otherInstancesRunning = false;
+            localServer.listen(QString(QLatin1String("QtAssistant%1"))
+                               .arg(QLatin1String(QT_VERSION_STR)));
+        }
+
         // check if it's locked, and if the other instance is running
         if (!otherInstancesRunning && QCLuceneIndexReader::isLocked(indexPath))
             QCLuceneIndexReader::unlock(indexPath);
@@ -705,7 +707,8 @@ void QHelpSearchIndexWriter::run()
                     removeDocuments(indexPath, namespaceName);
                 } else {
                     QString path = engine.documentationFileName(namespaceName);
-                    if (indexMap.value(namespaceName) < QFileInfo(path).lastModified()) {
+                    if (indexMap.value(namespaceName)
+                        < QFileInfo(path).lastModified()) {
                         // make sure we remove some outdated indexed stuff
                         indexMap.remove(namespaceName);
                         removeDocuments(indexPath, namespaceName);
@@ -728,94 +731,85 @@ void QHelpSearchIndexWriter::run()
             indexMap.clear();
             writer = new QCLuceneIndexWriter(indexPath, analyzer, true);
         }
-#if !defined(QT_NO_EXCEPTIONS)
-    } catch (...) {
-        qWarning("Full Text Search, could not create index writer in '%s'.",
-            qPrintable(indexPath));
-        return;
-    }
-#endif
 
-#if !defined(QT_NO_EXCEPTIONS)
-    try {
-#endif
         writer->setMergeFactor(100);
         writer->setMinMergeDocs(1000);
         writer->setMaxFieldLength(QCLuceneIndexWriter::DEFAULT_MAX_FIELD_LENGTH);
-#if !defined(QT_NO_EXCEPTIONS)
-    } catch (...) {
-        qWarning("Full Text Search, could not set writer properties.");
-        return;
-    }
-#endif
 
-    QStringList namespaces;
-    foreach(const QString &namespaceName, registeredDocs) {
-        mutexLocker.relock();
-        if (m_cancel) {
-            closeIndexWriter(writer);
-            emit indexingFinished();
-            return;
-        }
-        mutexLocker.unlock();
-
-        namespaces.append(namespaceName);
-        if (indexMap.contains(namespaceName))
-            continue;
-
-        const QList<QStringList> attributeSets =
-            engine.filterAttributeSets(namespaceName);
-
-        if (attributeSets.isEmpty()) {
-            const QList<QUrl> docFiles = indexableFiles(&engine, namespaceName,
-                QStringList());
-            if (!addDocuments(docFiles, engine, QStringList(), namespaceName,
-                writer, analyzer))
-                break;
-        } else {
-            bool bail = false;
-            foreach (const QStringList &attributes, attributeSets) {
-                const QList<QUrl> docFiles = indexableFiles(&engine,
-                    namespaceName, attributes);
-                if (!addDocuments(docFiles, engine, attributes, namespaceName,
-                    writer, analyzer)) {
-                    bail = true;
-                    break;
-                }
+        QStringList namespaces;
+        foreach(const QString &namespaceName, registeredDocs) {
+            mutexLocker.relock();
+            if (m_cancel) {
+                closeIndexWriter(writer);
+                emit indexingFinished();
+                return;
             }
-            if (bail)
-                break;
+            mutexLocker.unlock();
+
+            namespaces.append(namespaceName);
+            if (indexMap.contains(namespaceName))
+                continue;
+
+            const QList<QStringList> attributeSets =
+                    engine.filterAttributeSets(namespaceName);
+
+            if (attributeSets.isEmpty()) {
+                const QList<QUrl> docFiles = indexableFiles(&engine, namespaceName,
+                                                            QStringList());
+                if (!addDocuments(docFiles, engine, QStringList(), namespaceName,
+                                  writer, analyzer))
+                    break;
+            } else {
+                bool bail = false;
+                foreach (const QStringList &attributes, attributeSets) {
+                    const QList<QUrl> docFiles = indexableFiles(&engine,
+                                                                namespaceName, attributes);
+                    if (!addDocuments(docFiles, engine, attributes, namespaceName,
+                                      writer, analyzer)) {
+                        bail = true;
+                        break;
+                    }
+                }
+                if (bail)
+                    break;
+            }
+
+            mutexLocker.relock();
+            if (!m_cancel) {
+                QString path(engine.documentationFileName(namespaceName));
+                indexMap.insert(namespaceName, QFileInfo(path).lastModified());
+                writeIndexMap(engine, indexMap);
+            }
+            mutexLocker.unlock();
         }
+
+        closeIndexWriter(writer);
 
         mutexLocker.relock();
         if (!m_cancel) {
-            QString path(engine.documentationFileName(namespaceName));
-            indexMap.insert(namespaceName, QFileInfo(path).lastModified());
-            writeIndexMap(engine, indexMap);
-        }
-        mutexLocker.unlock();
-    }
-
-    closeIndexWriter(writer);
-
-    mutexLocker.relock();
-    if (!m_cancel) {
-        mutexLocker.unlock();
-
-        QStringList indexedNamespaces = indexMap.keys();
-        foreach(const QString &namespaceName, indexedNamespaces) {
-            mutexLocker.relock();
-            if (m_cancel)
-                break;
             mutexLocker.unlock();
 
-            if (!namespaces.contains(namespaceName)) {
-                indexMap.remove(namespaceName);
-                writeIndexMap(engine, indexMap);
-                removeDocuments(indexPath, namespaceName);
+            QStringList indexedNamespaces = indexMap.keys();
+            foreach(const QString &namespaceName, indexedNamespaces) {
+                mutexLocker.relock();
+                if (m_cancel)
+                    break;
+                mutexLocker.unlock();
+
+                if (!namespaces.contains(namespaceName)) {
+                    indexMap.remove(namespaceName);
+                    writeIndexMap(engine, indexMap);
+                    removeDocuments(indexPath, namespaceName);
+                }
             }
         }
+
+#if !defined(QT_NO_EXCEPTIONS)
+    } catch (...) {
+        qWarning("%s: Failed because of CLucene exception.", Q_FUNC_INFO);
     }
+#endif
+
     emit indexingFinished();
 }
 
