@@ -46,6 +46,7 @@
 #include "qnetworkreply_p.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
+#include "QtNetwork/qnetworksession.h"
 
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"

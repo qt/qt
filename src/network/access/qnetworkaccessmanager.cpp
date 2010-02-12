@@ -47,6 +47,8 @@
 #include "qnetworkcookie.h"
 #include "qabstractnetworkcache.h"
 
+#include "QtNetwork/qnetworksession.h"
+
 #include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessftpbackend_p.h"
 #include "qnetworkaccessfilebackend_p.h"
@@ -60,7 +62,6 @@
 #include "QtNetwork/qauthenticator.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
-#include "QtNetwork/qnetworksession.h"
 
 QT_BEGIN_NAMESPACE
 

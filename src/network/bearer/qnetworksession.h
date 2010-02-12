@@ -43,7 +43,6 @@
 #define QNETWORKSESSION_H
 
 #include <QtCore/qobject.h>
-#include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
 #include <QtNetwork/qnetworkinterface.h>
 #include <QtCore/qvariant.h>
