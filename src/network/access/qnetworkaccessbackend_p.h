@@ -162,6 +162,10 @@ public:
     // This will possibly enable buffering of the upload data.
     virtual bool needsResetableUploadData() { return false; }
 
+    // Returns true if backend is able to resume downloads.
+    virtual bool canResume() const { return false; }
+    virtual void setResumeOffset(quint64 offset) { Q_UNUSED(offset); }
+
 protected:
     // Create the device used for reading the upload data
     QNonContiguousByteDevice* createUploadByteDevice();

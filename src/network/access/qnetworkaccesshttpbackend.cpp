@@ -296,6 +296,7 @@ QNetworkAccessHttpBackend::QNetworkAccessHttpBackend()
 #ifndef QT_NO_OPENSSL
     , pendingSslConfiguration(0), pendingIgnoreAllSslErrors(false)
 #endif
+    , resumeOffset(0)
 {
 }
 
@@ -533,6 +534,28 @@ void QNetworkAccessHttpBackend::postRequest()
     httpRequest.setUrl(url());
 
     QList<QByteArray> headers = request().rawHeaderList();
+    if (resumeOffset != 0) {
+        if (headers.contains("Range")) {
+            // Need to adjust resume offset for user specified range
+
+            headers.removeOne("Range");
+
+            // We've already verified that requestRange starts with "bytes=", see canResume.
+            QByteArray requestRange = request().rawHeader("Range").mid(6);
+
+            int index = requestRange.indexOf('-');
+
+            quint64 requestStartOffset = requestRange.left(index).toULongLong();
+            quint64 requestEndOffset = requestRange.mid(index + 1).toULongLong();
+
+            requestRange = "bytes=" + QByteArray::number(resumeOffset + requestStartOffset) +
+                           '-' + QByteArray::number(requestEndOffset);
+
+            httpRequest.setHeaderField("Range", requestRange);
+        } else {
+            httpRequest.setHeaderField("Range", "bytes=" + QByteArray::number(resumeOffset) + '-');
+        }
+    }
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request().rawHeader(header));
 
@@ -1106,6 +1129,31 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
     }
     metaData.setAttributes(attributes);
     return metaData;
+}
+
+bool QNetworkAccessHttpBackend::canResume() const
+{
+    // Only GET operation supports resuming.
+    if (operation() != QNetworkAccessManager::GetOperation)
+        return false;
+
+    // Can only resume if server/resource supports Range header.
+    if (httpReply->headerField("Accept-Ranges", "none") == "none")
+        return false;
+
+    // We only support resuming for byte ranges.
+    if (request().hasRawHeader("Range")) {
+        QByteArray range = request().rawHeader("Range");
+        if (!range.startsWith("bytes="))
+            return false;
+    }
+
+    return true;
+}
+
+void QNetworkAccessHttpBackend::setResumeOffset(quint64 offset)
+{
+    resumeOffset = offset;
 }
 
 QT_END_NAMESPACE

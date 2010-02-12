@@ -497,15 +497,6 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
     QPointer<QNetworkReplyImpl> qq = q;
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (totalSize.isNull()) {
-        RawHeadersList::ConstIterator it = findRawHeader("Content-Range");
-        if (it != rawHeaders.constEnd()) {
-            int index = it->second.lastIndexOf('/');
-            if (index != -1)
-                totalSize = it->second.mid(index + 1).toLongLong() - preMigrationDownloaded;
-        }
-    }
-
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
@@ -812,8 +803,8 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     if (state == Finished || state == Aborted)
         return true;
 
-    // Resume only supported by http backend, not migrating.
-    if (!qobject_cast<QNetworkAccessHttpBackend *>(backend))
+    // Backend does not support resuming download.
+    if (!backend->canResume())
         return false;
 
     // Request has outgoing data, not migrating.
@@ -823,11 +814,6 @@ bool QNetworkReplyImplPrivate::migrateBackend()
     // Request is serviced from the cache, don't need to migrate.
     if (copyDevice)
         return true;
-
-    // Range header is not supported by server/resource, can't migrate.
-    RawHeadersList::ConstIterator it = findRawHeader("Accept-Ranges");
-    if (it == rawHeaders.constEnd() || it->second == "none")
-        return false;
 
     state = QNetworkReplyImplPrivate::Reconnecting;
 
@@ -841,13 +827,12 @@ bool QNetworkReplyImplPrivate::migrateBackend()
 
     preMigrationDownloaded = bytesDownloaded;
 
-    request.setRawHeader("Range", "bytes=" + QByteArray::number(preMigrationDownloaded) + '-');
-
     backend = manager->d_func()->findBackend(operation, request);
 
     if (backend) {
         backend->setParent(q);
         backend->reply = this;
+        backend->setResumeOffset(bytesDownloaded);
     }
 
     if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
