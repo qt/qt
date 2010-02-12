@@ -92,10 +92,10 @@ static const qreal goldenRatio = 1.618;
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,15,"QVGA Landscape"},
-{320,240,1,15,"QVGA Portrait"},
-{360,640,1,15,"NHD Landscape"},
-{640,360,1,15,"NHD Portrait"},
+{240,320,1,16,"QVGA Landscape"},
+{320,240,1,16,"QVGA Portrait"},
+{360,640,1,16,"NHD Landscape"},
+{640,360,1,16,"NHD Portrait"},
 {352,800,1,12,"E90 Landscape"}
 // *** End of generated data ***
 };
@@ -104,10 +104,10 @@ const int QS60StylePrivate::m_numberOfLayouts =
 
 const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
-{5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,-909,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,3,3,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1},
-{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,4,4,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,5,5,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
-{7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,5,5,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
+{5,0,-909,0,0,2,0,0,-1,7,12,19,13,13,6,200,-909,-909,-909,20,13,2,0,0,21,7,18,-909,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1},
+{5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,-909,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1},
+{7,0,-909,0,0,2,0,0,-1,25,69,28,19,19,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,-909,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,13,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
+{7,0,-909,0,0,2,0,0,-1,25,68,28,19,19,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,12,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1},
 {7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1}
 // *** End of generated data ***
 };
@@ -985,7 +985,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             //Handle graphics
             const QRect sliderHandle = subControlRect(control, optionSlider, SC_SliderHandle, widget);
             QS60StylePrivate::SkinElements handleElement;
-            if (optionSlider->state & QStyle::State_Sunken)
+            if (optionSlider->state & State_Sunken)
                 handleElement =
                         horizontal ? QS60StylePrivate::SE_SliderHandleSelectedHorizontal : QS60StylePrivate::SE_SliderHandleSelectedVertical;
             else
@@ -1985,7 +1985,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 */
 void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Q_D(const QS60Style);
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     bool commonStyleDraws = false;
 
@@ -2021,8 +2020,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
             painter->save();
 
-            QColor themeColor = QS60StylePrivate::themePalette()->windowText().color();
-            QColor windowTextColor = option->palette.windowText().color();
+            const QColor themeColor = QS60StylePrivate::themePalette()->windowText().color();
+            const QColor windowTextColor = option->palette.windowText().color();
 
             if (themeColor != windowTextColor)
                 painter->setPen(windowTextColor);
@@ -2069,8 +2068,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             buttonRect.adjust(0, -newY, -1, -newY);
 
             painter->save();
-            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
-            QColor buttonTextColor = option->palette.buttonText().color();
+            const QColor themeColor = QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
+            const QColor buttonTextColor = option->palette.buttonText().color();
             if (themeColor != buttonTextColor)
                 painter->setPen(buttonTextColor);
             else
@@ -2400,22 +2399,15 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz.setHeight(sz.height() + 2 * pixelMetric(PM_FocusFrameVMargin));
             break;
 #ifndef QT_NO_COMBOBOX
-        case CT_ComboBox:
-            if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-               const int frameWidth = cmb->frame ? pixelMetric(PM_ComboBoxFrameWidth, opt, widget) * 2 : 0;
-               const int textMargins = 2*(pixelMetric(PM_FocusFrameHMargin) + 1);
-               const int smallestExtraWidth = 23;
-               // QItemDelegate::sizeHint expands the textMargins two times, thus the 2*textMargins...
-               const int extra = 
-                   qMax(smallestExtraWidth, 2*textMargins + pixelMetric(PM_ScrollBarExtent, opt, widget));
-               sz = QSize(sz.width() + frameWidth + extra, sz.height() + frameWidth);
-               int maxScreenWidth = QApplication::desktop()->availableGeometry().size().width();
-               if (sz.width() > maxScreenWidth) {
-                   maxScreenWidth = maxScreenWidth - (extra + frameWidth);
-                   sz.setWidth(maxScreenWidth);
-               }
-           }
-           break;
+        case CT_ComboBox: {
+                // Fixing Ui design issues with too wide QComboBoxes and greedy SizeHints
+                // Make sure, that the combobox says within the screen.
+                const QSize desktopContentSize = QApplication::desktop()->availableGeometry().size()
+                        -QSize(pixelMetric(PM_LayoutLeftMargin) + pixelMetric(PM_LayoutRightMargin), 0);
+                sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget).
+                        boundedTo(desktopContentSize);
+            }
+            break;
 #endif
         default:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
@@ -2621,29 +2613,31 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             // lets use spinbox frame here as well, as no combobox specific value available.
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
             const int buttonWidth = qMax(cmb->rect.height(), buttonIconSize);
-            const int xposMod = (cmb->rect.x()) + width - buttonMargin - buttonWidth;
-            const int ypos = cmb->rect.y();
 
             QSize buttonSize;
             buttonSize.setWidth(buttonWidth + 2 * buttonMargin);
             buttonSize.setHeight(qMax(8, (cmb->rect.height() >> 1) - frameThickness)); //buttons should be squares
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
             switch (scontrol) {
-                case SC_ComboBoxArrow:
+                case SC_ComboBoxArrow: {
+                    const int xposMod = cmb->rect.x() + width - buttonMargin - buttonWidth;
+                    const int ypos = cmb->rect.y();
                     ret.setRect(xposMod, ypos + buttonMargin, buttonWidth, height - 2 * buttonMargin);
+                    }
                     break;
                 case SC_ComboBoxEditField: {
-                    const int withFrameX = cmb->rect.x() + cmb->rect.width() - frameThickness - buttonSize.width();
+                    const int withFrameX = cmb->rect.x() + width - frameThickness - buttonSize.width();
                     ret = QRect(
                         frameThickness,
                         frameThickness,
                         withFrameX - frameThickness,
-                        cmb->rect.height() - 2 * frameThickness);
+                        height - 2 * frameThickness);
                     }
                 break;
             default:
                 break;
             }
+            ret = visualRect(cmb->direction, cmb->rect, ret);
         }
         break;
     case CC_GroupBox:
@@ -2964,11 +2958,13 @@ void QS60Style::unpolish(QWidget *widget)
     if (widget)
         widget->setPalette(QPalette());
 
-#ifndef QT_NO_PROGRESSBAR
+#if defined(Q_WS_S60) && !defined(QT_NO_PROGRESSBAR)
     if (QProgressBar *bar = qobject_cast<QProgressBar *>(widget)) {
         widget->removeEventFilter(this);
         d->m_bars.removeAll(bar);
     }
+#else
+    Q_UNUSED(d)
 #endif
     QCommonStyle::unpolish(widget);
 }
@@ -3000,9 +2996,8 @@ void QS60Style::unpolish(QApplication *application)
  */
 bool QS60Style::event(QEvent *e)
 {
-    Q_D(QS60Style);
-
 #ifdef QT_KEYPAD_NAVIGATION
+    Q_D(QS60Style);
     const QEvent::Type eventType = e->type();
     if ((eventType == QEvent::FocusIn ||
          eventType == QEvent::FocusOut ||
@@ -3166,6 +3161,10 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
     return QStyle::eventFilter(object, event);
 }
 
+/*!
+    \internal
+    Handle the timer \a event. 
+*/
 void QS60Style::timerEvent(QTimerEvent *event)
 {
 #ifdef Q_WS_S60

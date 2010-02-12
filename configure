@@ -115,7 +115,7 @@ getQMakeConf1()
 	    inc_file=`echo "$line" | sed -n -e "/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p"`
 	    current_dir=`dirname "$1"`
 	    conf_file="$current_dir/$inc_file"
-	    if [ ! -e  "$conf_file" ]; then
+	    if [ ! -f  "$conf_file" ]; then
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
@@ -2282,7 +2282,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 fi
 
 # symlink fonts to be able to run application from build directory
-if [ "$PLATFORM_QWS" = "yes" ] && [ ! -e "${outpath}/lib/fonts" ]; then
+if [ "$PLATFORM_QWS" = "yes" ] && [ ! -d "${outpath}/lib/fonts" ]; then
     if [ "$PLATFORM" = "$XPLATFORM" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
@@ -3374,10 +3374,10 @@ Configure options:
     -debug-and-release . Compile and link two versions of Qt, with and without
                          debugging turned on (Mac only).
 
-    -developer-build.... Compile and link Qt with Qt developer options (including auto-tests exporting)
+    -developer-build ... Compile and link Qt with Qt developer options (including auto-tests exporting)
 
-    -opensource......... Compile and link the Open-Source Edition of Qt.
-    -commercial......... Compile and link the Commercial Edition of Qt.
+    -opensource ........ Compile and link the Open-Source Edition of Qt.
+    -commercial ........ Compile and link the Commercial Edition of Qt.
 
 
  *  -shared ............ Create and use shared Qt libraries.
@@ -3773,7 +3773,7 @@ Qt/X11 only:
                          Requires fontconfig/fontconfig.h, libfontconfig,
                          freetype.h and libfreetype.
 
- $XIN  -no-xinput.......... Do not compile Xinput support.
+ $XIN  -no-xinput ......... Do not compile Xinput support.
  $XIY  -xinput ............ Compile Xinput support. This also enabled tablet support
                          which requires IRIX with wacom.h and libXi or
                          XFree86 with X11/extensions/XInput.h and libXi.
@@ -7603,6 +7603,8 @@ elif [ "$CFG_OPENSSL" = "linked" ]; then
     OPENSSL_LINKAGE="(linked)"
 fi
 echo "OpenSSL support ..... $CFG_OPENSSL $OPENSSL_LINKAGE"
+echo "Alsa support ........ $CFG_ALSA"
+echo
 
 [ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........ $CFG_PTMALLOC"
 
@@ -7627,8 +7629,6 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG"
     echo "NOTE: Mac OS X frameworks implicitly build debug and release Qt libraries."
     echo
 fi
-echo "alsa support ........ $CFG_ALSA"
-echo
 
 sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
 PROCS=1

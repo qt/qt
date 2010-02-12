@@ -404,7 +404,7 @@ inline static void qt_mac_set_fullscreen_mode(bool b)
         return;
     qt_mac_app_fullscreen = b;
     if (b) {
-        SetSystemUIMode(kUIModeAllSuppressed, 0);
+        SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
     } else {
         SetSystemUIMode(kUIModeNormal, 0);
     }
@@ -562,6 +562,25 @@ inline static void qt_mac_set_window_group_to_popup(OSWindowRef window)
     // same must be done for popups. Otherwise, popups would be drawn
     // below 'stays on top' windows. Add 1 to get above pure stay-on-top windows.
     qt_mac_set_window_group(window, Qt::Popup, qt_mac_get_group_level(kOverlayWindowClass)+1);
+}
+#endif
+
+#ifdef QT_MAC_USE_COCOA
+void qt_mac_set_needs_display(QWidget *widget, QRegion region)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    if (region.isEmpty()) {
+        [theNSView setNeedsDisplay:YES];
+        return;
+    }
+
+    QVector<QRect> rects = region.rects();
+    for (int i = 0; i<rects.count(); ++i) {
+        const QRect &rect = rects.at(i);
+        NSRect nsrect = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+        [theNSView setNeedsDisplayInRect:nsrect];
+    }
+
 }
 #endif
 
@@ -3510,6 +3529,8 @@ void QWidgetPrivate::hide_sys()
 
     if (!QWidget::mouseGrabber()){
         QWidget *enterWidget = QApplication::widgetAt(QCursor::pos());
+        if (enterWidget && enterWidget->data->in_destructor)
+            enterWidget = 0;
         QApplicationPrivate::dispatchEnterLeave(enterWidget, qt_mouseover);
         qt_mouseover = enterWidget;
     }

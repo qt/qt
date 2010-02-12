@@ -81,6 +81,7 @@ static QList<QMenuBar*> nativeMenuBars;
 static uint qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
 static QPointer<QWidget> widgetWithContextMenu;
 static QList<QAction*> contextMenuActionList;
+static QWidget* actionMenu = NULL;
 static int contexMenuCommand=0;
 
 bool menuExists()
@@ -224,8 +225,26 @@ static void rebuildMenu()
 }
 
 #ifdef Q_WS_S60
+void qt_symbian_next_menu_from_action(QWidget *actionContainer)
+{
+    actionMenu = actionContainer;
+}
+
 void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
 {
+    if (actionMenu) {
+        QMenuBarPrivate *mb = 0;
+        mb = menubars()->value(actionMenu);
+        qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
+        deleteAll( &symbianMenus );
+        Q_ASSERT(mb);
+        mb->symbian_menubar->rebuild();
+        for (int i = 0; i < symbianMenus.count(); ++i)
+            QT_TRAP_THROWING(menuPane->AddMenuItemL(symbianMenus.at(i)->menuItemData));
+        actionMenu = NULL;
+        return;
+    }
+
     if (!menuExists())
         return;
     rebuildMenu();
@@ -271,10 +290,16 @@ int QMenuBarPrivate::symbianCommands(int command)
 void QMenuBarPrivate::symbianCreateMenuBar(QWidget *parent)
 {
     Q_Q(QMenuBar);
-    if (parent && parent->isWindow()){
-        menubars()->insert(q->window(), this);
-        symbian_menubar = new QSymbianMenuBarPrivate(this);
-        nativeMenuBars.append(q);
+    if (parent) {
+        if(parent->isWindow()) {
+            menubars()->insert(q->window(), this);
+            symbian_menubar = new QSymbianMenuBarPrivate(this);
+            nativeMenuBars.append(q);
+        } else {
+            menubars()->insert(q->parentWidget(), this);
+            symbian_menubar = new QSymbianMenuBarPrivate(this);
+            nativeMenuBars.append(q);
+        }
     }
 }
 
@@ -284,6 +309,7 @@ void QMenuBarPrivate::symbianDestroyMenuBar()
     int index = nativeMenuBars.indexOf(q);
     nativeMenuBars.removeAt(index);
     menubars()->remove(q->window(), this);
+    menubars()->remove(q->parentWidget(), this);
     rebuildMenu();
     if (symbian_menubar)
         delete symbian_menubar;

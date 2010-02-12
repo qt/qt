@@ -524,8 +524,11 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
         m_textLayout.draw(painter, offset, selections, clip);
 
     if (flags & DrawCursor){
+        int cursor = m_cursor;
+        if (m_preeditCursor != -1)
+            cursor += m_preeditCursor;
         if(!m_blinkPeriod || m_blinkStatus)
-            m_textLayout.drawCursor(painter, offset, m_cursor, m_cursorWidth);
+            m_textLayout.drawCursor(painter, offset, cursor, m_cursorWidth);
     }
 }
 
@@ -1368,6 +1371,8 @@ bool QLineControl::processEvent(QEvent* ev)
             processInputMethodEvent(static_cast<QInputMethodEvent*>(ev)); break;
 #ifndef QT_NO_SHORTCUT
         case QEvent::ShortcutOverride:{
+            if (isReadOnly())
+                return false;
             QKeyEvent* ke = static_cast<QKeyEvent*>(ev);
             if (ke == QKeySequence::Copy
                 || ke == QKeySequence::Paste

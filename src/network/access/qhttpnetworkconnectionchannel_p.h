@@ -151,6 +151,8 @@ public:
     void allDone(); // reply header + body have been read
     void handleStatus(); // called from allDone()
 
+    bool resetUploadData(); // return true if resetting worked or there is no upload data
+
     void pipelineInto(HttpMessagePair &pair);
     void requeueCurrentlyPipelinedRequests();
     void detectPipeliningSupport();

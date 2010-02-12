@@ -232,3 +232,4 @@ void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
     networkReply->deleteLater();
 }
 //! [9]
+

@@ -97,6 +97,7 @@ RESOURCES += linguist.qrc
 
 TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
+    $$TR_DIR/linguist_cs.ts \
     $$TR_DIR/linguist_de.ts \
     $$TR_DIR/linguist_fr.ts \
     $$TR_DIR/linguist_ja.ts \

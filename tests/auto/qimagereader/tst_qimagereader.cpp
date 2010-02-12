@@ -142,6 +142,7 @@ private slots:
     void gifHandlerBugs();
     void animatedGif();
     void gifImageCount();
+    void gifLoopCount();
 #endif
 
     void readCorruptImage_data();
@@ -765,6 +766,8 @@ void tst_QImageReader::gifImageCount()
         QVERIFY(io.canRead());
         QImage greenFrame = io.read();
 
+        QVERIFY(io.imageCount() == 4);
+
         QVERIFY(io.canRead());
         QImage blueFrame = io.read();
 
@@ -876,7 +879,25 @@ void tst_QImageReader::gifImageCount()
         QCOMPARE(blueFrame.size(), QSize(64,64));
         QVERIFY(emptyFrame.isNull());
     }
+    {
+        QImageReader io(":images/trolltech.gif");
+        QVERIFY(io.imageCount() == 34);
+        QVERIFY(io.size() == QSize(128,64));
+    }
 }
+
+void tst_QImageReader::gifLoopCount()
+{
+    {
+        QImageReader io(":images/qt-gif-anim.gif");
+        QCOMPARE(io.loopCount(), -1); // infinite loop
+    }
+    {
+        QImageReader io(":images/qt-gif-noanim.gif");
+        QCOMPARE(io.loopCount(), 0); // no loop
+    }
+}
+
 #endif
 
 class Server : public QObject
@@ -1612,6 +1633,35 @@ void tst_QImageReader::autoDetectImageFormat()
         QVERIFY(reader.canRead());
         QVERIFY(!reader.read().isNull());
     }
+
+#ifdef QTEST_HAVE_JPEG
+    {
+        QImageReader io(prefix + "YCbCr_rgb.jpg");
+        io.setAutoDetectImageFormat(false);
+        // This should fail since no format string is given
+        QImage image;
+        QVERIFY(!io.read(&image));
+    }
+    {
+        QImageReader io(prefix + "YCbCr_rgb.jpg", "jpg");
+        io.setAutoDetectImageFormat(false);
+        QImage image;
+        QVERIFY(io.read(&image));
+    }
+#endif
+    {
+        QImageReader io(prefix + "tst7.png");
+        io.setAutoDetectImageFormat(false);
+        // This should fail since no format string is given
+        QImage image;
+        QVERIFY(!io.read(&image));
+    }
+    {
+        QImageReader io(prefix + "tst7.png", "png");
+        io.setAutoDetectImageFormat(false);
+        QImage image;
+        QVERIFY(io.read(&image));
+    }
 }
 
 void tst_QImageReader::fileNameProbing()
@@ -1633,24 +1683,44 @@ void tst_QImageReader::pixelCompareWithBaseline_data()
 
     QTest::newRow("floppy (16px,32px - 16 colors)") << "35floppy.ico";
     QTest::newRow("semitransparent") << "semitransparent.ico";
-    QTest::newRow("slightlybroken") << "kde_favicon.ico";
+    QTest::newRow("slightlybrokenBMPHeader") << "kde_favicon.ico";
+    QTest::newRow("sightlybrokenIconHeader") << "connect.ico";
 }
 
 void tst_QImageReader::pixelCompareWithBaseline()
 {
     QFETCH(QString, fileName);
 
+    static int enteredCount = 0;    // Used for better error diagnostics if something fails. We
+    static int loadFailCount = 0;   // don't know if the reason load() fails is that the plugin
+                                    // does not exist or because of a bug in the plugin. But if at
+                                    // least one file succeeded we know that the plugin was built.
+                                    // The other failures are then real failures.
     QImage icoImg;
+    const QString inputFileName(QString::fromAscii("images/%1").arg(fileName));
+    QFileInfo fi(inputFileName);
+
+    ++enteredCount;
     // might fail if the plugin does not exist, which is ok.
-    if (icoImg.load(QString::fromAscii("images/%1").arg(fileName))) {
-        QString baselineFileName = QString::fromAscii("baseline/%1").arg(fileName);
+    if (icoImg.load(inputFileName)) {
+        icoImg = icoImg.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        const QString baselineFileName(QString::fromAscii("baseline/%1.png").arg(fi.baseName()));
 #if 0
         icoImg.save(baselineFileName);
 #else
         QImage baseImg;
         QVERIFY(baseImg.load(baselineFileName));
+        baseImg = baseImg.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        QCOMPARE(int(baseImg.format()), int(icoImg.format()));
         QCOMPARE(baseImg, icoImg);
 #endif
+    } else {
+        ++loadFailCount;
+        if (enteredCount != loadFailCount) {
+            QFAIL("Plugin is built, but some did not load properly");
+        } else {
+            qWarning("loading failed, check if ico plugin is built");
+        }
     }
 }
 

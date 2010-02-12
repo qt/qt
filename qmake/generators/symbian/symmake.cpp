@@ -53,7 +53,6 @@
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
 #define PLUGIN_COMMON_DEF_FILE_FOR_MMP "./plugin_common.def"
 #define PLUGIN_COMMON_DEF_FILE_ACTUAL "plugin_commonU.def"
-#define BLD_INF_FILENAME_LEN (sizeof(BLD_INF_FILENAME) - 1)
 
 #define BLD_INF_RULES_BASE "BLD_INF_RULES."
 #define BLD_INF_TAG_PLATFORMS "prj_platforms"
@@ -82,7 +81,9 @@
 #define MMP_END_RESOURCE "END"
 
 #define SIS_TARGET "sis"
+#define INSTALLER_SIS_TARGET "installer_sis"
 #define OK_SIS_TARGET "ok_sis"
+#define OK_INSTALLER_SIS_TARGET "ok_installer_sis"
 #define FAIL_SIS_NOPKG_TARGET "fail_sis_nopkg"
 #define FAIL_SIS_NOCACHE_TARGET "fail_sis_nocache"
 
@@ -219,7 +220,9 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     QString wrapperFileName("Makefile");
     QString outputFileName = fileInfo(Option::output.fileName()).fileName();
     if (outputFileName != BLD_INF_FILENAME) {
-        wrapperFileName.append(".").append((outputFileName.size() > BLD_INF_FILENAME_LEN && outputFileName.left(BLD_INF_FILENAME_LEN) == BLD_INF_FILENAME) ? outputFileName.mid(8) : outputFileName);
+        wrapperFileName.append(".").append(outputFileName.startsWith(BLD_INF_FILENAME)
+                                           ? outputFileName.mid(sizeof(BLD_INF_FILENAME))
+                                           : outputFileName);
         isPrimaryMakefile = false;
     }
 
@@ -253,7 +256,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     writeMmpFile(mmpFilename, symbianLangCodes);
 
     if (targetType == TypeExe) {
-        if (!project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
+        if (!project->isActiveConfig("no_icon")) {
             writeRegRssFile(userRssRules);
             writeRssFile(numberOfIcons, iconFile);
             writeLocFile(symbianLangCodes);
@@ -268,7 +271,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
 void SymbianMakefileGenerator::writeCustomDefFile()
 {
-    if (targetType == TypePlugin && !project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
+    if (targetType == TypePlugin && !project->isActiveConfig("stdbinary")) {
         // Create custom def file for plugin
         QFile ft(QLatin1String(PLUGIN_COMMON_DEF_FILE_ACTUAL));
 
@@ -322,7 +325,7 @@ void SymbianMakefileGenerator::init()
 
     if (0 != project->values("TARGET.UID2").size()) {
         uid2 = project->first("TARGET.UID2");
-    } else if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
+    } else if (project->isActiveConfig("stdbinary")) {
         uid2 = "0x20004C45";
     } else {
         if (targetType == TypeExe) {
@@ -575,7 +578,7 @@ void SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symb
         }
         t << endl;
 
-        if (!project->values("CONFIG").contains("static") && !project->values("CONFIG").contains("staticlib")) {
+        if (!project->isActiveConfig("static") && !project->isActiveConfig("staticlib")) {
             writeMmpFileLibraryPart(t);
         }
 
@@ -628,7 +631,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     if (targetType == TypeExe) {
         t << MMP_TARGET "\t\t" << fixedTarget << ".exe" << endl;
         if (!skipTargetType) {
-            if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
+            if (project->isActiveConfig("stdbinary"))
                 t << MMP_TARGETTYPE "\t\tSTDEXE" << endl;
             else
                 t << MMP_TARGETTYPE "\t\tEXE" << endl;
@@ -636,7 +639,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     } else if (targetType == TypeDll || targetType == TypePlugin) {
         t << MMP_TARGET "\t\t" << fixedTarget << ".dll" << endl;
         if (!skipTargetType) {
-            if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
+            if (project->isActiveConfig("stdbinary"))
                 t << MMP_TARGETTYPE "\t\tSTDDLL" << endl;
             else
                 t << MMP_TARGETTYPE "\t\tDLL" << endl;
@@ -644,7 +647,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     } else if (targetType == TypeLib) {
         t << MMP_TARGET "\t\t" << fixedTarget << ".lib" << endl;
         if (!skipTargetType) {
-            if (project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive))
+            if (project->isActiveConfig("stdbinary"))
                 t << MMP_TARGETTYPE "\t\tSTDLIB" << endl;
             else
                 t << MMP_TARGETTYPE "\t\tLIB" << endl;
@@ -680,7 +683,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     if (0 != project->values("TARGET.EPOCALLOWDLLDATA").size())
         t << MMP_EPOCALLOWDLLDATA << endl;
 
-    if (targetType == TypePlugin && !project->values("CONFIG").contains("stdbinary", Qt::CaseInsensitive)) {
+    if (targetType == TypePlugin && !project->isActiveConfig("stdbinary")) {
         // Use custom def file for Qt plugins
         t << "DEFFILE " PLUGIN_COMMON_DEF_FILE_FOR_MMP << endl;
     }
@@ -696,7 +699,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, QStringList &symbianLangCodes)
 {
     if ((targetType == TypeExe) &&
-            !project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
+            !project->isActiveConfig("no_icon")) {
 
         QString locTarget = fixedTarget;
         locTarget.append(".rss");
@@ -1054,7 +1057,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     // Add project mmps and old style extension makefiles
 
     QString mmpTag;
-    if (project->values("CONFIG").contains("symbian_test", Qt::CaseInsensitive))
+    if (project->isActiveConfig("symbian_test"))
         mmpTag = QLatin1String(BLD_INF_TAG_TESTMMPFILES);
     else
         mmpTag = QLatin1String(BLD_INF_TAG_MMPFILES);
@@ -1189,8 +1192,34 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
     t << pkgcommand << endl;
     t << endl;
 
+    QString sisName = fixedTarget;
+    sisName += ".sis";
+
+    t << sisName << ":" << endl;
+    t << "\t$(MAKE) -s -f $(MAKEFILE) " SIS_TARGET << endl << endl;
+
+    t << INSTALLER_SIS_TARGET ": " << sisName << endl;
+    siscommand = QString("\t$(if $(wildcard %1_installer.%2)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %3," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %4)")
+                          .arg(fixedTarget)
+                          .arg("pkg")
+                          .arg(OK_INSTALLER_SIS_TARGET)
+                          .arg(FAIL_SIS_NOPKG_TARGET);
+    t << siscommand << endl;
+    t << endl;
+
+    t << OK_INSTALLER_SIS_TARGET ": " << endl;
+
+    pkgcommand = QString("\tcreatepackage.bat $(QT_SIS_OPTIONS) %1_installer.%2 - " \
+                         "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
+                  .arg(fixedTarget)
+                  .arg("pkg");
+    t << pkgcommand << endl;
+    t << endl;
+
     t << FAIL_SIS_NOPKG_TARGET ":" << endl;
-    t << "\t$(error PKG file does not exist, 'SIS' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;
+    t << "\t$(error PKG file does not exist, '" SIS_TARGET "' and '" INSTALLER_SIS_TARGET "' target are only supported for executables or projects with DEPLOYMENT statement)" << endl;
     t << endl;
 
     t << FAIL_SIS_NOCACHE_TARGET ":" << endl;

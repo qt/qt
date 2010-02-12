@@ -358,7 +358,7 @@ void CentralWidget::zoomOut()
 
 void CentralWidget::findNext()
 {
-    find(findWidget->editFind->text(), true, false);
+    find(findWidget->editFind->text(), true);
 }
 
 void CentralWidget::nextPage()
@@ -389,7 +389,7 @@ void CentralWidget::previousPage()
 
 void CentralWidget::findPrevious()
 {
-    find(findWidget->editFind->text(), false, true);
+    find(findWidget->editFind->text(), false);
 }
 
 void CentralWidget::closeTab()
@@ -697,7 +697,7 @@ HelpViewer *CentralWidget::newEmptyTab()
 
 void CentralWidget::findCurrentText(const QString &text)
 {
-    find(text, false, false);
+    find(text, true);
 }
 
 void CentralWidget::connectSignals()
@@ -896,19 +896,35 @@ void CentralWidget::keyPressEvent(QKeyEvent *e)
     QWidget::keyPressEvent(e);
 }
 
-void CentralWidget::find(const QString &ttf, bool forward, bool backward)
+void CentralWidget::find(const QString &ttf, bool forward)
 {
     QPalette p = findWidget->editFind->palette();
     p.setColor(QPalette::Active, QPalette::Base, Qt::white);
 
-    if (!ttf.isEmpty()) {
-        HelpViewer *viewer = currentHelpViewer();
+    bool found = false;
 
-        bool found = false;
+#if defined(QT_NO_WEBKIT)
+    found = findInTextBrowser(ttf, forward);
+#else
+    found = findInWebPage(ttf, forward);
+#endif
+
+    if (!found && !ttf.isEmpty())
+        p.setColor(QPalette::Active, QPalette::Base, QColor(255, 102, 102));
+
+    if (!findWidget->isVisible())
+        findWidget->show();
+    findWidget->editFind->setPalette(p);
+}
+
+bool CentralWidget::findInWebPage(const QString &ttf, bool forward)
+{
 #if !defined(QT_NO_WEBKIT)
-        if (viewer) {
-            QWebPage::FindFlags options;
-            if (backward)
+    if (HelpViewer *viewer = currentHelpViewer()) {
+        bool found = false;
+        QWebPage::FindFlags options;
+        if (!ttf.isEmpty()) {
+            if (!forward)
                 options |= QWebPage::FindBackward;
 
             if (findWidget->checkCase->isChecked())
@@ -923,30 +939,27 @@ void CentralWidget::find(const QString &ttf, bool forward, bool backward)
                 if (found)
                     findWidget->labelWrapped->show();
             }
-        } else if (tabWidget->currentWidget() == m_searchWidget) {
-            QTextBrowser *browser = qFindChild<QTextBrowser*>(m_searchWidget);
-            found = findInTextBrowser(browser, ttf, forward, backward);
         }
-#else
-        QTextBrowser *browser = qobject_cast<QTextBrowser*>(viewer);
-        if (tabWidget->currentWidget() == m_searchWidget)
-            browser = qFindChild<QTextBrowser*>(m_searchWidget);
-        found = findInTextBrowser(browser, ttf, forward, backward);
-#endif
-
-        if (!found)
-            p.setColor(QPalette::Active, QPalette::Base, QColor(255, 102, 102));
+        // force highlighting of all other matches, also when empty (clear)
+        options = QWebPage::HighlightAllOccurrences;
+        viewer->findText(QLatin1String(""), options);
+        viewer->findText(ttf, options);
+        return found;
     }
 
-    if (!findWidget->isVisible())
-        findWidget->show();
-    findWidget->editFind->setPalette(p);
+    // this needs to stay, case for active search results page
+    return findInTextBrowser(ttf, forward);
+#endif
+    return false;
 }
 
-bool CentralWidget::findInTextBrowser(QTextBrowser* browser, const QString &ttf,
-    bool forward, bool backward)
+bool CentralWidget::findInTextBrowser(const QString &ttf, bool forward)
 {
-    if (!browser)
+    QTextBrowser *browser = qobject_cast<QTextBrowser*>(currentHelpViewer());
+    if (tabWidget->currentWidget() == m_searchWidget)
+        browser = qFindChild<QTextBrowser*>(m_searchWidget);
+
+    if (!browser || ttf.isEmpty())
         return false;
 
     QTextDocument *doc = browser->document();
@@ -962,7 +975,7 @@ bool CentralWidget::findInTextBrowser(QTextBrowser* browser, const QString &ttf,
             QTextCursor::MoveAnchor);
     }
 
-    if (backward)
+    if (!forward)
         options |= QTextDocument::FindBackward;
 
     if (findWidget->checkCase->isChecked())
@@ -1074,20 +1087,29 @@ void
 CentralWidget::setSourceFromSearch(const QUrl &url)
 {
     setSource(url);
+#if defined(QT_NO_WEBKIT)
     highlightSearchTerms();
+#else
+    connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
+        SLOT(highlightSearchTerms()));
+#endif
 }
 
 void
 CentralWidget::setSourceFromSearchInNewTab(const QUrl &url)
 {
     setSourceInNewTab(url);
+#if defined(QT_NO_WEBKIT)
     highlightSearchTerms();
+#else
+    connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
+        SLOT(highlightSearchTerms()));
+#endif
 }
 
 void
 CentralWidget::highlightSearchTerms()
 {
-#if defined(QT_NO_WEBKIT)
     HelpViewer *viewer = currentHelpViewer();
     if (!viewer)
         return;
@@ -1096,7 +1118,7 @@ CentralWidget::highlightSearchTerms()
     QList<QHelpSearchQuery> queryList = searchEngine->query();
 
     QStringList terms;
-    foreach (QHelpSearchQuery query, queryList) {
+    foreach (const QHelpSearchQuery &query, queryList) {
         switch (query.fieldName) {
             default: break;
             case QHelpSearchQuery::ALL: {
@@ -1109,6 +1131,7 @@ CentralWidget::highlightSearchTerms()
         }
     }
 
+#if defined(QT_NO_WEBKIT)
     viewer->viewport()->setUpdatesEnabled(false);
 
     QTextCharFormat marker;
@@ -1140,6 +1163,14 @@ CentralWidget::highlightSearchTerms()
     viewer->setTextCursor(firstHit);
 
     viewer->viewport()->setUpdatesEnabled(true);
+#else
+    viewer->findText("", QWebPage::HighlightAllOccurrences);
+         // clears existing selections
+    foreach (const QString& term, terms)
+        viewer->findText(term, QWebPage::HighlightAllOccurrences);
+
+    disconnect(viewer, SIGNAL(loadFinished(bool)), this,
+        SLOT(highlightSearchTerms()));
 #endif
 }
 

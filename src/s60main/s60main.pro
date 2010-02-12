@@ -22,6 +22,9 @@ symbian {
     # staticlib should not have any lib depencies in s60
     # This seems not to work, some hard coded libs are still added as dependency
     LIBS =
+
+    # Workaround for abld toolchain problem to make ARMV6 qtmain.lib link with GCCE apps
+    symbian-abld: QMAKE_CXXFLAGS.ARMCC += --dllimport_runtime
 } else {
     error("$$_FILE_ is intended only for Symbian!")
 }

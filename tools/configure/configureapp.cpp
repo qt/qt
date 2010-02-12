@@ -317,7 +317,6 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
     dictionary[ "S60" ]             = "yes";
-    dictionary[ "SYMBIAN_DEFFILES" ] = "yes";
 
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
@@ -483,7 +482,9 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";
-            dictionary[ "SYMBIAN_DEFFILES" ] = "no";
+            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
+                dictionary[ "SYMBIAN_DEFFILES" ] = "no";
+            }
         }
         else if( configCmdLine.at(i) == "-opensource" ) {
             dictionary[ "BUILDTYPE" ] = "opensource";
@@ -1475,6 +1476,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "XMLPATTERNS" ]         = "yes";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "S60" ]                 = "yes";
+        dictionary[ "SYMBIAN_DEFFILES" ]    = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
         // iconv_open seems to return -1 always, so something is probably missing from the platform.
         dictionary[ "QT_ICONV" ]            = "no";
@@ -1829,9 +1831,9 @@ bool Configure::displayHelp()
         desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.");
         desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2");
         desc("S60", "no",          "-no-s60",              "Do not compile in S60 support.");
-        desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework\n");
-        desc("SYMBIAN_DEFFILES", "no",  "no-usedeffiles",  "Disable the usage of DEF files.");
-        desc("SYMBIAN_DEFFILES", "yes", "usedeffiles",     "Enable the usage of DEF files.\n");
+        desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework");
+        desc("SYMBIAN_DEFFILES", "no",  "-no-usedeffiles",  "Disable the usage of DEF files.");
+        desc("SYMBIAN_DEFFILES", "yes", "-usedeffiles",     "Enable the usage of DEF files.\n");
         return true;
     }
     return false;
@@ -2535,8 +2537,11 @@ void Configure::generateOutputVars()
             qtConfig += "phonon-backend";
     }
 
-    if (dictionary["MULTIMEDIA"] == "yes")
+    if (dictionary["MULTIMEDIA"] == "yes") {
         qtConfig += "multimedia";
+        if (dictionary["AUDIO_BACKEND"] == "yes")
+            qtConfig += "audio-backend";
+    }
 
     if (dictionary["WEBKIT"] == "yes")
         qtConfig += "webkit";
@@ -2753,10 +2758,12 @@ void Configure::generateCachefile()
         if ( dictionary["PLUGIN_MANIFESTS"] == "no" )
             configStream << " no_plugin_manifest";
 
-        if ( dictionary["SYMBIAN_DEFFILES"] == "yes" ) {
-            configStream << " def_files";
-        } else if ( dictionary["SYMBIAN_DEFFILES"] == "no" ) {
-            configStream << " def_files_disabled";
+        if ( dictionary.contains("SYMBIAN_DEFFILES") ) {
+            if(dictionary["SYMBIAN_DEFFILES"] == "yes" ) {
+                configStream << " def_files";
+            } else if ( dictionary["SYMBIAN_DEFFILES"] == "no" ) {
+                configStream << " def_files_disabled";
+            }
         }
         configStream << endl;
         configStream << "QT_ARCH = " << dictionary[ "ARCHITECTURE" ] << endl;

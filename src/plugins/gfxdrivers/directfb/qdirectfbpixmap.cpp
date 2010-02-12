@@ -552,6 +552,34 @@ QImage *QDirectFBPixmapData::buffer()
     return &lockedImage;
 }
 
+
+bool QDirectFBPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    if (!dfbSurface) {
+        return false;
+    }
+    unlockSurface();
+    DFBResult result = dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBPixmapData::scroll", result);
+        return false;
+    }
+    result = dfbSurface->SetPorterDuff(dfbSurface, DSPD_NONE);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBPixmapData::scroll", result);
+        return false;
+    }
+
+    const DFBRectangle source = { rect.x(), rect.y(), rect.width(), rect.height() };
+    result = dfbSurface->Blit(dfbSurface, dfbSurface, &source, source.x + dx, source.y + dy);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBPixmapData::scroll", result);
+        return false;
+    }
+
+    return true;
+}
+
 void QDirectFBPixmapData::invalidate()
 {
     if (dfbSurface) {
@@ -565,9 +593,17 @@ void QDirectFBPixmapData::invalidate()
     imageFormat = QImage::Format_Invalid;
 }
 
+#ifndef QT_DIRECTFB_PLUGIN
+Q_GUI_EXPORT IDirectFBSurface *qt_directfb_surface_for_pixmap(const QPixmap &pixmap)
+{
+    const QPixmapData *data = pixmap.pixmapData();
+    if (!data || data->classId() != QPixmapData::DirectFBClass)
+        return 0;
+    const QDirectFBPixmapData *dfbData = static_cast<const QDirectFBPixmapData*>(data);
+    return dfbData->directFBSurface();
+}
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_QWS_DIRECTFB
-
-
-

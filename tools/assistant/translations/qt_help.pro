@@ -41,6 +41,7 @@ HEADERS += ../lib/qhelpcollectionhandler_p.h \
 
 TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
+    $$TR_DIR/qt_help_cs.ts \
     $$TR_DIR/qt_help_da.ts \
     $$TR_DIR/qt_help_de.ts \
     $$TR_DIR/qt_help_ja.ts \

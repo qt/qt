@@ -108,10 +108,9 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QSet<QGraphicsItem *> unpolishedItems;
+    QVector<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
-    bool unpolishedItemsModified;
     bool holesInTopLevelSiblingIndex;
     bool topLevelSequentialOrdering;
 
@@ -223,7 +222,8 @@ public:
               QRegion *, QWidget *, qreal, const QTransform *const, bool, bool);
 
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
-                   bool force = false, bool ignoreOpacity = false, bool removingItemFromScene = false);
+                   bool force = false, bool ignoreOpacity = false, bool removingItemFromScene = false,
+                   bool updateBoundingRect = false);
     void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false,
                                     qreal parentOpacity = qreal(1.0));
 

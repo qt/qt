@@ -79,7 +79,7 @@
 #  endif
 #endif // QT_NO_CODECS
 #include "qlocale.h"
-#include "private/qmutexpool_p.h"
+#include "qmutex.h"
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -659,13 +659,13 @@ static void setupLocaleMapper()
 #endif
 }
 
-
-static void setup()
-{
 #ifndef QT_NO_THREAD
-    QMutexLocker locker(QMutexPool::globalInstanceGet(&all));
+Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
 #endif
 
+// textCodecsMutex need to be locked to enter this function
+static void setup()
+{
     if (all)
         return;
 
@@ -903,8 +903,6 @@ QTextCodec::ConverterState::~ConverterState()
 */
 
 /*!
-    \nonreentrant
-
     Constructs a QTextCodec, and gives it the highest precedence. The
     QTextCodec should always be constructed on the heap (i.e. with \c
     new). Qt takes ownership and will delete it when the application
@@ -912,6 +910,9 @@ QTextCodec::ConverterState::~ConverterState()
 */
 QTextCodec::QTextCodec()
 {
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     setup();
     all->prepend(this);
 }
@@ -929,8 +930,12 @@ QTextCodec::~QTextCodec()
     if (!destroying_is_ok)
         qWarning("QTextCodec::~QTextCodec: Called by application");
 #endif
-    if (all)
+    if (all) {
+#ifndef QT_NO_THREAD
+        QMutexLocker locker(textCodecsMutex());
+#endif
         all->removeAll(this);
+    }
 }
 
 /*!
@@ -951,6 +956,9 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     if (name.isEmpty())
         return 0;
 
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     setup();
 
     for (int i = 0; i < all->size(); ++i) {
@@ -958,8 +966,8 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
         if (nameMatch(cursor->name(), name))
             return cursor;
         QList<QByteArray> aliases = cursor->aliases();
-        for (int i = 0; i < aliases.size(); ++i)
-            if (nameMatch(aliases.at(i), name))
+        for (int y = 0; y < aliases.size(); ++y)
+            if (nameMatch(aliases.at(y), name))
                 return cursor;
     }
 
@@ -973,6 +981,9 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 */
 QTextCodec* QTextCodec::codecForMib(int mib)
 {
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     setup();
 
     // Qt 3 used 1000 (mib for UCS2) as its identifier for the utf16 codec. Map
@@ -1001,6 +1012,9 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 */
 QList<QByteArray> QTextCodec::availableCodecs()
 {
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     setup();
 
     QList<QByteArray> codecs;
@@ -1008,6 +1022,11 @@ QList<QByteArray> QTextCodec::availableCodecs()
         codecs += all->at(i)->name();
         codecs += all->at(i)->aliases();
     }
+
+#ifndef QT_NO_THREAD
+    locker.unlock();
+#endif
+
 #ifndef QT_NO_TEXTCODECPLUGIN
     QFactoryLoader *l = loader();
     QStringList keys = l->keys();
@@ -1031,11 +1050,19 @@ QList<QByteArray> QTextCodec::availableCodecs()
 */
 QList<int> QTextCodec::availableMibs()
 {
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     setup();
 
     QList<int> codecs;
     for (int i = 0; i < all->size(); ++i)
         codecs += all->at(i)->mibEnum();
+
+#ifndef QT_NO_THREAD
+    locker.unlock();
+#endif
+
 #ifndef QT_NO_TEXTCODECPLUGIN
     QFactoryLoader *l = loader();
     QStringList keys = l->keys();
@@ -1082,6 +1109,9 @@ QTextCodec* QTextCodec::codecForLocale()
     if (localeMapper)
         return localeMapper;
 
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(textCodecsMutex());
+#endif
     setup();
 
     return localeMapper;

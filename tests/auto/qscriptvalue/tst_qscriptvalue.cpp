@@ -39,14 +39,8 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
+#include "tst_qscriptvalue.h"
 #include <QtGui/QPushButton>
-#include <QtCore/qnumeric.h>
-
-#include <QtScript/qscriptclass.h>
-#include <QtScript/qscriptvalue.h>
-#include <QtScript/qscriptengine.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -55,61 +49,69 @@ QT_BEGIN_NAMESPACE
 extern bool qt_script_isJITEnabled();
 QT_END_NAMESPACE
 
-class tst_QScriptValue : public QObject
-{
-    Q_OBJECT
-
-public:
-    tst_QScriptValue();
-    virtual ~tst_QScriptValue();
-
-private slots:
-    void ctor();
-    void engine();
-    void toString();
-    void toNumber();
-    void toBoolean();
-    void toBool();
-    void toInteger();
-    void toInt32();
-    void toUInt32();
-    void toUInt16();
-    void toVariant();
-    void toQObject();
-    void toObject();
-    void toDateTime();
-    void toRegExp();
-    void instanceOf();
-    void isArray();
-    void isDate();
-    void isError();
-    void isRegExp();
-    void getSetPrototype();
-    void getSetScope();
-    void getSetProperty();
-    void arrayElementGetterSetter();
-    void getSetData();
-    void getSetScriptClass();
-    void call();
-    void construct();
-    void lessThan();
-    void equals();
-    void strictlyEquals();
-    void castToPointer();
-    void prettyPrinter_data();
-    void prettyPrinter();
-    void engineDeleted();
-    void valueOfWithClosure();
-    void objectId();
-};
-
 tst_QScriptValue::tst_QScriptValue()
+    : engine(0)
 {
 }
 
 tst_QScriptValue::~tst_QScriptValue()
 {
+    delete engine;
 }
+
+void tst_QScriptValue::dataHelper(InitDataFunction init, DefineDataFunction define)
+{
+    QTest::addColumn<QString>("__expression__");
+    (this->*init)();
+    QHash<QString,QScriptValue>::const_iterator it;
+    for (it = m_values.constBegin(); it != m_values.constEnd(); ++it) {
+        m_currentExpression = it.key();
+        (this->*define)(it.key().toLatin1());
+    }
+    m_currentExpression = QString();
+}
+
+QTestData &tst_QScriptValue::newRow(const char *tag)
+{
+    return QTest::newRow(tag) << m_currentExpression;
+}
+
+void tst_QScriptValue::testHelper(TestFunction fun)
+{
+    QFETCH(QString, __expression__);
+    QScriptValue value = m_values.value(__expression__);
+    (this->*fun)(__expression__.toLatin1(), value);
+}
+
+void tst_QScriptValue::assignAndCopyConstruct_initData()
+{
+    QTest::addColumn<int>("dummy");
+    initScriptValues();
+}
+
+void tst_QScriptValue::assignAndCopyConstruct_makeData(const char *expr)
+{
+    newRow(expr) << 0;
+}
+
+void tst_QScriptValue::assignAndCopyConstruct_test(const char *, const QScriptValue &value)
+{
+    QScriptValue copy(value);
+    QCOMPARE(copy.strictlyEquals(value), !value.isNumber() || !qIsNaN(value.toNumber()));
+    QCOMPARE(copy.engine(), value.engine());
+
+    QScriptValue assigned = copy;
+    QCOMPARE(assigned.strictlyEquals(value), !copy.isNumber() || !qIsNaN(copy.toNumber()));
+    QCOMPARE(assigned.engine(), assigned.engine());
+
+    QScriptValue other(!value.toBool());
+    assigned = other;
+    QVERIFY(!assigned.strictlyEquals(copy));
+    QVERIFY(assigned.strictlyEquals(other));
+    QCOMPARE(assigned.engine(), other.engine());
+}
+
+DEFINE_TEST_FUNCTION(assignAndCopyConstruct)
 
 void tst_QScriptValue::ctor()
 {
@@ -330,19 +332,12 @@ void tst_QScriptValue::ctor()
     QVERIFY(QScriptValue(0, QString("ciao")).isString());
 }
 
-void tst_QScriptValue::engine()
-{
-    QScriptEngine eng;
-    QScriptValue object = eng.newObject();
-    QCOMPARE(object.engine(), &eng);
-}
-
 static QScriptValue myFunction(QScriptContext *, QScriptEngine *eng)
 {
     return eng->undefinedValue();
 }
 
-void tst_QScriptValue::toString()
+void tst_QScriptValue::toString_old()
 {
     QScriptEngine eng;
 
@@ -456,7 +451,7 @@ void tst_QScriptValue::toString()
     QVERIFY(variant.toString().isEmpty());
 }
 
-void tst_QScriptValue::toNumber()
+void tst_QScriptValue::toNumber_old()
 {
     QScriptEngine eng;
 
@@ -529,7 +524,7 @@ void tst_QScriptValue::toNumber()
     }
 }
 
-void tst_QScriptValue::toBoolean() // deprecated
+void tst_QScriptValue::toBoolean_old() // deprecated
 {
     QScriptEngine eng;
 
@@ -626,7 +621,7 @@ void tst_QScriptValue::toBoolean() // deprecated
     }
 }
 
-void tst_QScriptValue::toBool()
+void tst_QScriptValue::toBool_old()
 {
     QScriptEngine eng;
 
@@ -723,7 +718,7 @@ void tst_QScriptValue::toBool()
     }
 }
 
-void tst_QScriptValue::toInteger()
+void tst_QScriptValue::toInteger_old()
 {
     QScriptEngine eng;
 
@@ -810,7 +805,7 @@ void tst_QScriptValue::toInteger()
     QCOMPARE(inv.toInteger(), 0.0);
 }
 
-void tst_QScriptValue::toInt32()
+void tst_QScriptValue::toInt32_old()
 {
     QScriptEngine eng;
 
@@ -946,7 +941,7 @@ void tst_QScriptValue::toInt32()
     QCOMPARE(qscriptvalue_cast<qint32>(inv), 0);
 }
 
-void tst_QScriptValue::toUInt32()
+void tst_QScriptValue::toUInt32_old()
 {
     QScriptEngine eng;
 
@@ -1078,7 +1073,7 @@ void tst_QScriptValue::toUInt32()
     QCOMPARE(qscriptvalue_cast<quint32>(inv), quint32(0));
 }
 
-void tst_QScriptValue::toUInt16()
+void tst_QScriptValue::toUInt16_old()
 {
     QScriptEngine eng;
 
@@ -1239,7 +1234,7 @@ void tst_QScriptValue::toUInt16()
 Q_DECLARE_METATYPE(QVariant)
 #endif
 
-void tst_QScriptValue::toVariant()
+void tst_QScriptValue::toVariant_old()
 {
     QScriptEngine eng;
 
@@ -1346,7 +1341,7 @@ void tst_QScriptValue::toVariant()
 // unfortunately, this is necessary in order to do qscriptvalue_cast<QPushButton*>(...)
 Q_DECLARE_METATYPE(QPushButton*)
 
-void tst_QScriptValue::toQObject()
+void tst_QScriptValue::toQObject_old()
 {
     QScriptEngine eng;
 
@@ -1541,7 +1536,7 @@ void tst_QScriptValue::toObject()
     }
 }
 
-void tst_QScriptValue::toDateTime()
+void tst_QScriptValue::toDateTime_old()
 {
     QScriptEngine eng;
     QDateTime dt = eng.evaluate("new Date(0)").toDateTime();
@@ -1559,7 +1554,7 @@ void tst_QScriptValue::toDateTime()
     QVERIFY(!eng.undefinedValue().toDateTime().isValid());
 }
 
-void tst_QScriptValue::toRegExp()
+void tst_QScriptValue::toRegExp_old()
 {
     QScriptEngine eng;
     {
@@ -1589,7 +1584,7 @@ void tst_QScriptValue::toRegExp()
     QVERIFY(eng.undefinedValue().toRegExp().isEmpty());
 }
 
-void tst_QScriptValue::instanceOf()
+void tst_QScriptValue::instanceOf_old()
 {
     QScriptEngine eng;
     QScriptValue obj = eng.newObject();
@@ -1625,7 +1620,7 @@ void tst_QScriptValue::instanceOf()
     QCOMPARE(obj.instanceOf(otherEngine.globalObject().property("Object")), false);
 }
 
-void tst_QScriptValue::isArray()
+void tst_QScriptValue::isArray_old()
 {
     QScriptEngine eng;
     QVERIFY(eng.evaluate("[]").isArray());
@@ -1638,7 +1633,7 @@ void tst_QScriptValue::isArray()
     QVERIFY(!eng.undefinedValue().isArray());
 }
 
-void tst_QScriptValue::isDate()
+void tst_QScriptValue::isDate_old()
 {
     QScriptEngine eng;
     QVERIFY(eng.evaluate("new Date()").isDate());
@@ -1652,7 +1647,7 @@ void tst_QScriptValue::isDate()
     QVERIFY(!eng.undefinedValue().isDate());
 }
 
-void tst_QScriptValue::isError()
+void tst_QScriptValue::isError_old()
 {
     QStringList errors;
     errors << "Error"
@@ -1677,7 +1672,7 @@ void tst_QScriptValue::isError()
     QVERIFY(!eng.evaluate("new Object()").isError());
 }
 
-void tst_QScriptValue::isRegExp()
+void tst_QScriptValue::isRegExp_old()
 {
     QScriptEngine eng;
     QVERIFY(eng.evaluate("/foo/").isRegExp());
@@ -2718,7 +2713,7 @@ void tst_QScriptValue::construct()
     QVERIFY(!QScriptValue(QScriptValue::NullValue).construct().isValid());
 }
 
-void tst_QScriptValue::lessThan()
+void tst_QScriptValue::lessThan_old()
 {
     QScriptEngine eng;
 
@@ -2812,7 +2807,7 @@ void tst_QScriptValue::lessThan()
     QCOMPARE(date1.lessThan(QScriptValue(&otherEngine, 123)), false);
 }
 
-void tst_QScriptValue::equals()
+void tst_QScriptValue::equals_old()
 {
     QScriptEngine eng;
 
@@ -2907,7 +2902,7 @@ void tst_QScriptValue::equals()
     QScriptValue qobj1 = eng.newQObject(this);
     QScriptValue qobj2 = eng.newQObject(this);
     QScriptValue qobj3 = eng.newQObject(0);
-    QScriptValue qobj4 = eng.newQObject(new QObject());
+    QScriptValue qobj4 = eng.newQObject(new QObject(), QScriptEngine::ScriptOwnership);
     QVERIFY(qobj1.equals(qobj2)); // compares the QObject pointers
     QVERIFY(!qobj2.equals(qobj4)); // compares the QObject pointers
     QVERIFY(!qobj2.equals(obj2)); // compares the QObject pointers
@@ -3005,7 +3000,7 @@ void tst_QScriptValue::equals()
     QCOMPARE(date1.equals(QScriptValue(&otherEngine, 123)), false);
 }
 
-void tst_QScriptValue::strictlyEquals()
+void tst_QScriptValue::strictlyEquals_old()
 {
     QScriptEngine eng;
 
@@ -3090,6 +3085,20 @@ void tst_QScriptValue::strictlyEquals()
     QVERIFY(!falskt.strictlyEquals(undefined));
     QVERIFY(!falskt.strictlyEquals(null));
     QVERIFY(!falskt.strictlyEquals(QScriptValue()));
+
+    QVERIFY(!QScriptValue(false).strictlyEquals(123));
+    QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).strictlyEquals(123));
+    QVERIFY(!QScriptValue(QScriptValue::NullValue).strictlyEquals(123));
+    QVERIFY(!QScriptValue(false).strictlyEquals("ciao"));
+    QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).strictlyEquals("ciao"));
+    QVERIFY(!QScriptValue(QScriptValue::NullValue).strictlyEquals("ciao"));
+    QVERIFY(QScriptValue(&eng, "ciao").strictlyEquals("ciao"));
+    QVERIFY(QScriptValue("ciao").strictlyEquals(QScriptValue(&eng, "ciao")));
+    QVERIFY(!QScriptValue("ciao").strictlyEquals(123));
+    QVERIFY(!QScriptValue("ciao").strictlyEquals(QScriptValue(&eng, 123)));
+    QVERIFY(!QScriptValue(123).strictlyEquals("ciao"));
+    QVERIFY(!QScriptValue(123).strictlyEquals(QScriptValue(&eng, "ciao")));
+    QVERIFY(!QScriptValue(&eng, 123).strictlyEquals("ciao"));
 
     QScriptValue obj1 = eng.newObject();
     QScriptValue obj2 = eng.newObject();
@@ -3442,4 +3451,3 @@ void tst_QScriptValue::objectId()
 }
 
 QTEST_MAIN(tst_QScriptValue)
-#include "tst_qscriptvalue.moc"
