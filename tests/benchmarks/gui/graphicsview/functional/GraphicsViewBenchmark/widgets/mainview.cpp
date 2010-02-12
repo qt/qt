@@ -41,10 +41,8 @@
 #include <QDebug>
 #include <QApplication>
 #include <QGraphicsLinearLayout>
-#if ENABLE_OPENGL
 #ifndef QT_NO_OPENGL
 #include <QGLWidget>
-#endif
 #endif
 #include <QObject>
 
@@ -210,7 +208,9 @@ void MainView::paintEvent (QPaintEvent *event)
     else {
         QGraphicsView::paintEvent(event);
     }
-    emit repainted();
+
+    if (!m_OutputFps)
+        emit repainted();
 
     m_frameCount++;
     m_fpsLatestTs.start();
@@ -261,7 +261,6 @@ void MainView::construct()
 {
     m_scene = new QGraphicsScene;
 
-#ifdef ENABLE_OPENGL
 #ifndef QT_NO_OPENGL
     if (m_enableOpenGL) {
         qDebug() << "OpenGL enabled";
@@ -271,14 +270,11 @@ void MainView::construct()
         // Qt doc says: This is the preferred update mode for
         // viewports that do not support partial updates, such as QGLWidget...
         setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    }
+    } else
 #endif
-#endif
+        setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
     setScene(m_scene);
-
-    if (!m_enableOpenGL)
-        setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
     //setCacheMode(QGraphicsView::CacheBackground);

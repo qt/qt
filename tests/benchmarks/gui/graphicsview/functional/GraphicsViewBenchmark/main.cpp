@@ -50,6 +50,7 @@
 #include "itemrecyclinglist.h"
 #include "simplelist.h"
 #include "theme.h"
+#include "commandline.h"
 
 class tst_GraphicsViewBenchmark : public QObject
 {
@@ -67,8 +68,8 @@ public:
         Fast = 64
     };
 
-    tst_GraphicsViewBenchmark()
-        : mMainView(0), currentListSize(-1), currentListType(None) {}
+    tst_GraphicsViewBenchmark(Settings *settings)
+        : mSettings(settings), mMainView(0), currentListSize(-1), currentListType(None) {}
     ~tst_GraphicsViewBenchmark() {}
 
 public slots:
@@ -94,6 +95,7 @@ private slots:
     void scroll();
 
 private:
+    Settings *mSettings;
     MainView *mMainView;
     DummyDataGenerator mDataGenerator;
     int currentListSize;
@@ -312,19 +314,20 @@ void tst_GraphicsViewBenchmark::insertListData()
 
 void tst_GraphicsViewBenchmark::initTestCase()
 {
-    // ### Add support for:
-    // 1) OpenGL
-    // 2) FPS
-    // 3) Running the test manually
-    // Everything we need is already in widgets/[settings.cpp, commandline.cpp]
-    mMainView = new MainView(/*enableOpenGL=*/false, /*outputFPS=*/false);
+    mMainView = new MainView(mSettings->options() & Settings::UseOpenGL,
+                             mSettings->options() & Settings::OutputFps);
 
+    if (mSettings->size().width() > 0 && mSettings->size().height() > 0) {
+        mMainView->resize(mSettings->size().width(), mSettings->size().height());
+        mMainView->show();
+    } else {
 #if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
-    mMainView->showFullScreen();
+        mMainView->showFullScreen();
 #else
-    mMainView->resize(360, 640);
-    mMainView->show();
+        mMainView->resize(360, 640);
+        mMainView->show();
 #endif
+    }
 
     mDataGenerator.Reset();
     SimpleList *list = new SimpleList;
@@ -724,5 +727,70 @@ void tst_GraphicsViewBenchmark::scroll()
     }
 }
 
-QTEST_MAIN(tst_GraphicsViewBenchmark)
+int main(int argc, char *argv[])
+{
+    Settings settings;
+    if (!readSettingsFromCommandLine(argc, argv, settings))
+        return 1;
+
+    // Eat command line arguments.
+    int aargc = 0;
+    for (int i = 0; i < argc; ++i) {
+        if (argv[i])
+            ++aargc;
+    }
+    char **aargv = new char*[aargc];
+    aargc = 0;
+    for (int i = 0; i < argc; ++i) {
+        if (argv[i])
+            aargv[aargc++] = argv[i];
+    }
+
+    QApplication app(argc, argv);
+
+    int returnValue = 0;
+    if (settings.options() & Settings::ManualTest) {
+        MainView view(settings.options() & Settings::UseOpenGL, settings.options() & Settings::OutputFps);
+
+        DummyDataGenerator dataGenerator;
+        dataGenerator.Reset();
+
+        SimpleList *list = new SimpleList;
+        if (settings.options() & Settings::UseListItemCache)
+            list->setListItemCaching(true);
+        else
+            list->setListItemCaching(false);
+
+        if (settings.listItemCount())
+            fillList(dataGenerator, settings.listItemCount(), list);
+        else
+            fillList(dataGenerator, 500, list);
+
+        view.setTestWidget(list);
+
+        if ((settings.angle() % 360) != 0)
+            view.rotateContent(settings.angle());
+
+        if (settings.size().width() > 0 && settings.size().height() > 0) {
+            view.resize(settings.size().width(), settings.size().height());
+            view.show();
+        } else {
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
+            view.showFullScreen();
+#else
+            view.resize(360, 640);
+            view.show();
+#endif
+        }
+        returnValue = app.exec();
+    } else {
+        QTEST_DISABLE_KEYPAD_NAVIGATION
+        tst_GraphicsViewBenchmark tc(&settings);
+        returnValue = QTest::qExec(&tc, aargc, aargv);
+    }
+
+    delete [] aargv;
+    return returnValue;
+}
+
 #include "main.moc"

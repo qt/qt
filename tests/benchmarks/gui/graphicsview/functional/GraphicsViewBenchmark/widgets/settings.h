@@ -51,11 +51,12 @@ class Settings : public QObject {
 
 public:
     enum Option {
-        NoOptions = 0x0,
+        NoOptions = 0x1,
         UseListItemCache = 0x2,
         UseOpenGL = 0x4,
-        OutputFps = 0x5,
-        NoResourceUsage = 0x6,
+        OutputFps = 0x8,
+        NoResourceUsage = 0x10,
+        ManualTest = 0x20
     };
     Q_DECLARE_FLAGS(Options, Option)
 
