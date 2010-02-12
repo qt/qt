@@ -95,10 +95,10 @@ Example with certfile:
         # This is comment line, also the empty lines are ignored
         rd.cer;rd-key.pem
         .\\cert\\mycert.cer;.\\cert\\mykey.key;yourpassword
-        X:\\QtS60\\selfsigned.cer;X:\\QtS60\\selfsigned.key
+        X:\\QtS60\\s60installs\\selfsigned.cer;X:\\QtS60\\s60installs\\selfsigned.key
 
 If no certificate and key files are provided, either a RnD certificate or
-a self-signed certificate from Qt installation root directory is used.
+a self-signed certificate from QtDir\\src\\s60installs directory is used.
 ==============================================================================================
 
 ENDUSAGESTRING
@@ -149,8 +149,10 @@ $pkgoutputbasename = lc($pkgoutputbasename);
 
 # Store output file names to variables
 my $pkgoutput = lc($pkgoutputbasename.".pkg");
-my $unsigned_sis_name = $pkgoutputbasename."_unsigned.sis";
-my $signed_sis_name = $pkgoutputbasename.".sis";
+my $sisoutputbasename = lc($pkgoutputbasename);
+$sisoutputbasename =~ s/_$targetplatform//g;
+my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
+my $signed_sis_name = $sisoutputbasename.".sis";
 
 # Store some utility variables
 my $scriptpath = dirname(__FILE__);
@@ -261,7 +263,11 @@ system ("signsis $unsigned_sis_name $signed_sis_name $certificate $key $passphra
 # Check if creating signed SIS Succeeded
 stat($signed_sis_name);
 if( -e _ ) {
-    print ("\nSuccessfully created $signed_sis_name using certificate: $certtext!\n");
+    my $targetInsert = "";
+    if ($targetplatform ne "-") {
+        $targetInsert = "for $targetplatform ";
+    }
+    print ("\nSuccessfully created $signed_sis_name ${targetInsert}using certificate: $certtext!\n");
 
     # Sign with additional certificates & keys
     for my $row ( @certificates ) {

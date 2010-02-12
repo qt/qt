@@ -54,6 +54,7 @@
 //
 
 #include "qnetworkreplyimpl_p.h"
+#include "QtNetwork/qnetworksession.h"
 #include "QtCore/qobject.h"
 
 QT_BEGIN_NAMESPACE
@@ -111,6 +112,7 @@ public:
     //   socket).
 
     virtual void open() = 0;
+    virtual bool start();
     virtual void closeDownstreamChannel() = 0;
     virtual bool waitForDownstreamReadyRead(int msecs) = 0;
 
@@ -190,6 +192,7 @@ private:
     friend class QNetworkAccessManager;
     friend class QNetworkAccessManagerPrivate;
     friend class QNetworkAccessBackendUploadIODevice;
+    friend class QNetworkReplyImplPrivate;
     QNetworkAccessManagerPrivate *manager;
     QNetworkReplyImplPrivate *reply;
 };

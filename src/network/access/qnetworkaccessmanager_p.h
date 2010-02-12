@@ -65,6 +65,7 @@ class QAuthenticator;
 class QAbstractNetworkCache;
 class QNetworkAuthenticationCredential;
 class QNetworkCookieJar;
+class QNetworkSession;
 
 class QNetworkAccessManagerPrivate: public QObjectPrivate
 {
@@ -74,7 +75,9 @@ public:
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(0),
 #endif
-          cookieJarCreated(false)
+          cookieJarCreated(false),
+          networkSession(0),
+          networkAccessEnabled(true)
     { }
     ~QNetworkAccessManagerPrivate();
 
@@ -99,6 +102,12 @@ public:
 
     QNetworkAccessBackend *findBackend(QNetworkAccessManager::Operation op, const QNetworkRequest &request);
 
+    void createSession(const QNetworkConfiguration &config);
+
+    void _q_networkSessionNewConfigurationActivated();
+    void _q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &config,
+                                                        bool isSeamless);
+
     // this is the cache for storing downloaded files
     QAbstractNetworkCache *networkCache;
 
@@ -112,6 +121,8 @@ public:
 
     bool cookieJarCreated;
 
+    QNetworkSession *networkSession;
+    bool networkAccessEnabled;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.

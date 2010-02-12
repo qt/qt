@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-SUBDIRS	*= accessible imageformats sqldrivers iconengines script
+SUBDIRS	*= accessible imageformats sqldrivers iconengines script bearer
 unix:!symbian {
         contains(QT_CONFIG,iconv)|contains(QT_CONFIG,gnu-libiconv):SUBDIRS *= codecs
 } else {

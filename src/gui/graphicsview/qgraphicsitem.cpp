@@ -1392,7 +1392,8 @@ QGraphicsItem::~QGraphicsItem()
     }
     delete d_ptr->transformData;
 
-    qt_dataStore()->data.remove(this);
+    if (QGraphicsItemCustomDataStore *dataStore = qt_dataStore())
+        dataStore->data.remove(this);
 }
 
 /*!

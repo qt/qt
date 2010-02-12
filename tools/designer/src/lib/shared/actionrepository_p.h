@@ -59,6 +59,7 @@
 #include <QtGui/QTreeView>
 #include <QtGui/QListView>
 #include <QtGui/QStackedWidget>
+#include <QtGui/QIcon>
 
 QT_BEGIN_NAMESPACE
 
@@ -110,10 +111,14 @@ signals:
     void resourceImageDropped(const QString &path, QAction *action);
 
 private:
-    void initializeHeaders();
-
     typedef QList<QStandardItem *> QStandardItemList;
-    static void setItems(QDesignerFormEditorInterface *core, QAction *a, QStandardItemList &sl);
+
+    void initializeHeaders();
+    static void setItems(QDesignerFormEditorInterface *core, QAction *a,
+                         const QIcon &defaultIcon,
+                         QStandardItemList &sl);
+
+    const QIcon m_emptyIcon;
 
     QDesignerFormEditorInterface *m_core;
 };

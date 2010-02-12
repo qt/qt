@@ -951,8 +951,6 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget *shareWidget)
             break;
         current = current->parentWidget();
     }
-
-    isGLWidget = 1;
 }
 
 bool QGLWidgetPrivate::renderCxPm(QPixmap*)

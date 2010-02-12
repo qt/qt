@@ -231,7 +231,7 @@ if __name__ == '__main__':
     row_esc = escape(row)
     out.append(qsvTempl.substitute(expr = row, expr_esc = row_esc))
 
-  result = mainTempl.substitute(dump= "".join(out) \
+  result = mainTempl.safe_substitute(dump= "".join(out) \
                               , values = (11 * ' ' + '<< ').join(qsv) \
                               , count = len(qsv) \
                               , dataTags = (11 * ' ' + '<< ').join(map(lambda w: '"' + escape(w.replace('\n','')) + '"\n', qsv)))
