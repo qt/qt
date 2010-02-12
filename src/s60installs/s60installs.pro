@@ -32,7 +32,7 @@ symbian: {
         }
     } else {
         defineReplace(pluginLocations) {
-            return ($$QT_BUILD_TREE/src/plugins/s60/$$1)
+            return ($$QT_BUILD_TREE/plugins/s60/$$1)
         }
     }
 
