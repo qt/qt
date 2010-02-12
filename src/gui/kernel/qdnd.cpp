@@ -167,7 +167,6 @@ QDragManager *QDragManager::self()
     return instance;
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
 QPixmap QDragManager::dragCursor(Qt::DropAction action) const
 {
     QDragPrivate * d = dragPrivate();
@@ -185,7 +184,6 @@ QPixmap QDragManager::dragCursor(Qt::DropAction action) const
 #endif
     return QPixmap();
 }
-#endif
 
 bool QDragManager::hasCustomDragCursors() const
 {

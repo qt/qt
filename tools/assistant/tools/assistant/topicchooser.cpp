@@ -62,12 +62,10 @@ TopicChooser::TopicChooser(QWidget *parent, const QString &keyword,
         ui.listWidget->setCurrentRow(0);
     ui.listWidget->setFocus();
 
-    connect(ui.buttonDisplay, SIGNAL(clicked()),
-        this, SLOT(accept()));
-    connect(ui.buttonCancel, SIGNAL(clicked()),
-        this, SLOT(reject()));
-    connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)),
-        this, SLOT(accept()));
+    connect(ui.buttonDisplay, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(ui.buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(ui.listWidget, SIGNAL(itemActivated(QListWidgetItem*)), this,
+        SLOT(accept()));
 }
 
 QUrl TopicChooser::link() const

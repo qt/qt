@@ -70,7 +70,7 @@ protected:
     virtual void generateClassLikeNode(const InnerNode *inner,
                                        CodeMarker *marker);
     virtual void generateFakeNode( const FakeNode *fake, CodeMarker *marker );
-    virtual QString fileExtension(const Node *node);
+    virtual QString fileExtension(const Node *node) const;
 
     QList<QDomElement> generateIndexSections(QDomDocument &document,
                        const Node *node, CodeMarker *marker);

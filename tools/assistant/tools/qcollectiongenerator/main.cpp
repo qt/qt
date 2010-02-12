@@ -45,6 +45,7 @@
 #include <private/qhelpgenerator_p.h>
 #include <private/qhelpprojectdata_p.h>
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QMap>
 #include <QtCore/QFileInfo>
@@ -122,7 +123,8 @@ private:
 
 void CollectionConfigReader::raiseErrorWithLine()
 {
-    raiseError(QObject::tr("Unknown token at line %1.")
+    raiseError(QCoreApplication::translate("QCollectionGenerator",
+                                           "Unknown token at line %1.")
                     .arg(lineNumber()));
 }
 
@@ -142,8 +144,10 @@ void CollectionConfigReader::readData(const QByteArray &contents)
                 && attributes().value(QLatin1String("version")) == QLatin1String("1.0"))
                 readConfig();
             else
-                raiseError(QObject::tr("Unknown token at line %1. Expected \"QtHelpCollectionProject\"!")
-                .arg(lineNumber()));
+                raiseError(QCoreApplication::translate("QCollectionGenerator",
+                               "Unknown token at line %1. "
+                               "Expected \"QtHelpCollectionProject\"!")
+                           .arg(lineNumber()));
         }
     }
 }
@@ -353,7 +357,8 @@ int main(int argc, char *argv[])
                 QFileInfo fi(QString::fromLocal8Bit(argv[i]));
                 collectionFile = fi.absoluteFilePath();
             } else {
-                error = QObject::tr("Missing output file name!");
+                error = QCoreApplication::translate("QCollectionGenerator",
+                            "Missing output file name!");
             }
         } else if (arg == QLatin1String("-h")) {
             showHelp = true;
@@ -367,14 +372,16 @@ int main(int argc, char *argv[])
     }
 
     if (showVersion) {
-        fprintf(stdout, "Qt Collection Generator version 1.0 (Qt %s)\n", QT_VERSION_STR);
+        fprintf(stdout, "Qt Collection Generator version 1.0 (Qt %s)\n",
+                QT_VERSION_STR);
         return 0;
     }
 
     if (configFile.isEmpty() && !showHelp)
-        error = QObject::tr("Missing collection config file!");
+        error = QCoreApplication::translate("QCollectionGenerator",
+                                            "Missing collection config file!");
 
-    QString help = QObject::tr("\nUsage:\n\n"
+    QString help = QCoreApplication::translate("QCollectionGenerator", "\nUsage:\n\n"
         "qcollectiongenerator <collection-config-file> [options]\n\n"
         "  -o <collection-file>   Generates a collection file\n"
         "                         called <collection-file>. If\n"

@@ -42,11 +42,11 @@
 #ifndef XBELSUPPORT_H
 #define XBELSUPPORT_H
 
-#include <QtGui/QIcon>
 #include <QtXml/QXmlStreamReader>
+#include <QtCore/QPersistentModelIndex>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
-QT_FORWARD_DECLARE_CLASS(QStandardItem)
+QT_FORWARD_DECLARE_CLASS(QModelIndex)
 
 QT_BEGIN_NAMESPACE
 
@@ -59,31 +59,27 @@ public:
     void writeToFile(QIODevice *device);
 
 private:
-    void writeData(QStandardItem *item);
+    void writeData(const QModelIndex &index);
 
 private:
-    BookmarkModel *treeModel;
+    BookmarkModel *bookmarkModel;
 };
 
 class XbelReader : public QXmlStreamReader
 {
 public:
-    XbelReader(BookmarkModel *tree, BookmarkModel *list);
+    XbelReader(BookmarkModel *model);
     bool readFromFile(QIODevice *device);
 
 private:
     void readXBEL();
+    void readFolder();
+    void readBookmark();
     void readUnknownElement();
-    void readFolder(QStandardItem *item);
-    void readBookmark(QStandardItem *item);
-    QStandardItem* createChildItem(QStandardItem *item);
 
 private:
-    QIcon folderIcon;
-    QIcon bookmarkIcon;
-
-    BookmarkModel *treeModel;
-    BookmarkModel *listModel;
+    BookmarkModel *bookmarkModel;
+    QList<QPersistentModelIndex> parents;
 };
 
 QT_END_NAMESPACE

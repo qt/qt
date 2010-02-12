@@ -16,64 +16,81 @@ DEPENDPATH += ../shared
 # ## Work around a qmake issue when statically linking to
 # ## not-yet-installed plugins
 LIBS += -L$$QT_BUILD_TREE/plugins/sqldrivers
-HEADERS += helpviewer.h \
-    mainwindow.h \
-    indexwindow.h \
-    topicchooser.h \
-    contentwindow.h \
-    searchwidget.h \
-    preferencesdialog.h \
-    filternamedialog.h \
-    centralwidget.h \
-    installdialog.h \
+HEADERS += aboutdialog.h \
+    bookmarkdialog.h \
+    bookmarkfiltermodel.h \
+    bookmarkitem.h \
     bookmarkmanager.h \
-    remotecontrol.h \
+    bookmarkmodel.h \
+    centralwidget.h \
     cmdlineparser.h \
-    aboutdialog.h \
-    qtdocinstaller.h \
-    xbelsupport.h \
-    ../shared/collectionconfiguration.h \
+    contentwindow.h \
+    findwidget.h \
+    filternamedialog.h \
     helpenginewrapper.h \
-    tracer.h
+    helpviewer.h \
+    indexwindow.h \
+    installdialog.h \
+    mainwindow.h \
+    preferencesdialog.h \
+    qtdocinstaller.h \
+    remotecontrol.h \
+    searchwidget.h \
+    topicchooser.h \
+    tracer.h \
+    xbelsupport.h \
+    ../shared/collectionconfiguration.h
 win32:HEADERS += remotecontrol_win.h
-SOURCES += helpviewer.cpp \
+
+SOURCES += aboutdialog.cpp \
+    bookmarkdialog.cpp \
+    bookmarkfiltermodel.cpp \
+    bookmarkitem.cpp \
+    bookmarkmanager.cpp \
+    bookmarkmodel.cpp \
+    centralwidget.cpp \
+    cmdlineparser.cpp \
+    contentwindow.cpp \
+    findwidget.cpp \
+    filternamedialog.cpp \
+    helpenginewrapper.cpp \
+    helpviewer.cpp \
+    indexwindow.cpp \
+    installdialog.cpp \
     main.cpp \
     mainwindow.cpp \
-    indexwindow.cpp \
-    topicchooser.cpp \
-    contentwindow.cpp \
-    searchwidget.cpp \
     preferencesdialog.cpp \
-    filternamedialog.cpp \
-    centralwidget.cpp \
-    installdialog.cpp \
-    bookmarkmanager.cpp \
-    remotecontrol.cpp \
-    cmdlineparser.cpp \
-    aboutdialog.cpp \
     qtdocinstaller.cpp \
+    remotecontrol.cpp \
+    searchwidget.cpp \
+    topicchooser.cpp \
     xbelsupport.cpp \
     ../shared/collectionconfiguration.cpp \
-    helpenginewrapper.cpp
-FORMS += topicchooser.ui \
-    preferencesdialog.ui \
+
+FORMS += bookmarkdialog.ui \
+    bookmarkwidget.ui \
     filternamedialog.ui \
     installdialog.ui \
-    bookmarkdialog.ui
+    preferencesdialog.ui \
+    topicchooser.ui
+
 RESOURCES += assistant.qrc \
     assistant_images.qrc
-win32 { 
+
+win32 {
     !wince*:LIBS += -lshell32
     RC_FILE = assistant.rc
 }
-mac { 
+
+mac {
     ICON = assistant.icns
     TARGET = Assistant
     QMAKE_INFO_PLIST = Info_mac.plist
 }
-contains(CONFIG, static): { 
+
+contains(CONFIG, static): {
     SQLPLUGINS = $$unique(sql-plugins)
-    contains(SQLPLUGINS, sqlite): { 
+    contains(SQLPLUGINS, sqlite): {
         QTPLUGIN += qsqlite
         DEFINES += USE_STATIC_SQLITE_PLUGIN
     }
