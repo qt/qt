@@ -48,11 +48,12 @@ class QScriptClass;
 class QScriptDeclarativeClassPrivate
 {
 public:
-    QScriptDeclarativeClassPrivate() : engine(0), q_ptr(0), context(0) {}
+    QScriptDeclarativeClassPrivate() : engine(0), q_ptr(0), context(0), supportsCall(false) {}
 
     QScriptEngine *engine;
     QScriptDeclarativeClass *q_ptr;
     QScriptContext *context;
+    bool supportsCall:1;
 
     static QScriptDeclarativeClassPrivate *get(QScriptDeclarativeClass *c) {
         return c->d_ptr.data();
@@ -90,6 +91,9 @@ public:
                                      bool includeNonEnumerable = false);
 
     virtual JSC::CallType getCallData(QScriptObject*, JSC::CallData&);
+    static JSC::JSValue JSC_HOST_CALL call(JSC::ExecState*, JSC::JSObject*,
+                                           JSC::JSValue, const JSC::ArgList&);
+
     virtual JSC::ConstructType getConstructData(QScriptObject*, JSC::ConstructData&);
 
     virtual bool hasInstance(QScriptObject*, JSC::ExecState*,

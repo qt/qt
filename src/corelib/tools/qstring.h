@@ -595,7 +595,7 @@ private:
     struct Data {
         QBasicAtomicInt ref;
         int alloc, size;
-        ushort *data;
+        ushort *data; // QT5: put that after the bit field to fill alignment gap; don't use sizeof any more then
         ushort clean : 1;
         ushort simpletext : 1;
         ushort righttoleft : 1;

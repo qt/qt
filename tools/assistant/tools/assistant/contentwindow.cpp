@@ -144,7 +144,7 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
                     qobject_cast<QHelpContentModel*>(m_contentWidget->model());
                 if (contentModel) {
                     QHelpContentItem *itm = contentModel->contentItemAt(index);
-                    if (itm && HelpViewer::canOpenPage(itm->url().path()))
+                    if (itm && AbstractHelpViewer::canOpenPage(itm->url().path()))
                         CentralWidget::instance()->setSourceInNewTab(itm->url());
                 }
             } else if (button == Qt::LeftButton) {
@@ -170,7 +170,7 @@ void ContentWindow::showContextMenu(const QPoint &pos)
     QMenu menu;
     QAction *curTab = menu.addAction(tr("Open Link"));
     QAction *newTab = menu.addAction(tr("Open Link in New Tab"));
-    if (!HelpViewer::canOpenPage(itm->url().path()))
+    if (!AbstractHelpViewer::canOpenPage(itm->url().path()))
         newTab->setEnabled(false);
     
     menu.move(m_contentWidget->mapToGlobal(pos));

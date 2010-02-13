@@ -103,7 +103,7 @@ private:
     HelpEngineWrapperPrivate(const QString &collectionFile);
 
     void initFileSystemWatchers();
-    void assertDocFilesWatched();
+    void checkDocFilesWatched();
     void qchFileChanged(const QString &fileName, bool fromTimeout);
 
     static const int UpdateGracePeriod = 2000;
@@ -202,23 +202,23 @@ const QString HelpEngineWrapper::collectionFile() const
 bool HelpEngineWrapper::registerDocumentation(const QString &docFile)
 {
     TRACE_OBJ
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
     if (!d->m_helpEngine->registerDocumentation(docFile))
         return false;
     d->m_qchWatcher->addPath(docFile);
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
     return true;
 }
 
 bool HelpEngineWrapper::unregisterDocumentation(const QString &namespaceName)
 {
     TRACE_OBJ
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
     const QString &file = d->m_helpEngine->documentationFileName(namespaceName);
     if (!d->m_helpEngine->unregisterDocumentation(namespaceName))
         return false;
     d->m_qchWatcher->removePath(file);
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
     return true;
 }
 
@@ -715,7 +715,7 @@ void HelpEngineWrapperPrivate::initFileSystemWatchers()
         connect(m_qchWatcher, SIGNAL(fileChanged(QString)),
                 this, SLOT(qchFileChanged(QString)));
     }
-    assertDocFilesWatched();
+    checkDocFilesWatched();
 }
 
 void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName)
@@ -724,11 +724,15 @@ void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName)
     qchFileChanged(fileName, false);
 }
 
-void HelpEngineWrapperPrivate::assertDocFilesWatched()
+void HelpEngineWrapperPrivate::checkDocFilesWatched()
 {
     TRACE_OBJ
-    Q_ASSERT(m_qchWatcher->files().count()
-             == m_helpEngine->registeredDocumentations().count());
+    const int watchedFilesCount = m_qchWatcher->files().count();
+    const int docFilesCount = m_helpEngine->registeredDocumentations().count();
+    if (watchedFilesCount != docFilesCount) {
+        qWarning("Strange: Have %d docs, but %d are being watched",
+                 watchedFilesCount, docFilesCount);
+    }
 }
 
 void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName,

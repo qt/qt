@@ -25,9 +25,12 @@ HEADERS += aboutdialog.h \
     centralwidget.h \
     cmdlineparser.h \
     contentwindow.h \
+    findwidget.h \
     filternamedialog.h \
     helpenginewrapper.h \
     helpviewer.h \
+    helpviewer_qtb.h \
+    helpviewer_qwv.h \
     indexwindow.h \
     installdialog.h \
     mainwindow.h \
@@ -50,9 +53,12 @@ SOURCES += aboutdialog.cpp \
     centralwidget.cpp \
     cmdlineparser.cpp \
     contentwindow.cpp \
+    findwidget.cpp \
     filternamedialog.cpp \
     helpenginewrapper.cpp \
     helpviewer.cpp \
+    helpviewer_qtb.cpp \
+    helpviewer_qwv.cpp \
     indexwindow.cpp \
     installdialog.cpp \
     main.cpp \

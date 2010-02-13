@@ -1332,14 +1332,14 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
                                             ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
                                             : d->glyphCacheType;
 
-    if (txtype > QTransform::TxTranslate)
-        glyphType = QFontEngineGlyphCache::Raster_A8;
 
-    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask
-        && state()->composition_mode != QPainter::CompositionMode_Source
-        && state()->composition_mode != QPainter::CompositionMode_SourceOver)
-    {
-        drawCached = false;
+    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
+        if (d->deviceHasAlpha || txtype > QTransform::TxTranslate
+            || (state()->composition_mode != QPainter::CompositionMode_Source
+            && state()->composition_mode != QPainter::CompositionMode_SourceOver))
+        {
+            glyphType = QFontEngineGlyphCache::Raster_A8;
+        }
     }
 
     if (drawCached) {
@@ -1629,6 +1629,23 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
     d->stencilClean = true;
+
+    switch (pdev->devType()) {
+    case QInternal::Pixmap:
+        d->deviceHasAlpha = static_cast<QPixmap *>(pdev)->hasAlphaChannel();
+        break;
+    case QInternal::FramebufferObject:
+        {
+            GLenum f = static_cast<QGLFramebufferObject *>(pdev)->format().internalTextureFormat();
+            d->deviceHasAlpha = (f != GL_RGB && f != GL_RGB5 && f != GL_RGB8);
+        }
+        break;
+    default:
+        // widget, pbuffer
+        d->deviceHasAlpha = d->ctx->d_func()->reqFormat.alpha();
+        break;
+    }
+
 
     // Calling begin paint should make the correct context current. So, any
     // code which calls into GL or otherwise needs a current context *must*
