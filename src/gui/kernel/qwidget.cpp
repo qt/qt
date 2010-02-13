@@ -8277,7 +8277,7 @@ bool QWidget::event(QEvent *event)
         }
 
 #ifdef QT_SOFTKEYS_ENABLED
-        if (isWindow() && isActiveWindow())
+        if (isWindow())
             QSoftKeyManager::updateSoftKeys();
 #endif
 
