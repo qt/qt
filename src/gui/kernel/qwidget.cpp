@@ -192,6 +192,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , inDirtyList(0)
       , isScrolled(0)
       , isMoved(0)
+      , isGLWidget(0)
       , usesDoubleBufferedGLContext(0)
 #if defined(Q_WS_X11)
       , picture(0)
@@ -200,7 +201,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , nativeGesturePanEnabled(0)
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
-      , isGLWidget(0)
       , window_event(0)
       , qd_hd(0)
 #endif
@@ -8277,7 +8277,7 @@ bool QWidget::event(QEvent *event)
         }
 
 #ifdef QT_SOFTKEYS_ENABLED
-        if (isWindow() && isActiveWindow())
+        if (isWindow())
             QSoftKeyManager::updateSoftKeys();
 #endif
 

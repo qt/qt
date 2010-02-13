@@ -705,7 +705,11 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
         // Calculate how many lines to scroll. Depending on what delta is (and 
         // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
         // only scroll whole lines, so we keep the reminder until next event.
-        qreal stepsToScrollF = offset * QApplication::wheelScrollLines() * effectiveSingleStep();
+        qreal stepsToScrollF =
+#ifndef QT_NO_WHEELEVENT
+                QApplication::wheelScrollLines() *
+#endif
+                offset * effectiveSingleStep();
         // Check if wheel changed direction since last event:
         if (offset_accumulated != 0 && (offset / offset_accumulated) < 0)
             offset_accumulated = 0;

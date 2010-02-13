@@ -427,7 +427,9 @@ public:
     static int  cursor_flash_time;
     static int  mouse_double_click_time;
     static int  keyboard_input_time;
+#ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
+#endif
 
     static bool animate_ui;
     static bool animate_menu;

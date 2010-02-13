@@ -681,7 +681,7 @@ QByteArray QSimpleTextCodec::convertFromUnicode(const QChar *in, int length, Con
     int u;
     const QChar* ucp = in;
     unsigned char* rp = (unsigned char *)r.data();
-    const unsigned char* rmp = (const unsigned char *)reverseMap->data();
+    const unsigned char* rmp = (const unsigned char *)reverseMap->constData();
     int rmsize = (int) reverseMap->size();
     while(i--)
     {

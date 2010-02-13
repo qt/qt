@@ -606,9 +606,8 @@ void tst_QListView::indexAt()
     view2.setWrapping(true);
     // We really want to make sure it is shown, because the layout won't be known until it is shown
     view2.show();
-    for (int i = 0; i < 5 && !view2.m_shown; ++i) {
-        QTest::qWait(500);
-    }
+    QTest::qWaitForWindowShown(&view2);
+    QTRY_VERIFY(view2.m_shown);
 
     QVERIFY(view2.m_index.isValid());
     QVERIFY(view2.m_index.row() != 0);
@@ -760,7 +759,8 @@ void tst_QListView::hideFirstRow()
     view.setUniformItemSizes(true);
     view.setRowHidden(0,true);
     view.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
+    QTest::qWait(10);
 }
 
 void tst_QListView::batchedMode()
@@ -778,10 +778,10 @@ void tst_QListView::batchedMode()
     view.setBatchSize(2);
     view.resize(200,400);
     view.show();
-
-#if !defined(Q_OS_WINCE)
+    QTest::qWaitForWindowShown(&view);
     QTest::qWait(100);
-#else
+
+#if defined(Q_OS_WINCE)
     QTest::qWait(2000);
 #endif
     QBitArray ba;
@@ -1203,9 +1203,9 @@ void tst_QListView::scrollTo()
     //we click the item
     QPoint p = lv.visualRect(index).center();
     QTest::mouseClick(lv.viewport(), Qt::LeftButton, Qt::NoModifier, p);
-    //let's wait 1 second because the scrolling is delayed
-    QTest::qWait(1000);
-    QCOMPARE(lv.visualRect(index).y(),0);
+    //let's wait because the scrolling is delayed
+    QTest::qWait(QApplication::doubleClickInterval() + 150);
+    QTRY_COMPARE(lv.visualRect(index).y(),0);
 
     //we scroll down. As the item is to tall for the view, it will disappear
     QTest::keyClick(lv.viewport(), Qt::Key_Down, Qt::NoModifier);
@@ -1222,9 +1222,9 @@ void tst_QListView::scrollTo()
     //we click the item
     p = lv.visualRect(index).center();
     QTest::mouseClick(lv.viewport(), Qt::LeftButton, Qt::NoModifier, p);
-    //let's wait 1 second because the scrolling is delayed
-    QTest::qWait(1000);
-    QCOMPARE(lv.visualRect(index).x(),0);
+    //let's wait because the scrolling is delayed
+    QTest::qWait(QApplication::doubleClickInterval() + 150);
+    QTRY_COMPARE(lv.visualRect(index).x(),0);
 
     //we scroll right. As the item is too wide for the view, it will disappear
     QTest::keyClick(lv.viewport(), Qt::Key_Right, Qt::NoModifier);
@@ -1243,9 +1243,9 @@ void tst_QListView::scrollTo()
     //we click the item
     p = lv.visualRect(index).center();
     QTest::mouseClick(lv.viewport(), Qt::LeftButton, Qt::NoModifier, p);
-    //let's wait 1 second because the scrolling is delayed
-    QTest::qWait(1000);
-    QCOMPARE(lv.visualRect(index).y(),0);
+    //let's wait because the scrolling is delayed
+    QTest::qWait(QApplication::doubleClickInterval() + 150);
+    QTRY_COMPARE(lv.visualRect(index).y(),0);
 
     //we scroll down. As the item is too tall for the view, it will partially disappear
     QTest::keyClick(lv.viewport(), Qt::Key_Down, Qt::NoModifier);
@@ -1277,7 +1277,7 @@ void tst_QListView::scrollBarRanges()
 
     for (int h = 30; h <= 210; ++h) {
         lv.resize(250, h);
-        QTest::qWait(100); // wait for the layout to be done
+        QApplication::processEvents(); // wait for the layout to be done
         int visibleRowCount = lv.viewport()->size().height() / rowHeight;
         int invisibleRowCount = rowCount - visibleRowCount;
         QCOMPARE(lv.verticalScrollBar()->maximum(), invisibleRowCount);
@@ -1366,7 +1366,7 @@ void tst_QListView::scrollBarAsNeeded()
 
         model.setStringList(list);
         QApplication::processEvents();
-        QTest::qWait(100);
+        QTest::qWait(50);
 
         QStringList replacement;
         for (i = 0; i < itemCount; ++i) {
@@ -1375,10 +1375,9 @@ void tst_QListView::scrollBarAsNeeded()
         model.setStringList(replacement);
 
         QApplication::processEvents();
-        QTest::qWait(100);
 
-        QCOMPARE(lv.horizontalScrollBar()->isVisible(), horizontalScrollBarVisible);
-        QCOMPARE(lv.verticalScrollBar()->isVisible(), verticalScrollBarVisible);
+        QTRY_COMPARE(lv.horizontalScrollBar()->isVisible(), horizontalScrollBarVisible);
+        QTRY_COMPARE(lv.verticalScrollBar()->isVisible(), verticalScrollBarVisible);
     }
 }
 
@@ -1433,10 +1432,9 @@ void tst_QListView::wordWrap()
     lv.setFixedSize(150, 150);
     lv.show();
     QApplication::processEvents();
-    QTest::qWait(100);
 
-    QCOMPARE(lv.horizontalScrollBar()->isVisible(), false);
-    QCOMPARE(lv.verticalScrollBar()->isVisible(), true);
+    QTRY_COMPARE(lv.horizontalScrollBar()->isVisible(), false);
+    QTRY_COMPARE(lv.verticalScrollBar()->isVisible(), true);
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -1557,7 +1555,8 @@ void tst_QListView::task248430_crashWith0SizedItem()
     QStringListModel model(QStringList() << QLatin1String("item1") << QString());
     view.setModel(&model);
     view.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
+    QTest::qWait(20);
 }
 
 void tst_QListView::task250446_scrollChanged()
@@ -1569,21 +1568,21 @@ void tst_QListView::task250446_scrollChanged()
     QVERIFY(index.isValid());
     view.setCurrentIndex(index);
     view.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
     const int scrollValue = view.verticalScrollBar()->maximum();
     view.verticalScrollBar()->setValue(scrollValue);
     QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
     QCOMPARE(view.currentIndex(), index);
 
     view.showMinimized();
-    QTest::qWait(100);
-    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
-    QCOMPARE(view.currentIndex(), index);
+    QTest::qWait(50);
+    QTRY_COMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QTRY_COMPARE(view.currentIndex(), index);
 
     view.showNormal();
-    QTest::qWait(100);
-    QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
-    QCOMPARE(view.currentIndex(), index);
+    QTest::qWait(50);
+    QTRY_COMPARE(view.verticalScrollBar()->value(), scrollValue);
+    QTRY_COMPARE(view.currentIndex(), index);
 }
 
 void tst_QListView::task196118_visualRegionForSelection()
@@ -1699,7 +1698,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         view.setViewMode(QListView::IconMode);
         view.setModel(&model);
         view.show();
-        QTest::qWait(30);
+        QTest::qWaitForWindowShown(&view);
 
         // Verfify that item sizes are non-uniform
         QVERIFY(view.sizeHintForIndex(model.index(0, 0)).height() > view.sizeHintForIndex(model.index(1, 0)).height());
@@ -1729,7 +1728,7 @@ void tst_QListView::shiftSelectionWithNonUniformItemSizes()
         view.setViewMode(QListView::IconMode);
         view.setModel(&model);
         view.show();
-        QTest::qWait(30);
+        QTest::qWaitForWindowShown(&view);
 
         // Verfify that item sizes are non-uniform
         QVERIFY(view.sizeHintForIndex(model.index(0, 0)).width() > view.sizeHintForIndex(model.index(1, 0)).width());
@@ -1789,7 +1788,6 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.show();
     QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(30);
     QTRY_COMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
     QTest::keyClick(&view, Qt::Key_Down);
     QTest::qWait(30);
@@ -1834,6 +1832,24 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
         QVERIFY(index.isValid());
         QCOMPARE(index.row(), 2 * i + 1);
     }
+
+    //QTBUG-7929  should not crash
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QScrollBar *bar = view.flow() == QListView::TopToBottom
+            ? view.verticalScrollBar() : view.horizontalScrollBar();
+
+    int nbVisibleItem = rowCount / 2 - bar->maximum();
+
+    bar->setValue(bar->maximum());
+    QApplication::processEvents();
+    for (int i = rowCount; i > rowCount / 2; i--) {
+        view.setRowHidden(i, true);
+    }
+    QApplication::processEvents();
+    QTest::qWait(50);
+    QCOMPARE(bar->value(), bar->maximum());
+    QCOMPARE(bar->maximum(), rowCount/4 - nbVisibleItem);
 }
 
 void tst_QListView::taskQTBUG_633_changeModelData()

@@ -68,6 +68,7 @@ class QtCursorDatabase
 {
 public:
     QtCursorDatabase();
+    void clear();
 
     QStringList cursorShapeNames() const;
     QMap<int, QIcon> cursorShapeIcons() const;

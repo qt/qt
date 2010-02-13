@@ -250,6 +250,7 @@ private slots:
 #else
     void persistentWinId();
 #endif
+    void showNativeChild();
     void qobject_castInDestroyedSlot();
 
     void showHideEvent_data();
@@ -4585,6 +4586,16 @@ void tst_QWidget::persistentWinId()
     delete parent;
 }
 #endif // Q_OS_SYMBIAN
+
+void tst_QWidget::showNativeChild()
+{
+    QWidget topLevel;
+    topLevel.setGeometry(0, 0, 100, 100);
+    QWidget child(&topLevel);
+    child.winId();
+    topLevel.show();
+    QTest::qWaitForWindowShown(&topLevel);
+}
 
 class ShowHideEventWidget : public QWidget
 {

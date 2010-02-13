@@ -57,6 +57,7 @@
 
 #include <QtGui/QAction>
 #include <QtGui/QMenu>
+#include <QtGui/QPixmap>
 #include <QtCore/QHash>
 
 QT_BEGIN_NAMESPACE
@@ -183,6 +184,7 @@ protected:
 private:
     bool hideSubMenuOnCursorKey();
     bool showSubMenuOnCursorKey();
+    const QPixmap m_subMenuPixmap;
 
     QPoint m_startPosition;
     int m_currentIndex;

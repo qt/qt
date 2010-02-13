@@ -114,3 +114,7 @@ engine->evaluate("/foo/")
 engine->evaluate("new Object()")
 engine->evaluate("new Array()")
 engine->evaluate("new Error()")
+
+#other
+engine->nullValue()
+engine->undefinedValue()
