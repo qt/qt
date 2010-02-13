@@ -2543,6 +2543,11 @@ void MetaObjectGenerator::readFuncsInfo(ITypeInfo *typeinfo, ushort nFuncs)
                     break;
             }
             if (funcdesc->invkind == INVOKE_PROPERTYPUT) {
+                // remove the typename guessed for property setters
+                // its done only for setter's with more than one parameter.
+                if (funcdesc->cParams - funcdesc->cParamsOpt > 1) {
+                    type.clear();
+                }
                 QByteArray set;
                 if (isupper(prototype.at(0))) {
                     set = "Set";

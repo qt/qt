@@ -83,6 +83,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qapplication_p.h>
+#include <private/qcocoaapplication_mac_p.h>
 #include <private/qcocoawindow_mac_p.h>
 #include <private/qcocoaview_mac_p.h>
 #include <private/qkeymapper_p.h>
@@ -1279,22 +1280,42 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
     QMacCocoaAutoReleasePool pool;
     [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) set];
 }
+
+//  WARNING: If Qt did not create NSApplication (e.g. in case it is
+//  used as a plugin), and at the same time, there is no window on
+//  screen (or the window that the event is sendt to becomes hidden etc
+//  before the event gets delivered), the message will not be performed.
+bool qt_cocoaPostMessage(id target, SEL selector)
+{
+    if (!target)
+        return false;
+
+    NSInteger windowNumber = 0;
+    if (![NSApp isMemberOfClass:[QNSApplication class]]) {
+        // INVARIANT: Cocoa is not using our NSApplication subclass. That means
+        // we don't control the main event handler either. So target the event
+        // for one of the windows on screen:
+        NSWindow *nswin = [NSApp mainWindow];
+        if (!nswin) {
+            nswin = [NSApp keyWindow];
+            if (!nswin)
+                return false;
+        }
+        windowNumber = [nswin windowNumber];
+    }
+
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+    // That is why we need to split the address in two parts:
+    QCocoaPostMessageArgs *args = new QCocoaPostMessageArgs(target, selector);
+    quint32 lower = quintptr(args);
+    quint32 upper = quintptr(args) >> 32;
+    NSEvent *e = [NSEvent otherEventWithType:NSApplicationDefined
+        location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:windowNumber
+        context:nil subtype:QtCocoaEventSubTypePostMessage data1:lower data2:upper];
+    [NSApp postEvent:e atStart:NO];
+    return true;
+}
 #endif
-
-@implementation DebugNSApplication {
-}
-- (void)sendEvent:(NSEvent *)event
-{
-    NSLog(@"NSAppDebug: sendEvent: %@", event);
-    return [super sendEvent:event];
-}
-
-- (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)sender
-{
-    NSLog(@"NSAppDebug: sendAction: %s to %@ from %@", anAction, aTarget, sender);
-    return [super sendAction:anAction to:aTarget from:sender];
-}
-@end
 
 QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
 {

@@ -50,6 +50,7 @@
 
 #include <qmap.h>
 #include <qregexp.h>
+#include <QXmlStreamWriter>
 
 #include "codemarker.h"
 #include "config.h"
@@ -104,7 +105,8 @@ class HtmlGenerator : public PageGenerator
     virtual QString format();
     virtual void generateTree(const Tree *tree, CodeMarker *marker);
 
-    static QString protect(const QString& string);
+    QString protectEnc(const QString &string);
+    static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
     static QString cleanRef(const QString& ref);
     static QString sinceTitle(int i) { return sinceTitles[i]; }
 
@@ -115,7 +117,7 @@ class HtmlGenerator : public PageGenerator
                              CodeMarker *marker);
     virtual void generateClassLikeNode(const InnerNode *inner, CodeMarker *marker);
     virtual void generateFakeNode(const FakeNode *fake, CodeMarker *marker);
-    virtual QString fileExtension(const Node *node);
+    virtual QString fileExtension(const Node *node) const;
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
     virtual QString refForAtom(Atom *atom, const Node *node);
@@ -261,6 +263,14 @@ class HtmlGenerator : public PageGenerator
                    const Node *relative, 
                    CodeMarker *marker);
     void endLink();
+    bool generatePageElement(QXmlStreamWriter& writer, 
+                             const Node* node, 
+                             CodeMarker* marker) const;
+    void generatePageElements(QXmlStreamWriter& writer, 
+                              const Node* node, 
+                              CodeMarker* marker) const;
+    void generatePageIndex(const QString& fileName, 
+                           CodeMarker* marker) const;
 
 #if 0
     NavigationBar currentNavigationBar;
@@ -315,6 +325,7 @@ class HtmlGenerator : public PageGenerator
     NewSinceMaps newSinceMaps;
     static QString sinceTitles[];
     NewClassMaps newClassMaps;
+    static int id;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"

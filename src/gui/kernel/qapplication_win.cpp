@@ -2551,6 +2551,17 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             result = true;
             break;
         }
+#ifndef QT_NO_CURSOR
+        case WM_SETCURSOR: {
+            QCursor *ovr = QApplication::overrideCursor();
+            if (ovr) {
+                SetCursor(ovr->handle());
+                RETURN(TRUE);
+            }
+            result = false;
+            break;
+        }
+#endif
         default:
             result = false;                        // event was not processed
             break;
