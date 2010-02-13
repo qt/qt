@@ -133,7 +133,7 @@ public:
     inline char digitToCLocale(const QChar &c) const;
 
     inline bool isUninitializedSystemLocale() const;
-    QVariant querySystemLocale(QSystemLocale::QueryType type, const QVariant &in) const;
+    QVariant querySystemLocale(int type, const QVariant &in) const;
     static void updateSystemPrivate();
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };

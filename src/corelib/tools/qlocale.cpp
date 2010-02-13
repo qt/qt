@@ -1460,9 +1460,9 @@ bool QLocalePrivate::isUninitializedSystemLocale() const
     return this == maybeSystemPrivate() && m_language_id == 0;
 }
 
-QVariant QLocalePrivate::querySystemLocale(QSystemLocale::QueryType type, const QVariant &in) const
+QVariant QLocalePrivate::querySystemLocale(int type, const QVariant &in) const
 {
-    QVariant res = systemLocale()->query(type, in);
+    QVariant res = systemLocale()->query(QSystemLocale::QueryType(type), in);
     if (res.isNull() && isUninitializedSystemLocale()) {
         // if we were not able to get data from the system, initialize the
         // system locale private data (which is essentially equals to this)
