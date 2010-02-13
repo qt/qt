@@ -61,7 +61,7 @@ public:
     QString imageFileName(const Node *relative, const QString &fileBase);
 
 protected:
-    QString fileExtension(const Node *node);
+    QString fileExtension(const Node *node) const;
     void startText( const Node *relative, CodeMarker *marker );
     void endText( const Node *relative, CodeMarker *marker );
     int generateAtom( const Atom *atom, const Node *relative, CodeMarker *marker );
