@@ -98,7 +98,7 @@ EGLNativeDisplayType QEglContext::nativeDisplay()
     Display *xdpy = QX11Info::display();
     if (!xdpy) {
         qWarning("QEglContext::getDisplay(): X11 display is not open");
-        return EGL_DEFAULT_DISPLAY;
+        return EGLNativeDisplayType(EGL_DEFAULT_DISPLAY);
     }
     return EGLNativeDisplayType(xdpy);
 }

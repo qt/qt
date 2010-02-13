@@ -359,7 +359,7 @@ EGLDisplay QEglContext::display()
         openedDisplay = true;
         if (dpy == EGL_NO_DISPLAY) {
             qWarning("QEglContext::display(): Falling back to EGL_DEFAULT_DISPLAY");
-            dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+            dpy = eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
         }
         if (dpy == EGL_NO_DISPLAY) {
             qWarning("QEglContext::display(): Can't even open the default display");
