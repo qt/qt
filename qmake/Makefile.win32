@@ -73,7 +73,7 @@ ADDCLEAN    = qmake.tds
 OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw_make.obj \
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
-              borland_bmake.obj msvc_nmake.obj msvc_dsp.obj msvc_vcproj.obj \
+              borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj \
               msvc_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
               symmake_abld.obj symmake_sbsv2.obj
 
@@ -191,7 +191,6 @@ clean::
 	-del xmloutput.obj
 	-del borland_bmake.obj
 	-del msvc_nmake.obj
-	-del msvc_dsp.obj
 	-del msvc_vcproj.obj
 	-del msvc_objectmodel.obj
 	-del symmake.obj
@@ -375,9 +374,6 @@ mingw_make.obj: $(SOURCE_PATH)/qmake/generators/win32/mingw_make.cpp
 
 msvc_nmake.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_nmake.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_nmake.cpp
-
-msvc_dsp.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_dsp.cpp
-	$(CXX) $(CXXFLAGS) generators/win32/msvc_dsp.cpp
 
 msvc_vcproj.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcproj.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_vcproj.cpp

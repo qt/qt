@@ -250,8 +250,6 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                 Option::user_template = argv[++x];
             } else if(opt == "tp" || opt == "template_prefix") {
                 Option::user_template_prefix = argv[++x];
-            } else if(opt == "mac9") {
-                Option::target_mode = TARG_MAC9_MODE;
             } else if(opt == "macx") {
                 Option::target_mode = TARG_MACX_MODE;
             } else if(opt == "unix") {
@@ -532,10 +530,7 @@ Option::init(int argc, char **argv)
         Option::obj_ext = ".obj";
         Option::res_ext = ".res";
     } else {
-        if(Option::target_mode == Option::TARG_MAC9_MODE)
-            Option::dir_sep = ":";
-        else
-            Option::dir_sep = "/";
+        Option::dir_sep = "/";
         Option::obj_ext = ".o";
     }
     Option::qmake_abslocation = Option::fixPathToTargetOS(Option::qmake_abslocation);

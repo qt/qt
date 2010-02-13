@@ -38,45 +38,79 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "helpviewer.h"
-#include "tracer.h"
+#if defined(QT_NO_WEBKIT)
 
-#include <QtCore/QCoreApplication>
+#ifndef HELPVIEWERQTB_H
+#define HELPVIEWERQTB_H
+
+#include "helpviewer.h"
+
 #include <QtCore/QUrl>
+#include <QtCore/QVariant>
+
+#include <QtGui/QTextBrowser>
 
 QT_BEGIN_NAMESPACE
 
-QString AbstractHelpViewer::PageNotFoundMessage =
-    QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
-    "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
-    "</h3></div>");
+class CentralWidget;
+class HelpEngineWrapper;
+class QContextMenuEvent;
+class QKeyEvent;
+class QMouseEvent;
 
-AbstractHelpViewer::AbstractHelpViewer()
+class HelpViewer : public QTextBrowser, public AbstractHelpViewer
 {
-}
+    Q_OBJECT
 
-AbstractHelpViewer::~AbstractHelpViewer()
-{
-}
+public:
+    HelpViewer(CentralWidget *parent, qreal zoom = 0.0);
+    ~HelpViewer();
 
-bool AbstractHelpViewer::isLocalUrl(const QUrl &url)
-{
-    TRACE_OBJ
-    const QString &scheme = url.scheme();
-    return scheme.isEmpty()
-        || scheme == QLatin1String("file")
-        || scheme == QLatin1String("qrc")
-        || scheme == QLatin1String("data")
-        || scheme == QLatin1String("qthelp")
-        || scheme == QLatin1String("about");
-}
+    QFont viewerFont() const;
+    void setViewerFont(const QFont &font);
 
-bool AbstractHelpViewer::canOpenPage(const QString &url)
-{
-    TRACE_OBJ
-    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
-        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
-        || url == QLatin1String("blank");
-}
+    void scaleUp();
+    void scaleDown();
+    void resetScale();
+    qreal scale() const { return zoomCount; }
+
+    void setSource(const QUrl &url);
+
+    inline bool hasSelection() const
+    { return textCursor().hasSelection(); }
+
+    bool launchedWithExternalApp(const QUrl &url);
+
+public Q_SLOTS:
+    void home();
+
+protected:
+    void wheelEvent(QWheelEvent *e);
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private:
+    QVariant loadResource(int type, const QUrl &name);
+    void openLinkInNewTab(const QString &link);
+    bool hasAnchorAt(const QPoint& pos);
+    void contextMenuEvent(QContextMenuEvent *e);
+    void mouseReleaseEvent(QMouseEvent *e);
+    void keyPressEvent(QKeyEvent *e);
+
+private slots:
+    void openLinkInNewTab();
+
+private:
+    int zoomCount;
+    bool controlPressed;
+    QString lastAnchor;
+    CentralWidget* parentWidget;
+    HelpEngineWrapper &helpEngine;
+
+    bool forceFont;
+};
 
 QT_END_NAMESPACE
+
+#endif  // HELPVIEWERQTB_H
+
+#endif  // QT_NO_WEBKIT
