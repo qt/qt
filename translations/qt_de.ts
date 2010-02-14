@@ -4,7 +4,7 @@
 <context>
     <name>CloseButton</name>
     <message>
-        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2262"/>
+        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2264"/>
         <source>Close Tab</source>
         <translation>Schließen</translation>
     </message>
@@ -12,7 +12,7 @@
 <context>
     <name>FakeReply</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2198"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2200"/>
         <source>Fake error !</source>
         <translation>Fake error !</translation>
     </message>
@@ -143,7 +143,7 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
 <context>
     <name>Phonon::MMF</name>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/audiooutput.cpp" line="+108"/>
+        <location filename="../src/3rdparty/phonon/mmf/audiooutput.cpp" line="+103"/>
         <source>Audio Output</source>
         <translation>Audio-Ausgabe</translation>
     </message>
@@ -152,60 +152,333 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
         <source>The audio output device</source>
         <translation>Audio-Ausgabegerät</translation>
     </message>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/utils.cpp" line="+87"/>
+        <source>No error</source>
+        <translation>Kein Fehler</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Not found</source>
+        <translation>Nicht gefunden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Out of memory</source>
+        <translation>Es ist kein Speicher mehr verfügbar</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Not supported</source>
+        <translation>Nicht unterstützt</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Overflow</source>
+        <translation>Überlauf</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Underflow</source>
+        <translation>Unterlauf</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Already exists</source>
+        <translation>Existiert bereits</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Path not found</source>
+        <translation>Pfad konnte nicht gefunden werden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>In use</source>
+        <translation>Bereits in Verwendung</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Not ready</source>
+        <translation>Nicht bereit</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Access denied</source>
+        <translation>Zugriff verweigert</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Could not connect</source>
+        <translation>Es konnte keine Verbindung hergestellt werden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Disconnected</source>
+        <translation>Getrennt</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Permission denied</source>
+        <translation>Zugriff verweigert</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Insufficient bandwidth</source>
+        <translation>Unzureichende Bandweite</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Network unavailable</source>
+        <translation>Netzwerk nicht verfügbar</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Network communication error</source>
+        <translation>Fehler bei der Kommunikation über das Netzwerk</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Streaming not supported</source>
+        <translation>Streaming nicht unterstützt</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Server alert</source>
+        <translation>Server alert</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Invalid protocol</source>
+        <translation>Ungültiges Protokoll</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Invalid URL</source>
+        <translation>Ungültige URL</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Multicast error</source>
+        <translation>Multicast-Fehler</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Proxy server error</source>
+        <translation>Fehler bei Proxy-Server-Kommunikation</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Proxy server not supported</source>
+        <translation>Proxy-Server nicht unterstützt</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Audio output error</source>
+        <translation>Fehler bei Audio-Ausgabe</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Video output error</source>
+        <translation>Fehler bei Video-Ausgabe</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Decoder error</source>
+        <translation>Fehler im Decoder</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Audio or video components could not be played</source>
+        <translation>Audio- oder Videokomponenten konnten nicht abgespielt werden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>DRM error</source>
+        <translation>DRM-Fehler</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Unknown error (%1)</source>
+        <translation>Unbekannter Fehler (%1)</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AbstractMediaPlayer</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/abstractmediaplayer.cpp" line="+73"/>
+        <source>Not ready to play</source>
+        <translation>Das Abspielen ist im Grundzustand nicht möglich</translation>
+    </message>
+    <message>
+        <location line="+161"/>
+        <location line="+10"/>
+        <source>Error opening file</source>
+        <translation>Die Datei konnte nicht geöffnet werden</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Error opening URL</source>
+        <translation>Der URL konnte nicht geöffnet werden</translation>
+    </message>
+    <message>
+        <location line="+83"/>
+        <source>Setting volume failed</source>
+        <translation>Die Lautstärke konnte nicht eingestellt werden</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Playback complete</source>
+        <translation>Abspielen beendet</translation>
+    </message>
 </context>
 <context>
     <name>Phonon::MMF::AudioEqualizer</name>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/audioequalizer.cpp" line="+75"/>
-        <source>Frequency band, %1 Hz</source>
-        <translation>Frequenzband, %1 Hz</translation>
+        <location filename="../src/3rdparty/phonon/mmf/audioequalizer.cpp" line="+92"/>
+        <source>%1 Hz</source>
+        <translation>%1 Hz</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::AudioPlayer</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/audioplayer.cpp" line="+173"/>
+        <source>Getting position failed</source>
+        <translation>Die Position konnte nicht bestimmt werden</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Opening clip failed</source>
+        <translation>Der Clip konnte nicht geöffnet werden</translation>
     </message>
 </context>
 <context>
     <name>Phonon::MMF::EffectFactory</name>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/effectfactory.cpp" line="+65"/>
-        <source>Audio Equalizer</source>
-        <translation>Audio-Equalizer</translation>
+        <location filename="../src/3rdparty/phonon/mmf/effectfactory.cpp" line="+181"/>
+        <source>Enabled</source>
+        <translation>Aktiviert</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::EnvironmentalReverb</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/environmentalreverb.cpp" line="+146"/>
+        <source>Decay HF ratio (%)</source>
+        <extracomment>DecayHFRatio: Ratio of high-frequency decay time to the value specified by DecayTime.</extracomment>
+        <translation>Hochfrequenz-Abklingverhältnis (%)</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Bass Boost</source>
-        <translation>Bass-Boost</translation>
+        <location line="+6"/>
+        <source>Decay time (ms)</source>
+        <translation>Abklingzeit (ms)</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Distance Attenuation</source>
-        <translation>Abschwächung in Abhängigkeit von der Entfernung</translation>
+        <location line="+7"/>
+        <source>Density (%)</source>
+        <extracomment>Density Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Diffusion value.</extracomment>
+        <translation>Dichte (%)</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location line="+2"/>
-        <source>Environmental Reverb</source>
-        <translation>Hall-Effekt der Umgebung</translation>
+        <location line="+6"/>
+        <source>Diffusion (%)</source>
+        <extracomment>Diffusion: Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Density value.</extracomment>
+        <translation>Diffusion (%)</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Loudness</source>
-        <translation>Lautstärke</translation>
+        <location line="+5"/>
+        <source>Reflections delay (ms)</source>
+        <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
+        <translation>Verzögerung des Echos (ms)</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Source Orientation</source>
-        <translation>Ausrichtung der Quelle</translation>
+        <location line="+7"/>
+        <source>Reflections level (mB)</source>
+        <extracomment>ReflectionsLevel: Amplitude of reflections. This value is corrected by the RoomLevel to give the final reflection amplitude.</extracomment>
+        <translation>Stärke des Echos (mB)</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Stereo Widening</source>
-        <translation>Stereo-Basisverbreiterung</translation>
+        <location line="+7"/>
+        <source>Reverb delay (ms)</source>
+        <extracomment>ReverbDelay: Amount of time between arrival of the first reflection and start of the late reverberation.</extracomment>
+        <translation>Verzögerung des Nachhalls (ms)</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Reverb level (mB)</source>
+        <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
+        <translation>Stärke des Nachhalls (mB)</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Room HF level</source>
+        <extracomment>RoomHFLevel: Amplitude of low-pass filter used to attenuate the high frequency component of reflected sound.</extracomment>
+        <translation>Hochfrequenz-Pegel des Raums</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Room level (mB)</source>
+        <extracomment>RoomLevel: Master volume control for all reflected sound.</extracomment>
+        <translation>Pegel des Raums (mB)</translation>
     </message>
 </context>
 <context>
     <name>Phonon::MMF::MediaObject</name>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/mediaobject.cpp" line="+291"/>
-        <source>Media type could not be determined</source>
-        <translation>Der Typ des Mediums konnte nicht bestimmt werden</translation>
+        <location filename="../src/3rdparty/phonon/mmf/mediaobject.cpp" line="+270"/>
+        <source>Error opening source: type not supported</source>
+        <translation>Die Quelle konnte nicht geöffnet werden: Dieser Typ wird nicht unterstützt</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Error opening source: media type could not be determined</source>
+        <translation>Die Quelle konnte nicht geöffnet werden: Der Medientyp konnte nicht bestimmt werden</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::StereoWidening</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/stereowidening.cpp" line="+79"/>
+        <source>Level (%)</source>
+        <translation>Stärke (%)</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::VideoPlayer</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/mmf_videoplayer.cpp" line="+125"/>
+        <source>Pause failed</source>
+        <translation>Fehler bei Pause-Funktion</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Seek failed</source>
+        <translation>Suchoperation fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location line="+54"/>
+        <source>Getting position failed</source>
+        <translation>Die Position konnte nicht bestimmt werden</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Opening clip failed</source>
+        <translation>Der Clip konnte nicht geöffnet werden</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Buffering clip failed</source>
+        <translation>Fehler beim Puffern des Clips</translation>
+    </message>
+    <message>
+        <location line="+174"/>
+        <location line="+12"/>
+        <location line="+176"/>
+        <location line="+15"/>
+        <location line="+6"/>
+        <source>Video display error</source>
+        <translation>Fehler bei der Video-Anzeige</translation>
     </message>
 </context>
 <context>
@@ -275,7 +548,7 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
 <context>
     <name>Q3FileDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+829"/>
+        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+827"/>
         <source>Copy or Move a File</source>
         <translation>Datei kopieren oder verschieben</translation>
     </message>
@@ -300,7 +573,7 @@ Bitte überprüfen Sie Ihre GStreamer-Installation und stellen Sie sicher, dass 
         <location line="-157"/>
         <location line="+49"/>
         <location line="+2149"/>
-        <location filename="../src/qt3support/dialogs/q3filedialog_mac.cpp" line="+112"/>
+        <location filename="../src/qt3support/dialogs/q3filedialog_mac.cpp" line="+133"/>
         <source>All Files (*)</source>
         <translation>Alle Dateien (*)</translation>
     </message>
@@ -912,8 +1185,8 @@ nach
 <context>
     <name>QAbstractSocket</name>
     <message>
-        <location filename="../src/network/socket/qabstractsocket.cpp" line="+899"/>
-        <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+643"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+903"/>
+        <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+629"/>
         <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+661"/>
         <location line="+26"/>
         <source>Host not found</source>
@@ -932,19 +1205,20 @@ nach
         <translation>Das Zeitlimit für die Verbindung wurde überschritten</translation>
     </message>
     <message>
-        <location line="-555"/>
-        <location line="+805"/>
+        <location line="-559"/>
+        <location line="+809"/>
         <location line="+208"/>
         <source>Operation on socket is not supported</source>
         <translation>Diese Socket-Operation wird nicht unterstützt</translation>
     </message>
     <message>
-        <location line="+200"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+585"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+200"/>
         <source>Socket operation timed out</source>
         <translation>Das Zeitlimit für die Operation wurde überschritten</translation>
     </message>
     <message>
-        <location line="+380"/>
+        <location filename="../src/network/socket/qabstractsocket.cpp" line="+380"/>
         <source>Socket is not connected</source>
         <translation>Nicht verbunden</translation>
     </message>
@@ -957,7 +1231,7 @@ nach
 <context>
     <name>QAbstractSpinBox</name>
     <message>
-        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1217"/>
+        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1260"/>
         <source>&amp;Step up</source>
         <translation>&amp;Inkrementieren</translation>
     </message>
@@ -983,7 +1257,7 @@ nach
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2279"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2287"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -1053,7 +1327,7 @@ nach
 <context>
     <name>QColorDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1349"/>
+        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1356"/>
         <source>Hu&amp;e:</source>
         <translation>Farb&amp;ton:</translation>
     </message>
@@ -1093,7 +1367,7 @@ nach
         <translation>Farbauswahl</translation>
     </message>
     <message>
-        <location line="+180"/>
+        <location line="+184"/>
         <source>&amp;Basic colors</source>
         <translation>Grundfar&amp;ben</translation>
     </message>
@@ -1180,7 +1454,7 @@ nach
 <context>
     <name>QDB2Driver</name>
     <message>
-        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+1254"/>
+        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+1253"/>
         <source>Unable to connect</source>
         <translation>Es kann keine Verbindung aufgebaut werden</translation>
     </message>
@@ -1203,7 +1477,7 @@ nach
 <context>
     <name>QDB2Result</name>
     <message>
-        <location line="-1031"/>
+        <location line="-1030"/>
         <location line="+240"/>
         <source>Unable to execute statement</source>
         <translation>Der Befehl kann nicht ausgeführt werden</translation>
@@ -1278,7 +1552,7 @@ nach
 <context>
     <name>QDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qdialog.cpp" line="+636"/>
+        <location filename="../src/gui/dialogs/qdialog.cpp" line="+652"/>
         <source>What&apos;s This?</source>
         <translation>Direkthilfe</translation>
     </message>
@@ -1291,9 +1565,9 @@ nach
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1872"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1876"/>
         <location line="+464"/>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+622"/>
+        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+650"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -1505,7 +1779,7 @@ nach
 <context>
     <name>QFile</name>
     <message>
-        <location filename="../src/corelib/io/qfile.cpp" line="+697"/>
+        <location filename="../src/corelib/io/qfile.cpp" line="+698"/>
         <location line="+155"/>
         <source>Destination file exists</source>
         <translation>Die Zieldatei existiert bereits</translation>
@@ -1545,7 +1819,7 @@ nach
     <name>QFileDialog</name>
     <message>
         <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+558"/>
-        <location line="+450"/>
+        <location line="+471"/>
         <source>All Files (*)</source>
         <translation>Alle Dateien (*)</translation>
     </message>
@@ -1568,13 +1842,13 @@ nach
         <translation>Details</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+464"/>
+        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+465"/>
         <location line="+1"/>
         <source>File</source>
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-467"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-488"/>
         <source>Open</source>
         <translation>Öffnen</translation>
     </message>
@@ -1584,25 +1858,25 @@ nach
         <translation>Speichern unter</translation>
     </message>
     <message>
-        <location line="+689"/>
-        <location line="+50"/>
-        <location line="+1528"/>
+        <location line="+699"/>
+        <location line="+55"/>
+        <location line="+1532"/>
         <source>&amp;Open</source>
         <translation>&amp;Öffnen</translation>
     </message>
     <message>
-        <location line="-1578"/>
-        <location line="+50"/>
+        <location line="-1587"/>
+        <location line="+55"/>
         <source>&amp;Save</source>
         <translation>S&amp;peichern</translation>
     </message>
     <message>
-        <location line="+1801"/>
+        <location line="+1805"/>
         <source>Recent Places</source>
         <translation>Zuletzt besucht</translation>
     </message>
     <message>
-        <location line="-2511"/>
+        <location line="-2530"/>
         <source>&amp;Rename</source>
         <translation>&amp;Umbenennen</translation>
     </message>
@@ -1617,17 +1891,17 @@ nach
         <translation>&amp;Versteckte Dateien anzeigen</translation>
     </message>
     <message>
-        <location line="+1957"/>
+        <location line="+1976"/>
         <source>New Folder</source>
         <translation>Neues Verzeichnis</translation>
     </message>
     <message>
-        <location line="-1992"/>
+        <location line="-2011"/>
         <source>Find Directory</source>
         <translation>Verzeichnis suchen</translation>
     </message>
     <message>
-        <location line="+696"/>
+        <location line="+706"/>
         <source>Directories</source>
         <translation>Verzeichnisse</translation>
     </message>
@@ -1637,13 +1911,13 @@ nach
         <translation>Alle Dateien (*.*)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-655"/>
-        <location line="+659"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-665"/>
+        <location line="+669"/>
         <source>Directory:</source>
         <translation>Verzeichnis:</translation>
     </message>
     <message>
-        <location line="+810"/>
+        <location line="+819"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>Die Datei %1 existiert bereits.
@@ -1737,7 +2011,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Unbekannt</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2111"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2130"/>
         <source>Show </source>
         <translation>Anzeigen </translation>
     </message>
@@ -1753,8 +2027,8 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>&amp;Neues Verzeichnis</translation>
     </message>
     <message>
-        <location line="+667"/>
-        <location line="+38"/>
+        <location line="+677"/>
+        <location line="+43"/>
         <source>&amp;Choose</source>
         <translation>&amp;Auswählen</translation>
     </message>
@@ -1764,8 +2038,8 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-698"/>
-        <location line="+663"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-713"/>
+        <location line="+673"/>
         <source>File &amp;name:</source>
         <translation>Datei&amp;name:</translation>
     </message>
@@ -2286,7 +2560,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QHostInfo</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_p.h" line="+185"/>
+        <location filename="../src/network/kernel/qhostinfo_p.h" line="+101"/>
         <source>Unknown error</source>
         <translation>Unbekannter Fehler</translation>
     </message>
@@ -2296,7 +2570,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+257"/>
         <location line="+32"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+220"/>
+        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+216"/>
         <location line="+27"/>
         <source>Host not found</source>
         <translation>Rechner konnte nicht gefunden werden</translation>
@@ -2330,7 +2604,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QHttp</name>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+578"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-6"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+1835"/>
         <source>Connection refused</source>
         <translation>Verbindung verweigert</translation>
@@ -2350,8 +2624,6 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <location line="+82"/>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+10"/>
-        <location line="+19"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+48"/>
         <source>HTTP request failed</source>
         <translation>HTTP-Anfrage fehlgeschlagen</translation>
@@ -2382,7 +2654,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Verbindung mit %1 beendet</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-22"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+7"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+14"/>
         <source>Connection closed</source>
         <translation>Verbindung beendet</translation>
@@ -2647,7 +2919,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QIODevice</name>
     <message>
-        <location filename="../src/corelib/global/qglobal.cpp" line="+2072"/>
+        <location filename="../src/corelib/global/qglobal.cpp" line="+2096"/>
         <source>Permission denied</source>
         <translation>Zugriff verweigert</translation>
     </message>
@@ -2667,7 +2939,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Kein freier Speicherplatz auf dem Gerät vorhanden</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qiodevice.cpp" line="+1561"/>
+        <location filename="../src/corelib/io/qiodevice.cpp" line="+1565"/>
         <source>Unknown error</source>
         <translation>Unbekannter Fehler</translation>
     </message>
@@ -2731,7 +3003,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Operation unmap fehlgeschlagen für &apos;%1&apos;: %2</translation>
     </message>
     <message>
-        <location line="+344"/>
+        <location line="+345"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
         <translation>Das Plugin &apos;%1&apos; verwendet eine inkompatible Qt-Bibliothek. (%2.%3.%4) [%5]</translation>
     </message>
@@ -2783,12 +3055,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QLineEdit</name>
     <message>
-        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2035"/>
+        <location filename="../src/gui/widgets/qlineedit.cpp" line="+2112"/>
         <source>Select All</source>
         <translation>Alles auswählen</translation>
     </message>
     <message>
-        <location line="-32"/>
+        <location line="-40"/>
         <source>&amp;Undo</source>
         <translation>&amp;Rückgängig</translation>
     </message>
@@ -2798,22 +3070,22 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Wieder&amp;herstellen</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>Cu&amp;t</source>
         <translation>&amp;Ausschneiden</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopieren</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>&amp;Paste</source>
         <translation>Einf&amp;ügen</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
@@ -2916,7 +3188,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMYSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1261"/>
+        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1270"/>
         <source>Unable to open database &apos;</source>
         <translation>Die Datenbankverbindung kann nicht geöffnet werden &apos;</translation>
     </message>
@@ -2926,7 +3198,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Es kann keine Verbindung aufgebaut werden</translation>
     </message>
     <message>
-        <location line="+151"/>
+        <location line="+150"/>
         <source>Unable to begin transaction</source>
         <translation>Es kann keine Transaktion gestartet werden</translation>
     </message>
@@ -2944,12 +3216,13 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMYSQLResult</name>
     <message>
-        <location line="-969"/>
+        <location line="-977"/>
+        <location line="+31"/>
         <source>Unable to fetch data</source>
         <translation>Es konnten keine Daten abgeholt werden</translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+161"/>
         <source>Unable to execute query</source>
         <translation>Die Abfrage konnte nicht ausgeführt werden</translation>
     </message>
@@ -3127,7 +3400,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMenuBar</name>
     <message>
-        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+410"/>
+        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+436"/>
         <source>Actions</source>
         <translation>Optionen</translation>
     </message>
@@ -3163,7 +3436,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Hilfe</translation>
     </message>
     <message>
-        <location line="-1099"/>
+        <location line="-1102"/>
         <source>Show Details...</source>
         <translation>Details einblenden...</translation>
     </message>
@@ -3346,13 +3619,13 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QNetworkAccessFileBackend</name>
     <message>
-        <location filename="../src/network/access/qfilenetworkreply.cpp" line="+83"/>
+        <location filename="../src/network/access/qfilenetworkreply.cpp" line="+85"/>
         <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+100"/>
         <source>Request for opening non-local file %1</source>
         <translation>Anforderung zum Öffnen einer Datei über Netzwerk %1</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+33"/>
         <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+45"/>
         <source>Error opening %1: %2</source>
         <translation>%1 konnte nicht geöffnet werden: %2</translation>
@@ -3363,7 +3636,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Fehler beim Schreiben zur Datei %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qfilenetworkreply.cpp" line="-11"/>
+        <location filename="../src/network/access/qfilenetworkreply.cpp" line="-13"/>
         <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+48"/>
         <source>Cannot open %1: Path is a directory</source>
         <translation>%1 kann nicht geöffnet werden: Der Pfad spezifiziert ein Verzeichnis</translation>
@@ -3405,7 +3678,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QNetworkAccessHttpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+585"/>
+        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+599"/>
         <source>No suitable proxy found</source>
         <translation>Es konnte kein geeigneter Proxy-Server gefunden werden</translation>
     </message>
@@ -3413,12 +3686,12 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QNetworkReply</name>
     <message>
-        <location line="+95"/>
+        <location line="+101"/>
         <source>Error downloading %1 - server replied: %2</source>
         <translation>Beim Herunterladen von %1 trat ein Fehler auf - Die Antwort des Servers ist: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+77"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+80"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
         <translation>Das Protokoll &quot;%1&quot; ist unbekannt</translation>
     </message>
@@ -3426,7 +3699,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QNetworkReplyImpl</name>
     <message>
-        <location line="+519"/>
+        <location line="+525"/>
         <location line="+28"/>
         <source>Operation canceled</source>
         <translation>Operation abgebrochen</translation>
@@ -3509,7 +3782,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1790"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1806"/>
         <source>Unable to connect</source>
         <translation>Es kann keine Verbindung aufgebaut werden</translation>
     </message>
@@ -3542,14 +3815,14 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QODBCResult</name>
     <message>
-        <location line="-932"/>
-        <location line="+346"/>
+        <location line="-937"/>
+        <location line="+351"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation>QODBCResult::reset: &apos;SQL_CURSOR_STATIC&apos; konnte nicht als Attribut des Befehls gesetzt werden. Bitte prüfen Sie die Konfiguration Ihres ODBC-Treibers</translation>
     </message>
     <message>
-        <location line="-329"/>
-        <location line="+623"/>
+        <location line="-334"/>
+        <location line="+628"/>
         <source>Unable to execute statement</source>
         <translation>Der Befehl konnte nicht ausgeführt werden</translation>
     </message>
@@ -3569,7 +3842,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Die Variable konnte nicht gebunden werden</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+190"/>
+        <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+189"/>
         <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-467"/>
         <location line="+576"/>
         <source>Unable to fetch last</source>
@@ -3619,7 +3892,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
         <translation>Der entfernte Rechner hat die Verbindung zu %1 vorzeitig beendet</translation>
     </message>
     <message>
-        <location filename="../src/network/kernel/qhostinfo.cpp" line="+175"/>
+        <location filename="../src/network/kernel/qhostinfo.cpp" line="+168"/>
         <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+0"/>
         <source>No host name given</source>
         <translation>Es wurde kein Hostname angegeben</translation>
@@ -3803,7 +4076,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QPrintDialog</name>
     <message>
-        <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+108"/>
+        <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+110"/>
         <source>locally connected</source>
         <translation>direkt verbunden</translation>
     </message>
@@ -4232,12 +4505,12 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QPrintPreviewDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintpreviewdialog.cpp" line="+246"/>
+        <location filename="../src/gui/dialogs/qprintpreviewdialog.cpp" line="+249"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+71"/>
         <source>Print Preview</source>
         <translation>Druckvorschau</translation>
     </message>
@@ -4317,7 +4590,12 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Seite einrichten</translation>
     </message>
     <message>
-        <location line="+150"/>
+        <location line="+6"/>
+        <source>Close</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <location line="+148"/>
         <source>Export to PDF</source>
         <translation>PDF exportieren</translation>
     </message>
@@ -4530,7 +4808,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Zeitüberschreitung</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess.cpp" line="+855"/>
+        <location filename="../src/corelib/io/qprocess.cpp" line="+856"/>
         <location line="+52"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-211"/>
         <location line="+50"/>
@@ -4645,7 +4923,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QSQLite2Driver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite2/qsql_sqlite2.cpp" line="+391"/>
+        <location filename="../src/sql/drivers/sqlite2/qsql_sqlite2.cpp" line="+399"/>
         <source>Error opening database</source>
         <translation>Die Datenbankverbindung konnte nicht geöffnet werden</translation>
     </message>
@@ -4668,12 +4946,12 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QSQLite2Result</name>
     <message>
-        <location line="-319"/>
+        <location line="-326"/>
         <source>Unable to fetch results</source>
         <translation>Das Ergebnis konnte nicht abgeholt werden</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+150"/>
         <source>Unable to execute statement</source>
         <translation>Der Befehl konnte nicht ausgeführt werden</translation>
     </message>
@@ -4681,7 +4959,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QSQLiteDriver</name>
     <message>
-        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+540"/>
+        <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+547"/>
         <source>Error opening database</source>
         <translation>Die Datenbankverbindung konnte nicht geöffnet werden</translation>
     </message>
@@ -5184,7 +5462,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     </message>
     <message>
         <location filename="../src/corelib/kernel/qsharedmemory_symbian.cpp" line="+83"/>
-        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+79"/>
+        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+81"/>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+87"/>
         <source>%1: permission denied</source>
         <translation>%1: Zugriff verweigert</translation>
@@ -6150,7 +6428,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Umdrehen</translation>
     </message>
     <message>
-        <location line="+573"/>
+        <location line="+575"/>
         <location line="+135"/>
         <source>Ctrl</source>
         <translation>Strg</translation>
@@ -6184,7 +6462,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>F%1</translation>
     </message>
     <message>
-        <location line="-869"/>
+        <location line="-871"/>
         <source>Home Page</source>
         <translation>Startseite</translation>
     </message>
@@ -6293,7 +6571,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QSoftKeyManager</name>
     <message>
-        <location filename="../src/gui/kernel/qsoftkeymanager.cpp" line="+79"/>
+        <location filename="../src/gui/kernel/qsoftkeymanager.cpp" line="+63"/>
         <source>Ok</source>
         <translation>Ok</translation>
     </message>
@@ -6318,7 +6596,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location line="+172"/>
+        <location filename="../src/gui/kernel/qsoftkeymanager_s60.cpp" line="+273"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -6401,7 +6679,12 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Die Daten konnten nicht geschrieben werden: %1</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+63"/>
+        <source>Unable to decrypt data: %1</source>
+        <translation>Die Daten konnten nicht entschlüsselt werden: %1</translation>
+    </message>
+    <message>
+        <location line="+76"/>
         <source>Error while reading: %1</source>
         <translation>Beim Lesen ist ein Fehler aufgetreten: %1</translation>
     </message>
@@ -6411,7 +6694,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Im Ablauf des SSL-Protokolls ist ein Fehler aufgetreten: %1</translation>
     </message>
     <message>
-        <location line="-501"/>
+        <location line="-521"/>
         <source>Error creating SSL context (%1)</source>
         <translation>Es konnte keine SSL-Kontextstruktur erzeugt werden (%1)</translation>
     </message>
@@ -6657,7 +6940,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2024"/>
+        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2027"/>
         <source>&amp;Undo</source>
         <translation>&amp;Rückgängig</translation>
     </message>
@@ -7289,7 +7572,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <location line="+2"/>
         <source>Play movie in full-screen mode</source>
         <comment>Media controller element</comment>
-        <translation>FIlm im Vollbildmodus abspielen</translation>
+        <translation>Film im Vollbildmodus abspielen</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -7375,7 +7658,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>%1 (%2x%3 Pixel)</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+412"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+416"/>
         <source>Bad HTTP request</source>
         <translation>Ungültige HTTP-Anforderung</translation>
     </message>
@@ -7460,7 +7743,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1822"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1833"/>
         <source>JavaScript Alert - %1</source>
         <translation>JavaScript-Hinweis - %1</translation>
     </message>
@@ -7470,7 +7753,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>JavaScript-Bestätigung - %1</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+19"/>
         <source>JavaScript Prompt - %1</source>
         <translation>JavaScript-Eingabeaufforderung - %1</translation>
     </message>
@@ -7706,7 +7989,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5720"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5728"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -7962,7 +8245,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/xmlpatterns/api/qcoloringmessagehandler.cpp" line="+87"/>
         <source>Warning in %1, at line %2, column %3: %4</source>
-        <translation>Fehler in %1, bei Zeile %2, Spalte %3: %4</translation>
+        <translation>Warnung in %1, bei Zeile %2, Spalte %3: %4</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -9183,7 +9466,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <location line="-470"/>
         <location line="+451"/>
         <source>%1 is not allowed to derive from %2 by list as the latter defines it as final.</source>
-        <translation>%1 darf nicht durch Listen von %2 abgeleitet werden, da sie letzterer sie als final deklariert.</translation>
+        <translation>%1 darf nicht durch Listen von %2 abgeleitet werden, da letzterer sie als final deklariert.</translation>
     </message>
     <message>
         <location line="-431"/>
@@ -9634,7 +9917,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+6"/>
         <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
-        <translation>Der komplexe Typ % kann nicht durch Erweiterung von %2 abgeleitet werden, da letzterer ein &apos;%3&apos;-Element in seinem Inhaltsmodell hat.</translation>
+        <translation>Der komplexe Typ %1 kann nicht durch Erweiterung von %2 abgeleitet werden, da letzterer ein &apos;%3&apos;-Element in seinem Inhaltsmodell hat.</translation>
     </message>
     <message>
         <location line="+101"/>

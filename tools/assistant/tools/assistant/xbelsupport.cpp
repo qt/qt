@@ -41,9 +41,12 @@
 #include "tracer.h"
 
 #include "xbelsupport.h"
-#include "bookmarkmanager.h"
 
-#include <QtCore/QCoreApplication>
+#include "bookmarkitem.h"
+#include "bookmarkmodel.h"
+
+#include <QtCore/QDate>
+#include <QtCore/QModelIndex>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,7 +58,7 @@ struct Bookmark {
 
 XbelWriter::XbelWriter(BookmarkModel *model)
     : QXmlStreamWriter()
-    , treeModel(model)
+    , bookmarkModel(model)
 {
     TRACE_OBJ
     setAutoFormatting(true);
@@ -71,53 +74,46 @@ void XbelWriter::writeToFile(QIODevice *device)
     writeStartElement(QLatin1String("xbel"));
     writeAttribute(QLatin1String("version"), QLatin1String("1.0"));
 
-    QStandardItem *root = treeModel->invisibleRootItem();
-    for (int i = 0; i < root->rowCount(); ++i)
-        writeData(root->child(i));
-
+    const QModelIndex &root = bookmarkModel->index(0,0, QModelIndex());
+    for (int i = 0; i < bookmarkModel->rowCount(root); ++i)
+        writeData(bookmarkModel->index(i, 0, root));
     writeEndDocument();
 }
 
-void XbelWriter::writeData(QStandardItem *child)
+void XbelWriter::writeData(const QModelIndex &index)
 {
     TRACE_OBJ
-    Bookmark entry;
-    entry.title = child->data(Qt::DisplayRole).toString();
-    entry.url = child->data(Qt::UserRole + 10).toString();
+    if (index.isValid()) {
+        Bookmark entry;
+        entry.title = index.data().toString();
+        entry.url = index.data(UserRoleUrl).toString();
 
-    if (entry.url == QLatin1String("Folder")) {
-        writeStartElement(QLatin1String("folder"));
+        if (index.data(UserRoleFolder).toBool()) {
+            writeStartElement(QLatin1String("folder"));
+            entry.folded = !index.data(UserRoleExpanded).toBool();
+            writeAttribute(QLatin1String("folded"), entry.folded
+                ? QLatin1String("yes") : QLatin1String("no"));
+            writeTextElement(QLatin1String("title"), entry.title);
 
-        entry.folded = !child->data(Qt::UserRole + 11).toBool();
-        writeAttribute(QLatin1String("folded"),
-            entry.folded ? QLatin1String("yes") : QLatin1String("no"));
-
-        writeTextElement(QLatin1String("title"), entry.title);
-
-        for (int i = 0; i < child->rowCount(); ++i)
-            writeData(child->child(i));
-
-        writeEndElement();
-    } else {
-        writeStartElement(QLatin1String("bookmark"));
-        writeAttribute(QLatin1String("href"), entry.url);
-        writeTextElement(QLatin1String("title"), entry.title);
-        writeEndElement();
+            for (int i = 0; i < bookmarkModel->rowCount(index); ++i)
+                writeData(bookmarkModel->index(i, 0 , index));
+            writeEndElement();
+        } else {
+            writeStartElement(QLatin1String("bookmark"));
+            writeAttribute(QLatin1String("href"), entry.url);
+            writeTextElement(QLatin1String("title"), entry.title);
+            writeEndElement();
+        }
     }
 }
 
+// -- XbelReader
 
-// XbelReader
-
-
-XbelReader::XbelReader(BookmarkModel *tree, BookmarkModel *list)
+XbelReader::XbelReader(BookmarkModel *model)
     : QXmlStreamReader()
-    , treeModel(tree)
-    , listModel(list)
+    , bookmarkModel(model)
 {
     TRACE_OBJ
-    folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon);
-    bookmarkIcon = QIcon(QLatin1String(":/trolltech/assistant/images/bookmark.png"));
 }
 
 bool XbelReader::readFromFile(QIODevice *device)
@@ -132,7 +128,11 @@ bool XbelReader::readFromFile(QIODevice *device)
             if (name() == QLatin1String("xbel")
                 && attributes().value(QLatin1String("version"))
                     == QLatin1String("1.0")) {
+                const QModelIndex &root = bookmarkModel->index(0,0, QModelIndex());
+                parents.append(bookmarkModel->addItem(root, true));
                 readXBEL();
+                bookmarkModel->setData(parents.first(),
+                    QDate::currentDate().toString(Qt::ISODate), Qt::EditRole);
             } else {
                 raiseError(QLatin1String("The file is not an XBEL version 1.0 file."));
             }
@@ -153,9 +153,63 @@ void XbelReader::readXBEL()
 
         if (isStartElement()) {
             if (name() == QLatin1String("folder"))
-                readFolder(0);
+                readFolder();
             else if (name() == QLatin1String("bookmark"))
-                readBookmark(0);
+                readBookmark();
+            else
+                readUnknownElement();
+        }
+    }
+}
+
+void XbelReader::readFolder()
+{
+    TRACE_OBJ
+    parents.append(bookmarkModel->addItem(parents.last(), true));
+    bookmarkModel->setData(parents.last(),
+        attributes().value(QLatin1String("folded")) == QLatin1String("no"),
+        UserRoleExpanded);
+
+    while (!atEnd()) {
+        readNext();
+
+        if (isEndElement())
+            break;
+
+        if (isStartElement()) {
+            if (name() == QLatin1String("title")) {
+                bookmarkModel->setData(parents.last(), readElementText(),
+                    Qt::EditRole);
+            } else if (name() == QLatin1String("folder"))
+                readFolder();
+            else if (name() == QLatin1String("bookmark"))
+                readBookmark();
+            else
+                readUnknownElement();
+        }
+    }
+
+    parents.removeLast();
+}
+
+void XbelReader::readBookmark()
+{
+    TRACE_OBJ
+    const QModelIndex &index = bookmarkModel->addItem(parents.last(), false);
+    if (BookmarkItem* item = bookmarkModel->itemFromIndex(index)) {
+        item->setData(UserRoleUrl, attributes().value(QLatin1String("href"))
+            .toString());
+    }
+
+    while (!atEnd()) {
+        readNext();
+
+        if (isEndElement())
+            break;
+
+        if (isStartElement()) {
+            if (name() == QLatin1String("title"))
+                bookmarkModel->setData(index, readElementText(), Qt::EditRole);
             else
                 readUnknownElement();
         }
@@ -174,76 +228,6 @@ void XbelReader::readUnknownElement()
         if (isStartElement())
             readUnknownElement();
     }
-}
-
-void XbelReader::readFolder(QStandardItem *item)
-{
-    TRACE_OBJ
-    QStandardItem *folder = createChildItem(item);
-    folder->setIcon(folderIcon);
-    folder->setData(QLatin1String("Folder"), Qt::UserRole + 10);
-
-    bool expanded =
-        (attributes().value(QLatin1String("folded")) != QLatin1String("no"));
-    folder->setData(expanded, Qt::UserRole + 11);
-
-    while (!atEnd()) {
-        readNext();
-
-        if (isEndElement())
-            break;
-
-        if (isStartElement()) {
-            if (name() == QLatin1String("title"))
-                folder->setText(readElementText());
-            else if (name() == QLatin1String("folder"))
-                readFolder(folder);
-            else if (name() == QLatin1String("bookmark"))
-                readBookmark(folder);
-            else
-                readUnknownElement();
-        }
-    }
-}
-
-void XbelReader::readBookmark(QStandardItem *item)
-{
-    TRACE_OBJ
-    QStandardItem *bookmark = createChildItem(item);
-    bookmark->setIcon(bookmarkIcon);
-    bookmark->setText(QCoreApplication::tr("Unknown title"));
-    bookmark->setData(attributes().value(QLatin1String("href")).toString(),
-        Qt::UserRole + 10);
-
-    while (!atEnd()) {
-        readNext();
-
-        if (isEndElement())
-            break;
-
-        if (isStartElement()) {
-            if (name() == QLatin1String("title"))
-                bookmark->setText(readElementText());
-            else
-                readUnknownElement();
-        }
-    }
-
-    listModel->appendRow(bookmark->clone());
-}
-
-QStandardItem *XbelReader::createChildItem(QStandardItem *item)
-{
-    TRACE_OBJ
-    QStandardItem *childItem = new QStandardItem();
-    childItem->setEditable(false);
-
-    if (item)
-        item->appendRow(childItem);
-    else
-        treeModel->appendRow(childItem);
-
-    return childItem;
 }
 
 QT_END_NAMESPACE

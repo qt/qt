@@ -109,7 +109,7 @@ QKqueueFileSystemWatcherEngine::~QKqueueFileSystemWatcherEngine()
     close(kqpipe[0]);
     close(kqpipe[1]);
 
-    foreach (int id, pathToID.values())
+    foreach (int id, pathToID)
         ::close(id < 0 ? -id : id);
 }
 

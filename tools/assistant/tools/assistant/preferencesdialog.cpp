@@ -38,26 +38,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "tracer.h"
-
 #include "preferencesdialog.h"
-#include "filternamedialog.h"
-#include "installdialog.h"
-#include "fontpanel.h"
+
 #include "centralwidget.h"
-#include "aboutdialog.h"
+#include "filternamedialog.h"
+#include "fontpanel.h"
 #include "helpenginewrapper.h"
+#include "installdialog.h"
+#include "tracer.h"
 
 #include <QtCore/QtAlgorithms>
 #include <QtCore/QFileSystemWatcher>
 
-#include <QtGui/QHeaderView>
-#include <QtGui/QFileDialog>
-#include <QtGui/QMessageBox>
-#include <QtGui/QMenu>
-#include <QtGui/QFontDatabase>
-#include <QtGui/QApplication>
 #include <QtGui/QDesktopWidget>
+#include <QtGui/QFileDialog>
+#include <QtGui/QFontDatabase>
+#include <QtGui/QHeaderView>
+#include <QtGui/QMenu>
+#include <QtGui/QMessageBox>
 
 #include <QtHelp/QHelpEngineCore>
 
@@ -115,6 +113,9 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
 
     updateFontSettingsPage();
     updateOptionsPage();
+
+    if (helpEngine.usesAppFont())
+        setFont(helpEngine.appFont());
 }
 
 PreferencesDialog::~PreferencesDialog()
@@ -124,16 +125,13 @@ PreferencesDialog::~PreferencesDialog()
         helpEngine.setAppFont(m_appFontPanel->selectedFont());
         helpEngine.setUseAppFont(m_appFontPanel->isChecked());
         helpEngine.setAppWritingSystem(m_appFontPanel->writingSystem());
+        emit updateApplicationFont();
     }
 
     if (m_browserFontChanged) {
         helpEngine.setBrowserFont(m_browserFontPanel->selectedFont());
         helpEngine.setUseBrowserFont(m_browserFontPanel->isChecked());
         helpEngine.setBrowserWritingSystem(m_browserFontPanel->writingSystem());
-    }
-
-    if (m_appFontChanged || m_browserFontChanged) {
-        emit updateApplicationFont();
         emit updateBrowserFont();
     }
 
@@ -160,8 +158,10 @@ void PreferencesDialog::updateFilterPage()
     m_ui.attributeWidget->clear();
 
     m_filterMapBackup.clear();
-    const QStringList filters = helpEngine.customFilters();
+    const QStringList &filters = helpEngine.customFilters();
     foreach (const QString &filter, filters) {
+        if (filter == HelpEngineWrapper::TrUnfiltered)
+            continue;
         QStringList atts = helpEngine.filterAttributes(filter);
         m_filterMapBackup.insert(filter, atts);
         if (!m_filterMap.contains(filter))

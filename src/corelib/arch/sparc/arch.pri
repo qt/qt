@@ -1,7 +1,7 @@
 #
 # SPARC architecture
 #
-*-64 {
+*-64* {
     SOURCES += $$QT_ARCH_CPP/qatomic64.s
 } 
 else {

@@ -192,6 +192,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , inDirtyList(0)
       , isScrolled(0)
       , isMoved(0)
+      , isGLWidget(0)
       , usesDoubleBufferedGLContext(0)
 #if defined(Q_WS_X11)
       , picture(0)
@@ -200,7 +201,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , nativeGesturePanEnabled(0)
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
-      , isGLWidget(0)
       , window_event(0)
       , qd_hd(0)
 #endif
@@ -1439,6 +1439,18 @@ QWidget::~QWidget()
     }
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    if (d->extra && d->extra->topextra && d->extra->topextra->backingStore) {
+        // Okay, we are about to destroy the top-level window that owns
+        // the backing store. Make sure we delete the backing store right away
+        // before the window handle is invalid. This is important because
+        // the backing store will delete its window surface, which may or may
+        // not have a reference to this widget that will be used later to
+        // notify the window it no longer has a surface.
+        delete d->extra->topextra->backingStore;
+        d->extra->topextra->backingStore = 0;
+    }
+#endif
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
         bs->removeDirtyWidget(this);
         if (testAttribute(Qt::WA_StaticContents))
@@ -1660,7 +1672,13 @@ void QWidgetPrivate::syncBackingStore()
         repaint_sys(dirty);
         dirty = QRegion();
     } else if (QWidgetBackingStore *bs = maybeBackingStore()) {
+#ifdef QT_MAC_USE_COCOA
+        Q_UNUSED(bs);
+        void qt_mac_set_needs_display(QWidget *, QRegion);
+        qt_mac_set_needs_display(q_func(), QRegion());
+#else
         bs->sync();
+#endif
     }
 }
 
@@ -1668,8 +1686,15 @@ void QWidgetPrivate::syncBackingStore(const QRegion &region)
 {
     if (paintOnScreen())
         repaint_sys(region);
-    else if (QWidgetBackingStore *bs = maybeBackingStore())
+    else if (QWidgetBackingStore *bs = maybeBackingStore()) {
+#ifdef QT_MAC_USE_COCOA
+        Q_UNUSED(bs);
+        void qt_mac_set_needs_display(QWidget *, QRegion);
+        qt_mac_set_needs_display(q_func(), region);
+#else
         bs->sync(q_func(), region);
+#endif
+    }
 }
 
 void QWidgetPrivate::setUpdatesEnabled_helper(bool enable)
@@ -6422,6 +6447,8 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
         first = fp;
     }
 
+    if (fp == second)
+        return;
 
     if (QWidget *sp = second->focusProxy())
         second = sp;
@@ -7573,23 +7600,21 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     if (isMain)
         QApplication::quit();
 #endif
-    // Attempt to close the application only if this widget has the
-    // WA_QuitOnClose flag set set and has a non-visible parent
-    quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible() || parentWidget->testAttribute(Qt::WA_DontShowOnScreen));
+    // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
+    quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible());
 
     if (quitOnClose) {
-        // If there is no non-withdrawn primary window left (except
-        // the ones without QuitOnClose or with WA_DontShowOnScreen),
-        // we emit the lastWindowClosed signal
+        /* if there is no non-withdrawn primary window left (except
+           the ones without QuitOnClose), we emit the lastWindowClosed
+           signal */
         QWidgetList list = QApplication::topLevelWidgets();
         bool lastWindowClosed = true;
         for (int i = 0; i < list.size(); ++i) {
             QWidget *w = list.at(i);
-            if ((w->isVisible() && !w->testAttribute(Qt::WA_DontShowOnScreen))
-                    && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose)) {
-                lastWindowClosed = false;
-                break;
-            }
+            if (!w->isVisible() || w->parentWidget() || !w->testAttribute(Qt::WA_QuitOnClose))
+                continue;
+            lastWindowClosed = false;
+            break;
         }
         if (lastWindowClosed)
             QApplicationPrivate::emitLastWindowClosed();
@@ -8252,7 +8277,7 @@ bool QWidget::event(QEvent *event)
         }
 
 #ifdef QT_SOFTKEYS_ENABLED
-        if (isWindow() && isActiveWindow())
+        if (isWindow())
             QSoftKeyManager::updateSoftKeys();
 #endif
 

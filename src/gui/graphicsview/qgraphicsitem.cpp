@@ -319,7 +319,7 @@
     QGraphicsItem::keyPressEvent() and QGraphicsItem::keyReleaseEvent().
 
     \value ItemClipsToShape The item clips to its own shape. The item cannot
-    draw or receive mouse, tablet, drag and drop or hover events outside ts
+    draw or receive mouse, tablet, drag and drop or hover events outside its
     shape. It is disabled by default. This behavior is enforced by
     QGraphicsView::drawItems() or QGraphicsScene::drawItems(). This flag was
     introduced in Qt 4.3.
@@ -668,6 +668,7 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qnumeric.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qpainter.h>
@@ -1392,7 +1393,8 @@ QGraphicsItem::~QGraphicsItem()
     }
     delete d_ptr->transformData;
 
-    qt_dataStore()->data.remove(this);
+    if (QGraphicsItemCustomDataStore *dataStore = qt_dataStore())
+        dataStore->data.remove(this);
 }
 
 /*!
@@ -2569,6 +2571,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
     if (newOpacity == d_ptr->opacity)
         return;
 
+    bool wasFullyTransparent = d_ptr->isOpacityNull();
     d_ptr->opacity = newOpacity;
 
     // Notify change.
@@ -2584,7 +2587,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*force=*/false,
-                                          /*ignoreOpacity=*/true);
+                                          /*ignoreOpacity=*/d_ptr->isOpacityNull());
+        if (wasFullyTransparent)
+            d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
     }
 
     if (d_ptr->isObject)
@@ -3438,6 +3443,9 @@ void QGraphicsItem::setX(qreal x)
     if (d_ptr->inDestructor)
         return;
 
+    if (qIsNaN(x))
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3460,6 +3468,9 @@ void QGraphicsItem::setX(qreal x)
 void QGraphicsItem::setY(qreal y)
 {
     if (d_ptr->inDestructor)
+        return;
+
+    if (qIsNaN(y))
         return;
 
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));

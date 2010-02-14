@@ -3391,8 +3391,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
                             needText = true;
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                                pr.setHeight(pixmap.size().height());
-                                cr.adjust(0, pr.bottom() + 1, 0, 1);
+                                QMainWindow *mw = qobject_cast<QMainWindow *>(w->window());
+                                if (mw && mw->unifiedTitleAndToolBarOnMac()) {
+                                    pr.setHeight(pixmap.size().height());
+                                    cr.adjust(0, pr.bottom() + 1, 0, 1);
+                                } else {
+                                    pr.setHeight(pixmap.size().height() + 6);
+                                    cr.adjust(0, pr.bottom(), 0, -3);
+                                }       
                                 alignment |= Qt::AlignCenter;
                             } else {
                                 pr.setWidth(pixmap.width() + 8);

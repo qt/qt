@@ -521,6 +521,24 @@ bool QScrollBar::event(QEvent *event)
     if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
         d_func()->updateHoverControl(he->pos());
         break;
+#ifndef QT_NO_WHEELEVENT
+    case QEvent::Wheel: {
+        // override wheel event without adding virtual function override
+        QWheelEvent *ev = static_cast<QWheelEvent *>(event);
+        int delta = ev->delta();
+        // scrollbar is a special case - in vertical mode it reaches minimum
+        // value in the upper position, however QSlider's minimum value is on
+        // the bottom. So we need to invert a value, but since the scrollbar is
+        // inverted by default, we need to inverse the delta value for the
+        // horizontal orientation.
+        if (ev->orientation() == Qt::Horizontal)
+            delta = -delta;
+        Q_D(QScrollBar);
+        if (d->scrollByDelta(ev->orientation(), ev->modifiers(), delta))
+            event->accept();
+        return true;
+    }
+#endif
     default:
         break;
     }

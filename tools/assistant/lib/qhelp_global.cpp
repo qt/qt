@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QRegExp>
 #include <QtCore/QMutexLocker>
 #include <QtGui/QTextDocument>
@@ -60,7 +61,7 @@ QString QHelpGlobal::uniquifyConnectionName(const QString &name, void *pointer)
 
 QString QHelpGlobal::documentTitle(const QString &content)
 {
-    QString title = QObject::tr("Untitled");
+    QString title = QCoreApplication::translate("QHelp", "Untitled");
     if (!content.isEmpty()) {
         int start = content.indexOf(QLatin1String("<title>"), 0, Qt::CaseInsensitive) + 7;
         int end = content.indexOf(QLatin1String("</title>"), 0, Qt::CaseInsensitive);

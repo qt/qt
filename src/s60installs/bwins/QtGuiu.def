@@ -2081,8 +2081,8 @@ EXPORTS
 	?addPixmap@QGraphicsScene@@QAEPAVQGraphicsPixmapItem@@ABVQPixmap@@@Z @ 2080 NONAME ; class QGraphicsPixmapItem * QGraphicsScene::addPixmap(class QPixmap const &)
 	?addPixmap@QIcon@@QAEXABVQPixmap@@W4Mode@1@W4State@1@@Z @ 2081 NONAME ; void QIcon::addPixmap(class QPixmap const &, enum QIcon::Mode, enum QIcon::State)
 	?addPixmap@QIconEngine@@UAEXABVQPixmap@@W4Mode@QIcon@@W4State@4@@Z @ 2082 NONAME ; void QIconEngine::addPixmap(class QPixmap const &, enum QIcon::Mode, enum QIcon::State)
-	?addPixmapDestructionHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 2083 NONAME ; void QImagePixmapCleanupHooks::addPixmapDestructionHook(void (*)(class QPixmap *))
-	?addPixmapModificationHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 2084 NONAME ; void QImagePixmapCleanupHooks::addPixmapModificationHook(void (*)(class QPixmap *))
+	?addPixmapDestructionHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 2083 NONAME ABSENT ; void QImagePixmapCleanupHooks::addPixmapDestructionHook(void (*)(class QPixmap *))
+	?addPixmapModificationHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 2084 NONAME ABSENT ; void QImagePixmapCleanupHooks::addPixmapModificationHook(void (*)(class QPixmap *))
 	?addPolygon@QGraphicsScene@@QAEPAVQGraphicsPolygonItem@@ABVQPolygonF@@ABVQPen@@ABVQBrush@@@Z @ 2085 NONAME ; class QGraphicsPolygonItem * QGraphicsScene::addPolygon(class QPolygonF const &, class QPen const &, class QBrush const &)
 	?addPolygon@QPainterPath@@QAEXABVQPolygonF@@@Z @ 2086 NONAME ; void QPainterPath::addPolygon(class QPolygonF const &)
 	?addRect@QGraphicsScene@@QAEPAVQGraphicsRectItem@@ABVQRectF@@ABVQPen@@ABVQBrush@@@Z @ 2087 NONAME ; class QGraphicsRectItem * QGraphicsScene::addRect(class QRectF const &, class QPen const &, class QBrush const &)
@@ -4283,8 +4283,8 @@ EXPORTS
 	?executeDelayedItemsLayout@QAbstractItemView@@IAEXXZ @ 4282 NONAME ; void QAbstractItemView::executeDelayedItemsLayout(void)
 	?executeImageHooks@QImagePixmapCleanupHooks@@SAX_J@Z @ 4283 NONAME ; void QImagePixmapCleanupHooks::executeImageHooks(long long)
 	?executePendingSort@QTreeWidgetItem@@ABEXXZ @ 4284 NONAME ; void QTreeWidgetItem::executePendingSort(void) const
-	?executePixmapDestructionHooks@QImagePixmapCleanupHooks@@SAXPAVQPixmap@@@Z @ 4285 NONAME ; void QImagePixmapCleanupHooks::executePixmapDestructionHooks(class QPixmap *)
-	?executePixmapModificationHooks@QImagePixmapCleanupHooks@@SAXPAVQPixmap@@@Z @ 4286 NONAME ; void QImagePixmapCleanupHooks::executePixmapModificationHooks(class QPixmap *)
+	?executePixmapDestructionHooks@QImagePixmapCleanupHooks@@SAXPAVQPixmap@@@Z @ 4285 NONAME ABSENT ; void QImagePixmapCleanupHooks::executePixmapDestructionHooks(class QPixmap *)
+	?executePixmapModificationHooks@QImagePixmapCleanupHooks@@SAXPAVQPixmap@@@Z @ 4286 NONAME ABSENT ; void QImagePixmapCleanupHooks::executePixmapModificationHooks(class QPixmap *)
 	?expand@QTreeView@@QAEXABVQModelIndex@@@Z @ 4287 NONAME ; void QTreeView::expand(class QModelIndex const &)
 	?expandAll@QTreeView@@QAEXXZ @ 4288 NONAME ; void QTreeView::expandAll(void)
 	?expandItem@QTreeWidget@@QAEXPBVQTreeWidgetItem@@@Z @ 4289 NONAME ; void QTreeWidget::expandItem(class QTreeWidgetItem const *)
@@ -7927,8 +7927,8 @@ EXPORTS
 	?removeItemWidget@QTreeWidget@@QAEXPAVQTreeWidgetItem@@H@Z @ 7926 NONAME ; void QTreeWidget::removeItemWidget(class QTreeWidgetItem *, int)
 	?removeMapping@QDataWidgetMapper@@QAEXPAVQWidget@@@Z @ 7927 NONAME ; void QDataWidgetMapper::removeMapping(class QWidget *)
 	?removePage@QWizard@@QAEXH@Z @ 7928 NONAME ; void QWizard::removePage(int)
-	?removePixmapDestructionHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 7929 NONAME ; void QImagePixmapCleanupHooks::removePixmapDestructionHook(void (*)(class QPixmap *))
-	?removePixmapModificationHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 7930 NONAME ; void QImagePixmapCleanupHooks::removePixmapModificationHook(void (*)(class QPixmap *))
+	?removePixmapDestructionHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 7929 NONAME ABSENT ; void QImagePixmapCleanupHooks::removePixmapDestructionHook(void (*)(class QPixmap *))
+	?removePixmapModificationHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmap@@@Z@Z @ 7930 NONAME ABSENT ; void QImagePixmapCleanupHooks::removePixmapModificationHook(void (*)(class QPixmap *))
 	?removeRow@QStandardItem@@QAEXH@Z @ 7931 NONAME ; void QStandardItem::removeRow(int)
 	?removeRow@QTableWidget@@QAEXH@Z @ 7932 NONAME ; void QTableWidget::removeRow(int)
 	?removeRows@QSortFilterProxyModel@@UAE_NHHABVQModelIndex@@@Z @ 7933 NONAME ; bool QSortFilterProxyModel::removeRows(int, int, class QModelIndex const &)
@@ -12533,4 +12533,72 @@ EXPORTS
 	?symbianHandleCommand@QApplicationPrivate@@QAEHPBVQSymbianEvent@@@Z @ 12532 NONAME ; int QApplicationPrivate::symbianHandleCommand(class QSymbianEvent const *)
 	?symbianProcessWsEvent@QApplicationPrivate@@QAEHPBVQSymbianEvent@@@Z @ 12533 NONAME ; int QApplicationPrivate::symbianProcessWsEvent(class QSymbianEvent const *)
 	?symbianResourceChange@QApplicationPrivate@@QAEHPBVQSymbianEvent@@@Z @ 12534 NONAME ; int QApplicationPrivate::symbianResourceChange(class QSymbianEvent const *)
+	?addPixmapDataDestructionHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmapData@@@Z@Z @ 12535 NONAME ; void QImagePixmapCleanupHooks::addPixmapDataDestructionHook(void (*)(class QPixmapData *))
+	?addPixmapDataModificationHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmapData@@@Z@Z @ 12536 NONAME ; void QImagePixmapCleanupHooks::addPixmapDataModificationHook(void (*)(class QPixmapData *))
+	?cacheKey@QPixmapData@@QBE_JXZ @ 12537 NONAME ; long long QPixmapData::cacheKey(void) const
+	?eventFilter@QS60Style@@MAE_NPAVQObject@@PAVQEvent@@@Z @ 12538 NONAME ; bool QS60Style::eventFilter(class QObject *, class QEvent *)
+	?executePixmapDataDestructionHooks@QImagePixmapCleanupHooks@@SAXPAVQPixmapData@@@Z @ 12539 NONAME ; void QImagePixmapCleanupHooks::executePixmapDataDestructionHooks(class QPixmapData *)
+	?executePixmapDataModificationHooks@QImagePixmapCleanupHooks@@SAXPAVQPixmapData@@@Z @ 12540 NONAME ; void QImagePixmapCleanupHooks::executePixmapDataModificationHooks(class QPixmapData *)
+	?invalidateChildGraphicsEffectsRecursively@QGraphicsItemPrivate@@QAEXW4InvalidateReason@1@@Z @ 12541 NONAME ; void QGraphicsItemPrivate::invalidateChildGraphicsEffectsRecursively(enum QGraphicsItemPrivate::InvalidateReason)
+	?invalidateParentGraphicsEffectsRecursively@QGraphicsItemPrivate@@QAEXXZ @ 12542 NONAME ; void QGraphicsItemPrivate::invalidateParentGraphicsEffectsRecursively(void)
+	?markParentDirty@QGraphicsItemPrivate@@QAEX_N@Z @ 12543 NONAME ; void QGraphicsItemPrivate::markParentDirty(bool)
+	?removePixmapDataDestructionHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmapData@@@Z@Z @ 12544 NONAME ; void QImagePixmapCleanupHooks::removePixmapDataDestructionHook(void (*)(class QPixmapData *))
+	?removePixmapDataModificationHook@QImagePixmapCleanupHooks@@QAEXP6AXPAVQPixmapData@@@Z@Z @ 12545 NONAME ; void QImagePixmapCleanupHooks::removePixmapDataModificationHook(void (*)(class QPixmapData *))
+	?setParentItemHelper@QGraphicsItemPrivate@@QAEXPAVQGraphicsItem@@PBVQVariant@@1@Z @ 12546 NONAME ; void QGraphicsItemPrivate::setParentItemHelper(class QGraphicsItem *, class QVariant const *, class QVariant const *)
+	?timerEvent@QS60Style@@MAEXPAVQTimerEvent@@@Z @ 12547 NONAME ; void QS60Style::timerEvent(class QTimerEvent *)
+	?updateAncestorFlags@QGraphicsItemPrivate@@QAEXXZ @ 12548 NONAME ; void QGraphicsItemPrivate::updateAncestorFlags(void)
+	?updateChildWithGraphicsEffectFlagRecursively@QGraphicsItemPrivate@@QAEXXZ @ 12549 NONAME ; void QGraphicsItemPrivate::updateChildWithGraphicsEffectFlagRecursively(void)
+	?isOpacityNull@QGraphicsItemPrivate@@SA_NM@Z @ 12550 NONAME ; bool QGraphicsItemPrivate::isOpacityNull(float)
+	?isOpacityNull@QGraphicsItemPrivate@@QBE_NXZ @ 12551 NONAME ; bool QGraphicsItemPrivate::isOpacityNull(void) const
+	?api@QEglContext@@QBE?AW4API@QEgl@@XZ @ 12552 NONAME ABSENT ; enum QEgl::API QEglContext::api(void) const
+	?chooseConfig@QEglContext@@QAE_NABVQEglProperties@@W4PixelFormatMatch@QEgl@@@Z @ 12553 NONAME ABSENT ; bool QEglContext::chooseConfig(class QEglProperties const &, enum QEgl::PixelFormatMatch)
+	?destroySurface@QEglContext@@QAEXH@Z @ 12554 NONAME ABSENT ; void QEglContext::destroySurface(int)
+	?lazyDoneCurrent@QEglContext@@QAE_NXZ @ 12555 NONAME ABSENT ; bool QEglContext::lazyDoneCurrent(void)
+	?waitNative@QEglContext@@QAEXXZ @ 12556 NONAME ABSENT ; void QEglContext::waitNative(void)
+	?context@QEglContext@@QBEHXZ @ 12557 NONAME ABSENT ; int QEglContext::context(void) const
+	?configAttrib@QEglContext@@QBE_NHPAH@Z @ 12558 NONAME ABSENT ; bool QEglContext::configAttrib(int, int *) const
+	??0QEglProperties@@QAE@ABV0@@Z @ 12559 NONAME ABSENT ; QEglProperties::QEglProperties(class QEglProperties const &)
+	?config@QEglContext@@QBEHXZ @ 12560 NONAME ABSENT ; int QEglContext::config(void) const
+	?openDisplay@QEglContext@@QAE_NPAVQPaintDevice@@@Z @ 12561 NONAME ABSENT ; bool QEglContext::openDisplay(class QPaintDevice *)
+	?error@QEglContext@@SAHXZ @ 12562 NONAME ABSENT ; int QEglContext::error(void)
+	?swapBuffers@QEglContext@@QAE_NH@Z @ 12563 NONAME ABSENT ; bool QEglContext::swapBuffers(int)
+	?setApi@QEglContext@@QAEXW4API@QEgl@@@Z @ 12564 NONAME ABSENT ; void QEglContext::setApi(enum QEgl::API)
+	?makeCurrent@QEglContext@@QAE_NH@Z @ 12565 NONAME ABSENT ; bool QEglContext::makeCurrent(int)
+	?createSurface@QEglContext@@QAEHPAVQPaintDevice@@PBVQEglProperties@@@Z @ 12566 NONAME ABSENT ; int QEglContext::createSurface(class QPaintDevice *, class QEglProperties const *)
+	?dumpAllConfigs@QEglContext@@QAEXXZ @ 12567 NONAME ABSENT ; void QEglContext::dumpAllConfigs(void)
+	?reduceConfiguration@QEglProperties@@QAE_NXZ @ 12568 NONAME ABSENT ; bool QEglProperties::reduceConfiguration(void)
+	?removeValue@QEglProperties@@QAE_NH@Z @ 12569 NONAME ABSENT ; bool QEglProperties::removeValue(int)
+	?toString@QEglProperties@@QBE?AVQString@@XZ @ 12570 NONAME ABSENT ; class QString QEglProperties::toString(void) const
+	?dumpAllConfigs@QEglProperties@@SAXXZ @ 12571 NONAME ABSENT ; void QEglProperties::dumpAllConfigs(void)
+	?defaultDisplay@QEglContext@@SAHPAVQPaintDevice@@@Z @ 12572 NONAME ABSENT ; int QEglContext::defaultDisplay(class QPaintDevice *)
+	?configProperties@QEglContext@@QBE?AVQEglProperties@@H@Z @ 12573 NONAME ABSENT ; class QEglProperties QEglContext::configProperties(int) const
+	?properties@QEglProperties@@QBEPBHXZ @ 12574 NONAME ABSENT ; int const * QEglProperties::properties(void) const
+	??0QEglContext@@QAE@XZ @ 12575 NONAME ABSENT ; QEglContext::QEglContext(void)
+	??1QEglContext@@QAE@XZ @ 12576 NONAME ABSENT ; QEglContext::~QEglContext(void)
+	?isValid@QEglContext@@QBE_NXZ @ 12577 NONAME ABSENT ; bool QEglContext::isValid(void) const
+	?value@QEglProperties@@QBEHH@Z @ 12578 NONAME ABSENT ; int QEglProperties::value(int) const
+	?clearError@QEglContext@@SAXXZ @ 12579 NONAME ABSENT ; void QEglContext::clearError(void)
+	??0QEglProperties@@QAE@H@Z @ 12580 NONAME ABSENT ; QEglProperties::QEglProperties(int)
+	?setValue@QEglProperties@@QAEXHH@Z @ 12581 NONAME ABSENT ; void QEglProperties::setValue(int, int)
+	?setPaintDeviceFormat@QEglProperties@@QAEXPAVQPaintDevice@@@Z @ 12582 NONAME ABSENT ; void QEglProperties::setPaintDeviceFormat(class QPaintDevice *)
+	?destroy@QEglContext@@QAEXXZ @ 12583 NONAME ABSENT ; void QEglContext::destroy(void)
+	?setRenderableType@QEglProperties@@QAEXW4API@QEgl@@@Z @ 12584 NONAME ABSENT ; void QEglProperties::setRenderableType(enum QEgl::API)
+	?setContext@QEglContext@@QAEXH@Z @ 12585 NONAME ABSENT ; void QEglContext::setContext(int)
+	?waitClient@QEglContext@@QAEXXZ @ 12586 NONAME ABSENT ; void QEglContext::waitClient(void)
+	?isEmpty@QEglProperties@@QBE_NXZ @ 12587 NONAME ABSENT ; bool QEglProperties::isEmpty(void) const
+	?getDisplay@QEglContext@@CAHPAVQPaintDevice@@@Z @ 12588 NONAME ABSENT ; int QEglContext::getDisplay(class QPaintDevice *)
+	?isSharing@QEglContext@@QBE_NXZ @ 12589 NONAME ABSENT ; bool QEglContext::isSharing(void) const
+	?isCurrent@QEglContext@@QBE_NXZ @ 12590 NONAME ABSENT ; bool QEglContext::isCurrent(void) const
+	??0QEglProperties@@QAE@XZ @ 12591 NONAME ABSENT ; QEglProperties::QEglProperties(void)
+	?extensions@QEglContext@@SA?AVQString@@XZ @ 12592 NONAME ABSENT ; class QString QEglContext::extensions(void)
+	?setCurrentContext@QEglContext@@CAXW4API@QEgl@@PAV1@@Z @ 12593 NONAME ABSENT ; void QEglContext::setCurrentContext(enum QEgl::API, class QEglContext *)
+	??1QEglProperties@@QAE@XZ @ 12594 NONAME ABSENT ; QEglProperties::~QEglProperties(void)
+	?createContext@QEglContext@@QAE_NPAV1@PBVQEglProperties@@@Z @ 12595 NONAME ABSENT ; bool QEglContext::createContext(class QEglContext *, class QEglProperties const *)
+	?setConfig@QEglContext@@QAEXH@Z @ 12596 NONAME ABSENT ; void QEglContext::setConfig(int)
+	?hasExtension@QEglContext@@SA_NPBD@Z @ 12597 NONAME ABSENT ; bool QEglContext::hasExtension(char const *)
+	?doneCurrent@QEglContext@@QAE_NXZ @ 12598 NONAME ABSENT ; bool QEglContext::doneCurrent(void)
+	?display@QEglContext@@QBEHXZ @ 12599 NONAME ABSENT ; int QEglContext::display(void) const
+	?setPixelFormat@QEglProperties@@QAEXW4Format@QImage@@@Z @ 12600 NONAME ABSENT ; void QEglProperties::setPixelFormat(enum QImage::Format)
+	?currentContext@QEglContext@@CAPAV1@W4API@QEgl@@@Z @ 12601 NONAME ABSENT ; class QEglContext * QEglContext::currentContext(enum QEgl::API)
+	?errorString@QEglContext@@SA?AVQString@@H@Z @ 12602 NONAME ABSENT ; class QString QEglContext::errorString(int)
 

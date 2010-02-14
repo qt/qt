@@ -951,8 +951,8 @@ void QLabel::contextMenuEvent(QContextMenuEvent *ev)
         return;
     }
     ev->accept();
-    menu->exec(ev->globalPos());
-    delete menu;
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->popup(ev->globalPos());
 #endif
 }
 

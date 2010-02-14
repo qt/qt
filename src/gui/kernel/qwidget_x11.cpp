@@ -346,11 +346,6 @@ Q_GUI_EXPORT void qt_x11_enforce_cursor(QWidget * w)
     qt_x11_enforce_cursor(w, false);
 }
 
-static Bool checkForConfigureAndExpose(Display *, XEvent *e, XPointer)
-{
-    return e->type == ConfigureNotify || e->type == Expose;
-}
-
 Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
 {
     if (!w || (!w->isWindow() && !w->internalWinId()))
@@ -363,38 +358,60 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     if (!w->testAttribute(Qt::WA_WState_Created))
         return;
 
-    if (!(w->windowFlags() & Qt::X11BypassWindowManagerHint)) {
-        // if the window is not override-redirect, then the window manager
-        // will reparent us to the frame decoration window.
-        while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ReparentNotify, &ev)) {
-            if (t.elapsed() > maximumWaitTime)
-                return;
-            qApp->syncX(); // non-busy wait
-        }
-    }
+    WId winid = w->internalWinId();
 
-    while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), MapNotify, &ev)) {
-        if (t.elapsed() > maximumWaitTime)
-            return;
-        qApp->syncX(); // non-busy wait
-    }
+    // first deliver events that are already in the local queue
+    QApplication::sendPostedEvents();
 
-    qApp->x11ProcessEvent(&ev);
+    // the normal sequence is:
+    //  ... ConfigureNotify ... ReparentNotify ... MapNotify ... Expose
+    // with X11BypassWindowManagerHint:
+    //  ConfigureNotify ... MapNotify ... Expose
 
-    // ok, seems like the window manager successfully reparented us, we'll wait
-    // for the first paint event to arrive, while handling ConfigureNotify in
-    // the arrival order
-    while(1)
-    {
-        if (XCheckIfEvent(X11->display, &ev, checkForConfigureAndExpose, 0)) {
+    enum State {
+        Initial, Reparented, Mapped
+    } state = Initial;
+
+    do {
+        if (XEventsQueued(X11->display, QueuedAlready)) {
+            XNextEvent(X11->display, &ev);
             qApp->x11ProcessEvent(&ev);
-            if (ev.type == Expose)
-                return;
+
+            if (w->windowFlags() & Qt::X11BypassWindowManagerHint) {
+                switch (state) {
+                case Initial:
+                case Reparented:
+                    if (ev.type == MapNotify && ev.xany.window == winid)
+                        state = Mapped;
+                    break;
+                case Mapped:
+                    if (ev.type == Expose && ev.xany.window == winid)
+                        return;
+                    break;
+                }
+            } else {
+                switch (state) {
+                case Initial:
+                    if (ev.type == ReparentNotify && ev.xany.window == winid)
+                        state = Reparented;
+                    break;
+                case Reparented:
+                    if (ev.type == MapNotify && ev.xany.window == winid)
+                        state = Mapped;
+                    break;
+                case Mapped:
+                    if (ev.type == Expose && ev.xany.window == winid)
+                        return;
+                    break;
+                }
+            }
+        } else {
+            if (!XEventsQueued(X11->display, QueuedAfterFlush))
+                qApp->syncX(); // non-busy wait
         }
         if (t.elapsed() > maximumWaitTime)
             return;
-        qApp->syncX(); // non-busy wait
-    }
+    } while(1);
 }
 
 void qt_change_net_wm_state(const QWidget* w, bool set, Atom one, Atom two = 0)

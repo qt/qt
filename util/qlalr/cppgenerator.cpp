@@ -457,7 +457,7 @@ void CppGenerator::generateDecl (QTextStream &out)
   out << "class " << grammar.table_name << endl
       << "{" << endl
       << "public:" << endl
-      << "  enum {" << endl;
+      << "  enum VariousConstants {" << endl;
 
   foreach (Name t, grammar.terminals)
     {

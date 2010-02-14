@@ -90,6 +90,8 @@ Q_DECLARE_METATYPE(QRectF)
 #define COMPARE_REGIONS QTRY_COMPARE
 #endif
 
+static QGraphicsRectItem staticItem; //QTBUG-7629, we should not crash at exit.
+
 static void sendMousePress(QGraphicsScene *scene, const QPointF &point, Qt::MouseButton button = Qt::LeftButton)
 {
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
@@ -249,6 +251,21 @@ public:
     int repaints;
     QRectF br;
     QBrush brush;
+};
+
+class MyGraphicsView : public QGraphicsView
+{
+public:
+    int repaints;
+    QRegion paintedRegion;
+    MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+    void paintEvent(QPaintEvent *e)
+    {
+        paintedRegion += e->region();
+        ++repaints;
+        QGraphicsView::paintEvent(e);
+    }
+    void reset() { repaints = 0; paintedRegion = QRegion(); }
 };
 
 class tst_QGraphicsItem : public QObject
@@ -419,6 +436,8 @@ private slots:
     void QTBUG_4233_updateCachedWithSceneRect();
     void QTBUG_5418_textItemSetDefaultColor();
     void QTBUG_6738_missingUpdateWithSetParent();
+    void QTBUG_7714_fullUpdateDiscardingOpacityUpdate2();
+    void QT_2653_fullUpdateDiscardingOpacityUpdate();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -3164,7 +3183,6 @@ void tst_QGraphicsItem::childrenBoundingRect()
     childChild->setParentItem(child);
     childChild->setPos(500, 500);
     child->rotate(90);
-
 
     scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));;
 
@@ -6252,13 +6270,6 @@ void tst_QGraphicsItem::opacity2()
     QGraphicsScene scene;
     scene.addItem(parent);
 
-    class MyGraphicsView : public QGraphicsView
-    { public:
-        int repaints;
-        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-        void paintEvent(QPaintEvent *e) { ++repaints; QGraphicsView::paintEvent(e); }
-    };
-
     MyGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
@@ -6335,20 +6346,6 @@ void tst_QGraphicsItem::opacityZeroUpdates()
 
     QGraphicsScene scene;
     scene.addItem(parent);
-
-    class MyGraphicsView : public QGraphicsView
-    { public:
-        int repaints;
-        QRegion paintedRegion;
-        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-        void paintEvent(QPaintEvent *e)
-        {
-            ++repaints;
-            paintedRegion += e->region();
-            QGraphicsView::paintEvent(e);
-        }
-        void reset() { repaints = 0; paintedRegion = QRegion(); }
-    };
 
     MyGraphicsView view(&scene);
     view.show();
@@ -7075,21 +7072,6 @@ void tst_QGraphicsItem::deviceTransform()
     QCOMPARE(rect2->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult2);
     QCOMPARE(rect3->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult3);
 }
-
-class MyGraphicsView : public QGraphicsView
-{
-public:
-    int repaints;
-    QRegion paintedRegion;
-    MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-    void paintEvent(QPaintEvent *e)
-    {
-        paintedRegion += e->region();
-        ++repaints;
-        QGraphicsView::paintEvent(e);
-    }
-    void reset() { repaints = 0; paintedRegion = QRegion(); }
-};
 
 void tst_QGraphicsItem::update()
 {
@@ -9835,7 +9817,7 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
 }
 
-void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
+void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
 {
     struct Item : public QGraphicsTextItem
     {
@@ -9914,20 +9896,6 @@ void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
     QGraphicsScene scene;
     scene.addItem(parent);
 
-    class MyGraphicsView : public QGraphicsView
-    { public:
-        int repaints;
-        QRegion paintedRegion;
-        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
-        void paintEvent(QPaintEvent *e)
-        {
-            ++repaints;
-            paintedRegion += e->region();
-            QGraphicsView::paintEvent(e);
-        }
-        void reset() { repaints = 0; paintedRegion = QRegion(); }
-    };
-
     MyGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
@@ -9953,6 +9921,85 @@ void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
     child4->setVisible(false);
 
     QTRY_VERIFY(view.repaints == 1);
+}
+
+void tst_QGraphicsItem::QT_2653_fullUpdateDiscardingOpacityUpdate()
+{
+    QGraphicsScene scene(0, 0, 200, 200);
+    MyGraphicsView view(&scene);
+
+    EventTester *parentGreen = new EventTester();
+    parentGreen->setGeometry(QRectF(20, 20, 100, 100));
+    parentGreen->brush = Qt::green;
+
+    EventTester *childYellow = new EventTester(parentGreen);
+    childYellow->setGeometry(QRectF(10, 10, 50, 50));
+    childYellow->brush = Qt::yellow;
+
+    scene.addItem(parentGreen);
+
+    childYellow->setOpacity(0.0);
+    parentGreen->setOpacity(0.0);
+
+    // set any of the flags below to trigger a fullUpdate to reproduce the bug:
+    // ItemIgnoresTransformations, ItemClipsChildrenToShape, ItemIsSelectable
+    parentGreen->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.reset();
+
+    parentGreen->setOpacity(1.0);
+
+    QTRY_COMPARE(view.repaints, 1);
+
+    view.reset();
+    childYellow->repaints = 0;
+
+    childYellow->setOpacity(1.0);
+
+    QTRY_COMPARE(view.repaints, 1);
+    QTRY_COMPARE(childYellow->repaints, 1);
+}
+
+void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
+{
+    QGraphicsScene scene(0, 0, 200, 200);
+    MyGraphicsView view(&scene);
+    MyGraphicsView origView(&scene);
+
+    EventTester *parentGreen = new EventTester();
+    parentGreen->setGeometry(QRectF(20, 20, 100, 100));
+    parentGreen->brush = Qt::green;
+
+    EventTester *childYellow = new EventTester(parentGreen);
+    childYellow->setGeometry(QRectF(10, 10, 50, 50));
+    childYellow->brush = Qt::yellow;
+
+    scene.addItem(parentGreen);
+
+    origView.show();
+    QTest::qWaitForWindowShown(&origView);
+    origView.setGeometry(origView.width() + 20, 20,
+                         origView.width(), origView.height());
+
+    parentGreen->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
+    origView.reset();
+    childYellow->setOpacity(0.0);
+
+    QTRY_COMPARE(origView.repaints, 1);
+
+    view.show();
+
+    QTest::qWaitForWindowShown(&view);
+    view.reset();
+    origView.reset();
+
+    childYellow->setOpacity(1.0);
+
+    QTRY_COMPARE(origView.repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

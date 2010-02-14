@@ -236,6 +236,26 @@ void tst_QFileSystemModel::rootPath()
     QCOMPARE(model->rootPath(), QString(QDir::homePath()));
     QCOMPARE(rootChanged.count(), oldRootPath == model->rootPath() ? 0 : 1);
     QCOMPARE(model->rootDirectory().absolutePath(), QDir::homePath());
+
+    model->setRootPath(QDir::rootPath());
+    int oldCount = rootChanged.count();
+    oldRootPath = model->rootPath();
+    root = model->setRootPath(QDir::homePath() + QLatin1String("/."));
+    QTRY_VERIFY(model->rowCount(root) >= 0);
+    QCOMPARE(model->rootPath(), QDir::homePath());
+    QCOMPARE(rootChanged.count(), oldRootPath == model->rootPath() ? oldCount : oldCount + 1);
+    QCOMPARE(model->rootDirectory().absolutePath(), QDir::homePath());
+
+    QDir newdir = QDir::home();
+    if (newdir.cdUp()) {
+        oldCount = rootChanged.count();
+        oldRootPath = model->rootPath();
+        root = model->setRootPath(QDir::homePath() + QLatin1String("/.."));
+        QTRY_VERIFY(model->rowCount(root) >= 0);
+        QCOMPARE(model->rootPath(), newdir.path());
+        QCOMPARE(rootChanged.count(), oldCount + 1);
+        QCOMPARE(model->rootDirectory().absolutePath(), newdir.path());
+    }
 }
 
 void tst_QFileSystemModel::naturalCompare_data()
