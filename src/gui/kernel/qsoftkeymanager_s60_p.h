@@ -98,7 +98,6 @@ private:
 private:
     QHash<int, QAction*> realSoftKeyActions;
     QSize cachedCbaIconSize[4];
-    bool skipNextUpdate;
 };
 
 

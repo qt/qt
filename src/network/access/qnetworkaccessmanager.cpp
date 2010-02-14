@@ -592,7 +592,7 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
 
 /*!
     Posts a request to obtain the network headers for \a request
-    and returns a new QNetworkReply object which will contain such headers
+    and returns a new QNetworkReply object which will contain such headers.
 
     The function is named after the HTTP request associated (HEAD).
 */

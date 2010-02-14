@@ -1,0 +1,86 @@
+/*!
+\page qmlstates.html
+\target qmlstates
+\title QML States
+
+\section1 Overview
+
+QML states typically describe user interface configurations, including:
+\list
+\o What UI elements are present
+\o The properties of those elements (including how they behave)
+\o What actions are available
+\endlist
+
+A state can also be thought of as a set of batched changes from a default configuration.
+
+Examples of states in modern UI:
+\list
+\o An Address Book application with a 'View Contact' state and an 'Edit Contact' State. In the first state the contact information presented is read-only (using labels), and in the second it is editable (using editors).
+\o A button with a pressed and unpressed state. When pressed the text moves slightly down and to the right, and the button has a slightly darker appearance.
+\endlist
+
+\section1 States in QML
+
+In QML:
+\list
+\o Any object can use states.
+\o There is a default state. The default state can be explicitly set.
+\o A state can affect the properties of other objects, not just the object owning the state (and not just that object's children).
+\endlist
+
+Here is an example of using states. In the default state \c myRect is positioned at 0,0. In the 'moved' state it is positioned at 50,50. Clicking within the mouse region changes the state from the default state to the 'moved' state, thus moving the rectangle.
+
+\qml
+Item {
+    id: myItem
+
+    Rectangle {
+        id: myRect
+        width: 100
+        height: 100
+        color: "red"
+    }
+
+    states: [
+        State {
+            name: "moved"
+            PropertyChanges {
+                target: myRect
+                x: 50
+                y: 50
+            }
+        }
+    ]
+
+    MouseRegion {
+        anchors.fill: parent
+        onClicked: myItem.state = 'moved'
+    }
+}
+\endqml
+
+State changes can be animated using \l{state-transitions}{Transitions}.
+
+For example, adding this code to the above \c {Item {}} element animates the transition to the "moved" state:
+
+\qml
+    transitions: [
+        Transition {
+            NumberAnimation { matchProperties: "x,y"; duration: 500 }
+        }
+    ]
+\endqml
+
+See \l{state-transitions}{Transitions} for more information.
+
+
+Other things you can do in a state change:
+\list
+\o override signal handlers with PropertyChanges
+\o change an item's visual parent with ParentChange
+\o change an item's anchors with AnchorChanges
+\o run some script with StateChangeScript
+\endlist
+
+*/

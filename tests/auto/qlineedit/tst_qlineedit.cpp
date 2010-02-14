@@ -271,10 +271,10 @@ private slots:
     void taskQTBUG_4401_enterKeyClearsPassword();
     void taskQTBUG_4679_moveToStartEndOfBlock();
     void taskQTBUG_4679_selectToStartEndOfBlock();
-    void taskQTBUG_7395_readOnlyShortcut();
 #ifndef QT_NO_CONTEXTMENU
     void taskQTBUG_7902_contextMenuCrash();
 #endif
+    void taskQTBUG_7395_readOnlyShortcut();
 
 protected slots:
 #ifdef QT3_SUPPORT

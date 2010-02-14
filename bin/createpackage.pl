@@ -54,6 +54,8 @@ use Getopt::Long;
 use File::Basename;
 # Use File::Spec services mainly rel2abs
 use File::Spec;
+# Use File::Path - to make stub sis target directory
+use File::Path;
 # use CWD abs_bath, which is exported only on request
 use Cwd 'abs_path';
 
@@ -111,11 +113,13 @@ my $install = "";
 my $preprocessonly = "";
 my $certfile = "";
 my $preserveUnsigned = "";
+my $stub = "";
 
 unless (GetOptions('i|install' => \$install,
                    'p|preprocess' => \$preprocessonly,
                    'c|certfile=s' => \$certfile,
-                   'u|unsigned' => \$preserveUnsigned,)){
+                   'u|unsigned' => \$preserveUnsigned,
+                   's|stub' => \$stub,)){
     Usage();
 }
 
@@ -153,6 +157,7 @@ my $sisoutputbasename = lc($pkgoutputbasename);
 $sisoutputbasename =~ s/_$targetplatform//g;
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
 my $signed_sis_name = $sisoutputbasename.".sis";
+my $stub_sis_name = $sisoutputbasename."_stub.sis";
 
 # Store some utility variables
 my $scriptpath = dirname(__FILE__);
@@ -254,48 +259,57 @@ if ($preprocessonly) {
     exit;
 }
 
-# Create SIS.
-system ("makesis $pkgoutput $unsigned_sis_name");
-
-# Sign SIS with certificate info given as an argument.
-system ("signsis $unsigned_sis_name $signed_sis_name $certificate $key $passphrase");
-
-# Check if creating signed SIS Succeeded
-stat($signed_sis_name);
-if( -e _ ) {
-    my $targetInsert = "";
-    if ($targetplatform ne "-") {
-        $targetInsert = "for $targetplatform ";
-    }
-    print ("\nSuccessfully created $signed_sis_name ${targetInsert}using certificate: $certtext!\n");
-
-    # Sign with additional certificates & keys
-    for my $row ( @certificates ) {
-        # Get certificate absolute file names, relative paths are relative to certfilepath
-        my $abscert = File::Spec->rel2abs( $row->[0], $certfilepath);
-        my $abskey = File::Spec->rel2abs( $row->[1], $certfilepath);
-
-        system ("signsis $signed_sis_name $signed_sis_name $abscert $abskey $row->[2]");
-        print ("\tAdditionally signed the SIS with certificate: $row->[0]!\n");
-    }
-
-    # remove temporary pkg and unsigned sis
-    if (!$preservePkgOutput) {
-        unlink $pkgoutput;
-    }
-    if (!$preserveUnsigned) {
-        unlink $unsigned_sis_name;
-    }
-
-    # Install the sis if requested
-    if ($install) {
-        print ("\nInstalling $signed_sis_name...\n");
-        system ("$signed_sis_name");
-    }
+if($stub) {
+    if(!($ENV{EPOCROOT})) { die("EPOCROOT must be set to create stub sis files"); }
+    my $systeminstall = "$ENV{EPOCROOT}epoc32/data/z/system/install";
+    mkpath($systeminstall);
+    my $stub_sis_name = $systeminstall."/".$stub_sis_name;
+    # Create stub SIS.
+    system ("makesis -s $pkgoutput $stub_sis_name");
 } else {
-    # Lets leave the generated PKG for problem solving purposes
-    print ("\nSIS creation failed!\n");
-}
+    # Create SIS.
+    system ("makesis $pkgoutput $unsigned_sis_name");
+    print("\n");
 
+    # Sign SIS with certificate info given as an argument.
+    system ("signsis $unsigned_sis_name $signed_sis_name $certificate $key $passphrase");
+
+    # Check if creating signed SIS Succeeded
+    stat($signed_sis_name);
+    if( -e _ ) {
+        my $targetInsert = "";
+        if ($targetplatform ne "-") {
+            $targetInsert = "for $targetplatform ";
+        }
+        print ("Successfully created $signed_sis_name ${targetInsert}using certificate: $certtext!\n");
+
+        # Sign with additional certificates & keys
+        for my $row ( @certificates ) {
+            # Get certificate absolute file names, relative paths are relative to certfilepath
+            my $abscert = File::Spec->rel2abs( $row->[0], $certfilepath);
+            my $abskey = File::Spec->rel2abs( $row->[1], $certfilepath);
+
+            system ("signsis $signed_sis_name $signed_sis_name $abscert $abskey $row->[2]");
+            print ("\tAdditionally signed the SIS with certificate: $row->[0]!\n");
+        }
+
+        # remove temporary pkg and unsigned sis
+        if (!$preservePkgOutput) {
+            unlink $pkgoutput;
+        }
+        if (!$preserveUnsigned) {
+            unlink $unsigned_sis_name;
+        }
+
+        # Install the sis if requested
+        if ($install) {
+            print ("\nInstalling $signed_sis_name...\n");
+            system ("$signed_sis_name");
+        }
+    } else {
+        # Lets leave the generated PKG for problem solving purposes
+        print ("\nSIS creation failed!\n");
+    }
+}
 
 #end of file

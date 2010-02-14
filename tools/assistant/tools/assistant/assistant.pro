@@ -29,6 +29,8 @@ HEADERS += aboutdialog.h \
     filternamedialog.h \
     helpenginewrapper.h \
     helpviewer.h \
+    helpviewer_qtb.h \
+    helpviewer_qwv.h \
     indexwindow.h \
     installdialog.h \
     mainwindow.h \
@@ -55,6 +57,8 @@ SOURCES += aboutdialog.cpp \
     filternamedialog.cpp \
     helpenginewrapper.cpp \
     helpviewer.cpp \
+    helpviewer_qtb.cpp \
+    helpviewer_qwv.cpp \
     indexwindow.cpp \
     installdialog.cpp \
     main.cpp \

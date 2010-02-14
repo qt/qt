@@ -465,11 +465,11 @@ struct QGLExtensionFuncs
 #endif
 
 #ifndef GL_RGB16
-#define GL_RGB16 32852
+#define GL_RGB16 0x8054
 #endif
 
 #ifndef GL_UNSIGNED_SHORT_5_6_5
-#define GL_UNSIGNED_SHORT_5_6_5 33635
+#define GL_UNSIGNED_SHORT_5_6_5 0x8363
 #endif
 
 #ifndef GL_UNSIGNED_INT_8_8_8_8_REV

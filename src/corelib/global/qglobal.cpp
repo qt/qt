@@ -1994,7 +1994,6 @@ void qt_check_pointer(const char *n, int l)
     qWarning("In file %s, line %d: Out of memory", n, l);
 }
 
-#ifndef QT_NO_EXCEPTIONS
 /* \internal
    Allows you to throw an exception without including <new>
    Called internally from Q_CHECK_PTR on certain OS combinations
@@ -2003,7 +2002,6 @@ void qBadAlloc()
 {
     QT_THROW(std::bad_alloc());
 }
-#endif
 
 /*
   The Q_ASSERT macro calls this function when the test fails.
