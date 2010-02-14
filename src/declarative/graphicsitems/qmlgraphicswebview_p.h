@@ -246,6 +246,31 @@ private:
     friend class QmlGraphicsWebPage;
 };
 
+class QmlGraphicsWebViewAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString windowObjectName READ windowObjectName WRITE setWindowObjectName)
+public:
+    QmlGraphicsWebViewAttached(QObject *parent)
+        : QObject(parent)
+    {
+    }
+
+    QString windowObjectName() const
+    {
+        return m_windowObjectName;
+    }
+
+    void setWindowObjectName(const QString &n)
+    {
+        m_windowObjectName = n;
+    }
+
+private:
+    QString m_windowObjectName;
+};
+
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsWebView)

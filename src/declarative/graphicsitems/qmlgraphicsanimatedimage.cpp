@@ -78,7 +78,6 @@ Item {
     \endqml
     \endtable
 */
-QML_DEFINE_TYPE(Qt,4,6,AnimatedImage,QmlGraphicsAnimatedImage)
 
 QmlGraphicsAnimatedImage::QmlGraphicsAnimatedImage(QmlGraphicsItem *parent)
     : QmlGraphicsImage(*(new QmlGraphicsAnimatedImagePrivate), parent)

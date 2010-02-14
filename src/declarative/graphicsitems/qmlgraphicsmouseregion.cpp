@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 static const int PressAndHoldDelay = 800;
 
-QML_DEFINE_TYPE(Qt,4,6,Drag,QmlGraphicsDrag)
 QmlGraphicsDrag::QmlGraphicsDrag(QObject *parent)
 : QObject(parent), _target(0), _axis(XandYAxis), _xmin(0), _xmax(0), _ymin(0), _ymax(0)
 {
@@ -230,8 +229,6 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
-
-QML_DEFINE_TYPE(Qt,4,6,MouseRegion,QmlGraphicsMouseRegion)
 
 /*!
     \internal

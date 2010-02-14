@@ -39,50 +39,27 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsfocuspanel_p.h"
+#ifndef QMLGRAPHICSEFFECTS_P_H
+#define QMLGRAPHICSEFFECTS_P_H
 
-#include <QtGui/qgraphicsscene.h>
-#include <QEvent>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_NAMESPACE
+#include <qml.h>
+#include <QtGui/qgraphicseffect.h>
 
-/*!
-   \qmlclass FocusPanel QmlGraphicsFocusPanel
-   \brief The FocusPanel item explicitly creates a focus panel.
-   \inherits Item
+QML_DECLARE_TYPE(QGraphicsEffect)
+QML_DECLARE_TYPE(QGraphicsBlurEffect)
+QML_DECLARE_TYPE(QGraphicsColorizeEffect)
+QML_DECLARE_TYPE(QGraphicsDropShadowEffect)
+QML_DECLARE_TYPE(QGraphicsOpacityEffect)
 
-    Focus panels assist in keyboard focus handling when building QML
-    applications.  All the details are covered in the 
-    \l {qmlfocus}{keyboard focus documentation}.
-*/
-
-/*!
-    \internal
-    \class QmlGraphicsFocusPanel
-*/
-
-QmlGraphicsFocusPanel::QmlGraphicsFocusPanel(QmlGraphicsItem *parent) :
-    QmlGraphicsItem(parent)
-{
-    setFlag(ItemIsPanel);
-}
-
-QmlGraphicsFocusPanel::~QmlGraphicsFocusPanel()
-{
-}
-
-/*!
-    \qmlproperty bool FocusPanel::active
-
-    Sets whether the item is the active focus panel.
-*/
-
-bool QmlGraphicsFocusPanel::sceneEvent(QEvent *event)
-{
-    if (event->type() == QEvent::WindowActivate ||
-        event->type() == QEvent::WindowDeactivate)
-        emit activeChanged();
-    return QmlGraphicsItem::sceneEvent(event);
-}
-
-QT_END_NAMESPACE
+#endif // QMLGRAPHICSEFFECTS_P_H

@@ -64,12 +64,8 @@
 #include <qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,WebView,QmlGraphicsWebView)
-QML_DEFINE_NOCREATE_TYPE(QAction)
 
 static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
-
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsWebSettings)
 
 class QmlGraphicsWebViewPrivate : public QmlGraphicsPaintedItemPrivate
 {
@@ -460,30 +456,6 @@ QmlList<QObject *> *QmlGraphicsWebView::javaScriptWindowObjects()
     Q_D(QmlGraphicsWebView);
     return &d->windowObjects;
 }
-
-class QmlGraphicsWebViewAttached : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QString windowObjectName READ windowObjectName WRITE setWindowObjectName)
-public:
-    QmlGraphicsWebViewAttached(QObject *parent)
-        : QObject(parent)
-    {
-    }
-
-    QString windowObjectName() const
-    {
-        return m_windowObjectName;
-    }
-
-    void setWindowObjectName(const QString &n)
-    {
-        m_windowObjectName = n;
-    }
-
-private:
-    QString m_windowObjectName;
-};
 
 QmlGraphicsWebViewAttached *QmlGraphicsWebView::qmlAttachedProperties(QObject *o)
 {

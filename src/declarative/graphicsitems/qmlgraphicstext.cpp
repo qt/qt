@@ -55,7 +55,6 @@
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,Text,QmlGraphicsText)
 
 /*!
     \qmlclass Text QmlGraphicsText
