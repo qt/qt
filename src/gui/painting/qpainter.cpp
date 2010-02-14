@@ -5745,10 +5745,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
     if (d->extended == 0 || !d->state->matrix.isAffine()) {
-        if (staticText_d->size.isValid())
-            drawText(QRectF(position, staticText_d->size), staticText_d->text);
-        else
-            drawText(position, staticText_d->text);
+        staticText_d->paintText(this);
         return;
     }
 
@@ -5784,7 +5781,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     bool restoreWhenFinished = false;
     if (staticText_d->needsClipRect) {
         save();
-        setClipRect(QRectF(position, staticText_d->size));
+        setClipRect(QRectF(position, staticText_d->maximumSize));
 
         restoreWhenFinished = true;
     }
@@ -5815,10 +5812,18 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
         staticText_d->position = transformedPosition;
     }
 
+    QPen oldPen = d->state->pen;
+    QColor currentColor = oldPen.color();
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
+        if (currentColor != item->color) {
+            setPen(item->color);
+            currentColor = item->color;
+        }
         d->extended->drawStaticTextItem(item);
     }
+    if (currentColor != oldPen.color())
+        setPen(oldPen);
 
     if (restoreWhenFinished)
         restore();

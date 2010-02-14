@@ -129,7 +129,7 @@ QStaticText::QStaticText(const QString &text, const QSizeF &size)
     : data(new QStaticTextPrivate)
 {    
     data->text = text;
-    data->size = size;
+    data->maximumSize = size;
     data->init();
 }
 
@@ -199,7 +199,7 @@ bool QStaticText::operator==(const QStaticText &other) const
     return (data == other.data
             || (data->text == other.data->text
                 && data->font == other.data->font
-                && data->size == other.data->size));
+                && data->maximumSize == other.data->maximumSize));
 }
 
 /*!
@@ -212,16 +212,22 @@ bool QStaticText::operator!=(const QStaticText &other) const
 }
 
 /*!
-    Sets the text of the QStaticText to \a text.
+    Sets the text of the QStaticText to \a text. If \a textFormat is set to Qt::AutoText
+    (the default), the format of the text will try to be determined using the function
+     Qt::mightBeRichText(). If the text format is Qt::PlainText, then the text will be displayed
+     as is, whereas it will be interpreted as HTML if the format is Qt::RichText. HTML tags
+     that alter the font of the text, its color, or its layout are supported by QStaticText.
 
     \note This function will cause the layout of the text to be recalculated.
 
     \sa text()
 */
-void QStaticText::setText(const QString &text) 
+void QStaticText::setText(const QString &text, Qt::TextFormat textFormat)
 {
     detach();
     data->text = text;
+    data->preferRichText = (textFormat == Qt::RichText
+                            || (textFormat == Qt::AutoText && Qt::mightBeRichText(text)));
     data->init();
 }
 
@@ -283,7 +289,7 @@ bool QStaticText::useBackendOptimizations() const
 void QStaticText::setMaximumSize(const QSizeF &size)
 {
     detach();
-    data->size = size;
+    data->maximumSize = size;
     data->init();
 }
 
@@ -294,7 +300,17 @@ void QStaticText::setMaximumSize(const QSizeF &size)
 */
 QSizeF QStaticText::maximumSize() const
 {
-    return data->size;
+    return data->maximumSize;
+}
+
+/*!
+  Returns the size of the bounding rect for this QStaticText.
+
+  \sa maximumSize()
+*/
+QSizeF QStaticText::size() const
+{
+    return data->actualSize;
 }
 
 /*!
@@ -315,7 +331,7 @@ QStaticTextPrivate::QStaticTextPrivate()
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
-    : text(other.text), font(other.font), size(other.size), matrix(other.matrix),
+    : text(other.text), font(other.font), maximumSize(other.maximumSize), matrix(other.matrix),
       items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
       useBackendOptimizations(false)
 {
@@ -373,6 +389,7 @@ namespace {
             currentItem->numGlyphs = ti.glyphs.numGlyphs;
             currentItem->glyphs = m_glyphPool;
             currentItem->glyphPositions = m_positionPool;
+            currentItem->color = state->pen().color();
 
             QTransform matrix = state->transform();
             matrix.translate(position.x(), position.y());
@@ -488,7 +505,38 @@ namespace {
     private:
         DrawTextItemRecorder *m_paintEngine;
     };
+}
 
+void QStaticTextPrivate::paintText(QPainter *p)
+{
+    if (!preferRichText) {
+        if (maximumSize.isValid()) {
+            QRectF boundingRect;
+            p->drawText(QRectF(QPointF(0, 0), maximumSize), Qt::TextWordWrap, text, &boundingRect);
+
+            actualSize = boundingRect.size();
+            needsClipRect = boundingRect.width() > maximumSize.width()
+                            || boundingRect.height() > maximumSize.height();
+        } else {
+            p->drawText(0, 0, text);
+            needsClipRect = false;
+
+            QFontMetrics fm(font);
+            actualSize = fm.boundingRect(text).size();
+        }
+    } else {
+        QTextDocument document;
+        document.setDefaultFont(font);
+        document.setHtml(text);
+
+        QRectF rect = maximumSize.isValid() ? QRectF(QPointF(0, 0), maximumSize) : QRectF();
+        document.adjustSize();
+        document.drawContents(p, rect);        
+        actualSize = document.size();
+        needsClipRect = maximumSize.isValid()
+                        && (actualSize.width() > maximumSize.width()
+                            || actualSize.height() > maximumSize.height());
+    }
 }
 
 void QStaticTextPrivate::init()
@@ -507,10 +555,8 @@ void QStaticTextPrivate::init()
         painter.setFont(font);
         painter.setTransform(matrix);
 
-        if (size.isValid())
-            painter.drawText(QRectF(QPointF(0, 0), size), text);
-        else
-            painter.drawText(0, 0, text);
+        paintText(&painter);
+
     }
 
     itemCount = counterDevice.itemCount();    
@@ -533,17 +579,7 @@ void QStaticTextPrivate::init()
         painter.setFont(font);
         painter.setTransform(matrix);
 
-        if (size.isValid()) {
-            QRectF boundingRect;
-            painter.drawText(QRectF(QPointF(0, 0), size), Qt::TextWordWrap, text, &boundingRect);
-
-            needsClipRect = boundingRect.width() > size.width()
-                            || boundingRect.height() > size.height();
-
-        } else {
-            painter.drawText(0, 0, text);
-            needsClipRect = false;
-        }
+        paintText(&painter);
     }
 
 }

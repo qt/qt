@@ -65,11 +65,13 @@ public:
     QStaticText(const QStaticText &other);
     ~QStaticText();
 
-    void setText(const QString &text);
+    void setText(const QString &text, Qt::TextFormat textFormat = Qt::AutoText);
     QString text() const;
 
     void setMaximumSize(const QSizeF &maximumSize);
     QSizeF maximumSize() const;
+
+    QSizeF size() const;
 
     void prepare(const QTransform &matrix, const QFont &font);
 

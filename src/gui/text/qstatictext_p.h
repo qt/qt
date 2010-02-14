@@ -98,11 +98,12 @@ public:
     int numChars;                                // 4 bytes per item
     QFontEngine *fontEngine;                     // 4 bytes per item
     QFont font;                                  // 8 bytes per item
+    QColor color;                                // 10 bytes per item
     QStaticTextUserData *userData;               // 8 bytes per item
     char useBackendOptimizations : 1;            // 1 byte per item
     char userDataNeedsUpdate : 1;                //
                                                  // ================
-                                                 // 41 bytes per item
+                                                 // 51 bytes per item
 };
 
 class QStaticText;
@@ -114,12 +115,14 @@ public:
     ~QStaticTextPrivate();
 
     void init();
+    void paintText(QPainter *p);
 
     QAtomicInt ref;                      // 4 bytes per text
 
     QString text;                        // 4 bytes per text
     QFont font;                          // 8 bytes per text
-    QSizeF size;                         // 16 bytes per text
+    QSizeF maximumSize;                  // 16 bytes per text
+    QSizeF actualSize;                   // 16 bytes per text
     QPointF position;                    // 16 bytes per text
 
     QTransform matrix;                   // 80 bytes per text
@@ -130,8 +133,9 @@ public:
 
     char needsClipRect           : 1;    // 1 byte per text
     char useBackendOptimizations : 1;
+    char preferRichText          : 1;
                                          // ================
-                                         // 145 bytes per text
+                                         // 171 bytes per text
 
     static QStaticTextPrivate *get(const QStaticText *q);
 };
