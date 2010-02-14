@@ -1324,12 +1324,10 @@ QVariant QSystemLocale::query(QueryType /* type */, QVariant /* in */) const
 
 #endif
 
-#ifndef QT_NO_SYSTEMLOCALE
 static QSystemLocale *_systemLocale = 0;
 Q_GLOBAL_STATIC_WITH_ARGS(QSystemLocale, QSystemLocale_globalSystemLocale, (true))
 static QLocalePrivate *system_lp = 0;
 Q_GLOBAL_STATIC(QLocalePrivate, globalLocalePrivate)
-#endif
 
 /******************************************************************************
 ** Default system locale behavior
@@ -1425,36 +1423,7 @@ static const QSystemLocale *systemLocale()
     return QSystemLocale_globalSystemLocale();
 }
 
-// returns the private data for the system locale. Cached data will not be
-// initialized until the updateSystemPrivate is called.
-static const QLocalePrivate *systemPrivate()
-{
-#ifndef QT_NO_SYSTEMLOCALE
-    if (!system_lp) {
-        system_lp = globalLocalePrivate();
-        // mark the locale as uninitialized system locale
-        system_lp->m_language_id = 0;
-    }
-    return system_lp;
-#else
-    return locale_data;
-#endif
-}
-
-#ifndef QT_NO_SYSTEMLOCALE
-static const QLocalePrivate *maybeSystemPrivate()
-{
-    return system_lp;
-}
-#endif
-
-static const QLocalePrivate *defaultPrivate()
-{
-    if (!default_lp)
-        default_lp = systemPrivate();
-    return default_lp;
-}
-
+static const QLocalePrivate *maybeSystemPrivate();
 bool QLocalePrivate::isUninitializedSystemLocale() const
 {
     return this == maybeSystemPrivate() && m_language_id == 0;
@@ -1515,6 +1484,36 @@ void QLocalePrivate::updateSystemPrivate()
         system_lp->m_plus = res.toString().at(0).unicode();
 }
 #endif
+
+// returns the private data for the system locale. Cached data will not be
+// initialized until the updateSystemPrivate is called.
+static const QLocalePrivate *systemPrivate()
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (!system_lp) {
+        system_lp = globalLocalePrivate();
+        // mark the locale as uninitialized system locale
+        system_lp->m_language_id = 0;
+    }
+    return system_lp;
+#else
+    return locale_data;
+#endif
+}
+
+#ifndef QT_NO_SYSTEMLOCALE
+static const QLocalePrivate *maybeSystemPrivate()
+{
+    return system_lp;
+}
+#endif
+
+static const QLocalePrivate *defaultPrivate()
+{
+    if (!default_lp)
+        default_lp = systemPrivate();
+    return default_lp;
+}
 
 static QString getLocaleListData(const ushort *data, int size, int index)
 {
