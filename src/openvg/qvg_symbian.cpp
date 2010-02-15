@@ -87,6 +87,70 @@ static CFbsBitmap* createBlitCopy(CFbsBitmap* bitmap)
     return copy;
 }
 
+static VGImage sgImageToVGImage(QEglContext *context, const RSgImage &sgImage)
+{
+    // when "0" used as argument then
+    // default display, context are used
+    if (!context)
+        context = qt_vg_create_context(0, QInternal::Pixmap);
+
+    VGImage vgImage = VG_INVALID_HANDLE;
+
+    TInt err = 0;
+
+    RSgDriver driver;
+    err = driver.Open();
+    if (err != KErrNone) {
+        return vgImage;
+    }
+
+    if (sgImage.IsNull()) {
+        driver.Close();
+        return vgImage;
+    }
+
+    TSgImageInfo sgImageInfo;
+    err = sgImage.GetInfo(sgImageInfo);
+    if (err != KErrNone) {
+        driver.Close();
+        return vgImage;
+    }
+
+    pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
+    pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
+    pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
+
+    if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
+        driver.Close();
+        return vgImage;
+    }
+
+    const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
+    EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
+            EGL_NO_CONTEXT,
+            EGL_NATIVE_PIXMAP_KHR,
+            (EGLClientBuffer)&sgImage,
+            (EGLint*)KEglImageAttribs);
+
+    if (eglGetError() != EGL_SUCCESS) {
+        driver.Close();
+        return vgImage;
+    }
+
+    vgImage = vgCreateEGLImageTargetKHR(eglImage);
+    if (vgGetError() != VG_NO_ERROR) {
+        eglDestroyImageKHR(context->display(), eglImage);
+        driver.Close();
+        return vgImage;
+    }
+
+    //setSerialNumber(++qt_vg_pixmap_serial);
+    // release stuff
+    eglDestroyImageKHR(context->display(), eglImage);
+    driver.Close();
+    return vgImage;
+}
+
 void QVGPixmapData::cleanup()
 {
     is_null = w = h = 0;
@@ -96,82 +160,25 @@ void QVGPixmapData::cleanup()
 
 void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
 {
-#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
     if (type == QPixmapData::SgImage && pixmap) {
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
         RSgImage *sgImage = reinterpret_cast<RSgImage*>(pixmap);
-        // when "0" used as argument then
-        // default display, context are used
-        if (!context)
-            context = qt_vg_create_context(0, QInternal::Pixmap);
-
         destroyImages();
         prevSize = QSize();
 
-        TInt err = 0;
-
-        RSgDriver driver;
-        err = driver.Open();
-        if (err != KErrNone) {
-            cleanup();
-            return;
+        VGImage vgImage = sgImageToVGImage(context, *sgImage);
+        if (vgImage != VG_INVALID_HANDLE) {
+            w = vgGetParameteri(vgImage, VG_IMAGE_WIDTH);
+            h = vgGetParameteri(vgImage, VG_IMAGE_HEIGHT);
+            d = 32; // We always use ARGB_Premultiplied for VG pixmaps.
         }
 
-        if (sgImage->IsNull()) {
-            cleanup();
-            driver.Close();
-            return;
-        }
-
-        TSgImageInfo sgImageInfo;
-        err = sgImage->GetInfo(sgImageInfo);
-        if (err != KErrNone) {
-            cleanup();
-            driver.Close();
-            return;
-        }
-
-        pfnEglCreateImageKHR eglCreateImageKHR = (pfnEglCreateImageKHR) eglGetProcAddress("eglCreateImageKHR");
-        pfnEglDestroyImageKHR eglDestroyImageKHR = (pfnEglDestroyImageKHR) eglGetProcAddress("eglDestroyImageKHR");
-        pfnVgCreateEGLImageTargetKHR vgCreateEGLImageTargetKHR = (pfnVgCreateEGLImageTargetKHR) eglGetProcAddress("vgCreateEGLImageTargetKHR");
-
-        if (eglGetError() != EGL_SUCCESS || !eglCreateImageKHR || !eglDestroyImageKHR || !vgCreateEGLImageTargetKHR) {
-            cleanup();
-            driver.Close();
-            return;
-        }
-
-        const EGLint KEglImageAttribs[] = {EGL_IMAGE_PRESERVED_SYMBIAN, EGL_TRUE, EGL_NONE};
-        EGLImageKHR eglImage = eglCreateImageKHR(context->display(),
-                EGL_NO_CONTEXT,
-                EGL_NATIVE_PIXMAP_KHR,
-                (EGLClientBuffer)sgImage,
-                (EGLint*)KEglImageAttribs);
-
-        if (eglGetError() != EGL_SUCCESS) {
-            cleanup();
-            driver.Close();
-            return;
-        }
-
-        vgImage = vgCreateEGLImageTargetKHR(eglImage);
-        if (vgGetError() != VG_NO_ERROR) {
-            cleanup();
-            eglDestroyImageKHR(context->display(), eglImage);
-            driver.Close();
-            return;
-        }
-
-        w = sgImageInfo.iSizeInPixels.iWidth;
-        h = sgImageInfo.iSizeInPixels.iHeight;
-        d = 32; // We always use ARGB_Premultiplied for VG pixmaps.
         is_null = (w <= 0 || h <= 0);
-        source = QImage();
+        source = QImage(); // vgGetImageSubData() some day?
         recreate = false;
         prevSize = QSize(w, h);
         //setSerialNumber(++qt_vg_pixmap_serial);
-        // release stuff
-        eglDestroyImageKHR(context->display(), eglImage);
-        driver.Close();
+#endif
     } else if (type == QPixmapData::FbsBitmap) {
         CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
 
@@ -217,16 +224,12 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         if(deleteSourceBitmap)
             delete bitmap;
     }
-#else
-    Q_UNUSED(pixmap);
-    Q_UNUSED(type);
-#endif
 }
 
 void* QVGPixmapData::toNativeType(NativeType type)
 {
-#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
     if (type == QPixmapData::SgImage) {
+#if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
         toVGImage();
 
         if (!isValid() || vgImage == VG_INVALID_HANDLE)
@@ -293,13 +296,14 @@ void* QVGPixmapData::toNativeType(NativeType type)
         eglDestroyImageKHR(context->display(), eglImage);
         driver.Close();
         return reinterpret_cast<void*>(sgImage);
+#endif
     } else if (type == QPixmapData::FbsBitmap) {
                 CFbsBitmap *bitmap = q_check_ptr(new CFbsBitmap);
 
         if (bitmap) {
             if (bitmap->Create(TSize(source.width(), source.height()),
                               EColor16MAP) == KErrNone) {
-                const uchar *sptr = qt_vg_imageBits(source);
+                const uchar *sptr = const_cast<const QImage&>(source).bits();
                 bitmap->BeginDataAccess();
 
                 uchar *dptr = (uchar*)bitmap->DataAddress();
@@ -314,8 +318,6 @@ void* QVGPixmapData::toNativeType(NativeType type)
 
         return reinterpret_cast<void*>(bitmap);
     }
-#else
-    Q_UNUSED(type);
     return 0;
 #endif
 }
