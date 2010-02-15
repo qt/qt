@@ -1415,6 +1415,7 @@ void QPdfBaseEngine::setProperty(PrintEnginePropertyKey key, const QVariant &val
     case PPK_FullPage:
         d->fullPage = value.toBool();
         break;
+    case PPK_CopyCount: // fallthrough
     case PPK_NumberOfCopies:
         d->copies = value.toInt();
         break;
@@ -1503,6 +1504,17 @@ QVariant QPdfBaseEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_FullPage:
         ret = d->fullPage;
+        break;
+    case PPK_CopyCount:
+        ret = d->copies;
+        break;
+    case PPK_SupportsMultipleCopies:
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+        if (QCUPSSupport::isAvailable())
+            ret = true;
+        else
+#endif
+            ret = false;
         break;
     case PPK_NumberOfCopies:
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
