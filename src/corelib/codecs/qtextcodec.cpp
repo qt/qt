@@ -975,8 +975,10 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 
     for (int i = 0; i < all->size(); ++i) {
         QTextCodec *cursor = all->at(i);
-        if (nameMatch(cursor->name(), name))
+        if (nameMatch(cursor->name(), name)) {
+            cache.insert(name, cursor);
             return cursor;
+        }
         QList<QByteArray> aliases = cursor->aliases();
         for (int y = 0; y < aliases.size(); ++y)
             if (nameMatch(aliases.at(y), name)) {
