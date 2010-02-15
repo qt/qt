@@ -5132,6 +5132,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 }
 
 /*!
+    \obsolete
+
     Paints the given \a items using the provided \a painter, after the
     background has been drawn, and before the foreground has been
     drawn.  All painting is done in \e scene coordinates. Before
@@ -5154,7 +5156,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     \snippet doc/src/snippets/graphicssceneadditemsnippet.cpp 0
 
-    \obsolete Since Qt 4.6, this function is not called anymore unless
+    Since Qt 4.6, this function is not called anymore unless
     the QGraphicsView::IndirectPainting flag is given as an Optimization
     flag.
 
