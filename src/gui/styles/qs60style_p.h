@@ -131,7 +131,7 @@ public:
         SP_QgnGrafBarFrameSideL,
         SP_QgnGrafBarFrameSideR,
         SP_QgnGrafBarProgress,
-        SP_QgnGrafOrgBgGrid
+        SP_QgnGrafOrgBgGrid,
         SP_QgnGrafScrollArrowDown,
         SP_QgnGrafScrollArrowLeft,
         SP_QgnGrafScrollArrowRight,
