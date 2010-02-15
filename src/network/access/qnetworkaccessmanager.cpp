@@ -710,9 +710,25 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
 /*!
     \since 4.7
 
-    Sets the network configuration that will be used when creating a network session to \a config.
+    Sets the network configuration that will be used when creating the
+    \l {QNetworkSession}{network session} to \a config.
 
-    \sa configuration()
+    The network configuration is used to create and open a network session before any request that
+    requires network access is process.  If no network configuration is explicitly set via this
+    function the network configuration returned by
+    QNetworkConfigurationManager::defaultConfiguration() will be used.
+
+    To restore the default network configuration set the network configuration to the value
+    returned from QNetworkConfigurationManager::defaultConfiguration().
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 2
+
+    If an invalid network configuration is set, a network session will not be created.  In this
+    case network requests will be processed regardless, but may fail.  For example:
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 3
+
+    \sa configuration(), QNetworkSession
 */
 void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config)
 {
@@ -722,9 +738,10 @@ void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config
 /*!
     \since 4.7
 
-    Returns the network configuration.
+    Returns the network configuration that will be used to create the
+    \l {QNetworkSession}{network session} which will be used when processing network requests.
 
-    \sa setConfiguration()
+    \sa setConfiguration(), activeConfiguration()
 */
 QNetworkConfiguration QNetworkAccessManager::configuration() const
 {
@@ -740,6 +757,14 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
     \since 4.7
 
     Returns the current active network configuration.
+
+    If the network configuration returned by configuration() is of type
+    QNetworkConfiguration::ServiceNetwork this function will return the current active child
+    network configuration of that configuration.  Otherwise returns the same network configuration
+    as configuration().
+
+    Use this function to return the actual network configuration currently in use by the network
+    session.
 
     \sa configuration()
 */
