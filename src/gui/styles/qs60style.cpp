@@ -2481,6 +2481,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         case SH_FormLayoutWrapPolicy:
             retValue = QFormLayout::WrapLongRows;
             break;
+        case SH_ScrollBar_ContextMenu:
+            retValue = false;
+            break;
         default:
             retValue = QCommonStyle::styleHint(sh, opt, widget, hret);
             break;
