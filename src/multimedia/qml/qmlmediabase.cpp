@@ -48,7 +48,7 @@
 #include <QtMultimedia/qmediaservice.h>
 #include <QtMultimedia/qmediaserviceprovider.h>
 #include <QtMultimedia/qmetadatacontrol.h>
-#include <QtMultimedia/qmetadatacontrolmetaobject_p.h>
+#include <QtMultimedia/private/qmetadatacontrolmetaobject_p.h>
 
 
 
