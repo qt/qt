@@ -90,9 +90,6 @@ Q_SIGNALS:
     void configurationChanged(const QNetworkConfiguration& config);
     void onlineStateChanged(bool isOnline);
 
-private:
-    void updateInternetServiceConfiguration();
-
     void abort();
 
 public:

@@ -109,62 +109,6 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
         emit onlineStateChanged(online);
 }
 
-void QNetworkConfigurationManagerPrivate::updateInternetServiceConfiguration()
-{
-#if 0
-    if (!generic->snapConfigurations.contains(QLatin1String("Internet Service Network"))) {
-        QNetworkConfigurationPrivate *serviceNetwork = new QNetworkConfigurationPrivate;
-        serviceNetwork->name = tr("Internet");
-        serviceNetwork->isValid = true;
-        serviceNetwork->id = QLatin1String("Internet Service Network");
-        serviceNetwork->state = QNetworkConfiguration::Defined;
-        serviceNetwork->type = QNetworkConfiguration::ServiceNetwork;
-
-        QNetworkConfigurationPrivatePointer ptr(serviceNetwork);
-
-        generic->snapConfigurations.insert(serviceNetwork->id, ptr);
-
-        if (!firstUpdate) {
-            QNetworkConfiguration item;
-            item.d = ptr;
-            emit configurationAdded(item);
-        }
-    }
-
-    QNetworkConfigurationPrivatePointer ptr =
-        generic->snapConfigurations.value(QLatin1String("Internet Service Network"));
-
-    QList<QNetworkConfigurationPrivatePointer> serviceNetworkMembers;
-
-    QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
-        generic->accessPointConfigurations.constBegin();
-
-    QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Defined;
-    while (i != generic->accessPointConfigurations.constEnd()) {
-        QNetworkConfigurationPrivatePointer child = i.value();
-
-        if (child.data()->internet && ((child.data()->state & QNetworkConfiguration::Defined)
-                    == QNetworkConfiguration::Defined)) {
-            serviceNetworkMembers.append(child);
-
-            state |= child.data()->state;
-        }
-
-        ++i;
-    }
-
-
-    if (ptr.data()->state != state || ptr.data()->serviceNetworkMembers != serviceNetworkMembers) {
-        ptr.data()->state = state;
-        ptr.data()->serviceNetworkMembers = serviceNetworkMembers;
-
-        QNetworkConfiguration item;
-        item.d = ptr;
-        emit configurationChanged(item);
-    }
-#endif
-}
-
 void QNetworkConfigurationManagerPrivate::updateConfigurations()
 {
     if (firstUpdate) {
