@@ -164,7 +164,9 @@ protected:
     bool x11Event(XEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
+#ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *event);
+#endif
     bool event(QEvent *e);
 
 private:

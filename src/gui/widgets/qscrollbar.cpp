@@ -521,6 +521,7 @@ bool QScrollBar::event(QEvent *event)
     if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
         d_func()->updateHoverControl(he->pos());
         break;
+#ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel: {
         // override wheel event without adding virtual function override
         QWheelEvent *ev = static_cast<QWheelEvent *>(event);
@@ -537,6 +538,7 @@ bool QScrollBar::event(QEvent *event)
             event->accept();
         return true;
     }
+#endif
     default:
         break;
     }

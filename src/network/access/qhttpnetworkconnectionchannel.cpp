@@ -286,7 +286,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         if (!socket->bytesAvailable()) {
             if (reply && reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
                 reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
-                this->state = QHttpNetworkConnectionChannel::IdleState;
                 allDone();
             } else {
                 // try to reconnect/resend before sending an error.
@@ -347,7 +346,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                     emit reply->headerChanged();
                 if (!replyPrivate->expectContent()) {
                     replyPrivate->state = QHttpNetworkReplyPrivate::AllDoneState;
-                    this->state = QHttpNetworkConnectionChannel::IdleState;
                     allDone();
                     return;
                 }
@@ -424,7 +422,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
             // everything done, fall through
             }
       case QHttpNetworkReplyPrivate::AllDoneState:
-            this->state = QHttpNetworkConnectionChannel::IdleState;
             allDone();
             break;
         default:
@@ -570,6 +567,9 @@ void QHttpNetworkConnectionChannel::allDone()
     // in case of failures, each channel will attempt two reconnects before emitting error.
     reconnectAttempts = 2;
 
+    // now the channel can be seen as free/idle again, all signal emissions for the reply have been done
+    this->state = QHttpNetworkConnectionChannel::IdleState;
+
     detectPipeliningSupport();
 
     // move next from pipeline to current request
@@ -610,19 +610,19 @@ void QHttpNetworkConnectionChannel::allDone()
 void QHttpNetworkConnectionChannel::detectPipeliningSupport()
 {
     // detect HTTP Pipelining support
-    QByteArray serverHeaderField = reply->headerField("Server");
+    QByteArray serverHeaderField;
     if (
-            // check for broken servers in server reply header
-            // this is adapted from http://mxr.mozilla.org/firefox/ident?i=SupportsPipelining
-            (!serverHeaderField.contains("Microsoft-IIS/4."))
-            && (!serverHeaderField.contains("Microsoft-IIS/5."))
-            && (!serverHeaderField.contains("Netscape-Enterprise/3."))
             // check for HTTP/1.1
-            && (reply->d_func()->majorVersion == 1 && reply->d_func()->minorVersion == 1)
+            (reply->d_func()->majorVersion == 1 && reply->d_func()->minorVersion == 1)
             // check for not having connection close
             && (!reply->d_func()->isConnectionCloseEnabled())
             // check if it is still connected
             && (socket->state() == QAbstractSocket::ConnectedState)
+            // check for broken servers in server reply header
+            // this is adapted from http://mxr.mozilla.org/firefox/ident?i=SupportsPipelining
+            && (serverHeaderField = reply->headerField("Server"), !serverHeaderField.contains("Microsoft-IIS/4."))
+            && (!serverHeaderField.contains("Microsoft-IIS/5."))
+            && (!serverHeaderField.contains("Netscape-Enterprise/3."))
             ) {
         pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningProbablySupported;
     } else {
