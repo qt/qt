@@ -423,13 +423,26 @@ int QHttpNetworkReplyPrivate::gunzipBodyPartially(QByteArray &compressed, QByteA
 
 qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
 {
+    if (fragment.isEmpty()) {
+        // reserve bytes for the status line. This is better than always append() which reallocs the byte array
+        fragment.reserve(32);
+    }
+
     qint64 bytes = 0;
     char c;
+    qint64 haveRead = 0;
 
-    while (socket->bytesAvailable()) {
+    do {
+        haveRead = socket->read(&c, 1);
+        if (haveRead == -1)
+            return -1; // unexpected EOF
+        else if (haveRead == 0)
+            break; // read more later
+
+        bytes++;
+
         // allow both CRLF & LF (only) line endings
-        if (socket->peek(&c, 1) == 1 && c == '\n') {
-            bytes += socket->read(&c, 1); // read the "n"
+        if (c == '\n') {
             // remove the CR at the end
             if (fragment.endsWith('\r')) {
                 fragment.truncate(fragment.length()-1);
@@ -442,11 +455,6 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             }
             break;
         } else {
-            c = 0;
-            int haveRead = socket->read(&c, 1);
-            if (haveRead == -1)
-                return -1;
-            bytes += haveRead;
             fragment.append(c);
         }
 
@@ -456,8 +464,7 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             fragment.clear();
             return -1;
         }
-
-    }
+    } while (haveRead == 1);
 
     return bytes;
 }
@@ -500,20 +507,41 @@ bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
 
 qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
 {
+    if (fragment.isEmpty()) {
+        // according to http://dev.opera.com/articles/view/mama-http-headers/ the average size of the header
+        // block is 381 bytes.
+        // reserve bytes. This is better than always append() which reallocs the byte array.
+        fragment.reserve(512);
+    }
+
     qint64 bytes = 0;
     char c = 0;
     bool allHeaders = false;
-    while (!allHeaders && socket->bytesAvailable()) {
-        if (socket->peek(&c, 1) == 1 && c == '\n') {
-            // check for possible header endings. As per HTTP rfc,
-            // the header endings will be marked by CRLFCRLF. But
-            // we will allow CRLFLF, LFLF & CRLFCRLF
-            if (fragment.endsWith("\n\r") || fragment.endsWith('\n'))
-                allHeaders = true;
+    qint64 haveRead = 0;
+    do {
+        haveRead = socket->read(&c, 1);
+        if (haveRead == 0) {
+            // read more later
+            break;
+        } else if (haveRead == -1) {
+            // connection broke down
+            return -1;
+        } else {
+            fragment.append(c);
+            bytes++;
+
+            if (c == '\n') {
+                // check for possible header endings. As per HTTP rfc,
+                // the header endings will be marked by CRLFCRLF. But
+                // we will allow CRLFCRLF, CRLFLF, LFLF
+                if (fragment.endsWith("\r\n\r\n")
+                    || fragment.endsWith("\r\n\n")
+                    || fragment.endsWith("\n\n"))
+                    allHeaders = true;
+            }
         }
-        bytes += socket->read(&c, 1);
-        fragment.append(c);
-    }
+    } while (!allHeaders && haveRead > 0);
+
     // we received all headers now parse them
     if (allHeaders) {
         parseHeader(fragment);

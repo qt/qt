@@ -1267,32 +1267,28 @@ static const uint L2CacheLineLengthInInts = L2CacheLineLength/sizeof(uint);
   result = 0
   d = d * cia
 */
+#define comp_func_Clear_impl(dest, length, const_alpha)\
+{\
+    if (const_alpha == 255) {\
+        QT_MEMFILL_UINT(dest, length, 0);\
+    } else {\
+        int ialpha = 255 - const_alpha;\
+        PRELOAD_INIT(dest)\
+        for (int i = 0; i < length; ++i) {\
+            PRELOAD_COND(dest)\
+            dest[i] = BYTE_MUL(dest[i], ialpha);\
+        }\
+    }\
+}
+
 static void QT_FASTCALL comp_func_solid_Clear(uint *dest, int length, uint, uint const_alpha)
 {
-    if (const_alpha == 255) {
-        QT_MEMFILL_UINT(dest, length, 0);
-    } else {
-        int ialpha = 255 - const_alpha;
-        PRELOAD_INIT(dest)
-        for (int i = 0; i < length; ++i) {
-            PRELOAD_COND(dest)
-            dest[i] = BYTE_MUL(dest[i], ialpha);
-        }
-    }
+    comp_func_Clear_impl(dest, length, const_alpha);
 }
 
 static void QT_FASTCALL comp_func_Clear(uint *dest, const uint *, int length, uint const_alpha)
 {
-    if (const_alpha == 255) {
-        QT_MEMFILL_UINT(dest, length, 0);
-    } else {
-        int ialpha = 255 - const_alpha;
-        PRELOAD_INIT(dest)
-        for (int i = 0; i < length; ++i) {
-            PRELOAD_COND(dest)
-            dest[i] = BYTE_MUL(dest[i], ialpha);
-        }
-    }
+    comp_func_Clear_impl(dest, length, const_alpha);
 }
 
 /*

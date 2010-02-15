@@ -4,13 +4,15 @@ QT -= gui
 CONFIG += console
 CONFIG -= app_bundle
 
-include(trk/trk.pri)
+include(symbianutils/symbianutils.pri)
 
 SOURCES += main.cpp \
     trksignalhandler.cpp
 
 HEADERS += trksignalhandler.h \
     serenum.h
+
+DEFINES += SYMBIANUTILS_INCLUDE_PRI
 
 windows { 
     SOURCES += serenum_win.cpp 

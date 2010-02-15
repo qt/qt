@@ -45,6 +45,8 @@
 #include <private/qfontengine_p.h>
 #include <private/qemulationpaintengine_p.h>
 #include <private/qimage_p.h>
+#include <qstatictext.h>
+#include <private/qstatictext_p.h>
 
 #include <QDebug>
 
@@ -960,6 +962,18 @@ void QPaintBufferEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         buffer->updateBoundingRect(r);
 }
 
+void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
+{
+    QString text = QString(staticTextItem->chars, staticTextItem->numChars);
+
+    QStaticText staticText(text);
+    staticText.prepare(state()->matrix, staticTextItem->font);
+
+    QVariantList variants;
+    variants << QVariant(staticTextItem->font) << QVariant::fromValue(staticText);
+    buffer->addCommand(QPaintBufferPrivate::Cmd_DrawStaticText, QVariant(variants));
+}
+
 void QPaintBufferEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
 {
 #ifdef QPAINTBUFFER_DEBUG_DRAW
@@ -1425,6 +1439,19 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
 #endif
         painter->setClipRegion(region, Qt::ClipOperation(cmd.extra));
         break; }
+        
+    case QPaintBufferPrivate::Cmd_DrawStaticText: {
+            
+            QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
+            
+            QFont font(variants.at(0).value<QFont>());
+            QStaticText text(variants.at(0).value<QStaticText>());
+            
+            painter->setFont(font);
+            painter->drawStaticText(QPointF(0, 0), text);
+            
+        break;
+    }
 
     case QPaintBufferPrivate::Cmd_DrawText: {
         QPointF pos(d->floats.at(cmd.extra), d->floats.at(cmd.extra+1));

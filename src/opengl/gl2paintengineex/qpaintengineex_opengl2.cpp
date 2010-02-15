@@ -77,6 +77,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qdatabuffer_p.h>
+#include <private/qstatictext_p.h>
 #include <private/qtriangulator_p.h>
 
 #include "qglgradientcache_p.h"
@@ -1290,6 +1291,20 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
 
+void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    Q_D(QGL2PaintEngineEx);
+
+    ensureActive();
+
+    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine->glyphFormat >= 0
+                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine->glyphFormat)
+                                            : d->glyphCacheType;
+
+    // ### What about huge fonts? These are not passed through cache in drawTextItem().
+    d->drawCachedGlyphs(glyphType, textItem, true);
+}
+
 void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1343,33 +1358,70 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     }
 
     if (drawCached) {
-        d->drawCachedGlyphs(p, glyphType, ti);
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+        QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
+        ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
+        {
+            QStaticTextItem staticTextItem;
+            staticTextItem.chars = ti.chars;
+            staticTextItem.fontEngine = ti.fontEngine;
+            staticTextItem.glyphs = glyphs.data();
+            staticTextItem.numChars = ti.num_chars;
+            staticTextItem.numGlyphs = glyphs.size();
+            staticTextItem.glyphPositions = positions.data();
+
+            d->drawCachedGlyphs(glyphType, &staticTextItem, false);
+        }
         return;
     }
 
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
-void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType,
-                                                const QTextItemInt &ti)
+namespace {
+
+    class QOpenGLStaticTextUserData: public QStaticTextUserData
+    {
+    public:
+        QOpenGLStaticTextUserData()
+            : QStaticTextUserData(OpenGLUserData)
+        {
+        }
+
+        ~QOpenGLStaticTextUserData()
+        {
+        }
+
+        QGL2PEXVertexArray vertexCoordinateArray;
+        QGL2PEXVertexArray textureCoordinateArray;
+    };
+
+}
+
+void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType,
+                                                QStaticTextItem *staticTextItem,
+                                                bool includeMatrixInCache)
 {
     Q_Q(QGL2PaintEngineEx);
 
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
-    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+    QOpenGL2PaintEngineState *s = q->state();
 
     QGLTextureGlyphCache *cache =
-            (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, glyphType, QTransform());
-
+        (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(ctx, glyphType,
+                                                                        includeMatrixInCache
+                                                                          ? s->matrix
+                                                                          : QTransform());
     if (!cache || cache->cacheType() != glyphType) {
-        cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
-        ti.fontEngine->setGlyphCache(ctx, cache);
+        cache = new QGLTextureGlyphCache(ctx, glyphType,
+                                         includeMatrixInCache ? s->matrix : QTransform());
+        staticTextItem->fontEngine->setGlyphCache(ctx, cache);
     }
 
     cache->setPaintEnginePrivate(this);
-    cache->populate(ti, glyphs, positions);
+    cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
+                    staticTextItem->glyphPositions);
 
     if (cache->width() == 0 || cache->height() == 0)
         return;
@@ -1381,20 +1433,70 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();
 
-    vertexCoordinateArray.clear();
-    textureCoordinateArray.clear();
+    bool recreateVertexArrays = false;
+    if (staticTextItem->userDataNeedsUpdate)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData == 0)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
+        recreateVertexArrays = true;
 
-    for (int i=0; i<glyphs.size(); ++i) {
-        const QTextureGlyphCache::Coord &c = cache->coords.value(glyphs[i]);
-        int x = positions[i].x.toInt() + c.baseLineX - margin;
-        int y = positions[i].y.toInt() - c.baseLineY - margin;
+    // Use global arrays by default
+    QGL2PEXVertexArray *vertexCoordinates = &vertexCoordinateArray;
+    QGL2PEXVertexArray *textureCoordinates = &textureCoordinateArray;
 
-        vertexCoordinateArray.addRect(QRectF(x, y, c.w, c.h));
-        textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
+    if (staticTextItem->useBackendOptimizations) {
+        QOpenGLStaticTextUserData *userData = 0;
+
+        if (staticTextItem->userData == 0
+            || staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData) {
+
+            userData = new QOpenGLStaticTextUserData();
+            staticTextItem->setUserData(userData);
+
+        } else {
+            userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData);
+        }
+
+        // Use cache if backend optimizations is turned on
+        vertexCoordinates = &userData->vertexCoordinateArray;
+        textureCoordinates = &userData->textureCoordinateArray;
     }
 
-    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
-    setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
+
+    if (recreateVertexArrays) {
+        vertexCoordinates->clear();
+        textureCoordinates->clear();
+
+        for (int i=0; i<staticTextItem->numGlyphs; ++i) {
+            const QTextureGlyphCache::Coord &c = cache->coords.value(staticTextItem->glyphs[i]);
+            int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
+            int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
+
+            vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
+            textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
+        }
+
+        staticTextItem->userDataNeedsUpdate = false;
+    }
+
+    if (elementIndices.size() < staticTextItem->numGlyphs*6) {
+        Q_ASSERT(elementIndices.size() % 6 == 0);
+        int j = elementIndices.size() / 6 * 4;
+        while (j < staticTextItem->numGlyphs*4) {
+            elementIndices.append(j + 0);
+            elementIndices.append(j + 0);
+            elementIndices.append(j + 1);
+            elementIndices.append(j + 2);
+            elementIndices.append(j + 3);
+            elementIndices.append(j + 3);
+
+            j += 4;
+        }
+    }
+
+    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinates->data());
+    setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinates->data());
 
     if (addOffset) {
         addOffset = false;
@@ -1407,6 +1509,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
 
     QBrush pensBrush = q->state()->pen.brush();
     setBrush(pensBrush);
+
+    // When painting a QStaticTextItem, the glyph positions are already in device coordinates,
+    // therefore we temporarily set an identity matrix on the painter for the draw call to
+    // avoid transforming the positions twice.
+    QTransform old = s->matrix;
+    if (includeMatrixInCache)
+        s->matrix = QTransform();
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
 
@@ -1461,7 +1570,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
-            glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+            glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 
             shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass2);
 
@@ -1491,7 +1600,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
-    glDrawArrays(GL_TRIANGLES, 0, 6 * glyphs.size());
+
+    glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
+
+    if (includeMatrixInCache)
+        s->matrix = old;
 }
 
 void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)

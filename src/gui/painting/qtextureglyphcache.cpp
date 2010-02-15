@@ -55,29 +55,28 @@ QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
 
-void QTextureGlyphCache::populate(const QTextItemInt &ti,
-                                  const QVarLengthArray<glyph_t> &glyphs,
-                                  const QVarLengthArray<QFixedPoint> &)
+void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+                                  const QFixedPoint *)
 {
 #ifdef CACHE_DEBUG
     printf("Populating with '%s'\n", QString::fromRawData(ti.chars, ti.num_chars).toLatin1().data());
     qDebug() << " -> current transformation: " << m_transform;
 #endif
 
-    m_current_textitem = &ti;
+    m_current_fontengine = fontEngine;
     const int margin = glyphMargin();
 
     QHash<glyph_t, Coord> listItemCoordinates;
     int rowHeight = 0;
 
     // check each glyph for its metrics and get the required rowHeight.
-    for (int i=0; i < glyphs.size(); ++i) {
+    for (int i=0; i < numGlyphs; ++i) {
         const glyph_t glyph = glyphs[i];
         if (coords.contains(glyph))
             continue;
         if (listItemCoordinates.contains(glyph))
             continue;
-        glyph_metrics_t metrics = ti.fontEngine->boundingBox(glyph, m_transform);
+        glyph_metrics_t metrics = fontEngine->boundingBox(glyph, m_transform);
 
 #ifdef CACHE_DEBUG
         printf("'%c' (%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f, ti.ascent=%.2f, ti.descent=%.2f\n",
@@ -182,7 +181,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
             break;
         };
 
-        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_textitem->fontEngine);
+        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_fontengine);
         QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
 
         if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
@@ -194,9 +193,9 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
     } else
 #endif
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        return m_current_textitem->fontEngine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
+        return m_current_fontengine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
     else
-        return m_current_textitem->fontEngine->alphaMapForGlyph(g, m_transform);
+        return m_current_fontengine->alphaMapForGlyph(g, m_transform);
 
     return QImage();
 }

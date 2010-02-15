@@ -677,7 +677,7 @@ If you are using pre-built binaries, follow the instructions given in the
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 30
 
-        This will create a self-signed \c fluidlauncher_armv5_urel.sis and
+        This will create a self-signed \c fluidlauncher.sis and
         install it to your device.
 
         To run the demos on the emulator simply navigate to the directory of the demo

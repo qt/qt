@@ -133,6 +133,7 @@ public:
     virtual void stroke(const QVectorPath &path, const QPen &pen);
     virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
 
+    virtual void drawStaticTextItem(QStaticTextItem *textItem);
 
     Type type() const { return OpenGL2; }
 
@@ -194,7 +195,8 @@ public:
     void stroke(const QVectorPath &path, const QPen &pen);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
-    void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
+    void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem,
+                          bool includeMatrixInCache);
 
     // Calls glVertexAttributePointer if the pointer has changed
     inline void setVertexAttributePointer(unsigned int arrayIndex, const GLfloat *pointer);
@@ -265,6 +267,7 @@ public:
 
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
+    QVector<GLushort> elementIndices;
     QDataBuffer<GLfloat> opacityArray;
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];

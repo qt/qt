@@ -143,9 +143,17 @@ QObject *WebPage::createPlugin(const QString &classId, const QUrl &url, const QS
 
 void WebPage::handleUnsupportedContent(QNetworkReply *reply)
 {
-    if (reply->error() == QNetworkReply::NoError) {
-        BrowserApplication::downloadManager()->handleUnsupportedContent(reply);
+    QString errorString = reply->errorString();
+
+    if (m_loadingUrl != reply->url()) {
+        // sub resource of this page
+        qWarning() << "Resource" << reply->url().toEncoded() << "has unknown Content-Type, will be ignored.";
+        reply->deleteLater();
         return;
+    }
+
+    if (reply->error() == QNetworkReply::NoError && !reply->header(QNetworkRequest::ContentTypeHeader).isValid()) {
+        errorString = "Unknown Content-Type";
     }
 
     QFile file(QLatin1String(":/notfound.html"));
@@ -156,7 +164,7 @@ void WebPage::handleUnsupportedContent(QNetworkReply *reply)
     QString title = tr("Error loading page: %1").arg(reply->url().toString());
     QString html = QString(QLatin1String(file.readAll()))
                         .arg(title)
-                        .arg(reply->errorString())
+                        .arg(errorString)
                         .arg(reply->url().toString());
 
     QBuffer imageBuffer;

@@ -7572,7 +7572,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <location line="+2"/>
         <source>Play movie in full-screen mode</source>
         <comment>Media controller element</comment>
-        <translation>FIlm im Vollbildmodus abspielen</translation>
+        <translation>Film im Vollbildmodus abspielen</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -8245,7 +8245,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/xmlpatterns/api/qcoloringmessagehandler.cpp" line="+87"/>
         <source>Warning in %1, at line %2, column %3: %4</source>
-        <translation>Fehler in %1, bei Zeile %2, Spalte %3: %4</translation>
+        <translation>Warnung in %1, bei Zeile %2, Spalte %3: %4</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -9466,7 +9466,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <location line="-470"/>
         <location line="+451"/>
         <source>%1 is not allowed to derive from %2 by list as the latter defines it as final.</source>
-        <translation>%1 darf nicht durch Listen von %2 abgeleitet werden, da sie letzterer sie als final deklariert.</translation>
+        <translation>%1 darf nicht durch Listen von %2 abgeleitet werden, da letzterer sie als final deklariert.</translation>
     </message>
     <message>
         <location line="-431"/>
@@ -9917,7 +9917,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+6"/>
         <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
-        <translation>Der komplexe Typ % kann nicht durch Erweiterung von %2 abgeleitet werden, da letzterer ein &apos;%3&apos;-Element in seinem Inhaltsmodell hat.</translation>
+        <translation>Der komplexe Typ %1 kann nicht durch Erweiterung von %2 abgeleitet werden, da letzterer ein &apos;%3&apos;-Element in seinem Inhaltsmodell hat.</translation>
     </message>
     <message>
         <location line="+101"/>
