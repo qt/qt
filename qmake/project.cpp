@@ -1354,16 +1354,7 @@ bool
 QMakeProject::read(uchar cmd)
 {
     if(cfile.isEmpty()) {
-        //find out where qmake (myself) lives
-        if (!base_vars.contains("QMAKE_QMAKE")) {
-            if (!Option::qmake_abslocation.isNull())
-                base_vars["QMAKE_QMAKE"] = QStringList(Option::qmake_abslocation);
-            else
-                base_vars["QMAKE_QMAKE"] = QStringList("qmake");
-        }
-
         // hack to get the Option stuff in there
-        base_vars["QMAKE_EXT_OBJ"] = QStringList(Option::obj_ext);
         base_vars["QMAKE_EXT_CPP"] = Option::cpp_ext;
         base_vars["QMAKE_EXT_C"] = Option::c_ext;
         base_vars["QMAKE_EXT_H"] = Option::h_ext;
@@ -3164,6 +3155,19 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
     } else if (var == QLatin1String("QMAKE_DIR_SEP")) {
         if (place[var].isEmpty())
             return values("DIR_SEPARATOR", place);
+    } else if (var == QLatin1String("QMAKE_EXT_OBJ")) {
+        if (place[var].isEmpty()) {
+            var = ".BUILTIN." + var;
+            place[var] = QStringList(Option::obj_ext);
+        }
+    } else if (var == QLatin1String("QMAKE_QMAKE")) {
+        if (place[var].isEmpty()) {
+            var = ".BUILTIN." + var;
+            if (!Option::qmake_abslocation.isNull())
+                place[var] = QStringList(Option::qmake_abslocation);
+            else
+                place[var] = QStringList("qmake");
+        }
     } else if (var == QLatin1String("EPOCROOT")) {
         if (place[var].isEmpty())
             place[var] = QStringList(epocRoot());
