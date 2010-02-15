@@ -68,6 +68,14 @@ extern uint qGlobalPostedEventsCount();
 #  define QS_RAWINPUT 0x0400
 #endif
 
+#ifndef WM_TOUCH
+#  define WM_TOUCH 0x0240
+#endif
+#ifndef WM_GESTURE
+#  define WM_GESTURE 0x0119
+#  define WM_GESTURENOTIFY 0x011A
+#endif
+
 enum {
     WM_QT_SOCKETNOTIFIER = WM_USER,
     WM_QT_SENDPOSTEDEVENTS = WM_USER + 1,
@@ -714,6 +722,9 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                             && msg.message <= WM_MOUSELAST)
                         || msg.message == WM_MOUSEWHEEL
                         || msg.message == WM_MOUSEHWHEEL
+                        || msg.message == WM_TOUCH
+                        || msg.message == WM_GESTURE
+                        || msg.message == WM_GESTURENOTIFY
                         || msg.message == WM_CLOSE)) {
                     // queue user input events for later processing
                     haveMessage = false;

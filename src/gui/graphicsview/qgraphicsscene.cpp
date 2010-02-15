@@ -5902,13 +5902,21 @@ void QGraphicsScenePrivate::getGestureTargets(const QSet<QGesture *> &gestures,
             QList<QGraphicsItem *> items = itemsAtPosition(screenPos, QPointF(), viewport);
             QList<QGraphicsObject *> result;
             for (int j = 0; j < items.size(); ++j) {
-                QGraphicsObject *item = items.at(j)->toGraphicsObject();
-                if (!item)
-                    continue;
-                QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
-                if (d->gestureContext.contains(gestureType)) {
-                    result.append(item);
+                QGraphicsItem *item = items.at(j);
+
+                // Check if the item is blocked by a modal panel and use it as
+                // a target instead of this item.
+                (void) item->isBlockedByModalPanel(&item);
+
+                if (QGraphicsObject *itemobj = item->toGraphicsObject()) {
+                    QGraphicsItemPrivate *d = item->d_func();
+                    if (d->gestureContext.contains(gestureType)) {
+                        result.append(itemobj);
+                    }
                 }
+                // Don't propagate through panels.
+                if (item->isPanel())
+                    break;
             }
             DEBUG() << "QGraphicsScenePrivate::getGestureTargets:"
                     << gesture << result;
