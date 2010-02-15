@@ -37,7 +37,12 @@
 #endif
 
 #ifdef HAVE_SYS_TYPES_H
+#if !defined(Q_OS_WINCE)
 # include <sys/types.h>
+#else
+# include <windows.h>
+# include <types.h>
+#endif
 #endif
 
 #ifdef HAVE_STRING_H

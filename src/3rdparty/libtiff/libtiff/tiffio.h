@@ -72,6 +72,8 @@ typedef uint32 toff_t;          /* file offset */
 #define __WIN32__
 #endif
 
+#include <stdlib.h>
+
 /*
  * On windows you should define USE_WIN32_FILEIO if you are using tif_win32.c
  * or AVOID_WIN32_FILEIO if you are using something else (like tif_unix.c).

@@ -181,7 +181,7 @@ TIFFOpen(const char* name, const char* mode)
 	return tif;
 }
 
-#ifdef __WIN32__
+#if defined (__WIN32__) && !defined(__SYMBIAN32__)
 #include <windows.h>
 /*
  * Open a TIFF file with a Unicode filename, for read/writing.

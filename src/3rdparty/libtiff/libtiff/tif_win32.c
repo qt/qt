@@ -29,6 +29,7 @@
  * Scott Wagner (wagner@itek.com), Itek Graphix, Rochester, NY USA
  */
 #include "tiffiop.h"
+#include <windows.h>
 
 #include <windows.h>
 
