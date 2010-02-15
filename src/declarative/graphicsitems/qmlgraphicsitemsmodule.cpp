@@ -74,8 +74,10 @@
 #include "qmlgraphicstextedit_p.h"
 #include "qmlgraphicstextinput_p.h"
 #include "qmlgraphicsvisualitemmodel_p.h"
+#ifdef QT_WEBKIT_LIB
 #include "qmlgraphicswebview_p.h"
 #include "qmlgraphicswebview_p_p.h"
+#endif
 #include "qmlgraphicsanchors_p.h"
 
 #define QML_REGISTER_TYPE(URI,VMAJ,VMIN,TYPE,CLASS) \
@@ -140,7 +142,9 @@ void QmlGraphicsItemModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,VisibleArea,QmlGraphicsFlickableVisibleArea);
     QML_REGISTER_TYPE(Qt,4,6,VisualDataModel,QmlGraphicsVisualDataModel);
     QML_REGISTER_TYPE(Qt,4,6,VisualItemModel,QmlGraphicsVisualItemModel);
+#ifdef QT_WEBKIT_LIB
     QML_REGISTER_TYPE(Qt,4,6,WebView,QmlGraphicsWebView);
+#endif
 
     QML_REGISTER_NOCREATE_TYPE(QmlGraphicsAnchors);
     QML_REGISTER_NOCREATE_TYPE(QGraphicsEffect);
@@ -154,5 +158,7 @@ void QmlGraphicsItemModule::defineModule()
     QML_REGISTER_NOCREATE_TYPE(QValidator);
     QML_REGISTER_NOCREATE_TYPE(QmlGraphicsVisualModel);
     QML_REGISTER_NOCREATE_TYPE(QAction);
+#ifdef QT_WEBKIT_LIB
     QML_REGISTER_NOCREATE_TYPE(QmlGraphicsWebSettings);
+#endif
 }
