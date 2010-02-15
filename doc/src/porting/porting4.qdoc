@@ -3201,8 +3201,8 @@
 
     The \c QShared class has been obsoleted by the more powerful
     QSharedData and QSharedDataPointer as a means of creating custom
-    implicitly shared classes. It has been renamed Q3Shared moved to
-    the Qt3Support library.
+    implicitly shared classes. It has been renamed Q3Shared and moved
+    to the Qt3Support library.
 
     An easy way of porting to Qt 4 is to include this class into your
     project and to use it instead of \c QShared:
@@ -3226,7 +3226,7 @@
     \section1 QSimpleRichText
 
     QSimpleRichText has been obsoleted by QTextDocument. It has
-    bene renamed Q3SimpleRichText and moved to the Qt3Support
+    been renamed Q3SimpleRichText and moved to the Qt3Support
     library.
 
     Previously, you would do the following with Q3SimpleRichText:

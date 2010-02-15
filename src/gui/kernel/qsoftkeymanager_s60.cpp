@@ -66,17 +66,18 @@ QSoftKeyManagerPrivateS60::QSoftKeyManagerPrivateS60()
     cachedCbaIconSize[1] = QSize(0,0);
     cachedCbaIconSize[2] = QSize(0,0);
     cachedCbaIconSize[3] = QSize(0,0);
-    skipNextUpdate = false;
 }
 
 bool QSoftKeyManagerPrivateS60::skipCbaUpdate()
 {
-    // lets not update softkeys if
+    // Lets not update softkeys if
     // 1. We don't have application panes, i.e. cba
-    // 2. S60 native dialog or menu is shown
-    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes) ||
-        CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || skipNextUpdate) {
-        skipNextUpdate = false;
+    // 2. Our CBA is not active, i.e. S60 native dialog or menu with custom CBA is shown
+    // Note: Cannot use IsDisplayingMenuOrDialog since CBA update can be triggered before
+    // menu/dialog CBA is actually displayed i.e. it is being costructed.
+    CEikButtonGroupContainer *appUiCba = S60->buttonGroupContainer();
+    CEikButtonGroupContainer *currentCba = CEikButtonGroupContainer::Current();
+    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes) || appUiCba != currentCba) {
         return true;
     }
     return false;
@@ -384,9 +385,6 @@ bool QSoftKeyManagerPrivateS60::handleCommand(int command)
             }
             qt_symbian_next_menu_from_action(actionContainer);
             QT_TRAP_THROWING(S60->menuBar()->TryDisplayMenuBarL());
-            // TODO: hack remove, it can happen that IsDisplayingMenuOrDialog return false
-            // in updateSoftKeys_sys, and we will override menu CBA with our own
-            skipNextUpdate = true;
         } else {
             Q_ASSERT(action->softKeyRole() != QAction::NoSoftKey);
             QWidget *actionParent = action->parentWidget();
