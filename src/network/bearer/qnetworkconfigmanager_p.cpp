@@ -55,8 +55,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 
 QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
 {
-    while (!sessionEngines.isEmpty())
-        delete sessionEngines.takeFirst();
+    qDeleteAll(sessionEngines);
 }
 
 void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurationPrivatePointer ptr)
