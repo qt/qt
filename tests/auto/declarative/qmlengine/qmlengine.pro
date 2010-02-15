@@ -1,5 +1,5 @@
 load(qttest_p4)
-contains(QT_CONFIG,declarative): QT += declarative webkit network
+contains(QT_CONFIG,declarative): QT += declarative network
 macx:CONFIG -= app_bundle
 
 SOURCES += tst_qmlengine.cpp 
