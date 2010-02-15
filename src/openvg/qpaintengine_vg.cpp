@@ -3406,7 +3406,11 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     if (it != d->fontCache.constEnd()) {
         glyphCache = it.value();
     } else {
+#ifdef Q_OS_SYMBIAN
+        glyphCache = new QSymbianVGFontGlyphCache();
+#else
         glyphCache = new QVGFontGlyphCache();
+#endif
         if (glyphCache->font == VG_INVALID_HANDLE) {
             qWarning("QVGPaintEngine::drawTextItem: OpenVG fonts are not supported by the OpenVG engine");
             delete glyphCache;

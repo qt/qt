@@ -54,7 +54,7 @@
 //
 
 #include "qconfig.h"
-#include "qfontengine_p.h"
+#include <private/qfontengine_p.h>
 #include "qsize.h"
 #include <openfont.h>
 
