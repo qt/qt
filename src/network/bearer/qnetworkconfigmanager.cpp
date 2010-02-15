@@ -296,14 +296,7 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 
     This is equivalent to the following code snippet:
 
-    \code
-        QNetworkConfigurationManager mgr;
-        QList<QNetworkConfiguration> activeConfigs = mgr.allConfigurations(QNetworkConfiguration::Active)
-        if (activeConfigs.count() > 0)
-            Q_ASSERT(mgr.isOnline())
-        else
-            Q_ASSERT(!mgr.isOnline())
-    \endcode
+    \snippet doc/src/snippets/code/src_network_bearer_qnetworkconfigmanager.cpp 0
 
     \sa onlineStateChanged()
 */
