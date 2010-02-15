@@ -157,7 +157,7 @@ QT_BEGIN_NAMESPACE
                         QNetworkSession. An example of a discovered configuration could be a WLAN
                         which is within in range. If the device moves out of range the discovered
                         flag is dropped. A second example is a GPRS configuration which generally
-                        remains discovered for as long as the phone has network coverage. A
+                        remains discovered for as long as the device has network coverage. A
                         configuration that has this state is also in state
                         QNetworkConfiguration::Defined. If the configuration is a service network
                         this flag is set if at least one of the underlying access points
