@@ -2277,14 +2277,16 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QS60StyleEnums::SkinParts skinPart =
                         (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
                 int minDimension = qMin(option->rect.width(), option->rect.height());
-                const int resizeValue = minDimension >> 1;
-                minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
                 QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-                int verticalMagic(0);
-                // magic values for positioning svg icon.
-                if (option->rect.width() <= option->rect.height())
-                    verticalMagic = 3;
-                iconRect.translate(3, verticalMagic - resizeValue);
+				const int magicTweak = 3;
+                int resizeValue = minDimension >> 1;
+                if (!QS60StylePrivate::isTouchSupported()) {
+                    minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
+                    iconRect.setSize(QSize(minDimension, minDimension));
+                    const int verticalMagic = (option->rect.width() <= option->rect.height()) ? magicTweak : 0;
+                    resizeValue = verticalMagic - resizeValue;
+                }
+                iconRect.translate(magicTweak, resizeValue);
                 QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);
             }
         }
