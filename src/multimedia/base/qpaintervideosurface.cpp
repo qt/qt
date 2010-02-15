@@ -362,23 +362,23 @@ void QVideoSurfaceGLPainter::updateColors(int brightness, int contrast, int hue,
 {
     const qreal b = brightness / 200.0;
     const qreal c = contrast / 100.0 + 1.0;
-    const qreal h = hue / 200.0;
+    const qreal h = hue / 100.0;
     const qreal s = saturation / 100.0 + 1.0;
 
     const qreal cosH = qCos(M_PI * h);
     const qreal sinH = qSin(M_PI * h);
 
-    const qreal h11 = -0.4728 * cosH + 0.7954 * sinH + 1.4728;
-    const qreal h21 = -0.9253 * cosH - 0.0118 * sinH + 0.9523;
-    const qreal h31 =  0.4525 * cosH + 0.8072 * sinH - 0.4524;
+    const qreal h11 =  0.787 * cosH - 0.213 * sinH + 0.213;
+    const qreal h21 = -0.213 * cosH + 0.143 * sinH + 0.213;
+    const qreal h31 = -0.213 * cosH - 0.787 * sinH + 0.213;
 
-    const qreal h12 =  1.4728 * cosH - 1.3728 * sinH - 1.4728;
-    const qreal h22 =  1.9253 * cosH + 0.5891 * sinH - 0.9253;
-    const qreal h32 = -0.4525 * cosH - 1.9619 * sinH + 0.4525;
+    const qreal h12 = -0.715 * cosH - 0.715 * sinH + 0.715;
+    const qreal h22 =  0.285 * cosH + 0.140 * sinH + 0.715;
+    const qreal h32 = -0.715 * cosH + 0.715 * sinH + 0.715;
 
-    const qreal h13 =  1.4728 * cosH - 0.2181 * sinH - 1.4728;
-    const qreal h23 =  0.9253 * cosH + 1.1665 * sinH - 0.9253;
-    const qreal h33 =  0.5475 * cosH - 1.3846 * sinH + 0.4525;
+    const qreal h13 = -0.072 * cosH + 0.928 * sinH + 0.072;
+    const qreal h23 = -0.072 * cosH - 0.283 * sinH + 0.072;
+    const qreal h33 =  0.928 * cosH + 0.072 * sinH + 0.072;
 
     const qreal sr = (1.0 - s) * 0.3086;
     const qreal sg = (1.0 - s) * 0.6094;
@@ -982,6 +982,9 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
     if (m_frame.isValid()) {
         painter->beginNativePainting();
 
+        glEnable(GL_STENCIL_TEST);
+        glEnable(GL_SCISSOR_TEST);
+
         const int width = QGLContext::currentContext()->device()->width();
         const int height = QGLContext::currentContext()->device()->height();
 
@@ -1072,6 +1075,9 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
 
         m_program.release();
 
+
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_STENCIL_TEST);
         painter->endNativePainting();
     }
     return QAbstractVideoSurface::NoError;

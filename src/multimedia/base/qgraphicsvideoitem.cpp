@@ -47,7 +47,7 @@
 #include <QtMultimedia/qvideooutputcontrol.h>
 #include <QtMultimedia/qvideorenderercontrol.h>
 #include <QtMultimedia/qvideosurfaceformat.h>
-
+#include <QtOpenGL/qgl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -384,9 +384,6 @@ void QGraphicsVideoItem::paint(
     if (d->surface && d->surface->isActive()) {
         d->surface->paint(painter, d->boundingRect, d->sourceRect);
         d->surface->setReady(true);
-#ifndef QGRAPHICSVIDEOITEM_SHADERS    // Flickers
-    }
-#else
     } else if (d->updatePaintDevice && (painter->paintEngine()->type() == QPaintEngine::OpenGL
             || painter->paintEngine()->type() == QPaintEngine::OpenGL2)) {
         d->updatePaintDevice = false;
@@ -398,7 +395,6 @@ void QGraphicsVideoItem::paint(
             d->surface->setShaderType(QPainterVideoSurface::FragmentProgramShader);
         }
     }
-#endif
 }
 
 /*!
