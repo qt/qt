@@ -75,9 +75,9 @@ public:
 #ifndef QT_NO_NETWORKPROXY
           proxyFactory(0),
 #endif
-          cookieJarCreated(false),
           networkSession(0),
-          networkAccessEnabled(true)
+          networkAccessEnabled(true),
+          cookieJarCreated(false)
     { }
     ~QNetworkAccessManagerPrivate();
 
@@ -119,10 +119,10 @@ public:
     QNetworkProxyFactory *proxyFactory;
 #endif
 
-    bool cookieJarCreated;
-
     QNetworkSession *networkSession;
     bool networkAccessEnabled;
+
+    bool cookieJarCreated;
 
     // this cache can be used by individual backends to cache e.g. their TCP connections to a server
     // and use the connections for multiple requests.
