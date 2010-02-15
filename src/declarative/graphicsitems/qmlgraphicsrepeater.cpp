@@ -60,8 +60,6 @@ QmlGraphicsRepeaterPrivate::~QmlGraphicsRepeaterPrivate()
         delete model;
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Repeater,QmlGraphicsRepeater)
-
 /*!
     \qmlclass Repeater QmlGraphicsRepeater
     \inherits Item

@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,BorderImage,QmlGraphicsBorderImage)
-
 /*!
     \qmlclass BorderImage QmlGraphicsBorderImage
     \brief The BorderImage element provides an image that can be used as a border.

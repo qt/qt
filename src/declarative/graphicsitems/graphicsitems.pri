@@ -1,9 +1,11 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/qmlgraphicsitemsmodule_p.h \
     $$PWD/qmlgraphicsanchors_p.h \
     $$PWD/qmlgraphicsanchors_p_p.h \
     $$PWD/qmlgraphicsevents_p_p.h \
+    $$PWD/qmlgraphicseffects_p.h \
     $$PWD/qmlgraphicsflickable_p.h \
     $$PWD/qmlgraphicsflickable_p_p.h \
     $$PWD/qmlgraphicsflipable_p.h \
@@ -52,6 +54,7 @@ HEADERS += \
     $$PWD/qmlgraphicseffects.cpp
 
 SOURCES += \
+    $$PWD/qmlgraphicsitemsmodule.cpp \
     $$PWD/qmlgraphicsanchors.cpp \
     $$PWD/qmlgraphicsevents.cpp \
     $$PWD/qmlgraphicsflickable.cpp \
