@@ -70,6 +70,8 @@ public:
     bool isBackwardAvailable() const;
     QList<QAction*> globalActions() const;
     void setGlobalActions(const QList<QAction*> &actions);
+
+    HelpViewer *viewerAt(int index) const;
     HelpViewer *currentHelpViewer() const;
 
     bool searchWidgetAttached() const;
@@ -142,9 +144,6 @@ private:
     void initPrinter();
     QString quoteTabTitle(const QString &title) const;
     void setLastShownPages();
-
-    void getBrowserFontFor(QWidget* viewer, QFont *font);
-    void setBrowserFontFor(QWidget *widget, const QFont &font);
 
 private:
     int lastTabPage;

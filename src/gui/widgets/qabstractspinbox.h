@@ -137,7 +137,9 @@ protected:
     void resizeEvent(QResizeEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+#ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *event);
+#endif
     void focusInEvent(QFocusEvent *event);
     void focusOutEvent(QFocusEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);

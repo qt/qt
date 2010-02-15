@@ -308,10 +308,12 @@ void QSystemTrayIconSys::mouseDoubleClickEvent(QMouseEvent *ev)
         emit q->activated(QSystemTrayIcon::DoubleClick);
 }
 
+#ifndef QT_NO_WHEELEVENT
 void QSystemTrayIconSys::wheelEvent(QWheelEvent *e)
 {
     QApplication::sendEvent(q, e);
 }
+#endif
 
 bool QSystemTrayIconSys::event(QEvent *e)
 {

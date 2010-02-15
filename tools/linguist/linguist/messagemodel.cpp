@@ -584,12 +584,16 @@ void MultiContextItem::putMessageItem(int pos, MessageItem *m)
     m_messageLists.last()[pos] = m;
 }
 
-void MultiContextItem::appendMessageItem(MessageItem *m)
+void MultiContextItem::appendMessageItems(const QList<MessageItem *> &m)
 {
+    QList<MessageItem *> nullItems = m; // Basically, just a reservation
+    for (int i = 0; i < nullItems.count(); ++i)
+        nullItems[i] = 0;
     for (int i = 0; i < m_messageLists.count() - 1; ++i)
-        m_messageLists[i].append(0);
-    m_messageLists.last().append(m);
-    m_multiMessageList.append(MultiMessageItem(m));
+        m_messageLists[i] += nullItems;
+    m_messageLists.last() += m;
+    foreach (MessageItem *mi, m)
+        m_multiMessageList.append(MultiMessageItem(mi));
 }
 
 void MultiContextItem::removeMultiMessageItem(int pos)
@@ -710,32 +714,42 @@ void MultiDataModel::append(DataModel *dm, bool readWrite)
         m_msgModel->endInsertColumns();
     }
     m_msgModel->endInsertColumns();
+    int appendedContexts = 0;
     for (int i = 0; i < dm->contextCount(); ++i) {
         ContextItem *c = dm->contextItem(i);
         int mcx = findContextIndex(c->context());
         if (mcx >= 0) {
             MultiContextItem *mc = multiContextItem(mcx);
             mc->assignLastModel(c, readWrite);
+            QList<MessageItem *> appendItems;
             for (int j = 0; j < c->messageCount(); ++j) {
                 MessageItem *m = c->messageItem(j);
                 int msgIdx = mc->findMessage(m->text(), m->comment());
-                if (msgIdx >= 0) {
+                if (msgIdx >= 0)
                     mc->putMessageItem(msgIdx, m);
-                } else {
-                    int msgCnt = mc->messageCount();
-                    m_msgModel->beginInsertRows(m_msgModel->createIndex(mcx, 0, 0), msgCnt, msgCnt);
-                    mc->appendMessageItem(m);
-                    m_msgModel->endInsertRows();
-                    ++m_numMessages;
-                }
+                else
+                    appendItems << m;
+            }
+            if (!appendItems.isEmpty()) {
+                int msgCnt = mc->messageCount();
+                m_msgModel->beginInsertRows(m_msgModel->createIndex(mcx, 0, 0),
+                                            msgCnt, msgCnt + appendItems.size() - 1);
+                mc->appendMessageItems(appendItems);
+                m_msgModel->endInsertRows();
+                m_numMessages += appendItems.size();
             }
         } else {
-            MultiContextItem item(modelCount() - 1, c, readWrite);
-            m_msgModel->beginInsertRows(QModelIndex(), contextCount(), contextCount());
-            m_multiContextList.append(item);
-            m_msgModel->endInsertRows();
-            m_numMessages += item.messageCount();
+            m_multiContextList << MultiContextItem(modelCount() - 1, c, readWrite);
+            m_numMessages += c->messageCount();
+            ++appendedContexts;
         }
+    }
+    if (appendedContexts) {
+        // Do that en block to avoid itemview inefficiency. It doesn't hurt that we
+        // announce the availability of the data "long" after it was actually added.
+        m_msgModel->beginInsertRows(QModelIndex(),
+                                    contextCount() - appendedContexts, contextCount() - 1);
+        m_msgModel->endInsertRows();
     }
     dm->setWritable(readWrite);
     updateCountsOnAdd(modelCount() - 1, readWrite);

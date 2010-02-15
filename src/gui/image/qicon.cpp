@@ -104,6 +104,15 @@ QT_BEGIN_NAMESPACE
 
 static QBasicAtomicInt serialNumCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
 
+static void qt_cleanup_icon_cache();
+typedef QCache<QString, QIcon> IconCache;
+Q_GLOBAL_STATIC_WITH_INITIALIZER(IconCache, qtIconCache, qAddPostRoutine(qt_cleanup_icon_cache))
+
+static void qt_cleanup_icon_cache()
+{
+    qtIconCache()->clear();
+}
+
 QIconPrivate::QIconPrivate()
     : engine(0), ref(1),
     serialNum(serialNumCounter.fetchAndAddRelaxed(1)),
@@ -963,15 +972,13 @@ QString QIcon::themeName()
 */
 QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 {
-    static QCache <QString, QIcon> iconCache;
-
     QIcon icon;
 
-    if (iconCache.contains(name)) {
-        icon = *iconCache.object(name);
+    if (qtIconCache()->contains(name)) {
+        icon = *qtIconCache()->object(name);
     } else {
         QIcon *cachedIcon  = new QIcon(new QIconLoaderEngine(name));
-        iconCache.insert(name, cachedIcon);
+        qtIconCache()->insert(name, cachedIcon);
         icon = *cachedIcon;
     }
 
