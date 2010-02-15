@@ -5736,7 +5736,7 @@ void QPainter::drawText(const QPointF &p, const QString &str)
 void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
 {
     Q_D(QPainter);
-    if (!d->engine || staticText.isEmpty() || pen().style() == Qt::NoPen)
+    if (!d->engine || staticText.text().isEmpty() || pen().style() == Qt::NoPen)
         return;
 
     QStaticTextPrivate *staticText_d =

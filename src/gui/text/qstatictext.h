@@ -65,8 +65,11 @@ public:
     QStaticText(const QStaticText &other);
     ~QStaticText();
 
-    void setText(const QString &text, Qt::TextFormat textFormat = Qt::AutoText);
+    void setText(const QString &text);
     QString text() const;
+
+    void setTextFormat(Qt::TextFormat textFormat);
+    Qt::TextFormat textFormat() const;
 
     void setMaximumSize(const QSizeF &maximumSize);
     QSizeF maximumSize() const;
@@ -81,8 +84,6 @@ public:
     QStaticText &operator=(const QStaticText &);
     bool operator==(const QStaticText &) const;
     bool operator!=(const QStaticText &) const;
-
-    bool isEmpty() const;
 
 private:
     void detach();

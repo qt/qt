@@ -212,23 +212,45 @@ bool QStaticText::operator!=(const QStaticText &other) const
 }
 
 /*!
-    Sets the text of the QStaticText to \a text. If \a textFormat is set to Qt::AutoText
-    (the default), the format of the text will try to be determined using the function
-     Qt::mightBeRichText(). If the text format is Qt::PlainText, then the text will be displayed
-     as is, whereas it will be interpreted as HTML if the format is Qt::RichText. HTML tags
-     that alter the font of the text, its color, or its layout are supported by QStaticText.
+    Sets the text of the QStaticText to \a text.
 
     \note This function will cause the layout of the text to be recalculated.
 
     \sa text()
 */
-void QStaticText::setText(const QString &text, Qt::TextFormat textFormat)
+void QStaticText::setText(const QString &text)
 {
     detach();
     data->text = text;
-    data->preferRichText = (textFormat == Qt::RichText
-                            || (textFormat == Qt::AutoText && Qt::mightBeRichText(text)));
     data->init();
+}
+
+/*!
+   Sets the text format of the QStaticText to \a textFormat. If \a textFormat is set to
+   Qt::AutoText (the default), the format of the text will try to be determined using the
+   function Qt::mightBeRichText(). If the text format is Qt::PlainText, then the text will be
+   displayed as is, whereas it will be interpreted as HTML if the format is Qt::RichText. HTML tags
+   that alter the font of the text, its color, or its layout are supported by QStaticText.
+
+   \note This function will cause the layout of the text to be recalculated.
+
+   \sa textFormat(), setText(), text()
+*/
+void QStaticText::setTextFormat(Qt::TextFormat textFormat)
+{
+    detach();
+    data->textFormat = textFormat;
+    data->init();
+}
+
+/*!
+  Returns the text format of the QStaticText.
+
+  \sa setTextFormat(), setText(), text()
+*/
+Qt::TextFormat QStaticText::textFormat() const
+{
+    return Qt::TextFormat(data->textFormat);
 }
 
 /*!
@@ -313,19 +335,9 @@ QSizeF QStaticText::size() const
     return data->actualSize;
 }
 
-/*!
-   Returns true if the text of the QStaticText is empty, and false if not.
-
-   \sa text()
-*/
-bool QStaticText::isEmpty() const
-{
-    return data->text.isEmpty();
-}
-
 QStaticTextPrivate::QStaticTextPrivate()
         : items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
-          useBackendOptimizations(false)
+          useBackendOptimizations(false), textFormat(Qt::AutoText)
 {
     ref = 1;    
 }
@@ -333,7 +345,7 @@ QStaticTextPrivate::QStaticTextPrivate()
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
     : text(other.text), font(other.font), maximumSize(other.maximumSize), matrix(other.matrix),
       items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
-      useBackendOptimizations(false)
+      useBackendOptimizations(false), textFormat(other.textFormat)
 {
     ref = 1;
 }
@@ -509,6 +521,9 @@ namespace {
 
 void QStaticTextPrivate::paintText(QPainter *p)
 {
+    bool preferRichText = textFormat == Qt::RichText
+                          || (textFormat == Qt::AutoText && Qt::mightBeRichText(text));
+
     if (!preferRichText) {
         if (maximumSize.isValid()) {
             QRectF boundingRect;

@@ -133,7 +133,7 @@ public:
 
     char needsClipRect           : 1;    // 1 byte per text
     char useBackendOptimizations : 1;
-    char preferRichText          : 1;
+    char textFormat              : 2;
                                          // ================
                                          // 171 bytes per text
 
