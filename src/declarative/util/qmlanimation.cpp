@@ -77,7 +77,7 @@ static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
     if (hasParams) {
         QString easeName = curve.trimmed();
         if (!easeName.endsWith(QLatin1Char(')'))) {
-            qmlInfo(obj) << obj->tr("Unmatched parenthesis in easing function \"%1\"").arg(curve);
+            qmlInfo(obj) << QmlPropertyAnimation::tr("Unmatched parenthesis in easing function \"%1\"").arg(curve);
             return easingCurve;
         }
 
@@ -86,7 +86,7 @@ static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
             easeName.mid(idx + 1, easeName.length() - 1 - idx - 1);
         normalizedCurve = easeName.left(idx);
         if (!normalizedCurve.startsWith(QLatin1String("ease"))) {
-            qmlInfo(obj) << obj->tr("Easing function \"%1\" must start with \"ease\"").arg(curve);
+            qmlInfo(obj) << QmlPropertyAnimation::tr("Easing function \"%1\" must start with \"ease\"").arg(curve);
             return easingCurve;
         }
 
@@ -101,7 +101,7 @@ static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
 
     int value = me.keyToValue(normalizedCurve.toUtf8().constData());
     if (value < 0) {
-        qmlInfo(obj) << obj->tr("Unknown easing curve \"%1\"").arg(curve);
+        qmlInfo(obj) << QmlPropertyAnimation::tr("Unknown easing curve \"%1\"").arg(curve);
         return easingCurve;
     }
     easingCurve.setType((QEasingCurve::Type)value);
@@ -111,7 +111,7 @@ static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
             int sep = str.indexOf(QLatin1Char(':'));
 
             if (sep == -1) {
-                qmlInfo(obj) << obj->tr("Improperly specified parameter in easing function \"%1\"").arg(curve);
+                qmlInfo(obj) << QmlPropertyAnimation::tr("Improperly specified parameter in easing function \"%1\"").arg(curve);
                 continue;
             }
 
@@ -120,7 +120,7 @@ static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
             qreal propValue = str.mid(sep + 1).trimmed().toDouble(&isOk);
 
             if (propName.isEmpty() || !isOk) {
-                qmlInfo(obj) << obj->tr("Improperly specified parameter in easing function \"%1\"").arg(curve);
+                qmlInfo(obj) << QmlPropertyAnimation::tr("Improperly specified parameter in easing function \"%1\"").arg(curve);
                 continue;
             }
 
@@ -131,7 +131,7 @@ static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
             } else if (propName == QLatin1String("overshoot")) {
                 easingCurve.setOvershoot(propValue);
             } else {
-                qmlInfo(obj) << obj->tr("Unknown easing parameter \"%1\"").arg(propName);
+                qmlInfo(obj) << QmlPropertyAnimation::tr("Unknown easing parameter \"%1\"").arg(propName);
                 continue;
             }
         }
@@ -226,7 +226,7 @@ QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const 
 {
     QmlMetaProperty prop = QmlMetaProperty::createProperty(obj, str, qmlContext(infoObj));
     if (!prop.isValid()) {
-        qmlInfo(infoObj) << QmlAbstractAnimation::tr("Cannot animate non-existant property \"%1\"").arg(str);
+        qmlInfo(infoObj) << QmlAbstractAnimation::tr("Cannot animate non-existent property \"%1\"").arg(str);
         return QmlMetaProperty();
     } else if (!prop.isWritable()) {
         qmlInfo(infoObj) << QmlAbstractAnimation::tr("Cannot animate read-only property \"%1\"").arg(str);
