@@ -525,16 +525,20 @@ Option::init(int argc, char **argv)
     }
 
     //defaults for globals
-    if(Option::target_mode == Option::TARG_WIN_MODE) {
-        Option::dir_sep = "\\";
-        Option::obj_ext = ".obj";
-        Option::res_ext = ".res";
-    } else {
-        Option::dir_sep = "/";
-        Option::obj_ext = ".o";
-    }
-    Option::qmake_abslocation = Option::fixPathToTargetOS(Option::qmake_abslocation);
+    applyHostMode();
     return QMAKE_CMDLINE_SUCCESS;
+}
+
+void Option::applyHostMode()
+{
+   if (Option::host_mode == Option::HOST_WIN_MODE) {
+       Option::dir_sep = "\\";
+       Option::obj_ext = ".obj";
+   } else {
+       Option::dir_sep = "/";
+       Option::obj_ext = ".o";
+   }
+   Option::qmake_abslocation = Option::fixPathToTargetOS(Option::qmake_abslocation);
 }
 
 bool Option::postProcessProject(QMakeProject *project)
