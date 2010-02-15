@@ -131,6 +131,7 @@ public:
         SP_QgnGrafBarFrameSideL,
         SP_QgnGrafBarFrameSideR,
         SP_QgnGrafBarProgress,
+        SP_QgnGrafOrgBgGrid
         SP_QgnGrafScrollArrowDown,
         SP_QgnGrafScrollArrowLeft,
         SP_QgnGrafScrollArrowRight,
@@ -428,6 +429,7 @@ public:
         SE_ScrollBarHandlePressedVertical,
         SE_ButtonInactive,
         SE_Editor,
+        SE_DropArea
     };
 
     enum SkinFrameElements {

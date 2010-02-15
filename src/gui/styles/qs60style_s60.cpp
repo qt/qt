@@ -178,6 +178,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafBarFrameSideL */          {KAknsIIDQgnGrafBarFrameSideL,          EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafBarFrameSideR */          {KAknsIIDQgnGrafBarFrameSideR,          EDrawIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafBarProgress */            {KAknsIIDQgnGrafBarProgress,            EDrawIcon,   ES60_All,    -1,-1},
+    /* SP_QgnGrafOrgBgGrid */              {KAknsIIDQgnGrafOrgBgGrid,              EDrawIcon,   ES60_All,    -1,-1},   
     /* SP_QgnGrafScrollArrowDown */        {KAknsIIDQgnGrafScrollArrowDown,     EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowLeft */        {KAknsIIDQgnGrafScrollArrowLeft,     EDrawGulIcon,   ES60_All,    -1,-1},
     /* SP_QgnGrafScrollArrowRight */       {KAknsIIDQgnGrafScrollArrowRight,    EDrawGulIcon,   ES60_All,    -1,-1},

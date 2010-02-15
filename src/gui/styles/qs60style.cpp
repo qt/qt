@@ -289,6 +289,9 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_Editor:
         drawFrame(SF_FrameLineEdit, painter, rect, flags | SF_PointNorth);
         break;
+    case SE_DropArea:
+        drawPart(QS60StyleEnums::SP_QgnGrafOrgBgGrid, painter, rect, flags | SF_PointNorth);
+        break;
     default:
         break;
     }
@@ -2302,7 +2305,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
     case PE_PanelScrollAreaCorner:
         break;
-
+    case PE_IndicatorItemViewItemDrop:
+        if (QS60StylePrivate::isTouchSupported())
+            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_DropArea, painter, option->rect, flags);
+        else
+            commonStyleDraws = true;
+        break;
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
     case PE_IndicatorDockWidgetResizeHandle:
@@ -2323,7 +2331,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_TOOLBAR
 #ifndef QT_NO_COLUMNVIEW
     case PE_IndicatorColumnViewArrow:
-    case PE_IndicatorItemViewItemDrop:
 #endif //QT_NO_COLUMNVIEW
     case PE_FrameTabBarBase: // since tabs are in S60 always in navipane, let's use common style for tab base in Qt.
     default:
