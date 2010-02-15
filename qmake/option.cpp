@@ -126,7 +126,7 @@ QString Option::mkfile::qmakespec_commandline;
 
 static Option::QMAKE_MODE default_mode(QString progname)
 {
-    int s = progname.lastIndexOf(Option::dir_sep);
+    int s = progname.lastIndexOf(QDir::separator());
     if(s != -1)
         progname = progname.right(progname.length() - (s + 1));
     if(progname == "qmakegen")

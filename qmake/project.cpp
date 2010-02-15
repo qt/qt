@@ -620,7 +620,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         feature_roots += splitPathList(prop->value("QMAKEFEATURES"));
     if(!Option::mkfile::cachefile.isEmpty()) {
         QString path;
-        int last_slash = Option::mkfile::cachefile.lastIndexOf(Option::dir_sep);
+        int last_slash = Option::mkfile::cachefile.lastIndexOf(QDir::separator());
         if(last_slash != -1)
             path = Option::fixPathToLocalOS(Option::mkfile::cachefile.left(last_slash));
         for(QStringList::Iterator concat_it = concat.begin();
