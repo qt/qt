@@ -982,6 +982,9 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
     if (m_frame.isValid()) {
         painter->beginNativePainting();
 
+        glEnable(GL_STENCIL_TEST);
+        glEnable(GL_SCISSOR_TEST);
+
         const int width = QGLContext::currentContext()->device()->width();
         const int height = QGLContext::currentContext()->device()->height();
 
@@ -1072,6 +1075,9 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
 
         m_program.release();
 
+
+        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_STENCIL_TEST);
         painter->endNativePainting();
     }
     return QAbstractVideoSurface::NoError;
