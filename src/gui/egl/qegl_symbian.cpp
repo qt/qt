@@ -86,14 +86,6 @@ EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties
     return surf;
 }
 
-EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
-{
-    EGLDisplay dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (dpy == EGL_NO_DISPLAY)
-        qWarning("QEglContext::defaultDisplay(): Falling back to EGL_DEFAULT_DISPLAY");
-    return dpy;
-}
-
 // Set pixel format and other properties based on a paint device.
 void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
 {

@@ -60,7 +60,7 @@ QEglProperties::QEglProperties(EGLConfig cfg)
     props.append(EGL_NONE);
     for (int name = 0x3020; name <= 0x304F; ++name) {
         EGLint value;
-        if (name != EGL_NONE && eglGetConfigAttrib(QEglContext::defaultDisplay(0), cfg, name, &value))
+        if (name != EGL_NONE && eglGetConfigAttrib(QEglContext::display(), cfg, name, &value))
             setValue(name, value);
     }
     eglGetError();  // Clear the error state.
@@ -273,12 +273,12 @@ static void addTag(QString& str, const QString& tag)
 void QEglProperties::dumpAllConfigs()
 {
     EGLint count = 0;
-    eglGetConfigs(QEglContext::defaultDisplay(0), 0, 0, &count);
+    eglGetConfigs(QEglContext::display(), 0, 0, &count);
     if (count < 1)
         return;
 
     EGLConfig *configs = new EGLConfig [count];
-    eglGetConfigs(QEglContext::defaultDisplay(0), configs, count, &count);
+    eglGetConfigs(QEglContext::display(), configs, count, &count);
     for (EGLint index = 0; index < count; ++index)
         qWarning() << QEglProperties(configs[index]).toString();
     delete [] configs;

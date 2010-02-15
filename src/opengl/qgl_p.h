@@ -540,8 +540,8 @@ public:
 
     static QGLTextureCache *instance();
     static void deleteIfEmpty();
-    static void imageCleanupHook(qint64 cacheKey);
-    static void cleanupTextures(QPixmapData* pixmap);
+    static void cleanupTexturesForCacheKey(qint64 cacheKey);
+    static void cleanupTexturesForPixampData(QPixmapData* pixmap);
     static void cleanupBeforePixmapDestruction(QPixmapData* pixmap);
 
 private:
