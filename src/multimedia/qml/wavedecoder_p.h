@@ -45,9 +45,15 @@
 #include <QtCore/qiodevice.h>
 #include <QtMultimedia/qaudioformat.h>
 
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+
 class WaveDecoder : public QIODevice
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     explicit WaveDecoder(QIODevice *source, QObject *parent = 0);
@@ -109,5 +115,9 @@ private:
     QIODevice *source;
     CombinedHeader header;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // WAVEDECODER_H

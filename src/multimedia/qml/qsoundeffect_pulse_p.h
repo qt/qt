@@ -54,17 +54,17 @@
 //
 
 
-#include <QtCore/qobject.h>
-
-#include <QTime>
-
-#include <qmediaplayer.h>
-
 #include "qsoundeffect_p.h"
 
+#include <QtCore/qobject.h>
+#include <QtCore/qtime.h>
+#include <QtMultimedia/qmediaplayer.h>
 #include <pulse/pulseaudio.h>
 
-QTM_USE_NAMESPACE
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -130,5 +130,9 @@ private:
     QIODevice *m_stream;
     QNetworkAccessManager *m_networkAccessManager;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QSOUNDEFFECT_PULSE_H

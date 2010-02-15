@@ -56,13 +56,13 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-
-#include <qmediaplayer.h>
-#include <qmobilityglobal.h>
-
+#include <QtMultimedia/qmediaplayer.h>
 #include "qsoundeffect_p.h"
 
-QTM_USE_NAMESPACE
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 class WaveDecoder;
 
@@ -101,5 +101,9 @@ private:
     int  m_volume;
     QMediaPlayer *m_player;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QSOUNDEFFECT_QMEDIA_H

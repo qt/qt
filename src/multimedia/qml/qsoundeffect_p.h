@@ -56,7 +56,12 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-#include <qml.h>
+#include <QtDeclarative/qml.h>
+
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 class QSoundEffectPrivate;
 class QSoundEffect : public QObject
@@ -111,6 +116,11 @@ private:
     QSoundEffectPrivate* d;
 };
 
-QML_DECLARE_TYPE(QSoundEffect)
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QT_PREPEND_NAMESPACE(QSoundEffect))
+
+QT_END_HEADER
+
 
 #endif // QSOUNDEFFECT_H

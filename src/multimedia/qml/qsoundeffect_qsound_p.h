@@ -56,13 +56,14 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qdatetime.h>
-
-#include <qmediaplayer.h>
+#include <QtMultimedia/qmediaplayer.h>
 
 #include "qsoundeffect_p.h"
 
 
-QTM_USE_NAMESPACE
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 class QTimer;
 class QSound;
@@ -120,5 +121,9 @@ private:
     QSound *m_sound;
     QTimer *m_timer;
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QSOUNDEFFECT_QSOUND_H
