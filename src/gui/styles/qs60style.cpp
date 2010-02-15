@@ -847,15 +847,18 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
             break;
 
-        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
-        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
         case QS60StyleEnums::SP_QsnCpScrollBgBottom:
-        case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
         case QS60StyleEnums::SP_QsnCpScrollBgTop:
         case QS60StyleEnums::SP_QsnCpScrollHandleBottom:
-        case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
         case QS60StyleEnums::SP_QsnCpScrollHandleTop:
+        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+            result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
+            result.setWidth(pixelMetric(QStyle::PM_ScrollBarExtent));
+            break;
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
+        case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
             result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
             result.setWidth(pixelMetric(QStyle::PM_ScrollBarSliderMin));
             break;
