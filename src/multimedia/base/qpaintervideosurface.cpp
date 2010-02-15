@@ -362,7 +362,7 @@ void QVideoSurfaceGLPainter::updateColors(int brightness, int contrast, int hue,
 {
     const qreal b = brightness / 200.0;
     const qreal c = contrast / 100.0 + 1.0;
-    const qreal h = hue / 200.0;
+    const qreal h = hue / 100.0;
     const qreal s = saturation / 100.0 + 1.0;
 
     const qreal cosH = qCos(M_PI * h);
