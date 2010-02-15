@@ -167,6 +167,7 @@ void tst_QmlDebugService::objectToString()
 
     obj->setObjectName("Hello");
     QCOMPARE(QmlDebugService::objectToString(obj), QString("QObject: Hello"));
+    delete obj;
 }
 
 

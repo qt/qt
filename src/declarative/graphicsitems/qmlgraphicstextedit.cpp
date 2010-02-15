@@ -56,7 +56,6 @@
 #include <private/qtextcontrol_p.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,TextEdit,QmlGraphicsTextEdit)
 
 /*!
     \qmlclass TextEdit QmlGraphicsTextEdit

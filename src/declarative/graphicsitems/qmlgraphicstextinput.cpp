@@ -51,12 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,TextInput,QmlGraphicsTextInput);
-QML_DEFINE_NOCREATE_TYPE(QValidator);
-QML_DEFINE_TYPE(Qt,4,6,QIntValidator,QIntValidator);
-QML_DEFINE_TYPE(Qt,4,6,QDoubleValidator,QDoubleValidator);
-QML_DEFINE_TYPE(Qt,4,6,QRegExpValidator,QRegExpValidator);
-
 /*!
     \qmlclass TextInput QmlGraphicsTextInput
     The TextInput item allows you to add an editable line of text to a scene.

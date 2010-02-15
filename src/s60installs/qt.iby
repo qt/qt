@@ -113,6 +113,7 @@ data=\epoc32\data\z\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resou
 data=\epoc32\data\z\resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin      resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin
 
 // Stub sis file
-data=ZSYSTEM\install\qt.sis    System\Install\qt.sis
+data=ZSYSTEM\install\qt_stub.sis    System\Install\qt_stub.sis
+data=ZSYSTEM\install\qtwebkit_stub.sis    System\Install\qtwebkit_stub.sis
 
 #endif // __QT_IBY__
