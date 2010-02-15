@@ -3346,38 +3346,18 @@ void QWidgetPrivate::show_sys()
         return;
 
     bool realWindow = isRealWindow();
+#ifndef QT_MAC_USE_COCOA
     if (realWindow && !q->testAttribute(Qt::WA_Moved)) {
         q->createWinId();
         if (QWidget *p = q->parentWidget()) {
             p->createWinId();
-#ifndef QT_MAC_USE_COCOA
             RepositionWindow(qt_mac_window_for(q), qt_mac_window_for(p), kWindowCenterOnParentWindow);
-#else
-            CGRect parentFrame = NSRectToCGRect([qt_mac_window_for(p) frame]);
-            OSWindowRef windowRef = qt_mac_window_for(q);
-            NSRect windowFrame = [windowRef frame];
-            NSPoint parentCenter = NSMakePoint(CGRectGetMidX(parentFrame), CGRectGetMidY(parentFrame));
-            [windowRef setFrameTopLeftPoint:NSMakePoint(parentCenter.x - (windowFrame.size.width / 2),
-                                                        (parentCenter.y + (windowFrame.size.height / 2)))];
-#endif
         } else {
-#ifndef QT_MAC_USE_COCOA
             RepositionWindow(qt_mac_window_for(q), 0, kWindowCenterOnMainScreen);
-#else
-            // Ideally we would do a "center" here, but NSWindow's center is more equivalent to
-            // kWindowAlertPositionOnMainScreen instead of kWindowCenterOnMainScreen.
-            QRect availGeo = QApplication::desktop()->availableGeometry(q);
-            // Center the content only.
-            data.crect.moveCenter(availGeo.center());
-            QRect fStrut = frameStrut();
-            QRect frameRect(data.crect.x() - fStrut.left(), data.crect.y() - fStrut.top(),
-                            fStrut.left() + fStrut.right() + data.crect.width(),
-                            fStrut.top() + fStrut.bottom() + data.crect.height());
-            NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1), frameRect.width(), frameRect.height());
-            [qt_mac_window_for(q) setFrame:cocoaFrameRect display:NO];
-#endif
         }
     }
+#endif
+
     data.fstrut_dirty = true;
     if (realWindow) {
          // Delegates can change window state, so record some things earlier.
@@ -4270,6 +4250,22 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             setGeometry_sys_helper(x, y, w, h, isMove);
         }
 #else
+        if (!isMove && !q->testAttribute(Qt::WA_Moved) && !q->isVisible()) {
+            // INVARIANT: The location of the window has not yet been set. The default will
+            // instead be to center it on the desktop, or over the parent, if any. Since we now
+            // resize the window, we need to adjust the top left position to keep the window
+            // centeralized. And we need to to this now (and before show) in case the positioning
+            // of other windows (e.g. sub-windows) depend on this position:
+            if (QWidget *p = q->parentWidget()) {
+                x = p->geometry().center().x() - (w / 2);
+                y = p->geometry().center().y() - (h / 2);
+            } else {
+                QRect availGeo = QApplication::desktop()->availableGeometry(q);
+                x = availGeo.center().x() - (w / 2);
+                y = availGeo.center().y() - (h / 2);
+            }
+        }
+
         QSize  olds = q->size();
         const bool isResize = (olds != QSize(w, h));
         NSWindow *window = qt_mac_window_for(q);
