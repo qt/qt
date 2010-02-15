@@ -428,6 +428,26 @@ void tst_QGL::getSetCheck()
     obj1.setPlane(TEST_INT_MAX);
     QCOMPARE(TEST_INT_MAX, obj1.plane());
 
+    // int QGLFormat::major/minorVersion()
+    // void QGLFormat::setVersion(int, int)
+    QCOMPARE(obj1.majorVersion(), 1);
+    QCOMPARE(obj1.minorVersion(), 0);
+    obj1.setVersion(3, 2);
+    QCOMPARE(obj1.majorVersion(), 3);
+    QCOMPARE(obj1.minorVersion(), 2);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setVersion: Cannot set zero or negative version number 0.1");
+    obj1.setVersion(0, 1);
+    QCOMPARE(obj1.majorVersion(), 3);
+    QCOMPARE(obj1.minorVersion(), 2);
+    QTest::ignoreMessage(QtWarningMsg, "QGLFormat::setVersion: Cannot set zero or negative version number 3.-1");
+    obj1.setVersion(3, -1);
+    QCOMPARE(obj1.majorVersion(), 3);
+    QCOMPARE(obj1.minorVersion(), 2);
+    obj1.setVersion(TEST_INT_MAX, TEST_INT_MAX - 1);
+    QCOMPARE(obj1.majorVersion(), TEST_INT_MAX);
+    QCOMPARE(obj1.minorVersion(), TEST_INT_MAX - 1);
+
+
     // operator== and operator!= for QGLFormat
     QGLFormat format1;
     QGLFormat format2;
@@ -508,6 +528,27 @@ void tst_QGL::getSetCheck()
     QVERIFY(!(format1 == format2));
     QVERIFY(format1 != format2);
     format2.setPlane(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setVersion(3, 2);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setVersion(3, 2);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setProfile(QGLFormat::CoreProfile);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setProfile(QGLFormat::CoreProfile);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setOption(QGL::NoDeprecatedFunctions);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setOption(QGL::NoDeprecatedFunctions);
     QVERIFY(format1 == format2);
     QVERIFY(!(format1 != format2));
 
@@ -701,8 +742,6 @@ void tst_QGL::openGLVersionCheck()
 
 #if defined(QT_OPENGL_ES_1)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Common_Version_1_0);
-#elif defined(QT_OPENGL_ES_1_CL)
-    QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_CommonLite_Version_1_0);
 #elif defined(QT_OPENGL_ES_2)
     QVERIFY(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0);
 #else

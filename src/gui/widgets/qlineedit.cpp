@@ -2046,9 +2046,9 @@ void QLineEdit::dropEvent(QDropEvent* e)
 */
 void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
 {
-    QPointer<QMenu> menu = createStandardContextMenu();
-    menu->exec(event->globalPos());
-    delete menu;
+    QMenu *menu = createStandardContextMenu();
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->popup(event->globalPos());
 }
 
 #if defined(Q_WS_WIN)

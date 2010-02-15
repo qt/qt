@@ -83,7 +83,7 @@ static void printUsage()
     printOut(QObject::tr(
         "Usage:\n"
         "    lupdate [options] [project-file]...\n"
-        "    lupdate [options] [source-file|path]... -ts ts-files\n\n"
+        "    lupdate [options] [source-file|path|@lst-file]... -ts ts-files|@lst-file\n\n"
         "lupdate is part of Qt's Linguist tool chain. It extracts translatable\n"
         "messages from Qt UI files, C++, Java and JavaScript/QtScript source code.\n"
         "Extracted messages are stored in textual translation source files (typically\n"
@@ -132,6 +132,8 @@ static void printUsage()
         "           Specify the codec assumed for tr() calls. Effective only with -ts.\n"
         "    -version\n"
         "           Display the version of lupdate and exit.\n"
+        "    @lst-file\n"
+        "           Read additional file names (one per line) from lst-file.\n"
     ).arg(m_defaultExtensions));
 }
 
@@ -560,73 +562,91 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        if (metTsFlag) {
-            bool found = false;
-            foreach (const Translator::FileFormat &fmt, Translator::registeredFileFormats()) {
-                if (arg.endsWith(QLatin1Char('.') + fmt.extension, Qt::CaseInsensitive)) {
-                    QFileInfo fi(arg);
-                    if (!fi.exists() || fi.isWritable()) {
-                        tsFileNames.append(QFileInfo(arg).absoluteFilePath());
-                    } else {
-                        qWarning("lupdate warning: For some reason, '%s' is not writable.\n",
-                                qPrintable(arg));
-                    }
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                qWarning("lupdate error: File '%s' has no recognized extension\n",
-                         qPrintable(arg));
+        QStringList files;
+        if (arg.startsWith(QLatin1String("@"))) {
+            QFile lstFile(arg.mid(1));
+            if (!lstFile.open(QIODevice::ReadOnly)) {
+                qWarning("lupdate error: List file '%s' is not readable",
+                         qPrintable(lstFile.fileName()));
                 return 1;
             }
-        } else if (arg.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
-                || arg.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
-            proFiles << arg;
+            while (!lstFile.atEnd())
+                files << QString::fromLocal8Bit(lstFile.readLine().trimmed());
+        } else {
+            files << arg;
+        }
+        if (metTsFlag) {
+            foreach (const QString &file, files) {
+                bool found = false;
+                foreach (const Translator::FileFormat &fmt, Translator::registeredFileFormats()) {
+                    if (file.endsWith(QLatin1Char('.') + fmt.extension, Qt::CaseInsensitive)) {
+                        QFileInfo fi(file);
+                        if (!fi.exists() || fi.isWritable()) {
+                            tsFileNames.append(QFileInfo(file).absoluteFilePath());
+                        } else {
+                            qWarning("lupdate warning: For some reason, '%s' is not writable.\n",
+                                    qPrintable(file));
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    qWarning("lupdate error: File '%s' has no recognized extension\n",
+                             qPrintable(file));
+                    return 1;
+                }
+            }
             numFiles++;
         } else {
-            QFileInfo fi(arg);
-            if (!fi.exists()) {
-                qWarning("lupdate error: File '%s' does not exists\n", qPrintable(arg));
-                return 1;
-            } else if (fi.isDir()) {
-                if (options & Verbose)
-                    printOut(QObject::tr("Scanning directory '%1'...").arg(arg));
-                QDir dir = QDir(fi.filePath());
-                projectRoots.insert(dir.absolutePath() + QLatin1Char('/'));
-                if (extensionsNameFilters.isEmpty()) {
-                    foreach (QString ext, extensions.split(QLatin1Char(','))) {
-                        ext = ext.trimmed();
-                        if (ext.startsWith(QLatin1Char('.')))
-                            ext.remove(0, 1);
-                        extensionsNameFilters.insert(ext);
-                    }
+            foreach (const QString &file, files) {
+                QFileInfo fi(file);
+                if (!fi.exists()) {
+                    qWarning("lupdate error: File '%s' does not exists\n", qPrintable(file));
+                    return 1;
                 }
-                QDir::Filters filters = QDir::Files | QDir::NoSymLinks;
-                if (recursiveScan)
-                    filters |= QDir::AllDirs | QDir::NoDotAndDotDot;
-                QFileInfoList fileinfolist;
-                recursiveFileInfoList(dir, extensionsNameFilters, filters, &fileinfolist);
-                int scanRootLen = dir.absolutePath().length();
-                foreach (const QFileInfo &fi, fileinfolist) {
-                    QString fn = QDir::cleanPath(fi.absoluteFilePath());
-                    sourceFiles << fn;
+                if (file.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
+                    || file.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
+                    proFiles << file;
+                } else if (fi.isDir()) {
+                    if (options & Verbose)
+                        printOut(QObject::tr("Scanning directory '%1'...").arg(file));
+                    QDir dir = QDir(fi.filePath());
+                    projectRoots.insert(dir.absolutePath() + QLatin1Char('/'));
+                    if (extensionsNameFilters.isEmpty()) {
+                        foreach (QString ext, extensions.split(QLatin1Char(','))) {
+                            ext = ext.trimmed();
+                            if (ext.startsWith(QLatin1Char('.')))
+                                ext.remove(0, 1);
+                            extensionsNameFilters.insert(ext);
+                        }
+                    }
+                    QDir::Filters filters = QDir::Files | QDir::NoSymLinks;
+                    if (recursiveScan)
+                        filters |= QDir::AllDirs | QDir::NoDotAndDotDot;
+                    QFileInfoList fileinfolist;
+                    recursiveFileInfoList(dir, extensionsNameFilters, filters, &fileinfolist);
+                    int scanRootLen = dir.absolutePath().length();
+                    foreach (const QFileInfo &fi, fileinfolist) {
+                        QString fn = QDir::cleanPath(fi.absoluteFilePath());
+                        sourceFiles << fn;
 
-                    if (!fn.endsWith(QLatin1String(".java"))
-                        && !fn.endsWith(QLatin1String(".ui"))
-                        && !fn.endsWith(QLatin1String(".js"))
-                        && !fn.endsWith(QLatin1String(".qs"))) {
-                        int offset = 0;
-                        int depth = 0;
-                        do {
-                            offset = fn.lastIndexOf(QLatin1Char('/'), offset - 1);
-                            QString ffn = fn.mid(offset + 1);
-                            allCSources.insert(ffn, fn);
-                        } while (++depth < 3 && offset > scanRootLen);
+                        if (!fn.endsWith(QLatin1String(".java"))
+                            && !fn.endsWith(QLatin1String(".ui"))
+                            && !fn.endsWith(QLatin1String(".js"))
+                            && !fn.endsWith(QLatin1String(".qs"))) {
+                            int offset = 0;
+                            int depth = 0;
+                            do {
+                                offset = fn.lastIndexOf(QLatin1Char('/'), offset - 1);
+                                QString ffn = fn.mid(offset + 1);
+                                allCSources.insert(ffn, fn);
+                            } while (++depth < 3 && offset > scanRootLen);
+                        }
                     }
+                } else {
+                    sourceFiles << QDir::cleanPath(fi.absoluteFilePath());;
                 }
-            } else {
-                sourceFiles << QDir::cleanPath(fi.absoluteFilePath());;
             }
             numFiles++;
         }

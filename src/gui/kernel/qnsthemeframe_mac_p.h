@@ -157,7 +157,7 @@
 - (void)resetCursorRects;
 - (char)shouldBeTreatedAsInkEvent:fp8;
 - (char)_shouldBeTreatedAsInkEventInInactiveWindow:fp8;
-- hitTest:(struct _NSPoint)fp8;
+//- hitTest:(struct _NSPoint)fp8; // collides with hittest in qcocoasharedwindowmethods_mac_p.h
 - (NSRect)_leftGroupRect;
 - (NSRect)_rightGroupRect;
 - (void)_updateWidgets;

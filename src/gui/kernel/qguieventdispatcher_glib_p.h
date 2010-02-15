@@ -71,6 +71,7 @@ public:
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
 
     void startingUp();
+    void flush();
 };
 
 QT_END_NAMESPACE

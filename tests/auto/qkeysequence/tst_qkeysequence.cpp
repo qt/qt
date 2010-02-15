@@ -119,6 +119,7 @@ private slots:
     void symetricConstructors_data();
     void symetricConstructors();
     void checkMultipleNames();
+    void checkMultipleCodes();
     void mnemonic_data();
     void mnemonic();
     void toString_data();
@@ -263,6 +264,18 @@ void tst_QKeySequence::checkMultipleNames()
     QKeySequence oldK( "Ctrl+Page Up" );
     QKeySequence newK( "Ctrl+PgUp" );
     QVERIFY( oldK == newK );
+}
+
+//TODO: could test third constructor, or test fromString on all constructor-data
+void tst_QKeySequence::checkMultipleCodes()
+{
+    QKeySequence seq1("Alt+d, l");
+    QKeySequence seq2 = QKeySequence::fromString("Alt+d, l");
+    QVERIFY( seq1 == seq2 );
+
+    QKeySequence seq3("Alt+d,l");
+    QKeySequence seq4 = QKeySequence::fromString("Alt+d,l");
+    QVERIFY( seq3 == seq4 );
 }
 
 /*

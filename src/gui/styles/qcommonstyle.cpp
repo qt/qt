@@ -5662,10 +5662,16 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
         OSType iconType = 0;
         switch (standardIcon) {
         case QStyle::SP_MessageBoxQuestion:
+            iconType = kQuestionMarkIcon;
+            break;
         case QStyle::SP_MessageBoxInformation:
+            iconType = kAlertNoteIcon;
+            break;
         case QStyle::SP_MessageBoxWarning:
+            iconType = kAlertCautionIcon;
+            break;
         case QStyle::SP_MessageBoxCritical:
-            iconType = kGenericApplicationIcon;
+            iconType = kAlertStopIcon;
             break;
         case SP_DesktopIcon:
             iconType = kDesktopIcon;

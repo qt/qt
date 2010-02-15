@@ -181,6 +181,10 @@ inline QString qt_mac_NSStringToQString(const NSString *nsstr)
 
 inline NSString *qt_mac_QStringToNSString(const QString &qstr)
 { return [reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr)) autorelease]; }
+
+@interface DebugNSApplication : NSApplication {}
+@end
+
 #endif
 
 QT_END_NAMESPACE

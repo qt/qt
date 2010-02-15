@@ -91,7 +91,7 @@ QString FSDirectory::FSLock::toString() const
 // # pragma mark -- FSDirectory::FSIndexInput
 
 FSDirectory::FSIndexInput::FSIndexInput(const QString& path, int32_t bufferSize)
-    : BufferedIndexInput(bufferSize)	
+    : BufferedIndexInput(bufferSize)
 {
     CND_PRECONDITION(!path.isEmpty(), "path is NULL");
 
@@ -155,7 +155,7 @@ FSDirectory::FSIndexInput::FSIndexInput(const FSIndexInput& other)
     if (other.handle == NULL)
         _CLTHROWA(CL_ERR_NullPointer, "other handle is null");
 
-    SCOPED_LOCK_MUTEX(other.handle->THIS_LOCK)
+    SCOPED_LOCK_MUTEX(*other.handle->THIS_LOCK)
 
     _pos = other.handle->_fpos;
     handle = _CL_POINTER(other.handle);
@@ -169,7 +169,30 @@ FSDirectory::FSIndexInput::~FSIndexInput()
 void FSDirectory::FSIndexInput::close()
 {
     BufferedIndexInput::close();
+#ifdef _LUCENE_THREADMUTEX
+    if (handle != NULL) {
+        // Here we have a bit of a problem... We need to lock the handle to
+        // ensure that we can safely delete the handle... But if we delete the
+        // handle, then the scoped unlock, won't be able to unlock the mutex...
+
+        // take a reference of the lock object...
+        _LUCENE_THREADMUTEX* mutex = handle->THIS_LOCK;
+        //lock the mutex
+        mutex->lock();
+
+        // determine if we are about to delete the handle...
+        bool doUnlock = (handle->__cl_refcount > 1);
+        // decdelete (deletes if refcount is down to 0)
+        _CLDECDELETE(handle);
+
+        if (doUnlock)
+            mutex->unlock();
+        else
+            delete mutex;
+    }
+#else
     _CLDECDELETE(handle);
+#endif
 }
 
 IndexInput* FSDirectory::FSIndexInput::clone() const
@@ -186,7 +209,7 @@ void FSDirectory::FSIndexInput::seekInternal(const int64_t position)
 
 void FSDirectory::FSIndexInput::readInternal(uint8_t* b, const int32_t len)
 {
-    SCOPED_LOCK_MUTEX(handle->THIS_LOCK)
+    SCOPED_LOCK_MUTEX(*handle->THIS_LOCK)
 
     CND_PRECONDITION(handle != NULL, "shared file handle has closed");
     CND_PRECONDITION(handle->fhandle.isOpen(), "file is not open");
@@ -214,8 +237,10 @@ void FSDirectory::FSIndexInput::readInternal(uint8_t* b, const int32_t len)
 FSDirectory::FSIndexInput::SharedHandle::SharedHandle()
     : _fpos(0)
     , _length(0)
-
 {
+#ifdef _LUCENE_THREADMUTEX
+    THIS_LOCK = new _LUCENE_THREADMUTEX;
+#endif
 }
 
 FSDirectory::FSIndexInput::SharedHandle::~SharedHandle()

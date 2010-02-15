@@ -1257,6 +1257,8 @@ Qt::FillRule QPainterPath::fillRule() const
 void QPainterPath::setFillRule(Qt::FillRule fillRule)
 {
     ensureData();
+    if (d_func()->fillRule == fillRule)
+        return;
     detach();
 
     d_func()->fillRule = fillRule;

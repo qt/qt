@@ -55,6 +55,7 @@
 
 #include <QtCore/qdatetime.h>
 #include "3rdparty/cycle_p.h"
+#include "qbenchmark.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -71,8 +72,7 @@ public:
     virtual int adjustMedianCount(int suggestion) = 0;
     virtual bool repeatCount() { return 1; } 
     virtual bool needsWarmupIteration() { return false; } 
-    virtual QString unitText() = 0;
-    virtual QString metricText() = 0;
+    virtual QTest::QBenchmarkMetric metricType() = 0;
 };
 
 class QBenchmarkTimeMeasurer : public QBenchmarkMeasurerBase
@@ -84,8 +84,7 @@ public:
     bool isMeasurementAccepted(qint64 measurement);
     int adjustIterationCount(int sugestion);
     int adjustMedianCount(int suggestion);
-    QString unitText();
-    QString metricText();
+    QTest::QBenchmarkMetric metricType();
 private:
     QTime time;
 };
@@ -102,8 +101,7 @@ public:
     int adjustIterationCount(int);
     int adjustMedianCount(int suggestion);
     bool needsWarmupIteration();
-    QString unitText();
-    QString metricText();
+    QTest::QBenchmarkMetric metricType();
 private:
     CycleCounterTicks startTicks;
 };

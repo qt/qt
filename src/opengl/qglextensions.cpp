@@ -191,35 +191,45 @@ bool qt_resolve_frag_program_extensions(QGLContext *ctx)
 
 bool qt_resolve_buffer_extensions(QGLContext *ctx)
 {
-    if (glMapBufferARB && glUnmapBufferARB
-#if !defined(QT_OPENGL_ES_2)
-        && glBindBuffer && glDeleteBuffers && glGenBuffers && glBufferData
-#endif
-        )
+#if defined(QGL_RESOLVE_BUFFER_FUNCS)
+    if (glBindBuffer && glDeleteBuffers && glGenBuffers && glBufferData
+            && glBufferSubData && glGetBufferParameteriv)
         return true;
+#endif
 
-#if !defined(QT_OPENGL_ES_2)
+#if defined(QGL_RESOLVE_BUFFER_FUNCS)
     glBindBuffer = (_glBindBuffer) qt_gl_getProcAddressARB(ctx, "glBindBuffer");
     glDeleteBuffers = (_glDeleteBuffers) qt_gl_getProcAddressARB(ctx, "glDeleteBuffers");
     glGenBuffers = (_glGenBuffers) qt_gl_getProcAddressARB(ctx, "glGenBuffers");
     glBufferData = (_glBufferData) qt_gl_getProcAddressARB(ctx, "glBufferData");
+    glBufferSubData = (_glBufferSubData) qt_gl_getProcAddressARB(ctx, "glBufferSubData");
+    glGetBufferSubData = (_glGetBufferSubData) qt_gl_getProcAddressARB(ctx, "glGetBufferSubData");
+    glGetBufferParameteriv = (_glGetBufferParameteriv) qt_gl_getProcAddressARB(ctx, "glGetBufferParameteriv");
 #endif
     glMapBufferARB = (_glMapBufferARB) qt_gl_getProcAddressARB(ctx, "glMapBuffer");
     glUnmapBufferARB = (_glUnmapBufferARB) qt_gl_getProcAddressARB(ctx, "glUnmapBuffer");
 
-    return glMapBufferARB
-        && glUnmapBufferARB
-#if !defined(QT_OPENGL_ES_2)
-        && glBindBuffer
+#if defined(QGL_RESOLVE_BUFFER_FUNCS)
+    return glBindBuffer
         && glDeleteBuffers
         && glGenBuffers
         && glBufferData
+        && glBufferSubData
+        && glGetBufferParameteriv;
+        // glGetBufferSubData() is optional
+#else
+    return true;
 #endif
-        ;
 }
 
 bool qt_resolve_glsl_extensions(QGLContext *ctx)
 {
+    // Geometry shaders are optional...
+    glProgramParameteriEXT = (_glProgramParameteriEXT) ctx->getProcAddress(QLatin1String("glProgramParameteriEXT"));
+    glFramebufferTextureEXT = (_glFramebufferTextureEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureEXT"));
+    glFramebufferTextureLayerEXT = (_glFramebufferTextureLayerEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureLayerEXT"));
+    glFramebufferTextureFaceEXT = (_glFramebufferTextureFaceEXT) ctx->getProcAddress(QLatin1String("glFramebufferTextureFaceEXT"));
+
 #if defined(QT_OPENGL_ES_2)
     // The GLSL shader functions are always present in OpenGL/ES 2.0.
     // The only exceptions are glGetProgramBinaryOES and glProgramBinaryOES.

@@ -55,6 +55,7 @@
 #include "qtools_p.h"
 #include "qhash.h"
 #include "qdebug.h"
+#include "qendian.h"
 
 #ifdef Q_OS_MAC
 #include <private/qcore_mac_p.h>
@@ -1091,7 +1092,12 @@ QString::QString(QChar ch)
     \internal
 */
 
-/*! \fn void QString::isDetached() const
+/*! \fn bool QString::isDetached() const
+
+    \internal
+*/
+
+/*! \fn bool QString::isSharedWith(const QString &other) const
 
     \internal
 */
@@ -7317,7 +7323,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
                     != (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
                 ushort *data = reinterpret_cast<ushort *>(str.data());
                 while (len--) {
-                    *data = (*data >> 8) | (*data << 8);
+                    *data = qbswap(*data);
                     ++data;
                 }
             }

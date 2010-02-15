@@ -53,8 +53,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QHelpEngine;
 class CentralWidget;
+class HelpEngineWrapper;
 
 class QPoint;
 class QString;
@@ -69,7 +69,7 @@ class HelpViewer : public QWebView
     Q_OBJECT
 
 public:
-    HelpViewer(QHelpEngine *helpEngine, CentralWidget *parent);
+    HelpViewer(CentralWidget *parent);
     void setSource(const QUrl &url);
 
     inline QUrl source() const
@@ -97,6 +97,9 @@ public:
     inline qreal zoom() const
     { return textSizeMultiplier(); }
 
+    static bool canOpenPage(const QString &url);
+    static bool isLocalUrl(const QUrl &url);
+
 public Q_SLOTS:
     void home();
     void backward() { back(); }
@@ -118,9 +121,9 @@ private Q_SLOTS:
     void setLoadFinished(bool ok);
 
 private:
-    QHelpEngine *helpEngine;
     CentralWidget* parentWidget;
     bool loadFinished;
+    HelpEngineWrapper &helpEngine;
 };
 
 #else
@@ -130,7 +133,7 @@ class HelpViewer : public QTextBrowser
     Q_OBJECT
 
 public:
-    HelpViewer(QHelpEngine *helpEngine, CentralWidget *parent);
+    HelpViewer(CentralWidget *parent);
     void setSource(const QUrl &url);
 
     void resetZoom();
@@ -143,6 +146,8 @@ public:
     { return textCursor().hasSelection(); }
 
     bool launchedWithExternalApp(const QUrl &url);
+    static bool canOpenPage(const QString &url);
+    static bool isLocalUrl(const QUrl &url);
 
 public Q_SLOTS:
     void home();
@@ -165,8 +170,8 @@ private:
     int zoomCount;
     bool controlPressed;
     QString lastAnchor;
-    QHelpEngine *helpEngine;
     CentralWidget* parentWidget;
+    HelpEngineWrapper &helpEngine;
 };
 
 #endif

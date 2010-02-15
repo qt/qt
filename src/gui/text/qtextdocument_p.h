@@ -252,10 +252,11 @@ public:
     inline QFont defaultFont() const { return formats.defaultFont(); }
     inline void setDefaultFont(const QFont &f) { formats.setDefaultFont(f); }
 
+    void clearUndoRedoStacks(QTextDocument::Stacks stacksToClear, bool emitSignals = false);
+
 private:
     bool split(int pos);
     bool unite(uint f);
-    void truncateUndoStack();
 
     void insert_string(int pos, uint strPos, uint length, int format, QTextUndoCommand::Operation op);
     int insert_block(int pos, uint strPos, int format, int blockformat, QTextUndoCommand::Operation op, int command);

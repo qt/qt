@@ -3146,6 +3146,18 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         break;
     case PE_PanelLineEdit:
         QWindowsStyle::drawPrimitive(pe, opt, p, w);
+        // Draw the focus frame for widgets other than QLineEdit (e.g. for line edits in Webkit).
+        // Focus frame is drawn outside the rectangle passed in the option-rect.
+        if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
+            if ((opt->state & State_HasFocus) && !qobject_cast<const QLineEdit*>(w)) {
+                int vmargin = pixelMetric(QStyle::PM_FocusFrameVMargin);
+                int hmargin = pixelMetric(QStyle::PM_FocusFrameHMargin);
+                QStyleOptionFrame focusFrame = *panel;
+                focusFrame.rect = panel->rect.adjusted(-hmargin, -vmargin, hmargin, vmargin);
+                drawControl(CE_FocusFrame, &focusFrame, p, w);
+            }
+        }
+
         break;
     case PE_FrameTabWidget:
         if (const QStyleOptionTabWidgetFrame *twf
@@ -3169,7 +3181,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->drawLine(opt->rect.topLeft(), opt->rect.bottomLeft());
         } break;
     case PE_FrameStatusBarItem:
-        QCommonStyle::drawPrimitive(pe, opt, p, w);
         break;
     case PE_IndicatorTabClose: {
         bool hover = (opt->state & State_MouseOver);

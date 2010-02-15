@@ -85,6 +85,9 @@ void Node::setDoc(const Doc& doc, bool replace)
 }
 
 /*!
+  Construct a node with the given \a type and having the
+  given \a parent and \a name. The new node is added to the
+  parent's child list.
  */
 Node::Node(Type type, InnerNode *parent, const QString& name)
     : typ(type),
@@ -490,6 +493,8 @@ NodeList InnerNode::overloads(const QString &funcName) const
 }
 
 /*!
+  Construct an inner node (i.e., not a leaf node) of the
+  given \a type and having the given \a parent and \a name.
  */
 InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
@@ -547,6 +552,7 @@ bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 }
 
 /*!
+  Adds the \a child to this node's child list.
  */
 void InnerNode::addChild(Node *child)
 {
@@ -564,7 +570,7 @@ void InnerNode::addChild(Node *child)
     else {
         if (child->type() == Enum)
             enumChildren.append(child);
-	childMap.insert(child->name(), child);
+        childMap.insert(child->name(), child);
     }
 }
 
@@ -1207,7 +1213,11 @@ bool TargetNode::isInnerNode() const
 bool QmlClassNode::qmlOnly = false;
 
 /*!
-  Constructor for the Qml class node.
+  Constructs a Qml class node (i.e. a Fake node with the
+  subtype QmlClass. The new node has the given \a parent
+  and \a name and is associated with the C++ class node
+  specified by \a cn which may be null if the the Qml
+  class node is not associated with a C++ class node.
  */
 QmlClassNode::QmlClassNode(InnerNode *parent,
                            const QString& name,
@@ -1231,6 +1241,18 @@ QString QmlClassNode::fileBase() const
     return "qml_" + Node::fileBase();
 #endif
     return Node::fileBase();
+}
+
+/*!
+  Constructs a Qml basic type node (i.e. a Fake node with
+  the subtype QmlBasicType. The new node has the given
+  \a parent and \a name.
+ */
+QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
+                                   const QString& name)
+    : FakeNode(parent, name, QmlBasicType)
+{
+    setTitle(name);
 }
 
 /*!

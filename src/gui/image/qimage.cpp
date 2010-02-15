@@ -1835,7 +1835,7 @@ void QImage::setColor(int i, QRgb c)
     qAlpha() to access the pixels.
 
     \sa bytesPerLine(), bits(), {QImage#Pixel Manipulation}{Pixel
-    Manipulation}
+    Manipulation}, constScanLine()
 */
 uchar *QImage::scanLine(int i)
 {
@@ -1865,6 +1865,28 @@ const uchar *QImage::scanLine(int i) const
 
 
 /*!
+    Returns a pointer to the pixel data at the scanline with index \a
+    i. The first scanline is at index 0.
+
+    The scanline data is aligned on a 32-bit boundary.
+
+    Note that QImage uses \l{Implicit Data Sharing} {implicit data
+    sharing}, but this function does \e not perform a deep copy of the
+    shared pixel data, because the returned data is const.
+
+    \sa scanLine(), constBits()
+    \since 4.7
+*/
+const uchar *QImage::constScanLine(int i) const
+{
+    if (!d)
+        return 0;
+
+    Q_ASSERT(i >= 0 && i < height());
+    return d->data + i * d->bytes_per_line;
+}
+
+/*!
     Returns a pointer to the first pixel data. This is equivalent to
     scanLine(0).
 
@@ -1873,7 +1895,7 @@ const uchar *QImage::scanLine(int i) const
     data, thus ensuring that this QImage is the only one using the
     current return value.
 
-    \sa scanLine(), byteCount()
+    \sa scanLine(), byteCount(), constBits()
 */
 uchar *QImage::bits()
 {
@@ -1901,6 +1923,20 @@ const uchar *QImage::bits() const
 }
 
 
+/*!
+    Returns a pointer to the first pixel data.
+
+    Note that QImage uses \l{Implicit Data Sharing} {implicit data
+    sharing}, but this function does \e not perform a deep copy of the
+    shared pixel data, because the returned data is const.
+
+    \sa bits(), constScanLine()
+    \since 4.7
+*/
+const uchar *QImage::constBits() const
+{
+    return d ? d->data : 0;
+}
 
 /*!
     \fn void QImage::reset()

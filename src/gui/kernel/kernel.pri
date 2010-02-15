@@ -206,6 +206,7 @@ embedded {
 
         OBJECTIVE_HEADERS += \
                 qcocoawindow_mac_p.h \
+                qcocoapanel_mac_p.h \
                 qcocoawindowdelegate_mac_p.h \
                 qcocoaview_mac_p.h \
                 qcocoaapplication_mac_p.h \

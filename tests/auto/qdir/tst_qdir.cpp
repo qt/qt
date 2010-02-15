@@ -49,6 +49,7 @@
 #include <qregexp.h>
 #include <qstringlist.h>
 #include "../network-settings.h"
+#include "../../shared/filesystem.h"
 
 #if defined(Q_OS_SYMBIAN)
 # define STRINGIFY(x) #x
@@ -164,6 +165,8 @@ private slots:
 
     void longFileName_data();
     void longFileName();
+
+    void updateFileLists();
 };
 
 // Testing get/set functions
@@ -982,6 +985,13 @@ tst_QDir::cleanPath_data()
     QTest::newRow("data7") << ".//file1.txt" << "file1.txt";
     QTest::newRow("data8") << "/foo/bar/..//file1.txt" << "/foo/file1.txt";
     QTest::newRow("data9") << "//" << "/";
+#if !defined(Q_OS_WINCE)
+#if defined Q_OS_WIN
+    QTest::newRow("data10") << "c:\\" << "c:/";
+#else
+    QTest::newRow("data10") << "/:/" << "/:";
+#endif
+#endif
 }
 
 
@@ -1433,6 +1443,95 @@ void tst_QDir::longFileName()
     file2.close();
 
     QFile::remove(fileName);
+}
+
+void tst_QDir::updateFileLists()
+{
+    //  Test setup
+
+    FileSystem fs;
+
+    QVERIFY( fs.createDirectory("update-file-lists") );
+    QVERIFY( fs.createFile("update-file-lists/file1.txt") );
+    QVERIFY( fs.createFile("update-file-lists/file2.doc") );
+
+    QVERIFY( fs.createDirectory("update-file-lists/sub-dir1") );
+    QVERIFY( fs.createFile("update-file-lists/sub-dir1/file3.txt") );
+    QVERIFY( fs.createFile("update-file-lists/sub-dir1/file4.doc") );
+    QVERIFY( fs.createFile("update-file-lists/sub-dir1/file5.txt") );
+
+    QVERIFY( fs.createDirectory("update-file-lists/sub-dir2") );
+    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file6.txt") );
+    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file7.txt") );
+    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file8.doc") );
+    QVERIFY( fs.createFile("update-file-lists/sub-dir2/file9.doc") );
+
+    //  Actual test
+
+    QDir dir("update-file-lists");
+
+    QCOMPARE(dir.count(), uint(6));
+    QCOMPARE(dir.entryList().size(), 6);
+    QCOMPARE(dir.entryInfoList().size(), 6);
+
+    dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
+
+    QCOMPARE(dir.entryList().size(), 4);
+    QCOMPARE(dir.count(), uint(4));
+    QCOMPARE(dir.entryInfoList().size(), 4);
+
+    dir.setPath("update-file-lists/sub-dir1");
+
+    QCOMPARE(dir.entryInfoList().size(), 3);
+    QCOMPARE(dir.count(), uint(3));
+    QCOMPARE(dir.entryList().size(), 3);
+
+    dir.setNameFilters(QStringList("*.txt"));
+
+    QCOMPARE(dir.entryInfoList().size(), 2);
+    QCOMPARE(dir.entryList().size(), 2);
+    QCOMPARE(dir.count(), uint(2));
+
+    dir.setPath("update-file-lists");
+    dir = QDir(dir.path(),
+            "*.txt",
+            QDir::Name | QDir::DirsLast,
+            QDir::AllEntries | QDir::AllDirs | QDir::NoDotAndDotDot);
+
+    QCOMPARE(dir.count(), uint(3));
+    QCOMPARE(dir.entryList().size(), 3);
+    QCOMPARE(dir.entryInfoList().size(), 3);
+    QCOMPARE(dir.entryList(), QStringList() << "file1.txt" << "sub-dir1" << "sub-dir2");
+
+    dir.setSorting(QDir::Name | QDir::DirsFirst);
+
+    QCOMPARE(dir.count(), uint(3));
+    QCOMPARE(dir.entryList().size(), 3);
+    QCOMPARE(dir.entryInfoList().size(), 3);
+    QCOMPARE(dir.entryList(), QStringList() << "sub-dir1" << "sub-dir2" << "file1.txt");
+
+    {
+        QVERIFY( fs.createFile("update-file-lists/extra-file.txt") );
+
+        QDir dir2(dir);
+
+        QCOMPARE(dir2.count(), uint(3));
+        QCOMPARE(dir2.entryList().size(), 3);
+        QCOMPARE(dir2.entryInfoList().size(), 3);
+        QCOMPARE(dir2.entryList(), QStringList() << "sub-dir1" << "sub-dir2" << "file1.txt");
+
+        dir2.refresh();
+
+        QCOMPARE(dir2.count(), uint(4));
+        QCOMPARE(dir2.entryList().size(), 4);
+        QCOMPARE(dir2.entryInfoList().size(), 4);
+        QCOMPARE(dir2.entryList(), QStringList() << "sub-dir1" << "sub-dir2" << "extra-file.txt" << "file1.txt");
+    }
+
+    QCOMPARE(dir.count(), uint(3));
+    QCOMPARE(dir.entryList().size(), 3);
+    QCOMPARE(dir.entryInfoList().size(), 3);
+    QCOMPARE(dir.entryList(), QStringList() << "sub-dir1" << "sub-dir2" << "file1.txt");
 }
 
 QTEST_MAIN(tst_QDir)

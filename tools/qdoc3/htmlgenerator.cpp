@@ -1428,14 +1428,19 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     QList<Section> sections;
     QList<Section>::const_iterator s;
 
-    QString htmlTitle = fake->fullTitle();
+    QString fullTitle = fake->fullTitle();
+    QString htmlTitle = fullTitle;
     if (fake->subType() == Node::File && !fake->subTitle().isEmpty()) {
         subTitleSize = SmallSubTitle;
         htmlTitle += " (" + fake->subTitle() + ")";
     }
+    else if (fake->subType() == Node::QmlBasicType) {
+        fullTitle = "QML Basic Type: " + fullTitle;
+        htmlTitle = fullTitle;
+    }
 
     generateHeader(htmlTitle, fake, marker, true);
-    generateTitle(fake->fullTitle(),
+    generateTitle(fullTitle,
                   Text() << fake->subTitle(),
                   subTitleSize,
                   fake,

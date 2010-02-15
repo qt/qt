@@ -1065,7 +1065,7 @@ QRect QRenderRule::boxRect(const QRect& cr, int flags) const
             r.adjust(-p[LeftEdge], -p[TopEdge], p[RightEdge], p[BottomEdge]);
         }
     }
-    if (!hasNativeBorder() && (flags & Border)) {
+    if (hasBorder() && (flags & Border)) {
         const int *b = border()->borders;
         r.adjust(-b[LeftEdge], -b[TopEdge], b[RightEdge], b[BottomEdge]);
     }
@@ -1352,6 +1352,12 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorRole fr, QPalette
         if (br != QPalette::NoRole)
             p->setBrush(br, bg->brush);
         p->setBrush(QPalette::Window, bg->brush);
+        if (bg->brush.style() == Qt::SolidPattern) {
+            p->setBrush(QPalette::Light, bg->brush.color().lighter(115));
+            p->setBrush(QPalette::Midlight, bg->brush.color().lighter(107));
+            p->setBrush(QPalette::Dark, bg->brush.color().darker(150));
+            p->setBrush(QPalette::Shadow, bg->brush.color().darker(300));
+        }
     }
 
     if (!hasPalette())

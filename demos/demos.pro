@@ -38,7 +38,7 @@ wince*:  SUBDIRS = \
             demos_undo \
             demos_sub-attaq
             
-contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl):!contains(QT_CONFIG, opengles2):{
+contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles2):{
 SUBDIRS += demos_boxes
 }
 
