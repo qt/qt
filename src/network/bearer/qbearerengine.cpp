@@ -50,22 +50,23 @@ QBearerEngine::QBearerEngine(QObject *parent)
 
 QBearerEngine::~QBearerEngine()
 {
-    foreach (const QString &oldIface, snapConfigurations.keys()) {
-        QNetworkConfigurationPrivatePointer priv = snapConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
+    QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
+    QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
+    for (it = snapConfigurations.begin(), end = snapConfigurations.end(); it != end; ++it) {
+        it.value()->isValid = false;
+        it.value()->id.clear();
     }
 
-    foreach (const QString &oldIface, accessPointConfigurations.keys()) {
-        QNetworkConfigurationPrivatePointer priv = accessPointConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
+    for (it = accessPointConfigurations.begin(), end = accessPointConfigurations.end();
+         it != end; ++it) {
+        it.value()->isValid = false;
+        it.value()->id.clear();
     }
 
-    foreach (const QString &oldIface, userChoiceConfigurations.keys()) {
-        QNetworkConfigurationPrivatePointer priv = userChoiceConfigurations.take(oldIface);
-        priv->isValid = false;
-        priv->id.clear();
+    for (it = userChoiceConfigurations.begin(), end = userChoiceConfigurations.end();
+         it != end; ++it) {
+        it.value()->isValid = false;
+        it.value()->id.clear();
     }
 }
 

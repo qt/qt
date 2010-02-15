@@ -235,25 +235,25 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
 
     foreach (QBearerEngine *engine, conPriv->sessionEngines) {
-        QStringList cpsIdents = engine->accessPointConfigurations.keys();
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
 
         //find all InternetAccessPoints
-        foreach (const QString &ii, cpsIdents) {
-            QNetworkConfigurationPrivatePointer p = engine->accessPointConfigurations.value(ii);
-            if ((p->state & filter) == filter) {
+        for (it = engine->accessPointConfigurations.begin(),
+             end = engine->accessPointConfigurations.end(); it != end; ++it) {
+            if ((it.value()->state & filter) == filter) {
                 QNetworkConfiguration pt;
-                pt.d = engine->accessPointConfigurations.value(ii);
+                pt.d = it.value();
                 result << pt;
             }
         }
 
         //find all service networks
-        cpsIdents = engine->snapConfigurations.keys();
-        foreach (const QString &ii, cpsIdents) {
-            QNetworkConfigurationPrivatePointer p = engine->snapConfigurations.value(ii);
-            if ((p->state & filter) == filter) {
+        for (it = engine->snapConfigurations.begin(),
+             end = engine->snapConfigurations.end(); it != end; ++it) {
+            if ((it.value()->state & filter) == filter) {
                 QNetworkConfiguration pt;
-                pt.d = engine->snapConfigurations.value(ii);
+                pt.d = it.value();
                 result << pt;
             }
         }

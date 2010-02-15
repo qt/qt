@@ -244,16 +244,19 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
     QNetworkConfigurationPrivatePointer firstDiscovered;
 
     foreach (QBearerEngine *engine, sessionEngines) {
-        foreach (const QString &id, engine->snapConfigurations.keys()) {
-            QNetworkConfigurationPrivatePointer ptr = engine->snapConfigurations.value(id);
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
 
-            if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        for (it = engine->snapConfigurations.begin(), end = engine->snapConfigurations.end();
+             it != end; ++it) {
+            if ((it.value()->state & QNetworkConfiguration::Active) ==
+                QNetworkConfiguration::Active) {
                 QNetworkConfiguration config;
-                config.d = ptr;
+                config.d = it.value();
                 return config;
-            } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
                        QNetworkConfiguration::Discovered) {
-                firstDiscovered = ptr;
+                firstDiscovered = it.value();
             }
         }
     }
@@ -269,16 +272,19 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
     firstDiscovered.reset();
 
     foreach (QBearerEngine *engine, sessionEngines) {
-        foreach (const QString &id, engine->accessPointConfigurations.keys()) {
-            QNetworkConfigurationPrivatePointer ptr = engine->accessPointConfigurations.value(id);
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
 
-            if ((ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
+        for (it = engine->accessPointConfigurations.begin(),
+             end = engine->accessPointConfigurations.end(); it != end; ++it) {
+            if ((it.value()->state & QNetworkConfiguration::Active) ==
+                QNetworkConfiguration::Active) {
                 QNetworkConfiguration config;
-                config.d = ptr;
+                config.d = it.value();
                 return config;
-            } else if ((ptr->state & QNetworkConfiguration::Discovered) ==
+            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
                        QNetworkConfiguration::Discovered) {
-                firstDiscovered = ptr;
+                firstDiscovered = it.value();
             }
         }
     }
