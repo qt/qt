@@ -1750,7 +1750,11 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     case QInternal::FramebufferObject:
         {
             GLenum f = static_cast<QGLFramebufferObject *>(pdev)->format().internalTextureFormat();
+#ifndef QT_OPENGL_ES
             d->deviceHasAlpha = (f != GL_RGB && f != GL_RGB5 && f != GL_RGB8);
+#else
+            d->deviceHasAlpha = (f == GL_RGBA);
+#endif
         }
         break;
     default:
