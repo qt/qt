@@ -1335,5 +1335,3 @@ void QmlGraphicsFlickablePrivate::updateVelocity()
 }
 
 QT_END_NAMESPACE
-
-#include <qmlgraphicsflickable.moc>

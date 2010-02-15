@@ -1698,5 +1698,3 @@ QmlGraphicsGridViewAttached *QmlGraphicsGridView::qmlAttachedProperties(QObject 
 }
 
 QT_END_NAMESPACE
-
-#include <qmlgraphicsgridview.moc>

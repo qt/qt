@@ -2675,5 +2675,3 @@ QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject 
 }
 
 QT_END_NAMESPACE
-
-#include <qmlgraphicslistview.moc>
