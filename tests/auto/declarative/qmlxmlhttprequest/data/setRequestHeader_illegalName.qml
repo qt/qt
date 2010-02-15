@@ -46,6 +46,7 @@ QtObject {
         x.onreadystatechange = function() {
             if (x.readyState == XMLHttpRequest.DONE) {
                 dataOK = (x.responseText == "QML Rocks!\n");
+                    print("DATA:" + x.responseText);
             }
         }
 
