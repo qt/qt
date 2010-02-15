@@ -131,9 +131,9 @@ public:
     glyph_t *glyphPool;                  // 4 bytes per text
     QFixedPoint *positionPool;           // 4 bytes per text
 
-    char needsClipRect           : 1;    // 1 byte per text
-    char useBackendOptimizations : 1;
-    char textFormat              : 2;
+    unsigned char needsClipRect           : 1;    // 1 byte per text
+    unsigned char useBackendOptimizations : 1;
+    unsigned char textFormat              : 2;
                                          // ================
                                          // 171 bytes per text
 
