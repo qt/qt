@@ -70,7 +70,7 @@ class Q_NETWORK_EXPORT QNetworkAccessManager: public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool networkAccess READ networkAccessEnabled WRITE setNetworkAccessEnabled NOTIFY networkAccessChanged)
+    Q_PROPERTY(NetworkAccessibility networkAccessible READ networkAccessible WRITE setNetworkAccessible NOTIFY networkAccessibleChanged)
 
 public:
     enum Operation {
@@ -82,6 +82,12 @@ public:
         CustomOperation,
 
         UnknownOperation = 0
+    };
+
+    enum NetworkAccessibility {
+        UnknownAccessibility = -1,
+        NotAccessible = 0,
+        Accessible = 1
     };
 
     explicit QNetworkAccessManager(QObject *parent = 0);
@@ -113,8 +119,8 @@ public:
     QNetworkConfiguration configuration() const;
     QNetworkConfiguration activeConfiguration() const;
 
-    void setNetworkAccessEnabled(bool enabled);
-    bool networkAccessEnabled() const;
+    void setNetworkAccessible(NetworkAccessibility accessible);
+    NetworkAccessibility networkAccessible() const;
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
@@ -128,7 +134,7 @@ Q_SIGNALS:
 
     void networkSessionConnected();
 
-    void networkAccessChanged(bool enabled);
+    void networkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
 
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,
@@ -142,6 +148,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionNewConfigurationActivated())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionPreferredConfigurationChanged(QNetworkConfiguration,bool))
+    Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State));
 };
 
 QT_END_NAMESPACE
