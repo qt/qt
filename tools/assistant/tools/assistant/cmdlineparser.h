@@ -42,6 +42,7 @@
 #ifndef CMDLINEPARSER_H
 #define CMDLINEPARSER_H
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
 
@@ -49,13 +50,14 @@ QT_BEGIN_NAMESPACE
 
 class CmdLineParser
 {
+    Q_DECLARE_TR_FUNCTIONS(CmdLineParser)
 public:
     enum Result {Ok, Help, Error};
     enum ShowState {Untouched, Show, Hide, Activate};
     enum RegisterState {None, Register, Unregister};
 
-    CmdLineParser();
-    Result parse(const QStringList &arguments);
+    CmdLineParser(const QStringList &arguments);
+    Result parse();
 
     void setCollectionFile(const QString &file);
     QString collectionFile() const;
@@ -68,17 +70,30 @@ public:
     ShowState search() const;
     QString currentFilter() const;
     bool removeSearchIndex() const;
+    bool rebuildSearchIndex() const;
     RegisterState registerRequest() const;
     QString helpFile() const;
-
-    bool copy() const { return m_copy; }
 
     void showMessage(const QString &msg, bool error);
 
 private:
     QString getFileName(const QString &fileName);
+    bool hasMoreArgs() const;
+    const QString &nextArg();
+    void handleCollectionFileOption();
+    void handleShowUrlOption();
+    void handleShowOption();
+    void handleHideOption();
+    void handleActivateOption();
+    void handleShowOrHideOrActivateOption(ShowState state);
+    void handleRegisterOption();
+    void handleUnregisterOption();
+    void handleRegisterOrUnregisterOption(RegisterState state);
+    void handleSetCurrentFilterOption();
 
-    QString m_helpMessage;
+    QStringList m_arguments;
+    int m_pos;
+    static const QString m_helpMessage;
     QString m_collectionFile;
     QString m_cloneFile;
     QString m_helpFile;
@@ -92,8 +107,9 @@ private:
     RegisterState m_register;
     QString m_currentFilter;
     bool m_removeSearchIndex;
-    bool m_copy;
+    bool m_rebuildSearchIndex;
     bool m_quiet;
+    QString m_error;
 };
 
 QT_END_NAMESPACE

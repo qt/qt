@@ -457,6 +457,30 @@
 */
 
 /*!
+    \page qt4-7-intro.html
+    \title What's New in Qt 4.7
+
+    Qt 4.7 provides many improvements and enhancements over the
+    previous releases in the Qt 4 series. This document covers the
+    most important features in this release, separated by category.
+
+    A list of other Qt 4 features can be found on the \bold{\l{What's
+    New in Qt 4}} page.
+
+    \bold{Highlights}
+
+    \tableofcontents
+
+    \section1 New Classes, Functions, Macros, etc.
+
+    Links to new classes, functions, macros, and other items
+    introduced in Qt 4.7.
+
+    \sincelist 4.7
+
+*/
+
+/*!
     \page qt4-6-intro.html
     \title What's New in Qt 4.6
 

@@ -158,6 +158,7 @@ struct QTLWExtra {
     quint32 newCounterValueLo;
 #endif
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
+    uint hotkeyRegistered: 1; // Hot key from the STARTUPINFO has been registered.
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
@@ -385,6 +386,8 @@ public:
     QRegion prepareToRender(const QRegion &region, QWidget::RenderFlags renderFlags);
     void render_helper(QPainter *painter, const QPoint &targetOffset, const QRegion &sourceRegion,
                        QWidget::RenderFlags renderFlags);
+    void render(QPaintDevice *target, const QPoint &targetOffset, const QRegion &sourceRegion,
+                QWidget::RenderFlags renderFlags, bool readyToRender);
     void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
                     QPainter *sharedPainter = 0, QWidgetBackingStore *backingStore = 0);
 
@@ -761,6 +764,8 @@ public:
     void initWindowPtr();
     void finishCreateWindow_sys_Carbon(OSWindowRef windowRef);
 #else
+    void setSubWindowStacking(bool set);
+    void setWindowLevel();
     void finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ windowRef);
     void syncCocoaMask();
     void finishCocoaMaskSetup();

@@ -400,8 +400,10 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
     qlonglong entered = QLocalePrivate::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
     if (overflow || !ok)
         return Invalid;
-    if (entered >= b && entered <= t)
-        return Acceptable;
+    if (entered >= b && entered <= t) {
+        locale().toInt(input, &ok);
+        return ok ? Acceptable : Intermediate;
+    }
 
     if (entered >= 0) {
         // the -entered < b condition is necessary to allow people to type
@@ -412,6 +414,20 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
     }
 }
 
+/*! \reimp */
+void QIntValidator::fixup(QString &input) const
+{
+    QByteArray buff;
+    if (!locale().d()->validateChars(input, QLocalePrivate::IntegerMode, &buff)) {
+        QLocale cl(QLocale::C);
+        if (!cl.d()->validateChars(input, QLocalePrivate::IntegerMode, &buff))
+            return;
+    }
+    bool ok, overflow;
+    qlonglong entered = QLocalePrivate::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
+    if (ok && !overflow)
+        input = locale().toString(entered);
+}
 
 /*!
     Sets the range of the validator to only accept integers between \a

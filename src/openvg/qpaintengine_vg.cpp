@@ -979,16 +979,13 @@ static QImage colorizeBitmap(const QImage &image, const QColor &color)
     int height = sourceImage.height();
     int width = sourceImage.width();
     for (int y=0; y<height; ++y) {
-        uchar *source = sourceImage.scanLine(y);
+        const uchar *source = sourceImage.constScanLine(y);
         QRgb *target = reinterpret_cast<QRgb *>(dest.scanLine(y));
         for (int x=0; x < width; ++x)
             target[x] = (source[x>>3] >> (x&7)) & 1 ? fg : bg;
     }
     return dest;
 }
-
-// defined in qpixmapdata_vg.cpp.
-const uchar *qt_vg_imageBits(const QImage& image);
 
 static VGImage toVGImage
     (const QImage & image, Qt::ImageConversionFlags flags = Qt::AutoColor)
@@ -1023,7 +1020,7 @@ static VGImage toVGImage
         break;
     }
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1067,7 +1064,7 @@ static VGImage toVGImageSubRect
         break;
     }
 
-    const uchar *pixels = qt_vg_imageBits(img) + bpp * sr.x() +
+    const uchar *pixels = img.constBits() + bpp * sr.x() +
                           img.bytesPerLine() * sr.y();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
@@ -1089,7 +1086,7 @@ static VGImage toVGImageWithOpacity(const QImage & image, qreal opacity)
     painter.drawImage(0, 0, image);
     painter.end();
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1111,7 +1108,7 @@ static VGImage toVGImageWithOpacitySubRect
     painter.drawImage(QPoint(0, 0), image, sr);
     painter.end();
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -3225,15 +3222,15 @@ void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
         if (!scaledImage.isNull()) {  // Not a space character
             if (scaledImage.format() == QImage::Format_Indexed8) {
                 vgImage = vgCreateImage(VG_A_8, scaledImage.width(), scaledImage.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(scaledImage), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
+                vgImageSubData(vgImage, scaledImage.constBits(), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
             } else if (scaledImage.format() == QImage::Format_Mono) {
                 QImage img = scaledImage.convertToFormat(QImage::Format_Indexed8);
                 vgImage = vgCreateImage(VG_A_8, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, img.constBits(), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
             } else {
                 QImage img = scaledImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
                 vgImage = vgCreateImage(VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, img.constBits(), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
             }
         }
         origin[0] = -metrics.x.toReal() + 0.5f;
@@ -3717,7 +3714,7 @@ void QVGCompositionHelper::drawCursorPixmap
         if (vgImage == VG_INVALID_HANDLE)
             return;
         vgImageSubData
-            (vgImage, qt_vg_imageBits(img) + img.bytesPerLine() * (img.height() - 1),
+            (vgImage, img.constBits() + img.bytesPerLine() * (img.height() - 1),
              -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
              img.width(), img.height());
 

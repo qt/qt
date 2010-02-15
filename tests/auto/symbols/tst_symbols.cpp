@@ -100,7 +100,6 @@ void tst_Symbols::globalObjects()
 #ifndef Q_OS_LINUX
     QSKIP("Linux-specific test", SkipAll);
 #endif
-    QSKIP("Test disabled, we're not fixing these issues in this Qt version", SkipAll);
 
     // these are regexps for global objects that are allowed in Qt
     QStringList whitelist = QStringList()

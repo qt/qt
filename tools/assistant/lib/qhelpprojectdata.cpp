@@ -41,6 +41,7 @@
 
 #include "qhelpprojectdata_p.h"
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QStack>
@@ -82,7 +83,7 @@ private:
 
 void QHelpProjectDataPrivate::raiseUnknownTokenError()
 {
-    raiseError(QObject::tr("Unknown token."));
+    raiseError(QCoreApplication::translate("QHelpProject", "Unknown token."));
 }
 
 void QHelpProjectDataPrivate::readData(const QByteArray &contents)
@@ -95,12 +96,14 @@ void QHelpProjectDataPrivate::readData(const QByteArray &contents)
                 && attributes().value(QLatin1String("version")) == QLatin1String("1.0"))
                 readProject();
             else
-                raiseError(QObject::tr("Unknown token. Expected \"QtHelpProject\"!"));
+                raiseError(QCoreApplication::translate("QHelpProject",
+                               "Unknown token. Expected \"QtHelpProject\"!"));
         }
     }
 
     if (hasError()) {
-        raiseError(QObject::tr("Error in line %1: %2").arg(lineNumber())
+        raiseError(QCoreApplication::translate("QHelpProject",
+                       "Error in line %1: %2").arg(lineNumber())
             .arg(errorString()));
     }
 }
@@ -113,11 +116,15 @@ void QHelpProjectDataPrivate::readProject()
             if (name() == QLatin1String("virtualFolder")) {
                 virtualFolder = readElementText();
                 if (virtualFolder.contains(QLatin1String("/")))
-                    raiseError(QObject::tr("A virtual folder must not contain a \'/\' character!"));
+                    raiseError(QCoreApplication::translate("QHelpProject",
+                                   "A virtual folder must not contain "
+                                   "a \'/\' character!"));
             } else if (name() == QLatin1String("namespace")) {
                 namespaceName = readElementText();
                 if (namespaceName.contains(QLatin1String("/")))
-                    raiseError(QObject::tr("A namespace must not contain a \'/\' character!"));
+                    raiseError(QCoreApplication::translate("QHelpProject",
+                                   "A namespace must not contain a "
+                                   "\'/\' character!"));
             } else if (name() == QLatin1String("customFilter")) {
                 readCustomFilter();
             } else if (name() == QLatin1String("filterSection")) {
@@ -125,17 +132,21 @@ void QHelpProjectDataPrivate::readProject()
             } else if (name() == QLatin1String("metaData")) {
                 QString n = attributes().value(QLatin1String("name")).toString();
                 if (!metaData.contains(n))
-                    metaData[n] = attributes().value(QLatin1String("value")).toString();
+                    metaData[n]
+                        = attributes().value(QLatin1String("value")).toString();
                 else
-                    metaData.insert(n, attributes().value(QLatin1String("value")).toString());
+                    metaData.insert(n, attributes().
+                                    value(QLatin1String("value")).toString());
             } else {
                 raiseUnknownTokenError();
             }
         } else if (isEndElement() && name() == QLatin1String("QtHelpProject")) {
             if (namespaceName.isEmpty())
-                raiseError(QObject::tr("Missing namespace in QtHelpProject."));
+                raiseError(QCoreApplication::translate("QHelpProject",
+                              "Missing namespace in QtHelpProject."));
             else if (virtualFolder.isEmpty())
-                raiseError(QObject::tr("Missing virtual folder in QtHelpProject"));
+                raiseError(QCoreApplication::translate("QHelpProject",
+                               "Missing virtual folder in QtHelpProject"));
             break;
         }
     }
@@ -223,12 +234,14 @@ void QHelpProjectDataPrivate::readKeywords()
                 if (attributes().value(QLatin1String("ref")).toString().isEmpty()
                     || (attributes().value(QLatin1String("name")).toString().isEmpty()
                     && attributes().value(QLatin1String("id")).toString().isEmpty()))
-                    raiseError(QObject::tr("Missing attribute in keyword at line %1.")
-                        .arg(lineNumber()));
-                filterSectionList.last().addIndex(
-                    QHelpDataIndexItem(attributes().value(QLatin1String("name")).toString(),
-                        attributes().value(QLatin1String("id")).toString(),
-                        attributes().value(QLatin1String("ref")).toString()));
+                    raiseError(QCoreApplication::translate("QHelpProject",
+                                   "Missing attribute in keyword at line %1.")
+                               .arg(lineNumber()));
+                filterSectionList.last()
+                    .addIndex(QHelpDataIndexItem(attributes().
+                                  value(QLatin1String("name")).toString(),
+                              attributes().value(QLatin1String("id")).toString(),
+                              attributes().value(QLatin1String("ref")).toString()));
             } else {
                 raiseUnknownTokenError();
             }
@@ -346,8 +359,8 @@ bool QHelpProjectData::readData(const QString &fileName)
     d->rootPath = QFileInfo(fileName).absolutePath();
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly)) {
-        d->errorMsg = QObject::tr("The input file %1 could not be opened!")
-            .arg(fileName);
+        d->errorMsg = QCoreApplication::translate("QHelpProject",
+                          "The input file %1 could not be opened!").arg(fileName);
         return false;
     }
 

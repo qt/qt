@@ -259,8 +259,7 @@ void QTextDocumentPrivate::clear()
         objects.clear();
 
         title.clear();
-        undoState = 0;
-        truncateUndoStack();
+        clearUndoRedoStacks(QTextDocument::UndoAndRedoStacks);
         text = QString();
         unreachableCharacterCount = 0;
         modifiedState = 0;
@@ -292,7 +291,7 @@ QTextDocumentPrivate::~QTextDocumentPrivate()
     cursors.clear();
     undoState = 0;
     undoEnabled = true;
-    truncateUndoStack();
+    clearUndoRedoStacks(QTextDocument::RedoStack);
 }
 
 void QTextDocumentPrivate::setLayout(QAbstractTextDocumentLayout *layout)
@@ -1027,7 +1026,7 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
     if (!undoEnabled)
         return;
     if (undoState < undoStack.size())
-        truncateUndoStack();
+        clearUndoRedoStacks(QTextDocument::RedoStack);
 
     if (!undoStack.isEmpty() && modified) {
         QTextUndoCommand &last = undoStack[undoState - 1];
@@ -1050,26 +1049,46 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
         emit document()->undoCommandAdded();
 }
 
-void QTextDocumentPrivate::truncateUndoStack()
+void QTextDocumentPrivate::clearUndoRedoStacks(QTextDocument::Stacks stacksToClear,
+                                               bool emitSignals)
 {
-    if (undoState == undoStack.size())
-        return;
-
-    for (int i = undoState; i < undoStack.size(); ++i) {
-        QTextUndoCommand c = undoStack[i];
-        if (c.command & QTextUndoCommand::Removed) {
-            // ########
-//             QTextFragment *f = c.fragment_list;
-//             while (f) {
-//                 QTextFragment *n = f->right;
-//                 delete f;
-//                 f = n;
-//             }
-        } else if (c.command & QTextUndoCommand::Custom) {
-            delete c.custom;
+    bool undoCommandsAvailable = undoState != 0;
+    bool redoCommandsAvailable = undoState != undoStack.size();
+    if (stacksToClear == QTextDocument::UndoStack && undoCommandsAvailable) {
+        for (int i = 0; i < undoState; ++i) {
+            QTextUndoCommand c = undoStack[undoState];
+            if (c.command & QTextUndoCommand::Custom)
+                delete c.custom;
         }
+        undoStack.remove(0, undoState);
+        undoStack.resize(undoStack.size() - undoState);
+        undoState = 0;
+        if (emitSignals)
+            emitUndoAvailable(false);
+    } else if (stacksToClear == QTextDocument::RedoStack
+               && redoCommandsAvailable) {
+        for (int i = undoState; i < undoStack.size(); ++i) {
+            QTextUndoCommand c = undoStack[i];
+            if (c.command & QTextUndoCommand::Custom)
+                delete c.custom;
+        }
+        undoStack.resize(undoState);
+        if (emitSignals)
+            emitRedoAvailable(false);
+    } else if (stacksToClear == QTextDocument::UndoAndRedoStacks
+               && !undoStack.isEmpty()) {
+        for (int i = 0; i < undoStack.size(); ++i) {
+            QTextUndoCommand c = undoStack[i];
+            if (c.command & QTextUndoCommand::Custom)
+                delete c.custom;
+        }
+        undoState = 0;
+        undoStack.resize(0);
+        if (emitSignals && undoCommandsAvailable)
+            emitUndoAvailable(false);
+        if (emitSignals && redoCommandsAvailable)
+            emitRedoAvailable(false);
     }
-    undoStack.resize(undoState);
 }
 
 void QTextDocumentPrivate::emitUndoAvailable(bool available)
@@ -1097,7 +1116,7 @@ void QTextDocumentPrivate::enableUndoRedo(bool enable)
 
     if (!enable) {
         undoState = 0;
-        truncateUndoStack();
+        clearUndoRedoStacks(QTextDocument::RedoStack);
         emitUndoAvailable(false);
         emitRedoAvailable(false);
     }

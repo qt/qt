@@ -256,6 +256,13 @@ public:
     void undo(QTextCursor *cursor);
     void redo(QTextCursor *cursor);
 
+    enum Stacks {
+        UndoStack = 0x01,
+        RedoStack = 0x02,
+        UndoAndRedoStacks = UndoStack | RedoStack
+    };
+    void clearUndoRedoStacks(Stacks historyToClear = UndoAndRedoStacks);
+
     int maximumBlockCount() const;
     void setMaximumBlockCount(int maximum);
 

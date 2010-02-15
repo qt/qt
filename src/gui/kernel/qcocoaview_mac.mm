@@ -81,7 +81,6 @@ Q_GLOBAL_STATIC(DnDParams, qMacDnDParams);
 extern void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos); // qcursor_mac.mm
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); // qapplication.cpp
 extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
-extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
@@ -212,7 +211,6 @@ extern "C" {
     composingText = new QString();
     composing = false;
     sendKeyEvents = true;
-    currentCustomTypes = 0;
     [self setHidden:YES];
     return self;
 }
@@ -227,36 +225,12 @@ extern "C" {
                                                object:self];
 }
 
--(void)registerDragTypes
-{
-    QMacCocoaAutoReleasePool pool;
-    // Calling registerForDraggedTypes is slow, so only do it once for each widget
-    // or when the custom types change.
-    const QStringList& customTypes = qEnabledDraggedTypes();
-    if (currentCustomTypes == 0 || *currentCustomTypes != customTypes) {
-        if (currentCustomTypes == 0)
-            currentCustomTypes = new QStringList();
-        *currentCustomTypes = customTypes;
-        const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
-	NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType,
-                                   NSFilenamesPboardType, NSStringPboardType,
-                                   NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
-                                   NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
-                                   NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
-                                   NSRTFDPboardType, NSHTMLPboardType, NSPICTPboardType,
-                                   NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
-                                   NSFilesPromisePboardType, NSInkTextPboardType,
-                                   NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
-        // Add custom types supported by the application.
-        for (int i = 0; i < customTypes.size(); i++) {
-           [supportedTypes addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(customTypes[i]))];
-        }
-        [self registerForDraggedTypes:supportedTypes];
-    }
-}
-
 - (void)resetCursorRects
 {
+    // [NSView addCursorRect] is slow, so bail out early if we can:
+    if (NSIsEmptyRect([self visibleRect]))
+        return;
+
     QWidget *cursorWidget = qwidget;
 
     if (cursorWidget->testAttribute(Qt::WA_TransparentForMouseEvents))
@@ -300,15 +274,9 @@ extern "C" {
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
 {
-    if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
-        return NSDragOperationNone;
+    // NB: This function is called from QCoocaWindow/QCocoaPanel rather than directly
+    // from Cocoa. They modify the drag target, and might fake enter/leave events.
     NSPoint windowPoint = [sender draggingLocation];
-    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-        // pass the drag enter event to the view underneath.
-        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
-        if (candidateView && candidateView != self)
-            return [candidateView draggingEntered:sender];
-    }
     dragEnterSequence = [sender draggingSequenceNumber];
     [self addDropData:sender];
     QMimeData *mimeData = dropData;
@@ -361,13 +329,9 @@ extern "C" {
  }
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
 {
+    // NB: This function is called from QCoocaWindow/QCocoaPanel rather than directly
+    // from Cocoa. They modify the drag target, and might fake enter/leave events.
     NSPoint windowPoint = [sender draggingLocation];
-    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-        // pass the drag move event to the view underneath.
-        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
-        if (candidateView && candidateView != self)
-            return [candidateView draggingUpdated:sender];
-    }
     // in cases like QFocusFrame, the view under the mouse might
     // not have received the drag enter. Generate a synthetic
     // drag enter event for that view.
@@ -417,14 +381,10 @@ extern "C" {
 
 - (void)draggingExited:(id < NSDraggingInfo >)sender
 {
+    // NB: This function is called from QCoocaWindow/QCocoaPanel rather than directly
+    // from Cocoa. They modify the drag target, and might fake enter/leave events.
+    Q_UNUSED(sender);
     dragEnterSequence = -1;
-    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-        // try sending the leave event to the last view which accepted drag enter.
-        DnDParams *dndParams = [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
-        NSView *candidateView = [[[self window] contentView] hitTest:dndParams->activeDragEnterPos];
-        if (candidateView && candidateView != self)
-            return [candidateView draggingExited:sender];
-    }
     // drag enter event was rejected, so ignore the move event.
     if (dropData) {
         QDragLeaveEvent de;
@@ -435,14 +395,10 @@ extern "C" {
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
+    // NB: This function is called from QCoocaWindow/QCocoaPanel rather than directly
+    // from Cocoa. They modify the drag target, and might fake enter/leave events.
     NSPoint windowPoint = [sender draggingLocation];
     dragEnterSequence = -1;
-    if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
-        // pass the drop event to the view underneath.
-        NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
-        if (candidateView && candidateView != self)
-            return [candidateView performDragOperation:sender];
-    }
     [self addDropData:sender];
 
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
@@ -472,8 +428,6 @@ extern "C" {
 {
     delete composingText;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    delete currentCustomTypes;
-    [self unregisterDraggedTypes];
     [super dealloc];
 }
 
@@ -616,6 +570,10 @@ extern "C" {
 
 - (void)updateTrackingAreas
 {
+    // [NSView addTrackingArea] is slow, so bail out early if we can:
+    if (NSIsEmptyRect([self visibleRect]))
+        return;
+
     QMacCocoaAutoReleasePool pool;
     if (NSArray *trackingArray = [self trackingAreas]) {
         NSUInteger size = [trackingArray count];

@@ -281,6 +281,7 @@ public:
 
     bool needsSync;
     bool multisamplingAlwaysEnabled;
+    bool deviceHasAlpha;
 
     GLfloat depthRange[2];
 
@@ -296,6 +297,7 @@ public:
 
     QSet<QVectorPath::CacheEntry *> pathCaches;
     QVector<GLuint> unusedVBOSToClean;
+    QVector<GLuint> unusedIBOSToClean;
 
     const GLfloat *vertexAttribPointers[3];
 };

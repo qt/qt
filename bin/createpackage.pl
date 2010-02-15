@@ -157,10 +157,8 @@ my $signed_sis_name = $sisoutputbasename.".sis";
 # Store some utility variables
 my $scriptpath = dirname(__FILE__);
 my $certtext = $certificate;
-my $certpath = $scriptpath;
-$certpath =~ s-^(.*[^\\])$-$1\\-o;          # ensure path ends with a backslash
-$certpath =~ s-/-\\-go;                     # for those working with UNIX shells
-$certpath =~ s-bin\\$-src\\s60installs\\-;  # certificates are one step up in hierarcy
+# certificates are one step up in hierarchy
+my $certpath = File::Spec->catdir($scriptpath, File::Spec->updir(), "src/s60installs/");
 
 # Check some pre-conditions and print error messages if needed.
 unless (length($templatepkg)) {
@@ -192,14 +190,14 @@ if (length($certificate)) {
 } else {
     #If no certificate is given, check default options
     $certtext = "RnD";
-    $certificate = $certpath."rd.cer";
-    $key = $certpath."rd-key.pem";
+    $certificate = File::Spec->catfile($certpath, "rd.cer");
+    $key = File::Spec->catfile($certpath, "rd-key.pem");
 
     stat($certificate);
     unless( -e _ ) {
         $certtext = "Self Signed";
-        $certificate = $certpath."selfsigned.cer";
-        $key = $certpath."selfsigned.key";
+        $certificate = File::Spec->catfile($certpath, "selfsigned.cer");
+        $key = File::Spec->catfile($certpath, "selfsigned.key");
     }
 }
 

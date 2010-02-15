@@ -189,8 +189,8 @@ public:
     QList<QObject *> pendingChildInsertedEvents;
 #else
     // preserve binary compatibility with code compiled without Qt 3 support
-    // ### why?
-    QList<QObject *> unused;
+    // keeping the binary layout stable helps the Qt Creator debugger
+    void *unused;
 #endif
 
     QList<QPointer<QObject> > eventFilters;

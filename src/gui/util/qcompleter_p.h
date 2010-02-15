@@ -98,6 +98,7 @@ public:
     void _q_complete(QModelIndex, bool = false);
     void _q_completionSelected(const QItemSelection&);
     void _q_autoResizePopup();
+    void _q_fileSystemModelDirectoryLoaded(const QString &path);
     void setCurrentIndex(QModelIndex, bool = true);
 };
 

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_dnotify_p.h"
 
@@ -255,16 +256,16 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
 
         if(fd == 0) {
 
-            DIR *d = ::opendir(path.toUtf8().constData());
+            QT_DIR *d = QT_OPENDIR(path.toUtf8().constData());
             if(!d) continue; // Could not open directory
-            DIR *parent = 0;
+            QT_DIR *parent = 0;
 
             QDir parentDir(path);
             if(!parentDir.isRoot()) {
                 parentDir.cdUp();
-                parent = ::opendir(parentDir.path().toUtf8().constData());
+                parent = QT_OPENDIR(parentDir.path().toUtf8().constData());
                 if(!parent) {
-                    ::closedir(d);
+                    QT_CLOSEDIR(d);
                     continue;
                 }
             }
@@ -272,8 +273,8 @@ QStringList QDnotifyFileSystemWatcherEngine::addPaths(const QStringList &paths, 
             fd = qt_safe_dup(::dirfd(d));
             int parentFd = parent ? qt_safe_dup(::dirfd(parent)) : 0;
 
-            ::closedir(d);
-            if(parent) ::closedir(parent);
+            QT_CLOSEDIR(d);
+            if(parent) QT_CLOSEDIR(parent);
 
             Q_ASSERT(fd);
             if(::fcntl(fd, F_SETSIG, SIGIO) ||

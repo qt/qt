@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include "installdialog.h"
 
@@ -66,6 +67,7 @@ InstallDialog::InstallDialog(QHelpEngineCore *helpEngine, QWidget *parent,
                              const QString &host, int port)
     : QDialog(parent), m_helpEngine(helpEngine), m_host(host), m_port(port)
 {
+    TRACE_OBJ
     m_ui.setupUi(this);
     
     m_ui.installButton->setEnabled(false);
@@ -94,15 +96,18 @@ InstallDialog::InstallDialog(QHelpEngineCore *helpEngine, QWidget *parent,
 
 InstallDialog::~InstallDialog()
 {
+    TRACE_OBJ
 }
 
 QStringList InstallDialog::installedDocumentations() const
 {
+    TRACE_OBJ
     return m_installedDocumentations;
 }
 
 void InstallDialog::init()
 {
+    TRACE_OBJ
     m_ui.statusLabel->setText(tr("Downloading documentation info..."));
     m_ui.progressBar->show();
     
@@ -122,6 +127,7 @@ void InstallDialog::init()
 
 void InstallDialog::updateInstallButton()
 {
+    TRACE_OBJ
     QListWidgetItem *item = 0;
     for (int i=0; i<m_ui.listWidget->count(); ++i) {
         item = m_ui.listWidget->item(i);
@@ -136,6 +142,7 @@ void InstallDialog::updateInstallButton()
 
 void InstallDialog::updateDocItemList()
 {
+    TRACE_OBJ
     QStringList registeredDocs = m_helpEngine->registeredDocumentations();
     QListWidgetItem *item = 0;
     for (int i=0; i<m_ui.listWidget->count(); ++i) {
@@ -151,6 +158,7 @@ void InstallDialog::updateDocItemList()
 
 void InstallDialog::cancelDownload()
 {
+    TRACE_OBJ
     m_ui.statusLabel->setText(tr("Download canceled."));
     m_httpAborted = true;
     m_itemsToInstall.clear();
@@ -162,6 +170,7 @@ void InstallDialog::cancelDownload()
 
 void InstallDialog::install()
 {
+    TRACE_OBJ
     QListWidgetItem *item = 0;
     for (int i=0; i<m_ui.listWidget->count(); ++i) {
         item = m_ui.listWidget->item(i);
@@ -174,6 +183,7 @@ void InstallDialog::install()
 
 void InstallDialog::downloadNextFile()
 {
+    TRACE_OBJ
     if (!m_itemsToInstall.count()) {
         m_ui.cancelButton->setEnabled(false);
         m_ui.closeButton->setEnabled(true);
@@ -226,6 +236,7 @@ void InstallDialog::downloadNextFile()
 
 void InstallDialog::httpRequestFinished(int requestId, bool error)
 {
+    TRACE_OBJ
     if (requestId == m_docInfoId  && m_buffer) {        
         m_ui.progressBar->hide();
         if (error) {
@@ -296,6 +307,7 @@ void InstallDialog::httpRequestFinished(int requestId, bool error)
 
 void InstallDialog::installFile(const QString &fileName)
 {
+    TRACE_OBJ
     if (m_helpEngine->registerDocumentation(fileName)) {
         m_installedDocumentations
             .append(QHelpEngineCore::namespaceName(fileName));
@@ -308,6 +320,7 @@ void InstallDialog::installFile(const QString &fileName)
 
 void InstallDialog::readResponseHeader(const QHttpResponseHeader &responseHeader)
 {
+    TRACE_OBJ
     if (responseHeader.statusCode() != 200) {
         QMessageBox::information(this, m_windowTitle,
             tr("Download failed: %1.")
@@ -321,6 +334,7 @@ void InstallDialog::readResponseHeader(const QHttpResponseHeader &responseHeader
 
 void InstallDialog::updateDataReadProgress(int bytesRead, int totalBytes)
 {
+    TRACE_OBJ
     if (m_httpAborted)
         return;
 
@@ -330,6 +344,7 @@ void InstallDialog::updateDataReadProgress(int bytesRead, int totalBytes)
 
 void InstallDialog::browseDirectories()
 {
+    TRACE_OBJ
     QString dir = QFileDialog::getExistingDirectory(this, m_windowTitle,
         m_ui.pathLineEdit->text());
     if (!dir.isEmpty())

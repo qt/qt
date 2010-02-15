@@ -1281,6 +1281,21 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
 }
 #endif
 
+@implementation DebugNSApplication {
+}
+- (void)sendEvent:(NSEvent *)event
+{
+    NSLog(@"NSAppDebug: sendEvent: %@", event);
+    return [super sendEvent:event];
+}
+
+- (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)sender
+{
+    NSLog(@"NSAppDebug: sendAction: %s to %@ from %@", anAction, aTarget, sender);
+    return [super sendAction:anAction to:aTarget from:sender];
+}
+@end
+
 QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
 {
 #ifndef QT_MAC_USE_COCOA

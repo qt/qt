@@ -49,11 +49,18 @@
 #include <stdlib.h>
 #include <qdebug.h>
 
+#ifdef Q_OS_WIN
+#define SCRIPT_EXT ".bat"
+#else
+#define SCRIPT_EXT ".sh"
+#endif
+
 #define RESOURCE_DIRECTORY_MMP "/resource/apps"
 #define RESOURCE_DIRECTORY_RESOURCE "\\\\resource\\\\apps\\\\"
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
 #define PLUGIN_COMMON_DEF_FILE_FOR_MMP "./plugin_common.def"
-#define PLUGIN_COMMON_DEF_FILE_ACTUAL "plugin_commonU.def"
+#define PLUGIN_COMMON_DEF_FILE_ACTUAL "plugin_commonu.def"
+#define BLD_INF_FILENAME_LEN (sizeof(BLD_INF_FILENAME) - 1)
 
 #define BLD_INF_RULES_BASE "BLD_INF_RULES."
 #define BLD_INF_TAG_PLATFORMS "prj_platforms"
@@ -457,7 +464,7 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile, Deployme
     for (int i = 0; i < depList.size(); ++i)  {
         t << QString("\"%1\"    - \"%2\"")
              .arg(QString(depList.at(i).from).replace('\\','/'))
-             .arg(depList.at(i).to) << endl;
+             .arg(QString(depList.at(i).to).replace('/','\\')) << endl;
     }
     t << endl;
 
@@ -1860,7 +1867,7 @@ void SymbianMakefileGenerator::generateCleanCommands(QTextStream& t,
         t << "\t-@ if EXIST \"" << QDir::toNativeSeparators(item) << "\" ";
         t << cmd << " " << cmdOptions << " \"" << QDir::toNativeSeparators(item) << "\"" << endl;
 #else
-        t << "\t-if test -f " << QDir::toNativeSeparators(item) << "; then ";
+        t << "\t-if test -e " << QDir::toNativeSeparators(item) << "; then ";
         t << cmd << " " << cmdOptions << " " << QDir::toNativeSeparators(item) << "; fi" << endl;
 #endif
     }
@@ -1899,7 +1906,7 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 
     t << OK_SIS_TARGET ":" << endl;
 
-    QString pkgcommand = QString("\tcreatepackage.bat $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
+    QString pkgcommand = QString("\tcreatepackage" SCRIPT_EXT " $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
                                  "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
                           .arg(fixedTarget)
                           .arg("pkg");

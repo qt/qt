@@ -61,6 +61,7 @@
 #include <qapplication.h>
 #include "qtextcontrol_p.h"
 #include "private/qtextedit_p.h"
+#include "private/qdataurl_p.h"
 
 #include "qtextdocument_p.h"
 #include <private/qprinter_p.h>
@@ -432,6 +433,23 @@ void QTextDocument::redo(QTextCursor *cursor)
         *cursor = QTextCursor(this);
         cursor->setPosition(pos);
     }
+}
+
+/*!
+    \since 4.7
+    Clears the specified stacks.
+
+    This method clears any commands on the undo stack, the redo stack, or both (the
+    default). If any commands got cleared, the appropriate signals
+    (\a QTextDocument::undoAvailable or \a QTextDocument::redoAvailable) get
+    emitted.
+
+    \sa QTextDocument::undoAvailable QTextDocument::redoAvailable
+*/
+void QTextDocument::clearUndoRedoStacks(Stacks stacksToClear)
+{
+    Q_D(QTextDocument);
+    d->clearUndoRedoStacks(stacksToClear, true);
 }
 
 /*!
@@ -1923,6 +1941,10 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
         r = control->loadResource(type, name);
     }
 #endif
+
+    // handle data: URLs
+    if (r.isNull() && name.scheme() == QLatin1String("data"))
+        r = qDecodeDataUrl(name).second;
 
     // if resource was not loaded try to load it here
     if (!doc && r.isNull() && name.isRelative()) {

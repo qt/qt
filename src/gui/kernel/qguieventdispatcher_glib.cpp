@@ -216,4 +216,9 @@ void QGuiEventDispatcherGlib::startingUp()
     g_source_add_poll(&d->x11EventSource->source, &d->x11EventSource->pollfd);
 }
 
+void QGuiEventDispatcherGlib::flush()
+{
+    XFlush(X11->display);
+}
+
 QT_END_NAMESPACE

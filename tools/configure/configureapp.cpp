@@ -701,9 +701,6 @@ void Configure::parseCmdLine()
         } else if ( configCmdLine.at(i) == "-opengl-es-cm" ) {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_CM" ]    = "yes";
-        } else if ( configCmdLine.at(i) == "-opengl-es-cl" ) {
-            dictionary[ "OPENGL" ]          = "yes";
-            dictionary[ "OPENGL_ES_CL" ]    = "yes";
         } else if ( configCmdLine.at(i) == "-opengl-es-2" ) {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
@@ -1821,7 +1818,6 @@ bool Configure::displayHelp()
         desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application");
         desc(                      "-signature <file>",    "Use file for signing the target project");
         desc("OPENGL_ES_CM", "no", "-opengl-es-cm",        "Enable support for OpenGL ES Common");
-        desc("OPENGL_ES_CL", "no", "-opengl-es-cl",        "Enable support for OpenGL ES Common Lite");
         desc("OPENGL_ES_2",  "no", "-opengl-es-2",         "Enable support for OpenGL ES 2.0");
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
@@ -1871,8 +1867,16 @@ bool Configure::findFile( const QString &fileName )
 
     QString paths;
     if (file.endsWith(".h")) {
-        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
-		    return true;
+        if (!mingwPath.isNull()) {
+            if (!findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
+		        return true;
+            //now let's try the additional compiler path
+            QDir mingwLibDir = mingwPath + QLatin1String("/../lib/gcc/mingw32");
+            foreach(const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+                if (!findFileInPaths(file, version.absoluteFilePath() + QLatin1String("/include")).isNull())
+                    return true;
+            }
+        }
         paths = QString::fromLocal8Bit(getenv("INCLUDE"));
     } else if ( file.endsWith( ".lib" ) ||  file.endsWith( ".a" ) ) {
         if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../lib")).isNull())
@@ -2002,18 +2006,16 @@ bool Configure::checkAvailability(const QString &part)
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "OPENGL_ES_CM")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
-    else if (part == "OPENGL_ES_CL")
-        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "OPENGL_ES_2")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "DIRECTSHOW")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "SSE2")
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-g++");
+        available = (dictionary.value("QMAKESPEC") != "win32-msvc");
     else if (part == "3DNOW" )
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-icc") && findFile("mm3dnow.h") && (dictionary.value("QMAKESPEC") != "win32-g++");
+        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-icc") && findFile("mm3dnow.h");
     else if (part == "MMX" || part == "SSE")
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-g++");
+        available = (dictionary.value("QMAKESPEC") != "win32-msvc");
     else if (part == "OPENSSL")
         available = findFile("openssl\\ssl.h");
     else if (part == "DBUS")
@@ -2481,11 +2483,6 @@ void Configure::generateOutputVars()
         qtConfig += "egl";
     }
 
-    if ( dictionary["OPENGL_ES_CL"] == "yes" ) {
-        qtConfig += "opengles1cl";
-        qtConfig += "egl";
-    }
-
     if ( dictionary["OPENVG"] == "yes" ) {
         qtConfig += "openvg";
         qtConfig += "egl";
@@ -2939,13 +2936,10 @@ void Configure::generateConfigfiles()
         if(dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
-           dictionary["OPENGL_ES_CL"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
         if(dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
-        if(dictionary["OPENGL_ES_CL"] == "yes")     qconfigList += "QT_OPENGL_ES_1_CL";
-
         if(dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
         if(dictionary["SQL_ODBC"] == "yes")         qconfigList += "QT_SQL_ODBC";
         if(dictionary["SQL_OCI"] == "yes")          qconfigList += "QT_SQL_OCI";

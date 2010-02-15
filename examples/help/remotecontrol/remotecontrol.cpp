@@ -123,7 +123,7 @@ void RemoteControl::sendCommand(const QString &cmd)
 {
     if (process->state() != QProcess::Running)
         return;
-    process->write(cmd.toLocal8Bit() + '\0');
+    process->write(cmd.toLocal8Bit() + '\n');
 }
 
 void RemoteControl::on_indexButton_clicked()

@@ -56,7 +56,7 @@
 #include "QtGui/qinputcontext.h"
 #include "QtCore/qt_windows.h"
 
-#if defined(Q_CC_MINGW) && !defined(IMR_RECONVERTSTRING)
+#if !defined(IMR_RECONVERTSTRING)
 typedef struct tagRECONVERTSTRING {
     DWORD dwSize;
     DWORD dwVersion;

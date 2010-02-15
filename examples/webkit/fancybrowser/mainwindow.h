@@ -52,7 +52,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(const QUrl& url);
 
 protected slots:
 
@@ -61,6 +61,9 @@ protected slots:
     void adjustTitle();
     void setProgress(int p);
     void finishLoading(bool);
+
+    void viewSource();
+    void slotSourceDownloaded();
 
     void highlightAllLinks();
     void rotateImages(bool invert);

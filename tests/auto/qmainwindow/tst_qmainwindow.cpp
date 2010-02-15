@@ -108,6 +108,7 @@ private slots:
     void addToolbarAfterShow();
     void centralWidgetSize();
     void dockWidgetSize();
+    void QTBUG2774_stylechange();
 };
 
 // Testing get/set functions
@@ -1708,6 +1709,45 @@ void tst_QMainWindow::dockWidgetSize()
         //otherwise the screen is too small and the size are irrelevant
     }
 }
+
+void tst_QMainWindow::QTBUG2774_stylechange()
+{
+
+    QMainWindow mw;
+    QDockWidget *dockw = new QDockWidget();
+    mw.addDockWidget(Qt::LeftDockWidgetArea, dockw);
+    mw.addDockWidget(Qt::LeftDockWidgetArea, new QDockWidget());
+    QTextEdit *central = new QTextEdit(&mw);
+    mw.setCentralWidget(central);
+    dockw->resize(10,10);
+    mw.show();
+    QTest::qWaitForWindowShown(&mw);
+    int centralOriginalWidth = central->width();
+
+    QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() - 3)));
+    QVERIFY( mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height())));
+    QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() + 30)));
+
+
+    {
+        QTest::qWait(1000);
+        mw.setStyleSheet("QMainWindow::separator {  width: 50px; height:50px; }");
+        QTest::qWait(5000);
+        QApplication::processEvents();
+        QVERIFY(central->width() < centralOriginalWidth);
+        QVERIFY( mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height())));
+        QVERIFY( mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() + 49)));
+    }
+
+    {
+        mw.setStyleSheet("QMainWindow::separator {  width: 0px; height: 0px; }");
+        QApplication::processEvents();
+        QVERIFY(central->width() > centralOriginalWidth);
+        QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height())));
+        QVERIFY(!mw.isSeparator(QPoint(4, dockw->pos().y() + dockw->size().height() + 1)));
+    }
+}
+
 
 
 QTEST_MAIN(tst_QMainWindow)

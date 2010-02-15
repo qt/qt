@@ -64,22 +64,6 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#ifndef QT_OPENGL_ES_1_CL
-#define q_vertexType float
-#define q_vertexTypeEnum GL_FLOAT
-#define f2vt(f)     (f)
-#define vt2f(x)     (x)
-#define i2vt(i)     (float(i))
-#else
-#define FLOAT2X(f)      (int( (f) * (65536)))
-#define X2FLOAT(x)      (float(x) / 65536.0f)
-#define f2vt(f)     FLOAT2X(f)
-#define i2vt(i)     ((i)*65536)
-#define vt2f(x)     X2FLOAT(x)
-#define q_vertexType GLfixed
-#define q_vertexTypeEnum GL_FIXED
-#endif //QT_OPENGL_ES_1_CL
-
 #ifdef QT_OPENGL_ES
 QT_BEGIN_INCLUDE_NAMESPACE
 #if defined(QT_OPENGL_ES_2)
@@ -132,11 +116,15 @@ public:
     QGLFormatPrivate()
         : ref(1)
     {
-        opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
+        opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering
+             | QGL::StencilBuffer | QGL::DeprecatedFunctions;
         pln = 0;
         depthSize = accumSize = stencilSize = redSize = greenSize = blueSize = alphaSize = -1;
         numSamples = -1;
         swapInterval = -1;
+        majorVersion = 1;
+        minorVersion = 0;
+        profile = QGLFormat::NoProfile;
     }
     QGLFormatPrivate(const QGLFormatPrivate *other)
         : ref(1),
@@ -150,7 +138,10 @@ public:
           blueSize(other->blueSize),
           alphaSize(other->alphaSize),
           numSamples(other->numSamples),
-          swapInterval(other->swapInterval)
+          swapInterval(other->swapInterval),
+          majorVersion(other->majorVersion),
+          minorVersion(other->minorVersion),
+          profile(other->profile)
     {
     }
     QAtomicInt ref;
@@ -165,6 +156,9 @@ public:
     int alphaSize;
     int numSamples;
     int swapInterval;
+    int majorVersion;
+    int minorVersion;
+    QGLFormat::OpenGLContextProfile profile;
 };
 
 class QGLWidgetPrivate : public QWidgetPrivate
@@ -344,6 +338,10 @@ public:
 
     void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
     void syncGlState(); // Makes sure the GL context's state is what we think it is
+
+#if defined(Q_WS_WIN)
+    void updateFormatVersion();
+#endif
 
 #if defined(Q_WS_WIN)
     HGLRC rc;

@@ -317,5 +317,12 @@ static void cleanupCocoaApplicationDelegate()
     qt_sendSpontaneousEvent(qAppInstance(), &qtEvent);
 }
 
+- (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+{
+    Q_UNUSED(event);
+    Q_UNUSED(replyEvent);
+    [NSApp terminate:self];
+}
+
 @end
 #endif

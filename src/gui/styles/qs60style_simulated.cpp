@@ -94,12 +94,12 @@ bool saveThemeToBlob(const QString &themeBlob,
         dataOut << color;
     }
 
-    const int picturesCount = partPictures.count();
-    dataOut << picturesCount;
-    foreach (const QString &key, partPictures.keys()) {
-        const QPicture picture = partPictures.value(key);
-        dataOut << key;
-        dataOut << picture;
+    dataOut << partPictures.count();
+    QHashIterator<QString, QPicture> i(partPictures);
+    while (i.hasNext()) {
+        i.next();
+        dataOut << i.key();
+        dataOut << i.value(); // the QPicture
     }
 
     QDataStream blobOut(&blob);

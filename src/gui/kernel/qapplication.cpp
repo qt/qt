@@ -182,6 +182,15 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     gestureManager = 0;
     gestureWidget = 0;
 
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+    move_cursor = 0;
+    copy_cursor = 0;
+    link_cursor = 0;
+#endif
+#if defined(Q_WS_WIN)
+    ignore_cursor = 0;
+#endif
+
     if (!self)
         self = this;
 }
@@ -925,7 +934,7 @@ void QApplicationPrivate::initialize()
 
     // Set up which span functions should be used in raster engine...
     qInitDrawhelperAsm();
-
+    
 #if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
     // initialize the graphics system - on X11 this is initialized inside
     // qt_init() in qapplication_x11.cpp because of several reasons.
@@ -1030,6 +1039,15 @@ QApplication::~QApplication()
 #ifndef QT_NO_CLIPBOARD
     delete qt_clipboard;
     qt_clipboard = 0;
+#endif
+
+#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+    delete d->move_cursor; d->move_cursor = 0;
+    delete d->copy_cursor; d->copy_cursor = 0;
+    delete d->link_cursor; d->link_cursor = 0;
+#endif
+#if defined(Q_WS_WIN)
+    delete d->ignore_cursor; d->ignore_cursor = 0;
 #endif
 
     delete QWidgetPrivate::mapper;
@@ -5687,6 +5705,228 @@ QGestureManager* QGestureManager::instance()
     if (!qAppPriv->gestureManager)
         qAppPriv->gestureManager = new QGestureManager(qApp);
     return qAppPriv->gestureManager;
+}
+
+// These pixmaps approximate the images in the Windows User Interface Guidelines.
+
+// XPM
+
+static const char * const move_xpm[] = {
+"11 20 3 1",
+".        c None",
+#if defined(Q_WS_WIN)
+"a        c #000000",
+"X        c #FFFFFF", // Windows cursor is traditionally white
+#else
+"a        c #FFFFFF",
+"X        c #000000", // X11 cursor is traditionally black
+#endif
+"aa.........",
+"aXa........",
+"aXXa.......",
+"aXXXa......",
+"aXXXXa.....",
+"aXXXXXa....",
+"aXXXXXXa...",
+"aXXXXXXXa..",
+"aXXXXXXXXa.",
+"aXXXXXXXXXa",
+"aXXXXXXaaaa",
+"aXXXaXXa...",
+"aXXaaXXa...",
+"aXa..aXXa..",
+"aa...aXXa..",
+"a.....aXXa.",
+"......aXXa.",
+".......aXXa",
+".......aXXa",
+"........aa."};
+
+#ifdef Q_WS_WIN
+/* XPM */
+static const char * const ignore_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa.....XXXX.....",
+".......aXXa..XXaaaaXX...",
+".......aXXa.XaaaaaaaaX..",
+"........aa.XaaaXXXXaaaX.",
+"...........XaaaaX..XaaX.",
+"..........XaaXaaaX..XaaX",
+"..........XaaXXaaaX.XaaX",
+"..........XaaX.XaaaXXaaX",
+"..........XaaX..XaaaXaaX",
+"...........XaaX..XaaaaX.",
+"...........XaaaXXXXaaaX.",
+"............XaaaaaaaaX..",
+".............XXaaaaXX...",
+"...............XXXX....."};
+#endif
+
+/* XPM */
+static const char * const copy_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+#if defined(Q_WS_WIN) // Windows cursor is traditionally white
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa..............",
+".......aXXa.............",
+".......aXXa.............",
+"........aa...aaaaaaaaaaa",
+#else
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+#endif
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXaaaaaXXa",
+".............aXXXXaXXXXa",
+".............aXXXXaXXXXa",
+".............aXXXXXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+/* XPM */
+static const char * const link_xpm[] = {
+"24 30 3 1",
+".        c None",
+"a        c #000000",
+"X        c #FFFFFF",
+#if defined(Q_WS_WIN) // Windows cursor is traditionally white
+"aa......................",
+"aXa.....................",
+"aXXa....................",
+"aXXXa...................",
+"aXXXXa..................",
+"aXXXXXa.................",
+"aXXXXXXa................",
+"aXXXXXXXa...............",
+"aXXXXXXXXa..............",
+"aXXXXXXXXXa.............",
+"aXXXXXXaaaa.............",
+"aXXXaXXa................",
+"aXXaaXXa................",
+"aXa..aXXa...............",
+"aa...aXXa...............",
+"a.....aXXa..............",
+"......aXXa..............",
+".......aXXa.............",
+".......aXXa.............",
+"........aa...aaaaaaaaaaa",
+#else
+"XX......................",
+"XaX.....................",
+"XaaX....................",
+"XaaaX...................",
+"XaaaaX..................",
+"XaaaaaX.................",
+"XaaaaaaX................",
+"XaaaaaaaX...............",
+"XaaaaaaaaX..............",
+"XaaaaaaaaaX.............",
+"XaaaaaaXXXX.............",
+"XaaaXaaX................",
+"XaaXXaaX................",
+"XaX..XaaX...............",
+"XX...XaaX...............",
+"X.....XaaX..............",
+"......XaaX..............",
+".......XaaX.............",
+".......XaaX.............",
+"........XX...aaaaaaaaaaa",
+#endif
+".............aXXXXXXXXXa",
+".............aXXXaaaaXXa",
+".............aXXXXaaaXXa",
+".............aXXXaaaaXXa",
+".............aXXaaaXaXXa",
+".............aXXaaXXXXXa",
+".............aXXaXXXXXXa",
+".............aXXXaXXXXXa",
+".............aXXXXXXXXXa",
+".............aaaaaaaaaaa"};
+
+QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
+{
+    if (!move_cursor) {
+        move_cursor = new QPixmap((const char **)move_xpm);
+        copy_cursor = new QPixmap((const char **)copy_xpm);
+        link_cursor = new QPixmap((const char **)link_xpm);
+#ifdef Q_WS_WIN
+        ignore_cursor = new QPixmap((const char **)ignore_xpm);
+#endif
+    }
+
+    switch (cshape) {
+    case Qt::DragMoveCursor:
+        return *move_cursor;
+    case Qt::DragCopyCursor:
+        return *copy_cursor;
+    case Qt::DragLinkCursor:
+        return *link_cursor;
+#ifdef Q_WS_WIN
+    case Qt::ForbiddenCursor:
+        return *ignore_cursor;
+#endif
+    default:
+        break;
+    }
+    return QPixmap();
 }
 
 QT_END_NAMESPACE
