@@ -50,6 +50,7 @@
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qfont.h>
+#include <QtGui/qaction.h>
 
 QT_BEGIN_HEADER
 
@@ -233,6 +234,7 @@ QML_DECLARE_TYPE(QmlGraphicsItem)
 QML_DECLARE_TYPE(QGraphicsTransform)
 QML_DECLARE_TYPE(QGraphicsScale)
 QML_DECLARE_TYPE(QGraphicsRotation)
+QML_DECLARE_TYPE(QAction)
 
 QT_END_HEADER
 
