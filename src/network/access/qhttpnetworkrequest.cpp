@@ -61,6 +61,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     uploadByteDevice = other.uploadByteDevice;
     autoDecompress = other.autoDecompress;
     pipeliningAllowed = other.pipeliningAllowed;
+    customVerb = other.customVerb;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -101,6 +102,9 @@ QByteArray QHttpNetworkRequestPrivate::methodName() const
         break;
     case QHttpNetworkRequest::Connect:
         ba += "CONNECT";
+        break;
+    case QHttpNetworkRequest::Custom:
+        ba += customVerb;
         break;
     default:
         break;
@@ -228,6 +232,16 @@ QHttpNetworkRequest::Operation QHttpNetworkRequest::operation() const
 void QHttpNetworkRequest::setOperation(Operation operation)
 {
     d->operation = operation;
+}
+
+QByteArray QHttpNetworkRequest::customVerb() const
+{
+    return d->customVerb;
+}
+
+void QHttpNetworkRequest::setCustomVerb(const QByteArray &customVerb)
+{
+    d->customVerb = customVerb;
 }
 
 QHttpNetworkRequest::Priority QHttpNetworkRequest::priority() const

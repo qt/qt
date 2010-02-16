@@ -489,7 +489,15 @@ extern "C" {
             qWarning("QWidget::repaint: Recursive repaint detected");
 
         const QRect qrect = QRect(aRect.origin.x, aRect.origin.y, aRect.size.width, aRect.size.height);
-        QRegion qrgn(qrect);
+        QRegion qrgn;
+
+	const NSRect *rects;
+	NSInteger count;
+	[self getRectsBeingDrawn:&rects count:&count];
+	for (int i = 0; i < count; ++i) {
+	    QRect tmpRect = QRect(rects[i].origin.x, rects[i].origin.y, rects[i].size.width, rects[i].size.height);
+	    qrgn += tmpRect;
+	}
 
         if (!qwidget->isWindow() && !qobject_cast<QAbstractScrollArea *>(qwidget->parent())) {
             const QRegion &parentMask = qwidget->window()->mask();
