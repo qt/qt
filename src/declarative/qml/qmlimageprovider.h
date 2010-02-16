@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,56 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef PROPERTIESTABLEMODEL_H
-#define PROPERTIESTABLEMODEL_H
 
-#include <private/qmldebug_p.h>
+#ifndef QMLIMAGEPROVIDER_H
+#define QMLIMAGEPROVIDER_H
 
-#include <QtGui/qwidget.h>
+#include <QtGui/qimage.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QmlDebugConnection;
-class PropertiesViewItem;
+QT_MODULE(Declarative)
 
-class ObjectPropertiesView : public QWidget
+class Q_DECLARATIVE_EXPORT QmlImageProvider
 {
-    Q_OBJECT
 public:
-    ObjectPropertiesView(QmlEngineDebug *client = 0, QWidget *parent = 0);
-
-    void setEngineDebug(QmlEngineDebug *client);
-    void clear();
-    
-signals:
-    void activated(const QmlDebugObjectReference &, const QmlDebugPropertyReference &);
-
-public slots:
-    void reload(const QmlDebugObjectReference &);
-    void watchCreated(QmlDebugWatch *);
-
-private slots:
-    void queryFinished();
-    void watchStateChanged();
-    void valueChanged(const QByteArray &name, const QVariant &value);
-    void itemActivated(QTreeWidgetItem *i);
-
-private:
-    void setObject(const QmlDebugObjectReference &object);
-    void setWatched(const QString &property, bool watched);
-    void setPropertyValue(PropertiesViewItem *item, const QVariant &value, bool makeGray);
-
-    QmlEngineDebug *m_client;
-    QmlDebugObjectQuery *m_query;
-    QmlDebugWatch *m_watch;
-
-    QTreeWidget *m_tree;
-    QmlDebugObjectReference m_object;
+    virtual ~QmlImageProvider();
+    virtual QImage request(const QString &id) = 0;
 };
-
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+
+#endif // QMLIMAGEPROVIDER

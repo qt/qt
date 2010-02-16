@@ -126,8 +126,6 @@ private:
     QString m_query;
 };
 
-QML_DECLARE_TYPE(QmlXmlListModelRole)
-
 class QmlXmlListModelPrivate;
 struct QmlXmlRoleList : public QmlConcreteList<QmlXmlListModelRole *>
 {
@@ -724,5 +722,7 @@ void QmlXmlListModel::queryCompleted(int id, int size)
 }
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlXmlListModelRole)
 
 #include <qmlxmllistmodel.moc>

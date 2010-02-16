@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,68 +38,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef EXPRESSIONQUERYWIDGET_H
-#define EXPRESSIONQUERYWIDGET_H
 
-#include <QWidget>
-
-#include <private/qmldebug_p.h>
+#include "qmlimageprovider.h"
 
 QT_BEGIN_NAMESPACE
 
-class QGroupBox;
-class QTextEdit;
-class QLineEdit;
-class QPushButton;
+/*!
+    \class QmlImageProvider
+    \brief The QmlImageProvider class provides an interface for threaded image requests.
 
-class ExpressionQueryWidget : public QWidget
+    Note: the request() method may be called by multiple threads, so ensure the
+    implementation of this method is reentrant.
+
+    \sa QmlEngine::addImageProvider()
+*/
+QmlImageProvider::~QmlImageProvider()
 {
-    Q_OBJECT
-public:
-    enum Mode {
-        SeparateEntryMode,
-        ShellMode
-    };
+}
 
-    ExpressionQueryWidget(Mode mode = SeparateEntryMode, QmlEngineDebug *client = 0, QWidget *parent = 0);
-    
-    void setEngineDebug(QmlEngineDebug *client);
-    void clear();
+/*!
+    \fn QImage QmlImageProvider::request(const QString &id)
 
-protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    Implement this method to return the image with \a id.
 
-public slots:
-    void setCurrentObject(const QmlDebugObjectReference &obj);
-
-private slots:
-    void executeExpression();
-    void showResult();
-
-private:
-    void appendPrompt();
-    void checkCurrentContext();
-    void showCurrentContext();
-    void updateTitle();
-
-    Mode m_mode;
-
-    QmlEngineDebug *m_client;
-    QmlDebugExpressionQuery *m_query;
-    QTextEdit *m_textEdit;
-    QLineEdit *m_lineEdit;
-    QPushButton *m_button;
-    QString m_prompt;
-    QString m_expr;
-    QString m_lastExpr;
-
-    QString m_title;
-
-    QmlDebugObjectReference m_currObject;
-    QmlDebugObjectReference m_objectAtLastFocus;
-};
+    Note: this method may be called by multiple threads, so ensure the
+    implementation of this method is reentrant.
+*/
 
 QT_END_NAMESPACE
-
-#endif
-

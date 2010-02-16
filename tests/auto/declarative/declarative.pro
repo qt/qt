@@ -56,6 +56,7 @@ SUBDIRS += \
            qmlgraphicsrepeater \    # Cover
            qmlvaluetypes \          # Cover
            qmlxmlhttprequest \      # Cover
+           qmlimageprovider \       # Cover
            sql                      # Cover
 
 contains(QT_CONFIG, webkit) {

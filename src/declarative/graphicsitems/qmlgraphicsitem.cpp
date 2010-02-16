@@ -2880,6 +2880,6 @@ int QmlGraphicsItemPrivate::restart(QTime &t)
     return n;
 }
 
-#include <moc_qmlgraphicsitem.cpp>
-
 QT_END_NAMESPACE
+
+#include <moc_qmlgraphicsitem.cpp>

@@ -65,7 +65,12 @@ public:
 private:
     QList<QObject *> m_events;
 };
+
+QT_END_NAMESPACE
+
 QML_DECLARE_TYPE(QmlGraphicsVisualTest)
+
+QT_BEGIN_NAMESPACE
 
 class QmlGraphicsVisualTestFrame : public QObject
 {
@@ -90,7 +95,12 @@ private:
     QString m_hash;
     QUrl m_image;
 };
+
+QT_END_NAMESPACE
+
 QML_DECLARE_TYPE(QmlGraphicsVisualTestFrame)
+
+QT_BEGIN_NAMESPACE
 
 class QmlGraphicsVisualTestMouse : public QObject
 {
@@ -134,7 +144,12 @@ private:
     int m_modifiers;
     bool m_viewport;
 };
+
+QT_END_NAMESPACE
+
 QML_DECLARE_TYPE(QmlGraphicsVisualTestMouse)
+
+QT_BEGIN_NAMESPACE
 
 class QmlGraphicsVisualTestKey : public QObject
 {
@@ -178,7 +193,12 @@ private:
     int m_count;
     bool m_viewport;
 };
+
+QT_END_NAMESPACE
+
 QML_DECLARE_TYPE(QmlGraphicsVisualTestKey)
+
+QT_BEGIN_NAMESPACE
 
 class QmlGraphicsTester : public QAbstractAnimation
 {

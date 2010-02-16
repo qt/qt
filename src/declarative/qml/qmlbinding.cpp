@@ -291,6 +291,12 @@ void QmlAbstractBinding::removeFromObject()
     }
 }
 
+void QmlAbstractBinding::clear()
+{
+    if (m_mePtr)
+        *m_mePtr = 0;
+}
+
 QString QmlAbstractBinding::expression() const
 {
     return QLatin1String("<Unknown>");

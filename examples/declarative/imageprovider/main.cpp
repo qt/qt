@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,40 +38,62 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtGui/qapplication.h>
 
-#include "qmldebugger.h"
+#include <QApplication>
+
+#include <qmlengine.h>
+#include <qmlcontext.h>
+#include <qml.h>
+#include <qmlgraphicsitem.h>
+#include <qmlimageprovider.h>
+#include <qmlview.h>
+#include <QImage>
+#include <QPainter>
+
+/*
+   This example illustrates using a QmlImageProvider to serve
+   images asynchronously.
+*/
+
+//![0]
+class ColorImageProvider : public QmlImageProvider
+{
+public:
+    // This is run in a low priority thread.
+    QImage request(const QString &id) {
+        QImage image(100, 50, QImage::Format_RGB32);
+        image.fill(QColor(id).rgba());
+        QPainter p(&image);
+        p.setPen(Qt::black);
+        p.drawText(QRectF(0,0,100,50),Qt::AlignCenter,id);
+        return image;
+    }
+};
 
 int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
-    app.setApplicationName("QtQmlDebugger");
-    app.setOrganizationName("Nokia");
-    app.setOrganizationDomain("nokia.com");    
 
-    QStringList args = app.arguments();
+    QmlView view;
+    view.setUrl(QUrl("qrc:view.qml"));
 
-    QmlDebugger win;
-    if (args.contains("--engine"))
-        win.showEngineTab();
+    view.engine()->addImageProvider("colors", new ColorImageProvider);
 
-    for (int i=0; i<args.count(); i++) {
-        if (!args[i].contains(':'))
-            continue;
-        QStringList hostAndPort = args[i].split(':');
-        bool ok = false;
-        quint16 port = hostAndPort.value(1).toInt(&ok);
-        if (ok) {
-            qWarning() << "qmldebugger connecting to"
-                    << hostAndPort[0] << port << "...";
-            win.setHost(hostAndPort[0]);
-            win.setPort(port);
-            win.connectToHost();
-            break;
-        }
-    }
+    QStringList dataList;
+    dataList.append("image://colors/red");
+    dataList.append("image://colors/green");
+    dataList.append("image://colors/blue");
+    dataList.append("image://colors/brown");
+    dataList.append("image://colors/orange");
+    dataList.append("image://colors/purple");
+    dataList.append("image://colors/yellow");
 
-    win.show();
+    QmlContext *ctxt = view.rootContext();
+    ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+
+    view.execute();
+    view.show();
 
     return app.exec();
 }
+//![0]

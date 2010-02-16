@@ -44,6 +44,8 @@
 
 #include <QObject>
 
+QT_BEGIN_NAMESPACE
+
 class DeviceOrientationPrivate;
 class DeviceOrientation : public QObject
 {
@@ -65,5 +67,7 @@ private:
     DeviceOrientationPrivate *d_ptr;
     friend class DeviceOrientationPrivate;
 };
+
+QT_END_NAMESPACE
 
 #endif
