@@ -52,7 +52,7 @@ class AudioInfo : public QIODevice
 {
     Q_OBJECT
 public:
-    AudioInfo(QObject *parent, QAudioInput *device);
+    AudioInfo(QObject *parent);
     ~AudioInfo();
 
     void start();
@@ -62,8 +62,6 @@ public:
 
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
-
-    QAudioInput *input;
 
 private:
     int m_maxValue;

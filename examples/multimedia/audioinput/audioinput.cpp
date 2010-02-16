@@ -52,11 +52,9 @@
 
 #define BUFFER_SIZE 4096
 
-AudioInfo::AudioInfo(QObject *parent, QAudioInput *device)
+AudioInfo::AudioInfo(QObject *parent)
     :QIODevice(parent)
 {
-    input = device;
-
     m_maxValue = 0;
 }
 
@@ -222,7 +220,7 @@ InputTest::InputTest()
     audioInput = new QAudioInput(format,this);
     connect(audioInput, SIGNAL(notify()), SLOT(status()));
     connect(audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
-    audioinfo  = new AudioInfo(this,audioInput);
+    audioinfo  = new AudioInfo(this);
     connect(audioinfo, SIGNAL(update()), SLOT(refreshDisplay()));
     audioinfo->start();
     audioInput->start(audioinfo);
