@@ -86,7 +86,7 @@ private:
     void createAudioOutput();
 
 private:
-    QTimer*          m_timer;
+    QTimer*          m_pullTimer;
 
     // Owned by layout
     QPushButton*     m_modeButton;
@@ -108,11 +108,11 @@ private:
     static const QString ResumeLabel;
 
 private slots:
-    void status();
-    void writeMore();
-    void toggle();
-    void togglePlay();
-    void state(QAudio::State state);
+    void notified();
+    void pullTimerExpired();
+    void toggleMode();
+    void toggleSuspendResume();
+    void stateChanged(QAudio::State state);
     void deviceChanged(int index);
 };
 
