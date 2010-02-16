@@ -7,6 +7,10 @@ QT += declarative \
     network \
     sql
 
+contains(QT_CONFIG, multimedia) {
+    QT += multimedia
+}
+
 contains(QT_CONFIG, opengl) {
     QT += opengl
     DEFINES += GL_SUPPORTED

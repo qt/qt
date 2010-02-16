@@ -57,7 +57,7 @@
 #include "qsoundeffect_p.h"
 
 #include <QtCore/qobject.h>
-#include <QtCore/qtime.h>
+#include <QtCore/qdatetime.h>
 #include <QtMultimedia/qmediaplayer.h>
 #include <pulse/pulseaudio.h>
 

@@ -151,7 +151,7 @@ private:
         m_mainLoopApi = pa_threaded_mainloop_get_api(m_mainLoop);
 
         lock();
-        m_context = pa_context_new(m_mainLoopApi, QString("QtPulseAudio:%1").arg(::getpid()).toAscii().constData());
+        m_context = pa_context_new(m_mainLoopApi, QString(QLatin1String("QtPulseAudio:%1")).arg(::getpid()).toAscii().constData());
 
 #if(Q_WS_MAEMO_5)
         pa_context_set_state_callback(m_context, context_state_callback, this);
@@ -362,7 +362,7 @@ void QSoundEffectPrivate::decoderReady()
     }
 
     if (m_name.isNull())
-        m_name = QString("QtPulseSample-%1-%2").arg(::getpid()).arg(int(this)).toUtf8();
+        m_name = QString(QLatin1String("QtPulseSample-%1-%2")).arg(::getpid()).arg(int(this)).toUtf8();
 
     pa_sample_spec spec = audioFormatToSampleSpec(m_waveDecoder->audioFormat());
 
