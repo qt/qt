@@ -65,6 +65,7 @@
     \row \o \l{QtWebKit} \o Classes for displaying and editing Web content
     \row \o \l{QtXml} \o Classes for handling XML
     \row \o \l{QtXmlPatterns} \o An XQuery & XPath engine for XML and custom data models
+    \row \o \l{QtDeclarative} \o An engine for declaratively building fluid user interfaces.
     \row \o \l{Phonon Module}{Phonon} \o Multimedia framework classes
     \row \o \l{Qt3Support} \o Qt 3 compatibility classes
     \header \o {2,1} \bold{Modules for working with Qt's tools}
@@ -1079,14 +1080,4 @@
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
     \endlegalese
-*/
-
-/*!
-    \page qtassistant.html
-    \title QtAssistant
-
-    This module is no longer needed. Use the QtHelp module to integrate documentation
-    into your application.
-
-    \sa {QtHelp}
 */

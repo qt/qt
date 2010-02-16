@@ -45,7 +45,6 @@
 #include <QGLWidget>
 #include <QTime>
 
-#include "cl_helper.h"
 
 
 class Bubble;
@@ -76,8 +75,8 @@ private:
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
     QList<qreal> vertices;
     QList<qreal> normals;
-    q_vertexType *createdVertices;
-    q_vertexType *createdNormals;
+    GLfloat *createdVertices;
+    GLfloat *createdNormals;
     int m_vertexNumber;
     bool qtLogo;
     QList<Bubble*> bubbles;

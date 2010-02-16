@@ -136,6 +136,20 @@ static Option::QMAKE_MODE default_mode(QString progname)
     return Option::QMAKE_GENERATE_MAKEFILE;
 }
 
+static QString detectProjectFile(const QString &path)
+{
+    QString ret;
+    QDir dir(path);
+    if(dir.exists(dir.dirName() + Option::pro_ext)) {
+        ret = dir.filePath(dir.dirName()) + Option::pro_ext;
+    } else { //last try..
+        QStringList profiles = dir.entryList(QStringList("*" + Option::pro_ext));
+        if(profiles.count() == 1)
+            ret = dir.filePath(profiles.at(0));
+    }
+    return ret;
+}
+
 QString project_builtin_regx();
 bool usage(const char *a0)
 {
@@ -322,12 +336,18 @@ Option::parseCommandLine(int argc, char **argv, int skip)
                     if(!fi.makeAbsolute()) //strange
                         arg = fi.filePath();
                     if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
-                       Option::qmake_mode == Option::QMAKE_GENERATE_PRL)
+                       Option::qmake_mode == Option::QMAKE_GENERATE_PRL) {
+                        if(fi.isDir()) {
+                            QString proj = detectProjectFile(arg);
+                            if (!proj.isNull())
+                                arg = proj;
+                        }
                         Option::mkfile::project_files.append(arg);
-                    else if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT)
+                    } else if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
                         Option::projfile::project_dirs.append(arg);
-                    else
+                    } else {
                         handled = false;
+                    }
                 }
                 if(!handled) {
                     return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
@@ -495,15 +515,9 @@ Option::init(int argc, char **argv)
 
         //try REALLY hard to do it for them, lazy..
         if(Option::mkfile::project_files.isEmpty()) {
-            QString pwd = qmake_getpwd(),
-                   proj = pwd + "/" + pwd.right(pwd.length() - (pwd.lastIndexOf('/') + 1)) + Option::pro_ext;
-            if(QFile::exists(proj)) {
+            QString proj = detectProjectFile(qmake_getpwd());
+            if(!proj.isNull())
                 Option::mkfile::project_files.append(proj);
-            } else { //last try..
-                QStringList profiles = QDir(pwd).entryList(QStringList("*" + Option::pro_ext));
-                if(profiles.count() == 1)
-                    Option::mkfile::project_files.append(pwd + "/" + profiles[0]);
-            }
 #ifndef QT_BUILD_QMAKE_LIBRARY
             if(Option::mkfile::project_files.isEmpty()) {
                 usage(argv[0]);

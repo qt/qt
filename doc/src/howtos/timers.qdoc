@@ -72,7 +72,7 @@
     The upper limit for the interval value is determined by the number
     of milliseconds that can be specified in a signed integer
     (in practice, this is a period of just over 24 days). The accuracy
-    depends on the underlying operating system. Windows 98 has 55
+    depends on the underlying operating system. Windows 2000 has 15
     millisecond accuracy; other systems that we have tested can handle
     1 millisecond intervals.
 

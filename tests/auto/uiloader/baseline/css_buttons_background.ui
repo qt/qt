@@ -89,6 +89,19 @@ color: yellow;
         </property>
        </widget>
       </item>
+      <item row="5" column="0">
+       <widget class="QPushButton" name="pushButton_4">
+        <property name="text">
+         <string>Checked</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -149,6 +162,19 @@ color: yellow;
         </property>
        </widget>
       </item>
+      <item row="5" column="0">
+       <widget class="QPushButton" name="pushButton_5">
+        <property name="text">
+         <string>Checked</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -205,6 +231,19 @@ color: yellow;
          <string>autoraise</string>
         </property>
         <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QPushButton" name="pushButton_6">
+        <property name="text">
+         <string>Checked</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>

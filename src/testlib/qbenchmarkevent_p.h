@@ -70,8 +70,7 @@ public:
     int adjustIterationCount(int suggestion);
     int adjustMedianCount(int suggestion);
     bool repeatCount() { return 1; } 
-    QString unitText();
-    QString metricText();
+    QTest::QBenchmarkMetric metricType();
     static bool eventCountingMechanism(void *message);
     static qint64 eventCounter;
 };

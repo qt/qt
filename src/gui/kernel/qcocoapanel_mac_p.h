@@ -54,10 +54,16 @@
 #ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 
+QT_FORWARD_DECLARE_CLASS(QStringList);
+
 @interface QT_MANGLE_NAMESPACE(QCocoaPanel) : NSPanel {
     bool leftButtonIsRightButton;
+    QStringList *currentCustomDragTypes;
 }
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask;
+- (void)registerDragTypes;
+
 @end
 #endif
+

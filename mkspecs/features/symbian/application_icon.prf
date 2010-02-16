@@ -58,4 +58,3 @@ contains( CONFIG, no_icon ) {
         RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif
     }
 }
-

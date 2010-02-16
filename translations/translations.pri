@@ -17,7 +17,7 @@ LUPDATE += -locations relative -no-ui-lines
 
 ###### Qt Libraries
 
-QT_TS        = ar cs da de es fr iw ja_JP pl pt ru sk sl sv uk zh_CN zh_TW
+QT_TS        = ar cs da de es fr hu iw ja_JP pl pt ru sk sl sv uk zh_CN zh_TW
 
 ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                 -I../include -I../include/Qt \
@@ -57,9 +57,7 @@ ts-linguist.depends = sub-tools
 ts-assistant.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                     ../tools/assistant/translations/translations.pro \
                                     && $$LUPDATE \
-                                    ../tools/assistant/translations/qt_help.pro \
-                                    && $$LUPDATE \
-                                    ../tools/assistant/translations/translations_adp.pro)
+                                    ../tools/assistant/translations/qt_help.pro))
 ts-assistant.depends = sub-tools
 
 ###### Qtconfig

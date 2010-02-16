@@ -881,6 +881,7 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
     static QRegExp globalX("[\n{()=] *([a-zA-Z_][a-zA-Z_0-9]*)[ \n]*\\(");
     static QRegExp multiLineComment("/(?:( )?\\*(?:[^*]+|\\*(?! /))*\\*\\1/)");
     multiLineComment.setMinimal(true);
+    static QRegExp singleLineCommentLine("(?:^|\n)(?:[^&]|&(?!quot;)|&quot;(?:[^&\\\\]|&(?!quot;)|\\\\&quot;|\\\\(?!&quot;))*&quot;)*//(?!!)[^!\n]*");
     static QRegExp singleLineComment("//(?!!)[^!\n]*");
     static QRegExp preprocessor("(?:^|\n)(#[ \t]*(?:include|if|elif|endif|error|pragma|define"
                                 "|warning)(?:(?:\\\\\n|\\n#)[^\n]*)*)");
@@ -1056,7 +1057,8 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
         int mlpos;
         int slpos;
         int len;
-        slpos = singleLineComment.indexIn(result, pos);
+        int sllpos = singleLineCommentLine.indexIn(result, pos);
+        slpos = sllpos == -1 ? -1 : singleLineComment.indexIn(result, sllpos);
         mlpos = multiLineComment.indexIn(result, pos);
 
         if (slpos == -1 && mlpos == -1)
@@ -1127,7 +1129,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                 "signal",
                                 "signals");
 	    FastSection qmlattachedsignals(qmlClassNode,
-                                           "QML Attached Signals",
+                                           "Attached Signals",
                                            "signal",
                                            "signals");
 	    FastSection qmlmethods(qmlClassNode,
@@ -1135,7 +1137,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                    "method",
                                    "methods");
 	    FastSection qmlattachedmethods(qmlClassNode,
-                                           "QML Attached Methods",
+                                           "Attached Methods",
                                            "method",
                                            "methods");
 

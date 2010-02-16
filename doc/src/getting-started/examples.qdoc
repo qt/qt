@@ -1218,6 +1218,8 @@
 
     \list
     \o \l{help/simpletextviewer}{Simple Text Viewer}\raisedaster
+    \o \l{help/remotecontrol}{Remote Control}
+    \o \l{help/contextsensitivehelp}{Context-Sensitive Help}
     \endlist
 
     Examples marked with an asterisk (*) are fully documented.

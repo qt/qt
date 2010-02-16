@@ -270,6 +270,11 @@ void QSortFilterProxyModelPrivate::clear_mapping()
 
     qDeleteAll(source_index_mapping);
     source_index_mapping.clear();
+    if (dynamic_sortfilter && update_source_sort_column()) {
+        //update_source_sort_column might have created wrong mapping so we have to clear it again
+        qDeleteAll(source_index_mapping);
+        source_index_mapping.clear();
+    }
 
     // update the persistent indexes
     update_persistent_indexes(source_indexes);
@@ -1208,11 +1213,6 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
 void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged()
 {
     Q_Q(QSortFilterProxyModel);
-    if (saved_persistent_indexes.isEmpty()) {
-        clear_mapping();
-        emit q->layoutChanged();
-        return;
-    }
 
     qDeleteAll(source_index_mapping);
     source_index_mapping.clear();
@@ -1220,7 +1220,11 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged()
     update_persistent_indexes(saved_persistent_indexes);
     saved_persistent_indexes.clear();
 
-    update_source_sort_column();
+    if (dynamic_sortfilter && update_source_sort_column()) {
+        //update_source_sort_column might have created wrong mapping so we have to clear it again
+        qDeleteAll(source_index_mapping);
+        source_index_mapping.clear();
+    }
 
     emit q->layoutChanged();
 }
@@ -1481,7 +1485,6 @@ QSortFilterProxyModel::QSortFilterProxyModel(QObject *parent)
     d->filter_column = 0;
     d->filter_role = Qt::DisplayRole;
     d->dynamic_sortfilter = false;
-    connect(this, SIGNAL(modelReset()), this, SLOT(invalidate()));
 }
 
 /*!

@@ -43,19 +43,20 @@
 #define REMOTECONTROL_H
 
 #include <QtCore/QObject>
+#include <QtCore/QString>
 #include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 
+class HelpEngineWrapper;
 class MainWindow;
-class QHelpEngine;
 
 class RemoteControl : public QObject
 {
     Q_OBJECT
 
 public:
-    RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine);
+    RemoteControl(MainWindow *mainWindow);
 
 private slots:
     void receivedData();
@@ -64,10 +65,20 @@ private slots:
 
 private:
     void clearCache();
+    void splitInputString(const QString &input, QString &cmd, QString &arg);
+    void handleDebugCommand(const QString &arg);
+    void handleShowOrHideCommand(const QString &arg, bool show);
+    void handleSetSourceCommand(const QString &arg);
+    void handleSyncContentsCommand();
+    void handleActivateKeywordCommand(const QString &arg);
+    void handleActivateIdentifierCommand(const QString &arg);
+    void handleExpandTocCommand(const QString &arg);
+    void handleSetCurrentFilterCommand(const QString &arg);
+    void handleRegisterCommand(const QString &arg);
+    void handleUnregisterCommand(const QString &arg);
 
 private:
     MainWindow *m_mainWindow;
-    QHelpEngine *m_helpEngine;
     bool m_debug;
 
     bool m_caching;
@@ -77,6 +88,7 @@ private:
     QString m_activateIdentifier;
     int m_expandTOC;
     QString m_currentFilter;
+    HelpEngineWrapper &helpEngine;
 };
 
 QT_END_NAMESPACE

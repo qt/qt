@@ -4876,90 +4876,7 @@ void QWidget::unsetCursor()
 void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
                      const QRegion &sourceRegion, RenderFlags renderFlags)
 {
-    Q_D(QWidget);
-    if (!target) {
-        qWarning("QWidget::render: null pointer to paint device");
-        return;
-    }
-
-    const bool inRenderWithPainter = d->extra && d->extra->inRenderWithPainter;
-    QRegion paintRegion = !inRenderWithPainter ? d->prepareToRender(sourceRegion, renderFlags)
-                                               : sourceRegion;
-    if (paintRegion.isEmpty())
-        return;
-
-#ifndef Q_WS_MAC
-    QPainter *oldSharedPainter = inRenderWithPainter ? d->sharedPainter() : 0;
-
-    // Use the target's shared painter if set (typically set when doing
-    // "other->render(widget);" in the widget's paintEvent.
-    if (target->devType() == QInternal::Widget) {
-        QWidgetPrivate *targetPrivate = static_cast<QWidget *>(target)->d_func();
-        if (targetPrivate->extra && targetPrivate->extra->inRenderWithPainter) {
-            QPainter *targetPainter = targetPrivate->sharedPainter();
-            if (targetPainter && targetPainter->isActive())
-                d->setSharedPainter(targetPainter);
-        }
-    }
-#endif
-
-    // Use the target's redirected device if set and adjust offset and paint
-    // region accordingly. This is typically the case when people call render
-    // from the paintEvent.
-    QPoint offset = targetOffset;
-    offset -= paintRegion.boundingRect().topLeft();
-    QPoint redirectionOffset;
-    QPaintDevice *redirected = 0;
-
-    if (target->devType() == QInternal::Widget)
-        redirected = static_cast<QWidget *>(target)->d_func()->redirected(&redirectionOffset);
-    if (!redirected)
-        redirected = QPainter::redirected(target, &redirectionOffset);
-
-    if (redirected) {
-        target = redirected;
-        offset -= redirectionOffset;
-    }
-
-    if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
-        if (QPaintEngine *targetEngine = target->paintEngine()) {
-            const QRegion targetSystemClip = targetEngine->systemClip();
-            if (!targetSystemClip.isEmpty())
-                paintRegion &= targetSystemClip.translated(-offset);
-        }
-    }
-
-    // Set backingstore flags.
-    int flags = QWidgetPrivate::DrawPaintOnScreen | QWidgetPrivate::DrawInvisible;
-    if (renderFlags & DrawWindowBackground)
-        flags |= QWidgetPrivate::DrawAsRoot;
-
-    if (renderFlags & DrawChildren)
-        flags |= QWidgetPrivate::DrawRecursive;
-    else
-        flags |= QWidgetPrivate::DontSubtractOpaqueChildren;
-
-#ifdef Q_WS_QWS
-    flags |= QWidgetPrivate::DontSetCompositionMode;
-#endif
-
-    if (target->devType() == QInternal::Printer) {
-        QPainter p(target);
-        d->render_helper(&p, targetOffset, paintRegion, renderFlags);
-        return;
-    }
-
-#ifndef Q_WS_MAC
-    // Render via backingstore.
-    d->drawWidget(target, paintRegion, offset, flags, d->sharedPainter());
-
-    // Restore shared painter.
-    if (oldSharedPainter)
-        d->setSharedPainter(oldSharedPainter);
-#else
-    // Render via backingstore (no shared painter).
-    d->drawWidget(target, paintRegion, offset, flags, 0);
-#endif
+    d_func()->render(target, targetOffset, sourceRegion, renderFlags, false);
 }
 
 /*!
@@ -5403,6 +5320,97 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 #endif
                                 , sharedPainter, backingStore);
     }
+}
+
+void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
+                            const QRegion &sourceRegion, QWidget::RenderFlags renderFlags,
+                            bool readyToRender)
+{
+    Q_Q(QWidget);
+    if (!target) {
+        qWarning("QWidget::render: null pointer to paint device");
+        return;
+    }
+
+    const bool inRenderWithPainter = extra && extra->inRenderWithPainter;
+    QRegion paintRegion = !inRenderWithPainter && !readyToRender
+                          ? prepareToRender(sourceRegion, renderFlags)
+                          : sourceRegion;
+    if (paintRegion.isEmpty())
+        return;
+
+#ifndef Q_WS_MAC
+    QPainter *oldSharedPainter = inRenderWithPainter ? sharedPainter() : 0;
+
+    // Use the target's shared painter if set (typically set when doing
+    // "other->render(widget);" in the widget's paintEvent.
+    if (target->devType() == QInternal::Widget) {
+        QWidgetPrivate *targetPrivate = static_cast<QWidget *>(target)->d_func();
+        if (targetPrivate->extra && targetPrivate->extra->inRenderWithPainter) {
+            QPainter *targetPainter = targetPrivate->sharedPainter();
+            if (targetPainter && targetPainter->isActive())
+                setSharedPainter(targetPainter);
+        }
+    }
+#endif
+
+    // Use the target's redirected device if set and adjust offset and paint
+    // region accordingly. This is typically the case when people call render
+    // from the paintEvent.
+    QPoint offset = targetOffset;
+    offset -= paintRegion.boundingRect().topLeft();
+    QPoint redirectionOffset;
+    QPaintDevice *redirected = 0;
+
+    if (target->devType() == QInternal::Widget)
+        redirected = static_cast<QWidget *>(target)->d_func()->redirected(&redirectionOffset);
+    if (!redirected)
+        redirected = QPainter::redirected(target, &redirectionOffset);
+
+    if (redirected) {
+        target = redirected;
+        offset -= redirectionOffset;
+    }
+
+    if (!inRenderWithPainter) { // Clip handled by shared painter (in qpainter.cpp).
+        if (QPaintEngine *targetEngine = target->paintEngine()) {
+            const QRegion targetSystemClip = targetEngine->systemClip();
+            if (!targetSystemClip.isEmpty())
+                paintRegion &= targetSystemClip.translated(-offset);
+        }
+    }
+
+    // Set backingstore flags.
+    int flags = DrawPaintOnScreen | DrawInvisible;
+    if (renderFlags & QWidget::DrawWindowBackground)
+        flags |= DrawAsRoot;
+
+    if (renderFlags & QWidget::DrawChildren)
+        flags |= DrawRecursive;
+    else
+        flags |= DontSubtractOpaqueChildren;
+
+#ifdef Q_WS_QWS
+    flags |= DontSetCompositionMode;
+#endif
+
+    if (target->devType() == QInternal::Printer) {
+        QPainter p(target);
+        render_helper(&p, targetOffset, paintRegion, renderFlags);
+        return;
+    }
+
+#ifndef Q_WS_MAC
+    // Render via backingstore.
+    drawWidget(target, paintRegion, offset, flags, sharedPainter());
+
+    // Restore shared painter.
+    if (oldSharedPainter)
+        setSharedPainter(oldSharedPainter);
+#else
+    // Render via backingstore (no shared painter).
+    drawWidget(target, paintRegion, offset, flags, 0);
+#endif
 }
 
 void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& siblings, int index, const QRegion &rgn,
@@ -7592,23 +7600,21 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     if (isMain)
         QApplication::quit();
 #endif
-    // Attempt to close the application only if this widget has the
-    // WA_QuitOnClose flag set set and has a non-visible parent
-    quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible() || parentWidget->testAttribute(Qt::WA_DontShowOnScreen));
+    // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
+    quitOnClose = quitOnClose && (parentWidget.isNull() || !parentWidget->isVisible());
 
     if (quitOnClose) {
-        // If there is no non-withdrawn primary window left (except
-        // the ones without QuitOnClose or with WA_DontShowOnScreen),
-        // we emit the lastWindowClosed signal
+        /* if there is no non-withdrawn primary window left (except
+           the ones without QuitOnClose), we emit the lastWindowClosed
+           signal */
         QWidgetList list = QApplication::topLevelWidgets();
         bool lastWindowClosed = true;
         for (int i = 0; i < list.size(); ++i) {
             QWidget *w = list.at(i);
-            if ((w->isVisible() && !w->testAttribute(Qt::WA_DontShowOnScreen))
-                    && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose)) {
-                lastWindowClosed = false;
-                break;
-            }
+            if (!w->isVisible() || w->parentWidget() || !w->testAttribute(Qt::WA_QuitOnClose))
+                continue;
+            lastWindowClosed = false;
+            break;
         }
         if (lastWindowClosed)
             QApplicationPrivate::emitLastWindowClosed();
@@ -8271,7 +8277,7 @@ bool QWidget::event(QEvent *event)
         }
 
 #ifdef QT_SOFTKEYS_ENABLED
-        if (isWindow() && isActiveWindow())
+        if (isWindow())
             QSoftKeyManager::updateSoftKeys();
 #endif
 

@@ -122,6 +122,7 @@ public:
 
     inline void detach();
     inline bool isDetached() const;
+    inline bool isSharedWith(const QString &other) const { return d == other.d; }
     void clear();
 
     inline const QChar at(int i) const;

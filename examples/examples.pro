@@ -45,13 +45,12 @@ contains(QT_CONFIG, multimedia) {
 contains(QT_CONFIG, script): SUBDIRS += script
 
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
-contains(QT_CONFIG, webkit): SUBDIRS += webkit
 embedded:SUBDIRS += qws
 !wince*:!symbian: {
-	!contains(QT_EDITION, Console):contains(QT_BUILD_PARTS, tools):SUBDIRS += designer
-	contains(QT_BUILD_PARTS, tools):SUBDIRS += assistant qtestlib help
+    !contains(QT_EDITION, Console):contains(QT_BUILD_PARTS, tools):SUBDIRS += designer
+    contains(QT_BUILD_PARTS, tools):SUBDIRS += qtestlib help
 } else {
-	contains(QT_BUILD_PARTS, tools):SUBDIRS += qtestlib
+    contains(QT_BUILD_PARTS, tools):SUBDIRS += qtestlib
 }
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
 contains(QT_CONFIG, openvg): SUBDIRS += openvg

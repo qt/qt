@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.6.2"
+#define QT_VERSION_STR   "4.7.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040602
+#define QT_VERSION 0x040700
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -275,7 +275,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#ifdef AUTODETECT_COCOA
+#ifdef QT_AUTODETECT_COCOA
 #  ifdef Q_OS_MAC64
 #    define QT_MAC_USE_COCOA 1
 #    define QT_BUILD_KEY QT_BUILD_KEY_COCOA
@@ -672,8 +672,9 @@ namespace QT_NAMESPACE {}
 #      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
 #      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
-// using CC 5.9: Warning: attribute visibility is unsupported and will be skipped..
-//#      define Q_DECL_EXPORT     __attribute__((__visibility__("default")))
+#    endif
+#    if __SUNPRO_CC >= 0x550
+#      define Q_DECL_EXPORT     __global
 #    endif
 #    if __SUNPRO_CC < 0x5a0
 #      define Q_NO_TEMPLATE_FRIENDS
@@ -1540,6 +1541,7 @@ inline QT3_SUPPORT bool qt_winUnicode() { return true; }
 inline QT3_SUPPORT int qWinVersion() { return QSysInfo::WindowsVersion; }
 #endif
 
+// ### Qt 5: remove Win9x support macros QT_WA and QT_WA_INLINE.
 #define QT_WA(unicode, ansi) unicode
 #define QT_WA_INLINE(unicode, ansi) (unicode)
 

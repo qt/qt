@@ -760,9 +760,9 @@ CFG_MAC_ARCHS=
 MAC_CONFIG_TEST_COMMANDLINE=  # used to make the configure tests run with the correct arch's and SDK settings
 CFG_MAC_DWARF2=auto
 CFG_MAC_XARCH=auto
-CFG_MAC_CARBON=yes
-CFG_MAC_COCOA=auto
-COMMANDLINE_MAC_COCOA=no
+CFG_MAC_CARBON=no
+CFG_MAC_COCOA=yes
+COMMANDLINE_MAC_CARBON=no
 CFG_SXE=no
 CFG_PREFIX_INSTALL=yes
 CFG_SDK=
@@ -922,7 +922,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1226,7 +1226,7 @@ while [ "$#" -gt 0 ]; do
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
-            [ "$VAL" = "es1cl" ] || [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
+            [ "$VAL" = "es1" ] || [ "$VAL" = "es2" ]; then
             CFG_OPENGL="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -1322,13 +1322,17 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     cocoa)
+#       do nothing - Cocoa is the default.
+        ;;
+    carbon)
         if [ "$PLATFORM_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
-            CFG_MAC_COCOA="$VAL"
-            COMMANDLINE_MAC_COCOA="$VAL"
+            CFG_MAC_CARBON="$VAL"
+            COMMANDLINE_MAC_CARBON="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
         ;;
+
     framework)
         if [ "$PLATFORM_MAC" = "yes" ]; then
             CFG_FRAMEWORK="$VAL"
@@ -3713,11 +3717,11 @@ Qt/X11 only:
  +  -opengl <api> ...... Enable OpenGL support.
                          With no parameter, this will auto-detect the "best"
                          OpenGL API to use. If desktop OpenGL is available, it
-                         will be used. Use desktop, es1, es1cl or es2 for <api>
+                         will be used. Use desktop, es1, or es2 for <api>
                          to force the use of the Desktop (OpenGL 1.x or 2.x),
-                         OpenGL ES 1.x Common profile, 1.x Common Lite profile
-                         or 2.x APIs instead. On X11, the EGL API will be used
-                         to manage GL contexts in the case of OpenGL ES
+                         OpenGL ES 1.x Common profile, or 2.x APIs instead.
+                         On X11, the EGL API will be used to manage GL
+                         contexts in the case of OpenGL ES
 
      -no-openvg ........ Do not support OpenVG.
  +   -openvg ........... Enable OpenVG support.
@@ -3792,10 +3796,11 @@ Qt/Mac only:
     -Fstring ........... Add an explicit framework path.
     -fw string ......... Add an explicit framework.
 
-    -cocoa ............. Build the Cocoa version of Qt. Note that -no-framework
-                         and -static is not supported with -cocoa. Specifying
-                         this option creates Qt binaries that requires Mac OS X
-                         10.5 or higher.
+    -cocoa ............. [Deprecated] Cocoa is now enabled by default.
+
+    -carbon .............Build the Carbon version of Qt. 64-bit archs
+                         are not supported by carbon and will be built
+                         with cocoa
 
  *  -framework ......... Build Qt as a series of frameworks and
                          link tools against those frameworks.
@@ -3808,8 +3813,7 @@ Qt/Mac only:
 
     -arch <arch> ....... Build Qt for <arch>
                          Example values for <arch>: x86 ppc x86_64 ppc64
-                         Multiple -arch arguments can be specified, 64-bit archs
-                         will be built with the Cocoa framework.
+                         Multiple -arch arguments can be specified.
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
                          To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
@@ -3871,7 +3875,7 @@ Qt for Embedded Linux only:
     -no-opengl .......... Do not support OpenGL.
     -opengl <api> ....... Enable OpenGL ES support
                           With no parameter, this will attempt to auto-detect OpenGL ES 1.x
-                          or 2.x. Use es1, es1cl or es2 for <api> to override auto-detection.
+                          or 2.x. Use es1 or es2 for <api> to override auto-detection.
 
                           NOTE: A QGLScreen driver for the hardware is required to support
                                 OpenGL ES on Qt for Embedded Linux.
@@ -4992,7 +4996,7 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         CFG_EGL=yes
         CFG_EGL_GLES_INCLUDES=yes
     fi
-    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
+    if ( [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es2" ] ) && [ "$CFG_EGL" != "yes" ]; then
         echo "The EGL functionality test failed!"
         echo " EGL is required for OpenGL ES to manage contexts & surfaces."
         echo " You might need to modify the include and library search paths by editing"
@@ -5092,7 +5096,7 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         exit 1
     fi
 
-    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es1cl = ES 1.x common lite, es2 = OpenGL ES 2.x)
+    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
     if [ "$CFG_OPENGL" = "auto" ] || [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
             CFG_OPENGL=desktop
@@ -5100,8 +5104,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
             CFG_OPENGL=es2
 	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es1
-	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es1cl
         else
             if [ "$CFG_OPENGL" = "yes" ]; then
                 echo "All the OpenGL functionality tests failed!"
@@ -5125,16 +5127,6 @@ if [ "$PLATFORM_X11" = "yes" ]; then
        *)
            ;;
        esac
-    elif [ "$CFG_OPENGL" = "es1cl" ]; then
-        # OpenGL ES 1.x common lite
-	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS
-        if [ $? != "0" ]; then
-	    echo "The OpenGL ES 1.x Common Lite Profile functionality test failed!"
-            echo " You might need to modify the include and library search paths by editing"
-            echo " QMAKE_INCDIR_OPENGL_ES1CL, QMAKE_LIBDIR_OPENGL_ES1CL and QMAKE_LIBS_OPENGL_ES1CL in"
-            echo " ${XQMAKESPEC}."
-            exit 1
-        fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
 	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -5444,14 +5436,12 @@ fi
 # QWS
 if [ "$PLATFORM_QWS" = "yes" ]; then
 
-    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es1cl = ES 1.x common lite, es2 = OpenGL ES 2.x)
+    # auto-detect OpenGL support (es1 = OpenGL ES 1.x Common, es2 = OpenGL ES 2.x)
     if [ "$CFG_OPENGL" = "yes" ]; then
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es2
 	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
             CFG_OPENGL=es1
-	elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            CFG_OPENGL=es1cl
         else
             echo "All the OpenGL ES functionality tests failed!"
             echo " You might need to modify the include and library search paths by editing"
@@ -5966,14 +5956,14 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
-# Set the default arch.
-# Carbon builds: 32 bit x86/ppc.
-# For "-cocoa" builds on snow leopard : compiler default (64-bit).
-# For "-cocoa" builds on leopard : compiler default (32-bit).
+# Set the default arch if there are no "-arch" arguments on the configure line
+# For "-carbon" builds: 32 bit x86/ppc.
+# For builds on snow leopard : compiler default (64-bit).
+# For builds on leopard : compiler default (32-bit).
 if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
-	if [ "$CFG_MAC_COCOA" != "yes" ]; then
+	if [ "$CFG_MAC_CARBON" = "yes" ]; then
 		if [ "$QT_MAC_DEFAULT_ARCH" = "x86_64" ]; then
 			CFG_MAC_ARCHS=" x86"
 		elif [ "$QT_MAC_DEFAULT_ARCH" = "ppc64" ]; then
@@ -5988,12 +5978,13 @@ if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" = "" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
 fi
 
-# enable cocoa and/or carbon on Mac
-if [ "$CFG_MAC_COCOA" = "yes" ]; then
-#   -cocoa on the command line disables carbon completely (i.e. use cocoa for 32-bit as well)
-    CFG_MAC_CARBON="no"
-else
-#   check which archs are in use, enable cocoa if we find a 64-bit one
+# enable Cocoa and/or Carbon on Mac
+#  -carbon on the command line disables Cocoa, except for 64-bit archs
+if [ "$CFG_MAC_CARBON" = "yes" ]; then
+    CFG_MAC_CARBON="YES"
+    CFG_MAC_COCOA="NO"
+
+#    check which archs are in use, enable cocoa if we find a 64-bit one
     if echo "$CFG_MAC_ARCHS" | grep 64 > /dev/null 2>&1; then
         CFG_MAC_COCOA="yes";
         CFG_MAC_CARBON="no";
@@ -6003,11 +5994,17 @@ else
         if echo "$CFG_MAC_ARCHS" | grep -w x86 > /dev/null 2>&1; then
             CFG_MAC_CARBON="yes";
         fi
-    else
-#       no 64-bit archs found.
-        CFG_MAC_COCOA="no"
     fi
-fi;
+fi
+
+# select Carbon on 10.4 Tiger.
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
+    if [ "$VERSION" == 8 ]; then
+        CFG_MAC_COCOA="no";
+        CFG_MAC_CARBON="yes";
+    fi
+fi
 
 # set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
@@ -6092,7 +6089,7 @@ else
     QT_CONFIG="$QT_CONFIG opengl"
 fi
 
-if [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es1cl" ] || [ "$CFG_OPENGL" = "es2" ]; then
+if [ "$CFG_OPENGL" = "es1" ] || [ "$CFG_OPENGL" = "es2" ]; then
     if [ "$PLATFORM_QWS" = "yes" ]; then
 	QCONFIG_FLAGS="$QCONFIG_FLAGS Q_BACKINGSTORE_SUBSURFACES"
 	QCONFIG_FLAGS="$QCONFIG_FLAGS Q_USE_EGLWINDOWSURFACE"
@@ -6103,11 +6100,6 @@ fi
 if [ "$CFG_OPENGL" = "es1" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_1"
     QT_CONFIG="$QT_CONFIG opengles1"
-fi
-
-if [ "$CFG_OPENGL" = "es1cl" ]; then
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_OPENGL_ES_1_CL"
-    QT_CONFIG="$QT_CONFIG opengles1cl"
 fi
 
 if [ "$CFG_OPENGL" = "es2" ]; then
@@ -6614,9 +6606,8 @@ fi
 # On Mac, set the minimum deployment target for the different architechtures 
 # using the Xarch compiler option when supported (10.5 and up).  On 10.4 the
 # deployment version is set to 10.4 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
-# env. variable. "-cocoa" on the command line means Cocoa is used in 32-bit mode also,
-# in this case fall back on QMAKE_MACOSX_DEPLOYMENT_TARGET which will be set to 10.5.
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] && [ "$COMMANDLINE_MAC_COCOA" != "yes" ]; then
+# env. variable. 
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] ; then
     if echo "$CFG_MAC_ARCHS" | grep '\<x86\>' > /dev/null 2>&1; then
         QMakeVar add QMAKE_CFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
         QMakeVar add QMAKE_CXXFLAGS "-Xarch_i386 -mmacosx-version-min=10.4"
@@ -6936,9 +6927,9 @@ if [ "$CFG_LARGEFILE" = "yes" ]; then
 fi
 
 # if both carbon and cocoa are specified, enable the autodetection code.
-if [ "$CFG_MAC_COCOA" = "yes" -a "$CFG_MAC_CARBON" = "yes" ]; then
-    echo "#define AUTODETECT_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
-elif [ "$CFG_MAC_COCOA" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" -a "$CFG_MAC_CARBON" = "yes" ]; then
+    echo "#define QT_AUTODETECT_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
+elif [ "$PLATFORM_MAC" = "yes" -a "$CFG_MAC_COCOA" = "yes" ]; then
     echo "#define QT_MAC_USE_COCOA 1" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
@@ -7549,8 +7540,6 @@ if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ...... yes (Desktop OpenGL)"
 elif [ "$CFG_OPENGL" = "es1" ]; then
     echo "OpenGL support ...... yes (OpenGL ES 1.x Common profile)"
-elif [ "$CFG_OPENGL" = "es1cl" ]; then
-    echo "OpenGL support ...... yes (OpenGL ES 1.x Common Lite profile)"
 elif [ "$CFG_OPENGL" = "es2" ]; then
     echo "OpenGL support ...... yes (OpenGL ES 2.x)"
 else
@@ -7865,20 +7854,6 @@ EOF
     done
 done
 rm -f .projects .projects.3
-
-#-------------------------------------------------------------------------------
-# XShape is important, DnD in the Designer doens't work without it
-#-------------------------------------------------------------------------------
-if [ "$PLATFORM_X11" = "yes" ] && [ "$CFG_XSHAPE" = "no" ]; then
-    cat <<EOF
-
-	NOTICE: Qt will not be built with XShape support.
-
-	As a result, drag-and-drop in the Qt Designer will NOT
-	work. We recommend that you enable XShape support by passing
-	the -xshape switch to $0.
-EOF
-fi
 
 #-------------------------------------------------------------------------------
 # check for platforms that we don't yet know about

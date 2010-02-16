@@ -174,13 +174,17 @@ public:
     static QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
     static bool currentExecIsNSAppRun;
     static bool nsAppRunCalledByQt;
+    static bool cleanupModalSessionsNeeded;
+    static bool modalSessionsTemporarilyStopped;
     static NSModalSession currentModalSessionCached;
-    static void updateChildrenWorksWhenModal();
     static NSModalSession currentModalSession();
-    static int activeModalSessionCount();
+    static void updateChildrenWorksWhenModal();
     static void temporarilyStopAllModalSessions();
     static void beginModalSession(QWidget *widget);
     static void endModalSession(QWidget *widget);
+    static void cancelWaitForMoreEvents();
+    static void cleanupModalSessions();
+    static void ensureNSAppInitialized();
 #endif
 
     MacSocketHash macSockets;
@@ -190,7 +194,7 @@ public:
     CFRunLoopObserverRef firstTimeObserver;
     QAtomicInt serialNumber;
     int lastSerial;
-    bool interrupt;
+    static bool interrupt;
 private:
     static Boolean postedEventSourceEqualCallback(const void *info1, const void *info2);
     static void postedEventsSourcePerformCallback(void *info);
@@ -211,6 +215,7 @@ class QtMacInterruptDispatcherHelp : public QObject
 
     public:
     static void interruptLater();
+    static void cancelInterruptLater();
 };
 #endif
 

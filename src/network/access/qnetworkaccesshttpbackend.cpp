@@ -480,10 +480,24 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
         loadedFromCache = false;
 }
 
+static QHttpNetworkRequest::Priority convert(const QNetworkRequest::Priority& prio)
+{
+    switch (prio) {
+    case QNetworkRequest::LowPriority:
+        return QHttpNetworkRequest::LowPriority;
+    case QNetworkRequest::HighPriority:
+        return QHttpNetworkRequest::HighPriority;
+    case QNetworkRequest::NormalPriority:
+    default:
+        return QHttpNetworkRequest::NormalPriority;
+    }
+}
+
 void QNetworkAccessHttpBackend::postRequest()
 {
     bool loadedFromCache = false;
     QHttpNetworkRequest httpRequest;
+    httpRequest.setPriority(convert(request().priority()));
     switch (operation()) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);

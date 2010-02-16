@@ -4238,6 +4238,8 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
         widgetItem->paintWindowFrame(painter, option, widget);
         if (painterStateProtection)
             painter->restore();
+    } else if (widgetItem->autoFillBackground()) {
+        painter->fillRect(option->exposedRect, widgetItem->palette().window());
     }
 
     widgetItem->paint(painter, option, widget);

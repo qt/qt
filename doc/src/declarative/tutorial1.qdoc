@@ -1,0 +1,56 @@
+/*!
+\page tutorial1.html
+\title Tutorial 1 - Basic Types
+
+This first program is a very simple "Hello world" example that introduces some basic QML concepts.
+The picture below is a screenshot of this program.
+
+\image declarative-tutorial1.png
+
+Here is the QML code for the application:
+
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 0
+
+\section1 Walkthrough
+
+\section2 Import
+
+First, we need to import the types that we need for this example. Most QML files will import the built-in QML
+types (like \l{Rectangle}, \l{Image}, ...) that come with Qt with:
+
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 3
+
+\section2 Rectangle element
+
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 1
+
+We declare a root element of type \l{Rectangle}. It is one of the basic building blocks you can use to create an application in QML.
+We give it an \c{id} to be able to refer to it later. In this case, we call it \e page.
+We also set the \c width, \c height and \c color properties.
+The \l{Rectangle} element contains many other properties (such as \c x and \c y), but these are left at their default values.
+
+\section2 Text element
+
+\snippet examples/declarative/tutorials/helloworld/tutorial1.qml 2
+
+We add a \l Text element as a child of our root element that will display the text 'Hello world!'.
+
+The \c y property is used to position the text vertically at 30 pixels from the top of its parent.
+
+The \c font.pointSize and \c font.bold properties are related to fonts and use the \l{Dot Properties}{dot notation}.
+
+The \c anchors.horizontalCenter property refers to the horizontal center of an element.
+In this case, we specify that our text element should be horizontally centered in the \e page element (see \l{anchor-layout}{Anchor-based Layout}).
+
+\section2 Viewing the example
+
+To view what you have created, run the qmlviewer (located in the \c bin directory) with your filename as the first argument.
+For example, to run the provided completed Tutorial 1 example from the install location, you would type:
+
+\code
+bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
+\endcode
+
+[\l {Tutorial}] [Next: \l {Tutorial 2 - QML Component}]
+
+*/

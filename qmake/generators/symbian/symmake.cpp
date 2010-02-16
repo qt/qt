@@ -49,10 +49,17 @@
 #include <stdlib.h>
 #include <qdebug.h>
 
+#ifdef Q_OS_WIN
+#define SCRIPT_EXT ".bat"
+#else
+#define SCRIPT_EXT ".sh"
+#endif
+
 #define RESOURCE_DIRECTORY_MMP "/resource/apps"
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
 #define PLUGIN_COMMON_DEF_FILE_FOR_MMP "./plugin_common.def"
-#define PLUGIN_COMMON_DEF_FILE_ACTUAL "plugin_commonU.def"
+#define PLUGIN_COMMON_DEF_FILE_ACTUAL "plugin_commonu.def"
+#define BLD_INF_FILENAME_LEN (sizeof(BLD_INF_FILENAME) - 1)
 
 #define BLD_INF_RULES_BASE "BLD_INF_RULES."
 #define BLD_INF_TAG_PLATFORMS "prj_platforms"
@@ -82,8 +89,10 @@
 
 #define SIS_TARGET "sis"
 #define INSTALLER_SIS_TARGET "installer_sis"
+#define ROM_STUB_SIS_TARGET "stub_sis"
 #define OK_SIS_TARGET "ok_sis"
 #define OK_INSTALLER_SIS_TARGET "ok_installer_sis"
+#define OK_ROM_STUB_SIS_TARGET "ok_stub_sis"
 #define FAIL_SIS_NOPKG_TARGET "fail_sis_nopkg"
 #define FAIL_SIS_NOCACHE_TARGET "fail_sis_nocache"
 
@@ -1157,7 +1166,7 @@ void SymbianMakefileGenerator::generateCleanCommands(QTextStream& t,
         t << "\t-@ if EXIST \"" << QDir::toNativeSeparators(item) << "\" ";
         t << cmd << " " << cmdOptions << " \"" << QDir::toNativeSeparators(item) << "\"" << endl;
 #else
-        t << "\t-if test -f " << QDir::toNativeSeparators(item) << "; then ";
+        t << "\t-if test -e " << QDir::toNativeSeparators(item) << "; then ";
         t << cmd << " " << cmdOptions << " " << QDir::toNativeSeparators(item) << "; fi" << endl;
 #endif
     }
@@ -1169,7 +1178,7 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
     t << endl;
 
     t << SIS_TARGET ":" << endl;
-    QString siscommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
+    QString siscommand = QString::fromLatin1("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
                                   "$(MAKE) -s -f $(MAKEFILE) %4," \
                                   "$(if $(QT_SIS_TARGET),$(MAKE) -s -f $(MAKEFILE) %4," \
                                   "$(MAKE) -s -f $(MAKEFILE) %5))," \
@@ -1185,7 +1194,7 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 
     t << OK_SIS_TARGET ":" << endl;
 
-    QString pkgcommand = QString("\tcreatepackage.bat $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
+    QString pkgcommand = QString::fromLatin1("\tcreatepackage" SCRIPT_EXT " $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
                                  "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
                           .arg(fixedTarget)
                           .arg("pkg");
@@ -1198,8 +1207,32 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
     t << sisName << ":" << endl;
     t << "\t$(MAKE) -s -f $(MAKEFILE) " SIS_TARGET << endl << endl;
 
+    t << ROM_STUB_SIS_TARGET ":" << endl;
+    QString stubsiscommand = QString::fromLatin1("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %4," \
+                                  "$(if $(QT_SIS_TARGET),$(MAKE) -s -f $(MAKEFILE) %4," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %5))," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %6)")
+                          .arg(fixedTarget)
+                          .arg("pkg")
+                          .arg(MAKE_CACHE_NAME)
+                          .arg(OK_ROM_STUB_SIS_TARGET)
+                          .arg(FAIL_SIS_NOCACHE_TARGET)
+                          .arg(FAIL_SIS_NOPKG_TARGET);
+    t << stubsiscommand << endl;
+    t << endl;
+
+    t << OK_ROM_STUB_SIS_TARGET ":" << endl;
+
+    QString stubpkgcommand = QString::fromLatin1("\tcreatepackage" SCRIPT_EXT " -s $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
+                                 "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
+                          .arg(fixedTarget)
+                          .arg("pkg");
+    t << stubpkgcommand << endl;
+    t << endl;
+
     t << INSTALLER_SIS_TARGET ": " << sisName << endl;
-    siscommand = QString("\t$(if $(wildcard %1_installer.%2)," \
+    siscommand = QString::fromLatin1("\t$(if $(wildcard %1_installer.%2)," \
                                   "$(MAKE) -s -f $(MAKEFILE) %3," \
                                   "$(MAKE) -s -f $(MAKEFILE) %4)")
                           .arg(fixedTarget)
@@ -1211,7 +1244,7 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 
     t << OK_INSTALLER_SIS_TARGET ": " << endl;
 
-    pkgcommand = QString("\tcreatepackage.bat $(QT_SIS_OPTIONS) %1_installer.%2 - " \
+    pkgcommand = QString::fromLatin1("\tcreatepackage.bat $(QT_SIS_OPTIONS) %1_installer.%2 - " \
                          "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
                   .arg(fixedTarget)
                   .arg("pkg");

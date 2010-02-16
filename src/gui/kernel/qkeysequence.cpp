@@ -861,6 +861,8 @@ QKeySequence::QKeySequence()
     Up to four key codes may be entered by separating them with
     commas, e.g. "Alt+X,Ctrl+S,Q".
 
+    \a key should be in NativeText format.
+
     This constructor is typically used with \link QObject::tr() tr
     \endlink(), so that shortcut keys can be replaced in
     translations:
@@ -874,6 +876,16 @@ QKeySequence::QKeySequence(const QString &key)
 {
     d = new QKeySequencePrivate();
     assign(key);
+}
+
+/*!
+    \since 4.x
+    Creates a key sequence from the \a key string based on \a format.
+*/
+QKeySequence::QKeySequence(const QString &key, QKeySequence::SequenceFormat format)
+{
+    d = new QKeySequencePrivate();
+    assign(key, format);
 }
 
 /*!
@@ -1055,8 +1067,23 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
     contain up to four key codes, provided they are separated by a
     comma; for example, "Alt+X,Ctrl+S,Z". The return value is the
     number of key codes added.
+    \a keys should be in NativeText format.
 */
 int QKeySequence::assign(const QString &ks)
+{
+    return assign(ks, NativeText);
+}
+
+/*!
+    \fn int QKeySequence::assign(const QString &keys, QKeySequence::SequenceFormat format)
+    \since 4.x
+
+    Adds the given \a keys to the key sequence (based on \a format).
+    \a keys may contain up to four key codes, provided they are
+    separated by a comma; for example, "Alt+X,Ctrl+S,Z". The return
+    value is the number of key codes added.
+*/
+int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
 {
     QString keyseq = ks;
     QString part;
@@ -1086,7 +1113,7 @@ int QKeySequence::assign(const QString &ks)
         }
         part = keyseq.left(-1 == p ? keyseq.length() : p - diff);
         keyseq = keyseq.right(-1 == p ? 0 : keyseq.length() - (p + 1));
-        d->key[n] = decodeString(part);
+        d->key[n] = QKeySequencePrivate::decodeString(part, format);
         ++n;
     }
     return n;
@@ -1557,12 +1584,7 @@ QString QKeySequence::toString(SequenceFormat format) const
 */
 QKeySequence QKeySequence::fromString(const QString &str, SequenceFormat format)
 {
-    QStringList sl = str.split(QLatin1String(", "));
-    int keys[4] = {0, 0, 0, 0};
-    int total = qMin(sl.count(), 4);
-    for (int i = 0; i < total; ++i)
-        keys[i] = QKeySequencePrivate::decodeString(sl[i], format);
-    return QKeySequence(keys[0], keys[1], keys[2], keys[3]);
+    return QKeySequence(str, format);
 }
 
 /*****************************************************************************
