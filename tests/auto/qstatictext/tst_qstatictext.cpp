@@ -89,17 +89,18 @@ void tst_QStaticText::constructionAndDestruction()
     QStaticText text("My text");
 }
 
+Q_DECLARE_METATYPE(QStaticText::PerformanceHint)
 void tst_QStaticText::drawToPoint_data()
 {
-    QTest::addColumn<bool>("useBackendOptimizations");
+    QTest::addColumn<QStaticText::PerformanceHint>("performanceHint");
 
-    QTest::newRow("Without backend optimizations") << false;
-    QTest::newRow("With backend optimizations") << true;
+    QTest::newRow("Moderate caching") << QStaticText::ModerateCaching;
+    QTest::newRow("Aggressive caching") << QStaticText::AggressiveCaching;
 }
 
 void tst_QStaticText::drawToPoint()
 {
-    QFETCH(bool, useBackendOptimizations);
+    QFETCH(QStaticText::PerformanceHint, performanceHint);
 
     QPixmap imageDrawText(1000, 1000);
     imageDrawText.fill(Qt::white);
@@ -113,7 +114,7 @@ void tst_QStaticText::drawToPoint()
     {
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        text.setUseBackendOptimizations(useBackendOptimizations);
+        text.setPerformanceHint(performanceHint);
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -122,15 +123,15 @@ void tst_QStaticText::drawToPoint()
 
 void tst_QStaticText::drawToRect_data()
 {
-    QTest::addColumn<bool>("useBackendOptimizations");
+    QTest::addColumn<QStaticText::PerformanceHint>("performanceHint");
 
-    QTest::newRow("Without backend optimizations") << false;
-    QTest::newRow("With backend optimizations") << true;
+    QTest::newRow("Moderate caching") << QStaticText::ModerateCaching;
+    QTest::newRow("Aggressive caching") << QStaticText::AggressiveCaching;
 }
 
 void tst_QStaticText::drawToRect()
 {
-    QFETCH(bool, useBackendOptimizations);
+    QFETCH(QStaticText::PerformanceHint, performanceHint);
 
     QPixmap imageDrawText(1000, 1000);
     imageDrawText.fill(Qt::white);
@@ -144,7 +145,7 @@ void tst_QStaticText::drawToRect()
     {
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", QSizeF(10, 500));
-        text.setUseBackendOptimizations(useBackendOptimizations);
+        text.setPerformanceHint(performanceHint);
         p.drawStaticText(QPointF(11, 12), text);
     }
 

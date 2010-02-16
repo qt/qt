@@ -5702,11 +5702,15 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 
     \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
 
+    \since 4.7
+
     \overload
 */
 
 /*!
     \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
+
+    \since 4.7
 
     \overload
 */
@@ -5733,6 +5737,25 @@ void QPainter::drawText(const QPointF &p, const QString &str)
     drawText(p, str, 0, 0);
 }
 
+/*!
+    \since 4.7
+
+    Draws the given \a staticText at the given \a position.
+
+    The text will be drawn using the font and the transformation set on the painter. If the
+    font and/or transformation set on the painter are different from the ones used to initialize
+    the layout of the QStaticText, then the layout will have to be recalculated. Use
+    QStaticText::prepare() to initialize \a staticText with the font and transformation with which
+    it will later be drawn.
+
+    If \a position is not the same as when \a staticText was initialized, or when it was last drawn,
+    then there will be a slight overhead when translating the text to its new position.
+
+    \note If the painter's transformation is not affine, then \a staticText will be drawn using regular
+    calls to drawText(), losing any potential performance improvement.
+
+    \sa QStaticText
+*/
 void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
 {
     Q_D(QPainter);

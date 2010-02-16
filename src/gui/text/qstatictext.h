@@ -60,6 +60,11 @@ class QStaticTextPrivate;
 class Q_GUI_EXPORT QStaticText
 {    
 public:
+    enum PerformanceHint {
+        ModerateCaching,
+        AggressiveCaching
+    };
+
     QStaticText();
     QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
     QStaticText(const QStaticText &other);
@@ -78,8 +83,8 @@ public:
 
     void prepare(const QTransform &matrix, const QFont &font);
 
-    void setUseBackendOptimizations(bool on);
-    bool useBackendOptimizations() const;
+    void setPerformanceHint(PerformanceHint performanceHint);
+    PerformanceHint performanceHint() const;
 
     QStaticText &operator=(const QStaticText &);
     bool operator==(const QStaticText &) const;
