@@ -12,7 +12,7 @@ SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/makefiledeps.cpp generators/metamakefile.cpp generators/mac/pbuilder_pbx.cpp \
            generators/xmloutput.cpp generators/win32/borland_bmake.cpp \
            generators/win32/msvc_nmake.cpp generators/projectgenerator.cpp \
-           generators/win32/msvc_dsp.cpp generators/win32/msvc_vcproj.cpp \
+           generators/win32/msvc_vcproj.cpp \
            generators/win32/msvc_objectmodel.cpp \
            generators/symbian/symmake.cpp \
            generators/symbian/symmake_abld.cpp \
@@ -24,7 +24,7 @@ HEADERS += project.h property.h generators/makefile.h \
            generators/win32/winmakefile.h generators/projectgenerator.h \
            generators/makefiledeps.h generators/metamakefile.h generators/mac/pbuilder_pbx.h \
            generators/xmloutput.h generators/win32/borland_bmake.h generators/win32/msvc_nmake.h \
-           generators/win32/msvc_dsp.h generators/win32/msvc_vcproj.h \
+           generators/win32/msvc_vcproj.h \
            generators/win32/mingw_make.h generators/win32/msvc_objectmodel.h \
            generators/symbian/symmake.h \
            generators/symbian/symmake_abld.h \
