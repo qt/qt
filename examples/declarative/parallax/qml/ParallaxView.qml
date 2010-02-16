@@ -74,7 +74,7 @@ Item {
             }
             transitions: Transition {
                 NumberAnimation {
-                    matchProperties: "scale,y"
+                    properties: "scale,y"
                 }
              }
         }

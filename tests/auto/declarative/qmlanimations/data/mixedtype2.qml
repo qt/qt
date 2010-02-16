@@ -20,6 +20,6 @@ Rectangle {
         PropertyChanges { target: myRect; x: 200; color: "blue" }
     }
     transitions: Transition {
-        PropertyAnimation { matchProperties: "x,color"; duration: 1000 } //x is real, color is color
+        PropertyAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
     }
 }

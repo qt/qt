@@ -118,7 +118,7 @@ Rectangle {
     }
 
     transitions: Transition {
-        NumberAnimation { matchProperties: "x,y,width"; easing: "easeOutBounce"; duration: 500 }
-        NumberAnimation { matchProperties: "opacity"; easing: "easeInOutQuad"; duration: 500 }
+        NumberAnimation { properties: "x,y,width"; easing: "easeOutBounce"; duration: 500 }
+        NumberAnimation { properties: "opacity"; easing: "easeInOutQuad"; duration: 500 }
     }
 }

@@ -63,6 +63,7 @@ private slots:
     //void transitionOverrides();
     void group();
     void emptyBehavior();
+    void explicitSelection();
     void nonSelectingBehavior();
     void reassignedAnimation();
     void disabled();
@@ -225,19 +226,23 @@ void tst_qmlbehaviors::emptyBehavior()
     QCOMPARE(x, qreal(200));    //should change immediately
 }
 
-void tst_qmlbehaviors::nonSelectingBehavior()
+void tst_qmlbehaviors::explicitSelection()
 {
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/explicit.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         rect->setState("moved");
+        QTest::qWait(100);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
-        QCOMPARE(x, qreal(200));    //should change immediately
+        QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
+}
 
+void tst_qmlbehaviors::nonSelectingBehavior()
+{
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting2.qml"));
