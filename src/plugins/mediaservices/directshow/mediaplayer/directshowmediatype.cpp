@@ -54,9 +54,20 @@ namespace
 
     static const TypeLookup qt_typeLookup[] =
     {
-        { QVideoFrame::Format_RGB24, MEDIASUBTYPE_RGB24 },
         { QVideoFrame::Format_RGB32, MEDIASUBTYPE_RGB32 },
-        { QVideoFrame::Format_YV12, MEDIASUBTYPE_YV12 }
+        { QVideoFrame::Format_RGB24, MEDIASUBTYPE_RGB24 },
+        { QVideoFrame::Format_RGB565, MEDIASUBTYPE_RGB565 },
+        { QVideoFrame::Format_RGB555, MEDIASUBTYPE_RGB555 },
+        { QVideoFrame::Format_AYUV444, MEDIASUBTYPE_AYUV },
+        { QVideoFrame::Format_YUYV, MEDIASUBTYPE_YUY2 },
+        { QVideoFrame::Format_UYVY, MEDIASUBTYPE_UYVY },
+        { QVideoFrame::Format_IMC1, MEDIASUBTYPE_IMC1 },
+        { QVideoFrame::Format_IMC2, MEDIASUBTYPE_IMC2 },
+        { QVideoFrame::Format_IMC3, MEDIASUBTYPE_IMC3 },
+        { QVideoFrame::Format_IMC4, MEDIASUBTYPE_IMC4 },
+        { QVideoFrame::Format_YV12, MEDIASUBTYPE_YV12 },
+        { QVideoFrame::Format_NV12, MEDIASUBTYPE_NV12 },
+        { QVideoFrame::Format_YUV420P, MEDIASUBTYPE_IYUV }
     };
 }
 
@@ -144,11 +155,27 @@ QVideoSurfaceFormat DirectShowMediaType::formatFromType(const AM_MEDIA_TYPE &typ
 int DirectShowMediaType::bytesPerLine(const QVideoSurfaceFormat &format)
 {
     switch (format.pixelFormat()) {
-    case QVideoFrame::Format_RGB24:
-        return format.frameWidth() * 4 + 3 - format.frameWidth() % 4;
+    // 32 bpp packed formats.
     case QVideoFrame::Format_RGB32:
+    case QVideoFrame::Format_AYUV444:
         return format.frameWidth() * 4;
+    // 24 bpp packed formats.
+    case QVideoFrame::Format_RGB24:
+        return format.frameWidth() * 3 + 3 - format.frameWidth() % 4;
+    // 16 bpp packed formats.
+    case QVideoFrame::Format_RGB565:
+    case QVideoFrame::Format_RGB555:
+    case QVideoFrame::Format_YUYV:
+    case QVideoFrame::Format_UYVY:
+        return format.frameWidth() * 2 + 3 - format.frameWidth() % 4;
+    // Planar formats.
+    case QVideoFrame::Format_IMC1:
+    case QVideoFrame::Format_IMC2:
+    case QVideoFrame::Format_IMC3:
+    case QVideoFrame::Format_IMC4:
     case QVideoFrame::Format_YV12:
+    case QVideoFrame::Format_NV12:
+    case QVideoFrame::Format_YUV420P:
         return format.frameWidth() + 3 - format.frameWidth() % 4;
     default:
         return 0;
