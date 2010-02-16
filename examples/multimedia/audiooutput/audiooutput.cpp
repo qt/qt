@@ -44,30 +44,27 @@
 
 #include <QAudioOutput>
 #include <QAudioDeviceInfo>
+#include <QtCore/qmath.h>
+#include <QtCore/qendian.h>
 #include "audiooutput.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 #define SECONDS     1
 #define FREQ        600
 #define SYSTEM_FREQ 44100
 
-Generator::Generator(QObject *parent)
-    :QIODevice( parent )
+Generator::Generator(const QAudioFormat &format,
+                     qint64 durationUs,
+                     int frequency,
+                     QObject *parent)
+    :   QIODevice(parent)
+    ,   pos(0)
 {
-    finished = false;
-    buffer = new char[SECONDS*SYSTEM_FREQ*4+1000];
-    t=buffer;
-    len=fillData(t,FREQ,SECONDS); /* mono FREQHz sine */
-    pos   = 0;
-    total = len;
+    generateData(format, durationUs, frequency);
 }
 
 Generator::~Generator()
 {
-    delete [] buffer;
+
 }
 
 void Generator::start()
@@ -75,54 +72,67 @@ void Generator::start()
     open(QIODevice::ReadOnly);
 }
 
-qint64 Generator::bytesAvailable() const
-{
-    return (SECONDS*SYSTEM_FREQ*2)-pos + QIODevice::bytesAvailable();
-}
-
 void Generator::stop()
 {
+    pos = 0;
     close();
 }
 
-int Generator::putShort(char *t, unsigned int value)
+void Generator::generateData(const QAudioFormat &format, qint64 durationUs, int frequency)
 {
-    *(unsigned char *)(t++)=value&255;
-    *(unsigned char *)(t)=(value/256)&255;
-    return 2;
+    const int channelBytes = format.sampleSize() / 8;
+    const int sampleBytes = format.channels() * channelBytes;
+
+    qint64 length = (format.frequency() * format.channels() * (format.sampleSize() / 8))
+                        * durationUs / 100000;
+
+    Q_ASSERT(length % sampleBytes == 0);
+    Q_UNUSED(sampleBytes) // suppress warning in release builds
+
+    buffer.resize(length);
+    unsigned char *ptr = reinterpret_cast<unsigned char *>(buffer.data());
+    int sampleIndex = 0;
+
+    while (length) {
+        const qreal x = qSin(2 * M_PI * frequency * qreal(sampleIndex % format.frequency()) / format.frequency());
+        for (int i=0; i<format.channels(); ++i) {
+            if (format.sampleSize() == 8 && format.sampleType() == QAudioFormat::UnSignedInt) {
+                const quint8 value = static_cast<quint8>((1.0 + x) / 2 * 255);
+                *reinterpret_cast<quint8*>(ptr) = value;
+            } else if (format.sampleSize() == 8 && format.sampleType() == QAudioFormat::SignedInt) {
+                const qint8 value = static_cast<qint8>(x * 127);
+                *reinterpret_cast<quint8*>(ptr) = value;
+            } else if (format.sampleSize() == 16 && format.sampleType() == QAudioFormat::UnSignedInt) {
+                quint16 value = static_cast<quint16>((1.0 + x) / 2 * 65535);
+                if (format.byteOrder() == QAudioFormat::LittleEndian)
+                    qToLittleEndian<quint16>(value, ptr);
+                else
+                    qToBigEndian<quint16>(value, ptr);
+            } else if (format.sampleSize() == 16 && format.sampleType() == QAudioFormat::SignedInt) {
+                qint16 value = static_cast<qint16>(x * 32767);
+                if (format.byteOrder() == QAudioFormat::LittleEndian)
+                    qToLittleEndian<qint16>(value, ptr);
+                else
+                    qToBigEndian<qint16>(value, ptr);
+            }
+
+            ptr += channelBytes;
+            length -= channelBytes;
+        }
+        ++sampleIndex;
+    }
 }
 
-int Generator::fillData(char *start, int frequency, int seconds)
+qint64 Generator::readData(char *data, qint64 len)
 {
-    int i, len=0;
-    int value;
-    for(i=0; i<seconds*SYSTEM_FREQ; i++) {
-        value=(int)(32767.0*sin(2.0*M_PI*((double)(i))*(double)(frequency)/SYSTEM_FREQ));
-        putShort(start, value);
-        start += 4;
-        len+=2;
+    qint64 total = 0;
+    while (len - total) {
+        const qint64 chunk = qMin((buffer.size() - pos), len - total);
+        memcpy(data, buffer.constData() + pos, chunk);
+        pos = (pos + chunk) % buffer.size();
+        total += chunk;
     }
-    return len;
-}
-
-qint64 Generator::readData(char *data, qint64 maxlen)
-{
-    int len = maxlen;
-    if (len > 16384)
-        len = 16384;
-
-    if (len < (SECONDS*SYSTEM_FREQ*2)-pos) {
-        // Normal
-        memcpy(data,t+pos,len);
-        pos+=len;
-        return len;
-    } else {
-        // Whats left and reset to start
-        qint64 left = (SECONDS*SYSTEM_FREQ*2)-pos;
-        memcpy(data,t+pos,left);
-        pos=0;
-        return left;
-    }
+    return total;
 }
 
 qint64 Generator::writeData(const char *data, qint64 len)
@@ -131,6 +141,11 @@ qint64 Generator::writeData(const char *data, qint64 len)
     Q_UNUSED(len);
 
     return 0;
+}
+
+qint64 Generator::bytesAvailable() const
+{
+    return buffer.size() + QIODevice::bytesAvailable();
 }
 
 AudioTest::AudioTest()
@@ -160,14 +175,10 @@ AudioTest::AudioTest()
 
     buffer = new char[BUFFER_SIZE];
 
-    gen = new Generator(this);
-
     pullMode = true;
 
     timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),SLOT(writeMore()));
-
-    gen->start();
 
     settings.setFrequency(SYSTEM_FREQ);
     settings.setChannels(1);
@@ -182,13 +193,8 @@ AudioTest::AudioTest()
         settings = info.nearestFormat(settings);
     }
 
-    if(settings.sampleSize() != 16) {
-        qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
-        button->setDisabled(true);
-        button2->setDisabled(true);
-        audioOutput = 0;
-        return;
-    }
+    gen = new Generator(settings, SECONDS*1000000, FREQ, this);
+    gen->start();
 
     audioOutput = new QAudioOutput(settings,this);
     connect(audioOutput,SIGNAL(notify()),SLOT(status()));

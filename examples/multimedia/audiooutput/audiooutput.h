@@ -49,6 +49,7 @@
 #include <QTimer>
 #include <QPushButton>
 #include <QComboBox>
+#include <QByteArray>
 
 #include <QAudioOutput>
 
@@ -56,27 +57,22 @@ class Generator : public QIODevice
 {
     Q_OBJECT
 public:
-    Generator(QObject *parent);
+    Generator(const QAudioFormat &format, qint64 durationUs, int frequency, QObject *parent);
     ~Generator();
 
     void start();
     void stop();
-
-    char *t;
-    int  len;
-    int  pos;
-    int  total;
-    char *buffer;
-    bool finished;
-    int  chunk_size;
 
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
     qint64 bytesAvailable() const;
 
 private:
-    int putShort(char *t, unsigned int value);
-    int fillData(char *start, int frequency, int seconds);
+    void generateData(const QAudioFormat &format, qint64 durationUs, int frequency);
+
+private:
+    qint64 pos;
+    QByteArray buffer;
 };
 
 class AudioTest : public QMainWindow
@@ -86,6 +82,7 @@ public:
     AudioTest();
     ~AudioTest();
 
+private:
     QAudioDeviceInfo  device;
     Generator*        gen;
     QAudioOutput*     audioOutput;
