@@ -51,7 +51,13 @@
 
 #ifdef Q_OS_SYMBIAN
 #define SRCDIR "c:/data/qsharedmemorytemp/"
+#define LACKEYDIR SRCDIR "lackey"
+#elif Q_OS_WINCE
+#define LACKEYDIR SRCDIR "lackey"
+#else
+#define LACKEYDIR SRCDIR "../lackey"
 #endif
+
 Q_DECLARE_METATYPE(QSharedMemory::SharedMemoryError)
 Q_DECLARE_METATYPE(QSharedMemory::AccessMode)
 
@@ -411,10 +417,10 @@ void tst_QSharedMemory::readOnly()
 #if defined (Q_OS_SYMBIAN)
     QSKIP("Readonly shared memory is not supported in symbian", SkipAll);
 #endif
-    QString program = "./lackey/lackey";
+    QString program = LACKEYDIR "/lackey";
     QStringList arguments;
     rememberKey("readonly_segfault");
-    arguments << SRCDIR "lackey/scripts/readonly_segfault.js";
+    arguments << LACKEYDIR "/scripts/readonly_segfault.js";
 
     // ### on windows disable the popup somehow
     QProcess p;
@@ -727,28 +733,20 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 
     rememberKey("market");
 
-#ifndef Q_OS_WINCE
-    QStringList arguments = QStringList() << SRCDIR "lackey/scripts/producer.js";
-#else
-    QStringList arguments = QStringList() << QFileInfo(SRCDIR "lackey/scripts/producer.js").absoluteFilePath();
-#endif
+    QStringList arguments = QStringList() << LACKEYDIR "/scripts/producer.js";
     QProcess producer;
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
-    producer.start( "./lackey/lackey", arguments);
+    producer.start( LACKEYDIR "/lackey", arguments);
     producer.waitForStarted();
     QVERIFY(producer.error() != QProcess::FailedToStart);
 
     QList<QProcess*> consumers;
     unsigned int failedProcesses = 0;
     for (int i = 0; i < processes; ++i) {
-#ifndef Q_OS_WINCE
-        QStringList arguments = QStringList() << SRCDIR  "lackey/scripts/consumer.js";
-#else
-        QStringList arguments = QStringList() << QFileInfo(SRCDIR "lackey/scripts/consumer.js").absoluteFilePath();
-#endif
+        QStringList arguments = QStringList() << LACKEYDIR  "/scripts/consumer.js";
         QProcess *p = new QProcess;
         p->setProcessChannelMode(QProcess::ForwardedChannels);
-        p->start("./lackey/lackey", arguments);
+        p->start(LACKEYDIR "/lackey", arguments);
 
         if (p->waitForStarted(2000))
             consumers.append(p);

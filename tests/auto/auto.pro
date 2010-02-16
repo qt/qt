@@ -445,17 +445,16 @@ SUBDIRS += \
            qplugin \
            qpluginloader \
            qscrollbar \
-           qsharedmemory \
            qsidebar \
            qsizegrip \
            qsqldriver \
-           qsystemsemaphore \
            qtconcurrentfilter \
            qtconcurrentiteratekernel \
            qtconcurrentmap \
            qtconcurrentrun \
            qtconcurrentthreadengine \
            qthreadpool \
+           qtipc \
            qtokenautomaton \
            qtouchevent \
            qwidget_window \
