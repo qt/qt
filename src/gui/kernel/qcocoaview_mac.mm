@@ -828,6 +828,7 @@ extern "C" {
         deltaZ = qBound(-120, int([theEvent deltaZ] * 10000), 120);
     }
 
+#ifndef QT_NO_WHEELEVENT
     if (deltaX != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaX, buttons, keyMods, Qt::Horizontal);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
@@ -868,6 +869,8 @@ extern "C" {
             wheelOK = qwe2.isAccepted();
         }
     }
+#endif //QT_NO_WHEELEVENT
+
     if (!wheelOK) {
         return [super scrollWheel:theEvent];
     }
@@ -1404,7 +1407,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
     // setup the data
     QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacPasteboardMime::MIME_DND);
-    dragPrivate()->data->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray());
+    dragPrivate()->data->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
     dragBoard.setMimeData(dragPrivate()->data);
 
     // create the image

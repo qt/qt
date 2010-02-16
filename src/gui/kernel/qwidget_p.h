@@ -173,6 +173,8 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
+#elif defined(Q_OS_SYMBIAN)
+    uint inExpose : 1; // Prevents drawing recursion
 #endif
 };
 
@@ -229,7 +231,6 @@ struct QWExtra {
 #endif
 #elif defined(Q_OS_SYMBIAN) // <----------------------------------------------------- Symbian
     uint activated : 1; // RWindowBase::Activated has been called
-    uint inExpose : 1; // Prevents drawing recursion
 
     /**
      * Defines the behaviour of QSymbianControl::Draw.

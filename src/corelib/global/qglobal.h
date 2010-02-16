@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.6.2"
+#define QT_VERSION_STR   "4.6.3"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040602
+#define QT_VERSION 0x040603
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -1674,10 +1674,7 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #endif
 
 Q_CORE_EXPORT void qt_check_pointer(const char *, int);
-
-#ifndef QT_NO_EXCEPTIONS
 Q_CORE_EXPORT void qBadAlloc();
-#endif
 
 #ifdef QT_NO_EXCEPTIONS
 #  if defined(QT_NO_DEBUG)

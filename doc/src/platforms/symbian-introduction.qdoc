@@ -127,10 +127,13 @@
     \row \o \c run           \o Run the application on the emulator.
     \row \o \c runonphone    \o Run the application on a device.
     \row \o \c sis           \o Create signed \c .sis file for project.
-    \row \o \c installer_sis \o Create signed smart installer \c .sis file for project.
+    \row \o \c installer_sis \o Create signed \l{Smart Installer}{smart installer}
+                                \c .sis file for project.
                                 Smart installer will attempt to download
                                 missing dependencies in addition to
                                 just installing the application.
+    \row \o \c stub_sis      \o Create a stub sis to allow upgradability of projects
+                                that are deployed in ROM
     \endtable
 
     The following lines perform a debug build for the emulator
@@ -140,6 +143,14 @@
 
     To work on your project in Carbide, simply import the \c .pro file
     by right clicking on the project explorer and executing "Import...".
+
+    \section2 Smart Installer
+
+    The Smart Installer makes sure that deployed applications have all the Qt dependencies
+    they need to run on a device.
+
+    Download the latest release of the Smart Installer from \l{http://get.qt.nokia.com/nokiasmartinstaller/},
+    and install it on top of the Qt package.
 
     \section1 Installing your own applications
 

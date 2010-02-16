@@ -125,7 +125,7 @@
     necessary for drawing. Thanks to QStyleOption, it is possible to make
     QStyle draw widgets without linking in any code for the widget. This
     makes it possible to use \l{QStyle}'s draw functions on any paint
-    device. Ie you can draw a combobox on any widget, not just on a
+    device, i.e., you can draw a combobox on any widget, not just on a
     QComboBox.
 
     The widget is passed as the last argument in case the style needs

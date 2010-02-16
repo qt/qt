@@ -54,9 +54,10 @@ QT_BEGIN_NAMESPACE
 static QEglContext * volatile currentGLContext = 0;
 static QEglContext * volatile currentVGContext = 0;
 
+EGLDisplay QEglContext::dpy = EGL_NO_DISPLAY;
+
 QEglContext::QEglContext()
     : apiType(QEgl::OpenGL)
-    , dpy(EGL_NO_DISPLAY)
     , ctx(EGL_NO_CONTEXT)
     , cfg(0)
     , currentSurface(EGL_NO_SURFACE)
@@ -68,7 +69,7 @@ QEglContext::QEglContext()
 
 QEglContext::~QEglContext()
 {
-    destroy();
+    destroyContext();
 
     if (currentGLContext == this)
         currentGLContext = 0;
@@ -86,14 +87,6 @@ bool QEglContext::isCurrent() const
     return current;
 }
 
-// Open the EGL display associated with "device".
-bool QEglContext::openDisplay(QPaintDevice *device)
-{
-    if (dpy == EGL_NO_DISPLAY)
-        dpy = defaultDisplay(device);
-    return (dpy != EGL_NO_DISPLAY);
-}
-
 // Choose a configuration that matches "properties".
 bool QEglContext::chooseConfig
         (const QEglProperties& properties, QEgl::PixelFormatMatch match)
@@ -102,7 +95,7 @@ bool QEglContext::chooseConfig
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
-        if (!eglChooseConfig(dpy, props.properties(), 0, 0, &matching) || !matching)
+        if (!eglChooseConfig(display(), props.properties(), 0, 0, &matching) || !matching)
             continue;
 
         // If we want the best pixel format, then return the first
@@ -179,7 +172,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (shareContext && shareContext->ctx == EGL_NO_CONTEXT)
         shareContext = 0;
     if (shareContext) {
-        ctx = eglCreateContext(dpy, cfg, shareContext->ctx, contextProps.properties());
+        ctx = eglCreateContext(display(), cfg, shareContext->ctx, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
             qWarning() << "QEglContext::createContext(): Could not share context:" << errorString(eglGetError());
             shareContext = 0;
@@ -209,7 +202,7 @@ void QEglContext::destroySurface(EGLSurface surface)
 }
 
 // Destroy the context.  Note: this does not destroy the surface.
-void QEglContext::destroy()
+void QEglContext::destroyContext()
 {
     if (ctx != EGL_NO_CONTEXT && ownsContext)
         eglDestroyContext(dpy, ctx);
@@ -248,7 +241,7 @@ bool QEglContext::makeCurrent(EGLSurface surface)
         eglBindAPI(EGL_OPENVG_API);
 #endif
 
-    bool ok = eglMakeCurrent(dpy, surface, surface, ctx);
+    bool ok = eglMakeCurrent(display(), surface, surface, ctx);
     if (!ok)
         qWarning() << "QEglContext::makeCurrent():" << errorString(eglGetError());
     return ok;
@@ -277,7 +270,7 @@ bool QEglContext::doneCurrent()
         eglBindAPI(EGL_OPENVG_API);
 #endif
 
-    bool ok = eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    bool ok = eglMakeCurrent(display(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
         qWarning() << "QEglContext::doneCurrent():" << errorString(eglGetError());
     return ok;
@@ -299,7 +292,7 @@ bool QEglContext::swapBuffers(EGLSurface surface)
     if(ctx == EGL_NO_CONTEXT)
         return false;
 
-    bool ok = eglSwapBuffers(dpy, surface);
+    bool ok = eglSwapBuffers(display(), surface);
     if (!ok)
         qWarning() << "QEglContext::swapBuffers():" << errorString(eglGetError());
     return ok;
@@ -338,7 +331,7 @@ void QEglContext::waitClient()
 // Query the value of a configuration attribute.
 bool QEglContext::configAttrib(int name, EGLint *value) const
 {
-    return eglGetConfigAttrib(dpy, cfg, name, value);
+    return eglGetConfigAttrib(display(), cfg, name, value);
 }
 
 // Retrieve all of the properties on "cfg".  If zero, return
@@ -357,26 +350,37 @@ QEglProperties QEglContext::configProperties(EGLConfig cfg) const
     return props;
 }
 
-// Initialize and return the default display.
-EGLDisplay QEglContext::defaultDisplay(QPaintDevice *device)
+EGLDisplay QEglContext::display()
 {
-    static EGLDisplay dpy = EGL_NO_DISPLAY;
-    if (dpy == EGL_NO_DISPLAY) {
-        dpy = getDisplay(device);
+    static bool openedDisplay = false;
+
+    if (!openedDisplay) {
+        dpy = eglGetDisplay(nativeDisplay());
+        openedDisplay = true;
         if (dpy == EGL_NO_DISPLAY) {
-            qWarning() << "QEglContext::defaultDisplay(): Cannot open EGL display";
+            qWarning("QEglContext::display(): Falling back to EGL_DEFAULT_DISPLAY");
+            dpy = eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
+        }
+        if (dpy == EGL_NO_DISPLAY) {
+            qWarning("QEglContext::display(): Can't even open the default display");
             return EGL_NO_DISPLAY;
         }
+
         if (!eglInitialize(dpy, NULL, NULL)) {
-            qWarning() << "QEglContext::defaultDisplay(): Cannot initialize EGL display:" << errorString(eglGetError());
+            qWarning() << "QEglContext::display(): Cannot initialize EGL display:" << errorString(eglGetError());
             return EGL_NO_DISPLAY;
         }
-#ifdef EGL_OPENGL_ES_API
-        eglBindAPI(EGL_OPENGL_ES_API);
-#endif
     }
+
     return dpy;
 }
+
+#if !defined(Q_WS_X11) && !defined(Q_WS_WINCE) // WinCE & X11 implement this properly
+EGLNativeDisplayType QEglContext::nativeDisplay()
+{
+    return EGL_DEFAULT_DISPLAY;
+}
+#endif
 
 // Return the error string associated with a specific code.
 QString QEglContext::errorString(EGLint code)
@@ -410,7 +414,7 @@ void QEglContext::dumpAllConfigs()
 {
     QEglProperties props;
     EGLint count = 0;
-    if (!eglGetConfigs(dpy, 0, 0, &count) || count < 1)
+    if (!eglGetConfigs(display(), 0, 0, &count) || count < 1)
         return;
     EGLConfig *configs = new EGLConfig [count];
     eglGetConfigs(dpy, configs, count, &count);
@@ -423,7 +427,7 @@ void QEglContext::dumpAllConfigs()
 
 QString QEglContext::extensions()
 {
-    const char* exts = eglQueryString(QEglContext::defaultDisplay(0), EGL_EXTENSIONS);
+    const char* exts = eglQueryString(QEglContext::display(), EGL_EXTENSIONS);
     return QString(QLatin1String(exts));
 }
 
@@ -431,7 +435,7 @@ bool QEglContext::hasExtension(const char* extensionName)
 {
     QList<QByteArray> extensions =
         QByteArray(reinterpret_cast<const char *>
-            (eglQueryString(QEglContext::defaultDisplay(0), EGL_EXTENSIONS))).split(' ');
+            (eglQueryString(QEglContext::display(), EGL_EXTENSIONS))).split(' ');
     return extensions.contains(extensionName);
 }
 

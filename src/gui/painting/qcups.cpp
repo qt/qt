@@ -342,7 +342,9 @@ bool QCUPSSupport::printerHasPPD(const char *printerName)
 {
     if (!isAvailable())
         return false;
-    return _cupsGetPPD(printerName) != 0;
+    const char *ppdFile = _cupsGetPPD(printerName);
+    unlink(ppdFile);
+    return (ppdFile != 0);
 }
 
 QString QCUPSSupport::unicodeString(const char *s)
