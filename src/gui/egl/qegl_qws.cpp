@@ -59,9 +59,10 @@ QT_BEGIN_NAMESPACE
 // We don't have QGLScreen to create EGL surfaces for us,
 // so surface creation needs to be done in QtOpenGL or
 // QtOpenVG for Qt/Embedded.
-EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)
 {
     Q_UNUSED(device);
+    Q_UNUSED(cfg);
     Q_UNUSED(properties);
     return EGL_NO_SURFACE;
 }

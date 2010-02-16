@@ -89,10 +89,10 @@ bool QEglContext::isCurrent() const
 }
 
 // Choose a configuration that matches "properties".
-bool QEglContext::chooseConfig
-        (const QEglProperties& properties, QEgl::PixelFormatMatch match)
+EGLConfig QEgl::chooseConfig(const QEglProperties* properties, QEgl::PixelFormatMatch match)
 {
-    QEglProperties props(properties);
+    QEglProperties props(*properties);
+    EGLConfig cfg = QEGL_NO_CONFIG;
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
@@ -106,7 +106,7 @@ bool QEglContext::chooseConfig
             eglChooseConfig(display(), props.properties(), &cfg, 1, &matching);
             if (matching < 1)
                 continue;
-            return true;
+            return cfg;
         }
 
         // Fetch all of the matching configurations and find the
@@ -127,7 +127,7 @@ bool QEglContext::chooseConfig
                      alpha == props.value(EGL_ALPHA_SIZE))) {
                 cfg = configs[index];
                 delete [] configs;
-                return true;
+                return cfg;
             }
         }
         delete [] configs;
@@ -146,8 +146,20 @@ bool QEglContext::chooseConfig
         qWarning() << "Available:";
         QEgl::dumpAllConfigs();
     }
-    return false;
+    return QEGL_NO_CONFIG;
 }
+
+bool QEglContext::chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match)
+{
+    cfg = QEgl::chooseConfig(&properties, match);
+    return cfg != QEGL_NO_CONFIG;
+}
+
+EGLSurface QEglContext::createSurface(QPaintDevice* device, const QEglProperties *properties)
+{
+    return QEgl::createSurface(device, cfg, properties);
+}
+
 
 // Create the EGLContext.
 bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties *properties)

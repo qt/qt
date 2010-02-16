@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)
 {
     // Create the native drawable for the paint device.
     int devType = device->devType();

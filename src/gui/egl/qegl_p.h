@@ -93,8 +93,11 @@ typedef NativeDisplayType EGLNativeDisplayType;
 
 QT_END_INCLUDE_NAMESPACE
 
+#include <QtGui/qpaintdevice.h>
 
 QT_BEGIN_NAMESPACE
+
+#define QEGL_NO_CONFIG ((EGLConfig)-1)
 
 class QEglProperties;
 
@@ -111,8 +114,8 @@ namespace QEgl {
         BestPixelFormat
     };
 
-//    EGLConfig  chooseConfig(const QEglProperties* properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
-//    EGLSurface createSurface(QPaintDevice *device, EGLConfig config, const QEglProperties *properties = 0);
+    Q_GUI_EXPORT EGLConfig  chooseConfig(const QEglProperties* configAttribs, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
+    Q_GUI_EXPORT EGLSurface createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *surfaceAttribs = 0);
 
     Q_GUI_EXPORT void dumpAllConfigs();
 
