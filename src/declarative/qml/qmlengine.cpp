@@ -383,6 +383,10 @@ QmlEngine::~QmlEngine()
         QmlEngineDebugServer::remEngine(this);
 }
 
+/*! \fn void QmlEngine::quit()
+  This signal is emitted when the QmlEngine quits.
+ */
+
 /*!
   Clears the engine's internal component cache.
 
@@ -999,7 +1003,7 @@ QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e
 void QmlEnginePrivate::sendQuit ()
 {
     Q_Q(QmlEngine);
-    emit q->quit ();
+    emit q->quit();
 }
 
 QScriptValue QmlEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)

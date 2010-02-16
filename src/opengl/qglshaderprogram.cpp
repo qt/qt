@@ -3082,7 +3082,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
 
     \since 4.7
 
-    \sa setGeometryShaderOutputVertexCount
+    \sa setGeometryOutputVertexCount()
 */
 int QGLShaderProgram::maxGeometryOutputVertices() const
 {
@@ -3091,11 +3091,9 @@ int QGLShaderProgram::maxGeometryOutputVertices() const
     return n;
 }
 
-
-
 /*!
     Sets the maximum number of vertices the current geometry shader
-    program will produce, if active.
+    program will produce, if active, to \a count.
 
     \since 4.7
 
@@ -3129,7 +3127,7 @@ int QGLShaderProgram::geometryOutputVertexCount() const
 
 
 /*!
-    Sets the output type from the geometry shader, if active.
+    Sets the input type from \a inputType.
 
     This parameter takes effect the next time the program is linked.
 */
@@ -3154,7 +3152,8 @@ GLenum QGLShaderProgram::geometryInputType() const
 
 
 /*!
-    Sets the output type from the geometry shader, if active.
+    Sets the output type from the geometry shader, if active, to
+    \a outputType.
 
     This parameter takes effect the next time the program is linked.
 

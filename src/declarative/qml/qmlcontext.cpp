@@ -428,7 +428,7 @@ void QmlContextPrivate::setIdPropertyData(QmlIntegerCache *data)
 }
 
 /*!
-    Set a the \a value of the \a name property on this context.
+    Set the \a value of the \a name property on this context.
 
     QmlContext does \bold not take ownership of \a value.
 */
@@ -452,6 +452,10 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
     }
 }
 
+/*!
+  Returns the value of the \a name property for this context
+  as a QVariant.
+ */
 QVariant QmlContext::contextProperty(const QString &name) const
 {
     Q_D(const QmlContext);

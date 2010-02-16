@@ -62,6 +62,10 @@ QT_BEGIN_NAMESPACE
     Note: the create() method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
 */
+
+/*!
+  The destructor is empty.
+ */
 QmlNetworkAccessManagerFactory::~QmlNetworkAccessManagerFactory()
 {
 }

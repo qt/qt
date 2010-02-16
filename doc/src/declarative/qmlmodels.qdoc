@@ -198,6 +198,10 @@ QAbstractItemModel provides the roles set via the QAbstractItemModel::setRoleNam
 QStringList provides the contents of the list via the \e modelData role:
 
 \table
+\header
+\o 
+\o 
+\row
 \o
 \code
 // main.cpp
@@ -228,7 +232,7 @@ ListView {
 \endcode
 \endtable
 
-Note: There is no way for the view to know that the contents of a QStringList
+\note There is no way for the view to know that the contents of a QStringList
 have changed.  If the QStringList is changed, it will be necessary to reset
 the model by calling QmlContext::setContextProperty() again.
 
