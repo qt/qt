@@ -624,7 +624,7 @@ QNetworkManagerSettings::QNetworkManagerSettings(const QString &settingsService,
                                                 dbusConnection);
     if (!d->connectionInterface->isValid()) {
         d->valid = false;
-        qWarning() << "Could not find NetworkManagerSettings";
+        //qWarning() << "Could not find NetworkManagerSettings";
         return;
     }
     d->valid = true;
@@ -689,7 +689,7 @@ QNetworkManagerSettingsConnection::QNetworkManagerSettingsConnection(const QStri
                                                 NM_DBUS_IFACE_SETTINGS_CONNECTION,
                                                 dbusConnection, parent);
     if (!d->connectionInterface->isValid()) {
-        qWarning() << "Could not find NetworkManagerSettingsConnection";
+        //qWarning() << "Could not find NetworkManagerSettingsConnection";
         d->valid = false;
         return;
     }
@@ -921,7 +921,7 @@ QNetworkManagerConnectionActive::QNetworkManagerConnectionActive( const QString 
                                                 dbusConnection, parent);
     if (!d->connectionInterface->isValid()) {
         d->valid = false;
-        qWarning() << "Could not find NetworkManagerSettingsConnection";
+        //qWarning() << "Could not find NetworkManagerSettingsConnection";
         return;
     }
     d->valid = true;
@@ -1022,7 +1022,7 @@ QNetworkManagerIp4Config::QNetworkManagerIp4Config( const QString &deviceObjectP
                                                 dbusConnection, parent);
     if (!d->connectionInterface->isValid()) {
         d->valid = false;
-        qWarning() << "Could not find NetworkManagerIp4Config";
+        //qWarning() << "Could not find NetworkManagerIp4Config";
         return;
     }
     d->valid = true;
