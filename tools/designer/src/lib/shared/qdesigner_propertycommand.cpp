@@ -926,8 +926,9 @@ bool PropertyListCommand::PropertyDescription::equals(const PropertyDescription 
 
 
 // ---- PropertyListCommand
-PropertyListCommand::PropertyListCommand(QDesignerFormWindowInterface *formWindow) :
-    QDesignerFormWindowCommand(QString(), formWindow)
+PropertyListCommand::PropertyListCommand(QDesignerFormWindowInterface *formWindow,
+                                         QUndoCommand *parent) :
+    QDesignerFormWindowCommand(QString(), formWindow, parent)
 {
 }
 
@@ -966,10 +967,17 @@ bool PropertyListCommand::add(QObject *object, const QString &propertyName)
         if (!match || m_propertyDescription.m_specialProperty == SP_ObjectName)
             return false;
     }
-    m_propertyHelperList.push_back(PropertyHelper(object, m_propertyDescription.m_specialProperty, sheet, index));
+
+    const PropertyHelperPtr ph(createPropertyHelper(object, m_propertyDescription.m_specialProperty, sheet, index));
+    m_propertyHelperList.push_back(ph);
     return true;
 }
 
+PropertyHelper *PropertyListCommand::createPropertyHelper(QObject *object, SpecialProperty sp,
+                                                          QDesignerPropertySheetExtension *sheet, int sheetIndex) const
+{
+    return new PropertyHelper(object, sp, sheet, sheetIndex);
+}
 
 // Init from a list and make sure referenceObject is added first to obtain the right property group
 bool PropertyListCommand::initList(const ObjectList &list, const QString &apropertyName, QObject *referenceObject)
@@ -993,19 +1001,19 @@ bool PropertyListCommand::initList(const ObjectList &list, const QString &aprope
 QObject* PropertyListCommand::object(int index) const
 {
     Q_ASSERT(index < m_propertyHelperList.size());
-    return m_propertyHelperList[index].object();
+    return m_propertyHelperList.at(index)->object();
 }
 
 QVariant PropertyListCommand::oldValue(int index) const
 {
     Q_ASSERT(index < m_propertyHelperList.size());
-    return m_propertyHelperList[index].oldValue();
+    return m_propertyHelperList.at(index)->oldValue();
 }
 
 void PropertyListCommand::setOldValue(const QVariant &oldValue, int index)
 {
     Q_ASSERT(index < m_propertyHelperList.size());
-    m_propertyHelperList[index].setOldValue(oldValue);
+    m_propertyHelperList.at(index)->setOldValue(oldValue);
 }
 // ----- SetValueFunction: Set a new value when applied to a PropertyHelper.
 class SetValueFunction {
@@ -1065,9 +1073,10 @@ template <class PropertyListIterator, class Function>
     bool updatedPropertyEditor = false;
 
     for (PropertyListIterator it = begin; it != end; ++it) {
-        if (QObject* object = it->object()) { // Might have been deleted in the meantime
-            const PropertyHelper::Value newValue = function(*it);
-            updateMask |= it->updateMask();
+        PropertyHelper *ph = it->data();
+        if (QObject* object = ph->object()) { // Might have been deleted in the meantime
+            const PropertyHelper::Value newValue = function( *ph );
+            updateMask |= ph->updateMask();
             // Update property editor if it is the current object
             if (!updatedPropertyEditor && propertyEditor && object == propertyEditor->object()) {
                 propertyEditor->setPropertyValue(propertyName, newValue.first,  newValue.second);
@@ -1084,9 +1093,11 @@ template <class PropertyListIterator, class Function>
 unsigned PropertyListCommand::setValue(QVariant value, bool changed, unsigned subPropertyMask)
 {
     if(debugPropertyCommands)
-        qDebug() << "PropertyListCommand::setValue(" << value <<  changed << subPropertyMask << ')';
+        qDebug() << "PropertyListCommand::setValue(" << value
+                 << changed << subPropertyMask << ')';
     return changePropertyList(formWindow()->core(),
-                              m_propertyDescription.m_propertyName, m_propertyHelperList.begin(), m_propertyHelperList.end(),
+                              m_propertyDescription.m_propertyName,
+                              m_propertyHelperList.begin(), m_propertyHelperList.end(),
                               SetValueFunction(formWindow(), PropertyHelper::Value(value, changed), subPropertyMask));
 }
 
@@ -1146,15 +1157,16 @@ bool PropertyListCommand::canMergeLists(const PropertyHelperList& other) const
     if (m_propertyHelperList.size() !=  other.size())
         return false;
     for (int i = 0; i < m_propertyHelperList.size(); i++) {
-        if (!m_propertyHelperList[i].canMerge(other[i]))
+        if (!m_propertyHelperList.at(i)->canMerge(*other.at(i)))
             return false;
     }
     return true;
 }
 
 // ---- SetPropertyCommand ----
-SetPropertyCommand::SetPropertyCommand(QDesignerFormWindowInterface *formWindow)
-    :  PropertyListCommand(formWindow),
+SetPropertyCommand::SetPropertyCommand(QDesignerFormWindowInterface *formWindow,
+                                       QUndoCommand *parent)
+    :  PropertyListCommand(formWindow, parent),
        m_subPropertyMask(SubPropertyAll)
 {
 }
@@ -1210,7 +1222,7 @@ unsigned SetPropertyCommand::subPropertyMask(const QVariant &newValue, QObject *
 void SetPropertyCommand::setDescription()
 {
     if (propertyHelperList().size() == 1) {
-        setText(QApplication::translate("Command", "Changed '%1' of '%2'").arg(propertyName()).arg(propertyHelperList()[0].object()->objectName()));
+        setText(QApplication::translate("Command", "Changed '%1' of '%2'").arg(propertyName()).arg(propertyHelperList().at(0)->object()->objectName()));
     } else {
         int count = propertyHelperList().size();
         setText(QApplication::translate("Command", "Changed '%1' of %n objects", "", QCoreApplication::UnicodeUTF8, count).arg(propertyName()));
@@ -1231,6 +1243,11 @@ int SetPropertyCommand::id() const
     return 1976;
 }
 
+QVariant SetPropertyCommand::mergeValue(const QVariant &newValue)
+{
+    return newValue;
+}
+
 bool SetPropertyCommand::mergeWith(const QUndoCommand *other)
 {
     if (id() != other->id() || !formWindow()->isDirty())
@@ -1248,7 +1265,10 @@ bool SetPropertyCommand::mergeWith(const QUndoCommand *other)
         !canMergeLists(cmd->propertyHelperList()))
         return false;
 
-    m_newValue = cmd->newValue();
+    const QVariant newValue = mergeValue(cmd->newValue());
+    if (!newValue.isValid())
+        return false;
+    m_newValue = newValue;
     m_subPropertyMask |= cmd->m_subPropertyMask;
     if(debugPropertyCommands)
         qDebug() << "SetPropertyCommand::mergeWith() succeeded " << propertyName();
@@ -1289,7 +1309,7 @@ bool ResetPropertyCommand::init(const ObjectList &list, const QString &aproperty
 void ResetPropertyCommand::setDescription()
 {
     if (propertyHelperList().size() == 1) {
-        setText(QApplication::translate("Command", "Reset '%1' of '%2'").arg(propertyName()).arg(propertyHelperList()[0].object()->objectName()));
+        setText(QApplication::translate("Command", "Reset '%1' of '%2'").arg(propertyName()).arg(propertyHelperList().at(0)->object()->objectName()));
     } else {
         int count = propertyHelperList().size();
         setText(QApplication::translate("Command", "Reset '%1' of %n objects", "", QCoreApplication::UnicodeUTF8, count).arg(propertyName()));
