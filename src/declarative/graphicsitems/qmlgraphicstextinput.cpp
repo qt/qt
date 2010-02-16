@@ -646,10 +646,12 @@ void QmlGraphicsTextInput::focusChanged(bool hasFocus)
 void QmlGraphicsTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QmlGraphicsTextInput);
-    if((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
+    if(((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()
-                && ev->key() == Qt::Key_Right)){
+                && ev->key() == Qt::Key_Right))
+            && (d->lastSelectionStart == d->lastSelectionEnd)){
         //ignore when moving off the end
+        //unless there is a selection, because then moving will do something (deselect)
         ev->ignore();
     }else{
         d->control->processKeyEvent(ev);
