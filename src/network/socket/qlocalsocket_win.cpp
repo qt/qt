@@ -537,7 +537,10 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 bool QLocalSocket::isValid() const
 {
     Q_D(const QLocalSocket);
-    return (d->handle != INVALID_HANDLE_VALUE);
+    if (d->handle == INVALID_HANDLE_VALUE)
+        return false;
+
+    return PeekNamedPipe(d->handle, NULL, 0, NULL, NULL, NULL);
 }
 
 bool QLocalSocket::waitForReadyRead(int msecs)
