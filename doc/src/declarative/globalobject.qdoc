@@ -71,7 +71,7 @@ when the property has one of the following types:
 \o Vector3D
 \endlist
 
-There are also string based constructors for these types, see \l{basicqmltypes.html}{Qml Types}.
+There are also string based constructors for these types, see \l{qmlbasictypes.html}{Qml Types}.
 
 \section3 Qt.rgba(qreal red, qreal green, qreal blue, qreal alpha)
 This function returns a Color with the specified \c red, \c green, \c blue and \c alpha components. All components should be in the range 0-1 inclusive.

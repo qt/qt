@@ -41,7 +41,7 @@
 
 /*!
 \page qmldynamicobjects.html
-\title Dynamic Object Creation
+\title Dynamic Object Management
 
 QML has some support for dynamically loading and managing QML objects from
 within Javascript blocks. It is preferable to use the existing QML elements for
