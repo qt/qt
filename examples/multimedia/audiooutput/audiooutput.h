@@ -102,6 +102,11 @@ private:
     bool             m_pullMode;
     QByteArray       m_buffer;
 
+    static const QString PushModeLabel;
+    static const QString PullModeLabel;
+    static const QString SuspendLabel;
+    static const QString ResumeLabel;
+
 private slots:
     void status();
     void writeMore();

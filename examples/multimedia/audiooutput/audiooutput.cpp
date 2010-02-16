@@ -48,10 +48,16 @@
 #include <QtCore/qendian.h>
 #include "audiooutput.h"
 
-#define SECONDS     1
-#define FREQ        600
-#define SYSTEM_FREQ 44100
+const QString AudioTest::PushModeLabel(tr("Enable push mode"));
+const QString AudioTest::PullModeLabel(tr("Enable pull mode"));
+const QString AudioTest::SuspendLabel(tr("Suspend playback"));
+const QString AudioTest::ResumeLabel(tr("Resume playback"));
+
+const int DurationSeconds = 1;
+const int ToneFrequencyHz = 600;
+const int DataFrequencyHz = 44100;
 const int BufferSize      = 32768;
+
 
 Generator::Generator(const QAudioFormat &format,
                      qint64 durationUs,
@@ -175,12 +181,12 @@ void AudioTest::initializeWindow()
     layout->addWidget(m_deviceBox);
 
     m_modeButton = new QPushButton(this);
-    m_modeButton->setText(tr("Click for Push Mode"));
+    m_modeButton->setText(PushModeLabel);
     connect(m_modeButton,SIGNAL(clicked()),SLOT(toggle()));
     layout->addWidget(m_modeButton);
 
     m_suspendResumeButton = new QPushButton(this);
-    m_suspendResumeButton->setText(tr("Click To Suspend"));
+    m_suspendResumeButton->setText(SuspendLabel);
     connect(m_suspendResumeButton,SIGNAL(clicked()),SLOT(togglePlay()));
     layout->addWidget(m_suspendResumeButton);
 
@@ -198,7 +204,7 @@ void AudioTest::initializeAudio()
 
     m_pullMode = true;
 
-    m_format.setFrequency(SYSTEM_FREQ);
+    m_format.setFrequency(DataFrequencyHz);
     m_format.setChannels(1);
     m_format.setSampleSize(16);
     m_format.setCodec("audio/pcm");
@@ -211,7 +217,7 @@ void AudioTest::initializeAudio()
         m_format = info.nearestFormat(m_format);
     }
 
-    m_generator = new Generator(m_format, SECONDS*1000000, FREQ, this);
+    m_generator = new Generator(m_format, DurationSeconds*1000000, ToneFrequencyHz, this);
 
     createAudioOutput();
 }
@@ -277,17 +283,17 @@ void AudioTest::toggle()
     m_audioOutput->stop();
 
     if (m_pullMode) {
-        m_modeButton->setText("Click for Pull Mode");
+        m_modeButton->setText(PullModeLabel);
         m_output = m_audioOutput->start();
         m_pullMode = false;
         m_timer->start(20);
     } else {
-        m_modeButton->setText("Click for Push Mode");
+        m_modeButton->setText(PushModeLabel);
         m_pullMode = true;
         m_audioOutput->start(m_generator);
     }
 
-    m_suspendResumeButton->setText("Click To Suspend");
+    m_suspendResumeButton->setText(SuspendLabel);
 }
 
 void AudioTest::togglePlay()
@@ -296,15 +302,15 @@ void AudioTest::togglePlay()
     if (m_audioOutput->state() == QAudio::SuspendedState) {
         qWarning() << "status: Suspended, resume()";
         m_audioOutput->resume();
-        m_suspendResumeButton->setText("Click To Suspend");
+        m_suspendResumeButton->setText(SuspendLabel);
     } else if (m_audioOutput->state() == QAudio::ActiveState) {
         qWarning() << "status: Active, suspend()";
         m_audioOutput->suspend();
-        m_suspendResumeButton->setText("Click To Resume");
+        m_suspendResumeButton->setText(ResumeLabel);
     } else if (m_audioOutput->state() == QAudio::StoppedState) {
         qWarning() << "status: Stopped, resume()";
         m_audioOutput->resume();
-        m_suspendResumeButton->setText("Click To Suspend");
+        m_suspendResumeButton->setText(SuspendLabel);
     } else if (m_audioOutput->state() == QAudio::IdleState) {
         qWarning() << "status: IdleState";
     }
