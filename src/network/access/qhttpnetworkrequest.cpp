@@ -132,25 +132,32 @@ QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
 QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request, bool throughProxy)
 {
     QByteArray ba = request.d->methodName();
-    QByteArray uri = request.d->uri(throughProxy);
-    ba += ' ' + uri;
+    ba += ' ';
+    ba += request.d->uri(throughProxy);
 
-    QString majorVersion = QString::number(request.majorVersion());
-    QString minorVersion = QString::number(request.minorVersion());
-    ba += " HTTP/" + majorVersion.toLatin1() + '.' + minorVersion.toLatin1() + "\r\n";
+    ba += " HTTP/";
+    ba += QByteArray::number(request.majorVersion());
+    ba += '.';
+    ba += QByteArray::number(request.minorVersion());
+    ba += "\r\n";
 
     QList<QPair<QByteArray, QByteArray> > fields = request.header();
     QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
-    for (; it != fields.constEnd(); ++it)
-        ba += it->first + ": " + it->second + "\r\n";
+    for (; it != fields.constEnd(); ++it) {
+        ba += it->first;
+        ba += ": ";
+        ba += it->second;
+        ba += "\r\n";
+    }
     if (request.d->operation == QHttpNetworkRequest::Post) {
         // add content type, if not set in the request
         if (request.headerField("content-type").isEmpty())
             ba += "Content-Type: application/x-www-form-urlencoded\r\n";
         if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
             QByteArray query = request.d->url.encodedQuery();
-            ba += "Content-Length: "+ QByteArray::number(query.size()) + "\r\n";
-            ba += "\r\n";
+            ba += "Content-Length: ";
+            ba += QByteArray::number(query.size());
+            ba += "\r\n\r\n";
             ba += query;
         } else {
             ba += "\r\n";
