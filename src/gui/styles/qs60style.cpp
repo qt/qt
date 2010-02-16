@@ -289,6 +289,9 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_Editor:
         drawFrame(SF_FrameLineEdit, painter, rect, flags | SF_PointNorth);
         break;
+    case SE_DropArea:
+        drawPart(QS60StyleEnums::SP_QgnGrafOrgBgGrid, painter, rect, flags | SF_PointNorth);
+        break;
     default:
         break;
     }
@@ -844,15 +847,18 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
             break;
 
-        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
-        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
         case QS60StyleEnums::SP_QsnCpScrollBgBottom:
-        case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
         case QS60StyleEnums::SP_QsnCpScrollBgTop:
         case QS60StyleEnums::SP_QsnCpScrollHandleBottom:
-        case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
         case QS60StyleEnums::SP_QsnCpScrollHandleTop:
+        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+            result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
+            result.setWidth(pixelMetric(QStyle::PM_ScrollBarExtent));
+            break;
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
+        case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
             result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
             result.setWidth(pixelMetric(QStyle::PM_ScrollBarSliderMin));
             break;
@@ -2271,14 +2277,16 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QS60StyleEnums::SkinParts skinPart =
                         (option->state & State_Open) ? QS60StyleEnums::SP_QgnIndiHlColSuper : QS60StyleEnums::SP_QgnIndiHlExpSuper;
                 int minDimension = qMin(option->rect.width(), option->rect.height());
-                const int resizeValue = minDimension >> 1;
-                minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
                 QRect iconRect(option->rect.topLeft(), QSize(minDimension, minDimension));
-                int verticalMagic(0);
-                // magic values for positioning svg icon.
-                if (option->rect.width() <= option->rect.height())
-                    verticalMagic = 3;
-                iconRect.translate(3, verticalMagic - resizeValue);
+				const int magicTweak = 3;
+                int resizeValue = minDimension >> 1;
+                if (!QS60StylePrivate::isTouchSupported()) {
+                    minDimension += resizeValue; // Adjust the icon bigger because of empty space in svg icon.
+                    iconRect.setSize(QSize(minDimension, minDimension));
+                    const int verticalMagic = (option->rect.width() <= option->rect.height()) ? magicTweak : 0;
+                    resizeValue = verticalMagic - resizeValue;
+                }
+                iconRect.translate(magicTweak, resizeValue);
                 QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);
             }
         }
@@ -2302,7 +2310,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         break;
     case PE_PanelScrollAreaCorner:
         break;
-
+    case PE_IndicatorItemViewItemDrop:
+        if (QS60StylePrivate::isTouchSupported())
+            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_DropArea, painter, option->rect, flags);
+        else
+            commonStyleDraws = true;
+        break;
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
     case PE_IndicatorDockWidgetResizeHandle:
@@ -2323,7 +2336,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_TOOLBAR
 #ifndef QT_NO_COLUMNVIEW
     case PE_IndicatorColumnViewArrow:
-    case PE_IndicatorItemViewItemDrop:
 #endif //QT_NO_COLUMNVIEW
     case PE_FrameTabBarBase: // since tabs are in S60 always in navipane, let's use common style for tab base in Qt.
     default:
@@ -2480,6 +2492,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_FormLayoutWrapPolicy:
             retValue = QFormLayout::WrapLongRows;
+            break;
+        case SH_ScrollBar_ContextMenu:
+            retValue = false;
             break;
         default:
             retValue = QCommonStyle::styleHint(sh, opt, widget, hret);
