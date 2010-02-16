@@ -989,6 +989,40 @@ QString::QString(const QChar *unicode, int size)
     }
 }
 
+/*!
+    \since 4.7
+
+    Constructs a string initialized with the characters of the QChar array
+    \a unicode, which must be terminated with a 0.
+
+    QString makes a deep copy of the string data. The unicode data is copied as
+    is and the Byte Order Mark is preserved if present.
+*/
+QString::QString(const QChar *unicode)
+{
+     if (!unicode) {
+         d = &shared_null;
+         d->ref.ref();
+     } else {
+         int size = 0;
+         while (unicode[size] != 0)
+             ++size;
+         if (!size) {
+             d = &shared_empty;
+             d->ref.ref();
+         } else {
+             d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+             Q_CHECK_PTR(d);
+             d->ref = 1;
+             d->alloc = d->size = size;
+             d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+             d->data = d->array;
+             memcpy(d->array, unicode, size * sizeof(QChar));
+             d->array[size] = '\0';
+         }
+     }
+}
+
 
 /*!
     Constructs a string of the given \a size with every character set
@@ -3867,7 +3901,7 @@ QString QString::fromUtf8(const char *str, int size)
     host byte order is assumed.
 
     This function is comparatively slow.
-    Use QString(const ushort *, int) if possible.
+    Use QString(const ushort *, int) or QString(const ushort *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
