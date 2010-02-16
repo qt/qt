@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <QtGui/qgraphicsview.h>
 #include <QtGui/qpixmapcache.h>
+#include <QtGui/qdesktopwidget.h>
 
 #include "mainview.h"
 #include "dummydatagen.h"
@@ -324,8 +325,12 @@ void tst_GraphicsViewBenchmark::initTestCase()
 #if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
         mMainView->showFullScreen();
 #else
-        mMainView->resize(360, 640);
-        mMainView->show();
+        if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
+            mMainView->showFullScreen();
+        } else {
+            mMainView->resize(360, 640);
+            mMainView->show();
+        }
 #endif
     }
 
@@ -778,8 +783,12 @@ int main(int argc, char *argv[])
 #if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAEMO_5)
             view.showFullScreen();
 #else
-            view.resize(360, 640);
-            view.show();
+            if (QApplication::desktop()->width() < 360 || QApplication::desktop()->height() < 640) {
+                view.showFullScreen();
+            } else {
+                view.resize(360, 640);
+                view.show();
+            }
 #endif
         }
         returnValue = app.exec();
