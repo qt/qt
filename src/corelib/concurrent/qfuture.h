@@ -111,7 +111,7 @@ public:
     {
     public:
         typedef std::bidirectional_iterator_tag iterator_category;
-        typedef ptrdiff_t difference_type;
+        typedef qptrdiff difference_type;
         typedef T value_type;
         typedef const T *pointer;
         typedef const T &reference;
