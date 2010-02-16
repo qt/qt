@@ -75,7 +75,7 @@ It creates a new \c{<html>} element in the output and sets its \c{id}
 attribute to be the \c{id} attribute from an \c{<html>} element in the
 \c{other.html} file.
 
-\section1 Using Path Expressions To Match & Select Items
+\section1 Using Path Expressions To Match And Select Items
 
 In C++ and Java, we write nested \c{for} loops and recursive functions
 to traverse XML trees in search of elements of interest. In XQuery, we

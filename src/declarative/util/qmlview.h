@@ -90,7 +90,7 @@ Q_SIGNALS:
     void initialSize(QSize size);
     void sceneResized(QSize size);
     void errors(const QList<QmlError> &error);
-    void quit ();
+    void quit();
 
 private Q_SLOTS:
     void continueExecute();

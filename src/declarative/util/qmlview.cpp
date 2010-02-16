@@ -394,6 +394,10 @@ void QmlView::continueExecute()
   This signal is emitted when the qml loaded contains \a errors.
  */
 
+/*! \fn void QmlView::quit()
+  \internal
+ */
+
 /*!
   \internal
  */

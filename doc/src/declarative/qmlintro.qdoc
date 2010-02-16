@@ -168,7 +168,7 @@ Properties begin with a lowercase letter (with the exception of \l{Attached Prop
 
 \section2 Property types
 
-QML supports properties of many types (see \l{Common QML Types}). The basic types include int,
+QML supports properties of many types (see \l{QML Basic Types}). The basic types include int,
 real, bool, string, color, and lists.
 
 \code
