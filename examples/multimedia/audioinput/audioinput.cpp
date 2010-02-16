@@ -263,6 +263,8 @@ void InputTest::toggleMode()
         pullMode = true;
         audioInput->start(audioinfo);
     }
+
+    button2->setText("Click To Suspend");
 }
 
 void InputTest::toggleSuspend()
