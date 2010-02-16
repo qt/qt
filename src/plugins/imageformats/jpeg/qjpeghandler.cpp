@@ -403,7 +403,7 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
         QRect clip;
         if (clipRect.isEmpty()) {
             clip = imageRect;
-        } else if (cinfo.scale_denom == 1) {
+        } else if (cinfo.scale_denom == cinfo.scale_num) {
             clip = clipRect.intersected(imageRect);
         } else {
             // The scale factor was corrected above to ensure that
