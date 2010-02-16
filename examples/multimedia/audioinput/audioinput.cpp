@@ -53,7 +53,7 @@
 
 #include "audioinput.h"
 
-#define BUFFER_SIZE 4096
+const int BufferSize = 4096;
 
 AudioInfo::AudioInfo(const QAudioFormat &format, QObject *parent)
     :   QIODevice(parent)
@@ -199,11 +199,28 @@ void RenderArea::setLevel(qreal value)
 
 
 InputTest::InputTest()
+    :   m_canvas(0)
+    ,   m_modeButton(0)
+    ,   m_suspendResumeButton(0)
+    ,   m_deviceBox(0)
+    ,   m_audioInfo(0)
+    ,   m_audioInput(0)
+    ,   m_input(0)
+    ,   m_pullMode(false)
+    ,   m_buffer(BufferSize, 0)
 {
-    QWidget *window = new QWidget;
-    QVBoxLayout* layout = new QVBoxLayout;
+    initializeWindow();
+    initializeAudio();
+}
 
-    m_canvas = new RenderArea;
+InputTest::~InputTest() {}
+
+void InputTest::initializeWindow()
+{
+    QScopedPointer<QWidget> window(new QWidget);
+    QScopedPointer<QVBoxLayout> layout(new QVBoxLayout);
+
+    m_canvas = new RenderArea(this);
     layout->addWidget(m_canvas);
 
     m_deviceBox = new QComboBox(this);
@@ -224,12 +241,16 @@ InputTest::InputTest()
     connect(m_suspendResumeButton, SIGNAL(clicked()), SLOT(toggleSuspend()));
     layout->addWidget(m_suspendResumeButton);
 
-    window->setLayout(layout);
-    setCentralWidget(window);
-    window->show();
+    window->setLayout(layout.data());
+    layout.take(); // ownership transferred
 
-    m_buffer = new char[BUFFER_SIZE];
+    setCentralWidget(window.data());
+    QWidget *const windowPtr = window.take(); // ownership transferred
+    windowPtr->show();
+}
 
+void InputTest::initializeAudio()
+{
     m_pullMode = true;
 
     m_format.setFrequency(8000);
@@ -245,24 +266,20 @@ InputTest::InputTest()
         m_format = info.nearestFormat(m_format);
     }
 
-    if(m_format.sampleSize() != 16) {
-        qWarning()<<"audio device doesn't support 16 bit samples, example cannot run";
-        m_audioInput = 0;
-        m_modeButton->setDisabled(true);
-        m_suspendResumeButton->setDisabled(true);
-        return;
-    }
-
-    m_audioInput = new QAudioInput(m_format,this);
-    connect(m_audioInput, SIGNAL(notify()), SLOT(status()));
-    connect(m_audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
     m_audioInfo  = new AudioInfo(m_format, this);
     connect(m_audioInfo, SIGNAL(update()), SLOT(refreshDisplay()));
+
+    createAudioInput();
+}
+
+void InputTest::createAudioInput()
+{
+    m_audioInput = new QAudioInput(m_device, m_format, this);
+    connect(m_audioInput, SIGNAL(notify()), SLOT(status()));
+    connect(m_audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
     m_audioInfo->start();
     m_audioInput->start(m_audioInfo);
 }
-
-InputTest::~InputTest() {}
 
 void InputTest::status()
 {
@@ -276,9 +293,9 @@ void InputTest::readMore()
     qint64 len = m_audioInput->bytesReady();
     if(len > 4096)
         len = 4096;
-    qint64 l = m_input->read(m_buffer,len);
+    qint64 l = m_input->read(m_buffer.data(), len);
     if(l > 0) {
-        m_audioInfo->write(m_buffer,l);
+        m_audioInfo->write(m_buffer.constData(), l);
     }
 }
 
@@ -339,10 +356,6 @@ void InputTest::deviceChanged(int index)
     m_audioInput->disconnect(this);
     delete m_audioInput;
 
-    m_device = m_deviceBox->itemData(idx).value<QAudioDeviceInfo>();
-    m_audioInput = new QAudioInput(m_device, m_format, this);
-    connect(m_audioInput, SIGNAL(notify()), SLOT(status()));
-    connect(m_audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
-    m_audioInfo->start();
-    m_audioInput->start(m_audioInfo);
+    m_device = m_deviceBox->itemData(index).value<QAudioDeviceInfo>();
+    createAudioInput();
 }

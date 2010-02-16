@@ -45,6 +45,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QComboBox>
+#include <QByteArray>
 
 #include <qaudioinput.h>
 
@@ -97,6 +98,11 @@ public:
     InputTest();
     ~InputTest();
 
+private:
+    void initializeWindow();
+    void initializeAudio();
+    void createAudioInput();
+
 private slots:
     void refreshDisplay();
     void status();
@@ -107,19 +113,18 @@ private slots:
     void deviceChanged(int index);
 
 private:
+    // Owned by layout
+    RenderArea *m_canvas;
+    QPushButton *m_modeButton;
+    QPushButton *m_suspendResumeButton;
+    QComboBox *m_deviceBox;
+
     AudioInfo *m_audioInfo;
     QAudioDeviceInfo m_device;
     QAudioFormat m_format;
     QAudioInput *m_audioInput;
     QIODevice *m_input;
-    RenderArea *m_canvas;
-
     bool m_pullMode;
-
-    QPushButton *m_modeButton;
-    QPushButton *m_suspendResumeButton;
-    QComboBox *m_deviceBox;
-
-    char *m_buffer;
+    QByteArray m_buffer;
 };
 
