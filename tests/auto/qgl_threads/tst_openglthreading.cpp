@@ -45,6 +45,10 @@
 #include <QtOpenGL/QtOpenGL>
 #include "tst_openglthreading.h"
 
+#ifdef Q_WS_X11
+#include <private/qt_x11_p.h>
+#endif
+
 #define RUNNING_TIME 5000
 
 tst_OpenGLThreading::tst_OpenGLThreading(QObject *parent)
@@ -114,9 +118,9 @@ public:
     {
         setAutoBufferSwap(false);
     }
-    
+
     void paintEvent(QPaintEvent *)
-    {        
+    {
         m_thread->lock();
         makeCurrent();
         QPainter p(this);
@@ -339,10 +343,6 @@ public:
         mutex.unlock();
     };
 
-    void sendResizeEvent(QResizeEvent *e) {
-        QGLWidget::resizeEvent(e);
-    }
-
     QMutex mutex;
     QSize newSize;
 };
@@ -367,13 +367,13 @@ public:
 
         while (time.elapsed() < RUNNING_TIME && !failure) {
 
+
             m_widget->mutex.lock();
             QSize s = m_widget->newSize;
             m_widget->mutex.unlock();
+
             if (s != m_size) {
-                QResizeEvent e(s, m_size);
-                m_widget->sendResizeEvent(&e);
-                m_size = s;
+                glViewport(0, 0, s.width(), s.height());
             }
 
             if (QGLContext::currentContext() != m_widget->context()) {
@@ -392,9 +392,9 @@ public:
             glReadPixels(w / 2, h / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &color);
 
             m_widget->swapBuffers();
-
-
         }
+
+        m_widget->doneCurrent();
     }
 
     bool failure;
@@ -438,6 +438,12 @@ void tst_OpenGLThreading::renderInThread()
             widget.update(100 + value, 100 + value, 20, 20);
         qApp->processEvents();
         value = -value;
+
+#ifdef Q_WS_WIN
+        Sleep(100);
+#else
+        usleep(100 * 1000);
+#endif
     }
 
     QVERIFY(!thread.failure);
@@ -446,7 +452,17 @@ void tst_OpenGLThreading::renderInThread()
 
 
 
+int main(int argc, char **argv)
+{
+#ifdef Q_WS_X11
+    XInitThreads();
+#endif
 
-QTEST_MAIN(tst_OpenGLThreading);
+    QApplication app(argc, argv);
+    QTEST_DISABLE_KEYPAD_NAVIGATION \
+
+    tst_OpenGLThreading tc;
+    return QTest::qExec(&tc, argc, argv);
+}
 
 #include "tst_openglthreading.moc"
