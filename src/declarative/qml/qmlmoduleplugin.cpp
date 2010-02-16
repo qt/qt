@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     The plugin should register QML types with qmlRegisterType() when the
     defineModule() method is called.
 
-    \sa examples/declarative/plugins
+    See the example in \c{examples/declarative/plugins}.
 */
 
 /*!

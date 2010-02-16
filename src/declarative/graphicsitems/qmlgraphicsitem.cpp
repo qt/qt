@@ -1426,6 +1426,10 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
     \internal
 */
 
+/*! \fn void QmlGraphicsItem::transformOriginChanged(TransformOrigin)
+  \internal
+*/
+
 /*!
     \fn void QmlGraphicsItem::childrenChanged()
     \internal
