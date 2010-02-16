@@ -46,11 +46,11 @@
 #include <private/qmlbehavior_p.h>
 #include <private/qmlanimation_p.h>
 
-class tst_behaviors : public QObject
+class tst_qmlbehaviors : public QObject
 {
     Q_OBJECT
 public:
-    tst_behaviors() {}
+    tst_qmlbehaviors() {}
 
 private slots:
     void simpleBehavior();
@@ -68,7 +68,7 @@ private slots:
     void disabled();
 };
 
-void tst_behaviors::simpleBehavior()
+void tst_qmlbehaviors::simpleBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/simple.qml"));
@@ -82,7 +82,7 @@ void tst_behaviors::simpleBehavior()
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::scriptTriggered()
+void tst_qmlbehaviors::scriptTriggered()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/scripttrigger.qml"));
@@ -95,7 +95,7 @@ void tst_behaviors::scriptTriggered()
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::cppTriggered()
+void tst_qmlbehaviors::cppTriggered()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/cpptrigger.qml"));
@@ -111,7 +111,7 @@ void tst_behaviors::cppTriggered()
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::loop()
+void tst_qmlbehaviors::loop()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/loop.qml"));
@@ -122,7 +122,7 @@ void tst_behaviors::loop()
     rect->setState("moved");
 }
 
-void tst_behaviors::colorBehavior()
+void tst_qmlbehaviors::colorBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/color.qml"));
@@ -135,7 +135,7 @@ void tst_behaviors::colorBehavior()
     QVERIFY(color != QColor("red") && color != QColor("green"));  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::parentBehavior()
+void tst_qmlbehaviors::parentBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/parent.qml"));
@@ -152,7 +152,7 @@ void tst_behaviors::parentBehavior()
     QVERIFY(parent == newParent);
 }
 
-void tst_behaviors::replaceBinding()
+void tst_qmlbehaviors::replaceBinding()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/binding.qml"));
@@ -186,7 +186,7 @@ void tst_behaviors::replaceBinding()
     QCOMPARE(innerRect->x(), (qreal)20);
 }
 
-void tst_behaviors::group()
+void tst_qmlbehaviors::group()
 {
     {
         QmlEngine engine;
@@ -213,7 +213,7 @@ void tst_behaviors::group()
     }
 }
 
-void tst_behaviors::emptyBehavior()
+void tst_qmlbehaviors::emptyBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/empty.qml"));
@@ -225,7 +225,7 @@ void tst_behaviors::emptyBehavior()
     QCOMPARE(x, qreal(200));    //should change immediately
 }
 
-void tst_behaviors::nonSelectingBehavior()
+void tst_qmlbehaviors::nonSelectingBehavior()
 {
     {
         QmlEngine engine;
@@ -250,7 +250,7 @@ void tst_behaviors::nonSelectingBehavior()
     }
 }
 
-void tst_behaviors::reassignedAnimation()
+void tst_qmlbehaviors::reassignedAnimation()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml"));
@@ -262,7 +262,7 @@ void tst_behaviors::reassignedAnimation()
                      rect->findChild<QmlBehavior*>("MyBehavior"))->animation())->duration(), 200);
 }
 
-void tst_behaviors::disabled()
+void tst_qmlbehaviors::disabled()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/disabled.qml"));
@@ -276,6 +276,6 @@ void tst_behaviors::disabled()
 
 }
 
-QTEST_MAIN(tst_behaviors)
+QTEST_MAIN(tst_qmlbehaviors)
 
 #include "tst_qmlbehaviors.moc"
