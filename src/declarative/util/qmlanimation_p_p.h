@@ -108,6 +108,8 @@ public:
     {
         if (state() == Running)
             stop();
+        if (policy == DeleteWhenStopped)
+            delete animAction;
         animAction = action;
         policy = p;
     }
@@ -126,12 +128,12 @@ protected:
                     animAction = 0;
                 }
             }
-        } else if (newState == Stopped && policy == DeleteWhenStopped) {
+        } /*else if (newState == Stopped && policy == DeleteWhenStopped) {
             if (!running) {
                 delete animAction;
                 animAction = 0;
             }
-        }
+        }*/
     }
 
 private:
@@ -222,9 +224,8 @@ public:
 
     void commence();
 
-    QmlNullableValue<QmlMetaProperty> userProperty;
+    QmlMetaProperty defaultProperty;
 
-    QmlMetaProperty property;
     QmlAnimationGroup *group;
 
     static QmlMetaProperty createProperty(QObject *obj, const QString &str, QObject *infoObj);

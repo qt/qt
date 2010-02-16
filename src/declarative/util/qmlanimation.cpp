@@ -210,10 +210,16 @@ bool QmlAbstractAnimation::isRunning() const
     return d->running;
 }
 
+//commence is called to start an animation when it is used as a
+//simple animation, and not as part of a transition
 void QmlAbstractAnimationPrivate::commence()
 {
     Q_Q(QmlAbstractAnimation);
-    q->prepare(userProperty.value);
+
+    QmlStateActions actions;
+    QmlMetaProperties properties;
+    q->transition(actions, properties, QmlAbstractAnimation::Forward);
+
     q->qtAnimation()->start();
     if (q->qtAnimation()->state() != QAbstractAnimation::Running) {
         running = false;
@@ -313,7 +319,7 @@ void QmlAbstractAnimation::setPaused(bool p)
     else
         qtAnimation()->resume();
 
-    emit pausedChanged(d->running);
+    emit pausedChanged(d->paused);
 }
 
 void QmlAbstractAnimation::classBegin()
@@ -532,8 +538,7 @@ void QmlAbstractAnimation::complete()
 void QmlAbstractAnimation::setTarget(const QmlMetaProperty &p)
 {
     Q_D(QmlAbstractAnimation);
-    if (d->userProperty.isNull)
-        d->userProperty = p;
+    d->defaultProperty = p;
 
     if (!d->avoidPropertyValueSourceStart)
         setRunning(true);
@@ -545,16 +550,7 @@ void QmlAbstractAnimation::setTarget(const QmlMetaProperty &p)
 void QmlAbstractAnimation::setDefaultTarget(const QmlMetaProperty &p)
 {
     Q_D(QmlAbstractAnimation);
-    d->userProperty = p;
-}
-
-//prepare is called before an animation begins
-//(when an animation is used as a simple animation, and not as part of a transition)
-void QmlAbstractAnimation::prepare(QmlMetaProperty &)
-{
-    QmlStateActions actions;
-    QmlMetaProperties properties;
-    transition(actions, properties, QmlAbstractAnimation::Forward);
+    d->defaultProperty = p;
 }
 
 void QmlAbstractAnimation::transition(QmlStateActions &actions,
@@ -1012,9 +1008,9 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
 
     bool hasSelectors = !props.isEmpty() || !targets.isEmpty() || !d->exclude.isEmpty();
 
-    if (d->userProperty.isValid() && !hasSelectors) {
-        props << d->userProperty.value.name();
-        targets << d->userProperty.value.object();
+    if (d->defaultProperty.isValid() && !hasSelectors) {
+        props << d->defaultProperty.name();
+        targets << d->defaultProperty.object();
     }
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
@@ -1467,10 +1463,10 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
         from = d->animations.count() - 1;
     }
 
-    bool valid = d->userProperty.isValid();
+    bool valid = d->defaultProperty.isValid();
     for (int ii = from; ii < d->animations.count() && ii >= 0; ii += inc) {
         if (valid)
-            d->animations.at(ii)->setDefaultTarget(d->userProperty);
+            d->animations.at(ii)->setDefaultTarget(d->defaultProperty);
         d->animations.at(ii)->transition(actions, modified, direction);
     }
 }
@@ -1523,10 +1519,10 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
                                       TransitionDirection direction)
 {
     Q_D(QmlAnimationGroup);
-    bool valid = d->userProperty.isValid();
+    bool valid = d->defaultProperty.isValid();
     for (int ii = 0; ii < d->animations.count(); ++ii) {
         if (valid)
-            d->animations.at(ii)->setDefaultTarget(d->userProperty);
+            d->animations.at(ii)->setDefaultTarget(d->defaultProperty);
         d->animations.at(ii)->transition(actions, modified, direction);
     }
 }
@@ -2140,9 +2136,9 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     bool hasSelectors = !props.isEmpty() || !targets.isEmpty() || !d->exclude.isEmpty();
     bool useType = (props.isEmpty() && d->propertyName.isEmpty() && d->defaultToInterpolatorType) ? true : false;
 
-    if (d->userProperty.isValid() && !hasSelectors) {
-        props << d->userProperty.value.name();
-        targets << d->userProperty.value.object();
+    if (d->defaultProperty.isValid() && !hasSelectors) {
+        props << d->defaultProperty.name();
+        targets << d->defaultProperty.object();
     }
 
     PropertyUpdater *data = new PropertyUpdater;

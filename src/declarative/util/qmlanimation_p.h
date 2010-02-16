@@ -124,7 +124,6 @@ public:
     virtual void transition(QmlStateActions &actions,
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
-    void prepare(QmlMetaProperty &);    //### make private
     virtual QAbstractAnimation *qtAnimation() = 0;
 
 private Q_SLOTS:
