@@ -51,6 +51,7 @@
 #define SECONDS     1
 #define FREQ        600
 #define SYSTEM_FREQ 44100
+const int BufferSize      = 32768;
 
 Generator::Generator(const QAudioFormat &format,
                      qint64 durationUs,
@@ -149,9 +150,23 @@ qint64 Generator::bytesAvailable() const
 }
 
 AudioTest::AudioTest()
+    :   m_timer(new QTimer(this))
+    ,   m_modeButton(0)
+    ,   m_suspendResumeButton(0)
+    ,   m_deviceBox(0)
+    ,   m_generator(0)
+    ,   m_audioOutput(0)
+    ,   m_output(0)
+    ,   m_buffer(BufferSize, 0)
 {
-    QWidget *window = new QWidget;
-    QVBoxLayout* layout = new QVBoxLayout;
+    initializeWindow();
+    initializeAudio();
+}
+
+void AudioTest::initializeWindow()
+{
+    QScopedPointer<QWidget> window(new QWidget);
+    QScopedPointer<QVBoxLayout> layout(new QVBoxLayout);
 
     m_deviceBox = new QComboBox(this);
     foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput))
@@ -169,16 +184,19 @@ AudioTest::AudioTest()
     connect(m_suspendResumeButton,SIGNAL(clicked()),SLOT(togglePlay()));
     layout->addWidget(m_suspendResumeButton);
 
-    window->setLayout(layout);
-    setCentralWidget(window);
-    window->show();
+    window->setLayout(layout.data());
+    layout.take(); // ownership transferred
 
-    m_buffer = new char[BUFFER_SIZE];
+    setCentralWidget(window.data());
+    QWidget *const windowPtr = window.take(); // ownership transferred
+    windowPtr->show();
+}
+
+void AudioTest::initializeAudio()
+{
+    connect(m_timer, SIGNAL(timeout()), SLOT(writeMore()));
 
     m_pullMode = true;
-
-    m_timer = new QTimer(this);
-    connect(m_timer,SIGNAL(timeout()),SLOT(writeMore()));
 
     m_format.setFrequency(SYSTEM_FREQ);
     m_format.setChannels(1);
@@ -194,18 +212,24 @@ AudioTest::AudioTest()
     }
 
     m_generator = new Generator(m_format, SECONDS*1000000, FREQ, this);
+
+    createAudioOutput();
+}
+
+void AudioTest::createAudioOutput()
+{
+    delete m_audioOutput;
+    m_audioOutput = 0;
+    m_audioOutput = new QAudioOutput(m_format, this);
+    connect(m_audioOutput, SIGNAL(notify()), SLOT(status()));
+    connect(m_audioOutput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
     m_generator->start();
-
-    m_audioOutput = new QAudioOutput(m_format,this);
-    connect(m_audioOutput,SIGNAL(notify()),SLOT(status()));
-    connect(m_audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
-
     m_audioOutput->start(m_generator);
 }
 
 AudioTest::~AudioTest()
 {
-    delete [] m_buffer;
+
 }
 
 void AudioTest::deviceChanged(int idx)
@@ -214,14 +238,8 @@ void AudioTest::deviceChanged(int idx)
     m_generator->stop();
     m_audioOutput->stop();
     m_audioOutput->disconnect(this);
-    delete m_audioOutput;
-
     m_device = m_deviceBox->itemData(idx).value<QAudioDeviceInfo>();
-    m_audioOutput = new QAudioOutput(m_device,m_format,this);
-    connect(m_audioOutput,SIGNAL(notify()),SLOT(status()));
-    connect(m_audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
-    m_generator->start();
-    m_audioOutput->start(m_generator);
+    createAudioOutput();
 }
 
 void AudioTest::status()
@@ -242,9 +260,9 @@ void AudioTest::writeMore()
 
     int chunks = m_audioOutput->bytesFree()/m_audioOutput->periodSize();
     while(chunks) {
-       l = m_generator->read(m_buffer,m_audioOutput->periodSize());
+       l = m_generator->read(m_buffer.data(), m_audioOutput->periodSize());
        if (l > 0)
-           out = m_output->write(m_buffer,l);
+           out = m_output->write(m_buffer.data(), l);
        if (l != m_audioOutput->periodSize())
 	   break;
        chunks--;

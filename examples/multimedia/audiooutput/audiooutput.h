@@ -41,8 +41,6 @@
 
 #include <math.h>
 
-#define BUFFER_SIZE 32768
-
 #include <QObject>
 #include <QMainWindow>
 #include <QIODevice>
@@ -83,19 +81,26 @@ public:
     ~AudioTest();
 
 private:
-    QAudioDeviceInfo  m_device;
-    Generator*        m_generator;
-    QAudioOutput*     m_audioOutput;
-    QIODevice*        m_output;
-    QTimer*           m_timer;
-    QAudioFormat      m_format;
+    void initializeWindow();
+    void initializeAudio();
+    void createAudioOutput();
 
-    bool              m_pullMode;
-    char*             m_buffer;
+private:
+    QTimer*          m_timer;
 
-    QPushButton*      m_modeButton;
-    QPushButton*      m_suspendResumeButton;
-    QComboBox*        m_deviceBox;
+    // Owned by layout
+    QPushButton*     m_modeButton;
+    QPushButton*     m_suspendResumeButton;
+    QComboBox*       m_deviceBox;
+
+    QAudioDeviceInfo m_device;
+    Generator*       m_generator;
+    QAudioOutput*    m_audioOutput;
+    QIODevice*       m_output; // not owned
+    QAudioFormat     m_format;
+
+    bool             m_pullMode;
+    QByteArray       m_buffer;
 
 private slots:
     void status();
