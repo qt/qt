@@ -52,19 +52,21 @@ class AudioInfo : public QIODevice
 {
     Q_OBJECT
 public:
-    AudioInfo(QObject *parent);
+    AudioInfo(const QAudioFormat &format, QObject *parent);
     ~AudioInfo();
 
     void start();
     void stop();
 
-    int LinearMax();
+    qreal level() const { return m_level; }
 
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
 
 private:
-    int m_maxValue;
+    const QAudioFormat m_format;
+    quint16 m_maxAmplitude;
+    qreal m_level; // 0.0 <= m_level <= 1.0
 
 signals:
     void update();
@@ -78,13 +80,13 @@ class RenderArea : public QWidget
 public:
     RenderArea(QWidget *parent = 0);
 
-    void setLevel(int value);
+    void setLevel(qreal value);
 
 protected:
     void paintEvent(QPaintEvent *event);
 
 private:
-    int level;
+    qreal level;
     QPixmap pixmap;
 };
 

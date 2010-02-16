@@ -48,14 +48,42 @@
 
 #include <QAudioDeviceInfo>
 #include <QAudioInput>
+
+#include <QtCore/qendian.h>
+
 #include "audioinput.h"
 
 #define BUFFER_SIZE 4096
 
-AudioInfo::AudioInfo(QObject *parent)
-    :QIODevice(parent)
+AudioInfo::AudioInfo(const QAudioFormat &format, QObject *parent)
+    :   QIODevice(parent)
+    ,   m_format(format)
+    ,   m_maxAmplitude(0)
+    ,   m_level(0.0)
+
 {
-    m_maxValue = 0;
+    switch (m_format.sampleSize()) {
+    case 8:
+        switch (m_format.sampleType()) {
+        case QAudioFormat::UnSignedInt:
+            m_maxAmplitude = 255;
+            break;
+        case QAudioFormat::SignedInt:
+            m_maxAmplitude = 127;
+            break;
+        }
+        break;
+    case 16:
+        switch (m_format.sampleType()) {
+        case QAudioFormat::UnSignedInt:
+            m_maxAmplitude = 65535;
+            break;
+        case QAudioFormat::SignedInt:
+            m_maxAmplitude = 32767;
+            break;
+        }
+        break;
+    }
 }
 
 AudioInfo::~AudioInfo()
@@ -82,39 +110,47 @@ qint64 AudioInfo::readData(char *data, qint64 maxlen)
 
 qint64 AudioInfo::writeData(const char *data, qint64 len)
 {
-    int samples = len/2; // 2 bytes per sample
-    int maxAmp = 32768; // max for S16 samples
-    bool clipping = false;
+    if (m_maxAmplitude) {
+        Q_ASSERT(m_format.sampleSize() % 8 == 0);
+        const int channelBytes = m_format.sampleSize() / 8;
+        const int sampleBytes = m_format.channels() * channelBytes;
+        Q_ASSERT(len % sampleBytes == 0);
+        const int numSamples = len / sampleBytes;
 
-    m_maxValue = 0;
+        quint16 maxValue = 0;
+        const unsigned char *ptr = reinterpret_cast<const unsigned char *>(data);
 
-    qint16 *s = (qint16*)data;
+        for (int i = 0; i < numSamples; ++i) {
+            for(int j = 0; j < m_format.channels(); ++j) {
+                quint16 value = 0;
 
-    // sample format is S16LE, only!
+                if (m_format.sampleSize() == 8 && m_format.sampleType() == QAudioFormat::UnSignedInt) {
+                    value = *reinterpret_cast<const quint8*>(ptr);
+                } else if (m_format.sampleSize() == 8 && m_format.sampleType() == QAudioFormat::SignedInt) {
+                    value = qAbs(*reinterpret_cast<const qint8*>(ptr));
+                } else if (m_format.sampleSize() == 16 && m_format.sampleType() == QAudioFormat::UnSignedInt) {
+                    if (m_format.byteOrder() == QAudioFormat::LittleEndian)
+                        value = qFromLittleEndian<quint16>(ptr);
+                    else
+                        value = qFromBigEndian<quint16>(ptr);
+                } else if (m_format.sampleSize() == 16 && m_format.sampleType() == QAudioFormat::SignedInt) {
+                    if (m_format.byteOrder() == QAudioFormat::LittleEndian)
+                        value = qAbs(qFromLittleEndian<qint16>(ptr));
+                    else
+                        value = qAbs(qFromBigEndian<qint16>(ptr));
+                }
 
-    for (int i = 0; i < samples; ++i) {
-        qint16 sample = *s;
-        s++;
-        if (abs(sample) > m_maxValue) m_maxValue = abs(sample);
+                maxValue = qMax(value, maxValue);
+                ptr += channelBytes;
+            }
+        }
+
+        maxValue = qMin(maxValue, m_maxAmplitude);
+        m_level = qreal(maxValue) / m_maxAmplitude;
     }
-    // check for clipping
-    if (m_maxValue >= (maxAmp - 1))
-        clipping = true;
-
-    float value = ((float)m_maxValue/(float)maxAmp);
-    if (clipping)
-        m_maxValue = 100;
-    else
-        m_maxValue = (int)(value*100);
 
     emit update();
-
     return len;
-}
-
-int AudioInfo::LinearMax()
-{
-    return m_maxValue;
 }
 
 RenderArea::RenderArea(QWidget *parent)
@@ -137,12 +173,12 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
                            painter.viewport().top()+10,
                            painter.viewport().right()-20,
                            painter.viewport().bottom()-20));
-    if (level == 0)
+    if (level == 0.0)
         return;
 
     painter.setPen(Qt::red);
 
-    int pos = ((painter.viewport().right()-20)-(painter.viewport().left()+11))*level/100;
+    int pos = ((painter.viewport().right()-20)-(painter.viewport().left()+11))*level;
     for (int i = 0; i < 10; ++i) {
         int x1 = painter.viewport().left()+11;
         int y1 = painter.viewport().top()+10+i;
@@ -155,7 +191,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
     }
 }
 
-void RenderArea::setLevel(int value)
+void RenderArea::setLevel(qreal value)
 {
     level = value;
     repaint();
@@ -220,7 +256,7 @@ InputTest::InputTest()
     audioInput = new QAudioInput(format,this);
     connect(audioInput, SIGNAL(notify()), SLOT(status()));
     connect(audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
-    audioinfo  = new AudioInfo(this);
+    audioinfo  = new AudioInfo(format, this);
     connect(audioinfo, SIGNAL(update()), SLOT(refreshDisplay()));
     audioinfo->start();
     audioInput->start(audioinfo);
@@ -292,7 +328,7 @@ void InputTest::state(QAudio::State state)
 
 void InputTest::refreshDisplay()
 {
-    canvas->setLevel(audioinfo->LinearMax());
+    canvas->setLevel(audioinfo->level());
     canvas->repaint();
 }
 
