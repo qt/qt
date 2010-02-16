@@ -47,7 +47,6 @@
 QT_BEGIN_NAMESPACE
 class QUndoStack;
 class QUndoCommand;
-QT_END_NAMESPACE
 
 namespace qdesigner_internal {
 
@@ -85,5 +84,7 @@ private:
 };
 
 } // namespace qdesigner_internal
+
+QT_END_NAMESPACE
 
 #endif // QDESIGNERUNDOSTACK_H

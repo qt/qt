@@ -44,6 +44,8 @@
 #include <QtGui/QUndoStack>
 #include <QtGui/QUndoCommand>
 
+QT_BEGIN_NAMESPACE
+
 namespace qdesigner_internal {
 
 QDesignerUndoStack::QDesignerUndoStack(QObject *parent) :
@@ -106,3 +108,5 @@ void QDesignerUndoStack::setDirty(bool v)
 }
 
 } // namespace qdesigner_internal
+
+QT_END_NAMESPACE

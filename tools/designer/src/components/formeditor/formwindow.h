@@ -76,7 +76,6 @@ class FormWindowWidgetStack;
 class FormWindowManager;
 class FormWindowDnDItem;
 class SetPropertyCommand;
-class QDesignerUndoStack;
 
 class QT_FORMEDITOR_EXPORT FormWindow: public FormWindowBase
 {

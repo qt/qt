@@ -1459,12 +1459,6 @@ QDebug operator<<(QDebug in, const ArrowKeyOperation &op)
     return in;
 }
 
-} // namespace qdesigner_internal
-
-Q_DECLARE_METATYPE(qdesigner_internal::ArrowKeyOperation)
-
-namespace qdesigner_internal {
-
 // ArrowKeyPropertyHelper: Applies a struct ArrowKeyOperation
 // (stored as new value) to a list of widgets using to calculate the
 // changed geometry of the widget in setValue(). Thus, the 'newValue'
@@ -2969,3 +2963,5 @@ QUndoStack *FormWindow::commandHistory() const
 } // namespace
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(qdesigner_internal::ArrowKeyOperation)
