@@ -44,6 +44,7 @@
 #include <private/qgl_p.h>
 #include <private/qegl_p.h>
 #include <private/qeglproperties_p.h>
+#include <private/qeglcontext_p.h>
 
 #if !defined(QT_OPENGL_ES_1)
 #include <private/qpaintengineex_opengl2_p.h>

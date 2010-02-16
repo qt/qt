@@ -53,13 +53,34 @@
 // We mean it.
 //
 
-#include <QtCore/qsize.h>
-#include <QtGui/qimage.h>
-
-#include <private/qeglproperties_p.h>
-
 QT_BEGIN_INCLUDE_NAMESPACE
 
+#if defined(QT_GLES_EGL)
+#include <GLES/egl.h>
+#else
+#include <EGL/egl.h>
+#endif
+
+#if defined(Q_WS_X11)
+// If <EGL/egl.h> included <X11/Xlib.h>, then the global namespace
+// may have been polluted with X #define's.  The following makes sure
+// the X11 headers were included properly and then cleans things up.
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#undef Bool
+#undef Status
+#undef None
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef Type
+#undef FontChange
+#undef CursorShape
+#endif
+
+// Internally we use the EGL-prefixed native types which are used in EGL >= 1.3.
+// For older versions of EGL, we have to define these types ourselves here:
 #if !defined(EGL_VERSION_1_3) && !defined(QEGL_NATIVE_TYPES_DEFINED)
 #undef EGLNativeWindowType
 #undef EGLNativePixmapType
@@ -69,74 +90,27 @@ typedef NativePixmapType EGLNativePixmapType;
 typedef NativeDisplayType EGLNativeDisplayType;
 #define QEGL_NATIVE_TYPES_DEFINED 1
 #endif
+
 QT_END_INCLUDE_NAMESPACE
+
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QEglContext
-{
-public:
-    QEglContext();
-    ~QEglContext();
+namespace QEgl {
+    enum API
+    {
+        OpenGL,
+        OpenVG
+    };
 
-    bool isValid() const;
-    bool isCurrent() const;
-    bool isSharing() const { return sharing; }
-
-    QEgl::API api() const { return apiType; }
-    void setApi(QEgl::API api) { apiType = api; }
-
-    bool chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
-    bool createContext(QEglContext *shareContext = 0, const QEglProperties *properties = 0);
-    void destroyContext();
-    EGLSurface createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
-    void destroySurface(EGLSurface surface);
-
-    bool makeCurrent(EGLSurface surface);
-    bool doneCurrent();
-    bool lazyDoneCurrent();
-    bool swapBuffers(EGLSurface surface);
-
-    void waitNative();
-    void waitClient();
-
-    bool configAttrib(int name, EGLint *value) const;
-
-    static void clearError() { eglGetError(); }
-    static EGLint error() { return eglGetError(); }
-    static QString errorString(EGLint code);
-
-    static EGLDisplay display();
-
-    EGLContext context() const { return ctx; }
-    void setContext(EGLContext context) { ctx = context; ownsContext = false;}
-
-    EGLConfig config() const { return cfg; }
-    void setConfig(EGLConfig config) { cfg = config; }
-
-    QEglProperties configProperties(EGLConfig cfg = 0) const;
-
-    void dumpAllConfigs();
-
-    static QString extensions();
-    static bool hasExtension(const char* extensionName);
-
-private:
-    QEgl::API apiType;
-    EGLContext ctx;
-    EGLConfig cfg;
-    EGLSurface currentSurface;
-    bool current;
-    bool ownsContext;
-    bool sharing;
-
-    static EGLDisplay dpy;
-    static EGLNativeDisplayType nativeDisplay();
-
-    static QEglContext *currentContext(QEgl::API api);
-    static void setCurrentContext(QEgl::API api, QEglContext *context);
+    enum PixelFormatMatch
+    {
+        ExactPixelFormat,
+        BestPixelFormat
+    };
 };
+
 
 QT_END_NAMESPACE
 
-#endif // QEGL_P_H
+#endif //QEGL_P_H

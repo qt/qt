@@ -54,7 +54,8 @@
 
 #include <windows.h>
 
-#include <private/qegl_p.h>
+#include <private/qeglproperties_p.h>
+#include <private/qeglcontext_p.h>
 #include <private/qgl_egl_p.h>
 #include <private/qgl_cl_p.h>
 

@@ -83,7 +83,7 @@
 #endif
 
 #ifdef QT_OPENGL_ES
-#include <private/qegl_p.h>
+#include <private/qeglcontext_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -46,7 +46,8 @@ QT_BEGIN_NAMESPACE
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 
-#include "qegl_p.h"
+#include "qeglproperties_p.h"
+#include "qeglcontext_p.h"
 
 
 // Initialize a property block.
