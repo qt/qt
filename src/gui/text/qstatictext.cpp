@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QStaticText
-    \internal
     \brief The QStaticText class enables optimized drawing of text when the text and its layout
     is updated rarely.
     \since 4.7
@@ -63,11 +62,13 @@ QT_BEGIN_NAMESPACE
     more efficiently than by using QPainter::drawText() in which the layout information is 
     recalculated with every call. 
 
-    The class primarily provides an optimization for cases where text and the transformations on
-    the painter are static over several paint events. If the text or its layout is changed
-    regularly, QPainter::drawText() is the more efficient alternative. Translating the painter
-    will not cause the layout of the text to be recalculated, but will cause a very small
-    performance impact on drawStaticText(). Altering any other parts of the painter's
+    The class primarily provides an optimization for cases where the text, its font and the
+    transformations on the painter are static over several paint events. If the text or its layout
+    is changed for every iteration, QPainter::drawText() is the more efficient alternative, since
+    the static text's layout would have to be recalculated to take the new state into consideration.
+
+    Translating the painter will not cause the layout of the text to be recalculated, but will cause
+    a very small performance impact on drawStaticText(). Altering any other parts of the painter's
     transformation or the painter's font will cause the layout of the static text to be
     recalculated. This should be avoided as often as possible to maximize the performance
     benefit of using QStaticText.
@@ -107,6 +108,11 @@ QT_BEGIN_NAMESPACE
     passed to QPainter::drawStaticText() and can change from call to call with a minimal impact
     on performance.
 
+    QStaticText will attempt to guess the format of the input text using Qt::mightBeRichText().
+    To force QStaticText to display its contents as either plain text or rich text, use the
+    function QStaticText::setTextFormat() and pass in, respectively, Qt::PlainText and
+    Qt::RichText.
+
     \sa QPainter::drawText(), QPainter::drawStaticText(), QTextLayout, QTextDocument
 */
 
@@ -119,11 +125,9 @@ QStaticText::QStaticText()
 }
 
 /*!
-    \fn QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &maximumSize)
+    Constructs a QStaticText object with the given \a text and bounded by the given \a size.
 
-    Constructs a QStaticText object with the given \a text which is to be rendered in the given
-    \a font and bounded by the given \a maximumSize. If an invalid size is passed for \a maximumSize
-    the text will be unbounded.         
+    If an invalid size is passed for \a size the text will be unbounded.
 */
 QStaticText::QStaticText(const QString &text, const QSizeF &size)
     : data(new QStaticTextPrivate)
@@ -302,11 +306,11 @@ bool QStaticText::useBackendOptimizations() const
 }
 
 /*!
-    Sets the maximum size of the QStaticText to \a maximumSize.
+    Sets the maximum size of the QStaticText to \a size.
 
     \note This function will cause the layout of the text to be recalculated.
 
-    \sa maximumSize()
+    \sa maximumSize(), size()
 */
 void QStaticText::setMaximumSize(const QSizeF &size)
 {
