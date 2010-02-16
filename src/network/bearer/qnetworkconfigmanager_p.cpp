@@ -244,6 +244,11 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
 
 void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
 {
+    if (sessionEngines.isEmpty()) {
+        emit configurationUpdateComplete();
+        return;
+    }
+
     updating = true;
 
     for (int i = 0; i < sessionEngines.count(); ++i) {
