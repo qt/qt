@@ -1083,7 +1083,8 @@ QmlGraphicsWebView *QmlGraphicsWebView::createWindow(QWebPage::WebWindowType typ
                         if (!webview) {
                             delete item;
                         } else {
-                            item->setParent(d->newWindowParent);
+                            nobj->setParent(d->newWindowParent);
+                            static_cast<QGraphicsObject*>(item)->setParentItem(d->newWindowParent);
                         }
                     }
                 } else {

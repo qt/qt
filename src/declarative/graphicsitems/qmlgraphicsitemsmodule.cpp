@@ -127,9 +127,11 @@ void QmlGraphicsItemModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,PathQuad,QmlGraphicsPathQuad);
     QML_REGISTER_TYPE(Qt,4,6,PathView,QmlGraphicsPathView);
     QML_REGISTER_TYPE(Qt,4,6,Pen,QmlGraphicsPen);
-    QML_REGISTER_TYPE(Qt,4,6,QDoubleValidator,QDoubleValidator);
     QML_REGISTER_TYPE(Qt,4,6,QIntValidator,QIntValidator);
-    QML_REGISTER_TYPE(Qt,4,6,QRegExpValidator,QRegExpValidator);
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
+    QML_REGISTER_TYPE(Qt,4,7,QDoubleValidator,QDoubleValidator);
+    QML_REGISTER_TYPE(Qt,4,7,QRegExpValidator,QRegExpValidator);
+#endif
     QML_REGISTER_TYPE(Qt,4,6,Rectangle,QmlGraphicsRectangle);
     QML_REGISTER_TYPE(Qt,4,6,Repeater,QmlGraphicsRepeater);
     QML_REGISTER_TYPE(Qt,4,6,Rotation,QGraphicsRotation);
