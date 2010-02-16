@@ -116,7 +116,7 @@ void QGstreamerPlayerSession::load(const QUrl &url)
         m_tags.clear();
         emit tagsChanged();
 
-        g_object_set(G_OBJECT(m_playbin), "uri", m_url.toString().toLocal8Bit().constData(), NULL);
+        g_object_set(G_OBJECT(m_playbin), "uri", m_url.toEncoded().constData(), NULL);
 
 //        if (!m_streamTypes.isEmpty()) {
 //            m_streamProperties.clear();
