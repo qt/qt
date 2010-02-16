@@ -836,7 +836,7 @@ void tst_QNetworkSession::outOfProcessSession()
 
     qDebug() << "starting lackey";
     QProcess lackey;
-    lackey.start("qnetworksessionlackey");
+    lackey.start("lackey/lackey");
     qDebug() << lackey.error() << lackey.errorString();
     QVERIFY(lackey.waitForStarted());
 

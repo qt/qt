@@ -59,6 +59,14 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
+    // Cannot read/write to processes on WinCE or Symbian.
+    // Easiest alternative is to use sockets for IPC.
+
+    QLocalSocket oopSocket;
+
+    oopSocket.connectToServer("tst_qnetworksession");
+    oopSocket.waitForConnected(-1);
+
     QNetworkConfigurationManager manager;
     QList<QNetworkConfiguration> discovered =
 #if defined (Q_OS_SYMBIAN)
@@ -71,14 +79,6 @@ int main(int argc, char** argv)
     if (discovered.isEmpty()) {
         return NO_DISCOVERED_CONFIGURATIONS_ERROR;
     }
-
-    // Cannot read/write to processes on WinCE or Symbian.
-    // Easiest alternative is to use sockets for IPC.
-
-    QLocalSocket oopSocket;
-
-    oopSocket.connectToServer("tst_qnetworksession");
-    oopSocket.waitForConnected(-1);
 
     qDebug() << "Lackey started";
 

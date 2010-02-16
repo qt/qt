@@ -1,7 +1,11 @@
 SOURCES += main.cpp
-TARGET = qnetworksessionlackey
+TARGET = lackey
 
 QT = core network
+
+DESTDIR = ./
+
+win32:CONFIG += console
 
 symbian {
      # Needed for interprocess communication and opening QNetworkSession
