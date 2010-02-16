@@ -1428,26 +1428,123 @@ int FormWindow::calcValue(int val, bool forward, bool snap, int snapOffset) cons
     return (forward ? val + 1 : val - 1);
 }
 
-QRect FormWindow::applyValue(const QRect &rect, int val, int key, bool size) const
+// ArrowKeyOperation: Stores a keyboard move or resize (Shift pressed)
+// operation.
+struct ArrowKeyOperation {
+    ArrowKeyOperation() : resize(false), distance(0), arrowKey(Qt::Key_Left) {}
+
+    QRect apply(const QRect &in) const;
+
+    bool resize; // Resize: Shift-Key->drag bottom/right corner, else just move
+    int distance;
+    int arrowKey;
+};
+
+QRect ArrowKeyOperation::apply(const QRect &rect) const
 {
     QRect r = rect;
-    if (size) {
-        if (key == Qt::Key_Left || key == Qt::Key_Right)
-            r.setWidth(val);
+    if (resize) {
+        if (arrowKey == Qt::Key_Left || arrowKey == Qt::Key_Right)
+            r.setWidth(r.width() + distance);
         else
-            r.setHeight(val);
+            r.setHeight(r.height() + distance);
     } else {
-        if (key == Qt::Key_Left || key == Qt::Key_Right)
-            r.moveLeft(val);
+        if (arrowKey == Qt::Key_Left || arrowKey == Qt::Key_Right)
+            r.moveLeft(r.x() + distance);
         else
-            r.moveTop(val);
+            r.moveTop(r.y() + distance);
     }
     return r;
 }
 
+QDebug operator<<(QDebug in, const ArrowKeyOperation &op)
+{
+    in.nospace() << "Resize=" << op.resize << " dist=" << op.distance << " Key=" << op.arrowKey << ' ';
+    return in;
+}
+
+} // namespace qdesigner_internal
+
+Q_DECLARE_METATYPE(qdesigner_internal::ArrowKeyOperation)
+
+namespace qdesigner_internal {
+
+// ArrowKeyPropertyHelper: Applies a struct ArrowKeyOperation
+// (stored as new value) to a list of widgets using to calculate the
+// changed geometry of the widget in setValue(). Thus, the 'newValue'
+// of the property command is the relative move distance, which is the same
+// for all widgets (although resulting in different geometries for the widgets).
+// The command merging can then work as it would when applying the same text
+// to all QLabels.
+
+class ArrowKeyPropertyHelper : public PropertyHelper {
+public:
+    ArrowKeyPropertyHelper(QObject* o, SpecialProperty sp,
+                       QDesignerPropertySheetExtension *s, int i) :
+                       PropertyHelper(o, sp, s, i) {}
+
+    virtual Value setValue(QDesignerFormWindowInterface *fw, const QVariant &value, bool changed, unsigned subPropertyMask);
+};
+
+PropertyHelper::Value ArrowKeyPropertyHelper::setValue(QDesignerFormWindowInterface *fw, const QVariant &value, bool changed, unsigned subPropertyMask)
+{
+    // Apply operation to obtain the new geometry value.
+    QWidget *w = qobject_cast<QWidget*>(object());
+    const ArrowKeyOperation operation = qvariant_cast<ArrowKeyOperation>(value);
+    const QRect newGeom = operation.apply(w->geometry());
+    return PropertyHelper::setValue(fw, QVariant(newGeom), changed, subPropertyMask);
+}
+
+// ArrowKeyPropertyCommand: Helper factory overwritten to create
+// ArrowKeyPropertyHelper and a merge operation that merges values of
+// the same direction.
+class ArrowKeyPropertyCommand: public SetPropertyCommand {
+public:
+    explicit ArrowKeyPropertyCommand(QDesignerFormWindowInterface *fw,
+                                     QUndoCommand *p = 0);
+
+    void init(QWidgetList &l, const ArrowKeyOperation &op);
+
+protected:
+    virtual PropertyHelper *createPropertyHelper(QObject *o, SpecialProperty sp,
+                                                 QDesignerPropertySheetExtension *s, int i) const
+        { return new ArrowKeyPropertyHelper(o, sp, s, i); }
+    virtual QVariant mergeValue(const QVariant &newValue);
+};
+
+ArrowKeyPropertyCommand::ArrowKeyPropertyCommand(QDesignerFormWindowInterface *fw,
+                                                 QUndoCommand *p) :
+    SetPropertyCommand(fw, p)
+{
+    static const int mid = qRegisterMetaType<qdesigner_internal::ArrowKeyOperation>();
+    Q_UNUSED(mid)
+}
+
+void ArrowKeyPropertyCommand::init(QWidgetList &l, const ArrowKeyOperation &op)
+{
+    QObjectList ol;
+    foreach(QWidget *w, l)
+        ol.push_back(w);
+    SetPropertyCommand::init(ol, QLatin1String("geometry"), qVariantFromValue(op));
+
+    setText(op.resize ? FormWindow::tr("Key Resize") : FormWindow::tr("Key Move"));
+}
+
+QVariant ArrowKeyPropertyCommand::mergeValue(const QVariant &newMergeValue)
+{
+    // Merge move operations of the same arrow key
+    if (!qVariantCanConvert<ArrowKeyOperation>(newMergeValue))
+        return QVariant();
+    ArrowKeyOperation mergedOperation = qvariant_cast<ArrowKeyOperation>(newValue());
+    const ArrowKeyOperation newMergeOperation = qvariant_cast<ArrowKeyOperation>(newMergeValue);
+    if (mergedOperation.resize != newMergeOperation.resize || mergedOperation.arrowKey != newMergeOperation.arrowKey)
+        return QVariant();
+    mergedOperation.distance += newMergeOperation.distance;
+    return qVariantFromValue(mergedOperation);
+}
+
 void FormWindow::handleArrowKeyEvent(int key, Qt::KeyboardModifiers modifiers)
 {
-    bool startMacro = false;
     const QDesignerFormWindowCursorInterface *c = cursor();
     if (!c->hasSelection())
         return;
@@ -1480,57 +1577,14 @@ void FormWindow::handleArrowKeyEvent(int key, Qt::KeyboardModifiers modifiers)
 
     const int newValue = calcValue(oldValue, forward, snap, snapPoint);
 
-    const int offset = newValue - oldValue;
+    ArrowKeyOperation operation;
+    operation.resize = modifiers & Qt::ShiftModifier;
+    operation.distance = newValue - oldValue;
+    operation.arrowKey = key;
 
-    const int selCount = selection.count();
-    // check if selection is the same as last time
-    if (selCount != m_moveSelection.count() ||
-        m_lastUndoIndex != m_commandHistory->index()) {
-        m_moveSelection.clear();
-        startMacro = true;
-    } else {
-        for (int index = 0; index < selCount; ++index) {
-            if (m_moveSelection[index]->object() != selection.at(index)) {
-                m_moveSelection.clear();
-                startMacro = true;
-                break;
-            }
-        }
-    }
-
-    if (startMacro)
-        beginCommand(tr("Key Move"));
-
-    for (int index = 0; index < selCount; ++index) {
-        QWidget *w = selection.at(index);
-        const QRect oldGeom = w->geometry();
-        const QRect geom = applyValue(oldGeom, getValue(oldGeom, key, size) + offset, key, size);
-
-        SetPropertyCommand *cmd = 0;
-
-        if (m_moveSelection.count() > index)
-            cmd = m_moveSelection[index];
-
-        if (!cmd) {
-            cmd = new SetPropertyCommand(this);
-            cmd->init(w, QLatin1String("geometry"), geom);
-            cmd->setText(tr("Key Move"));
-            m_commandHistory->push(cmd);
-
-            if (m_moveSelection.count() > index)
-                m_moveSelection.replace(index, cmd);
-            else
-                m_moveSelection.append(cmd);
-        } else {
-            cmd->setNewValue(geom);
-            cmd->redo();
-        }
-    }
-
-    if (startMacro) {
-        endCommand();
-        m_lastUndoIndex = m_commandHistory->index();
-    }
+    ArrowKeyPropertyCommand *cmd = new ArrowKeyPropertyCommand(this);
+    cmd->init(selection, operation);
+    m_commandHistory->push(cmd);
 }
 
 bool FormWindow::handleKeyReleaseEvent(QWidget *, QWidget *, QKeyEvent *e)

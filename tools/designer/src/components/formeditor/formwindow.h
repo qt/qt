@@ -263,7 +263,6 @@ private:
 
     int getValue(const QRect &rect, int key, bool size) const;
     int calcValue(int val, bool forward, bool snap, int snapOffset) const;
-    QRect applyValue(const QRect &rect, int val, int key, bool size) const;
     void handleClickSelection(QWidget *managedWidget, unsigned mouseFlags);
 
     bool frameNeeded(QWidget *w) const;
@@ -368,8 +367,6 @@ private:
     QString m_exportMacro;
     QStringList m_includeHints;
 
-    QList<SetPropertyCommand*> m_moveSelection;
-    int m_lastUndoIndex;
     QPoint m_contextMenuPosition;
 
 private:
