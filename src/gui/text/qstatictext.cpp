@@ -117,6 +117,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QStaticText::PerformanceHint
+
+    This enum the different performance hints that can be set on the QStaticText. These hints
+    can be used to indicate that the QStaticText should use additional caches, if possible,
+    to improve performance at the expense of memory. In particular, setting the performance hint
+    AggressiveCaching on the QStaticText will improve performance when using the OpenGL graphics
+    system or when drawing to a QGLWidget.
+
+    \value ModerateCaching Do basic caching for high performance at a low memory cost.
+    \value AggressiveCaching Use additional caching when available. This may improve performance
+           at a higher memory cost.
+*/
+
+/*!
     Constructs an empty QStaticText
 */
 QStaticText::QStaticText()    
@@ -268,41 +282,34 @@ QString QStaticText::text() const
 }
 
 /*!
-  Sets whether the QStaticText object should use optimizations specific to the paint engine
-  backend if they are available. If \a on is set to true, backend optimizations will be turned
-  on, otherwise they will be turned off. The default value is false.
+  Sets the performance hint of the QStaticText. This hint can be used to customize how much
+  caching is done internally to improve performance.
 
-  If backend optimizations are on, the paint engine used to draw the static text is allowed to
-  store data in the object which will assist it in future calls to drawStaticText. In particular,
-  when using the opengl graphics system, or when painting on a QGLWidget, turning this flag on will
-  improve performance, but increase the memory footprint of the QStaticText object.
-
-  The default value is false.
+  The default is QStaticText::ModerateCaching.
 
   \note This function will cause the layout of the text to be recalculated.
 
-  \sa useBackendOptimizations()
+  \sa performanceHint()
 */
-void QStaticText::setUseBackendOptimizations(bool on)
+void QStaticText::setPerformanceHint(PerformanceHint performanceHint)
 {
-    if ((!on && !data->useBackendOptimizations)
-        || (on && data->useBackendOptimizations))
+    if ((performanceHint == ModerateCaching && !data->useBackendOptimizations)
+        || (performanceHint == AggressiveCaching && data->useBackendOptimizations)) {
         return;
-
+    }
     detach();
-    data->useBackendOptimizations = on;
+    data->useBackendOptimizations = (performanceHint == AggressiveCaching);
     data->init();
 }
 
 /*!
-  Returns whether the QStaticText object should use optimizations specific to the paint engine
-  backend when possible. By default this setting is false.
+  Returns which performance hint is set for the QStaticText.
 
-  \sa setUseBackendOptimizations()
+  \sa setPerformanceHint()
 */
-bool QStaticText::useBackendOptimizations() const
+QStaticText::PerformanceHint QStaticText::performanceHint() const
 {
-    return data->useBackendOptimizations;
+    return data->useBackendOptimizations ? AggressiveCaching : ModerateCaching;
 }
 
 /*!
