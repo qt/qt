@@ -754,8 +754,10 @@ bool QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
                                                 QmlMetaProperty::WriteFlags flags)
 {
     // Remove any existing bindings on this property
-    if (!(flags & QmlMetaProperty::DontRemoveBinding))
-        delete q->setBinding(0);
+    if (!(flags & QmlMetaProperty::DontRemoveBinding)) {
+        QmlAbstractBinding *binding = q->setBinding(0);
+        if (binding) binding->destroy();
+    }
 
     bool rv = false;
     uint type = q->type();
