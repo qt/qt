@@ -86,8 +86,8 @@ protected:
     void paintEvent(QPaintEvent *event);
 
 private:
-    qreal level;
-    QPixmap pixmap;
+    qreal m_level;
+    QPixmap m_pixmap;
 };
 
 class InputTest : public QMainWindow
@@ -103,23 +103,23 @@ private slots:
     void readMore();
     void toggleMode();
     void toggleSuspend();
-    void state(QAudio::State s);
-    void deviceChanged(int idx);
+    void state(QAudio::State state);
+    void deviceChanged(int index);
 
 private:
-    AudioInfo *audioinfo;
-    QAudioDeviceInfo device;
-    QAudioFormat format;
-    QAudioInput *audioInput;
-    QIODevice *input;
-    RenderArea *canvas;
+    AudioInfo *m_audioInfo;
+    QAudioDeviceInfo m_device;
+    QAudioFormat m_format;
+    QAudioInput *m_audioInput;
+    QIODevice *m_input;
+    RenderArea *m_canvas;
 
-    bool pullMode;
+    bool m_pullMode;
 
-    QPushButton *button;
-    QPushButton *button2;
-    QComboBox *deviceBox;
+    QPushButton *m_modeButton;
+    QPushButton *m_suspendResumeButton;
+    QComboBox *m_deviceBox;
 
-    char *buffer;
+    char *m_buffer;
 };
 
