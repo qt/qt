@@ -112,7 +112,7 @@ private slots:
     void writeMore();
     void toggle();
     void togglePlay();
-    void state(QAudio::State s);
-    void deviceChanged(int idx);
+    void state(QAudio::State state);
+    void deviceChanged(int index);
 };
 

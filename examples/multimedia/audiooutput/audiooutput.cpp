@@ -213,7 +213,7 @@ void AudioTest::initializeAudio()
 
     QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
     if (!info.isFormatSupported(m_format)) {
-        qWarning()<<"default format not supported try to use nearest";
+        qWarning() << "Default format not supported - trying to use nearest";
         m_format = info.nearestFormat(m_format);
     }
 
@@ -238,19 +238,21 @@ AudioTest::~AudioTest()
 
 }
 
-void AudioTest::deviceChanged(int idx)
+void AudioTest::deviceChanged(int index)
 {
     m_timer->stop();
     m_generator->stop();
     m_audioOutput->stop();
     m_audioOutput->disconnect(this);
-    m_device = m_deviceBox->itemData(idx).value<QAudioDeviceInfo>();
+    m_device = m_deviceBox->itemData(index).value<QAudioDeviceInfo>();
     createAudioOutput();
 }
 
 void AudioTest::status()
 {
-    qWarning() << "byteFree = " << m_audioOutput->bytesFree() << " bytes, elapsedUSecs = " << m_audioOutput->elapsedUSecs() << ", processedUSecs = " << m_audioOutput->processedUSecs();
+    qWarning() << "bytesFree = " << m_audioOutput->bytesFree()
+               << ", " << "elapsedUSecs = " << m_audioOutput->elapsedUSecs()
+               << ", " << "processedUSecs = " << m_audioOutput->processedUSecs();
 }
 
 void AudioTest::writeMore()
@@ -318,5 +320,5 @@ void AudioTest::togglePlay()
 
 void AudioTest::state(QAudio::State state)
 {
-    qWarning() << " state=" << state;
+    qWarning() << "state = " << state;
 }
