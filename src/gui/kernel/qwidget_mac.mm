@@ -3275,6 +3275,8 @@ void QWidgetPrivate::show_sys()
 
     bool realWindow = isRealWindow();
     if (realWindow && !q->testAttribute(Qt::WA_Moved)) {
+        if (qt_mac_is_macsheet(q))
+            recreateMacWindow();
         q->createWinId();
         if (QWidget *p = q->parentWidget()) {
             p->createWinId();
