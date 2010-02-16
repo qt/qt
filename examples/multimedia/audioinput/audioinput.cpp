@@ -267,7 +267,7 @@ void InputTest::initializeAudio()
 
     QAudioDeviceInfo info(QAudioDeviceInfo::defaultInputDevice());
     if (!info.isFormatSupported(m_format)) {
-        qWarning()<<"default format not supported try to use nearest";
+        qWarning() << "Default format not supported - trying to use nearest";
         m_format = info.nearestFormat(m_format);
     }
 
@@ -288,7 +288,9 @@ void InputTest::createAudioInput()
 
 void InputTest::status()
 {
-    qWarning()<<"bytesReady = "<<m_audioInput->bytesReady()<<" bytes, elapsedUSecs = "<<m_audioInput->elapsedUSecs()<<", processedUSecs = "<<m_audioInput->processedUSecs();
+    qWarning() << "bytesReady = " << m_audioInput->bytesReady()
+               << ", " << "elapsedUSecs = " <<m_audioInput->elapsedUSecs()
+               << ", " << "processedUSecs = "<<m_audioInput->processedUSecs();
 }
 
 void InputTest::readMore()
@@ -345,7 +347,7 @@ void InputTest::toggleSuspend()
 
 void InputTest::state(QAudio::State state)
 {
-    qWarning() << " state=" << state;
+    qWarning() << "state = " << state;
 }
 
 void InputTest::refreshDisplay()
