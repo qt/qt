@@ -65,6 +65,7 @@
 #include "qmlcomponent_p.h"
 #include "qmlscriptclass_p.h"
 #include "qmlnetworkaccessmanagerfactory.h"
+#include "qmlimageprovider.h"
 
 #include <qfxperf_p_p.h>
 
@@ -85,6 +86,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qmutex.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
@@ -424,6 +426,7 @@ QmlContext *QmlEngine::rootContext()
 void QmlEngine::setNetworkAccessManagerFactory(QmlNetworkAccessManagerFactory *factory)
 {
     Q_D(QmlEngine);
+    QMutexLocker locker(&d->mutex);
     d->networkAccessManagerFactory = factory;
 }
 
@@ -438,17 +441,24 @@ QmlNetworkAccessManagerFactory *QmlEngine::networkAccessManagerFactory() const
     return d->networkAccessManagerFactory;
 }
 
+QNetworkAccessManager *QmlEnginePrivate::createNetworkAccessManager(QObject *parent) const
+{
+    QMutexLocker locker(&mutex);
+    QNetworkAccessManager *nam;
+    if (networkAccessManagerFactory) {
+        nam = networkAccessManagerFactory->create(parent);
+    } else {
+        nam = new QNetworkAccessManager(parent);
+    }
+
+    return nam;
+}
+
 QNetworkAccessManager *QmlEnginePrivate::getNetworkAccessManager() const
 {
     Q_Q(const QmlEngine);
-
-    if (!networkAccessManager) {
-        if (networkAccessManagerFactory) {
-            networkAccessManager = networkAccessManagerFactory->create(const_cast<QmlEngine*>(q));
-        } else {
-            networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(q));
-        }
-    }
+    if (!networkAccessManager)
+        networkAccessManager = createNetworkAccessManager(const_cast<QmlEngine*>(q));
     return networkAccessManager;
 }
 
@@ -467,6 +477,69 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
     return d->getNetworkAccessManager();
+}
+
+/*!
+    Sets the \a provider to use for images requested via the \e image: url
+    scheme, with host \a providerId.
+
+    QmlImageProvider allows images to be provided to QML asynchronously.
+    The image request will be run in a low priority thread.  This allows
+    potentially costly image loading to be done in the background, without
+    affecting the performance of the UI.
+
+    Note that images loaded from a QmlImageProvider are cached by
+    QPixmapCache, similar to any image loaded by QML.
+
+    The QmlEngine assumes ownership of the provider.
+
+    This example creates a provider with id \e colors:
+
+    \snippet examples/declarative/imageprovider/main.cpp 0
+
+    \snippet examples/declarative/imageprovider/view.qml 0
+
+    \sa removeImageProvider()
+*/
+void QmlEngine::addImageProvider(const QString &providerId, QmlImageProvider *provider)
+{
+    Q_D(QmlEngine);
+    QMutexLocker locker(&d->mutex);
+    d->imageProviders.insert(providerId, provider);
+}
+
+/*!
+    Returns the QmlImageProvider set for \a providerId.
+*/
+QmlImageProvider *QmlEngine::imageProvider(const QString &providerId) const
+{
+    Q_D(const QmlEngine);
+    QMutexLocker locker(&d->mutex);
+    return d->imageProviders.value(providerId);
+}
+
+/*!
+    Removes the QmlImageProvider for \a providerId.
+
+    Returns the provider if it was found; otherwise returns 0.
+
+    \sa addImageProvider()
+*/
+void QmlEngine::removeImageProvider(const QString &providerId)
+{
+    Q_D(QmlEngine);
+    QMutexLocker locker(&d->mutex);
+    delete d->imageProviders.take(providerId);
+}
+
+QImage QmlEnginePrivate::getImageFromProvider(const QUrl &url)
+{
+    QMutexLocker locker(&mutex);
+    QImage image;
+    QmlImageProvider *provider = imageProviders.value(url.host());
+    if (provider)
+        image = provider->request(url.path().mid(1));
+    return image;
 }
 
 /*!

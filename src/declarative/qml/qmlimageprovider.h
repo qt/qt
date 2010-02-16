@@ -39,13 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QMLENGINE_H
-#define QMLENGINE_H
+#ifndef QMLIMAGEPROVIDER_H
+#define QMLIMAGEPROVIDER_H
 
-#include <QtCore/qurl.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qmap.h>
-#include <QtScript/qscriptvalue.h>
+#include <QtGui/qimage.h>
 
 QT_BEGIN_HEADER
 
@@ -53,59 +50,15 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlComponent;
-class QmlEnginePrivate;
-class QmlImportsPrivate;
-class QmlExpression;
-class QmlContext;
-class QmlType;
-class QUrl;
-class QScriptEngine;
-class QScriptContext;
-class QmlImageProvider;
-class QNetworkAccessManager;
-class QmlNetworkAccessManagerFactory;
-class Q_DECLARATIVE_EXPORT QmlEngine : public QObject
+class Q_DECLARATIVE_EXPORT QmlImageProvider
 {
-    Q_PROPERTY(QString offlineStoragePath READ offlineStoragePath WRITE setOfflineStoragePath)
-    Q_OBJECT
 public:
-    QmlEngine(QObject *p = 0);
-    virtual ~QmlEngine();
-
-    QmlContext *rootContext();
-
-    void clearComponentCache();
-
-    void addImportPath(const QString& dir);
-
-    void setNetworkAccessManagerFactory(QmlNetworkAccessManagerFactory *);
-    QmlNetworkAccessManagerFactory *networkAccessManagerFactory() const;
-
-    QNetworkAccessManager *networkAccessManager() const;
-
-    void addImageProvider(const QString &id, QmlImageProvider *);
-    QmlImageProvider *imageProvider(const QString &id) const;
-    void removeImageProvider(const QString &id);
-
-    void setOfflineStoragePath(const QString& dir);
-    QString offlineStoragePath() const;
-
-    QUrl baseUrl() const;
-    void setBaseUrl(const QUrl &);
-
-    static QmlContext *contextForObject(const QObject *);
-    static void setContextForObject(QObject *, QmlContext *);
-
-Q_SIGNALS:
-    void quit ();
-
-private:
-    Q_DECLARE_PRIVATE(QmlEngine)
+    virtual ~QmlImageProvider();
+    virtual QImage request(const QString &id) = 0;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLENGINE_H
+#endif // QMLIMAGEPROVIDER
