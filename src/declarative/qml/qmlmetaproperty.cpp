@@ -276,7 +276,7 @@ const char *QmlMetaProperty::propertyTypeName() const
 {
     if (type() & ValueTypeProperty) {
 
-        QmlEnginePrivate *ep = d->context?QmlEnginePrivate::get(d->context->engine()):0;
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(d->context);
         QmlValueType *valueType = 0;
         if (ep) valueType = ep->valueTypes[d->core.propType];
         else valueType = QmlValueTypeFactory::valueType(d->core.propType);
@@ -689,7 +689,7 @@ QVariant QmlMetaPropertyPrivate::readValueProperty()
 
     } else if(type & QmlMetaProperty::ValueTypeProperty) {
 
-        QmlEnginePrivate *ep = context?QmlEnginePrivate::get(context->engine()):0;
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(context);
         QmlValueType *valueType = 0;
         if (ep) valueType = ep->valueTypes[core.propType];
         else valueType = QmlValueTypeFactory::valueType(core.propType);
@@ -762,8 +762,7 @@ bool QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
     bool rv = false;
     uint type = q->type();
     if (type & QmlMetaProperty::ValueTypeProperty) {
-        QmlEnginePrivate *ep = 
-            context?static_cast<QmlEnginePrivate *>(QObjectPrivate::get(context->engine())):0;
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(context);
 
         QmlValueType *writeBack = 0;
         if (ep) {
