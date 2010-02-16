@@ -68,10 +68,12 @@ elements, and QML is a better choice if your UI is comprised of a large number
 of simple and dynamic elements.
 
 \section1 Adding QML to a QGraphicsView based UI
-If you have an existing Graphics View based UI you can create new items in QML,
-and use \l{QmlComponent} to create \l{QGraphicsObject}s from the QML files. These
-\l{QGraphicsObject}s can then be placed into your \l{QGraphicsScene} using \l{QGraphicsScene::addItem}
-or by reparenting them to an item already in the \l{QGraphicsScene}.
+
+If you have an existing Graphics View based UI you can create new
+items in QML, and use \l{QmlComponent} to create \l{QGraphicsObject}s
+from the QML files. These \l{QGraphicsObject}s can then be placed into
+your \l{QGraphicsScene} using \l{QGraphicsScene::addItem()} or by
+reparenting them to an item already in the \l{QGraphicsScene}.
 
 Example, for local QML files:
 
