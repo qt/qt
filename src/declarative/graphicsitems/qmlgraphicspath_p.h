@@ -189,7 +189,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsPath : public QObject, public QmlParserSta
     Q_OBJECT
 
     Q_INTERFACES(QmlParserStatus)
-    Q_PROPERTY(QList<QmlGraphicsPathElement *>* pathElements READ pathElements)
+    Q_PROPERTY(QmlListProperty<QmlGraphicsPathElement> pathElements READ pathElements)
     Q_PROPERTY(qreal startX READ startX WRITE setStartX)
     Q_PROPERTY(qreal startY READ startY WRITE setStartY)
     Q_PROPERTY(bool closed READ isClosed NOTIFY changed)
@@ -199,7 +199,7 @@ public:
     QmlGraphicsPath(QObject *parent=0);
     ~QmlGraphicsPath();
 
-    QList<QmlGraphicsPathElement *>* pathElements();
+    QmlListProperty<QmlGraphicsPathElement> pathElements();
 
     qreal startX() const;
     void setStartX(qreal x);

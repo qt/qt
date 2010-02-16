@@ -125,7 +125,7 @@ public:
     int m_version_maj;
     int m_version_min;
     int m_typeId; int m_listId; int m_qmlListId;
-    QmlPrivate::Func m_opFunc;
+    QObject *(*m_newFunc)();
     const QMetaObject *m_baseMetaObject;
     QmlAttachedPropertiesFunc m_attachedPropertiesFunc;
     const QMetaObject *m_attachedPropertiesType;
@@ -142,15 +142,14 @@ public:
 
 QmlTypePrivate::QmlTypePrivate()
 : m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_qmlListId(0),
-  m_opFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
+  m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
   m_parserStatusCast(-1), m_propertyValueSourceCast(-1), m_propertyValueInterceptorCast(-1),
   m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), m_isSetup(false)
 {
 }
 
 
-QmlType::QmlType(int type, int listType, int qmlListType,
-                 QmlPrivate::Func opFunc, const char *iid, int index)
+QmlType::QmlType(int type, int listType, int qmlListType, const char *iid, int index)
 : d(new QmlTypePrivate)
 {
     d->m_isInterface = true;
@@ -158,7 +157,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_typeId = type;
     d->m_listId = listType;
     d->m_qmlListId = qmlListType;
-    d->m_opFunc = opFunc;
+    d->m_newFunc = 0;
     d->m_index = index;
     d->m_isSetup = true;
     d->m_version_maj = 0;
@@ -166,7 +165,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
 }
 
 QmlType::QmlType(int type, int listType, int qmlListType,
-                 QmlPrivate::Func opFunc, const char *qmlName,
+                 QObject *(*newFunc)(), const char *qmlName,
                  int version_maj, int version_min,
                  const QMetaObject *metaObject,
                  QmlAttachedPropertiesFunc attachedPropertiesFunc,
@@ -183,7 +182,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_typeId = type;
     d->m_listId = listType;
     d->m_qmlListId = qmlListType;
-    d->m_opFunc = opFunc;
+    d->m_newFunc = newFunc;
     d->m_baseMetaObject = metaObject;
     d->m_attachedPropertiesFunc = attachedPropertiesFunc;
     d->m_attachedPropertiesType = attachedType;
@@ -283,10 +282,7 @@ QObject *QmlType::create() const
 {
     d->init();
 
-    QVariant v;
-    QObject *rv = 0;
-    d->m_opFunc(QmlPrivate::Create, 0, v, v, (void **)&rv);
-
+    QObject *rv = d->m_newFunc();
     if (rv && !d->m_metaObjects.isEmpty())
         (void *)new QmlProxyMetaObject(rv, &d->m_metaObjects);
 
@@ -321,29 +317,35 @@ int QmlType::qmlListTypeId() const
 void QmlType::listClear(const QVariant &list)
 {
     Q_ASSERT(list.userType() == qListTypeId());
-    QVariant arg;
-    d->m_opFunc(QmlPrivate::Clear, 0, list, arg, 0);
+    QmlListProperty<void> *l = (QmlListProperty<void> *)list.data();
+    if (l->clear) l->clear(l);
 }
 
 void QmlType::listAppend(const QVariant &list, const QVariant &item)
 {
     Q_ASSERT(list.userType() == qListTypeId());
-    d->m_opFunc(QmlPrivate::Append, 0, list, item, 0);
+    QmlListProperty<void> *l = (QmlListProperty<void> *)list.data();
+    if (l->append) l->append(l, *(void **)item.data());
 }
 
 QVariant QmlType::listAt(const QVariant &list, int idx)
 {
     Q_ASSERT(list.userType() == qListTypeId());
-    QVariant rv;
-    void *ptr = (void *)&rv;
-    d->m_opFunc(QmlPrivate::Value, idx, list, QVariant(), &ptr);
-    return rv;
+    QmlListProperty<void> *l = (QmlListProperty<void> *)list.data();
+    if (l->at) {
+        void *v = l->at(l, idx);
+        return QVariant(typeId(), &v);
+    } else {
+        return QVariant();
+    }
 }
 
 int QmlType::listCount(const QVariant &list)
 {
     Q_ASSERT(list.userType() == qListTypeId());
-    return d->m_opFunc(QmlPrivate::Length, 0, list, QVariant(), 0);
+    QmlListProperty<void> *l = (QmlListProperty<void> *)list.data();
+    if (l->count) return l->count(l);
+    return 0;
 }
 
 const QMetaObject *QmlType::metaObject() const
@@ -387,15 +389,6 @@ int QmlType::propertyValueInterceptorCast() const
     return d->m_propertyValueInterceptorCast;
 }
 
-QVariant QmlType::fromObject(QObject *obj) const
-{
-    QVariant rv;
-    QVariant *v_ptr = &rv;
-    QVariant vobj = QVariant::fromValue(obj);
-    d->m_opFunc(QmlPrivate::FromObject, 0, QVariant(), vobj, (void **)&v_ptr);
-    return rv;
-}
-
 const char *QmlType::interfaceIId() const
 {
     return d->m_iid;
@@ -407,7 +400,6 @@ int QmlType::index() const
 }
 
 int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
-                                    QmlPrivate::Func listFunction,
                                     const char *iid)
 {
     QWriteLocker lock(metaTypeDataLock());
@@ -416,7 +408,7 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     int index = data->types.count();
 
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
-                                listFunction, iid, index);
+                                iid, index);
 
     data->types.append(type);
     data->idToType.insert(type->typeId(), type);
@@ -439,7 +431,7 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     return index;
 }
 
-int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func,
+int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QObject *(*func)(),
         const char *uri, int version_maj, int version_min, const char *cname,
         const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
         int pStatus, int object, int valueSource, int valueInterceptor, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)

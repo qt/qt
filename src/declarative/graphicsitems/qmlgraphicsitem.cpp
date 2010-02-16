@@ -892,7 +892,6 @@ void QmlGraphicsKeyNavigationAttached::keyReleased(QKeyEvent *event)
     parameter provides information about the event.
 */
 
-
 const QmlGraphicsKeysAttached::SigMap QmlGraphicsKeysAttached::sigMap[] = {
     { Qt::Key_Left, "leftPressed" },
     { Qt::Key_Right, "rightPressed" },

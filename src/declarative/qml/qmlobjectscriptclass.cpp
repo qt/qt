@@ -239,7 +239,7 @@ QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
         }
 
         if (lastData->flags & QmlPropertyCache::Data::IsQList) {
-            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QListPtr, lastData->propType));
+            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::ListProperty, lastData->propType));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQmlList) {
             return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QmlListPtr, lastData->propType));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
