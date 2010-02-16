@@ -609,7 +609,7 @@ EGLConfig Q_OPENGL_EXPORT qt_chooseEGLConfigForPixmap(bool hasAlpha, bool readOn
 
         EGLint configCount = 0;
         do {
-            eglChooseConfig(QEglContext::display(), configAttribs.properties(), targetConfig, 1, &configCount);
+            eglChooseConfig(QEgl::display(), configAttribs.properties(), targetConfig, 1, &configCount);
             if (configCount > 0) {
                 // Got one
                 qDebug() << "Found an" << (hasAlpha ? "ARGB" : "RGB") << (readOnly ? "readonly" : "target" )
@@ -648,7 +648,7 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
         pixmapAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGB);
 
     EGLSurface pixmapSurface;
-    pixmapSurface = eglCreatePixmapSurface(QEglContext::display(),
+    pixmapSurface = eglCreatePixmapSurface(QEgl::display(),
                                            pixmapConfig,
                                            (EGLNativePixmapType) pixmapData->handle(),
                                            pixmapAttribs.properties());
@@ -656,7 +656,7 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
 //           pixmapSurface, pixmapData->handle());
     if (pixmapSurface == EGL_NO_SURFACE) {
         qWarning() << "Failed to create a pixmap surface using config" << (int)pixmapConfig
-                   << ":" << QEglContext::errorString(eglGetError());
+                   << ":" << QEgl::errorString();
         return false;
     }
 
@@ -693,8 +693,8 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
     if (!checkedForTFP) {
         // Check for texture_from_pixmap egl extension
         checkedForTFP = true;
-        if (eglContext->hasExtension("EGL_NOKIA_texture_from_pixmap") ||
-            eglContext->hasExtension("EGL_EXT_texture_from_pixmap"))
+        if (QEgl::hasExtension("EGL_NOKIA_texture_from_pixmap") ||
+            QEgl::hasExtension("EGL_EXT_texture_from_pixmap"))
         {
             qDebug("Found texture_from_pixmap EGL extension!");
             haveTFP = true;
@@ -734,7 +734,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
     EGLBoolean success;
     success = eglBindTexImage(eglContext->display(), (EGLSurface)pixmapData->gl_surface, EGL_BACK_BUFFER);
     if (success == EGL_FALSE) {
-        qWarning() << "eglBindTexImage() failed:" << eglContext->errorString(eglGetError());
+        qWarning() << "eglBindTexImage() failed:" << QEgl::errorString();
         eglDestroySurface(eglContext->display(), (EGLSurface)pixmapData->gl_surface);
         pixmapData->gl_surface = (Qt::HANDLE)EGL_NO_SURFACE;
         haveTFP = false;
@@ -757,10 +757,10 @@ void QGLContextPrivate::destroyGlSurfaceForPixmap(QPixmapData* pmd)
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
     if (pixmapData->gl_surface) {
         EGLBoolean success;
-        success = eglDestroySurface(QEglContext::display(), (EGLSurface)pixmapData->gl_surface);
+        success = eglDestroySurface(QEgl::display(), (EGLSurface)pixmapData->gl_surface);
         if (success == EGL_FALSE) {
             qWarning() << "destroyGlSurfaceForPixmap() - Error deleting surface: "
-                       << QEglContext::errorString(eglGetError());
+                       << QEgl::errorString();
         }
         pixmapData->gl_surface = 0;
     }
@@ -772,12 +772,12 @@ void QGLContextPrivate::unbindPixmapFromTexture(QPixmapData* pmd)
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
     if (pixmapData->gl_surface) {
         EGLBoolean success;
-        success = eglReleaseTexImage(QEglContext::display(),
+        success = eglReleaseTexImage(QEgl::display(),
                                      (EGLSurface)pixmapData->gl_surface,
                                      EGL_BACK_BUFFER);
         if (success == EGL_FALSE) {
             qWarning() << "unbindPixmapFromTexture() - Unable to release bound texture: "
-                       << QEglContext::errorString(eglGetError());
+                       << QEgl::errorString();
         }
     }
 }

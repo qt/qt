@@ -84,17 +84,17 @@ EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties
         props = 0;
     EGLSurface surf;
     if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
+        surf = eglCreateWindowSurface(QEgl::display(), cfg, windowDrawable, props);
     else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
+        surf = eglCreatePixmapSurface(QEgl::display(), cfg, pixmapDrawable, props);
     if (surf == EGL_NO_SURFACE) {
         qWarning() << "QEglContext::createSurface(): Unable to create EGL surface:"
-                   << errorString(eglGetError());
+                   << QEgl::errorString();
     }
     return surf;
 }
 
-EGLNativeDisplayType QEglContext::nativeDisplay()
+EGLNativeDisplayType QEgl::nativeDisplay()
 {
     Display *xdpy = QX11Info::display();
     if (!xdpy) {

@@ -57,8 +57,6 @@ QT_BEGIN_NAMESPACE
 static QEglContext * volatile currentGLContext = 0;
 static QEglContext * volatile currentVGContext = 0;
 
-EGLDisplay QEglContext::dpy = EGL_NO_DISPLAY;
-
 QEglContext::QEglContext()
     : apiType(QEgl::OpenGL)
     , ctx(EGL_NO_CONTEXT)
@@ -98,7 +96,8 @@ bool QEglContext::chooseConfig
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
-        if (!eglChooseConfig(display(), props.properties(), 0, 0, &matching) || !matching)
+        EGLDisplay dpy = QEgl::display();
+        if (!eglChooseConfig(dpy, props.properties(), 0, 0, &matching) || !matching)
             continue;
 
         // If we want the best pixel format, then return the first
@@ -145,7 +144,7 @@ bool QEglContext::chooseConfig
         qWarning() << "QEglContext::chooseConfig(): Could not find a suitable EGL configuration";
         qWarning() << "Requested:" << props.toString();
         qWarning() << "Available:";
-        dumpAllConfigs();
+        QEgl::dumpAllConfigs();
     }
     return false;
 }
@@ -175,9 +174,9 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (shareContext && shareContext->ctx == EGL_NO_CONTEXT)
         shareContext = 0;
     if (shareContext) {
-        ctx = eglCreateContext(display(), cfg, shareContext->ctx, contextProps.properties());
+        ctx = eglCreateContext(QEgl::display(), cfg, shareContext->ctx, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
-            qWarning() << "QEglContext::createContext(): Could not share context:" << errorString(eglGetError());
+            qWarning() << "QEglContext::createContext(): Could not share context:" << QEgl::errorString();
             shareContext = 0;
         } else {
             sharing = true;
@@ -186,7 +185,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (ctx == EGL_NO_CONTEXT) {
         ctx = eglCreateContext(display(), cfg, 0, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
-            qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << errorString(eglGetError());
+            qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << QEgl::errorString();
             return false;
         }
     }
@@ -243,9 +242,9 @@ bool QEglContext::makeCurrent(EGLSurface surface)
         eglBindAPI(EGL_OPENVG_API);
 #endif
 
-    bool ok = eglMakeCurrent(display(), surface, surface, ctx);
+    bool ok = eglMakeCurrent(QEgl::display(), surface, surface, ctx);
     if (!ok)
-        qWarning() << "QEglContext::makeCurrent():" << errorString(eglGetError());
+        qWarning() << "QEglContext::makeCurrent():" << QEgl::errorString();
     return ok;
 }
 
@@ -272,9 +271,9 @@ bool QEglContext::doneCurrent()
         eglBindAPI(EGL_OPENVG_API);
 #endif
 
-    bool ok = eglMakeCurrent(display(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    bool ok = eglMakeCurrent(QEgl::display(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
-        qWarning() << "QEglContext::doneCurrent():" << errorString(eglGetError());
+        qWarning() << "QEglContext::doneCurrent():" << QEgl::errorString();
     return ok;
 }
 
@@ -294,9 +293,9 @@ bool QEglContext::swapBuffers(EGLSurface surface)
     if(ctx == EGL_NO_CONTEXT)
         return false;
 
-    bool ok = eglSwapBuffers(display(), surface);
+    bool ok = eglSwapBuffers(QEgl::display(), surface);
     if (!ok)
-        qWarning() << "QEglContext::swapBuffers():" << errorString(eglGetError());
+        qWarning() << "QEglContext::swapBuffers():" << QEgl::errorString();
     return ok;
 }
 
@@ -333,43 +332,33 @@ void QEglContext::waitClient()
 // Query the value of a configuration attribute.
 bool QEglContext::configAttrib(int name, EGLint *value) const
 {
-    return eglGetConfigAttrib(display(), cfg, name, value);
+    return eglGetConfigAttrib(QEgl::display(), cfg, name, value);
 }
 
-// Retrieve all of the properties on "cfg".  If zero, return
-// the context's configuration.
-QEglProperties QEglContext::configProperties(EGLConfig cfg) const
+QEglProperties QEglContext::configProperties() const
 {
-    if (!cfg)
-        cfg = config();
-    QEglProperties props;
-    for (int name = 0x3020; name <= 0x304F; ++name) {
-        EGLint value;
-        if (name != EGL_NONE && eglGetConfigAttrib(display(), cfg, name, &value))
-            props.setValue(name, value);
-    }
-    eglGetError();  // Clear the error state.
-    return props;
+    return QEglProperties(config());
 }
 
-EGLDisplay QEglContext::display()
+EGLDisplay QEgl::display()
 {
+    static EGLDisplay dpy = EGL_NO_DISPLAY;
     static bool openedDisplay = false;
 
     if (!openedDisplay) {
         dpy = eglGetDisplay(nativeDisplay());
         openedDisplay = true;
         if (dpy == EGL_NO_DISPLAY) {
-            qWarning("QEglContext::display(): Falling back to EGL_DEFAULT_DISPLAY");
+            qWarning("QEgl::display(): Falling back to EGL_DEFAULT_DISPLAY");
             dpy = eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
         }
         if (dpy == EGL_NO_DISPLAY) {
-            qWarning("QEglContext::display(): Can't even open the default display");
+            qWarning("QEgl::display(): Can't even open the default display");
             return EGL_NO_DISPLAY;
         }
 
         if (!eglInitialize(dpy, NULL, NULL)) {
-            qWarning() << "QEglContext::display(): Cannot initialize EGL display:" << errorString(eglGetError());
+            qWarning() << "QEgl::display(): Cannot initialize EGL display:" << QEgl::errorString();
             return EGL_NO_DISPLAY;
         }
     }
@@ -378,14 +367,14 @@ EGLDisplay QEglContext::display()
 }
 
 #if !defined(Q_WS_X11) && !defined(Q_WS_WINCE) // WinCE & X11 implement this properly
-EGLNativeDisplayType QEglContext::nativeDisplay()
+EGLNativeDisplayType QEgl::nativeDisplay()
 {
     return EGL_DEFAULT_DISPLAY;
 }
 #endif
 
 // Return the error string associated with a specific code.
-QString QEglContext::errorString(EGLint code)
+QString QEgl::errorString(EGLint code)
 {
     static const char * const errors[] = {
         "Success (0x3000)",                 // No tr
@@ -411,8 +400,24 @@ QString QEglContext::errorString(EGLint code)
     }
 }
 
+QString QEgl::errorString()
+{
+    return errorString(error());
+}
+
+void QEgl::clearError()
+{
+    eglGetError();
+}
+
+EGLint QEgl::error()
+{
+    return eglGetError();
+}
+
+
 // Dump all of the EGL configurations supported by the system.
-void QEglContext::dumpAllConfigs()
+void QEgl::dumpAllConfigs()
 {
     QEglProperties props;
     EGLint count = 0;
@@ -421,23 +426,23 @@ void QEglContext::dumpAllConfigs()
     EGLConfig *configs = new EGLConfig [count];
     eglGetConfigs(display(), configs, count, &count);
     for (EGLint index = 0; index < count; ++index) {
-        props = configProperties(configs[index]);
+        props = QEglProperties(configs[index]);
         qWarning() << props.toString();
     }
     delete [] configs;
 }
 
-QString QEglContext::extensions()
+QString QEgl::extensions()
 {
-    const char* exts = eglQueryString(QEglContext::display(), EGL_EXTENSIONS);
+    const char* exts = eglQueryString(QEgl::display(), EGL_EXTENSIONS);
     return QString(QLatin1String(exts));
 }
 
-bool QEglContext::hasExtension(const char* extensionName)
+bool QEgl::hasExtension(const char* extensionName)
 {
     QList<QByteArray> extensions =
         QByteArray(reinterpret_cast<const char *>
-            (eglQueryString(QEglContext::display(), EGL_EXTENSIONS))).split(' ');
+            (eglQueryString(QEgl::display(), EGL_EXTENSIONS))).split(' ');
     return extensions.contains(extensionName);
 }
 

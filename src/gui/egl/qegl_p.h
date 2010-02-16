@@ -96,6 +96,8 @@ QT_END_INCLUDE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+class QEglProperties;
+
 namespace QEgl {
     enum API
     {
@@ -108,6 +110,22 @@ namespace QEgl {
         ExactPixelFormat,
         BestPixelFormat
     };
+
+//    EGLConfig  chooseConfig(const QEglProperties* properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
+//    EGLSurface createSurface(QPaintDevice *device, EGLConfig config, const QEglProperties *properties = 0);
+
+    Q_GUI_EXPORT void dumpAllConfigs();
+
+    Q_GUI_EXPORT void clearError();
+    Q_GUI_EXPORT EGLint error();
+    Q_GUI_EXPORT QString errorString(EGLint code);
+    Q_GUI_EXPORT QString errorString();
+
+    Q_GUI_EXPORT QString extensions();
+    Q_GUI_EXPORT bool hasExtension(const char* extensionName);
+
+    Q_GUI_EXPORT EGLDisplay display();
+    Q_GUI_EXPORT EGLNativeDisplayType nativeDisplay();
 };
 
 

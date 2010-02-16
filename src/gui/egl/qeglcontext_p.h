@@ -90,24 +90,15 @@ public:
 
     bool configAttrib(int name, EGLint *value) const;
 
-    static void clearError() { eglGetError(); }
-    static EGLint error() { return eglGetError(); }
-    static QString errorString(EGLint code);
-
-    static EGLDisplay display();
-
     EGLContext context() const { return ctx; }
     void setContext(EGLContext context) { ctx = context; ownsContext = false;}
+
+    EGLDisplay display() {return QEgl::display();}
 
     EGLConfig config() const { return cfg; }
     void setConfig(EGLConfig config) { cfg = config; }
 
-    QEglProperties configProperties(EGLConfig cfg = 0) const;
-
-    void dumpAllConfigs();
-
-    static QString extensions();
-    static bool hasExtension(const char* extensionName);
+    QEglProperties configProperties() const;
 
 private:
     QEgl::API apiType;
@@ -117,9 +108,6 @@ private:
     bool current;
     bool ownsContext;
     bool sharing;
-
-    static EGLDisplay dpy;
-    static EGLNativeDisplayType nativeDisplay();
 
     static QEglContext *currentContext(QEgl::API api);
     static void setCurrentContext(QEgl::API api, QEglContext *context);
