@@ -77,39 +77,38 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
 
 QByteArray QHttpNetworkRequestPrivate::methodName() const
 {
-    QByteArray ba;
     switch (operation) {
-    case QHttpNetworkRequest::Options:
-        ba += "OPTIONS";
-        break;
     case QHttpNetworkRequest::Get:
-        ba += "GET";
+        return "GET";
         break;
     case QHttpNetworkRequest::Head:
-        ba += "HEAD";
+        return "HEAD";
         break;
     case QHttpNetworkRequest::Post:
-        ba += "POST";
+        return "POST";
+        break;
+    case QHttpNetworkRequest::Options:
+        return "OPTIONS";
         break;
     case QHttpNetworkRequest::Put:
-        ba += "PUT";
+        return "PUT";
         break;
     case QHttpNetworkRequest::Delete:
-        ba += "DELETE";
+        return "DELETE";
         break;
     case QHttpNetworkRequest::Trace:
-        ba += "TRACE";
+        return "TRACE";
         break;
     case QHttpNetworkRequest::Connect:
-        ba += "CONNECT";
+        return "CONNECT";
         break;
     case QHttpNetworkRequest::Custom:
-        ba += customVerb;
+        return customVerb;
         break;
     default:
         break;
     }
-    return ba;
+    return QByteArray();
 }
 
 QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
