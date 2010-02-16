@@ -75,6 +75,11 @@ void Generator::start()
     open(QIODevice::ReadOnly);
 }
 
+qint64 Generator::bytesAvailable() const
+{
+    return (SECONDS*SYSTEM_FREQ*2)-pos + QIODevice::bytesAvailable();
+}
+
 void Generator::stop()
 {
     close();
