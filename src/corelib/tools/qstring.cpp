@@ -1800,13 +1800,14 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
     }
 
     QT_TRY {
-        detach();
         if (blen == alen) {
             // replace in place
+            detach();
             for (int i = 0; i < nIndices; ++i)
                 memcpy(d->data + indices[i], afterBuffer, alen * sizeof(QChar));
         } else if (alen < blen) {
             // replace from front
+            detach();
             uint to = indices[0];
             if (alen)
                 memcpy(d->data+to, after, alen*sizeof(QChar));
