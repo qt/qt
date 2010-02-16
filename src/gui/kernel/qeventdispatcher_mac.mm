@@ -492,6 +492,14 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
         case NSOtherMouseDown:   
         case NSOtherMouseUp:     
         case NSOtherMouseDragged:
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+        case NSEventTypeGesture: // touch events
+        case NSEventTypeMagnify:
+        case NSEventTypeSwipe:
+        case NSEventTypeRotate:
+        case NSEventTypeBeginGesture:
+        case NSEventTypeEndGesture:
+#endif
             result    = true;
         break;
 

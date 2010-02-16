@@ -157,6 +157,7 @@ public:
     void requeueCurrentlyPipelinedRequests();
     void detectPipeliningSupport();
 
+    void handleUnexpectedEOF();
     void closeAndResendCurrentRequest();
 
     void eatWhitespace();

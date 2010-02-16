@@ -260,12 +260,22 @@ void QKqueueFileSystemWatcherEngine::run()
 
             DEBUG() << "QKqueueFileSystemWatcherEngine: processing kevent" << kev.ident << kev.filter;
             if (fd == kqpipe[0]) {
-                char c;
-                if (read(kqpipe[0], &c, 1) != 1) {
+                // read all pending data from the pipe
+                QByteArray ba;
+                ba.resize(kev.data);
+                if (read(kqpipe[0], ba.data(), ba.size()) != ba.size()) {
                     perror("QKqueueFileSystemWatcherEngine: error reading from pipe");
                     return;
                 }
-                switch (c) {
+                // read the command from the buffer (but break and return on 'q')
+                char cmd = 0;
+                for (int i = 0; i < ba.size(); ++i) {
+                    cmd = ba.constData()[i];
+                    if (cmd == 'q')
+                        break;
+                }
+                // handle the command
+                switch (cmd) {
                 case 'q':
                     DEBUG() << "QKqueueFileSystemWatcherEngine: thread received 'q', exiting...";
                     return;
@@ -273,7 +283,7 @@ void QKqueueFileSystemWatcherEngine::run()
                     DEBUG() << "QKqueueFileSystemWatcherEngine: thread received '@', continuing...";
                     break;
                 default:
-                    DEBUG() << "QKqueueFileSystemWatcherEngine: thread received unknow message" << c;
+                    DEBUG() << "QKqueueFileSystemWatcherEngine: thread received unknow message" << cmd;
                     break;
                 }
             } else {

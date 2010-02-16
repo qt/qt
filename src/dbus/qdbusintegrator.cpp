@@ -1937,7 +1937,7 @@ int QDBusConnectionPrivate::sendWithReplyAsync(const QDBusMessage &message, QObj
     QDBusPendingCallPrivate *pcall = sendWithReplyAsync(message, timeout);
     Q_ASSERT(pcall);
 
-    // has it already finished (dispatched locally)?
+    // has it already finished with success (dispatched locally)?
     if (pcall->replyMessage.type() == QDBusMessage::ReplyMessage) {
         pcall->setReplyCallback(receiver, returnMethod);
         processFinishedCall(pcall);
@@ -1945,33 +1945,24 @@ int QDBusConnectionPrivate::sendWithReplyAsync(const QDBusMessage &message, QObj
         return 1;
     }
 
+    // either it hasn't finished or it has finished with error
+    if (errorMethod) {
+        pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
+        connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), receiver, errorMethod,
+                Qt::QueuedConnection);
+        pcall->watcherHelper->moveToThread(thread());
+    }
+
     // has it already finished and is an error reply message?
     if (pcall->replyMessage.type() == QDBusMessage::ErrorMessage) {
-        if (errorMethod) {
-            pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
-            connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), receiver, errorMethod);
-            pcall->watcherHelper->moveToThread(thread());
-        }
         processFinishedCall(pcall);
         delete pcall;
         return 1;
     }
 
-    // has it already finished with error?
-    if (pcall->replyMessage.type() != QDBusMessage::InvalidMessage) {
-        delete pcall;
-        return 0;
-    }
-
     pcall->autoDelete = true;
     pcall->ref.ref();
-
     pcall->setReplyCallback(receiver, returnMethod);
-    if (errorMethod) {
-        pcall->watcherHelper = new QDBusPendingCallWatcherHelper;
-        connect(pcall->watcherHelper, SIGNAL(error(QDBusError,QDBusMessage)), receiver, errorMethod);
-        pcall->watcherHelper->moveToThread(thread());
-    }
 
     return 1;
 }
