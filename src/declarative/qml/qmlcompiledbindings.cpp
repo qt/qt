@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+// #define COMPILEDBINDINGS_DEBUG
+
 #include "qmlcompiledbindings_p.h"
 
 #include <QtDeclarative/qmlinfo.h>
@@ -275,6 +277,7 @@ void QmlCompiledBindingsPrivate::Binding::destroy()
     enabled = false;
     removeFromObject();
     parent->q_func()->release();
+    clear();
 }
 
 int QmlCompiledBindings::qt_metacall(QMetaObject::Call c, int id, void **)
@@ -975,6 +978,147 @@ static void throwException(int id, QmlDelayedError *error,
         qWarning() << error->error;
 }
 
+static void dumpInstruction(const Instr *instr)
+{
+    switch (instr->common.type) {
+    case Instr::Noop:
+        qWarning().nospace() << "Noop";
+        break;
+    case Instr::Subscribe:
+        qWarning().nospace() << "Subscribe" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
+        break;
+    case Instr::SubscribeId:
+        qWarning().nospace() << "SubscribeId" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
+        break;
+    case Instr::LoadId:
+        qWarning().nospace() << "LoadId" << "\t\t\t" << instr->load.index << "\t" << instr->load.reg;
+        break;
+    case Instr::LoadScope:
+        qWarning().nospace() << "LoadScope" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
+        break;
+    case Instr::LoadRoot:
+        qWarning().nospace() << "LoadRoot" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
+        break;
+    case Instr::LoadAttached:
+        qWarning().nospace() << "LoadAttached" << "\t\t" << instr->attached.output << "\t" << instr->attached.reg << "\t" << instr->attached.index;
+        break;
+    case Instr::ConvertIntToReal:
+        qWarning().nospace() << "ConvertIntToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        break;
+    case Instr::ConvertRealToInt:
+        qWarning().nospace() << "ConvertRealToInt" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        break;
+    case Instr::Real:
+        qWarning().nospace() << "Real" << "\t\t\t" << instr->real_value.reg << "\t" << instr->real_value.value;
+        break;
+    case Instr::Int:
+        qWarning().nospace() << "Int" << "\t\t\t" << instr->int_value.reg << "\t" << instr->int_value.value;
+        break;
+    case Instr::Bool:
+        qWarning().nospace() << "Bool" << "\t\t\t" << instr->bool_value.reg << "\t" << instr->bool_value.value;
+        break;
+    case Instr::String:
+        qWarning().nospace() << "String" << "\t\t\t" << instr->string_value.reg << "\t" << instr->string_value.offset << "\t" << instr->string_value.length;
+        break;
+    case Instr::AddReal:
+        qWarning().nospace() << "AddReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::AddInt:
+        qWarning().nospace() << "AddInt" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::AddString:
+        qWarning().nospace() << "AddString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::MinusReal:
+        qWarning().nospace() << "MinusReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::MinusInt:
+        qWarning().nospace() << "MinusInt" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::CompareReal:
+        qWarning().nospace() << "CompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::CompareString:
+        qWarning().nospace() << "CompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::NotCompareReal:
+        qWarning().nospace() << "NotCompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::NotCompareString:
+        qWarning().nospace() << "NotCompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::GreaterThanReal:
+        qWarning().nospace() << "GreaterThanReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::MaxReal:
+        qWarning().nospace() << "MaxReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::MinReal:
+        qWarning().nospace() << "MinReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::NewString:
+        qWarning().nospace() << "NewString" << "\t\t" << instr->construct.reg;
+        break;
+    case Instr::NewUrl:
+        qWarning().nospace() << "NewUrl" << "\t\t\t" << instr->construct.reg;
+        break;
+    case Instr::CleanupString:
+        qWarning().nospace() << "CleanupString" << "\t\t" << instr->cleanup.reg;
+        break;
+    case Instr::CleanupUrl:
+        qWarning().nospace() << "CleanupUrl" << "\t\t" << instr->cleanup.reg;
+        break;
+    case Instr::Fetch:
+        qWarning().nospace() << "Fetch" << "\t\t\t" << instr->fetch.output << "\t" << instr->fetch.index << "\t" << instr->fetch.objectReg;
+        break;
+    case Instr::Store:
+        qWarning().nospace() << "Store" << "\t\t\t" << instr->store.output << "\t" << instr->store.index << "\t" << instr->store.reg;
+        break;
+    case Instr::Copy:
+        qWarning().nospace() << "Copy" << "\t\t\t" << instr->copy.reg << "\t" << instr->copy.src;
+        break;
+    case Instr::Skip:
+        qWarning().nospace() << "Skip" << "\t\t\t" << instr->skip.reg << "\t" << instr->skip.count;
+        break;
+    case Instr::Done:
+        qWarning().nospace() << "Done";
+        break;
+    case Instr::InitString:
+        qWarning().nospace() << "InitString" << "\t\t" << instr->initstring.offset << "\t" << instr->initstring.dataIdx;
+        break;
+    case Instr::FindGeneric:
+        qWarning().nospace() << "FindGeneric" << "\t\t" << instr->find.reg << "\t" << instr->find.name;
+        break;
+    case Instr::FindGenericTerminal:
+        qWarning().nospace() << "FindGenericTerminal" << "\t" << instr->find.reg << "\t" <<  instr->find.name;
+        break;
+    case Instr::FindProperty:
+        qWarning().nospace() << "FindProperty" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
+        break;
+    case Instr::FindPropertyTerminal:
+        qWarning().nospace() << "FindPropertyTerminal" << "\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
+        break;
+    case Instr::CleanupGeneric:
+        qWarning().nospace() << "CleanupGeneric" << "\t\t" << instr->cleanup.reg;
+        break;
+    case Instr::ConvertGenericToReal:
+        qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        break;
+    case Instr::ConvertGenericToBool:
+        qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        break;
+    case Instr::ConvertGenericToString:
+        qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        break;
+    case Instr::ConvertGenericToUrl:
+        qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        break;
+    default:
+        qWarning().nospace() << "Unknown";
+        break;
+    }
+}
+
 void QmlCompiledBindingsPrivate::run(int instrIndex,
                                      QmlContextPrivate *context, QmlDelayedError *error,
                                      QObject *scope, QObject *output)
@@ -990,7 +1134,14 @@ void QmlCompiledBindingsPrivate::run(int instrIndex,
     instr += instrIndex;
     const char *data = program->data();
 
+#ifdef COMPILEDBINDINGS_DEBUG
+    qWarning().nospace() << "Begin binding run";
+#endif
+
     while (instr) {
+#ifdef COMPILEDBINDINGS_DEBUG
+        dumpInstruction(instr);
+#endif
 
     switch (instr->common.type) {
     case Instr::Noop:
@@ -1403,144 +1554,7 @@ void QmlBindingCompiler::dump(const QByteArray &programData)
 
     while (count--) {
 
-        switch (instr->common.type) {
-        case Instr::Noop:
-            qWarning().nospace() << "Noop";
-            break;
-        case Instr::Subscribe:
-            qWarning().nospace() << "Subscribe" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
-            break;
-        case Instr::SubscribeId:
-            qWarning().nospace() << "SubscribeId" << "\t\t" << instr->subscribe.offset << "\t" << instr->subscribe.reg << "\t" << instr->subscribe.index;
-            break;
-        case Instr::LoadId:
-            qWarning().nospace() << "LoadId" << "\t\t\t" << instr->load.index << "\t" << instr->load.reg;
-            break;
-        case Instr::LoadScope:
-            qWarning().nospace() << "LoadScope" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
-            break;
-        case Instr::LoadRoot:
-            qWarning().nospace() << "LoadRoot" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
-            break;
-        case Instr::LoadAttached:
-            qWarning().nospace() << "LoadAttached" << "\t\t" << instr->attached.output << "\t" << instr->attached.reg << "\t" << instr->attached.index;
-            break;
-        case Instr::ConvertIntToReal:
-            qWarning().nospace() << "ConvertIntToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
-            break;
-        case Instr::ConvertRealToInt:
-            qWarning().nospace() << "ConvertRealToInt" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
-            break;
-        case Instr::Real:
-            qWarning().nospace() << "Real" << "\t\t\t" << instr->real_value.reg << "\t" << instr->real_value.value;
-            break;
-        case Instr::Int:
-            qWarning().nospace() << "Int" << "\t\t\t" << instr->int_value.reg << "\t" << instr->int_value.value;
-            break;
-        case Instr::Bool:
-            qWarning().nospace() << "Bool" << "\t\t\t" << instr->bool_value.reg << "\t" << instr->bool_value.value;
-            break;
-        case Instr::String:
-            qWarning().nospace() << "String" << "\t\t\t" << instr->string_value.reg << "\t" << instr->string_value.offset << "\t" << instr->string_value.length;
-            break;
-        case Instr::AddReal:
-            qWarning().nospace() << "AddReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::AddInt:
-            qWarning().nospace() << "AddInt" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::AddString:
-            qWarning().nospace() << "AddString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::MinusReal:
-            qWarning().nospace() << "MinusReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::MinusInt:
-            qWarning().nospace() << "MinusInt" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::CompareReal:
-            qWarning().nospace() << "CompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::CompareString:
-            qWarning().nospace() << "CompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::NotCompareReal:
-            qWarning().nospace() << "NotCompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::NotCompareString:
-            qWarning().nospace() << "NotCompareString" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::GreaterThanReal:
-            qWarning().nospace() << "GreaterThanReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::MaxReal:
-            qWarning().nospace() << "MaxReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::MinReal:
-            qWarning().nospace() << "MinReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
-            break;
-        case Instr::NewString:
-            qWarning().nospace() << "NewString" << "\t\t" << instr->construct.reg;
-            break;
-        case Instr::NewUrl:
-            qWarning().nospace() << "NewUrl" << "\t\t\t" << instr->construct.reg;
-            break;
-        case Instr::CleanupString:
-            qWarning().nospace() << "CleanupString" << "\t\t" << instr->cleanup.reg;
-            break;
-        case Instr::CleanupUrl:
-            qWarning().nospace() << "CleanupUrl" << "\t\t" << instr->cleanup.reg;
-            break;
-        case Instr::Fetch:
-            qWarning().nospace() << "Fetch" << "\t\t\t" << instr->fetch.output << "\t" << instr->fetch.index << "\t" << instr->fetch.objectReg;
-            break;
-        case Instr::Store:
-            qWarning().nospace() << "Store" << "\t\t\t" << instr->store.output << "\t" << instr->store.index << "\t" << instr->store.reg;
-            break;
-        case Instr::Copy:
-            qWarning().nospace() << "Copy" << "\t\t\t" << instr->copy.reg << "\t" << instr->copy.src;
-            break;
-        case Instr::Skip:
-            qWarning().nospace() << "Skip" << "\t\t\t" << instr->skip.reg << "\t" << instr->skip.count;
-            break;
-        case Instr::Done:
-            qWarning().nospace() << "Done";
-            break;
-        case Instr::InitString:
-            qWarning().nospace() << "InitString" << "\t\t" << instr->initstring.offset << "\t" << instr->initstring.dataIdx;
-            break;
-        case Instr::FindGeneric:
-            qWarning().nospace() << "FindGeneric" << "\t\t" << instr->find.reg << "\t" << instr->find.name;
-            break;
-        case Instr::FindGenericTerminal:
-            qWarning().nospace() << "FindGenericTerminal" << "\t" << instr->find.reg << "\t" <<  instr->find.name;
-            break;
-        case Instr::FindProperty:
-            qWarning().nospace() << "FindProperty" << "\t\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
-            break;
-        case Instr::FindPropertyTerminal:
-            qWarning().nospace() << "FindPropertyTerminal" << "\t" << instr->find.reg << "\t" << instr->find.src << "\t" << instr->find.name;
-            break;
-        case Instr::CleanupGeneric:
-            qWarning().nospace() << "CleanupGeneric" << "\t\t" << instr->cleanup.reg;
-            break;
-        case Instr::ConvertGenericToReal:
-            qWarning().nospace() << "ConvertGenericToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
-            break;
-        case Instr::ConvertGenericToBool:
-            qWarning().nospace() << "ConvertGenericToBool" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
-            break;
-        case Instr::ConvertGenericToString:
-            qWarning().nospace() << "ConvertGenericToString" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
-            break;
-        case Instr::ConvertGenericToUrl:
-            qWarning().nospace() << "ConvertGenericToUrl" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
-            break;
-        default:
-            qWarning().nospace() << "Unknown";
-            break;
-        }
-
+        dumpInstruction(instr);
         ++instr;
     }
 }
@@ -1584,6 +1598,9 @@ int QmlBindingCompilerPrivate::commitCompile()
 bool QmlBindingCompilerPrivate::compile(QmlJS::AST::Node *node)
 {
     resetInstanceState();
+
+    if (destination->type == -1)
+        return false;
 
     Result type;
 
