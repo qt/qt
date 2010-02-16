@@ -257,23 +257,16 @@ void AudioTest::status()
 
 void AudioTest::writeMore()
 {
-    if (!m_audioOutput)
-        return;
-
-    if (m_audioOutput->state() == QAudio::StoppedState)
-        return;
-
-    int    l;
-    int    out;
-
-    int chunks = m_audioOutput->bytesFree()/m_audioOutput->periodSize();
-    while(chunks) {
-       l = m_generator->read(m_buffer.data(), m_audioOutput->periodSize());
-       if (l > 0)
-           out = m_output->write(m_buffer.data(), l);
-       if (l != m_audioOutput->periodSize())
-	   break;
-       chunks--;
+    if (m_audioOutput && m_audioOutput->state() != QAudio::StoppedState) {
+        int chunks = m_audioOutput->bytesFree()/m_audioOutput->periodSize();
+        while (chunks) {
+           const qint64 len = m_generator->read(m_buffer.data(), m_audioOutput->periodSize());
+           if (len)
+               m_output->write(m_buffer.data(), len);
+           if (len != m_audioOutput->periodSize())
+               break;
+           --chunks;
+        }
     }
 }
 
