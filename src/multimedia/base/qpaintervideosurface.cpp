@@ -579,8 +579,10 @@ QVideoSurfaceArbFpPainter::QVideoSurfaceArbFpPainter(QGLContext *context)
 
     m_imagePixelFormats
             << QVideoFrame::Format_RGB32
+            << QVideoFrame::Format_BGR32
             << QVideoFrame::Format_ARGB32
             << QVideoFrame::Format_RGB24
+            << QVideoFrame::Format_BGR24
             << QVideoFrame::Format_RGB565
             << QVideoFrame::Format_YV12
             << QVideoFrame::Format_YUV420P;
@@ -605,6 +607,10 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::start(const QVideoSurfac
             initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
             program = qt_arbfp_xrgbShaderProgram;
             break;
+        case QVideoFrame::Format_BGR32:
+            initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
+            program = qt_arbfp_rgbShaderProgram;
+            break;
         case QVideoFrame::Format_ARGB32:
             initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
             program = qt_arbfp_argbShaderProgram;
@@ -612,6 +618,10 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::start(const QVideoSurfac
         case QVideoFrame::Format_RGB24:
             initRgbTextureInfo(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
             program = qt_arbfp_argbShaderProgram;
+            break;
+        case QVideoFrame::Format_BGR24:
+            initRgbTextureInfo(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
+            program = qt_arbfp_rgbShaderProgram;
             break;
         case QVideoFrame::Format_RGB565:
             initRgbTextureInfo(GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, format.frameSize());
@@ -706,6 +716,9 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::paint(
     if (m_frame.isValid()) {
         painter->beginNativePainting();
 
+        glEnable(GL_STENCIL_TEST);
+        glEnable(GL_SCISSOR_TEST);
+
         const float txLeft = source.left() / m_frameSize.width();
         const float txRight = source.right() / m_frameSize.width();
         const float txTop = m_scanLineDirection == QVideoSurfaceFormat::TopToBottom
@@ -778,6 +791,9 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::paint(
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisable(GL_FRAGMENT_PROGRAM_ARB);
+
+        glDisable(GL_STENCIL_TEST);
+        glDisable(GL_SCISSOR_TEST);
 
         painter->endNativePainting();
     }
@@ -872,9 +888,11 @@ QVideoSurfaceGlslPainter::QVideoSurfaceGlslPainter(QGLContext *context)
 {
     m_imagePixelFormats
             << QVideoFrame::Format_RGB32
+            << QVideoFrame::Format_BGR32
             << QVideoFrame::Format_ARGB32
 #ifndef QT_OPENGL_ES
             << QVideoFrame::Format_RGB24
+            << QVideoFrame::Format_BGR24
 #endif
             << QVideoFrame::Format_RGB565
             << QVideoFrame::Format_YV12
@@ -900,12 +918,20 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::start(const QVideoSurface
             initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
             fragmentProgram = qt_glsl_xrgbShaderProgram;
             break;
+        case QVideoFrame::Format_BGR32:
+            initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
+            fragmentProgram = qt_glsl_rgbShaderProgram;
+            break;
         case QVideoFrame::Format_ARGB32:
             initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
             fragmentProgram = qt_glsl_argbShaderProgram;
             break;
 #ifndef QT_OPENGL_ES
         case QVideoFrame::Format_RGB24:
+            initRgbTextureInfo(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, format.frameSize());
+            fragmentProgram = qt_glsl_argbShaderProgram;
+            break;
+        case QVideoFrame::Format_BGR24:
             initRgbTextureInfo(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, format.frameSize());
             fragmentProgram = qt_glsl_rgbShaderProgram;
             break;
