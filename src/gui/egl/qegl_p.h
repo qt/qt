@@ -128,7 +128,10 @@ namespace QEgl {
     Q_GUI_EXPORT bool hasExtension(const char* extensionName);
 
     Q_GUI_EXPORT EGLDisplay display();
+
     Q_GUI_EXPORT EGLNativeDisplayType nativeDisplay();
+    Q_GUI_EXPORT EGLNativeWindowType  nativeWindow(QWidget*);
+    Q_GUI_EXPORT EGLNativePixmapType  nativePixmap(QPixmap*);
 };
 
 

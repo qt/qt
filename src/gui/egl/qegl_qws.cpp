@@ -55,18 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Create the surface for a QPixmap, QImage, or QWidget.
-// We don't have QGLScreen to create EGL surfaces for us,
-// so surface creation needs to be done in QtOpenGL or
-// QtOpenVG for Qt/Embedded.
-EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)
-{
-    Q_UNUSED(device);
-    Q_UNUSED(cfg);
-    Q_UNUSED(properties);
-    return EGL_NO_SURFACE;
-}
-
 static QScreen *screenForDevice(QPaintDevice *device)
 {
     QScreen *screen = qt_screen;
