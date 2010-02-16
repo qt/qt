@@ -1,4 +1,4 @@
-include (../../xmlpatterns.pri)
+include (../xmlpatterns.pri)
 
 TARGET   = $$XMLPATTERNS_SDK
 TEMPLATE = lib
