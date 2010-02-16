@@ -1938,7 +1938,7 @@ void SymbianMakefileGenerator::writeSisTargets(QTextStream &t)
 
     t << OK_ROM_STUB_SIS_TARGET ":" << endl;
 
-    QString stubpkgcommand = QString::fromLatin1("\tcreatepackage.bat -s $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
+    QString stubpkgcommand = QString::fromLatin1("\tcreatepackage" SCRIPT_EXT " -s $(QT_SIS_OPTIONS) %1_template.%2 $(QT_SIS_TARGET) " \
                                  "$(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)")
                           .arg(fixedTarget)
                           .arg("pkg");
