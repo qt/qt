@@ -57,7 +57,7 @@ Generator::Generator(const QAudioFormat &format,
                      int frequency,
                      QObject *parent)
     :   QIODevice(parent)
-    ,   pos(0)
+    ,   m_pos(0)
 {
     generateData(format, durationUs, frequency);
 }
@@ -74,7 +74,7 @@ void Generator::start()
 
 void Generator::stop()
 {
-    pos = 0;
+    m_pos = 0;
     close();
 }
 
@@ -89,8 +89,8 @@ void Generator::generateData(const QAudioFormat &format, qint64 durationUs, int 
     Q_ASSERT(length % sampleBytes == 0);
     Q_UNUSED(sampleBytes) // suppress warning in release builds
 
-    buffer.resize(length);
-    unsigned char *ptr = reinterpret_cast<unsigned char *>(buffer.data());
+    m_buffer.resize(length);
+    unsigned char *ptr = reinterpret_cast<unsigned char *>(m_buffer.data());
     int sampleIndex = 0;
 
     while (length) {
@@ -127,9 +127,9 @@ qint64 Generator::readData(char *data, qint64 len)
 {
     qint64 total = 0;
     while (len - total) {
-        const qint64 chunk = qMin((buffer.size() - pos), len - total);
-        memcpy(data, buffer.constData() + pos, chunk);
-        pos = (pos + chunk) % buffer.size();
+        const qint64 chunk = qMin((m_buffer.size() - m_pos), len - total);
+        memcpy(data, m_buffer.constData() + m_pos, chunk);
+        m_pos = (m_pos + chunk) % m_buffer.size();
         total += chunk;
     }
     return total;
@@ -145,7 +145,7 @@ qint64 Generator::writeData(const char *data, qint64 len)
 
 qint64 Generator::bytesAvailable() const
 {
-    return buffer.size() + QIODevice::bytesAvailable();
+    return m_buffer.size() + QIODevice::bytesAvailable();
 }
 
 AudioTest::AudioTest()
@@ -153,99 +153,99 @@ AudioTest::AudioTest()
     QWidget *window = new QWidget;
     QVBoxLayout* layout = new QVBoxLayout;
 
-    deviceBox = new QComboBox(this);
+    m_deviceBox = new QComboBox(this);
     foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput))
-        deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
-    connect(deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
-    layout->addWidget(deviceBox);
+        m_deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
+    connect(m_deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
+    layout->addWidget(m_deviceBox);
 
-    button = new QPushButton(this);
-    button->setText(tr("Click for Push Mode"));
-    connect(button,SIGNAL(clicked()),SLOT(toggle()));
-    layout->addWidget(button);
+    m_modeButton = new QPushButton(this);
+    m_modeButton->setText(tr("Click for Push Mode"));
+    connect(m_modeButton,SIGNAL(clicked()),SLOT(toggle()));
+    layout->addWidget(m_modeButton);
 
-    button2 = new QPushButton(this);
-    button2->setText(tr("Click To Suspend"));
-    connect(button2,SIGNAL(clicked()),SLOT(togglePlay()));
-    layout->addWidget(button2);
+    m_suspendResumeButton = new QPushButton(this);
+    m_suspendResumeButton->setText(tr("Click To Suspend"));
+    connect(m_suspendResumeButton,SIGNAL(clicked()),SLOT(togglePlay()));
+    layout->addWidget(m_suspendResumeButton);
 
     window->setLayout(layout);
     setCentralWidget(window);
     window->show();
 
-    buffer = new char[BUFFER_SIZE];
+    m_buffer = new char[BUFFER_SIZE];
 
-    pullMode = true;
+    m_pullMode = true;
 
-    timer = new QTimer(this);
-    connect(timer,SIGNAL(timeout()),SLOT(writeMore()));
+    m_timer = new QTimer(this);
+    connect(m_timer,SIGNAL(timeout()),SLOT(writeMore()));
 
-    settings.setFrequency(SYSTEM_FREQ);
-    settings.setChannels(1);
-    settings.setSampleSize(16);
-    settings.setCodec("audio/pcm");
-    settings.setByteOrder(QAudioFormat::LittleEndian);
-    settings.setSampleType(QAudioFormat::SignedInt);
+    m_format.setFrequency(SYSTEM_FREQ);
+    m_format.setChannels(1);
+    m_format.setSampleSize(16);
+    m_format.setCodec("audio/pcm");
+    m_format.setByteOrder(QAudioFormat::LittleEndian);
+    m_format.setSampleType(QAudioFormat::SignedInt);
 
     QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
-    if (!info.isFormatSupported(settings)) {
+    if (!info.isFormatSupported(m_format)) {
         qWarning()<<"default format not supported try to use nearest";
-        settings = info.nearestFormat(settings);
+        m_format = info.nearestFormat(m_format);
     }
 
-    gen = new Generator(settings, SECONDS*1000000, FREQ, this);
-    gen->start();
+    m_generator = new Generator(m_format, SECONDS*1000000, FREQ, this);
+    m_generator->start();
 
-    audioOutput = new QAudioOutput(settings,this);
-    connect(audioOutput,SIGNAL(notify()),SLOT(status()));
-    connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
+    m_audioOutput = new QAudioOutput(m_format,this);
+    connect(m_audioOutput,SIGNAL(notify()),SLOT(status()));
+    connect(m_audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
 
-    audioOutput->start(gen);
+    m_audioOutput->start(m_generator);
 }
 
 AudioTest::~AudioTest()
 {
-    delete [] buffer;
+    delete [] m_buffer;
 }
 
 void AudioTest::deviceChanged(int idx)
 {
-    timer->stop();
-    gen->stop();
-    audioOutput->stop();
-    audioOutput->disconnect(this);
-    delete audioOutput;
+    m_timer->stop();
+    m_generator->stop();
+    m_audioOutput->stop();
+    m_audioOutput->disconnect(this);
+    delete m_audioOutput;
 
-    device = deviceBox->itemData(idx).value<QAudioDeviceInfo>();
-    audioOutput = new QAudioOutput(device,settings,this);
-    connect(audioOutput,SIGNAL(notify()),SLOT(status()));
-    connect(audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
-    gen->start();
-    audioOutput->start(gen);
+    m_device = m_deviceBox->itemData(idx).value<QAudioDeviceInfo>();
+    m_audioOutput = new QAudioOutput(m_device,m_format,this);
+    connect(m_audioOutput,SIGNAL(notify()),SLOT(status()));
+    connect(m_audioOutput,SIGNAL(stateChanged(QAudio::State)),SLOT(state(QAudio::State)));
+    m_generator->start();
+    m_audioOutput->start(m_generator);
 }
 
 void AudioTest::status()
 {
-    qWarning() << "byteFree = " << audioOutput->bytesFree() << " bytes, elapsedUSecs = " << audioOutput->elapsedUSecs() << ", processedUSecs = " << audioOutput->processedUSecs();
+    qWarning() << "byteFree = " << m_audioOutput->bytesFree() << " bytes, elapsedUSecs = " << m_audioOutput->elapsedUSecs() << ", processedUSecs = " << m_audioOutput->processedUSecs();
 }
 
 void AudioTest::writeMore()
 {
-    if (!audioOutput)
+    if (!m_audioOutput)
         return;
 
-    if (audioOutput->state() == QAudio::StoppedState)
+    if (m_audioOutput->state() == QAudio::StoppedState)
         return;
 
     int    l;
     int    out;
 
-    int chunks = audioOutput->bytesFree()/audioOutput->periodSize();
+    int chunks = m_audioOutput->bytesFree()/m_audioOutput->periodSize();
     while(chunks) {
-       l = gen->read(buffer,audioOutput->periodSize());
+       l = m_generator->read(m_buffer,m_audioOutput->periodSize());
        if (l > 0)
-           out = output->write(buffer,l);
-       if (l != audioOutput->periodSize())
+           out = m_output->write(m_buffer,l);
+       if (l != m_audioOutput->periodSize())
 	   break;
        chunks--;
     }
@@ -255,39 +255,39 @@ void AudioTest::toggle()
 {
     // Change between pull and push modes
 
-    timer->stop();
-    audioOutput->stop();
+    m_timer->stop();
+    m_audioOutput->stop();
 
-    if (pullMode) {
-        button->setText("Click for Pull Mode");
-        output = audioOutput->start();
-        pullMode = false;
-        timer->start(20);
+    if (m_pullMode) {
+        m_modeButton->setText("Click for Pull Mode");
+        m_output = m_audioOutput->start();
+        m_pullMode = false;
+        m_timer->start(20);
     } else {
-        button->setText("Click for Push Mode");
-        pullMode = true;
-        audioOutput->start(gen);
+        m_modeButton->setText("Click for Push Mode");
+        m_pullMode = true;
+        m_audioOutput->start(m_generator);
     }
 
-    button2->setText("Click To Suspend");
+    m_suspendResumeButton->setText("Click To Suspend");
 }
 
 void AudioTest::togglePlay()
 {
     // toggle suspend/resume
-    if (audioOutput->state() == QAudio::SuspendedState) {
+    if (m_audioOutput->state() == QAudio::SuspendedState) {
         qWarning() << "status: Suspended, resume()";
-        audioOutput->resume();
-        button2->setText("Click To Suspend");
-    } else if (audioOutput->state() == QAudio::ActiveState) {
+        m_audioOutput->resume();
+        m_suspendResumeButton->setText("Click To Suspend");
+    } else if (m_audioOutput->state() == QAudio::ActiveState) {
         qWarning() << "status: Active, suspend()";
-        audioOutput->suspend();
-        button2->setText("Click To Resume");
-    } else if (audioOutput->state() == QAudio::StoppedState) {
+        m_audioOutput->suspend();
+        m_suspendResumeButton->setText("Click To Resume");
+    } else if (m_audioOutput->state() == QAudio::StoppedState) {
         qWarning() << "status: Stopped, resume()";
-        audioOutput->resume();
-        button2->setText("Click To Suspend");
-    } else if (audioOutput->state() == QAudio::IdleState) {
+        m_audioOutput->resume();
+        m_suspendResumeButton->setText("Click To Suspend");
+    } else if (m_audioOutput->state() == QAudio::IdleState) {
         qWarning() << "status: IdleState";
     }
 }

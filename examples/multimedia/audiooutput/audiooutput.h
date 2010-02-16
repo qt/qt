@@ -71,8 +71,8 @@ private:
     void generateData(const QAudioFormat &format, qint64 durationUs, int frequency);
 
 private:
-    qint64 pos;
-    QByteArray buffer;
+    qint64 m_pos;
+    QByteArray m_buffer;
 };
 
 class AudioTest : public QMainWindow
@@ -83,19 +83,19 @@ public:
     ~AudioTest();
 
 private:
-    QAudioDeviceInfo  device;
-    Generator*        gen;
-    QAudioOutput*     audioOutput;
-    QIODevice*        output;
-    QTimer*           timer;
-    QAudioFormat      settings;
+    QAudioDeviceInfo  m_device;
+    Generator*        m_generator;
+    QAudioOutput*     m_audioOutput;
+    QIODevice*        m_output;
+    QTimer*           m_timer;
+    QAudioFormat      m_format;
 
-    bool              pullMode;
-    char*             buffer;
+    bool              m_pullMode;
+    char*             m_buffer;
 
-    QPushButton*      button;
-    QPushButton*      button2;
-    QComboBox*     deviceBox;
+    QPushButton*      m_modeButton;
+    QPushButton*      m_suspendResumeButton;
+    QComboBox*        m_deviceBox;
 
 private slots:
     void status();
