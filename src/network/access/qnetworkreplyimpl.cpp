@@ -549,21 +549,24 @@ void QNetworkReplyImplPrivate::finished()
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
-    QNetworkSession *session = manager->d_func()->networkSession;
-    if (session && session->state() == QNetworkSession::Roaming &&
-        state == Working && errorCode != QNetworkReply::OperationCanceledError) {
-        // only content with a known size will fail with a temporary network failure error
-        if (!totalSize.isNull()) {
-            if (bytesDownloaded != totalSize) {
-                if (migrateBackend()) {
-                    // either we are migrating or the request is finished/aborted
-                    if (state == Reconnecting || state == WaitingForSession) {
-                        resumeNotificationHandling();
-                        return; // exit early if we are migrating.
+
+    if (!manager.isNull()) {
+        QNetworkSession *session = manager->d_func()->networkSession;
+        if (session && session->state() == QNetworkSession::Roaming &&
+            state == Working && errorCode != QNetworkReply::OperationCanceledError) {
+            // only content with a known size will fail with a temporary network failure error
+            if (!totalSize.isNull()) {
+                if (bytesDownloaded != totalSize) {
+                    if (migrateBackend()) {
+                        // either we are migrating or the request is finished/aborted
+                        if (state == Reconnecting || state == WaitingForSession) {
+                            resumeNotificationHandling();
+                            return; // exit early if we are migrating.
+                        }
+                    } else {
+                        error(QNetworkReply::TemporaryNetworkFailureError,
+                              q->tr("Temporary network failure."));
                     }
-                } else {
-                    error(QNetworkReply::TemporaryNetworkFailureError,
-                          q->tr("Temporary network failure."));
                 }
             }
         }
