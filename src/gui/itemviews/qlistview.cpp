@@ -2160,7 +2160,7 @@ void QListModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
     } else {
         if (flowPositions.isEmpty())
             return;
-        const int max = flowPositions.count() - 1;
+        const int max = scrollValueMap.count() - 1;
         if (vertical && flow() == QListView::TopToBottom && dy != 0) {
             int currentValue = qBound(0, verticalValue, max);
             int previousValue = qBound(0, currentValue + dy, max);

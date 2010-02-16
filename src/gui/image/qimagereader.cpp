@@ -263,25 +263,37 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
             device->seek(pos);
     }
 
-    if (!handler && !testFormat.isEmpty() && autoDetectImageFormat && !ignoresFormatAndExtension) {
+    if (!handler && !testFormat.isEmpty() && !ignoresFormatAndExtension) {
         // check if any plugin supports the format (they are not allowed to
         // read from the device yet).
         const qint64 pos = device ? device->pos() : 0;
-        for (int i = 0; i < keys.size(); ++i) {
-            if (i != suffixPluginIndex) {
-                QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(keys.at(i)));
-                if (plugin && plugin->capabilities(device, testFormat) & QImageIOPlugin::CanRead) {
+
+        if (autoDetectImageFormat) {
+            for (int i = 0; i < keys.size(); ++i) {
+                if (i != suffixPluginIndex) {
+                    QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(keys.at(i)));
+                    if (plugin && plugin->capabilities(device, testFormat) & QImageIOPlugin::CanRead) {
 #ifdef QIMAGEREADER_DEBUG
-                    qDebug() << "QImageReader::createReadHandler: the" << keys.at(i) << "plugin can read this format";
+                        qDebug() << "QImageReader::createReadHandler: the" << keys.at(i) << "plugin can read this format";
 #endif
-                    handler = plugin->create(device, testFormat);
-                    break;
+                        handler = plugin->create(device, testFormat);
+                        break;
+                    }
                 }
+            }
+        } else {
+            QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(QLatin1String(testFormat)));
+            if (plugin && plugin->capabilities(device, testFormat) & QImageIOPlugin::CanRead) {
+#ifdef QIMAGEREADER_DEBUG
+                qDebug() << "QImageReader::createReadHandler: the" << testFormat << "plugin can read this format";
+#endif
+                handler = plugin->create(device, testFormat);
             }
         }
         if (device && !device->isSequential())
             device->seek(pos);
     }
+
 #endif // QT_NO_LIBRARY
 
     // if we don't have a handler yet, check if we have built-in support for

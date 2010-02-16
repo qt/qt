@@ -3822,7 +3822,7 @@
     The tear indicator and the scroll buttons can be further customized as follows:
     \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 148
 
-    Sine Qt 4.6 the close button can be customized as follow:
+    Since Qt 4.6 the close button can be customized as follow:
     \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 159
 
     \section2 Customizing QTableView

@@ -181,7 +181,11 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     qt_format_to_attrib_list(f, attribs);
 
-    GLXFBConfig *configs = glXChooseFBConfig(X11->display, X11->defaultScreen, attribs, &num_configs);
+    int screen = X11->defaultScreen;
+    if (shareWidget)
+        screen = shareWidget->x11Info().screen();
+
+    GLXFBConfig *configs = glXChooseFBConfig(X11->display, screen, attribs, &num_configs);
     if (configs && num_configs) {
         int res;
         glXGetFBConfigAttrib(X11->display, configs[0], GLX_LEVEL, &res);

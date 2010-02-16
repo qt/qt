@@ -199,7 +199,7 @@
     level QNetworkProtocol and QUrlOperator abstraction has been
     eliminated. These classes attempted the impossible (unify FTP and
     HTTP under one roof), and unsurprisingly failed at that. Qt 4
-    still provides QFtp, and it also proveds the QNetworkAccessManager.
+    still provides QFtp, and it also provides the QNetworkAccessManager.
 
     The QSocket class in Qt 3 has been renamed QTcpSocket. The new
     class is reentrant and supports blocking. It's also easier to
