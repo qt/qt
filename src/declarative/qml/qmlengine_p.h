@@ -75,6 +75,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstack.h>
+#include <QtCore/qmutex.h>
 #include <QtScript/qscriptengine.h>
 
 #include <private/qobject_p.h>
@@ -211,9 +212,15 @@ public:
 
     bool inBeginCreate;
 
+    QNetworkAccessManager *createNetworkAccessManager(QObject *parent) const;
     QNetworkAccessManager *getNetworkAccessManager() const;
     mutable QNetworkAccessManager *networkAccessManager;
     mutable QmlNetworkAccessManagerFactory *networkAccessManagerFactory;
+
+    QHash<QString,QmlImageProvider*> imageProviders;
+    QImage getImageFromProvider(const QUrl &url);
+
+    mutable QMutex mutex;
 
     QmlCompositeTypeManager typeManager;
     QStringList fileImportPath;

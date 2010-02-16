@@ -53,6 +53,8 @@
 #include "engine.h"
 #include "qmldebugger.h"
 
+QT_BEGIN_NAMESPACE
+
 QmlDebugger::QmlDebugger(QWidget *parent)
 : QWidget(parent)
 {
@@ -179,3 +181,5 @@ void QmlDebugger::disconnectFromHost()
 {
     client.disconnectFromHost();
 }
+
+QT_END_NAMESPACE

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,26 @@
 **
 ****************************************************************************/
 
-#include "deviceorientation.h"
+#ifndef QMLIMAGEPROVIDER_H
+#define QMLIMAGEPROVIDER_H
 
-QT_USE_NAMESPACE
+#include <QtGui/qimage.h>
 
-class DefaultDeviceOrientation : public DeviceOrientation
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+class Q_DECLARATIVE_EXPORT QmlImageProvider
 {
-    Q_OBJECT
 public:
-    DefaultDeviceOrientation() : DeviceOrientation(), m_orientation(DeviceOrientation::Portrait) {}
-
-    Orientation orientation() const {
-        return m_orientation;
-    }
-
-    void setOrientation(Orientation o) {
-        if (o != m_orientation) {
-            m_orientation = o;
-            emit orientationChanged();
-        }
-    }
-
-    Orientation m_orientation;
+    virtual ~QmlImageProvider();
+    virtual QImage request(const QString &id) = 0;
 };
 
-DeviceOrientation* DeviceOrientation::instance()
-{
-    static DefaultDeviceOrientation *o = 0;
-    if (!o)
-        o = new DefaultDeviceOrientation;
-    return o;
-}
+QT_END_NAMESPACE
 
-#include "deviceorientation.moc"
+QT_END_HEADER
 
+#endif // QMLIMAGEPROVIDER

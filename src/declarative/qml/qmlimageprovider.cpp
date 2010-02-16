@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,30 @@
 **
 ****************************************************************************/
 
-#include "deviceorientation.h"
+#include "qmlimageprovider.h"
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
-class DefaultDeviceOrientation : public DeviceOrientation
+/*!
+    \class QmlImageProvider
+    \brief The QmlImageProvider class provides an interface for threaded image requests.
+
+    Note: the request() method may be called by multiple threads, so ensure the
+    implementation of this method is reentrant.
+
+    \sa QmlEngine::addImageProvider()
+*/
+QmlImageProvider::~QmlImageProvider()
 {
-    Q_OBJECT
-public:
-    DefaultDeviceOrientation() : DeviceOrientation(), m_orientation(DeviceOrientation::Portrait) {}
-
-    Orientation orientation() const {
-        return m_orientation;
-    }
-
-    void setOrientation(Orientation o) {
-        if (o != m_orientation) {
-            m_orientation = o;
-            emit orientationChanged();
-        }
-    }
-
-    Orientation m_orientation;
-};
-
-DeviceOrientation* DeviceOrientation::instance()
-{
-    static DefaultDeviceOrientation *o = 0;
-    if (!o)
-        o = new DefaultDeviceOrientation;
-    return o;
 }
 
-#include "deviceorientation.moc"
+/*!
+    \fn QImage QmlImageProvider::request(const QString &id)
 
+    Implement this method to return the image with \a id.
+
+    Note: this method may be called by multiple threads, so ensure the
+    implementation of this method is reentrant.
+*/
+
+QT_END_NAMESPACE
