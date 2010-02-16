@@ -1212,12 +1212,9 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
         default:
             if (QApplication::keypadNavigationEnabled()) {
                 if (!hasEditFocus() && !(e->modifiers() & Qt::ControlModifier)) {
-                    if (e->text()[0].isPrint()) {
+                    if (e->text()[0].isPrint())
                         setEditFocus(true);
-#ifndef Q_OS_SYMBIAN
-                        clear();
-#endif
-                    } else {
+                    else {
                         e->ignore();
                         return;
                     }
@@ -1677,12 +1674,8 @@ void QTextEdit::inputMethodEvent(QInputMethodEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     if (d->control->textInteractionFlags() & Qt::TextEditable
         && QApplication::keypadNavigationEnabled()
-        && !hasEditFocus()) {
+        && !hasEditFocus())
         setEditFocus(true);
-#ifndef Q_OS_SYMBIAN
-        selectAll();    // so text is replaced rather than appended to
-#endif
-    }
 #endif
     d->sendControlEvent(e);
     ensureCursorVisible();
