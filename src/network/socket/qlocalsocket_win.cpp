@@ -110,6 +110,20 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
 {
 }
 
+QLocalSocketPrivate::~QLocalSocketPrivate()
+{
+    destroyPipeHandles();
+    CloseHandle(overlapped.hEvent);
+}
+
+void QLocalSocketPrivate::destroyPipeHandles()
+{
+    if (handle != INVALID_HANDLE_VALUE) {
+        DisconnectNamedPipe(handle);
+        CloseHandle(handle);
+    }
+}
+
 void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 {
     Q_D(QLocalSocket);
@@ -388,8 +402,7 @@ void QLocalSocket::close()
     d->readSequenceStarted = false;
     d->pendingReadyRead = false;
     d->pipeClosed = false;
-    DisconnectNamedPipe(d->handle);
-    CloseHandle(d->handle);
+    d->destroyPipeHandles();
     d->handle = INVALID_HANDLE_VALUE;
     ResetEvent(d->overlapped.hEvent);
     d->state = UnconnectedState;
