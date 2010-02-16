@@ -39,60 +39,74 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of Qt Designer.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "qdesignerundostack.h"
 
-#ifndef QDESIGNER_FORMWINDOWCOMMAND_H
-#define QDESIGNER_FORMWINDOWCOMMAND_H
-
-#include "shared_global_p.h"
-
-#include <QtCore/QPointer>
+#include <QtGui/QUndoStack>
 #include <QtGui/QUndoCommand>
 
 QT_BEGIN_NAMESPACE
 
-class QDesignerFormEditorInterface;
-class QDesignerFormWindowInterface;
-class QDesignerPropertySheetExtension;
-
 namespace qdesigner_internal {
 
-class QDESIGNER_SHARED_EXPORT QDesignerFormWindowCommand: public QUndoCommand
+QDesignerUndoStack::QDesignerUndoStack(QObject *parent) :
+    QObject(parent),
+    m_undoStack(new QUndoStack),
+    m_fakeDirty(false)
 {
+    connect(m_undoStack, SIGNAL(indexChanged(int)), this, SIGNAL(changed()));
+}
 
-public:
-    QDesignerFormWindowCommand(const QString &description,
-                               QDesignerFormWindowInterface *formWindow,
-                               QUndoCommand *parent = 0);
+QDesignerUndoStack::~QDesignerUndoStack()
+{ // QUndoStack is managed by the QUndoGroup
+}
 
-    virtual void undo();
-    virtual void redo();
+void QDesignerUndoStack::push(QUndoCommand * cmd)
+{
+    m_undoStack->push(cmd);
+}
 
-    static void updateBuddies(QDesignerFormWindowInterface *form,
-                              const QString &old_name, const QString &new_name);
-protected:
-    QDesignerFormWindowInterface *formWindow() const;
-    QDesignerFormEditorInterface *core() const;
-    QDesignerPropertySheetExtension* propertySheet(QObject *object) const;
+void QDesignerUndoStack::beginMacro(const QString &text)
+{
+    m_undoStack->beginMacro(text);
+}
 
-    void cheapUpdate();
+void QDesignerUndoStack::endMacro()
+{
+    m_undoStack->endMacro();
+}
 
-    void selectUnmanagedObject(QObject *unmanagedObject);
-private:
-    QPointer<QDesignerFormWindowInterface> m_formWindow;
-};
+int  QDesignerUndoStack::index() const
+{
+    return m_undoStack->index();
+}
+
+const QUndoStack *QDesignerUndoStack::qundoStack() const
+{
+    return m_undoStack;
+}
+QUndoStack *QDesignerUndoStack::qundoStack()
+{
+    return m_undoStack;
+}
+
+bool QDesignerUndoStack::isDirty() const
+{
+    return m_fakeDirty || !m_undoStack->isClean();
+}
+
+void QDesignerUndoStack::setDirty(bool v)
+{
+    if (isDirty() == v)
+        return;
+    if (v) {
+        m_fakeDirty = true;
+        emit changed();
+    } else {
+        m_fakeDirty = false;
+        m_undoStack->setClean();
+    }
+}
 
 } // namespace qdesigner_internal
 
 QT_END_NAMESPACE
-
-#endif // QDESIGNER_COMMAND_H
