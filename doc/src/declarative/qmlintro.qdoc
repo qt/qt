@@ -266,6 +266,7 @@ State {
 because \c changes is the default property of the \c State type.
 
 \section2 Grouped Properties
+\target dot properties
 
 In some cases properties form a logical group and use a 'dot' or grouped notation
 to show this.

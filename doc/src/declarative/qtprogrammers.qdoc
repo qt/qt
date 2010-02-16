@@ -58,7 +58,7 @@ an application with a UI defined in QML also uses Qt for all the non-UI logic.
 QML provides direct access to the following concepts from Qt:
 
 \list
- \o QAction - the \l {basicqmlaction}{action} type
+ \o QAction - the \l {QML Basic Types}{action} type
  \o QObject signals and slots - available as functions to call in JavaScript
  \o QObject properties - available as variables in JavaScript
  \o QWidget - QmlView is a QML-displaying widget
