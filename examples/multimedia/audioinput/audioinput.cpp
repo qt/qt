@@ -279,14 +279,15 @@ void InputTest::initializeAudio()
 
 void InputTest::createAudioInput()
 {
+
     m_audioInput = new QAudioInput(m_device, m_format, this);
-    connect(m_audioInput, SIGNAL(notify()), SLOT(status()));
-    connect(m_audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(state(QAudio::State)));
+    connect(m_audioInput, SIGNAL(notify()), SLOT(notified()));
+    connect(m_audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(stateChanged(QAudio::State)));
     m_audioInfo->start();
     m_audioInput->start(m_audioInfo);
 }
 
-void InputTest::status()
+void InputTest::notified()
 {
     qWarning() << "bytesReady = " << m_audioInput->bytesReady()
                << ", " << "elapsedUSecs = " <<m_audioInput->elapsedUSecs()
@@ -345,7 +346,7 @@ void InputTest::toggleSuspend()
     }
 }
 
-void InputTest::state(QAudio::State state)
+void InputTest::stateChanged(QAudio::State state)
 {
     qWarning() << "state = " << state;
 }
