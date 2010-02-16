@@ -53,6 +53,8 @@ public:
     tst_animations() {}
 
 private slots:
+    void initTestCase() { QmlEngine engine; } // ensure types are registered
+
     void simpleProperty();
     void simpleNumber();
     void simpleColor();
