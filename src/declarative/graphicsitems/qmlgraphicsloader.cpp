@@ -398,6 +398,7 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
     }
 
     d->resizeMode = mode;
+    emit resizeModeChanged();
     d->initResize();
 }
 

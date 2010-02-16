@@ -59,7 +59,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsLoader : public QmlGraphicsItem
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QmlComponent *sourceComponent READ sourceComponent WRITE setSourceComponent NOTIFY sourceChanged)
-    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
+    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode NOTIFY resizeModeChanged)
     Q_PROPERTY(QGraphicsObject *item READ item NOTIFY itemChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
@@ -89,6 +89,8 @@ Q_SIGNALS:
     void sourceChanged();
     void statusChanged();
     void progressChanged();
+    void resizeModeChanged();
+
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);

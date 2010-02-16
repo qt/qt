@@ -1640,7 +1640,10 @@ bool QmlGraphicsItem::clip() const
 
 void QmlGraphicsItem::setClip(bool c)
 {
+    if (clip() == c)
+        return;
     setFlag(ItemClipsChildrenToShape, c);
+    emit clipChanged();
 }
 
 /*!
@@ -2628,6 +2631,7 @@ void QmlGraphicsItem::setSmooth(bool smooth)
     if (d->smooth == smooth)
         return;
     d->smooth = smooth;
+    emit smoothChanged();
     update();
 }
 
