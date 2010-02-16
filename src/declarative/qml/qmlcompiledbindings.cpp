@@ -1881,7 +1881,8 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
                     subscribeName << contextName();
                     subscribeName << name;
 
-                    fetch(type, context->metaObject(), reg, d0Idx, subscribeName, nameNodes.at(ii));
+                    if (!fetch(type, context->metaObject(), reg, d0Idx, subscribeName, nameNodes.at(ii)))
+                        return false;
                 } else if(d1Idx != -1) {
                     Instr instr;
                     instr.common.type = Instr::LoadRoot;
@@ -1892,7 +1893,8 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
                     subscribeName << QLatin1String("$$$ROOT");
                     subscribeName << name;
 
-                    fetch(type, component->metaObject(), reg, d1Idx, subscribeName, nameNodes.at(ii));
+                    if (!fetch(type, component->metaObject(), reg, d1Idx, subscribeName, nameNodes.at(ii)))
+                        return false;
                 } else {
                     Instr find;
                     if (nameParts.count() == 1)
@@ -1952,8 +1954,7 @@ bool QmlBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
 
             if (absType || (wasAttachedObject && idx != -1) || (mo && mo->property(idx).isFinal())) {
                 absType = 0; 
-                fetch(type, mo, reg, idx, subscribeName, nameNodes.at(ii));
-                if (type.type == -1)
+                if (!fetch(type, mo, reg, idx, subscribeName, nameNodes.at(ii)))
                     return false;
             } else {
 
