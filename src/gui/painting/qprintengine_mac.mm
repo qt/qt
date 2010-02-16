@@ -789,7 +789,7 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         ret = 1;
         break;
     case PPK_CopyCount: {
-        uint copies = 1;
+        UInt32 copies = 1;
         PMGetCopies(d->settings, &copies);
         ret = copies;
         break;
