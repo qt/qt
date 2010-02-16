@@ -154,6 +154,19 @@ QListData::Data *QListData::detach(int alloc)
 }
 
 /*!
+ *  Detaches the QListData by allocating new memory for a list which will be bigger
+ *  than the copied one and is expected to grow further.
+ *  Returns the old (shared) data, it is up to the caller to deref() and free()
+ *  For the new data node_copy needs to be called.
+ *
+ *  \internal
+ */
+QListData::Data *QListData::detach_grow(int alloc)
+{
+    return detach(grow(alloc));
+}
+
+/*!
  *  Detaches the QListData by reallocating new memory.
  *  Returns the old (shared) data, it is up to the caller to deref() and free()
  *  For the new data node_copy needs to be called.
@@ -592,6 +605,11 @@ void **QListData::erase(void **xi)
 */
 
 /*! \fn void QList::detach()
+
+    \internal
+*/
+
+/*! \fn void QList::detach_grow(int alloc)
 
     \internal
 */
