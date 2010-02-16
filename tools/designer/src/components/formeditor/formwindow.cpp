@@ -399,8 +399,7 @@ void FormWindow::setCursorToAll(const QCursor &c, QWidget *start)
 void FormWindow::init()
 {
     if (FormWindowManager *manager = qobject_cast<FormWindowManager*> (core()->formWindowManager())) {
-        m_commandHistory = new QUndoStack(this);
-        manager->undoGroup()->addStack(m_commandHistory);
+        manager->undoGroup()->addStack(m_undoStack.qundoStack());
     }
 
     m_blockSelectionChanged = false;
@@ -429,9 +428,8 @@ void FormWindow::init()
     m_mainContainer = 0;
     m_currentWidget = 0;
 
-    connect(m_commandHistory, SIGNAL(indexChanged(int)), this, SLOT(updateDirty()));
-    connect(m_commandHistory, SIGNAL(indexChanged(int)), this, SIGNAL(changed()));
-    connect(m_commandHistory, SIGNAL(indexChanged(int)), this, SLOT(checkSelection()));
+    connect(&m_undoStack, SIGNAL(changed()), this, SIGNAL(changed()));
+    connect(&m_undoStack, SIGNAL(changed()), this, SLOT(checkSelection()));
 
     core()->metaDataBase()->add(this);
 
@@ -1227,14 +1225,14 @@ void FormWindow::insertWidget(QWidget *w, const QRect &rect, QWidget *container,
     if (w->parentWidget() != container) {
         ReparentWidgetCommand *cmd = new ReparentWidgetCommand(this);
         cmd->init(w, container);
-        m_commandHistory->push(cmd);
+        m_undoStack.push(cmd);
     }
 
-    m_commandHistory->push(geom_cmd);
+    m_undoStack.push(geom_cmd);
 
     InsertWidgetCommand *cmd = new InsertWidgetCommand(this);
     cmd->init(w, already_in_form);
-    m_commandHistory->push(cmd);
+    m_undoStack.push(cmd);
 
     endCommand();
 
@@ -1277,12 +1275,10 @@ void FormWindow::resizeWidget(QWidget *widget, const QRect &geometry)
     Q_ASSERT(isDescendant(this, widget));
 
     QRect r = geometry;
-    if (m_lastIndex > m_commandHistory->index())
-        m_lastIndex = -1;
     SetPropertyCommand *cmd = new SetPropertyCommand(this);
     cmd->init(widget, QLatin1String("geometry"), r);
     cmd->setText(tr("Resize"));
-    m_commandHistory->push(cmd);
+    m_undoStack.push(cmd);
 }
 
 void FormWindow::raiseChildSelections(QWidget *w)
@@ -1584,7 +1580,7 @@ void FormWindow::handleArrowKeyEvent(int key, Qt::KeyboardModifiers modifiers)
 
     ArrowKeyPropertyCommand *cmd = new ArrowKeyPropertyCommand(this);
     cmd->init(selection, operation);
-    m_commandHistory->push(cmd);
+    m_undoStack.push(cmd);
 }
 
 bool FormWindow::handleKeyReleaseEvent(QWidget *, QWidget *, QKeyEvent *e)
@@ -1863,7 +1859,7 @@ void FormWindow::paste(PasteMode pasteMode)
             foreach (QWidget *w, clipboard.m_widgets) {
                 InsertWidgetCommand *cmd = new InsertWidgetCommand(this);
                 cmd->init(w);
-                m_commandHistory->push(cmd);
+                m_undoStack.push(cmd);
                 selectWidget(w);
             }
         }
@@ -1873,7 +1869,7 @@ void FormWindow::paste(PasteMode pasteMode)
                 ensureUniqueObjectName(a);
                 AddActionCommand *cmd = new AddActionCommand(this);
                 cmd->init(a);
-                m_commandHistory->push(cmd);
+                m_undoStack.push(cmd);
             }
         endCommand();
     } while (false);
@@ -2009,14 +2005,12 @@ void FormWindow::breakLayout(QWidget *w)
 
 void FormWindow::beginCommand(const QString &description)
 {
-    if (m_lastIndex > m_commandHistory->index())
-        m_lastIndex = -1;
-    m_commandHistory->beginMacro(description);
+    m_undoStack.beginMacro(description);
 }
 
 void FormWindow::endCommand()
 {
-    m_commandHistory->endMacro();
+    m_undoStack.endMacro();
 }
 
 void FormWindow::raiseWidgets()
@@ -2031,7 +2025,7 @@ void FormWindow::raiseWidgets()
     foreach (QWidget *widget, widgets) {
         RaiseWidgetCommand *cmd = new RaiseWidgetCommand(this);
         cmd->init(widget);
-        m_commandHistory->push(cmd);
+        m_undoStack.push(cmd);
     }
     endCommand();
 }
@@ -2048,7 +2042,7 @@ void FormWindow::lowerWidgets()
     foreach (QWidget *widget, widgets) {
         LowerWidgetCommand *cmd = new LowerWidgetCommand(this);
         cmd->init(widget);
-        m_commandHistory->push(cmd);
+        m_undoStack.push(cmd);
     }
     endCommand();
 }
@@ -2429,20 +2423,12 @@ FormWindow *FormWindow::findFormWindow(QWidget *w)
 
 bool FormWindow::isDirty() const
 {
-    return m_dirty;
+    return m_undoStack.isDirty();
 }
 
 void FormWindow::setDirty(bool dirty)
 {
-    m_dirty = dirty;
-
-    if (!m_dirty)
-        m_lastIndex = m_commandHistory->index();
-}
-
-void FormWindow::updateDirty()
-{
-    m_dirty = m_commandHistory->index() != m_lastIndex;
+    m_undoStack.setDirty(dirty);
 }
 
 QWidget *FormWindow::containerAt(const QPoint &pos)
@@ -2811,7 +2797,7 @@ bool FormWindow::dropDockWidget(QDesignerDnDItemInterface *item, const QPoint &g
         qVariantSetValue(v, e);
         SetPropertyCommand *cmd = new SetPropertyCommand(this);
         cmd->init(widget, dockWidgetAreaName, v);
-        m_commandHistory->push(cmd);
+        m_undoStack.push(cmd);
     }
 
     endCommand();
@@ -2973,6 +2959,11 @@ QEditorFormBuilder *FormWindow::createFormBuilder()
 QWidget *FormWindow::formContainer() const
 {
     return m_widgetStack->formContainer();
+}
+
+QUndoStack *FormWindow::commandHistory() const
+{
+    return const_cast<QDesignerUndoStack &>(m_undoStack).qundoStack();
 }
 
 } // namespace

@@ -43,6 +43,7 @@
 #define FORMWINDOW_H
 
 #include "formeditor_global.h"
+#include "qdesignerundostack.h"
 #include <formwindowbase_p.h>
 
 // Qt
@@ -64,7 +65,6 @@ class QLabel;
 class QTimer;
 class QAction;
 class QMenu;
-class QUndoStack;
 class QRubberBand;
 
 namespace qdesigner_internal {
@@ -76,6 +76,7 @@ class FormWindowWidgetStack;
 class FormWindowManager;
 class FormWindowDnDItem;
 class SetPropertyCommand;
+class QDesignerUndoStack;
 
 class QT_FORMEDITOR_EXPORT FormWindow: public FormWindowBase
 {
@@ -165,9 +166,7 @@ public:
     void manageWidget(QWidget *w);
     void unmanageWidget(QWidget *w);
 
-    inline QUndoStack *commandHistory() const
-    { return m_commandHistory; }
-
+    virtual QUndoStack *commandHistory() const;
     void beginCommand(const QString &description);
     void endCommand();
 
@@ -238,7 +237,6 @@ protected:
 
 private slots:
     void selectionChangedTimerDone();
-    void updateDirty();
     void checkSelection();
     void checkSelectionNow();
     void slotSelectWidget(QAction *);
@@ -337,7 +335,7 @@ private:
 
     QPoint m_startPos;
 
-    QUndoStack *m_commandHistory;
+    QDesignerUndoStack m_undoStack;
 
     QString m_fileName;
 
@@ -350,9 +348,6 @@ private:
     QTimer *m_selectionChangedTimer;
     QTimer *m_checkSelectionTimer;
     QTimer *m_geometryChangedTimer;
-
-    int m_dirty;
-    int m_lastIndex;
 
     FormWindowWidgetStack *m_widgetStack;
     WidgetEditorTool *m_widgetEditor;
