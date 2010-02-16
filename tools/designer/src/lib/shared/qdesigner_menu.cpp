@@ -88,6 +88,7 @@ static inline void extendClickableArea(QRect *subMenuRect, Qt::LayoutDirection d
 
 QDesignerMenu::QDesignerMenu(QWidget *parent) :
     QMenu(parent),
+    m_subMenuPixmap(QPixmap(QLatin1String(":/trolltech/formeditor/images/submenu.png"))),
     m_currentIndex(0),
     m_addItem(new SpecialMenuAction(this)),
     m_addSeparator(new SpecialMenuAction(this)),
@@ -550,11 +551,10 @@ void QDesignerMenu::deleteAction(QAction *a)
 
 QRect QDesignerMenu::subMenuPixmapRect(QAction *action) const
 {
-    static const QPixmap pm(QLatin1String(":/trolltech/formeditor/images/submenu.png"));
     const QRect g = actionGeometry(action);
-    const int x = layoutDirection() == Qt::LeftToRight ? (g.right() - pm.width() - 2) : 2;
-    const int y = g.top() + (g.height() - pm.height())/2 + 1;
-    return QRect(x, y, pm.width(), pm.height());
+    const int x = layoutDirection() == Qt::LeftToRight ? (g.right() - m_subMenuPixmap.width() - 2) : 2;
+    const int y = g.top() + (g.height() - m_subMenuPixmap.height())/2 + 1;
+    return QRect(x, y, m_subMenuPixmap.width(), m_subMenuPixmap.height());
 }
 
 bool QDesignerMenu::hasSubMenuPixmap(QAction *action) const
@@ -591,8 +591,7 @@ void QDesignerMenu::paintEvent(QPaintEvent *event)
 
             p.fillRect(g, lg);
         } else if (hasSubMenuPixmap(a)) {
-            static const QPixmap pm(QLatin1String(":/trolltech/formeditor/images/submenu.png"));
-            p.drawPixmap(subMenuPixmapRect(a).topLeft(), pm);
+            p.drawPixmap(subMenuPixmapRect(a).topLeft(), m_subMenuPixmap);
         }
     }
 

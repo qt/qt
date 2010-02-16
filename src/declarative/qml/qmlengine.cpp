@@ -97,6 +97,8 @@
 #include <private/qobject_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
 
+#include <private/qmlgraphicsitemsmodule_p.h>
+
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
 #include <qlibrary.h>
@@ -138,6 +140,8 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
+static bool qt_QmlQtModule_registered = false;
+
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false), 
   contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
@@ -146,6 +150,10 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   networkAccessManager(0), networkAccessManagerFactory(0),
   typeManager(e), uniqueId(1)
 {
+    if (!qt_QmlQtModule_registered) {
+        qt_QmlQtModule_registered = true;
+        QmlGraphicsItemModule::defineModule();
+    }
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
     fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
 }

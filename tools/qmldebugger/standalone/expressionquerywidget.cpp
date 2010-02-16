@@ -51,6 +51,8 @@
 
 #include "expressionquerywidget.h"
 
+QT_BEGIN_NAMESPACE
+
 ExpressionQueryWidget::ExpressionQueryWidget(Mode mode, QmlEngineDebug *client, QWidget *parent)
     : QWidget(parent),
       m_mode(mode),
@@ -274,3 +276,5 @@ bool ExpressionQueryWidget::eventFilter(QObject *obj, QEvent *event)
     }
     return QWidget::eventFilter(obj, event);
 }
+
+QT_END_NAMESPACE

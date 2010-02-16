@@ -52,6 +52,8 @@
 
 Q_DECLARE_METATYPE(QmlDebugObjectReference)
 
+QT_BEGIN_NAMESPACE
+
 ObjectTree::ObjectTree(QmlEngineDebug *client, QWidget *parent)
     : QTreeWidget(parent),
       m_client(client),
@@ -229,3 +231,5 @@ void ObjectTree::mousePressEvent(QMouseEvent *me)
         }
     } 
 }
+
+QT_END_NAMESPACE

@@ -44,7 +44,6 @@
 
 #include "bookmarkmanager.h"
 #include "centralwidget.h"
-#include "helpviewer.h"
 #include "indexwindow.h"
 #include "topicchooser.h"
 #include "contentwindow.h"
@@ -760,12 +759,10 @@ void MainWindow::showPreferences()
 {
     TRACE_OBJ
     PreferencesDialog dia(this);
-
     connect(&dia, SIGNAL(updateApplicationFont()), this,
         SLOT(updateApplicationFont()));
     connect(&dia, SIGNAL(updateBrowserFont()), m_centralWidget,
         SLOT(updateBrowserFont()));
-
     dia.showDialog();
 }
 
@@ -970,7 +967,9 @@ void MainWindow::updateApplicationFont()
     if (helpEngine.usesAppFont())
         font = helpEngine.appFont();
 
-    qApp->setFont(font, "QWidget");
+    const QWidgetList &widgets = qApp->allWidgets();
+    foreach (QWidget* widget, widgets)
+        widget->setFont(font);
 }
 
 void MainWindow::setupFilterCombo()

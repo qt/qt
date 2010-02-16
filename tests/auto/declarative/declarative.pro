@@ -35,7 +35,6 @@ SUBDIRS += \
            qmlgraphicstext \        # Cover
            qmlgraphicstextedit \    # Cover
            qmlgraphicstextinput \   # Cover
-           qmlgraphicswebview \     # Cover
            qmlinfo \                # Cover
            qmlinstruction \         # Cover
            qmllanguage \            # Cover
@@ -60,6 +59,10 @@ SUBDIRS += \
            qmlimageprovider \       # Cover
            sql                      # Cover
 
+contains(QT_CONFIG, webkit) {
+    SUBDIRS += \
+           qmlgraphicswebview       # Cover
+}
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

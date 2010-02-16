@@ -36,7 +36,7 @@ ADDCLEAN    =
 OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               option.o winmakefile.o projectgenerator.o property.o meta.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-              borland_bmake.o msvc_nmake.o msvc_dsp.o msvc_vcproj.o \
+              borland_bmake.o msvc_nmake.o msvc_vcproj.o \
               msvc_objectmodel.o symmake.o initprojectdeploy_symbian.o \
               symmake_abld.o symmake_sbsv2.o
 
@@ -256,9 +256,6 @@ mingw_make.o: $(SOURCE_PATH)/qmake/generators/win32/mingw_make.cpp
 
 msvc_nmake.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_nmake.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_nmake.cpp
-
-msvc_dsp.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_dsp.cpp
-	$(CXX) $(CXXFLAGS) generators/win32/msvc_dsp.cpp
 
 msvc_vcproj.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcproj.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_vcproj.cpp

@@ -212,8 +212,8 @@ void EnginePane::enginesChanged()
         engineSelected(qobject_cast<DebuggerEngineItem*>(m_engineItems.at(0))->engineId());
 }
 
+QT_END_NAMESPACE
 
 #include "engine.moc"
 
-QT_END_NAMESPACE
 

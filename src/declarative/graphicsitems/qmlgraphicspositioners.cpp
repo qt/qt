@@ -288,7 +288,6 @@ void QmlGraphicsBasePositioner::finishApplyTransitions()
     d->moveActions.clear();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Column,QmlGraphicsColumn)
 /*!
   \qmlclass Column QmlGraphicsColumn
   \brief The Column item lines up its children vertically.
@@ -418,7 +417,6 @@ void QmlGraphicsColumn::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Row,QmlGraphicsRow)
 /*!
   \qmlclass Row QmlGraphicsRow
   \brief The Row item lines up its children horizontally.
@@ -523,7 +521,6 @@ void QmlGraphicsRow::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Grid,QmlGraphicsGrid)
 
 /*!
   \qmlclass Grid QmlGraphicsGrid
@@ -711,7 +708,6 @@ void QmlGraphicsGrid::doPositioning()
 }
 
 
-QML_DEFINE_TYPE(Qt,4,6,Flow,QmlGraphicsFlow)
 /*!
   \qmlclass Flow QmlGraphicsFlow
   \brief The Flow item lines up its children side by side, wrapping as necessary.

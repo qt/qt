@@ -54,9 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,PathView,QmlGraphicsPathView)
-
-
 inline qreal qmlMod(qreal x, qreal y)
 {
 #ifdef QT_USE_MATH_H_FLOATS
@@ -910,11 +907,16 @@ void QmlGraphicsPathViewPrivate::snapToCurrent()
 
     //Rounds is the number of times round to make the current item visible
     int rounds = itemIndex / items.count();
-    int otherWayRounds = (model->count() - (itemIndex)) / items.count() + 1;
+    int otherWayRounds = (model->count() - (itemIndex)) / items.count();
     if (otherWayRounds < rounds)
         rounds = -otherWayRounds;
 
     itemIndex += pathOffset;
+    if(model->count() % items.count() && itemIndex - model->count() + items.count() > 0){
+        //When model.count() is not a multiple of pathItemCount we need to manually
+        //fix the index so that going backwards one step works correctly.
+        itemIndex = itemIndex - model->count() + items.count();
+    }
     itemIndex %= items.count();
     qreal targetOffset = qmlMod(100 + (snapPos*100) - 100.0 * itemIndex / items.count(), qreal(100.0));
 
@@ -928,7 +930,7 @@ void QmlGraphicsPathViewPrivate::snapToCurrent()
     moveOffset.setValue(_offset);
 
     if (rounds!=0){
-        //Compensate if the targetOffset would bring the target it from off the screen
+        //Compensate if the targetOffset would bring the target in from off the screen
         qreal distance = targetOffset - _offset;
         if (distance <= -50)
             rounds--;

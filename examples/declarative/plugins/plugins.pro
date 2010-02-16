@@ -1,6 +1,7 @@
 TEMPLATE = lib
 TARGET  = qtimeexampleqmlplugin
-CONFIG += qt plugin declarative
+CONFIG += qt plugin
+QT += declarative
 
 SOURCES += plugin.cpp
 

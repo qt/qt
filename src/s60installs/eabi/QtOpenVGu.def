@@ -173,4 +173,27 @@ EXPORTS
 	_Z21qt_vg_destroy_contextP11QEglContexti @ 172 NONAME
 	_ZN13QVGPixmapData22destroyImageAndContextEv @ 173 NONAME
 	_ZN13QVGPixmapData9hibernateEv @ 174 NONAME
+	_ZN12QVGImagePool11detachImageEP13QVGPixmapData @ 175 NONAME
+	_ZN12QVGImagePool12reclaimSpaceE13VGImageFormatllP13QVGPixmapData @ 176 NONAME
+	_ZN12QVGImagePool12releaseImageEP13QVGPixmapDatam @ 177 NONAME
+	_ZN12QVGImagePool12setImagePoolEPS_ @ 178 NONAME
+	_ZN12QVGImagePool13removeFromLRUEP13QVGPixmapData @ 179 NONAME
+	_ZN12QVGImagePool15moveToHeadOfLRUEP13QVGPixmapData @ 180 NONAME
+	_ZN12QVGImagePool20createImageForPixmapE13VGImageFormatllmP13QVGPixmapData @ 181 NONAME
+	_ZN12QVGImagePool20createPermanentImageE13VGImageFormatllm @ 182 NONAME
+	_ZN12QVGImagePool20createTemporaryImageE13VGImageFormatllmP13QVGPixmapData @ 183 NONAME
+	_ZN12QVGImagePool8instanceEv @ 184 NONAME
+	_ZN12QVGImagePool8useImageEP13QVGPixmapData @ 185 NONAME
+	_ZN12QVGImagePool9hibernateEv @ 186 NONAME
+	_ZN12QVGImagePool9pixmapLRUEv @ 187 NONAME
+	_ZN12QVGImagePoolC1Ev @ 188 NONAME
+	_ZN12QVGImagePoolC2Ev @ 189 NONAME
+	_ZN12QVGImagePoolD0Ev @ 190 NONAME
+	_ZN12QVGImagePoolD1Ev @ 191 NONAME
+	_ZN12QVGImagePoolD2Ev @ 192 NONAME
+	_ZN13QVGPixmapData13destroyImagesEv @ 193 NONAME
+	_ZN13QVGPixmapData13reclaimImagesEv @ 194 NONAME
+	_ZN13QVGPixmapData19detachImageFromPoolEv @ 195 NONAME
+	_ZTI12QVGImagePool @ 196 NONAME
+	_ZTV12QVGImagePool @ 197 NONAME
 

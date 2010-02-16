@@ -227,6 +227,73 @@ private Q_SLOTS:
     void animStopped();
 };
 
+class QmlGraphicsListViewAttached : public QObject
+{
+    Q_OBJECT
+public:
+    QmlGraphicsListViewAttached(QObject *parent)
+        : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
+    ~QmlGraphicsListViewAttached() {}
+
+    Q_PROPERTY(QmlGraphicsListView *view READ view CONSTANT)
+    QmlGraphicsListView *view() { return m_view; }
+
+    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
+    bool isCurrentItem() const { return m_isCurrent; }
+    void setIsCurrentItem(bool c) {
+        if (m_isCurrent != c) {
+            m_isCurrent = c;
+            emit currentItemChanged();
+        }
+    }
+
+    Q_PROPERTY(QString prevSection READ prevSection NOTIFY prevSectionChanged)
+    QString prevSection() const { return m_prevSection; }
+    void setPrevSection(const QString &sect) {
+        if (m_prevSection != sect) {
+            m_prevSection = sect;
+            emit prevSectionChanged();
+        }
+    }
+
+    Q_PROPERTY(QString section READ section NOTIFY sectionChanged)
+    QString section() const { return m_section; }
+    void setSection(const QString &sect) {
+        if (m_section != sect) {
+            m_section = sect;
+            emit sectionChanged();
+        }
+    }
+
+    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged)
+    bool delayRemove() const { return m_delayRemove; }
+    void setDelayRemove(bool delay) {
+        if (m_delayRemove != delay) {
+            m_delayRemove = delay;
+            emit delayRemoveChanged();
+        }
+    }
+
+    void emitAdd() { emit add(); }
+    void emitRemove() { emit remove(); }
+
+Q_SIGNALS:
+    void currentItemChanged();
+    void sectionChanged();
+    void prevSectionChanged();
+    void delayRemoveChanged();
+    void add();
+    void remove();
+
+public:
+    QmlGraphicsListView *m_view;
+    bool m_isCurrent;
+    mutable QString m_section;
+    QString m_prevSection;
+    bool m_delayRemove;
+};
+
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPEINFO(QmlGraphicsListView, QML_HAS_ATTACHED_PROPERTIES)

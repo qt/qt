@@ -809,12 +809,15 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 void QSymbianControl::Draw(const TRect& controlRect) const
 {
     // Set flag to avoid calling DrawNow in window surface
-    QWExtra *extra = qwidget->d_func()->extraData();
-    if (extra && !extra->inExpose) {
-        extra->inExpose = true;
+    QWidget *window = qwidget->window();
+    Q_ASSERT(window);
+    QTLWExtra *topExtra = window->d_func()->maybeTopData();
+    Q_ASSERT(topExtra);
+    if (!topExtra->inExpose) {
+        topExtra->inExpose = true;
         QRect exposeRect = qt_TRect2QRect(controlRect);
         qwidget->d_func()->syncBackingStore(exposeRect);
-        extra->inExpose = false;
+        topExtra->inExpose = false;
     }
 
     QWindowSurface *surface = qwidget->windowSurface();

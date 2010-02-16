@@ -46,13 +46,15 @@
 #include <private/qmlanimation_p.h>
 #include <QVariantAnimation>
 
-class tst_animations : public QObject
+class tst_qmlanimations : public QObject
 {
     Q_OBJECT
 public:
-    tst_animations() {}
+    tst_qmlanimations() {}
 
 private slots:
+    void initTestCase() { QmlEngine engine; } // ensure types are registered
+
     void simpleProperty();
     void simpleNumber();
     void simpleColor();
@@ -80,7 +82,7 @@ private slots:
     QCOMPARE(lhs, rhs); \
 } while (false)
 
-void tst_animations::simpleProperty()
+void tst_qmlanimations::simpleProperty()
 {
     QmlGraphicsRectangle rect;
     QmlPropertyAnimation animation;
@@ -105,7 +107,7 @@ void tst_animations::simpleProperty()
     QCOMPARE(rect.pos(), QPointF(100,100));
 }
 
-void tst_animations::simpleNumber()
+void tst_qmlanimations::simpleNumber()
 {
     QmlGraphicsRectangle rect;
     QmlNumberAnimation animation;
@@ -130,7 +132,7 @@ void tst_animations::simpleNumber()
     QCOMPARE(rect.x(), qreal(100));
 }
 
-void tst_animations::simpleColor()
+void tst_qmlanimations::simpleColor()
 {
     QmlGraphicsRectangle rect;
     QmlColorAnimation animation;
@@ -164,7 +166,7 @@ void tst_animations::simpleColor()
     QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
 }
 
-void tst_animations::alwaysRunToEnd()
+void tst_qmlanimations::alwaysRunToEnd()
 {
     QmlGraphicsRectangle rect;
     QmlPropertyAnimation animation;
@@ -184,7 +186,7 @@ void tst_animations::alwaysRunToEnd()
     QTIMED_COMPARE(rect.x(), qreal(200));
 }
 
-void tst_animations::complete()
+void tst_qmlanimations::complete()
 {
     QmlGraphicsRectangle rect;
     QmlPropertyAnimation animation;
@@ -205,7 +207,7 @@ void tst_animations::complete()
     QCOMPARE(rect.x(), qreal(200));
 }
 
-void tst_animations::resume()
+void tst_qmlanimations::resume()
 {
     QmlGraphicsRectangle rect;
     QmlPropertyAnimation animation;
@@ -232,7 +234,7 @@ void tst_animations::resume()
     QVERIFY(rect.x() > x);
 }
 
-void tst_animations::dotProperty()
+void tst_qmlanimations::dotProperty()
 {
     QmlGraphicsRectangle rect;
     QmlNumberAnimation animation;
@@ -251,7 +253,7 @@ void tst_animations::dotProperty()
     QCOMPARE(rect.border()->width(), 5);
 }
 
-void tst_animations::badTypes()
+void tst_qmlanimations::badTypes()
 {
     //don't crash
     {
@@ -301,7 +303,7 @@ void tst_animations::badTypes()
     }
 }
 
-void tst_animations::badProperties()
+void tst_qmlanimations::badProperties()
 {
     //make sure we get a runtime error
     {
@@ -328,7 +330,7 @@ void tst_animations::badProperties()
 
 //test animating mixed types with property animation in a transition
 //for example, int + real; color + real; etc
-void tst_animations::mixedTypes()
+void tst_qmlanimations::mixedTypes()
 {
     //assumes border.width stats a real -- not real robust
     {
@@ -364,7 +366,7 @@ void tst_animations::mixedTypes()
     }
 }
 
-void tst_animations::properties()
+void tst_qmlanimations::properties()
 {
     const int waitDuration = 300;
     {
@@ -431,7 +433,7 @@ void tst_animations::properties()
     }
 }
 
-void tst_animations::propertiesTransition()
+void tst_qmlanimations::propertiesTransition()
 {
     const int waitDuration = 300;
     {
@@ -502,7 +504,7 @@ void tst_animations::propertiesTransition()
     }
 }
 
-void tst_animations::easingStringConversion()
+void tst_qmlanimations::easingStringConversion()
 {
     QmlNumberAnimation *animation = new QmlNumberAnimation;
     animation->setEasing("easeInOutQuad");
@@ -553,7 +555,7 @@ void tst_animations::easingStringConversion()
     delete animation;
 }
 
-void tst_animations::invalidDuration()
+void tst_qmlanimations::invalidDuration()
 {
     QmlPropertyAnimation *animation = new QmlPropertyAnimation;
     QTest::ignoreMessage(QtWarningMsg, "QML PropertyAnimation (unknown location) Cannot set a duration of < 0");
@@ -566,7 +568,7 @@ void tst_animations::invalidDuration()
     QCOMPARE(pauseAnimation->duration(), 250);
 }
 
-void tst_animations::attached()
+void tst_qmlanimations::attached()
 {
     QmlEngine engine;
 
@@ -577,7 +579,7 @@ void tst_animations::attached()
     QVERIFY(rect);
 }
 
-void tst_animations::propertyValueSourceDefaultStart()
+void tst_qmlanimations::propertyValueSourceDefaultStart()
 {
     {
         QmlEngine engine;
@@ -606,6 +608,6 @@ void tst_animations::propertyValueSourceDefaultStart()
     }
 }
 
-QTEST_MAIN(tst_animations)
+QTEST_MAIN(tst_qmlanimations)
 
 #include "tst_qmlanimations.moc"

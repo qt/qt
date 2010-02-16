@@ -864,6 +864,9 @@ typedef quint64 qulonglong;
 #  endif
 #endif
 
+#define Q_INIT_RESOURCE_EXTERN(name) \
+    extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();
+
 #define Q_INIT_RESOURCE(name) \
     do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
         QT_MANGLE_NAMESPACE(qInitResources_ ## name) (); } while (0)
@@ -1676,10 +1679,7 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #endif
 
 Q_CORE_EXPORT void qt_check_pointer(const char *, int);
-
-#ifndef QT_NO_EXCEPTIONS
 Q_CORE_EXPORT void qBadAlloc();
-#endif
 
 #ifdef QT_NO_EXCEPTIONS
 #  if defined(QT_NO_DEBUG)

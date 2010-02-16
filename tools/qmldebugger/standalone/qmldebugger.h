@@ -45,6 +45,8 @@
 #include <QtNetwork/qtcpsocket.h>
 #include <QtGui/qwidget.h>
 
+QT_BEGIN_NAMESPACE
+
 class QLabel;
 class QLineEdit;
 class QSpinBox;
@@ -86,5 +88,7 @@ private:
     EnginePane *m_enginePane;
     QTabWidget *m_tabs;
 };
+
+QT_END_NAMESPACE
 
 #endif

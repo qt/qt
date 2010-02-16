@@ -508,6 +508,7 @@ void tst_qmlgraphicstextinput::inputMethodHints()
 /*
 TextInput element should only handle left/right keys until the cursor reaches
 the extent of the text, then they should ignore the keys.
+
 */
 void tst_qmlgraphicstextinput::navigation()
 {
@@ -518,13 +519,23 @@ void tst_qmlgraphicstextinput::navigation()
 
     QVERIFY(canvas->root() != 0);
 
-    QmlGraphicsItem *input = qobject_cast<QmlGraphicsItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+    QmlGraphicsTextInput *input = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
 
     QVERIFY(input != 0);
+    input->setCursorPosition(0);
     QTRY_VERIFY(input->hasFocus() == true);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->hasFocus() == true);
+    //QT-2944: If text is selected, then we should deselect first.
+    input->setCursorPosition(input->text().length());
+    input->setSelectionStart(0);
+    input->setSelectionEnd(input->text().length());
+    QVERIFY(input->selectionStart() != input->selectionEnd());
+    simulateKey(canvas, Qt::Key_Right);
+    QVERIFY(input->selectionStart() == input->selectionEnd());
+    QVERIFY(input->selectionStart() == input->text().length());
     QVERIFY(input->hasFocus() == true);
     simulateKey(canvas, Qt::Key_Right);
     QVERIFY(input->hasFocus() == false);

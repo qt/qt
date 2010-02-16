@@ -46,8 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,FocusPanel,QmlGraphicsFocusPanel)
-
 /*!
    \qmlclass FocusPanel QmlGraphicsFocusPanel
    \brief The FocusPanel item explicitly creates a focus panel.

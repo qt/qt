@@ -174,7 +174,11 @@ uint32_t toUInt32SlowCase(double d, bool& ok)
 
 NEVER_INLINE double nonInlineNaN()
 {
+#if PLATFORM(SYMBIAN)
+    return nanval();
+#else
     return std::numeric_limits<double>::quiet_NaN();
+#endif
 }
 
 } // namespace JSC

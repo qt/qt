@@ -43,7 +43,8 @@
 #include "centralwidget.h"
 #include "findwidget.h"
 #include "helpenginewrapper.h"
-#include "helpviewer.h"
+#include "helpviewer_qtb.h"
+#include "helpviewer_qwv.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
 #include "../shared/collectionconfiguration.h"
@@ -57,6 +58,7 @@
 #include <QtGui/QPrinter>
 #include <QtGui/QTabBar>
 #include <QtGui/QTabWidget>
+#include <QtGui/QTextBrowser>
 #include <QtGui/QToolButton>
 #include <QtGui/QPageSetupDialog>
 #include <QtGui/QPrintDialog>
@@ -70,6 +72,7 @@ namespace {
     HelpViewer* helpViewerFromTabPosition(const QTabWidget *widget,
         const QPoint &point)
     {
+        TRACE_OBJ
         QTabBar *tabBar = qFindChild<QTabBar*>(widget);
         for (int i = 0; i < tabBar->count(); ++i) {
             if (tabBar->tabRect(i).contains(point))
@@ -80,9 +83,7 @@ namespace {
     CentralWidget *staticCentralWidget = 0;
 }
 
-
 // -- CentralWidget
-
 
 CentralWidget::CentralWidget(MainWindow *parent)
     : QWidget(parent)
@@ -174,7 +175,7 @@ CentralWidget::~CentralWidget()
         HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(i));
         if (viewer && viewer->source().isValid()) {
             currentPages << viewer->source().toString();
-            zoomFactors << QString::number(viewer->zoom());
+            zoomFactors << QString::number(viewer->scale());
         }
     }
 
@@ -208,7 +209,7 @@ void CentralWidget::zoomIn()
     TRACE_OBJ
     HelpViewer *viewer = currentHelpViewer();
     if (viewer)
-        viewer->zoomIn();
+        viewer->scaleUp();
 
     if (tabWidget->currentWidget() == m_searchWidget)
         m_searchWidget->zoomIn();
@@ -219,7 +220,7 @@ void CentralWidget::zoomOut()
     TRACE_OBJ
     HelpViewer *viewer = currentHelpViewer();
     if (viewer)
-        viewer->zoomOut();
+        viewer->scaleDown();
 
     if (tabWidget->currentWidget() == m_searchWidget)
         m_searchWidget->zoomOut();
@@ -237,9 +238,8 @@ void CentralWidget::nextPage()
 void CentralWidget::resetZoom()
 {
     TRACE_OBJ
-    HelpViewer *viewer = currentHelpViewer();
-    if (viewer)
-        viewer->resetZoom();
+    if (HelpViewer *viewer = currentHelpViewer())
+        viewer->resetScale();
 
     if (tabWidget->currentWidget() == m_searchWidget)
         m_searchWidget->resetZoom();
@@ -522,25 +522,12 @@ void CentralWidget::setSourceInNewTab(const QUrl &url, qreal zoom)
         return;
 #endif
 
-    viewer = new HelpViewer(this);
+    viewer = new HelpViewer(this, zoom);
     viewer->installEventFilter(this);
     viewer->setSource(url);
     viewer->setFocus(Qt::OtherFocusReason);
     tabWidget->setCurrentIndex(tabWidget->addTab(viewer,
         quoteTabTitle(viewer->documentTitle())));
-
-    QFont font;
-    getBrowserFontFor(viewer, &font);
-
-#if defined(QT_NO_WEBKIT)
-    font.setPointSize((int)(font.pointSize() + zoom));
-    setBrowserFontFor(viewer, font);
-    viewer->setZoom((int)zoom);
-#else
-    setBrowserFontFor(viewer, font);
-    viewer->setTextSizeMultiplier(zoom == 0.0 ? 1.0 : zoom);
-#endif
-
     connectSignals();
 }
 
@@ -579,7 +566,13 @@ void CentralWidget::connectSignals()
     }
 }
 
-HelpViewer *CentralWidget::currentHelpViewer() const
+HelpViewer* CentralWidget::viewerAt(int index) const
+{
+    TRACE_OBJ
+    return qobject_cast<HelpViewer*>(tabWidget->widget(index));
+}
+
+HelpViewer* CentralWidget::currentHelpViewer() const
 {
     TRACE_OBJ
     return qobject_cast<HelpViewer*>(tabWidget->currentWidget());
@@ -755,6 +748,7 @@ void CentralWidget::keyPressEvent(QKeyEvent *e)
 
 void CentralWidget::findNext()
 {
+    TRACE_OBJ
     find(findWidget->text(), true);
 }
 
@@ -876,21 +870,24 @@ bool CentralWidget::findInTextBrowser(const QString &ttf, bool forward)
 void CentralWidget::updateBrowserFont()
 {
     TRACE_OBJ
-    QFont font;
-    bool searchAttached = searchWidgetAttached();
+    const bool searchAttached = searchWidgetAttached();
     if (searchAttached) {
-        getBrowserFontFor(m_searchWidget, &font);
-        setBrowserFontFor(m_searchWidget, font);
+        HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+        m_searchWidget->setFont(helpEngine.usesBrowserFont()
+            ? helpEngine.browserFont() : qApp->font());
     }
 
-    int i = searchAttached ? 1 : 0;
-    getBrowserFontFor(tabWidget->widget(i), &font);
-    for ( ; i < tabWidget->count(); ++i)
-        setBrowserFontFor(tabWidget->widget(i), font);
+    const int count = tabWidget->count();
+    if (HelpViewer* viewer = viewerAt(count - 1)) {
+        const QFont &font = viewer->viewerFont();
+        for (int i = searchAttached ? 1 : 0; i < count; ++i)
+            viewerAt(i)->setViewerFont(font);
+    }
 }
 
 bool CentralWidget::searchWidgetAttached() const
 {
+    TRACE_OBJ
     return m_searchWidget && m_searchWidget->isAttached();
 }
 
@@ -906,9 +903,9 @@ void CentralWidget::createSearchWidget(QHelpSearchEngine *searchEngine)
     connect(m_searchWidget, SIGNAL(requestShowLinkInNewTab(QUrl)), this,
         SLOT(setSourceFromSearchInNewTab(QUrl)));
 
-    QFont font;
-    getBrowserFontFor(m_searchWidget, &font);
-    setBrowserFontFor(m_searchWidget, font);
+    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+    m_searchWidget->setFont(!helpEngine.usesBrowserFont() ? qApp->font()
+        : helpEngine.browserFont());
 }
 
 void CentralWidget::activateSearchWidget(bool updateLastTabPage)
@@ -1101,43 +1098,6 @@ QMap<int, QString> CentralWidget::currentSourceFileList() const
             sourceList.insert(i, viewer->source().host());
     }
     return sourceList;
-}
-
-void CentralWidget::getBrowserFontFor(QWidget *viewer, QFont *font)
-{
-    TRACE_OBJ
-    HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-    if (!helpEngine.usesBrowserFont()) {
-        *font = qApp->font();   // case for QTextBrowser and SearchWidget
-#if !defined(QT_NO_WEBKIT)
-        QWebView *view = qobject_cast<QWebView*> (viewer);
-        if (view) {
-            QWebSettings *settings = QWebSettings::globalSettings();
-            *font = QFont(settings->fontFamily(QWebSettings::StandardFont),
-                settings->fontSize(QWebSettings::DefaultFontSize));
-        }
-#endif
-    } else {
-        *font = helpEngine.browserFont();
-    }
-}
-
-void CentralWidget::setBrowserFontFor(QWidget *widget, const QFont &font)
-{
-    TRACE_OBJ
-#if !defined(QT_NO_WEBKIT)
-    QWebView *view = qobject_cast<QWebView*> (widget);
-    if (view) {
-        QWebSettings *settings = view->settings();
-        settings->setFontFamily(QWebSettings::StandardFont, font.family());
-        settings->setFontSize(QWebSettings::DefaultFontSize, font.pointSize());
-    } else if (widget && widget->font() != font) {
-        widget->setFont(font);
-    }
-#else
-    if (widget && widget->font() != font)
-        widget->setFont(font);
-#endif
 }
 
 QT_END_NAMESPACE

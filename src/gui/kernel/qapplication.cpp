@@ -122,15 +122,19 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 static void initResources()
 {
 #if defined(Q_WS_WINCE)
+    Q_INIT_RESOURCE_EXTERN(qstyle_wince)
     Q_INIT_RESOURCE(qstyle_wince);
 #elif defined(Q_OS_SYMBIAN)
+    Q_INIT_RESOURCE_EXTERN(qstyle_s60)
     Q_INIT_RESOURCE(qstyle_s60);
 #else
+    Q_INIT_RESOURCE_EXTERN(qstyle)
     Q_INIT_RESOURCE(qstyle);
 #endif
-
+    Q_INIT_RESOURCE_EXTERN(qmessagebox)
     Q_INIT_RESOURCE(qmessagebox);
 #if !defined(QT_NO_PRINTDIALOG)
+    Q_INIT_RESOURCE_EXTERN(qprintdialog)
     Q_INIT_RESOURCE(qprintdialog);
 #endif
 
@@ -5264,10 +5268,20 @@ QInputContext *QApplication::inputContext() const
             qic = QInputContextFactory::create(QLatin1String("xim"), that);
         that->d_func()->inputContext = qic;
     }
-#elif defined(Q_WS_S60)
+#elif defined(Q_OS_SYMBIAN)
     if (!d->inputContext) {
         QApplication *that = const_cast<QApplication *>(this);
-        that->d_func()->inputContext = QInputContextFactory::create(QString::fromLatin1("coefep"), that);
+        const QStringList keys = QInputContextFactory::keys();
+        // Try hbim and coefep first, then try others.
+        if (keys.contains("hbim")) {
+            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("hbim"), that);
+        } else if (keys.contains("coefep")) {
+            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
+        } else {
+            for (int c = 0; c < keys.size() && !d->inputContext; ++c) {
+                that->d_func()->inputContext = QInputContextFactory::create(keys[c], that);
+            }
+        }
     }
 #endif
     return d->inputContext;
