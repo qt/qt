@@ -1,6 +1,8 @@
 TEMPLATE = subdirs
 
-!maemo:contains(QT_CONFIG, dbus):contains(QT_CONFIG, networkmanager):SUBDIRS += networkmanager
+!maemo:contains(QT_CONFIG, dbus):contains(QT_CONFIG, networkmanager) {
+    SUBDIRS += networkmanager generic
+}
 win32:SUBDIRS += nla
 win32:!wince*:SUBDIRS += nativewifi
 macx:SUBDIRS += corewlan
