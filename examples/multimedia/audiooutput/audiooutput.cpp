@@ -262,6 +262,8 @@ void AudioTest::toggle()
         pullMode = true;
         audioOutput->start(gen);
     }
+
+    button2->setText("Click To Suspend");
 }
 
 void AudioTest::togglePlay()
