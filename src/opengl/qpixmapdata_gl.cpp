@@ -234,6 +234,11 @@ QSize QGLPixmapGLPaintDevice::size() const
     return data->size();
 }
 
+bool QGLPixmapGLPaintDevice::alphaRequested() const
+{
+    return data->m_hasAlpha;
+}
+
 void QGLPixmapGLPaintDevice::setPixmapData(QGLPixmapData* d)
 {
     data = d;

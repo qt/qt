@@ -1231,14 +1231,14 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
                                             ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
                                             : d->glyphCacheType;
 
-    if (txtype > QTransform::TxTranslate)
-        glyphType = QFontEngineGlyphCache::Raster_A8;
 
-    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask
-        && state()->composition_mode != QPainter::CompositionMode_Source
-        && state()->composition_mode != QPainter::CompositionMode_SourceOver)
-    {
-        drawCached = false;
+    if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
+        if (d->device->alphaRequested() || txtype > QTransform::TxTranslate
+            || (state()->composition_mode != QPainter::CompositionMode_Source
+            && state()->composition_mode != QPainter::CompositionMode_SourceOver))
+        {
+            glyphType = QFontEngineGlyphCache::Raster_A8;
+        }
     }
 
     if (drawCached) {

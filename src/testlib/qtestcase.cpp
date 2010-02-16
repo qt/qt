@@ -1113,6 +1113,14 @@ static void qParseArgs(int argc, char *argv[])
 #endif
         } else if (strcmp(argv[i], "-qws") == 0) {
             // do nothing
+        } else if (strcmp(argv[i], "-graphicssystem") == 0) {
+            // do nothing
+            if (i + 1 >= argc) {
+                printf("-graphicssystem needs an extra parameter specifying the graphics system\n");
+                exit(1);
+            } else {
+                ++i;
+            }
         } else if (argv[i][0] == '-') {
             printf("Unknown option: '%s'\n\n%s", argv[i], testOptions);
             exit(1);

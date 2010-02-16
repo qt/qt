@@ -336,8 +336,18 @@ void addFontToDatabase(QString familyName, const QString &scriptName,
                 signature->fsCsb[0], signature->fsCsb[1]
             };
             QList<QFontDatabase::WritingSystem> systems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
-            for (int i = 0; i < systems.count(); ++i)
-                family->writingSystems[systems.at(i)] = QtFontFamily::Supported;
+
+            for (int i = 0; i < systems.count(); ++i) {
+                QFontDatabase::WritingSystem writingSystem = systems.at(i);
+
+                // ### Hack to work around problem with Thai text on Windows 7. Segoe UI contains
+                // the symbol for Baht, and Windows thus reports that it supports the Thai script.
+                // Since it's the default UI font on this platform, most widgets will be unable to
+                // display Thai text by default. As a temporary work around, we special case Segoe UI
+                // and remove the Thai script from its list of supported writing systems.
+                if (writingSystem != QFontDatabase::Thai || familyName != QLatin1String("Segoe UI"))
+                    family->writingSystems[writingSystem] = QtFontFamily::Supported;
+            }
         } else if (!family->writingSystemCheck) {
             //qDebug("family='%s' script=%s", family->name.latin1(), script.latin1());
             if (scriptName == QLatin1String("Western")
