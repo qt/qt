@@ -179,7 +179,6 @@ void tst_QGraphicsItem::setTransform_data()
 {
     QTest::addColumn<QTransform>("transform");
 
-    QTest::newRow("id") << QTransform();
     QTest::newRow("rotate 45z") << QTransform().rotate(45);
     QTest::newRow("scale 2x2") << QTransform().scale(2, 2);
     QTest::newRow("translate 100, 100") << QTransform().translate(100, 100);
