@@ -227,7 +227,8 @@ static const YuvFormat qt_yuvColorLookup[] =
     { QVideoFrame::Format_UYVY,    GST_MAKE_FOURCC('U','Y','V','Y'), 16 },
     { QVideoFrame::Format_YUYV,    GST_MAKE_FOURCC('Y','U','Y','2'), 16 },
     { QVideoFrame::Format_NV12,    GST_MAKE_FOURCC('N','V','1','2'), 8 },
-    { QVideoFrame::Format_NV21,    GST_MAKE_FOURCC('N','V','2','1'), 8 }
+    { QVideoFrame::Format_NV21,    GST_MAKE_FOURCC('N','V','2','1'), 8 },
+    { QVideoFrame::Format_AYUV444, GST_MAKE_FOURCC('A','Y','U','V'), 32 }
 };
 
 static int indexOfYuvColor(QVideoFrame::PixelFormat format)
