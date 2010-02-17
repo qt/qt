@@ -44,11 +44,13 @@
 #include <QtDeclarative/qmlimageprovider.h>
 #include <private/qmlgraphicsimage_p.h>
 
+// QmlImageProvider::request() is run in an idle thread where possible
+// Be generous in our timeout.
 #define TRY_WAIT(expr) \
     do { \
-        for (int ii = 0; ii < 6; ++ii) { \
+        for (int ii = 0; ii < 10; ++ii) { \
             if ((expr)) break; \
-            QTest::qWait(50); \
+            QTest::qWait(100); \
         } \
         QVERIFY((expr)); \
     } while (false)
