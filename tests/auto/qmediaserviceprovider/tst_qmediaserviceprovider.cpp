@@ -107,6 +107,7 @@ public:
 
     QList<QByteArray> devices(const QByteArray &service) const
     {
+        Q_UNUSED(service);
         QList<QByteArray> res;
         return res;
     }
@@ -198,6 +199,7 @@ public:
 
     QList<QByteArray> devices(const QByteArray &service) const
     {
+        Q_UNUSED(service);
         QList<QByteArray> res;
         return res;
     }
@@ -252,7 +254,7 @@ void tst_QMediaServiceProvider::initTestCase()
     plugins << new MockServicePlugin2;
     plugins << new MockServicePlugin3;
 
-    QMediaPluginLoader::setStaticPlugins(QLatin1String("/mediaservice"), plugins);
+    QMediaPluginLoader::setStaticPlugins(QLatin1String("/mediaservices"), plugins);
 }
 
 void tst_QMediaServiceProvider::testDefaultProviderAvailable()
@@ -270,7 +272,6 @@ void tst_QMediaServiceProvider::testObtainService()
 
     QMediaService *service = 0;
 
-    QTest::ignoreMessage(QtWarningMsg, "Load static plugins for \"/mediaservice/\" ");
     // Player
     service = provider->requestService(Q_MEDIASERVICE_MEDIAPLAYER);
     QVERIFY(service != 0);
