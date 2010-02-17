@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,68 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef EXPRESSIONQUERYWIDGET_H
-#define EXPRESSIONQUERYWIDGET_H
 
-#include <QWidget>
+#ifndef QMLIMAGEPROVIDER_H
+#define QMLIMAGEPROVIDER_H
 
-#include <private/qmldebug_p.h>
+#include <QtGui/qimage.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QGroupBox;
-class QTextEdit;
-class QLineEdit;
-class QPushButton;
+QT_MODULE(Declarative)
 
-class ExpressionQueryWidget : public QWidget
+class Q_DECLARATIVE_EXPORT QmlImageProvider
 {
-    Q_OBJECT
 public:
-    enum Mode {
-        SeparateEntryMode,
-        ShellMode
-    };
-
-    ExpressionQueryWidget(Mode mode = SeparateEntryMode, QmlEngineDebug *client = 0, QWidget *parent = 0);
-    
-    void setEngineDebug(QmlEngineDebug *client);
-    void clear();
-
-protected:
-    bool eventFilter(QObject *obj, QEvent *event);
-
-public slots:
-    void setCurrentObject(const QmlDebugObjectReference &obj);
-
-private slots:
-    void executeExpression();
-    void showResult();
-
-private:
-    void appendPrompt();
-    void checkCurrentContext();
-    void showCurrentContext();
-    void updateTitle();
-
-    Mode m_mode;
-
-    QmlEngineDebug *m_client;
-    QmlDebugExpressionQuery *m_query;
-    QTextEdit *m_textEdit;
-    QLineEdit *m_lineEdit;
-    QPushButton *m_button;
-    QString m_prompt;
-    QString m_expr;
-    QString m_lastExpr;
-
-    QString m_title;
-
-    QmlDebugObjectReference m_currObject;
-    QmlDebugObjectReference m_objectAtLastFocus;
+    virtual ~QmlImageProvider();
+    virtual QImage request(const QString &id) = 0;
 };
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
 
+#endif // QMLIMAGEPROVIDER

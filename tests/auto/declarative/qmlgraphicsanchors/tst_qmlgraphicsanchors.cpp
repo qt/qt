@@ -51,11 +51,11 @@ Q_DECLARE_METATYPE(QmlGraphicsAnchors::UsedAnchor)
 Q_DECLARE_METATYPE(QmlGraphicsAnchorLine::AnchorLine)
 
 
-class tst_anchors : public QObject
+class tst_qmlgraphicsanchors : public QObject
 {
     Q_OBJECT
 public:
-    tst_anchors() {}
+    tst_qmlgraphicsanchors() {}
 
     template<typename T>
     T *findItem(QmlGraphicsItem *parent, const QString &id);
@@ -80,7 +80,7 @@ private slots:
    Find an item with the specified id.
 */
 template<typename T>
-T *tst_anchors::findItem(QmlGraphicsItem *parent, const QString &objectName)
+T *tst_qmlgraphicsanchors::findItem(QmlGraphicsItem *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     QList<QGraphicsItem *> children = parent->childItems();
@@ -99,7 +99,7 @@ T *tst_anchors::findItem(QmlGraphicsItem *parent, const QString &objectName)
     return 0;
 }
 
-void tst_anchors::basicAnchors()
+void tst_qmlgraphicsanchors::basicAnchors()
 {
     QmlView *view = new QmlView;
     view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/anchors.qml"));
@@ -168,7 +168,7 @@ void tst_anchors::basicAnchors()
 }
 
 // mostly testing that we don't crash
-void tst_anchors::loops()
+void tst_qmlgraphicsanchors::loops()
 {
     {
         QmlView *view = new QmlView;
@@ -199,7 +199,7 @@ void tst_anchors::loops()
     }
 }
 
-void tst_anchors::illegalSets()
+void tst_qmlgraphicsanchors::illegalSets()
 {
     QFETCH(QString, qml);
     QFETCH(QString, warning);
@@ -216,7 +216,7 @@ void tst_anchors::illegalSets()
     delete o;
 }
 
-void tst_anchors::illegalSets_data()
+void tst_qmlgraphicsanchors::illegalSets_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("warning");
@@ -274,7 +274,7 @@ void tst_anchors::illegalSets_data()
         << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
 }
 
-void tst_anchors::reset()
+void tst_qmlgraphicsanchors::reset()
 {
     QFETCH(QString, side);
     QFETCH(QmlGraphicsAnchorLine::AnchorLine, anchorLine);
@@ -301,7 +301,7 @@ void tst_anchors::reset()
     delete baseItem;
 }
 
-void tst_anchors::reset_data()
+void tst_qmlgraphicsanchors::reset_data()
 {
     QTest::addColumn<QString>("side");
     QTest::addColumn<QmlGraphicsAnchorLine::AnchorLine>("anchorLine");
@@ -317,7 +317,7 @@ void tst_anchors::reset_data()
     QTest::newRow("baseline") << "baseline" << QmlGraphicsAnchorLine::Baseline << QmlGraphicsAnchors::HasBaselineAnchor;
 }
 
-void tst_anchors::resetConvenience()
+void tst_qmlgraphicsanchors::resetConvenience()
 {
     QmlGraphicsItem *baseItem = new QmlGraphicsItem;
     QmlGraphicsItem *item = new QmlGraphicsItem;
@@ -338,7 +338,7 @@ void tst_anchors::resetConvenience()
     delete baseItem;
 }
 
-void tst_anchors::nullItem()
+void tst_qmlgraphicsanchors::nullItem()
 {
     QFETCH(QString, side);
 
@@ -354,7 +354,7 @@ void tst_anchors::nullItem()
     delete item;
 }
 
-void tst_anchors::nullItem_data()
+void tst_qmlgraphicsanchors::nullItem_data()
 {
     QTest::addColumn<QString>("side");
 
@@ -368,7 +368,7 @@ void tst_anchors::nullItem_data()
     QTest::newRow("baseline") << "baseline";
 }
 
-void tst_anchors::crash1()
+void tst_qmlgraphicsanchors::crash1()
 {
     QmlView *view = new QmlView;
 
@@ -383,7 +383,7 @@ void tst_anchors::crash1()
     delete view;
 }
 
-void tst_anchors::fill()
+void tst_qmlgraphicsanchors::fill()
 {
     QmlView *view = new QmlView;
 
@@ -409,7 +409,7 @@ void tst_anchors::fill()
     delete view;
 }
 
-void tst_anchors::centerIn()
+void tst_qmlgraphicsanchors::centerIn()
 {
     QmlView *view = new QmlView;
 
@@ -429,7 +429,7 @@ void tst_anchors::centerIn()
     delete view;
 }
 
-void tst_anchors::margins()
+void tst_qmlgraphicsanchors::margins()
 {
     QmlView *view = new QmlView;
 
@@ -454,6 +454,6 @@ void tst_anchors::margins()
     delete view;
 }
 
-QTEST_MAIN(tst_anchors)
+QTEST_MAIN(tst_qmlgraphicsanchors)
 
 #include "tst_qmlgraphicsanchors.moc"

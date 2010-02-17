@@ -42,6 +42,7 @@
 #include <QtGui>
 #include <QtXml>
 
+QT_BEGIN_NAMESPACE
 // Database schema definition and open/create functions
 
 QString resultsTable = QString("(TestName varchar, TestCaseName varchar, Series varchar, Idx varchar, ") + 
@@ -319,3 +320,5 @@ void DataBaseWriter::addResult(const QString &series, const QString &index, cons
         query.bindValue(":ChartType", "BarChart");
     execQuery(query);
 }
+
+QT_END_NAMESPACE

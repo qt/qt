@@ -11,6 +11,7 @@ Rectangle {
     }
 
     TextInput { id: input; focus: true
+        text: "Needs some text"
         KeyNavigation.left: firstItem
         KeyNavigation.right: lastItem
         KeyNavigation.up: firstItem

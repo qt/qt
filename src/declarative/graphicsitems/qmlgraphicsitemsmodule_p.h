@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,59 +38,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef OBJECTTREE_H
-#define OBJECTTREE_H
 
-#include <QtGui/qtreewidget.h>
+#ifndef QMLGRAPHICSITEMMODULE_H
+#define QMLGRAPHICSITEMMODULE_H
+
+#include <qml.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTreeWidgetItem;
+QT_MODULE(Declarative)
 
-class QmlEngineDebug;
-class QmlDebugObjectReference;
-class QmlDebugObjectQuery;
-class QmlDebugContextReference;
-class QmlDebugConnection;
-
-
-class ObjectTree : public QTreeWidget
+class QmlGraphicsItemModule
 {
-    Q_OBJECT
 public:
-    ObjectTree(QmlEngineDebug *client = 0, QWidget *parent = 0);
-
-    void setEngineDebug(QmlEngineDebug *client);
-    
-signals:
-    void currentObjectChanged(const QmlDebugObjectReference &);
-    void activated(const QmlDebugObjectReference &);
-    void expressionWatchRequested(const QmlDebugObjectReference &, const QString &);
-
-public slots:
-    void reload(int objectDebugId);     // set the root object
-    void setCurrentObject(int debugId); // select an object in the tree
-
-protected:
-    virtual void mousePressEvent(QMouseEvent *);
-
-private slots:
-    void objectFetched();
-    void currentItemChanged(QTreeWidgetItem *);
-    void activated(QTreeWidgetItem *);
-
-private:
-    QTreeWidgetItem *findItemByObjectId(int debugId) const;
-    QTreeWidgetItem *findItem(QTreeWidgetItem *item, int debugId) const;
-    void dump(const QmlDebugContextReference &, int);
-    void dump(const QmlDebugObjectReference &, int);
-    void buildTree(const QmlDebugObjectReference &, QTreeWidgetItem *parent);
-
-    QmlEngineDebug *m_client;
-    QmlDebugObjectQuery *m_query;
+    static void defineModule();
 };
 
 QT_END_NAMESPACE
 
+QT_END_HEADER
 
-#endif
+#endif // QMLGRAPHICSITEMMODULE_H

@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsAnchors)
-
 //TODO: should we cache relationships, so we don't have to check each time (parent-child or sibling)?
 //TODO: support non-parent, non-sibling (need to find lowest common ancestor)
 

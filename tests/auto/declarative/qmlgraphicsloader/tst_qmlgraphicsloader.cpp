@@ -42,6 +42,7 @@
 #include <QtGui/QGraphicsWidget>
 #include <QtGui/QGraphicsScene>
 
+#include <QSignalSpy>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicsloader_p.h>
@@ -259,6 +260,13 @@ void tst_QmlGraphicsLoader::sizeLoaderToItem()
     loader->setHeight(30);
     QCOMPARE(rect->width(), 180.0);
     QCOMPARE(rect->height(), 30.0);
+
+    // notify
+    QSignalSpy spy(loader, SIGNAL(resizeModeChanged()));
+    loader->setResizeMode(QmlGraphicsLoader::NoResize);
+    QCOMPARE(spy.count(),1);
+    loader->setResizeMode(QmlGraphicsLoader::NoResize);
+    QCOMPARE(spy.count(),1);
 }
 
 void tst_QmlGraphicsLoader::sizeItemToLoader()

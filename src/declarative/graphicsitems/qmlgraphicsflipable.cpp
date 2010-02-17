@@ -49,8 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,Flipable,QmlGraphicsFlipable)
-
 class QmlGraphicsFlipablePrivate : public QmlGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QmlGraphicsFlipable)

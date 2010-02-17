@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,56 +38,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef PROPERTIESTABLEMODEL_H
-#define PROPERTIESTABLEMODEL_H
 
-#include <private/qmldebug_p.h>
+#ifndef QMLGRAPHICSEFFECTS_P_H
+#define QMLGRAPHICSEFFECTS_P_H
 
-#include <QtGui/qwidget.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_NAMESPACE
+#include <qml.h>
+#include <QtGui/qgraphicseffect.h>
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QmlDebugConnection;
-class PropertiesViewItem;
+QML_DECLARE_TYPE(QGraphicsEffect)
+QML_DECLARE_TYPE(QGraphicsBlurEffect)
+QML_DECLARE_TYPE(QGraphicsColorizeEffect)
+QML_DECLARE_TYPE(QGraphicsDropShadowEffect)
+QML_DECLARE_TYPE(QGraphicsOpacityEffect)
 
-class ObjectPropertiesView : public QWidget
-{
-    Q_OBJECT
-public:
-    ObjectPropertiesView(QmlEngineDebug *client = 0, QWidget *parent = 0);
-
-    void setEngineDebug(QmlEngineDebug *client);
-    void clear();
-    
-signals:
-    void activated(const QmlDebugObjectReference &, const QmlDebugPropertyReference &);
-
-public slots:
-    void reload(const QmlDebugObjectReference &);
-    void watchCreated(QmlDebugWatch *);
-
-private slots:
-    void queryFinished();
-    void watchStateChanged();
-    void valueChanged(const QByteArray &name, const QVariant &value);
-    void itemActivated(QTreeWidgetItem *i);
-
-private:
-    void setObject(const QmlDebugObjectReference &object);
-    void setWatched(const QString &property, bool watched);
-    void setPropertyValue(PropertiesViewItem *item, const QVariant &value, bool makeGray);
-
-    QmlEngineDebug *m_client;
-    QmlDebugObjectQuery *m_query;
-    QmlDebugWatch *m_watch;
-
-    QTreeWidget *m_tree;
-    QmlDebugObjectReference m_object;
-};
-
-
-QT_END_NAMESPACE
-
-#endif
+#endif // QMLGRAPHICSEFFECTS_P_H

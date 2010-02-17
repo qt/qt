@@ -300,8 +300,6 @@ QmlContext::~QmlContext()
         co->prevContextObject = 0;
     }
 
-    delete [] d->idValues;
-
     if (d->propertyNames)
         d->propertyNames->release();
 
@@ -310,6 +308,8 @@ QmlContext::~QmlContext()
 
     if (d->optimizedBindings)
         d->optimizedBindings->release();
+
+    delete [] d->idValues;
 }
 
 void QmlContextPrivate::invalidateEngines()

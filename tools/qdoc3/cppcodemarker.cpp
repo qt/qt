@@ -881,7 +881,7 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
     static QRegExp globalX("[\n{()=] *([a-zA-Z_][a-zA-Z_0-9]*)[ \n]*\\(");
     static QRegExp multiLineComment("/(?:( )?\\*(?:[^*]+|\\*(?! /))*\\*\\1/)");
     multiLineComment.setMinimal(true);
-    static QRegExp singleLineCommentLine("(?:^|\n)(?:[^&]|&(?!quot;)|&quot;(?:[^&\\\\]|&(?!quot;)|\\\\&quot;|\\\\(?!&quot;))*&quot;)*//(?!!)[^!\n]*");
+    static QRegExp singleLineCommentLine("(?:^|\n)(?:[^\n&]|&(?!quot;)|&quot;(?:[^&\n\\\\]|&(?!quot;)|\\\\&quot;|\\\\(?!&quot;))*&quot;)*//(?!!)[^!\n]*");
     static QRegExp singleLineComment("//(?!!)[^!\n]*");
     static QRegExp preprocessor("(?:^|\n)(#[ \t]*(?:include|if|elif|endif|error|pragma|define"
                                 "|warning)(?:(?:\\\\\n|\\n#)[^\n]*)*)");

@@ -45,6 +45,8 @@
 
 #include "proxysettings.h"
 
+QT_BEGIN_NAMESPACE
+
 ProxySettings::ProxySettings (QWidget * parent)
         : QDialog (parent), Ui::ProxySettings()
 {
@@ -104,3 +106,5 @@ bool ProxySettings::httpProxyInUse()
     QSettings settings;
     return settings.value ("http_proxy/use", 0).toBool ();
 }
+
+QT_END_NAMESPACE

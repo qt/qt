@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt QML Debugger of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,53 +38,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
 
-#include <private/qmldebugclient_p.h>
-#include <QtNetwork/qtcpsocket.h>
-#include <QtGui/qwidget.h>
+#include "qmlimageprovider.h"
 
-class QLabel;
-class QLineEdit;
-class QSpinBox;
-class QPushButton;
-class QTabWidget;
+QT_BEGIN_NAMESPACE
 
-class EnginePane;
+/*!
+    \class QmlImageProvider
+    \brief The QmlImageProvider class provides an interface for threaded image requests.
 
-class QmlDebugger : public QWidget
+    Note: the request() method may be called by multiple threads, so ensure the
+    implementation of this method is reentrant.
+
+    \sa QmlEngine::addImageProvider()
+*/
+QmlImageProvider::~QmlImageProvider()
 {
-    Q_OBJECT
-public:
-    QmlDebugger(QWidget * = 0);
+}
 
-    void setHost(const QString &host);
-    void setPort(quint16 port);
-    void showEngineTab();
+/*!
+    \fn QImage QmlImageProvider::request(const QString &id)
 
-public slots:
-    void connectToHost();
-    void disconnectFromHost();
+    Implement this method to return the image with \a id.
 
-protected:
-    void closeEvent(QCloseEvent *);
-    
-private slots:
-    void connectionStateChanged();
-    void connectionError(QAbstractSocket::SocketError socketError);
+    Note: this method may be called by multiple threads, so ensure the
+    implementation of this method is reentrant.
+*/
 
-private:
-    QmlDebugConnection client;
-
-    QLabel *m_connectionState;
-    QLineEdit *m_host;
-    QSpinBox *m_port;
-    QPushButton *m_connectButton;
-    QPushButton *m_disconnectButton;
-
-    EnginePane *m_enginePane;
-    QTabWidget *m_tabs;
-};
-
-#endif
+QT_END_NAMESPACE

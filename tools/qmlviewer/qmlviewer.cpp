@@ -52,8 +52,9 @@
 #include <QAbstractAnimation>
 #include "deviceskin.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 3))
 #include <private/qzipreader_p.h>
+#define QMLVIEWER_ZIP_SUPPORT
 #endif
 
 #include <QSettings>
@@ -107,7 +108,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class Screen : public QObject
 {
     Q_OBJECT
@@ -130,7 +130,12 @@ signals:
     void orientationChanged();
 };
 
+QT_END_NAMESPACE
+
 QML_DECLARE_TYPE(Screen)
+
+QT_BEGIN_NAMESPACE
+
 QML_DEFINE_TYPE(QmlViewer, 1, 0, Screen, Screen)
 
 class SizedMenuBar : public QMenuBar
@@ -866,7 +871,7 @@ void QmlViewer::reload()
 
 void QmlViewer::open(const QString& doc)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+#ifdef QMLVIEWER_ZIP_SUPPORT
     if (doc.endsWith(".wgt",Qt::CaseInsensitive)
      || doc.endsWith(".wgz",Qt::CaseInsensitive)
      || doc.endsWith(".zip",Qt::CaseInsensitive))
@@ -878,7 +883,7 @@ void QmlViewer::open(const QString& doc)
 
 void QmlViewer::openWgt(const QString& doc)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+#ifdef QMLVIEWER_ZIP_SUPPORT
     // XXX This functionality could be migrated to QmlView once refined
 
     QUrl url(doc);
@@ -891,7 +896,7 @@ void QmlViewer::openWgt(const QString& doc)
 #endif
 }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+#ifdef QMLVIEWER_ZIP_SUPPORT
 static void removeRecursive(const QString& dirname)
 {
     QDir dir(dirname);
@@ -907,7 +912,7 @@ static void removeRecursive(const QString& dirname)
 
 void QmlViewer::unpackWgt()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 2))
+#ifdef QMLVIEWER_ZIP_SUPPORT
     QByteArray all = wgtreply->readAll();
     QBuffer buf(&all);
     buf.open(QIODevice::ReadOnly);

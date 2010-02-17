@@ -62,47 +62,7 @@
 
 #include <private/qobject_p.h>
 
-QML_DECLARE_TYPE(QListModelInterface)
-
 QT_BEGIN_NAMESPACE
-
-class QmlGraphicsVisualItemModelAttached : public QObject
-{
-    Q_OBJECT
-
-public:
-    QmlGraphicsVisualItemModelAttached(QObject *parent)
-        : QObject(parent), m_index(0) {}
-    ~QmlGraphicsVisualItemModelAttached() {
-        attachedProperties.remove(parent());
-    }
-
-    Q_PROPERTY(int index READ index NOTIFY indexChanged)
-    int index() const { return m_index; }
-    void setIndex(int idx) {
-        if (m_index != idx) {
-            m_index = idx;
-            emit indexChanged();
-        }
-    }
-
-    static QmlGraphicsVisualItemModelAttached *properties(QObject *obj) {
-        QmlGraphicsVisualItemModelAttached *rv = attachedProperties.value(obj);
-        if (!rv) {
-            rv = new QmlGraphicsVisualItemModelAttached(obj);
-            attachedProperties.insert(obj, rv);
-        }
-        return rv;
-    }
-
-Q_SIGNALS:
-    void indexChanged();
-
-public:
-    int m_index;
-
-    static QHash<QObject*, QmlGraphicsVisualItemModelAttached*> attachedProperties;
-};
 
 QHash<QObject*, QmlGraphicsVisualItemModelAttached*> QmlGraphicsVisualItemModelAttached::attachedProperties;
 
@@ -1146,10 +1106,8 @@ void QmlGraphicsVisualDataModel::_q_destroyingPackage(QmlPackage *package)
     emit destroyingItem(qobject_cast<QmlGraphicsItem*>(package->part(d->m_part)));
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsVisualModel);
-QML_DEFINE_TYPE(Qt,4,6,VisualItemModel,QmlGraphicsVisualItemModel)
-QML_DEFINE_TYPE(Qt,4,6,VisualDataModel,QmlGraphicsVisualDataModel)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QListModelInterface)
 
 #include <qmlgraphicsvisualitemmodel.moc>
