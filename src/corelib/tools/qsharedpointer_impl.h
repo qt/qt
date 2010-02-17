@@ -132,7 +132,7 @@ namespace QtSharedPointer {
         typedef const value_type *const_pointer;
         typedef value_type &reference;
         typedef const value_type &const_reference;
-        typedef ptrdiff_t difference_type;
+        typedef qptrdiff difference_type;
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
@@ -541,7 +541,7 @@ public:
     typedef const value_type *const_pointer;
     typedef value_type &reference;
     typedef const value_type &const_reference;
-    typedef ptrdiff_t difference_type;
+    typedef qptrdiff difference_type;
 
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
 #ifndef Q_CC_NOKIAX86

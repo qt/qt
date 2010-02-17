@@ -44,7 +44,7 @@
 #define Q_tst_SuiteTest
 
 #include <QtCore/QObject>
-#include "../../qxmlquery/TestFundament.h"
+#include "../qxmlquery/TestFundament.h"
 
 /*!
  \class tst_SuiteTest

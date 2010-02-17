@@ -148,7 +148,7 @@ void tst_CompilerWarnings::warnings()
     if (tmpSourceFile.isEmpty()) {
         tmpQSourceFile.open(QIODevice::ReadWrite | QIODevice::Truncate);
         tmpSourceFile = tmpQSourceFile.fileName();
-        QFile cppSource(":/test.cpp");
+        QFile cppSource(":/test_cpp.txt");
         bool openResult = cppSource.open(QIODevice::ReadOnly);
         if (openResult)
         {
@@ -158,7 +158,7 @@ void tst_CompilerWarnings::warnings()
         }
     }
     tmpQSourceFile.close();
-    QVERIFY2(openResult, "Need resource temporary \"test.cpp\"");
+    QVERIFY2(openResult, "Need resource temporary \"test_cpp.txt\"");
 
     QStringList args;
     QString compilerName;
