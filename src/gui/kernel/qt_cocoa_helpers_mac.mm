@@ -648,6 +648,21 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
 }
 #endif
 
+Qt::MouseButton cocoaButton2QtButton(long buttonNum)
+{
+    if (buttonNum == 0)
+        return Qt::LeftButton;
+    if (buttonNum == 1)
+        return Qt::RightButton;
+    if (buttonNum == 2)
+        return Qt::MidButton;
+    if (buttonNum == 3)
+        return Qt::XButton1;
+    if (buttonNum == 4)
+        return Qt::XButton2;
+    return Qt::NoButton;
+}
+
 // Helper to share code between QCocoaWindow and QCocoaView
 bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent)
 {
