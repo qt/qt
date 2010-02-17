@@ -1069,9 +1069,13 @@ void QmlGraphicsListViewPrivate::fixupY()
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
-        if (currentItem && highlight && currentItem->position() != highlight->position()) {
+        if (currentItem && currentItem->position() - position() != highlightRangeStart) {
+            qreal pos = currentItem->position() - highlightRangeStart;
             timeline.reset(_moveY);
-            timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            if (fixupDuration)
+                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            else
+                _moveY.setValue(-pos);
             vTime = timeline.time();
         }
     } else if (snapMode != QmlGraphicsListView::NoSnap) {
@@ -1080,7 +1084,10 @@ void QmlGraphicsListViewPrivate::fixupY()
             qreal dist = qAbs(_moveY + pos);
             if (dist > 0) {
                 timeline.reset(_moveY);
-                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                if (fixupDuration)
+                    timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                else
+                    _moveY.setValue(-pos);
                 vTime = timeline.time();
             }
         }
@@ -1102,9 +1109,13 @@ void QmlGraphicsListViewPrivate::fixupX()
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
-        if (currentItem && highlight && currentItem->position() != highlight->position()) {
+        if (currentItem && currentItem->position() - position() != highlightRangeStart) {
+            qreal pos = currentItem->position() - highlightRangeStart;
             timeline.reset(_moveX);
-            timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            if (fixupDuration)
+                timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            else
+                _moveX.setValue(-pos);
             vTime = timeline.time();
         }
     } else if (snapMode != QmlGraphicsListView::NoSnap) {
@@ -1113,7 +1124,10 @@ void QmlGraphicsListViewPrivate::fixupX()
             qreal dist = qAbs(_moveX + pos);
             if (dist > 0) {
                 timeline.reset(_moveX);
-                timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                if (fixupDuration)
+                    timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                else
+                    _moveX.setValue(-pos);
                 vTime = timeline.time();
             }
         }
@@ -2261,6 +2275,7 @@ void QmlGraphicsListView::positionViewAtIndex(int index)
         for (int i = 0; i < oldVisible.count(); ++i)
             d->releaseItem(oldVisible.at(i));
     }
+    d->fixupPosition();
 }
 
 
@@ -2633,9 +2648,32 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
         ++endIndex;
     }
 
+    // update visibleIndex
+    for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
+        if ((*it)->index != -1) {
+            d->visibleIndex = (*it)->index;
+            break;
+        }
+    }
+
+    // Fix current index
+    if (d->currentIndex >= 0 && d->currentItem) {
+        int oldCurrent = d->currentIndex;
+        d->currentIndex = d->model->indexOf(d->currentItem->item, this);
+        if (oldCurrent != d->currentIndex) {
+            d->currentItem->index = d->currentIndex;
+            emit currentIndexChanged();
+        }
+    }
+
     // Whatever moved items remain are no longer visible items.
-    while (moved.count())
-        d->releaseItem(moved.take(moved.begin().key()));
+    while (moved.count()) {
+        int idx = moved.begin().key();
+        FxListItem *item = moved.take(idx);
+        if (item->item == d->currentItem->item)
+            item->setPosition(d->positionAt(idx));
+        d->releaseItem(item);
+    }
 
     // Ensure we don't cause an ugly list scroll.
     d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + moveBy);
