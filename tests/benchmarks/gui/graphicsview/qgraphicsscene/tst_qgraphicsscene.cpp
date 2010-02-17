@@ -209,7 +209,6 @@ void tst_QGraphicsScene::itemAt()
     if (!sceneRect.isNull())
         scene.setSceneRect(sceneRect);
 
-    QGraphicsItem *item = 0;
     for (int y = 0; y < numItems_Y; ++y) {
         for (int x = 0; x < numItems_X; ++x) {
             QGraphicsRectItem *item = new QGraphicsRectItem(itemRect);
