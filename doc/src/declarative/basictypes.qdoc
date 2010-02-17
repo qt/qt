@@ -65,6 +65,8 @@
   \qml
   Item { width: 100; height: 200 }
   \endqml
+
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -80,6 +82,7 @@
   Item { focus: true; clip: false }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -99,6 +102,7 @@
   {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
   format.
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -114,6 +118,7 @@
   Text { text: "Hello world!" }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -136,6 +141,7 @@
   \raw HTML
   \endraw
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -162,6 +168,7 @@
   Rectangle { color: "#800000FF" }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -177,6 +184,7 @@
   Widget { pos: "0,20" }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -192,6 +200,7 @@
   Widget { size: "150x50" }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -207,6 +216,7 @@
   Widget { geometry: "50,50,100x100" }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -222,6 +232,7 @@
   DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -237,6 +248,7 @@
   TimePicker { time: "14:22:15" }
   \endqml
 
+  \sa {QML Basic Types}
  */
 
 /*!
@@ -261,6 +273,7 @@
   Text { font.family: "Helvetica"; font.pointSize: 13; font.bold: true }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -286,6 +299,7 @@
   Text { text: MyItem.someaction.text }
   \endqml
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -313,6 +327,7 @@
   \c Child1, \c Child2 and \c Child3 will all be added to the children list
   in the order in which they appear.
 
+  \sa {QML Basic Types}
 */
 
 /*!
@@ -338,4 +353,6 @@
   \qml
   Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
   \endqml
+
+  \sa {QML Basic Types}
 */
