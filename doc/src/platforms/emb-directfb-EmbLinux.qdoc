@@ -267,7 +267,8 @@ perform well.
     \o QT_NO_DIRECTFB_IMAGEPROVIDER
     \o By default Qt will use DirectFB to load QPixmaps from disk/memory. If
 your DirectFB implementation does not support this it might make sense to
-define this.
+define this. If you see strange rendering issues with pixmaps that have an
+alpha channel defining this could solve the problem.
 
  \row
     \o QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
