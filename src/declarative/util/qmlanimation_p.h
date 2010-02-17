@@ -95,6 +95,7 @@ public:
     void setGroup(QmlAnimationGroup *);
 
     void setDefaultTarget(const QmlMetaProperty &);
+    void setDisableUserControl();
 
     void classBegin();
     void componentComplete();

@@ -117,6 +117,7 @@ void QmlTransitionPrivate::AnimationList::append(QmlAbstractAnimation *a)
 {
     QmlConcreteList<QmlAbstractAnimation *>::append(a);
     parent->group.addAnimation(a->qtAnimation());
+    a->setDisableUserControl();
 }
 
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)

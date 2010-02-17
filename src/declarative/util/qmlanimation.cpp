@@ -249,7 +249,7 @@ void QmlAbstractAnimation::setRunning(bool r)
     if (d->running == r)
         return;
 
-    if (d->group) {
+    if (d->group || d->disableUserControl) {
         qWarning("QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
         return;
     }
@@ -308,7 +308,7 @@ void QmlAbstractAnimation::setPaused(bool p)
     if (d->paused == p)
         return;
 
-    if (d->group) {
+    if (d->group || d->disableUserControl) {
         qWarning("QmlAbstractAnimation: setPaused() cannot be used on non-root animation nodes");
         return;
     }
@@ -544,13 +544,26 @@ void QmlAbstractAnimation::setTarget(const QmlMetaProperty &p)
         setRunning(true);
 }
 
-//we rely on setTarget only being called when used as a value source
-//so this function allows us to do the same thing as setTarget without
-//that assumption
+/*
+    we rely on setTarget only being called when used as a value source
+    so this function allows us to do the same thing as setTarget without
+    that assumption
+*/
 void QmlAbstractAnimation::setDefaultTarget(const QmlMetaProperty &p)
 {
     Q_D(QmlAbstractAnimation);
     d->defaultProperty = p;
+}
+
+/*
+    don't allow start/stop/pause/resume to be manually invoked,
+    because something else (like a Behavior) already has control
+    over the animation.
+*/
+void QmlAbstractAnimation::setDisableUserControl()
+{
+    Q_D(QmlAbstractAnimation);
+    d->disableUserControl = true;
 }
 
 void QmlAbstractAnimation::transition(QmlStateActions &actions,

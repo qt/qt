@@ -124,8 +124,10 @@ void QmlBehavior::setAnimation(QmlAbstractAnimation *animation)
     }
 
     d->animation = animation;
-    if (d->animation)
+    if (d->animation) {
         d->animation->setDefaultTarget(d->property);
+        d->animation->setDisableUserControl();
+    }
 }
 
 /*!

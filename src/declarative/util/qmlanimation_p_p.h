@@ -210,17 +210,17 @@ public:
     QmlAbstractAnimationPrivate()
     : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
       connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
-      avoidPropertyValueSourceStart(false), group(0) {}
+      avoidPropertyValueSourceStart(false), disableUserControl(false), group(0) {}
 
     bool running:1;
     bool paused:1;
     bool alwaysRunToEnd:1;
     bool repeat:1;
     bool connectedTimeLine:1;
-
     bool componentComplete:1;
     bool startOnCompletion:1;
     bool avoidPropertyValueSourceStart:1;
+    bool disableUserControl:1;
 
     void commence();
 
