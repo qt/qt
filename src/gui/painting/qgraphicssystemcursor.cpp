@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -495,6 +495,17 @@ void QGraphicsSystemCursorImage::createSystemCursor(int id)
     }
 }
 
+/*!
+    \fn void set(Qt::CursorShape id)
+
+    \brief Calling this method sets the cursor image to the specified shape
+
+    \a id is one of the defined Qt::CursorShape values.
+
+    If id is invalid, Qt::BitmapCursor, or unknown by the implementation,
+    Qt::ArrowCursor is used instead.
+*/
+
 void QGraphicsSystemCursorImage::set(Qt::CursorShape id)
 {
     QGraphicsSystemCursorImage *cursor = 0;
@@ -513,6 +524,18 @@ void QGraphicsSystemCursorImage::set(Qt::CursorShape id)
     hot = cursor->hot;
 }
 
+/*!
+    \fn void set(const QImage * image, int hx, int hy)
+
+    \brief Set the cursor image to the specified QImage, with the hotsport at (hx, hy)
+
+    \a image A pointer to a QImage
+
+    \a hx The x coordinate of the cursor's hotspot
+
+    \a hy the y coordinate of the cursor's hotspot
+*/
+
 void QGraphicsSystemCursorImage::set(const QImage * image, int hx, int hy)
 {
     hot.setX(hx);
@@ -520,6 +543,24 @@ void QGraphicsSystemCursorImage::set(const QImage * image, int hx, int hy)
     cursorImage = *image;
 }
 
+/*!
+    \fn set(const uchar *data, const uchar *mask, int width, int height, int hx, int hy)
+
+    \brief set the cursor image to the graphic represented by the combination of data, mask,
+    width, and height
+
+    \a data The pixel data of the graphic
+
+    \a mask Mask data for the graphic. pixels in data with a corresponding mask bit of 0 are not drawn
+
+    \a width The width of the graphic in pixels
+
+    \a height The height of the graphic in pixels
+
+    \a hx The X hotspot of the cursor graphic
+
+    \a hy The Y hotspot of the cursor graphic
+*/
 void QGraphicsSystemCursorImage::set(const uchar *data, const uchar *mask,
                     int width, int height, int hx, int hy)
 {
@@ -576,5 +617,38 @@ void QGraphicsSystemCursorImage::set(const uchar *data, const uchar *mask,
     }
 
 }
+
+/*!
+    \fn QGraphicsSystemCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
+
+    \brief set the cursor image to the graphic represented by the combination of data, mask,
+    width, and height
+
+    \a data The pixel data of the graphic
+
+    \a mask Mask data for the graphic. pixels in data with a corresponding mask bit of 0 are not drawn
+
+    \a width The width of the graphic in pixels
+
+    \a height The height of the graphic in pixels
+
+    \a hotX The X hotspot of the cursor graphic
+
+    \a hotY The Y hotspot of the cursor graphic
+
+    \sa set
+*/
+
+/*!
+  \fn QImage *image()
+
+  \brief Return the cursor graphic as a pointer to a QImage
+*/
+
+/*!
+    \fn QPoint hotspot
+
+    \brief Return the cursor's hotspot
+*/
 
 QT_END_NAMESPACE
