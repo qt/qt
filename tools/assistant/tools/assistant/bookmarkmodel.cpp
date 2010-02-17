@@ -79,6 +79,9 @@ BookmarkModel::bookmarks() const
 void
 BookmarkModel::setBookmarks(const QByteArray &bookmarks)
 {
+    beginResetModel();
+
+    delete rootItem;
     folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon);
     bookmarkIcon = QIcon(QLatin1String(":/trolltech/assistant/images/bookmark.png"));
 
@@ -115,6 +118,8 @@ BookmarkModel::setBookmarks(const QByteArray &bookmarks)
 
     setupCache(root);
     cache.insert(static_cast<BookmarkItem*> (root.internalPointer()), root);
+
+    endResetModel();
 }
 
 void
@@ -220,9 +225,9 @@ BookmarkModel::flags(const QModelIndex &index) const
     if (m_editable)
         defaultFlags |= Qt::ItemIsEditable;
 
-    if (itemFromIndex(index) && index.data(UserRoleFolder).toBool()
-        && index.column() > 0) {
-        defaultFlags &= ~Qt::ItemIsEditable;
+    if (itemFromIndex(index) && index.data(UserRoleFolder).toBool()) {
+        if (index.column() > 0)
+            return defaultFlags &~ Qt::ItemIsEditable;
         return defaultFlags | Qt::ItemIsDropEnabled;
     }
 
@@ -241,11 +246,13 @@ BookmarkModel::data(const QModelIndex &index, int role) const
                         return QLatin1String("");
                     return item->data(index.column());
                 }   break;
+
                 case Qt::DecorationRole: {
                     if (index.column() == 0)
                         return index.data(UserRoleFolder).toBool()
                             ? folderIcon : bookmarkIcon;
                 }   break;
+
                 default:;
                     return item->data(role);
             }
