@@ -25,6 +25,7 @@ ts-qt.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                     3rdparty/webkit \
                                     activeqt \
                                     corelib \
+                                    declarative \
                                     gui \
                                     multimedia \
                                     network \

@@ -254,7 +254,7 @@ void tst_behaviors::reassignedAnimation()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml"));
-    QTest::ignoreMessage(QtWarningMsg, QString("QML Behavior (" + QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:12) Can't change the animation assigned to a Behavior.").toUtf8().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString("QML Behavior (" + QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml").toString() + ":9:12) Cannot change the animation assigned to a Behavior.").toUtf8().constData());
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
     QCOMPARE(qobject_cast<QmlNumberAnimation*>(

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the Qt Designer of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,68 +39,74 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATICTEXT_H
-#define QSTATICTEXT_H
+#include "qdesignerundostack.h"
 
-#include <QtCore/qsize.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qmetatype.h>
-
-#include <QtGui/qtransform.h>
-#include <QtGui/qfont.h>
-
-
-QT_BEGIN_HEADER
+#include <QtGui/QUndoStack>
+#include <QtGui/QUndoCommand>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
+namespace qdesigner_internal {
 
-class QStaticTextPrivate;
-class Q_GUI_EXPORT QStaticText
-{    
-public:
-    enum PerformanceHint {
-        ModerateCaching,
-        AggressiveCaching
-    };
+QDesignerUndoStack::QDesignerUndoStack(QObject *parent) :
+    QObject(parent),
+    m_undoStack(new QUndoStack),
+    m_fakeDirty(false)
+{
+    connect(m_undoStack, SIGNAL(indexChanged(int)), this, SIGNAL(changed()));
+}
 
-    QStaticText();
-    QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
-    QStaticText(const QStaticText &other);
-    ~QStaticText();
+QDesignerUndoStack::~QDesignerUndoStack()
+{ // QUndoStack is managed by the QUndoGroup
+}
 
-    void setText(const QString &text);
-    QString text() const;
+void QDesignerUndoStack::push(QUndoCommand * cmd)
+{
+    m_undoStack->push(cmd);
+}
 
-    void setTextFormat(Qt::TextFormat textFormat);
-    Qt::TextFormat textFormat() const;
+void QDesignerUndoStack::beginMacro(const QString &text)
+{
+    m_undoStack->beginMacro(text);
+}
 
-    void setMaximumSize(const QSizeF &maximumSize);
-    QSizeF maximumSize() const;
+void QDesignerUndoStack::endMacro()
+{
+    m_undoStack->endMacro();
+}
 
-    QSizeF size() const;
+int  QDesignerUndoStack::index() const
+{
+    return m_undoStack->index();
+}
 
-    void prepare(const QTransform &matrix, const QFont &font);
+const QUndoStack *QDesignerUndoStack::qundoStack() const
+{
+    return m_undoStack;
+}
+QUndoStack *QDesignerUndoStack::qundoStack()
+{
+    return m_undoStack;
+}
 
-    void setPerformanceHint(PerformanceHint performanceHint);
-    PerformanceHint performanceHint() const;
+bool QDesignerUndoStack::isDirty() const
+{
+    return m_fakeDirty || !m_undoStack->isClean();
+}
 
-    QStaticText &operator=(const QStaticText &);
-    bool operator==(const QStaticText &) const;
-    bool operator!=(const QStaticText &) const;
+void QDesignerUndoStack::setDirty(bool v)
+{
+    if (isDirty() == v)
+        return;
+    if (v) {
+        m_fakeDirty = true;
+        emit changed();
+    } else {
+        m_fakeDirty = false;
+        m_undoStack->setClean();
+    }
+}
 
-private:
-    void detach();
-
-    QExplicitlySharedDataPointer<QStaticTextPrivate> data;
-    friend class QStaticTextPrivate;
-};
-
-Q_DECLARE_METATYPE(QStaticText)
+} // namespace qdesigner_internal
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QSTATICTEXT_H

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the Qt Designer of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,68 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATICTEXT_H
-#define QSTATICTEXT_H
+#ifndef QDESIGNERUNDOSTACK_H
+#define QDESIGNERUNDOSTACK_H
 
-#include <QtCore/qsize.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qmetatype.h>
-
-#include <QtGui/qtransform.h>
-#include <QtGui/qfont.h>
-
-
-QT_BEGIN_HEADER
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
+class QUndoStack;
+class QUndoCommand;
 
-QT_MODULE(Gui)
+namespace qdesigner_internal {
 
-class QStaticTextPrivate;
-class Q_GUI_EXPORT QStaticText
-{    
+/* QDesignerUndoStack: A QUndoStack extended by a way of setting it to
+ * "dirty" indepently of commands (by modifications without commands
+ * such as resizing). Accomplished via bool m_fakeDirty flag. The
+ * lifecycle of the QUndoStack is managed by the QUndoGroup. */
+class QDesignerUndoStack : public QObject
+{
+    Q_DISABLE_COPY(QDesignerUndoStack)
+    Q_OBJECT
 public:
-    enum PerformanceHint {
-        ModerateCaching,
-        AggressiveCaching
-    };
+    explicit QDesignerUndoStack(QObject *parent = 0);
+    virtual ~QDesignerUndoStack();
 
-    QStaticText();
-    QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
-    QStaticText(const QStaticText &other);
-    ~QStaticText();
+    void push(QUndoCommand * cmd);
+    void beginMacro(const QString &text);
+    void endMacro();
+    int  index() const;
 
-    void setText(const QString &text);
-    QString text() const;
+    const QUndoStack *qundoStack() const;
+    QUndoStack *qundoStack();
 
-    void setTextFormat(Qt::TextFormat textFormat);
-    Qt::TextFormat textFormat() const;
+    bool isDirty() const;
 
-    void setMaximumSize(const QSizeF &maximumSize);
-    QSizeF maximumSize() const;
+signals:
+    void changed();
 
-    QSizeF size() const;
-
-    void prepare(const QTransform &matrix, const QFont &font);
-
-    void setPerformanceHint(PerformanceHint performanceHint);
-    PerformanceHint performanceHint() const;
-
-    QStaticText &operator=(const QStaticText &);
-    bool operator==(const QStaticText &) const;
-    bool operator!=(const QStaticText &) const;
+public slots:
+    void setDirty(bool);
 
 private:
-    void detach();
-
-    QExplicitlySharedDataPointer<QStaticTextPrivate> data;
-    friend class QStaticTextPrivate;
+    QUndoStack *m_undoStack;
+    bool m_fakeDirty;
 };
 
-Q_DECLARE_METATYPE(QStaticText)
+} // namespace qdesigner_internal
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QSTATICTEXT_H
+#endif // QDESIGNERUNDOSTACK_H

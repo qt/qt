@@ -153,6 +153,8 @@ SUBDIRS += \
            qfontmetrics \
            qftp \
            qgetputenv \
+           qgl \
+	   qgl_threads \
            qglobal \
            qgraphicseffect \
            qgraphicseffectsource \

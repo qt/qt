@@ -357,7 +357,7 @@ QmlPropertyChangesPrivate::property(const QByteArray &property)
     Q_Q(QmlPropertyChanges);
     QmlMetaProperty prop = QmlMetaProperty::createProperty(object, QString::fromUtf8(property));
     if (!prop.isValid()) {
-        qmlInfo(q) << QmlPropertyChanges::tr("Cannot assign to non-existant property \"%1\"").arg(QString::fromUtf8(property));
+        qmlInfo(q) << QmlPropertyChanges::tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(property));
         return QmlMetaProperty();
     } else if (!(prop.type() & QmlMetaProperty::SignalProperty) && !prop.isWritable()) {
         qmlInfo(q) << QmlPropertyChanges::tr("Cannot assign to read-only property \"%1\"").arg(QString::fromUtf8(property));

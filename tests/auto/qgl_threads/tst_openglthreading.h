@@ -39,68 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATICTEXT_H
-#define QSTATICTEXT_H
+#ifndef TST_OPENGLTHREADING_H
+#define TST_OPENGLTHREADING_H
 
-#include <QtCore/qsize.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qmetatype.h>
+#include <QObject>
 
-#include <QtGui/qtransform.h>
-#include <QtGui/qfont.h>
-
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class QStaticTextPrivate;
-class Q_GUI_EXPORT QStaticText
-{    
+class tst_OpenGLThreading : public QObject
+{
+Q_OBJECT
 public:
-    enum PerformanceHint {
-        ModerateCaching,
-        AggressiveCaching
-    };
+    explicit tst_OpenGLThreading(QObject *parent = 0);
 
-    QStaticText();
-    QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
-    QStaticText(const QStaticText &other);
-    ~QStaticText();
+private slots:
+    void swapInThread();
+    void textureUploadInThread();
 
-    void setText(const QString &text);
-    QString text() const;
-
-    void setTextFormat(Qt::TextFormat textFormat);
-    Qt::TextFormat textFormat() const;
-
-    void setMaximumSize(const QSizeF &maximumSize);
-    QSizeF maximumSize() const;
-
-    QSizeF size() const;
-
-    void prepare(const QTransform &matrix, const QFont &font);
-
-    void setPerformanceHint(PerformanceHint performanceHint);
-    PerformanceHint performanceHint() const;
-
-    QStaticText &operator=(const QStaticText &);
-    bool operator==(const QStaticText &) const;
-    bool operator!=(const QStaticText &) const;
-
-private:
-    void detach();
-
-    QExplicitlySharedDataPointer<QStaticTextPrivate> data;
-    friend class QStaticTextPrivate;
+    void renderInThread_data();
+    void renderInThread();
 };
 
-Q_DECLARE_METATYPE(QStaticText)
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QSTATICTEXT_H
+#endif // TST_OPENGLTHREADING_H
