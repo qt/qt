@@ -135,9 +135,9 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(Screen)
 
-QT_BEGIN_NAMESPACE
-
 QML_DEFINE_TYPE(QmlViewer, 1, 0, Screen, Screen)
+
+QT_BEGIN_NAMESPACE
 
 class SizedMenuBar : public QMenuBar
 {
