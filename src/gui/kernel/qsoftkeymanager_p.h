@@ -87,6 +87,7 @@ public:
 
     static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
     static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);
+    static QString standardSoftKeyText(StandardSoftKey standardKey);
 
 protected:
     bool event(QEvent *e);
@@ -94,7 +95,6 @@ protected:
 private:
     QSoftKeyManager();
     static QSoftKeyManager *instance();
-    static const char *standardSoftKeyText(StandardSoftKey standardKey);
     bool appendSoftkeys(const QWidget &source, int level);
     QWidget *softkeySource(QWidget *previousSource, bool& recursiveMerging);
     bool handleUpdateSoftKeys();
