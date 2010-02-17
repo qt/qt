@@ -326,7 +326,7 @@ which in turn gives \e {active focus} to the \c {Text} element that
 actually performs the work of handling the \e {Return} key.
 
 All of the QML view classes, such as \l PathView and \l GridView, behave
-in a similar mannor to allow key handling in their respective delegates.
+in a similar manner to allow key handling in their respective delegates.
 
 \section1 Focus Panels
 
