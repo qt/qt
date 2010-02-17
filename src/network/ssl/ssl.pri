@@ -35,11 +35,5 @@ symbian {
     RESOURCES += network.qrc
 
     # Add optional SSL libs
-    !contains(QT_CONFIG, system-zlib):contains(OPENSSL_LIBS, -lz) {
-        # Use the zlib in QtCore
-        OPENSSL_LIBS -= -lz
-        OPENSSL_LIBS += -lQtCore4
-    }
     LIBS_PRIVATE += $$OPENSSL_LIBS
-
 }
