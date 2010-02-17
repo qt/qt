@@ -72,7 +72,6 @@ private slots:
     void scale();
     void shear();
     void translate();
-    void setRotation();
 };
 
 tst_QGraphicsItem::tst_QGraphicsItem()
@@ -240,17 +239,6 @@ void tst_QGraphicsItem::translate()
 
     QBENCHMARK {
         item->translate(100, 100);
-    }
-}
-
-void tst_QGraphicsItem::setRotation()
-{
-    QGraphicsScene scene;
-    QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
-    processEvents();
-
-    QBENCHMARK {
-        item->setRotation(45);
     }
 }
 
