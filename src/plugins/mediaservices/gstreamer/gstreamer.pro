@@ -27,7 +27,6 @@ HEADERS += \
     qgstreamervideorendererinterface.h \
     qgstreamervideowidget.h \
     qgstreamerserviceplugin.h \
-#    qgstreameraudioinputendpointselector.h \
     qgstreamervideoinputdevicecontrol.h \
     qgstreamervideooverlay.h \
     qgstreamervideorenderer.h \
@@ -44,7 +43,6 @@ SOURCES += \
     qgstreamervideorendererinterface.cpp \
     qgstreamervideowidget.cpp \
     qgstreamerserviceplugin.cpp \
-#    qgstreameraudioinputendpointselector.cpp \
     qgstreamervideoinputdevicecontrol.cpp \
     qgstreamervideooverlay.cpp \
     qgstreamervideorenderer.cpp \
