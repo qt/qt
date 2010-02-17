@@ -41,8 +41,11 @@ wince* {
 QT += scripttools \
     xml \
     xmlpatterns \
-    webkit \
     phonon
+
+    contains(QT_CONFIG, webkit) {
+        QT += webkit 
+    }
 }
 symbian {
 #    TARGET.UID3 =
