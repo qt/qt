@@ -313,7 +313,7 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     Q_ASSERT(lastData);
 
     if (!lastData->isValid()) {
-        QString error = QLatin1String("Cannot assign to non-existant property \"") +
+        QString error = QLatin1String("Cannot assign to non-existent property \"") +
                         toString(name) + QLatin1Char('\"');
         if (context())
             context()->throwError(error);
@@ -628,11 +628,11 @@ QmlObjectMethodScriptClass::Value QmlObjectMethodScriptClass::call(Object *o, QS
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
             if (argTypes[ii] == QVariant::Invalid) 
-                return Value(ctxt, ctxt->throwError(QString(QLatin1String("Unknown method parameter type: %1")).arg(QLatin1String(argTypeNames.at(ii)))));
+                return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }
 
         if (argTypes.count() > ctxt->argumentCount()) 
-            return Value(ctxt, ctxt->throwError("Insufficient arguments"));
+            return Value(ctxt, ctxt->throwError(QLatin1String("Insufficient arguments")));
 
         QVarLengthArray<MetaCallArgument, 9> args(argTypes.count() + 1);
         args[0].initAsType(method->data.propType, engine);

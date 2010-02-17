@@ -38,12 +38,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QtTest/QtTest>
+#include <QtTest/QSignalSpy>
 #include <private/qlistmodelinterface_p.h>
-#include <qmlview.h>
+#include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlview.h>
+#include <QtDeclarative/qmlcontext.h>
 #include <private/qmlgraphicsrepeater_p.h>
 #include <private/qmlgraphicstext_p.h>
-#include <qmlcontext.h>
+
+inline QUrl TEST_FILE(const QString &filename)
+{
+    return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
+}
 
 class tst_QmlGraphicsRepeater : public QObject
 {
@@ -57,6 +65,7 @@ private slots:
     void stringList();
     void dataModel();
     void itemModel();
+    void properties();
 
 private:
     QmlView *createView(const QString &filename);
@@ -317,6 +326,33 @@ void tst_QmlGraphicsRepeater::itemModel()
     delete canvas;
 }
 
+void tst_QmlGraphicsRepeater::properties()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("/properties.qml"));
+
+    QmlGraphicsItem *root = qobject_cast<QmlGraphicsItem*>(component.create());
+    QVERIFY(root);
+
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(root, "repeater");
+    QVERIFY(repeater);
+
+    QSignalSpy modelSpy(repeater, SIGNAL(modelChanged()));
+    repeater->setModel(3);
+    QCOMPARE(modelSpy.count(),1);
+    repeater->setModel(3);
+    QCOMPARE(modelSpy.count(),1);
+
+    QSignalSpy delegateSpy(repeater, SIGNAL(delegateChanged()));
+
+    QmlComponent rectComponent(&engine);
+    rectComponent.setData("import Qt 4.6; Rectangle {}", QUrl::fromLocalFile(""));
+
+    repeater->setDelegate(&rectComponent);
+    QCOMPARE(delegateSpy.count(),1);
+    repeater->setDelegate(&rectComponent);
+    QCOMPARE(delegateSpy.count(),1);
+}
 
 QmlView *tst_QmlGraphicsRepeater::createView(const QString &filename)
 {

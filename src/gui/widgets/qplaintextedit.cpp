@@ -2394,7 +2394,7 @@ void QPlainTextEdit::setReadOnly(bool ro)
     then the focus policy is also automatically set to Qt::ClickFocus.
 
     The default value depends on whether the QPlainTextEdit is read-only
-    or editable, and whether it is a QTextBrowser or not.
+    or editable.
 */
 
 void QPlainTextEdit::setTextInteractionFlags(Qt::TextInteractionFlags flags)

@@ -394,7 +394,7 @@ void tst_qmldom::loadErrors()
     QCOMPARE(error.url(), QUrl());
     QCOMPARE(error.line(), 3);
     QCOMPARE(error.column(), 3);
-    QCOMPARE(error.description(), QString("Cannot assign to non-existant property \"foo\""));
+    QCOMPARE(error.description(), QString("Cannot assign to non-existent property \"foo\""));
 }
 
 // Test loading a file with syntax errors

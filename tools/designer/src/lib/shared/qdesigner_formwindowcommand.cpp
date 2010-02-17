@@ -62,8 +62,10 @@ QT_BEGIN_NAMESPACE
 namespace qdesigner_internal {
 
 // ---- QDesignerFormWindowCommand ----
-QDesignerFormWindowCommand::QDesignerFormWindowCommand(const QString &description, QDesignerFormWindowInterface *formWindow)
-    : QUndoCommand(description),
+QDesignerFormWindowCommand::QDesignerFormWindowCommand(const QString &description,
+                                                       QDesignerFormWindowInterface *formWindow,
+                                                       QUndoCommand *parent)
+    : QUndoCommand(description, parent),
       m_formWindow(formWindow)
 {
 }

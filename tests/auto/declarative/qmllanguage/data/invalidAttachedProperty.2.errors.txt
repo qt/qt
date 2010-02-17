@@ -1,1 +1,1 @@
-5:27:Cannot assign to non-existant property "foo"
+5:27:Cannot assign to non-existent property "foo"

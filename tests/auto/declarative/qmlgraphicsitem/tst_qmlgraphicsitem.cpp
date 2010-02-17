@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtTest/QSignalSpy>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlview.h>
-#include <qmlgraphicsitem.h>
+#include <QtDeclarative/qmlgraphicsitem.h>
 
 class tst_QmlGraphicsItem : public QObject
 
@@ -55,10 +56,13 @@ public:
 private slots:
     void keys();
     void keyNavigation();
+    void smooth();
+    void clip();
 
 private:
     template<typename T>
     T *findItem(QmlGraphicsItem *parent, const QString &objectName);
+    QmlEngine engine;
 };
 
 class KeysTestObject : public QObject
@@ -239,6 +243,52 @@ void tst_QmlGraphicsItem::keyNavigation()
     item = findItem<QmlGraphicsItem>(canvas->root(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
+}
+
+void tst_QmlGraphicsItem::smooth()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6; Item { smooth: false; }", QUrl::fromLocalFile(""));
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
+    QSignalSpy spy(item, SIGNAL(smoothChanged()));
+
+    QVERIFY(item);
+    QVERIFY(!item->smooth());
+
+    item->setSmooth(true);
+    QVERIFY(item->smooth());
+    QCOMPARE(spy.count(),1);
+    item->setSmooth(true);
+    QCOMPARE(spy.count(),1);
+
+    item->setSmooth(false);
+    QVERIFY(!item->smooth());
+    QCOMPARE(spy.count(),2);
+    item->setSmooth(false);
+    QCOMPARE(spy.count(),2);
+}
+
+void tst_QmlGraphicsItem::clip()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6\nItem { clip: false\n }", QUrl::fromLocalFile(""));
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
+    QSignalSpy spy(item, SIGNAL(clipChanged()));
+
+    QVERIFY(item);
+    QVERIFY(!item->clip());
+
+    item->setClip(true);
+    QVERIFY(item->clip());
+    QCOMPARE(spy.count(),1);
+    item->setClip(true);
+    QCOMPARE(spy.count(),1);
+
+    item->setClip(false);
+    QVERIFY(!item->clip());
+    QCOMPARE(spy.count(),2);
+    item->setClip(false);
+    QCOMPARE(spy.count(),2);
 }
 
 template<typename T>

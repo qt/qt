@@ -731,7 +731,7 @@ void tst_qmlstates::propertyErrors()
 
     QCOMPARE(rect->color(),QColor("red"));
 
-    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to non-existant property \"colr\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to non-existent property \"colr\"").constData());
     QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to read-only property \"wantsFocus\"").constData());
     rect->setState("blue");
 }
@@ -877,7 +877,7 @@ void tst_qmlstates::nonExistantProperty()
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 
-    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/nonExistantProp.qml") + ":9:9) Cannot assign to non-existant property \"colr\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/nonExistantProp.qml") + ":9:9) Cannot assign to non-existent property \"colr\"").constData());
     rect->setState("blue");
     QCOMPARE(rect->state(), QLatin1String("blue"));
 }

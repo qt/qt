@@ -29,6 +29,7 @@ SUBDIRS += \
            qmlgraphicsitem \        # Cover
            qmlgraphicslistview \    # Cover
            qmlgraphicsloader \      # Cover
+           qmlgraphicsmouseregion \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicspathview \    # Cover
            qmlgraphicspositioners \ # Cover

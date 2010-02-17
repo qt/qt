@@ -65,7 +65,10 @@ QmlGraphicsItem *QmlGraphicsDrag::target() const
 
 void QmlGraphicsDrag::setTarget(QmlGraphicsItem *t)
 {
+    if (_target == t)
+        return;
     _target = t;
+    emit targetChanged();
 }
 
 QmlGraphicsDrag::Axis QmlGraphicsDrag::axis() const
@@ -75,7 +78,10 @@ QmlGraphicsDrag::Axis QmlGraphicsDrag::axis() const
 
 void QmlGraphicsDrag::setAxis(QmlGraphicsDrag::Axis a)
 {
+    if (_axis == a)
+        return;
     _axis = a;
+    emit axisChanged();
 }
 
 qreal QmlGraphicsDrag::xmin() const
@@ -85,7 +91,10 @@ qreal QmlGraphicsDrag::xmin() const
 
 void QmlGraphicsDrag::setXmin(qreal m)
 {
+    if (_xmin == m)
+        return;
     _xmin = m;
+    emit minimumXChanged();
 }
 
 qreal QmlGraphicsDrag::xmax() const
@@ -95,7 +104,10 @@ qreal QmlGraphicsDrag::xmax() const
 
 void QmlGraphicsDrag::setXmax(qreal m)
 {
+    if (_xmax == m)
+        return;
     _xmax = m;
+    emit maximumXChanged();
 }
 
 qreal QmlGraphicsDrag::ymin() const
@@ -105,7 +117,10 @@ qreal QmlGraphicsDrag::ymin() const
 
 void QmlGraphicsDrag::setYmin(qreal m)
 {
+    if (_ymin == m)
+        return;
     _ymin = m;
+    emit minimumYChanged();
 }
 
 qreal QmlGraphicsDrag::ymax() const
@@ -115,7 +130,10 @@ qreal QmlGraphicsDrag::ymax() const
 
 void QmlGraphicsDrag::setYmax(qreal m)
 {
+    if (_ymax == m)
+        return;
     _ymax = m;
+    emit maximumYChanged();
 }
 
 QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()

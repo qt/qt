@@ -1006,7 +1006,10 @@ bool QmlGraphicsFlickable::overShoot() const
 void QmlGraphicsFlickable::setOverShoot(bool o)
 {
     Q_D(QmlGraphicsFlickable);
+    if (d->overShoot == o)
+        return;
     d->overShoot = o;
+    emit overShootChanged();
 }
 
 /*!
@@ -1215,6 +1218,7 @@ void QmlGraphicsFlickable::setMaximumFlickVelocity(qreal v)
     if (v == d->maxVelocity)
         return;
     d->maxVelocity = v;
+    emit maximumFlickVelocityChanged();
 }
 
 /*!
@@ -1232,7 +1236,10 @@ qreal QmlGraphicsFlickable::flickDeceleration() const
 void QmlGraphicsFlickable::setFlickDeceleration(qreal deceleration)
 {
     Q_D(QmlGraphicsFlickable);
+    if (deceleration == d->deceleration)
+        return;
     d->deceleration = deceleration;
+    emit flickDecelerationChanged();
 }
 
 /*!
@@ -1270,6 +1277,7 @@ void QmlGraphicsFlickable::setPressDelay(int delay)
     if (d->pressDelay == delay)
         return;
     d->pressDelay = delay;
+    emit pressDelayChanged();
 }
 
 qreal QmlGraphicsFlickable::reportedVelocitySmoothing() const
