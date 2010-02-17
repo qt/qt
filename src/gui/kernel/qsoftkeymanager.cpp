@@ -215,7 +215,7 @@ bool QSoftKeyManager::handleUpdateSoftKeys()
         if (source) {
             bool added = appendSoftkeys(*source, level);
             source = softkeySource(source, recursiveMerging);
-            level = added ? ++level : level;
+            level = added ? level + 1 : level;
         }
     } while (source);
 
