@@ -158,14 +158,8 @@ void tst_QLocale::ctor()
     QCoreApplication app(argc, (char**)&argv);
 #endif
     QLocale default_locale = QLocale::system();
-
-    QVERIFY(!default_locale.monthName(1, QLocale::LongFormat).isEmpty());
-    QVERIFY(!default_locale.monthName(1, QLocale::ShortFormat).isEmpty());
-    QVERIFY(default_locale.language() != 0);
-
     QLocale::Language default_lang = default_locale.language();
     QLocale::Country default_country = default_locale.country();
-
 
     qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toLatin1().constData(),
             QLocale::countryToString(default_country).toLatin1().constData());
