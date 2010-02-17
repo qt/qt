@@ -151,8 +151,9 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
         mimeType = QLatin1String("text/html");
     }
 
-    const QByteArray &ba = helpEngine->fileData(url);
-    return new HelpNetworkReply(request, ba.isEmpty() ? " " : ba, mimeType);
+    const QByteArray &data = helpEngine->findFile(url).isValid()
+        ? helpEngine->fileData(url) : QByteArray("File not found!");
+    return new HelpNetworkReply(request, data, mimeType);
 }
 
 class HelpPage : public QWebPage
