@@ -170,7 +170,7 @@ private:
 
     friend class QXmlStreamWriter;
     friend class QXmlStreamWriterPrivate;
-#if defined Q_XMLSTREAM_RENAME_SYMBOLS
+#if defined(Q_OS_MAC32) || defined(Q_OS_AIX)
     friend class QCoreXmlStreamWriter;
     friend class QCoreXmlStreamWriterPrivate;
 #endif
