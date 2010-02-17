@@ -25,7 +25,7 @@ General Improvements
 - Documentation and Examples
 
 - Support for the GL_EXT_geometry_shader4, aka Geometry Shaders, was added
-  to QGLShaderProgram. 
+  to QGLShaderProgram.
 
 Third party components
 ----------------------
@@ -35,6 +35,10 @@ Third party components
 *                          Library                                         *
 ****************************************************************************
 
+ - QPrinter
+    * Obsoleted the slightly confusing setNumCopies() and numCopies()
+      functions, and replaced them with setCopyCount(), copyCount() and
+      supportsMultipleCopies().
 
 ****************************************************************************
 *                          Database Drivers                                *

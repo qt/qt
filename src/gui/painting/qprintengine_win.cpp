@@ -1240,6 +1240,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->updateOrigin();
         break;
 
+    case PPK_CopyCount: // fallthrough
     case PPK_NumberOfCopies:
         if (!d->devMode)
             break;
@@ -1404,6 +1405,14 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
 
     case PPK_FullPage:
         value = d->fullPage;
+        break;
+
+    case PPK_CopyCount:
+        value = d->num_copies;
+        break;
+
+    case PPK_SupportsMultipleCopies:
+        value = true;
         break;
 
     case PPK_NumberOfCopies:

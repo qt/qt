@@ -78,6 +78,7 @@ class QPolygon;
 class QTextItem;
 class QMatrix;
 class QTransform;
+class QStaticText;
 
 class QPainterPrivateDeleter;
 
@@ -368,6 +369,10 @@ public:
 
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
+
+    void drawStaticText(const QPointF &p, const QStaticText &staticText);
+    inline void drawStaticText(const QPoint &p, const QStaticText &staticText);
+    inline void drawStaticText(int x, int y, const QStaticText &staticText);
 
     void drawText(const QPointF &p, const QString &s);
     inline void drawText(const QPoint &p, const QString &s);
@@ -894,6 +899,16 @@ inline void QPainter::drawImage(int x, int y, const QImage &image, int sx, int s
         drawImage(QPointF(x, y), image);
     else
         drawImage(QRectF(x, y, -1, -1), image, QRectF(sx, sy, sw, sh), flags);
+}
+
+inline void QPainter::drawStaticText(const QPoint &p, const QStaticText &staticText)
+{
+    drawStaticText(QPointF(p), staticText);
+}
+
+inline void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
+{
+    drawStaticText(QPointF(x, y), staticText);
 }
 
 inline void QPainter::drawTextItem(const QPoint &p, const QTextItem &ti)

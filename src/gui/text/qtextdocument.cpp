@@ -1767,9 +1767,9 @@ void QTextDocument::print(QPrinter *printer) const
     int pageCopies;
     if (printer->collateCopies() == true){
         docCopies = 1;
-        pageCopies = printer->numCopies();
+        pageCopies = printer->supportsMultipleCopies() ? 1 : printer->copyCount();
     } else {
-        docCopies = printer->numCopies();
+        docCopies = printer->supportsMultipleCopies() ? 1 : printer->copyCount();
         pageCopies = 1;
     }
 
