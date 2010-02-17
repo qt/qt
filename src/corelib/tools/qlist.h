@@ -122,7 +122,7 @@ public:
     inline int size() const { return p.size(); }
 
     inline void detach() { if (d->ref != 1) detach_helper(); }
-    inline void detach_grow(int by) { if (d->ref != 1) detach_helper_grow(d->end - d->begin + by); }
+    inline void detach_grow(int by) { if (d->ref != 1) detach_helper_grow(d->alloc + by); }
 
     inline void detachShared()
     {
