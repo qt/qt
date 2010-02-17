@@ -354,8 +354,6 @@ void MainWindow::lookForNewQtDocumentation()
 void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
 {
     TRACE_OBJ
-    if (newDocsInstalled)
-        HelpEngineWrapper::instance().setupData();
     statusBar()->clearMessage();
     checkInitState();
 }
@@ -383,6 +381,7 @@ void MainWindow::checkInitState()
         }
         emit initDone();
     }
+    HelpEngineWrapper::instance().initialDocSetupDone();
 }
 
 void MainWindow::insertLastPages()

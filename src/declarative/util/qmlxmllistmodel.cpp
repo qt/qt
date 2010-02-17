@@ -391,7 +391,7 @@ void QmlXmlRoleList::insert(int i, QmlXmlListModelRole *role)
 {
     QmlConcreteList<QmlXmlListModelRole *>::insert(i, role);
     if (model->roleNames.contains(role->name())) {
-        qmlInfo(role) << QObject::tr("\"%1\" duplicates a previous role name and will be disabled.").arg(role->name());
+        qmlInfo(role) << QCoreApplication::translate("QmlXmlRoleList", "\"%1\" duplicates a previous role name and will be disabled.").arg(role->name());
         return;
     }
     model->roles.insert(i, model->highestRole);
@@ -551,7 +551,7 @@ void QmlXmlListModel::setQuery(const QString &query)
 {
     Q_D(QmlXmlListModel);
     if (!query.startsWith(QLatin1Char('/'))) {
-        qmlInfo(this) << tr("An XmlListModel query must start with '/' or \"//\"");
+        qmlInfo(this) << QCoreApplication::translate("QmlXmlRoleList", "An XmlListModel query must start with '/' or \"//\"");
         return;
     }
 

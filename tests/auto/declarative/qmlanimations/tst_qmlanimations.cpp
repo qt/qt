@@ -308,7 +308,7 @@ void tst_animations::badProperties()
         QmlEngine engine;
 
         QmlComponent c1(&engine, QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml"));
-        QByteArray message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml").toString().toUtf8() + ":18:9) Cannot animate non-existant property \"border.colr\"";
+        QByteArray message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml").toString().toUtf8() + ":18:9) Cannot animate non-existent property \"border.colr\"";
         QTest::ignoreMessage(QtWarningMsg, message);
         QTest::ignoreMessage(QtWarningMsg, message); // why twice?
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c1.create());
@@ -546,8 +546,8 @@ void tst_animations::easingStringConversion()
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutElastic);
     QVERIFY(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude() != qreal(5));
 
-    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unknown easing parameter \"nonexistantproperty\"");
-    animation->setEasing("easeOutQuad(nonexistantproperty: 12)");
+    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unknown easing parameter \"nonexistentproperty\"");
+    animation->setEasing("easeOutQuad(nonexistentproperty: 12)");
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutQuad);
 
     delete animation;

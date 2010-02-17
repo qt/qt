@@ -39,60 +39,52 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of Qt Designer.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QDESIGNERUNDOSTACK_H
+#define QDESIGNERUNDOSTACK_H
 
-#ifndef QDESIGNER_FORMWINDOWCOMMAND_H
-#define QDESIGNER_FORMWINDOWCOMMAND_H
-
-#include "shared_global_p.h"
-
-#include <QtCore/QPointer>
-#include <QtGui/QUndoCommand>
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
-
-class QDesignerFormEditorInterface;
-class QDesignerFormWindowInterface;
-class QDesignerPropertySheetExtension;
+class QUndoStack;
+class QUndoCommand;
 
 namespace qdesigner_internal {
 
-class QDESIGNER_SHARED_EXPORT QDesignerFormWindowCommand: public QUndoCommand
+/* QDesignerUndoStack: A QUndoStack extended by a way of setting it to
+ * "dirty" indepently of commands (by modifications without commands
+ * such as resizing). Accomplished via bool m_fakeDirty flag. The
+ * lifecycle of the QUndoStack is managed by the QUndoGroup. */
+class QDesignerUndoStack : public QObject
 {
-
+    Q_DISABLE_COPY(QDesignerUndoStack)
+    Q_OBJECT
 public:
-    QDesignerFormWindowCommand(const QString &description,
-                               QDesignerFormWindowInterface *formWindow,
-                               QUndoCommand *parent = 0);
+    explicit QDesignerUndoStack(QObject *parent = 0);
+    virtual ~QDesignerUndoStack();
 
-    virtual void undo();
-    virtual void redo();
+    void push(QUndoCommand * cmd);
+    void beginMacro(const QString &text);
+    void endMacro();
+    int  index() const;
 
-    static void updateBuddies(QDesignerFormWindowInterface *form,
-                              const QString &old_name, const QString &new_name);
-protected:
-    QDesignerFormWindowInterface *formWindow() const;
-    QDesignerFormEditorInterface *core() const;
-    QDesignerPropertySheetExtension* propertySheet(QObject *object) const;
+    const QUndoStack *qundoStack() const;
+    QUndoStack *qundoStack();
 
-    void cheapUpdate();
+    bool isDirty() const;
 
-    void selectUnmanagedObject(QObject *unmanagedObject);
+signals:
+    void changed();
+
+public slots:
+    void setDirty(bool);
+
 private:
-    QPointer<QDesignerFormWindowInterface> m_formWindow;
+    QUndoStack *m_undoStack;
+    bool m_fakeDirty;
 };
 
 } // namespace qdesigner_internal
 
 QT_END_NAMESPACE
 
-#endif // QDESIGNER_COMMAND_H
+#endif // QDESIGNERUNDOSTACK_H
