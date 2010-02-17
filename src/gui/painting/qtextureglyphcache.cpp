@@ -55,6 +55,20 @@ QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
 
+// returns the highest number closest to v, which is a power of 2
+// NB! assumes 32 bit ints
+int qt_next_power_of_two(int v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    ++v;
+    return v;
+}
+
 void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
                                   const QFixedPoint *)
 {
@@ -115,7 +129,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
     rowHeight += margin * 2;
     if (isNull())
-        createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, rowHeight);
+        createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, qt_next_power_of_two(rowHeight));
 
     // now actually use the coords and paint the wanted glyps into cache.
     QHash<glyph_t, Coord>::iterator iter = listItemCoordinates.begin();
@@ -128,13 +142,9 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             m_cy = m_h;
         }
         if (m_cy + c.h > m_h) {
-            int new_height;
-            if (m_cx == 0) { // add a whole row
-                new_height = m_h + rowHeight;
-                m_cy = m_h;
-            } else { // just extend row
-                new_height = m_cy + rowHeight;
-            }
+            int new_height = m_h*2;
+            while (new_height < m_cy + c.h)
+                new_height *= 2;
             // if no room in the current texture - realloc a larger texture
             resizeTextureData(m_w, new_height);
             m_h = new_height;
