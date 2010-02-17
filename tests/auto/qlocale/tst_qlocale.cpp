@@ -2027,7 +2027,7 @@ void tst_QLocale::QTBUG_7898()
     //QString dateTimeStr = QString("Monday, January 5, 2009 11:48:32 AM"); // with no blank space char after "AM", call "toDateTime" will get invalid value
     QString dateTimeStr = QString("Monday, January 5, 2009 11:48:32 AM ");
 
-    QDateTime value1 = locale.toDateTime(dateTimeStr , locale.dateTimeFormat(QLocale::LongFormat));qDebug()<<locale.toString(value1);
+    QDateTime value1 = locale.toDateTime(dateTimeStr , locale.dateTimeFormat(QLocale::LongFormat));
     QDateTime value2 = locale.toDateTime(dateTimeStr , QLocale::LongFormat);
     QCOMPARE(value1.isValid(), value2.isValid());
     if (value1.isValid()) {
