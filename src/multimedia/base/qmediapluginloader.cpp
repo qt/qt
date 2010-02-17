@@ -88,7 +88,6 @@ void QMediaPluginLoader::load()
         return;
 
     if (staticMediaPlugins() && staticMediaPlugins()->contains(m_location)) {
-        qWarning() << "Load static plugins for" << m_location;
         foreach(QObject *o, staticMediaPlugins()->value(m_location)) {
             if (o != 0 && o->qt_metacast(m_iid) != 0) {
                 QFactoryInterface* p = qobject_cast<QFactoryInterface*>(o);
