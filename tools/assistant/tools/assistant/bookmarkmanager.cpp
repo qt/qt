@@ -187,6 +187,10 @@ BookmarkManager::BookmarkManager()
 
     connect(&HelpEngineWrapper::instance(), SIGNAL(setupFinished()), this,
         SLOT(setupFinished()));
+    connect(bookmarkModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this,
+        SLOT(refeshBookmarkMenu()));
+    connect(bookmarkModel, SIGNAL(rowsInserted(QModelIndex, int, int)), this,
+        SLOT(refeshBookmarkMenu()));
     connect(bookmarkModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this,
         SLOT(refeshBookmarkMenu()));
 }
@@ -323,10 +327,8 @@ void BookmarkManager::setupFinished()
 void BookmarkManager::addBookmark()
 {
     TRACE_OBJ
-    if (CentralWidget *widget = CentralWidget::instance()) {
-        showBookmarkDialog(widget->currentTitle(),
-            widget->currentSource().toString());
-    }
+    if (CentralWidget *widget = CentralWidget::instance())
+        addBookmark(widget->currentTitle(), widget->currentSource().toString());
 }
 
 void BookmarkManager::removeBookmark()
