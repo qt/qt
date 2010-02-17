@@ -306,6 +306,18 @@ BookmarkModel::itemFromIndex(const QModelIndex &index) const
      return rootItem;
 }
 
+QList<QPersistentModelIndex>
+BookmarkModel::indexListFor(const QString &label) const
+{
+    QList<QPersistentModelIndex> hits;
+    const QModelIndexList &list = collectItems(QModelIndex());
+    foreach(const QModelIndex &index, list) {
+        if (index.data().toString().contains(label, Qt::CaseInsensitive))
+            hits.prepend(index);    // list is reverse sorted
+    }
+    return hits;
+}
+
 bool
 BookmarkModel::insertRows(int position, int rows, const QModelIndex &parent)
 {
