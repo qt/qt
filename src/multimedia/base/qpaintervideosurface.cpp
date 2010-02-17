@@ -531,6 +531,32 @@ static const char *qt_arbfp_yuvPlanarShaderProgram =
     "DP4 result.color.z, yuv, matrix[2];\n"
     "END";
 
+// Paints a YUV444 frame.
+static const char *qt_arbfp_xyuvShaderProgram =
+    "!!ARBfp1.0\n"
+    "PARAM matrix[4] = { program.local[0..2],"
+    "{ 0.0, 0.0, 0.0, 1.0 } };\n"
+    "TEMP ayuv;\n"
+    "TEX ayuv, fragment.texcoord[0], texture[0], 2D;\n"
+    "MOV ayuv.x, matrix[3].w;\n"
+    "DP4 result.color.x, ayuv.yzwx, matrix[0];\n"
+    "DP4 result.color.y, ayuv.yzwx, matrix[1];\n"
+    "DP4 result.color.z, ayuv.yzwx, matrix[2];\n"
+    "END";
+
+// Paints a AYUV444 frame.
+static const char *qt_arbfp_ayuvShaderProgram =
+    "!!ARBfp1.0\n"
+    "PARAM matrix[4] = { program.local[0..2],"
+    "{ 0.0, 0.0, 0.0, 1.0 } };\n"
+    "TEMP ayuv;\n"
+    "TEX ayuv, fragment.texcoord[0], texture[0], 2D;\n"
+    "MOV ayuv.x, matrix[3].w;\n"
+    "DP4 result.color.x, ayuv.yzwx, matrix[0];\n"
+    "DP4 result.color.y, ayuv.yzwx, matrix[1];\n"
+    "DP4 result.color.z, ayuv.yzwx, matrix[2];\n"
+    "TEX result.color.w, fragment.texcoord[0], texture, 2D;\n"
+    "END";
 
 class QVideoSurfaceArbFpPainter : public QVideoSurfaceGLPainter
 {
@@ -584,6 +610,8 @@ QVideoSurfaceArbFpPainter::QVideoSurfaceArbFpPainter(QGLContext *context)
             << QVideoFrame::Format_RGB24
             << QVideoFrame::Format_BGR24
             << QVideoFrame::Format_RGB565
+            << QVideoFrame::Format_AYUV444
+            << QVideoFrame::Format_YUV444
             << QVideoFrame::Format_YV12
             << QVideoFrame::Format_YUV420P;
     m_glPixelFormats
@@ -617,7 +645,7 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::start(const QVideoSurfac
             break;
         case QVideoFrame::Format_RGB24:
             initRgbTextureInfo(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
-            program = qt_arbfp_argbShaderProgram;
+            program = qt_arbfp_xrgbShaderProgram;
             break;
         case QVideoFrame::Format_BGR24:
             initRgbTextureInfo(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
@@ -626,6 +654,16 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::start(const QVideoSurfac
         case QVideoFrame::Format_RGB565:
             initRgbTextureInfo(GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, format.frameSize());
             program = qt_arbfp_rgbShaderProgram;
+            break;
+        case QVideoFrame::Format_YUV444:
+            initRgbTextureInfo(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, format.frameSize());
+            program = qt_arbfp_xyuvShaderProgram;
+            m_yuv = true;
+            break;
+        case QVideoFrame::Format_AYUV444:
+            initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
+            program = qt_arbfp_ayuvShaderProgram;
+            m_yuv = true;
             break;
         case QVideoFrame::Format_YV12:
             initYv12TextureInfo(format.frameSize());
@@ -865,6 +903,28 @@ static const char *qt_glsl_yuvPlanarShaderProgram =
         "    gl_FragColor = colorMatrix * color;\n"
         "}\n";
 
+// Paints a YUV444 frame.
+static const char *qt_glsl_xyuvShaderProgram =
+        "uniform sampler2D texRgb;\n"
+        "uniform mediump mat4 colorMatrix;\n"
+        "varying highp vec2 textureCoord;\n"
+        "void main(void)\n"
+        "{\n"
+        "    highp vec4 color = vec4(texture2D(texRgb, textureCoord.st).gba, 1.0);\n"
+        "    gl_FragColor = colorMatrix * color;\n"
+        "}\n";
+
+// Paints a AYUV444 frame.
+static const char *qt_glsl_ayuvShaderProgram =
+        "uniform sampler2D texRgb;\n"
+        "uniform mediump mat4 colorMatrix;\n"
+        "varying highp vec2 textureCoord;\n"
+        "void main(void)\n"
+        "{\n"
+        "    highp vec4 color = vec4(texture2D(texRgb, textureCoord.st).gba, 1.0);\n"
+        "    color = colorMatrix * color;\n"
+        "    gl_FragColor = vec4(color.rgb, texture2D(texRgb, textureCoord.st).r);\n"
+        "}\n";
 
 class QVideoSurfaceGlslPainter : public QVideoSurfaceGLPainter
 {
@@ -895,6 +955,8 @@ QVideoSurfaceGlslPainter::QVideoSurfaceGlslPainter(QGLContext *context)
             << QVideoFrame::Format_BGR24
 #endif
             << QVideoFrame::Format_RGB565
+            << QVideoFrame::Format_YUV444
+            << QVideoFrame::Format_AYUV444
             << QVideoFrame::Format_YV12
             << QVideoFrame::Format_YUV420P;
     m_glPixelFormats
@@ -919,7 +981,7 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::start(const QVideoSurface
             fragmentProgram = qt_glsl_xrgbShaderProgram;
             break;
         case QVideoFrame::Format_BGR32:
-            initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
+            initRgbTextureInfo(GL_RGB, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
             fragmentProgram = qt_glsl_rgbShaderProgram;
             break;
         case QVideoFrame::Format_ARGB32:
@@ -939,6 +1001,16 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::start(const QVideoSurface
         case QVideoFrame::Format_RGB565:
             initRgbTextureInfo(GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, format.frameSize());
             fragmentProgram = qt_glsl_rgbShaderProgram;
+            break;
+        case QVideoFrame::Format_YUV444:
+            initRgbTextureInfo(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, format.frameSize());
+            fragmentProgram = qt_glsl_xyuvShaderProgram;
+            m_yuv = true;
+            break;
+        case QVideoFrame::Format_AYUV444:
+            initRgbTextureInfo(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
+            fragmentProgram = qt_glsl_ayuvShaderProgram;
+            m_yuv = true;
             break;
         case QVideoFrame::Format_YV12:
             initYv12TextureInfo(format.frameSize());
