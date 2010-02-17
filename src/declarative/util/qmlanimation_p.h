@@ -94,7 +94,6 @@ public:
     QmlAnimationGroup *group() const;
     void setGroup(QmlAnimationGroup *);
 
-    virtual void setTarget(const QmlMetaProperty &);    //###make private?
     void setDefaultTarget(const QmlMetaProperty &);
 
     void classBegin();
@@ -128,6 +127,9 @@ public:
 
 private Q_SLOTS:
     void timelineComplete();
+
+private:
+    virtual void setTarget(const QmlMetaProperty &);
 };
 
 class QmlPauseAnimationPrivate;
