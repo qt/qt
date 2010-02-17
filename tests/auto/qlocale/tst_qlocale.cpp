@@ -141,6 +141,8 @@ private slots:
 
     void ampm();
 
+    void QTBUG_7898();
+
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
 };
@@ -2018,6 +2020,24 @@ void tst_QLocale::symbianSystemLocale()
 # endif
 }
 #endif
+
+void tst_QLocale::QTBUG_7898()
+{
+    QLocale locale = QLocale(QLocale::English);
+    //QString dateTimeStr = QString("Monday, January 5, 2009 11:48:32 AM"); // with no blank space char after "AM", call "toDateTime" will get invalid value
+    QString dateTimeStr = QString("Monday, January 5, 2009 11:48:32 AM ");
+
+    QDateTime value1 = locale.toDateTime(dateTimeStr , locale.dateTimeFormat(QLocale::LongFormat));qDebug()<<locale.toString(value1);
+    QDateTime value2 = locale.toDateTime(dateTimeStr , QLocale::LongFormat);
+    QCOMPARE(value1.isValid(), value2.isValid());
+    if (value1.isValid()) {
+        QCOMPARE(value1, value2);
+        QCOMPARE(locale.toString(value1), dateTimeStr);
+        QCOMPARE(locale.toString(value2), dateTimeStr);
+        QCOMPARE(locale.toString(value1, locale.dateTimeFormat(QLocale::LongFormat)), dateTimeStr);
+        QCOMPARE(locale.toString(value2, locale.dateTimeFormat(QLocale::LongFormat)), dateTimeStr);
+    }
+}
 
 QTEST_APPLESS_MAIN(tst_QLocale)
 #include "tst_qlocale.moc"
