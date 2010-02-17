@@ -635,7 +635,7 @@ QmlGraphicsParticles::~QmlGraphicsParticles()
 }
 
 /*!
-    \qmlproperty string Particles::src
+    \qmlproperty string Particles::source
     This property holds the URL of the particle image.
 */
 
