@@ -425,34 +425,6 @@ void tst_QMediaPlaylist::saveAndLoad()
     QCOMPARE(errorSignal.size(), 1);
     QVERIFY(playlist.error() != QMediaPlaylist::NoError);
     QVERIFY(!playlist.errorString().isEmpty());
-
-    res = playlist.save(&buffer, "m3u");
-
-    QVERIFY(res);
-    QVERIFY(buffer.pos() > 0);
-    buffer.seek(0);
-
-    QMediaPlaylist playlist2;
-    playlist2.load(&buffer, "m3u");
-    QCOMPARE(playlist.error(), QMediaPlaylist::NoError);
-
-    QCOMPARE(playlist.mediaCount(), playlist2.mediaCount());
-    QCOMPARE(playlist.media(0), playlist2.media(0));
-    QCOMPARE(playlist.media(1), playlist2.media(1));
-    QCOMPARE(playlist.media(3), playlist2.media(3));
-
-    res = playlist.save(QUrl(QLatin1String("tmp.m3u")), "m3u");
-    QVERIFY(res);
-
-    playlist2.clear();
-    QVERIFY(playlist2.isEmpty());
-    playlist2.load(QUrl(QLatin1String("tmp.m3u")), "m3u");
-    QCOMPARE(playlist.error(), QMediaPlaylist::NoError);
-
-    QCOMPARE(playlist.mediaCount(), playlist2.mediaCount());
-    QCOMPARE(playlist.media(0), playlist2.media(0));
-    QCOMPARE(playlist.media(1), playlist2.media(1));
-    QCOMPARE(playlist.media(3), playlist2.media(3));
 }
 
 void tst_QMediaPlaylist::playbackMode_data()
