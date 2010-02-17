@@ -7,4 +7,5 @@ SUBDIRS = \
         qregexp \
         qstring \
         qstringbuilder \
-        qstringlist
+        qstringlist \
+        qvector
