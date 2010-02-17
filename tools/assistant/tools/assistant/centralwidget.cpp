@@ -333,9 +333,10 @@ void CentralWidget::setLastShownPages()
 
     for (int curTab = 0; curTab < pageCount; ++curTab) {
         const QString &curFile = lastShownPageList.at(curTab);
-        if (helpEngine.findFile(curFile).isValid())
+        if (helpEngine.findFile(curFile).isValid()
+            || curFile == QLatin1String("about:blank")) {
             setSourceInNewTab(curFile, zoomFactors.at(curTab).toFloat());
-        else if (curTab + searchIsAttached <= tabToShow)
+        } else if (curTab + searchIsAttached <= tabToShow)
             --tabToShow;
     }
 
