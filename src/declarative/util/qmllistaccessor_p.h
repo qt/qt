@@ -70,7 +70,7 @@ public:
     bool removeAt(int);
     bool clear();
 
-    enum Type { Invalid, StringList, VariantList, QmlList, ListProperty, Instance, Integer };
+    enum Type { Invalid, StringList, VariantList, QmlList, QListPtr, Instance, Integer };
     Type type() const { return m_type; }
 
 private:

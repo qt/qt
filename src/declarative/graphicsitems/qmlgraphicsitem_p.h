@@ -381,7 +381,7 @@ class QmlGraphicsKeysAttached : public QObject, public QmlGraphicsItemKeyFilter
     Q_DECLARE_PRIVATE(QmlGraphicsKeysAttached)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
-    Q_PROPERTY(QmlListProperty<QmlGraphicsItem> forwardTo READ forwardTo)
+    Q_PROPERTY(QList<QmlGraphicsItem *> *forwardTo READ forwardTo)
 
 public:
     QmlGraphicsKeysAttached(QObject *parent=0);
@@ -396,9 +396,9 @@ public:
         }
     }
 
-    QmlListProperty<QmlGraphicsItem> forwardTo() {
+    QList<QmlGraphicsItem *> *forwardTo() {
         Q_D(QmlGraphicsKeysAttached);
-        return QmlListProperty<QmlGraphicsItem>(this, d->targets);
+        return &d->targets;
     }
 
     virtual void componentComplete();

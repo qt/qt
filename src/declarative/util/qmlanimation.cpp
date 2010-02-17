@@ -947,10 +947,10 @@ void QmlPropertyAction::setProperties(const QString &p)
 
     \sa exclude matchProperties PropertyAnimation::matchTargets
 */
-QmlListProperty<QObject> QmlPropertyAction::targets()
+QList<QObject *> *QmlPropertyAction::targets()
 {
     Q_D(QmlPropertyAction);
-    return QmlListProperty<QObject>(this, d->targets);
+    return &d->targets;
 }
 
 /*!
@@ -958,10 +958,10 @@ QmlListProperty<QObject> QmlPropertyAction::targets()
     This property holds the objects not to be affected by this animation.
     \sa matchTargets
 */
-QmlListProperty<QObject> QmlPropertyAction::exclude()
+QList<QObject *> *QmlPropertyAction::exclude()
 {
     Q_D(QmlPropertyAction);
-    return QmlListProperty<QObject>(this, d->exclude);
+    return &d->exclude;
 }
 
 /*!
@@ -2097,10 +2097,10 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
     
     \sa exclude matchProperties
 */
-QmlListProperty<QObject> QmlPropertyAnimation::targets()
+QList<QObject *> *QmlPropertyAnimation::targets()
 {
     Q_D(QmlPropertyAnimation);
-    return QmlListProperty<QObject>(this, d->targets);
+    return &d->targets;
 }
 
 /*!
@@ -2108,10 +2108,10 @@ QmlListProperty<QObject> QmlPropertyAnimation::targets()
     This property holds the items not to be affected by this animation.
     \sa matchTargets
 */
-QmlListProperty<QObject> QmlPropertyAnimation::exclude()
+QList<QObject *> *QmlPropertyAnimation::exclude()
 {
     Q_D(QmlPropertyAnimation);
-    return QmlListProperty<QObject>(this, d->exclude);
+    return &d->exclude;
 }
 
 void QmlPropertyAnimationPrivate::valueChanged(qreal r)

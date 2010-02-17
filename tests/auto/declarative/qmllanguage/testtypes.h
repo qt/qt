@@ -447,20 +447,19 @@ QML_DECLARE_TYPE(MyTypeObject);
 class MyContainer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QmlListProperty<QObject> children READ children)
-    Q_PROPERTY(QmlListProperty<MyInterface> qlistInterfaces READ qlistInterfaces)
+    Q_PROPERTY(QList<QObject*>* children READ children)
+    Q_PROPERTY(QList<MyInterface*>* qlistInterfaces READ qlistInterfaces)
     Q_PROPERTY(QmlList<MyInterface*>* qmllistInterfaces READ qmllistInterfaces)
     Q_CLASSINFO("DefaultProperty", "children");
 public:
     MyContainer() {}
 
-    QmlListProperty<QObject> children() { return QmlListProperty<QObject>(this, m_children); }
-    QList<QObject *> *getChildren() { return &m_children; }
-    QmlListProperty<MyInterface> qlistInterfaces() { return QmlListProperty<MyInterface>(this, m_interfaces); }
-    QList<MyInterface *> *getQListInterfaces() { return &m_interfaces; }
+    QList<QObject*> *children() { return &m_children; }
+    QList<MyInterface *> *qlistInterfaces() { return &m_interfaces; }
     QmlList<MyInterface *> *qmllistInterfaces() { return &m_qmlinterfaces; }
     const QmlConcreteList<MyInterface *> &qmllistAccessor() const { return m_qmlinterfaces; }
 
+private:
     QList<QObject*> m_children;
     QList<MyInterface *> m_interfaces;
     QmlConcreteList<MyInterface *> m_qmlinterfaces;

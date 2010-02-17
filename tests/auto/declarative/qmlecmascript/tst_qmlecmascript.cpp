@@ -1612,7 +1612,7 @@ void tst_qmlecmascript::listToVariant()
     QObject *object = component.create(&context);
     QVERIFY(object != 0);
 
-    QVERIFY(qvariant_cast<QmlListProperty<MyQmlObject> >(object->property("test")) == container.children());
+    QCOMPARE(object->property("test"), QVariant::fromValue(container.children()));
 
     delete object;
 }
