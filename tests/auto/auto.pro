@@ -311,6 +311,7 @@ SUBDIRS += \
            qmediaserviceprovider \
            qmediatimerange \
            qvideowidget \
+           qmlaudio \
            qspinbox \
            qsplitter \
            qsql \
