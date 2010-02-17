@@ -67,6 +67,7 @@ private slots:
     void nonSelectingBehavior();
     void reassignedAnimation();
     void disabled();
+    void dontStart();
 };
 
 void tst_qmlbehaviors::simpleBehavior()
@@ -278,7 +279,21 @@ void tst_qmlbehaviors::disabled()
     rect->setState("moved");
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
     QCOMPARE(x, qreal(200));    //should change immediately
+}
 
+void tst_qmlbehaviors::dontStart()
+{
+    QmlEngine engine;
+
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart.qml"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+    QVERIFY(myAnim && myAnim->qtAnimation());
+    QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
 }
 
 QTEST_MAIN(tst_qmlbehaviors)

@@ -71,6 +71,7 @@ private slots:
     void invalidDuration();
     void attached();
     void propertyValueSourceDefaultStart();
+    void dontStart();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -625,6 +626,38 @@ void tst_qmlanimations::propertyValueSourceDefaultStart()
 
         QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontAutoStart.qml"));
 
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+        QVERIFY(myAnim && myAnim->qtAnimation());
+        QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+    }
+}
+
+
+void tst_qmlanimations::dontStart()
+{
+    {
+        QmlEngine engine;
+
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart.qml"));
+
+        QTest::ignoreMessage(QtWarningMsg, "QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+        QVERIFY(myAnim && myAnim->qtAnimation());
+        QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+    }
+
+    {
+        QmlEngine engine;
+
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart2.qml"));
+
+        QTest::ignoreMessage(QtWarningMsg, "QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 

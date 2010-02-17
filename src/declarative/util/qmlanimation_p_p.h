@@ -209,7 +209,7 @@ class QmlAbstractAnimationPrivate : public QObjectPrivate
 public:
     QmlAbstractAnimationPrivate()
     : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
-      connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
+      connectedTimeLine(false), componentComplete(true),
       avoidPropertyValueSourceStart(false), disableUserControl(false), group(0) {}
 
     bool running:1;
@@ -218,7 +218,6 @@ public:
     bool repeat:1;
     bool connectedTimeLine:1;
     bool componentComplete:1;
-    bool startOnCompletion:1;
     bool avoidPropertyValueSourceStart:1;
     bool disableUserControl:1;
 

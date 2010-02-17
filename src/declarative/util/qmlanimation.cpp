@@ -243,8 +243,12 @@ QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const 
 void QmlAbstractAnimation::setRunning(bool r)
 {
     Q_D(QmlAbstractAnimation);
-    if (r == false)
-        d->avoidPropertyValueSourceStart = true;
+    if (!d->componentComplete) {
+        d->running = r;
+        if (r == false)
+            d->avoidPropertyValueSourceStart = true;
+        return;
+    }
 
     if (d->running == r)
         return;
@@ -266,10 +270,7 @@ void QmlAbstractAnimation::setRunning(bool r)
                              this, SLOT(timelineComplete()));
             d->connectedTimeLine = true;
         }
-        if (d->componentComplete)
-            d->commence();
-        else
-            d->startOnCompletion = true;
+        d->commence();
         emit started();
     } else {
         if (d->alwaysRunToEnd) {
@@ -331,9 +332,11 @@ void QmlAbstractAnimation::classBegin()
 void QmlAbstractAnimation::componentComplete()
 {
     Q_D(QmlAbstractAnimation);
-    if (d->startOnCompletion)
-        d->commence();
     d->componentComplete = true;
+    if (d->running) {
+        d->running = false;
+        setRunning(true);
+    }
 }
 
 /*!
