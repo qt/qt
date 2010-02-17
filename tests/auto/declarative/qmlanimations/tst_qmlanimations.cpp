@@ -219,7 +219,7 @@ void tst_qmlanimations::resume()
     QVERIFY(animation.from() == 10);
 
     animation.start();
-    QTest::qWait(50);
+    QTest::qWait(100);
     animation.pause();
     qreal x = rect.x();
     QVERIFY(x != qreal(200));
@@ -229,7 +229,7 @@ void tst_qmlanimations::resume()
     animation.resume();
     QVERIFY(animation.isRunning());
     QVERIFY(!animation.isPaused());
-    QTest::qWait(50);
+    QTest::qWait(100);
     animation.stop();
     QVERIFY(rect.x() > x);
 }
@@ -330,7 +330,7 @@ void tst_qmlanimations::badProperties()
 //for example, int + real; color + real; etc
 void tst_qmlanimations::mixedTypes()
 {
-    //assumes border.width stats a real -- not real robust
+    //assumes border.width stays a real -- not real robust
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/mixedtype1.qml"));
