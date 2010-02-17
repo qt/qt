@@ -55,6 +55,7 @@ public:
     virtual ~tst_QGraphicsItem();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -82,8 +83,23 @@ tst_QGraphicsItem::~tst_QGraphicsItem()
 {
 }
 
+static inline void processEvents()
+{
+    QApplication::flush();
+    QApplication::processEvents();
+    QApplication::processEvents();
+}
+
+void tst_QGraphicsItem::initTestCase()
+{
+    QApplication::flush();
+    QTest::qWait(1500);
+    processEvents();
+}
+
 void tst_QGraphicsItem::init()
 {
+    processEvents();
 }
 
 void tst_QGraphicsItem::cleanup()
@@ -152,10 +168,10 @@ void tst_QGraphicsItem::setPos()
 
     QGraphicsScene scene;
     QGraphicsRectItem *rect = scene.addRect(QRectF(0, 0, 100, 100));
+    processEvents();
 
     QBENCHMARK {
         rect->setPos(10, 10);
-        rect->transform(); // prevent lazy optimizing
     }
 }
 
@@ -177,10 +193,10 @@ void tst_QGraphicsItem::setTransform()
 
     QGraphicsScene scene;
     QGraphicsRectItem *item = scene.addRect(QRectF(0, 0, 100, 100));
+    processEvents();
 
     QBENCHMARK {
         item->setTransform(transform);
-        item->transform(); // prevent lazy optimizing
     }
 }
 
@@ -188,10 +204,10 @@ void tst_QGraphicsItem::rotate()
 {
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
+    processEvents();
 
     QBENCHMARK {
         item->rotate(45);
-        item->transform(); // prevent lazy optimizing
     }
 }
 
@@ -199,10 +215,10 @@ void tst_QGraphicsItem::scale()
 {
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
+    processEvents();
 
     QBENCHMARK {
         item->scale(2, 2);
-        item->transform(); // prevent lazy optimizing
     }
 }
 
@@ -210,10 +226,10 @@ void tst_QGraphicsItem::shear()
 {
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
+    processEvents();
 
     QBENCHMARK {
         item->shear(1.5, 1.5);
-        item->transform(); // prevent lazy optimizing
     }
 }
 
@@ -221,10 +237,10 @@ void tst_QGraphicsItem::translate()
 {
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
+    processEvents();
 
     QBENCHMARK {
         item->translate(100, 100);
-        item->transform(); // prevent lazy optimizing
     }
 }
 
@@ -232,10 +248,10 @@ void tst_QGraphicsItem::setRotation()
 {
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 100, 100));
+    processEvents();
 
     QBENCHMARK {
         item->setRotation(45);
-        item->transform(); // prevent lazy optimizing
     }
 }
 
