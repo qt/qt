@@ -283,20 +283,17 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 
     // connection might be closed to signal the end of data
     if (socketState == QAbstractSocket::UnconnectedState) {
-        if (!socket->bytesAvailable()) {
+        if (socket->bytesAvailable() <= 0) {
             if (reply && reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
+                // finish this reply. this case happens when the server did not send a content length
                 reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
                 allDone();
             } else {
-                // try to reconnect/resend before sending an error.
-                if (reconnectAttempts-- > 0) {
-                    closeAndResendCurrentRequest();
-                } else if (reply) {
-                    reply->d_func()->errorString = connection->d_func()->errorDetail(QNetworkReply::RemoteHostClosedError, socket);
-                    emit reply->finishedWithError(QNetworkReply::RemoteHostClosedError, reply->d_func()->errorString);
-                    QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
-                }
+                handleUnexpectedEOF();
+                return;
             }
+        } else {
+            // socket not connected but still bytes for reading.. just continue in this function
         }
     }
 
@@ -311,18 +308,10 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         }
         case QHttpNetworkReplyPrivate::ReadingStatusState: {
             qint64 statusBytes = reply->d_func()->readStatus(socket);
-            if (statusBytes == -1 && reconnectAttempts <= 0) {
-                // too many errors reading/receiving/parsing the status, close the socket and emit error
-                close();
-                reply->d_func()->errorString = connection->d_func()->errorDetail(QNetworkReply::ProtocolFailure, socket);
-                emit reply->finishedWithError(QNetworkReply::ProtocolFailure, reply->d_func()->errorString);
-                QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
-                break;
-            } else if (statusBytes == -1) {
-                reconnectAttempts--;
-                reply->d_func()->clear();
-                closeAndResendCurrentRequest();
-                break;
+            if (statusBytes == -1) {
+                // connection broke while reading status. also handled if later _q_disconnected is called
+                handleUnexpectedEOF();
+                return;
             }
             bytes += statusBytes;
             lastStatus = reply->d_func()->statusCode;
@@ -330,7 +319,13 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         }
         case QHttpNetworkReplyPrivate::ReadingHeaderState: {
             QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
-            bytes += replyPrivate->readHeader(socket);
+            qint64 headerBytes = replyPrivate->readHeader(socket);
+            if (headerBytes == -1) {
+                // connection broke while reading headers. also handled if later _q_disconnected is called
+                handleUnexpectedEOF();
+                return;
+            }
+            bytes += headerBytes;
             if (replyPrivate->state == QHttpNetworkReplyPrivate::ReadingDataState) {
                 if (replyPrivate->isGzipped() && replyPrivate->autoDecompress) {
                     // remove the Content-Length from header
@@ -427,6 +422,23 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         default:
             break;
         }
+    }
+}
+
+// called when unexpectedly reading a -1 or when data is expected but socket is closed
+void QHttpNetworkConnectionChannel::handleUnexpectedEOF()
+{
+    if (reconnectAttempts <= 0) {
+        // too many errors reading/receiving/parsing the status, close the socket and emit error
+        requeueCurrentlyPipelinedRequests();
+        close();
+        reply->d_func()->errorString = connection->d_func()->errorDetail(QNetworkReply::RemoteHostClosedError, socket);
+        emit reply->finishedWithError(QNetworkReply::RemoteHostClosedError, reply->d_func()->errorString);
+        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+    } else {
+        reconnectAttempts--;
+        reply->d_func()->clear();
+        closeAndResendCurrentRequest();
     }
 }
 
@@ -799,9 +811,10 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 {
     // read the available data before closing
     if (isSocketWaiting() || isSocketReading()) {
-        state = QHttpNetworkConnectionChannel::ReadingState;
-        if (reply)
+        if (reply) {
+            state = QHttpNetworkConnectionChannel::ReadingState;
             _q_receiveReply();
+        }
     } else if (state == QHttpNetworkConnectionChannel::IdleState && resendCurrent) {
         // re-sending request because the socket was in ClosingState
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);

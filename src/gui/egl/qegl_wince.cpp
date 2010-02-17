@@ -87,20 +87,15 @@ EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties
     return surf;
 }
 
-EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
+EGLNativeDisplayType QEglContext::nativeDisplay()
 {
-    EGLDisplay dpy = 0;
     HWND win = (static_cast<QWidget*>(device))->winId();
     HDC myDc = GetDC(win);
     if (!myDc) {
-        qWarning("QEglContext::defaultDisplay(): WinCE display is not open");
+        qWarning("QEglContext::nativeDisplay(): WinCE display is not open");
+        return EGL_DEFAULT_DISPLAY;
     }
-    dpy = eglGetDisplay(EGLNativeDisplayType(myDc));
-    if (dpy == EGL_NO_DISPLAY) {
-        qWarning("QEglContext::defaultDisplay(): Falling back to EGL_DEFAULT_DISPLAY");
-        dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    }
-    return dpy;
+    return EGLNativeDisplayType(myDc);
 }
 
 // Set pixel format and other properties based on a paint device.

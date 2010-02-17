@@ -699,12 +699,17 @@ void QGraphicsColorizeEffect::draw(QPainter *painter)
     if (sourceIsPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
         const QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, NoPad);
-        d->filter->draw(painter, offset, pixmap);
+        if (!pixmap.isNull())
+            d->filter->draw(painter, offset, pixmap);
+
         return;
     }
 
     // Draw pixmap in deviceCoordinates to avoid pixmap scaling.
     const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset);
+    if (pixmap.isNull())
+        return;
+
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
@@ -858,9 +863,11 @@ void QGraphicsBlurEffect::draw(QPainter *painter)
     if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
         mode = NoPad;
 
-    // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
     QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset, mode);
+    if (pixmap.isNull())
+        return;
+
     d->filter->draw(painter, offset, pixmap);
 }
 
@@ -1047,6 +1054,9 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter)
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
     const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset, mode);
+    if (pixmap.isNull())
+        return;
+
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
