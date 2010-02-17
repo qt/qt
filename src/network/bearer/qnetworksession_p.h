@@ -116,9 +116,7 @@ protected:
     }
 
 Q_SIGNALS:
-    //releases any pending waitForOpened() calls
-    void quitPendingWaitsForOpened();
-
+    void opened();
     void error(QNetworkSession::SessionError error);
     void stateChanged(QNetworkSession::State state);
     void closed();

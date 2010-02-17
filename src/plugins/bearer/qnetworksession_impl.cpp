@@ -103,7 +103,7 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
     connect(sessionManager(), SIGNAL(forcedSessionClose(QNetworkConfiguration)),
             this, SLOT(forcedSessionClose(QNetworkConfiguration)));
 
-    opened = false;
+    sessionOpened = false;
     isOpen = false;
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
@@ -153,7 +153,7 @@ void QNetworkSessionPrivateImpl::open()
             emit QNetworkSessionPrivate::error(lastError);
             return;
         }
-        opened = true;
+        sessionOpened = true;
 
         if ((activeConfig.state() & QNetworkConfiguration::Active) != QNetworkConfiguration::Active &&
             (activeConfig.state() & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered) {
@@ -165,7 +165,7 @@ void QNetworkSessionPrivateImpl::open()
 
         isOpen = (activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active;
         if (isOpen)
-            emit quitPendingWaitsForOpened();
+            emit opened();
     }
 }
 
@@ -175,7 +175,7 @@ void QNetworkSessionPrivateImpl::close()
         lastError = QNetworkSession::OperationNotSupportedError;
         emit QNetworkSessionPrivate::error(lastError);
     } else if (isOpen) {
-        opened = false;
+        sessionOpened = false;
         isOpen = false;
         emit closed();
     }
@@ -196,7 +196,7 @@ void QNetworkSessionPrivateImpl::stop()
             sessionManager()->forceSessionClose(activeConfig);
         }
 
-        opened = false;
+        sessionOpened = false;
         isOpen = false;
         emit closed();
     }
@@ -364,10 +364,10 @@ void QNetworkSessionPrivateImpl::updateStateFromActiveConfig()
     state = engine->sessionStateForId(activeConfig.identifier());
 
     bool oldActive = isOpen;
-    isOpen = (state == QNetworkSession::Connected) ? opened : false;
+    isOpen = (state == QNetworkSession::Connected) ? sessionOpened : false;
 
     if (!oldActive && isOpen)
-        emit quitPendingWaitsForOpened();
+        emit opened();
     if (oldActive && !isOpen)
         emit closed();
 
@@ -398,7 +398,7 @@ void QNetworkSessionPrivateImpl::configurationChanged(QNetworkConfigurationPriva
 void QNetworkSessionPrivateImpl::forcedSessionClose(const QNetworkConfiguration &config)
 {
     if (activeConfig == config) {
-        opened = false;
+        sessionOpened = false;
         isOpen = false;
 
         emit closed();
@@ -416,7 +416,7 @@ void QNetworkSessionPrivateImpl::connectionError(const QString &id,
         switch (error) {
         case QBearerEngineImpl::OperationNotSupported:
             lastError = QNetworkSession::OperationNotSupportedError;
-            opened = false;
+            sessionOpened = false;
             break;
         case QBearerEngineImpl::InterfaceLookupError:
         case QBearerEngineImpl::ConnectError:
@@ -426,6 +426,7 @@ void QNetworkSessionPrivateImpl::connectionError(const QString &id,
         }
 
         emit QNetworkSessionPrivate::error(lastError);
+        emit closed();
     }
 }
 
