@@ -935,4 +935,3 @@ bool QmlDebugPropertyReference::hasNotifySignal() const
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QmlDebugObjectReference);

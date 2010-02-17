@@ -33,6 +33,7 @@ FORMS = recopts.ui \
     proxysettings.ui
 INCLUDEPATH += ../../include/QtDeclarative
 INCLUDEPATH += ../../src/declarative/util
+INCLUDEPATH += ../../src/declarative/graphicsitems
 include(../shared/deviceskin/deviceskin.pri)
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
@@ -41,8 +42,11 @@ wince* {
 QT += scripttools \
     xml \
     xmlpatterns \
-    webkit \
     phonon
+
+    contains(QT_CONFIG, webkit) {
+        QT += webkit 
+    }
 }
 symbian {
 #    TARGET.UID3 =

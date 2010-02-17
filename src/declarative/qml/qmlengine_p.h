@@ -316,6 +316,7 @@ public:
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
+    static QmlEnginePrivate *get(QmlContext *c) { return (c && c->engine()) ? QmlEnginePrivate::get(c->engine()) : 0; }
     static QmlEnginePrivate *get(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p; }
     static QmlEngine *get(QmlEnginePrivate *p) { return p->q_func(); }
     QmlContext *getContext(QScriptContext *);
