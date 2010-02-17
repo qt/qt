@@ -1439,6 +1439,14 @@ struct ArrowKeyOperation {
     int arrowKey;
 };
 
+} // namespace
+
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(qdesigner_internal::ArrowKeyOperation)
+QT_BEGIN_NAMESPACE
+
+namespace qdesigner_internal {
+
 QRect ArrowKeyOperation::apply(const QRect &rect) const
 {
     QRect r = rect;
@@ -1461,12 +1469,6 @@ QDebug operator<<(QDebug in, const ArrowKeyOperation &op)
     in.nospace() << "Resize=" << op.resize << " dist=" << op.distance << " Key=" << op.arrowKey << ' ';
     return in;
 }
-
-} // namespace qdesigner_internal
-
-Q_DECLARE_METATYPE(qdesigner_internal::ArrowKeyOperation)
-
-namespace qdesigner_internal {
 
 // ArrowKeyPropertyHelper: Applies a struct ArrowKeyOperation
 // (stored as new value) to a list of widgets using to calculate the
