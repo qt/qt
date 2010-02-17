@@ -560,7 +560,7 @@ void tst_QGraphicsView::imageRiver()
 #else
     for (int i = 0; i < 100; ++i) {
 #endif
-        AnimatedPixmapItem *item;
+        AnimatedPixmapItem *item = 0;
         if (direction == 0) item = new AnimatedPixmapItem((i % 4) + 1, 0, rotation, scale);
         if (direction == 1) item = new AnimatedPixmapItem(0, (i % 4) + 1, rotation, scale);
         if (direction == 2) item = new AnimatedPixmapItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
@@ -682,7 +682,7 @@ void tst_QGraphicsView::textRiver()
 #else
     for (int i = 0; i < 100; ++i) {
 #endif
-        AnimatedTextItem *item;
+        AnimatedTextItem *item = 0;
         if (direction == 0) item = new AnimatedTextItem((i % 4) + 1, 0, rotation, scale);
         if (direction == 1) item = new AnimatedTextItem(0, (i % 4) + 1, rotation, scale);
         if (direction == 2) item = new AnimatedTextItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
@@ -792,7 +792,7 @@ void tst_QGraphicsView::moveItemCache()
 #else
     for (int i = 0; i < 50; ++i) {
 #endif
-        AnimatedPixmapCacheItem *item;
+        AnimatedPixmapCacheItem *item = 0;
         if (direction == 0) item = new AnimatedPixmapCacheItem((i % 4) + 1, 0);
         if (direction == 1) item = new AnimatedPixmapCacheItem(0, (i % 4) + 1);
         if (direction == 2) item = new AnimatedPixmapCacheItem((i % 4) + 1, (i % 4) + 1);
@@ -843,6 +843,7 @@ public:
 protected:
     void advance(int i)
     {
+        Q_UNUSED(i);
         if (partial)
             update(QRectF(boundingRect().center().x(), boundingRect().center().x(), 30, 30));
         else
