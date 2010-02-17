@@ -199,6 +199,7 @@ BookmarkManager::~BookmarkManager()
 {
     TRACE_OBJ
     HelpEngineWrapper::instance().setBookmarks(bookmarkModel->bookmarks());
+    delete bookmarkModel;
 }
 
 void BookmarkManager::removeItem(const QModelIndex &index)
