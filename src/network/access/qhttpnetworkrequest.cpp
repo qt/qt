@@ -131,7 +131,11 @@ QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
 
 QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request, bool throughProxy)
 {
-    QByteArray ba = request.d->methodName();
+    QList<QPair<QByteArray, QByteArray> > fields = request.header();
+    QByteArray ba;
+    ba.reserve(40 + fields.length()*25); // very rough lower bound estimation
+
+    ba += request.d->methodName();
     ba += ' ';
     ba += request.d->uri(throughProxy);
 
@@ -141,9 +145,9 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     ba += QByteArray::number(request.minorVersion());
     ba += "\r\n";
 
-    QList<QPair<QByteArray, QByteArray> > fields = request.header();
     QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
-    for (; it != fields.constEnd(); ++it) {
+    QList<QPair<QByteArray, QByteArray> >::const_iterator endIt = fields.constEnd();
+    for (; it != endIt; ++it) {
         ba += it->first;
         ba += ": ";
         ba += it->second;
