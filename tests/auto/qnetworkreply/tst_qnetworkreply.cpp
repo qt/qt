@@ -2034,6 +2034,11 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
     QTest::newRow("invalid-version+disconnect") << QByteArray("HTTP/123 200 ") << true;
     QTest::newRow("invalid-version2+disconnect") << QByteArray("HTTP/a.\033 200 ") << true;
     QTest::newRow("invalid-reply-code+disconnect") << QByteArray("HTTP/1.0 fuu ") << true;
+
+    QTest::newRow("immediate disconnect") << QByteArray("") << true;
+    QTest::newRow("justHalfStatus+disconnect") << QByteArray("HTTP/1.1") << true;
+    QTest::newRow("justStatus+disconnect") << QByteArray("HTTP/1.1 200 OK\r\n") << true;
+    QTest::newRow("justStatusAndHalfHeaders+disconnect") << QByteArray("HTTP/1.1 200 OK\r\nContent-L") << true;
 }
 
 void tst_QNetworkReply::ioGetFromHttpBrokenServer()
