@@ -42,7 +42,6 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qtimer.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qpointer.h>
 
 #include <QtMultimedia/qmediaplayer.h>
@@ -112,9 +111,9 @@ class MediaPlayerRegisterMetaTypes
 public:
     MediaPlayerRegisterMetaTypes()
     {
-        qRegisterMetaType<QMediaPlayer::State>("QMediaPlayer::State");
-        qRegisterMetaType<QMediaPlayer::MediaStatus>("QMediaPlayer::MediaStatus");
-        qRegisterMetaType<QMediaPlayer::Error>("QMediaPlayer::Error");
+        qRegisterMetaType<QMediaPlayer::State>();
+        qRegisterMetaType<QMediaPlayer::MediaStatus>();
+        qRegisterMetaType<QMediaPlayer::Error>();
     }
 } _registerPlayerMetaTypes;
 }
