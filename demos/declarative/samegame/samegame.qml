@@ -89,7 +89,7 @@ Rectangle {
             text: "Score: " + gameCanvas.score; font.bold: true
             anchors.right: parent.right; anchors.rightMargin: 3
             anchors.verticalCenter: parent.verticalCenter
-            color: activePalette.text
+            color: activePalette.windowText
         }
     }
 }
