@@ -2150,7 +2150,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         targets.append(d->target);
 
     bool hasSelectors = !props.isEmpty() || !targets.isEmpty() || !d->exclude.isEmpty();
-    bool useType = (props.isEmpty() && d->propertyName.isEmpty() && d->defaultToInterpolatorType) ? true : false;
+    bool useType = (props.isEmpty() && d->defaultToInterpolatorType) ? true : false;
 
     if (d->defaultProperty.isValid() && !hasSelectors) {
         props << d->defaultProperty.name();
