@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Qt Assistant of the Qt Toolkit.
+** This file is part of the Qt Designer of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,45 +38,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "helpviewer.h"
-#include "tracer.h"
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QUrl>
+#ifndef QDESIGNERUNDOSTACK_H
+#define QDESIGNERUNDOSTACK_H
+
+#include <QtCore/QObject>
 
 QT_BEGIN_NAMESPACE
+class QUndoStack;
+class QUndoCommand;
 
-QString AbstractHelpViewer::PageNotFoundMessage =
-    QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
-    "align=\"center\"><br><br><h1>The page could not be found</h1><br><h3>'%1'"
-    "</h3></div>");
+namespace qdesigner_internal {
 
-AbstractHelpViewer::AbstractHelpViewer()
+/* QDesignerUndoStack: A QUndoStack extended by a way of setting it to
+ * "dirty" indepently of commands (by modifications without commands
+ * such as resizing). Accomplished via bool m_fakeDirty flag. The
+ * lifecycle of the QUndoStack is managed by the QUndoGroup. */
+class QDesignerUndoStack : public QObject
 {
-}
+    Q_DISABLE_COPY(QDesignerUndoStack)
+    Q_OBJECT
+public:
+    explicit QDesignerUndoStack(QObject *parent = 0);
+    virtual ~QDesignerUndoStack();
 
-AbstractHelpViewer::~AbstractHelpViewer()
-{
-}
+    void push(QUndoCommand * cmd);
+    void beginMacro(const QString &text);
+    void endMacro();
+    int  index() const;
 
-bool AbstractHelpViewer::isLocalUrl(const QUrl &url)
-{
-    TRACE_OBJ
-    const QString &scheme = url.scheme();
-    return scheme.isEmpty()
-        || scheme == QLatin1String("file")
-        || scheme == QLatin1String("qrc")
-        || scheme == QLatin1String("data")
-        || scheme == QLatin1String("qthelp")
-        || scheme == QLatin1String("about");
-}
+    const QUndoStack *qundoStack() const;
+    QUndoStack *qundoStack();
 
-bool AbstractHelpViewer::canOpenPage(const QString &url)
-{
-    TRACE_OBJ
-    return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
-        || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
-        || url == QLatin1String("blank");
-}
+    bool isDirty() const;
+
+signals:
+    void changed();
+
+public slots:
+    void setDirty(bool);
+
+private:
+    QUndoStack *m_undoStack;
+    bool m_fakeDirty;
+};
+
+} // namespace qdesigner_internal
 
 QT_END_NAMESPACE
+
+#endif // QDESIGNERUNDOSTACK_H

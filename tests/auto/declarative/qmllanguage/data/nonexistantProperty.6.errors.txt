@@ -1,1 +1,1 @@
-3:5:Cannot assign to non-existant default property
+3:5:Cannot assign to non-existent default property

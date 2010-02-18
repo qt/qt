@@ -9,7 +9,7 @@ LFLAGS = @QMAKE_LFLAGS@
 OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-     borland_bmake.o msvc_dsp.o msvc_vcproj.o msvc_nmake.o msvc_objectmodel.o \
+     borland_bmake.o msvc_vcproj.o msvc_nmake.o msvc_objectmodel.o \
      symmake.o initprojectdeploy_symbian.o symmake_abld.o symmake_sbsv2.o \
      symbiancommon.o
 
@@ -267,9 +267,6 @@ msvc_nmake.o: generators/win32/msvc_nmake.cpp
 
 pbuilder_pbx.o: generators/mac/pbuilder_pbx.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/mac/pbuilder_pbx.cpp
-
-msvc_dsp.o: generators/win32/msvc_dsp.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_dsp.cpp
 
 symmake.o: generators/symbian/symmake.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake.cpp
