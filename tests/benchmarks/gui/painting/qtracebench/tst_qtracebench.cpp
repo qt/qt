@@ -227,6 +227,8 @@ void tst_QTraceBench::trace_data()
     QTest::newRow("webkit") << (prefix + "webkit.trace");
     QTest::newRow("creator") << (prefix + "creator.trace");
     QTest::newRow("textedit") << (prefix + "textedit.trace");
+    QTest::newRow("qmlphoneconcept") << (prefix + "qmlphoneconcept.trace");
+    QTest::newRow("qmlsamegame") << (prefix + "qmlsamegame.trace");
 }
 
 void tst_QTraceBench::trace()
