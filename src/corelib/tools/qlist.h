@@ -80,6 +80,7 @@ struct Q_CORE_EXPORT QListData {
     static Data shared_null;
     Data *d;
     void **erase(void **xi);
+    void **append(int n);
     void **append();
     void **append(const QListData &l);
     void **append2(const QListData &l); // remove in 5.0

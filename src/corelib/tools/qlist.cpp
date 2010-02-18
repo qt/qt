@@ -180,22 +180,30 @@ void QListData::realloc(int alloc)
         d->begin = d->end = 0;
 }
 
+// ensures that enough space is available to append n elements
+void **QListData::append(int n)
+{
+    Q_ASSERT(d->ref == 1);
+    int e = d->end;
+    if (e + n > d->alloc) {
+        int b = d->begin;
+        if (b - n >= 2 * d->alloc / 3) {
+            // we have enough space. Just not at the end -> move it.
+            e -= b;
+            ::memcpy(d->array, d->array + b, e * sizeof(void *));
+            d->begin = 0;
+        } else {
+            realloc(grow(d->alloc + n));
+        }
+    }
+    d->end = e + n;
+    return d->array + e;
+}
+
 // ensures that enough space is available to append one element
 void **QListData::append()
 {
-    Q_ASSERT(d->ref == 1);
-    if (d->end == d->alloc) {
-        int n = d->end - d->begin;
-        if (d->begin > 2 * d->alloc / 3) {
-            // we have enough space. Just not at the end -> move it.
-            ::memcpy(d->array, d->array + d->begin, n * sizeof(void *));
-            d->begin = 0;
-            d->end = n;
-        } else {
-            realloc(grow(d->alloc + 1));
-        }
-    }
-    return d->array + d->end++;
+    return append(1);
 }
 
 // ensures that enough space is available to append the list
@@ -219,15 +227,7 @@ void **QListData::append(const QListData& l)
 // ensures that enough space is available to append the list
 void **QListData::append2(const QListData& l)
 {
-    Q_ASSERT(d->ref == 1);
-    int e = d->end;
-    int n = l.d->end - l.d->begin;
-    if (n) {
-        if (e + n > d->alloc)
-            realloc(grow(e + n));
-        d->end += n;
-    }
-    return d->array + e;
+    return append(l.d->end - l.d->begin);
 }
 
 void **QListData::prepend()
