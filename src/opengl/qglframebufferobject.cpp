@@ -128,7 +128,7 @@ void QGLFramebufferObjectFormat::detach()
     attachments, texture target \c GL_TEXTURE_2D, and internal format \c GL_RGBA8.
     On OpenGL/ES systems, the default internal format is \c GL_RGBA.
 
-    \sa samples(), attachment(), target(), internalTextureFormat()
+    \sa samples(), attachment(), internalTextureFormat()
 */
 
 QGLFramebufferObjectFormat::QGLFramebufferObjectFormat()

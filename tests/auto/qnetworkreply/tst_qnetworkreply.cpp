@@ -82,6 +82,7 @@ Q_DECLARE_METATYPE(QNetworkProxy)
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
 Q_DECLARE_METATYPE(QList<QNetworkProxy>)
 Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
+Q_DECLARE_METATYPE(QBuffer*)
 
 class QNetworkReplyPtr: public QSharedPointer<QNetworkReply>
 {
@@ -129,6 +130,9 @@ public:
     QString runSimpleRequest(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                              QNetworkReplyPtr &reply, const QByteArray &data = QByteArray());
 
+    QString runCustomRequest(const QNetworkRequest &request, QNetworkReplyPtr &reply,
+                             const QByteArray &verb, QIODevice *data);
+
 public Q_SLOTS:
     void finished();
     void gotError();
@@ -175,6 +179,8 @@ private Q_SLOTS:
     void deleteFromHttp();
     void putGetDeleteGetFromHttp_data();
     void putGetDeleteGetFromHttp();
+    void sendCustomRequestToHttp_data();
+    void sendCustomRequestToHttp();
 
     void ioGetFromData_data();
     void ioGetFromData();
@@ -758,6 +764,32 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
     default:
         Q_ASSERT_X(false, "tst_QNetworkReply", "Invalid/unknown operation requested");
     }
+    reply->setParent(this);
+    connect(reply, SIGNAL(finished()), SLOT(finished()));
+    connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
+
+    returnCode = Timeout;
+    loop = new QEventLoop;
+    QTimer::singleShot(20000, loop, SLOT(quit()));
+    int code = returnCode == Timeout ? loop->exec() : returnCode;
+    delete loop;
+    loop = 0;
+
+    switch (code) {
+    case Failure:
+        return "Request failed: " + reply->errorString();
+    case Timeout:
+        return "Network timeout";
+    }
+    return QString();
+}
+
+QString tst_QNetworkReply::runCustomRequest(const QNetworkRequest &request,
+                                            QNetworkReplyPtr &reply,
+                                            const QByteArray &verb,
+                                            QIODevice *data)
+{
+    reply = manager.sendCustomRequest(request, verb, data);
     reply->setParent(this);
     connect(reply, SIGNAL(finished()), SLOT(finished()));
     connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), SLOT(gotError()));
@@ -1434,6 +1466,57 @@ void tst_QNetworkReply::putGetDeleteGetFromHttp()
     QCOMPARE(reply->error(), get2Error);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), get2ResultCode);
 
+}
+
+void tst_QNetworkReply::sendCustomRequestToHttp_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QByteArray>("verb");
+    QTest::addColumn<QBuffer *>("device");
+    QTest::addColumn<int>("resultCode");
+    QTest::addColumn<QNetworkReply::NetworkError>("error");
+    QTest::addColumn<QByteArray>("expectedContent");
+
+    QTest::newRow("options") << QUrl("http://" + QtNetworkSettings::serverName()) <<
+            QByteArray("OPTIONS") << (QBuffer *) 0 << 200 << QNetworkReply::NoError << QByteArray();
+    QTest::newRow("trace") << QUrl("http://" + QtNetworkSettings::serverName()) <<
+            QByteArray("TRACE") << (QBuffer *) 0 << 200 << QNetworkReply::NoError << QByteArray();
+    QTest::newRow("connect") << QUrl("http://" + QtNetworkSettings::serverName()) <<
+            QByteArray("CONNECT") << (QBuffer *) 0 << 400 << QNetworkReply::UnknownContentError << QByteArray(); // 400 = Bad Request
+    QTest::newRow("nonsense") << QUrl("http://" + QtNetworkSettings::serverName()) <<
+            QByteArray("NONSENSE") << (QBuffer *) 0 << 501 << QNetworkReply::ProtocolUnknownError << QByteArray(); // 501 = Method Not Implemented
+
+    QByteArray ba("test");
+    QBuffer *buffer = new QBuffer;
+    buffer->setData(ba);
+    buffer->open(QIODevice::ReadOnly);
+    QTest::newRow("post") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi") << QByteArray("POST")
+            << buffer << 200 << QNetworkReply::NoError << QByteArray("098f6bcd4621d373cade4e832627b4f6\n");
+
+    QByteArray ba2("test");
+    QBuffer *buffer2 = new QBuffer;
+    buffer2->setData(ba2);
+    buffer2->open(QIODevice::ReadOnly);
+    QTest::newRow("put") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi") << QByteArray("PUT")
+            << buffer2 << 200 << QNetworkReply::NoError << QByteArray("098f6bcd4621d373cade4e832627b4f6\n");
+}
+
+void tst_QNetworkReply::sendCustomRequestToHttp()
+{
+    QFETCH(QUrl, url);
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply;
+    QFETCH(QByteArray, verb);
+    QFETCH(QBuffer *, device);
+    runCustomRequest(request, reply, verb, device);
+    QCOMPARE(reply->url(), url);
+    QFETCH(QNetworkReply::NetworkError, error);
+    QCOMPARE(reply->error(), error);
+    QFETCH(int, resultCode);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), resultCode);
+    QFETCH(QByteArray, expectedContent);
+    if (! expectedContent.isEmpty())
+        QCOMPARE(reply->readAll(), expectedContent);
 }
 
 void tst_QNetworkReply::ioGetFromData_data()

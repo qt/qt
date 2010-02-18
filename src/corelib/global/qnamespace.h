@@ -1725,7 +1725,8 @@ public:
     enum GestureFlag
     {
         DontStartGestureOnChildren = 0x01,
-        ReceivePartialGestures     = 0x02
+        ReceivePartialGestures     = 0x02,
+        IgnoredGesturesPropagateToParent = 0x04
     };
     Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
 

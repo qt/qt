@@ -171,12 +171,7 @@ public:
 private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;
-
-    friend class QXmlStreamWriter;
-    friend class QXmlStreamWriterPrivate;
 #if defined Q_XMLSTREAM_RENAME_SYMBOLS
-    friend class QCoreXmlStreamWriter;
-    friend class QCoreXmlStreamWriterPrivate;
 #endif
 };
 

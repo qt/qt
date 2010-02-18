@@ -225,9 +225,9 @@
     \row    \o \l{Qt3Support}   \o Qt 3 support classes
     \row    \o \l{QAxContainer} \o ActiveQt client extension
     \row    \o \l{QAxServer}    \o ActiveQt server extension
-    \row    \o \l{QtAssistant}  \o Classes for launching Qt Assistant
+    \row    \o \l{QtHelp}  	\o Classes for integrating online documentation
     \row    \o \l{QtDesigner}   \o Classes for extending and embedding Qt Designer
-    \row    \o \l{QtUiTools}       \o Classes for dynamic GUI generation
+    \row    \o \l{QtUiTools}    \o Classes for dynamic GUI generation
     \row    \o \l{QtTest}       \o Tool classes for unit testing
     \endtable
 

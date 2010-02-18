@@ -38,10 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#if defined(QT_NO_WEBKIT)
-
 #include "helpviewer_qtb.h"
 #include "helpviewer_qwv.h"
+
+#if defined(QT_NO_WEBKIT)
 
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
