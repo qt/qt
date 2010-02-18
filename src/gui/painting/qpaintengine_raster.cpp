@@ -100,10 +100,6 @@
 #endif
 #include <limits.h>
 
-#if defined(QT_NO_FPU) || (_MSC_VER >= 1300 && _MSC_VER < 1400)
-#  define FLOATING_POINT_BUGGY_OR_NO_FPU
-#endif
-
 QT_BEGIN_NAMESPACE
 
 extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
@@ -1827,7 +1823,6 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         }
     }
 
-#ifndef FLOATING_POINT_BUGGY_OR_NO_FPU
     if (path.shape() == QVectorPath::EllipseHint) {
         if (!s->flags.antialiased && s->matrix.type() <= QTransform::TxScale) {
             const qreal *p = path.points();
@@ -1847,7 +1842,6 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
             }
         }
     }
-#endif
 
     // ### Optimize for non transformed ellipses and rectangles...
     QRectF cpRect = path.controlPointRect();
@@ -3674,7 +3668,6 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
 */
 void QRasterPaintEngine::drawEllipse(const QRectF &rect)
 {
-#ifndef FLOATING_POINT_BUGGY_OR_NO_FPU
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
@@ -3697,7 +3690,6 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
             return;
         }
     }
-#endif
     QPaintEngineEx::drawEllipse(rect);
 }
 

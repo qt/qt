@@ -1580,10 +1580,8 @@ void tst_QPainter::drawClippedEllipse_data()
 void tst_QPainter::drawClippedEllipse()
 {
     QFETCH(QRect, rect);
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     if (sizeof(qreal) != sizeof(double))
         QSKIP("Test only works for qreal==double", SkipAll);
-#endif
     QImage image(rect.width() + 1, rect.height() + 1,
                  QImage::Format_ARGB32_Premultiplied);
     QRect expected = QRect(rect.x(), rect.y(), rect.width()+1, rect.height()+1)
