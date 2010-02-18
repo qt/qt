@@ -184,6 +184,20 @@ public:
     QScriptValue currentException() const { return m_currentException; }
     void clearCurrentException() { m_currentException.d_ptr.reset(); }
 
+    static QScriptSyntaxCheckResult checkSyntax(const QString &program);
+    static bool canEvaluate(const QString &program);
+
+    inline QScriptValuePrivate *allocateScriptValuePrivate(size_t);
+    inline void freeScriptValuePrivate(QScriptValuePrivate *p);
+
+    inline void registerScriptValue(QScriptValuePrivate *value);
+    inline void unregisterScriptValue(QScriptValuePrivate *value);
+    void detachAllRegisteredScriptValues();
+
+    inline void registerScriptString(QScriptStringPrivate *value);
+    inline void unregisterScriptString(QScriptStringPrivate *value);
+    void detachAllRegisteredScriptStrings();
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
@@ -191,8 +205,6 @@ public:
     JSC::JSValue newQMetaObject(const QMetaObject *metaObject,
                                 JSC::JSValue ctor);
 
-    static QScriptSyntaxCheckResult checkSyntax(const QString &program);
-    static bool canEvaluate(const QString &program);
     static bool convertToNativeQObject(const QScriptValue &value,
                                        const QByteArray &targetType,
                                        void **result);
@@ -222,17 +234,6 @@ public:
                        JSC::JSValue function, Qt::ConnectionType type);
     bool scriptDisconnect(JSC::JSValue signal, JSC::JSValue receiver,
                           JSC::JSValue function);
-
-    inline QScriptValuePrivate *allocateScriptValuePrivate(size_t);
-    inline void freeScriptValuePrivate(QScriptValuePrivate *p);
-
-    inline void registerScriptValue(QScriptValuePrivate *value);
-    inline void unregisterScriptValue(QScriptValuePrivate *value);
-    void detachAllRegisteredScriptValues();
-
-    inline void registerScriptString(QScriptStringPrivate *value);
-    inline void unregisterScriptString(QScriptStringPrivate *value);
-    void detachAllRegisteredScriptStrings();
 
     // private slots
     void _q_objectDestroyed(QObject *);
