@@ -46,6 +46,7 @@
 #include <private/qcocoamenuloader_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
+#include <private/qmenubar_p.h>
 #include <qmenubar.h>
 
 QT_FORWARD_DECLARE_CLASS(QCFString)
@@ -206,6 +207,11 @@ QT_USE_NAMESPACE
 - (void)hide:(id)sender
 {
     [NSApp hide:sender];
+}
+
+- (void)qtUpdateMenubar
+{
+    QMenuBarPrivate::macUpdateMenuBarImmediatly();
 }
 
 - (IBAction)qtDispatcherToQAction:(id)sender

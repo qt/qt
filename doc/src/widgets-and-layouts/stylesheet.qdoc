@@ -934,8 +934,8 @@
            subcontrol.
 
            For items with a sub menu, the arrow marks are styled using the
-           \l{::right-arrow-sub}{right-arrow} and
-           \l{::left-arrow-sub}{left-arrow}.
+           \l{right-arrow-sub}{right-arrow} and
+           \l{left-arrow-sub}{left-arrow}.
 
             The scroller is styled using the \l{#scroller-sub}{::scroller}.
 

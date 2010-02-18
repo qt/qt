@@ -2030,6 +2030,18 @@ void qt_mac_clear_menubar()
 */
 bool QMenuBar::macUpdateMenuBar()
 {
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    if (!qt_cocoaPostMessage(getMenuLoader(), @selector(qtUpdateMenubar)))
+        return QMenuBarPrivate::macUpdateMenuBarImmediatly();
+    return true;
+#else
+    return QMenuBarPrivate::macUpdateMenuBarImmediatly();
+#endif
+}
+
+bool QMenuBarPrivate::macUpdateMenuBarImmediatly()
+{
     bool ret = false;
     cancelAllMenuTracking();
     QWidget *w = findWindowThatShouldDisplayMenubar();
@@ -2095,8 +2107,9 @@ bool QMenuBar::macUpdateMenuBar()
         }
     }
 
-    if(!ret)
+    if (!ret) {
         qt_mac_clear_menubar();
+    }
     return ret;
 }
 

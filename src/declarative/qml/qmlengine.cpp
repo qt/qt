@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -392,6 +392,10 @@ QmlEngine::~QmlEngine()
     if (d->isDebugging)
         QmlEngineDebugServer::remEngine(this);
 }
+
+/*! \fn void QmlEngine::quit()
+  This signal is emitted when the QmlEngine quits.
+ */
 
 /*!
   Clears the engine's internal component cache.
@@ -1080,7 +1084,7 @@ QScriptValue QmlEnginePrivate::consoleLog(QScriptContext *ctxt, QScriptEngine *e
 void QmlEnginePrivate::sendQuit ()
 {
     Q_Q(QmlEngine);
-    emit q->quit ();
+    emit q->quit();
 }
 
 QScriptValue QmlEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)

@@ -154,6 +154,9 @@ static void ensureInitialized()
     \value DeleteOperation      delete contents operation (created with
     deleteResource())
 
+    \value CustomOperation      custom operation (created with
+    sendCustomRequest())
+
     \omitvalue UnknownOperation
 
     \sa QNetworkReply::operation()
@@ -566,7 +569,7 @@ QNetworkReply *QNetworkAccessManager::head(const QNetworkRequest &request)
 
     The contents as well as associated headers will be downloaded.
 
-    \sa post(), put(), deleteResource()
+    \sa post(), put(), deleteResource(), sendCustomRequest()
 */
 QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
 {
@@ -585,7 +588,7 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
     \note Sending a POST request on protocols other than HTTP and
     HTTPS is undefined and will probably fail.
 
-    \sa get(), put(), deleteResource()
+    \sa get(), put(), deleteResource(), sendCustomRequest()
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QIODevice *data)
 {
@@ -626,7 +629,7 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
     do not allow. Form upload mechanisms, including that of uploading
     files through HTML forms, use the POST mechanism.
 
-    \sa get(), post()
+    \sa get(), post(), deleteResource(), sendCustomRequest()
 */
 QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QIODevice *data)
 {
@@ -657,11 +660,37 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
     \note This feature is currently available for HTTP only, performing an 
     HTTP DELETE request.
 
-    \sa get(), post(), put()
+    \sa get(), post(), put(), sendCustomRequest()
 */
 QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &request)
 {
     return d_func()->postProcess(createRequest(QNetworkAccessManager::DeleteOperation, request));
+}
+
+/*!
+    \since 4.7
+
+    Sends a custom request to the server identified by the URL of \a request.
+
+    It is the user's responsibility to send a \a verb to the server that is valid
+    according to the HTTP specification.
+
+    This method provides means to send verbs other than the common ones provided
+    via get() or post() etc., for instance sending an HTTP OPTIONS command.
+
+    If \a data is not empty, the contents of the \a data
+    device will be uploaded to the server; in that case, data must be open for
+    reading and must remain valid until the finished() signal is emitted for this reply.
+
+    \note This feature is currently available for HTTP only.
+
+    \sa get(), post(), put(), deleteResource()
+*/
+QNetworkReply *QNetworkAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data)
+{
+    QNetworkRequest newRequest(request);
+    newRequest.setAttribute(QNetworkRequest::CustomVerbAttribute, verb);
+    return d_func()->postProcess(createRequest(QNetworkAccessManager::CustomOperation, newRequest, data));
 }
 
 /*!
