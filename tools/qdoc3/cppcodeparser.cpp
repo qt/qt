@@ -1033,7 +1033,10 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
 #ifdef QDOC_QML
     else if (command == COMMAND_QMLINHERITS) {
         setLink(node, Node::InheritsLink, arg);
-    }
+        if (node->subType() == Node::QmlClass) {
+            QmlClassNode::addInheritedBy(arg,node->name());
+        }
+   }
     else if (command == COMMAND_QMLDEFAULT) {
         QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
         qpgn->setDefault();
@@ -2298,14 +2301,6 @@ void CppCodeParser::createExampleFileNodes(FakeNode *fake)
     QStringList exampleFiles = Config::getFilesHere(fullPath,exampleNameFilter);
     QString imagesPath = fullPath + "/images";
     QStringList imageFiles = Config::getFilesHere(imagesPath,exampleImageFilter);
-
-#if 0    
-    qDebug() << "examplePath:" << examplePath;
-    qDebug() << " exampleFiles" <<  exampleFiles;
-    qDebug() << "imagesPath:" << imagesPath;
-    qDebug() << "fullPath:" << fullPath;
-    qDebug() << " imageFiles" <<  imageFiles;
-#endif    
 
     if (!exampleFiles.isEmpty()) {
         // move main.cpp and to the end, if it exists
