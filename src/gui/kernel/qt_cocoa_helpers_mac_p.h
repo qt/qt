@@ -137,7 +137,6 @@ void qt_mac_update_mouseTracking(QWidget *widget);
 OSStatus qt_mac_drawCGImage(CGContextRef cg, const CGRect *inbounds, CGImageRef);
 bool qt_mac_checkForNativeSizeGrip(const QWidget *widget);
 void qt_dispatchTabletProximityEvent(void * /*NSEvent * */ tabletEvent);
-Qt::MouseButton cocoaButton2QtButton(long buttonNum);
 #ifdef QT_MAC_USE_COCOA
 bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);
 void qt_cocoaChangeOverrideCursor(const QCursor &cursor);

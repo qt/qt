@@ -692,6 +692,7 @@ extern "C" {
     qt_button_down = 0;
 }
 
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
     if (!qt_button_down)

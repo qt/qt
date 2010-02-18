@@ -648,7 +648,7 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
 }
 #endif
 
-Qt::MouseButton cocoaButton2QtButton(long buttonNum)
+Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 {
     if (buttonNum == 0)
         return Qt::LeftButton;

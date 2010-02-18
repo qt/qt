@@ -382,6 +382,7 @@ QT_END_NAMESPACE
     [self menuTrackingDone:nil];
 }
 
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 - (void)otherMouseDown:(NSEvent *)mouseEvent
 {
     [self mousePressed:mouseEvent button:cocoaButton2QtButton([mouseEvent buttonNumber])];
