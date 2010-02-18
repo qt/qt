@@ -56,7 +56,6 @@
 #include "private/qabstractscrollarea_p.h"
 #include "private/qabstractitemmodel_p.h"
 #include "QtGui/qapplication.h"
-#include "QtCore/qdatetime.h"
 #include "QtGui/qevent.h"
 #include "QtGui/qmime.h"
 #include "QtGui/qpainter.h"
@@ -65,6 +64,7 @@
 #include "QtCore/qdebug.h"
 #include "QtGui/qpainter.h"
 #include "QtCore/qbasictimer.h"
+#include "QtCore/qtimestamp.h"
 
 #ifndef QT_NO_ITEMVIEWS
 
@@ -390,7 +390,7 @@ public:
 #endif
 
     QString keyboardInput;
-    QTime keyboardInputTime;
+    QTimestamp keyboardInputTime;
 
     bool autoScroll;
     QBasicTimer autoScrollTimer;

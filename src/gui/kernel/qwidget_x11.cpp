@@ -49,7 +49,7 @@
 #include "qbitmap.h"
 #include "qlayout.h"
 #include "qtextcodec.h"
-#include "qdatetime.h"
+#include "qtimestamp.h"
 #include "qcursor.h"
 #include "qstack.h"
 #include "qcolormap.h"
@@ -352,7 +352,7 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
         return;
     QApplication::flush();
     XEvent ev;
-    QTime t;
+    QTimestamp t;
     t.start();
     static const int maximumWaitTime = 2000;
     if (!w->testAttribute(Qt::WA_WState_Created))
