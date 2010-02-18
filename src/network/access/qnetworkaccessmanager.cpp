@@ -386,9 +386,6 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     : QObject(*new QNetworkAccessManagerPrivate, parent)
 {
     ensureInitialized();
-
-    QNetworkConfigurationManager manager;
-    d_func()->createSession(manager.defaultConfiguration());
 }
 
 /*!
@@ -845,6 +842,13 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     if (!d->networkAccessEnabled && !(req.url().scheme() == QLatin1String("file") ||
                                       req.url().scheme().isEmpty())) {
         return new QDisabledNetworkReply(this, req, op);
+    }
+
+    if (d->initializeSession && !d->networkSession) {
+        QNetworkConfigurationManager manager;
+        d->createSession(manager.defaultConfiguration());
+
+        d->initializeSession = false;
     }
 
     QNetworkRequest request = req;

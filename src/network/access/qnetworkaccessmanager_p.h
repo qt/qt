@@ -77,6 +77,7 @@ public:
 #endif
           networkSession(0),
           networkAccessEnabled(true),
+          initializeSession(true),
           cookieJarCreated(false)
     { }
     ~QNetworkAccessManagerPrivate();
@@ -121,6 +122,7 @@ public:
 
     QNetworkSession *networkSession;
     bool networkAccessEnabled;
+    bool initializeSession;
 
     bool cookieJarCreated;
 
