@@ -230,6 +230,16 @@ void QEglProperties::setRenderableType(QEgl::API api)
 // reductions in complexity are possible.
 bool QEglProperties::reduceConfiguration()
 {
+#ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
+    // For OpenVG, we sometimes try to create a surface using a pre-multiplied format. If we can't
+    // find a config which supports pre-multiplied formats, remove the flag on the surface type:
+    EGLint surfaceType = value(EGL_SURFACE_TYPE);
+    if (surfaceType & EGL_VG_ALPHA_FORMAT_PRE_BIT) {
+        surfaceType ^= EGL_VG_ALPHA_FORMAT_PRE_BIT;
+        setValue(EGL_SURFACE_TYPE, surfaceType);
+        return true;
+    }
+#endif
     // EGL chooses configs with the highest color depth over
     // those with smaller (but faster) lower color depths. One
     // way around this is to set EGL_BUFFER_SIZE to 16, which

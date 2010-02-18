@@ -88,6 +88,169 @@ bool QEglContext::isCurrent() const
     return current;
 }
 
+EGLConfig QEgl::defaultConfig(QPaintDevice* device, API api, ConfigOptions options)
+{
+    int devType = device->devType();
+
+    if ( (devType != QInternal::Pixmap) && ((options & Renderable) == 0))
+        qWarning("QEgl::defaultConfig() - Only configs for pixmaps make sense to be read-only!");
+
+    EGLConfig* targetConfig = 0;
+
+    static EGLConfig defaultVGConfigs[] = {
+        QEGL_NO_CONFIG, // 0    Window  Renderable  Translucent
+        QEGL_NO_CONFIG, // 1    Window  Renderable  Opaque
+        QEGL_NO_CONFIG, // 2    Pixmap  Renderable  Translucent
+        QEGL_NO_CONFIG, // 3    Pixmap  Renderable  Opaque
+        QEGL_NO_CONFIG, // 4    Pixmap  ReadOnly    Translucent
+        QEGL_NO_CONFIG  // 5    Pixmap  ReadOnly    Opaque
+    };
+    if (api == OpenVG) {
+        if (devType == QInternal::Widget) {
+            if (options & Translucent)
+                targetConfig = &(defaultVGConfigs[0]);
+            else
+                targetConfig = &(defaultVGConfigs[1]);
+        } else if (devType == QInternal::Pixmap) {
+            if (options & Renderable) {
+                if (options & Translucent)
+                    targetConfig = &(defaultVGConfigs[2]);
+                else // Opaque
+                    targetConfig = &(defaultVGConfigs[3]);
+            } else { // Read-only
+                if (options & Translucent)
+                    targetConfig = &(defaultVGConfigs[4]);
+                else // Opaque
+                    targetConfig = &(defaultVGConfigs[5]);
+            }
+        }
+    }
+
+
+    static EGLConfig defaultGLConfigs[] = {
+        QEGL_NO_CONFIG, // 0    Window  Renderable  Translucent
+        QEGL_NO_CONFIG, // 1    Window  Renderable  Opaque
+        QEGL_NO_CONFIG, // 2    PBuffer Renderable  Translucent
+        QEGL_NO_CONFIG, // 3    PBuffer Renderable  Opaque
+        QEGL_NO_CONFIG, // 4    Pixmap  Renderable  Translucent
+        QEGL_NO_CONFIG, // 5    Pixmap  Renderable  Opaque
+        QEGL_NO_CONFIG, // 6    Pixmap  ReadOnly    Translucent
+        QEGL_NO_CONFIG  // 7    Pixmap  ReadOnly    Opaque
+    };
+    if (api == OpenGL) {
+        if (devType == QInternal::Widget) {
+            if (options & Translucent)
+                targetConfig = &(defaultGLConfigs[0]);
+            else // Opaque
+                targetConfig = &(defaultGLConfigs[1]);
+        } else if (devType == QInternal::Pbuffer) {
+            if (options & Translucent)
+                targetConfig = &(defaultGLConfigs[2]);
+            else // Opaque
+                targetConfig = &(defaultGLConfigs[3]);
+        } else if (devType == QInternal::Pixmap) {
+            if (options & Renderable) {
+                if (options & Translucent)
+                    targetConfig = &(defaultGLConfigs[4]);
+                else // Opaque
+                    targetConfig = &(defaultGLConfigs[5]);
+            } else { // ReadOnly
+                if (options & Translucent)
+                    targetConfig = &(defaultGLConfigs[6]);
+                else // Opaque
+                    targetConfig = &(defaultGLConfigs[7]);
+            }
+        }
+    }
+
+    if (!targetConfig) {
+        qWarning("QEgl::defaultConfig() - No default config for device/api/options combo");
+        return QEGL_NO_CONFIG;
+    }
+    if (*targetConfig != QEGL_NO_CONFIG)
+        return *targetConfig;
+
+
+    // We haven't found an EGL config for the target config yet, so do it now:
+
+
+    // Allow overriding from an environment variable:
+    QByteArray configId;
+    if (api == OpenVG)
+        configId = qgetenv("QT_VG_EGL_CONFIG");
+    else
+        configId = qgetenv("QT_GL_EGL_CONFIG");
+    if (!configId.isEmpty()) {
+        // Overriden, so get the EGLConfig for the specified config ID:
+        EGLint properties[] = {
+            EGL_CONFIG_ID, (EGLint)configId.toInt(),
+            EGL_NONE
+        };
+        EGLint configCount = 0;
+        eglChooseConfig(display(), properties, targetConfig, 1, &configCount);
+        if (configCount > 0)
+            return *targetConfig;
+        qWarning() << "QEgl::defaultConfig() -" << configId << "appears to be invalid";
+    }
+
+    QEglProperties configAttribs;
+    configAttribs.setRenderableType(api);
+
+    EGLint surfaceType;
+    switch (devType) {
+        case QInternal::Widget:
+            surfaceType = EGL_WINDOW_BIT;
+            break;
+        case QInternal::Pixmap:
+            surfaceType = EGL_PIXMAP_BIT;
+            break;
+        case QInternal::Pbuffer:
+            surfaceType = EGL_PBUFFER_BIT;
+            break;
+        default:
+            qWarning("QEgl::defaultConfig() - Can't create EGL surface for %d device type", devType);
+            return QEGL_NO_CONFIG;
+    };
+#ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
+    // For OpenVG, we try to create a surface using a pre-multiplied format if
+    // the surface needs to have an alpha channel:
+    if (api == OpenVG && (options & Translucent))
+        surfaceType |= EGL_VG_ALPHA_FORMAT_PRE_BIT;
+#endif
+    configAttribs.setValue(EGL_SURFACE_TYPE, surfaceType);
+
+#ifdef EGL_BIND_TO_TEXTURE_RGBA
+    if (devType == QInternal::Pixmap || devType == QInternal::Pbuffer) {
+        if (options & Translucent)
+            configAttribs.setValue(EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE);
+        else
+            configAttribs.setValue(EGL_BIND_TO_TEXTURE_RGB, EGL_TRUE);
+    }
+#endif
+
+    // Add paint engine requirements
+    if (api == OpenVG) {
+#ifndef QVG_SCISSOR_CLIP
+        configAttribs.setValue(EGL_ALPHA_MASK_SIZE, 1);
+#endif
+    } else {
+        // Both OpenGL paint engines need to have stencil and sample buffers
+        configAttribs.setValue(EGL_STENCIL_SIZE, 1);
+        configAttribs.setValue(EGL_SAMPLE_BUFFERS, 1);
+#ifndef QT_OPENGL_ES_2
+        // Aditionally, the GL1 engine likes to have a depth buffer for clipping
+        configAttribs.setValue(EGL_DEPTH_SIZE, 1);
+#endif
+    }
+
+    // Finally, set the color format based on the device:
+    configAttribs.setPaintDeviceFormat(device);
+
+    *targetConfig = chooseConfig(&configAttribs, QEgl::BestPixelFormat);
+    return *targetConfig;
+}
+
+
 // Choose a configuration that matches "properties".
 EGLConfig QEgl::chooseConfig(const QEglProperties* properties, QEgl::PixelFormatMatch match)
 {
