@@ -97,7 +97,7 @@ public:
     typedef const value_type* const_pointer;
     typedef value_type& reference;
     typedef const value_type& const_reference;
-    typedef ptrdiff_t difference_type;
+    typedef qptrdiff difference_type;
     typedef int size_type;
 
     explicit QContiguousCache(int capacity = 0);

@@ -16,14 +16,19 @@ win32-borland: DEFINES += WIN32_BORLAND
 
 !symbian {
     win32 {
-        src = $(DESTDIR_TARGET)
+        # vcproj and Makefile generators refer to target differently
+        contains(TEMPLATE,vc.*) {
+            src = $(TargetPath)
+        } else {
+            src = $(DESTDIR_TARGET)
+        }
         files = mylib.dl2 system.trolltech.test.mylib.dll
     } else {
         src = $(DESTDIR)$(TARGET)
         files = libmylib.so2 system.trolltech.test.mylib.so
     }
     for(file, files) {
-        QMAKE_POST_LINK += $(COPY) $$src ..$$QMAKE_DIR_SEP$$file &&
+        QMAKE_POST_LINK += $$QMAKE_COPY $$src ..$$QMAKE_DIR_SEP$$file &&
         CLEAN_FILES += ../$$file
     }
     QMAKE_POST_LINK = $$member(QMAKE_POST_LINK, 0, -2)

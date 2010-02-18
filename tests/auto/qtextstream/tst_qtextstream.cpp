@@ -4308,10 +4308,15 @@ void tst_QTextStream::int_write_with_locale()
 // ------------------------------------------------------------------------------
 
 // like QTEST_APPLESS_MAIN, but initialising the locale on Unix
+#if defined (Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
+QT_BEGIN_NAMESPACE
+extern bool qt_locale_initialized;
+QT_END_NAMESPACE
+#endif
+
 int main(int argc, char *argv[])
 {
 #if defined (Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
-    extern bool qt_locale_initialized;
     ::setlocale(LC_ALL, "");
     qt_locale_initialized = true;
 #endif

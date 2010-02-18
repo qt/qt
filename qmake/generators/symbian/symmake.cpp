@@ -1355,7 +1355,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         removeSpecialCharacters(bldinfDefine);
 
         t << "#ifndef " << bldinfDefine << endl;
-        t << "\t#include \"" << QDir::toNativeSeparators(bldinfFilename) << "\"" << endl;
+        t << "\t#include \"" << bldinfFilename << "\"" << endl;
         t << "#endif // " << bldinfDefine << endl;
     }
 

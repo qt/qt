@@ -46,7 +46,7 @@
 //TESTED_FILES=
 
 #define EXISTING_SHARE "existing"
-#define LACKYLOC "../qsharedmemory/lackey"
+#define LACKYLOC "../lackey"
 #define LACKYWAITTIME 10000
 
 class tst_QSystemSemaphore : public QObject

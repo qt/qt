@@ -171,8 +171,6 @@ public:
 private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;
-#if defined Q_XMLSTREAM_RENAME_SYMBOLS
-#endif
 };
 
 class Q_CORE_EXPORT QTextDecoder {
