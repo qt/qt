@@ -368,7 +368,7 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
         dfbWindow->SetOpacity(dfbWindow, windowOpacity);
     }
 
-    setOpaque(noSystemBackground || windowOpacity != 0xff);
+    setOpaque(!noSystemBackground && windowOpacity == 0xff);
     if (wasNoSystemBackground != noSystemBackground) {
         releaseSurface();
         dfbWindow->Release(dfbWindow);
@@ -379,7 +379,7 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
     }
     screen->flipSurface(dfbSurface, flipFlags, region, offset);
 #else
-    setOpaque(windowOpacity != 0xff);
+    setOpaque(windowOpacity == 0xff);
     if (mode == Offscreen) {
         screen->exposeRegion(region.translated(offset + geometry().topLeft()), 0);
     } else {
