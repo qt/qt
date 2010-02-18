@@ -177,6 +177,9 @@ public:
 
     void agentDeleted(QScriptEngineAgent *agent);
 
+    static inline void saveException(JSC::ExecState *, JSC::JSValue *);
+    static inline void restoreException(JSC::ExecState *, JSC::JSValue);
+
     void setCurrentException(QScriptValue exception) { m_currentException = exception; }
     QScriptValue currentException() const { return m_currentException; }
     void clearCurrentException() { m_currentException.d_ptr.reset(); }
@@ -514,7 +517,7 @@ inline void QScriptValuePrivate::operator delete(void *ptr)
         qFree(d);
 }
 
-inline void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
+inline void QScriptEnginePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
 {
     if (exec) {
         *val = exec->exception();
@@ -524,7 +527,7 @@ inline void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValu
     }
 }
 
-inline void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
+inline void QScriptEnginePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
 {
     if (exec && val)
         exec->setException(val);

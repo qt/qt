@@ -910,9 +910,9 @@ QScriptValue ToPrimitive(const QScriptValue &object, JSC::PreferredPrimitiveType
     Q_ASSERT(pp->engine != 0);
     JSC::ExecState *exec = pp->engine->currentFrame;
     JSC::JSValue savedException;
-    QScriptValuePrivate::saveException(exec, &savedException);
+    QScriptEnginePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::asObject(pp->jscValue)->toPrimitive(exec, hint);
-    QScriptValuePrivate::restoreException(exec, savedException);
+    QScriptEnginePrivate::restoreException(exec, savedException);
     return pp->engine->scriptValueFromJSCValue(result);
 }
 
@@ -1103,9 +1103,9 @@ bool QScriptValue::equals(const QScriptValue &other) const
         if (eng_p) {
             JSC::ExecState *exec = eng_p->currentFrame;
             JSC::JSValue savedException;
-            QScriptValuePrivate::saveException(exec, &savedException);
+            QScriptEnginePrivate::saveException(exec, &savedException);
             bool result = JSC::JSValue::equal(exec, d->jscValue, other.d_ptr->jscValue);
-            QScriptValuePrivate::restoreException(exec, savedException);
+            QScriptEnginePrivate::restoreException(exec, savedException);
             return result;
         }
     }
@@ -1192,16 +1192,16 @@ QString QScriptValue::toString() const
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
+        QScriptEnginePrivate::saveException(exec, &savedException);
         JSC::UString str = d->jscValue.toString(exec);
         if (exec && exec->hadException() && !str.size()) {
             JSC::JSValue savedException2;
-            QScriptValuePrivate::saveException(exec, &savedException2);
+            QScriptEnginePrivate::saveException(exec, &savedException2);
             str = savedException2.toString(exec);
-            QScriptValuePrivate::restoreException(exec, savedException2);
+            QScriptEnginePrivate::restoreException(exec, savedException2);
         }
         if (savedException)
-            QScriptValuePrivate::restoreException(exec, savedException);
+            QScriptEnginePrivate::restoreException(exec, savedException);
         return str;
     }
     case QScriptValuePrivate::Number:
@@ -1233,9 +1233,9 @@ qsreal QScriptValue::toNumber() const
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
+        QScriptEnginePrivate::saveException(exec, &savedException);
         qsreal result = d->jscValue.toNumber(exec);
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
         return result;
     }
     case QScriptValuePrivate::Number:
@@ -1260,9 +1260,9 @@ bool QScriptValue::toBoolean() const
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
+        QScriptEnginePrivate::saveException(exec, &savedException);
         bool result = d->jscValue.toBoolean(exec);
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
         return result;
     }
     case QScriptValuePrivate::Number:
@@ -1296,9 +1296,9 @@ bool QScriptValue::toBool() const
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
+        QScriptEnginePrivate::saveException(exec, &savedException);
         bool result = d->jscValue.toBoolean(exec);
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
         return result;
     }
     case QScriptValuePrivate::Number:
@@ -1330,9 +1330,9 @@ qint32 QScriptValue::toInt32() const
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
+        QScriptEnginePrivate::saveException(exec, &savedException);
         qint32 result = d->jscValue.toInt32(exec);
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
         return result;
     }
     case QScriptValuePrivate::Number:
@@ -1364,9 +1364,9 @@ quint32 QScriptValue::toUInt32() const
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
+        QScriptEnginePrivate::saveException(exec, &savedException);
         quint32 result = d->jscValue.toUInt32(exec);
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
         return result;
     }
     case QScriptValuePrivate::Number:
@@ -1428,9 +1428,9 @@ qsreal QScriptValue::toInteger() const
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
         JSC::JSValue savedException;
-        QScriptValuePrivate::saveException(exec, &savedException);
+        QScriptEnginePrivate::saveException(exec, &savedException);
         qsreal result = d->jscValue.toInteger(exec);
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
         return result;
     }
     case QScriptValuePrivate::Number:
@@ -1490,9 +1490,9 @@ QVariant QScriptValue::toVariant() const
             // try to convert to primitive
             JSC::ExecState *exec = d->engine->currentFrame;
             JSC::JSValue savedException;
-            QScriptValuePrivate::saveException(exec, &savedException);
+            QScriptEnginePrivate::saveException(exec, &savedException);
             JSC::JSValue prim = d->jscValue.toPrimitive(exec);
-            QScriptValuePrivate::restoreException(exec, savedException);
+            QScriptEnginePrivate::restoreException(exec, savedException);
             if (!prim.isObject())
                 return d->engine->scriptValueFromJSCValue(prim).toVariant();
         } else if (isNumber()) {
@@ -1882,12 +1882,12 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
     JSC::JSValue savedException;
-    QScriptValuePrivate::saveException(exec, &savedException);
+    QScriptEnginePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, jscArgs);
     if (exec->hadException()) {
         result = exec->exception();
     } else {
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
     }
     return d->engine->scriptValueFromJSCValue(result);
 }
@@ -1963,12 +1963,12 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     }
 
     JSC::JSValue savedException;
-    QScriptValuePrivate::saveException(exec, &savedException);
+    QScriptEnginePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, applyArgs);
     if (exec->hadException()) {
         result = exec->exception();
     } else {
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
     }
     return d->engine->scriptValueFromJSCValue(result);
 }
@@ -2015,12 +2015,12 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
     JSC::JSValue savedException;
-    QScriptValuePrivate::saveException(exec, &savedException);
+    QScriptEnginePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, jscArgs);
     if (exec->hadException()) {
         result = JSC::asObject(exec->exception());
     } else {
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
     }
     return d->engine->scriptValueFromJSCValue(result);
 }
@@ -2074,13 +2074,13 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     }
 
     JSC::JSValue savedException;
-    QScriptValuePrivate::saveException(exec, &savedException);
+    QScriptEnginePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, applyArgs);
     if (exec->hadException()) {
         if (exec->exception().isObject())
             result = JSC::asObject(exec->exception());
     } else {
-        QScriptValuePrivate::restoreException(exec, savedException);
+        QScriptEnginePrivate::restoreException(exec, savedException);
     }
     return d->engine->scriptValueFromJSCValue(result);
 }

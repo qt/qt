@@ -109,9 +109,6 @@ public:
             return -1;
     }
 
-    static inline void saveException(JSC::ExecState*, JSC::JSValue*);
-    static inline void restoreException(JSC::ExecState*, JSC::JSValue);
-
     QScriptEnginePrivate *engine;
     Type type;
     JSC::JSValue jscValue;
