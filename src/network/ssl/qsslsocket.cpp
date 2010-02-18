@@ -286,8 +286,8 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
-#include <QtCore/qdatetime.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qtimestamp.h>
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qhostinfo.h>
 
@@ -1393,7 +1393,7 @@ bool QSslSocket::waitForEncrypted(int msecs)
     if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return false;
 
-    QTime stopWatch;
+    QTimestamp stopWatch;
     stopWatch.start();
 
     if (d->plainSocket->state() != QAbstractSocket::ConnectedState) {
@@ -1433,7 +1433,7 @@ bool QSslSocket::waitForReadyRead(int msecs)
     bool *previousReadyReadEmittedPointer = d->readyReadEmittedPointer;
     d->readyReadEmittedPointer = &readyReadEmitted;
 
-    QTime stopWatch;
+    QTimestamp stopWatch;
     stopWatch.start();
 
     if (!d->connectionEncrypted) {
@@ -1470,7 +1470,7 @@ bool QSslSocket::waitForBytesWritten(int msecs)
     if (d->mode == UnencryptedMode)
         return d->plainSocket->waitForBytesWritten(msecs);
 
-    QTime stopWatch;
+    QTimestamp stopWatch;
     stopWatch.start();
 
     if (!d->connectionEncrypted) {
@@ -1508,7 +1508,7 @@ bool QSslSocket::waitForDisconnected(int msecs)
     if (d->mode == UnencryptedMode)
         return d->plainSocket->waitForDisconnected(msecs);
 
-    QTime stopWatch;
+    QTimestamp stopWatch;
     stopWatch.start();
 
     if (!d->connectionEncrypted) {
