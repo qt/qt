@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,20 +39,26 @@
 **
 ****************************************************************************/
 
+#include <qtest.h>
+
 #include <QtGui>
-#include <QtDebug>
 
 #include <private/qpaintengineex_p.h>
 #include <private/qpaintbuffer_p.h>
+
+//TESTED_FILES=
 
 class ReplayWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ReplayWidget(const QString &filename, int from, int to, bool single);
+    ReplayWidget(const QString &filename);
 
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
+
+    bool done() const { return m_done; }
+    qreal result() const { return m_result; }
 
 public slots:
     void updateRect();
@@ -69,10 +75,10 @@ public:
     QList<uint> iterationTimes;
     QString filename;
 
-    int from;
-    int to;
+    bool m_done;
+    qreal m_result;
 
-    bool single;
+    uint m_total;
 };
 
 void ReplayWidget::updateRect()
@@ -83,9 +89,13 @@ void ReplayWidget::updateRect()
 
 void ReplayWidget::paintEvent(QPaintEvent *)
 {
+    if (m_done)
+        return;
+
     QPainter p(this);
 
-//    p.setClipRegion(frames.at(currentFrame).updateRegion);
+    // if partial updates don't work
+    // p.setClipRegion(frames.at(currentFrame).updateRegion);
 
     buffer.draw(&p, visibleUpdates.at(currentFrame));
 
@@ -94,18 +104,16 @@ void ReplayWidget::paintEvent(QPaintEvent *)
         currentFrame = 0;
         ++currentIteration;
 
-        if (single) {
-            deleteLater();
-            return;
-        }
+        uint currentElapsed = timer.isNull() ? 0 : timer.elapsed();
+        timer.restart();
 
-        if (currentIteration == 3)
-            timer.start();
-        else if (currentIteration > 3) {
-            iterationTimes << timer.elapsed();
-            timer.restart();
+        m_total += currentElapsed;
 
-            if (iterationTimes.size() >= 3) {
+        // warm up for at most 5 iterations or half a second
+        if (currentIteration >= 5 || m_total >= 500) {
+            iterationTimes << currentElapsed;
+
+            if (iterationTimes.size() >= 5) {
                 qreal mean = 0;
                 qreal stddev = 0;
                 uint min = INT_MAX;
@@ -128,18 +136,17 @@ void ReplayWidget::paintEvent(QPaintEvent *)
                 uint median = iterationTimes.at(iterationTimes.size() / 2);
 
                 stddev = 100 * stddev / mean;
-
-                if (iterationTimes.size() >= 10 || stddev < 4) {
+                // do 100 iterations, break earlier if we spend more than 5 seconds or have a low std deviation after 2 seconds
+                if (iterationTimes.size() >= 100 || m_total >= 5000 || (m_total >= 2000 && stddev < 4)) {
                     printf("%s, iterations: %d, frames: %d, min(ms): %d, median(ms): %d, stddev: %f %%, max(fps): %f\n", qPrintable(filename),
                             iterationTimes.size(), visibleUpdates.size(), min, median, stddev, 1000. * visibleUpdates.size() / min);
-                    deleteLater();
+                    m_result = min;
+                    m_done = true;
                     return;
                 }
             }
         }
     }
-
-    QTimer::singleShot(0, this, SLOT(updateRect()));
 }
 
 void ReplayWidget::resizeEvent(QResizeEvent *event)
@@ -147,28 +154,23 @@ void ReplayWidget::resizeEvent(QResizeEvent *event)
     visibleUpdates.clear();
 
     QRect bounds = rect();
-
-    int first = qMax(0, from);
-    int last = qMin(unsigned(to), unsigned(updates.size()));
-    for (int i = first; i < last; ++i) {
+    for (int i = 0; i < updates.size(); ++i) {
         if (updates.at(i).intersects(bounds))
             visibleUpdates << i;
     }
 
-    int range = last - first;
-
-    if (visibleUpdates.size() != range)
-        printf("Warning: skipped %d frames due to limited resolution\n", range - visibleUpdates.size());
+    if (visibleUpdates.size() != updates.size())
+        printf("Warning: skipped %d frames due to limited resolution\n", updates.size() - visibleUpdates.size());
 
 }
 
-ReplayWidget::ReplayWidget(const QString &filename_, int from_, int to_, bool single_)
+ReplayWidget::ReplayWidget(const QString &filename_)
     : currentFrame(0)
     , currentIteration(0)
     , filename(filename_)
-    , from(from_)
-    , to(to_)
-    , single(single_)
+    , m_done(false)
+    , m_result(0)
+    , m_total(0)
 {
     setWindowTitle(filename);
     QFile file(filename);
@@ -184,87 +186,77 @@ ReplayWidget::ReplayWidget(const QString &filename_, int from_, int to_, bool si
     uint size;
     in.readBytes(data, size);
     bool isTraceFile = size >= 7 && qstrncmp(data, "qttrace", 7) == 0;
-
     uint version = 0;
     if (size == 9 && qstrncmp(data, "qttraceV2", 9) == 0) {
         in.setFloatingPointPrecision(QDataStream::SinglePrecision);
         in >> version;
     }
 
+    delete [] data;
     if (!isTraceFile) {
         printf("File '%s' is not a trace file\n", qPrintable(filename_));
         return;
     }
 
     in >> buffer >> updates;
-    printf("Read paint buffer version %d with %d frames\n", version, buffer.numFrames());
 
     resize(buffer.boundingRect().size().toSize());
 
     setAutoFillBackground(false);
     setAttribute(Qt::WA_NoSystemBackground);
-
-    QTimer::singleShot(10, this, SLOT(updateRect()));
 }
 
-int main(int argc, char **argv)
+
+class tst_QTraceBench : public QObject
 {
-    QApplication app(argc, argv);
+    Q_OBJECT
 
-    if (argc <= 1 || qstrcmp(argv[1], "-h") == 0 || qstrcmp(argv[1], "--help") == 0) {
-        printf("Replays a tracefile generated with '-graphicssystem trace'\n");
-        printf("Usage:\n  > %s [OPTIONS] [traceFile]\n", argv[0]);
-        printf("OPTIONS\n"
-               "   --range=from-to to specify a frame range.\n"
-               "   --singlerun to do only one run (without statistics)\n");
-        return 1;
-    }
+private slots:
+    void trace();
+    void trace_data();
+};
 
-    QFile file(app.arguments().last());
-    if (!file.exists()) {
-        printf("%s does not exist\n", qPrintable(app.arguments().last()));
-        return 1;
-    }
+static const QLatin1String prefix(":/traces/");
 
-    bool single = false;
+void tst_QTraceBench::trace_data()
+{
+    QTest::addColumn<QString>("filename");
 
-    int from = 0;
-    int to = -1;
-    for (int i = 1; i < app.arguments().size() - 1; ++i) {
-        QString arg = app.arguments().at(i);
-        if (arg.startsWith(QLatin1String("--range="))) {
-            QString rest = arg.mid(8);
-            QStringList components = rest.split(QLatin1Char('-'));
-
-            bool ok1 = false;
-            bool ok2 = false;
-            int fromCandidate = 0;
-            int toCandidate = 0;
-            if (components.size() == 2) {
-                fromCandidate = components.first().toInt(&ok1);
-                toCandidate = components.last().toInt(&ok2);
-            }
-
-            if (ok1 && ok2) {
-                from = fromCandidate;
-                to = toCandidate;
-            } else {
-                printf("ERROR: malformed syntax in argument %s\n", qPrintable(arg));
-            }
-        } else if (arg == QLatin1String("--singlerun")) {
-            single = true;
-        } else {
-            printf("Unrecognized argument: %s\n", qPrintable(arg));
-            return 1;
-        }
-    }
-
-    ReplayWidget *widget = new ReplayWidget(app.arguments().last(), from, to, single);
-
-    if (!widget->updates.isEmpty()) {
-        widget->show();
-        return app.exec();
-    }
-
+    QTest::newRow("basicdrawing") << (prefix + "basicdrawing.trace");
+    QTest::newRow("webkit") << (prefix + "webkit.trace");
+    QTest::newRow("creator") << (prefix + "creator.trace");
+    QTest::newRow("textedit") << (prefix + "textedit.trace");
+    QTest::newRow("qmlphoneconcept") << (prefix + "qmlphoneconcept.trace");
+    QTest::newRow("qmlsamegame") << (prefix + "qmlsamegame.trace");
 }
-#include "main.moc"
+
+void tst_QTraceBench::trace()
+{
+    QFETCH(QString, filename);
+
+    QFile file(filename);
+    if (!file.exists()) {
+        qWarning() << "Missing file" << filename;
+        return;
+    }
+
+    ReplayWidget widget(filename);
+
+    if (widget.updates.isEmpty()) {
+        qWarning() << "No trace updates" << filename;
+        return;
+    }
+
+    widget.show();
+    QTest::qWaitForWindowShown(&widget);
+
+    while (!widget.done()) {
+        widget.updateRect();
+        QApplication::processEvents();
+    }
+
+    QTest::setBenchmarkResult(widget.result(), QTest::WalltimeMilliseconds);
+}
+
+QTEST_MAIN(tst_QTraceBench)
+#include "tst_qtracebench.moc"
