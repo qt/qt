@@ -129,6 +129,19 @@ void QTimestamp::start()
     t2 = r.second;
 }
 
+qint64 QTimestamp::restart()
+{
+    QPair<long, long> r = do_gettime();
+    qint64 oldt1 = t1;
+    qint64 oldt2 = t2;
+    t1 = r.first;
+    t2 = r.second;
+
+    r.first -= oldt1;
+    r.second -= oldt2;
+    return r.first * 1000 + r.second / fractionAdjustment();
+}
+
 qint64 QTimestamp::elapsed() const
 {
     QTimestamp now;

@@ -90,6 +90,14 @@ void QTimestamp::start()
     t2 = 0;
 }
 
+qint64 QTimestamp::restart()
+{
+    qint64 old = t1;
+    t1 = mach_absolute_time();
+
+    return absoluteToMSecs(t1 - old);
+}
+
 qint64 QTimestamp::elapsed() const
 {
     uint64_t cpu_time = mach_absolute_time();

@@ -56,6 +56,14 @@ void QTimestamp::start()
     t2 = 0;
 }
 
+qint64 QTimestamp::restart()
+{
+    QTime t = QTime::currentTime();
+    qint64 old = t1;
+    t1 = t.mds;
+    return t1 - old;
+}
+
 qint64 QTimestamp::elapsed() const
 {
     QTime t = QTime::currentTime();

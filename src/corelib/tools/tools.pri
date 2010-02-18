@@ -77,6 +77,7 @@ SOURCES += \
         tools/qstringlist.cpp \
         tools/qtextboundaryfinder.cpp \
         tools/qtimeline.cpp \
+        tools/qtimestamp.cpp \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp
 

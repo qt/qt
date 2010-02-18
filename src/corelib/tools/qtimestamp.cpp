@@ -39,60 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef QTIMESTAMP_H
-#define QTIMESTAMP_H
-
-#include <QtCore/qglobal.h>
-
-QT_BEGIN_HEADER
+#include "qtimestamp.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
+static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
 
-class Q_CORE_EXPORT QTimestamp
+void QTimestamp::invalidate()
 {
-public:
-    static bool isMonotonic();
+     t1 = t2 = invalidData;
+}
 
-    void start();
-    qint64 restart();
-    void invalidate();
-    bool isValid() const;
+bool QTimestamp::isValid() const
+{
+    return t1 != invalidData && t2 != invalidData;
+}
 
-    qint64 elapsed() const;
-    bool hasExpired(qint64 timeout) const;
-
-    qint64 msecsTo(const QTimestamp &other) const;
-    void addMSecs(int ms);
-    qint64 secsTo(const QTimestamp &other) const;
-    void addSecs(int secs);
-
-    bool operator==(const QTimestamp &other) const
-    { return t1 == other.t1 && t2 == other.t2; }
-    bool operator!=(const QTimestamp &other) const
-    { return !(*this == other); }
-
-    friend bool Q_CORE_EXPORT operator<(const QTimestamp &v1, const QTimestamp &v2);
-    friend qint64 operator-(const QTimestamp &v1, const QTimestamp &v2)
-    { return v2.msecsTo(v1); }
-
-    friend QTimestamp &operator+=(QTimestamp &ts, qint64 ms)
-    { ts.addMSecs(ms); return ts; }
-    friend QTimestamp operator+(const QTimestamp &ts, qint64 ms)
-    { QTimestamp copy(ts); return copy += ms; }
-    friend QTimestamp &operator-=(QTimestamp &ts, qint64 ms)
-    { ts.addMSecs(-ms); return ts; }
-    friend QTimestamp operator-(const QTimestamp &ts, qint64 ms)
-    { QTimestamp copy(ts); return copy -= ms; }
-
-private:
-    qint64 t1;
-    qint64 t2;
-};
+bool QTimestamp::hasExpired(qint64 timeout) const
+{
+    // if timeout is -1, quint64(timeout) is LLINT_MAX, so this will be
+    // considered as never expired
+    return quint64(elapsed()) > quint64(timeout);
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QTIMESTAMP_H

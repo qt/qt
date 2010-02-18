@@ -87,6 +87,13 @@ void QTimestamp::start()
     t2 = 0;
 }
 
+qint64 QTimestamp::restart()
+{
+    qint64 oldt1 = t1;
+    t1 = getTickCount();
+    return t1 - oldt1;
+}
+
 qint64 QTimestamp::elapsed() const
 {
     return getTickCount() - t1;
