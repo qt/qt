@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmldom.h>
+#include <QtDeclarative/private/qmldom_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
