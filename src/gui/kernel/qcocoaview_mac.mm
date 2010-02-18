@@ -84,21 +84,6 @@ extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
-Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
-{
-    if (buttonNum == 0)
-        return Qt::LeftButton;
-    if (buttonNum == 1)
-        return Qt::RightButton;
-    if (buttonNum == 2)
-        return Qt::MidButton;
-    if (buttonNum == 3)
-        return Qt::XButton1;
-    if (buttonNum == 4)
-        return Qt::XButton2;
-    return Qt::NoButton;
-}
-
 struct dndenum_mapper
 {
     NSDragOperation mac_code;
@@ -707,6 +692,7 @@ extern "C" {
     qt_button_down = 0;
 }
 
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
     if (!qt_button_down)

@@ -40,6 +40,10 @@
 ****************************************************************************/
 
 #include <qmlview.h>
+
+#ifdef hz
+#undef hz
+#endif
 #include "ui_recopts.h"
 
 #include "qmlviewer.h"
