@@ -55,9 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace std {
+namespace fulltextsearch {
+namespace std {
 
 Writer::Writer(const QString &path)
     : indexPath(path)
@@ -379,8 +378,7 @@ QString QHelpSearchIndexWriter::removeNamespace(const QString namespaces,
     return value;
 }
 
-        }   // namespace std
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace std
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE

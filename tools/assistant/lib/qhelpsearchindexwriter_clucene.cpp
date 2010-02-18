@@ -63,9 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace clucene {
+namespace fulltextsearch {
+namespace clucene {
 
 // taken from qtexthtmlparser
 static const struct QTextHtmlEntity
@@ -895,8 +894,7 @@ void QHelpSearchIndexWriter::closeIndexWriter(QCLuceneIndexWriter *writer)
 #endif
 }
 
-        }   // namespace clucene
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace clucene
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE
