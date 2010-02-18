@@ -210,11 +210,6 @@ public:
     void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
     bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
 
-
-#ifndef QT_NO_OPENSSL
-    QSslConfiguration sslConfiguration(const QHttpNetworkReply &reply) const;
-#endif
-
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy networkProxy;
     void emitProxyAuthenticationRequired(const QHttpNetworkConnectionChannel *chan, const QNetworkProxy &proxy, QAuthenticator* auth);

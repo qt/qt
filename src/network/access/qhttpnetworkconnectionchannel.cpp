@@ -124,6 +124,13 @@ void QHttpNetworkConnectionChannel::close()
 
 bool QHttpNetworkConnectionChannel::sendRequest()
 {
+    if (!reply) {
+        // heh, how should that happen!
+        qWarning() << "QHttpNetworkConnectionChannel::sendRequest() called without QHttpNetworkReply";
+        state = QHttpNetworkConnectionChannel::IdleState;
+        return false;
+    }
+
     switch (state) {
     case QHttpNetworkConnectionChannel::IdleState: { // write the header
         if (!ensureConnection()) {
@@ -134,13 +141,13 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         }
         written = 0; // excluding the header
         bytesTotal = 0;
-        if (reply) {
-            reply->d_func()->clear();
-            reply->d_func()->connection = connection;
-            reply->d_func()->autoDecompress = request.d->autoDecompress;
-            reply->d_func()->pipeliningUsed = false;
-        }
-        state = QHttpNetworkConnectionChannel::WritingState;
+
+        reply->d_func()->clear();
+        reply->d_func()->connection = connection;
+        reply->d_func()->connectionChannel = this;
+        reply->d_func()->autoDecompress = request.d->autoDecompress;
+        reply->d_func()->pipeliningUsed = false;
+
         pendingEncrypt = false;
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
@@ -174,13 +181,15 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             QObject::connect(uploadByteDevice, SIGNAL(readyRead()),this, SLOT(_q_uploadDataReadyRead()));
 
             bytesTotal = request.contentLength();
+
+            state = QHttpNetworkConnectionChannel::WritingState; // start writing data
+            sendRequest(); //recurse
         } else {
-            state = QHttpNetworkConnectionChannel::WaitingState;
-            sendRequest();
-            break;
+            state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
+            sendRequest(); //recurse
         }
-        // write the initial chunk together with the headers
-        // fall through
+
+        break;
     }
     case QHttpNetworkConnectionChannel::WritingState:
     {
@@ -190,7 +199,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             if (uploadByteDevice)
                 emit reply->dataSendProgress(written, bytesTotal);
             state = QHttpNetworkConnectionChannel::WaitingState; // now wait for response
-            sendRequest();
+            sendRequest(); // recurse
             break;
         }
 
@@ -278,16 +287,25 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 {
     Q_ASSERT(socket);
 
+    if (!reply) {
+        // heh, how should that happen!
+        qWarning() << "QHttpNetworkConnectionChannel::_q_receiveReply() called without QHttpNetworkReply,"
+                << socket->bytesAvailable() << "bytes on socket.";
+        close();
+        return;
+    }
+
     qint64 bytes = 0;
     QAbstractSocket::SocketState socketState = socket->state();
 
     // connection might be closed to signal the end of data
     if (socketState == QAbstractSocket::UnconnectedState) {
         if (socket->bytesAvailable() <= 0) {
-            if (reply && reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
+            if (reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
                 // finish this reply. this case happens when the server did not send a content length
                 reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
                 allDone();
+                return;
             } else {
                 handleUnexpectedEOF();
                 return;
@@ -299,12 +317,13 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 
     // read loop for the response
     while (socket->bytesAvailable()) {
-        QHttpNetworkReplyPrivate::ReplyState state = reply ? reply->d_func()->state : QHttpNetworkReplyPrivate::AllDoneState;
+        QHttpNetworkReplyPrivate::ReplyState state = reply->d_func()->state;
         switch (state) {
         case QHttpNetworkReplyPrivate::NothingDoneState: {
             // only eat whitespace on the first call
             eatWhitespace();
             state = reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
+            // fallthrough
         }
         case QHttpNetworkReplyPrivate::ReadingStatusState: {
             qint64 statusBytes = reply->d_func()->readStatus(socket);
@@ -412,8 +431,10 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
 #endif
                 }
             }
+            // still in ReadingDataState? This function will be called again by the socket's readyRead
             if (replyPrivate->state == QHttpNetworkReplyPrivate::ReadingDataState)
                 break;
+
             // everything done, fall through
             }
       case QHttpNetworkReplyPrivate::AllDoneState:
@@ -568,7 +589,8 @@ void QHttpNetworkConnectionChannel::allDone()
     handleStatus();
     // ### at this point there should be no more data on the socket
     // close if server requested
-    if (reply->d_func()->isConnectionCloseEnabled())
+    bool connectionCloseEnabled = reply->d_func()->isConnectionCloseEnabled();
+    if (connectionCloseEnabled)
         close();
     // queue the finished signal, this is required since we might send new requests from
     // slot connected to it. The socket will not fire readyRead signal, if we are already
@@ -579,14 +601,22 @@ void QHttpNetworkConnectionChannel::allDone()
     // in case of failures, each channel will attempt two reconnects before emitting error.
     reconnectAttempts = 2;
 
+    detectPipeliningSupport();
+
     // now the channel can be seen as free/idle again, all signal emissions for the reply have been done
     this->state = QHttpNetworkConnectionChannel::IdleState;
 
-    detectPipeliningSupport();
+    // if it does not need to be sent again we can set it to 0
+    // the previous code did not do that and we had problems with accidental re-sending of a
+    // finished request.
+    // Note that this may trigger a segfault at some other point. But then we can fix the underlying
+    // problem.
+    if (!resendCurrent)
+        reply = 0;
 
     // move next from pipeline to current request
     if (!alreadyPipelinedRequests.isEmpty()) {
-        if (resendCurrent || reply->d_func()->isConnectionCloseEnabled() || socket->state() != QAbstractSocket::ConnectedState) {
+        if (resendCurrent || connectionCloseEnabled || socket->state() != QAbstractSocket::ConnectedState) {
             // move the pipelined ones back to the main queue
             requeueCurrentlyPipelinedRequests();
             close();
@@ -742,12 +772,11 @@ void  QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
 
     QHttpNetworkRequest &request = pair.first;
     QHttpNetworkReply *reply = pair.second;
-    if (reply) {
-        reply->d_func()->clear();
-        reply->d_func()->connection = connection;
-        reply->d_func()->autoDecompress = request.d->autoDecompress;
-        reply->d_func()->pipeliningUsed = true;
-    }
+    reply->d_func()->clear();
+    reply->d_func()->connection = connection;
+    reply->d_func()->connectionChannel = this;
+    reply->d_func()->autoDecompress = request.d->autoDecompress;
+    reply->d_func()->pipeliningUsed = true;
 
 #ifndef QT_NO_NETWORKPROXY
     QByteArray header = QHttpNetworkRequestPrivate::header(request,
