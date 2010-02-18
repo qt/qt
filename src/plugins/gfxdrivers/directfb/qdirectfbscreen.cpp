@@ -1139,6 +1139,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 #endif
         d_ptr->dfb->SetCooperativeLevel(d_ptr->dfb, DFSCL_FULLSCREEN);
 
+    const bool forcePremultiplied = displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive);
+
     DFBSurfaceDescription description;
     memset(&description, 0, sizeof(DFBSurfaceDescription));
     IDirectFBSurface *surface;
@@ -1167,7 +1169,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
             description.caps |= capabilities[i].cap;
     }
 
-    if (displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive)) {
+    if (forcePremultiplied) {
         description.caps |= DSCAPS_PREMULTIPLIED;
     }
 
@@ -1217,6 +1219,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         d_ptr->alphaPixmapFormat = QImage::Format_ARGB32_Premultiplied;
         break;
     case QImage::Format_ARGB32:
+        if (forcePremultiplied)
+            d_ptr->alphaPixmapFormat = pixelFormat = QImage::Format_ARGB32_Premultiplied;
     case QImage::Format_ARGB32_Premultiplied:
     case QImage::Format_ARGB4444_Premultiplied:
     case QImage::Format_ARGB8555_Premultiplied:
