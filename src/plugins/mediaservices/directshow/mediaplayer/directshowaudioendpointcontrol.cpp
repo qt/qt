@@ -82,7 +82,21 @@ QList<QString> DirectShowAudioEndpointControl::availableEndpoints() const
 
 QString DirectShowAudioEndpointControl::endpointDescription(const QString &name) const
 {
-    return name.section(QLatin1Char('\\'), -1);
+    QString description;
+
+    if (IMoniker *moniker = m_devices.value(name, 0)) {
+        IPropertyBag *propertyBag = 0;
+        if (SUCCEEDED(moniker->BindToStorage(
+                0, 0, IID_IPropertyBag, reinterpret_cast<void **>(&propertyBag)))) {
+            VARIANT name;
+            VariantInit(&name);
+            if (SUCCEEDED(propertyBag->Read(L"FriendlyName", &name, 0)))
+                description = QString::fromWCharArray(name.bstrVal);
+            VariantClear(&name);
+            propertyBag->Release();
+        }
+    }
+    return description;;
 }
 
 QString DirectShowAudioEndpointControl::defaultEndpoint() const
