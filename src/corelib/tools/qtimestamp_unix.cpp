@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qtimestamp.h"
+#include "qpair.h"
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -51,6 +52,19 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+static qint64 fractionAdjustment()
+{
+    if (QTimestamp::isMonotonic()) {
+        // the monotonic timer is measured in nanoseconds
+        // 1 ms = 1000000 ns
+        return 1000*1000ull;
+    } else {
+        // gettimeofday is measured in microseconds
+        // 1 ms = 1000 us
+        return 1000;
+    }
+}
 
 bool QTimestamp::isMonotonic()
 {
@@ -73,42 +87,46 @@ bool QTimestamp::isMonotonic()
 #endif
 }
 
-static qint64 fractionAdjustment()
-{
-    if (QTimestamp::isMonotonic()) {
-        // the monotonic timer is measured in nanoseconds
-        // 1 ms = 1000000 ns
-        return 1000*1000ull;
-    } else {
-        // gettimeofday is measured in microseconds
-        // 1 ms = 1000 us
-        return 1000;
-    }
-}
-
-void QTimestamp::start()
+static inline QPair<long, long> do_gettime()
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 > 0)
     timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    t1 = ts.tv_sec;
-    t2 = ts.tv_nsec;
+    return qMakePair(ts.tv_sec, ts.tv_nsec);
 #else
 #  if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
-    if (isMonotonic()) {
+    if (QTimestamp::isMonotonic()) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
-        t1 = ts.tv_sec;
-        t2 = ts.tv_nsec;
-        return;
+        return qMakePair(ts.tv_sec, ts.tv_nsec);
     }
 #  endif
     // use gettimeofday
     timeval tv;
     ::gettimeofday(&tv, 0);
-    t1 = tv.tv_sec;
-    t2 = tv.tv_usec;
+    return qMakePair(tv.tv_sec, tv.tv_usec);
 #endif
+}
+
+// used in qcore_unix.cpp and qeventdispatcher_unix.cpp
+timeval qt_gettime()
+{
+    QPair<long, long> r = do_gettime();
+
+    timeval tv;
+    tv.tv_sec = r.first;
+    tv.tv_usec = r.second;
+    if (QTimestamp::isMonotonic())
+        tv.tv_usec /= 1000;
+
+    return tv;
+}
+
+void QTimestamp::start()
+{
+    QPair<long, long> r = do_gettime();
+    t1 = r.first;
+    t2 = r.second;
 }
 
 qint64 QTimestamp::elapsed() const

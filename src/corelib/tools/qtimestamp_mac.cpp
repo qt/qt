@@ -53,20 +53,35 @@ bool QTimestamp::isMonotonic()
 }
 
 static mach_timebase_info_data_t info = {0,0};
-static qint64 absoluteToMSecs(qint64 cpuTime)
+static qint64 absoluteToNSecs(qint64 cpuTime)
 {
     if (info.denom == 0)
         mach_timebase_info(&info);
     qint64 nsecs = cpuTime * info.numer / info.denom;
-    return nsecs / (1000*1000ull);
+    return nsecs;
+}
+
+static qint64 absoluteToMSecs(qint64 cpuTime)
+{
+    return absoluteToNSecs(cpuTime) / 1000000;
 }
 
 static qint64 msecsToAbsolute(qint64 ms)
 {
     if (info.denom == 0)
         mach_timebase_info(&info);
-    qint64 nsecs = ms * 1000000ull;
-    return nsecs * info.denom / info.numer;
+    return ms * 1000000 * info.denom / info.numer;
+}
+
+timeval qt_gettime()
+{
+    timeval tv;
+
+    uint64_t cpu_time = mach_absolute_time();
+    uint64_t nsecs = absoluteToNSecs(cpu_time);
+    tv.tv_sec = nsecs / 1000000000ull;
+    tv.tv_usec = (nsecs / 1000) - (tv.tv_sec * 1000000);
+    return tv;
 }
 
 void QTimestamp::start()
@@ -98,7 +113,7 @@ qint64 QTimestamp::secsTo(const QTimestamp &other) const
 
 void QTimestamp::addSecs(int secs)
 {
-    t1 += secs * 1000;
+    t1 += msecsToAbsolute(secs * 1000);
 }
 
 bool operator<(const QTimestamp &v1, const QTimestamp &v2)
