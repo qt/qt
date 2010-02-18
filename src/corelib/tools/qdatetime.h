@@ -204,6 +204,7 @@ private:
 
     friend class QDateTime;
     friend class QDateTimePrivate;
+    friend class QTimestamp;
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QTime &);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QTime &);

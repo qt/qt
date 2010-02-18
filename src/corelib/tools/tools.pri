@@ -42,6 +42,7 @@ HEADERS +=  \
         tools/qstringmatcher.h \
         tools/qtextboundaryfinder.h \
         tools/qtimeline.h \
+        tools/qtimestamp.h \
         tools/qunicodetables_p.h \
         tools/qvarlengtharray.h \
         tools/qvector.h \
@@ -80,6 +81,8 @@ SOURCES += \
         tools/qvsnprintf.cpp
 
 symbian:SOURCES+=tools/qlocale_symbian.cpp
+
+unix:SOURCES += tools/qtimestamp_generic.cpp
 
 #zlib support
 contains(QT_CONFIG, zlib) {
