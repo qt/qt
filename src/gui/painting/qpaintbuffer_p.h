@@ -184,6 +184,7 @@ public:
         Cmd_DrawTiledPixmap,
 
         Cmd_SystemStateChanged,
+        Cmd_Translate,
 
         Cmd_LastCommand
     };

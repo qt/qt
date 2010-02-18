@@ -185,7 +185,13 @@ ReplayWidget::ReplayWidget(const QString &filename_)
     char *data;
     uint size;
     in.readBytes(data, size);
-    bool isTraceFile = size == 7 && qstrncmp(data, "qttrace", 7) == 0;
+    bool isTraceFile = size >= 7 && qstrncmp(data, "qttrace", 7) == 0;
+    uint version = 0;
+    if (size == 9 && qstrncmp(data, "qttraceV2", 9) == 0) {
+        in.setFloatingPointPrecision(QDataStream::SinglePrecision);
+        in >> version;
+    }
+
     delete [] data;
     if (!isTraceFile) {
         printf("File '%s' is not a trace file\n", qPrintable(filename_));
@@ -193,7 +199,7 @@ ReplayWidget::ReplayWidget(const QString &filename_)
     }
 
     in >> buffer >> updates;
-    printf("Read paint buffer with %d frames\n", buffer.numFrames());
+    printf("Read paint buffer version %d with %d frames\n", version, buffer.numFrames());
 
     resize(buffer.boundingRect().size().toSize());
 
