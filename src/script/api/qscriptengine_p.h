@@ -37,8 +37,10 @@
 
 #include "private/qobject_p.h"
 
+#include <QtCore/qdatetime.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qnumeric.h>
+#include <QtCore/qregexp.h>
 #include <QtCore/qset.h>
 #include "qscriptvalue_p.h"
 #include "qscriptstring_p.h"
@@ -46,11 +48,14 @@
 #include "utils/qscriptdate_p.h"
 
 #include "DateConstructor.h"
+#include "DateInstance.h"
 #include "Debugger.h"
+#include "ErrorInstance.h"
 #include "JSArray.h"
 #include "Lexer.h"
 #include "RefPtr.h"
 #include "RegExpConstructor.h"
+#include "RegExpObject.h"
 #include "SourceProvider.h"
 #include "Structure.h"
 #include "JSGlobalObject.h"
@@ -133,6 +138,23 @@ public:
 
     static QScriptEnginePrivate *get(QScriptEngine *q) { return q ? q->d_func() : 0; }
     static QScriptEngine *get(QScriptEnginePrivate *d) { return d ? d->q_func() : 0; }
+
+    static inline bool isArray(JSC::JSValue);
+    static inline bool isDate(JSC::JSValue);
+    static inline bool isError(JSC::JSValue);
+    static inline bool isObject(JSC::JSValue);
+    static inline bool isRegExp(JSC::JSValue);
+    static inline bool isVariant(JSC::JSValue);
+
+    static inline bool toBool(JSC::ExecState *, JSC::JSValue);
+    static inline qsreal toInteger(JSC::ExecState *, JSC::JSValue);
+    static inline qsreal toNumber(JSC::ExecState *, JSC::JSValue);
+    static inline qint32 toInt32(JSC::ExecState *, JSC::JSValue);
+    static inline quint32 toUInt32(JSC::ExecState *, JSC::JSValue);
+    static inline quint16 toUInt16(JSC::ExecState *, JSC::JSValue);
+    static inline QString toString(JSC::ExecState *, JSC::JSValue);
+
+    static inline QDateTime toDateTime(JSC::ExecState *, JSC::JSValue);
 
     static bool convert(const QScriptValue &value,
                         int type, void *ptr,
@@ -674,6 +696,115 @@ inline JSC::JSValue QScriptEnginePrivate::newDate(JSC::ExecState *exec, const QD
 inline JSC::JSValue QScriptEnginePrivate::newObject()
 {
     return new (currentFrame)QScriptObject(scriptObjectStructure);
+}
+
+inline bool QScriptEnginePrivate::isObject(JSC::JSValue value)
+{
+    return value && value.isObject();
+}
+
+inline bool QScriptEnginePrivate::isArray(JSC::JSValue value)
+{
+    return isObject(value) && value.inherits(&JSC::JSArray::info);
+}
+
+inline bool QScriptEnginePrivate::isDate(JSC::JSValue value)
+{
+    return isObject(value) && value.inherits(&JSC::DateInstance::info);
+}
+
+inline bool QScriptEnginePrivate::isError(JSC::JSValue value)
+{
+    return isObject(value) && value.inherits(&JSC::ErrorInstance::info);
+}
+
+inline bool QScriptEnginePrivate::isRegExp(JSC::JSValue value)
+{
+    return isObject(value) && value.inherits(&JSC::RegExpObject::info);
+}
+
+inline bool QScriptEnginePrivate::isVariant(JSC::JSValue value)
+{
+    if (!isObject(value) || !value.inherits(&QScriptObject::info))
+        return false;
+    QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(value));
+    QScriptObjectDelegate *delegate = object->delegate();
+    return (delegate && (delegate->type() == QScriptObjectDelegate::Variant));
+}
+
+inline bool QScriptEnginePrivate::toBool(JSC::ExecState *exec, JSC::JSValue value)
+{
+    JSC::JSValue savedException;
+    saveException(exec, &savedException);
+    bool result = value.toBoolean(exec);
+    restoreException(exec, savedException);
+    return result;
+}
+
+inline qsreal QScriptEnginePrivate::toInteger(JSC::ExecState *exec, JSC::JSValue value)
+{
+    JSC::JSValue savedException;
+    saveException(exec, &savedException);
+    qsreal result = value.toInteger(exec);
+    restoreException(exec, savedException);
+    return result;
+}
+
+inline qsreal QScriptEnginePrivate::toNumber(JSC::ExecState *exec, JSC::JSValue value)
+{
+    JSC::JSValue savedException;
+    saveException(exec, &savedException);
+    qsreal result = value.toNumber(exec);
+    restoreException(exec, savedException);
+    return result;
+}
+
+inline qint32 QScriptEnginePrivate::toInt32(JSC::ExecState *exec, JSC::JSValue value)
+{
+    JSC::JSValue savedException;
+    saveException(exec, &savedException);
+    qint32 result = value.toInt32(exec);
+    restoreException(exec, savedException);
+    return result;
+}
+
+inline quint32 QScriptEnginePrivate::toUInt32(JSC::ExecState *exec, JSC::JSValue value)
+{
+    JSC::JSValue savedException;
+    saveException(exec, &savedException);
+    quint32 result = value.toUInt32(exec);
+    restoreException(exec, savedException);
+    return result;
+}
+
+inline quint16 QScriptEnginePrivate::toUInt16(JSC::ExecState *exec, JSC::JSValue value)
+{
+    // ### no equivalent function in JSC
+    return QScript::ToUInt16(toNumber(exec, value));
+}
+
+inline QString QScriptEnginePrivate::toString(JSC::ExecState *exec, JSC::JSValue value)
+{
+    JSC::JSValue savedException;
+    saveException(exec, &savedException);
+    JSC::UString str = value.toString(exec);
+    if (exec && exec->hadException() && !str.size()) {
+        JSC::JSValue savedException2;
+        saveException(exec, &savedException2);
+        str = savedException2.toString(exec);
+        restoreException(exec, savedException2);
+    }
+    if (savedException)
+        restoreException(exec, savedException);
+    return str;
+}
+
+inline QDateTime QScriptEnginePrivate::toDateTime(JSC::ExecState *, JSC::JSValue value)
+{
+    if (!isDate(value))
+        return QDateTime();
+    qsreal t = static_cast<JSC::DateInstance*>(JSC::asObject(value))->internalNumber();
+    return QScript::ToDateTime(t, Qt::LocalTime);
 }
 
 QT_END_NAMESPACE

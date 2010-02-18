@@ -29,21 +29,15 @@
 #include "qscriptengine_p.h"
 #include "qscriptstring_p.h"
 
-#include "JSArray.h"
 #include "JSGlobalObject.h"
 #include "JSImmediate.h"
 #include "JSObject.h"
 #include "JSValue.h"
 #include "JSFunction.h"
-#include "DateInstance.h"
-#include "ErrorInstance.h"
-#include "RegExpObject.h"
 #include "Identifier.h"
 #include "Operations.h"
 #include "Arguments.h"
 
-#include <QtCore/qdatetime.h>
-#include <QtCore/qregexp.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qnumeric.h>
@@ -629,9 +623,9 @@ QScriptValue &QScriptValue::operator=(const QScriptValue &other)
 bool QScriptValue::isError() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject())
+    if (!d || !d->isJSC())
         return false;
-    return d->jscValue.inherits(&JSC::ErrorInstance::info);
+    return QScriptEnginePrivate::isError(d->jscValue);
 }
 
 /*!
@@ -643,9 +637,9 @@ bool QScriptValue::isError() const
 bool QScriptValue::isArray() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject())
+    if (!d || !d->isJSC())
         return false;
-    return d->jscValue.inherits(&JSC::JSArray::info);
+    return QScriptEnginePrivate::isArray(d->jscValue);
 }
 
 /*!
@@ -657,9 +651,9 @@ bool QScriptValue::isArray() const
 bool QScriptValue::isDate() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject())
+    if (!d || !d->isJSC())
         return false;
-    return d->jscValue.inherits(&JSC::DateInstance::info);
+    return QScriptEnginePrivate::isDate(d->jscValue);
 }
 
 /*!
@@ -671,9 +665,9 @@ bool QScriptValue::isDate() const
 bool QScriptValue::isRegExp() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject())
+    if (!d || !d->isJSC())
         return false;
-    return d->jscValue.inherits(&JSC::RegExpObject::info);
+    return QScriptEnginePrivate::isRegExp(d->jscValue);
 }
 
 /*!
@@ -1113,18 +1107,7 @@ QString QScriptValue::toString() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
-        JSC::JSValue savedException;
-        QScriptEnginePrivate::saveException(exec, &savedException);
-        JSC::UString str = d->jscValue.toString(exec);
-        if (exec && exec->hadException() && !str.size()) {
-            JSC::JSValue savedException2;
-            QScriptEnginePrivate::saveException(exec, &savedException2);
-            str = savedException2.toString(exec);
-            QScriptEnginePrivate::restoreException(exec, savedException2);
-        }
-        if (savedException)
-            QScriptEnginePrivate::restoreException(exec, savedException);
-        return str;
+        return QScriptEnginePrivate::toString(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return QScript::ToString(d->numberValue);
@@ -1154,11 +1137,7 @@ qsreal QScriptValue::toNumber() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
-        JSC::JSValue savedException;
-        QScriptEnginePrivate::saveException(exec, &savedException);
-        qsreal result = d->jscValue.toNumber(exec);
-        QScriptEnginePrivate::restoreException(exec, savedException);
-        return result;
+        return QScriptEnginePrivate::toNumber(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return d->numberValue;
@@ -1181,11 +1160,7 @@ bool QScriptValue::toBoolean() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
-        JSC::JSValue savedException;
-        QScriptEnginePrivate::saveException(exec, &savedException);
-        bool result = d->jscValue.toBoolean(exec);
-        QScriptEnginePrivate::restoreException(exec, savedException);
-        return result;
+        return QScriptEnginePrivate::toBool(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return QScript::ToBool(d->numberValue);
@@ -1217,11 +1192,7 @@ bool QScriptValue::toBool() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
-        JSC::JSValue savedException;
-        QScriptEnginePrivate::saveException(exec, &savedException);
-        bool result = d->jscValue.toBoolean(exec);
-        QScriptEnginePrivate::restoreException(exec, savedException);
-        return result;
+        return QScriptEnginePrivate::toBool(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return QScript::ToBool(d->numberValue);
@@ -1251,11 +1222,7 @@ qint32 QScriptValue::toInt32() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
-        JSC::JSValue savedException;
-        QScriptEnginePrivate::saveException(exec, &savedException);
-        qint32 result = d->jscValue.toInt32(exec);
-        QScriptEnginePrivate::restoreException(exec, savedException);
-        return result;
+        return QScriptEnginePrivate::toInt32(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return QScript::ToInt32(d->numberValue);
@@ -1285,11 +1252,7 @@ quint32 QScriptValue::toUInt32() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
-        JSC::JSValue savedException;
-        QScriptEnginePrivate::saveException(exec, &savedException);
-        quint32 result = d->jscValue.toUInt32(exec);
-        QScriptEnginePrivate::restoreException(exec, savedException);
-        return result;
+        return QScriptEnginePrivate::toUInt32(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return QScript::ToUInt32(d->numberValue);
@@ -1318,8 +1281,8 @@ quint16 QScriptValue::toUInt16() const
         return 0;
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
-        // ### no equivalent function in JSC
-        return QScript::ToUInt16(toNumber());
+        JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
+        return QScriptEnginePrivate::toUInt16(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return QScript::ToUInt16(d->numberValue);
@@ -1349,11 +1312,7 @@ qsreal QScriptValue::toInteger() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
-        JSC::JSValue savedException;
-        QScriptEnginePrivate::saveException(exec, &savedException);
-        qsreal result = d->jscValue.toInteger(exec);
-        QScriptEnginePrivate::restoreException(exec, savedException);
-        return result;
+        return QScriptEnginePrivate::toInteger(exec, d->jscValue);
     }
     case QScriptValuePrivate::Number:
         return QScript::ToInteger(d->numberValue);
@@ -1456,10 +1415,9 @@ QScriptValue QScriptValue::toObject() const
 QDateTime QScriptValue::toDateTime() const
 {
     Q_D(const QScriptValue);
-    if (!isDate())
+    if (!d || !d->engine)
         return QDateTime();
-    qsreal t = static_cast<JSC::DateInstance*>(JSC::asObject(d->jscValue))->internalNumber();
-    return QScript::ToDateTime(t, Qt::LocalTime);
+    return QScriptEnginePrivate::toDateTime(d->engine->currentFrame, d->jscValue);
 }
 
 #ifndef QT_NO_REGEXP
@@ -2151,11 +2109,9 @@ bool QScriptValue::isObject() const
 bool QScriptValue::isVariant() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
+    if (!d || !d->isJSC())
         return false;
-    QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-    QScriptObjectDelegate *delegate = object->delegate();
-    return (delegate && (delegate->type() == QScriptObjectDelegate::Variant));
+    return QScriptEnginePrivate::isVariant(d->jscValue);
 }
 
 /*!
