@@ -177,7 +177,8 @@ public:
             snapToPixelGrid(false),
             addOffset(false),
             inverseScale(1),
-            lastMaskTextureUsed(0)
+            lastMaskTextureUsed(0),
+            elementIndicesVBOId(0)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -269,6 +270,7 @@ public:
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
     QVector<GLushort> elementIndices;
+    GLuint elementIndicesVBOId;
     QDataBuffer<GLfloat> opacityArray;
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
