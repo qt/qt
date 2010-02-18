@@ -277,22 +277,22 @@ void tst_OpenGLThreading::textureUploadInThread()
    if that works, we're in good shape..
  */
 
-static inline float random() { return (rand() % 100) / 100.f; }
+static inline float qrandom() { return (rand() % 100) / 100.f; }
 
 void renderAScene(int w, int h)
 {
 #ifdef QT_OPENGL_ES_2
             QGLShaderProgram program;
-            program.addShaderFromSourceCode(QGLShader::Vertex, "attribute highp vec2 pos; void main() { gl_Position = position; }");
+            program.addShaderFromSourceCode(QGLShader::Vertex, "attribute highp vec2 pos; void main() { gl_Position = vec4(pos.xy, 1.0, 1.0); }");
             program.addShaderFromSourceCode(QGLShader::Fragment, "uniform lowp vec4 color; void main() { gl_FragColor = color; }");
+            program.bindAttributeLocation("pos", 0);
             program.bind();
             int colorId = program.uniformLocation("color");
-            program.bindAttributeLocation("pos", 0);
 
-            glEnableClientState(GL_VERTEX_ARRAY);
+            glEnableVertexAttribArray(0);
 
             for (int i=0; i<1000; ++i) {
-                float pos[] = {
+                GLfloat pos[] = {
                     (rand() % 100) / 100.,
                     (rand() % 100) / 100.,
                     (rand() % 100) / 100.,
@@ -301,7 +301,7 @@ void renderAScene(int w, int h)
                     (rand() % 100) / 100.
                 };
 
-                glVertexAttributePointer(0, 2, GL_FLOAT, false, 0, pos);
+                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, pos);
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
             }
 #else
@@ -317,12 +317,12 @@ void renderAScene(int w, int h)
 
             for (int i=0;i<1000; ++i) {
                 glBegin(GL_TRIANGLES);
-                glColor3f(random(), random(), random());
-                glVertex2f(random() * w, random() * h);
-                glColor3f(random(), random(), random());
-                glVertex2f(random() * w, random() * h);
-                glColor3f(random(), random(), random());
-                glVertex2f(random() * w, random() * h);
+                glColor3f(qrandom(), qrandom(), qrandom());
+                glVertex2f(qrandom() * w, qrandom() * h);
+                glColor3f(qrandom(), qrandom(), qrandom());
+                glVertex2f(qrandom() * w, qrandom() * h);
+                glColor3f(qrandom(), qrandom(), qrandom());
+                glVertex2f(qrandom() * w, qrandom() * h);
                 glEnd();
             }
 #endif
