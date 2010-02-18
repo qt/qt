@@ -1656,9 +1656,32 @@ void QmlGraphicsGridView::itemsMoved(int from, int to, int count)
         ++endIndex;
     }
 
+    // update visibleIndex
+    for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
+        if ((*it)->index != -1) {
+            d->visibleIndex = (*it)->index;
+            break;
+        }
+    }
+
+    // Fix current index
+    if (d->currentIndex >= 0 && d->currentItem) {
+        int oldCurrent = d->currentIndex;
+        d->currentIndex = d->model->indexOf(d->currentItem->item, this);
+        if (oldCurrent != d->currentIndex) {
+            d->currentItem->index = d->currentIndex;
+            emit currentIndexChanged();
+        }
+    }
+
     // Whatever moved items remain are no longer visible items.
-    while (moved.count())
-        d->releaseItem(moved.take(moved.begin().key()));
+    while (moved.count()) {
+        int idx = moved.begin().key();
+        FxGridItem *item = moved.take(idx);
+        if (item->item == d->currentItem->item)
+            item->setPosition(d->colPosAt(idx), d->rowPosAt(idx));
+        d->releaseItem(item);
+    }
 
     d->layout(removedBeforeVisible);
 }
