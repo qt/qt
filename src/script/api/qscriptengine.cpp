@@ -24,7 +24,6 @@
 #include "config.h"
 #include "qscriptengine.h"
 #include "qscriptsyntaxchecker_p.h"
-#include "qnumeric.h"
 
 #include "qscriptengine_p.h"
 #include "qscriptengineagent_p.h"
@@ -40,6 +39,9 @@
 
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmetaobject.h>
+
+#include <QtCore/qnumeric.h>
+#include <math.h>
 
 #include "Error.h"
 #include "JSArray.h"
@@ -327,6 +329,74 @@ public:
 
 namespace QScript
 {
+
+static const qsreal D32 = 4294967296.0;
+
+qint32 ToInt32(qsreal n)
+{
+    if (qIsNaN(n) || qIsInf(n) || (n == 0))
+        return 0;
+
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
+    qsreal abs_n = fabs(n);
+
+    n = ::fmod(sign * ::floor(abs_n), D32);
+    const double D31 = D32 / 2.0;
+
+    if (sign == -1 && n < -D31)
+        n += D32;
+
+    else if (sign != -1 && n >= D31)
+        n -= D32;
+
+    return qint32 (n);
+}
+
+quint32 ToUInt32(qsreal n)
+{
+    if (qIsNaN(n) || qIsInf(n) || (n == 0))
+        return 0;
+
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
+    qsreal abs_n = fabs(n);
+
+    n = ::fmod(sign * ::floor(abs_n), D32);
+
+    if (n < 0)
+        n += D32;
+
+    return quint32 (n);
+}
+
+quint16 ToUInt16(qsreal n)
+{
+    static const qsreal D16 = 65536.0;
+
+    if (qIsNaN(n) || qIsInf(n) || (n == 0))
+        return 0;
+
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
+    qsreal abs_n = fabs(n);
+
+    n = ::fmod(sign * ::floor(abs_n), D16);
+
+    if (n < 0)
+        n += D16;
+
+    return quint16 (n);
+}
+
+qsreal ToInteger(qsreal n)
+{
+    if (qIsNaN(n))
+        return 0;
+
+    if (n == 0 || qIsInf(n))
+        return n;
+
+    int sign = n < 0 ? -1 : 1;
+    return sign * ::floor(::fabs(n));
+}
 
 void GlobalClientData::mark(JSC::MarkStack& markStack)
 {

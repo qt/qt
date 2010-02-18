@@ -83,6 +83,11 @@ namespace QScript
 #endif
     class TimeoutCheckerProxy;
 
+    qint32 ToInt32(qsreal);
+    quint32 ToUInt32(qsreal);
+    quint16 ToUInt16(qsreal);
+    qsreal ToInteger(qsreal);
+
     //some conversion helper functions
     inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(JSC::JSValue value);

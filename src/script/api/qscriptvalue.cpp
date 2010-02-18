@@ -180,85 +180,7 @@
     \omitvalue ResolveFull Check the object's own properties first, then search the prototype chain, and finally search the scope chain.
 */
 
-// ### move
-
-#include <QtCore/qnumeric.h>
-#include <math.h>
-
 QT_BEGIN_NAMESPACE
-
-namespace QScript
-{
-
-static const qsreal D32 = 4294967296.0;
-
-qint32 ToInt32(qsreal n)
-{
-    if (qIsNaN(n) || qIsInf(n) || (n == 0))
-        return 0;
-
-    qsreal sign = (n < 0) ? -1.0 : 1.0;
-    qsreal abs_n = fabs(n);
-
-    n = ::fmod(sign * ::floor(abs_n), D32);
-    const double D31 = D32 / 2.0;
-
-    if (sign == -1 && n < -D31)
-        n += D32;
-
-    else if (sign != -1 && n >= D31)
-        n -= D32;
-
-    return qint32 (n);
-}
-
-quint32 ToUint32(qsreal n)
-{
-    if (qIsNaN(n) || qIsInf(n) || (n == 0))
-        return 0;
-
-    qsreal sign = (n < 0) ? -1.0 : 1.0;
-    qsreal abs_n = fabs(n);
-
-    n = ::fmod(sign * ::floor(abs_n), D32);
-
-    if (n < 0)
-        n += D32;
-
-    return quint32 (n);
-}
-
-quint16 ToUint16(qsreal n)
-{
-    static const qsreal D16 = 65536.0;
-
-    if (qIsNaN(n) || qIsInf(n) || (n == 0))
-        return 0;
-
-    qsreal sign = (n < 0) ? -1.0 : 1.0;
-    qsreal abs_n = fabs(n);
-
-    n = ::fmod(sign * ::floor(abs_n), D16);
-
-    if (n < 0)
-        n += D16;
-
-    return quint16 (n);
-}
-
-qsreal ToInteger(qsreal n)
-{
-    if (qIsNaN(n))
-        return 0;
-
-    if (n == 0 || qIsInf(n))
-        return n;
-
-    int sign = n < 0 ? -1 : 1;
-    return sign * ::floor(::fabs(n));
-}
-
-} // namespace QScript
 
 QScriptValue QScriptValuePrivate::propertyHelper(const JSC::Identifier &id, int resolveMode) const
 {
@@ -1370,9 +1292,9 @@ quint32 QScriptValue::toUInt32() const
         return result;
     }
     case QScriptValuePrivate::Number:
-        return QScript::ToUint32(d->numberValue);
+        return QScript::ToUInt32(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToUint32(((JSC::UString)d->stringValue).toDouble());
+        return QScript::ToUInt32(((JSC::UString)d->stringValue).toDouble());
     }
     return 0;
 }
@@ -1397,12 +1319,12 @@ quint16 QScriptValue::toUInt16() const
     switch (d->type) {
     case QScriptValuePrivate::JavaScriptCore: {
         // ### no equivalent function in JSC
-        return QScript::ToUint16(toNumber());
+        return QScript::ToUInt16(toNumber());
     }
     case QScriptValuePrivate::Number:
-        return QScript::ToUint16(d->numberValue);
+        return QScript::ToUInt16(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToUint16(((JSC::UString)d->stringValue).toDouble());
+        return QScript::ToUInt16(((JSC::UString)d->stringValue).toDouble());
     }
     return 0;
 }
