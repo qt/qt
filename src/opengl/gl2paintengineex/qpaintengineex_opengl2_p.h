@@ -174,11 +174,11 @@ public:
             width(0), height(0),
             ctx(0),
             useSystemClip(true),
+            elementIndicesVBOId(0),
             snapToPixelGrid(false),
             addOffset(false),
             inverseScale(1),
-            lastMaskTextureUsed(0),
-            elementIndicesVBOId(0)
+            lastMaskTextureUsed(0)
     { }
 
     ~QGL2PaintEngineExPrivate();

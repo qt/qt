@@ -384,11 +384,11 @@ namespace {
         DrawTextItemRecorder(int expectedItemCount, QStaticTextItem *items,
                              int expectedGlyphCount, QFixedPoint *positionPool, glyph_t *glyphPool)
                 : m_items(items),
+                  m_itemCount(0), m_glyphCount(0),
                   m_expectedItemCount(expectedItemCount),
                   m_expectedGlyphCount(expectedGlyphCount),
-                  m_itemCount(0), m_glyphCount(0),
-                  m_positionPool(positionPool),
-                  m_glyphPool(glyphPool)
+                  m_glyphPool(glyphPool),
+                  m_positionPool(positionPool)
         {
         }
 
