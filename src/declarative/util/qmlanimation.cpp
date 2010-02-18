@@ -1414,6 +1414,177 @@ void QmlVector3dAnimation::setTo(QVector3D t)
 
 QML_DEFINE_TYPE(Qt,4,6,Vector3dAnimation,QmlVector3dAnimation)
 
+/*!
+    \qmlclass RotationAnimation QmlRotationAnimation
+    \inherits PropertyAnimation
+    \brief The RotationAnimation element allows you to animate rotations.
+
+    RotationAnimation is a specialized PropertyAnimation that gives control
+    over the direction of rotation.
+
+    The RotationAnimation in the following example ensures that we always take
+    the shortest rotation path when switching between our states.
+    \qml
+    states: {
+        State { name: "180"; PropertyChanges { target: myItem; rotation: 180 } }
+        State { name: "-180"; PropertyChanges { target: myItem; rotation: -180 } }
+        State { name: "180"; PropertyChanges { target: myItem; rotation: 270 } }
+    }
+    transition: Transition {
+        RotationAnimation { direction: RotationAnimation.Shortest }
+    }
+    \endqml
+
+    By default, when used in a transition RotationAnimation will rotate all
+    properties named "rotation" or "angle". You can override this by providing
+    your own properties via \c properties or \c property.
+*/
+
+/*!
+    \internal
+    \class QmlRotationAnimation
+*/
+
+QVariant _q_interpolateShortestRotation(qreal &f, qreal &t, qreal progress)
+{
+    qreal newt = t;
+    qreal diff = t-f;
+    while(diff > 180.0){
+        newt -= 360.0;
+        diff -= 360.0;
+    }
+    while(diff < -180.0){
+        newt += 360.0;
+        diff += 360.0;
+    }
+    return QVariant(f + (newt - f) * progress);
+}
+
+QVariant _q_interpolateClockwiseRotation(qreal &f, qreal &t, qreal progress)
+{
+    qreal newt = t;
+    qreal diff = t-f;
+    while(diff < 0.0){
+        newt += 360.0;
+        diff += 360.0;
+    }
+    return QVariant(f + (newt - f) * progress);
+}
+
+QVariant _q_interpolateCounterclockwiseRotation(qreal &f, qreal &t, qreal progress)
+{
+    qreal newt = t;
+    qreal diff = t-f;
+    while(diff > 0.0){
+        newt -= 360.0;
+        diff -= 360.0;
+    }
+    return QVariant(f + (newt - f) * progress);
+}
+
+QmlRotationAnimation::QmlRotationAnimation(QObject *parent)
+: QmlPropertyAnimation(*(new QmlRotationAnimationPrivate), parent)
+{
+    Q_D(QmlRotationAnimation);
+    d->interpolatorType = QMetaType::QReal;
+    d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateShortestRotation);
+    d->defaultProperties = QLatin1String("rotation,angle");
+}
+
+QmlRotationAnimation::~QmlRotationAnimation()
+{
+}
+
+/*!
+    \qmlproperty real RotationAnimation::from
+    This property holds the starting value.
+    If not set, then the value defined in the start state of the transition.
+*/
+qreal QmlRotationAnimation::from() const
+{
+    Q_D(const QmlRotationAnimation);
+    return d->from.toReal();
+}
+
+void QmlRotationAnimation::setFrom(qreal f)
+{
+    QmlPropertyAnimation::setFrom(f);
+}
+
+/*!
+    \qmlproperty real RotationAnimation::to
+    This property holds the ending value.
+    If not set, then the value defined in the end state of the transition or Behavior.
+*/
+qreal QmlRotationAnimation::to() const
+{
+    Q_D(const QmlRotationAnimation);
+    return d->to.toReal();
+}
+
+void QmlRotationAnimation::setTo(qreal t)
+{
+    QmlPropertyAnimation::setTo(t);
+}
+
+/*!
+    \qmlproperty enum RotationAnimation::direction
+    The direction in which to rotate.
+    Possible values are Numerical, Clockwise, Counterclockwise,
+    or Shortest.
+
+    \list
+    \row
+        \o Numerical
+        \o Rotate by linearly interpolating between the two numbers.
+           A rotation from 10 to 350 will rotate 340 degrees clockwise.
+    \row
+        \o Clockwise
+        \o Rotate clockwise between the two values
+    \row
+        \o Counterclockwise
+        \o Rotate counterclockwise between the two values
+    \row
+        \o Shortest
+        \o Rotate in the direction that produces the shortest animation path.
+           A rotation from 10 to 350 will rotate 20 degrees counterclockwise.
+    \list
+
+    The default direction is Shortest.
+*/
+QmlRotationAnimation::RotationDirection QmlRotationAnimation::direction() const
+{
+    Q_D(const QmlRotationAnimation);
+    return d->direction;
+}
+
+void QmlRotationAnimation::setDirection(QmlRotationAnimation::RotationDirection direction)
+{
+    Q_D(QmlRotationAnimation);
+    if (d->direction == direction)
+        return;
+
+    d->direction = direction;
+    switch(d->direction) {
+    case Clockwise:
+        d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateClockwiseRotation);
+        break;
+    case Counterclockwise:
+        d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateCounterclockwiseRotation);
+        break;
+    case Shortest:
+        d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateShortestRotation);
+        break;
+    default:
+        d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
+        break;
+    }
+
+    emit directionChanged();
+}
+
+QML_DEFINE_TYPE(Qt,4,6,RotationAnimation,QmlRotationAnimation)
+
 QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 : QmlAbstractAnimation(*(new QmlAnimationGroupPrivate), parent)
 {
@@ -1656,6 +1827,13 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 
 QmlPropertyAnimation::QmlPropertyAnimation(QObject *parent)
 : QmlAbstractAnimation(*(new QmlPropertyAnimationPrivate), parent)
+{
+    Q_D(QmlPropertyAnimation);
+    d->init();
+}
+
+QmlPropertyAnimation::QmlPropertyAnimation(QmlPropertyAnimationPrivate &dd, QObject *parent)
+: QmlAbstractAnimation(dd, parent)
 {
     Q_D(QmlPropertyAnimation);
     d->init();
@@ -2155,6 +2333,10 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     if (d->defaultProperty.isValid() && !hasSelectors) {
         props << d->defaultProperty.name();
         targets << d->defaultProperty.object();
+    }
+
+    if (props.isEmpty() && !d->defaultProperties.isEmpty()) {
+        props << d->defaultProperties.split(QLatin1Char(','));
     }
 
     PropertyUpdater *data = new PropertyUpdater;

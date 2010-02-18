@@ -297,6 +297,7 @@ public:
     QList<QObject *> *exclude();
 
 protected:
+    QmlPropertyAnimation(QmlPropertyAnimationPrivate &dd, QObject *parent);
     virtual void transition(QmlStateActions &actions,
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
@@ -367,6 +368,35 @@ public:
     void setTo(QVector3D);
 };
 
+class QmlRotationAnimationPrivate;
+class Q_AUTOTEST_EXPORT QmlRotationAnimation : public QmlPropertyAnimation
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlRotationAnimation)
+    Q_ENUMS(RotationDirection)
+
+    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(RotationDirection direction READ direction WRITE setDirection NOTIFY directionChanged)
+
+public:
+    QmlRotationAnimation(QObject *parent=0);
+    virtual ~QmlRotationAnimation();
+
+    qreal from() const;
+    void setFrom(qreal);
+
+    qreal to() const;
+    void setTo(qreal);
+
+    enum RotationDirection { Numerical, Shortest, Clockwise, Counterclockwise };
+    RotationDirection direction() const;
+    void setDirection(RotationDirection direction);
+
+Q_SIGNALS:
+    void directionChanged();
+};
+
 class QmlAnimationGroupPrivate;
 class QmlAnimationGroup : public QmlAbstractAnimation
 {
@@ -429,6 +459,7 @@ QML_DECLARE_TYPE(QmlNumberAnimation)
 QML_DECLARE_TYPE(QmlSequentialAnimation)
 QML_DECLARE_TYPE(QmlParallelAnimation)
 QML_DECLARE_TYPE(QmlVector3dAnimation)
+QML_DECLARE_TYPE(QmlRotationAnimation)
 
 QT_END_HEADER
 

@@ -358,6 +358,7 @@ public:
     QString properties;
     QList<QObject *> targets;
     QList<QObject *> exclude;
+    QString defaultProperties;
 
     bool fromSourced;
     bool fromIsDefined:1;
@@ -371,6 +372,15 @@ public:
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, int type);
+};
+
+class QmlRotationAnimationPrivate : public QmlPropertyAnimationPrivate
+{
+    Q_DECLARE_PUBLIC(QmlRotationAnimation)
+public:
+    QmlRotationAnimationPrivate() : direction(QmlRotationAnimation::Shortest) {}
+
+    QmlRotationAnimation::RotationDirection direction;
 };
 
 QT_END_NAMESPACE
