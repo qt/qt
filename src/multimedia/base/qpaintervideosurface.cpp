@@ -645,11 +645,11 @@ QAbstractVideoSurface::Error QVideoSurfaceArbFpPainter::start(const QVideoSurfac
             break;
         case QVideoFrame::Format_RGB24:
             initRgbTextureInfo(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
-            program = qt_arbfp_xrgbShaderProgram;
+            program = qt_arbfp_rgbShaderProgram;
             break;
         case QVideoFrame::Format_BGR24:
             initRgbTextureInfo(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE, format.frameSize());
-            program = qt_arbfp_rgbShaderProgram;
+            program = qt_arbfp_xrgbShaderProgram;
             break;
         case QVideoFrame::Format_RGB565:
             initRgbTextureInfo(GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, format.frameSize());
@@ -991,11 +991,11 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::start(const QVideoSurface
 #ifndef QT_OPENGL_ES
         case QVideoFrame::Format_RGB24:
             initRgbTextureInfo(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, format.frameSize());
-            fragmentProgram = qt_glsl_argbShaderProgram;
+            fragmentProgram = qt_glsl_rgbShaderProgram;
             break;
         case QVideoFrame::Format_BGR24:
             initRgbTextureInfo(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE, format.frameSize());
-            fragmentProgram = qt_glsl_rgbShaderProgram;
+            fragmentProgram = qt_glsl_argbShaderProgram;
             break;
 #endif
         case QVideoFrame::Format_RGB565:
