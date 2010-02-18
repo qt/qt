@@ -199,7 +199,6 @@ ReplayWidget::ReplayWidget(const QString &filename_)
     }
 
     in >> buffer >> updates;
-    printf("Read paint buffer version %d with %d frames\n", version, buffer.numFrames());
 
     resize(buffer.boundingRect().size().toSize());
 
