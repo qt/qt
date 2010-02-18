@@ -52,9 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace std {
+namespace fulltextsearch {
+namespace std {
 
 namespace {
     QStringList split( const QString &str )
@@ -607,8 +606,7 @@ void QHelpSearchIndexReaderDefault::run()
     emit searchingFinished(hitList.count());
 }
 
-        }   // namespace std
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace std
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE
