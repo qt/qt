@@ -78,6 +78,7 @@ public:
         DoNotBufferUploadDataAttribute,
         HttpPipeliningAllowedAttribute,
         HttpPipeliningWasUsedAttribute,
+        CustomVerbAttribute,
 
         User = 1000,
         UserMax = 32767

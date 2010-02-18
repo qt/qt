@@ -75,6 +75,7 @@ public:
         PutOperation,
         PostOperation,
         DeleteOperation,
+        CustomOperation,
 
         UnknownOperation = 0
     };
@@ -102,6 +103,7 @@ public:
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *deleteResource(const QNetworkRequest &request);
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = 0);
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY

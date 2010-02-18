@@ -61,6 +61,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     uploadByteDevice = other.uploadByteDevice;
     autoDecompress = other.autoDecompress;
     pipeliningAllowed = other.pipeliningAllowed;
+    customVerb = other.customVerb;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -76,36 +77,38 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
 
 QByteArray QHttpNetworkRequestPrivate::methodName() const
 {
-    QByteArray ba;
     switch (operation) {
-    case QHttpNetworkRequest::Options:
-        ba += "OPTIONS";
-        break;
     case QHttpNetworkRequest::Get:
-        ba += "GET";
+        return "GET";
         break;
     case QHttpNetworkRequest::Head:
-        ba += "HEAD";
+        return "HEAD";
         break;
     case QHttpNetworkRequest::Post:
-        ba += "POST";
+        return "POST";
+        break;
+    case QHttpNetworkRequest::Options:
+        return "OPTIONS";
         break;
     case QHttpNetworkRequest::Put:
-        ba += "PUT";
+        return "PUT";
         break;
     case QHttpNetworkRequest::Delete:
-        ba += "DELETE";
+        return "DELETE";
         break;
     case QHttpNetworkRequest::Trace:
-        ba += "TRACE";
+        return "TRACE";
         break;
     case QHttpNetworkRequest::Connect:
-        ba += "CONNECT";
+        return "CONNECT";
+        break;
+    case QHttpNetworkRequest::Custom:
+        return customVerb;
         break;
     default:
         break;
     }
-    return ba;
+    return QByteArray();
 }
 
 QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
@@ -128,26 +131,37 @@ QByteArray QHttpNetworkRequestPrivate::uri(bool throughProxy) const
 
 QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request, bool throughProxy)
 {
-    QByteArray ba = request.d->methodName();
-    QByteArray uri = request.d->uri(throughProxy);
-    ba += ' ' + uri;
-
-    QString majorVersion = QString::number(request.majorVersion());
-    QString minorVersion = QString::number(request.minorVersion());
-    ba += " HTTP/" + majorVersion.toLatin1() + '.' + minorVersion.toLatin1() + "\r\n";
-
     QList<QPair<QByteArray, QByteArray> > fields = request.header();
+    QByteArray ba;
+    ba.reserve(40 + fields.length()*25); // very rough lower bound estimation
+
+    ba += request.d->methodName();
+    ba += ' ';
+    ba += request.d->uri(throughProxy);
+
+    ba += " HTTP/";
+    ba += QByteArray::number(request.majorVersion());
+    ba += '.';
+    ba += QByteArray::number(request.minorVersion());
+    ba += "\r\n";
+
     QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();
-    for (; it != fields.constEnd(); ++it)
-        ba += it->first + ": " + it->second + "\r\n";
+    QList<QPair<QByteArray, QByteArray> >::const_iterator endIt = fields.constEnd();
+    for (; it != endIt; ++it) {
+        ba += it->first;
+        ba += ": ";
+        ba += it->second;
+        ba += "\r\n";
+    }
     if (request.d->operation == QHttpNetworkRequest::Post) {
         // add content type, if not set in the request
         if (request.headerField("content-type").isEmpty())
             ba += "Content-Type: application/x-www-form-urlencoded\r\n";
         if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
             QByteArray query = request.d->url.encodedQuery();
-            ba += "Content-Length: "+ QByteArray::number(query.size()) + "\r\n";
-            ba += "\r\n";
+            ba += "Content-Length: ";
+            ba += QByteArray::number(query.size());
+            ba += "\r\n\r\n";
             ba += query;
         } else {
             ba += "\r\n";
@@ -228,6 +242,16 @@ QHttpNetworkRequest::Operation QHttpNetworkRequest::operation() const
 void QHttpNetworkRequest::setOperation(Operation operation)
 {
     d->operation = operation;
+}
+
+QByteArray QHttpNetworkRequest::customVerb() const
+{
+    return d->customVerb;
+}
+
+void QHttpNetworkRequest::setCustomVerb(const QByteArray &customVerb)
+{
+    d->customVerb = customVerb;
 }
 
 QHttpNetworkRequest::Priority QHttpNetworkRequest::priority() const
