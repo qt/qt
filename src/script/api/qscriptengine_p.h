@@ -41,10 +41,15 @@
 #include <QtCore/qset.h>
 #include "qscriptvalue_p.h"
 #include "qscriptstring_p.h"
+#include "bridge/qscriptobject_p.h"
+#include "utils/qscriptdate_p.h"
 
+#include "DateConstructor.h"
 #include "Debugger.h"
+#include "JSArray.h"
 #include "Lexer.h"
 #include "RefPtr.h"
+#include "RegExpConstructor.h"
 #include "SourceProvider.h"
 #include "Structure.h"
 #include "JSGlobalObject.h"
@@ -202,6 +207,18 @@ public:
     inline void registerScriptString(QScriptStringPrivate *value);
     inline void unregisterScriptString(QScriptStringPrivate *value);
     void detachAllRegisteredScriptStrings();
+
+    static inline JSC::JSValue newArray(JSC::ExecState *, uint length);
+    static inline JSC::JSValue newDate(JSC::ExecState *, qsreal value);
+    static inline JSC::JSValue newDate(JSC::ExecState *, const QDateTime &);
+    inline JSC::JSValue newObject();
+
+#ifndef QT_NO_REGEXP
+    static JSC::JSValue newRegExp(JSC::ExecState *, const QRegExp &);
+#endif
+
+    static JSC::JSValue newRegExp(JSC::ExecState *, const QString &pattern, const QString &flags);
+    JSC::JSValue newVariant(const QVariant &);
 
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
@@ -585,6 +602,28 @@ inline const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScript
 inline JSC::ExecState *QScriptEnginePrivate::globalExec() const
 {
     return originalGlobalObject()->globalExec();
+}
+
+inline JSC::JSValue QScriptEnginePrivate::newArray(JSC::ExecState *exec, uint length)
+{
+    return JSC::constructEmptyArray(exec, length);
+}
+
+inline JSC::JSValue QScriptEnginePrivate::newDate(JSC::ExecState *exec, qsreal value)
+{
+    JSC::JSValue val = JSC::jsNumber(exec, value);
+    JSC::ArgList args(&val, 1);
+    return JSC::constructDate(exec, args);
+}
+
+inline JSC::JSValue QScriptEnginePrivate::newDate(JSC::ExecState *exec, const QDateTime &value)
+{
+    return newDate(exec, QScript::FromDateTime(value));
+}
+
+inline JSC::JSValue QScriptEnginePrivate::newObject()
+{
+    return new (currentFrame)QScriptObject(scriptObjectStructure);
 }
 
 QT_END_NAMESPACE

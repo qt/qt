@@ -44,11 +44,8 @@
 #include <math.h>
 
 #include "Error.h"
-#include "JSArray.h"
 #include "JSLock.h"
 #include "Interpreter.h"
-#include "DateConstructor.h"
-#include "RegExpConstructor.h"
 
 #include "PrototypeFunction.h"
 #include "InitializeThreading.h"
@@ -60,9 +57,7 @@
 #include "Parser.h"
 #include "Operations.h"
 
-#include "utils/qscriptdate_p.h"
 #include "bridge/qscriptfunction_p.h"
-#include "bridge/qscriptobject_p.h"
 #include "bridge/qscriptclassobject_p.h"
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
@@ -1497,6 +1492,92 @@ void QScriptEnginePrivate::detachAllRegisteredScriptStrings()
     registeredScriptStrings = 0;
 }
 
+#ifndef QT_NO_REGEXP
+
+extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
+
+JSC::JSValue QScriptEnginePrivate::newRegExp(JSC::ExecState *exec, const QRegExp &regexp)
+{
+    JSC::JSValue buf[2];
+    JSC::ArgList args(buf, sizeof(buf));
+
+    //convert the pattern to a ECMAScript pattern
+    QString pattern = qt_regexp_toCanonical(regexp.pattern(), regexp.patternSyntax());
+    if (regexp.isMinimal()) {
+        QString ecmaPattern;
+        int len = pattern.length();
+        ecmaPattern.reserve(len);
+        int i = 0;
+        const QChar *wc = pattern.unicode();
+        bool inBracket = false;
+        while (i < len) {
+            QChar c = wc[i++];
+            ecmaPattern += c;
+            switch (c.unicode()) {
+            case '?':
+            case '+':
+            case '*':
+            case '}':
+                if (!inBracket)
+                    ecmaPattern += QLatin1Char('?');
+                break;
+            case '\\':
+                if (i < len)
+                    ecmaPattern += wc[i++];
+                break;
+            case '[':
+                inBracket = true;
+                break;
+            case ']':
+                inBracket = false;
+               break;
+            default:
+                break;
+            }
+        }
+        pattern = ecmaPattern;
+    }
+
+    JSC::UString jscPattern = pattern;
+    QString flags;
+    if (regexp.caseSensitivity() == Qt::CaseInsensitive)
+        flags.append(QLatin1Char('i'));
+    JSC::UString jscFlags = flags;
+    buf[0] = JSC::jsString(exec, jscPattern);
+    buf[1] = JSC::jsString(exec, jscFlags);
+    return JSC::constructRegExp(exec, args);
+}
+
+#endif
+
+JSC::JSValue QScriptEnginePrivate::newRegExp(JSC::ExecState *exec, const QString &pattern, const QString &flags)
+{
+    JSC::JSValue buf[2];
+    JSC::ArgList args(buf, sizeof(buf));
+    JSC::UString jscPattern = pattern;
+    QString strippedFlags;
+    if (flags.contains(QLatin1Char('i')))
+        strippedFlags += QLatin1Char('i');
+    if (flags.contains(QLatin1Char('m')))
+        strippedFlags += QLatin1Char('m');
+    if (flags.contains(QLatin1Char('g')))
+        strippedFlags += QLatin1Char('g');
+    JSC::UString jscFlags = strippedFlags;
+    buf[0] = JSC::jsString(exec, jscPattern);
+    buf[1] = JSC::jsString(exec, jscFlags);
+    return JSC::constructRegExp(exec, args);
+}
+
+JSC::JSValue QScriptEnginePrivate::newVariant(const QVariant &value)
+{
+    QScriptObject *obj = new (currentFrame) QScriptObject(variantWrapperObjectStructure);
+    obj->setDelegate(new QScript::QVariantDelegate(value));
+    JSC::JSValue proto = defaultPrototype(value.userType());
+    if (proto)
+        obj->setPrototype(proto);
+    return obj;
+}
+
 #ifdef QT_NO_QOBJECT
 
 QScriptEngine::QScriptEngine()
@@ -1669,56 +1750,7 @@ extern QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->currentFrame;
-    JSC::JSValue buf[2];
-    JSC::ArgList args(buf, sizeof(buf));
-
-    //convert the pattern to a ECMAScript pattern
-    QString pattern = qt_regexp_toCanonical(regexp.pattern(), regexp.patternSyntax());
-    if (regexp.isMinimal()) {
-        QString ecmaPattern;
-        int len = pattern.length();
-        ecmaPattern.reserve(len);
-        int i = 0;
-        const QChar *wc = pattern.unicode();
-        bool inBracket = false;
-        while (i < len) {
-            QChar c = wc[i++];
-            ecmaPattern += c;
-            switch (c.unicode()) {
-            case '?':
-            case '+':
-            case '*':
-            case '}':
-                if (!inBracket)
-                    ecmaPattern += QLatin1Char('?');
-                break;
-            case '\\':
-                if (i < len)
-                    ecmaPattern += wc[i++];
-                break;
-            case '[':
-                inBracket = true;
-                break;
-            case ']':
-                inBracket = false;
-                break;
-            default:
-                break;
-            }
-        }
-        pattern = ecmaPattern;
-    }
-
-    JSC::UString jscPattern = pattern;
-    QString flags;
-    if (regexp.caseSensitivity() == Qt::CaseInsensitive)
-        flags.append(QLatin1Char('i'));
-    JSC::UString jscFlags = flags;
-    buf[0] = JSC::jsString(exec, jscPattern);
-    buf[1] = JSC::jsString(exec, jscFlags);
-    JSC::JSObject* result = JSC::constructRegExp(exec, args);
-    return d->scriptValueFromJSCValue(result);
+    return d->scriptValueFromJSCValue(d->newRegExp(d->currentFrame, regexp));
 }
 
 #endif // QT_NO_REGEXP
@@ -1736,14 +1768,7 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 QScriptValue QScriptEngine::newVariant(const QVariant &value)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->currentFrame;
-    QScriptObject *obj = new (exec) QScriptObject(d->variantWrapperObjectStructure);
-    obj->setDelegate(new QScript::QVariantDelegate(value));
-    QScriptValue result = d->scriptValueFromJSCValue(obj);
-    QScriptValue proto = defaultPrototype(value.userType());
-    if (proto.isValid())
-        result.setPrototype(proto);
-    return result;
+    return d->scriptValueFromJSCValue(d->newVariant(value));
 }
 
 /*!
@@ -1882,9 +1907,7 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
 QScriptValue QScriptEngine::newObject()
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->currentFrame;
-    JSC::JSObject *result = new (exec)QScriptObject(d->scriptObjectStructure);
-    return d->scriptValueFromJSCValue(result);
+    return d->scriptValueFromJSCValue(d->newObject());
 }
 
 /*!
@@ -2007,9 +2030,7 @@ QScriptValue QScriptEngine::newFunction(QScriptEngine::FunctionWithArgSignature 
 QScriptValue QScriptEngine::newArray(uint length)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->currentFrame;
-    JSC::JSArray* result = JSC::constructEmptyArray(exec, length);
-    return d->scriptValueFromJSCValue(result);
+    return d->scriptValueFromJSCValue(d->newArray(d->currentFrame, length));
 }
 
 /*!
@@ -2022,22 +2043,7 @@ QScriptValue QScriptEngine::newArray(uint length)
 QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &flags)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->currentFrame;
-    JSC::JSValue buf[2];
-    JSC::ArgList args(buf, sizeof(buf));
-    JSC::UString jscPattern = pattern;
-    QString strippedFlags;
-    if (flags.contains(QLatin1Char('i')))
-        strippedFlags += QLatin1Char('i');
-    if (flags.contains(QLatin1Char('m')))
-        strippedFlags += QLatin1Char('m');
-    if (flags.contains(QLatin1Char('g')))
-        strippedFlags += QLatin1Char('g');
-    JSC::UString jscFlags = strippedFlags;
-    buf[0] = JSC::jsString(exec, jscPattern);
-    buf[1] = JSC::jsString(exec, jscFlags);
-    JSC::JSObject* result = JSC::constructRegExp(exec, args);
-    return d->scriptValueFromJSCValue(result);
+    return d->scriptValueFromJSCValue(d->newRegExp(d->currentFrame, pattern, flags));
 }
 
 /*!
@@ -2048,11 +2054,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
 QScriptValue QScriptEngine::newDate(qsreal value)
 {
     Q_D(QScriptEngine);
-    JSC::ExecState* exec = d->currentFrame;
-    JSC::JSValue val = JSC::jsNumber(exec, value);
-    JSC::ArgList args(&val, 1);
-    JSC::JSObject *result = JSC::constructDate(exec, args);
-    return d->scriptValueFromJSCValue(result);
+    return d->scriptValueFromJSCValue(d->newDate(d->currentFrame, value));
 }
 
 /*!
@@ -2062,7 +2064,8 @@ QScriptValue QScriptEngine::newDate(qsreal value)
 */
 QScriptValue QScriptEngine::newDate(const QDateTime &value)
 {
-    return newDate(QScript::FromDateTime(value));
+    Q_D(QScriptEngine);
+    return d->scriptValueFromJSCValue(d->newDate(d->currentFrame, value));
 }
 
 #ifndef QT_NO_QOBJECT
