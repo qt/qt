@@ -17,6 +17,6 @@ Rectangle { border.color: "black"; color: "steelblue"; radius: 5; width: pix.wid
 
     transitions:
         Transition{
-            NumberAnimation { matchProperties:"x,left"; easing:"easeInOutQuad"; duration:200 }
+            NumberAnimation { properties:"x,left"; easing:"easeInOutQuad"; duration:200 }
         }
 }

@@ -93,7 +93,7 @@ Item {
                             }
                             NumberAnimation {
                                 easing: "easeInOutQuad"
-                                matchProperties: "angle"
+                                properties: "angle"
                             }
                             ScriptAction{
                                 script: if(model.hasMine && model.flipped){expl.explode = true;}

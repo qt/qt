@@ -67,7 +67,7 @@ For example, adding this code to the above \c {Item {}} element animates the tra
 \qml
     transitions: [
         Transition {
-            NumberAnimation { matchProperties: "x,y"; duration: 500 }
+            NumberAnimation { properties: "x,y"; duration: 500 }
         }
     ]
 \endqml

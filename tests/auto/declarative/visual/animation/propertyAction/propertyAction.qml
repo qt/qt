@@ -27,8 +27,8 @@ Rectangle {
         reversible: true
         SequentialAnimation {
             ColorAnimation {}
-            PropertyAction { matchProperties: "x" }
-            NumberAnimation { matchProperties: "y"; easing: "InOutQuad" }
+            PropertyAction { properties: "x" }
+            NumberAnimation { properties: "y"; easing: "InOutQuad" }
         }
     }
 }

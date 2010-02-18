@@ -122,7 +122,7 @@ Rectangle {
                 PropertyChanges { target: verticalScrollBar; opacity: 1 }
             }
         ]
-        transitions: [ Transition { NumberAnimation { matchProperties: "opacity"; duration: 400 } } ]
+        transitions: [ Transition { NumberAnimation { properties: "opacity"; duration: 400 } } ]
     }
 
     Row {

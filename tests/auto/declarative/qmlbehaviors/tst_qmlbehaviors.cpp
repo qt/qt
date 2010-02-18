@@ -63,9 +63,11 @@ private slots:
     //void transitionOverrides();
     void group();
     void emptyBehavior();
+    void explicitSelection();
     void nonSelectingBehavior();
     void reassignedAnimation();
     void disabled();
+    void dontStart();
 };
 
 void tst_qmlbehaviors::simpleBehavior()
@@ -225,19 +227,23 @@ void tst_qmlbehaviors::emptyBehavior()
     QCOMPARE(x, qreal(200));    //should change immediately
 }
 
-void tst_qmlbehaviors::nonSelectingBehavior()
+void tst_qmlbehaviors::explicitSelection()
 {
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/explicit.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         rect->setState("moved");
+        QTest::qWait(100);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
-        QCOMPARE(x, qreal(200));    //should change immediately
+        QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
+}
 
+void tst_qmlbehaviors::nonSelectingBehavior()
+{
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting2.qml"));
@@ -273,7 +279,21 @@ void tst_qmlbehaviors::disabled()
     rect->setState("moved");
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
     QCOMPARE(x, qreal(200));    //should change immediately
+}
 
+void tst_qmlbehaviors::dontStart()
+{
+    QmlEngine engine;
+
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart.qml"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+    QVERIFY(myAnim && myAnim->qtAnimation());
+    QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
 }
 
 QTEST_MAIN(tst_qmlbehaviors)

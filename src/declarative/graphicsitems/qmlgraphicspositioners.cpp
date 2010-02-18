@@ -361,7 +361,7 @@ Column {
 Column {
     move: Transition {
         NumberAnimation {
-            matchProperties: "y"
+            properties: "y"
             ease: "easeOutBounce"
         }
     }
@@ -470,7 +470,7 @@ Row {
     id: positioner
     move: Transition {
         NumberAnimation {
-            matchProperties: "x"
+            properties: "x"
             ease: "easeOutBounce"
         }
     }
@@ -592,7 +592,7 @@ Grid {
 Grid {
     move: Transition {
         NumberAnimation {
-            matchProperties: "x,y"
+            properties: "x,y"
             ease: "easeOutBounce"
         }
     }
@@ -737,7 +737,7 @@ Flow {
     id: positioner
     move: Transition {
         NumberAnimation {
-            matchProperties: "x,y"
+            properties: "x,y"
             ease: "easeOutBounce"
         }
     }
