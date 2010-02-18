@@ -42,14 +42,6 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qnumeric.h>
 
-#include "utils/qscriptdate_p.h"
-#include "bridge/qscriptobject_p.h"
-#include "bridge/qscriptclassobject_p.h"
-#include "bridge/qscriptvariant_p.h"
-#include "bridge/qscriptqobject_p.h"
-#include "bridge/qscriptdeclarativeclass_p.h"
-#include "bridge/qscriptdeclarativeobject_p.h"
-
 /*!
   \since 4.3
   \class QScriptValue
@@ -175,22 +167,6 @@
 */
 
 QT_BEGIN_NAMESPACE
-
-QVariant &QScriptValuePrivate::variantValue() const
-{
-    Q_ASSERT(jscValue.inherits(&QScriptObject::info));
-    QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(jscValue))->delegate();
-    Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::Variant));
-    return static_cast<QScript::QVariantDelegate*>(delegate)->value();
-}
-
-void QScriptValuePrivate::setVariantValue(const QVariant &value)
-{
-    Q_ASSERT(jscValue.inherits(&QScriptObject::info));
-    QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(jscValue))->delegate();
-    Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::Variant));
-    static_cast<QScript::QVariantDelegate*>(delegate)->setValue(value);
-}
 
 void QScriptValuePrivate::detachFromEngine()
 {
@@ -1205,40 +1181,10 @@ QVariant QScriptValue::toVariant() const
     if (!d)
         return QVariant();
     switch (d->type) {
-    case QScriptValuePrivate::JavaScriptCore:
-        if (isObject()) {
-            if (isVariant())
-                return d->variantValue();
-#ifndef QT_NO_QOBJECT
-            else if (isQObject())
-                return qVariantFromValue(toQObject());
-#endif
-            else if (isDate())
-                return QVariant(toDateTime());
-#ifndef QT_NO_REGEXP
-            else if (isRegExp())
-                return QVariant(toRegExp());
-#endif
-            else if (isArray())
-                return QScriptEnginePrivate::variantListFromArray(*this);
-            else if (QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(*this))
-                return dc->toVariant(QScriptDeclarativeClass::object(*this));
-            // try to convert to primitive
-            JSC::ExecState *exec = d->engine->currentFrame;
-            JSC::JSValue savedException;
-            QScriptEnginePrivate::saveException(exec, &savedException);
-            JSC::JSValue prim = d->jscValue.toPrimitive(exec);
-            QScriptEnginePrivate::restoreException(exec, savedException);
-            if (!prim.isObject())
-                return d->engine->scriptValueFromJSCValue(prim).toVariant();
-        } else if (isNumber()) {
-            return QVariant(toNumber());
-        } else if (isString()) {
-            return QVariant(toString());
-        } else if (isBool()) {
-            return QVariant(toBool());
-        }
-        return QVariant();
+    case QScriptValuePrivate::JavaScriptCore: {
+        JSC::ExecState *exec = d->engine ? d->engine->currentFrame : 0;
+        return QScriptEnginePrivate::toVariant(exec, d->jscValue);
+    }
     case QScriptValuePrivate::Number:
         return QVariant(d->numberValue);
     case QScriptValuePrivate::String:
@@ -1286,13 +1232,9 @@ QDateTime QScriptValue::toDateTime() const
 QRegExp QScriptValue::toRegExp() const
 {
     Q_D(const QScriptValue);
-    if (!isRegExp())
-        return QRegExp();
-    QString pattern = property(QLatin1String("source"), QScriptValue::ResolvePrototype).toString();
-    Qt::CaseSensitivity kase = Qt::CaseSensitive;
-    if (property(QLatin1String("ignoreCase"), QScriptValue::ResolvePrototype).toBool())
-        kase = Qt::CaseInsensitive;
-    return QRegExp(pattern, kase, QRegExp::RegExp2);
+    if (!d || !d->engine)
+         return QRegExp();
+    return QScriptEnginePrivate::toRegExp(d->engine->currentFrame, d->jscValue);
 }
 #endif // QT_NO_REGEXP
 
@@ -1309,19 +1251,9 @@ QRegExp QScriptValue::toRegExp() const
 QObject *QScriptValue::toQObject() const
 {
     Q_D(const QScriptValue);
-    if (isQObject()) {
-        QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-        QScriptObjectDelegate *delegate = object->delegate();
-        if (delegate->type() == QScriptObjectDelegate::DeclarativeClassObject)
-            return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->scriptClass()->toQObject(QScriptDeclarativeClass::object(*this));
-        return static_cast<QScript::QObjectDelegate*>(delegate)->value();
-    } else if (isVariant()) {
-        QVariant var = toVariant();
-        int type = var.userType();
-        if ((type == QMetaType::QObjectStar) || (type == QMetaType::QWidgetStar))
-            return *reinterpret_cast<QObject* const *>(var.constData());
-    }
-    return 0;
+    if (!d || !d->engine)
+        return 0;
+    return QScriptEnginePrivate::toQObject(d->engine->currentFrame, d->jscValue);
 }
 
 /*!
@@ -1333,9 +1265,9 @@ QObject *QScriptValue::toQObject() const
 const QMetaObject *QScriptValue::toQMetaObject() const
 {
     Q_D(const QScriptValue);
-    if (isQMetaObject())
-        return static_cast<QScript::QMetaObjectWrapperObject*>(JSC::asObject(d->jscValue))->value();
-    return 0;
+    if (!d || !d->engine)
+        return 0;
+    return QScriptEnginePrivate::toQMetaObject(d->engine->currentFrame, d->jscValue);
 }
 
 /*!
@@ -1971,13 +1903,9 @@ bool QScriptValue::isVariant() const
 bool QScriptValue::isQObject() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
+    if (!d || !d->isJSC())
         return false;
-    QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-    QScriptObjectDelegate *delegate = object->delegate();
-    return (delegate && (delegate->type() == QScriptObjectDelegate::QtObject ||
-                         (delegate->type() == QScriptObjectDelegate::DeclarativeClassObject &&
-                          static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->scriptClass()->isQObject())));
+    return QScriptEnginePrivate::isQObject(d->jscValue);
 }
 
 /*!
@@ -1989,9 +1917,9 @@ bool QScriptValue::isQObject() const
 bool QScriptValue::isQMetaObject() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject())
+    if (!d || !d->isJSC())
         return false;
-    return JSC::asObject(d->jscValue)->inherits(&QScript::QMetaObjectWrapperObject::info);
+    return QScriptEnginePrivate::isQMetaObject(d->jscValue);
 }
 
 /*!

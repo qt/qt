@@ -69,9 +69,6 @@ public:
     inline bool isJSC() const;
     inline bool isObject() const;
 
-    QVariant &variantValue() const;
-    void setVariantValue(const QVariant &value);
-
     static inline QScriptValuePrivate *get(const QScriptValue &q)
     {
         return q.d_ptr.data();
