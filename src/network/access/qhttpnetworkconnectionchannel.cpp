@@ -137,6 +137,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         if (reply) {
             reply->d_func()->clear();
             reply->d_func()->connection = connection;
+            reply->d_func()->connectionChannel = this;
             reply->d_func()->autoDecompress = request.d->autoDecompress;
             reply->d_func()->pipeliningUsed = false;
         }
@@ -568,7 +569,8 @@ void QHttpNetworkConnectionChannel::allDone()
     handleStatus();
     // ### at this point there should be no more data on the socket
     // close if server requested
-    if (reply->d_func()->isConnectionCloseEnabled())
+    bool connectionCloseEnabled = reply->d_func()->isConnectionCloseEnabled();
+    if (connectionCloseEnabled)
         close();
     // queue the finished signal, this is required since we might send new requests from
     // slot connected to it. The socket will not fire readyRead signal, if we are already
@@ -579,14 +581,22 @@ void QHttpNetworkConnectionChannel::allDone()
     // in case of failures, each channel will attempt two reconnects before emitting error.
     reconnectAttempts = 2;
 
+    detectPipeliningSupport();
+
     // now the channel can be seen as free/idle again, all signal emissions for the reply have been done
     this->state = QHttpNetworkConnectionChannel::IdleState;
 
-    detectPipeliningSupport();
+    // if it does not need to be sent again we can set it to 0
+    // the previous code did not do that and we had problems with accidental re-sending of a
+    // finished request.
+    // Note that this may trigger a segfault at some other point. But then we can fix the underlying
+    // problem.
+    if (!resendCurrent)
+        reply = 0;
 
     // move next from pipeline to current request
     if (!alreadyPipelinedRequests.isEmpty()) {
-        if (resendCurrent || reply->d_func()->isConnectionCloseEnabled() || socket->state() != QAbstractSocket::ConnectedState) {
+        if (resendCurrent || connectionCloseEnabled || socket->state() != QAbstractSocket::ConnectedState) {
             // move the pipelined ones back to the main queue
             requeueCurrentlyPipelinedRequests();
             close();
@@ -745,6 +755,7 @@ void  QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
     if (reply) {
         reply->d_func()->clear();
         reply->d_func()->connection = connection;
+        reply->d_func()->connectionChannel = this;
         reply->d_func()->autoDecompress = request.d->autoDecompress;
         reply->d_func()->pipeliningUsed = true;
     }
