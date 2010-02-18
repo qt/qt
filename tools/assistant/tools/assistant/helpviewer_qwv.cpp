@@ -49,10 +49,8 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QString>
 #include <QtCore/QStringBuilder>
-#include <QtCore/QTemporaryFile>
 #include <QtCore/QTimer>
 
-#include <QtGui/QDesktopServices>
 #include <QtGui/QWheelEvent>
 
 #include <QtNetwork/QNetworkAccessManager>
@@ -211,45 +209,27 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     const QNetworkRequest &request, QWebPage::NavigationType type)
 {
     TRACE_OBJ
-    const QUrl &url = request.url();
     const bool closeNewTab = closeNewTabIfNeeded;
     closeNewTabIfNeeded = false;
 
-    if (AbstractHelpViewer::isLocalUrl(url)) {
-        const QString& path = url.path();
-        if (!AbstractHelpViewer::canOpenPage(path)) {
-            QTemporaryFile tmpTmpFile;
-            if (!tmpTmpFile.open())
-                return false;
-            const QString &extension = QFileInfo(path).completeSuffix();
-            QFile actualTmpFile(tmpTmpFile.fileName() % QLatin1String(".")
-                % extension);
-            if (actualTmpFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
-                actualTmpFile.write(HelpEngineWrapper::instance().fileData(url));
-                actualTmpFile.close();
-                QDesktopServices::openUrl(QUrl(actualTmpFile.fileName()));
-            }
-
-            if (closeNewTab)
-                QMetaObject::invokeMethod(CentralWidget::instance(), "closeTab");
-            return false;
-        }
-
-        if (type == QWebPage::NavigationTypeLinkClicked
-            && (m_keyboardModifiers & Qt::ControlModifier
-            || m_pressedButtons == Qt::MidButton)) {
-                HelpViewer* viewer = centralWidget->newEmptyTab();
-                if (viewer)
-                    CentralWidget::instance()->setSource(url);
-                m_pressedButtons = Qt::NoButton;
-                m_keyboardModifiers = Qt::NoModifier;
-                return false;
-        }
-        return true;
+    const QUrl &url = request.url();
+    if (AbstractHelpViewer::launchWithExternalApp(url)) {
+        if (closeNewTab)
+            QMetaObject::invokeMethod(centralWidget, "closeTab");
+        return false;
     }
 
-    QDesktopServices::openUrl(url);
-    return false;
+    if (type == QWebPage::NavigationTypeLinkClicked
+        && (m_keyboardModifiers & Qt::ControlModifier
+        || m_pressedButtons == Qt::MidButton)) {
+            if (HelpViewer* viewer = centralWidget->newEmptyTab())
+                centralWidget->setSource(url);
+            m_pressedButtons = Qt::NoButton;
+            m_keyboardModifiers = Qt::NoModifier;
+            return false;
+    }
+
+    return true;
 }
 
 // -- HelpViewer
@@ -337,12 +317,7 @@ void HelpViewer::setSource(const QUrl &url)
 {
     TRACE_OBJ
     loadFinished = false;
-    if (url.toString() == QLatin1String("help")) {
-        load(QUrl(QLatin1String("qthelp://com.trolltech.com."
-            "assistantinternal-1.0.0/assistant/assistant.html")));
-    } else {
-        load(url);
-    }
+    load(url.toString() == QLatin1String("help") ? LocalHelpFile : url);
 }
 
 void HelpViewer::home()
