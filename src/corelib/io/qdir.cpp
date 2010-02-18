@@ -89,8 +89,6 @@ public:
     QDirPrivate(const QDir *copy = 0);
     ~QDirPrivate();
 
-    QString initFileEngine(const QString &file);
-
     void updateFileLists() const;
     void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *) const;
 
@@ -146,6 +144,7 @@ public:
     } *data;
     inline void setPath(const QString &p)
     {
+        detach(false);
         QString path = p;
         if ((path.endsWith(QLatin1Char('/')) || path.endsWith(QLatin1Char('\\')))
                 && path.length() > 1) {
@@ -155,8 +154,12 @@ public:
                 path.truncate(path.length() - 1);
         }
 
+        delete data->fileEngine;
+        data->fileEngine = QAbstractFileEngine::create(path);
+
         // set the path to be the qt friendly version so then we can operate on it using just /
-        data->path = initFileEngine(path);
+        data->path = data->fileEngine->fileName(QAbstractFileEngine::DefaultName);
+        data->clear();
     }
     inline void reset() {
         detach();
@@ -308,15 +311,6 @@ inline void QDirPrivate::updateFileLists() const
         sortFileList(data->sort, l, &data->files, &data->fileInfos);
         data->listsDirty = 0;
     }
-}
-
-inline QString QDirPrivate::initFileEngine(const QString &path)
-{
-    detach(false);
-    data->clear();
-    delete data->fileEngine;
-    data->fileEngine = QAbstractFileEngine::create(path);
-    return data->fileEngine->fileName(QAbstractFileEngine::DefaultName);
 }
 
 void QDirPrivate::detach(bool createFileEngine)

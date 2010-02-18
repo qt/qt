@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include <QtCore/qglobal.h>
+
 #if defined(QT_NO_WEBKIT)
 
 #ifndef HELPVIEWERQTB_H

@@ -6,19 +6,16 @@ contains(sql-drivers, psql) {
     HEADERS +=      drivers/psql/qsql_psql.h
     SOURCES +=      drivers/psql/qsql_psql.cpp
 
-    unix {
-        !isEmpty(QT_LFLAGS_PSQL) {
-            LIBS *= $$QT_LFLAGS_PSQL
+    unix|win32-g++ {
+        !static:!isEmpty(QT_LFLAGS_PSQL) {
+            !contains(QT_CONFIG, system-zlib): QT_LFLAGS_PSQL -= -lz
+            !static:LIBS *= $$QT_LFLAGS_PSQL
             QMAKE_CXXFLAGS *= $$QT_CFLAGS_PSQL
         }
         !contains(LIBS, .*pq.*):LIBS *= -lpq
     }
 
-    win32 {
-	!win32-g++:!contains( LIBS, .*pq.* ):LIBS *= -llibpq
-    	win32-g++:!contains( LIBS, .*pq.* ):LIBS *= -lpq
-        LIBS *= -lws2_32 -ladvapi32
-    }
+    win32:!win32-g++:!contains(LIBS, .*pq.* ) LIBS *= -llibpq -lws2_32 -ladvapi32
 }
 
 contains(sql-drivers, mysql) {

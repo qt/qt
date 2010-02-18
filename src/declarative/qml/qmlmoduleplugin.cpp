@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     The plugin should register QML types with qmlRegisterType() when the
     defineModule() method is called.
 
-    \sa examples/declarative/plugins
+    See the example in \c{examples/declarative/plugins}.
 */
 
 /*!

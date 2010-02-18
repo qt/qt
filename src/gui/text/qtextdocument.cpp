@@ -435,16 +435,23 @@ void QTextDocument::redo(QTextCursor *cursor)
     }
 }
 
+/*! \enum QTextDocument::Stacks
+  
+  \value UndoStack              The undo stack.
+  \value RedoStack              The redo stack.
+  \value UndoAndRedoStacks      Both the undo and redo stacks.
+*/
+        
 /*!
     \since 4.7
-    Clears the specified stacks.
+    Clears the stacks specified by \a stacksToClear.
 
-    This method clears any commands on the undo stack, the redo stack, or both (the
-    default). If any commands got cleared, the appropriate signals
-    (\a QTextDocument::undoAvailable or \a QTextDocument::redoAvailable) get
-    emitted.
+    This method clears any commands on the undo stack, the redo stack,
+    or both (the default). If commands are cleared, the appropriate
+    signals are emitted, QTextDocument::undoAvailable() or
+    QTextDocument::redoAvailable().
 
-    \sa QTextDocument::undoAvailable QTextDocument::redoAvailable
+    \sa QTextDocument::undoAvailable() QTextDocument::redoAvailable()
 */
 void QTextDocument::clearUndoRedoStacks(Stacks stacksToClear)
 {

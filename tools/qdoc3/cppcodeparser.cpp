@@ -281,8 +281,8 @@ void CppCodeParser::parseHeaderFile(const Location& location,
                                     const QString& filePath,
                                     Tree *tree)
 {
-    FILE *in = fopen(QFile::encodeName(filePath), "r");
-    if (!in) {
+    QFile in(filePath);
+    if (!in.open(QIODevice::ReadOnly)) {
         location.error(tr("Cannot open C++ header file '%1'").arg(filePath));
         return;
     }
@@ -295,7 +295,7 @@ void CppCodeParser::parseHeaderFile(const Location& location,
     matchDeclList(tree->root());
     if (!fileTokenizer.version().isEmpty())
         tree->setVersion(fileTokenizer.version());
-    fclose(in);
+    in.close();
 
     if (fileLocation.fileName() == "qiterator.h")
         parseQiteratorDotH(location, filePath);
@@ -312,8 +312,8 @@ void CppCodeParser::parseSourceFile(const Location& location,
                                     const QString& filePath,
                                     Tree *tree)
 {
-    FILE *in = fopen(QFile::encodeName(filePath), "r");
-    if (!in) {
+    QFile in(filePath);
+    if (!in.open(QIODevice::ReadOnly)) {
         location.error(tr("Cannot open C++ source file '%1' (%2)").arg(filePath).arg(strerror(errno)));
         return;
     }
@@ -325,7 +325,7 @@ void CppCodeParser::parseSourceFile(const Location& location,
     readToken();
     usedNamespaces.clear();
     matchDocsAndStuff();
-    fclose(in);
+    in.close();
 }
 
 /*!
