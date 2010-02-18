@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,29 @@
 **
 ****************************************************************************/
 
-#include <qstring.h>
-#include <qt_windows.h>
+#ifndef SYMBIAN_EPOCROOT_H
+#define SYMBIAN_EPOCROOT_H
 
-QT_BEGIN_NAMESPACE
+#include <QtCore/qstring.h>
 
+/**
+ * Determine the epoc root for the currently active SDK.
+ *
+ * The algorithm used is as follows:
+ * 1. If environment variable EPOCROOT is set and points to an existent
+ *    directory, this is returned.
+ * 2. The location of devices.xml is specified by a registry key.  If this
+ *    file exists, it is parsed.
+ * 3. If the EPOCDEVICE environment variable is set and a corresponding
+ *    entry is found in devices.xml, and its epocroot value points to an
+ *    existent directory, it is returned.
+ * 4. If a device element marked as default is found in devices.xml and its
+ *    epocroot value points to an existent directory, this is returned.
+ * 5. An empty string is returned.
+ *
+ * Any return value other than the empty string therefore is guaranteed to
+ * point to an existent directory.
+ */
+QString epocRoot();
 
-enum Compiler {
-    CC_UNKNOWN = 0,
-    CC_BORLAND = 0x01,
-    CC_MINGW   = 0x02,
-    CC_INTEL   = 0x03,
-    CC_MSVC4   = 0x40,
-    CC_MSVC5   = 0x50,
-    CC_MSVC6   = 0x60,
-    CC_NET2002 = 0x70,
-    CC_NET2003 = 0x71,
-    CC_NET2005 = 0x80,
-    CC_NET2008 = 0x90
-};
-
-struct CompilerInfo;
-class Environment
-{
-public:
-    static Compiler detectCompiler();
-    static QString detectQMakeSpec();
-    static bool detectExecutable(const QString &executable);
-
-    static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static bool cpdir(const QString &srcDir, const QString &destDir);
-    static bool rmdir(const QString &name);
-
-    static QString symbianEpocRoot();
-
-private:
-    static Compiler detectedCompiler;
-
-    static CompilerInfo *compilerInfo(Compiler compiler);
-};
-
-
-QT_END_NAMESPACE
+#endif // EPOCROOT_H
