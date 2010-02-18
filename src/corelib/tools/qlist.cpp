@@ -209,7 +209,7 @@ void **QListData::append(const QListData& l)
     int n = l.d->end - l.d->begin;
     if (n) {
         if (e + n > d->alloc)
-            realloc(grow(e + l.d->end - l.d->begin));
+            realloc(grow(e + n));
         ::memcpy(d->array + d->end, l.d->array + l.d->begin, n*sizeof(void*));
         d->end += n;
     }
@@ -253,11 +253,11 @@ void **QListData::insert(int i)
     Q_ASSERT(d->ref == 1);
     if (i <= 0)
         return prepend();
-    if (i >= d->end - d->begin)
+    int size = d->end - d->begin;
+    if (i >= size)
         return append();
 
     bool leftward = false;
-    int size = d->end - d->begin;
 
     if (d->begin == 0) {
         if (d->end == d->alloc) {
