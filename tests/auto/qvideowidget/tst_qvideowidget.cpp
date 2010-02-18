@@ -69,7 +69,6 @@ private slots:
     void setMediaObject();
 
     void showWindowControl();
-    void fullScreenWindowControl();
     void aspectRatioWindowControl();
     void sizeHintWindowControl_data() { sizeHint_data(); }
     void sizeHintWindowControl();
@@ -83,7 +82,6 @@ private slots:
     void saturationWindowControl();
 
     void showWidgetControl();
-    void fullScreenWidgetControl();
     void aspectRatioWidgetControl();
     void sizeHintWidgetControl_data() { sizeHint_data(); }
     void sizeHintWidgetControl();
@@ -97,7 +95,6 @@ private slots:
     void saturationWidgetControl();
 
     void showRendererControl();
-    void fullScreenRendererControl();
     void aspectRatioRendererControl();
     void sizeHintRendererControl_data();
     void sizeHintRendererControl();
@@ -111,6 +108,12 @@ private slots:
     void saturationRendererControl();
 
     void paintRendererControl();
+
+#ifndef Q_WS_X11
+    void fullScreenWindowControl();
+    void fullScreenWidgetControl();
+    void fullScreenRendererControl();
+#endif
 
 private:
     void sizeHint_data();
@@ -890,6 +893,7 @@ void tst_QVideoWidget::sizeHintRendererControl()
     QCOMPARE(widget.sizeHint(), expectedSize);
 }
 
+#ifndef Q_WS_X11
 
 void tst_QVideoWidget::fullScreenWindowControl()
 {
@@ -1115,6 +1119,7 @@ void tst_QVideoWidget::fullScreenRendererControl()
     QCOMPARE(spy.count(), 5);
 }
 
+#endif
 
 void tst_QVideoWidget::color_data()
 {
