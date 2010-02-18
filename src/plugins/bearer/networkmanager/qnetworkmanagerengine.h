@@ -70,6 +70,8 @@ public:
     QNetworkManagerEngine(QObject *parent = 0);
     ~QNetworkManagerEngine();
 
+    bool networkManagerAvailable() const;
+
     QString getInterfaceFromId(const QString &id);
     bool hasIdentifier(const QString &id);
 

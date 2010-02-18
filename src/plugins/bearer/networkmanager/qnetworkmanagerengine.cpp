@@ -65,6 +65,9 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
     systemSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE_SYSTEM_SETTINGS, this)),
     userSettings(new QNetworkManagerSettings(NM_DBUS_SERVICE_USER_SETTINGS, this))
 {
+    if (!interface->isValid())
+        return;
+
     interface->setConnections();
     connect(interface, SIGNAL(deviceAdded(QDBusObjectPath)),
             this, SLOT(deviceAdded(QDBusObjectPath)));
@@ -113,6 +116,11 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
 
 QNetworkManagerEngine::~QNetworkManagerEngine()
 {
+}
+
+bool QNetworkManagerEngine::networkManagerAvailable() const
+{
+    return interface->isValid();
 }
 
 void QNetworkManagerEngine::doRequestUpdate()

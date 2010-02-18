@@ -78,7 +78,6 @@ QNetworkManagerInterface::QNetworkManagerInterface(QObject *parent)
                                                 NM_DBUS_INTERFACE,
                                                 dbusConnection);
     if (!d->connectionInterface->isValid()) {
-        qWarning() << "Could not find NetworkManager";
         d->valid = false;
         return;
     }
@@ -321,7 +320,7 @@ QNetworkManagerInterfaceDevice::QNetworkManagerInterfaceDevice(const QString &de
                                                 dbusConnection);
     if (!d->connectionInterface->isValid()) {
         d->valid = false;
-        qWarning() << "Could not find NetworkManager";
+        qWarning() << "Could not find NetworkManagerInterfaceDevice";
         return;
     }
     d->valid = true;

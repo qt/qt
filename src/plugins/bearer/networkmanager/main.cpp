@@ -72,10 +72,15 @@ QStringList QNetworkManagerEnginePlugin::keys() const
 
 QBearerEngine *QNetworkManagerEnginePlugin::create(const QString &key) const
 {
-    if (key == QLatin1String("networkmanager"))
-        return new QNetworkManagerEngine;
-    else
-        return 0;
+    if (key == QLatin1String("networkmanager")) {
+        QNetworkManagerEngine *engine = new QNetworkManagerEngine;
+        if (engine->networkManagerAvailable())
+            return engine;
+        else
+            delete engine;
+    }
+
+    return 0;
 }
 
 Q_EXPORT_STATIC_PLUGIN(QNetworkManagerEnginePlugin)
