@@ -175,7 +175,6 @@ public:
 
         Cmd_DrawText,
         Cmd_DrawTextItem,
-        Cmd_DrawStaticText,
 
         Cmd_DrawImagePos,
         Cmd_DrawImageRect,
@@ -185,6 +184,9 @@ public:
 
         Cmd_SystemStateChanged,
         Cmd_Translate,
+        Cmd_DrawStaticText,
+
+        // new commands must be added above this line
 
         Cmd_LastCommand
     };
