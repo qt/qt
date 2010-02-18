@@ -227,7 +227,7 @@ public:
     void paintEvent(QPaintEvent *) {
         static int last = 0;
         static bool firstRun = true;
-        if (firstRun == 0) {
+        if (firstRun) {
             timer.start();
             firstRun = false;
         } else {
