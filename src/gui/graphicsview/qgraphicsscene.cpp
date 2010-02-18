@@ -5901,7 +5901,6 @@ void QGraphicsScenePrivate::leaveModal(QGraphicsItem *panel)
 }
 
 void QGraphicsScenePrivate::getGestureTargets(const QSet<QGesture *> &gestures,
-                                              QWidget *viewport,
                                               QMap<Qt::GestureType, QGesture *> *conflictedGestures,
                                               QList<QList<QGraphicsObject *> > *conflictedItems,
                                               QHash<QGesture *, QGraphicsObject *> *normalGestures)
@@ -5909,8 +5908,7 @@ void QGraphicsScenePrivate::getGestureTargets(const QSet<QGesture *> &gestures,
     foreach (QGesture *gesture, gestures) {
         Qt::GestureType gestureType = gesture->gestureType();
         if (gesture->hasHotSpot()) {
-            QPoint screenPos = gesture->hotSpot().toPoint();
-            QList<QGraphicsItem *> items = itemsAtPosition(screenPos, QPointF(), viewport);
+            QList<QGraphicsItem *> items = itemsAtPosition(QPoint(), gesture->d_func()->sceneHotSpot, 0);
             QList<QGraphicsObject *> result;
             for (int j = 0; j < items.size(); ++j) {
                 QGraphicsItem *item = items.at(j);
@@ -5946,6 +5944,10 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     QWidget *viewport = event->widget();
     if (!viewport)
         return;
+    QGraphicsView *graphicsView = qobject_cast<QGraphicsView *>(viewport->parent());
+    if (!graphicsView)
+        return;
+
     QList<QGesture *> allGestures = event->gestures();
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
             << "Delivering gestures:" <<  allGestures;
@@ -5958,6 +5960,14 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 
     QSet<QGesture *> startedGestures;
     foreach (QGesture *gesture, allGestures) {
+        // cache scene coordinates of the hot spot
+        if (gesture->hasHotSpot()) {
+            gesture->d_func()->sceneHotSpot = graphicsView->mapToScene(
+                    graphicsView->mapFromGlobal(gesture->hotSpot().toPoint()));
+        } else {
+            gesture->d_func()->sceneHotSpot = QPointF();
+        }
+
         QGraphicsObject *target = gestureTargets.value(gesture, 0);
         if (!target) {
             // when we are not in started mode but don't have a target
@@ -5976,7 +5986,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     QMap<Qt::GestureType, QGesture *> conflictedGestures;
     QList<QList<QGraphicsObject *> > conflictedItems;
     QHash<QGesture *, QGraphicsObject *> normalGestures;
-    getGestureTargets(startedGestures, viewport, &conflictedGestures, &conflictedItems,
+    getGestureTargets(startedGestures, &conflictedGestures, &conflictedItems,
                       &normalGestures);
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
             << "Conflicting gestures:" <<  conflictedGestures.values() << conflictedItems;
@@ -6186,7 +6196,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             QMap<Qt::GestureType, QGesture *> conflictedGestures;
             QList<QList<QGraphicsObject *> > itemsForConflictedGestures;
             QHash<QGesture *, QGraphicsObject *> normalGestures;
-            getGestureTargets(ignoredGestures, viewport,
+            getGestureTargets(ignoredGestures,
                               &conflictedGestures, &itemsForConflictedGestures,
                               &normalGestures);
             for (int k = 0; k < itemsForConflictedGestures.size(); ++k)
@@ -6205,7 +6215,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         if (g->gestureCancelPolicy() == QGesture::CancelAllInContext) {
             DEBUG() << "lets try to cancel some";
             // find gestures in context in Qt::GestureStarted or Qt::GestureUpdated state and cancel them
-            cancelGesturesForChildren(g, event->widget());
+            cancelGesturesForChildren(g);
         }
     }
 
@@ -6222,7 +6232,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     }
 }
 
-void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original, QWidget *viewport)
+void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original)
 {
     Q_ASSERT(original);
     QGraphicsItem *originalItem = gestureTargets.value(original);
@@ -6278,8 +6288,7 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original, QWidge
             if (!g->hasHotSpot())
                 continue;
 
-            QPoint screenPos = g->hotSpot().toPoint();
-            QList<QGraphicsItem *> items = itemsAtPosition(screenPos, QPointF(), viewport);
+            QList<QGraphicsItem *> items = itemsAtPosition(QPoint(), g->d_func()->sceneHotSpot, 0);
             for (int j = 0; j < items.size(); ++j) {
                 QGraphicsObject *item = items.at(j)->toGraphicsObject();
                 if (!item)
