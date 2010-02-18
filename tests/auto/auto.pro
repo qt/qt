@@ -153,8 +153,6 @@ SUBDIRS += \
            qfontmetrics \
            qftp \
            qgetputenv \
-           qgl \
-	   qgl_threads \
            qglobal \
            qgraphicseffect \
            qgraphicseffectsource \
@@ -464,7 +462,7 @@ SUBDIRS += \
            rcc \
            windowsmobile
 
-contains(QT_CONFIG,opengl):SUBDIRS += qgl qglbuffer
+contains(QT_CONFIG,opengl):SUBDIRS += qgl qglbuffer qgl_threads
 
 contains(QT_CONFIG,qt3support):!wince*:SUBDIRS += $$Q3SUBDIRS
 
