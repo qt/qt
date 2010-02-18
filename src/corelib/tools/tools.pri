@@ -84,6 +84,7 @@ symbian:SOURCES+=tools/qlocale_symbian.cpp
 
 mac:SOURCES += tools/qtimestamp_mac.cpp
 else:unix:SOURCES += tools/qtimestamp_unix.cpp
+else:win32:SOURCES += tools/qtimestamp_win.cpp
 else:SOURCES += tools/qtimestamp_generic.cpp
 
 #zlib support
