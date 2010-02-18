@@ -53,105 +53,308 @@
 // We mean it.
 //
 
-#include "qmlparser_p.h"
+#include "qmlerror.h"
 
-#include <QtCore/QtGlobal>
+#include <QtCore/qlist.h>
+#include <QtCore/qshareddata.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlDomDocumentPrivate : public QSharedData
+QT_MODULE(Declarative)
+
+class QString;
+class QByteArray;
+class QmlDomObject;
+class QmlDomList;
+class QmlDomValue;
+class QmlEngine;
+class QmlDomComponent;
+class QmlDomImport;
+class QIODevice;
+
+class QmlDomDocumentPrivate;
+
+class Q_DECLARATIVE_EXPORT QmlDomDocument
 {
 public:
-    QmlDomDocumentPrivate();
-    QmlDomDocumentPrivate(const QmlDomDocumentPrivate &o)
-    : QSharedData(o) { qFatal("Not impl"); }
-    ~QmlDomDocumentPrivate();
+    QmlDomDocument();
+    QmlDomDocument(const QmlDomDocument &);
+    ~QmlDomDocument();
+    QmlDomDocument &operator=(const QmlDomDocument &);
 
-    QList<QmlError> errors;
-    QList<QmlDomImport> imports;
-    QmlParser::Object *root;
-    QList<int> automaticSemicolonOffsets;
+    QList<QmlDomImport> imports() const;
+
+    QList<QmlError> errors() const;
+    bool load(QmlEngine *, const QByteArray &, const QUrl & = QUrl());
+
+    QmlDomObject rootObject() const;
+
+private:
+    QSharedDataPointer<QmlDomDocumentPrivate> d;
 };
 
-class QmlDomObjectPrivate : public QSharedData
+class QmlDomPropertyPrivate;
+class Q_DECLARATIVE_EXPORT QmlDomProperty
 {
 public:
-    QmlDomObjectPrivate();
-    QmlDomObjectPrivate(const QmlDomObjectPrivate &o)
-    : QSharedData(o) { qFatal("Not impl"); }
-    ~QmlDomObjectPrivate();
+    QmlDomProperty();
+    QmlDomProperty(const QmlDomProperty &);
+    ~QmlDomProperty();
+    QmlDomProperty &operator=(const QmlDomProperty &);
 
-    typedef QList<QPair<QmlParser::Property *, QByteArray> > Properties;
-    Properties properties() const;
-    Properties properties(QmlParser::Property *) const;
+    bool isValid() const;
 
-    QmlParser::Object *object;
+    QByteArray propertyName() const;
+    QList<QByteArray> propertyNameParts() const;
+
+    bool isDefaultProperty() const;
+
+    QmlDomValue value() const;
+
+    int position() const;
+    int length() const;
+
+private:
+    friend class QmlDomObject;
+    friend class QmlDomDynamicProperty;
+    QSharedDataPointer<QmlDomPropertyPrivate> d;
 };
 
-class QmlDomPropertyPrivate : public QSharedData
+class QmlDomDynamicPropertyPrivate;
+class Q_DECLARATIVE_EXPORT QmlDomDynamicProperty
 {
 public:
-    QmlDomPropertyPrivate();
-    QmlDomPropertyPrivate(const QmlDomPropertyPrivate &o)
-    : QSharedData(o) { qFatal("Not impl"); }
-    ~QmlDomPropertyPrivate();
+    QmlDomDynamicProperty();
+    QmlDomDynamicProperty(const QmlDomDynamicProperty &);
+    ~QmlDomDynamicProperty();
+    QmlDomDynamicProperty &operator=(const QmlDomDynamicProperty &);
 
-    QByteArray propertyName;
-    QmlParser::Property *property;
+    bool isValid() const;
+
+    QByteArray propertyName() const;
+    int propertyType() const;
+    QByteArray propertyTypeName() const;
+
+    bool isDefaultProperty() const;
+    QmlDomProperty defaultValue() const;
+
+    bool isAlias() const;
+
+    int position() const;
+    int length() const;
+
+private:
+    friend class QmlDomObject;
+    QSharedDataPointer<QmlDomDynamicPropertyPrivate> d;
 };
 
-class QmlDomDynamicPropertyPrivate : public QSharedData
+class QmlDomObjectPrivate;
+class Q_DECLARATIVE_EXPORT QmlDomObject
 {
 public:
-    QmlDomDynamicPropertyPrivate();
-    QmlDomDynamicPropertyPrivate(const QmlDomDynamicPropertyPrivate &o)
-    : QSharedData(o) { qFatal("Not impl"); }
-    ~QmlDomDynamicPropertyPrivate();
+    QmlDomObject();
+    QmlDomObject(const QmlDomObject &);
+    ~QmlDomObject();
+    QmlDomObject &operator=(const QmlDomObject &);
 
-    bool valid;
-    QmlParser::Object::DynamicProperty property;
+    bool isValid() const;
+
+    QByteArray objectType() const;
+    QByteArray objectClassName() const;
+
+    int objectTypeMajorVersion() const;
+    int objectTypeMinorVersion() const;
+
+    QString objectId() const;
+
+    QList<QmlDomProperty> properties() const;
+    QmlDomProperty property(const QByteArray &) const;
+
+    QList<QmlDomDynamicProperty> dynamicProperties() const;
+    QmlDomDynamicProperty dynamicProperty(const QByteArray &) const;
+
+    bool isCustomType() const;
+    QByteArray customTypeData() const;
+
+    bool isComponent() const;
+    QmlDomComponent toComponent() const;
+
+    int position() const;
+    int length() const;
+
+    QUrl url() const;
+private:
+    friend class QmlDomDocument;
+    friend class QmlDomComponent;
+    friend class QmlDomValue;
+    friend class QmlDomValueValueSource;
+    friend class QmlDomValueValueInterceptor;
+    QSharedDataPointer<QmlDomObjectPrivate> d;
 };
 
-class QmlDomValuePrivate : public QSharedData
+class QmlDomValuePrivate;
+class QmlDomBasicValuePrivate;
+class Q_DECLARATIVE_EXPORT QmlDomValueLiteral
 {
 public:
-    QmlDomValuePrivate();
-    QmlDomValuePrivate(const QmlDomValuePrivate &o)
-    : QSharedData(o) { qFatal("Not impl"); }
-    ~QmlDomValuePrivate();
+    QmlDomValueLiteral();
+    QmlDomValueLiteral(const QmlDomValueLiteral &);
+    ~QmlDomValueLiteral();
+    QmlDomValueLiteral &operator=(const QmlDomValueLiteral &);
 
-    QmlParser::Property *property;
-    QmlParser::Value *value;
+    QString literal() const;
+
+private:
+    friend class QmlDomValue;
+    QSharedDataPointer<QmlDomBasicValuePrivate> d;
 };
 
-class QmlDomBasicValuePrivate : public QSharedData
+class Q_DECLARATIVE_EXPORT QmlDomValueBinding
 {
 public:
-    QmlDomBasicValuePrivate();
-    QmlDomBasicValuePrivate(const QmlDomBasicValuePrivate &o) 
-    : QSharedData(o) { qFatal("Not impl"); }
-    ~QmlDomBasicValuePrivate();
+    QmlDomValueBinding();
+    QmlDomValueBinding(const QmlDomValueBinding &);
+    ~QmlDomValueBinding();
+    QmlDomValueBinding &operator=(const QmlDomValueBinding &);
 
-    QmlParser::Value *value;
+    QString binding() const;
+
+private:
+    friend class QmlDomValue;
+    QSharedDataPointer<QmlDomBasicValuePrivate> d;
 };
 
-class QmlDomImportPrivate : public QSharedData
+class Q_DECLARATIVE_EXPORT QmlDomValueValueSource
 {
 public:
-    QmlDomImportPrivate();
-    QmlDomImportPrivate(const QmlDomImportPrivate &o) 
-    : QSharedData(o) { qFatal("Not impl"); }
-    ~QmlDomImportPrivate();
+    QmlDomValueValueSource();
+    QmlDomValueValueSource(const QmlDomValueValueSource &);
+    ~QmlDomValueValueSource();
+    QmlDomValueValueSource &operator=(const QmlDomValueValueSource &);
 
+    QmlDomObject object() const;
+
+private:
+    friend class QmlDomValue;
+    QSharedDataPointer<QmlDomBasicValuePrivate> d;
+};
+
+class Q_DECLARATIVE_EXPORT QmlDomValueValueInterceptor
+{
+public:
+    QmlDomValueValueInterceptor();
+    QmlDomValueValueInterceptor(const QmlDomValueValueInterceptor &);
+    ~QmlDomValueValueInterceptor();
+    QmlDomValueValueInterceptor &operator=(const QmlDomValueValueInterceptor &);
+
+    QmlDomObject object() const;
+
+private:
+    friend class QmlDomValue;
+    QSharedDataPointer<QmlDomBasicValuePrivate> d;
+};
+
+
+class Q_DECLARATIVE_EXPORT QmlDomComponent : public QmlDomObject
+{
+public:
+    QmlDomComponent();
+    QmlDomComponent(const QmlDomComponent &);
+    ~QmlDomComponent();
+    QmlDomComponent &operator=(const QmlDomComponent &);
+
+    QmlDomObject componentRoot() const;
+};
+
+class Q_DECLARATIVE_EXPORT QmlDomValue
+{
+public:
+    enum Type { 
+        Invalid,
+        Literal, 
+        PropertyBinding, 
+        ValueSource,
+        ValueInterceptor,
+        Object,
+        List 
+    };
+
+    QmlDomValue();
+    QmlDomValue(const QmlDomValue &);
+    ~QmlDomValue();
+    QmlDomValue &operator=(const QmlDomValue &);
+
+    Type type() const;
+
+    bool isInvalid() const;
+    bool isLiteral() const;
+    bool isBinding() const;
+    bool isValueSource() const;
+    bool isValueInterceptor() const;
+    bool isObject() const;
+    bool isList() const;
+
+    QmlDomValueLiteral toLiteral() const;
+    QmlDomValueBinding toBinding() const;
+    QmlDomValueValueSource toValueSource() const;
+    QmlDomValueValueInterceptor toValueInterceptor() const;
+    QmlDomObject toObject() const;
+    QmlDomList toList() const;
+
+    int position() const;
+    int length() const;
+
+private:
+    friend class QmlDomProperty;
+    friend class QmlDomList;
+    QSharedDataPointer<QmlDomValuePrivate> d;
+};
+
+class Q_DECLARATIVE_EXPORT QmlDomList
+{
+public:
+    QmlDomList();
+    QmlDomList(const QmlDomList &);
+    ~QmlDomList();
+    QmlDomList &operator=(const QmlDomList &);
+
+    QList<QmlDomValue> values() const;
+
+    int position() const;
+    int length() const;
+
+    QList<int> commaPositions() const;
+
+private:
+    friend class QmlDomValue;
+    QSharedDataPointer<QmlDomValuePrivate> d;
+};
+
+class QmlDomImportPrivate;
+class Q_DECLARATIVE_EXPORT QmlDomImport
+{
+public:
     enum Type { Library, File };
 
-    Type type;
-    QString uri;
-    QString version;
-    QString qualifier;
+    QmlDomImport();
+    QmlDomImport(const QmlDomImport &);
+    ~QmlDomImport();
+    QmlDomImport &operator=(const QmlDomImport &);
+
+    Type type() const;
+    QString uri() const;
+    QString version() const;
+    QString qualifier() const;
+
+private:
+    friend class QmlDomDocument;
+    QSharedDataPointer<QmlDomImportPrivate> d;
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLDOM_P_H
+QT_END_HEADER
 
+#endif // QMLDOM_P_H

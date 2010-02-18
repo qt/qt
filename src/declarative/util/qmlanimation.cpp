@@ -2302,7 +2302,6 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                                      TransitionDirection direction)
 {
     Q_D(QmlPropertyAnimation);
-    Q_UNUSED(direction);
 
     QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)

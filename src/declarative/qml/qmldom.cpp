@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmldom.h"
 #include "qmldom_p.h"
+#include "qmldom_p_p.h"
 
 #include "qmlcompositetypedata_p.h"
 #include "qmlcompiler_p.h"
