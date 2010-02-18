@@ -892,14 +892,6 @@ void QmlPropertyAction::setTarget(QObject *o)
     emit targetChanged(d->target, d->propertyName);
 }
 
-/*!
-    \qmlproperty string PropertyAction::property
-    This property holds an explicit property to animated.
-
-    The exact effect of the \c property property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
-*/
-
 QString QmlPropertyAction::property() const
 {
     Q_D(const QmlPropertyAction);
@@ -916,13 +908,19 @@ void QmlPropertyAction::setProperty(const QString &n)
 }
 
 /*!
+    \qmlproperty string PropertyAction::property
     \qmlproperty string PropertyAction::properties
-    This property holds a comma-separated list of property names this action
-    will affect. These names are used in conjunction with targets (and the
-    singular forms target and property) to create a list of properties that the
-    action will set.
+    \qmlproperty Object PropertyAction::target
+    \qmlproperty list<Object> PropertyAction::targets
 
-    \sa targets PropertyAnimation::properties
+    These properties are used as a set to determine which properties should be
+    affected by this action.
+
+    The details of how these properties are interpreted in different situations
+    is covered in the \l{PropertyAnimation::properties}{corresponding} PropertyAnimation
+    documentation.
+
+    \sa exclude
 */
 QString QmlPropertyAction::properties() const
 {
@@ -939,17 +937,6 @@ void QmlPropertyAction::setProperties(const QString &p)
     emit propertiesChanged(p);
 }
 
-/*!
-    \qmlproperty list<Object> PropertyAction::targets
-    This property holds a list of objects this action will affect.
-    These objects are used in conjunction with properties (and their singular
-    forms property and target) to create a list of properties
-    that the action will set.
-
-    If no targets are specificed, all changing targets will be animated.
-
-    \sa exclude properties PropertyAnimation::targets
-*/
 QList<QObject *> *QmlPropertyAction::targets()
 {
     Q_D(QmlPropertyAction);
