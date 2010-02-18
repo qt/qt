@@ -38,6 +38,7 @@
 #include "private/qobject_p.h"
 
 #include <QtCore/qhash.h>
+#include <QtCore/qnumeric.h>
 #include <QtCore/qset.h>
 #include "qscriptvalue_p.h"
 #include "qscriptstring_p.h"
@@ -92,6 +93,15 @@ namespace QScript
     quint32 ToUInt32(qsreal);
     quint16 ToUInt16(qsreal);
     qsreal ToInteger(qsreal);
+
+    inline bool ToBool(qsreal);
+    inline bool ToBool(const QString &);
+    inline qsreal ToNumber(const QString &);
+    inline qint32 ToInt32(const QString &);
+    inline quint32 ToUInt32(const QString &);
+    inline quint16 ToUInt16(const QString &);
+    inline qsreal ToInteger(const QString &);
+    inline QString ToString(qsreal);
 
     //some conversion helper functions
     inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
@@ -394,6 +404,46 @@ private:
 inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
 {
     return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
+}
+
+inline QString ToString(qsreal value)
+{
+    return JSC::UString::from(value);
+}
+
+inline qsreal ToNumber(const QString &value)
+{
+    return ((JSC::UString)value).toDouble();
+}
+
+inline qint32 ToInt32(const QString &value)
+{
+    return ToInt32(ToNumber(value));
+}
+
+inline quint32 ToUInt32(const QString &value)
+{
+    return ToUInt32(ToNumber(value));
+}
+
+inline quint16 ToUInt16(const QString &value)
+{
+    return ToUInt16(ToNumber(value));
+}
+
+inline qsreal ToInteger(const QString &value)
+{
+    return ToInteger(ToNumber(value));
+}
+
+inline bool ToBool(qsreal value)
+{
+    return (value != 0) && !qIsNaN(value);
+}
+
+inline bool ToBool(const QString &value)
+{
+     return !value.isEmpty();
 }
 
 } // namespace QScript

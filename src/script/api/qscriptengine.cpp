@@ -40,7 +40,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qmetaobject.h>
 
-#include <QtCore/qnumeric.h>
 #include <math.h>
 
 #include "Error.h"

@@ -1127,7 +1127,7 @@ QString QScriptValue::toString() const
         return str;
     }
     case QScriptValuePrivate::Number:
-        return JSC::UString::from(d->numberValue);
+        return QScript::ToString(d->numberValue);
     case QScriptValuePrivate::String:
         return d->stringValue;
     }
@@ -1163,7 +1163,7 @@ qsreal QScriptValue::toNumber() const
     case QScriptValuePrivate::Number:
         return d->numberValue;
     case QScriptValuePrivate::String:
-        return ((JSC::UString)d->stringValue).toDouble();
+        return QScript::ToNumber(d->stringValue);
     }
     return 0;
 }
@@ -1188,9 +1188,9 @@ bool QScriptValue::toBoolean() const
         return result;
     }
     case QScriptValuePrivate::Number:
-        return (d->numberValue != 0) && !qIsNaN(d->numberValue);
+        return QScript::ToBool(d->numberValue);
     case QScriptValuePrivate::String:
-        return (!d->stringValue.isEmpty());
+        return QScript::ToBool(d->stringValue);
     }
     return false;
 }
@@ -1224,9 +1224,9 @@ bool QScriptValue::toBool() const
         return result;
     }
     case QScriptValuePrivate::Number:
-        return (d->numberValue != 0) && !qIsNaN(d->numberValue);
+        return QScript::ToBool(d->numberValue);
     case QScriptValuePrivate::String:
-        return (!d->stringValue.isEmpty());
+        return QScript::ToBool(d->stringValue);
     }
     return false;
 }
@@ -1260,7 +1260,7 @@ qint32 QScriptValue::toInt32() const
     case QScriptValuePrivate::Number:
         return QScript::ToInt32(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToInt32(((JSC::UString)d->stringValue).toDouble());
+        return QScript::ToInt32(d->stringValue);
     }
     return 0;
 }
@@ -1294,7 +1294,7 @@ quint32 QScriptValue::toUInt32() const
     case QScriptValuePrivate::Number:
         return QScript::ToUInt32(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToUInt32(((JSC::UString)d->stringValue).toDouble());
+        return QScript::ToUInt32(d->stringValue);
     }
     return 0;
 }
@@ -1324,7 +1324,7 @@ quint16 QScriptValue::toUInt16() const
     case QScriptValuePrivate::Number:
         return QScript::ToUInt16(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToUInt16(((JSC::UString)d->stringValue).toDouble());
+        return QScript::ToUInt16(d->stringValue);
     }
     return 0;
 }
@@ -1358,7 +1358,7 @@ qsreal QScriptValue::toInteger() const
     case QScriptValuePrivate::Number:
         return QScript::ToInteger(d->numberValue);
     case QScriptValuePrivate::String:
-        return QScript::ToInteger(((JSC::UString)d->stringValue).toDouble());
+        return QScript::ToInteger(d->stringValue);
     }
     return 0;
 }
