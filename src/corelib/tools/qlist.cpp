@@ -188,9 +188,9 @@ void **QListData::append()
         int n = d->end - d->begin;
         if (d->begin > 2 * d->alloc / 3) {
             // we have enough space. Just not at the end -> move it.
-            ::memcpy(d->array + n, d->array + d->begin, n * sizeof(void *));
-            d->begin = n;
-            d->end = n * 2;
+            ::memcpy(d->array, d->array + d->begin, n * sizeof(void *));
+            d->begin = 0;
+            d->end = n;
         } else {
             realloc(grow(d->alloc + 1));
         }
