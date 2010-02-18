@@ -176,7 +176,8 @@ public:
             useSystemClip(true),
             snapToPixelGrid(false),
             addOffset(false),
-            inverseScale(1)
+            inverseScale(1),
+            lastMaskTextureUsed(0)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -278,6 +279,7 @@ public:
     GLfloat inverseScale;
 
     GLuint lastTextureUsed;
+    GLuint lastMaskTextureUsed;
 
     bool needsSync;
     bool multisamplingAlwaysEnabled;

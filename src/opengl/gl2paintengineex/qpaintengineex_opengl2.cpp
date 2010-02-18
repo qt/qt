@@ -1596,7 +1596,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     //### TODO: Gamma correction
 
     glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-    glBindTexture(GL_TEXTURE_2D, cache->texture());
+    if (lastMaskTextureUsed != cache->texture()) {
+        glBindTexture(GL_TEXTURE_2D, cache->texture());
+        lastMaskTextureUsed = cache->texture();
+    }
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
@@ -1861,6 +1864,7 @@ void QGL2PaintEngineEx::ensureActive()
         d->transferMode(BrushDrawingMode);
         glViewport(0, 0, d->width, d->height);
         d->needsSync = false;
+        d->lastMaskTextureUsed = 0;
         d->shaderManager->setDirty();
         d->ctx->d_func()->syncGlState();
         for (int i = 0; i < 3; ++i)
