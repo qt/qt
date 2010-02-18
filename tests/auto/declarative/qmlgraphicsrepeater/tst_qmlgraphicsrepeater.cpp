@@ -70,7 +70,7 @@ private slots:
 private:
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QmlGraphicsItem *parent, const QString &id);
+    T *findItem(QGraphicsObject *parent, const QString &id);
 };
 
 class TestObject : public QObject
@@ -174,11 +174,11 @@ void tst_QmlGraphicsRepeater::numberModel()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->parentItem()->childItems().count(), 5+1);
 
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
     delete canvas;
@@ -200,7 +200,7 @@ void tst_QmlGraphicsRepeater::objectList()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->property("errors").toInt(), 0);//If this fails either they are out of order or can't find the object's data
     QCOMPARE(repeater->property("instantiated").toInt(), 100);
@@ -227,10 +227,10 @@ void tst_QmlGraphicsRepeater::stringList()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
 
-    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->rootObject(), "container");
     QVERIFY(container != 0);
 
     QCOMPARE(container->childItems().count(), data.count() + 3);
@@ -280,10 +280,10 @@ void tst_QmlGraphicsRepeater::dataModel()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
 
-    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->rootObject(), "container");
     QVERIFY(container != 0);
 
     QCOMPARE(container->childItems().count(), 4);
@@ -305,16 +305,16 @@ void tst_QmlGraphicsRepeater::itemModel()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
 
-    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->rootObject(), "container");
     QVERIFY(container != 0);
 
     QCOMPARE(container->childItems().count(), 1);
 
     testObject->setUseModel(true);
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
     QCOMPARE(container->childItems().count(), 4);
@@ -331,10 +331,10 @@ void tst_QmlGraphicsRepeater::properties()
     QmlEngine engine;
     QmlComponent component(&engine, TEST_FILE("/properties.qml"));
 
-    QmlGraphicsItem *root = qobject_cast<QmlGraphicsItem*>(component.create());
-    QVERIFY(root);
+    QmlGraphicsItem *rootObject = qobject_cast<QmlGraphicsItem*>(component.create());
+    QVERIFY(rootObject);
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(root, "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(rootObject, "repeater");
     QVERIFY(repeater);
 
     QSignalSpy modelSpy(repeater, SIGNAL(modelChanged()));
@@ -359,16 +359,13 @@ QmlView *tst_QmlGraphicsRepeater::createView(const QString &filename)
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
 
 template<typename T>
-T *tst_QmlGraphicsRepeater::findItem(QmlGraphicsItem *parent, const QString &objectName)
+T *tst_QmlGraphicsRepeater::findItem(QGraphicsObject *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     if (mo.cast(parent) && (objectName.isEmpty() || parent->objectName() == objectName))

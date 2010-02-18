@@ -77,13 +77,13 @@ void tst_QmlGraphicsPositioners::test_horizontal()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -100,13 +100,13 @@ void tst_QmlGraphicsPositioners::test_horizontal_spacing()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -123,13 +123,13 @@ void tst_QmlGraphicsPositioners::test_horizontal_animated()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     //Note that they animate in
@@ -165,13 +165,13 @@ void tst_QmlGraphicsPositioners::test_vertical()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -188,13 +188,13 @@ void tst_QmlGraphicsPositioners::test_vertical_spacing()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -212,15 +212,15 @@ void tst_QmlGraphicsPositioners::test_vertical_animated()
     canvas->execute();
 
     //Note that they animate in
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
     QCOMPARE(one->y(), -100.0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
     QCOMPARE(two->y(), -100.0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
     QCOMPARE(three->y(), -100.0);
 
@@ -253,15 +253,15 @@ void tst_QmlGraphicsPositioners::test_grid()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
-    QmlGraphicsRectangle *four = canvas->root()->findChild<QmlGraphicsRectangle*>("four");
+    QmlGraphicsRectangle *four = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("four");
     QVERIFY(four != 0);
-    QmlGraphicsRectangle *five = canvas->root()->findChild<QmlGraphicsRectangle*>("five");
+    QmlGraphicsRectangle *five = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -282,15 +282,15 @@ void tst_QmlGraphicsPositioners::test_grid_spacing()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
-    QmlGraphicsRectangle *four = canvas->root()->findChild<QmlGraphicsRectangle*>("four");
+    QmlGraphicsRectangle *four = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("four");
     QVERIFY(four != 0);
-    QmlGraphicsRectangle *five = canvas->root()->findChild<QmlGraphicsRectangle*>("five");
+    QmlGraphicsRectangle *five = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -311,27 +311,27 @@ void tst_QmlGraphicsPositioners::test_grid_animated()
     canvas->execute();
 
     //Note that all animate in
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
     QCOMPARE(one->x(), -100.0);
     QCOMPARE(one->y(), -100.0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
     QCOMPARE(two->x(), -100.0);
     QCOMPARE(two->y(), -100.0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
     QCOMPARE(three->x(), -100.0);
     QCOMPARE(three->y(), -100.0);
 
-    QmlGraphicsRectangle *four = canvas->root()->findChild<QmlGraphicsRectangle*>("four");
+    QmlGraphicsRectangle *four = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("four");
     QVERIFY(four != 0);
     QCOMPARE(four->x(), -100.0);
     QCOMPARE(four->y(), -100.0);
 
-    QmlGraphicsRectangle *five = canvas->root()->findChild<QmlGraphicsRectangle*>("five");
+    QmlGraphicsRectangle *five = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("five");
     QVERIFY(five != 0);
     QCOMPARE(five->x(), -100.0);
     QCOMPARE(five->y(), -100.0);
@@ -385,13 +385,13 @@ void tst_QmlGraphicsPositioners::test_repeater()
 
     canvas->execute();
 
-    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QmlGraphicsRectangle *three = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -406,10 +406,7 @@ QmlView *tst_QmlGraphicsPositioners::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setQml(xml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }

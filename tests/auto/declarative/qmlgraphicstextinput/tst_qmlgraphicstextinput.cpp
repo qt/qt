@@ -352,8 +352,8 @@ void tst_qmlgraphicstextinput::maxLength()
     canvas->execute();
     canvas->show();
     canvas->setFocus();
-    QVERIFY(canvas->root() != 0);
-    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->root());
+    QVERIFY(canvas->rootObject() != 0);
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
     QVERIFY(textinputObject->text().isEmpty());
     QVERIFY(textinputObject->maxLength() == 10);
@@ -381,8 +381,8 @@ void tst_qmlgraphicstextinput::masks()
     canvas->execute();
     canvas->show();
     canvas->setFocus();
-    QVERIFY(canvas->root() != 0);
-    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->root());
+    QVERIFY(canvas->rootObject() != 0);
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
     QTRY_VERIFY(textinputObject->hasFocus() == true);
     QVERIFY(textinputObject->text().length() == 0);
@@ -407,9 +407,9 @@ void tst_qmlgraphicstextinput::validators()
     canvas->show();
     canvas->setFocus();
 
-    QVERIFY(canvas->root() != 0);
+    QVERIFY(canvas->rootObject() != 0);
 
-    QmlGraphicsTextInput *intInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("intInput")));
+    QmlGraphicsTextInput *intInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("intInput")));
     QVERIFY(intInput);
     intInput->setFocus(true);
     QTRY_VERIFY(intInput->hasFocus());
@@ -430,7 +430,7 @@ void tst_qmlgraphicstextinput::validators()
     QCOMPARE(intInput->text(), QLatin1String("11"));
     QCOMPARE(intInput->hasAcceptableInput(), true);
 
-    QmlGraphicsTextInput *dblInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("dblInput")));
+    QmlGraphicsTextInput *dblInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("dblInput")));
     QTRY_VERIFY(dblInput);
     dblInput->setFocus(true);
     QVERIFY(dblInput->hasFocus() == true);
@@ -459,7 +459,7 @@ void tst_qmlgraphicstextinput::validators()
     QCOMPARE(dblInput->text(), QLatin1String("12.11"));
     QCOMPARE(dblInput->hasAcceptableInput(), true);
 
-    QmlGraphicsTextInput *strInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("strInput")));
+    QmlGraphicsTextInput *strInput = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("strInput")));
     QTRY_VERIFY(strInput);
     strInput->setFocus(true);
     QVERIFY(strInput->hasFocus() == true);
@@ -497,8 +497,8 @@ void tst_qmlgraphicstextinput::inputMethodHints()
     canvas->show();
     canvas->setFocus();
 
-    QVERIFY(canvas->root() != 0);
-    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->root());
+    QVERIFY(canvas->rootObject() != 0);
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput *>(canvas->rootObject());
     QVERIFY(textinputObject != 0);
     QVERIFY(textinputObject->inputMethodHints() & Qt::ImhNoPredictiveText);
     textinputObject->setInputMethodHints(Qt::ImhUppercaseOnly);
@@ -517,9 +517,9 @@ void tst_qmlgraphicstextinput::navigation()
     canvas->show();
     canvas->setFocus();
 
-    QVERIFY(canvas->root() != 0);
+    QVERIFY(canvas->rootObject() != 0);
 
-    QmlGraphicsTextInput *input = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+    QmlGraphicsTextInput *input = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
 
     QVERIFY(input != 0);
     input->setCursorPosition(0);
@@ -549,7 +549,7 @@ void tst_qmlgraphicstextinput::cursorDelegate()
     view->execute();
     view->show();
     view->setFocus();
-    QmlGraphicsTextInput *textInputObject = view->root()->findChild<QmlGraphicsTextInput*>("textInputObject");
+    QmlGraphicsTextInput *textInputObject = view->rootObject()->findChild<QmlGraphicsTextInput*>("textInputObject");
     QVERIFY(textInputObject != 0);
     QVERIFY(textInputObject->findChild<QmlGraphicsItem*>("cursorInstance"));
     //Test Delegate gets created
@@ -578,9 +578,9 @@ void tst_qmlgraphicstextinput::readOnly()
     canvas->show();
     canvas->setFocus();
 
-    QVERIFY(canvas->root() != 0);
+    QVERIFY(canvas->rootObject() != 0);
 
-    QmlGraphicsTextInput *input = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+    QmlGraphicsTextInput *input = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
 
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasFocus() == true);
@@ -607,10 +607,7 @@ QmlView *tst_qmlgraphicstextinput::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setQml(xml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }

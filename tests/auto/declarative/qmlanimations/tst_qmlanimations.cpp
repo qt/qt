@@ -258,7 +258,7 @@ void tst_qmlanimations::badTypes()
     //don't crash
     {
         QmlView *view = new QmlView;
-        view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/badtype1.qml"));
+        view->setSource(QUrl::fromLocalFile(SRCDIR "/data/badtype1.qml"));
 
         view->execute();
         qApp->processEvents();

@@ -608,8 +608,8 @@ void tst_qmlgraphicstextedit::inputMethodHints()
     canvas->show();
     canvas->setFocus();
 
-    QVERIFY(canvas->root() != 0);
-    QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit *>(canvas->root());
+    QVERIFY(canvas->rootObject() != 0);
+    QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit *>(canvas->rootObject());
     QVERIFY(textEditObject != 0);
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhNoPredictiveText);
     textEditObject->setInputMethodHints(Qt::ImhUppercaseOnly);
@@ -622,7 +622,7 @@ void tst_qmlgraphicstextedit::cursorDelegate()
     view->execute();
     view->show();
     view->setFocus();
-    QmlGraphicsTextEdit *textEditObject = view->root()->findChild<QmlGraphicsTextEdit*>("textEditObject");
+    QmlGraphicsTextEdit *textEditObject = view->rootObject()->findChild<QmlGraphicsTextEdit*>("textEditObject");
     QVERIFY(textEditObject != 0);
     QVERIFY(textEditObject->findChild<QmlGraphicsItem*>("cursorInstance"));
     //Test Delegate gets created
@@ -650,40 +650,40 @@ void tst_qmlgraphicstextedit::delegateLoading()
     server.serveDirectory(SRCDIR "/data/httpslow", TestHTTPServer::Delay);
     server.serveDirectory(SRCDIR "/data/http");
     QmlView* view = new QmlView(0);
-    view->setUrl(QUrl("http://localhost:42332/cursorHttpTestPass.qml"));
+    view->setSource(QUrl("http://localhost:42332/cursorHttpTestPass.qml"));
     view->execute();
     view->show();
     view->setFocus();
-    QTRY_VERIFY(view->root());//Wait for loading to finish.
-    QmlGraphicsTextEdit *textEditObject = view->root()->findChild<QmlGraphicsTextEdit*>("textEditObject");
-    //    view->root()->dumpObjectTree();
+    QTRY_VERIFY(view->rootObject());//Wait for loading to finish.
+    QmlGraphicsTextEdit *textEditObject = view->rootObject()->findChild<QmlGraphicsTextEdit*>("textEditObject");
+    //    view->rootObject()->dumpObjectTree();
     QVERIFY(textEditObject != 0);
     textEditObject->setFocus(true);
     QmlGraphicsItem *delegate;
-    delegate = view->root()->findChild<QmlGraphicsItem*>("delegateOkay");
+    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateOkay");
     QVERIFY(delegate);
-    delegate = view->root()->findChild<QmlGraphicsItem*>("delegateSlow");
+    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateSlow");
     QVERIFY(delegate);
-    view->setUrl(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
+    view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
     view->execute();
     view->show();
     view->setFocus();
-    delegate = view->root()->findChild<QmlGraphicsItem*>("delegateOkay");
+    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateOkay");
     QVERIFY(delegate);
-    delegate = view->root()->findChild<QmlGraphicsItem*>("delegateFail");
+    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateFail");
     QVERIFY(!delegate);
-    view->setUrl(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
+    view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
     view->execute();
     view->show();
     view->setFocus();
-    delegate = view->root()->findChild<QmlGraphicsItem*>("delegateOkay");
+    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateOkay");
     QVERIFY(delegate);
-    delegate = view->root()->findChild<QmlGraphicsItem*>("delegateErrorA");
+    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateErrorA");
     QVERIFY(!delegate);
     //ErrorB should get a component which is ready but component.create() returns null
     //Not sure how to accomplish this with QmlGraphicsTextEdits cursor delegate
     //###This could be a case of overzealous defensive programming
-    //delegate = view->root()->findChild<QmlGraphicsItem*>("delegateErrorB");
+    //delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateErrorB");
     //QVERIFY(!delegate);
 }
 
@@ -698,9 +698,9 @@ void tst_qmlgraphicstextedit::navigation()
     canvas->show();
     canvas->setFocus();
 
-    QVERIFY(canvas->root() != 0);
+    QVERIFY(canvas->rootObject() != 0);
 
-    QmlGraphicsItem *input = qobject_cast<QmlGraphicsItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+    QmlGraphicsItem *input = qobject_cast<QmlGraphicsItem *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
 
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasFocus() == true);
@@ -721,9 +721,9 @@ void tst_qmlgraphicstextedit::readOnly()
     canvas->show();
     canvas->setFocus();
 
-    QVERIFY(canvas->root() != 0);
+    QVERIFY(canvas->rootObject() != 0);
 
-    QmlGraphicsTextEdit *edit = qobject_cast<QmlGraphicsTextEdit *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+    QmlGraphicsTextEdit *edit = qobject_cast<QmlGraphicsTextEdit *>(qvariant_cast<QObject *>(canvas->rootObject()->property("myInput")));
 
     QVERIFY(edit != 0);
     QTRY_VERIFY(edit->hasFocus() == true);
@@ -750,10 +750,7 @@ QmlView *tst_qmlgraphicstextedit::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setQml(xml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
     return canvas;
 }
 

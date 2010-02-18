@@ -75,7 +75,7 @@ int main(int argc, char ** argv)
     QApplication app(argc, argv);
 
     QmlView view;
-    view.setUrl(QUrl("qrc:view.qml"));
+    view.setSource(QUrl("qrc:view.qml"));
 
     view.engine()->addImageProvider("colors", new ColorImageProvider);
 

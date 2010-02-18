@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXVIEW_H
-#define QFXVIEW_H
+#ifndef QMLVIEW_H
+#define QMLVIEW_H
 
 #include <QtCore/qdatetime.h>
 #include <QtGui/qgraphicssceneevent.h>
@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlGraphicsItem;
+class QGraphicsObject;
 class QmlEngine;
 class QmlContext;
 class QmlError;
@@ -62,35 +62,38 @@ class QmlViewPrivate;
 class Q_DECLARATIVE_EXPORT QmlView : public QGraphicsView
 {
     Q_OBJECT
-    Q_PROPERTY(bool contentResizable READ contentResizable WRITE setContentResizable)
+    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+
+    Q_DECLARE_PRIVATE(QmlView)
+
 public:
     explicit QmlView(QWidget *parent = 0);
-
     virtual ~QmlView();
 
-    void setUrl(const QUrl&);
-    QUrl url() const;
-    void setQml(const QString &qml, const QString &filename=QString());
-    QString qml() const;
+    QUrl source() const;
+    void setSource(const QUrl&);
+
     QmlEngine* engine();
     QmlContext* rootContext();
-    virtual void execute();
-    virtual void reset();
+    void execute();
 
-    virtual QmlGraphicsItem* addItem(const QString &qml, QmlGraphicsItem* parent=0);
-    virtual void clearItems();
+    QGraphicsObject *rootObject() const;
 
-    virtual QmlGraphicsItem *root() const;
+    enum ResizeMode { SizeViewToRootObject, SizeRootObjectToView };
+    ResizeMode resizeMode() const;
+    void setResizeMode(ResizeMode);
 
-    void setContentResizable(bool);
-    bool contentResizable() const;
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+
+    QList<QmlError> errors() const;
+
     QSize sizeHint() const;
 
 Q_SIGNALS:
-    void initialSize(QSize size);
-    void sceneResized(QSize size);
-    void errors(const QList<QmlError> &error);
-    void quit ();
+    void sceneResized(QSize size); // ???
+    void statusChanged(QmlView::Status);
 
 private Q_SLOTS:
     void continueExecute();
@@ -100,14 +103,10 @@ protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void paintEvent(QPaintEvent *event);
     void timerEvent(QTimerEvent*);
-
-private:
-    friend class QmlViewPrivate;
-    QmlViewPrivate *d;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QFXVIEW_H
+#endif // QMLVIEW_H

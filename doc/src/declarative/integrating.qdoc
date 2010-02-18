@@ -84,6 +84,15 @@ QGraphicsObject *object =
 scene->addItem(object);
 \endcode
 
+The following QGraphicsView options are recommended for optimal performance
+of QML UIs:
+
+\list
+\o QGraphicsView::setOptimizationFlags(QGraphicsView::DontSavePainterState);
+\o QGraphicsView::setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+\o QGraphicsScene::setItemIndexMethod(QGraphicsScene::NoIndex);
+\endlist
+
 \section1 Using existing QGraphicsWidgets in QML
 Another way of integrating with a QGraphicsView based UI is to expose your
 existing QGraphicsWidgets to QML, and constructing your scene in QML. Note that
