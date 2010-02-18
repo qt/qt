@@ -156,6 +156,24 @@ public:
 
     static inline QDateTime toDateTime(JSC::ExecState *, JSC::JSValue);
 
+    static inline JSC::JSValue property(JSC::ExecState*, JSC::JSValue, const JSC::Identifier &id,
+                                 int resolveMode = QScriptValue::ResolvePrototype);
+    static JSC::JSValue propertyHelper(JSC::ExecState*, JSC::JSValue, const JSC::Identifier &id, int resolveMode);
+    static inline JSC::JSValue property(JSC::ExecState*, JSC::JSValue, quint32 index,
+                                 int resolveMode = QScriptValue::ResolvePrototype);
+    static JSC::JSValue propertyHelper(JSC::ExecState*, JSC::JSValue, quint32, int resolveMode);
+    static inline JSC::JSValue property(JSC::ExecState*, JSC::JSValue, const QString &, int resolveMode);
+    static inline void setProperty(JSC::ExecState*, JSC::JSValue object, const QString &name, JSC::JSValue,
+                     const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
+    static void setProperty(JSC::ExecState*, JSC::JSValue object, const JSC::Identifier &id, JSC::JSValue,
+                     const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
+    static void setProperty(JSC::ExecState*, JSC::JSValue object, quint32 index, JSC::JSValue,
+                     const QScriptValue::PropertyFlags &flags = QScriptValue::KeepExistingFlags);
+    static QScriptValue::PropertyFlags propertyFlags(JSC::ExecState*, JSC::JSValue value,
+                                              const JSC::Identifier &id, const QScriptValue::ResolveFlags &mode);
+    static inline QScriptValue::PropertyFlags propertyFlags(JSC::ExecState*, JSC::JSValue value,
+                                              const QString &name, const QScriptValue::ResolveFlags &mode);
+
     static bool convert(const QScriptValue &value,
                         int type, void *ptr,
                         QScriptEnginePrivate *eng);
@@ -568,32 +586,83 @@ inline void QScriptValuePrivate::initFrom(const QString &value)
         engine->registerScriptValue(this);
 }
 
-inline QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
+inline JSC::JSValue QScriptEnginePrivate::property(JSC::ExecState *exec, JSC::JSValue value, const QString &name, int resolveMode)
 {
-    JSC::ExecState *exec = engine->currentFrame;
-    return property(JSC::Identifier(exec, name), resolveMode);
+    return property(exec, value, JSC::Identifier(exec, name), resolveMode);
 }
 
-inline QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+inline JSC::JSValue QScriptEnginePrivate::property(JSC::ExecState *exec, JSC::JSValue value, const JSC::Identifier &id, int resolveMode)
 {
-    Q_ASSERT(isObject());
-    JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = JSC::asObject(jscValue);
+    Q_ASSERT(isObject(value));
+    JSC::JSObject *object = JSC::asObject(value);
     JSC::PropertySlot slot(object);
     if ((resolveMode & QScriptValue::ResolvePrototype) && object->getPropertySlot(exec, id, slot))
-        return engine->scriptValueFromJSCValue(slot.getValue(exec, id));
-    return propertyHelper(id, resolveMode);
+        return slot.getValue(exec, id);
+    return propertyHelper(exec, value, id, resolveMode);
 }
 
-inline QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
+inline JSC::JSValue QScriptEnginePrivate::property(JSC::ExecState *exec, JSC::JSValue value, quint32 index, int resolveMode)
 {
-    Q_ASSERT(isObject());
-    JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = JSC::asObject(jscValue);
+    Q_ASSERT(isObject(value));
+    JSC::JSObject *object = JSC::asObject(value);
     JSC::PropertySlot slot(object);
     if ((resolveMode & QScriptValue::ResolvePrototype) && object->getPropertySlot(exec, index, slot))
-        return engine->scriptValueFromJSCValue(slot.getValue(exec, index));
-    return propertyHelper(index, resolveMode);
+        return slot.getValue(exec, index);
+    return propertyHelper(exec, value, index, resolveMode);
+}
+
+inline QScriptValue::PropertyFlags QScriptEnginePrivate::propertyFlags(JSC::ExecState *exec, JSC::JSValue value,
+                                                                       const QString &name,
+                                                                       const QScriptValue::ResolveFlags &mode)
+{
+    return propertyFlags(exec, value, JSC::Identifier(exec, name), mode);
+}
+
+inline void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue objectValue, const QString &name,
+                                              JSC::JSValue value, const QScriptValue::PropertyFlags &flags)
+{
+    setProperty(exec, objectValue, JSC::Identifier(exec, name), value, flags);
+}
+
+inline JSC::JSValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+{
+    return QScriptEnginePrivate::property(engine->currentFrame, jscValue, id, resolveMode);
+}
+
+inline JSC::JSValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
+{
+    return QScriptEnginePrivate::property(engine->currentFrame, jscValue, index, resolveMode);
+}
+
+inline JSC::JSValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
+{
+    JSC::ExecState *exec = engine->currentFrame;
+    return QScriptEnginePrivate::property(exec, jscValue, JSC::Identifier(exec, name), resolveMode);
+}
+
+inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(
+        const JSC::Identifier &id, const QScriptValue::ResolveFlags &mode) const
+{
+    return QScriptEnginePrivate::propertyFlags(engine->currentFrame, jscValue, id, mode);
+}
+
+inline void QScriptValuePrivate::setProperty(const JSC::Identifier &id, const JSC::JSValue &value,
+                                             const QScriptValue::PropertyFlags &flags)
+{
+    QScriptEnginePrivate::setProperty(engine->currentFrame, jscValue, id, value, flags);
+}
+
+inline void QScriptValuePrivate::setProperty(quint32 index, const JSC::JSValue &value,
+                                             const QScriptValue::PropertyFlags &flags)
+{
+    QScriptEnginePrivate::setProperty(engine->currentFrame, jscValue, index, value, flags);
+}
+
+inline void QScriptValuePrivate::setProperty(const QString &name, const JSC::JSValue &value,
+                                             const QScriptValue::PropertyFlags &flags)
+{
+    JSC::ExecState *exec = engine->currentFrame;
+    QScriptEnginePrivate::setProperty(exec, jscValue, JSC::Identifier(exec, name), value, flags);
 }
 
 inline void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)

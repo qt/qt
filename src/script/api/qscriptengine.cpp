@@ -1577,6 +1577,172 @@ JSC::JSValue QScriptEnginePrivate::newVariant(const QVariant &value)
     return obj;
 }
 
+JSC::JSValue QScriptEnginePrivate::propertyHelper(JSC::ExecState *exec, JSC::JSValue value, const JSC::Identifier &id, int resolveMode)
+{
+    JSC::JSValue result;
+    if (!(resolveMode & QScriptValue::ResolvePrototype)) {
+        // Look in the object's own properties
+        JSC::JSObject *object = JSC::asObject(value);
+        JSC::PropertySlot slot(object);
+        if (object->getOwnPropertySlot(exec, id, slot))
+            result = slot.getValue(exec, id);
+    }
+    if (!result && (resolveMode & QScriptValue::ResolveScope)) {
+        // ### check if it's a function object and look in the scope chain
+        JSC::JSValue scope = property(exec, value, QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
+        if (isObject(scope))
+            result = property(exec, scope, id, resolveMode);
+    }
+    return result;
+}
+
+JSC::JSValue QScriptEnginePrivate::propertyHelper(JSC::ExecState *exec, JSC::JSValue value, quint32 index, int resolveMode)
+{
+    JSC::JSValue result;
+    if (!(resolveMode & QScriptValue::ResolvePrototype)) {
+        // Look in the object's own properties
+        JSC::JSObject *object = JSC::asObject(value);
+        JSC::PropertySlot slot(object);
+        if (object->getOwnPropertySlot(exec, index, slot))
+            result = slot.getValue(exec, index);
+    }
+    return result;
+}
+
+void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue objectValue, const JSC::Identifier &id,
+                                       JSC::JSValue value, const QScriptValue::PropertyFlags &flags)
+{
+    JSC::JSObject *thisObject = JSC::asObject(objectValue);
+    JSC::JSValue setter = thisObject->lookupSetter(exec, id);
+    JSC::JSValue getter = thisObject->lookupGetter(exec, id);
+    if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
+        if (!value) {
+            // deleting getter/setter
+            if ((flags & QScriptValue::PropertyGetter) && (flags & QScriptValue::PropertySetter)) {
+                // deleting both: just delete the property
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+            } else if (flags & QScriptValue::PropertyGetter) {
+                // preserve setter, if there is one
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+                if (setter && setter.isObject())
+                    thisObject->defineSetter(exec, id, JSC::asObject(setter));
+            } else { // flags & QScriptValue::PropertySetter
+                // preserve getter, if there is one
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+                if (getter && getter.isObject())
+                    thisObject->defineGetter(exec, id, JSC::asObject(getter));
+            }
+        } else {
+            if (value.isObject()) { // ### should check if it has callData()
+                // defining getter/setter
+                if (id == exec->propertyNames().underscoreProto) {
+                    qWarning("QScriptValue::setProperty() failed: "
+                             "cannot set getter or setter of native property `__proto__'");
+                } else {
+                    if (flags & QScriptValue::PropertyGetter)
+                        thisObject->defineGetter(exec, id, JSC::asObject(value));
+                    if (flags & QScriptValue::PropertySetter)
+                        thisObject->defineSetter(exec, id, JSC::asObject(value));
+                }
+            } else {
+                qWarning("QScriptValue::setProperty(): getter/setter must be a function");
+            }
+        }
+    } else {
+        // setting the value
+        if (getter && getter.isObject() && !(setter && setter.isObject())) {
+            qWarning("QScriptValue::setProperty() failed: "
+                     "property '%s' has a getter but no setter",
+                     qPrintable(QString(id.ustring())));
+            return;
+        }
+        if (!value) {
+            // ### check if it's a getter/setter property
+            thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+        } else if (flags != QScriptValue::KeepExistingFlags) {
+            if (thisObject->hasOwnProperty(exec, id))
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false); // ### hmmm - can't we just update the attributes?
+            unsigned attribs = 0;
+            if (flags & QScriptValue::ReadOnly)
+                attribs |= JSC::ReadOnly;
+            if (flags & QScriptValue::SkipInEnumeration)
+                attribs |= JSC::DontEnum;
+            if (flags & QScriptValue::Undeletable)
+                attribs |= JSC::DontDelete;
+            attribs |= flags & QScriptValue::UserRange;
+            thisObject->putWithAttributes(exec, id, value, attribs);
+        } else {
+            JSC::PutPropertySlot slot;
+            thisObject->put(exec, id, value, slot);
+        }
+    }
+}
+
+void QScriptEnginePrivate::setProperty(JSC::ExecState *exec, JSC::JSValue objectValue, quint32 index,
+                                       JSC::JSValue value, const QScriptValue::PropertyFlags &flags)
+{
+    if (!value) {
+        JSC::asObject(objectValue)->deleteProperty(exec, index, /*checkDontDelete=*/false);
+    } else {
+        if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
+            // fall back to string-based setProperty(), since there is no
+            // JSC::JSObject::defineGetter(unsigned)
+            setProperty(exec, objectValue, JSC::Identifier::from(exec, index), value, flags);
+        } else {
+            if (flags != QScriptValue::KeepExistingFlags) {
+                //                if (JSC::asObject(d->jscValue)->hasOwnProperty(exec, arrayIndex))
+                //                    JSC::asObject(d->jscValue)->deleteProperty(exec, arrayIndex);
+                unsigned attribs = 0;
+                if (flags & QScriptValue::ReadOnly)
+                    attribs |= JSC::ReadOnly;
+                if (flags & QScriptValue::SkipInEnumeration)
+                    attribs |= JSC::DontEnum;
+                if (flags & QScriptValue::Undeletable)
+                    attribs |= JSC::DontDelete;
+                attribs |= flags & QScriptValue::UserRange;
+                JSC::asObject(objectValue)->putWithAttributes(exec, index, value, attribs);
+            } else {
+                JSC::asObject(objectValue)->put(exec, index, value);
+            }
+        }
+    }
+}
+
+QScriptValue::PropertyFlags QScriptEnginePrivate::propertyFlags(JSC::ExecState *exec, JSC::JSValue value, const JSC::Identifier &id,
+                                                                const QScriptValue::ResolveFlags &mode)
+{
+    JSC::JSObject *object = JSC::asObject(value);
+    unsigned attribs = 0;
+    JSC::PropertyDescriptor descriptor;
+    if (object->getOwnPropertyDescriptor(exec, id, descriptor))
+        attribs = descriptor.attributes();
+    else if (!object->getPropertyAttributes(exec, id, attribs)) {
+        if ((mode & QScriptValue::ResolvePrototype) && object->prototype() && object->prototype().isObject()) {
+            JSC::JSValue proto = object->prototype();
+            return propertyFlags(exec, proto, id, mode);
+        }
+        return 0;
+    }
+    QScriptValue::PropertyFlags result = 0;
+    if (attribs & JSC::ReadOnly)
+        result |= QScriptValue::ReadOnly;
+    if (attribs & JSC::DontEnum)
+        result |= QScriptValue::SkipInEnumeration;
+    if (attribs & JSC::DontDelete)
+        result |= QScriptValue::Undeletable;
+    //We cannot rely on attribs JSC::Setter/Getter because they are not necesserly set by JSC (bug?)
+    if (attribs & JSC::Getter || !object->lookupGetter(exec, id).isUndefinedOrNull())
+        result |= QScriptValue::PropertyGetter;
+    if (attribs & JSC::Setter || !object->lookupSetter(exec, id).isUndefinedOrNull())
+        result |= QScriptValue::PropertySetter;
+#ifndef QT_NO_QOBJECT
+    if (attribs & QScript::QObjectMemberAttribute)
+        result |= QScriptValue::QObjectMember;
+#endif
+    result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);
+    return result;
+}
+
 #ifdef QT_NO_QOBJECT
 
 QScriptEngine::QScriptEngine()
