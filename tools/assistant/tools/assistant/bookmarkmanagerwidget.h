@@ -38,41 +38,65 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HELPVIEWER_H
-#define HELPVIEWER_H
+#ifndef BOOKMARKMANAGERWIDGET_H
+#define BOOKMARKMANAGERWIDGET_H
 
-#include <QtCore/QString>
+#include "ui_bookmarkmanagerwidget.h"
 
-#include <QtGui/QFont>
+#include <QtCore/QPersistentModelIndex>
+
+#include <QtGui/QMenu>
 
 QT_BEGIN_NAMESPACE
 
-class QUrl;
+class BookmarkModel;
+class QCloseEvent;
+class QString;
 
-class AbstractHelpViewer
+class BookmarkManagerWidget : public QWidget
 {
+    Q_OBJECT
 public:
-    AbstractHelpViewer();
-    ~AbstractHelpViewer();
+    BookmarkManagerWidget(BookmarkModel *bookmarkModel, QWidget *parent = 0);
+    ~BookmarkManagerWidget();
 
-    virtual QFont viewerFont() const = 0;
-    virtual void setViewerFont(const QFont &font) = 0;
+protected:
+    void closeEvent(QCloseEvent *event);
 
-    virtual void scaleUp() = 0;
-    virtual void scaleDown() = 0;
-    
-    virtual void resetScale() = 0;
-    virtual qreal scale() const = 0;
+signals:
+    void setSource(const QUrl &url);
+    void setSourceInNewTab(const QUrl &url);
 
-    static QString AboutBlank;
-    static QString LocalHelpFile;
-    static QString PageNotFoundMessage;
+    void managerWidgetAboutToClose();
 
-    static bool isLocalUrl(const QUrl &url);
-    static bool canOpenPage(const QString &url);
-    static bool launchWithExternalApp(const QUrl &url);
+private:
+    void renameItem(const QModelIndex &index);
+    void selectNextIndex(bool direction) const;
+    bool eventFilter(QObject *object, QEvent *event);
+
+private slots:
+    void findNext();
+    void findPrevious();
+
+    void importBookmarks();
+    void exportBookmarks();
+
+    void refeshBookmarkCache();
+    void textChanged(const QString &text);
+
+    void removeItem(const QModelIndex &index = QModelIndex());
+
+    void customContextMenuRequested(const QPoint &point);
+    void setSourceFromIndex(const QModelIndex &index, bool newTab = false);
+
+private:
+    QMenu importExportMenu;
+    Ui::BookmarkManagerWidget ui;
+    QList<QPersistentModelIndex> cache;
+
+    BookmarkModel *bookmarkModel;
 };
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWER_H
+#endif  // BOOKMARKMANAGERWIDGET_H

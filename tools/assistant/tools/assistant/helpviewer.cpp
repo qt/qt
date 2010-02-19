@@ -39,12 +39,24 @@
 **
 ****************************************************************************/
 #include "helpviewer.h"
+#include "helpenginewrapper.h"
 #include "tracer.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QFileInfo>
+#include <QtCore/QStringBuilder>
+#include <QtCore/QTemporaryFile>
 #include <QtCore/QUrl>
 
+#include <QtGui/QDesktopServices>
+
 QT_BEGIN_NAMESPACE
+
+QString AbstractHelpViewer::AboutBlank =
+    QCoreApplication::translate("HelpViewer", "<title>about:blank</title>");
+
+QString AbstractHelpViewer::LocalHelpFile = QLatin1String("qthelp://"
+    "com.trolltech.com.assistantinternal-1.0.0/assistant/assistant.html");
 
 QString AbstractHelpViewer::PageNotFoundMessage =
     QCoreApplication::translate("HelpViewer", "<title>Error 404...</title><div "
@@ -76,7 +88,38 @@ bool AbstractHelpViewer::canOpenPage(const QString &url)
     TRACE_OBJ
     return url.endsWith(QLatin1String(".html"), Qt::CaseInsensitive)
         || url.endsWith(QLatin1String(".htm"), Qt::CaseInsensitive)
-        || url == QLatin1String("blank");
+        || url == QLatin1String("about:blank");
+}
+
+bool AbstractHelpViewer::launchWithExternalApp(const QUrl &url)
+{
+    TRACE_OBJ
+    if (isLocalUrl(url)) {
+        const HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
+        const QUrl &resolvedUrl = helpEngine.findFile(url);
+        if (!resolvedUrl.isValid())
+            return false;
+
+        const QString& path = resolvedUrl.path();
+        if (!canOpenPage(path)) {
+            QTemporaryFile tmpTmpFile;
+            if (!tmpTmpFile.open())
+                return false;
+
+            const QString &extension = QFileInfo(path).completeSuffix();
+            QFile actualTmpFile(tmpTmpFile.fileName() % QLatin1String(".")
+                % extension);
+            if (!actualTmpFile.open(QIODevice::ReadWrite | QIODevice::Truncate))
+                return false;
+
+            actualTmpFile.write(helpEngine.fileData(resolvedUrl));
+            actualTmpFile.close();
+            return QDesktopServices::openUrl(QUrl(actualTmpFile.fileName()));
+        }
+    } else if (url.scheme() == QLatin1String("http")) {
+        return QDesktopServices::openUrl(url);
+    }
+    return false;
 }
 
 QT_END_NAMESPACE
