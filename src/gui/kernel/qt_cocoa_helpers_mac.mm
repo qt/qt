@@ -971,7 +971,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
 #ifndef QT_NAMESPACE
         Q_ASSERT(clickCount > 0);
 #endif
-        if (clickCount % 2 == 0)
+        if (clickCount % 2 == 0 && buttons == button)
             eventType = QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
