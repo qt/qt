@@ -15,6 +15,7 @@ symbian: {
         qtresources.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/s60main.rsc
     } else {
         qtresources.sources = $$QMAKE_LIBDIR_QT/s60main.rsc
+        DESTDIR = $$QMAKE_LIBDIR_QT
     }
     qtresources.path = c:$$APP_RESOURCE_DIR
 
