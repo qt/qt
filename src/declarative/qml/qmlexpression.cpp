@@ -189,6 +189,7 @@ QScriptValue QmlExpressionPrivate::evalInObjectScope(QmlContext *context, QObjec
 
 /*!
     \class QmlExpression
+  \since 4.7
     \brief The QmlExpression class evaluates JavaScript in a QML context.
 */
 

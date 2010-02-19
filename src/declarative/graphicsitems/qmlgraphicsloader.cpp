@@ -112,6 +112,7 @@ QML_DEFINE_TYPE(Qt,4,6,Loader,QmlGraphicsLoader)
 
 /*!
     \qmlclass Loader QmlGraphicsLoader
+    \since 4.7
     \inherits Item
 
     \brief The Loader item allows dynamically loading an Item-based

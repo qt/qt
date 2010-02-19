@@ -46,6 +46,7 @@ QML_DEFINE_TYPE(Qt,4,6,FocusScope,QmlGraphicsFocusScope)
 
 /*!
     \qmlclass FocusScope QmlGraphicsFocusScope
+    \since 4.7
     \brief The FocusScope object explicitly creates a focus scope.
     \inherits Item
 

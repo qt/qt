@@ -51,6 +51,7 @@ QML_DEFINE_TYPE(Qt,4,6,LayoutItem,QmlGraphicsLayoutItem)
 
 /*!
     \qmlclass LayoutItem QmlGraphicsLayoutItem
+    \since 4.7
     \brief The LayoutItem element allows you to place your Fluid UI elements inside a classical Qt layout.
 */
 

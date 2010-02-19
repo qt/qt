@@ -143,6 +143,7 @@ QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation)
 
 /*!
     \qmlclass Animation QmlAbstractAnimation
+  \since 4.7
     \brief The Animation element is the base of all QML animations.
 
     The Animation element cannot be used directly in a QML file.  It exists
@@ -567,6 +568,7 @@ void QmlAbstractAnimation::timelineComplete()
 
 /*!
     \qmlclass PauseAnimation QmlPauseAnimation
+  \since 4.7
     \inherits Animation
     \brief The PauseAnimation element provides a pause for an animation.
 
@@ -640,6 +642,7 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 
 /*!
     \qmlclass ColorAnimation QmlColorAnimation
+  \since 4.7
     \inherits PropertyAnimation
     \brief The ColorAnimation element allows you to animate color changes.
 
@@ -703,6 +706,7 @@ QML_DEFINE_TYPE(Qt,4,6,ColorAnimation,QmlColorAnimation)
 
 /*!
     \qmlclass ScriptAction QmlScriptAction
+  \since 4.7
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
@@ -809,6 +813,7 @@ QML_DEFINE_TYPE(Qt,4,6,ScriptAction,QmlScriptAction)
 
 /*!
     \qmlclass PropertyAction QmlPropertyAction
+  \since 4.7
     \inherits Animation
     \brief The PropertyAction element allows immediate property changes during animation.
 
@@ -1108,6 +1113,7 @@ QML_DEFINE_TYPE(Qt,4,6,PropertyAction,QmlPropertyAction)
 
 /*!
     \qmlclass ParentAction QmlParentAction
+  \since 4.7
     \inherits Animation
     \brief The ParentAction element allows parent changes during animation.
 
@@ -1330,6 +1336,7 @@ QML_DEFINE_TYPE(Qt,4,6,ParentAction,QmlParentAction)
 
 /*!
     \qmlclass NumberAnimation QmlNumberAnimation
+  \since 4.7
     \inherits PropertyAnimation
     \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
@@ -1393,6 +1400,7 @@ QML_DEFINE_TYPE(Qt,4,6,NumberAnimation,QmlNumberAnimation)
 
 /*!
     \qmlclass Vector3dAnimation QmlVector3dAnimation
+  \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element allows you to animate changes in properties of type QVector3d.
 */
@@ -1466,6 +1474,7 @@ QmlList<QmlAbstractAnimation *> *QmlAnimationGroup::animations()
 
 /*!
     \qmlclass SequentialAnimation QmlSequentialAnimation
+  \since 4.7
     \inherits Animation
     \brief The SequentialAnimation element allows you to run animations sequentially.
 
@@ -1541,6 +1550,7 @@ QML_DEFINE_TYPE(Qt,4,6,SequentialAnimation,QmlSequentialAnimation)
 
 /*!
     \qmlclass ParallelAnimation QmlParallelAnimation
+  \since 4.7
     \inherits Animation
     \brief The ParallelAnimation element allows you to run animations in parallel.
 
@@ -1665,6 +1675,7 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 
 /*!
     \qmlclass PropertyAnimation QmlPropertyAnimation
+  \since 4.7
     \inherits Animation
     \brief The PropertyAnimation element allows you to animate property changes.
 

@@ -52,6 +52,7 @@ QML_DEFINE_TYPE(Qt,4,6,Image,QmlGraphicsImage)
 
 /*!
     \qmlclass Image QmlGraphicsImage
+    \since 4.7
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 

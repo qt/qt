@@ -393,6 +393,21 @@ qsreal ToInteger(qsreal n)
     return sign * ::floor(::fabs(n));
 }
 
+#ifdef Q_CC_MSVC
+// MSVC2008 crashes if these are inlined.
+
+QString ToString(qsreal value)
+{
+    return JSC::UString::from(value);
+}
+
+qsreal ToNumber(const QString &value)
+{
+    return ((JSC::UString)value).toDouble();
+}
+
+#endif
+
 void GlobalClientData::mark(JSC::MarkStack& markStack)
 {
     engine->mark(markStack);
