@@ -93,6 +93,8 @@ public:
     bool isSeekable() const;
 
     qreal playbackRate() const;
+
+public slots:
     void setPlaybackRate(qreal rate);
 
     void setPosition(qint64 pos);
@@ -105,6 +107,8 @@ public:
     void setMuted(bool muted);
 
     void processEOS();
+    void processStateChange();
+    void processVolumeChange();
 
 signals:
     void positionChanged(qint64 position);
