@@ -65,6 +65,7 @@ public:
 
     void setEnabled(bool);
     void setMovie(void *movie);
+    void updateNaturalSize(const QSize &newSize);
 
     WId winId() const;
     void setWinId(WId id);

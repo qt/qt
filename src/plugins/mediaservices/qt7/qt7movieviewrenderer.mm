@@ -298,6 +298,14 @@ void QT7MovieViewRenderer::setMovie(void *movie)
     setupVideoOutput();
 }
 
+void QT7MovieViewRenderer::updateNaturalSize(const QSize &newSize)
+{
+    if (m_nativeSize != newSize) {
+        m_nativeSize = newSize;
+        setupVideoOutput();
+    }
+}
+
 QAbstractVideoSurface *QT7MovieViewRenderer::surface() const
 {
     return m_surface;

@@ -104,6 +104,9 @@ QT_BEGIN_NAMESPACE
         [[NSNotificationCenter defaultCenter] addObserver: self selector:
             @selector(processVolumeChange:) name: QTMovieVolumeDidChangeNotification object: m_movie];
 
+        [[NSNotificationCenter defaultCenter] addObserver: self selector:
+            @selector(processNaturalSizeChange:) name: QTMovieNaturalSizeDidChangeNotification object: m_movie];
+
         [movie retain];
     }
 }
@@ -126,6 +129,11 @@ QT_BEGIN_NAMESPACE
     m_session->processVolumeChange();
 }
 
+- (void) processNaturalSizeChange :(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    m_session->processNaturalSizeChange();
+}
 
 @end
 
@@ -353,6 +361,8 @@ void QT7PlayerSession::setMedia(const QMediaContent &content, QIODevice *stream)
     else
         return;
 
+    qDebug() << "Open media" << url;
+
     NSError *err = 0;
     NSString *urlString = (NSString *)qString2CFStringRef(url.toString());
 
@@ -415,7 +425,7 @@ void QT7PlayerSession::processStateChange()
 {
     signed long state = [[(QTMovie*)m_QTMovie attributeForKey:QTMovieLoadStateAttribute]
                          longValue];
-    //qDebug() << "new State:" << state;
+    qDebug() << "Moview load state changed:" << state;
 
 #ifndef QUICKTIME_C_API_AVAILABLE
     enum {
@@ -457,11 +467,6 @@ void QT7PlayerSession::processStateChange()
             emit durationChanged(duration());
             emit audioAvailableChanged(isAudioAvailable());
             emit videoAvailableChanged(isVideoAvailable());
-
-            //give output a change to re-read movie properties
-            if (m_videoOutput)
-                m_videoOutput->setMovie(m_QTMovie);
-
             break;
         case QMediaPlayer::InvalidMedia:
             emit stateChanged(m_state = QMediaPlayer::StoppedState);
@@ -482,6 +487,15 @@ void QT7PlayerSession::processVolumeChange()
 
     if (newVolume != m_volume) {
         emit volumeChanged(m_volume = newVolume);
+    }
+}
+
+void QT7PlayerSession::processNaturalSizeChange()
+{
+    if (m_videoOutput) {
+        NSSize size = [[(QTMovie*)m_QTMovie attributeForKey:@"QTMovieNaturalSizeAttribute"] sizeValue];
+        qDebug() << "Native size changed:" << QSize(size.width, size.height);
+        m_videoOutput->updateNaturalSize(QSize(size.width, size.height));
     }
 }
 

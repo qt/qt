@@ -177,7 +177,7 @@ void QT7MovieViewOutput::setupVideoOutput()
     if (m_movie == 0 || m_winId <= 0)
         return;
 
-    NSSize size = [[(QTMovie*)m_movie attributeForKey:@"QTMovieCurrentSizeAttribute"] sizeValue];
+    NSSize size = [[(QTMovie*)m_movie attributeForKey:@"QTMovieNaturalSizeAttribute"] sizeValue];
     m_nativeSize = QSize(size.width, size.height);
 
     if (!m_movieView)
@@ -199,6 +199,11 @@ void QT7MovieViewOutput::setMovie(void *movie)
 {
     m_movie = movie;
     setupVideoOutput();
+}
+
+void QT7MovieViewOutput::updateNaturalSize(const QSize &newSize)
+{
+    m_nativeSize = newSize;
 }
 
 WId QT7MovieViewOutput::winId() const

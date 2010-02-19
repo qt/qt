@@ -43,6 +43,7 @@
 #define QT7VIDEOOUTPUTCONTROL_H
 
 #include <QtCore/qobject.h>
+#include <QtCore/qsize.h>
 
 #include <QtMultimedia/qvideooutputcontrol.h>
 #include <QtMultimedia/qvideowindowcontrol.h>
@@ -68,6 +69,7 @@ public:
     virtual ~QT7VideoOutput() {}
     virtual void setEnabled(bool enabled) = 0;
     virtual void setMovie(void *movie) = 0;
+    virtual void updateNaturalSize(const QSize &newSize) = 0;
 };
 
 class QT7VideoWindowControl : public QVideoWindowControl, public QT7VideoOutput

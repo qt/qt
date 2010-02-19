@@ -109,6 +109,7 @@ public slots:
     void processEOS();
     void processStateChange();
     void processVolumeChange();
+    void processNaturalSizeChange();
 
 signals:
     void positionChanged(qint64 position);

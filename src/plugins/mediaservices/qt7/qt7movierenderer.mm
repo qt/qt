@@ -374,15 +374,16 @@ void QT7MovieRenderer::setMovie(void *movie)
         [(QTMovie*)m_movie retain];
 
         setupVideoOutput();
-    } else {
-        if (m_movie) {
-            //reset video output if native size was changed
-            NSSize size = [[(QTMovie*)m_movie attributeForKey:@"QTMovieNaturalSizeAttribute"] sizeValue];
-            if (m_nativeSize != QSize(size.width, size.height))
-                setupVideoOutput();
-        }
     }
 #endif
+}
+
+void QT7MovieRenderer::updateNaturalSize(const QSize &newSize)
+{
+    if (m_nativeSize != newSize) {
+        m_nativeSize = newSize;
+        setupVideoOutput();
+    }
 }
 
 QAbstractVideoSurface *QT7MovieRenderer::surface() const
