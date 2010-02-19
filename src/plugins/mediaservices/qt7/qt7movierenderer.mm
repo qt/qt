@@ -269,7 +269,7 @@ void QT7MovieRenderer::setupVideoOutput()
         return;
     }
 
-    NSSize size = [[(QTMovie*)m_movie attributeForKey:@"QTMovieCurrentSizeAttribute"] sizeValue];
+    NSSize size = [[(QTMovie*)m_movie attributeForKey:@"QTMovieNaturalSizeAttribute"] sizeValue];
     m_nativeSize = QSize(size.width, size.height);
 
 #ifdef QUICKTIME_C_API_AVAILABLE
@@ -320,34 +320,36 @@ void QT7MovieRenderer::setupVideoOutput()
             (m_usingGLContext && (m_currentGLContext != QGLContext::currentContext())) ||
             (!m_usingGLContext && (m_pixelBufferContextGeometry != m_nativeSize))) {
             QTVisualContextRelease(m_visualContext);
+            m_pixelBufferContextGeometry = QSize();
             m_visualContext = 0;
         }
     }
 
-    if (!m_visualContext) {
-        if (m_usingGLContext) {
-            qDebug() << "Building OpenGL visual context";
-            m_currentGLContext = QGLContext::currentContext();
-            if (!createGLVisualContext()) {
-                qWarning() << "QT7MovieRenderer: failed to create visual context";
-                return;
-            }
-        } else {
-            qDebug() << "Building Pixel Buffer visual context";
-            if (!createPixelBufferVisualContext()) {
-                qWarning() << "QT7MovieRenderer: failed to create visual context";
-                return;
+    if (!m_nativeSize.isEmpty()) {
+        if (!m_visualContext) {
+            if (m_usingGLContext) {
+                qDebug() << "Building OpenGL visual context" << m_nativeSize;
+                m_currentGLContext = QGLContext::currentContext();
+                if (!createGLVisualContext()) {
+                    qWarning() << "QT7MovieRenderer: failed to create visual context";
+                    return;
+                }
+            } else {
+                qDebug() << "Building Pixel Buffer visual context" << m_nativeSize;
+                if (!createPixelBufferVisualContext()) {
+                    qWarning() << "QT7MovieRenderer: failed to create visual context";
+                    return;
+                }
             }
         }
+
+        // targets a Movie to render into a visual context
+        SetMovieVisualContext([(QTMovie*)m_movie quickTimeMovie], m_visualContext);
+
+        m_displayLink->start();
     }
-
-    // targets a Movie to render into a visual context
-    SetMovieVisualContext([(QTMovie*)m_movie quickTimeMovie], m_visualContext);
-
-
 #endif
 
-    m_displayLink->start();
 }
 
 void QT7MovieRenderer::setEnabled(bool)
@@ -358,19 +360,29 @@ void QT7MovieRenderer::setMovie(void *movie)
 {
     qDebug() << "QT7MovieRenderer::setMovie" << movie;
 
-    if (m_movie == movie)
-        return;
-
+#ifdef QUICKTIME_C_API_AVAILABLE
     QMutexLocker locker(&m_mutex);
 
-#ifdef QUICKTIME_C_API_AVAILABLE
-    //ensure the old movie doesn't hold the visual context, otherwise it can't be reused
-    if (m_movie && m_visualContext)
-        SetMovieVisualContext([(QTMovie*)m_movie quickTimeMovie], 0);
-#endif
+    if (m_movie != movie) {
+        if (m_movie) {
+            //ensure the old movie doesn't hold the visual context, otherwise it can't be reused
+            SetMovieVisualContext([(QTMovie*)m_movie quickTimeMovie], nil);
+            [(QTMovie*)m_movie release];
+        }
 
-    m_movie = movie;
-    setupVideoOutput();
+        m_movie = movie;
+        [(QTMovie*)m_movie retain];
+
+        setupVideoOutput();
+    } else {
+        if (m_movie) {
+            //reset video output if native size was changed
+            NSSize size = [[(QTMovie*)m_movie attributeForKey:@"QTMovieNaturalSizeAttribute"] sizeValue];
+            if (m_nativeSize != QSize(size.width, size.height))
+                setupVideoOutput();
+        }
+    }
+#endif
 }
 
 QAbstractVideoSurface *QT7MovieRenderer::surface() const
@@ -426,7 +438,7 @@ void QT7MovieRenderer::updateVideoFrame(const CVTimeStamp &ts)
                 CVPixelBufferRelease((CVPixelBufferRef)imageBuffer);
             }
 
-            QVideoFrame frame(buffer, m_nativeSize, QVideoFrame::Format_RGB32);            
+            QVideoFrame frame(buffer, m_nativeSize, QVideoFrame::Format_RGB32);
             m_surface->present(frame);
             QTVisualContextTask(m_visualContext);
         }
