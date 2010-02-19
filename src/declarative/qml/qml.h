@@ -77,6 +77,7 @@ enum { /* TYPEINFO flags */
 };
 
 #define QML_DECLARE_TYPEINFO(TYPE, FLAGS) \
+QT_BEGIN_NAMESPACE \
 template <> \
 class QmlTypeInfo<TYPE > \
 { \
@@ -84,7 +85,8 @@ public: \
     enum { \
         hasAttachedProperties = (((FLAGS) & QML_HAS_ATTACHED_PROPERTIES) == QML_HAS_ATTACHED_PROPERTIES) \
     }; \
-};
+}; \
+QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 

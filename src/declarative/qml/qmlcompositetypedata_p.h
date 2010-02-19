@@ -146,5 +146,7 @@ public:
     QByteArray data;
 };
 
+QT_END_NAMESPACE
+
 #endif // QMLCOMPOSITETYPEDATA_P_H
 

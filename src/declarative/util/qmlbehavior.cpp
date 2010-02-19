@@ -124,8 +124,10 @@ void QmlBehavior::setAnimation(QmlAbstractAnimation *animation)
     }
 
     d->animation = animation;
-    if (d->animation)
-        d->animation->setTarget(d->property);
+    if (d->animation) {
+        d->animation->setDefaultTarget(d->property);
+        d->animation->setDisableUserControl();
+    }
 }
 
 /*!
@@ -183,7 +185,7 @@ void QmlBehavior::setTarget(const QmlMetaProperty &property)
     d->property = property;
     d->currentValue = property.read();
     if (d->animation)
-        d->animation->setTarget(property);
+        d->animation->setDefaultTarget(property);
 }
 
 QT_END_NAMESPACE

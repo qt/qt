@@ -87,9 +87,6 @@ public:
         return item == other.item && anchorLine == other.anchorLine;
     }
 };
-Q_DECLARE_METATYPE(QmlGraphicsAnchorLine)
-
-
 
 class QmlGraphicsAnchorsPrivate : public QObjectPrivate, public QmlGraphicsItemChangeListener
 {
@@ -171,4 +168,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QmlGraphicsAnchorLine)
+
 #endif

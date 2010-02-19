@@ -304,6 +304,9 @@ void tst_qmlgraphicswebview::multipleWindows()
     QmlGraphicsGrid *grid = qobject_cast<QmlGraphicsGrid*>(component.create());
     QVERIFY(grid != 0);
     QTRY_COMPARE(grid->children().count(), 2+5); // Component, Loader, 5 WebViews
+    QmlGraphicsItem* popup = qobject_cast<QmlGraphicsItem*>(grid->children().at(3)); // first popup after Component, Loaded, original.
+    QVERIFY(popup != 0);
+    QTRY_COMPARE(popup->x(), 150.0);
 }
 
 void tst_qmlgraphicswebview::loadError()

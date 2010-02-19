@@ -52,7 +52,7 @@ Rectangle {
     }]
 
     transitions: Transition {
-        NumberAnimation { matchProperties: "x,y,width,height" }
+        NumberAnimation { properties: "x,y,width,height" }
     }
 
     MouseRegion {

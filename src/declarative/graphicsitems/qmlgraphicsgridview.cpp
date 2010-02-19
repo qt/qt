@@ -51,63 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsGridViewAttached : public QObject
-{
-    Q_OBJECT
-public:
-    QmlGraphicsGridViewAttached(QObject *parent)
-        : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
-    ~QmlGraphicsGridViewAttached() {
-        attachedProperties.remove(parent());
-    }
-
-    Q_PROPERTY(QmlGraphicsGridView *view READ view CONSTANT)
-    QmlGraphicsGridView *view() { return m_view; }
-
-    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
-    bool isCurrentItem() const { return m_isCurrent; }
-    void setIsCurrentItem(bool c) {
-        if (m_isCurrent != c) {
-            m_isCurrent = c;
-            emit currentItemChanged();
-        }
-    }
-
-    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged)
-    bool delayRemove() const { return m_delayRemove; }
-    void setDelayRemove(bool delay) {
-        if (m_delayRemove != delay) {
-            m_delayRemove = delay;
-            emit delayRemoveChanged();
-        }
-    }
-
-    static QmlGraphicsGridViewAttached *properties(QObject *obj) {
-        QmlGraphicsGridViewAttached *rv = attachedProperties.value(obj);
-        if (!rv) {
-            rv = new QmlGraphicsGridViewAttached(obj);
-            attachedProperties.insert(obj, rv);
-        }
-        return rv;
-    }
-
-    void emitAdd() { emit add(); }
-    void emitRemove() { emit remove(); }
-
-Q_SIGNALS:
-    void currentItemChanged();
-    void delayRemoveChanged();
-    void add();
-    void remove();
-
-public:
-    QmlGraphicsGridView *m_view;
-    bool m_isCurrent;
-    bool m_delayRemove;
-
-    static QHash<QObject*, QmlGraphicsGridViewAttached*> attachedProperties;
-};
-
 QHash<QObject*, QmlGraphicsGridViewAttached*> QmlGraphicsGridViewAttached::attachedProperties;
 
 
@@ -1713,9 +1656,32 @@ void QmlGraphicsGridView::itemsMoved(int from, int to, int count)
         ++endIndex;
     }
 
+    // update visibleIndex
+    for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
+        if ((*it)->index != -1) {
+            d->visibleIndex = (*it)->index;
+            break;
+        }
+    }
+
+    // Fix current index
+    if (d->currentIndex >= 0 && d->currentItem) {
+        int oldCurrent = d->currentIndex;
+        d->currentIndex = d->model->indexOf(d->currentItem->item, this);
+        if (oldCurrent != d->currentIndex) {
+            d->currentItem->index = d->currentIndex;
+            emit currentIndexChanged();
+        }
+    }
+
     // Whatever moved items remain are no longer visible items.
-    while (moved.count())
-        d->releaseItem(moved.take(moved.begin().key()));
+    while (moved.count()) {
+        int idx = moved.begin().key();
+        FxGridItem *item = moved.take(idx);
+        if (item->item == d->currentItem->item)
+            item->setPosition(d->colPosAt(idx), d->rowPosAt(idx));
+        d->releaseItem(item);
+    }
 
     d->layout(removedBeforeVisible);
 }
@@ -1754,8 +1720,4 @@ QmlGraphicsGridViewAttached *QmlGraphicsGridView::qmlAttachedProperties(QObject 
     return QmlGraphicsGridViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(Qt, 4,6, GridView, QmlGraphicsGridView)
-
 QT_END_NAMESPACE
-
-#include <qmlgraphicsgridview.moc>

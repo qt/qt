@@ -80,8 +80,8 @@ Rectangle {
 
                 transitions: Transition {
                     ParallelAnimation {
-                        NumberAnimation { matchProperties: "x"; easing: type; duration: 1000 }
-                        ColorAnimation { matchProperties: "color"; easing: type; duration: 1000 }
+                        NumberAnimation { properties: "x"; easing: type; duration: 1000 }
+                        ColorAnimation { properties: "color"; easing: type; duration: 1000 }
                     }
                 }
             }

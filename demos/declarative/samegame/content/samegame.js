@@ -158,7 +158,11 @@ function victoryCheck()
     //Checks for game over
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1))){
         timer = new Date() - timer;
+        //scoreName.show("You won! Please enter your name:                 ");
         scoreName.show("You won! Please enter your name:                 ");
+        scoreName.initialWidth = scoreName.text.width + 20;
+        scoreName.width = scoreName.initialWidth;
+        scoreName.text.opacity = 0;//Just a spacer
         //dialog.show("Game Over. Your score is " + gameCanvas.score);
     }
 }
@@ -218,8 +222,9 @@ function saveHighScore(name) {
             tx.executeSql('CREATE TABLE IF NOT EXISTS Scores(name TEXT, score NUMBER, gridSize TEXT, time NUMBER)');
             tx.executeSql(dataStr, data);
 
-            var rs = tx.executeSql('SELECT * FROM Scores WHERE gridSize = "12x17" ORDER BY score desc LIMIT 10');
-            var r = "\nHIGH SCORES for a standard sized grid\n\n"
+            //Only show results for the current grid size
+            var rs = tx.executeSql('SELECT * FROM Scores WHERE gridSize = "'+maxX+"x"+maxY+'" ORDER BY score desc LIMIT 10');
+            var r = "\nHIGH SCORES for this grid size\n\n"
             for(var i = 0; i < rs.rows.length; i++){
                 r += (i+1)+". " + rs.rows.item(i).name +' got '
                     + rs.rows.item(i).score + ' points in '
