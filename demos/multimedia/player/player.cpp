@@ -184,14 +184,14 @@ void Player::positionChanged(qint64 progress)
 
 void Player::metaDataChanged()
 {
-    //qDebug() << "update metadata" << player->metaData(QtMedia::Title).toString();
+    //qDebug() << "update metadata" << player->metaData(QtMultimedia::Title).toString();
     if (player->isMetaDataAvailable()) {
         setTrackInfo(QString("%1 - %2")
-                .arg(player->metaData(QtMedia::AlbumArtist).toString())
-                .arg(player->metaData(QtMedia::Title).toString()));
+                .arg(player->metaData(QtMultimedia::AlbumArtist).toString())
+                .arg(player->metaData(QtMultimedia::Title).toString()));
 
         if (coverLabel) {
-            QUrl url = player->metaData(QtMedia::CoverArtUrlLarge).value<QUrl>();
+            QUrl url = player->metaData(QtMultimedia::CoverArtUrlLarge).value<QUrl>();
 
             coverLabel->setPixmap(!url.isEmpty()
                     ? QPixmap(url.toString())

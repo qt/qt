@@ -72,18 +72,18 @@ bool QT7PlayerMetaDataControl::isWritable() const
     return false;
 }
 
-QVariant QT7PlayerMetaDataControl::metaData(QtMedia::MetaData key) const
+QVariant QT7PlayerMetaDataControl::metaData(QtMultimedia::MetaData key) const
 {
     return m_tags.value(key);
 }
 
-void QT7PlayerMetaDataControl::setMetaData(QtMedia::MetaData key, QVariant const &value)
+void QT7PlayerMetaDataControl::setMetaData(QtMultimedia::MetaData key, QVariant const &value)
 {
     Q_UNUSED(key);
     Q_UNUSED(value);
 }
 
-QList<QtMedia::MetaData> QT7PlayerMetaDataControl::availableMetaData() const
+QList<QtMultimedia::MetaData> QT7PlayerMetaDataControl::availableMetaData() const
 {
     return m_tags.keys();
 }
@@ -243,13 +243,13 @@ void QT7PlayerMetaDataControl::updateTags()
         metaMap.insert(QLatin1String("nam"), QString::fromUtf8([name UTF8String]));
 #endif // QUICKTIME_C_API_AVAILABLE
 
-        m_tags.insert(QtMedia::AlbumArtist, metaMap.value(QLatin1String("ART")));
-        m_tags.insert(QtMedia::AlbumTitle, metaMap.value(QLatin1String("alb")));
-        m_tags.insert(QtMedia::Title, metaMap.value(QLatin1String("nam")));
-        m_tags.insert(QtMedia::Date, metaMap.value(QLatin1String("day")));
-        m_tags.insert(QtMedia::Genre, metaMap.value(QLatin1String("gnre")));
-        m_tags.insert(QtMedia::TrackNumber, metaMap.value(QLatin1String("trk")));
-        m_tags.insert(QtMedia::Description, metaMap.value(QLatin1String("des")));
+        m_tags.insert(QtMultimedia::AlbumArtist, metaMap.value(QLatin1String("ART")));
+        m_tags.insert(QtMultimedia::AlbumTitle, metaMap.value(QLatin1String("alb")));
+        m_tags.insert(QtMultimedia::Title, metaMap.value(QLatin1String("nam")));
+        m_tags.insert(QtMultimedia::Date, metaMap.value(QLatin1String("day")));
+        m_tags.insert(QtMultimedia::Genre, metaMap.value(QLatin1String("gnre")));
+        m_tags.insert(QtMultimedia::TrackNumber, metaMap.value(QLatin1String("trk")));
+        m_tags.insert(QtMultimedia::Description, metaMap.value(QLatin1String("des")));
     }
 
     if (!wasEmpty || !m_tags.isEmpty())
