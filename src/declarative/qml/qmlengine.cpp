@@ -1227,7 +1227,6 @@ struct QmlEnginePrivate::ImportedNamespace {
     QList<int> majversions;
     QList<int> minversions;
     QList<bool> isLibrary;
-    QList<bool> isBuiltin; // Types provided by C++ code (including plugins)
     QList<QString> qmlDirContent;
 
     bool find(const QByteArray& type, int *vmajor, int *vminor, QmlType** type_return, QUrl* url_return) const
@@ -1236,23 +1235,22 @@ struct QmlEnginePrivate::ImportedNamespace {
             int vmaj = majversions.at(i);
             int vmin = minversions.at(i);
 
-            if (isBuiltin.at(i)) {
-                QByteArray qt = uris.at(i).toUtf8();
-                qt += '/';
-                qt += type;
+            QByteArray qt = uris.at(i).toUtf8();
+            qt += '/';
+            qt += type;
+            if (qmlImportTrace())
+                qDebug() << "Look in" << qt;
+            QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
+            if (vmajor) *vmajor = vmaj;
+            if (vminor) *vminor = vmin;
+            if (t) {
                 if (qmlImportTrace())
-                    qDebug() << "Look in" << qt;
-                QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
-                if (vmajor) *vmajor = vmaj;
-                if (vminor) *vminor = vmin;
-                if (t) {
-                    if (qmlImportTrace())
-                        qDebug() << "Found" << qt;
-                    if (type_return)
-                        *type_return = t;
-                    return true;
-                }
+                    qDebug() << "Found" << qt;
+                if (type_return)
+                    *type_return = t;
+                return true;
             }
+
             QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
             QString qmldircontent = qmlDirContent.at(i);
             if (vmaj>=0 || !qmldircontent.isEmpty()) {
@@ -1321,7 +1319,6 @@ public:
                 set.insert(prefix,(s=new QmlEnginePrivate::ImportedNamespace));
         }
         QString url = uri;
-        bool isbuiltin = false;
         if (importType == QmlScriptParser::Import::Library) {
             url.replace(QLatin1Char('.'),QLatin1Char('/'));
             bool found = false;
@@ -1334,16 +1331,11 @@ public:
                     break;
                 }
             }
-            if (!found) {
-                // XXX assume it is a built-in type qualifier
-                isbuiltin = true;
-            }
             QFactoryLoader *l = loader();
             QmlModuleFactoryInterface *factory =
                 qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
             if (factory) {
                 factory->defineModuleOnce(uri);
-                isbuiltin = true;
             }
         } else {
             url = base.resolved(QUrl(url)).toString();
@@ -1353,7 +1345,6 @@ public:
         s->majversions.prepend(vmaj);
         s->minversions.prepend(vmin);
         s->isLibrary.prepend(importType == QmlScriptParser::Import::Library);
-        s->isBuiltin.prepend(isbuiltin);
         s->qmlDirContent.prepend(qmldircontent);
         return true;
     }
@@ -1376,10 +1367,11 @@ public:
         if (s) {
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
-            if (s->urls.count() == 1 && !s->isBuiltin[0] && !s->isLibrary[0] && url_return) {
+            if (s->urls.count() == 1 && !s->isLibrary[0] && url_return) {
                 *url_return = QUrl(s->urls[0]+QLatin1Char('/')).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
                 return true;
             }
+
         }
         if (url_return) {
             *url_return = base.resolved(QUrl(QString::fromUtf8(type + ".qml")));
@@ -1440,9 +1432,6 @@ static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePri
     QList<QmlType *> types = QmlMetaType::qmlTypes();
 
     for (int ii = 0; ii < set.uris.count(); ++ii) {
-        if (!set.isBuiltin.at(ii))
-            continue;
-
         QByteArray base = set.uris.at(ii).toUtf8() + '/';
         int major = set.majversions.at(ii);
         int minor = set.minversions.at(ii);
