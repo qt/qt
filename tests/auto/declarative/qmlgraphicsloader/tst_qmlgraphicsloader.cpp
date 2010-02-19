@@ -389,7 +389,7 @@ void tst_QmlGraphicsLoader::networkRequestUrl()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
-    server.serveDirectory("data");
+    server.serveDirectory(SRCDIR "/data");
 
     QmlComponent component(&engine);
     component.setData(QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), TEST_FILE(""));
@@ -441,7 +441,7 @@ void tst_QmlGraphicsLoader::failNetworkRequest()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
-    server.serveDirectory("data");
+    server.serveDirectory(SRCDIR "/data");
 
     QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14445/IDontExist.qml) ");
 
