@@ -263,6 +263,8 @@ private Q_SLOTS:
 
     void httpConnectionCount();
 
+    void httpRecursiveCreation();
+
 #ifndef QT_NO_OPENSSL
     void ioPostToHttpsUploadProgress();
     void ignoreSslErrorsList_data();
@@ -3869,6 +3871,70 @@ void tst_QNetworkReply::httpConnectionCount()
 #else
     QCOMPARE(pendingConnectionCount, 6);
 #endif
+}
+
+class HttpRecursiveCreationHelper : public QObject {
+    Q_OBJECT
+public:
+
+    HttpRecursiveCreationHelper():
+            QObject(0),
+            requestsStartedCount_finished(0),
+            requestsStartedCount_readyRead(0),
+            requestsFinishedCount(0)
+    {
+    }
+    QNetworkAccessManager manager;
+    int requestsStartedCount_finished;
+    int requestsStartedCount_readyRead;
+    int requestsFinishedCount;
+public slots:
+    void finishedSlot() {
+        requestsFinishedCount++;
+
+        QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+        QVERIFY(!reply->error());
+        QVERIFY(reply->bytesAvailable() == 27906);
+
+        if (requestsFinishedCount == 60) {
+            QTestEventLoop::instance().exitLoop();
+            return;
+        }
+
+        if (requestsStartedCount_finished < 30) {
+            startOne();
+            requestsStartedCount_finished++;
+        }
+
+        reply->deleteLater();
+    }
+    void readyReadSlot() {
+        QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+        QVERIFY(!reply->error());
+
+        if (requestsStartedCount_readyRead < 30 && reply->bytesAvailable() > 27906/2) {
+            startOne();
+            requestsStartedCount_readyRead++;
+        }
+    }
+    void startOne() {
+        QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+        QNetworkRequest request(url);
+        QNetworkReply *reply = manager.get(request);
+        reply->setParent(this);
+        connect(reply, SIGNAL(finished()), this, SLOT(finishedSlot()));
+        connect(reply, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+    }
+};
+
+void tst_QNetworkReply::httpRecursiveCreation()
+{
+    // this test checks if creation of new requests to the same host properly works
+    // from readyRead() and finished() signals
+    HttpRecursiveCreationHelper helper;
+    helper.startOne();
+    QTestEventLoop::instance().enterLoop(30);
+    QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
 #ifndef QT_NO_OPENSSL

@@ -112,7 +112,7 @@ class QList
 public:
     inline QList() : d(&QListData::shared_null) { d->ref.ref(); }
     inline QList(const QList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
-    ~QList(); // ### Qt5: make this destructor virtual
+    ~QList();
     QList<T> &operator=(const QList<T> &l);
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
