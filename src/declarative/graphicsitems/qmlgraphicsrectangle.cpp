@@ -86,6 +86,7 @@ void QmlGraphicsPen::setWidth(int w)
 
 /*!
     \qmlclass GradientStop QmlGraphicsGradientStop
+  \since 4.7
     \brief The GradientStop item defines the color at a position in a Gradient
 
     \sa Gradient
@@ -106,6 +107,7 @@ void QmlGraphicsGradientStop::updateGradient()
 
 /*!
     \qmlclass Gradient QmlGraphicsGradient
+  \since 4.7
     \brief The Gradient item defines a gradient fill.
 
     A gradient is defined by two or more colors, which will be blended seemlessly.  The
@@ -153,6 +155,7 @@ QML_DEFINE_TYPE(Qt,4,6,Rectangle,QmlGraphicsRectangle)
 
 /*!
     \qmlclass Rectangle QmlGraphicsRectangle
+  \since 4.7
     \brief The Rectangle item allows you to add rectangles to a scene.
     \inherits Item
 

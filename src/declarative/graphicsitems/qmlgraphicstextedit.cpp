@@ -60,6 +60,7 @@ QML_DEFINE_TYPE(Qt,4,6,TextEdit,QmlGraphicsTextEdit)
 
 /*!
     \qmlclass TextEdit QmlGraphicsTextEdit
+  \since 4.7
     \brief The TextEdit item allows you to add editable formatted text to a scene.
 
     It can display both plain and rich text. For example:

@@ -130,6 +130,7 @@ void QmlContextPrivate::init()
 
 /*!
     \class QmlContext
+  \since 4.7
     \brief The QmlContext class defines a context within a QML engine.
     \mainclass
 

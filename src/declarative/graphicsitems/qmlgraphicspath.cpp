@@ -60,6 +60,7 @@ QML_DEFINE_TYPE(Qt,4,6,PathCubic,QmlGraphicsPathCubic)
 
 /*!
     \qmlclass PathElement QmlGraphicsPathElement
+    \since 4.7
     \brief PathElement is the base path type.
 
     This type is the base for all path types.  It cannot
@@ -76,6 +77,7 @@ QML_DEFINE_TYPE(Qt,4,6,PathCubic,QmlGraphicsPathCubic)
 
 /*!
     \qmlclass Path QmlGraphicsPath
+    \since 4.7
     \brief A Path object defines a path for use by \l PathView.
 
     A Path is composed of one or more path segments - PathLine, PathQuad,
@@ -476,6 +478,7 @@ void QmlGraphicsCurve::setY(qreal y)
 
 /*!
     \qmlclass PathAttribute QmlGraphicsPathAttribute
+    \since 4.7
     \brief The PathAttribute allows setting an attribute at a given position in a Path.
 
     The PathAttribute object allows attibutes consisting of a name and
@@ -555,6 +558,7 @@ void QmlGraphicsPathAttribute::setValue(qreal value)
 
 /*!
     \qmlclass PathLine QmlGraphicsPathLine
+    \since 4.7
     \brief The PathLine defines a straight line.
 
     The example below creates a path consisting of a straight line from
@@ -595,6 +599,7 @@ void QmlGraphicsPathLine::addToPath(QPainterPath &path)
 
 /*!
     \qmlclass PathQuad QmlGraphicsPathQuad
+    \since 4.7
     \brief The PathQuad defines a quadratic Bezier curve with a control point.
 
     The following QML produces the path shown below:
@@ -679,6 +684,7 @@ void QmlGraphicsPathQuad::addToPath(QPainterPath &path)
 
 /*!
    \qmlclass PathCubic QmlGraphicsPathCubic
+    \since 4.7
    \brief The PathCubic defines a cubic Bezier curve with two control points.
 
     The following QML produces the path shown below:
@@ -789,6 +795,7 @@ void QmlGraphicsPathCubic::addToPath(QPainterPath &path)
 
 /*!
     \qmlclass PathPercent QmlGraphicsPathPercent
+    \since 4.7
     \brief The PathPercent manipulates the way a path is interpreted.
 
     The examples below show the normal distrubution of items along a path

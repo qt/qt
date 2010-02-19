@@ -64,6 +64,7 @@ QML_DEFINE_TYPE(Qt,4,6,Repeater,QmlGraphicsRepeater)
 
 /*!
     \qmlclass Repeater QmlGraphicsRepeater
+  \since 4.7
     \inherits Item
 
     \brief The Repeater item allows you to repeat a component based on a model.

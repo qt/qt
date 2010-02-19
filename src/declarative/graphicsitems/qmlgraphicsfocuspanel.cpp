@@ -50,6 +50,7 @@ QML_DEFINE_TYPE(Qt,4,6,FocusPanel,QmlGraphicsFocusPanel)
 
 /*!
    \qmlclass FocusPanel QmlGraphicsFocusPanel
+    \since 4.7
    \brief The FocusPanel item explicitly creates a focus panel.
    \inherits Item
 

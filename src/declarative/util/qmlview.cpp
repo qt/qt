@@ -152,6 +152,7 @@ public:
 
 /*!
     \class QmlView
+  \since 4.7
     \brief The QmlView class provides a widget for displaying a Qt Declarative user interface.
 
     QmlView currently provides a minimal interface for displaying QML
