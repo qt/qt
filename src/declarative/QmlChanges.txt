@@ -18,6 +18,14 @@ reinforced.
 
 sectionExpression has been replaced by section.property, section.criteria
 
+ListModel
+---------
+- types are strictly checked (previously, everything was a string)
+ - foo: "bar"  continues to work as before
+ - foo: bar  is now invalid, use  foo: "bar"
+ - foo: true  is now a bool (not string "true")
+ - foo: false  is now a bool (not string "false" == true!)
+
 
 =============================================================================
 The changes below are pre-4.6.0 release.
