@@ -668,18 +668,12 @@ void tst_qmlgraphicstextedit::delegateLoading()
     view->execute();
     view->show();
     view->setFocus();
-    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateOkay");
-    QVERIFY(delegate);
-    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateFail");
-    QVERIFY(!delegate);
+    QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
     view->execute();
     view->show();
     view->setFocus();
-    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateOkay");
-    QVERIFY(delegate);
-    delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateErrorA");
-    QVERIFY(!delegate);
+    QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
     //ErrorB should get a component which is ready but component.create() returns null
     //Not sure how to accomplish this with QmlGraphicsTextEdits cursor delegate
     //###This could be a case of overzealous defensive programming
