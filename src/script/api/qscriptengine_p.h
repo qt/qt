@@ -106,12 +106,18 @@ namespace QScript
 
     inline bool ToBool(qsreal);
     inline bool ToBool(const QString &);
-    inline qsreal ToNumber(const QString &);
     inline qint32 ToInt32(const QString &);
     inline quint32 ToUInt32(const QString &);
     inline quint16 ToUInt16(const QString &);
     inline qsreal ToInteger(const QString &);
+#ifdef Q_CC_MSVC
+    // MSVC2008 crashes if these are inlined.
+    qsreal ToNumber(const QString &);
+    QString ToString(qsreal);
+#else
+    inline qsreal ToNumber(const QString &);
     inline QString ToString(qsreal);
+#endif
 
     //some conversion helper functions
     inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
@@ -463,6 +469,9 @@ inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
     return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
 }
 
+#ifndef Q_CC_MSVC
+// MSVC2008 crashes if these are inlined.
+
 inline QString ToString(qsreal value)
 {
     return JSC::UString::from(value);
@@ -472,6 +481,8 @@ inline qsreal ToNumber(const QString &value)
 {
     return ((JSC::UString)value).toDouble();
 }
+
+#endif
 
 inline qint32 ToInt32(const QString &value)
 {
