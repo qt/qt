@@ -53,17 +53,17 @@ class QMultimediaQmlModule : public QmlModulePlugin
 public:
     QStringList keys() const
     {
-        return QStringList() << QLatin1String("qt.multimedia");
+        return QStringList() << QLatin1String("Qt.multimedia");
     }
 
     void defineModule(const QString& uri)
     {
         Q_UNUSED(uri)
-        Q_ASSERT(uri == QLatin1String("qt.multimedia"));
+        Q_ASSERT(uri == QLatin1String("Qt.multimedia"));
 
-        qmlRegisterType<QSoundEffect>("qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
-        qmlRegisterType<QmlAudio>("qt.multimedia", 4, 7, "Audio", "Audio");
-        qmlRegisterType<QmlGraphicsVideo>("qt.multimedia", 4, 7, "Video", "Video");
+        qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
+        qmlRegisterType<QmlAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
+        qmlRegisterType<QmlGraphicsVideo>("Qt.multimedia", 4, 7, "Video", "Video");
     }
 };
 
