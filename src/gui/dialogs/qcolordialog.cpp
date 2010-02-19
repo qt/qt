@@ -1078,8 +1078,7 @@ QColorShower::QColorShower(QColorDialog *parent)
 
 #ifdef QT_SMALL_COLORDIALOG
 #  ifdef Q_WS_S60
-    QS60Data s60Data = QS60Data();
-    const bool nonTouchUI = !s60Data.hasTouchscreen;
+    const bool nonTouchUI = !S60->hasTouchscreen;
 #  elif defined Q_WS_MAEMO_5
     const bool nonTouchUI = false;
 #  endif
@@ -1506,8 +1505,7 @@ void QColorDialogPrivate::init(const QColor &initial)
 
 #if defined(QT_SMALL_COLORDIALOG)
 #  if defined(Q_WS_S60)
-    QS60Data s60Data = QS60Data();
-    const bool nonTouchUI = !s60Data.hasTouchscreen;
+    const bool nonTouchUI = !S60->hasTouchscreen;
 #  elif defined(Q_WS_MAEMO_5)
     const bool nonTouchUI = false;
 #  endif
