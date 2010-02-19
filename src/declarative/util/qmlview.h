@@ -102,7 +102,8 @@ private Q_SLOTS:
 protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void paintEvent(QPaintEvent *event);
-    void timerEvent(QTimerEvent*);
+    virtual void timerEvent(QTimerEvent*);
+    virtual void setRootObject(QObject *obj);
 };
 
 QT_END_NAMESPACE

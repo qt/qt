@@ -429,52 +429,60 @@ void QmlView::continueExecute()
         return;
     }
 
-    if (obj) {
-        if (QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(obj)) {
-
-            d->scene.addItem(item);
-
-            QPerformanceLog::displayData();
-            QPerformanceLog::clear();
-            d->root = item;
-            d->qmlRoot = item;
-            connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
-            connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
-            if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
-                d->initialSize.setWidth(d->qmlRoot->width());
-            if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)
-                d->initialSize.setHeight(d->qmlRoot->height());
-            resize(d->initialSize);
-
-            if (d->resizeMode == SizeRootObjectToView) {
-                d->qmlRoot->setWidth(width());
-                d->qmlRoot->setHeight(height());
-            } else {
-                QSize sz(d->qmlRoot->width(),d->qmlRoot->height());
-                emit sceneResized(sz);
-                resize(sz);
-            }
-            updateGeometry();
-        } else if (QGraphicsObject *item = qobject_cast<QGraphicsObject *>(obj)) {
-            d->scene.addItem(item);
-            qWarning() << "QmlView::resizeMode is not honored for components of type QGraphicsObject";
-        } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
-            window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
-            window()->setAttribute(Qt::WA_NoSystemBackground, false);
-            if (!layout()) {
-                setLayout(new QVBoxLayout);
-                layout()->setContentsMargins(0, 0, 0, 0);
-            } else if (layout()->count()) {
-                // Hide the QGraphicsView in GV mode.
-                QLayoutItem *item = layout()->itemAt(0);
-                if (item->widget())
-                    item->widget()->hide();
-            }
-            layout()->addWidget(wid);
-            emit sceneResized(wid->size());
-        }
-    }
+    setRootObject(obj);
     emit statusChanged(status());
+}
+
+
+/*!
+  \internal
+*/
+void QmlView::setRootObject(QObject *obj)
+{
+    Q_D(QmlView);
+
+    if (QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(obj)) {
+        d->scene.addItem(item);
+
+        QPerformanceLog::displayData();
+        QPerformanceLog::clear();
+        d->root = item;
+        d->qmlRoot = item;
+        connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
+        if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
+            d->initialSize.setWidth(d->qmlRoot->width());
+        if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)
+            d->initialSize.setHeight(d->qmlRoot->height());
+        resize(d->initialSize);
+
+        if (d->resizeMode == SizeRootObjectToView) {
+            d->qmlRoot->setWidth(width());
+            d->qmlRoot->setHeight(height());
+        } else {
+            QSize sz(d->qmlRoot->width(),d->qmlRoot->height());
+            emit sceneResized(sz);
+            resize(sz);
+        }
+        updateGeometry();
+    } else if (QGraphicsObject *item = qobject_cast<QGraphicsObject *>(obj)) {
+        d->scene.addItem(item);
+        qWarning() << "QmlView::resizeMode is not honored for components of type QGraphicsObject";
+    } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
+        window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
+        window()->setAttribute(Qt::WA_NoSystemBackground, false);
+        if (!layout()) {
+            setLayout(new QVBoxLayout);
+            layout()->setContentsMargins(0, 0, 0, 0);
+        } else if (layout()->count()) {
+            // Hide the QGraphicsView in GV mode.
+            QLayoutItem *item = layout()->itemAt(0);
+            if (item->widget())
+                item->widget()->hide();
+        }
+        layout()->addWidget(wid);
+        emit sceneResized(wid->size());
+    }
 }
 
 /*!
