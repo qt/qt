@@ -66,6 +66,53 @@ static int grow(int size)
     return x;
 }
 
+/*!
+ *  Detaches the QListData by allocating new memory for a list which will be bigger
+ *  than the copied one and is expected to grow further.
+ *  *idx is the desired insertion point and is clamped to the actual size of the list.
+ *  num is the number of new elements to insert at the insertion point.
+ *  Returns the old (shared) data, it is up to the caller to deref() and free().
+ *  For the new data node_copy needs to be called.
+ *
+ *  \internal
+ */
+QListData::Data *QListData::detach_grow(int *idx, int num)
+{
+    Data *x = d;
+    int l = x->end - x->begin;
+    int nl = l + num;
+    int alloc = grow(nl);
+    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + alloc * sizeof(void *)));
+    Q_CHECK_PTR(t);
+
+    t->ref = 1;
+    t->sharable = true;
+    t->alloc = alloc;
+    // The space reservation algorithm's optimization is biased towards appending:
+    // Something which looks like an append will put the data at the beginning,
+    // while something which looks like a prepend will put it in the middle
+    // instead of at the end. That's based on the assumption that prepending
+    // is uncommon and even an initial prepend will eventually be followed by
+    // at least some appends.
+    int bg;
+    if (*idx < 0) {
+        *idx = 0;
+        bg = (alloc - nl) >> 1;
+    } else if (*idx > l) {
+        *idx = l;
+        bg = 0;
+    } else if (*idx < (l >> 1)) {
+        bg = (alloc - nl) >> 1;
+    } else {
+        bg = 0;
+    }
+    t->begin = bg;
+    t->end = bg + nl;
+    d = t;
+
+    return x;
+}
+
 #if QT_VERSION >= 0x050000
 #  error "Remove QListData::detach(), it is only required for binary compatibility for 4.0.x to 4.2.x"
 #endif
