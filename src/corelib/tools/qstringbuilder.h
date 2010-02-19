@@ -117,6 +117,20 @@ public:
 };
 
 
+template <>
+class QStringBuilder <QString, QString>
+{
+    public:
+        QStringBuilder(const QString &a_, const QString &b_) : a(a_), b(b_) {}
+
+        operator QString() const
+        { QString r(a); r += b; return r; }
+        QByteArray toLatin1() const { return QString(*this).toLatin1(); }
+
+        const QString &a;
+        const QString &b;
+};
+
 template <> struct QConcatenable<char> : private QAbstractConcatenable
 {
     typedef char type;
