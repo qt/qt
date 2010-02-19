@@ -24,7 +24,6 @@ Rectangle {
         }
         ListElement {
             name: "Cumquat"; cost: 3.25
-            types: [ "Small", "Smaller" ]
             attributes: [
                 ListElement { description: "Citrus" }
             ]
@@ -82,12 +81,12 @@ Rectangle {
                 anchors.right: removeButton.left; anchors.rightMargin: 35; spacing: 10
                 width: childrenRect.width; anchors.verticalCenter: parent.verticalCenter
                 Image { source: "content/pics/list-add.png"
-                    ClickAutoRepeating { id: clickUp; anchors.fill: parent; onClicked: fruitModel.set(index,"cost",Number(cost)+0.25) }
+                    ClickAutoRepeating { id: clickUp; anchors.fill: parent; onClicked: fruitModel.setProperty(index,"cost",cost+0.25) }
                     scale: clickUp.isPressed ? 0.9 : 1; transformOrigin: Item.Center
                 }
                 Text { id: costText; text: '$'+Number(cost).toFixed(2); font.pixelSize: 15; color: "White"; font.bold: true; }
                 Image { source: "content/pics/list-remove.png"
-                    ClickAutoRepeating { id: clickDown; anchors.fill: parent; onClicked: fruitModel.set(index,"cost",Math.max(0,Number(cost)-0.25)) }
+                    ClickAutoRepeating { id: clickDown; anchors.fill: parent; onClicked: fruitModel.setProperty(index,"cost",Math.max(0,cost-0.25)) }
                     scale: clickDown.isPressed ? 0.9 : 1; transformOrigin: Item.Center
                 }
             }
@@ -122,7 +121,7 @@ Rectangle {
                 PropertyChanges { target: verticalScrollBar; opacity: 1 }
             }
         ]
-        transitions: [ Transition { NumberAnimation { matchProperties: "opacity"; duration: 400 } } ]
+        transitions: [ Transition { NumberAnimation { properties: "opacity"; duration: 400 } } ]
     }
 
     Row {

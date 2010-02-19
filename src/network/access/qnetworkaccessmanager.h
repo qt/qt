@@ -79,6 +79,7 @@ public:
         PutOperation,
         PostOperation,
         DeleteOperation,
+        CustomOperation,
 
         UnknownOperation = 0
     };
@@ -106,6 +107,7 @@ public:
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *deleteResource(const QNetworkRequest &request);
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = 0);
 
     void setConfiguration(const QNetworkConfiguration &config);
     QNetworkConfiguration configuration() const;

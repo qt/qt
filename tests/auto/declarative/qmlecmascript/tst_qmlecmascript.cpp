@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/private/qguard_p.h>
+#include <QtDeclarative/private/qmlguard_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qnumeric.h>
 #include <private/qmlengine_p.h>
@@ -835,9 +835,9 @@ void tst_qmlecmascript::dynamicCreation()
 void tst_qmlecmascript::dynamicDestruction()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicDeletion.qml"));
-    QGuard<MyQmlObject> object = qobject_cast<MyQmlObject*>(component.create());
+    QmlGuard<MyQmlObject> object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
-    QGuard<QObject> createdQmlObject = 0;
+    QmlGuard<QObject> createdQmlObject = 0;
 
     QMetaObject::invokeMethod(object, "create");
     createdQmlObject = object->objectProperty();
@@ -846,10 +846,9 @@ void tst_qmlecmascript::dynamicDestruction()
 
     QMetaObject::invokeMethod(object, "killOther");
     QVERIFY(createdQmlObject);
-    QTest::qWait(0);
     QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
     QVERIFY(createdQmlObject);
-    for (int ii = 0; createdQmlObject && ii < 10; ++ii) {
+    for (int ii = 0; createdQmlObject && ii < 50; ++ii) { // After 5 seconds we should give up
         if (createdQmlObject) {
             QTest::qWait(100);
             QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);

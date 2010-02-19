@@ -864,6 +864,9 @@ typedef quint64 qulonglong;
 #  endif
 #endif
 
+#define Q_INIT_RESOURCE_EXTERN(name) \
+    extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();
+
 #define Q_INIT_RESOURCE(name) \
     do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
         QT_MANGLE_NAMESPACE(qInitResources_ ## name) (); } while (0)

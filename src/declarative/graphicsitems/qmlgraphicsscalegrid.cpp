@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
     \class QmlGraphicsScaleGrid
     \brief The QmlGraphicsScaleGrid class allows you to specify a 3x3 grid to use in scaling an image.
 */
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsScaleGrid)
 
 QmlGraphicsScaleGrid::QmlGraphicsScaleGrid(QObject *parent) : QObject(parent), _left(0), _top(0), _right(0), _bottom(0)
 {

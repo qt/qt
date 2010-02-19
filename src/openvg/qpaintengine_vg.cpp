@@ -50,10 +50,10 @@
 #endif
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qdrawhelper_p.h>
-#include <QtGui/private/qtextureglyphcache_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
+#include <QtGui/private/qstatictext_p.h>
 #include <QDebug>
 #include <QSet>
 
@@ -86,10 +86,9 @@ public:
     QVGFontGlyphCache();
     ~QVGFontGlyphCache();
 
-    void cacheGlyphs(QVGPaintEnginePrivate *d,
-                     const QTextItemInt &ti,
-                     const QVarLengthArray<glyph_t> &glyphs);
-    void setScaleFromText(const QTextItemInt &ti);
+    void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
+
+    void setScaleFromText(const QFont &font, QFontEngine *fontEngine);
 
     VGFont font;
     VGfloat scaleX;
@@ -3185,22 +3184,20 @@ QVGFontGlyphCache::~QVGFontGlyphCache()
         vgDestroyFont(font);
 }
 
-void QVGFontGlyphCache::setScaleFromText(const QTextItemInt &ti)
+void QVGFontGlyphCache::setScaleFromText(const QFont &font, QFontEngine *fontEngine)
 {
-    QFontInfo fi(ti.font());
+    QFontInfo fi(font);
     qreal pixelSize = fi.pixelSize();
-    qreal emSquare = ti.fontEngine->properties().emSquare.toReal();
+    qreal emSquare = fontEngine->properties().emSquare.toReal();
     scaleX = scaleY = static_cast<VGfloat>(pixelSize / emSquare);
 }
 
-void QVGFontGlyphCache::cacheGlyphs
-        (QVGPaintEnginePrivate *d, const QTextItemInt &ti,
-         const QVarLengthArray<glyph_t> &glyphs)
+void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
+                                    QFontEngine *fontEngine,
+                                    const glyph_t *g, int count)
 {
     VGfloat origin[2];
     VGfloat escapement[2];
-    const glyph_t *g = glyphs.constData();
-    int count = glyphs.size();
     glyph_metrics_t metrics;
     // Some Qt font engines don't set yoff in getUnscaledGlyph().
     // Zero the metric structure so that everything has a default value.
@@ -3219,9 +3216,9 @@ void QVGFontGlyphCache::cacheGlyphs
         }
 #if !defined(QVG_NO_IMAGE_GLYPHS)
         Q_UNUSED(d);
-        QImage scaledImage = ti.fontEngine->alphaMapForGlyph(glyph);
+        QImage scaledImage = fontEngine->alphaMapForGlyph(glyph);
         VGImage vgImage = VG_INVALID_HANDLE;
-        metrics = ti.fontEngine->boundingBox(glyph);
+        metrics = fontEngine->boundingBox(glyph);
         if (!scaledImage.isNull()) {  // Not a space character
             if (scaledImage.format() == QImage::Format_Indexed8) {
                 vgImage = vgCreateImage(VG_A_8, scaledImage.width(), scaledImage.height(), VG_IMAGE_QUALITY_FASTER);
@@ -3245,7 +3242,7 @@ void QVGFontGlyphCache::cacheGlyphs
 #else
         // Calculate the path for the glyph and cache it.
         QPainterPath path;
-        ti.fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
+        fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
         VGPath vgPath;
         if (!path.isEmpty()) {
             vgPath = d->painterPathToVGPath(path);
@@ -3286,8 +3283,28 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     ti.fontEngine->getGlyphPositions
         (ti.glyphs, matrix, ti.flags, glyphs, positions);
 
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
+        QPaintEngineEx::drawTextItem(p, textItem);    
+#else
+    // OpenGL 1.0 does not have support for VGFont and glyphs,
+    // so fall back to the default Qt path stroking algorithm.
+    QPaintEngineEx::drawTextItem(p, textItem);
+#endif
+}
+
+void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
+                     QPointF(0, 0));
+}
+
+ bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
+                                       QFontEngine *fontEngine, const QPointF &p)
+ {
+    Q_D(QVGPaintEngine);
+
     // Find the glyph cache for this font.
-    QVGFontCache::ConstIterator it = d->fontCache.constFind(ti.fontEngine);
+    QVGFontCache::ConstIterator it = d->fontCache.constFind(fontEngine);
     QVGFontGlyphCache *glyphCache;
     if (it != d->fontCache.constEnd()) {
         glyphCache = it.value();
@@ -3295,15 +3312,14 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         glyphCache = new QVGFontGlyphCache();
         if (glyphCache->font == VG_INVALID_HANDLE) {
             qWarning("QVGPaintEngine::drawTextItem: OpenVG fonts are not supported by the OpenVG engine");
-            delete glyphCache;
-            QPaintEngineEx::drawTextItem(p, textItem);
-            return;
+            delete glyphCache;            
+            return false;
         }
-        glyphCache->setScaleFromText(ti);
-        d->fontCache.insert(ti.fontEngine, glyphCache);
+        glyphCache->setScaleFromText(font, fontEngine);
+        d->fontCache.insert(fontEngine, glyphCache);
         if (!d->fontEngineCleaner)
             d->fontEngineCleaner = new QVGFontEngineCleaner(d);
-        QObject::connect(ti.fontEngine, SIGNAL(destroyed()),
+        QObject::connect(fontEngine, SIGNAL(destroyed()),
                          d->fontEngineCleaner, SLOT(fontEngineDestroyed()));
     }
 
@@ -3316,7 +3332,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, glyphTransform);
 
     // Add the glyphs from the text item into the glyph cache.
-    glyphCache->cacheGlyphs(d, ti, glyphs);
+    glyphCache->cacheGlyphs(d, fontEngine, glyphs, numGlyphs);
 
     // Set the glyph drawing origin.
     VGfloat origin[2];
@@ -3335,13 +3351,10 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, glyphs.size(), (VGuint*)glyphs.data(),
+    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs,
                  NULL, NULL, VG_FILL_PATH, VG_TRUE);
-#else
-    // OpenGL 1.0 does not have support for VGFont and glyphs,
-    // so fall back to the default Qt path stroking algorithm.
-    QPaintEngineEx::drawTextItem(p, textItem);
-#endif
+
+    return true;
 }
 
 void QVGPaintEngine::setState(QPainterState *s)

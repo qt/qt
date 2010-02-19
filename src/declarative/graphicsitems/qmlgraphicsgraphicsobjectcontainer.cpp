@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,9 +130,6 @@ public:
     \class QmlGraphicsGraphicsObjectContainer
     \brief The QmlGraphicsGraphicsObjectContainer class allows you to add QGraphicsObjects into Fluid UI applications.
 */
-
-QML_DEFINE_NOCREATE_TYPE(QGraphicsObject)
-QML_DEFINE_TYPE(Qt,4,6,GraphicsObjectContainer,QmlGraphicsGraphicsObjectContainer)
 
 QmlGraphicsGraphicsObjectContainer::QmlGraphicsGraphicsObjectContainer(QmlGraphicsItem *parent)
 : QmlGraphicsItem(*new QmlGraphicsGraphicsObjectContainerPrivate, parent)

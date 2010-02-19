@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,11 +48,11 @@
 
 #define SERVER_PORT 14445
 
-class tst_xmlhttprequest : public QObject
+class tst_qmlxmlhttprequest : public QObject
 {
     Q_OBJECT
 public:
-    tst_xmlhttprequest() {}
+    tst_qmlxmlhttprequest() {}
 
 private slots:
     void initTestCase() {
@@ -123,7 +123,7 @@ inline QUrl TEST_FILE(const QString &filename)
 }
 
 // Test that the dom exception codes are correct
-void tst_xmlhttprequest::domExceptionCodes()
+void tst_qmlxmlhttprequest::domExceptionCodes()
 {
     QmlComponent component(&engine, TEST_FILE("domExceptionCodes.qml"));
     QObject *object = component.create();
@@ -160,7 +160,7 @@ void tst_xmlhttprequest::domExceptionCodes()
     } while (false) 
 
 
-void tst_xmlhttprequest::callbackException_data()
+void tst_qmlxmlhttprequest::callbackException_data()
 {
     QTest::addColumn<QString>("which");
     QTest::addColumn<int>("line");
@@ -170,7 +170,7 @@ void tst_xmlhttprequest::callbackException_data()
     QTest::newRow("on-done") << "4" << 15;
 }
 
-void tst_xmlhttprequest::callbackException()
+void tst_qmlxmlhttprequest::callbackException()
 {
     // Test exception reporting for exceptions thrown at various points.
 
@@ -194,7 +194,7 @@ void tst_xmlhttprequest::callbackException()
 
 // Test that the state value properties on the XMLHttpRequest constructor have the correct values.
 // ### WebKit does not do this, but it seems to fit the standard and QML better
-void tst_xmlhttprequest::staticStateValues()
+void tst_qmlxmlhttprequest::staticStateValues()
 {
     QmlComponent component(&engine, TEST_FILE("staticStateValues.qml"));
     QObject *object = component.create();
@@ -210,7 +210,7 @@ void tst_xmlhttprequest::staticStateValues()
 }
 
 // Test that the state value properties on instances have the correct values.
-void tst_xmlhttprequest::instanceStateValues()
+void tst_qmlxmlhttprequest::instanceStateValues()
 {
     QmlComponent component(&engine, TEST_FILE("instanceStateValues.qml"));
     QObject *object = component.create();
@@ -226,7 +226,7 @@ void tst_xmlhttprequest::instanceStateValues()
 }
 
 // Test calling constructor 
-void tst_xmlhttprequest::constructor()
+void tst_qmlxmlhttprequest::constructor()
 {
     QmlComponent component(&engine, TEST_FILE("constructor.qml"));
     QObject *object = component.create();
@@ -239,7 +239,7 @@ void tst_xmlhttprequest::constructor()
 }
 
 // Test that all the properties are set correctly before any request is sent
-void tst_xmlhttprequest::defaultState()
+void tst_qmlxmlhttprequest::defaultState()
 {
     QmlComponent component(&engine, TEST_FILE("defaultState.qml"));
     QObject *object = component.create();
@@ -255,7 +255,7 @@ void tst_xmlhttprequest::defaultState()
 }
 
 // Test valid XMLHttpRequest.open() calls
-void tst_xmlhttprequest::open()
+void tst_qmlxmlhttprequest::open()
 {
     // Relative url
     {
@@ -353,7 +353,7 @@ void tst_xmlhttprequest::open()
 }
 
 // Test that calling XMLHttpRequest.open() with an invalid method raises an exception
-void tst_xmlhttprequest::open_invalid_method()
+void tst_qmlxmlhttprequest::open_invalid_method()
 {
     QmlComponent component(&engine, TEST_FILE("open_invalid_method.qml"));
     QObject *object = component.create();
@@ -365,7 +365,7 @@ void tst_xmlhttprequest::open_invalid_method()
 }
 
 // Test that calling XMLHttpRequest.open() with sync raises an exception
-void tst_xmlhttprequest::open_sync()
+void tst_qmlxmlhttprequest::open_sync()
 {
     QmlComponent component(&engine, TEST_FILE("open_sync.qml"));
     QObject *object = component.create();
@@ -377,7 +377,7 @@ void tst_xmlhttprequest::open_sync()
 }
 
 // Calling with incorrect arg count raises an exception
-void tst_xmlhttprequest::open_arg_count()
+void tst_qmlxmlhttprequest::open_arg_count()
 {
     {
         QmlComponent component(&engine, TEST_FILE("open_arg_count.1.qml"));
@@ -401,7 +401,7 @@ void tst_xmlhttprequest::open_arg_count()
 }
 
 // Test valid setRequestHeader() calls
-void tst_xmlhttprequest::setRequestHeader()
+void tst_qmlxmlhttprequest::setRequestHeader()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
@@ -421,7 +421,7 @@ void tst_xmlhttprequest::setRequestHeader()
 }
 
 // Test setting headers before open() throws exception
-void tst_xmlhttprequest::setRequestHeader_unsent()
+void tst_qmlxmlhttprequest::setRequestHeader_unsent()
 {
     QmlComponent component(&engine, TEST_FILE("setRequestHeader_unsent.qml"));
     QObject *object = component.create();
@@ -432,7 +432,7 @@ void tst_xmlhttprequest::setRequestHeader_unsent()
     delete object;
 }
 
-void tst_xmlhttprequest::setRequestHeader_illegalName_data()
+void tst_qmlxmlhttprequest::setRequestHeader_illegalName_data()
 {
     QTest::addColumn<QString>("name");
 
@@ -461,7 +461,7 @@ void tst_xmlhttprequest::setRequestHeader_illegalName_data()
 }
 
 // Tests that using illegal header names has no effect
-void tst_xmlhttprequest::setRequestHeader_illegalName()
+void tst_qmlxmlhttprequest::setRequestHeader_illegalName()
 {
     QFETCH(QString, name);
 
@@ -491,7 +491,7 @@ void tst_xmlhttprequest::setRequestHeader_illegalName()
 }
 
 // Test that attempting to set a header after a request is sent throws an exception
-void tst_xmlhttprequest::setRequestHeader_sent()
+void tst_qmlxmlhttprequest::setRequestHeader_sent()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
@@ -513,7 +513,7 @@ void tst_xmlhttprequest::setRequestHeader_sent()
 }
 
 // Invalid arg count throws exception
-void tst_xmlhttprequest::setRequestHeader_args()
+void tst_qmlxmlhttprequest::setRequestHeader_args()
 {
     QmlComponent component(&engine, TEST_FILE("setRequestHeader_args.qml"));
     QObject *object = component.create();
@@ -525,7 +525,7 @@ void tst_xmlhttprequest::setRequestHeader_args()
 }
 
 // Test that calling send() in UNSENT state throws an exception
-void tst_xmlhttprequest::send_unsent()
+void tst_qmlxmlhttprequest::send_unsent()
 {
     QmlComponent component(&engine, TEST_FILE("send_unsent.qml"));
     QObject *object = component.create();
@@ -537,7 +537,7 @@ void tst_xmlhttprequest::send_unsent()
 }
 
 // Test attempting to resend a sent request throws an exception
-void tst_xmlhttprequest::send_alreadySent()
+void tst_qmlxmlhttprequest::send_alreadySent()
 {
     QmlComponent component(&engine, TEST_FILE("send_alreadySent.qml"));
     QObject *object = component.create();
@@ -550,7 +550,7 @@ void tst_xmlhttprequest::send_alreadySent()
 }
 
 // Test that send for a GET or HEAD ignores data
-void tst_xmlhttprequest::send_ignoreData()
+void tst_qmlxmlhttprequest::send_ignoreData()
 {
     {
         TestHTTPServer server(SERVER_PORT);
@@ -592,7 +592,7 @@ void tst_xmlhttprequest::send_ignoreData()
 }
 
 // Test that send()'ing data works
-void tst_xmlhttprequest::send_withdata()
+void tst_qmlxmlhttprequest::send_withdata()
 {
     // No content-type
     {
@@ -729,7 +729,7 @@ void tst_xmlhttprequest::send_withdata()
 }
 
 // Test abort() has no effect in unsent state
-void tst_xmlhttprequest::abort_unsent()
+void tst_qmlxmlhttprequest::abort_unsent()
 {
     QmlComponent component(&engine, TEST_FILE("abort_unsent.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
@@ -750,7 +750,7 @@ void tst_xmlhttprequest::abort_unsent()
 }
 
 // Test abort() cancels an open (but unsent) request
-void tst_xmlhttprequest::abort_opened()
+void tst_qmlxmlhttprequest::abort_opened()
 {
     QmlComponent component(&engine, TEST_FILE("abort_opened.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
@@ -771,7 +771,7 @@ void tst_xmlhttprequest::abort_opened()
 }
 
 // Test abort() aborts in progress send
-void tst_xmlhttprequest::abort()
+void tst_qmlxmlhttprequest::abort()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
@@ -795,7 +795,7 @@ void tst_xmlhttprequest::abort()
     delete object;
 }
 
-void tst_xmlhttprequest::getResponseHeader()
+void tst_qmlxmlhttprequest::getResponseHeader()
 {
     QmlEngine engine; // Avoid cookie contamination
 
@@ -835,7 +835,7 @@ void tst_xmlhttprequest::getResponseHeader()
 }
 
 // Test getResponseHeader throws an exception in an invalid state
-void tst_xmlhttprequest::getResponseHeader_unsent()
+void tst_qmlxmlhttprequest::getResponseHeader_unsent()
 {
     QmlComponent component(&engine, TEST_FILE("getResponseHeader_unsent.qml"));
     QObject *object = component.create();
@@ -847,7 +847,7 @@ void tst_xmlhttprequest::getResponseHeader_unsent()
 }
 
 // Test getResponseHeader throws an exception in an invalid state
-void tst_xmlhttprequest::getResponseHeader_sent()
+void tst_qmlxmlhttprequest::getResponseHeader_sent()
 {
     QmlComponent component(&engine, TEST_FILE("getResponseHeader_sent.qml"));
     QObject *object = component.create();
@@ -859,7 +859,7 @@ void tst_xmlhttprequest::getResponseHeader_sent()
 }
 
 // Invalid arg count throws exception
-void tst_xmlhttprequest::getResponseHeader_args()
+void tst_qmlxmlhttprequest::getResponseHeader_args()
 {
     QmlComponent component(&engine, TEST_FILE("getResponseHeader_args.qml"));
     QObject *object = component.create();
@@ -870,7 +870,7 @@ void tst_xmlhttprequest::getResponseHeader_args()
     delete object;
 }
 
-void tst_xmlhttprequest::getAllResponseHeaders()
+void tst_qmlxmlhttprequest::getAllResponseHeaders()
 {
     QmlEngine engine; // Avoid cookie contamination
 
@@ -903,7 +903,7 @@ void tst_xmlhttprequest::getAllResponseHeaders()
 }
 
 // Test getAllResponseHeaders throws an exception in an invalid state
-void tst_xmlhttprequest::getAllResponseHeaders_unsent()
+void tst_qmlxmlhttprequest::getAllResponseHeaders_unsent()
 {
     QmlComponent component(&engine, TEST_FILE("getAllResponseHeaders_unsent.qml"));
     QObject *object = component.create();
@@ -915,7 +915,7 @@ void tst_xmlhttprequest::getAllResponseHeaders_unsent()
 }
 
 // Test getAllResponseHeaders throws an exception in an invalid state
-void tst_xmlhttprequest::getAllResponseHeaders_sent()
+void tst_qmlxmlhttprequest::getAllResponseHeaders_sent()
 {
     QmlComponent component(&engine, TEST_FILE("getAllResponseHeaders_sent.qml"));
     QObject *object = component.create();
@@ -927,7 +927,7 @@ void tst_xmlhttprequest::getAllResponseHeaders_sent()
 }
 
 // Invalid arg count throws exception
-void tst_xmlhttprequest::getAllResponseHeaders_args()
+void tst_qmlxmlhttprequest::getAllResponseHeaders_args()
 {
     QmlComponent component(&engine, TEST_FILE("getAllResponseHeaders_args.qml"));
     QObject *object = component.create();
@@ -938,7 +938,7 @@ void tst_xmlhttprequest::getAllResponseHeaders_args()
     delete object;
 }
 
-void tst_xmlhttprequest::status()
+void tst_qmlxmlhttprequest::status()
 {
     {
         TestHTTPServer server(SERVER_PORT);
@@ -995,7 +995,7 @@ void tst_xmlhttprequest::status()
     }
 }
 
-void tst_xmlhttprequest::statusText()
+void tst_qmlxmlhttprequest::statusText()
 {
     {
         TestHTTPServer server(SERVER_PORT);
@@ -1052,7 +1052,7 @@ void tst_xmlhttprequest::statusText()
     }
 }
 
-void tst_xmlhttprequest::responseText()
+void tst_qmlxmlhttprequest::responseText()
 {
     {
         TestHTTPServer server(SERVER_PORT);
@@ -1138,7 +1138,7 @@ void tst_xmlhttprequest::responseText()
 
 // Test that calling hte XMLHttpRequest methods on a non-XMLHttpRequest object
 // throws an exception
-void tst_xmlhttprequest::invalidMethodUsage()
+void tst_qmlxmlhttprequest::invalidMethodUsage()
 {
     QmlComponent component(&engine, TEST_FILE("invalidMethodUsage.qml"));
     QObject *object = component.create();
@@ -1162,7 +1162,7 @@ void tst_xmlhttprequest::invalidMethodUsage()
 }
 
 // Test that XMLHttpRequest transparently redirects
-void tst_xmlhttprequest::redirects()
+void tst_qmlxmlhttprequest::redirects()
 {
     {
         TestHTTPServer server(SERVER_PORT);
@@ -1227,7 +1227,7 @@ void tst_xmlhttprequest::redirects()
     }
 }
 
-void tst_xmlhttprequest::responseXML_invalid()
+void tst_qmlxmlhttprequest::responseXML_invalid()
 {
     QmlComponent component(&engine, TEST_FILE("responseXML_invalid.qml"));
     QObject *object = component.create();
@@ -1241,7 +1241,7 @@ void tst_xmlhttprequest::responseXML_invalid()
 }
 
 // Test the Document DOM element
-void tst_xmlhttprequest::document()
+void tst_qmlxmlhttprequest::document()
 {
     QmlComponent component(&engine, TEST_FILE("document.qml"));
     QObject *object = component.create();
@@ -1255,7 +1255,7 @@ void tst_xmlhttprequest::document()
 }
 
 // Test the Element DOM element
-void tst_xmlhttprequest::element()
+void tst_qmlxmlhttprequest::element()
 {
     QmlComponent component(&engine, TEST_FILE("element.qml"));
     QObject *object = component.create();
@@ -1269,7 +1269,7 @@ void tst_xmlhttprequest::element()
 }
 
 // Test the Attr DOM element
-void tst_xmlhttprequest::attr()
+void tst_qmlxmlhttprequest::attr()
 {
     QmlComponent component(&engine, TEST_FILE("attr.qml"));
     QObject *object = component.create();
@@ -1283,7 +1283,7 @@ void tst_xmlhttprequest::attr()
 }
 
 // Test the Text DOM element
-void tst_xmlhttprequest::text()
+void tst_qmlxmlhttprequest::text()
 {
     QmlComponent component(&engine, TEST_FILE("text.qml"));
     QObject *object = component.create();
@@ -1297,7 +1297,7 @@ void tst_xmlhttprequest::text()
 }
 
 // Test the CDataSection DOM element
-void tst_xmlhttprequest::cdata()
+void tst_qmlxmlhttprequest::cdata()
 {
     QmlComponent component(&engine, TEST_FILE("cdata.qml"));
     QObject *object = component.create();
@@ -1310,6 +1310,6 @@ void tst_xmlhttprequest::cdata()
     delete object;
 }
 
-QTEST_MAIN(tst_xmlhttprequest)
+QTEST_MAIN(tst_qmlxmlhttprequest)
 
 #include "tst_qmlxmlhttprequest.moc"

@@ -92,8 +92,11 @@
     system.
 
     By default, resources are accessible in the application under the
-    same name as they have in the source tree, with a \c :/ prefix.
-    For example, the path \c :/images/cut.png would give access to the
+    same file name as they have in the source tree, with a \c :/ prefix,
+    or by a \link QUrl URL\endlink with a \c qrc scheme.
+
+    For example, the file path \c :/images/cut.png or the URL
+    \c qrc:///images/cut.png would give access to the
     \c cut.png file, whose location in the application's source tree
     is \c images/cut.png. This can be changed using the \c file tag's
     \c alias attribute:

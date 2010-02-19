@@ -192,19 +192,20 @@ void tst_Headers::licenseCheck()
     QByteArray data = f.readAll();
     data.replace("\r\n", "\n"); // Windows
     data.replace('\r', '\n'); // Mac OS9
-    QStringList content = QString::fromLocal8Bit(data).split("\n");
+    QStringList content = QString::fromLocal8Bit(data).split("\n", QString::SkipEmptyParts);
+
+    if (content.count() <= 2) // likely a #include line and empty line only. Not a copyright issue.
+        return;
 
     if (content.first().contains("generated")) {
         content.takeFirst();
-        if (content.first().isEmpty())
-            content.takeFirst();
     }
 
     if (sourceFile.endsWith("/tests/auto/linguist/lupdate/testdata/good/merge_ordering/foo.cpp")
         || sourceFile.endsWith("/tests/auto/linguist/lupdate/testdata/good/mergecpp/finddialog.cpp"))
     {
         // These files are meant to start with empty lines.
-        while (content.first().isEmpty() || content.first().startsWith("//"))
+        while (content.first().startsWith("//"))
             content.takeFirst();
     }
 

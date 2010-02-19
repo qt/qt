@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,8 +107,6 @@ void QmlGraphicsLoaderPrivate::initResize()
     }
     _q_updateSize();
 }
-
-QML_DEFINE_TYPE(Qt,4,6,Loader,QmlGraphicsLoader)
 
 /*!
     \qmlclass Loader QmlGraphicsLoader
@@ -400,6 +398,7 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
     }
 
     d->resizeMode = mode;
+    emit resizeModeChanged();
     d->initResize();
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -289,6 +289,12 @@ void QmlAbstractBinding::removeFromObject()
         if (data) data->clearBindingBit(propertyIndex());
         m_object = 0;
     }
+}
+
+void QmlAbstractBinding::clear()
+{
+    if (m_mePtr)
+        *m_mePtr = 0;
 }
 
 QString QmlAbstractBinding::expression() const

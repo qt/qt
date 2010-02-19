@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,8 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
+
+QT_USE_NAMESPACE
 
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
@@ -93,6 +95,7 @@ void usage()
     qWarning("  -record arg .............................. add a recording process argument");
     qWarning("  -autorecord [from-]<tomilliseconds> ...... set recording to start and stop");
     qWarning("  -devicekeys .............................. use numeric keys (see F1)");
+    qWarning("  -dragthreshold <size> .................... set mouse drag threshold size");
     qWarning("  -netcache <size> ......................... set disk cache to size bytes");
     qWarning("  -translation <translationfile> ........... set the language to run in");
     qWarning("  -L <directory> ........................... prepend to the library search path");
@@ -215,6 +218,9 @@ int main(int argc, char ** argv)
             autorecord_to = range.mid(dash+1).toInt();
         } else if (arg == "-devicekeys") {
             devkeys = true;
+        } else if (arg == "-dragthreshold") {
+            if (lastArg) usage();
+            app.setStartDragDistance(QString(argv[++i]).toInt());
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
             fprintf(stderr, "Qt Declarative UI Viewer version %s\n", QT_VERSION_STR);
             return 0;

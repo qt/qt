@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,6 +64,8 @@
 
 Q_DECLARE_METATYPE(QSqlDatabase)
 Q_DECLARE_METATYPE(QSqlQuery)
+
+QT_BEGIN_NAMESPACE
 
 class QmlSqlQueryScriptClass: public QScriptClass {
 public:
@@ -423,3 +425,4 @@ We add a "forwardOnly" property that stops Qt caching results (code promises to 
 through the data.
 */
 
+QT_END_NAMESPACE

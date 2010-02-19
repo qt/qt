@@ -171,6 +171,7 @@ SUBDIRS += \
            qgraphicsscene \
            qgraphicssceneindex \
            qgraphicstransform \
+           qgraphicsvideoitem \
            qgraphicsview \
            qgraphicswidget \
            qgridlayout \
@@ -299,6 +300,19 @@ SUBDIRS += \
            qaudioformat \
            qaudiooutput \
            qaudioinput \
+           qmediacontent \
+           qmediaobject \
+           qmediaplayer \
+           qmediaplaylist \
+           qmediaplaylistnavigator \
+           qmediapluginloader \
+           qmediaresource \
+           qmediaservice \
+           qmediaserviceprovider \
+           qmediatimerange \
+           qvideowidget \
+           qmlaudio \
+           qmlgraphicsvideo \
            qspinbox \
            qsplitter \
            qsql \
@@ -322,6 +336,7 @@ SUBDIRS += \
            qstandarditemmodel \
            qstate \
            qstatemachine \
+           qstatictext \
            qstatusbar \
            qstl \
            qstring \
@@ -465,7 +480,7 @@ SUBDIRS += \
            rcc \
            windowsmobile
 
-contains(QT_CONFIG,opengl):SUBDIRS += qgl qglbuffer
+contains(QT_CONFIG,opengl):SUBDIRS += qgl qglbuffer qgl_threads
 
 contains(QT_CONFIG,qt3support):!wince*:SUBDIRS += $$Q3SUBDIRS
 

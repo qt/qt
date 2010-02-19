@@ -104,6 +104,9 @@ public:
     void setDelayedReply(bool enable) const;
     bool isDelayedReply() const;
 
+    void setAutoStartService(bool enable);
+    bool autoStartService() const;
+
     void setArguments(const QList<QVariant> &arguments);
     QList<QVariant> arguments() const;
 

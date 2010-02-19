@@ -83,7 +83,7 @@
 
     First, the query opens a \c{<bibliography>} element in the
     output. The
-    \l{xquery-introduction.html#using-path-expressions-to-match-select-items}
+    \l{xquery-introduction.html#using-path-expressions-to-match-and-select-items}
     {embedded path expression} then loads the XML document describing
     the contents of the library (\c{library.xml}) and begins the
     search. For each \c{<book>} element it finds, where the publisher

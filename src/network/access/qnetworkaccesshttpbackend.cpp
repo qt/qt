@@ -213,6 +213,7 @@ QNetworkAccessHttpBackendFactory::create(QNetworkAccessManager::Operation op,
     case QNetworkAccessManager::HeadOperation:
     case QNetworkAccessManager::PutOperation:
     case QNetworkAccessManager::DeleteOperation:
+    case QNetworkAccessManager::CustomOperation:
         break;
 
     default:
@@ -525,6 +526,14 @@ void QNetworkAccessHttpBackend::postRequest()
     case QNetworkAccessManager::DeleteOperation:
         invalidateCache();
         httpRequest.setOperation(QHttpNetworkRequest::Delete);
+        break;
+
+    case QNetworkAccessManager::CustomOperation:
+        invalidateCache(); // for safety reasons, we don't know what the operation does
+        httpRequest.setOperation(QHttpNetworkRequest::Custom);
+        httpRequest.setUploadByteDevice(createUploadByteDevice());
+        httpRequest.setCustomVerb(request().attribute(
+                QNetworkRequest::CustomVerbAttribute).toByteArray());
         break;
 
     default:

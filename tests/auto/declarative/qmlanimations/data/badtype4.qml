@@ -21,7 +21,7 @@ Rectangle {
     }
     transitions: Transition {
         //comment out each in turn to make sure each only animates the relevant property
-        ColorAnimation { matchProperties: "x,color"; duration: 1000 } //x is real, color is color
-        NumberAnimation { matchProperties: "x,color"; duration: 1000 } //x is real, color is color
+        ColorAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
+        NumberAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,9 +70,9 @@ private slots:
 private:
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QmlGraphicsItem *parent, const QString &id, int index=-1);
+    T *findItem(QGraphicsObject *parent, const QString &id, int index=-1);
     template<typename T>
-    QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
+    QList<T*> findItems(QGraphicsObject *parent, const QString &objectName);
     void dumpTree(QmlGraphicsItem *parent, int depth = 0);
 };
 
@@ -160,7 +160,7 @@ void tst_QmlGraphicsGridView::items()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -208,7 +208,7 @@ void tst_QmlGraphicsGridView::changed()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsFlickable *gridview = findItem<QmlGraphicsFlickable>(canvas->root(), "grid");
+    QmlGraphicsFlickable *gridview = findItem<QmlGraphicsFlickable>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -241,7 +241,7 @@ void tst_QmlGraphicsGridView::inserted()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -322,7 +322,7 @@ void tst_QmlGraphicsGridView::removed()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -482,7 +482,7 @@ void tst_QmlGraphicsGridView::moved()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -578,15 +578,12 @@ void tst_QmlGraphicsGridView::currentIndex()
     ctxt->setContextProperty("testModel", &model);
 
     QString filename(SRCDIR "/data/gridview-initCurrent.qml");
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -722,7 +719,7 @@ void tst_QmlGraphicsGridView::changeFlow()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -827,7 +824,7 @@ void tst_QmlGraphicsGridView::positionViewAtIndex()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
     QVERIFY(gridview != 0);
 
     QmlGraphicsItem *viewport = gridview->viewport();
@@ -907,10 +904,7 @@ QmlView *tst_QmlGraphicsGridView::createView(const QString &filename)
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
@@ -920,10 +914,10 @@ QmlView *tst_QmlGraphicsGridView::createView(const QString &filename)
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QmlGraphicsGridView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
+T *tst_QmlGraphicsGridView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    //qDebug() << parent->childItems().count() << "children";
     for (int i = 0; i < parent->childItems().count(); ++i) {
         QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
@@ -950,11 +944,11 @@ T *tst_QmlGraphicsGridView::findItem(QmlGraphicsItem *parent, const QString &obj
 }
 
 template<typename T>
-QList<T*> tst_QmlGraphicsGridView::findItems(QmlGraphicsItem *parent, const QString &objectName)
+QList<T*> tst_QmlGraphicsGridView::findItems(QGraphicsObject *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
-    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    //qDebug() << parent->childItems().count() << "children";
     for (int i = 0; i < parent->childItems().count(); ++i) {
         QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)

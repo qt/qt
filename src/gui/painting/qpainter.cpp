@@ -70,6 +70,8 @@
 #include <private/qwidget_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qmath_p.h>
+#include <qstatictext.h>
+#include <private/qstatictext_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -5698,6 +5700,23 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 }
 
 /*!
+
+    \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
+
+    \since 4.7
+
+    \overload
+*/
+
+/*!
+    \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
+
+    \since 4.7
+
+    \overload
+*/
+
+/*!
     \fn void QPainter::drawText(const QPointF &position, const QString &text)
 
     Draws the given \a text with the currently defined text direction,
@@ -5717,6 +5736,124 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
 void QPainter::drawText(const QPointF &p, const QString &str)
 {
     drawText(p, str, 0, 0);
+}
+
+/*!
+    \since 4.7
+
+    Draws the given \a staticText at the given \a position.
+
+    The text will be drawn using the font and the transformation set on the painter. If the
+    font and/or transformation set on the painter are different from the ones used to initialize
+    the layout of the QStaticText, then the layout will have to be recalculated. Use
+    QStaticText::prepare() to initialize \a staticText with the font and transformation with which
+    it will later be drawn.
+
+    If \a position is not the same as when \a staticText was initialized, or when it was last drawn,
+    then there will be a slight overhead when translating the text to its new position.
+
+    \note If the painter's transformation is not affine, then \a staticText will be drawn using regular
+    calls to drawText(), losing any potential performance improvement.
+
+    \sa QStaticText
+*/
+void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
+{
+    Q_D(QPainter);
+    if (!d->engine || staticText.text().isEmpty() || pen().style() == Qt::NoPen)
+        return;
+
+    QStaticTextPrivate *staticText_d =
+            const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
+
+    // If we don't have an extended paint engine, or if the painter is projected,
+    // we go through standard code path
+    if (d->extended == 0 || !d->state->matrix.isAffine()) {
+        staticText_d->paintText(position, this);
+        return;
+    }
+
+    // Don't recalculate entire layout because of translation, rather add the dx and dy
+    // into the position to move each text item the correct distance.
+    QPointF transformedPosition = position * d->state->matrix;
+    QTransform matrix = d->state->matrix;
+
+    // The translation has been applied to transformedPosition. Remove translation
+    // component from matrix.
+    if (d->state->matrix.isTranslating()) {
+        qreal m11 = d->state->matrix.m11();
+        qreal m12 = d->state->matrix.m12();
+        qreal m13 = d->state->matrix.m13();
+        qreal m21 = d->state->matrix.m21();
+        qreal m22 = d->state->matrix.m22();
+        qreal m23 = d->state->matrix.m23();
+        qreal m33 = d->state->matrix.m33();
+
+        d->state->matrix.setMatrix(m11, m12, m13,
+                                   m21, m22, m23,
+                                   0.0, 0.0, m33);
+    }
+
+    // If the transform is not identical to the text transform,
+    // we have to relayout the text (for other transformations than plain translation)
+    bool staticTextNeedsReinit = false;
+    if (staticText_d->matrix != d->state->matrix) {
+        staticText_d->matrix = d->state->matrix;
+        staticTextNeedsReinit = true;
+    }
+
+    bool restoreWhenFinished = false;
+    if (staticText_d->needsClipRect) {
+        save();
+        setClipRect(QRectF(position, staticText_d->maximumSize));
+
+        restoreWhenFinished = true;
+    }
+
+    if (font() != staticText_d->font) {
+        staticText_d->font = font();
+        staticTextNeedsReinit = true;
+    }
+
+    // Recreate the layout of the static text because the matrix or font has changed
+    if (staticTextNeedsReinit)
+        staticText_d->init();    
+
+    if (transformedPosition != staticText_d->position) { // Translate to actual position
+        QFixed fx = QFixed::fromReal(transformedPosition.x());
+        QFixed fy = QFixed::fromReal(transformedPosition.y());
+        QFixed oldX = QFixed::fromReal(staticText_d->position.x());
+        QFixed oldY = QFixed::fromReal(staticText_d->position.y());
+        for (int item=0; item<staticText_d->itemCount;++item) {
+            QStaticTextItem *textItem = staticText_d->items + item;
+            for (int i=0; i<textItem->numGlyphs; ++i) {
+                textItem->glyphPositions[i].x += fx - oldX;
+                textItem->glyphPositions[i].y += fy - oldY;
+            }
+            textItem->userDataNeedsUpdate = true;
+        }
+
+        staticText_d->position = transformedPosition;
+    }
+
+    QPen oldPen = d->state->pen;
+    QColor currentColor = oldPen.color();
+    for (int i=0; i<staticText_d->itemCount; ++i) {
+        QStaticTextItem *item = staticText_d->items + i;
+        if (currentColor != item->color) {
+            setPen(item->color);
+            currentColor = item->color;
+        }
+        d->extended->drawStaticTextItem(item);
+    }
+    if (currentColor != oldPen.color())
+        setPen(oldPen);
+
+    if (restoreWhenFinished)
+        restore();
+
+    if (matrix.isTranslating())
+        d->state->matrix = matrix;
 }
 
 /*!

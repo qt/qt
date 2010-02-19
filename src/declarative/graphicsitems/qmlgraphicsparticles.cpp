@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,8 +108,6 @@ public:
 
 //---------------------------------------------------------------------------
 
-QML_DEFINE_TYPE(Qt,4,6,ParticleMotion,QmlGraphicsParticleMotion)
-
 /*!
     \class QmlGraphicsParticleMotion
     \ingroup group_effects
@@ -169,8 +167,6 @@ void QmlGraphicsParticleMotion::destroy(QmlGraphicsParticle &particle)
     \brief The QmlGraphicsParticleMotionLinear class moves the particles linearly.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,ParticleMotionLinear,QmlGraphicsParticleMotionLinear)
-
 void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interval)
 {
     p.x += interval * p.x_velocity;
@@ -190,8 +186,6 @@ void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interv
     \ingroup group_effects
     \brief The QmlGraphicsParticleMotionGravity class moves the particles towards a point.
 */
-
-QML_DEFINE_TYPE(Qt,4,6,ParticleMotionGravity,QmlGraphicsParticleMotionGravity)
 
 /*!
     \qmlproperty int ParticleMotionGravity::xattractor
@@ -292,8 +286,6 @@ Rectangle {
     \qmlproperty int QmlGraphicsParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
-
-QML_DEFINE_TYPE(Qt,4,6,ParticleMotionWander,QmlGraphicsParticleMotionWander)
 
 void QmlGraphicsParticleMotionWander::advance(QmlGraphicsParticle &p, int interval)
 {
@@ -561,8 +553,6 @@ void QmlGraphicsParticlesPrivate::updateOpacity(QmlGraphicsParticle &p, int age)
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Particles,QmlGraphicsParticles)
-
 /*!
     \qmlclass Particles
     \brief The Particles object generates and moves particles.
@@ -645,7 +635,7 @@ QmlGraphicsParticles::~QmlGraphicsParticles()
 }
 
 /*!
-    \qmlproperty string Particles::src
+    \qmlproperty string Particles::source
     This property holds the URL of the particle image.
 */
 

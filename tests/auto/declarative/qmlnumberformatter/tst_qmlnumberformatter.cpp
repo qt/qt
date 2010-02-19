@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,12 +45,12 @@
 #include <private/qnumberformat_p.h>
 #include <private/qmlnumberformatter_p.h>
 
-class tst_numberformat : public QObject
+class tst_qmlnumberformatter : public QObject
 {
     Q_OBJECT
 public:
-    tst_numberformat();
-   
+    tst_qmlnumberformatter();
+
     void init() {}
     void initTestCase() {}
 
@@ -67,7 +67,7 @@ private:
     QStringList texts;
 };
 
-tst_numberformat::tst_numberformat()
+tst_qmlnumberformatter::tst_qmlnumberformatter()
 {
     strings << "100.0"
             << "12345"
@@ -177,7 +177,7 @@ tst_numberformat::tst_numberformat()
              << "texts.size()" << texts.size();
 }
 
-void tst_numberformat::text_data()
+void tst_qmlnumberformatter::text_data()
 {
     QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("format");
@@ -194,7 +194,7 @@ void tst_numberformat::text_data()
 
 }
 
-void tst_numberformat::text()
+void tst_qmlnumberformatter::text()
 {
     QFETCH(QString, string);
     QFETCH(QString, format);
@@ -217,6 +217,6 @@ void tst_numberformat::text()
     delete formatter;
 }
 
-QTEST_MAIN(tst_numberformat)
+QTEST_MAIN(tst_qmlnumberformatter)
 
 #include "tst_qmlnumberformatter.moc"

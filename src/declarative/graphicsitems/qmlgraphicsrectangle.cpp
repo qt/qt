@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,9 +46,6 @@
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,Pen,QmlGraphicsPen)
-QML_DEFINE_TYPE(Qt,4,6,GradientStop,QmlGraphicsGradientStop)
-QML_DEFINE_TYPE(Qt,4,6,Gradient,QmlGraphicsGradient)
 
 /*!
     \internal
@@ -149,7 +146,6 @@ void QmlGraphicsGradient::doUpdate()
     emit updated();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Rectangle,QmlGraphicsRectangle)
 
 /*!
     \qmlclass Rectangle QmlGraphicsRectangle

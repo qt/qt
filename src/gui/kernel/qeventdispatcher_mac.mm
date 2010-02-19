@@ -1064,10 +1064,9 @@ void QEventDispatcherMacPrivate::cancelWaitForMoreEvents()
     // In case the event dispatcher is waiting for more
     // events somewhere, we post a dummy event to wake it up:
     QMacCocoaAutoReleasePool pool;
-    static const short NSAppShouldStopForQt = SHRT_MAX;
     [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
         modifierFlags:0 timestamp:0. windowNumber:0 context:0
-        subtype:NSAppShouldStopForQt data1:0 data2:0] atStart:NO];
+        subtype:QtCocoaEventSubTypeWakeup data1:0 data2:0] atStart:NO];
 }
 #endif
 

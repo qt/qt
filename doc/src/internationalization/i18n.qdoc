@@ -729,7 +729,7 @@
 
     \section1 Further Reading
 
-    \l{Qt Linguist Manual}, \l{Hello tr Example}, \l{Translation Rules for Plurals}
+    \l{Qt Linguist Manual}, \l{Hello tr() Example}, \l{Translation Rules for Plurals}
 */
 
 /*!

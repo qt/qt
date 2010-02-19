@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -122,6 +122,9 @@ private slots:
 
     //writeToReadOnly();
 
+    // Bugs
+    void crashOnValueProperty();
+
 private:
     QmlEngine engine;
 };
@@ -207,6 +210,9 @@ private:
     QRect m_rect;
     QUrl m_url;
 };
+
+QML_DECLARE_TYPE(PropertyObject);
+QML_DEFINE_TYPE(Test,1,0,PropertyObject,PropertyObject);
 
 void tst_qmlmetaproperty::qmlmetaproperty_object()
 {
@@ -1116,6 +1122,30 @@ void tst_qmlmetaproperty::writeObjectToQmlList()
     prop.write(qVariantFromValue(object));
     QCOMPARE(container->qmlChildren()->size(), 2);
     QCOMPARE(container->qmlChildren()->at(1), object);
+}
+
+void tst_qmlmetaproperty::crashOnValueProperty()
+{
+    QmlEngine *engine = new QmlEngine;
+    QmlComponent component(engine);
+
+    component.setData("import Test 1.0\nPropertyObject { wrectProperty.x: 10 }", QUrl());
+    PropertyObject *obj = qobject_cast<PropertyObject*>(component.create());
+    QVERIFY(obj != 0);
+
+    QmlMetaProperty p = QmlMetaProperty::createProperty(obj, "wrectProperty.x", qmlContext(obj));
+    QCOMPARE(p.name(), QString("wrectProperty.x"));
+
+    QCOMPARE(p.read(), QVariant(10));
+
+    //don't crash once the engine is deleted
+    delete engine;
+    engine = 0;
+
+    QCOMPARE(p.propertyTypeName(), "int");
+    QCOMPARE(p.read(), QVariant(10));
+    p.write(QVariant(20));
+    QCOMPARE(p.read(), QVariant(20));
 }
 
 QTEST_MAIN(tst_qmlmetaproperty)
