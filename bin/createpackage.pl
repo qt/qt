@@ -277,7 +277,9 @@ if($stub) {
     print("\n");
 
     # Sign SIS with certificate info given as an argument.
-    system ("signsis $unsigned_sis_name $signed_sis_name $certificate $key $passphrase");
+    my $relcert = File::Spec->abs2rel($certificate);
+    my $relkey = File::Spec->abs2rel($key);
+    system ("signsis $unsigned_sis_name $signed_sis_name $relcert $relkey $passphrase");
 
     # Check if creating signed SIS Succeeded
     stat($signed_sis_name);
@@ -291,10 +293,10 @@ if($stub) {
         # Sign with additional certificates & keys
         for my $row ( @certificates ) {
             # Get certificate absolute file names, relative paths are relative to certfilepath
-            my $abscert = File::Spec->rel2abs( $row->[0], $certfilepath);
-            my $abskey = File::Spec->rel2abs( $row->[1], $certfilepath);
+            my $relcert = File::Spec->abs2rel(File::Spec->rel2abs( $row->[0], $certfilepath));
+            my $relkey = File::Spec->abs2rel(File::Spec->rel2abs( $row->[1], $certfilepath));
 
-            system ("signsis $signed_sis_name $signed_sis_name $abscert $abskey $row->[2]");
+            system ("signsis $signed_sis_name $signed_sis_name $relcert $relkey $row->[2]");
             print ("\tAdditionally signed the SIS with certificate: $row->[0]!\n");
         }
 
