@@ -27,24 +27,20 @@ symbian: {
         $$QMAKE_LIBDIR_QT/QtSql.dll
 
     symbian-abld|symbian-sbsv2 {
-        defineReplace(pluginLocations) {
-            return ($${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET))
-        }
+        pluginLocations = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
     } else {
-        defineReplace(pluginLocations) {
-            return ($$QT_BUILD_TREE/plugins/s60/$$1)
-        }
+        pluginLocations = $$QT_BUILD_TREE/plugins/s60
     }
 
     qts60plugindeployment = \
         "IF package(0x1028315F)" \
-        "   \"$$pluginLocations(5_0)/qts60plugin_5_0.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0.dll\"" \
+        "   \"$$pluginLocations/qts60plugin_5_0.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0.dll\"" \
         "ELSEIF package(0x102752AE)" \
-        "   \"$$pluginLocations(3_2)/qts60plugin_3_2.dll\" - \"c:\\sys\\bin\\qts60plugin_3_2.dll\"" \
+        "   \"$$pluginLocations/qts60plugin_3_2.dll\" - \"c:\\sys\\bin\\qts60plugin_3_2.dll\"" \
         "ELSEIF package(0x102032BE)" \
-        "   \"$$pluginLocations(3_1)/qts60plugin_3_1.dll\" - \"c:\\sys\\bin\\qts60plugin_3_1.dll\"" \
+        "   \"$$pluginLocations/qts60plugin_3_1.dll\" - \"c:\\sys\\bin\\qts60plugin_3_1.dll\"" \
         "ELSE" \
-        "   \"$$pluginLocations(5_0)/qts60plugin_5_0.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0.dll\"" \
+        "   \"$$pluginLocations/qts60plugin_5_0.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0.dll\"" \
         "ENDIF"
     qtlibraries.pkg_postrules += qts60plugindeployment
 
@@ -129,7 +125,7 @@ symbian: {
     }
 
     contains(QT_CONFIG, multimedia) {
-        qtlibraries.sources += QtMultimedia.dll
+        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMultimedia.dll
     }
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
