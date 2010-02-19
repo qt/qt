@@ -160,6 +160,7 @@ AudioTest::AudioTest()
     ,   m_modeButton(0)
     ,   m_suspendResumeButton(0)
     ,   m_deviceBox(0)
+    ,   m_device(QAudioDeviceInfo::defaultOutputDevice())
     ,   m_generator(0)
     ,   m_audioOutput(0)
     ,   m_output(0)
@@ -226,7 +227,7 @@ void AudioTest::createAudioOutput()
 {
     delete m_audioOutput;
     m_audioOutput = 0;
-    m_audioOutput = new QAudioOutput(m_format, this);
+    m_audioOutput = new QAudioOutput(m_device, m_format, this);
     connect(m_audioOutput, SIGNAL(notify()), SLOT(notified()));
     connect(m_audioOutput, SIGNAL(stateChanged(QAudio::State)), SLOT(stateChanged(QAudio::State)));
     m_generator->start();

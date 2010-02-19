@@ -21,6 +21,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-I$(BUILD_PATH)/src/corelib/global \
 		-I$(BUILD_PATH)/src/corelib/xml \
 		-I$(SOURCE_PATH)/mkspecs/win32-g++  \
+		-I$(SOURCE_PATH)/tools/shared \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_PCRE \
 		-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
 		-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
@@ -38,6 +39,8 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_dsp.o msvc_vcproj.o \
               msvc_objectmodel.o symmake.o initprojectdeploy_symbian.o \
+              registry.o \
+              epocroot.o \
               symmake_abld.o symmake_sbsv2.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
@@ -277,6 +280,12 @@ symmake_sbsv2.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
 
 initprojectdeploy_symbian.o: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
+
+registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
+
+epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 
 project.o: $(SOURCE_PATH)/qmake/project.cpp $(SOURCE_PATH)/qmake/project.h $(SOURCE_PATH)/qmake/option.h
 	$(CXX) $(CXXFLAGS) project.cpp

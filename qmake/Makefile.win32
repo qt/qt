@@ -34,6 +34,7 @@ CFLAGS	     = -c -Fo$@ \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(BUILD_PATH)\src\corelib\xml \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
+              -I$(SOURCE_PATH)\tools\shared \
               -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NODLL -DQT_NO_STL \
               -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP -DQT_BUILD_QMAKE -DQT_NO_THREAD \
               -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM -DQT_NO_PCRE -DQT_BOOTSTRAPPED \
@@ -59,6 +60,7 @@ CFLAGS	    = -c -o$@ \
 	-I$(SOURCE_PATH)\include -I$(SOURCE_PATH)\include\QtCore \
 	-I$(BUILD_PATH)\src\corelib\global \
         -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
+    -I$(SOURCE_PATH)\tools\shared \
 	-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NODLL -DQT_NO_STL \
 	-DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP -DQT_BUILD_QMAKE -DQT_NO_THREAD \
 	-DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT
@@ -75,6 +77,8 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_dsp.obj msvc_vcproj.obj \
               msvc_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
+              registry.obj \
+              epocroot.obj \
               symmake_abld.obj symmake_sbsv2.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
@@ -198,6 +202,8 @@ clean::
 	-del symmake_abld.obj
 	-del symmake_sbsv2.obj
 	-del initprojectdeploy_symbian.obj
+	-del registry.obj
+	-del epocroot.obj
 	-del pbuilder_pbx.obj
 	-del qxmlstream.obj
 	-del qxmlutils.obj
@@ -396,6 +402,12 @@ symmake_sbsv2.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
 
 initprojectdeploy_symbian.obj: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
+
+registry.obj: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
+
+epocroot.obj: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 
 md5.obj: $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
