@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,6 +71,7 @@ private slots:
     void invalidDuration();
     void attached();
     void propertyValueSourceDefaultStart();
+    void dontStart();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -219,7 +220,7 @@ void tst_qmlanimations::resume()
     QVERIFY(animation.from() == 10);
 
     animation.start();
-    QTest::qWait(50);
+    QTest::qWait(100);
     animation.pause();
     qreal x = rect.x();
     QVERIFY(x != qreal(200));
@@ -229,7 +230,7 @@ void tst_qmlanimations::resume()
     animation.resume();
     QVERIFY(animation.isRunning());
     QVERIFY(!animation.isPaused());
-    QTest::qWait(50);
+    QTest::qWait(100);
     animation.stop();
     QVERIFY(rect.x() > x);
 }
@@ -258,7 +259,7 @@ void tst_qmlanimations::badTypes()
     //don't crash
     {
         QmlView *view = new QmlView;
-        view->setUrl(QUrl::fromLocalFile(SRCDIR "/data/badtype1.qml"));
+        view->setSource(QUrl::fromLocalFile(SRCDIR "/data/badtype1.qml"));
 
         view->execute();
         qApp->processEvents();
@@ -312,14 +313,12 @@ void tst_qmlanimations::badProperties()
         QmlComponent c1(&engine, QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml"));
         QByteArray message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty1.qml").toString().toUtf8() + ":18:9) Cannot animate non-existent property \"border.colr\"";
         QTest::ignoreMessage(QtWarningMsg, message);
-        QTest::ignoreMessage(QtWarningMsg, message); // why twice?
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c1.create());
         QVERIFY(rect);
 
         QmlComponent c2(&engine, QUrl::fromLocalFile(SRCDIR "/data/badproperty2.qml"));
         message = "QML ColorAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/badproperty2.qml").toString().toUtf8() + ":18:9) Cannot animate read-only property \"border\"";
         QTest::ignoreMessage(QtWarningMsg, message);
-        QTest::ignoreMessage(QtWarningMsg, message); // why twice?
         rect = qobject_cast<QmlGraphicsRectangle*>(c2.create());
         QVERIFY(rect);
 
@@ -332,7 +331,7 @@ void tst_qmlanimations::badProperties()
 //for example, int + real; color + real; etc
 void tst_qmlanimations::mixedTypes()
 {
-    //assumes border.width stats a real -- not real robust
+    //assumes border.width stays a real -- not real robust
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/mixedtype1.qml"));
@@ -427,9 +426,8 @@ void tst_qmlanimations::properties()
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
         QTest::qWait(waitDuration);
-        QEXPECT_FAIL("", "QTBUG-8072", Continue);
         QTIMED_COMPARE(myRect->x(),qreal(100));
-        QTIMED_COMPARE(myRect->y(),qreal(100));
+        QTIMED_COMPARE(myRect->y(),qreal(200));
     }
 }
 
@@ -472,9 +470,9 @@ void tst_qmlanimations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition4.qml").toString().toUtf8() + ":22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
+        QCOMPARE(myRect->y(),qreal(100));
     }
 
     {
@@ -485,9 +483,10 @@ void tst_qmlanimations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (" + QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition5.qml").toString().toUtf8() + ":22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
-        QCOMPARE(myRect->x(),qreal(200));
+        QCOMPARE(myRect->x(),qreal(100));
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(200));
     }
 
     {
@@ -496,12 +495,27 @@ void tst_qmlanimations::propertiesTransition()
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
-        //### should output warning at some point -- theItem doesn't exist
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
         rect->setState("moved");
-        QCOMPARE(myRect->x(),qreal(200));
+        QCOMPARE(myRect->x(),qreal(100));
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(200));
     }
+
+    /*{
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertiesTransition6.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        rect->setState("moved");
+        QCOMPARE(myRect->x(),qreal(100));
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(100));
+    }*/
 }
 
 void tst_qmlanimations::easingStringConversion()
@@ -605,6 +619,51 @@ void tst_qmlanimations::propertyValueSourceDefaultStart()
         QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
         QVERIFY(myAnim);
         QVERIFY(myAnim->isRunning() == false);
+    }
+
+    {
+        QmlEngine engine;
+
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontAutoStart.qml"));
+
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+        QVERIFY(myAnim && myAnim->qtAnimation());
+        QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+    }
+}
+
+
+void tst_qmlanimations::dontStart()
+{
+    {
+        QmlEngine engine;
+
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart.qml"));
+
+        QTest::ignoreMessage(QtWarningMsg, "QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+        QVERIFY(myAnim && myAnim->qtAnimation());
+        QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+    }
+
+    {
+        QmlEngine engine;
+
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart2.qml"));
+
+        QTest::ignoreMessage(QtWarningMsg, "QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+        QVERIFY(myAnim && myAnim->qtAnimation());
+        QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
     }
 }
 

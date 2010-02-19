@@ -20,6 +20,6 @@ Rectangle {
         PropertyChanges { target: myRect; x: 200; border.width: 10 }
     }
     transitions: Transition {
-        PropertyAnimation { matchProperties: "x,border.width"; duration: 1000 } //x is real, border.width is int
+        PropertyAnimation { properties: "x,border.width"; duration: 1000 } //x is real, border.width is int
     }
 }

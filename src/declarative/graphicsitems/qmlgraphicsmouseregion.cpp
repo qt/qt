@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -172,12 +172,24 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
     \qmlsignal MouseRegion::onEntered()
 
     This handler is called when the mouse enters the mouse region.
+
+    By default the onEntered handler is only called while a button is
+    pressed.  Setting hoverEnabled to true enables handling of
+    onExited when no mouse button is pressed.
+
+    \sa hoverEnabled
 */
 
 /*!
     \qmlsignal MouseRegion::onExited()
 
     This handler is called when the mouse exists the mouse region.
+
+    By default the onExited handler is only called while a button is
+    pressed.  Setting hoverEnabled to true enables handling of
+    onExited when no mouse button is pressed.
+
+    \sa hoverEnabled
 */
 
 /*!
@@ -189,6 +201,10 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
     position, and any buttons currently pressed.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
+
+    By default the onPositionChanged handler is only called while a button is
+    pressed.  Setting hoverEnabled to true enables handling of
+    onPositionChanged when no mouse button is pressed.
 */
 
 /*!

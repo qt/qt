@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,7 @@ private slots:
 
 private:
     template<typename T>
-    T *findItem(QmlGraphicsItem *parent, const QString &objectName);
+    T *findItem(QGraphicsObject *parent, const QString &objectName);
     QmlEngine engine;
 };
 
@@ -112,7 +112,7 @@ void tst_QmlGraphicsItem::keys()
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setUrl(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
 
     KeysTestObject *testObject = new KeysTestObject;
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
@@ -194,7 +194,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setUrl(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
     canvas->execute();
     canvas->show();
     qApp->processEvents();
@@ -204,7 +204,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QFocusEvent fe(QEvent::FocusIn);
     QApplication::sendEvent(canvas, &fe);
 
-    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(canvas->root(), "item1");
+    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -213,7 +213,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item2");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item2");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -222,7 +222,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item4");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item4");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -231,7 +231,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item3");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item3");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -240,7 +240,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item1");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 }
@@ -292,15 +292,15 @@ void tst_QmlGraphicsItem::clip()
 }
 
 template<typename T>
-T *tst_QmlGraphicsItem::findItem(QmlGraphicsItem *parent, const QString &objectName)
+T *tst_QmlGraphicsItem::findItem(QGraphicsObject *parent, const QString &objectName)
 {
     if (!parent)
         return 0;
 
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;

@@ -37,7 +37,7 @@ Item {
     transitions: [
         Transition {
             NumberAnimation {
-                matchProperties: "opacity,scale,x,y"
+                properties: "opacity,scale,x,y"
                 easing: "easeOutBounce"
             }
         }

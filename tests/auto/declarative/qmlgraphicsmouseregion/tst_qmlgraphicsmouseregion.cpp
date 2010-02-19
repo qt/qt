@@ -59,18 +59,18 @@ void tst_QmlGraphicsMouseRegion::dragProperties()
     canvas->execute();
     canvas->show();
     canvas->setFocus();
-    QVERIFY(canvas->root() != 0);
+    QVERIFY(canvas->rootObject() != 0);
 
-    QmlGraphicsMouseRegion *mouseRegion = canvas->root()->findChild<QmlGraphicsMouseRegion*>("mouseregion");
+    QmlGraphicsMouseRegion *mouseRegion = canvas->rootObject()->findChild<QmlGraphicsMouseRegion*>("mouseregion");
     QmlGraphicsDrag *drag = mouseRegion->drag();
     QVERIFY(mouseRegion != 0);
     QVERIFY(drag != 0);
 
     // target
-    QmlGraphicsItem *blackRect = canvas->root()->findChild<QmlGraphicsItem*>("blackrect");
+    QmlGraphicsItem *blackRect = canvas->rootObject()->findChild<QmlGraphicsItem*>("blackrect");
     QVERIFY(blackRect != 0);
     QVERIFY(blackRect == drag->target());
-    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(canvas->root());
+    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(canvas->rootObject());
     QVERIFY(rootItem != 0);
     QSignalSpy targetSpy(drag, SIGNAL(targetChanged()));
     drag->setTarget(rootItem);
@@ -129,10 +129,7 @@ QmlView *tst_QmlGraphicsMouseRegion::createView(const QString &filename)
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }

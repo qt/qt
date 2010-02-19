@@ -1,6 +1,22 @@
+=============================================================================
+The changes below are pre Qt 4.7.0 alpha
 
+QmlView
+-------
+The API of QmlView has been narrowed and its role as a convenience class
+reinforced.
+- remove addItem()
+- remove clearItems() - use 'delete root()'
+- remove reset()
+- resizeContent -> enum ResizeMode { SizeViewToRootObject, SizeRootObjectToView }
+- remove setQml(), qml()
+- rename setUrl(), ur() to setSource(), source()
+- root() -> rootObject(),  returns QGraphicsObject rather than QmlGraphicsItem
+- remove quit() signal -> use quit() signal of engine()
+- initialSize() signal removed
+- Added status() to determine status of the internal QmlComponent
 
-Listview: sectionExpression has been replaced by section.property, section.criteria
+sectionExpression has been replaced by section.property, section.criteria
 
 
 =============================================================================

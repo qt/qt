@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,7 +94,7 @@ public:
         }
 
         transitions: Transition {
-            NumberAnimation { matchProperties: "angle"; duration: 2000 }
+            NumberAnimation { properties: "angle"; duration: 2000 }
         }
 
         MouseRegion {

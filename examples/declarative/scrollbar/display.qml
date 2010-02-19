@@ -27,7 +27,7 @@ Rectangle {
                 from: "*"
                 to: "*"
                 NumberAnimation {
-                    matchProperties: "opacity"
+                    properties: "opacity"
                     duration: 400
                 }
             }

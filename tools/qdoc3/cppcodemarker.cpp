@@ -881,8 +881,7 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
     static QRegExp globalX("[\n{()=] *([a-zA-Z_][a-zA-Z_0-9]*)[ \n]*\\(");
     static QRegExp multiLineComment("/(?:( )?\\*(?:[^*]+|\\*(?! /))*\\*\\1/)");
     multiLineComment.setMinimal(true);
-    static QRegExp singleLineCommentLine("(?:^|\n)(?:[^\n&]|&(?!quot;)|&quot;(?:[^&\n\\\\]|&(?!quot;)|\\\\&quot;|\\\\(?!&quot;))*&quot;)*//(?!!)[^!\n]*");
-    static QRegExp singleLineComment("//(?!!)[^!\n]*");
+    static QRegExp singleLineComment("[^:]//(?!!)[^!\\n]*");
     static QRegExp preprocessor("(?:^|\n)(#[ \t]*(?:include|if|elif|endif|error|pragma|define"
                                 "|warning)(?:(?:\\\\\n|\\n#)[^\n]*)*)");
     static QRegExp literals("&quot;(?:[^\\\\&]|\\\\[^\n]|&(?!quot;))*&quot;"
@@ -1057,8 +1056,7 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
         int mlpos;
         int slpos;
         int len;
-        int sllpos = singleLineCommentLine.indexIn(result, pos);
-        slpos = sllpos == -1 ? -1 : singleLineComment.indexIn(result, sllpos);
+        slpos = singleLineComment.indexIn(result, pos);
         mlpos = multiLineComment.indexIn(result, pos);
 
         if (slpos == -1 && mlpos == -1)
@@ -1069,13 +1067,13 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
             len = multiLineComment.matchedLength();
         }
         else if (mlpos == -1) {
-            pos = slpos;
-            len = singleLineComment.matchedLength();
+            pos = slpos + 1;
+            len = singleLineComment.matchedLength() - 1;
         }
         else {
             if (slpos < mlpos) {
-                pos = slpos;
-                len = singleLineComment.matchedLength();
+                pos = slpos + 1;
+                len = singleLineComment.matchedLength() - 1;
             }
             else {
                 pos = mlpos;

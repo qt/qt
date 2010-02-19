@@ -1436,6 +1436,14 @@ struct ArrowKeyOperation {
     int arrowKey;
 };
 
+} // namespace
+
+QT_END_NAMESPACE
+Q_DECLARE_METATYPE(qdesigner_internal::ArrowKeyOperation)
+QT_BEGIN_NAMESPACE
+
+namespace qdesigner_internal {
+
 QRect ArrowKeyOperation::apply(const QRect &rect) const
 {
     QRect r = rect;
@@ -2964,4 +2972,3 @@ QUndoStack *FormWindow::commandHistory() const
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(qdesigner_internal::ArrowKeyOperation)

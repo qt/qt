@@ -76,8 +76,8 @@ HEADERS += \
     $$PWD/qmlengine_p.h \
     $$PWD/qmlexpression_p.h \
     $$PWD/qmlprivate.h \
-    $$PWD/qmldom.h \
     $$PWD/qmldom_p.h \
+    $$PWD/qmldom_p_p.h \
     $$PWD/qmlrefcount_p.h \
     $$PWD/qmlmetatype.h \
     $$PWD/qmlengine.h \
