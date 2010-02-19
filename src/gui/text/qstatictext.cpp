@@ -530,7 +530,7 @@ namespace {
     };
 }
 
-void QStaticTextPrivate::paintText(QPainter *p)
+void QStaticTextPrivate::paintText(const QPointF &pos, QPainter *p)
 {
     bool preferRichText = textFormat == Qt::RichText
                           || (textFormat == Qt::AutoText && Qt::mightBeRichText(text));
@@ -538,13 +538,13 @@ void QStaticTextPrivate::paintText(QPainter *p)
     if (!preferRichText) {
         if (maximumSize.isValid()) {
             QRectF boundingRect;
-            p->drawText(QRectF(QPointF(0, 0), maximumSize), Qt::TextWordWrap, text, &boundingRect);
+            p->drawText(QRectF(pos, maximumSize), Qt::TextWordWrap, text, &boundingRect);
 
             actualSize = boundingRect.size();
             needsClipRect = boundingRect.width() > maximumSize.width()
                             || boundingRect.height() > maximumSize.height();
         } else {
-            p->drawText(0, 0, text);
+            p->drawText(pos, text);
             needsClipRect = false;
 
             QFontMetrics fm(font);
@@ -555,9 +555,12 @@ void QStaticTextPrivate::paintText(QPainter *p)
         document.setDefaultFont(font);
         document.setHtml(text);
 
-        QRectF rect = maximumSize.isValid() ? QRectF(QPointF(0, 0), maximumSize) : QRectF();
+        QRectF rect = maximumSize.isValid() ? QRectF(pos, maximumSize) : QRectF();
         document.adjustSize();
+        p->save();
+        p->translate(pos);
         document.drawContents(p, rect);        
+        p->restore();
         actualSize = document.size();
         needsClipRect = maximumSize.isValid()
                         && (actualSize.width() > maximumSize.width()
@@ -581,7 +584,7 @@ void QStaticTextPrivate::init()
         painter.setFont(font);
         painter.setTransform(matrix);
 
-        paintText(&painter);
+        paintText(QPointF(0, 0), &painter);
 
     }
 
@@ -605,7 +608,7 @@ void QStaticTextPrivate::init()
         painter.setFont(font);
         painter.setTransform(matrix);
 
-        paintText(&painter);
+        paintText(QPointF(0, 0), &painter);
     }
 
 }

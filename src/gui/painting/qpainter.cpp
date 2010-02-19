@@ -5768,7 +5768,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
     if (d->extended == 0 || !d->state->matrix.isAffine()) {
-        staticText_d->paintText(this);
+        staticText_d->paintText(position, this);
         return;
     }
 

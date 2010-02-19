@@ -116,7 +116,7 @@ public:
     ~QStaticTextPrivate();
 
     void init();
-    void paintText(QPainter *p);
+    void paintText(const QPointF &pos, QPainter *p);
 
     QAtomicInt ref;                      // 4 bytes per text
 

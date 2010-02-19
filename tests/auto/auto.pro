@@ -324,6 +324,7 @@ SUBDIRS += \
            qstandarditemmodel \
            qstate \
            qstatemachine \
+           qstatictext \
            qstatusbar \
            qstl \
            qstring \
