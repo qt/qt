@@ -12,14 +12,6 @@ sourceencoding          = UTF-8
 outputencoding          = UTF-8
 naturallanguage         = en_US
 
-edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript \
-                          QtScriptTools QtSql QtSvg QtWebKit QtXml QtXmlPatterns \
-                          Qt3Support QtHelp QtDesigner QtAssistant QAxContainer Phonon \
-                          QAxServer QtUiTools QtTest QtDBus
-
-edition.DesktopLight.modules = QtCore QtDBus QtGui Qt3SupportLight QtTest
-edition.DesktopLight.groups       = -graphicsview-api
-
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp

@@ -176,7 +176,7 @@ consult the installation instructions provided instead of the ones in
 this document.
 \o \l{Open Source Versions of Qt} is not officially supported for use with
 any version of Visual Studio. Integration with Visual Studio is available
-as part of the \l{Qt Commercial Editions}.
+as part of the \l{Qt Commercial Edition}.
 
 \endlist
 \endtable

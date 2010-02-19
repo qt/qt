@@ -1261,7 +1261,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateIncludes(inner, marker);
     generateStatus(inner, marker);
     if (classe) {
-        generateModuleWarning(classe, marker);
         generateInherits(classe, marker);
         generateInheritedBy(classe, marker);
     }

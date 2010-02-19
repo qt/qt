@@ -124,7 +124,6 @@ class Generator
                           Node::SubType subtype,
                           const QString& tag);
     void generateExampleFiles(const FakeNode *fake, CodeMarker *marker);
-    void generateModuleWarning(const ClassNode *classe, CodeMarker *marker);
 
     virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
     virtual QString fullName(const Node *node, 
