@@ -89,6 +89,7 @@ public:
     void waitClient();
 
     bool configAttrib(int name, EGLint *value) const;
+    int  configAttrib(int name) const;
 
     EGLContext context() const { return ctx; }
     void setContext(EGLContext context) { ctx = context; ownsContext = false;}

@@ -510,6 +510,16 @@ bool QEglContext::configAttrib(int name, EGLint *value) const
     return eglGetConfigAttrib(QEgl::display(), cfg, name, value);
 }
 
+int QEglContext::configAttrib(int name) const
+{
+    EGLint value;
+    EGLBoolean success = eglGetConfigAttrib(QEgl::display(), cfg, name, &value);
+    if (success)
+        return value;
+    else
+        return EGL_DONT_CARE;
+}
+
 QEglProperties QEglContext::configProperties() const
 {
     return QEglProperties(config());
