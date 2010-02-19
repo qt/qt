@@ -104,9 +104,10 @@ QT_BEGIN_NAMESPACE
         [[NSNotificationCenter defaultCenter] addObserver: self selector:
             @selector(processVolumeChange:) name: QTMovieVolumeDidChangeNotification object: m_movie];
 
+        /*
         [[NSNotificationCenter defaultCenter] addObserver: self selector:
             @selector(processNaturalSizeChange:) name: QTMovieNaturalSizeDidChangeNotification object: m_movie];
-
+        */
         [movie retain];
     }
 }
