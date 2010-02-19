@@ -1689,11 +1689,22 @@ uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFla
     return reinterpret_cast<uchar*>(mem);
 }
 
+static inline bool isFullUpdate(IDirectFBSurface *surface, const QRegion &region, const QPoint &offset)
+{
+    if (offset == QPoint(0, 0) && region.rectCount() == 1) {
+	QSize size;
+	surface->GetSize(surface, &size.rwidth(), &size.rheight());
+	if (region.boundingRect().size() == size)
+	    return true;
+    }
+    return false;
+}
 
 void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                                   const QRegion &region, const QPoint &offset)
 {
-    if (!(flipFlags & DSFLIP_BLIT) || d_ptr->directFBFlags & NoPartialFlip) {
+    if (d_ptr->directFBFlags & NoPartialFlip
+        || (!(flipFlags & DSFLIP_BLIT) && QT_PREPEND_NAMESPACE(isFullUpdate(surface, region, offset)))) {
         surface->Flip(surface, 0, flipFlags);
     } else {
         if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.rectCount() > 1) {
