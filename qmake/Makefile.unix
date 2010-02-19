@@ -22,8 +22,6 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qgl
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
       qmap.o qmetatype.o qsettings.o qlibraryinfo.o qvariant.o qvsnprintf.o \
       qlocale.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o qxmlstream.o qxmlutils.o \
-      registry.o \
-      epocroot.o \
       $(QTOBJS)
 
 
