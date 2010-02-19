@@ -49,9 +49,6 @@
 #include <stdlib.h>
 #include <qdebug.h>
 
-// Included from tools/shared
-#include <symbian/epocroot.h>
-
 #define RESOURCE_DIRECTORY_MMP "/resource/apps"
 #define RESOURCE_DIRECTORY_RESOURCE "\\\\resource\\\\apps\\\\"
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"

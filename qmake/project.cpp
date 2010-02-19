@@ -44,6 +44,8 @@
 #include "option.h"
 #include "cachekeys.h"
 
+#include "epocroot.h"
+
 #include <qdatetime.h>
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -61,9 +63,6 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-
-// Included from tools/shared
-#include <symbian/epocroot.h>
 
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen

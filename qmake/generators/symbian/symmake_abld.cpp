@@ -48,9 +48,6 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
-// Included from tools/shared
-#include <symbian/epocroot.h>
-
 #define DO_NOTHING_TARGET "do_nothing"
 #define CREATE_TEMPS_TARGET "create_temps"
 #define EXTENSION_CLEAN "extension_clean"
