@@ -295,6 +295,7 @@ void QmlGraphicsAnimatedImage::playingStatusChanged()
 void QmlGraphicsAnimatedImage::componentComplete()
 {
     Q_D(QmlGraphicsAnimatedImage);
+    QmlGraphicsImage::componentComplete();
     if (!d->reply) {
         setCurrentFrame(d->preset_currentframe);
         d->preset_currentframe = 0;
