@@ -96,6 +96,25 @@ struct Q_CORE_EXPORT QListData {
     inline void **end() const { return d->array + d->end; }
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+//
+// QtPodForSize and QtPodForType are internal and may change or go away any time.
+// We mean it.
+//
+//////////////////////////////////////////////////////////////////////////////////
+template <int N> struct QtPodForSize {
+    // This base type is rather obviously broken and cannot be made
+    // working due to alignment constraints.
+    // This doesn't matter as far as QList is concerned, as we are
+    // using this type only for QTypeInfo<T>::isLarge == false.
+    typedef struct { } Type;
+};
+template <> struct QtPodForSize<1> { typedef quint8  Type; };
+template <> struct QtPodForSize<2> { typedef quint16 Type; };
+template <> struct QtPodForSize<4> { typedef quint32 Type; };
+template <> struct QtPodForSize<8> { typedef quint64 Type; };
+template <class T> struct QtPodForType : QtPodForSize<sizeof(T)> { };
+
 template <typename T>
 class QList
 {
@@ -491,10 +510,11 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
             QT_RETHROW;
         }
     } else {
-        const T cpy(t);
+        typedef typename QtPodForType<T>::Type PodNode;
+        PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
         Node *n = reinterpret_cast<Node *>(p.append());
         QT_TRY {
-            node_construct(n, cpy);
+            node_construct(n, *reinterpret_cast<const T *>(&cpy));
         } QT_CATCH(...) {
             --d->end;
             QT_RETHROW;
@@ -515,10 +535,11 @@ inline void QList<T>::prepend(const T &t)
             QT_RETHROW;
         }
     } else {
-        const T cpy(t);
+        typedef typename QtPodForType<T>::Type PodNode;
+        PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
         Node *n = reinterpret_cast<Node *>(p.prepend());
         QT_TRY {
-            node_construct(n, cpy);
+            node_construct(n, *reinterpret_cast<const T *>(&cpy));
         } QT_CATCH(...) {
             ++d->begin;
             QT_RETHROW;
@@ -539,10 +560,11 @@ inline void QList<T>::insert(int i, const T &t)
             QT_RETHROW;
         }
     } else {
-        const T cpy(t);
+        typedef typename QtPodForType<T>::Type PodNode;
+        PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
         Node *n = reinterpret_cast<Node *>(p.insert(i));
         QT_TRY {
-            node_construct(n, cpy);
+            node_construct(n, *reinterpret_cast<const T *>(&cpy));
         } QT_CATCH(...) {
             p.remove(i);
             QT_RETHROW;
