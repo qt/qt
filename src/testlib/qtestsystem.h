@@ -44,7 +44,7 @@
 
 #include <QtTest/qtestcase.h>
 #include <QtCore/qcoreapplication.h>
-#include <QtCore/qdatetime.h>
+#include <QtCore/qtimestamp.h>
 
 QT_BEGIN_HEADER
 
@@ -63,7 +63,7 @@ namespace QTest
     {
         Q_ASSERT(QCoreApplication::instance());
 
-        QTime timer;
+        QTimestamp timer;
         timer.start();
         do {
             QCoreApplication::processEvents(QEventLoop::AllEvents, ms);

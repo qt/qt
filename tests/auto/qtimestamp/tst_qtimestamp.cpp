@@ -63,7 +63,7 @@ void tst_QTimestamp::elapsed()
     QTimestamp t1;
     t1.start();
 
-    QTest::qWait(4*minResolution);
+    QTest::qSleep(4*minResolution);
     QTimestamp t2;
     t2.start();
 
