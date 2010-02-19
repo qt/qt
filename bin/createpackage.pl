@@ -154,11 +154,11 @@ if ($pkgoutputbasename eq $templatepkg) {
     $preservePkgOutput = "1";
 }
 $pkgoutputbasename =~ s/\.pkg//g;
-$pkgoutputbasename = lc($pkgoutputbasename);
+$pkgoutputbasename = $pkgoutputbasename;
 
 # Store output file names to variables
-my $pkgoutput = lc($pkgoutputbasename.".pkg");
-my $sisoutputbasename = lc($pkgoutputbasename);
+my $pkgoutput = $pkgoutputbasename.".pkg";
+my $sisoutputbasename = $pkgoutputbasename;
 $sisoutputbasename =~ s/_$targetplatform//g;
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
 my $signed_sis_name = $sisoutputbasename.".sis";
