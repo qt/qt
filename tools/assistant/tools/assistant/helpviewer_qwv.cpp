@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include "helpviewer_qwv.h"
 
 #if !defined(QT_NO_WEBKIT)

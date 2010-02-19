@@ -336,13 +336,17 @@ static QPainterPath samplePath13()
 static QPainterPath samplePath14()
 {
     QPainterPath path;
-    path.moveTo(QPointF(100, 180));
-    path.lineTo(QPointF(100, 80));
-    path.lineTo(QPointF(120, 80));
-    path.lineTo(QPointF(120, 100));
-    path.lineTo(QPointF(160, 100));
-    path.lineTo(QPointF(160, 180));
-    path.lineTo(QPointF(100, 180));
+
+    path.moveTo(160, 80);
+    path.lineTo(160, 180);
+    path.lineTo(100, 180);
+    path.lineTo(100, 80);
+    path.lineTo(160, 80);
+    path.moveTo(160, 80);
+    path.lineTo(160, 100);
+    path.lineTo(120, 100);
+    path.lineTo(120, 80);
+
     return path;
 }
 

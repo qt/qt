@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
+#ifndef HELPVIEWERQWV_H
+#define HELPVIEWERQWV_H
+
 #include <QtCore/qglobal.h>
 
 #if !defined(QT_NO_WEBKIT)
-
-#ifndef HELPVIEWERQWV_H
-#define HELPVIEWERQWV_H
 
 #include "helpviewer.h"
 
@@ -120,6 +120,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWERQWV_H
-
 #endif  // !QT_NO_WEBKIT
+
+#endif  // HELPVIEWERQWV_H
