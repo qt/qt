@@ -701,6 +701,9 @@ public:
 
     bool acceptGestureOverride;
     QSet<Qt::GestureType> ignoredGestures;
+    QSet<Qt::GestureType> ignoredStartedGestures;
+    QSet<Qt::GestureType> ignoredUpdatedGestures;
+    QSet<Qt::GestureType> ignoredFinishedGestures;
 
     QRectF size;
     int instanceNumber;
@@ -713,6 +716,9 @@ public:
         events.clear();
         overrideEvents.clear();
         ignoredGestures.clear();
+        ignoredStartedGestures.clear();
+        ignoredUpdatedGestures.clear();
+        ignoredFinishedGestures.clear();
     }
 
 protected:
@@ -735,6 +741,24 @@ protected:
             QGestureEvent *e = static_cast<QGestureEvent *>(event);
             foreach(Qt::GestureType type, ignoredGestures)
                 e->ignore(e->gesture(type));
+            foreach(QGesture *g, e->gestures()) {
+                switch (g->state()) {
+                case Qt::GestureStarted:
+                    if (ignoredStartedGestures.contains(g->gestureType()))
+                        e->ignore(g);
+                    break;
+                case Qt::GestureUpdated:
+                    if (ignoredUpdatedGestures.contains(g->gestureType()))
+                        e->ignore(g);
+                    break;
+                case Qt::GestureFinished:
+                    if (ignoredFinishedGestures.contains(g->gestureType()))
+                        e->ignore(g);
+                    break;
+                default:
+                    break;
+                }
+            }
         } else if (event->type() == QEvent::GestureOverride) {
             ++gestureOverrideEventsReceived;
             eventsPtr = &overrideEvents;
