@@ -116,4 +116,149 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
         setVisualFormat(qt_x11Info(dev));
 }
 
+
+VisualID QEgl::getCompatibleVisualId(EGLConfig config)
+{
+    VisualID    visualId = 0;
+    EGLint      eglValue = 0;
+
+    EGLint configRedSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_RED_SIZE, &configRedSize);
+
+    EGLint configGreenSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_GREEN_SIZE, &configGreenSize);
+
+    EGLint configBlueSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_BLUE_SIZE, &configBlueSize);
+
+    EGLint configAlphaSize = 0;
+    eglGetConfigAttrib(display(), config, EGL_ALPHA_SIZE, &configAlphaSize);
+
+    eglGetConfigAttrib(display(), config, EGL_BUFFER_SIZE, &eglValue);
+    int configBitDepth = eglValue;
+
+    // See if EGL provided a valid VisualID:
+    eglGetConfigAttrib(display(), config, EGL_NATIVE_VISUAL_ID, &eglValue);
+    visualId = (VisualID)eglValue;
+    if (visualId) {
+        // EGL has suggested a visual id, so get the rest of the visual info for that id:
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+        visualInfoTemplate.visualid = visualId;
+
+        XVisualInfo *chosenVisualInfo;
+        int matchingCount = 0;
+        chosenVisualInfo = XGetVisualInfo(X11->display, VisualIDMask, &visualInfoTemplate, &matchingCount);
+        if (chosenVisualInfo) {
+            if (configBitDepth == chosenVisualInfo->depth) {
+#if !defined(QT_NO_XRENDER)
+                // If we have XRender, actually check the visual supplied by EGL is ARGB
+                if (configAlphaSize > 0) {
+                    XRenderPictFormat *format;
+                    format = XRenderFindVisualFormat(X11->display, chosenVisualInfo->visual);
+                    if (!format || (format->type != PictTypeDirect) || (!format->direct.alphaMask)) {
+                        qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this is not ARGB",
+                                 (int)visualId, (int)config);
+                        visualId = 0;
+                    }
+                }
+#endif
+            } else {
+                qWarning("Warning: EGL suggested using X visual ID %d (%d bpp) for config %d (%d bpp), but the depths do not match!",
+                         (int)visualId, chosenVisualInfo->depth, (int)config, configBitDepth);
+                visualId = 0;
+            }
+        }
+        XFree(chosenVisualInfo);
+    }
+
+    if (visualId) {
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+        if (configHasAlpha)
+            qDebug("Using ARGB Visual ID %d provided by EGL for config %d", (int)visualId, (int)config);
+        else
+            qDebug("Using Opaque Visual ID %d provided by EGL for config %d", (int)visualId, (int)config);
+#endif
+        return visualId;
+    }
+
+
+    // If EGL didn't give us a valid visual ID, try XRender
+#if !defined(QT_NO_XRENDER)
+    if (!visualId) {
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+
+        visualInfoTemplate.depth = configBitDepth;
+        visualInfoTemplate.c_class = TrueColor;
+
+        XVisualInfo *matchingVisuals;
+        int matchingCount = 0;
+        matchingVisuals = XGetVisualInfo(X11->display,
+                                         VisualDepthMask|VisualClassMask,
+                                         &visualInfoTemplate,
+                                         &matchingCount);
+
+        for (int i = 0; i < matchingCount; ++i) {
+            XRenderPictFormat *format;
+            format = XRenderFindVisualFormat(X11->display, matchingVisuals[i].visual);
+
+            // Check the format for the visual matches the EGL config
+            if ( (countBits(format->direct.redMask) == configRedSize) &&
+                 (countBits(format->direct.greenMask) == configGreenSize) &&
+                 (countBits(format->direct.blueMask) == configBlueSize) &&
+                 (countBits(format->direct.alphaMask) == configAlphaSize) )
+            {
+                visualId = matchingVisuals[i].visualid;
+                break;
+            }
+        }
+        if (matchingVisuals)
+            XFree(matchingVisuals);
+
+    }
+    if (visualId) {
+# ifdef QT_DEBUG_X11_VISUAL_SELECTION
+        if (configHasAlpha)
+            qDebug("Using ARGB Visual ID %d provided by XRender for EGL config %d", (int)visualId, (int)config);
+        else
+            qDebug("Using Opaque Visual ID %d provided by XRender for EGL config %d", (int)visualId, (int)config);
+# endif // QT_DEBUG_X11_VISUAL_SELECTION
+        return visualId;
+    }
+#endif //!defined(QT_NO_XRENDER)
+
+
+    // Finally, if XRender also failed to find a visual (or isn't present), try to
+    // use XGetVisualInfo and only use the bit depth to match on:
+    if (!visualId) {
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+
+        visualInfoTemplate.depth = configBitDepth;
+
+        XVisualInfo *matchingVisuals;
+        int matchingCount = 0;
+        matchingVisuals = XGetVisualInfo(X11->display,
+                                         VisualDepthMask,
+                                         &visualInfoTemplate,
+                                         &matchingCount);
+        if (matchingVisuals) {
+            visualId = matchingVisuals[0].visualid;
+            XFree(matchingVisuals);
+        }
+    }
+
+    if (visualId) {
+#ifdef QT_DEBUG_X11_VISUAL_SELECTION
+        qDebug("Using Visual ID %d provided by XGetVisualInfo for EGL config %d", (int)visualId, (int)config);
+#endif
+        return visualId;
+    }
+
+    qWarning("Unable to find an X11 visual which matches EGL config %d", (int)config);
+    return (VisualID)0;
+}
+
+
 QT_END_NAMESPACE

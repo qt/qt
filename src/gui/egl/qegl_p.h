@@ -147,6 +147,10 @@ namespace QEgl {
     Q_GUI_EXPORT EGLNativeDisplayType nativeDisplay();
     Q_GUI_EXPORT EGLNativeWindowType  nativeWindow(QWidget*);
     Q_GUI_EXPORT EGLNativePixmapType  nativePixmap(QPixmap*);
+
+#ifdef Q_WS_X11
+    Q_GUI_EXPORT VisualID getCompatibleVisualId(EGLConfig config);
+#endif
 };
 
 
