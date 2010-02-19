@@ -27,9 +27,5 @@ INCPATH += generators \
            $$QT_SOURCE_TREE/include \
            $$QT_SOURCE_TREE/include/QtCore \
            $$QT_SOURCE_TREE/qmake
-
-VPATH += $$QT_SOURCE_TREE/tools/shared
-INCPATH += $$QT_SOURCE_TREE/tools/shared
-
 include(qmake.pri)
 

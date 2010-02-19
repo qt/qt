@@ -50,6 +50,8 @@
 #include <qfile.h>
 #include <stdlib.h>
 
+#include "epocroot.h"
+
 #define PLUGIN_STUB_DIR "qmakepluginstubs"
 
 struct CopyItem
