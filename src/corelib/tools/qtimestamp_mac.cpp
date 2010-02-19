@@ -66,13 +66,6 @@ static qint64 absoluteToMSecs(qint64 cpuTime)
     return absoluteToNSecs(cpuTime) / 1000000;
 }
 
-static qint64 msecsToAbsolute(qint64 ms)
-{
-    if (info.denom == 0)
-        mach_timebase_info(&info);
-    return ms * 1000000 * info.denom / info.numer;
-}
-
 timeval qt_gettime()
 {
     timeval tv;
@@ -109,19 +102,9 @@ qint64 QTimestamp::msecsTo(const QTimestamp &other) const
     return absoluteToMSecs(other.t1 - t1);
 }
 
-void QTimestamp::addMSecs(int ms)
-{
-    t1 += msecsToAbsolute(ms);
-}
-
 qint64 QTimestamp::secsTo(const QTimestamp &other) const
 {
     return msecsTo(other) / 1000;
-}
-
-void QTimestamp::addSecs(int secs)
-{
-    t1 += msecsToAbsolute(secs * 1000);
 }
 
 bool operator<(const QTimestamp &v1, const QTimestamp &v2)

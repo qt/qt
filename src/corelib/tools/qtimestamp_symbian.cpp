@@ -93,20 +93,9 @@ qint64 QTimestamp::msecsTo(const QTimestamp &other) const
     return difference(other.t1, t1);
 }
 
-void QTimestamp::addMSecs(int ms)
-{
-    // simulate a 32-bit rollover
-    t1 = quint32(t1 + ms);
-}
-
 qint64 QTimestamp::secsTo(const QTimestamp &other) const
 {
     return msecsTo(other) / 1000;
-}
-
-void QTimestamp::addSecs(int secs)
-{
-    addMSecs(secs * 1000);
 }
 
 bool operator<(const QTimestamp &v1, const QTimestamp &v2)

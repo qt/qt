@@ -78,19 +78,9 @@ qint64 QTimestamp::msecsTo(const QTimestamp &other) const
     return diff;
 }
 
-void QTimestamp::addMSecs(int ms)
-{
-    t1 += ms;
-}
-
 qint64 QTimestamp::secsTo(const QTimestamp &other) const
 {
     return msecsTo(other) / 1000;
-}
-
-void QTimestamp::addSecs(int secs)
-{
-    t1 += secs * 1000;
 }
 
 bool operator<(const QTimestamp &v1, const QTimestamp &v2)

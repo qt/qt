@@ -156,20 +156,9 @@ qint64 QTimestamp::msecsTo(const QTimestamp &other) const
     return secs * 1000 + fraction / fractionAdjustment();
 }
 
-void QTimestamp::addMSecs(int ms)
-{
-    t1 += ms / 1000;
-    t2 += ms % 1000 * fractionAdjustment();
-}
-
 qint64 QTimestamp::secsTo(const QTimestamp &other) const
 {
     return other.t1 - t1;
-}
-
-void QTimestamp::addSecs(int secs)
-{
-    t1 += secs;
 }
 
 bool operator<(const QTimestamp &v1, const QTimestamp &v2)

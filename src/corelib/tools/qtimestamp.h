@@ -64,9 +64,7 @@ public:
     bool hasExpired(qint64 timeout) const;
 
     qint64 msecsTo(const QTimestamp &other) const;
-    void addMSecs(int ms);
     qint64 secsTo(const QTimestamp &other) const;
-    void addSecs(int secs);
 
     bool operator==(const QTimestamp &other) const
     { return t1 == other.t1 && t2 == other.t2; }
@@ -74,17 +72,6 @@ public:
     { return !(*this == other); }
 
     friend bool Q_CORE_EXPORT operator<(const QTimestamp &v1, const QTimestamp &v2);
-    friend qint64 operator-(const QTimestamp &v1, const QTimestamp &v2)
-    { return v2.msecsTo(v1); }
-
-    friend QTimestamp &operator+=(QTimestamp &ts, qint64 ms)
-    { ts.addMSecs(ms); return ts; }
-    friend QTimestamp operator+(const QTimestamp &ts, qint64 ms)
-    { QTimestamp copy(ts); return copy += ms; }
-    friend QTimestamp &operator-=(QTimestamp &ts, qint64 ms)
-    { ts.addMSecs(-ms); return ts; }
-    friend QTimestamp operator-(const QTimestamp &ts, qint64 ms)
-    { QTimestamp copy(ts); return copy -= ms; }
 
 private:
     qint64 t1;
