@@ -983,6 +983,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
             button = Qt::RightButton;
             [theView qt_setLeftButtonIsRightButton: false];
         }
+        qt_button_down = 0;
         break;
     }
     [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->localPoint = localPoint;
