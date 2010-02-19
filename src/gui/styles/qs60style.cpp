@@ -2396,10 +2396,20 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         case CT_PushButton:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             //FIXME properly - style should calculate the location of border frame-part
-            sz += QSize(2 * pixelMetric(PM_ButtonMargin), 2 * pixelMetric(PM_ButtonMargin));
-            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))
+            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))  {
                 if (buttonWidget->isCheckable())
                     sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
+                const int iconHeight = (!buttonWidget->icon().isNull()) ? buttonWidget->iconSize().height() : 0;
+                const int textHeight = (buttonWidget->text().length() > 0) ?
+                    buttonWidget->fontMetrics().size(Qt::TextSingleLine, buttonWidget->text()).height() : 0;
+                const int decoratorHeight = (buttonWidget->isCheckable()) ? pixelMetric(PM_IndicatorHeight) : 0;
+
+                const int contentHeight =
+                        qMax(qMax(iconHeight, decoratorHeight) + pixelMetric(PM_ButtonMargin),
+                             textHeight + 2*pixelMetric(PM_ButtonMargin));
+                sz.setHeight(contentHeight);
+                sz += QSize(2 * pixelMetric(PM_ButtonMargin), 0);
+            }
             break;
         case CT_LineEdit:
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))

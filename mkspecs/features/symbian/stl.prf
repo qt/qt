@@ -15,11 +15,18 @@ INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE
 INCLUDEPATH -= $$[QT_INSTALL_PREFIX]/mkspecs/common/symbian/stl-off
 
 # libstdcppv5 is preferred over libstdcpp as it has/uses the throwing version of operator new
-exists($${EPOCROOT}epoc32/release/armv5/urel/libstdcppv5.dll)|exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcppv5.dll) {
-    LIBS *= -llibstdcppv5.dll
+STL_LIB = -llibstdcppv5.dll
 
-    # STDCPP turns on standard C++ new behaviour (ie. throwing new)
-    MMP_RULES += "STDCPP"
-} else {
-    LIBS *= -llibstdcpp.dll
+# STDCPP turns on standard C++ new behaviour (ie. throwing new)
+STL_MMP_RULE = "STDCPP"
+
+# Fall back to old implementation if that is the only one that is found
+exists($${EPOCROOT}epoc32/release/armv5/urel/libstdcpp.dll)|exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcpp.dll) {
+    !exists($${EPOCROOT}epoc32/release/armv5/urel/libstdcppv5.dll):!exists($${EPOCROOT}epoc32/release/winscw/udeb/libstdcppv5.dll) {
+        STL_LIB = -llibstdcpp.dll
+        STL_MMP_RULE =
+    }
 }
+
+LIBS *= $$STL_LIB
+MMP_RULES *= $$STL_MMP_RULE
