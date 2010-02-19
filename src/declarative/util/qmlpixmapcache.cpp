@@ -267,12 +267,12 @@ QmlImageReader::QmlImageReader(QmlEngine *eng)
 
 QmlImageReader::~QmlImageReader()
 {
-    quit();
-    wait();
     readerMutex.lock();
     readers.remove(engine);
     readerMutex.unlock();
-    delete handler;
+
+    quit();
+    wait();
 }
 
 QmlImageReader *QmlImageReader::instance(QmlEngine *engine)
@@ -335,6 +335,9 @@ void QmlImageReader::run()
     handler = new QmlImageRequestHandler(this, engine);
 
     exec();
+
+    delete handler;
+    handler = 0;
 }
 
 //===========================================================================
