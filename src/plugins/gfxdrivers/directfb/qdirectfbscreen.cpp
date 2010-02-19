@@ -1126,6 +1126,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
     if (displayArgs.contains(QLatin1String("boundingrectflip"), Qt::CaseInsensitive)) {
         d_ptr->directFBFlags |= BoundingRectFlip;
+    } else if (displayArgs.contains(QLatin1String("nopartialflip"), Qt::CaseInsensitive)) {
+        d_ptr->directFBFlags |= NoPartialFlip;
     }
 
 #ifdef QT_DIRECTFB_IMAGECACHE
@@ -1691,7 +1693,7 @@ uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFla
 void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                                   const QRegion &region, const QPoint &offset)
 {
-    if (!(flipFlags & DSFLIP_BLIT)) {
+    if (!(flipFlags & DSFLIP_BLIT) || d_ptr->directFBFlags & NoPartialFlip) {
         surface->Flip(surface, 0, flipFlags);
     } else {
         if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.rectCount() > 1) {
