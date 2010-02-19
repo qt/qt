@@ -66,6 +66,7 @@
 #include "qmlscriptclass_p.h"
 #include "qmlnetworkaccessmanagerfactory.h"
 #include "qmlimageprovider.h"
+#include "qmldirparser_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -1262,24 +1263,21 @@ struct QmlEnginePrivate::ImportedNamespace {
                         qmldircontent = QString::fromUtf8(qmldir.readAll());
                     }
                 }
-                QString typespace = QString::fromUtf8(type)+QLatin1Char(' ');
-                QStringList lines = qmldircontent.split(QLatin1Char('\n'));
-                foreach (QString line, lines) {
-                    if (line.isEmpty() || line.at(0) == QLatin1Char('#'))
-                        continue;
-                    if (line.startsWith(typespace)) {
-                        int space1 = line.indexOf(QLatin1Char(' '));
-                        int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
-                        QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-1:space2-space1-1);
-                        int dot = mapversions.indexOf(QLatin1Char('.'));
-                        int mapvmaj = mapversions.left(dot).toInt();
-                        if (mapvmaj<=vmaj) {
-                            if (mapvmaj<vmaj || vmin >= mapversions.mid(dot+1).toInt()) {
-                                QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-1);
-                                if (url_return)
-                                    *url_return = url.resolved(QUrl(mapfile.toString()));
-                                return true;
-                            }
+
+                const QString typespace = QString::fromUtf8(type);
+
+                QmlDirParser qmldirParser;
+                qmldirParser.setUrl(url);
+                qmldirParser.setSource(qmldircontent);
+                qmldirParser.parse();
+
+                foreach (const QmlDirParser::Component &c, qmldirParser.components()) { // ### TODO: cache the components
+                    if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
+                        if (c.typeName == typespace) {
+                            if (url_return)
+                                *url_return = url.resolved(QUrl(c.fileName));
+
+                            return true;
                         }
                     }
                 }
