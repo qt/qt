@@ -78,6 +78,7 @@
 #endif
 
 #define QT_USE_XOPEN_LFS_EXTENSIONS
+#define QT_NO_READDIR64
 #include "../common/posix/qplatformdefs.h"
 
 #undef QT_OPEN_LARGEFILE

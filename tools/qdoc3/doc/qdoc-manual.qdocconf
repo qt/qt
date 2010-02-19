@@ -1,0 +1,49 @@
+project          = QDoc
+description      = QDoc3 Manual
+
+indexes          = $QTDIR/doc/html/qt.index
+
+outputdir        = html
+
+sources          = qdoc-manual.qdoc
+sourcedirs       = $PWD
+
+exampledirs     += $PWD \
+                   $QTDIR/examples
+
+imagedirs       += images
+
+extraimages.HTML = qt-logo
+
+HTML.stylesheets = classic.css
+
+HTML.style       = "h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }\n" \
+                   "a:link { color: #004faf; text-decoration: none }\n" \
+                   "a:visited { color: #672967; text-decoration: none }\n" \
+                   "td.postheader { font-family: sans-serif }\n" \
+                   "tr.address { font-family: sans-serif }\n" \
+                   "body { background: #ffffff; color: black; }"
+
+HTML.postheader  = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"5\" width=\"100%\">\n" \
+                   "<tr>\n" \
+                   "<td align=\"left\" valign=\"top\" width=\"32\">" \
+                   "<a href=\"http://qt.nokia.com/\"><img src=\"images/qt-logo.png\" align=\"left\" border=\"0\" /></a>" \
+                   "</td>\n" \
+                   "<td class=\"postheader\" valign=\"center\">" \
+                   "<a href=\"01-qdoc-manual.html\">" \
+                   "<font color=\"#004faf\">Home: QDoc Manual</font></a>&nbsp;&middot;" \
+                   "<a href=\"http://qt.nokia.com/doc/4.7\">" \
+                   "<font color=\"#004faf\"> Qt Reference Documentation</font></a>" \
+                   "</td>\n" \
+                   "</tr></table>"
+
+HTML.footer     = "<p /><address><hr /><div align=\"center\">\n" \
+                  "<table width=\"100%\" cellspacing=\"0\" border=\"0\"><tr class=\"address\">\n" \
+                  "<td width=\"40%\" align=\"left\">Copyright &copy; 2010 Nokia Corporation and/or its subsidiary(-ies)</td>\n" \
+                  "<td width=\"20%\" align=\"center\"><a href=\"trademarks.html\">Trademarks</a></td>\n" \
+                  "<td width=\"40%\" align=\"right\"><div align=\"right\">Qt \\version</div></td>\n" \
+                  "</tr></table></div></address>"
+
+spurious        += "Missing '\\}'" 
+spurious        += "Cannot use .*"
+spurious        += "Unexpected .*"

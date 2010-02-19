@@ -42,6 +42,7 @@
 /*!
     \namespace Qt
     \inmodule QtCore
+    \target Qt Namespace
 
     \brief The Qt namespace contains miscellaneous identifiers
     used throughout the Qt library.

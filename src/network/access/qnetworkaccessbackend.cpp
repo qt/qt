@@ -120,8 +120,11 @@ QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
 
     if (reply->outgoingDataBuffer)
         device = QNonContiguousByteDeviceFactory::create(reply->outgoingDataBuffer);
-    else
+    else if (reply->outgoingData) {
         device = QNonContiguousByteDeviceFactory::create(reply->outgoingData);
+    } else {
+        return 0;
+    }
 
     bool bufferDisallowed =
             reply->request.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,

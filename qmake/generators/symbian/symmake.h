@@ -119,7 +119,6 @@ protected:
                                const QString& itemPrefix,
                                const QString& itemSuffix);
 
-    void writeSisTargets(QTextStream &t);
     void generateDistcleanTargets(QTextStream& t);
     void generateExecutionTargets(QTextStream& t, const QStringList& platforms);
 

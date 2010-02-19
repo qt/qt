@@ -1237,7 +1237,7 @@ void qt_init(QApplicationPrivate *priv, int)
 
     // Cocoa application delegate
 #ifdef QT_MAC_USE_COCOA
-    NSApplication *cocoaApp = [NSApplication sharedApplication];
+    NSApplication *cocoaApp = [QNSApplication sharedApplication];
     QMacCocoaAutoReleasePool pool;
     NSObject *oldDelegate = [cocoaApp delegate];
     QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];

@@ -77,7 +77,7 @@ void PageGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     generateInnerNode(tree->root(), marker);
 }
 
-QString PageGenerator::fileBase(const Node *node)
+QString PageGenerator::fileBase(const Node *node) const
 {
     if (node->relates())
 	node = node->relates();
@@ -153,7 +153,7 @@ QString PageGenerator::fileBase(const Node *node)
     return res;
 }
 
-QString PageGenerator::fileName(const Node *node)
+QString PageGenerator::fileName(const Node *node) const
 {
     if (!node->url().isEmpty())
         return node->url();
@@ -177,7 +177,7 @@ void PageGenerator::beginSubPage(const Location& location,
 	location.fatal(tr("Cannot open output file '%1'")
 			.arg(outFile->fileName()));
     QTextStream *out = new QTextStream(outFile);
-    out->setCodec("ISO-8859-1");
+    out->setCodec(outputCodec);
     outStreamStack.push(out);
 }
 

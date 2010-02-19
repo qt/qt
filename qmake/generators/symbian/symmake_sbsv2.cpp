@@ -231,8 +231,6 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         qDeleteAll(subtargets);
     }
 
-    writeSisTargets(t);
-
     generateDistcleanTargets(t);
 
     t << "clean: " << BLD_INF_FILENAME << endl;

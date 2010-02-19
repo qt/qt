@@ -138,7 +138,9 @@
 #define QT_OPENDIR              ::opendir
 #define QT_CLOSEDIR             ::closedir
 
-#if defined(QT_USE_XOPEN_LFS_EXTENSIONS) && defined(QT_LARGEFILE_SUPPORT)
+#if defined(QT_LARGEFILE_SUPPORT) \
+        && defined(QT_USE_XOPEN_LFS_EXTENSIONS) \
+        && !defined(QT_NO_READDIR64)
 #define QT_DIRENT               struct dirent64
 #define QT_READDIR              ::readdir64
 #define QT_READDIR_R            ::readdir64_r

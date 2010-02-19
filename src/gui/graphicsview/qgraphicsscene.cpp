@@ -5936,6 +5936,9 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     typedef QHash<QGraphicsObject *, QList<QGesture *> > GesturesPerItem;
     GesturesPerItem gesturesPerItem;
 
+    // gestures that are only supposed to propagate to parent items.
+    QSet<QGesture *> parentPropagatedGestures;
+
     QSet<QGesture *> startedGestures;
     foreach (QGesture *gesture, allGestures) {
         QGraphicsObject *target = gestureTargets.value(gesture, 0);
@@ -5946,6 +5949,10 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                 startedGestures.insert(gesture);
         } else {
             gesturesPerItem[target].append(gesture);
+            Qt::GestureFlags flags =
+                    target->QGraphicsItem::d_func()->gestureContext.value(gesture->gestureType());
+            if (flags & Qt::IgnoredGesturesPropagateToParent)
+                parentPropagatedGestures.insert(gesture);
         }
     }
 
@@ -6035,6 +6042,10 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         Q_ASSERT(!gestureTargets.contains(g));
         gestureTargets.insert(g, receiver);
         gesturesPerItem[receiver].append(g);
+        Qt::GestureFlags flags =
+                receiver->QGraphicsItem::d_func()->gestureContext.value(g->gestureType());
+        if (flags & Qt::IgnoredGesturesPropagateToParent)
+            parentPropagatedGestures.insert(g);
     }
     it = ignoredConflictedGestures.begin();
     e = ignoredConflictedGestures.end();
@@ -6044,13 +6055,17 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         Q_ASSERT(!gestureTargets.contains(g));
         gestureTargets.insert(g, receiver);
         gesturesPerItem[receiver].append(g);
+        Qt::GestureFlags flags =
+                receiver->QGraphicsItem::d_func()->gestureContext.value(g->gestureType());
+        if (flags & Qt::IgnoredGesturesPropagateToParent)
+            parentPropagatedGestures.insert(g);
     }
 
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
             << "Started gestures:" << normalGestures.keys()
             << "All gestures:" << gesturesPerItem.values();
 
-    // deliver all events
+    // deliver all gesture events
     QList<QGesture *> alreadyIgnoredGestures;
     QHash<QGraphicsObject *, QSet<QGesture *> > itemIgnoredGestures;
     QList<QGraphicsObject *> targetItems = gesturesPerItem.keys();
@@ -6070,9 +6085,26 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         foreach(QGesture *g, alreadyIgnoredGestures) {
             QMap<Qt::GestureType, Qt::GestureFlags>::iterator contextit =
                     gid->gestureContext.find(g->gestureType());
-            bool deliver = contextit != gid->gestureContext.end() &&
-                (g->state() == Qt::GestureStarted ||
-                 (contextit.value() & Qt::ReceivePartialGestures));
+            bool deliver = false;
+            if (contextit != gid->gestureContext.end()) {
+                if (g->state() == Qt::GestureStarted) {
+                    deliver = true;
+                } else {
+                    const Qt::GestureFlags flags = contextit.value();
+                    if (flags & Qt::ReceivePartialGestures) {
+                        QGraphicsObject *originalTarget = gestureTargets.value(g);
+                        Q_ASSERT(originalTarget);
+                        QGraphicsItemPrivate *otd = originalTarget->QGraphicsItem::d_func();
+                        const Qt::GestureFlags originalTargetFlags = otd->gestureContext.value(g->gestureType());
+                        if (originalTargetFlags & Qt::IgnoredGesturesPropagateToParent) {
+                            // only deliver to parents of the original target item
+                            deliver = item->isAncestorOf(originalTarget);
+                        } else {
+                            deliver = true;
+                        }
+                    }
+                }
+            }
             if (deliver)
                 gestures += g;
         }
@@ -6100,18 +6132,52 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                     << "item has ignored the event, will propagate."
                     << item << ignoredGestures;
             itemIgnoredGestures[item] += ignoredGestures;
+            alreadyIgnoredGestures = ignoredGestures.toList();
+
+            // remove gestures that are supposed to be propagated to
+            // parent items only.
+            QSet<QGesture *> parentGestures;
+            for (QSet<QGesture *>::iterator it = ignoredGestures.begin();
+                 it != ignoredGestures.end();) {
+                if (parentPropagatedGestures.contains(*it)) {
+                    parentGestures.insert(*it);
+                    it = ignoredGestures.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+
+            QSet<QGraphicsObject *> itemsSet = targetItems.toSet();
+
+            foreach(QGesture *g, parentGestures) {
+                // get the original target for the gesture
+                QGraphicsItem *item = gestureTargets.value(g, 0);
+                Q_ASSERT(item);
+                const Qt::GestureType gestureType = g->gestureType();
+                // iterate through parent items of the original gesture
+                // target item and collect potential receivers
+                do {
+                    if (QGraphicsObject *obj = item->toGraphicsObject()) {
+                        if (item->d_func()->gestureContext.contains(gestureType))
+                            itemsSet.insert(obj);
+                    }
+                    if (item->isPanel())
+                        break;
+                } while ((item = item->parentItem()));
+            }
+
             QMap<Qt::GestureType, QGesture *> conflictedGestures;
             QList<QList<QGraphicsObject *> > itemsForConflictedGestures;
             QHash<QGesture *, QGraphicsObject *> normalGestures;
             getGestureTargets(ignoredGestures, viewport,
                               &conflictedGestures, &itemsForConflictedGestures,
                               &normalGestures);
-            QSet<QGraphicsObject *> itemsSet = targetItems.toSet();
             for (int k = 0; k < itemsForConflictedGestures.size(); ++k)
                 itemsSet += itemsForConflictedGestures.at(k).toSet();
+
             targetItems = itemsSet.toList();
+
             qSort(targetItems.begin(), targetItems.end(), qt_closestItemFirst);
-            alreadyIgnoredGestures = conflictedGestures.values();
             DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
                     << "new targets:" << targetItems;
             i = -1; // start delivery again
