@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = lackey tst_qnetworksession
+SUBDIRS = lackey test

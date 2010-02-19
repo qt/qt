@@ -4,6 +4,17 @@ HEADERS  += ../../qbearertestcommon.h
 
 QT = core network
 
+TARGET = tst_qnetworksession
+CONFIG(debug_and_release) {
+  CONFIG(debug, debug|release) {
+    DESTDIR = ../debug
+  } else {
+    DESTDIR = ../release
+  }
+} else {
+  DESTDIR = ..
+}
+
 symbian {
     TARGET.CAPABILITY = NetworkServices NetworkControl ReadUserData PowerMgmt
 }
