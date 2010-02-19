@@ -42,9 +42,13 @@ isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x020000 0x800000
 
 # Sis file creation
 make_cache_name = .make.cache
-fixedDestdir = $$DESTDIR
-!isEmpty(fixedDestdir):!contains(fixedDestdir, "[/\\]$"):fixedDestdir = $${fixedDestdir}/
-contains(QMAKE_HOST.os, "Windows"):fixedDestdir = $$replace(fixedDestdir, "/", "\\")
+!symbian-abld:!symbian-sbsv2 {
+    fixedDestdir = $$DESTDIR
+    !isEmpty(fixedDestdir):!contains(fixedDestdir, "[/\\]$"):fixedDestdir = $${fixedDestdir}/
+    contains(QMAKE_HOST.os, "Windows"):fixedDestdir = $$replace(fixedDestdir, "/", "\\")
+} else {
+    fixedDestdir =
+}
 
 sis_target.target = sis
 sis_target.commands = $(if $(wildcard $$basename(TARGET)_template.pkg), \
