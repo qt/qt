@@ -846,8 +846,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 
 QScriptValue QScriptEnginePrivate::scriptValueFromVariant(const QVariant &v)
 {
-    Q_Q(QScriptEngine);
-    QScriptValue result = q->create(v.userType(), v.data());
+    QScriptValue result = create(v.userType(), v.data());
     Q_ASSERT(result.isValid());
     return result;
 }

@@ -84,21 +84,6 @@ extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
-Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
-{
-    if (buttonNum == 0)
-        return Qt::LeftButton;
-    if (buttonNum == 1)
-        return Qt::RightButton;
-    if (buttonNum == 2)
-        return Qt::MidButton;
-    if (buttonNum == 3)
-        return Qt::XButton1;
-    if (buttonNum == 4)
-        return Qt::XButton2;
-    return Qt::NoButton;
-}
-
 struct dndenum_mapper
 {
     NSDragOperation mac_code;
@@ -489,7 +474,15 @@ extern "C" {
             qWarning("QWidget::repaint: Recursive repaint detected");
 
         const QRect qrect = QRect(aRect.origin.x, aRect.origin.y, aRect.size.width, aRect.size.height);
-        QRegion qrgn(qrect);
+        QRegion qrgn;
+
+	const NSRect *rects;
+	NSInteger count;
+	[self getRectsBeingDrawn:&rects count:&count];
+	for (int i = 0; i < count; ++i) {
+	    QRect tmpRect = QRect(rects[i].origin.x, rects[i].origin.y, rects[i].size.width, rects[i].size.height);
+	    qrgn += tmpRect;
+	}
 
         if (!qwidget->isWindow() && !qobject_cast<QAbstractScrollArea *>(qwidget->parent())) {
             const QRegion &parentMask = qwidget->window()->mask();
@@ -699,6 +692,7 @@ extern "C" {
     qt_button_down = 0;
 }
 
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
     if (!qt_button_down)

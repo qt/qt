@@ -85,6 +85,7 @@
 - (IBAction)unhideAllApplications:(id)sender;
 - (IBAction)hide:(id)sender;
 - (IBAction)qtDispatcherToQAction:(id)sender;
+- (void)qtUpdateMenubar;
 @end
 
 #endif // QT_MAC_USE_COCOA
