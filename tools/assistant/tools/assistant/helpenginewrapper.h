@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -100,6 +100,12 @@ public:
     const QStringList filterAttributes() const;
     const QStringList filterAttributes(const QString &filterName) const;
     QString	error() const;   
+
+    /*
+     * To be called after assistant has finished looking for new documentation.
+     * This will mainly cause the search index to be updated, if necessary.
+     */
+    void initialDocSetupDone();
 
     const QStringList qtDocInfo(const QString &component) const;
     void setQtDocInfo(const QString &component, const QStringList &doc);

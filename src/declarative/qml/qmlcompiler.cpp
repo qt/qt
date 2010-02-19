@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -730,7 +730,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
         compileState.parserStatusCount++;
 
     // Check if this is a custom parser type.  Custom parser types allow
-    // assignments to non-existant properties.  These assignments are then
+    // assignments to non-existent properties.  These assignments are then
     // compiled by the type.
     bool isCustomParser = output->types.at(obj->type).type &&
                           output->types.at(obj->type).type->customParser() != 0;
@@ -1429,7 +1429,7 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
                                                    ctxt));
             return true;
         } else if (!type || !type->attachedPropertiesType())  {
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Non-existant attached object"));
+            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Non-existent attached object"));
         }
 
         if (!prop->value)
@@ -1486,9 +1486,9 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
     } else if (prop->index == -1) {
 
         if (prop->isDefault) {
-            COMPILE_EXCEPTION(prop->values.first(), QCoreApplication::translate("QmlCompiler","Cannot assign to non-existant default property"));
+            COMPILE_EXCEPTION(prop->values.first(), QCoreApplication::translate("QmlCompiler","Cannot assign to non-existent default property"));
         } else {
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Cannot assign to non-existant property \"%1\"").arg(QString::fromUtf8(prop->name)));
+            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         }
 
     } else if (prop->value) {
@@ -1534,7 +1534,7 @@ QmlCompiler::buildPropertyInNamespace(QmlEnginePrivate::ImportedNamespace *ns,
                                                               &type, 0, 0, 0);
 
         if (!type || !type->attachedPropertiesType()) 
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Non-existant attached object"));
+            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Non-existent attached object"));
 
         if (!prop->value)
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Invalid attached object assignment"));
@@ -1841,7 +1841,7 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
     foreach (Property *prop, obj->properties) {
         int idx = type->metaObject()->indexOfProperty(prop->name.constData());
         if (idx == -1)
-            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Cannot assign to non-existant property \"%1\"").arg(QString::fromUtf8(prop->name)));
+            COMPILE_EXCEPTION(prop, QCoreApplication::translate("QmlCompiler","Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(prop->name)));
         QMetaProperty p = type->metaObject()->property(idx);
         prop->index = idx;
         prop->type = p.userType();

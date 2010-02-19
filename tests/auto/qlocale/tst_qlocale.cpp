@@ -158,14 +158,8 @@ void tst_QLocale::ctor()
     QCoreApplication app(argc, (char**)&argv);
 #endif
     QLocale default_locale = QLocale::system();
-
-    QVERIFY(!default_locale.monthName(1, QLocale::LongFormat).isEmpty());
-    QVERIFY(!default_locale.monthName(1, QLocale::ShortFormat).isEmpty());
-    QVERIFY(default_locale.language() != 0);
-
     QLocale::Language default_lang = default_locale.language();
     QLocale::Country default_country = default_locale.country();
-
 
     qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toLatin1().constData(),
             QLocale::countryToString(default_country).toLatin1().constData());
@@ -1023,6 +1017,9 @@ void tst_QLocale::toDateTime_data()
 
     QTest::newRow("RFC-1123") << "C" << QDateTime(QDate(2007, 11, 1), QTime(18, 8, 30))
                               << "ddd, dd MMM yyyy hh:mm:ss 'GMT'" << "Thu, 01 Nov 2007 18:08:30 GMT";
+
+    QTest::newRow("longFormat") << "en_US" << QDateTime(QDate(2009, 1, 5), QTime(11, 48, 32))
+                      << "dddd, MMMM d, yyyy h:mm:ss AP " << "Monday, January 5, 2009 11:48:32 AM ";
 }
 
 void tst_QLocale::toDateTime()
@@ -1034,6 +1031,8 @@ void tst_QLocale::toDateTime()
 
     QLocale l(localeName);
     QCOMPARE(l.toDateTime(string, format), result);
+    if (l.dateTimeFormat(QLocale::LongFormat) == format)
+        QCOMPARE(l.toDateTime(string, QLocale::LongFormat), result);
 }
 
 void tst_QLocale::macDefaultLocale()

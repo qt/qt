@@ -645,10 +645,9 @@ bool QDBusMessage::isDelayedReply() const
 }
 
 /*!
-    Sets whether this message will have the auto start flag.
-    This flag only makes sense for method call messages. For
-    these messages it tells the D-Bus server to either auto
-    start the service responsible for the service name, or
+    Sets the auto start flag to \a enable. This flag only makes sense
+    for method call messages, where it tells the D-Bus server to
+    either auto start the service responsible for the service name, or
     not to auto start it.
 
     By default this flag is true, i.e. a service is autostarted.

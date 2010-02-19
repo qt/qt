@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -572,7 +572,7 @@ void tst_qmlecmascript::enums()
     QCOMPARE(object->property("i").toInt(), 19);
     QCOMPARE(object->property("j").toInt(), 19);
     }
-    // Non-existant enums
+    // Non-existent enums
     {
     QmlComponent component(&engine, TEST_FILE("enums.2.qml"));
 
@@ -680,7 +680,7 @@ void tst_qmlecmascript::outerBindingOverridesInnerBinding()
 }
 
 /*
-Access a non-existant attached object.  
+Access a non-existent attached object.  
 
 Tests for a regression where this used to crash.
 */
@@ -928,7 +928,7 @@ void tst_qmlecmascript::scriptErrors()
     QString warning5 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
     QString warning6 = url + ":9: Unable to assign [undefined] to int";
     QString warning7 = url + ":14: Error: Cannot assign to read-only property \"trueProperty\"";
-    QString warning8 = url + ":15: Error: Cannot assign to non-existant property \"fakeProperty\"";
+    QString warning8 = url + ":15: Error: Cannot assign to non-existent property \"fakeProperty\"";
 
     QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
@@ -1207,15 +1207,15 @@ void tst_qmlecmascript::callQtInvokables()
     QScriptEngine *engine = &ep->scriptEngine;
     ep->globalClass->explicitSetProperty("object", ep->objectClass->newQObject(&o));
 
-    // Non-existant methods
+    // Non-existent methods
     o.reset();
-    QCOMPARE(engine->evaluate("object.method_nonexistant()").isError(), true);
+    QCOMPARE(engine->evaluate("object.method_nonexistent()").isError(), true);
     QCOMPARE(o.error(), false);
     QCOMPARE(o.invoked(), -1);
     QCOMPARE(o.actuals().count(), 0);
 
     o.reset();
-    QCOMPARE(engine->evaluate("object.method_nonexistant(10, 11)").isError(), true);
+    QCOMPARE(engine->evaluate("object.method_nonexistent(10, 11)").isError(), true);
     QCOMPARE(o.error(), false);
     QCOMPARE(o.invoked(), -1);
     QCOMPARE(o.actuals().count(), 0);

@@ -1,1 +1,1 @@
-4:18:Cannot assign to non-existant property "foo"
+4:18:Cannot assign to non-existent property "foo"

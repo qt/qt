@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,7 +119,7 @@ void QmlBehavior::setAnimation(QmlAbstractAnimation *animation)
 {
     Q_D(QmlBehavior);
     if (d->animation) {
-        qmlInfo(this) << tr("Can't change the animation assigned to a Behavior.");
+        qmlInfo(this) << tr("Cannot change the animation assigned to a Behavior.");
         return;
     }
 

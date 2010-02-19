@@ -207,25 +207,17 @@ QScriptDeclarativeClass::newObjectValue(QScriptEngine *engine,
 QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue &v)
 {
     QScriptValuePrivate *d = QScriptValuePrivate::get(v);
-    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
+    if (!d || !d->isJSC())
         return 0;
-    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-    QScriptObjectDelegate *delegate = scriptObject->delegate();
-    if (!delegate || (delegate->type() != QScriptObjectDelegate::DeclarativeClassObject))
-        return 0;
-    return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->scriptClass();
+    return QScriptEnginePrivate::declarativeClass(d->jscValue);
 }
 
 QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &v)
 {
     QScriptValuePrivate *d = QScriptValuePrivate::get(v);
-    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
+    if (!d || !d->isJSC())
         return 0;
-    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-    QScriptObjectDelegate *delegate = scriptObject->delegate();
-    if (!delegate || (delegate->type() != QScriptObjectDelegate::DeclarativeClassObject))
-        return 0;
-    return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->object();
+    return QScriptEnginePrivate::declarativeObject(d->jscValue);
 }
 
 QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Identifier &name)
