@@ -163,7 +163,7 @@ void QPrintDialogPrivate::_q_okClicked()
     printer->setPaperSize(pageSize);
     printer->setPageOrder(pageOrder2);
     printer->setColorMode(colorMode2);
-    printer->setNumCopies(numCopies);
+    printer->setCopyCount(numCopies);
 
     switch ((rangeCombo->itemData(rangeCombo->currentIndex())).toInt()){
     case (int)QPrintDialog::AllPages:
@@ -479,8 +479,8 @@ void QPrintDialogPrivate::setPrinter(QPrinter *p, bool pickUpSettings)
             printGray->setChecked(true);
 
         // number of copies
-        copies->setValue(p->numCopies());
-        _q_setNumCopies(p->numCopies());
+        copies->setValue(p->copyCount());
+        _q_setNumCopies(p->copyCount());
     }
 
     if (p) {

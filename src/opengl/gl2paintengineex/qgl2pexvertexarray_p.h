@@ -102,8 +102,36 @@ public:
     QGL2PEXVertexArray() :
         maxX(-2e10), maxY(-2e10), minX(2e10), minY(2e10),
         boundingRectDirty(true) {}
+    
+    inline void addRect(const QRectF &rect)
+    {
+        qreal top = rect.top();
+        qreal left = rect.left();
+        qreal bottom = rect.bottom();
+        qreal right = rect.right();
+    
+        vertexArray << QGLPoint(left, top)
+                    << QGLPoint(right, top)
+                    << QGLPoint(right, bottom)
+                    << QGLPoint(right, bottom)
+                    << QGLPoint(left, bottom)
+                    << QGLPoint(left, top);        
+    }
 
-    void addRect(const QRectF &rect);
+    inline void addQuad(const QRectF &rect)
+    {
+        qreal top = rect.top();
+        qreal left = rect.left();
+        qreal bottom = rect.bottom();
+        qreal right = rect.right();
+
+        vertexArray << QGLPoint(left, top)
+                    << QGLPoint(right, top)
+                    << QGLPoint(left, bottom)
+                    << QGLPoint(right, bottom);
+
+    }
+
     void addPath(const QVectorPath &path, GLfloat curveInverseScale, bool outline = true);
     void clear();
 

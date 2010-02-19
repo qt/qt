@@ -76,7 +76,9 @@ class Q_GUI_EXPORT QTextureGlyphCache : public QFontEngineGlyphCache
 {
 public:
     QTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)
-        : QFontEngineGlyphCache(matrix, type), m_w(0), m_h(0), m_cx(0), m_cy(0) { }
+        : QFontEngineGlyphCache(matrix, type), m_current_fontengine(0),
+                                               m_w(0), m_h(0), m_cx(0), m_cy(0)
+        { }
 
     virtual ~QTextureGlyphCache() { }
 
@@ -90,9 +92,8 @@ public:
         int baseLineY;
     };
 
-    void populate(const QTextItemInt &ti,
-                  const QVarLengthArray<glyph_t> &glyphs,
-                  const QVarLengthArray<QFixedPoint> &positions);
+    void populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+                  const QFixedPoint *positions);
 
     virtual void createTextureData(int width, int height) = 0;
     virtual void resizeTextureData(int width, int height) = 0;
@@ -113,7 +114,7 @@ public:
     QImage textureMapForGlyph(glyph_t g) const;
 
 protected:
-    const QTextItemInt *m_current_textitem;
+    QFontEngine *m_current_fontengine;
 
     int m_w; // image width
     int m_h; // image height
