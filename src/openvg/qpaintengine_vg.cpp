@@ -2399,7 +2399,7 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         return;
 
     // Check to see if we can use vgClear() for faster filling.
-    if (brush.style() == Qt::SolidPattern &&
+    if (brush.style() == Qt::SolidPattern && brush.isOpaque() &&
             clipTransformIsSimple(d->transform) && d->opacity == 1.0f &&
             clearRect(rect, brush.color())) {
         return;
@@ -2442,7 +2442,7 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     Q_D(QVGPaintEngine);
 
     // Check to see if we can use vgClear() for faster filling.
-    if (clipTransformIsSimple(d->transform) && d->opacity == 1.0f &&
+    if (clipTransformIsSimple(d->transform) && d->opacity == 1.0f && color.alpha() == 255 &&
             clearRect(rect, color)) {
         return;
     }
