@@ -420,7 +420,7 @@ QT_END_NAMESPACE
 
     This property holds the tile of the media.
 
-    \sa {QtMedia::Title}
+    \sa {QtMultimedia::Title}
 */
 
 /*!
@@ -428,7 +428,7 @@ QT_END_NAMESPACE
 
     This property holds the sub-title of the media.
 
-    \sa {QtMedia::SubTitle}
+    \sa {QtMultimedia::SubTitle}
 */
 
 /*!
@@ -436,7 +436,7 @@ QT_END_NAMESPACE
 
     This property holds the author of the media.
 
-    \sa {QtMedia::Author}
+    \sa {QtMultimedia::Author}
 */
 
 /*!
@@ -444,7 +444,7 @@ QT_END_NAMESPACE
 
     This property holds a user comment about the media.
 
-    \sa {QtMedia::Comment}
+    \sa {QtMultimedia::Comment}
 */
 
 /*!
@@ -452,7 +452,7 @@ QT_END_NAMESPACE
 
     This property holds a description of the media.
 
-    \sa {QtMedia::Description}
+    \sa {QtMultimedia::Description}
 */
 
 /*!
@@ -460,7 +460,7 @@ QT_END_NAMESPACE
 
     This property holds the category of the media
 
-    \sa {QtMedia::Category}
+    \sa {QtMultimedia::Category}
 */
 
 /*!
@@ -468,7 +468,7 @@ QT_END_NAMESPACE
 
     This property holds the genre of the media.
 
-    \sa {QtMedia::Genre}
+    \sa {QtMultimedia::Genre}
 */
 
 /*!
@@ -476,7 +476,7 @@ QT_END_NAMESPACE
 
     This property holds the year of release of the media.
 
-    \sa {QtMedia::Year}
+    \sa {QtMultimedia::Year}
 */
 
 /*!
@@ -484,7 +484,7 @@ QT_END_NAMESPACE
 
     This property holds the date of the media.
 
-    \sa {QtMedia::Date}
+    \sa {QtMultimedia::Date}
 */
 
 /*!
@@ -492,7 +492,7 @@ QT_END_NAMESPACE
 
     This property holds a user rating of the media in the range of 0 to 100.
 
-    \sa {QtMedia::UserRating}
+    \sa {QtMultimedia::UserRating}
 */
 
 /*!
@@ -500,7 +500,7 @@ QT_END_NAMESPACE
 
     This property holds a list of keywords describing the media.
 
-    \sa {QtMedia::Keywords}
+    \sa {QtMultimedia::Keywords}
 */
 
 /*!
@@ -508,7 +508,7 @@ QT_END_NAMESPACE
 
     This property holds the language of the media, as an ISO 639-2 code.
 
-    \sa {QtMedia::Language}
+    \sa {QtMultimedia::Language}
 */
 
 /*!
@@ -516,7 +516,7 @@ QT_END_NAMESPACE
 
     This property holds the publisher of the media.
 
-    \sa {QtMedia::Publisher}
+    \sa {QtMultimedia::Publisher}
 */
 
 /*!
@@ -524,7 +524,7 @@ QT_END_NAMESPACE
 
     This property holds the media's copyright notice.
 
-    \sa {QtMedia::Copyright}
+    \sa {QtMultimedia::Copyright}
 */
 
 /*!
@@ -532,7 +532,7 @@ QT_END_NAMESPACE
 
     This property holds the parental rating of the media.
 
-    \sa {QtMedia::ParentalRating}
+    \sa {QtMultimedia::ParentalRating}
 */
 
 /*!
@@ -541,7 +541,7 @@ QT_END_NAMESPACE
     This property holds the name of the rating organisation responsible for the
     parental rating of the media.
 
-    \sa {QtMedia::RatingOrganisation}
+    \sa {QtMultimedia::RatingOrganisation}
 */
 
 /*!
@@ -549,7 +549,7 @@ QT_END_NAMESPACE
 
     This property property holds the size of the media in bytes.
 
-    \sa {QtMedia::Size}
+    \sa {QtMultimedia::Size}
 */
 
 /*!
@@ -557,7 +557,7 @@ QT_END_NAMESPACE
 
     This property holds the type of the media.
 
-    \sa {QtMedia::MediaType}
+    \sa {QtMultimedia::MediaType}
 */
 
 /*!
@@ -566,7 +566,7 @@ QT_END_NAMESPACE
     This property holds the bit rate of the media's audio stream ni bits per
     second.
 
-    \sa {QtMedia::AudioBitRate}
+    \sa {QtMultimedia::AudioBitRate}
 */
 
 /*!
@@ -574,7 +574,7 @@ QT_END_NAMESPACE
 
     This property holds the encoding of the media audio stream.
 
-    \sa {QtMedia::AudioCodec}
+    \sa {QtMultimedia::AudioCodec}
 */
 
 /*!
@@ -582,7 +582,7 @@ QT_END_NAMESPACE
 
     This property holds the average volume level of the media.
 
-    \sa {QtMedia::AverageLevel}
+    \sa {QtMultimedia::AverageLevel}
 */
 
 /*!
@@ -590,7 +590,7 @@ QT_END_NAMESPACE
 
     This property holds the number of channels in the media's audio stream.
 
-    \sa {QtMedia::ChannelCount}
+    \sa {QtMultimedia::ChannelCount}
 */
 
 /*!
@@ -598,7 +598,7 @@ QT_END_NAMESPACE
 
     This property holds the peak volume of media's audio stream.
 
-    \sa {QtMedia::PeakValue}
+    \sa {QtMultimedia::PeakValue}
 */
 
 /*!
@@ -606,7 +606,7 @@ QT_END_NAMESPACE
 
     This property holds the sample rate of the media's audio stream in hertz.
 
-    \sa {QtMedia::SampleRate}
+    \sa {QtMultimedia::SampleRate}
 */
 
 /*!
@@ -614,7 +614,7 @@ QT_END_NAMESPACE
 
     This property holds the title of the album the media belongs to.
 
-    \sa {QtMedia::AlbumTitle}
+    \sa {QtMultimedia::AlbumTitle}
 */
 
 /*!
@@ -623,7 +623,7 @@ QT_END_NAMESPACE
     This property holds the name of the principal artist of the album the media
     belongs to.
 
-    \sa {QtMedia::AlbumArtist}
+    \sa {QtMultimedia::AlbumArtist}
 */
 
 /*!
@@ -631,7 +631,7 @@ QT_END_NAMESPACE
 
     This property holds the names of artists contributing to the media.
 
-    \sa {QtMedia::ContributingArtist}
+    \sa {QtMultimedia::ContributingArtist}
 */
 
 /*!
@@ -639,7 +639,7 @@ QT_END_NAMESPACE
 
     This property holds the composer of the media.
 
-    \sa {QtMedia::Composer}
+    \sa {QtMultimedia::Composer}
 */
 
 /*!
@@ -647,7 +647,7 @@ QT_END_NAMESPACE
 
     This property holds the conductor of the media.
 
-    \sa {QtMedia::Conductor}
+    \sa {QtMultimedia::Conductor}
 */
 
 /*!
@@ -655,7 +655,7 @@ QT_END_NAMESPACE
 
     This property holds the lyrics to the media.
 
-    \sa {QtMedia::Lyrics}
+    \sa {QtMultimedia::Lyrics}
 */
 
 /*!
@@ -663,7 +663,7 @@ QT_END_NAMESPACE
 
     This property holds the mood of the media.
 
-    \sa {QtMedia::Mood}
+    \sa {QtMultimedia::Mood}
 */
 
 /*!
@@ -671,7 +671,7 @@ QT_END_NAMESPACE
 
     This property holds the track number of the media.
 
-    \sa {QtMedia::TrackNumber}
+    \sa {QtMultimedia::TrackNumber}
 */
 
 /*!
@@ -679,7 +679,7 @@ QT_END_NAMESPACE
 
     This property holds the number of track on the album containing the media.
 
-    \sa {QtMedia::TrackNumber}
+    \sa {QtMultimedia::TrackNumber}
 */
 
 /*!
@@ -687,7 +687,7 @@ QT_END_NAMESPACE
 
     This property holds the URL of a small cover art image.
 
-    \sa {QtMedia::CoverArtUrlSmall}
+    \sa {QtMultimedia::CoverArtUrlSmall}
 */
 
 /*!
@@ -695,7 +695,7 @@ QT_END_NAMESPACE
 
     This property holds the URL of a large cover art image.
 
-    \sa {QtMedia::CoverArtUrlLarge}
+    \sa {QtMultimedia::CoverArtUrlLarge}
 */
 
 /*!
@@ -703,7 +703,7 @@ QT_END_NAMESPACE
 
     This property holds the dimension of an image or video.
 
-    \sa {QtMedia::Resolution}
+    \sa {QtMultimedia::Resolution}
 */
 
 /*!
@@ -711,7 +711,7 @@ QT_END_NAMESPACE
 
     This property holds the pixel aspect ratio of an image or video.
 
-    \sa {QtMedia::PixelAspectRatio}
+    \sa {QtMultimedia::PixelAspectRatio}
 */
 
 /*!
@@ -719,7 +719,7 @@ QT_END_NAMESPACE
 
     This property holds the frame rate of the media's video stream.
 
-    \sa {QtMedia::VideoFrameRate}
+    \sa {QtMultimedia::VideoFrameRate}
 */
 
 /*!
@@ -728,7 +728,7 @@ QT_END_NAMESPACE
     This property holds the bit rate of the media's video stream in bits per
     second.
 
-    \sa {QtMedia::VideoBitRate}
+    \sa {QtMultimedia::VideoBitRate}
 */
 
 /*!
@@ -736,7 +736,7 @@ QT_END_NAMESPACE
 
     This property holds the encoding of the media's video stream.
 
-    \sa {QtMedia::VideoCodec}
+    \sa {QtMultimedia::VideoCodec}
 */
 
 /*!
@@ -744,7 +744,7 @@ QT_END_NAMESPACE
 
     This property holds the URL of a poster image.
 
-    \sa {QtMedia::PosterUrl}
+    \sa {QtMultimedia::PosterUrl}
 */
 
 /*!
@@ -752,7 +752,7 @@ QT_END_NAMESPACE
 
     This property holds the chapter number of the media.
 
-    \sa {QtMedia::ChapterNumber}
+    \sa {QtMultimedia::ChapterNumber}
 */
 
 /*!
@@ -760,7 +760,7 @@ QT_END_NAMESPACE
 
     This property holds the director of the media.
 
-    \sa {QtMedia::Director}
+    \sa {QtMultimedia::Director}
 */
 
 /*!
@@ -768,7 +768,7 @@ QT_END_NAMESPACE
 
     This property holds the lead performer in the media.
 
-    \sa {QtMedia::LeadPerformer}
+    \sa {QtMultimedia::LeadPerformer}
 */
 
 /*!
@@ -776,7 +776,7 @@ QT_END_NAMESPACE
 
     This property holds the writer of the media.
 
-    \sa {QtMedia::Writer}
+    \sa {QtMultimedia::Writer}
 */
 
 // The remaining properties are related to photos, and are technically
@@ -786,157 +786,157 @@ QT_END_NAMESPACE
 /*!
     \qmlproperty variant Video::cameraManufacturer
 
-    \sa {QtMedia::CameraManufacturer}
+    \sa {QtMultimedia::CameraManufacturer}
 */
 
 /*!
     \qmlproperty variant Video::cameraModel
 
-    \sa {QtMedia::CameraModel}
+    \sa {QtMultimedia::CameraModel}
 */
 
 /*!
     \qmlproperty variant Video::event
 
-    \sa {QtMedia::Event}
+    \sa {QtMultimedia::Event}
 */
 
 /*!
     \qmlproperty variant Video::subject
 
-    \sa {QtMedia::Subject}
+    \sa {QtMultimedia::Subject}
 */
 
 /*!
     \qmlproperty variant Video::orientation
 
-    \sa {QtMedia::Orientation}
+    \sa {QtMultimedia::Orientation}
 */
 
 /*!
     \qmlproperty variant Video::exposureTime
 
-    \sa {QtMedia::ExposureTime}
+    \sa {QtMultimedia::ExposureTime}
 */
 
 /*!
     \qmlproperty variant Video::fNumber
 
-    \sa {QtMedia::FNumber}
+    \sa {QtMultimedia::FNumber}
 */
 
 /*!
     \qmlproperty variant Video::exposureProgram
 
-    \sa {QtMedia::ExposureProgram}
+    \sa {QtMultimedia::ExposureProgram}
 */
 
 /*!
     \qmlproperty variant Video::isoSpeedRatings
 
-    \sa {QtMedia::ISOSpeedRatings}
+    \sa {QtMultimedia::ISOSpeedRatings}
 */
 
 /*!
     \qmlproperty variant Video::exposureBiasValue
 
-    \sa {QtMedia::ExposureBiasValue}
+    \sa {QtMultimedia::ExposureBiasValue}
 */
 
 /*!
     \qmlproperty variant Video::dateTimeDigitized
 
-    \sa {QtMedia::DateTimeDigitized}
+    \sa {QtMultimedia::DateTimeDigitized}
 */
 
 /*!
     \qmlproperty variant Video::subjectDistance
 
-    \sa {QtMedia::SubjectDistance}
+    \sa {QtMultimedia::SubjectDistance}
 */
 
 /*!
     \qmlproperty variant Video::meteringMode
 
-    \sa {QtMedia::MeteringMode}
+    \sa {QtMultimedia::MeteringMode}
 */
 
 /*!
     \qmlproperty variant Video::lightSource
 
-    \sa {QtMedia::LightSource}
+    \sa {QtMultimedia::LightSource}
 */
 
 /*!
     \qmlproperty variant Video::flash
 
-    \sa {QtMedia::Flash}
+    \sa {QtMultimedia::Flash}
 */
 
 /*!
     \qmlproperty variant Video::focalLength
 
-    \sa {QtMedia::FocalLength}
+    \sa {QtMultimedia::FocalLength}
 */
 
 /*!
     \qmlproperty variant Video::exposureMode
 
-    \sa {QtMedia::ExposureMode}
+    \sa {QtMultimedia::ExposureMode}
 */
 
 /*!
     \qmlproperty variant Video::whiteBalance
 
-    \sa {QtMedia::WhiteBalance}
+    \sa {QtMultimedia::WhiteBalance}
 */
 
 /*!
     \qmlproperty variant Video::DigitalZoomRatio
 
-    \sa {QtMedia::DigitalZoomRatio}
+    \sa {QtMultimedia::DigitalZoomRatio}
 */
 
 /*!
     \qmlproperty variant Video::focalLengthIn35mmFilm
 
-    \sa {QtMedia::FocalLengthIn35mmFile}
+    \sa {QtMultimedia::FocalLengthIn35mmFile}
 */
 
 /*!
     \qmlproperty variant Video::sceneCaptureType
 
-    \sa {QtMedia::SceneCaptureType}
+    \sa {QtMultimedia::SceneCaptureType}
 */
 
 /*!
     \qmlproperty variant Video::gainControl
 
-    \sa {QtMedia::GainControl}
+    \sa {QtMultimedia::GainControl}
 */
 
 /*!
     \qmlproperty variant Video::contrast
 
-    \sa {QtMedia::contrast}
+    \sa {QtMultimedia::contrast}
 */
 
 /*!
     \qmlproperty variant Video::saturation
 
-    \sa {QtMedia::Saturation}
+    \sa {QtMultimedia::Saturation}
 */
 
 /*!
     \qmlproperty variant Video::sharpness
 
-    \sa {QtMedia::Sharpness}
+    \sa {QtMultimedia::Sharpness}
 */
 
 /*!
     \qmlproperty variant Video::deviceSettingDescription
 
-    \sa {QtMedia::DeviceSettingDescription}
+    \sa {QtMultimedia::DeviceSettingDescription}
 */
 
 #endif

@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     its current media it will implement QMetaDataControl.  This control
     provides functions for both retrieving and setting meta-data values.
     Meta-data may be addressed by the well defined keys in the
-    QtMedia::MetaData enumeration using the metaData() functions, or by
+    QtMultimedia::MetaData enumeration using the metaData() functions, or by
     string keys using the extendedMetaData() functions.
 
     The functionality provided by this control is exposed to application
@@ -117,13 +117,13 @@ QMetaDataControl::~QMetaDataControl()
 */
 
 /*!
-    \fn QVariant QMetaDataControl::metaData(QtMedia::MetaData key) const
+    \fn QVariant QMetaDataControl::metaData(QtMultimedia::MetaData key) const
 
     Returns the meta-data for the given \a key.
 */
 
 /*!
-    \fn void QMetaDataControl::setMetaData(QtMedia::MetaData key, const QVariant &value)
+    \fn void QMetaDataControl::setMetaData(QtMultimedia::MetaData key, const QVariant &value)
 
     Sets the \a value of the meta-data element with the given \a key.
 */

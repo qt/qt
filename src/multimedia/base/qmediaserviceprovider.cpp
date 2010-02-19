@@ -509,7 +509,7 @@ Q_GLOBAL_STATIC(QPluginServiceProvider, pluginProvider);
 */
 
 /*!
-    \fn QtMedia::SupportEstimate QMediaServiceProvider::hasSupport(const QByteArray &serviceType, const QString &mimeType, const QStringList& codecs, int flags) const
+    \fn QtMultimedia::SupportEstimate QMediaServiceProvider::hasSupport(const QByteArray &serviceType, const QString &mimeType, const QStringList& codecs, int flags) const
 
     Returns how confident a media service provider is that is can provide a \a serviceType
     service that is able to play media of a specific \a mimeType that is encoded using the listed

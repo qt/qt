@@ -73,7 +73,7 @@ private slots:
     void geometry();
 };
 
-Q_DECLARE_METATYPE(QtMedia::MetaData);
+Q_DECLARE_METATYPE(QtMultimedia::MetaData);
 Q_DECLARE_METATYPE(QmlGraphicsVideo::Error);
 
 class QtTestMediaPlayerControl : public QMediaPlayerControl
