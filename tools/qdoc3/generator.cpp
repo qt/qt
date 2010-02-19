@@ -1213,6 +1213,32 @@ void Generator::appendSortedNames(Text& text,
     }
 }
 
+void Generator::appendSortedNames(Text& text,
+                                  const Node* base,
+                                  const NodeList& subs,
+                                  CodeMarker *marker)
+{
+    NodeList::ConstIterator r;
+    QMap<QString,Text> classMap;
+    int index = 0;
+
+    r = subs.begin();
+    while (r != subs.end()) {
+        Text className;
+        appendFullName(className, (*r), base, marker);
+        classMap[className.toString().toLower()] = className;
+        ++r;
+    }
+
+    QStringList classNames = classMap.keys();
+    classNames.sort();
+
+    foreach (const QString &className, classNames) {
+        text << classMap[className];
+        text << separator(index++, classNames.count());
+    }
+}
+
 int Generator::skipAtoms(const Atom *atom, Atom::Type type) const
 {
     int skipAhead = 0;
