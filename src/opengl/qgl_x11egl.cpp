@@ -282,6 +282,7 @@ void QGLWidget::updateOverlayGL()
 }
 
 //#define QT_DEBUG_X11_VISUAL_SELECTION 1
+//#undef QT_DEBUG_X11_VISUAL_SELECTION
 
 bool qt_egl_setup_x11_visual(XVisualInfo &vi, EGLDisplay display, EGLConfig config, const QX11Info &x11Info, bool useArgbVisual)
 {
@@ -471,10 +472,21 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     if (visible)
         hide();
 
-    XVisualInfo vi;
     QEglContext *eglContext = d->glcx->d_func()->eglContext;
-    bool usingArgbVisual = qt_egl_setup_x11_visual(vi, eglContext->display(), eglContext->config(),
-                                                   x11Info(), tryArgbVisual);
+
+    XVisualInfo vi;
+    memset(&vi, 0, sizeof(XVisualInfo));
+    vi.visualid = QEgl::getCompatibleVisualId(eglContext->config());
+
+    {
+    XVisualInfo *visualInfoPtr;
+    int matchingCount = 0;
+    visualInfoPtr = XGetVisualInfo(X11->display, VisualIDMask, &vi, &matchingCount);
+    vi = *visualInfoPtr;
+    XFree(visualInfoPtr);
+    }
+
+    bool usingArgbVisual = eglContext->configAttrib(EGL_ALPHA_SIZE) > 0;
 
     XSetWindowAttributes a;
 

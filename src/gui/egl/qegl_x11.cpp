@@ -116,6 +116,7 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
         setVisualFormat(qt_x11Info(dev));
 }
 
+//#define QT_DEBUG_X11_VISUAL_SELECTION 1
 
 VisualID QEgl::getCompatibleVisualId(EGLConfig config)
 {
@@ -174,7 +175,7 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
 
     if (visualId) {
 #ifdef QT_DEBUG_X11_VISUAL_SELECTION
-        if (configHasAlpha)
+        if (configAlphaSize > 0)
             qDebug("Using ARGB Visual ID %d provided by EGL for config %d", (int)visualId, (int)config);
         else
             qDebug("Using Opaque Visual ID %d provided by EGL for config %d", (int)visualId, (int)config);
@@ -219,7 +220,7 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
     }
     if (visualId) {
 # ifdef QT_DEBUG_X11_VISUAL_SELECTION
-        if (configHasAlpha)
+        if (configAlphaSize > 0)
             qDebug("Using ARGB Visual ID %d provided by XRender for EGL config %d", (int)visualId, (int)config);
         else
             qDebug("Using Opaque Visual ID %d provided by XRender for EGL config %d", (int)visualId, (int)config);
