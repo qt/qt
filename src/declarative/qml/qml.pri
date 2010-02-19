@@ -52,7 +52,9 @@ SOURCES += \
     $$PWD/qmlworkerscript.cpp \
     $$PWD/qmlimageprovider.cpp \
     $$PWD/qmlnetworkaccessmanagerfactory.cpp \
-    $$PWD/qmldirparser.cpp
+    $$PWD/qmldirparser.cpp \
+    $$PWD/qmlextensionplugin.cpp
+
 HEADERS += \
     $$PWD/qmlparser_p.h \
     $$PWD/qmlglobal_p.h \
@@ -121,7 +123,10 @@ HEADERS += \
     $$PWD/qmlguard_p.h \
     $$PWD/qmlimageprovider.h \
     $$PWD/qmlnetworkaccessmanagerfactory.h \
-    $$PWD/qmldirparser_p.h
+    $$PWD/qmldirparser_p.h \
+    $$PWD/qmlextensioninterface.h \
+    $$PWD/qmlextensionplugin.h
+
 QT += sql
 include(parser/parser.pri)
 include(rewriter/rewriter.pri)
