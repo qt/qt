@@ -76,6 +76,7 @@ public:
 
     void setEnabled(bool);
     void setMovie(void *movie);
+    void updateNaturalSize(const QSize &newSize);
 
     QAbstractVideoSurface *surface() const;
     void setSurface(QAbstractVideoSurface *surface);
