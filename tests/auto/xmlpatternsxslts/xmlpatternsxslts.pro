@@ -5,17 +5,17 @@ SOURCES += tst_xmlpatternsxslts.cpp \
 include (../xmlpatterns.pri)
 
 contains(QT_CONFIG,xmlpatterns) {
-HEADERS += ../xmlpatternsxqts/test/tst_suitetest.h
-SOURCES += ../xmlpatternsxqts/test/tst_suitetest.cpp
+HEADERS += ../xmlpatternsxqts/tst_suitetest.h
+SOURCES += ../xmlpatternsxqts/tst_suitetest.cpp
 LIBS += -l$$XMLPATTERNS_SDK
 }
 
 QT += xml
-INCLUDEPATH += $$(QTSRCDIR)/tests/auto/xmlpatternsxqts/lib/ \
-               $$(QTDIR)/include/QtXmlPatterns/private      \
-               $$(QTSRCDIR)/tests/auto/xmlpatternsxqts/test \
-               ../xmlpatternsxqts/test                      \
-               ../xmlpatternsxqts/lib
+INCLUDEPATH += $$(QTSRCDIR)/tests/auto/xmlpatternssdk  \
+               $$(QTDIR)/include/QtXmlPatterns/private \
+               $$(QTSRCDIR)/tests/auto/xmlpatternsxqts \
+               ../xmlpatternsxqts                      \
+               ../xmlpatternssdk
 
 wince*: {
     testdata.sources = XSLTS Baseline.xml

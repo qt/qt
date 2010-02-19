@@ -242,9 +242,11 @@ private:
     QSharedMemory sm;
 };
 
+QT_BEGIN_NAMESPACE
 Q_SCRIPT_DECLARE_QMETAOBJECT(ScriptSharedMemory, QObject*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(ScriptSystemLock, QObject*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(ScriptSystemSemaphore, QObject*);
+QT_END_NAMESPACE
 
 static void interactive(QScriptEngine &eng)
 {

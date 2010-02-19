@@ -2265,24 +2265,31 @@ void Configure::generateBuildKey()
 
     QString build32Key = buildKey + "Windows " + compiler + " %1 " + build_options.join(" ") + " " + build_defines.join(" ");
     QString build64Key = buildKey + "Windows x64 " + compiler + " %1 " + build_options.join(" ") + " " + build_defines.join(" ");
+    QString buildSymbianKey = buildKey + "Symbian " + build_options.join(" ") + " " + build_defines.join(" ");
     build32Key = build32Key.simplified();
     build64Key = build64Key.simplified();
-    build32Key.prepend("#  define ");
-    build64Key.prepend("#  define ");
+    buildSymbianKey = buildSymbianKey.simplified();
+    build32Key.prepend("#   define ");
+    build64Key.prepend("#   define ");
+    buildSymbianKey.prepend("# define ");
 
-    QString buildkey = // Debug builds
-                       "#if (defined(_DEBUG) || defined(DEBUG))\n"
-                       "# if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
-                       + build64Key.arg("debug") + "\"\n"
-                       "# else\n"
-                       + build32Key.arg("debug") + "\"\n"
-                       "# endif\n"
+    QString buildkey = "#if defined(__SYMBIAN32__)\n"
+                       + buildSymbianKey + "\"\n"
                        "#else\n"
-                       // Release builds
-                       "# if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
-                       + build64Key.arg("release") + "\"\n"
+                       // Debug builds
+                       "# if (defined(_DEBUG) || defined(DEBUG))\n"
+                       "#  if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
+                       + build64Key.arg("debug") + "\"\n"
+                       "#  else\n"
+                       + build32Key.arg("debug") + "\"\n"
+                       "#  endif\n"
                        "# else\n"
+                       // Release builds
+                       "#  if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
+                       + build64Key.arg("release") + "\"\n"
+                       "#  else\n"
                        + build32Key.arg("release") + "\"\n"
+                       "#  endif\n"
                        "# endif\n"
                        "#endif\n";
 

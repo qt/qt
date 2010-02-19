@@ -1306,11 +1306,23 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
             const int dataCount = table.dataCount();
             QTestResult::setSkipCurrentTest(false);
 
+            // Data tag requested but none available?
+            if (data && !dataCount) {
+                // Let empty data tag through.
+                if (!*data)
+                    data = 0;
+                else {
+                    printf("Unknown testdata for function %s: '%s'\n", slotName, data);
+                    printf("Function has no testdata.\n");
+                    return false;
+                }
+            }
+
             /* For each entry in the data table, do: */
             do {
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
-                    QTestDataSetter s(table.isEmpty() ? static_cast<QTestData *>(0)
+                    QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
                     qInvokeTestMethodDataEntry(slot);

@@ -5132,6 +5132,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 }
 
 /*!
+    \obsolete
+
     Paints the given \a items using the provided \a painter, after the
     background has been drawn, and before the foreground has been
     drawn.  All painting is done in \e scene coordinates. Before
@@ -5154,7 +5156,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     \snippet doc/src/snippets/graphicssceneadditemsnippet.cpp 0
 
-    \obsolete Since Qt 4.6, this function is not called anymore unless
+    Since Qt 4.6, this function is not called anymore unless
     the QGraphicsView::IndirectPainting flag is given as an Optimization
     flag.
 
@@ -5710,8 +5712,15 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             item->d_ptr->acceptedTouchBeginEvent = true;
             bool res = sendTouchBeginEvent(item, &touchEvent)
                        && touchEvent.isAccepted();
-            if (!res)
+            if (!res) {
+                // forget about these touch points, we didn't handle them
+                for (int i = 0; i < touchEvent.touchPoints().count(); ++i) {
+                    const QTouchEvent::TouchPoint &touchPoint = touchEvent.touchPoints().at(i);
+                    itemForTouchPointId.remove(touchPoint.id());
+                    sceneCurrentTouchPoints.remove(touchPoint.id());
+                }
                 ignoreSceneTouchEvent = false;
+            }
             break;
         }
         default:
@@ -5902,13 +5911,21 @@ void QGraphicsScenePrivate::getGestureTargets(const QSet<QGesture *> &gestures,
             QList<QGraphicsItem *> items = itemsAtPosition(screenPos, QPointF(), viewport);
             QList<QGraphicsObject *> result;
             for (int j = 0; j < items.size(); ++j) {
-                QGraphicsObject *item = items.at(j)->toGraphicsObject();
-                if (!item)
-                    continue;
-                QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
-                if (d->gestureContext.contains(gestureType)) {
-                    result.append(item);
+                QGraphicsItem *item = items.at(j);
+
+                // Check if the item is blocked by a modal panel and use it as
+                // a target instead of this item.
+                (void) item->isBlockedByModalPanel(&item);
+
+                if (QGraphicsObject *itemobj = item->toGraphicsObject()) {
+                    QGraphicsItemPrivate *d = item->d_func();
+                    if (d->gestureContext.contains(gestureType)) {
+                        result.append(itemobj);
+                    }
                 }
+                // Don't propagate through panels.
+                if (item->isPanel())
+                    break;
             }
             DEBUG() << "QGraphicsScenePrivate::getGestureTargets:"
                     << gesture << result;
