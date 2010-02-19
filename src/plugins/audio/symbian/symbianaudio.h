@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,38 @@
 **
 ****************************************************************************/
 
-#include <qstring.h>
-#include <qt_windows.h>
+#ifndef SYMBIANAUDIO_H
+#define SYMBIANAUDIO_H
+
+#include <QtCore/qnamespace.h>
 
 QT_BEGIN_NAMESPACE
 
+namespace SymbianAudio {
 
-enum Compiler {
-    CC_UNKNOWN = 0,
-    CC_BORLAND = 0x01,
-    CC_MINGW   = 0x02,
-    CC_INTEL   = 0x03,
-    CC_MSVC4   = 0x40,
-    CC_MSVC5   = 0x50,
-    CC_MSVC6   = 0x60,
-    CC_NET2002 = 0x70,
-    CC_NET2003 = 0x71,
-    CC_NET2005 = 0x80,
-    CC_NET2008 = 0x90
+/**
+ * Default values used by audio input and output classes, when underlying
+ * DevSound instance has not yet been created.
+ */
+
+const int DefaultBufferSize = 4096; // bytes
+const int DefaultNotifyInterval = 1000; // ms
+
+/**
+ * Enumeration used to track state of internal DevSound instances.
+ * Values are translated to the corresponding QAudio::State values by
+ * SymbianAudio::Utils::stateNativeToQt.
+ */
+enum State {
+        ClosedState
+    ,   InitializingState
+    ,   ActiveState
+    ,   IdleState
+    ,   SuspendedState
 };
 
-struct CompilerInfo;
-class Environment
-{
-public:
-    static Compiler detectCompiler();
-    static QString detectQMakeSpec();
-    static bool detectExecutable(const QString &executable);
-
-    static int execute(QStringList arguments, const QStringList &additionalEnv, const QStringList &removeEnv);
-    static bool cpdir(const QString &srcDir, const QString &destDir);
-    static bool rmdir(const QString &name);
-
-    static QString symbianEpocRoot();
-
-private:
-    static Compiler detectedCompiler;
-
-    static CompilerInfo *compilerInfo(Compiler compiler);
-};
-
+} // namespace SymbianAudio
 
 QT_END_NAMESPACE
+
+#endif

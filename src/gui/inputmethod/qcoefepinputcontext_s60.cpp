@@ -113,7 +113,7 @@ void QCoeFepInputContext::update()
     updateHints(false);
 
     // For pre-5.0 SDKs, we don't do text updates on S60 side.
-    if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
+    if (QSysInfo::s60Version() < QSysInfo::SV_S60_5_0) {
         return;
     }
 
@@ -740,6 +740,9 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
 void QCoeFepInputContext::DoCommitFepInlineEditL()
 {
     commitCurrentString(false);
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
+        ReportAknEdStateEvent(QT_EAknCursorPositionChanged);
+
 }
 
 void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
