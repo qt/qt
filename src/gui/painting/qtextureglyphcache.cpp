@@ -55,29 +55,42 @@ QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
 
-void QTextureGlyphCache::populate(const QTextItemInt &ti,
-                                  const QVarLengthArray<glyph_t> &glyphs,
-                                  const QVarLengthArray<QFixedPoint> &)
+// returns the highest number closest to v, which is a power of 2
+// NB! assumes 32 bit ints
+int qt_next_power_of_two(int v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    ++v;
+    return v;
+}
+
+void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+                                  const QFixedPoint *)
 {
 #ifdef CACHE_DEBUG
     printf("Populating with '%s'\n", QString::fromRawData(ti.chars, ti.num_chars).toLatin1().data());
     qDebug() << " -> current transformation: " << m_transform;
 #endif
 
-    m_current_textitem = &ti;
+    m_current_fontengine = fontEngine;
     const int margin = glyphMargin();
 
     QHash<glyph_t, Coord> listItemCoordinates;
     int rowHeight = 0;
 
     // check each glyph for its metrics and get the required rowHeight.
-    for (int i=0; i < glyphs.size(); ++i) {
+    for (int i=0; i < numGlyphs; ++i) {
         const glyph_t glyph = glyphs[i];
         if (coords.contains(glyph))
             continue;
         if (listItemCoordinates.contains(glyph))
             continue;
-        glyph_metrics_t metrics = ti.fontEngine->boundingBox(glyph, m_transform);
+        glyph_metrics_t metrics = fontEngine->boundingBox(glyph, m_transform);
 
 #ifdef CACHE_DEBUG
         printf("'%c' (%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f, ti.ascent=%.2f, ti.descent=%.2f\n",
@@ -116,7 +129,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
 
     rowHeight += margin * 2;
     if (isNull())
-        createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, rowHeight);
+        createCache(QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH, qt_next_power_of_two(rowHeight));
 
     // now actually use the coords and paint the wanted glyps into cache.
     QHash<glyph_t, Coord>::iterator iter = listItemCoordinates.begin();
@@ -129,13 +142,9 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
             m_cy = m_h;
         }
         if (m_cy + c.h > m_h) {
-            int new_height;
-            if (m_cx == 0) { // add a whole row
-                new_height = m_h + rowHeight;
-                m_cy = m_h;
-            } else { // just extend row
-                new_height = m_cy + rowHeight;
-            }
+            int new_height = m_h*2;
+            while (new_height < m_cy + c.h)
+                new_height *= 2;
             // if no room in the current texture - realloc a larger texture
             resizeTextureData(m_w, new_height);
             m_h = new_height;
@@ -182,7 +191,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
             break;
         };
 
-        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_textitem->fontEngine);
+        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_fontengine);
         QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
 
         if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
@@ -194,9 +203,9 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
     } else
 #endif
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        return m_current_textitem->fontEngine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
+        return m_current_fontengine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
     else
-        return m_current_textitem->fontEngine->alphaMapForGlyph(g, m_transform);
+        return m_current_fontengine->alphaMapForGlyph(g, m_transform);
 
     return QImage();
 }

@@ -96,6 +96,7 @@ SOURCES += \
         unix:LIBS_PRIVATE  += -lpng
         win32:LIBS += libpng.lib
     } else {
+	DEFINES *= QT_USE_BUNDLED_LIBPNG
         !isEqual(QT_ARCH, i386):!isEqual(QT_ARCH, x86_64):DEFINES += PNG_NO_ASSEMBLER_CODE
         INCLUDEPATH  += ../3rdparty/libpng ../3rdparty/zlib
         SOURCES += ../3rdparty/libpng/png.c \
@@ -112,8 +113,7 @@ SOURCES += \
           ../3rdparty/libpng/pngwio.c \
           ../3rdparty/libpng/pngwrite.c \
           ../3rdparty/libpng/pngwtran.c \
-          ../3rdparty/libpng/pngwutil.c \
-          ../3rdparty/libpng/pnggccrd.c
+          ../3rdparty/libpng/pngwutil.c
     }
 } else {
     DEFINES *= QT_NO_IMAGEFORMAT_PNG

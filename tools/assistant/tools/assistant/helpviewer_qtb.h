@@ -38,13 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef HELPVIEWERQTB_H
+#define HELPVIEWERQTB_H
 
 #include <QtCore/qglobal.h>
 
 #if defined(QT_NO_WEBKIT)
-
-#ifndef HELPVIEWERQTB_H
-#define HELPVIEWERQTB_H
 
 #include "helpviewer.h"
 
@@ -114,6 +113,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWERQTB_H
-
 #endif  // QT_NO_WEBKIT
+
+#endif  // HELPVIEWERQTB_H
