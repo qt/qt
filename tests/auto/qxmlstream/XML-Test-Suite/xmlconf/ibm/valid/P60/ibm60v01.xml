@@ -10,7 +10,7 @@
  <!ATTLIST one chapter CDATA #IMPLIED>
  <!ATTLIST two chapter CDATA #REQUIRED>
  <!ATTLIST three chapter CDATA #FIXED "JavaBeans">
- <!ATTLIST four chapter CDATA 'defualt'>
+ <!ATTLIST four chapter CDATA 'default'>
  ]>
 <Java><one chapter="Introduction"/>
  <three chapter="JavaBeans"/>

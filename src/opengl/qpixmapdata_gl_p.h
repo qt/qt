@@ -88,6 +88,7 @@ public:
     void endPaint();
     QGLContext* context() const;
     QSize size() const;
+    bool alphaRequested() const;
 
     void setPixmapData(QGLPixmapData*);
 private:

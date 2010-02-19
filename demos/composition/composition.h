@@ -109,10 +109,6 @@ public:
 
     void paint(QPainter *);
 
-    void mousePressEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-
     void setCirclePos(const QPointF &pos);
 
     QSize sizeHint() const { return QSize(500, 400); }
@@ -120,6 +116,12 @@ public:
     bool animationEnabled() const { return m_animation_enabled; }
     int circleColor() const { return m_circle_hue; }
     int circleAlpha() const { return m_circle_alpha; }
+
+protected:
+    void mousePressEvent(QMouseEvent *);
+    void mouseMoveEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
+    void timerEvent(QTimerEvent *);
 
 public slots:
     void setClearMode() { m_composition_mode = QPainter::CompositionMode_Clear; update(); }
@@ -150,7 +152,7 @@ public slots:
 
     void setCircleAlpha(int alpha) { m_circle_alpha = alpha; update(); }
     void setCircleColor(int hue) { m_circle_hue = hue; update(); }
-    void setAnimationEnabled(bool enabled) { m_animation_enabled = enabled; update(); }
+    void setAnimationEnabled(bool enabled);
 
 private:
     void updateCirclePos();
@@ -177,6 +179,7 @@ private:
 
     ObjectType m_current_object;
     bool m_animation_enabled;
+    int m_animationTimer;
 
 #ifdef QT_OPENGL_SUPPORT
     QGLPixelBuffer *m_pbuffer;

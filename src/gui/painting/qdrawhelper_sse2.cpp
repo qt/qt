@@ -57,6 +57,217 @@
 
 QT_BEGIN_NAMESPACE
 
+/*
+ * Multiply the components of pixelVector by alphaChannel
+ * Each 32bits components of alphaChannel must be in the form 0x00AA00AA
+ * colorMask must have 0x00ff00ff on each 32 bits component
+ * half must have the value 128 (0x80) for each 32 bits compnent
+ */
+#define BYTE_MUL_SSE2(result, pixelVector, alphaChannel, colorMask, half) \
+{ \
+    /* 1. separate the colors in 2 vectors so each color is on 16 bits \
+       (in order to be multiplied by the alpha \
+       each 32 bit of dstVectorAG are in the form 0x00AA00GG \
+       each 32 bit of dstVectorRB are in the form 0x00RR00BB */\
+    __m128i pixelVectorAG = _mm_srli_epi16(pixelVector, 8); \
+    __m128i pixelVectorRB = _mm_and_si128(pixelVector, colorMask); \
+ \
+    /* 2. multiply the vectors by the alpha channel */\
+    pixelVectorAG = _mm_mullo_epi16(pixelVectorAG, alphaChannel); \
+    pixelVectorRB = _mm_mullo_epi16(pixelVectorRB, alphaChannel); \
+ \
+    /* 3. devide by 255, that's the tricky part. \
+       we do it like for BYTE_MUL(), with bit shift: X/255 ~= (X + X/256 + rounding)/256 */ \
+    /** so first (X + X/256 + rounding) */\
+    pixelVectorRB = _mm_add_epi16(pixelVectorRB, _mm_srli_epi16(pixelVectorRB, 8)); \
+    pixelVectorRB = _mm_add_epi16(pixelVectorRB, half); \
+    pixelVectorAG = _mm_add_epi16(pixelVectorAG, _mm_srli_epi16(pixelVectorAG, 8)); \
+    pixelVectorAG = _mm_add_epi16(pixelVectorAG, half); \
+ \
+    /** second devide by 256 */\
+    pixelVectorRB = _mm_srli_epi16(pixelVectorRB, 8); \
+    /** for AG, we could >> 8 to divide followed by << 8 to put the \
+        bytes in the correct position. By masking instead, we execute \
+        only one instruction */\
+    pixelVectorAG = _mm_andnot_si128(colorMask, pixelVectorAG); \
+ \
+    /* 4. combine the 2 pairs of colors */ \
+    result = _mm_or_si128(pixelVectorAG, pixelVectorRB); \
+}
+
+/*
+ * Each 32bits components of alphaChannel must be in the form 0x00AA00AA
+ * oneMinusAlphaChannel must be 255 - alpha for each 32 bits component
+ * colorMask must have 0x00ff00ff on each 32 bits component
+ * half must have the value 128 (0x80) for each 32 bits compnent
+ */
+#define INTERPOLATE_PIXEL_255_SSE2(result, srcVector, dstVector, alphaChannel, oneMinusAlphaChannel, colorMask, half) { \
+    /* interpolate AG */\
+    __m128i srcVectorAG = _mm_srli_epi16(srcVector, 8); \
+    __m128i dstVectorAG = _mm_srli_epi16(dstVector, 8); \
+    __m128i srcVectorAGalpha = _mm_mullo_epi16(srcVectorAG, alphaChannel); \
+    __m128i dstVectorAGoneMinusAlphalpha = _mm_mullo_epi16(dstVectorAG, oneMinusAlphaChannel); \
+    __m128i finalAG = _mm_add_epi16(srcVectorAGalpha, dstVectorAGoneMinusAlphalpha); \
+    finalAG = _mm_add_epi16(finalAG, _mm_srli_epi16(finalAG, 8)); \
+    finalAG = _mm_add_epi16(finalAG, half); \
+    finalAG = _mm_andnot_si128(colorMask, finalAG); \
+ \
+    /* interpolate RB */\
+    __m128i srcVectorRB = _mm_and_si128(srcVector, colorMask); \
+    __m128i dstVectorRB = _mm_and_si128(dstVector, colorMask); \
+    __m128i srcVectorRBalpha = _mm_mullo_epi16(srcVectorRB, alphaChannel); \
+    __m128i dstVectorRBoneMinusAlphalpha = _mm_mullo_epi16(dstVectorRB, oneMinusAlphaChannel); \
+    __m128i finalRB = _mm_add_epi16(srcVectorRBalpha, dstVectorRBoneMinusAlphalpha); \
+    finalRB = _mm_add_epi16(finalRB, _mm_srli_epi16(finalRB, 8)); \
+    finalRB = _mm_add_epi16(finalRB, half); \
+    finalRB = _mm_srli_epi16(finalRB, 8); \
+ \
+    /* combine */\
+    result = _mm_or_si128(finalAG, finalRB); \
+}
+
+void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
+                                    const uchar *srcPixels, int sbpl,
+                                    int w, int h,
+                                    int const_alpha)
+{
+    const quint32 *src = (const quint32 *) srcPixels;
+    quint32 *dst = (uint *) destPixels;
+    if (const_alpha == 256) {
+        const __m128i alphaMask = _mm_set1_epi32(0xff000000);
+        const __m128i nullVector = _mm_set1_epi32(0);
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i one = _mm_set1_epi16(0xff);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        for (int y = 0; y < h; ++y) {
+            int x = 0;
+            for (; x < w-3; x += 4) {
+                const __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+                const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask);
+                if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, alphaMask)) == 0xffff) {
+                    // all opaque
+                    _mm_storeu_si128((__m128i *)&dst[x], srcVector);
+                } else if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, nullVector)) != 0xffff) {
+                    // not fully transparent
+                    // result = s + d * (1-alpha)
+
+                    // extract the alpha channel on 2 x 16 bits
+                    // so we have room for the multiplication
+                    // each 32 bits will be in the form 0x00AA00AA
+                    // with A being the 1 - alpha
+                    __m128i alphaChannel = _mm_srli_epi32(srcVector, 24);
+                    alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16));
+                    alphaChannel = _mm_sub_epi16(one, alphaChannel);
+
+                    const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+                    __m128i destMultipliedByOneMinusAlpha;
+                    BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half);
+
+                    // result = s + d * (1-alpha)
+                    const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha);
+                    _mm_storeu_si128((__m128i *)&dst[x], result);
+                }
+            }
+            for (; x<w; ++x) {
+                uint s = src[x];
+                if (s >= 0xff000000)
+                    dst[x] = s;
+                else if (s != 0)
+                    dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+            }
+            dst = (quint32 *)(((uchar *) dst) + dbpl);
+            src = (const quint32 *)(((const uchar *) src) + sbpl);
+        }
+    } else if (const_alpha != 0) {
+        // dest = (s + d * sia) * ca + d * cia
+        //      = s * ca + d * (sia * ca + cia)
+        //      = s * ca + d * (1 - sa*ca)
+        const_alpha = (const_alpha * 255) >> 8;
+        const __m128i nullVector = _mm_set1_epi32(0);
+        const __m128i half = _mm_set1_epi16(0x80);
+        const __m128i one = _mm_set1_epi16(0xff);
+        const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+        const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
+        for (int y = 0; y < h; ++y) {
+            int x = 0;
+            for (; x < w-3; x += 4) {
+                __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+                if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) {
+                    BYTE_MUL_SSE2(srcVector, srcVector, constAlphaVector, colorMask, half);
+
+                    __m128i alphaChannel = _mm_srli_epi32(srcVector, 24);
+                    alphaChannel = _mm_or_si128(alphaChannel, _mm_slli_epi32(alphaChannel, 16));
+                    alphaChannel = _mm_sub_epi16(one, alphaChannel);
+
+                    const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+                    __m128i destMultipliedByOneMinusAlpha;
+                    BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half);
+
+                    const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha);
+                    _mm_storeu_si128((__m128i *)&dst[x], result);
+                }
+            }
+            for (; x<w; ++x) {
+                quint32 s = src[x];
+                if (s != 0) {
+                    s = BYTE_MUL(s, const_alpha);
+                    dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+                }
+            }
+            dst = (quint32 *)(((uchar *) dst) + dbpl);
+            src = (const quint32 *)(((const uchar *) src) + sbpl);
+        }
+    }
+}
+
+// qblendfunctions.cpp
+void qt_blend_rgb32_on_rgb32(uchar *destPixels, int dbpl,
+                             const uchar *srcPixels, int sbpl,
+                             int w, int h,
+                             int const_alpha);
+
+void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
+                                 const uchar *srcPixels, int sbpl,
+                                 int w, int h,
+                                 int const_alpha)
+{
+    const quint32 *src = (const quint32 *) srcPixels;
+    quint32 *dst = (uint *) destPixels;
+    if (const_alpha != 256) {
+        if (const_alpha != 0) {
+            const __m128i nullVector = _mm_set1_epi32(0);
+            const __m128i half = _mm_set1_epi16(0x80);
+            const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
+
+            const_alpha = (const_alpha * 255) >> 8;
+            int one_minus_const_alpha = 255 - const_alpha;
+            const __m128i constAlphaVector = _mm_set1_epi16(const_alpha);
+            const __m128i oneMinusConstAlpha =  _mm_set1_epi16(one_minus_const_alpha);
+            for (int y = 0; y < h; ++y) {
+                int x = 0;
+                for (; x < w-3; x += 4) {
+                    __m128i srcVector = _mm_loadu_si128((__m128i *)&src[x]);
+                    if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVector, nullVector)) != 0xffff) {
+                        const __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+                        __m128i result;
+                        INTERPOLATE_PIXEL_255_SSE2(result, srcVector, dstVector, constAlphaVector, oneMinusConstAlpha, colorMask, half);
+                        _mm_storeu_si128((__m128i *)&dst[x], result);
+                    }
+                }
+                for (; x<w; ++x) {
+                    quint32 s = src[x];
+                    s = BYTE_MUL(s, const_alpha);
+                    dst[x] = INTERPOLATE_PIXEL_255(src[x], const_alpha, dst[x], one_minus_const_alpha);
+                }
+                dst = (quint32 *)(((uchar *) dst) + dbpl);
+                src = (const quint32 *)(((const uchar *) src) + sbpl);
+            }
+        }
+    } else {
+        qt_blend_rgb32_on_rgb32(destPixels, dbpl, srcPixels, sbpl, w, h, const_alpha);
+    }
+}
+
 void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
 {
     if (count < 7) {

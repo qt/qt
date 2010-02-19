@@ -1,9 +1,12 @@
-TEMPLATE = subdirs
-CONFIG += ordered
+load(qttest_p4)
+SOURCES += tst_xmlpatternsview.cpp
 
-SUBDIRS = ../xmlpatternsxqts test
+include (../xmlpatterns.pri)
 
-contains(QT_CONFIG,xmlpatterns) {
-  SUBDIRS += view
+TARGET = tst_xmlpatternsview
+
+wince*: {
+    viewexe.sources = $$QT_BUILD_TREE/xmlpatternsview.exe
+    viewexe.path = .
+    DEPLOYMENT += viewexe
 }
-requires(contains(QT_CONFIG,private_tests))

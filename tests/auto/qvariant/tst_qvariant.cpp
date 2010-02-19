@@ -3200,7 +3200,10 @@ struct MyPrimitive
         return x == o.x && y == o.y;
     }
 };
+
+QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(MyPrimitive, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
 
 struct MyData
 {
@@ -3239,7 +3242,9 @@ struct MyMovable
 int MyMovable::count  = 0;
 
 
+QT_BEGIN_NAMESPACE
 Q_DECLARE_TYPEINFO(MyMovable, Q_MOVABLE_TYPE);
+QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QList<QSize>)
 Q_DECLARE_METATYPE(MyPrimitive)
