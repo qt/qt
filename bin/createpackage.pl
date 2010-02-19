@@ -171,14 +171,6 @@ unless (length($templatepkg)) {
     Usage();
 }
 
-# If the pkg file is not actually a template, there is no need for plaform or target.
-if ($templatepkg =~ m/_template\.pkg/i) {
-    unless (length($platform) && length($target)) {
-        print "\nError: Platform or target is not defined!\n";
-        Usage();
-    }
-}
-
 # Check template exist
 stat($templatepkg);
 unless( -e _ ) {
@@ -245,6 +237,14 @@ local $/;
 open( TEMPLATE, $templatepkg) or die "Error '$templatepkg': $!\n";
 $_=<TEMPLATE>;
 close (TEMPLATE);
+
+# If the pkg file does not contain macros, there is no need for platform or target.
+if (m/\$\(PLATFORM\)/) {
+    unless (length($platform) && length($target)) {
+        print "\nError: Platform or target is not defined!\n";
+        Usage();
+    }
+}
 
 # replace the PKG variables
 s/\$\(PLATFORM\)/$platform/gm;
