@@ -85,7 +85,7 @@ Where parameters are as follows:
                                winscw | gcce | armv5 | armv6 | armv7
      certificate             = The certificate file used for signing
      key                     = The certificate's private key file
-     passphrase              = The certificate's private key file's passphrase
+     passphrase              = The passphrase of the certificate's private key file
 
 Example:
      createpackage.pl fluidlauncher_template.pkg release-armv5
