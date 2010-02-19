@@ -171,6 +171,7 @@ SUBDIRS += \
            qgraphicsscene \
            qgraphicssceneindex \
            qgraphicstransform \
+           qgraphicsvideoitem \
            qgraphicsview \
            qgraphicswidget \
            qgridlayout \
@@ -299,6 +300,19 @@ SUBDIRS += \
            qaudioformat \
            qaudiooutput \
            qaudioinput \
+           qmediacontent \
+           qmediaobject \
+           qmediaplayer \
+           qmediaplaylist \
+           qmediaplaylistnavigator \
+           qmediapluginloader \
+           qmediaresource \
+           qmediaservice \
+           qmediaserviceprovider \
+           qmediatimerange \
+           qvideowidget \
+           qmlaudio \
+           qmlgraphicsvideo \
            qspinbox \
            qsplitter \
            qsql \

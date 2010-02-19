@@ -19,7 +19,6 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, o
 contains(QT_CONFIG, openvg): SRC_SUBDIRS += src_openvg
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
 contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
-contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 contains(QT_CONFIG, svg): SRC_SUBDIRS += src_svg
 contains(QT_CONFIG, webkit)  {
     #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
@@ -28,6 +27,7 @@ contains(QT_CONFIG, webkit)  {
 contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
 contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
+contains(QT_CONFIG, multimedia): SRC_SUBDIRS += src_multimedia
 SRC_SUBDIRS += src_plugins
 
 src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
@@ -102,7 +102,7 @@ src_declarative.target = sub-declarative
    src_multimedia.depends = src_gui
    src_tools_activeqt.depends = src_tools_idc src_gui
    src_declarative.depends = src_xml src_gui src_script src_network src_svg
-   src_plugins.depends = src_gui src_sql src_svg
+   src_plugins.depends = src_gui src_sql src_svg src_multimedia
    contains(QT_CONFIG, webkit)  {
       src_webkit.depends = src_gui src_sql src_network src_xml 
       contains(QT_CONFIG, phonon):src_webkit.depends += src_phonon
@@ -116,6 +116,7 @@ src_declarative.target = sub-declarative
       src_phonon.depends +=  src_dbus
    }
    contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): src_plugins.depends += src_opengl
+   contains(QT_CONFIG, declarative): src_multimedia.depends += src_declarative
 }
 
 !symbian {
