@@ -76,6 +76,18 @@ static quint64 getTickCount()
     return GetTickCount();
 }
 
+static qint64 difference(qint64 a, qint64 b)
+{
+    qint64 retval = a - b;
+    // if we're not using GetTickCount64, then there can be 32-bit rollover
+    // assume there were rollovers if the difference is negative by more than
+    // 75% of the 32-bit range
+
+    if (!ptrGetTickCount64 && retval < Q_INT64_C(-0xc0000000))
+        retval += Q_UINT64_C(0x100000000);
+    return retval;
+}
+
 bool QTimestamp::isMonotonic()
 {
     return true;
@@ -91,22 +103,26 @@ qint64 QTimestamp::restart()
 {
     qint64 oldt1 = t1;
     t1 = getTickCount();
-    return t1 - oldt1;
+    return difference(t1, oldt1);
 }
 
 qint64 QTimestamp::elapsed() const
 {
-    return getTickCount() - t1;
+    return difference(getTickCount(), t1);
 }
 
 qint64 QTimestamp::msecsTo(const QTimestamp &other) const
 {
-    return other.t1 - t1;
+    return difference(other.t1, t1);
 }
 
 void QTimestamp::addMSecs(int ms)
 {
     t1 += ms;
+
+    // do we need to simulate rolling over?
+    if (!ptrGetTickCount64)
+        t1 = quint32(t1);
 }
 
 qint64 QTimestamp::secsTo(const QTimestamp &other) const
@@ -116,12 +132,12 @@ qint64 QTimestamp::secsTo(const QTimestamp &other) const
 
 void QTimestamp::addSecs(int secs)
 {
-    t1 += secs * 1000;
+    addMSecs(secs * 1000);
 }
 
 bool operator<(const QTimestamp &v1, const QTimestamp &v2)
 {
-    return v1.t1 < v2.t1;
+    return difference(v1.t1, v2.t1) < 0;
 }
 
 QT_END_NAMESPACE
