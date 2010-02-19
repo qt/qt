@@ -130,16 +130,21 @@ my $templatepkg = $ARGV[0];
 my $targetplatform = lc $ARGV[1];
 
 my @tmpvalues = split('-', $targetplatform);
-my $target = $tmpvalues[0];
-my $platform = $tmpvalues[1];;
+my $target;
+$target = $tmpvalues[0] or $target = "";
+my $platform;
+$platform = $tmpvalues[1] or $platform = "";
 
 # Convert visual target to real target (debug->udeb and release->urel)
 $target =~ s/debug/udeb/i;
 $target =~ s/release/urel/i;
 
-my $certificate = $ARGV[2];
-my $key = $ARGV[3];
-my $passphrase = $ARGV[4];
+my $certificate;
+$certificate = $ARGV[2] or $certificate = "";
+my $key;
+$key = $ARGV[3] or $key = "";
+my $passphrase;
+$passphrase = $ARGV[4] or $passphrase = "";
 
 # Generate output pkg basename (i.e. file name without extension)
 my $pkgoutputbasename = $templatepkg;
