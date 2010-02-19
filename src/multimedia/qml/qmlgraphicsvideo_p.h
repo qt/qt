@@ -58,7 +58,7 @@ class QTimerEvent;
 class QVideoSurfaceFormat;
 
 
-class Q_AUTOTEST_EXPORT QmlGraphicsVideo : public QmlGraphicsItem, public QmlMediaBase
+class Q_MULTIMEDIA_EXPORT QmlGraphicsVideo : public QmlGraphicsItem, public QmlMediaBase
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)

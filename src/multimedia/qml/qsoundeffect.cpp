@@ -52,7 +52,6 @@
 #include "qsoundeffect_qsound_p.h"
 #endif
 
-QML_DEFINE_TYPE(Qt,4,6,SoundEffect,QSoundEffect)
 
 /*!
     \qmlclass QSoundEffect

@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 class QTimerEvent;
 
-class Q_AUTOTEST_EXPORT QmlAudio : public QObject, public QmlMediaBase, public QmlParserStatus
+class Q_MULTIMEDIA_EXPORT QmlAudio : public QObject, public QmlMediaBase, public QmlParserStatus
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)

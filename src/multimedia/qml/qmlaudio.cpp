@@ -45,7 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,Audio,QmlAudio);
 
 /*!
     \qmlclass Audio QmlAudio
