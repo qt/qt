@@ -565,6 +565,18 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         QMacCocoaAutoReleasePool pool;
         NSEvent* event = 0;
 
+        // First, send all previously excluded input events, if any:
+        if (!(flags & QEventLoop::ExcludeUserInputEvents)) {
+            while (!d->queuedUserInputEvents.isEmpty()) {
+                event = static_cast<NSEvent *>(d->queuedUserInputEvents.takeFirst());
+                if (!filterEvent(event)) {
+                    qt_mac_send_event(flags, event, 0);
+                    retVal = true;
+                }
+                [event release];
+            }
+        }
+
         // If Qt is used as a plugin, or as an extension in a native cocoa
         // application, we should not run or stop NSApplication; This will be
         // done from the application itself. And if processEvents is called
@@ -598,49 +610,33 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
             // We cannot block the thread (and run in a tight loop).
             // Instead we will process all current pending events and return.
             d->ensureNSAppInitialized();
-            do {
-                bool releaseEvent = false;
+            if (NSModalSession session = d->currentModalSession()) {
+                if (flags & QEventLoop::WaitForMoreEvents)
+                    qt_mac_waitForMoreModalSessionEvents();
+                NSInteger status = [NSApp runModalSession:session];
+                if (status != NSRunContinuesResponse && session == d->currentModalSessionCached) {
+                    // INVARIANT: Someone called [NSApp stopModal:] from outside the event
+                    // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
+                    // 'session' as well. As a result, we need to restart all internal sessions:
+                    d->temporarilyStopAllModalSessions();
+                }
+                retVal = true;
+            } else do {
+                event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                    untilDate:nil
+                    inMode:NSDefaultRunLoopMode
+                    dequeue: YES];
 
-                if (!(flags & QEventLoop::ExcludeUserInputEvents)
-                        && !d->queuedUserInputEvents.isEmpty()) {
-                    // Process a pending user input event
-                    releaseEvent = true;
-                    event = static_cast<NSEvent *>(d->queuedUserInputEvents.takeFirst());
-                } else {
-                    if (NSModalSession session = d->currentModalSession()) {
-                        if (flags & QEventLoop::WaitForMoreEvents)
-                            qt_mac_waitForMoreModalSessionEvents();
-                        NSInteger status = [NSApp runModalSession:session];
-                        if (status != NSRunContinuesResponse && session == d->currentModalSessionCached) {
-                            // INVARIANT: Someone called [NSApp stopModal:] from outside the event
-                            // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
-                            // 'session' as well. As a result, we need to restart all internal sessions:
-                            d->temporarilyStopAllModalSessions();
-                        }
-                        retVal = true;
-                        break;
-                    } else {
-                        event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                            untilDate:nil
-                            inMode:NSDefaultRunLoopMode
-                            dequeue: YES];
-
-                        if (event != nil) {
-                            if (flags & QEventLoop::ExcludeUserInputEvents) {
-                                if (IsMouseOrKeyEvent(event)) {
-                                    [event retain];
-                                    d->queuedUserInputEvents.append(event);
-                                    continue;
-                                }
-                            }
+                if (event) {
+                    if (flags & QEventLoop::ExcludeUserInputEvents) {
+                        if (IsMouseOrKeyEvent(event)) {
+                            [event retain];
+                            d->queuedUserInputEvents.append(event);
+                            continue;
                         }
                     }
-                }
-                if (event) {
                     if (!filterEvent(event) && qt_mac_send_event(flags, event, 0))
                         retVal = true;
-                    if (releaseEvent)
-                        [event release];
                 }
             } while (!d->interrupt && event != nil);
 
