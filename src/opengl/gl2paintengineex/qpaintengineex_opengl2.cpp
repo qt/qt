@@ -91,7 +91,7 @@
 QT_BEGIN_NAMESPACE
 
 //#define QT_GL_NO_SCISSOR_TEST
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
@@ -1357,7 +1357,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->deviceHasAlpha || txtype > QTransform::TxTranslate
+        if (d->device->alphaRequested() || txtype > QTransform::TxTranslate
             || (state()->composition_mode != QPainter::CompositionMode_Source
             && state()->composition_mode != QPainter::CompositionMode_SourceOver))
         {

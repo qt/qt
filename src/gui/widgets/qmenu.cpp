@@ -117,7 +117,7 @@ public:
         if (parentWidget->parentWidget())
             parentWidget = parentWidget->parentWidget();
         setParent(parentWidget, Qt::Window | Qt::Tool);
-	setAttribute(Qt::WA_DeleteOnClose, true);
+        setAttribute(Qt::WA_DeleteOnClose, true);
         setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
         setWindowTitle(p->windowTitle());
         setEnabled(p->isEnabled());
@@ -1226,7 +1226,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     else if (action->isSeparator())
         option->menuItemType = QStyleOptionMenuItem::Separator;
     else if (d->defaultAction == action)
-	    option->menuItemType = QStyleOptionMenuItem::DefaultItem;
+        option->menuItemType = QStyleOptionMenuItem::DefaultItem;
     else
         option->menuItemType = QStyleOptionMenuItem::Normal;
     if (action->isIconVisibleInMenu())
@@ -1719,7 +1719,14 @@ bool QMenu::isEmpty() const
 void QMenu::clear()
 {
     QList<QAction*> acts = actions();
+
     for(int i = 0; i < acts.size(); i++) {
+#ifdef QT_SOFTKEYS_ENABLED
+        Q_D(QMenu);
+        // Lets not touch to our internal softkey actions
+        if(acts[i] == d->selectAction || acts[i] == d->cancelAction)
+            continue;
+#endif
         removeAction(acts[i]);
         if (acts[i]->parent() == this && acts[i]->d_func()->widgets.isEmpty())
             delete acts[i];
@@ -2406,6 +2413,13 @@ QMenu::event(QEvent *e)
         }
         return true;
 #endif
+#ifdef QT_SOFTKEYS_ENABLED
+    case QEvent::LanguageChange: {
+        d->selectAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::SelectSoftKey));
+        d->cancelAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::CancelSoftKey));
+        }
+        break;
+#endif
     default:
         break;
     }
@@ -2917,7 +2931,7 @@ void QMenu::actionEvent(QActionEvent *e)
 #endif
     if (isVisible()) {
         d->updateActionRects();
-	resize(sizeHint());
+        resize(sizeHint());
         update();
     }
 }

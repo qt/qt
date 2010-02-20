@@ -3609,6 +3609,8 @@ void QGraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
 }
 
 /*!
+    \obsolete 
+
     Draws the items \a items in the scene using \a painter, after the
     background and before the foreground are drawn. \a numItems is the number
     of items in \a items and options in \a options. \a options is a list of
@@ -3617,7 +3619,7 @@ void QGraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
 
     The default implementation calls the scene's drawItems() function.
 
-    \obsolete Since Qt 4.6, this function is not called anymore unless
+    Since Qt 4.6, this function is not called anymore unless
     the QGraphicsView::IndirectPainting flag is given as an Optimization
     flag.
 

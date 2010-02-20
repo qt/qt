@@ -404,6 +404,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     QHttpNetworkReply *reply = new QHttpNetworkReply(request.url());
     reply->setRequest(request);
     reply->d_func()->connection = q;
+    reply->d_func()->connectionChannel = &channels[0]; // will have the correct one set later
     HttpMessagePair pair = qMakePair(request, reply);
 
     switch (request.priority()) {
@@ -688,14 +689,12 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (channels[i].resendCurrent) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
-            if (channels[i].reply) {
 
-                // if this is not possible, error will be emitted and connection terminated
-                if (!channels[i].resetUploadData())
-                    continue;
+            // if this is not possible, error will be emitted and connection terminated
+            if (!channels[i].resetUploadData())
+                continue;
 
-                channels[i].sendRequest();
-            }
+            channels[i].sendRequest();
         }
     }
 
@@ -861,17 +860,6 @@ QNetworkProxy QHttpNetworkConnection::transparentProxy() const
 
 // SSL support below
 #ifndef QT_NO_OPENSSL
-QSslConfiguration QHttpNetworkConnectionPrivate::sslConfiguration(const QHttpNetworkReply &reply) const
-{
-    if (!encrypt)
-        return QSslConfiguration();
-
-    for (int i = 0; i < channelCount; ++i)
-        if (channels[i].reply == &reply)
-            return static_cast<QSslSocket *>(channels[0].socket)->sslConfiguration();
-    return QSslConfiguration(); // pending or done request
-}
-
 void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config)
 {
     Q_D(QHttpNetworkConnection);
