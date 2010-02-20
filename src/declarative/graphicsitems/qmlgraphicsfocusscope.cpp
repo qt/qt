@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass FocusScope QmlGraphicsFocusScope
+    \since 4.7
     \brief The FocusScope object explicitly creates a focus scope.
     \inherits Item
 

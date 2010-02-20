@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Text QmlGraphicsText
+  \since 4.7
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 

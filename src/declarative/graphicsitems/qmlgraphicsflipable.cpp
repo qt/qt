@@ -64,6 +64,7 @@ public:
 
 /*!
     \qmlclass Flipable QmlGraphicsFlipable
+    \since 4.7
     \brief The Flipable item provides a surface that can be flipped.
     \inherits Item
 

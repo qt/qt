@@ -109,7 +109,7 @@ private:
     Q_DISABLE_COPY(QSoundEffect)
 
     int m_loopCount;
-    int m_volume;
+    int m_vol;
     bool m_muted;
     int m_runningCount;
 
