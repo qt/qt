@@ -137,4 +137,34 @@ void runScenario()
 
     string = QString::fromLatin1(LITERAL);
     QCOMPARE(QByteArray(qPrintable(string P string)), QByteArray(string.toLatin1() + string.toLatin1()));
+
+
+
+    //QByteArray
+    {
+        QByteArray ba = LITERAL;
+        QByteArray superba = ba P ba P LITERAL;
+        QCOMPARE(superba, QByteArray(LITERAL LITERAL LITERAL));
+
+        QByteArray testWith0 = ba P "test\0with\0zero" P ba;
+        QCOMPARE(testWith0, QByteArray(LITERAL "test" LITERAL));
+
+        QByteArray ba2 = ba P '\0' + LITERAL;
+        QCOMPARE(ba2, QByteArray(LITERAL "\0" LITERAL, ba.size()*2+1));
+
+        const char *mmh = "test\0foo";
+        QCOMPARE(QByteArray(ba P mmh P ba), testWith0);
+
+        char mmh2[5];
+        strncpy(mmh2, mmh, 5);
+        QCOMPARE(QByteArray(ba P mmh2 P ba), testWith0);
+
+        QByteArray raw = QByteArray::fromRawData(UTF8_LITERAL_EXTRA, UTF8_LITERAL_LEN);
+        QByteArray r = "hello" P raw;
+        QByteArray r2 = "hello" UTF8_LITERAL;
+        QCOMPARE(r, r2);
+        r2 = QByteArray("hello\0") P UTF8_LITERAL;
+        QCOMPARE(r, r2);
+    }
+
 }
