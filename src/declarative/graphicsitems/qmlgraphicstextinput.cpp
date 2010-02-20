@@ -51,12 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,TextInput,QmlGraphicsTextInput);
-QML_DEFINE_NOCREATE_TYPE(QValidator);
-QML_DEFINE_TYPE(Qt,4,6,QIntValidator,QIntValidator);
-QML_DEFINE_TYPE(Qt,4,6,QDoubleValidator,QDoubleValidator);
-QML_DEFINE_TYPE(Qt,4,6,QRegExpValidator,QRegExpValidator);
-
 /*!
     \qmlclass TextInput QmlGraphicsTextInput
   \since 4.7
@@ -653,10 +647,12 @@ void QmlGraphicsTextInput::focusChanged(bool hasFocus)
 void QmlGraphicsTextInput::keyPressEvent(QKeyEvent* ev)
 {
     Q_D(QmlGraphicsTextInput);
-    if((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
+    if(((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()
-                && ev->key() == Qt::Key_Right)){
+                && ev->key() == Qt::Key_Right))
+            && (d->lastSelectionStart == d->lastSelectionEnd)){
         //ignore when moving off the end
+        //unless there is a selection, because then moving will do something (deselect)
         ev->ignore();
     }else{
         d->control->processKeyEvent(ev);

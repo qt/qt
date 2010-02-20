@@ -58,11 +58,11 @@
     } while (false)
 
 
-class tst_animatedimage : public QObject
+class tst_qmlgraphicsanimatedimage : public QObject
 {
     Q_OBJECT
 public:
-    tst_animatedimage() {}
+    tst_qmlgraphicsanimatedimage() {}
 
 private slots:
     void play();
@@ -75,7 +75,7 @@ private slots:
     void invalidSource();
 };
 
-void tst_animatedimage::play()
+void tst_qmlgraphicsanimatedimage::play()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickman.qml"));
@@ -86,7 +86,7 @@ void tst_animatedimage::play()
     delete anim;
 }
 
-void tst_animatedimage::pause()
+void tst_qmlgraphicsanimatedimage::pause()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanpause.qml"));
@@ -98,7 +98,7 @@ void tst_animatedimage::pause()
     delete anim;
 }
 
-void tst_animatedimage::stopped()
+void tst_qmlgraphicsanimatedimage::stopped()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanstopped.qml"));
@@ -110,7 +110,7 @@ void tst_animatedimage::stopped()
     delete anim;
 }
 
-void tst_animatedimage::setFrame()
+void tst_qmlgraphicsanimatedimage::setFrame()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanpause.qml"));
@@ -122,7 +122,7 @@ void tst_animatedimage::setFrame()
     delete anim;
 }
 
-void tst_animatedimage::frameCount()
+void tst_qmlgraphicsanimatedimage::frameCount()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/colors.qml"));
@@ -134,7 +134,7 @@ void tst_animatedimage::frameCount()
     delete anim;
 }
 
-void tst_animatedimage::remote()
+void tst_qmlgraphicsanimatedimage::remote()
 {
     QFETCH(QString, fileName);
     QFETCH(bool, paused);
@@ -159,7 +159,7 @@ void tst_animatedimage::remote()
     delete anim;
 }
 
-void tst_animatedimage::remote_data()
+void tst_qmlgraphicsanimatedimage::remote_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<bool>("paused");
@@ -168,7 +168,7 @@ void tst_animatedimage::remote_data()
     QTest::newRow("paused") << "stickmanpause.qml" << true;
 }
 
-void tst_animatedimage::invalidSource()
+void tst_qmlgraphicsanimatedimage::invalidSource()
 {
     QmlEngine engine;
     QmlComponent component(&engine);
@@ -186,6 +186,6 @@ void tst_animatedimage::invalidSource()
     QCOMPARE(anim->frameCount(), 0);
 }
 
-QTEST_MAIN(tst_animatedimage)
+QTEST_MAIN(tst_qmlgraphicsanimatedimage)
 
 #include "tst_qmlgraphicsanimatedimage.moc"

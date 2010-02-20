@@ -126,8 +126,10 @@ private:
     QString m_name;
     QString m_query;
 };
-
+QT_END_NAMESPACE
 QML_DECLARE_TYPE(QmlXmlListModelRole)
+QT_BEGIN_NAMESPACE
+
 
 class QmlXmlListModelPrivate;
 struct QmlXmlRoleList : public QmlConcreteList<QmlXmlListModelRole *>

@@ -62,6 +62,7 @@ class QmlType;
 class QUrl;
 class QScriptEngine;
 class QScriptContext;
+class QmlImageProvider;
 class QNetworkAccessManager;
 class QmlNetworkAccessManagerFactory;
 class Q_DECLARATIVE_EXPORT QmlEngine : public QObject
@@ -82,6 +83,10 @@ public:
     QmlNetworkAccessManagerFactory *networkAccessManagerFactory() const;
 
     QNetworkAccessManager *networkAccessManager() const;
+
+    void addImageProvider(const QString &id, QmlImageProvider *);
+    QmlImageProvider *imageProvider(const QString &id) const;
+    void removeImageProvider(const QString &id);
 
     void setOfflineStoragePath(const QString& dir);
     QString offlineStoragePath() const;

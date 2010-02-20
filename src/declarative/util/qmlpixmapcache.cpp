@@ -41,11 +41,13 @@
 
 #include "qmlpixmapcache_p.h"
 #include "qmlnetworkaccessmanagerfactory.h"
+#include "qmlimageprovider.h"
 
 #include "qfxperf_p_p.h"
 
 #include <qmlengine.h>
 #include <private/qmlglobal_p.h>
+#include <private/qmlengine_p.h>
 
 #include <QCoreApplication>
 #include <QImageReader>
@@ -82,7 +84,7 @@ class QmlImageReaderEvent : public QEvent
 public:
     enum ReadError { NoError, Loading, Decoding };
 
-    QmlImageReaderEvent(QmlImageReaderEvent::ReadError err, const QString &errStr, QImage &img)
+    QmlImageReaderEvent(QmlImageReaderEvent::ReadError err, const QString &errStr, const QImage &img)
         : QEvent(QEvent::User), error(err), errorString(errStr), image(img) {}
 
     ReadError error;
@@ -143,13 +145,8 @@ private slots:
 
 private:
     QNetworkAccessManager *networkAccessManager() {
-        if (!accessManager) {
-            if (engine && engine->networkAccessManagerFactory()) {
-                accessManager = engine->networkAccessManagerFactory()->create(this);
-            } else {
-                accessManager = new QNetworkAccessManager(this);
-            }
-        }
+        if (!accessManager)
+            accessManager = QmlEnginePrivate::get(engine)->createNetworkAccessManager(this);
         return accessManager;
     }
 
@@ -197,21 +194,32 @@ bool QmlImageRequestHandler::event(QEvent *event)
                 break;
             }
 
-            QmlPixmapReply *runningJob = reader->jobs.takeFirst();
+            QmlPixmapReply *runningJob = reader->jobs.takeLast();
             runningJob->addRef();
             runningJob->setLoading();
             QUrl url = runningJob->url();
             reader->mutex.unlock();
 
             // fetch
-            QNetworkRequest req(url);
-            req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-            QNetworkReply *reply = networkAccessManager()->get(req);
+            if (url.scheme() == QLatin1String("image")) {
+                QImage image = QmlEnginePrivate::get(engine)->getImageFromProvider(url);
+                QmlImageReaderEvent::ReadError errorCode = QmlImageReaderEvent::NoError;
+                QString errorStr;
+                if (image.isNull()) {
+                    errorCode = QmlImageReaderEvent::Loading;
+                    errorStr = QLatin1String("Failed to get image from provider: ") + url.toString();
+                }
+                QCoreApplication::postEvent(runningJob, new QmlImageReaderEvent(errorCode, errorStr, image));
+            } else {
+                QNetworkRequest req(url);
+                req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+                QNetworkReply *reply = networkAccessManager()->get(req);
 
-            QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
-            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+                QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
+                QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
 
-            replies.insert(reply, runningJob);
+                replies.insert(reply, runningJob);
+            }
         }
         return true;
     }
@@ -259,12 +267,12 @@ QmlImageReader::QmlImageReader(QmlEngine *eng)
 
 QmlImageReader::~QmlImageReader()
 {
-    quit();
-    wait();
     readerMutex.lock();
     readers.remove(engine);
     readerMutex.unlock();
-    delete handler;
+
+    quit();
+    wait();
 }
 
 QmlImageReader *QmlImageReader::instance(QmlEngine *engine)
@@ -327,6 +335,9 @@ void QmlImageReader::run()
     handler = new QmlImageRequestHandler(this, engine);
 
     exec();
+
+    delete handler;
+    handler = 0;
 }
 
 //===========================================================================
@@ -600,6 +611,6 @@ int QmlPixmapCache::pendingRequests()
     return qmlActivePixmapReplies()->count();
 }
 
-#include <qmlpixmapcache.moc>
-
 QT_END_NAMESPACE
+
+#include <qmlpixmapcache.moc>

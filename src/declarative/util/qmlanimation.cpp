@@ -211,11 +211,16 @@ bool QmlAbstractAnimation::isRunning() const
     return d->running;
 }
 
+//commence is called to start an animation when it is used as a
+//simple animation, and not as part of a transition
 void QmlAbstractAnimationPrivate::commence()
 {
     Q_Q(QmlAbstractAnimation);
 
-    q->prepare(userProperty.value);
+    QmlStateActions actions;
+    QmlMetaProperties properties;
+    q->transition(actions, properties, QmlAbstractAnimation::Forward);
+
     q->qtAnimation()->start();
     if (q->qtAnimation()->state() != QAbstractAnimation::Running) {
         running = false;
@@ -239,14 +244,17 @@ QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const 
 void QmlAbstractAnimation::setRunning(bool r)
 {
     Q_D(QmlAbstractAnimation);
-
-    if (r == false)
-        d->avoidPropertyValueSourceStart = true;
+    if (!d->componentComplete) {
+        d->running = r;
+        if (r == false)
+            d->avoidPropertyValueSourceStart = true;
+        return;
+    }
 
     if (d->running == r)
         return;
 
-    if (d->group) {
+    if (d->group || d->disableUserControl) {
         qWarning("QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
         return;
     }
@@ -263,10 +271,7 @@ void QmlAbstractAnimation::setRunning(bool r)
                              this, SLOT(timelineComplete()));
             d->connectedTimeLine = true;
         }
-        if (d->componentComplete)
-            d->commence();
-        else
-            d->startOnCompletion = true;
+        d->commence();
         emit started();
     } else {
         if (d->alwaysRunToEnd) {
@@ -305,7 +310,7 @@ void QmlAbstractAnimation::setPaused(bool p)
     if (d->paused == p)
         return;
 
-    if (d->group) {
+    if (d->group || d->disableUserControl) {
         qWarning("QmlAbstractAnimation: setPaused() cannot be used on non-root animation nodes");
         return;
     }
@@ -316,7 +321,7 @@ void QmlAbstractAnimation::setPaused(bool p)
     else
         qtAnimation()->resume();
 
-    emit pausedChanged(d->running);
+    emit pausedChanged(d->paused);
 }
 
 void QmlAbstractAnimation::classBegin()
@@ -328,9 +333,11 @@ void QmlAbstractAnimation::classBegin()
 void QmlAbstractAnimation::componentComplete()
 {
     Q_D(QmlAbstractAnimation);
-    if (d->startOnCompletion)
-        d->commence();
     d->componentComplete = true;
+    if (d->running) {
+        d->running = false;
+        setRunning(true);
+    }
 }
 
 /*!
@@ -535,17 +542,32 @@ void QmlAbstractAnimation::complete()
 void QmlAbstractAnimation::setTarget(const QmlMetaProperty &p)
 {
     Q_D(QmlAbstractAnimation);
-    if (d->userProperty.isNull)
-        d->userProperty = p;
+    d->defaultProperty = p;
 
     if (!d->avoidPropertyValueSourceStart)
         setRunning(true);
 }
 
-//prepare is called before an animation begins
-//(when an animation is used as a simple animation, and not as part of a transition)
-void QmlAbstractAnimation::prepare(QmlMetaProperty &)
+/*
+    we rely on setTarget only being called when used as a value source
+    so this function allows us to do the same thing as setTarget without
+    that assumption
+*/
+void QmlAbstractAnimation::setDefaultTarget(const QmlMetaProperty &p)
 {
+    Q_D(QmlAbstractAnimation);
+    d->defaultProperty = p;
+}
+
+/*
+    don't allow start/stop/pause/resume to be manually invoked,
+    because something else (like a Behavior) already has control
+    over the animation.
+*/
+void QmlAbstractAnimation::setDisableUserControl()
+{
+    Q_D(QmlAbstractAnimation);
+    d->disableUserControl = true;
 }
 
 void QmlAbstractAnimation::transition(QmlStateActions &actions,
@@ -688,7 +710,7 @@ void QmlColorAnimation::setFrom(const QColor &f)
 }
 
 /*!
-    \qmlproperty color ColorAnimation::from
+    \qmlproperty color ColorAnimation::to
     This property holds the ending color.
 */
 QColor QmlColorAnimation::to() const
@@ -824,7 +846,7 @@ QML_DEFINE_TYPE(Qt,4,6,ScriptAction,QmlScriptAction)
 
     Set \c thewebview.url to the value set for the destination state:
     \code
-    PropertyAction { matchTargets: thewebview; matchProperties: "url" }
+    PropertyAction { target: thewebview; property: "url" }
     \endcode
 
     The PropertyAction is immediate -
@@ -871,24 +893,9 @@ void QmlPropertyAction::setTarget(QObject *o)
     Q_D(QmlPropertyAction);
     if (d->target == o)
         return;
-
     d->target = o;
-    if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName, this);
-    } else {
-        d->userProperty.invalidate();
-    }
-
     emit targetChanged(d->target, d->propertyName);
 }
-
-/*!
-    \qmlproperty string PropertyAction::property
-    This property holds an explicit property to animated.
-
-    The exact effect of the \c property property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
-*/
 
 QString QmlPropertyAction::property() const
 {
@@ -901,29 +908,24 @@ void QmlPropertyAction::setProperty(const QString &n)
     Q_D(QmlPropertyAction);
     if (d->propertyName == n)
         return;
-
     d->propertyName = n;
-    if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName, this);
-    } else {
-        d->userProperty.invalidate();
-    }
-
     emit targetChanged(d->target, d->propertyName);
 }
 
 /*!
-    \qmlproperty string PropertyAction::matchProperties
-    This property holds a comma-separated list of property names this action
-    will match against. These names are used in conjunction with matchTargets
-    to create a list of properties that the action will set, assuming those
-    properties have changed.
+    \qmlproperty string PropertyAction::property
+    \qmlproperty string PropertyAction::properties
+    \qmlproperty Object PropertyAction::target
+    \qmlproperty list<Object> PropertyAction::targets
 
-    This property is typically used for an action appearing as part of a Transition.
+    These properties are used as a set to determine which properties should be
+    affected by this action.
 
-    By default, no property names will be matched.
+    The details of how these properties are interpreted in different situations
+    is covered in the \l{PropertyAnimation::properties}{corresponding} PropertyAnimation
+    documentation.
 
-    \sa matchTargets PropertyAnimation::matchProperties
+    \sa exclude
 */
 QString QmlPropertyAction::properties() const
 {
@@ -940,18 +942,6 @@ void QmlPropertyAction::setProperties(const QString &p)
     emit propertiesChanged(p);
 }
 
-/*!
-    \qmlproperty list<Object> PropertyAction::matchTargets
-    This property holds a list of objects this action will match against.
-    These objects are used in conjunction with matchProperties to create a list of properties
-    that the action will set, assuming those properties have changed.
-
-    This property is typically used for an action appearing as part of a Transition.
-
-    By default, all changing targets will be matched.
-
-    \sa exclude matchProperties PropertyAnimation::matchTargets
-*/
 QList<QObject *> *QmlPropertyAction::targets()
 {
     Q_D(QmlPropertyAction);
@@ -961,7 +951,7 @@ QList<QObject *> *QmlPropertyAction::targets()
 /*!
     \qmlproperty list<Object> PropertyAction::exclude
     This property holds the objects not to be affected by this animation.
-    \sa matchTargets
+    \sa targets
 */
 QList<QObject *> *QmlPropertyAction::exclude()
 {
@@ -989,27 +979,10 @@ void QmlPropertyAction::setValue(const QVariant &v)
     }
 }
 
-void QmlPropertyActionPrivate::doAction()
-{
-    property.write(value, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
-}
-
 QAbstractAnimation *QmlPropertyAction::qtAnimation()
 {
     Q_D(QmlPropertyAction);
     return d->spa;
-}
-
-void QmlPropertyAction::prepare(QmlMetaProperty &p)
-{
-    Q_D(QmlPropertyAction);
-
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
-
-    d->spa->setAnimAction(&d->proxy, QAbstractAnimation::KeepWhenStopped);
 }
 
 void QmlPropertyAction::transition(QmlStateActions &actions,
@@ -1034,31 +1007,42 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
+    if (!d->propertyName.isEmpty())
+        props << d->propertyName;
 
-    bool hasSelectors = !props.isEmpty() || !d->targets.isEmpty() || !d->exclude.isEmpty();
-    bool hasTarget = !d->propertyName.isEmpty() || d->target;
+    QList<QObject*> targets = d->targets;
+    if (d->target)
+        targets.append(d->target);
 
-    if (hasSelectors && hasTarget) {
-        qmlInfo(this) << tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
-        return;
+    bool hasSelectors = !props.isEmpty() || !targets.isEmpty() || !d->exclude.isEmpty();
+
+    if (d->defaultProperty.isValid() && !hasSelectors) {
+        props << d->defaultProperty.name();
+        targets << d->defaultProperty.object();
     }
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
 
     bool hasExplicit = false;
-    if (hasTarget && d->value.isValid()) {
-        QmlAction myAction;
-        myAction.property = d->createProperty(target(), d->propertyName, this);
-        if (myAction.property.isValid()) {
-            myAction.toValue = d->value;
-            data->actions << myAction;
-            hasExplicit = true;
-            for (int ii = 0; ii < actions.count(); ++ii) {
-                QmlAction &action = actions[ii];
-                if (action.property.object() == myAction.property.object() &&
-                    myAction.property.name() == action.property.name()) {
-                    modified << action.property;
-                    break;  //### any chance there could be multiples?
+    //an explicit animation has been specified
+    if (d->value.isValid()) {
+        for (int i = 0; i < props.count(); ++i) {
+            for (int j = 0; j < targets.count(); ++j) {
+                QmlAction myAction;
+                myAction.property = d->createProperty(targets.at(j), props.at(i), this);
+                if (myAction.property.isValid()) {
+                    myAction.toValue = d->value;
+                    QmlPropertyAnimationPrivate::convertVariant(myAction.toValue, myAction.property.propertyType());
+                    data->actions << myAction;
+                    hasExplicit = true;
+                    for (int ii = 0; ii < actions.count(); ++ii) {
+                        QmlAction &action = actions[ii];
+                        if (action.property.object() == myAction.property.object() &&
+                            myAction.property.name() == action.property.name()) {
+                            modified << action.property;
+                            break;  //### any chance there could be multiples?
+                        }
+                    }
                 }
             }
         }
@@ -1074,31 +1058,18 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
         QString sPropertyName = action.specifiedProperty;
         bool same = (obj == sObj);
 
-        if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
+        if ((targets.isEmpty() || targets.contains(obj) || (!same && targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName)))) {
             QmlAction myAction = action;
 
             if (d->value.isValid())
                 myAction.toValue = d->value;
+            QmlPropertyAnimationPrivate::convertVariant(myAction.toValue, myAction.property.propertyType());
 
             modified << action.property;
             data->actions << myAction;
             action.fromValue = myAction.toValue;
-        } else if (d->userProperty.isValid() &&
-            !hasSelectors && !hasTarget) {
-            if ((d->userProperty.value.object() == obj || (!same && d->userProperty.value.object() == sObj)) &&
-               (d->userProperty.value.name() == propertyName || (!same && d->userProperty.value.name() == sPropertyName))) {
-                //### same as above. merge
-                QmlAction myAction = action;
-
-                if (d->value.isValid())
-                    myAction.toValue = d->value;
-
-                modified << action.property;
-                data->actions << myAction;
-                action.fromValue = myAction.toValue;
-            }
         }
     }
 
@@ -1167,24 +1138,7 @@ void QmlParentActionPrivate::init()
 /*!
     \qmlproperty Item ParentAction::target
 
-    This property holds an explicit target item to reparent.
- */
-QmlGraphicsItem *QmlParentAction::object() const
-{
-    Q_D(const QmlParentAction);
-    return d->pcTarget;
-}
-
-void QmlParentAction::setObject(QmlGraphicsItem *target)
-{
-    Q_D(QmlParentAction);
-    d->pcTarget = target;
-}
-
-/*!
-    \qmlproperty Item ParentAction::matchTarget
-    This property holds the item this action will match against -- the item
-    that the action will reparent, assuming its parent has changed.
+    This property holds a target item to reparent.
 
     In the following example, \c myItem will be reparented by the ParentAction, while
     \c myOtherItem will not.
@@ -1202,24 +1156,23 @@ void QmlParentAction::setObject(QmlGraphicsItem *target)
     Transition {
         SequentialAnimation {
             PropertyAnimation { ... }
-            ParentAction { matchTargets: myItem }
+            ParentAction { target: myItem }
             PropertyAnimation { ... }
         }
     }
     \endqml
 
-    This property is typically used for an action appearing as part of a Transition.
  */
-QmlGraphicsItem *QmlParentAction::matchTarget() const
+QmlGraphicsItem *QmlParentAction::object() const
 {
     Q_D(const QmlParentAction);
     return d->pcTarget;
 }
 
-void QmlParentAction::setMatchTarget(QmlGraphicsItem *target)
+void QmlParentAction::setObject(QmlGraphicsItem *target)
 {
     Q_D(QmlParentAction);
-    d->pcMatchTarget = target;
+    d->pcTarget = target;
 }
 
 /*!
@@ -1283,17 +1236,27 @@ void QmlParentAction::transition(QmlStateActions &actions,
 
     QmlParentActionData *data = new QmlParentActionData;
 
-    if (d->pcTarget && d->pcMatchTarget) {
-        qmlInfo(this) << tr("matchTarget and target are mutually exclusive.");
-        return;
+    //### need to correctly handle modified/done
+
+    bool hasExplicit = false;
+    if (d->pcTarget && d->pcParent) {
+        data->reverse = false;
+        QmlAction myAction;
+        QmlParentChange *pc = new QmlParentChange;
+        pc->setObject(d->pcTarget);
+        pc->setParent(d->pcParent);
+        myAction.event = pc;
+        data->pc = pc;
+        data->actions << myAction;
+        hasExplicit = true;
     }
 
+    if (!hasExplicit)
     for (int ii = 0; ii < actions.count(); ++ii) {
         QmlAction &action = actions[ii];
 
         if (action.event && action.event->typeName() == QLatin1String("ParentChange")
-            && !d->pcTarget
-            && (!d->pcMatchTarget || static_cast<QmlParentChange*>(action.event)->object() == d->pcMatchTarget)) {
+            && (!d->pcTarget || static_cast<QmlParentChange*>(action.event)->object() == d->pcTarget)) {
             QmlAction myAction = action;
             data->reverse = action.reverseEvent;
             //### this logic differs from PropertyAnimation
@@ -1314,17 +1277,6 @@ void QmlParentAction::transition(QmlStateActions &actions,
         }
     }
 
-    if (d->pcTarget && d->pcParent) {
-        data->reverse = false;
-        QmlAction myAction;
-        QmlParentChange *pc = new QmlParentChange;
-        pc->setObject(d->pcTarget);
-        pc->setParent(d->pcParent);
-        myAction.event = pc;
-        data->pc = pc;
-        data->actions << myAction;
-    }
-
     if (data->actions.count()) {
         d->cpa->setAnimAction(data, QAbstractAnimation::DeleteWhenStopped);
     } else {
@@ -1343,7 +1295,7 @@ QML_DEFINE_TYPE(Qt,4,6,ParentAction,QmlParentAction)
     Animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
     \code
-    NumberAnimation { matchProperties: "x,y,scale"; duration: 200 }
+    NumberAnimation { properties: "x,y,scale"; duration: 200 }
     \endcode
 */
 
@@ -1383,7 +1335,7 @@ void QmlNumberAnimation::setFrom(qreal f)
 /*!
     \qmlproperty real NumberAnimation::to
     This property holds the ending value.
-    If not set, then the value defined in the end state of the transition.
+    If not set, then the value defined in the end state of the transition or Behavior.
 */
 qreal QmlNumberAnimation::to() const
 {
@@ -1442,7 +1394,7 @@ void QmlVector3dAnimation::setFrom(QVector3D f)
 /*!
     \qmlproperty real Vector3dAnimation::to
     This property holds the ending value.
-    If not set, then the value defined in the end state of the transition.
+    If not set, then the value defined in the end state of the transition or Behavior.
 */
 QVector3D QmlVector3dAnimation::to() const
 {
@@ -1456,6 +1408,177 @@ void QmlVector3dAnimation::setTo(QVector3D t)
 }
 
 QML_DEFINE_TYPE(Qt,4,6,Vector3dAnimation,QmlVector3dAnimation)
+
+/*!
+    \qmlclass RotationAnimation QmlRotationAnimation
+    \inherits PropertyAnimation
+    \brief The RotationAnimation element allows you to animate rotations.
+
+    RotationAnimation is a specialized PropertyAnimation that gives control
+    over the direction of rotation.
+
+    The RotationAnimation in the following example ensures that we always take
+    the shortest rotation path when switching between our states.
+    \qml
+    states: {
+        State { name: "180"; PropertyChanges { target: myItem; rotation: 180 } }
+        State { name: "-180"; PropertyChanges { target: myItem; rotation: -180 } }
+        State { name: "180"; PropertyChanges { target: myItem; rotation: 270 } }
+    }
+    transition: Transition {
+        RotationAnimation { direction: RotationAnimation.Shortest }
+    }
+    \endqml
+
+    By default, when used in a transition RotationAnimation will rotate all
+    properties named "rotation" or "angle". You can override this by providing
+    your own properties via \c properties or \c property.
+*/
+
+/*!
+    \internal
+    \class QmlRotationAnimation
+*/
+
+QVariant _q_interpolateShortestRotation(qreal &f, qreal &t, qreal progress)
+{
+    qreal newt = t;
+    qreal diff = t-f;
+    while(diff > 180.0){
+        newt -= 360.0;
+        diff -= 360.0;
+    }
+    while(diff < -180.0){
+        newt += 360.0;
+        diff += 360.0;
+    }
+    return QVariant(f + (newt - f) * progress);
+}
+
+QVariant _q_interpolateClockwiseRotation(qreal &f, qreal &t, qreal progress)
+{
+    qreal newt = t;
+    qreal diff = t-f;
+    while(diff < 0.0){
+        newt += 360.0;
+        diff += 360.0;
+    }
+    return QVariant(f + (newt - f) * progress);
+}
+
+QVariant _q_interpolateCounterclockwiseRotation(qreal &f, qreal &t, qreal progress)
+{
+    qreal newt = t;
+    qreal diff = t-f;
+    while(diff > 0.0){
+        newt -= 360.0;
+        diff -= 360.0;
+    }
+    return QVariant(f + (newt - f) * progress);
+}
+
+QmlRotationAnimation::QmlRotationAnimation(QObject *parent)
+: QmlPropertyAnimation(*(new QmlRotationAnimationPrivate), parent)
+{
+    Q_D(QmlRotationAnimation);
+    d->interpolatorType = QMetaType::QReal;
+    d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateShortestRotation);
+    d->defaultProperties = QLatin1String("rotation,angle");
+}
+
+QmlRotationAnimation::~QmlRotationAnimation()
+{
+}
+
+/*!
+    \qmlproperty real RotationAnimation::from
+    This property holds the starting value.
+    If not set, then the value defined in the start state of the transition.
+*/
+qreal QmlRotationAnimation::from() const
+{
+    Q_D(const QmlRotationAnimation);
+    return d->from.toReal();
+}
+
+void QmlRotationAnimation::setFrom(qreal f)
+{
+    QmlPropertyAnimation::setFrom(f);
+}
+
+/*!
+    \qmlproperty real RotationAnimation::to
+    This property holds the ending value.
+    If not set, then the value defined in the end state of the transition or Behavior.
+*/
+qreal QmlRotationAnimation::to() const
+{
+    Q_D(const QmlRotationAnimation);
+    return d->to.toReal();
+}
+
+void QmlRotationAnimation::setTo(qreal t)
+{
+    QmlPropertyAnimation::setTo(t);
+}
+
+/*!
+    \qmlproperty enum RotationAnimation::direction
+    The direction in which to rotate.
+    Possible values are Numerical, Clockwise, Counterclockwise,
+    or Shortest.
+
+    \list
+    \row
+        \o Numerical
+        \o Rotate by linearly interpolating between the two numbers.
+           A rotation from 10 to 350 will rotate 340 degrees clockwise.
+    \row
+        \o Clockwise
+        \o Rotate clockwise between the two values
+    \row
+        \o Counterclockwise
+        \o Rotate counterclockwise between the two values
+    \row
+        \o Shortest
+        \o Rotate in the direction that produces the shortest animation path.
+           A rotation from 10 to 350 will rotate 20 degrees counterclockwise.
+    \list
+
+    The default direction is Shortest.
+*/
+QmlRotationAnimation::RotationDirection QmlRotationAnimation::direction() const
+{
+    Q_D(const QmlRotationAnimation);
+    return d->direction;
+}
+
+void QmlRotationAnimation::setDirection(QmlRotationAnimation::RotationDirection direction)
+{
+    Q_D(QmlRotationAnimation);
+    if (d->direction == direction)
+        return;
+
+    d->direction = direction;
+    switch(d->direction) {
+    case Clockwise:
+        d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateClockwiseRotation);
+        break;
+    case Counterclockwise:
+        d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateCounterclockwiseRotation);
+        break;
+    case Shortest:
+        d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&_q_interpolateShortestRotation);
+        break;
+    default:
+        d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
+        break;
+    }
+
+    emit directionChanged();
+}
+
+QML_DEFINE_TYPE(Qt,4,6,RotationAnimation,QmlRotationAnimation)
 
 QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 : QmlAbstractAnimation(*(new QmlAnimationGroupPrivate), parent)
@@ -1504,18 +1627,6 @@ QmlSequentialAnimation::~QmlSequentialAnimation()
 {
 }
 
-void QmlSequentialAnimation::prepare(QmlMetaProperty &p)
-{
-    Q_D(QmlAnimationGroup);
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
-
-    for (int i = 0; i < d->animations.size(); ++i)
-        d->animations.at(i)->prepare(d->property);
-}
-
 QAbstractAnimation *QmlSequentialAnimation::qtAnimation()
 {
     Q_D(QmlAnimationGroup);
@@ -1535,13 +1646,10 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
         from = d->animations.count() - 1;
     }
 
-    //needed for Behavior
-    if (d->userProperty.isValid()) {
-        for (int i = 0; i < d->animations.count(); ++i)
-            d->animations.at(i)->setTarget(d->userProperty);
-    }
-
+    bool valid = d->defaultProperty.isValid();
     for (int ii = from; ii < d->animations.count() && ii >= 0; ii += inc) {
+        if (valid)
+            d->animations.at(ii)->setDefaultTarget(d->defaultProperty);
         d->animations.at(ii)->transition(actions, modified, direction);
     }
 }
@@ -1584,18 +1692,6 @@ QmlParallelAnimation::~QmlParallelAnimation()
 {
 }
 
-void QmlParallelAnimation::prepare(QmlMetaProperty &p)
-{
-    Q_D(QmlAnimationGroup);
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
-
-    for (int i = 0; i < d->animations.size(); ++i)
-        d->animations.at(i)->prepare(d->property);
-}
-
 QAbstractAnimation *QmlParallelAnimation::qtAnimation()
 {
     Q_D(QmlAnimationGroup);
@@ -1607,14 +1703,10 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
                                       TransitionDirection direction)
 {
     Q_D(QmlAnimationGroup);
-
-    //needed for Behavior
-    if (d->userProperty.isValid()) {
-        for (int i = 0; i < d->animations.count(); ++i)
-            d->animations.at(i)->setTarget(d->userProperty);
-    }
-
+    bool valid = d->defaultProperty.isValid();
     for (int ii = 0; ii < d->animations.count(); ++ii) {
+        if (valid)
+            d->animations.at(ii)->setDefaultTarget(d->defaultProperty);
         d->animations.at(ii)->transition(actions, modified, direction);
     }
 }
@@ -1679,16 +1771,67 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
     \inherits Animation
     \brief The PropertyAnimation element allows you to animate property changes.
 
-    Animate theObject's size property over 200ms, from its current size to 20-by-20:
-    \code
-    PropertyAnimation { target: theObject; property: "size"; to: "20x20"; duration: 200 }
-    \endcode
+    PropertyAnimation provides a way to animate changes to a property's value. It can
+    be used in many different situations:
+    \list
+    \o In a Transition
 
-    For an introduction to animation in QML, see \l{QML Animation}.
+    Animate any objects that have changed their x or y properties in the target state using
+    an InOutQuad easing curve:
+    \qml
+    Transition { PropertyAnimation { properties: "x,y"; easing: "InOutQuad" } }
+    \endqml
+    \o In a Behavior
+
+    Animate all changes to a rectangle's x property.
+    \qml
+    Rectangle {
+        x: Behavior { PropertyAnimation {} }
+    }
+    \endqml
+    \o As a property value source
+
+    Repeatedly animate the rectangle's x property.
+    \qml
+    Rectangle {
+        x: SequentialAnimation {
+            repeat: true
+            PropertyAnimation { to: 50 }
+            PropertyAnimation { to: 0 }
+        }
+    }
+    \endqml
+    \o In a signal handler
+
+    Fade out \c theObject when clicked:
+    \qml
+    MouseRegion {
+        anchors.fill: theObject
+        onClicked: PropertyAnimation { target: theObject; property: "opacity"; to: 0 }
+    }
+    \endqml
+    \o Standalone
+
+    Animate \c theObject's size property over 200ms, from its current size to 20-by-20:
+    \qml
+    PropertyAnimation { target: theObject; property: "size"; to: "20x20"; duration: 200 }
+    \endqml
+    \endlist
+
+    Depending on how the animation is used, the set of properties normally used will be
+    different. For more information see the individual property documentation, as well
+    as the \l{QML Animation} introduction.
 */
 
 QmlPropertyAnimation::QmlPropertyAnimation(QObject *parent)
 : QmlAbstractAnimation(*(new QmlPropertyAnimationPrivate), parent)
+{
+    Q_D(QmlPropertyAnimation);
+    d->init();
+}
+
+QmlPropertyAnimation::QmlPropertyAnimation(QmlPropertyAnimationPrivate &dd, QObject *parent)
+: QmlAbstractAnimation(dd, parent)
 {
     Q_D(QmlPropertyAnimation);
     d->init();
@@ -1755,7 +1898,7 @@ void QmlPropertyAnimation::setFrom(const QVariant &f)
 /*!
     \qmlproperty real PropertyAnimation::to
     This property holds the ending value.
-    If not set, then the value defined in the end state of the transition.
+    If not set, then the value defined in the end state of the transition or Behavior.
 */
 QVariant QmlPropertyAnimation::to() const
 {
@@ -1966,16 +2109,6 @@ void QmlPropertyAnimation::setEasing(const QString &e)
     emit easingChanged(e);
 }
 
-/*!
-    \qmlproperty Object PropertyAnimation::target
-    This property holds an explicit target object to animate.
-
-    target is used in conjunction with property to determine
-    what property should be animated.
-
-    \sa property matchTargets
-*/
-
 QObject *QmlPropertyAnimation::target() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1987,26 +2120,9 @@ void QmlPropertyAnimation::setTarget(QObject *o)
     Q_D(QmlPropertyAnimation);
     if (d->target == o)
         return;
-
     d->target = o;
-    if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName, this);
-    } else {
-        d->userProperty.invalidate();
-    }
-
     emit targetChanged(d->target, d->propertyName);
 }
-
-/*!
-    \qmlproperty string PropertyAnimation::property
-    This property holds an explicit property name to animate.
-
-    property is used in conjunction with target to determine
-    what property should be animated.
-
-    \sa target matchProperties
-*/
 
 QString QmlPropertyAnimation::property() const
 {
@@ -2019,46 +2135,10 @@ void QmlPropertyAnimation::setProperty(const QString &n)
     Q_D(QmlPropertyAnimation);
     if (d->propertyName == n)
         return;
-
     d->propertyName = n;
-    if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName, this);
-    } else {
-        d->userProperty.invalidate();
-    }
-
     emit targetChanged(d->target, d->propertyName);
 }
 
-/*!
-    \qmlproperty string PropertyAnimation::matchProperties
-    This property holds a comma-separated list of property names this animation
-    will match against. These names are used in conjunction with matchTargets
-    to create a list of properties that the animation will animate, assuming those
-    properties have changed.
-
-    In the following example, the change in 'x' will be animated by the transition, while
-    the change in 'y' will not.
-    \qml
-    State {
-        PropertyChanges {
-            target: myItem
-            x: 15; y: 15
-        }
-    }
-    Transition {
-        PropertyAnimation {
-            matchProperties: "x"
-        }
-    }
-    \endqml
-
-    This property is typically used for an animation appearing as part of a Transition.
-
-    By default, no property names will be matched.
-
-    \sa matchTargets PropertyAction::matchTargets
-*/
 QString QmlPropertyAnimation::properties() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -2076,37 +2156,86 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
 }
 
 /*!
-    \qmlproperty list<Object> PropertyAnimation::matchTargets
-    This property holds a list of objects this animation will match against.
-    These objects are used in conjunction with matchProperties to create a list of properties
-    that the animation will animate, assuming those properties have changed.
+    \qmlproperty string PropertyAnimation::property
+    \qmlproperty string PropertyAnimation::properties
+    \qmlproperty Object PropertyAnimation::target
+    \qmlproperty list<Object> PropertyAnimation::targets
 
-    In the following example, the changes to \c myItem will be animated by the transition, while
-    the changes to \c myOtherItem will not.
+    These properties are used as a set to determine which properties should be animated.
+    The singular and plural forms are functionally identical, e.g.
     \qml
-    State {
-        PropertyChanges {
-            target: myItem
-            x: 15; y: 15
-        }
-        PropertyChanges {
-            target: myOtherItem
-            x: 30; y: 30
-        }
-    }
-    Transition {
-        PropertyAnimation {
-            matchTargets: myItem
-            matchProperties: "x,y"
-        }
-    }
+    NumberAnimation { target: theItem; property: "x"; to: 500 }
     \endqml
+    has the same meaning as
+    \qml
+    NumberAnimation { targets: theItem; properties: "x"; to: 500 }
+    \endqml
+    The singular forms are slightly optimized, so if you do have only a single target/property
+    to animate you should try to use them.
 
-    This property is typically used for an animation appearing as part of a Transition.
+    In many cases these properties do not need to be explicitly specified -- they can be
+    inferred from the animation framework.
+    \table 80%
+    \row
+    \o Value Source / Behavior
+    \o When an animation is used as a value source or in a Behavior, the default target and property
+       name to be animated can both be inferred.
+       \qml
+       Rectangle {
+           id: theRect
+           width: 100; height: 100
+           color: Qt.rgba(0,0,1)
+           x: NumberAnimation { to: 500; repeat: true } //animate theRect's x property
+           y: Behavior { NumberAnimation {} } //animate theRect's y property
+       }
+       \endqml
+    \row
+    \o Transition
+    \o When used in a transition, a property animation is assumed to match \e all targets
+       but \e no properties. In practice, that means you need to specify at least the properties
+       in order for the animation to do anything.
+       \qml
+       Rectangle {
+           id: theRect
+           width: 100; height: 100
+           color: Qt.rgba(0,0,1)
+           Item { id: uselessItem }
+           states: State {
+               name: "state1"
+               PropertyChanges { target: theRect; x: 200; y: 200; z: 4 }
+               PropertyChanges { target: uselessItem; x: 10; y: 10; z: 2 }
+           }
+           transitions: Transition {
+               //animate both theRect's and uselessItem's x and y to their final values
+               NumberAnimation { properties: "x,y" }
 
-    By default, all changing targets will be matched.
-    
-    \sa exclude matchProperties
+               //animate theRect's z to its final value
+               NumberAnimation { target: theRect; property: "z" }
+           }
+       }
+       \endqml
+    \row
+    \o Standalone
+    \o When an animation is used standalone, both the target and property need to be
+       explicitly specified.
+       \qml
+       Rectangle {
+           id: theRect
+           width: 100; height: 100
+           color: Qt.rgba(0,0,1)
+           //need to explicitly specify target and property
+           NumberAnimation { id: theAnim; target: theRect; property: "x" to: 500 }
+           MouseRegion {
+               anchors.fill: parent
+               onClicked: theAnim.start()
+           }
+       }
+       \endqml
+    \endtable
+
+    As seen in the above example, properties is specified as a comma-separated string of property names to animate.
+
+    \sa exclude
 */
 QList<QObject *> *QmlPropertyAnimation::targets()
 {
@@ -2117,31 +2246,12 @@ QList<QObject *> *QmlPropertyAnimation::targets()
 /*!
     \qmlproperty list<Object> PropertyAnimation::exclude
     This property holds the items not to be affected by this animation.
-    \sa matchTargets
+    \sa targets
 */
 QList<QObject *> *QmlPropertyAnimation::exclude()
 {
     Q_D(QmlPropertyAnimation);
     return &d->exclude;
-}
-
-void QmlPropertyAnimationPrivate::valueChanged(qreal r)
-{
-    if (!fromSourced) {
-        if (!fromIsDefined) {
-            from = property.read();
-            convertVariant(from, interpolatorType ? interpolatorType : property.propertyType());
-            //### check for invalid variant if using property type
-        }
-        fromSourced = true;
-    }
-
-    if (r == 1.) {
-        property.write(to, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
-    } else {
-        if (interpolator)
-            property.write(interpolator(from.constData(), to.constData(), r), QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
-    }
 }
 
 QAbstractAnimation *QmlPropertyAnimation::qtAnimation()
@@ -2150,127 +2260,113 @@ QAbstractAnimation *QmlPropertyAnimation::qtAnimation()
     return d->va;
 }
 
-void QmlPropertyAnimation::prepare(QmlMetaProperty &p)
+struct PropertyUpdater : public QmlTimeLineValue
 {
-    Q_D(QmlPropertyAnimation);
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
+    QmlStateActions actions;
+    int interpolatorType;       //for Number/ColorAnimation
+    int prevInterpolatorType;   //for generic
+    QVariantAnimation::Interpolator interpolator;
+    bool reverse;
+    bool fromSourced;
+    bool fromDefined;
+    bool *wasDeleted;
+    PropertyUpdater() : wasDeleted(0) {}
+    ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
+    void setValue(qreal v)
+    {
+        bool deleted = false;
+        wasDeleted = &deleted;
+        if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
+            v = 1 - v;
+        QmlTimeLineValue::setValue(v);
+        for (int ii = 0; ii < actions.count(); ++ii) {
+            QmlAction &action = actions[ii];
 
-    if (!d->rangeIsSet) {
-        d->va->setStartValue(qreal(0));
-        d->va->setEndValue(qreal(1));
-        d->rangeIsSet = true;
+            if (v == 1.)
+                action.property.write(action.toValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
+            else {
+                if (!fromSourced && !fromDefined) {
+                    action.fromValue = action.property.read();
+                    if (interpolatorType)
+                        QmlPropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
+                }
+                if (!interpolatorType) {
+                    int propType = action.property.propertyType();
+                    if (!prevInterpolatorType || prevInterpolatorType != propType) {
+                        prevInterpolatorType = propType;
+                        interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
+                    }
+                }
+                if (interpolator)
+                    action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v), QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
+            }
+            if (deleted)
+                return;
+        }
+        wasDeleted = 0;
+        fromSourced = true;
     }
-
-    int propType = d->property.propertyType();
-    d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : propType);
-    if (d->fromIsDefined)
-        d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : propType);
-
-    if (!d->interpolatorType) {
-        //### check for invalid variants
-        d->interpolator = QVariantAnimationPrivate::getInterpolator(propType);
-    }
-
-    d->fromSourced = false;
-    d->value.QmlTimeLineValue::setValue(0.);
-    d->va->setAnimValue(&d->value, QAbstractAnimation::KeepWhenStopped);
-    d->va->setFromSourcedValue(&d->fromSourced);
-}
+};
 
 void QmlPropertyAnimation::transition(QmlStateActions &actions,
                                      QmlMetaProperties &modified,
                                      TransitionDirection direction)
 {
     Q_D(QmlPropertyAnimation);
-    Q_UNUSED(direction);
-
-    struct PropertyUpdater : public QmlTimeLineValue
-    {
-        QmlStateActions actions;
-        int interpolatorType;       //for Number/ColorAnimation
-        int prevInterpolatorType;   //for generic
-        QVariantAnimation::Interpolator interpolator;
-        bool reverse;
-        bool *wasDeleted;
-        PropertyUpdater() : wasDeleted(0) {}
-        ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
-        void setValue(qreal v)
-        {
-            bool deleted = false;
-            wasDeleted = &deleted;
-            if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
-                v = 1 - v;
-            QmlTimeLineValue::setValue(v);
-            for (int ii = 0; ii < actions.count(); ++ii) {
-                QmlAction &action = actions[ii];
-
-                if (v == 1.)
-                    action.property.write(action.toValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
-                else {
-                    if (action.fromValue.isNull()) {
-                        action.fromValue = action.property.read();
-                        if (interpolatorType)
-                            QmlPropertyAnimationPrivate::convertVariant(action.fromValue, interpolatorType);
-                    }
-                    if (!interpolatorType) {
-                        int propType = action.property.propertyType();
-                        if (!prevInterpolatorType || prevInterpolatorType != propType) {
-                            prevInterpolatorType = propType;
-                            interpolator = QVariantAnimationPrivate::getInterpolator(prevInterpolatorType);
-                        }
-                    }
-                    if (interpolator)
-                        action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v), QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
-                }
-                if (deleted)
-                    return;
-            }
-            wasDeleted = 0;
-        }
-    };
 
     QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
+    if (!d->propertyName.isEmpty())
+        props << d->propertyName;
 
-    bool hasSelectors = !props.isEmpty() || !d->targets.isEmpty() || !d->exclude.isEmpty();
-    bool hasTarget = !d->propertyName.isEmpty() || d->target;
+    QList<QObject*> targets = d->targets;
+    if (d->target)
+        targets.append(d->target);
 
-    if (hasSelectors && hasTarget) {
-        qmlInfo(this) << tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
-        return;
+    bool hasSelectors = !props.isEmpty() || !targets.isEmpty() || !d->exclude.isEmpty();
+    bool useType = (props.isEmpty() && d->defaultToInterpolatorType) ? true : false;
+
+    if (d->defaultProperty.isValid() && !hasSelectors) {
+        props << d->defaultProperty.name();
+        targets << d->defaultProperty.object();
     }
 
-    bool useType = (props.isEmpty() && d->propertyName.isEmpty() && d->defaultToInterpolatorType) ? true : false;
+    if (props.isEmpty() && !d->defaultProperties.isEmpty()) {
+        props << d->defaultProperties.split(QLatin1Char(','));
+    }
 
     PropertyUpdater *data = new PropertyUpdater;
     data->interpolatorType = d->interpolatorType;
     data->interpolator = d->interpolator;
     data->reverse = direction == Backward ? true : false;
+    data->fromSourced = false;
+    data->fromDefined = d->fromIsDefined;
 
     bool hasExplicit = false;
     //an explicit animation has been specified
-    if (hasTarget && d->toIsDefined) {
-        QmlAction myAction;
-        myAction.property = d->createProperty(target(), d->propertyName, this);
-        if (myAction.property.isValid()) {
-            if (d->fromIsDefined) {
-                d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
-                myAction.fromValue = d->from;
-            }
-            d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
-            myAction.toValue = d->to;
-            data->actions << myAction;
-            hasExplicit = true;
-            for (int ii = 0; ii < actions.count(); ++ii) {
-                QmlAction &action = actions[ii];
-                if (action.property.object() == myAction.property.object() &&
-                    myAction.property.name() == action.property.name()) {
-                    modified << action.property;
-                    break;  //### any chance there could be multiples?
+    if (d->toIsDefined) {
+        for (int i = 0; i < props.count(); ++i) {
+            for (int j = 0; j < targets.count(); ++j) {
+                QmlAction myAction;
+                myAction.property = d->createProperty(targets.at(j), props.at(i), this);
+                if (myAction.property.isValid()) {
+                    if (d->fromIsDefined) {
+                        myAction.fromValue = d->from;
+                        d->convertVariant(myAction.fromValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+                    }
+                    myAction.toValue = d->to;
+                    d->convertVariant(myAction.toValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+                    data->actions << myAction;
+                    hasExplicit = true;
+                    for (int ii = 0; ii < actions.count(); ++ii) {
+                        QmlAction &action = actions[ii];
+                        if (action.property.object() == myAction.property.object() &&
+                            myAction.property.name() == action.property.name()) {
+                            modified << action.property;
+                            break;  //### any chance there could be multiples?
+                        }
+                    }
                 }
             }
         }
@@ -2286,7 +2382,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         QString sPropertyName = action.specifiedProperty;
         bool same = (obj == sObj);
 
-        if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
+        if ((targets.isEmpty() || targets.contains(obj) || (!same && targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName))
                || (useType && action.property.propertyType() == d->interpolatorType))) {
@@ -2306,29 +2402,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
             data->actions << myAction;
             action.fromValue = myAction.toValue;
-        } else if (d->userProperty.isValid() &&
-                   !hasSelectors && !hasTarget) {
-           if ((d->userProperty.value.object() == obj || (!same && d->userProperty.value.object() == sObj)) &&
-              (d->userProperty.value.name() == propertyName || (!same && d->userProperty.value.name() == sPropertyName))) {
-               //### same as above. merge
-               QmlAction myAction = action;
-
-               if (d->fromIsDefined)
-                   myAction.fromValue = d->from;
-               else
-                   myAction.fromValue = QVariant();
-               if (d->toIsDefined)
-                   myAction.toValue = d->to;
-
-               d->convertVariant(myAction.fromValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
-               d->convertVariant(myAction.toValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
-
-               modified << action.property;
-
-               data->actions << myAction;
-               action.fromValue = myAction.toValue;
-           }
-       }
+        }
     }
 
     if (data->actions.count()) {
@@ -2338,6 +2412,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             d->rangeIsSet = true;
         }
         d->va->setAnimValue(data, QAbstractAnimation::DeleteWhenStopped);
+        d->va->setFromSourcedValue(&data->fromSourced);
     } else {
         delete data;
     }

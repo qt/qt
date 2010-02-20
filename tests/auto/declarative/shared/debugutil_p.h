@@ -51,6 +51,15 @@
 #include <private/qmldebugservice_p.h>
 #include <private/qmlgraphicsitem_p.h>
 
+class QmlTestFactory;
+
+class QmlDebugTest
+{
+public:
+    static bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
+
+    static int runTests(QmlTestFactory *factory, const QList<QByteArray> &qml = QList<QByteArray>());
+};
 
 class QmlDebugTestData : public QObject
 {
@@ -68,8 +77,14 @@ public:
 
     QList<QmlGraphicsItem *> items;
 
+signals:
+    void engineCreated();
+
 public slots:
     void testsFinished(int code);
+
+private:
+    friend class QmlDebugTest;
 };
 
 
@@ -81,14 +96,6 @@ public:
 
     virtual QObject *createTest(QmlDebugTestData *data) = 0;
 };
-
-
-namespace QmlDebugTest {
-
-    bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
-
-    int runTests(QmlTestFactory *factory, const QList<QByteArray> &qml = QList<QByteArray>());
-}
 
 class QmlDebugTestService : public QmlDebugService
 {
@@ -131,8 +138,6 @@ public:
     tst_QmlDebug_Thread(QmlDebugTestData *data, QmlTestFactory *factory);
 
     void run();
-
-    bool m_ready;
 
 signals:
     void testsFinished(int);

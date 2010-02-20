@@ -71,7 +71,7 @@ Rectangle {
             }
 
             transitions: Transition {
-                NumberAnimation { matchProperties: "rotation,scale"; duration: 200 }
+                NumberAnimation { properties: "rotation,scale"; duration: 200 }
             }
         }
     }

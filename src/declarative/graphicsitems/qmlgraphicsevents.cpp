@@ -190,7 +190,4 @@ MouseRegion {
     \endqml
 */
 
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsKeyEvent)
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsMouseEvent)
-
 QT_END_NAMESPACE

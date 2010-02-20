@@ -42,7 +42,7 @@ Item {
     ]
     transitions: [
         Transition {
-            NumberAnimation { matchProperties: "x,width"; duration: 500; easing: "easeInOutQuad" }
+            NumberAnimation { properties: "x,width"; duration: 500; easing: "easeInOutQuad" }
         }
     ]
 

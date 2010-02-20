@@ -55,8 +55,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsRepeater : public QmlGraphicsItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_CLASSINFO("DefaultProperty", "delegate")
 
@@ -73,8 +73,9 @@ public:
     int count() const;
 
 Q_SIGNALS:
+    void modelChanged();
+    void delegateChanged();
     void countChanged();
-
 private:
     void clear();
     void regenerate();

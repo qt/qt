@@ -288,7 +288,6 @@ void QmlGraphicsBasePositioner::finishApplyTransitions()
     d->moveActions.clear();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Column,QmlGraphicsColumn)
 /*!
   \qmlclass Column QmlGraphicsColumn
     \since 4.7
@@ -372,7 +371,7 @@ Column {
 Column {
     move: Transition {
         NumberAnimation {
-            matchProperties: "y"
+            properties: "y"
             ease: "easeOutBounce"
         }
     }
@@ -428,7 +427,6 @@ void QmlGraphicsColumn::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Row,QmlGraphicsRow)
 /*!
   \qmlclass Row QmlGraphicsRow
   \since 4.7
@@ -489,7 +487,7 @@ Row {
     id: positioner
     move: Transition {
         NumberAnimation {
-            matchProperties: "x"
+            properties: "x"
             ease: "easeOutBounce"
         }
     }
@@ -540,7 +538,6 @@ void QmlGraphicsRow::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Grid,QmlGraphicsGrid)
 
 /*!
   \qmlclass Grid QmlGraphicsGrid
@@ -613,7 +610,7 @@ Grid {
 Grid {
     move: Transition {
         NumberAnimation {
-            matchProperties: "x,y"
+            properties: "x,y"
             ease: "easeOutBounce"
         }
     }
@@ -729,7 +726,6 @@ void QmlGraphicsGrid::doPositioning()
 }
 
 
-QML_DEFINE_TYPE(Qt,4,6,Flow,QmlGraphicsFlow)
 /*!
   \qmlclass Flow QmlGraphicsFlow
   \since 4.7
@@ -760,7 +756,7 @@ Flow {
     id: positioner
     move: Transition {
         NumberAnimation {
-            matchProperties: "x,y"
+            properties: "x,y"
             ease: "easeOutBounce"
         }
     }

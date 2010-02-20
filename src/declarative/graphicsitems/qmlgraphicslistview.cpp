@@ -85,72 +85,6 @@ QString QmlGraphicsViewSection::sectionString(const QString &value)
         return value;
 }
 
-class QmlGraphicsListViewAttached : public QObject
-{
-    Q_OBJECT
-public:
-    QmlGraphicsListViewAttached(QObject *parent)
-        : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
-    ~QmlGraphicsListViewAttached() {}
-
-    Q_PROPERTY(QmlGraphicsListView *view READ view CONSTANT)
-    QmlGraphicsListView *view() { return m_view; }
-
-    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
-    bool isCurrentItem() const { return m_isCurrent; }
-    void setIsCurrentItem(bool c) {
-        if (m_isCurrent != c) {
-            m_isCurrent = c;
-            emit currentItemChanged();
-        }
-    }
-
-    Q_PROPERTY(QString prevSection READ prevSection NOTIFY prevSectionChanged)
-    QString prevSection() const { return m_prevSection; }
-    void setPrevSection(const QString &sect) {
-        if (m_prevSection != sect) {
-            m_prevSection = sect;
-            emit prevSectionChanged();
-        }
-    }
-
-    Q_PROPERTY(QString section READ section NOTIFY sectionChanged)
-    QString section() const { return m_section; }
-    void setSection(const QString &sect) {
-        if (m_section != sect) {
-            m_section = sect;
-            emit sectionChanged();
-        }
-    }
-
-    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged)
-    bool delayRemove() const { return m_delayRemove; }
-    void setDelayRemove(bool delay) {
-        if (m_delayRemove != delay) {
-            m_delayRemove = delay;
-            emit delayRemoveChanged();
-        }
-    }
-
-    void emitAdd() { emit add(); }
-    void emitRemove() { emit remove(); }
-
-Q_SIGNALS:
-    void currentItemChanged();
-    void sectionChanged();
-    void prevSectionChanged();
-    void delayRemoveChanged();
-    void add();
-    void remove();
-
-public:
-    QmlGraphicsListView *m_view;
-    bool m_isCurrent;
-    mutable QString m_section;
-    QString m_prevSection;
-    bool m_delayRemove;
-};
-
 //----------------------------------------------------------------------------
 
 class FxListItem
@@ -1135,9 +1069,13 @@ void QmlGraphicsListViewPrivate::fixupY()
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
-        if (currentItem && highlight && currentItem->position() != highlight->position()) {
+        if (currentItem && currentItem->position() - position() != highlightRangeStart) {
+            qreal pos = currentItem->position() - highlightRangeStart;
             timeline.reset(_moveY);
-            timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            if (fixupDuration)
+                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            else
+                _moveY.setValue(-pos);
             vTime = timeline.time();
         }
     } else if (snapMode != QmlGraphicsListView::NoSnap) {
@@ -1146,7 +1084,10 @@ void QmlGraphicsListViewPrivate::fixupY()
             qreal dist = qAbs(_moveY + pos);
             if (dist > 0) {
                 timeline.reset(_moveY);
-                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                if (fixupDuration)
+                    timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                else
+                    _moveY.setValue(-pos);
                 vTime = timeline.time();
             }
         }
@@ -1168,9 +1109,13 @@ void QmlGraphicsListViewPrivate::fixupX()
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
-        if (currentItem && highlight && currentItem->position() != highlight->position()) {
+        if (currentItem && currentItem->position() - position() != highlightRangeStart) {
+            qreal pos = currentItem->position() - highlightRangeStart;
             timeline.reset(_moveX);
-            timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            if (fixupDuration)
+                timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+            else
+                _moveX.setValue(-pos);
             vTime = timeline.time();
         }
     } else if (snapMode != QmlGraphicsListView::NoSnap) {
@@ -1179,7 +1124,10 @@ void QmlGraphicsListViewPrivate::fixupX()
             qreal dist = qAbs(_moveX + pos);
             if (dist > 0) {
                 timeline.reset(_moveX);
-                timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                if (fixupDuration)
+                    timeline.move(_moveX, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                else
+                    _moveX.setValue(-pos);
                 vTime = timeline.time();
             }
         }
@@ -2328,6 +2276,7 @@ void QmlGraphicsListView::positionViewAtIndex(int index)
         for (int i = 0; i < oldVisible.count(); ++i)
             d->releaseItem(oldVisible.at(i));
     }
+    d->fixupPosition();
 }
 
 
@@ -2700,9 +2649,32 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
         ++endIndex;
     }
 
+    // update visibleIndex
+    for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
+        if ((*it)->index != -1) {
+            d->visibleIndex = (*it)->index;
+            break;
+        }
+    }
+
+    // Fix current index
+    if (d->currentIndex >= 0 && d->currentItem) {
+        int oldCurrent = d->currentIndex;
+        d->currentIndex = d->model->indexOf(d->currentItem->item, this);
+        if (oldCurrent != d->currentIndex) {
+            d->currentItem->index = d->currentIndex;
+            emit currentIndexChanged();
+        }
+    }
+
     // Whatever moved items remain are no longer visible items.
-    while (moved.count())
-        d->releaseItem(moved.take(moved.begin().key()));
+    while (moved.count()) {
+        int idx = moved.begin().key();
+        FxListItem *item = moved.take(idx);
+        if (item->item == d->currentItem->item)
+            item->setPosition(d->positionAt(idx));
+        d->releaseItem(item);
+    }
 
     // Ensure we don't cause an ugly list scroll.
     d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + moveBy);
@@ -2741,9 +2713,4 @@ QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject 
     return new QmlGraphicsListViewAttached(obj);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,ListView,QmlGraphicsListView)
-QML_DEFINE_TYPE(Qt,4,6,ViewSection,QmlGraphicsViewSection)
-
 QT_END_NAMESPACE
-
-#include <qmlgraphicslistview.moc>

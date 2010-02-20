@@ -91,7 +91,7 @@
 #define D(arg) (arg)->release()
 #define A(arg) (arg)->addref()
 
-namespace {
+QT_BEGIN_NAMESPACE
 
 class DocumentImpl;
 class NodeImpl 
@@ -315,11 +315,13 @@ public:
     static QScriptValue load(QScriptEngine *engine, const QString &data);
 };
 
-}; // namespace
+QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(Node);
 Q_DECLARE_METATYPE(NodeList);
 Q_DECLARE_METATYPE(NamedNodeMap);
+
+QT_BEGIN_NAMESPACE
 
 void NodeImpl::addref() 
 {
@@ -1623,5 +1625,7 @@ void qt_add_qmlxmlhttprequest(QScriptEngine *engine)
 
     engine->globalObject().setProperty(QLatin1String("DOMException"), domExceptionPrototype);
 }
+
+QT_END_NAMESPACE
 
 #include <qmlxmlhttprequest.moc>

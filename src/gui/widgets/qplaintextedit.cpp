@@ -1320,6 +1320,26 @@ QTextCursor QPlainTextEdit::textCursor() const
     return d->control->textCursor();
 }
 
+/*!
+    Returns the reference of the anchor at position \a pos, or an
+    empty string if no anchor exists at that point.
+
+    \since 4.7
+ */
+QString QPlainTextEdit::anchorAt(const QPoint &pos) const
+{
+    Q_D(const QPlainTextEdit);
+    int cursorPos = d->control->hitTest(pos + QPoint(d->horizontalOffset(),
+                                                     d->verticalOffset()),
+                                        Qt::ExactHit);
+    if (cursorPos < 0)
+        return QString();
+
+    QTextDocumentPrivate *pieceTable = document()->docHandle();
+    QTextDocumentPrivate::FragmentIterator it = pieceTable->find(cursorPos);
+    QTextCharFormat fmt = pieceTable->formatCollection()->charFormat(it->format);
+    return fmt.anchorHref();
+}
 
 /*!
     Undoes the last operation.

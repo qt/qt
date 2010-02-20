@@ -49,14 +49,6 @@
 #include <private/qbezier_p.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,Path,QmlGraphicsPath)
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsPathElement)
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsCurve)
-QML_DEFINE_TYPE(Qt,4,6,PathAttribute,QmlGraphicsPathAttribute)
-QML_DEFINE_TYPE(Qt,4,6,PathPercent,QmlGraphicsPathPercent)
-QML_DEFINE_TYPE(Qt,4,6,PathLine,QmlGraphicsPathLine)
-QML_DEFINE_TYPE(Qt,4,6,PathQuad,QmlGraphicsPathQuad)
-QML_DEFINE_TYPE(Qt,4,6,PathCubic,QmlGraphicsPathCubic)
 
 /*!
     \qmlclass PathElement QmlGraphicsPathElement

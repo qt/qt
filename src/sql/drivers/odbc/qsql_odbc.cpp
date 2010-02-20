@@ -1558,7 +1558,7 @@ bool QODBCResult::exec()
             case QVariant::String:
                 if (d->unicode) {
                     if (bindValueType(i) & QSql::Out)
-                        values[i] = QString::fromUtf16((ushort*)tmpStorage.takeFirst().constData());
+                        values[i] = QString((QChar *)tmpStorage.takeFirst().constData());
                     break;
                 }
                 // fall through

@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 SUBDIRS = \
         qpainter \
         qregion \
-        qtransform
+        qtransform \
+        qtracebench

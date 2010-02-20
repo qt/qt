@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 static const int PressAndHoldDelay = 800;
 
-QML_DEFINE_TYPE(Qt,4,6,Drag,QmlGraphicsDrag)
 QmlGraphicsDrag::QmlGraphicsDrag(QObject *parent)
 : QObject(parent), _target(0), _axis(XandYAxis), _xmin(0), _xmax(0), _ymin(0), _ymax(0)
 {
@@ -66,7 +65,10 @@ QmlGraphicsItem *QmlGraphicsDrag::target() const
 
 void QmlGraphicsDrag::setTarget(QmlGraphicsItem *t)
 {
+    if (_target == t)
+        return;
     _target = t;
+    emit targetChanged();
 }
 
 QmlGraphicsDrag::Axis QmlGraphicsDrag::axis() const
@@ -76,7 +78,10 @@ QmlGraphicsDrag::Axis QmlGraphicsDrag::axis() const
 
 void QmlGraphicsDrag::setAxis(QmlGraphicsDrag::Axis a)
 {
+    if (_axis == a)
+        return;
     _axis = a;
+    emit axisChanged();
 }
 
 qreal QmlGraphicsDrag::xmin() const
@@ -86,7 +91,10 @@ qreal QmlGraphicsDrag::xmin() const
 
 void QmlGraphicsDrag::setXmin(qreal m)
 {
+    if (_xmin == m)
+        return;
     _xmin = m;
+    emit minimumXChanged();
 }
 
 qreal QmlGraphicsDrag::xmax() const
@@ -96,7 +104,10 @@ qreal QmlGraphicsDrag::xmax() const
 
 void QmlGraphicsDrag::setXmax(qreal m)
 {
+    if (_xmax == m)
+        return;
     _xmax = m;
+    emit maximumXChanged();
 }
 
 qreal QmlGraphicsDrag::ymin() const
@@ -106,7 +117,10 @@ qreal QmlGraphicsDrag::ymin() const
 
 void QmlGraphicsDrag::setYmin(qreal m)
 {
+    if (_ymin == m)
+        return;
     _ymin = m;
+    emit minimumYChanged();
 }
 
 qreal QmlGraphicsDrag::ymax() const
@@ -116,7 +130,10 @@ qreal QmlGraphicsDrag::ymax() const
 
 void QmlGraphicsDrag::setYmax(qreal m)
 {
+    if (_ymax == m)
+        return;
     _ymax = m;
+    emit maximumYChanged();
 }
 
 QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
@@ -156,12 +173,24 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
     \qmlsignal MouseRegion::onEntered()
 
     This handler is called when the mouse enters the mouse region.
+
+    By default the onEntered handler is only called while a button is
+    pressed.  Setting hoverEnabled to true enables handling of
+    onExited when no mouse button is pressed.
+
+    \sa hoverEnabled
 */
 
 /*!
     \qmlsignal MouseRegion::onExited()
 
     This handler is called when the mouse exists the mouse region.
+
+    By default the onExited handler is only called while a button is
+    pressed.  Setting hoverEnabled to true enables handling of
+    onExited when no mouse button is pressed.
+
+    \sa hoverEnabled
 */
 
 /*!
@@ -173,6 +202,10 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
     position, and any buttons currently pressed.
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
+
+    By default the onPositionChanged handler is only called while a button is
+    pressed.  Setting hoverEnabled to true enables handling of
+    onPositionChanged when no mouse button is pressed.
 */
 
 /*!
@@ -231,8 +264,6 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
-
-QML_DEFINE_TYPE(Qt,4,6,MouseRegion,QmlGraphicsMouseRegion)
 
 /*!
     \internal

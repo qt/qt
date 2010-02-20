@@ -48,8 +48,6 @@
 QT_BEGIN_NAMESPACE
 
 
-QML_DEFINE_TYPE(Qt,4,6,Image,QmlGraphicsImage)
-
 /*!
     \qmlclass Image QmlGraphicsImage
     \since 4.7

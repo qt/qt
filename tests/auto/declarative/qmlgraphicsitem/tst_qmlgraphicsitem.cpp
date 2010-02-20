@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtTest/QSignalSpy>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlview.h>
-#include <qmlgraphicsitem.h>
+#include <QtDeclarative/qmlgraphicsitem.h>
 
 class tst_QmlGraphicsItem : public QObject
 
@@ -55,10 +56,13 @@ public:
 private slots:
     void keys();
     void keyNavigation();
+    void smooth();
+    void clip();
 
 private:
     template<typename T>
-    T *findItem(QmlGraphicsItem *parent, const QString &objectName);
+    T *findItem(QGraphicsObject *parent, const QString &objectName);
+    QmlEngine engine;
 };
 
 class KeysTestObject : public QObject
@@ -108,7 +112,7 @@ void tst_QmlGraphicsItem::keys()
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setUrl(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
 
     KeysTestObject *testObject = new KeysTestObject;
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
@@ -190,7 +194,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setUrl(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
     canvas->execute();
     canvas->show();
     qApp->processEvents();
@@ -200,7 +204,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QFocusEvent fe(QEvent::FocusIn);
     QApplication::sendEvent(canvas, &fe);
 
-    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(canvas->root(), "item1");
+    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -209,7 +213,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item2");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item2");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -218,7 +222,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item4");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item4");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -227,7 +231,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item3");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item3");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 
@@ -236,21 +240,67 @@ void tst_QmlGraphicsItem::keyNavigation()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 
-    item = findItem<QmlGraphicsItem>(canvas->root(), "item1");
+    item = findItem<QmlGraphicsItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
 }
 
+void tst_QmlGraphicsItem::smooth()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6; Item { smooth: false; }", QUrl::fromLocalFile(""));
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
+    QSignalSpy spy(item, SIGNAL(smoothChanged()));
+
+    QVERIFY(item);
+    QVERIFY(!item->smooth());
+
+    item->setSmooth(true);
+    QVERIFY(item->smooth());
+    QCOMPARE(spy.count(),1);
+    item->setSmooth(true);
+    QCOMPARE(spy.count(),1);
+
+    item->setSmooth(false);
+    QVERIFY(!item->smooth());
+    QCOMPARE(spy.count(),2);
+    item->setSmooth(false);
+    QCOMPARE(spy.count(),2);
+}
+
+void tst_QmlGraphicsItem::clip()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6\nItem { clip: false\n }", QUrl::fromLocalFile(""));
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
+    QSignalSpy spy(item, SIGNAL(clipChanged()));
+
+    QVERIFY(item);
+    QVERIFY(!item->clip());
+
+    item->setClip(true);
+    QVERIFY(item->clip());
+    QCOMPARE(spy.count(),1);
+    item->setClip(true);
+    QCOMPARE(spy.count(),1);
+
+    item->setClip(false);
+    QVERIFY(!item->clip());
+    QCOMPARE(spy.count(),2);
+    item->setClip(false);
+    QCOMPARE(spy.count(),2);
+}
+
 template<typename T>
-T *tst_QmlGraphicsItem::findItem(QmlGraphicsItem *parent, const QString &objectName)
+T *tst_QmlGraphicsItem::findItem(QGraphicsObject *parent, const QString &objectName)
 {
     if (!parent)
         return 0;
 
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
+    for (int i = 0; i < parent->childItems().count(); ++i) {
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;

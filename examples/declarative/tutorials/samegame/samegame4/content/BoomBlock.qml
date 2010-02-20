@@ -24,7 +24,7 @@ Item { id:block
             }
         }
         opacity: 0
-        opacity: Behavior { NumberAnimation { matchProperties:"opacity"; duration: 200 } }
+        opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
         anchors.fill: parent
     }
     //![2]

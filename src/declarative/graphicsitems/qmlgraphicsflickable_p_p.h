@@ -159,6 +159,38 @@ public:
     QML_DECLARE_LIST_PROXY(QmlGraphicsFlickablePrivate, QObject *, data)
 };
 
+class QmlGraphicsFlickableVisibleArea : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal xPosition READ xPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal yPosition READ yPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal widthRatio READ widthRatio NOTIFY pageChanged)
+    Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY pageChanged)
+
+public:
+    QmlGraphicsFlickableVisibleArea(QmlGraphicsFlickable *parent=0);
+
+    qreal xPosition() const;
+    qreal widthRatio() const;
+    qreal yPosition() const;
+    qreal heightRatio() const;
+
+    void updateVisible();
+
+signals:
+    void pageChanged();
+
+private:
+    QmlGraphicsFlickable *flickable;
+    qreal m_xPosition;
+    qreal m_widthRatio;
+    qreal m_yPosition;
+    qreal m_heightRatio;
+};
+
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsFlickableVisibleArea)
 
 #endif

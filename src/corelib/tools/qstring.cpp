@@ -989,6 +989,40 @@ QString::QString(const QChar *unicode, int size)
     }
 }
 
+/*!
+    \since 4.7
+
+    Constructs a string initialized with the characters of the QChar array
+    \a unicode, which must be terminated with a 0.
+
+    QString makes a deep copy of the string data. The unicode data is copied as
+    is and the Byte Order Mark is preserved if present.
+*/
+QString::QString(const QChar *unicode)
+{
+     if (!unicode) {
+         d = &shared_null;
+         d->ref.ref();
+     } else {
+         int size = 0;
+         while (unicode[size] != 0)
+             ++size;
+         if (!size) {
+             d = &shared_empty;
+             d->ref.ref();
+         } else {
+             d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+             Q_CHECK_PTR(d);
+             d->ref = 1;
+             d->alloc = d->size = size;
+             d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+             d->data = d->array;
+             memcpy(d->array, unicode, size * sizeof(QChar));
+             d->array[size] = '\0';
+         }
+     }
+}
+
 
 /*!
     Constructs a string of the given \a size with every character set
@@ -1766,13 +1800,14 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
     }
 
     QT_TRY {
-        detach();
         if (blen == alen) {
             // replace in place
+            detach();
             for (int i = 0; i < nIndices; ++i)
                 memcpy(d->data + indices[i], afterBuffer, alen * sizeof(QChar));
         } else if (alen < blen) {
             // replace from front
+            detach();
             uint to = indices[0];
             if (alen)
                 memcpy(d->data+to, after, alen*sizeof(QChar));
@@ -3867,7 +3902,7 @@ QString QString::fromUtf8(const char *str, int size)
     host byte order is assumed.
 
     This function is comparatively slow.
-    Use QString(const ushort *, int) if possible.
+    Use QString(const ushort *, int) or QString(const ushort *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
@@ -3960,24 +3995,74 @@ QString QString::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QString result(d->size, Qt::Uninitialized);
-    const QChar *from = (const QChar*) d->data;
-    const QChar *fromend = (const QChar*) from+d->size;
-    int outc=0;
-    QChar *to   = (QChar*) result.d->data;
-    for (;;) {
-        while (from!=fromend && from->isSpace())
-            from++;
-        while (from!=fromend && !from->isSpace())
-            to[outc++] = *from++;
-        if (from!=fromend)
-            to[outc++] = QLatin1Char(' ');
-        else
+
+    const QChar * const start = reinterpret_cast<QChar *>(d->data);
+    const QChar *from = start;
+    const QChar *fromEnd = start + d->size;
+    forever {
+        QChar ch = *from;
+        if (!ch.isSpace())
             break;
+        if (++from == fromEnd) {
+            // All-whitespace string
+            shared_empty.ref.ref();
+            return QString(&shared_empty, 0);
+        }
     }
-    if (outc > 0 && to[outc-1] == QLatin1Char(' '))
-        outc--;
-    result.truncate(outc);
+    // This loop needs no underflow check, as we already determined that
+    // the string contains non-whitespace. If the string has exactly one
+    // non-whitespace, it will be checked twice - we can live with that.
+    while (fromEnd[-1].isSpace())
+        fromEnd--;
+    // The rest of the function depends on the fact that we already know
+    // that the last character in the source is no whitespace.
+    const QChar *copyFrom = from;
+    int copyCount;
+    forever {
+        if (++from == fromEnd) {
+            // Only leading and/or trailing whitespace, if any at all
+            return mid(copyFrom - start, from - copyFrom);
+        }
+        QChar ch = *from;
+        if (!ch.isSpace())
+            continue;
+        if (ch != QLatin1Char(' ')) {
+            copyCount = from - copyFrom;
+            break;
+        }
+        ch = *++from;
+        if (ch.isSpace()) {
+            copyCount = from - copyFrom - 1;
+            break;
+        }
+    }
+    // 'from' now points at the non-trailing whitespace which made the
+    // string not simplified in the first place. 'copyCount' is the number
+    // of already simplified characters - at least one, obviously -
+    // without a trailing space.
+    QString result((fromEnd - from) + copyCount, Qt::Uninitialized);
+    QChar *to = reinterpret_cast<QChar *>(result.d->data);
+    ::memcpy(to, copyFrom, copyCount * 2);
+    to += copyCount;
+    fromEnd--;
+    QChar ch;
+    forever {
+        *to++ = QLatin1Char(' ');
+        do {
+            ch = *++from;
+        } while (ch.isSpace());
+        if (from == fromEnd)
+            break;
+        do {
+            *to++ = ch;
+            ch = *++from;
+            if (from == fromEnd)
+                goto done;
+        } while (!ch.isSpace());
+    }
+  done:
+    *to++ = ch;
+    result.truncate(to - reinterpret_cast<QChar *>(result.d->data));
     return result;
 }
 

@@ -124,7 +124,7 @@ Rectangle {
                 ParallelAnimation {
                     ColorAnimation { property: "color"; duration: 500 }
                     NumberAnimation {
-                        duration: 300; matchProperties: "detailsOpacity,x,viewportY,height,width"
+                        duration: 300; properties: "detailsOpacity,x,viewportY,height,width"
                     }
                 }
             }
