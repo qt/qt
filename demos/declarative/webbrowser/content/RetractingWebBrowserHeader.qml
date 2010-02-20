@@ -96,8 +96,8 @@ Image {
     transitions: [
         Transition {
             NumberAnimation {
-                matchTargets: header
-                matchProperties: "progressOff"
+                targets: header
+                properties: "progressOff"
                 easing: "easeInOutQuad"
                 duration: 300
             }

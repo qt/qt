@@ -728,9 +728,10 @@ Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int length) const
         length = size() - pos;
     if (pos == 0 && length == size())
         return *this;
-    QVector<T> copy;
     if (pos + length > size())
         length = size() - pos;
+    QVector<T> copy;
+    copy.reserve(length);
     for (int i = pos; i < pos + length; ++i)
         copy += at(i);
     return copy;
@@ -740,6 +741,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> QVector<T>::toList() const
 {
     QList<T> result;
+    result.reserve(size());
     for (int i = 0; i < size(); ++i)
         result.append(at(i));
     return result;

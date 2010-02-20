@@ -55,8 +55,6 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-QML_DEFINE_TYPE(Qt,4,6,StateGroup,QmlStateGroup)
-
 class QmlStateGroupPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlStateGroup)
@@ -421,3 +419,5 @@ void QmlStateGroup::removeState(QmlState *state)
 }
 
 QT_END_NAMESPACE
+
+QML_DEFINE_TYPE(Qt,4,6,StateGroup,QmlStateGroup)

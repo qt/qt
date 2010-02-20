@@ -11,6 +11,7 @@ Item {
     signal clicked
 
     isPressed: SequentialAnimation {
+        running: false
         id: autoRepeat
         PropertyAction { target: page; property: "isPressed"; value: true }
         ScriptAction { script: page.pressed() }

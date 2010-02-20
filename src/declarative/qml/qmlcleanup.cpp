@@ -43,6 +43,8 @@
 
 #include "qmlengine_p.h"
 
+QT_BEGIN_NAMESPACE
+
 /*!
 \internal
 \class QmlCleanup
@@ -82,4 +84,4 @@ QmlCleanup::~QmlCleanup()
     prev = 0; 
     next = 0;
 }
-
+QT_END_NAMESPACE

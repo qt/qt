@@ -61,9 +61,11 @@ class QmlDebugServer : public QObject
 public:
     static QmlDebugServer *instance();
     void wait();
+    void registerForStartNotification(QObject *object, const char *receiver);
 
 private Q_SLOTS:
     void readyRead();
+    void registeredObjectDestroyed(QObject *object);
 
 private:
     friend class QmlDebugService;
@@ -83,6 +85,7 @@ public:
     QPacketProtocol *protocol;
     QHash<QString, QmlDebugService *> plugins;
     QStringList enabledPlugins;
+    QList<QPair<QObject*, QByteArray> > notifyClients;
 };
 
 class QmlDebugServicePrivate : public QObjectPrivate
@@ -111,6 +114,14 @@ void QmlDebugServerPrivate::wait()
     }
 
     qWarning("QmlDebugServer: Waiting for connection on port %d...", port);
+
+    for (int i=0; i<notifyClients.count(); i++) {
+        if (!QMetaObject::invokeMethod(notifyClients[i].first, notifyClients[i].second)) {
+            qWarning() << "QmlDebugServer: unable to call method" << notifyClients[i].second
+                    << "on object" << notifyClients[i].first << "to notify of debug server start";
+        }
+    }
+    notifyClients.clear();
 
     if (!server.waitForNewConnection(-1)) {
         qWarning("QmlDebugServer: Connection error");
@@ -163,6 +174,23 @@ void QmlDebugServer::wait()
 {
     Q_D(QmlDebugServer);
     d->wait();
+}
+
+void QmlDebugServer::registerForStartNotification(QObject *object, const char *methodName)
+{
+    Q_D(QmlDebugServer);
+    connect(object, SIGNAL(destroyed(QObject*)), SLOT(registeredObjectDestroyed(QObject*)));
+    d->notifyClients.append(qMakePair(object, QByteArray(methodName)));
+}
+
+void QmlDebugServer::registeredObjectDestroyed(QObject *object)
+{
+    Q_D(QmlDebugServer);
+    QMutableListIterator<QPair<QObject*, QByteArray> > i(d->notifyClients);
+    while (i.hasNext()) {
+        if (i.next().first == object)
+            i.remove();
+    }
 }
 
 QmlDebugServer::QmlDebugServer(int port)
@@ -365,6 +393,11 @@ QString QmlDebugService::objectToString(QObject *obj)
 void QmlDebugService::waitForClients()
 {
     QmlDebugServer::instance()->wait();
+}
+
+void QmlDebugService::notifyOnServerStart(QObject *object, const char *receiver)
+{
+    QmlDebugServer::instance()->registerForStartNotification(object, receiver);
 }
 
 void QmlDebugService::sendMessage(const QByteArray &message)

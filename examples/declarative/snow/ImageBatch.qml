@@ -23,7 +23,7 @@ GridView {
     transitions: Transition {
         SequentialAnimation {
             PauseAnimation { duration: 150 }
-            PropertyAction { matchProperties: "z" }
+            PropertyAction { properties: "z" }
         }
     }
     model: XmlListModel {
@@ -55,15 +55,15 @@ GridView {
                 to: "selected"
                 SequentialAnimation {
                     PauseAnimation { duration: 150 }
-                    PropertyAction { matchProperties: "z" }
-                    NumberAnimation { matchProperties: "scale"; duration: 150; }
+                    PropertyAction { properties: "z" }
+                    NumberAnimation { properties: "scale"; duration: 150; }
                 }
             },
             Transition {
                 from: "selected"
                 SequentialAnimation {
-                    NumberAnimation { matchProperties: "scale"; duration: 150 }
-                    PropertyAction { matchProperties: "z" }
+                    NumberAnimation { properties: "scale"; duration: 150 }
+                    PropertyAction { properties: "z" }
                 }
             }
         ]

@@ -20,6 +20,8 @@
 #include "config.h"
 #include "AccessibilityObject.h"
 
+QT_BEGIN_NAMESPACE
+
 #if HAVE(ACCESSIBILITY)
 
 namespace WebCore {
@@ -37,3 +39,5 @@ AccessibilityObjectPlatformInclusion AccessibilityObject::accessibilityPlatformI
 } // namespace WebCore
 
 #endif // HAVE(ACCESSIBILITY)
+
+QT_END_NAMESPACE

@@ -11,12 +11,12 @@ Rectangle {
         y: 0
         move: Transition {
             NumberAnimation {
-                matchProperties: "y"; easing: "easeOutBounce"
+                properties: "y"; easing: "easeOutBounce"
             }
         }
         add: Transition {
             NumberAnimation {
-                matchProperties: "y"; easing: "easeOutQuad"
+                properties: "y"; easing: "easeOutQuad"
             }
         }
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
@@ -35,12 +35,12 @@ Rectangle {
         y: 300 
         move: Transition {
             NumberAnimation {
-                matchProperties: "x"; easing: "easeOutBounce"
+                properties: "x"; easing: "easeOutBounce"
             }
         }
         add: Transition {
             NumberAnimation {
-                matchProperties: "x"; easing: "easeOutQuad"
+                properties: "x"; easing: "easeOutQuad"
             }
         }
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
@@ -101,13 +101,13 @@ Rectangle {
 
         move: Transition {
             NumberAnimation {
-                matchProperties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing: "easeOutBounce"
             }
         }
 
         add: Transition {
             NumberAnimation {
-                matchProperties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing: "easeOutBounce"
             }
         }
 
@@ -136,13 +136,13 @@ Rectangle {
 
         move: Transition {
             NumberAnimation {
-                matchProperties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing: "easeOutBounce"
             }
         }
 
         add: Transition {
             NumberAnimation {
-                matchProperties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing: "easeOutBounce"
             }
         }
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }

@@ -51,6 +51,8 @@ public:
     tst_QmlListModel() {}
 
 private slots:
+    void static_types();
+    void static_types_data();
     void static_i18n();
     void static_nestedElements();
     void static_nestedElements_data();
@@ -223,6 +225,59 @@ void tst_QmlListModel::dynamic()
     QCOMPARE(actual,result);
 }
 
+void tst_QmlListModel::static_types_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QVariant>("value");
+
+    QTest::newRow("string")
+        << "ListElement { foo: \"bar\" }"
+        << QVariant(QString("bar"));
+
+    QTest::newRow("real")
+        << "ListElement { foo: 10.5 }"
+        << QVariant(10.5);
+
+    QTest::newRow("real0")
+        << "ListElement { foo: 0 }"
+        << QVariant(double(0));
+
+    QTest::newRow("bool")
+        << "ListElement { foo: false }"
+        << QVariant(false);
+
+    QTest::newRow("bool")
+        << "ListElement { foo: true }"
+        << QVariant(true);
+}
+
+void tst_QmlListModel::static_types()
+{
+    QFETCH(QString, qml);
+    QFETCH(QVariant, value);
+
+    qml = "import Qt 4.6\nListModel { " + qml + " }";
+
+    QmlEngine engine;
+    QmlComponent component(&engine);
+    component.setData(qml.toUtf8(),
+                      QUrl::fromLocalFile(QString("dummy.qml")));
+    QVERIFY(!component.isError());
+
+    QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
+    QVERIFY(obj != 0);
+
+    QScriptValue actual = obj->get(0).property(QLatin1String("foo"));
+
+    QCOMPARE(actual.isString(), value.type() == QVariant::String);
+    QCOMPARE(actual.isBoolean(), value.type() == QVariant::Bool);
+    QCOMPARE(actual.isNumber(), value.type() == QVariant::Double);
+
+    QCOMPARE(actual.toString(), value.toString());
+
+    delete obj;
+}
+
 void tst_QmlListModel::error_data()
 {
     QTest::addColumn<QString>("qml");
@@ -246,7 +301,7 @@ void tst_QmlListModel::error_data()
 
     QTest::newRow("bindings not allowed in ListElement")
         << "import Qt 4.6\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
-        << "QTBUG-6203 ListElement should not allow binding its data to something";
+        << "ListElement: cannot use script for property value";
 
     QTest::newRow("random object list properties allowed in ListElement")
         << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"
