@@ -67,6 +67,8 @@
 #include <pulse/ext-stream-restore.h>
 #endif
 
+#include <unistd.h>
+
 // Less than ideal
 #define PA_SCACHE_ENTRY_SIZE_MAX (1024*1024*16)
 
