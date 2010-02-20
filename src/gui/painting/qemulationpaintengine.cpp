@@ -205,6 +205,11 @@ void QEmulationPaintEngine::drawTextItem(const QPointF &p, const QTextItem &text
     real_engine->drawTextItem(p, textItem);
 }
 
+void QEmulationPaintEngine::drawStaticTextItem(QStaticTextItem *item)
+{
+    real_engine->drawStaticTextItem(item);
+}
+
 void QEmulationPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s)
 {
     if (state()->bgMode == Qt::OpaqueMode && pixmap.isQBitmap())

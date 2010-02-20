@@ -46,11 +46,11 @@
 #include <private/qmlvaluetype_p.h>
 #include "testtypes.h"
 
-class tst_valuetypes : public QObject
+class tst_qmlvaluetypes : public QObject
 {
     Q_OBJECT
 public:
-    tst_valuetypes() {}
+    tst_qmlvaluetypes() {}
 
 private slots:
     void point();
@@ -84,7 +84,7 @@ inline QUrl TEST_FILE(const QString &filename)
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
 }
 
-void tst_valuetypes::point()
+void tst_qmlvaluetypes::point()
 {
     {
         QmlComponent component(&engine, TEST_FILE("point_read.qml"));
@@ -109,7 +109,7 @@ void tst_valuetypes::point()
     }
 }
 
-void tst_valuetypes::pointf()
+void tst_qmlvaluetypes::pointf()
 {
     {
         QmlComponent component(&engine, TEST_FILE("pointf_read.qml"));
@@ -134,7 +134,7 @@ void tst_valuetypes::pointf()
     }
 }
 
-void tst_valuetypes::size()
+void tst_qmlvaluetypes::size()
 {
     {
         QmlComponent component(&engine, TEST_FILE("size_read.qml"));
@@ -159,7 +159,7 @@ void tst_valuetypes::size()
     }
 }
 
-void tst_valuetypes::sizef()
+void tst_qmlvaluetypes::sizef()
 {
     {
         QmlComponent component(&engine, TEST_FILE("sizef_read.qml"));
@@ -184,7 +184,7 @@ void tst_valuetypes::sizef()
     }
 }
 
-void tst_valuetypes::rect()
+void tst_qmlvaluetypes::rect()
 {
     {
         QmlComponent component(&engine, TEST_FILE("rect_read.qml"));
@@ -211,7 +211,7 @@ void tst_valuetypes::rect()
     }
 }
 
-void tst_valuetypes::rectf()
+void tst_qmlvaluetypes::rectf()
 {
     {
         QmlComponent component(&engine, TEST_FILE("rectf_read.qml"));
@@ -238,7 +238,7 @@ void tst_valuetypes::rectf()
     }
 }
 
-void tst_valuetypes::vector3d()
+void tst_qmlvaluetypes::vector3d()
 {
     {
         QmlComponent component(&engine, TEST_FILE("vector3d_read.qml"));
@@ -264,7 +264,7 @@ void tst_valuetypes::vector3d()
     }
 }
 
-void tst_valuetypes::font()
+void tst_qmlvaluetypes::font()
 {
     {
         QmlComponent component(&engine, TEST_FILE("font_read.qml"));
@@ -337,7 +337,7 @@ void tst_valuetypes::font()
 }
 
 // Test bindings can write to value types
-void tst_valuetypes::bindingAssignment()
+void tst_qmlvaluetypes::bindingAssignment()
 {
     QmlComponent component(&engine, TEST_FILE("bindingAssignment.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -353,7 +353,7 @@ void tst_valuetypes::bindingAssignment()
 }
 
 // Test bindings can read from value types
-void tst_valuetypes::bindingRead()
+void tst_qmlvaluetypes::bindingRead()
 {
     QmlComponent component(&engine, TEST_FILE("bindingRead.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -369,7 +369,7 @@ void tst_valuetypes::bindingRead()
 }
 
 // Test static values can assign to value types
-void tst_valuetypes::staticAssignment()
+void tst_qmlvaluetypes::staticAssignment()
 {
     QmlComponent component(&engine, TEST_FILE("staticAssignment.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -381,7 +381,7 @@ void tst_valuetypes::staticAssignment()
 }
 
 // Test scripts can read/write value types
-void tst_valuetypes::scriptAccess()
+void tst_qmlvaluetypes::scriptAccess()
 {
     QmlComponent component(&engine, TEST_FILE("scriptAccess.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -395,7 +395,7 @@ void tst_valuetypes::scriptAccess()
 }
 
 // Test that assigning a constant from script removes any binding
-void tst_valuetypes::autoBindingRemoval()
+void tst_qmlvaluetypes::autoBindingRemoval()
 {
     {
         QmlComponent component(&engine, TEST_FILE("autoBindingRemoval.qml"));
@@ -466,7 +466,7 @@ void tst_valuetypes::autoBindingRemoval()
 }
 
 // Test that property value sources assign to value types
-void tst_valuetypes::valueSources()
+void tst_qmlvaluetypes::valueSources()
 {
     QmlComponent component(&engine, TEST_FILE("valueSources.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -489,7 +489,7 @@ static void checkNoErrors(QmlComponent& component)
 }
 
 // Test that property value interceptors can be applied to value types
-void tst_valuetypes::valueInterceptors()
+void tst_qmlvaluetypes::valueInterceptors()
 {
     QmlComponent component(&engine, TEST_FILE("valueInterceptors.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -507,7 +507,7 @@ void tst_valuetypes::valueInterceptors()
 }
 
 // Test that you can't assign a binding to the "root" value type, and a sub-property
-void tst_valuetypes::bindingConflict()
+void tst_qmlvaluetypes::bindingConflict()
 {
     QmlComponent component(&engine, TEST_FILE("bindingConflict.qml"));
     QCOMPARE(component.isError(), true);
@@ -524,7 +524,7 @@ void tst_valuetypes::bindingConflict()
 
 // Test that accessing a reference to a valuetype after the owning object is deleted
 // doesn't crash
-void tst_valuetypes::deletedObject()
+void tst_qmlvaluetypes::deletedObject()
 {
     QmlComponent component(&engine, TEST_FILE("deletedObject.qml"));
     QTest::ignoreMessage(QtDebugMsg, "Test: 2");
@@ -542,7 +542,7 @@ void tst_valuetypes::deletedObject()
 }
 
 // Test that value types can be assigned to another value type property in a binding
-void tst_valuetypes::bindingVariantCopy()
+void tst_qmlvaluetypes::bindingVariantCopy()
 {
     QmlComponent component(&engine, TEST_FILE("bindingVariantCopy.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -554,7 +554,7 @@ void tst_valuetypes::bindingVariantCopy()
 }
 
 // Test that value types can be assigned to another value type property in script
-void tst_valuetypes::scriptVariantCopy()
+void tst_qmlvaluetypes::scriptVariantCopy()
 {
     QmlComponent component(&engine, TEST_FILE("scriptVariantCopy.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -571,7 +571,7 @@ void tst_valuetypes::scriptVariantCopy()
 
 
 // Test that the value type classes can be used manually
-void tst_valuetypes::cppClasses()
+void tst_qmlvaluetypes::cppClasses()
 {
     CPP_TEST(QmlPointValueType, QPoint(19, 33));
     CPP_TEST(QmlPointFValueType, QPointF(33.6, -23));
@@ -583,6 +583,6 @@ void tst_valuetypes::cppClasses()
     CPP_TEST(QmlFontValueType, QFont("Helvetica"));
 
 }
-QTEST_MAIN(tst_valuetypes)
+QTEST_MAIN(tst_qmlvaluetypes)
 
 #include "tst_qmlvaluetypes.moc"

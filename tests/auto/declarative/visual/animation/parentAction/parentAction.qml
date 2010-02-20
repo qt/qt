@@ -49,7 +49,7 @@ Rectangle {
         SequentialAnimation {
             ColorAnimation { duration: 500}
             ParentAction {}
-            NumberAnimation { matchProperties: "rotation, scale"; duration: 1000 }
+            NumberAnimation { properties: "rotation, scale"; duration: 1000 }
         }
     }
 }

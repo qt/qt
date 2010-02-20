@@ -120,6 +120,7 @@ private slots:
     void operator_eqeq_nullstring();
     void operator_smaller();
     void insert();
+    void simplified_data();
     void simplified();
     void trimmed();
     void toLower();
@@ -1592,16 +1593,51 @@ void tst_QString::trimmed()
     QCOMPARE(a.trimmed(),(QString)"a");
 }
 
+void tst_QString::simplified_data()
+{
+    QTest::addColumn<QString>("full" );
+    QTest::addColumn<QString>("simple" );
+
+    QTest::newRow("null") << QString() << QString();
+    QTest::newRow("empty") << "" << "";
+    QTest::newRow("one char") << "a" << "a";
+    QTest::newRow("one word") << "foo" << "foo";
+    QTest::newRow("chars trivial") << "a b" << "a b";
+    QTest::newRow("words trivial") << "foo bar" << "foo bar";
+    QTest::newRow("allspace") << "  \t\v " << "";
+    QTest::newRow("char trailing") << "a " << "a";
+    QTest::newRow("char trailing tab") << "a\t" << "a";
+    QTest::newRow("char multitrailing") << "a   " << "a";
+    QTest::newRow("char multitrailing tab") << "a   \t" << "a";
+    QTest::newRow("char leading") << " a" << "a";
+    QTest::newRow("char leading tab") << "\ta" << "a";
+    QTest::newRow("char multileading") << "   a" << "a";
+    QTest::newRow("char multileading tab") << "\t   a" << "a";
+    QTest::newRow("chars apart") << "a  b" << "a b";
+    QTest::newRow("words apart") << "foo  bar" << "foo bar";
+    QTest::newRow("enclosed word") << "   foo \t " << "foo";
+    QTest::newRow("enclosed chars apart") << " a   b " << "a b";
+    QTest::newRow("enclosed words apart") << " foo   bar " << "foo bar";
+    QTest::newRow("chars apart posttab") << "a \tb" << "a b";
+    QTest::newRow("chars apart pretab") << "a\t b" << "a b";
+    QTest::newRow("many words") << "  just some    random\ttext here" << "just some random text here";
+}
+
 void tst_QString::simplified()
 {
-    QString j;
-    j.simplified();
+    QFETCH(QString, full);
+    QFETCH(QString, simple);
 
-    QString a;
-    a = "a ";
-    QCOMPARE(a.simplified(),(QString)"a");
-    a=" a   b ";
-    QCOMPARE(a.simplified(),(QString)"a b");
+    QString result = full.simplified();
+    if (simple.isNull()) {
+        QVERIFY2(result.isNull(), qPrintable("'" + full + "' did not yield null: " + result));
+    } else if (simple.isEmpty()) {
+        QVERIFY2(result.isEmpty() && !result.isNull(), qPrintable("'" + full + "' did not yield empty: " + result));
+    } else {
+        QCOMPARE(result, simple);
+        if (full == simple)
+            QVERIFY(result.isSharedWith(full));
+    }
 }
 
 void tst_QString::insert()

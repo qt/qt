@@ -54,9 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,PathView,QmlGraphicsPathView)
-
-
 inline qreal qmlMod(qreal x, qreal y)
 {
 #ifdef QT_USE_MATH_H_FLOATS

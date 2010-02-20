@@ -50,6 +50,7 @@
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qfont.h>
+#include <QtGui/qaction.h>
 
 QT_BEGIN_HEADER
 
@@ -87,12 +88,12 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsItem : public QGraphicsObject, public QmlP
     Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter CONSTANT FINAL)
     Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline CONSTANT FINAL)
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
-    Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
+    Q_PROPERTY(bool clip READ clip WRITE setClip NOTIFY clipChanged) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
     Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
-    Q_PROPERTY(bool smooth READ smooth WRITE setSmooth)
+    Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
     Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -177,6 +178,8 @@ Q_SIGNALS:
     void wantsFocusChanged();
     void parentChanged();
     void transformOriginChanged(TransformOrigin);
+    void smoothChanged();
+    void clipChanged();
 
 protected:
     bool isComponentComplete() const;
@@ -233,6 +236,7 @@ QML_DECLARE_TYPE(QmlGraphicsItem)
 QML_DECLARE_TYPE(QGraphicsTransform)
 QML_DECLARE_TYPE(QGraphicsScale)
 QML_DECLARE_TYPE(QGraphicsRotation)
+QML_DECLARE_TYPE(QAction)
 
 QT_END_HEADER
 

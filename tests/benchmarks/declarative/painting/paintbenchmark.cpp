@@ -48,10 +48,7 @@
 #include <QVBoxLayout>
 #include <QTime>
 #include <QDebug>
-
-#ifdef HAVE_STATICTEXT
-#include <private/qstatictext_p.h>
-#endif
+#include <QStaticText>
 
 int iterations = 20;
 const int count = 600;
@@ -60,6 +57,7 @@ const int spacing = 36;
 QSizeF size(1000, 800);
 const qreal lineWidth = 1000;
 QString strings[lines];
+QGLWidget *testWidget = 0;
 
 void paint_QTextLayout(QPainter &p, bool useCache)
 {
@@ -105,7 +103,6 @@ void paint_QTextLayout_cache(QPainter &p)
     paint_QTextLayout(p, true);
 }
 
-#ifdef HAVE_STATICTEXT
 void paint_QStaticText(QPainter &p, bool useOptimizations)
 {
     static QStaticText *staticText[lines];
@@ -113,7 +110,10 @@ void paint_QStaticText(QPainter &p, bool useOptimizations)
     if (first) {
         for (int i = 0; i < lines; ++i) {
             staticText[i] = new QStaticText(strings[i]);
-            staticText[i]->setUseBackendOptimizations(useOptimizations);
+            if (useOptimizations)
+                staticText[i]->setPerformanceHint(QStaticText::AggressiveCaching);
+            else
+                staticText[i]->setPerformanceHint(QStaticText::ModerateCaching);
         }
         first = false;
     }
@@ -133,7 +133,6 @@ void paint_QStaticText_optimizations(QPainter &p)
 {
     paint_QStaticText(p, true);
 }
-#endif
 
 void paint_QPixmapCachedText(QPainter &p)
 {
@@ -160,6 +159,15 @@ void paint_QPixmapCachedText(QPainter &p)
 
 void paint_RoundedRect(QPainter &p)
 {
+    static bool first = true;
+    if (first) {
+        if (testWidget) {
+            QGLFormat format = testWidget->format();
+            if (!format.sampleBuffers())
+                qWarning() << "Cannot paint antialiased rounded rect without sampleBuffers";
+        }
+        first = false;
+    }
     p.setRenderHint(QPainter::Antialiasing, true);
     p.setPen(Qt::black);
     p.setBrush(Qt::red);
@@ -174,27 +182,101 @@ void paint_RoundedRect(QPainter &p)
 void paint_QPixmapCachedRoundedRect(QPainter &p)
 {
     static bool first = true;
-    static QPixmap cacheRect[lines];
+    static QPixmap cacheRect;
     if (first) {
-        for (int i = 0; i < lines; ++i) {
-            QSize size((i+1)*50, spacing-1);
-            cacheRect[i] = QPixmap(size);
-            cacheRect[i].fill(Qt::transparent);
-            QPainter paint(&cacheRect[i]);
-            paint.setRenderHint(QPainter::Antialiasing);
-            paint.setPen(Qt::black);
-            paint.setBrush(Qt::red);
-            paint.drawRoundedRect(QRect(QPoint(0,0), size), 8, 8);
-        }
+        const int pw = 0;
+        const int radius = 8;
+        cacheRect = QPixmap(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2);
+        cacheRect.fill(Qt::transparent);
+        QPainter paint(&cacheRect);
+        paint.setRenderHint(QPainter::Antialiasing);
+        paint.setPen(Qt::black);
+        paint.setBrush(Qt::red);
+        if (pw%2)
+            paint.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, cacheRect.width()-(pw+1), cacheRect.height()-(pw+1)), radius, radius);
+        else
+            paint.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, cacheRect.width()-pw, cacheRect.height()-pw), radius, radius);
+
         first = false;
     }
     for (int i = 0; i < count; i++) {
         for (int j = 0; j < lines; ++j) {
-            p.drawPixmap(0,j*spacing,cacheRect[j]);
+            QSize size((j+1)*50, spacing-1);
+
+            p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
+
+            const int pw = 0;
+
+            int xOffset = (cacheRect.width()-1)/2;
+            int yOffset = (cacheRect.height()-1)/2;
+
+            QMargins margins(xOffset, yOffset, xOffset, yOffset);
+            QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+            //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
+            qDrawBorderPixmap(&p, QRect(-pw/2, j*spacing-pw/2, size.width()+pw, size.height()+pw), margins, cacheRect, cacheRect.rect(), margins, rules);
         }
     }
 }
 
+void paint_QPixmap63x63_opaque(QPainter &p)
+{
+    static bool first = true;
+    static QPixmap pm;
+    if (first) {
+        pm.load("data/63x63_opaque.png");
+        first = false;
+    }
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < lines; ++j) {
+            p.drawPixmap((i%10) * 64,j*spacing, pm);
+        }
+    }
+}
+
+void paint_QPixmap64x64_opaque(QPainter &p)
+{
+    static bool first = true;
+    static QPixmap pm;
+    if (first) {
+        pm.load("data/64x64_opaque.png");
+        first = false;
+    }
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < lines; ++j) {
+            p.drawPixmap((i%10) * 64,j*spacing, pm);
+        }
+    }
+}
+
+void paint_QPixmap63x63(QPainter &p)
+{
+    static bool first = true;
+    static QPixmap pm;
+    if (first) {
+        pm.load("data/63x63.png");
+        first = false;
+    }
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < lines; ++j) {
+            p.drawPixmap((i%10) * 64,j*spacing, pm);
+        }
+    }
+}
+
+void paint_QPixmap64x64(QPainter &p)
+{
+    static bool first = true;
+    static QPixmap pm;
+    if (first) {
+        pm.load("data/64x64.png");
+        first = false;
+    }
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < lines; ++j) {
+            p.drawPixmap((i%10) * 64,j*spacing, pm);
+        }
+    }
+}
 typedef void(*PaintFunc)(QPainter &);
 
 struct {
@@ -203,13 +285,15 @@ struct {
 } funcs[] = {
     { "QTextLayoutNoCache", &paint_QTextLayout_noCache },
     { "QTextLayoutWithCache", &paint_QTextLayout_cache },
-#ifdef HAVE_STATICTEXT
     { "QStaticTextNoBackendOptimizations", &paint_QStaticText_noOptimizations },
     { "QStaticTextWithBackendOptimizations", &paint_QStaticText_optimizations },
-#endif
     { "CachedText", &paint_QPixmapCachedText },
     { "RoundedRect", &paint_RoundedRect },
     { "CachedRoundedRect", &paint_QPixmapCachedRoundedRect },
+    { "QPixmap63x63_opaque", &paint_QPixmap63x63_opaque },
+    { "QPixmap64x64_opaque", &paint_QPixmap64x64_opaque },
+    { "QPixmap63x63", &paint_QPixmap63x63 },
+    { "QPixmap64x64", &paint_QPixmap64x64 },
     { 0, 0 }
 };
 
@@ -231,7 +315,7 @@ public:
     void paintEvent(QPaintEvent *) {
         static int last = 0;
         static bool firstRun = true;
-        if (firstRun == 0) {
+        if (firstRun) {
             timer.start();
             firstRun = false;
         } else {
@@ -297,11 +381,11 @@ int main(int argc, char *argv[])
     QWidget w;
     QGLFormat format = QGLFormat::defaultFormat();
     format.setSampleBuffers(sampleBuffers);
-    MyGLWidget *glw = new MyGLWidget(format);
-    glw->setAutoFillBackground(false);
+    testWidget = new MyGLWidget(format);
+    testWidget->setAutoFillBackground(false);
     QVBoxLayout *layout = new QVBoxLayout(&w);
     w.setLayout(layout);
-    layout->addWidget(glw);
+    layout->addWidget(testWidget);
     w.showFullScreen();
     app.exec();
 

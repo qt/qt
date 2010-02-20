@@ -86,6 +86,7 @@ public:
     , reversed(false), reversible(false), endState(0)
     {
         animations.parent = this;
+        group.trans = this;
     }
 
     QString fromState;
@@ -94,11 +95,6 @@ public:
     bool reversible;
     ParallelAnimationWrapper group;
     QmlTransitionManager *endState;
-
-    void init()
-    {
-        group.trans = this;
-    }
 
     void complete()
     {
@@ -121,6 +117,7 @@ void QmlTransitionPrivate::AnimationList::append(QmlAbstractAnimation *a)
 {
     QmlConcreteList<QmlAbstractAnimation *>::append(a);
     parent->group.addAnimation(a->qtAnimation());
+    a->setDisableUserControl();
 }
 
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
@@ -139,8 +136,6 @@ QML_DEFINE_TYPE(Qt,4,6,Transition,QmlTransition)
 QmlTransition::QmlTransition(QObject *parent)
     : QObject(*(new QmlTransitionPrivate), parent)
 {
-    Q_D(QmlTransition);
-    d->init();
 }
 
 QmlTransition::~QmlTransition()

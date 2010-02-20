@@ -55,12 +55,12 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsDrag : public QObject
     Q_OBJECT
 
     Q_ENUMS(Axis)
-    Q_PROPERTY(QmlGraphicsItem *target READ target WRITE setTarget)
-    Q_PROPERTY(Axis axis READ axis WRITE setAxis)
-    Q_PROPERTY(qreal minimumX READ xmin WRITE setXmin)
-    Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax)
-    Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin)
-    Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax)
+    Q_PROPERTY(QmlGraphicsItem *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(Axis axis READ axis WRITE setAxis NOTIFY axisChanged)
+    Q_PROPERTY(qreal minimumX READ xmin WRITE setXmin NOTIFY minimumXChanged)
+    Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax NOTIFY maximumXChanged)
+    Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin NOTIFY minimumYChanged)
+    Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax NOTIFY maximumYChanged)
     //### consider drag and drop
 
 public:
@@ -82,6 +82,14 @@ public:
     void setYmin(qreal);
     qreal ymax() const;
     void setYmax(qreal);
+
+Q_SIGNALS:
+    void targetChanged();
+    void axisChanged();
+    void minimumXChanged();
+    void maximumXChanged();
+    void minimumYChanged();
+    void maximumYChanged();
 
 private:
     QmlGraphicsItem *_target;
@@ -107,7 +115,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsMouseRegion : public QmlGraphicsItem
     Q_PROPERTY(Qt::MouseButtons pressedButtons READ pressedButtons NOTIFY pressedChanged)
     Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
     Q_PROPERTY(bool hoverEnabled READ acceptHoverEvents WRITE setAcceptHoverEvents)
-    Q_PROPERTY(QmlGraphicsDrag *drag READ drag) //### add flicking to QmlGraphicsDrag or add a QmlGraphicsFlick ???
+    Q_PROPERTY(QmlGraphicsDrag *drag READ drag CONSTANT) //### add flicking to QmlGraphicsDrag or add a QmlGraphicsFlick ???
 
 public:
     QmlGraphicsMouseRegion(QmlGraphicsItem *parent=0);

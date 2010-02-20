@@ -21,6 +21,7 @@ HEADERS += aboutdialog.h \
     bookmarkfiltermodel.h \
     bookmarkitem.h \
     bookmarkmanager.h \
+    bookmarkmanagerwidget.h \
     bookmarkmodel.h \
     centralwidget.h \
     cmdlineparser.h \
@@ -49,6 +50,7 @@ SOURCES += aboutdialog.cpp \
     bookmarkfiltermodel.cpp \
     bookmarkitem.cpp \
     bookmarkmanager.cpp \
+    bookmarkmanagerwidget.cpp \
     bookmarkmodel.cpp \
     centralwidget.cpp \
     cmdlineparser.cpp \
@@ -72,6 +74,7 @@ SOURCES += aboutdialog.cpp \
     ../shared/collectionconfiguration.cpp \
 
 FORMS += bookmarkdialog.ui \
+    bookmarkmanagerwidget.ui \
     bookmarkwidget.ui \
     filternamedialog.ui \
     installdialog.ui \

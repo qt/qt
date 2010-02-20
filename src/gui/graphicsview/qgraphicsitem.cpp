@@ -3178,8 +3178,9 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 */
 void QGraphicsItem::clearFocus()
 {
-    // Pass focus to the closest parent focus scope.
-    if (!d_ptr->inDestructor) {
+    // Pass focus to the closest parent focus scope when clearing focus
+    // from a focus scope.
+    if (!d_ptr->inDestructor && (d_ptr->flags & ItemIsFocusScope)) {
         QGraphicsItem *p = d_ptr->parent;
         while (p) {
             if (p->flags() & ItemIsFocusScope) {

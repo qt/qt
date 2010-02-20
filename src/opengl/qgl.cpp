@@ -1708,6 +1708,7 @@ QGLTextureCache::~QGLTextureCache()
 
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
+    QWriteLocker locker(&m_lock);
     if (m_cache.totalCost() + cost > m_cache.maxCost()) {
         // the cache is full - make an attempt to remove something
         const QList<qint64> keys = m_cache.keys();
@@ -1725,6 +1726,7 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
 
 bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 {
+    QWriteLocker locker(&m_lock);
     QList<qint64> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         QGLTexture *tex = m_cache.object(keys.at(i));
@@ -1739,6 +1741,7 @@ bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 
 void QGLTextureCache::removeContextTextures(QGLContext* ctx)
 {
+    QWriteLocker locker(&m_lock);
     QList<qint64> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         const qint64 &key = keys.at(i);
@@ -1761,11 +1764,8 @@ QGLTextureCache* QGLTextureCache::instance()
 */
 void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 {
-    // ### remove when the GL texture cache becomes thread-safe
-    if (qApp->thread() == QThread::currentThread()) {
-        instance()->remove(cacheKey);
-        Q_ASSERT(instance()->getTexture(cacheKey) == 0);
-    }
+    instance()->remove(cacheKey);
+    Q_ASSERT(instance()->getTexture(cacheKey) == 0);
 }
 
 
@@ -2388,7 +2388,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        qWarning(" - texture upload failed, error code 0x%x\n", error);
+        qWarning(" - texture upload failed, error code 0x%x, enum: %d (%x)\n", error, target, target);
     }
 #endif
 
@@ -3290,6 +3290,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 */
 
 
+
 /*****************************************************************************
   QGLWidget implementation
  *****************************************************************************/
@@ -3409,6 +3410,15 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     Overpainting 2D content on top of 3D content takes a little more effort.
     One approach to doing this is shown in the
     \l{Overpainting Example}{Overpainting} example.
+
+    \section1 Threading
+
+    It is possible to render into a QGLWidget from another thread, but it
+    requires that all access to the GL context is safe guarded. The Qt GUI
+    thread will try to use the context in resizeEvent and paintEvent, so in
+    order for threaded rendering using a GL widget to work, these functions
+    need to be intercepted in the GUI thread and handled accordingly in the
+    application.
 
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}

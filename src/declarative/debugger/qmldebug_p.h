@@ -361,6 +361,11 @@ private:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QmlDebugEngineReference)
+Q_DECLARE_METATYPE(QmlDebugObjectReference)
+Q_DECLARE_METATYPE(QmlDebugContextReference)
+Q_DECLARE_METATYPE(QmlDebugPropertyReference)
+
 QT_END_HEADER
 
 #endif // QMLDEBUG_H

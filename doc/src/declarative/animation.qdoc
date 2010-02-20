@@ -44,9 +44,9 @@
 \title QML Animation
 
 Animation in QML is done by animating properties of objects. Properties of type
-real, int, color, rect, point, and size can all be animated.
+real, int, color, rect, point, size, and vector3d can all be animated.
 
-QML supports three different forms of animation - basic property animation,
+QML supports three main forms of animation - basic property animation,
 transitions, and property behaviors.
 
 \tableofcontents
@@ -71,7 +71,6 @@ Rectangle {
         x: 60-img.width/2
         y: 0
         y: SequentialAnimation {
-            running: true
             repeat: true
             NumberAnimation { to: 200-img.height; easing: "easeOutBounce"; duration: 2000 }
             PauseAnimation { duration: 1000 }
@@ -84,8 +83,8 @@ Rectangle {
 \image propanim.gif
 
 When you assign an animation as a value source, you do not need to specify \c property
-or \c target; they are automatically selected for you. You do, however, need to specify \c to, and explicitly
-start the animation (usually via the \c running property).
+or \c target; they are automatically selected for you. You do, however, need to specify \c to.
+An animation specified as a value source will be \c running by default.
 
 \qml
 Rectangle {
@@ -94,7 +93,7 @@ Rectangle {
     Rectangle {
         color: "red"
         width: 50; height: 50
-        x: NumberAnimation { to: 50; running: true }
+        x: NumberAnimation { to: 50; }
     }
 }
 \endqml
@@ -135,7 +134,7 @@ For example, a transition could describe how an item moves from its initial posi
 transitions: [
     Transition {
         NumberAnimation {
-            matchProperties: "x,y"
+            properties: "x,y"
             easing: "easeOutBounce"
             duration: 200
         }
@@ -143,13 +142,38 @@ transitions: [
 ]
 \endcode
 
-As you can see from the above example, transitions make use of the same basic animation classes introduced
-above. However, you generally use a different set of properties when working with transitions. In the example,
-no \c target or \c property has been specified. Instead, we have specified \c matchProperties,
-which (along with \c matchTargets) acts as a selector to determine which property changes to animate;
-in this case, we will animate any x,y properties that have changed on any objects.
+As can be seen, transitions make use of the same basic animation classes introduced above.
+In the above example we have specified that we want to animate the \c x and \c y properties, but have not
+specified the objects to animate or the \c to values. By default these values are supplied by the framework --
+the animation will animate any \c targets whose \c x and \c y have changed, and the \c to values will be those
+defined in the end state. You can always supply explicit values to override these implicit values when needed.
 
-QML transitions also have selectors to determine which state changes a transition should apply to:
+\code
+Transition {
+    from: "*"
+    to: "MyState"
+    reversible: true
+    SequentialAnimation {
+        NumberAnimation {
+            duration: 1000
+            easing: "easeOutBounce"
+            // animate myItem's x and y if they have changed in the state
+            target: myItem
+            properties: "x,y"
+        }
+        NumberAnimation {
+            duration: 1000
+            // animate myItem2's y to 200, regardless of what happens in the state
+            target: myItem2
+            property: "y"
+            to: 200
+        }
+    }
+}
+\endcode
+
+QML transitions have selectors to determine which state changes a transition should apply to.
+The following transition will only be triggered when we enter into the \c "details" state.
 
 \code
 Transition {
@@ -175,40 +199,14 @@ Transition {
             NumberAnimation {
                 duration: 1000
                 easing: "easeOutBounce"
-                matchTargets: box1
-                matchProperties: "x,y"
+                targets: box1
+                properties: "x,y"
             }
             NumberAnimation {
                 duration: 1000
-                matchTargets: box2
-                matchProperties: "x,y"
+                targets: box2
+                properties: "x,y"
             }
-        }
-    }
-}
-\endcode
-
-To insert an explicit animation into your transition, you can use \c target and \c property as normal.
-
-\code
-Transition {
-    from: "*"
-    to: "MyState"
-    reversible: true
-    SequentialAnimation {
-        NumberAnimation {
-            duration: 1000
-            easing: "easeOutBounce"
-            // animate myItem's x and y if they have changed in the state
-            matchTargets: myItem
-            matchProperties: "x,y"
-        }
-        NumberAnimation {
-            duration: 1000
-            // animate myItem2's y to 200, regardless of what happens in the state
-            target: myItem2
-            property: "y"
-            to: 200
         }
     }
 }
@@ -217,8 +215,8 @@ Transition {
 \section1 Property Behaviors
 
 A \l{Behavior}{property behavior} specifies a default animation to run whenever the property's value changes, regardless
-of what caused the change. Unlike Transition, \l Behavior doesn't provide a way to indicate that a Behavior
-should only apply under certain circumstances.
+of what caused the change. The \c enabled property can be used to force a \l Behavior
+to only apply under certain circumstances.
 
 In the following snippet, we specify that we want the x position of redRect to be animated
 whenever it changes. The animation will last 300 milliseconds and use an InOutQuad easing curve.

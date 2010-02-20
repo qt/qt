@@ -154,14 +154,6 @@ public:
     QmlTimeLineEvent(const QmlTimeLineEvent &o);
 
     template<class T, void (T::*method)()>
-    QmlTimeLineEvent(QmlTimeLineObject *b, T *c)
-    {
-	d0 = &callFunc<T, method>;
-	d1 = (void *)c;
-	d2 = b;
-    }
-
-    template<class T, void (T::*method)()>
     static QmlTimeLineEvent timeLineEvent(QmlTimeLineObject *b, T *c)
     {
         QmlTimeLineEvent rv;

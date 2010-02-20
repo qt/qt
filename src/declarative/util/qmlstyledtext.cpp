@@ -58,6 +58,8 @@
     The opening and closing tags must be correctly nested.
 */
 
+QT_BEGIN_NAMESPACE
+
 class QmlStyledTextPrivate
 {
 public:
@@ -341,3 +343,5 @@ QStringRef QmlStyledTextPrivate::parseValue(const QChar *&ch, const QString &tex
 
     return QStringRef(&textIn, valStart, valLength);
 }
+
+QT_END_NAMESPACE

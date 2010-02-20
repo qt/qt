@@ -44,6 +44,8 @@
 #include <QDebug>
 #include <qmlcontext.h>
 
+QT_BEGIN_NAMESPACE
+
 class QmlFolderListModelPrivate
 {
 public:

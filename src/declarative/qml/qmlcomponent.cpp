@@ -539,7 +539,6 @@ QObject *QmlComponent::create(QmlContext *context)
 QObject *QmlComponentPrivate::create(QmlContext *context, 
                                      const QBitField &bindings)
 {
-    QObject *create(QmlContext *context, const QBitField &);
     if (!context)
         context = engine->rootContext();
 

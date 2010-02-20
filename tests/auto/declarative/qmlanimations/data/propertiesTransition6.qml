@@ -19,7 +19,7 @@ Rectangle {
         }
     }
     transitions: Transition {
-        NumberAnimation { matchTargets: theItem; matchProperties: "x" }
+        NumberAnimation { targets: theItem; properties: "x" }
     }
 
     MouseRegion {

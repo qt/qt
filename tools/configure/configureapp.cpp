@@ -961,6 +961,7 @@ void Configure::parseCmdLine()
             if(i==argCount)
                 break;
             qmakeDefines += "QT_NAMESPACE="+configCmdLine.at(i);
+            dictionary[ "QT_NAMESPACE" ] = configCmdLine.at(i);
         } else if( configCmdLine.at(i) == "-qtlibinfix" ) {
             ++i;
             if(i==argCount)
@@ -2846,6 +2847,9 @@ void Configure::generateCachefile()
         configStream << "#Qt for Symbian FPU settings" << endl;
         if(!dictionary["ARM_FPU_TYPE"].isEmpty()) {
             configStream<<"MMP_RULES += \"ARMFPU "<< dictionary["ARM_FPU_TYPE"]<< "\"";
+        }
+        if (!dictionary["QT_NAMESPACE"].isEmpty()) {
+            configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
         }
 
         configStream.flush();
