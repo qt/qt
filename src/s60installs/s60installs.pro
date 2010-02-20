@@ -82,7 +82,16 @@ symbian: {
     qtbackup.sources = backup_registration.xml
     qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
 
-    DEPLOYMENT += qtresources qtlibraries qtbackup imageformats_plugins codecs_plugins graphicssystems_plugins
+    bearer_plugins.path = c:$$QT_PLUGINS_BASE_DIR/bearer
+    bearer_plugins.sources += qsymbianbearer.dll
+
+    DEPLOYMENT += qtresources \
+                  qtlibraries \
+                  qtbackup \
+                  imageformats_plugins \
+                  codecs_plugins \
+                  graphicssystems_plugins \
+                  bearer_plugins
 
     contains(QT_CONFIG, svg): {
        qtlibraries.sources += QtSvg.dll
