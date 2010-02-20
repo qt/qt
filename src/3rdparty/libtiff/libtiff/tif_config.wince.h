@@ -1,24 +1,47 @@
+/* $Id: tif_config.wince.h,v 1.1 2007/01/15 18:40:39 mloskot Exp $ */
+
+/*
+ * TIFF library configuration header for Windows CE platform.
+ */
+#ifndef _WIN32_WCE
+# error This version of tif_config.h header is dedicated for Windows CE platform!
+#endif
+
 /* Define to 1 if you have the <assert.h> header file. */
 #define HAVE_ASSERT_H 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
-#define HAVE_FCNTL_H 1
+#define  HAVE_FCNTL_H 1
 
 /* Define as 0 or 1 according to the floating point format suported by the
    machine */
 #define HAVE_IEEEFP 1
 
+/* Define to 1 if you have the `jbg_newlen' function. */
+#define HAVE_JBG_NEWLEN 1
+
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
-#define HAVE_SYS_TYPES_H 1
+#undef HAVE_SYS_TYPES_H
 
 /* Define to 1 if you have the <io.h> header file. */
 #define HAVE_IO_H 1
 
 /* Define to 1 if you have the <search.h> header file. */
 #define HAVE_SEARCH_H 1
+
+/* Define to 1 if you have the `setmode' function. */
+#define HAVE_SETMODE 1
+
+/* Define to 1 if you have the `bsearch' function. */
+#define HAVE_BSEARCH 1
+#define bsearch wceex_bsearch
+
+/* Define to 1 if you have the `lfind' function. */
+#define HAVE_LFIND 1
+#define lfind wceex_lfind
 
 /* The size of a `int', as computed by sizeof. */
 #define SIZEOF_INT 4
@@ -41,4 +64,4 @@
 # endif
 #endif
 
-#define lfind _lfind
+

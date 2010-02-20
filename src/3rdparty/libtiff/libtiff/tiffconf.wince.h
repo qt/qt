@@ -1,8 +1,28 @@
+/* $Id: tiffconf.wince.h,v 1.1.2.1 2009-01-01 17:52:51 bfriesen Exp $ */
+
+/*
+ * Windows CE platform tiffconf.wince.h
+ * Created by Mateusz Loskot (mateusz@loskot.net)
+ *
+ * NOTE: Requires WCELIBCEX library with wceex_* functions,
+ * It's an extension to C library on Windows CE platform.
+ * For example, HAVE_STDIO_H definition indicates there are
+ * following files available:
+ * stdio.h - from Windows CE / Windows Mobile SDK 
+ * wce_stdio.h - from WCELIBCEX library
+ */
+
+
 /*
   Configuration defines for installed libtiff.
   This file maintained for backward compatibility. Do not use definitions
   from this file in your programs.
 */
+
+#ifndef _WIN32_WCE
+# error This version of tif_config.h header is dedicated for Windows CE platform!
+#endif
+
 
 #ifndef _TIFFCONF_
 #define _TIFFCONF_
@@ -21,6 +41,18 @@
 
 /* The size of a `long', as computed by sizeof. */
 #define SIZEOF_LONG 4
+
+/* Signed 64-bit type formatter */
+#define TIFF_INT64_FORMAT "%I64d"
+
+/* Signed 64-bit type */
+#define TIFF_INT64_T signed __int64
+
+/* Unsigned 64-bit type formatter */
+#define TIFF_UINT64_FORMAT "%I64u"
+
+/* Unsigned 64-bit type */
+#define TIFF_UINT64_T unsigned __int64
 
 /* Compatibility stuff. */
 
