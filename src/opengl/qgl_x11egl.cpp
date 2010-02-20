@@ -190,11 +190,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     if (d->eglContext == 0) {
         d->eglContext = new QEglContext();
         d->eglContext->setApi(QEgl::OpenGL);
-        if (!d->eglContext->openDisplay(device())) {
-            delete d->eglContext;
-            d->eglContext = 0;
-            return false;
-        }
 
         // Construct the configuration we need for this surface.
         QEglProperties configProps;
@@ -614,7 +609,7 @@ EGLConfig Q_OPENGL_EXPORT qt_chooseEGLConfigForPixmap(bool hasAlpha, bool readOn
 
         EGLint configCount = 0;
         do {
-            eglChooseConfig(QEglContext::defaultDisplay(0), configAttribs.properties(), targetConfig, 1, &configCount);
+            eglChooseConfig(QEglContext::display(), configAttribs.properties(), targetConfig, 1, &configCount);
             if (configCount > 0) {
                 // Got one
                 qDebug() << "Found an" << (hasAlpha ? "ARGB" : "RGB") << (readOnly ? "readonly" : "target" )
@@ -653,7 +648,7 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
         pixmapAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGB);
 
     EGLSurface pixmapSurface;
-    pixmapSurface = eglCreatePixmapSurface(QEglContext::defaultDisplay(0),
+    pixmapSurface = eglCreatePixmapSurface(QEglContext::display(),
                                            pixmapConfig,
                                            (EGLNativePixmapType) pixmapData->handle(),
                                            pixmapAttribs.properties());
@@ -762,7 +757,7 @@ void QGLContextPrivate::destroyGlSurfaceForPixmap(QPixmapData* pmd)
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
     if (pixmapData->gl_surface) {
         EGLBoolean success;
-        success = eglDestroySurface(QEglContext::defaultDisplay(0), (EGLSurface)pixmapData->gl_surface);
+        success = eglDestroySurface(QEglContext::display(), (EGLSurface)pixmapData->gl_surface);
         if (success == EGL_FALSE) {
             qWarning() << "destroyGlSurfaceForPixmap() - Error deleting surface: "
                        << QEglContext::errorString(eglGetError());
@@ -777,7 +772,7 @@ void QGLContextPrivate::unbindPixmapFromTexture(QPixmapData* pmd)
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
     if (pixmapData->gl_surface) {
         EGLBoolean success;
-        success = eglReleaseTexImage(QEglContext::defaultDisplay(0),
+        success = eglReleaseTexImage(QEglContext::display(),
                                      (EGLSurface)pixmapData->gl_surface,
                                      EGL_BACK_BUFFER);
         if (success == EGL_FALSE) {

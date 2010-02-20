@@ -43,8 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
-    namespace fulltextsearch {
+namespace fulltextsearch {
 
 QHelpSearchIndexReader::QHelpSearchIndexReader()
     : QThread()
@@ -100,7 +99,6 @@ QList<QHelpSearchEngine::SearchHit> QHelpSearchIndexReader::hits(int start,
 }
 
 
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE

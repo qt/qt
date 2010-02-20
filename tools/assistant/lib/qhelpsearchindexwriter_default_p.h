@@ -65,9 +65,8 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace std {
+namespace fulltextsearch {
+namespace std {
 
 class Writer
 {
@@ -123,9 +122,8 @@ private:
     QString m_indexFilesFolder;
 };
 
-        }   // namespace std
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace std
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE
 
