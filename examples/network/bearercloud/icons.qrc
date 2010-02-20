@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>wlan.svg</file>
+    <file>lan.svg</file>
+    <file>unknown.svg</file>
+</qresource>
+</RCC>
