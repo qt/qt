@@ -49,6 +49,9 @@
 #include <stdlib.h>
 #include <qdebug.h>
 
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
 #ifdef Q_OS_WIN
 #define SCRIPT_EXT ".bat"
 #else

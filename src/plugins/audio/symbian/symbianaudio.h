@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,17 +38,39 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QREMOTECOMMANDS_H
-#define QREMOTECOMMANDS_H
-#include <winbase.h>
-#include <rapi.h>
 
-extern "C" {
-    int __declspec(dllexport) qRemoteLaunch(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream*);
-    int __declspec(dllexport) qRemoteSoftReset(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream);
-    int __declspec(dllexport) qRemoteToggleUnattendedPowerMode(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream);
-    int __declspec(dllexport) qRemotePowerButton(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream);
-    bool __declspec(dllexport) qRemoteExecute(const wchar_t* program, const wchar_t* arguments = NULL, int *returnValue = NULL , DWORD* error = NULL, int timeout = -1);
-}
+#ifndef SYMBIANAUDIO_H
+#define SYMBIANAUDIO_H
+
+#include <QtCore/qnamespace.h>
+
+QT_BEGIN_NAMESPACE
+
+namespace SymbianAudio {
+
+/**
+ * Default values used by audio input and output classes, when underlying
+ * DevSound instance has not yet been created.
+ */
+
+const int DefaultBufferSize = 4096; // bytes
+const int DefaultNotifyInterval = 1000; // ms
+
+/**
+ * Enumeration used to track state of internal DevSound instances.
+ * Values are translated to the corresponding QAudio::State values by
+ * SymbianAudio::Utils::stateNativeToQt.
+ */
+enum State {
+        ClosedState
+    ,   InitializingState
+    ,   ActiveState
+    ,   IdleState
+    ,   SuspendedState
+};
+
+} // namespace SymbianAudio
+
+QT_END_NAMESPACE
 
 #endif

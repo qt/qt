@@ -247,7 +247,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "PHONON" ]          = "auto";
     dictionary[ "PHONON_BACKEND" ]  = "yes";
     dictionary[ "MULTIMEDIA" ]      = "yes";
-    dictionary[ "AUDIO_BACKEND" ]   = "yes";
+    dictionary[ "AUDIO_BACKEND" ]   = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
@@ -2067,6 +2067,52 @@ bool Configure::checkAvailability(const QString &part)
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     } else if (part == "DECLARATIVE") {
         available = QFile::exists(sourcePath + "/src/declarative/qml/qmlcomponent.h");
+    } else if (part == "AUDIO_BACKEND") {
+        available = true;
+        if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
+            QString epocRoot = Environment::symbianEpocRoot();
+            const QDir epocRootDir(epocRoot);
+            if (epocRootDir.exists()) {
+                QStringList paths;
+                paths << "epoc32/release/armv5/lib/mmfdevsound.dso"
+                      << "epoc32/release/armv5/lib/mmfdevsound.lib"
+                      << "epoc32/release/winscw/udeb/mmfdevsound.dll"
+                      << "epoc32/release/winscw/udeb/mmfdevsound.lib"
+                      << "epoc32/include/mmf/server/sounddevice.h";
+
+                QStringList::iterator i = paths.begin();
+                while (i != paths.end()) {
+                    const QString &path = epocRoot + *i;
+                    if (QFile::exists(path))
+                        i = paths.erase(i);
+                    else
+                        ++i;
+                }
+
+                available = (paths.size() == 0);
+                if (!available) {
+                    if (epocRoot.isNull() || epocRoot == "")
+                        epocRoot = "<empty string>";
+                    cout << endl
+                         << "The QtMultimedia audio backend will not be built because required" << endl
+                         << "support for CMMFDevSound was not found in the SDK." << endl
+                         << "The SDK which was examined was located at the following path:" << endl
+                         << "    " << epocRoot << endl
+                         << "The following required files were missing from the SDK:" << endl;
+                    QString path;
+                    foreach (path, paths)
+                        cout << "    " << path << endl;
+                    cout << endl;
+                }
+            } else {
+                cout << endl
+                     << "The SDK root was determined to be '" << epocRoot << "'." << endl
+                     << "This directory was not found, so the SDK could not be checked for" << endl
+                     << "CMMFDevSound support.  The QtMultimedia audio backend will therefore" << endl
+                     << "not be built." << endl << endl;
+                available = false;
+            }
+        }
     }
 
     return available;
@@ -2155,6 +2201,8 @@ void Configure::autoDetection()
         dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
     if (dictionary["DECLARATIVE"] == "auto")
         dictionary["DECLARATIVE"] = checkAvailability("DECLARATIVE") ? "yes" : "no";
+    if (dictionary["AUDIO_BACKEND"] == "auto")
+        dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
 
     // Qt/WinCE remote test application
     if (dictionary["CETEST"] == "auto")

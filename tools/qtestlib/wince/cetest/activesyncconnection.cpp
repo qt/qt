@@ -443,6 +443,145 @@ bool ActiveSyncConnection::execute(QString program, QString arguments, int timeo
     return result;
 }
 
+bool ActiveSyncConnection::setDeviceAwake(bool activate, int *returnValue)
+{
+    if (!isConnected()) {
+        qWarning("Cannot execute, connect to device first!");
+        return false;
+    }
+    bool result = false;
+
+    // If we want to wait, we have to use CeRapiInvoke, as CeCreateProcess has no way to wait
+    // until the process ends. The lib must have been build and also deployed already.
+    if (!isConnected() && !connect())
+        return false;
+
+    HRESULT res = S_OK;
+
+    //SYSTEM_POWER_STATUS_EX systemPowerState;
+
+    //res = CeGetSystemPowerStatusEx(&systemPowerState, true);
+
+    QString dllLocation = "\\Windows\\QtRemote.dll";
+    QString functionName = "qRemoteToggleUnattendedPowerMode";
+
+    DWORD outputSize;
+    BYTE* output;
+    IRAPIStream *stream;
+    int returned = 0;
+    int toggle = int(activate);
+
+    res = CeRapiInvoke(dllLocation.utf16(), functionName.utf16(), 0, 0, &outputSize, &output, &stream, 0);
+    if (S_OK != res) {
+        DWORD ce_error = CeGetLastError();
+        if (S_OK != ce_error) {
+            qWarning("Error invoking %s on %s: %s", qPrintable(functionName),
+                qPrintable(dllLocation), strwinerror(ce_error).constData());
+        } else {
+            qWarning("Error: %s on %s unexpectedly returned %d", qPrintable(functionName),
+                qPrintable(dllLocation), res);
+        }
+    } else {
+        DWORD written;
+
+        if (S_OK != stream->Write(&toggle, sizeof(toggle), &written)) {
+            qWarning("   Could not write toggle option to process");
+            return false;
+        }
+
+        if (S_OK != stream->Read(&returned, sizeof(returned), &written)) {
+            qWarning("   Could not access return value of process");
+        }
+        else
+            result = true;
+    }
+
+    if (returnValue)
+        *returnValue = returned;
+
+    return result;
+}
+
+bool ActiveSyncConnection::resetDevice()
+{
+    if (!isConnected()) {
+        qWarning("Cannot execute, connect to device first!");
+        return false;
+    }
+
+    bool result = false;
+    if (!isConnected() && !connect())
+        return false;
+
+    QString dllLocation = "\\Windows\\QtRemote.dll";
+    QString functionName = "qRemoteSoftReset";
+
+    DWORD outputSize;
+    BYTE* output;
+    IRAPIStream *stream;
+
+    int returned = 0;
+
+    HRESULT res = CeRapiInvoke(dllLocation.utf16(), functionName.utf16(), 0, 0, &outputSize, &output, &stream, 0);
+    if (S_OK != res) {
+        DWORD ce_error = CeGetLastError();
+        if (S_OK != ce_error) {
+            qWarning("Error invoking %s on %s: %s", qPrintable(functionName),
+                qPrintable(dllLocation), strwinerror(ce_error).constData());
+        } else {
+            qWarning("Error: %s on %s unexpectedly returned %d", qPrintable(functionName),
+                qPrintable(dllLocation), res);
+        }
+    } else {
+        result = true;
+    }
+    return result;
+}
+
+bool ActiveSyncConnection::toggleDevicePower(int *returnValue)
+{
+    if (!isConnected()) {
+        qWarning("Cannot execute, connect to device first!");
+        return false;
+    }
+
+    bool result = false;
+    if (!isConnected() && !connect())
+        return false;
+
+    QString dllLocation = "\\Windows\\QtRemote.dll";
+    QString functionName = "qRemotePowerButton";
+
+    DWORD outputSize;
+    BYTE* output;
+    IRAPIStream *stream;
+    int returned = 0;
+
+    HRESULT res = CeRapiInvoke(dllLocation.utf16(), functionName.utf16(), 0, 0, &outputSize, &output, &stream, 0);
+    if (S_OK != res) {
+        DWORD ce_error = CeGetLastError();
+        if (S_OK != ce_error) {
+            qWarning("Error invoking %s on %s: %s", qPrintable(functionName),
+                qPrintable(dllLocation), strwinerror(ce_error).constData());
+        } else {
+            qWarning("Error: %s on %s unexpectedly returned %d", qPrintable(functionName),
+                qPrintable(dllLocation), res);
+        }
+    } else {
+        DWORD written;
+        if (S_OK != stream->Read(&returned, sizeof(returned), &written)) {
+            qWarning("   Could not access return value of process");
+        }
+        else {
+            result = true;
+        }
+    }
+
+    if (returnValue)
+        *returnValue = returned;
+    return result;
+}
+
 bool ActiveSyncConnection::createDirectory(const QString &path, bool deleteBefore)
 {
     if (deleteBefore)

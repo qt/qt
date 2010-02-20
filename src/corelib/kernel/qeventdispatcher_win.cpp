@@ -525,8 +525,8 @@ LRESULT CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
                 MSG *msg = (MSG *) lp;
                 if (localSerialNumber != d->lastSerialNumber
                     // if this message IS the one that triggers sendPostedEvents(), no need to post it again
-                    && msg->hwnd != d->internalHwnd
-                    && msg->message != WM_QT_SENDPOSTEDEVENTS) {
+                    && (msg->hwnd != d->internalHwnd
+                        || msg->message != WM_QT_SENDPOSTEDEVENTS)) {
                     PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
                 }
             }
