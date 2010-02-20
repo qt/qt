@@ -19,6 +19,11 @@ symbian: {
         TARGET.UID3=0x2001E61B
 }
 
+contains(QMAKE_CC, gcc): {
+        #Disable warnings in 3rdparty code due to unused arguments
+	QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
+}
+
 contains(QT_CONFIG, system-jpeg) {
         unix:LIBS += -ljpeg
         win32:LIBS += libjpeg.lib
@@ -26,8 +31,10 @@ contains(QT_CONFIG, system-jpeg) {
 !contains(QT_CONFIG, system-jpeg) {
 	INCLUDEPATH += ../../../3rdparty/libjpeg
 	SOURCES  += \
+	    ../../../3rdparty/libjpeg/jaricom.c \
 	    ../../../3rdparty/libjpeg/jcapimin.c \
 	    ../../../3rdparty/libjpeg/jcapistd.c \
+	    ../../../3rdparty/libjpeg/jcarith.c \
 	    ../../../3rdparty/libjpeg/jccoefct.c \
 	    ../../../3rdparty/libjpeg/jccolor.c \
 	    ../../../3rdparty/libjpeg/jcdctmgr.c \
@@ -38,12 +45,12 @@ contains(QT_CONFIG, system-jpeg) {
 	    ../../../3rdparty/libjpeg/jcmaster.c \
 	    ../../../3rdparty/libjpeg/jcomapi.c \
 	    ../../../3rdparty/libjpeg/jcparam.c \
-	    ../../../3rdparty/libjpeg/jcphuff.c \
 	    ../../../3rdparty/libjpeg/jcprepct.c \
 	    ../../../3rdparty/libjpeg/jcsample.c \
 	    ../../../3rdparty/libjpeg/jctrans.c \
 	    ../../../3rdparty/libjpeg/jdapimin.c \
 	    ../../../3rdparty/libjpeg/jdapistd.c \
+	    ../../../3rdparty/libjpeg/jdarith.c \
 	    ../../../3rdparty/libjpeg/jdatadst.c \
 	    ../../../3rdparty/libjpeg/jdatasrc.c \
 	    ../../../3rdparty/libjpeg/jdcoefct.c \
@@ -55,7 +62,6 @@ contains(QT_CONFIG, system-jpeg) {
 	    ../../../3rdparty/libjpeg/jdmarker.c \
 	    ../../../3rdparty/libjpeg/jdmaster.c \
 	    ../../../3rdparty/libjpeg/jdmerge.c \
-	    ../../../3rdparty/libjpeg/jdphuff.c \
 	    ../../../3rdparty/libjpeg/jdpostct.c \
 	    ../../../3rdparty/libjpeg/jdsample.c \
 	    ../../../3rdparty/libjpeg/jdtrans.c \
@@ -66,11 +72,10 @@ contains(QT_CONFIG, system-jpeg) {
 	    ../../../3rdparty/libjpeg/jidctflt.c \
 	    ../../../3rdparty/libjpeg/jidctfst.c \
 	    ../../../3rdparty/libjpeg/jidctint.c \
-	    ../../../3rdparty/libjpeg/jidctred.c \
-	    ../../../3rdparty/libjpeg/jmemmgr.c \
 	    ../../../3rdparty/libjpeg/jquant1.c \
 	    ../../../3rdparty/libjpeg/jquant2.c \
 	    ../../../3rdparty/libjpeg/jutils.c \
+	    ../../../3rdparty/libjpeg/jmemmgr.c \
 	    ../../../3rdparty/libjpeg/jmemnobs.c
 }
 
