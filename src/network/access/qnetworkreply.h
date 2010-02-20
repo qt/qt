@@ -77,6 +77,7 @@ public:
         TimeoutError,
         OperationCanceledError,
         SslHandshakeFailedError,
+        TemporaryNetworkFailureError,
         UnknownNetworkError = 99,
 
         // proxy errors (101-199):
