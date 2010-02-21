@@ -39,26 +39,13 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOWS_REGISTRY_H
-#define WINDOWS_REGISTRY_H
+#ifndef EPOCROOT_H
+#define EPOCROOT_H
 
-#include <QtCore/qglobal.h>
+#include <qstring.h>
 
-#ifdef Q_OS_WIN32
-   #include <QtCore/qt_windows.h>
-#else
-    typedef void* HKEY;
-#endif
+// Implementation of epocRoot method is in initprojectdeploy_symbian.cpp
+// Defined in separate header for inclusion clarity
+extern QString epocRoot();
 
-#include <QtCore/qstring.h>
-
-/**
- * Read a value from the Windows registry.
- *
- * If the key is not found, or the registry cannot be accessed (for example
- * if this code is compiled for a platform other than Windows), a null
- * string is returned.
- */
-QString readRegistryKey(HKEY parentHandle, const QString &rSubkey);
-
-#endif // WINDOWS_REGISTRY_H
+#endif // EPOCROOT_H
