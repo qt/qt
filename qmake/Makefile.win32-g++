@@ -40,7 +40,6 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               borland_bmake.o msvc_nmake.o msvc_vcproj.o \
               msvc_objectmodel.o symmake.o initprojectdeploy_symbian.o \
               registry.o \
-              epocroot.o \
               symmake_abld.o symmake_sbsv2.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
@@ -280,9 +279,6 @@ initprojectdeploy_symbian.o: $(SOURCE_PATH)/qmake/generators/symbian/initproject
 
 registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-
-epocroot.o: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 
 project.o: $(SOURCE_PATH)/qmake/project.cpp $(SOURCE_PATH)/qmake/project.h $(SOURCE_PATH)/qmake/option.h
 	$(CXX) $(CXXFLAGS) project.cpp

@@ -78,7 +78,6 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               borland_bmake.obj msvc_nmake.obj msvc_vcproj.obj \
               msvc_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
               registry.obj \
-              epocroot.obj \
               symmake_abld.obj symmake_sbsv2.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
@@ -202,7 +201,6 @@ clean::
 	-del symmake_sbsv2.obj
 	-del initprojectdeploy_symbian.obj
 	-del registry.obj
-	-del epocroot.obj
 	-del pbuilder_pbx.obj
 	-del qxmlstream.obj
 	-del qxmlutils.obj
@@ -401,9 +399,6 @@ initprojectdeploy_symbian.obj: $(SOURCE_PATH)/qmake/generators/symbian/initproje
 
 registry.obj: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
-
-epocroot.obj: $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/symbian/epocroot.cpp
 
 md5.obj: $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
