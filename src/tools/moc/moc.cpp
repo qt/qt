@@ -292,8 +292,8 @@ void Moc::parseFunctionArguments(FunctionDef *def)
             arg.rightType += ' ';
             arg.rightType += lexem();
         }
-        arg.normalizedType = normalizeType(arg.type.name + ' ' + arg.rightType);
-        arg.typeNameForCast = normalizeType(noRef(arg.type.name) + "(*)" + arg.rightType);
+        arg.normalizedType = normalizeType(QByteArray(arg.type.name + ' ' + arg.rightType));
+        arg.typeNameForCast = normalizeType(QByteArray(noRef(arg.type.name) + "(*)" + arg.rightType));
         if (test(EQ))
             arg.isDefault = true;
         def->arguments += arg;

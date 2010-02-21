@@ -837,7 +837,7 @@ QString QTranslatorPrivate::do_translate(const char *context, const char *source
         numerus = numerusHelper(n, numerusRulesArray, numerusRulesLength);
 
     for (;;) {
-        quint32 h = elfHash(QByteArray(sourceText) + comment);
+        quint32 h = elfHash(QByteArray(QByteArray(sourceText) + comment).constData());
 
         const uchar *start = offsetArray;
         const uchar *end = start + ((numItems-1) << 3);
