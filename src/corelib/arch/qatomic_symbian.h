@@ -42,7 +42,7 @@
 #ifndef QATOMIC_SYMBIAN_H
 #define QATOMIC_SYMBIAN_H
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 #include <e32std.h>
 
 QT_BEGIN_HEADER

@@ -3,4 +3,5 @@ SUBDIRS = \
         io \
         kernel \
         thread \
-        tools
+        tools \
+	codecs

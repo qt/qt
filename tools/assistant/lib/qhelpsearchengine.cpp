@@ -63,9 +63,9 @@
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_CLUCENE_SUPPORT)
-    using namespace qt::fulltextsearch::clucene;
+    using namespace fulltextsearch::clucene;
 #else
-    using namespace qt::fulltextsearch::std;
+    using namespace fulltextsearch::std;
 #endif
 
 class QHelpSearchEnginePrivate : public QObject
@@ -195,7 +195,7 @@ private:
     QHelpSearchQueryWidget *queryWidget;
     QHelpSearchResultWidget *resultWidget;
 
-    qt::fulltextsearch::QHelpSearchIndexReader *indexReader;
+    fulltextsearch::QHelpSearchIndexReader *indexReader;
     QHelpSearchIndexWriter *indexWriter;
 
     QPointer<QHelpEngineCore> helpEngine;

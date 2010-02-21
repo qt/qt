@@ -366,11 +366,9 @@ template <typename T>
 Q_INLINE_TEMPLATE T* QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 {
 #ifndef __s390x__
-    return (T*)__CS_OLD_LOOP(reinterpret_cast<volatile long*>(_q_value), (int)newValue, "lr",
-                             "", "bcr 15,0\n");
+    return (T*)__CS_OLD_LOOP(&_q_value, (int)newValue, "lr", "", "");
 #else
-    return (T*)__CSG_OLD_LOOP(reinterpret_cast<volatile long*>(_q_value), (long)newValue, "lgr",
-                              "", "bcr 15,0\n");
+    return (T*)__CSG_OLD_LOOP(&_q_value, (long)newValue, "lgr", "", "");
 #endif
 }
 
@@ -378,9 +376,9 @@ template <typename T>
 Q_INLINE_TEMPLATE T* QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
 #ifndef __s390x__
-    return (T*)__CS_OLD_LOOP(reinterpret_cast<volatile long*>(_q_value), (int)newValue, "lr", "", "");
+    return (T*)__CS_OLD_LOOP(&_q_value, (int)newValue, "lr", "", "bcr 15,0 \n");
 #else
-    return (T*)__CSG_OLD_LOOP(reinterpret_cast<volatile long*>(_q_value), (long)newValue, "lgr", "", "");
+    return (T*)__CSG_OLD_LOOP(&_q_value, (long)newValue, "lgr", "", "bcr 15,0 \n");
 #endif
 }
 
@@ -388,11 +386,9 @@ template <typename T>
 Q_INLINE_TEMPLATE T* QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 {
 #ifndef __s390x__
-    return (T*)__CS_OLD_LOOP(reinterpret_cast<volatile long*>(_q_value), (int)newValue, "lr",
-                             "bcr 15,0 \n", "");
+    return (T*)__CS_OLD_LOOP(&_q_value, (int)newValue, "lr", "bcr 15,0 \n", "");
 #else
-    return (T*)__CSG_OLD_LOOP(reinterpret_cast<volatile long*>(_q_value), (long)newValue, "lgr",
-                              "bcr 15,0\n", "");
+    return (T*)__CSG_OLD_LOOP(&_q_value, (long)newValue, "lgr", "bcr 15,0\n", "");
 #endif
 }
 

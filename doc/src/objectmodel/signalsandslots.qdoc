@@ -379,7 +379,7 @@
     \section1 Signals And Slots With Default Arguments
 
     The signatures of signals and slots may contain arguments, and the
-    arguments can have defualt values. Consider QObject::destroyed():
+    arguments can have default values. Consider QObject::destroyed():
 
     \code
     void destroyed(QObject* = 0); 

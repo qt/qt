@@ -146,6 +146,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         if (products == 'B') {
             dictionary["EDITION"] = "Evaluation";
             dictionary["QT_EDITION"] = "QT_EDITION_EVALUATION";
+            licenseType = "Evaluation";
         }
     }
 
@@ -212,7 +213,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     }
 
     // Override for evaluation licenses
-    if (dictionary["Edition"] == "Evaluation")
+    if (dictionary["EDITION"] == "Evaluation")
         dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
 
     if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/.LICENSE")) {

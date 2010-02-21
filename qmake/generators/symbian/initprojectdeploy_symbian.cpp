@@ -46,104 +46,14 @@
 #include <qsettings.h>
 #include <qdebug.h>
 
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
 #define SYSBIN_DIR "\\sys\\bin"
 
 #define SUFFIX_DLL "dll"
 #define SUFFIX_EXE "exe"
 #define SUFFIX_QTPLUGIN "qtplugin"
-
-static void fixEpocRootStr(QString& path)
-{
-    path.replace("\\", "/");
-
-    if (path.size() > 1 && path[1] == QChar(':')) {
-        path = path.mid(2);
-    }
-
-    if (!path.size() || path[path.size()-1] != QChar('/')) {
-        path += QChar('/');
-    }
-}
-
-#define SYMBIAN_SDKS_KEY "HKEY_LOCAL_MACHINE\\Software\\Symbian\\EPOC SDKs"
-
-static QString epocRootStr;
-
-QString epocRoot()
-{
-    if (!epocRootStr.isEmpty()) {
-        return epocRootStr;
-    }
-
-    // First, check the env variable
-    epocRootStr = qgetenv("EPOCROOT");
-
-    if (epocRootStr.isEmpty()) {
-        // No EPOCROOT set, check the default device
-        // First check EPOCDEVICE env variable
-        QString defaultDevice = qgetenv("EPOCDEVICE");
-
-        // Check the windows registry via QSettings for devices.xml path
-        QSettings settings(SYMBIAN_SDKS_KEY, QSettings::NativeFormat);
-        QString devicesXmlPath = settings.value("CommonPath").toString();
-
-        if (!devicesXmlPath.isEmpty()) {
-            // Parse xml for correct device
-            devicesXmlPath += "/devices.xml";
-            QFile devicesFile(devicesXmlPath);
-            if (devicesFile.open(QIODevice::ReadOnly)) {
-                QXmlStreamReader xml(&devicesFile);
-                while (!xml.atEnd()) {
-                    xml.readNext();
-                    if (xml.isStartElement() && xml.name() == "devices") {
-                        if (xml.attributes().value("version") == "1.0") {
-                            // Look for correct device
-                            while (!(xml.isEndElement() && xml.name() == "devices") && !xml.atEnd()) {
-                                xml.readNext();
-                                if (xml.isStartElement() && xml.name() == "device") {
-                                    if ((defaultDevice.isEmpty() && xml.attributes().value("default") == "yes") ||
-                                        (!defaultDevice.isEmpty() && (xml.attributes().value("id").toString() + QString(":") + xml.attributes().value("name").toString()) == defaultDevice)) {
-                                        // Found the correct device
-                                        while (!(xml.isEndElement() && xml.name() == "device") && !xml.atEnd()) {
-                                            xml.readNext();
-                                            if (xml.isStartElement() && xml.name() == "epocroot") {
-                                                epocRootStr = xml.readElementText();
-                                                fixEpocRootStr(epocRootStr);
-                                                return epocRootStr;
-                                            }
-                                        }
-                                        xml.raiseError("No epocroot element found");
-                                    }
-                                }
-                            }
-                        } else {
-                            xml.raiseError("Invalid 'devices' element version");
-                        }
-                    }
-                }
-                if (xml.hasError()) {
-                    fprintf(stderr, "ERROR: \"%s\" when parsing devices.xml\n", qPrintable(xml.errorString()));
-                }
-            } else {
-                fprintf(stderr, "Could not open devices.xml (%s)\n", qPrintable(devicesXmlPath));
-            }
-        } else {
-            fprintf(stderr, "Could not retrieve " SYMBIAN_SDKS_KEY " setting\n");
-        }
-
-        fprintf(stderr, "Failed to determine epoc root.\n");
-        if (!defaultDevice.isEmpty())
-            fprintf(stderr, "The device indicated by EPOCDEVICE environment variable (%s) could not be found.\n", qPrintable(defaultDevice));
-        fprintf(stderr, "Either set EPOCROOT or EPOCDEVICE environment variable to a valid value, or provide a default Symbian device.\n");
-
-        // No valid device found; set epocroot to "/"
-        epocRootStr = QLatin1String("/");
-    }
-
-    fixEpocRootStr(epocRootStr);
-    return epocRootStr;
-}
-
 
 static bool isPlugin(const QFileInfo& info, const QString& devicePath)
 {

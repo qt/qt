@@ -1540,6 +1540,11 @@ bool QAbstractItemView::event(QEvent *event)
     case QEvent::FontChange:
         d->doDelayedItemsLayout(); // the size of the items will change
         break;
+#ifdef QT_SOFTKEYS_ENABLED
+    case QEvent::LanguageChange:
+        d->doneSoftKey->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::DoneSoftKey));
+        break;
+#endif
     default:
         break;
     }
