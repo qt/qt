@@ -1,14 +1,17 @@
-QMAKE_CFLAGS		+= --dllimport_runtime --preinclude rvct2_2.h  --diag_suppress 186,654,1300 --thumb --fpu softvfp --cpu 5T --enum_is_int -Ono_known_library --fpmode ieee_no_fenv --export_all_vtbl --no_vfe --apcs /inter $$QMAKE_CFLAGS.ARMCC
-QMAKE_CXXFLAGS		+= $$QMAKE_CFLAGS --no_parse_templates $$QMAKE_CXXFLAGS.ARMCC
-QMAKE_LFLAGS      	+= --diag_suppress 6331,6780 --bpabi --reloc --datacompressor=off --split --rw-base 0x800000 --dll --no_scanlib
-QMAKE_LFLAGS_APP        += --entry _E32Startup
-QMAKE_LFLAGS_SHLIB      += --entry _E32Dll
-QMAKE_CFLAGS_DEBUG	+= -g
-QMAKE_CXXFLAGS_DEBUG	+= -g
-QMAKE_CFLAGS_RELEASE	+= -O2 -Otime
-QMAKE_CXXFLAGS_RELEASE	+= -O2 -Otime
+gcceExtraFlags = --include=${EPOCROOT}epoc32/include/gcce/gcce.h -march=armv5t -mapcs -mthumb-interwork -nostdinc -c -fvisibility-inlines-hidden -mthumb  -msoft-float -T script
+QMAKE_CFLAGS += $${gcceExtraFlags}
+QMAKE_CXXFLAGS += $${gcceExtraFlags} -x c++ -fexceptions -fno-unit-at-a-time
 
-DEFINES              += __SYMBIAN32__ EKA2 __S60_50__ __S60_3X__ __SERIES60_3X__ __EPOC32__ __MARM__ __EABI__ __ARMCC__ __ARMcc_2__ __ARMCC_2_2__ __MARM_ARMV5__ __MARM_INTERWORK__ __DLL__ _UNICODE __SUPPORT_CPP_EXCEPTIONS__
+#   QMAKE_CFLAGS		+= --dllimport_runtime --preinclude rvct2_2.h  --diag_suppress 186,654,1300 --thumb --fpu softvfp --cpu 5T --enum_is_int -Ono_known_library --fpmode ieee_no_fenv --export_all_vtbl --no_vfe --apcs /inter $$QMAKE_CFLAGS.ARMCC
+#   QMAKE_CXXFLAGS		+= $$QMAKE_CFLAGS --no_parse_templates $$QMAKE_CXXFLAGS.ARMCC
+#   QMAKE_LFLAGS      	+= --diag_suppress 6331,6780 --bpabi --reloc --datacompressor=off --split --rw-base 0x800000 --dll --no_scanlib
+#   QMAKE_LFLAGS_APP        += --entry _E32Startup
+#   QMAKE_LFLAGS_SHLIB      += --entry _E32Dll
+#   QMAKE_CFLAGS_DEBUG	+= -g
+#   QMAKE_CXXFLAGS_DEBUG	+= -g
+#   QMAKE_CFLAGS_RELEASE	+= -O2 -Otime
+#   QMAKE_CXXFLAGS_RELEASE	+= -O2 -Otime
+#
 
 symbianObjdir=$$OBJECTS_DIR
 isEmpty(symbianObjdir) {
@@ -125,7 +128,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
 
 # Symbian resource files
 
-linux-armcc:symbian_resources_INCLUDES = -I$$(RVCT22INC)
+#linux-armcc:symbian_resources_INCLUDES = -I$$(RVCT22INC)
 symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
 symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
