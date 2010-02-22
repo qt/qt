@@ -28,6 +28,11 @@ ListModel
  - foo: true  is now a bool (not string "true")
  - foo: false  is now a bool (not string "false" == true!)
 
+PropertyAnimation
+------------------
+matchProperties and matchTargets have been renamed back to properties and targets.
+The semantics are explained in the PropertyAnimation::properties documentation
+and the animation overview documentation.
 
 =============================================================================
 The changes below are pre-4.6.0 release.
