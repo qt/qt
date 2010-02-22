@@ -49,8 +49,6 @@
 #include <QtCore/qdebug.h>
 
 
-QT_BEGIN_NAMESPACE
-
 #define VIDEO_TRANSPARENT(m) -(void)m:(NSEvent *)e{[[self superview] m:e];}
 
 @interface TransparentQTMovieView : QTMovieView
@@ -308,5 +306,3 @@ void QT7MovieViewOutput::setSaturation(int saturation)
 {
     m_saturation = saturation;
 }
-
-QT_END_NAMESPACE

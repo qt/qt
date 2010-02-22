@@ -138,7 +138,6 @@ void QMacWindowFader::performFade()
 }
 
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // qapplication.cpp;
-extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QWidget * mac_mouse_grabber;
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
