@@ -415,7 +415,7 @@ int QmlGraphicsVisualDataModelDataMetaObject::createProperty(const char *name, c
         if (model->m_listAccessor->type() == QmlListAccessor::ListProperty) {
             model->ensureRoles();
             QObject *object = model->m_listAccessor->at(data->m_index).value<QObject*>();
-            if (object && object->property(name).isValid())
+            if (object && (object->property(name).isValid() || qstrcmp(name,"modelData")==0))
                 return QmlOpenMetaObject::createProperty(name, type);
         }
     }
