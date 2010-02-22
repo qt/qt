@@ -97,7 +97,6 @@
 #include <QGraphicsObject>
 #include <QtCore/qcryptographichash.h>
 
-#include <private/qfactoryloader_p.h>
 #include <private/qobject_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
 
@@ -1249,12 +1248,13 @@ struct QmlEnginePrivate::ImportedNamespace {
             QByteArray qt = uris.at(i).toUtf8();
             qt += '/';
             qt += type;
+
             if (qmlImportTrace())
                 qDebug() << "Look in" << qt;
             QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
-            if (vmajor) *vmajor = vmaj;
-            if (vminor) *vminor = vmin;
             if (t) {
+                if (vmajor) *vmajor = vmaj;
+                if (vminor) *vminor = vmin;
                 if (qmlImportTrace())
                     qDebug() << "Found" << qt;
                 if (type_return)
@@ -1273,7 +1273,7 @@ struct QmlEnginePrivate::ImportedNamespace {
                     }
                 }
 
-                const QString typespace = QString::fromUtf8(type);
+                const QString typeName = QString::fromUtf8(type);
 
                 QmlDirParser qmldirParser;
                 qmldirParser.setUrl(url);
@@ -1282,7 +1282,7 @@ struct QmlEnginePrivate::ImportedNamespace {
 
                 foreach (const QmlDirParser::Component &c, qmldirParser.components()) { // ### TODO: cache the components
                     if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
-                        if (c.typeName == typespace) {
+                        if (c.typeName == typeName) {
                             if (url_return)
                                 *url_return = url.resolved(QUrl(c.fileName));
 
@@ -1290,6 +1290,7 @@ struct QmlEnginePrivate::ImportedNamespace {
                         }
                     }
                 }
+
             } else {
                 // XXX search non-files too! (eg. zip files, see QT-524)
                 QFileInfo f(toLocalFileOrQrc(url));
@@ -1304,9 +1305,6 @@ struct QmlEnginePrivate::ImportedNamespace {
     }
 };
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QmlModuleFactoryInterface_iid, QLatin1String("/qmlmodules")))
-
 class QmlImportsPrivate {
 public:
     QmlImportsPrivate() : ref(1)
@@ -1319,7 +1317,9 @@ public:
             delete s;
     }
 
-    bool add(const QUrl& base, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath)
+    QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
+
+    bool add(const QUrl& base, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath, QmlEngine *engine)
     {
         QmlEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
@@ -1331,26 +1331,48 @@ public:
         }
         QString url = uri;
         if (importType == QmlScriptParser::Import::Library) {
-            url.replace(QLatin1Char('.'),QLatin1Char('/'));
+            url.replace(QLatin1Char('.'), QLatin1Char('/'));
             bool found = false;
-            foreach (QString p, importPath) {
-                QString dir = p+QLatin1Char('/')+url;
+            QString content;
+            QString dir;
+            QStringList paths = importPath;
+            paths.prepend(QFileInfo(base.toLocalFile()).path());
+            foreach (const QString &p, paths) {
+                dir = p+QLatin1Char('/')+url;
                 QFileInfo fi(dir+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
+
                 if (fi.isFile()) {
-                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     found = true;
+
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+
+                    QFile file(absoluteFilePath);
+                    if (file.open(QFile::ReadOnly))
+                        content = QString::fromUtf8(file.readAll());
+
+                    if (! qmlDirFilesForWhichPluginsHaveBeenLoaded.contains(absoluteFilePath)) {
+                        qmlDirFilesForWhichPluginsHaveBeenLoaded.insert(absoluteFilePath);
+
+                        QmlDirParser qmldirParser;
+                        qmldirParser.setSource(content);
+                        qmldirParser.parse();
+
+                        foreach (const QmlDirParser::Plugin &plugin, qmldirParser.plugins()) {
+                            const QFileInfo pluginFileInfo(dir + QDir::separator() + plugin.path, plugin.name);
+                            const QString pluginFilePath = pluginFileInfo.absoluteFilePath();
+                            engine->importExtension(pluginFilePath, uri);
+                        }
+                    }
+
                     break;
                 }
             }
-            QFactoryLoader *l = loader();
-            QmlModuleFactoryInterface *factory =
-                qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
-            if (factory) {
-                factory->defineModuleOnce(uri);
-            }
+
         } else {
             url = base.resolved(QUrl(url)).toString();
         }
+
         s->uris.prepend(uri);
         s->urls.prepend(url);
         s->majversions.prepend(vmaj);
@@ -1546,12 +1568,12 @@ void QmlEngine::addImportPath(const QString& path)
 
   \sa QmlExtensionInterface
 */
-bool QmlEngine::importExtension(const QString &fileName)
+bool QmlEngine::importExtension(const QString &fileName, const QString &uri)
 {
     QPluginLoader loader(fileName);
 
     if (QmlExtensionInterface *iface = qobject_cast<QmlExtensionInterface *>(loader.instance())) {
-        iface->initialize(this);
+        iface->initialize(this, uri);
         return true;
     }
 
@@ -1604,7 +1626,8 @@ QString QmlEngine::offlineStoragePath() const
 */
 bool QmlEnginePrivate::addToImport(Imports* imports, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const
 {
-    bool ok = imports->d->add(imports->d->base,qmldircontent,uri,prefix,vmaj,vmin,importType,fileImportPath);
+    QmlEngine *engine = QmlEnginePrivate::get(const_cast<QmlEnginePrivate *>(this));
+    bool ok = imports->d->add(imports->d->base,qmldircontent,uri,prefix,vmaj,vmin,importType,fileImportPath, engine);
     if (qmlImportTrace())
         qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << '.' << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;

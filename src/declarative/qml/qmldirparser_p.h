@@ -74,6 +74,7 @@ public:
     QString source() const;
     void setSource(const QString &source);
 
+    bool isParsed() const;
     bool parse();
 
     bool hasError() const;
@@ -116,6 +117,7 @@ private:
     QString _source;
     QList<Component> _components;
     QList<Plugin> _plugins;
+    unsigned _isParsed: 1;
 };
 
 QT_END_NAMESPACE

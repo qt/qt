@@ -62,7 +62,7 @@ public:
     explicit QmlExtensionPlugin(QObject *parent = 0);
     ~QmlExtensionPlugin();
 
-    virtual void initialize(QmlEngine *engine) = 0;
+    virtual void initialize(QmlEngine *engine, const QString &uri) = 0;
 };
 
 QT_END_NAMESPACE

@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QmlDirParser::QmlDirParser()
+    : _isParsed(false)
 {
 }
 
@@ -72,11 +73,21 @@ QString QmlDirParser::source() const
 
 void QmlDirParser::setSource(const QString &source)
 {
+    _isParsed = false;
     _source = source;
+}
+
+bool QmlDirParser::isParsed() const
+{
+    return _isParsed;
 }
 
 bool QmlDirParser::parse()
 {
+    if (_isParsed)
+        return true;
+
+    _isParsed = true;
     _errors.clear();
     _plugins.clear();
     _components.clear();
