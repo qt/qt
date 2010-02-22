@@ -67,7 +67,7 @@
 #include "qmlnetworkaccessmanagerfactory.h"
 #include "qmlimageprovider.h"
 #include "qmldirparser_p.h"
-
+#include "qmlextensioninterface.h"
 #include <qfxperf_p_p.h>
 
 #include <QtCore/qmetaobject.h>
@@ -82,6 +82,7 @@
 #include <QDebug>
 #include <QMetaObject>
 #include <QStack>
+#include <QPluginLoader>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qthread.h>
@@ -1527,6 +1528,24 @@ void QmlEngine::addImportPath(const QString& path)
         qDebug() << "QmlEngine::addImportPath" << path;
     Q_D(QmlEngine);
     d->fileImportPath.prepend(path);
+}
+
+/*!
+  Imports the given \a extension into this QmlEngine.  Returns
+  true if the extension was successfully imported.
+
+  \sa QmlExtensionInterface
+*/
+bool QmlEngine::importExtension(const QString &fileName)
+{
+    QPluginLoader loader(fileName);
+
+    if (QmlExtensionInterface *iface = qobject_cast<QmlExtensionInterface *>(loader.instance())) {
+        iface->initialize(this);
+        return true;
+    }
+
+    return false;
 }
 
 /*!
