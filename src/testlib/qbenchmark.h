@@ -43,7 +43,7 @@
 #define QBENCHMARK_H
 
 #include <QtTest/qtest_global.h>
-#include <QtTest/private/qbenchmarkmetric_p.h>
+#include <QtTest/qbenchmarkmetric.h>
 
 QT_BEGIN_HEADER
 
