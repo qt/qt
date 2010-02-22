@@ -108,6 +108,10 @@ symbian {
         }
     }
     load(armcc_warnings)
+
+    # workaround for the fact that some of our required includes in Symbian^3
+    # now depend upon files in epoc32/include/platform
+    INCLUDEPATH += $$OS_LAYER_SYSTEMINCLUDE
 }
 win32-borland:INCLUDEPATH += kernel
 

@@ -60,9 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace clucene {
+namespace fulltextsearch {
+namespace clucene {
 
 class QHelpSearchIndexReaderClucene : public QHelpSearchIndexReader
 {
@@ -84,9 +83,8 @@ private:
         const QList<QHelpSearchQuery> &queryList);
 };
 
-        }   // namespace clucene
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace clucene
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE
 

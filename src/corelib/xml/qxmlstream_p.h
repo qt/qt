@@ -54,7 +54,7 @@
 #ifndef QXMLSTREAM_P_H
 #define QXMLSTREAM_P_H
 
-#if defined(Q_OS_VXWORKS) && defined(ERROR)
+#if defined(ERROR)
 #  undef ERROR
 #endif
 

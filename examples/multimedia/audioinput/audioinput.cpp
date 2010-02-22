@@ -208,6 +208,7 @@ InputTest::InputTest()
     ,   m_modeButton(0)
     ,   m_suspendResumeButton(0)
     ,   m_deviceBox(0)
+    ,   m_device(QAudioDeviceInfo::defaultInputDevice())
     ,   m_audioInfo(0)
     ,   m_audioInput(0)
     ,   m_input(0)
@@ -279,7 +280,6 @@ void InputTest::initializeAudio()
 
 void InputTest::createAudioInput()
 {
-
     m_audioInput = new QAudioInput(m_device, m_format, this);
     connect(m_audioInput, SIGNAL(notify()), SLOT(notified()));
     connect(m_audioInput, SIGNAL(stateChanged(QAudio::State)), SLOT(stateChanged(QAudio::State)));
