@@ -90,6 +90,7 @@ void QDeclarativeUtilModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,Package,QDeclarativePackage);
     QML_REGISTER_TYPE(Qt,4,6,ParallelAnimation,QDeclarativeParallelAnimation);
     QML_REGISTER_TYPE(Qt,4,6,ParentAction,QDeclarativeParentAction);
+    QML_REGISTER_TYPE(Qt,4,6,ParentAnimation,QDeclarativeParentAnimation);
     QML_REGISTER_TYPE(Qt,4,6,ParentChange,QDeclarativeParentChange);
     QML_REGISTER_TYPE(Qt,4,6,PauseAnimation,QDeclarativePauseAnimation);
     QML_REGISTER_TYPE(Qt,4,6,PropertyAction,QDeclarativePropertyAction);
