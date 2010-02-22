@@ -3700,7 +3700,7 @@ template <>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 inline quint32 alpha_4(const qargb8555 *src)
 {
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
     const quint8 *src8 = reinterpret_cast<const quint8*>(src);
     return src8[0] << 24 | src8[3] << 16 | src8[6] << 8 | src8[9];
 }
@@ -4026,8 +4026,8 @@ template <>
 inline void interpolate_pixel_4(qargb8565 *dest, const qargb8565 *src,
                                 quint32 alpha)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint32 a = eff_alpha_4(alpha, dest);
     const quint32 ia = eff_ialpha_4(alpha, dest);
@@ -4122,8 +4122,8 @@ template <>
 inline void interpolate_pixel_4(qargb8555 *dest, const qargb8555 *src,
                                 quint32 alpha)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
 
     const quint32 a = eff_alpha_4(alpha, dest);
@@ -4218,8 +4218,8 @@ template <>
 inline void interpolate_pixel_4(qrgb888 *dest, const qrgb888 *src,
                                 quint32 alpha)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint32 a = eff_alpha_4(alpha, dest);
     const quint32 ia = eff_ialpha_4(alpha, dest);
@@ -4291,8 +4291,8 @@ template <class DST, class SRC>
 inline void interpolate_pixel_4(DST *dest, quint8 a,
                                 const SRC *src, quint8 b)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     dest[0] = dest[0].byte_mul(a) + DST(src[0]).byte_mul(b);
     dest[1] = dest[1].byte_mul(a) + DST(src[1]).byte_mul(b);
@@ -4303,8 +4303,8 @@ inline void interpolate_pixel_4(DST *dest, quint8 a,
 template <class DST, class SRC>
 inline void blend_sourceOver_4(DST *dest, const SRC *src)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint32 a = alpha_4(src);
     if (a == 0xffffffff) {
@@ -4319,8 +4319,8 @@ inline void blend_sourceOver_4(DST *dest, const SRC *src)
 template <>
 inline void blend_sourceOver_4(qargb8565 *dest, const qargb8565 *src)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint32 a = alpha_4(src);
     if (a == 0xffffffff) {
@@ -4333,8 +4333,8 @@ inline void blend_sourceOver_4(qargb8565 *dest, const qargb8565 *src)
 template <>
 inline void blend_sourceOver_4(qargb8555 *dest, const qargb8555 *src)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint32 a = alpha_4(src);
     if (a == 0xffffffff) {
@@ -4347,8 +4347,8 @@ inline void blend_sourceOver_4(qargb8555 *dest, const qargb8555 *src)
 template <>
 inline void blend_sourceOver_4(qargb6666 *dest, const qargb6666 *src)
 {
-    Q_ASSERT((long(dest) & 0x3) == 0);
-    Q_ASSERT((long(src) & 0x3) == 0);
+    Q_ASSERT((quintptr(dest) & 0x3) == 0);
+    Q_ASSERT((quintptr(src) & 0x3) == 0);
 
     const quint32 a = alpha_4(src);
     if (a == 0xffffffff) {
