@@ -107,7 +107,7 @@ public:
         const QChar * const start = d;
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
 
-        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && size != d - start) {
+        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && int(size) != d - start) {
             // this resize is necessary since we allocate a bit too much
             // when dealing with variable sized 8-bit encodings
             s.resize(d - start);
