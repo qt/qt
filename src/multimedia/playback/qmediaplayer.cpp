@@ -947,9 +947,10 @@ QStringList QMediaPlayer::supportedMimeTypes(Flags flags)
             Such playback service can be used for beeps, ringtones, etc.
 */
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
 #include "moc_qmediaplayer.cpp"
 
-QT_END_NAMESPACE
-
-QT_END_NAMESPACE
 

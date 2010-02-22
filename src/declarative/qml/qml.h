@@ -55,8 +55,6 @@
 
 QT_BEGIN_HEADER
 
-QT_MODULE(Declarative)
-
 #define QML_DECLARE_TYPE(TYPE) \
     Q_DECLARE_METATYPE(TYPE *) \
     Q_DECLARE_METATYPE(QList<TYPE *> *) \
@@ -89,6 +87,8 @@ public: \
 QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
 
 #if defined(Q_OS_SYMBIAN)
 #define QML_DEFINE_INTERFACE(INTERFACE) \
