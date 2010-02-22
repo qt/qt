@@ -951,5 +951,3 @@ QStringList QMediaPlayer::supportedMimeTypes(Flags flags)
 
 QT_END_NAMESPACE
 
-QT_END_NAMESPACE
-
