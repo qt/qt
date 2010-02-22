@@ -55,7 +55,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-:   capFlags(0), firstUpdate(true), mutex(QMutex::Recursive)
+:   capFlags(0), mutex(QMutex::Recursive), firstUpdate(true)
 {
     updateConfigurations();
 
