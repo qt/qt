@@ -59,7 +59,7 @@
 
 #define TRY_WAIT(expr) \
     do { \
-        for (int ii = 0; ii < 6; ++ii) { \
+        for (int ii = 0; ii < 60; ++ii) { \
             if ((expr)) break; \
             QTest::qWait(50); \
         } \
