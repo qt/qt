@@ -439,7 +439,7 @@ QLibraryInfo::location(LibraryLocation loc)
                     QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
                     if (urlRef) {
                         QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-                        return QDir::cleanPath(path + QLatin1String("/Contents/") + ret);
+                        return QDir::cleanPath(QString(path) + QLatin1String("/Contents/") + ret);
                     }
                 }
 #endif
