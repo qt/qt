@@ -6238,7 +6238,7 @@ void Q3TextEdit::optimParseTags(QString * line, int lineNo, int indexOffset)
                         } else {
                             tmp = tagStack.isEmpty() ? 0 : tagStack.pop();
                             if (!tmp) {
-                                if (((QLatin1Char('/') + cur->tag) == tag->tag) ||
+                                if ((QString(QLatin1Char('/') + cur->tag) == tag->tag) ||
                                      (tag->tag == QLatin1String("/font") && cur->tag.left(4) == QLatin1String("font"))) {
                                     // set up the left and parent of this tag
                                     tag->leftTag = cur;
