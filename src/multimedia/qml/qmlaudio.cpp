@@ -280,7 +280,7 @@ QmlAudio::Status QmlAudio::status() const
 */
 
 /*!
-    \qmlproperty qreal playbackRate
+    \qmlproperty qreal Audio::playbackRate
 
     This property holds the rate at which audio is played at as a multiple of the normal rate.
 */
@@ -313,7 +313,7 @@ QmlAudio::Error QmlAudio::error() const
 */
 
 /*!
-    \qmlproperty Audio::onError(error, errorString)
+    \qmlsignal Audio::onError(error, errorString)
 
     This property is called when an \l {Error}{error} has occurred.  The errorString parameter
     may contain more detailed information about the error.
