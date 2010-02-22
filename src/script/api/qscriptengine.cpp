@@ -4227,4 +4227,9 @@ Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled()
 }
 #endif
 
+#ifdef Q_CC_MSVC
+// Try to prevent compiler from crashing.
+#pragma optimize("", off)
+#endif
+
 QT_END_NAMESPACE
