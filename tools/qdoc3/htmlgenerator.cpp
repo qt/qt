@@ -1261,7 +1261,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateIncludes(inner, marker);
     generateStatus(inner, marker);
     if (classe) {
-        generateModuleWarning(classe, marker);
         generateInherits(classe, marker);
         generateInheritedBy(classe, marker);
     }
@@ -1525,6 +1524,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateQmlInherits(qml_cn, marker);
         generateQmlInstantiates(qml_cn, marker);
         generateBrief(qml_cn, marker);
+        generateQmlInheritedBy(qml_cn, marker);
         sections = marker->qmlSections(qml_cn,CodeMarker::Summary);
         s = sections.begin();
         while (s != sections.end()) {
@@ -4304,6 +4304,27 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
                 generateText(text, cn, marker);
                 out() << "</p>";
             }
+        }
+    }
+}
+
+/*!
+  Output the "Inherit by" list for the QML element,
+  if it is inherited by any other elements.
+ */
+void HtmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
+                                           CodeMarker* marker)
+{
+    if (cn) {
+        NodeList subs;
+        QmlClassNode::subclasses(cn->name(),subs);
+        if (!subs.isEmpty()) {
+            //subs.sort();
+            Text text;
+            text << Atom::ParaLeft << "Inherited by ";
+            appendSortedNames(text,cn,subs,marker);
+            text << Atom::ParaRight;
+            generateText(text, cn, marker);
         }
     }
 }

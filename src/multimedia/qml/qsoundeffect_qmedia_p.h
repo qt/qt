@@ -98,7 +98,7 @@ Q_SIGNALS:
 
 private:
     bool m_muted;
-    int  m_volume;
+    int  m_vol;
     QMediaPlayer *m_player;
 };
 

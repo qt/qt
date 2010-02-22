@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass LayoutItem QmlGraphicsLayoutItem
+    \since 4.7
     \brief The LayoutItem element allows you to place your Fluid UI elements inside a classical Qt layout.
 
     LayoutItem is a variant of Item with a couple of additional properties. These properties provide the size hints

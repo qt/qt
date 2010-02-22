@@ -71,6 +71,7 @@ public:
 QML_DEFINE_TYPE(Qt,4,6,Binding,QmlBind)
 /*!
     \qmlclass Binding QmlBind
+  \since 4.7
     \brief The Binding element allows arbitrary property bindings to be created.
 
     Sometimes it is necessary to bind to a property of an object that wasn't

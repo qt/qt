@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass PropertyChanges QmlPropertyChanges
+  \since 4.7
     \brief The PropertyChanges element describes new property values for a state.
 
     PropertyChanges provides a state change that modifies the properties of an item.

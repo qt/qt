@@ -62,7 +62,7 @@
 QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     QObject(parent),
     m_muted(false),
-    m_volume(100),
+    m_vol(100),
     m_player(0)
 {
 }
@@ -83,7 +83,7 @@ int QSoundEffectPrivate::volume() const
 {
     if (m_player) return m_player->volume();
 
-    return m_volume;
+    return m_vol;
 }
 
 bool QSoundEffectPrivate::isMuted() const
@@ -128,7 +128,7 @@ void QSoundEffectPrivate::stop()
 
 void QSoundEffectPrivate::setVolume(int volume)
 {
-    m_volume = volume;
+    m_vol = volume;
 
     if (m_player)
         m_player->setVolume(volume);
@@ -149,7 +149,7 @@ void QSoundEffectPrivate::setMedia(const QMediaContent &media)
 
     if (m_player == 0) {
         m_player = new QMediaPlayer(this, QMediaPlayer::LowLatency);
-        m_player->setVolume(m_volume);
+        m_player->setVolume(m_vol);
         m_player->setMuted(m_muted);
 
         connect(m_player, SIGNAL(volumeChanged(int)), SIGNAL(volumeChanged(int)));
