@@ -7,7 +7,7 @@ Rectangle {
         objectName: "MyRect"
         width: 100; height: 100;
         color: "green"
-        color: Behavior { ColorAnimation { duration: 200; } }
+        color: Behavior { ColorAnimation { duration: 500; } }
     }
     MouseRegion {
         id: clicker

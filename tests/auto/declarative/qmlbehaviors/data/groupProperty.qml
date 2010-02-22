@@ -6,7 +6,7 @@ Rectangle {
         id: rect
         objectName: "MyRect"
         width: 100; height: 100; color: "green"
-        pos: Behavior { PropertyAnimation { duration: 200; } }
+        pos: Behavior { PropertyAnimation { duration: 500; } }
     }
     MouseRegion {
         id: clicker

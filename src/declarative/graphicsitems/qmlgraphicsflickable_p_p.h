@@ -110,8 +110,6 @@ public:
     qreal velocityX;
     qreal velocityY;
     QTime pressTime;
-    QmlTimeLineEvent fixupXEvent;
-    QmlTimeLineEvent fixupYEvent;
     qreal deceleration;
     qreal maxVelocity;
     QTime velocityTime;
@@ -124,6 +122,9 @@ public:
     QBasicTimer delayedPressTimer;
     int pressDelay;
     int fixupDuration;
+
+    static void fixupY_callback(void *);
+    static void fixupX_callback(void *);
 
     void updateVelocity();
     struct Velocity : public QmlTimeLineValue
