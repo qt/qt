@@ -427,8 +427,6 @@ void QmlView::continueExecute()
 */
 void QmlView::setRootObject(QObject *obj)
 {
-    Q_D(QmlView);
-
     if (QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(obj)) {
         d->scene.addItem(item);
 
