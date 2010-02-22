@@ -145,6 +145,10 @@ QMediaPlaylist::~QMediaPlaylist()
     delete d_ptr;
 }
 
+/*!
+    Returns the QMediaObject that is being used to play the contents of this playlist.
+*/
+
 QMediaObject *QMediaPlaylist::mediaObject() const
 {
     return d_func()->mediaObject;
@@ -308,7 +312,7 @@ int QMediaPlaylist::mediaCount() const
 
 /*!
   Returns true if the playlist contains no items; otherwise returns false.
-  \sa size()
+  \sa mediaCount()
   */
 bool QMediaPlaylist::isEmpty() const
 {
@@ -317,7 +321,7 @@ bool QMediaPlaylist::isEmpty() const
 
 /*!
   Returns true if the playlist can be modified; otherwise returns false.
-  \sa size()
+  \sa mediaCount()
   */
 bool QMediaPlaylist::isReadOnly() const
 {
