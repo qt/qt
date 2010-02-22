@@ -509,65 +509,6 @@ static void qmake_error_msg(const QString &msg)
             msg.toLatin1().constData());
 }
 
-enum isForSymbian_enum {
-    isForSymbian_NOT_SET = -1,
-    isForSymbian_FALSE = 0,
-    isForSymbian_ABLD = 1,
-    isForSymbian_SBSV2 = 2,
-};
-
-static isForSymbian_enum isForSymbian_value = isForSymbian_NOT_SET;
-
-// Checking for symbian build is primarily determined from the qmake spec,
-// but if that is not specified, detect if symbian is the default spec
-// by checking the MAKEFILE_GENERATOR variable value.
-static void init_symbian(const QMap<QString, QStringList>& vars)
-{
-    if (isForSymbian_value != isForSymbian_NOT_SET)
-        return;
-
-    QString spec = QFileInfo(Option::mkfile::qmakespec).fileName();
-    if (spec.startsWith("symbian-abld", Qt::CaseInsensitive)) {
-        isForSymbian_value = isForSymbian_ABLD;
-    } else if (spec.startsWith("symbian-sbsv2", Qt::CaseInsensitive)) {
-        isForSymbian_value = isForSymbian_SBSV2;
-    } else {
-        QStringList generatorList = vars["MAKEFILE_GENERATOR"];
-
-        if (!generatorList.isEmpty()) {
-            QString generator = generatorList.first();
-            if (generator.startsWith("SYMBIAN_ABLD"))
-                isForSymbian_value = isForSymbian_ABLD;
-            else if (generator.startsWith("SYMBIAN_SBSV2"))
-                isForSymbian_value = isForSymbian_SBSV2;
-            else
-                isForSymbian_value = isForSymbian_FALSE;
-        } else {
-            isForSymbian_value = isForSymbian_FALSE;
-        }
-    }
-}
-
-bool isForSymbian()
-{
-    // If isForSymbian_value has not been initialized explicitly yet,
-    // call initializer with dummy map to check qmake spec.
-    if (isForSymbian_value == isForSymbian_NOT_SET)
-        init_symbian(QMap<QString, QStringList>());
-
-    return (isForSymbian_value != isForSymbian_FALSE);
-}
-
-bool isForSymbianSbsv2()
-{
-    // If isForSymbian_value has not been initialized explicitly yet,
-    // call initializer with dummy map to check qmake spec.
-    if (isForSymbian_value == isForSymbian_NOT_SET)
-        init_symbian(QMap<QString, QStringList>());
-
-    return (isForSymbian_value == isForSymbian_SBSV2);
-}
-
 /*
    1) environment variable QMAKEFEATURES (as separated by colons)
    2) property variable QMAKEFEATURES (as separated by colons)
@@ -595,21 +536,14 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             break;
         default: // Can't happen, just make the compiler shut up
         case Option::TARG_UNIX_MODE:
-            {
-                if (isForSymbian())
-                    concat << base_concat + QDir::separator() + "symbian";
-                else
-                    concat << base_concat + QDir::separator() + "unix";
-                break;
-            }
+            concat << base_concat + QDir::separator() + "unix";
+            break;
         case Option::TARG_WIN_MODE:
-            {
-                if (isForSymbian())
-                    concat << base_concat + QDir::separator() + "symbian";
-                else
-                    concat << base_concat + QDir::separator() + "win32";
-                break;
-            }
+            concat << base_concat + QDir::separator() + "win32";
+            break;
+        case Option::TARG_SYMBIAN_MODE:
+            concat << base_concat + QDir::separator() + "symbian";
+            break;
         }
         concat << base_concat;
     }
@@ -1449,8 +1383,6 @@ QMakeProject::read(uchar cmd)
             }
             validateModes();
 
-            init_symbian(base_vars);
-
             if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty()) {
                 debug_msg(1, "QMAKECACHE file: reading %s", Option::mkfile::cachefile.toLatin1().constData());
                 read(Option::mkfile::cachefile, base_vars);
@@ -1598,6 +1530,8 @@ void QMakeProject::validateModes()
                         Option::target_mode = Option::TARG_UNIX_MODE;
                     else if (os == "macx")
                         Option::target_mode = Option::TARG_MACX_MODE;
+                    else if (os == "symbian")
+                        Option::target_mode = Option::TARG_SYMBIAN_MODE;
                     else if (os == "win32")
                         Option::target_mode = Option::TARG_WIN_MODE;
                     else
@@ -1623,24 +1557,20 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
     else if(x == "false")
         return false;
 
-    // Symbian is an exception to how scopes are resolved. Since we do not
-    // have a separate target mode for Symbian, but we expect the scope to resolve
-    // on other platforms we base it entirely on the mkspec. This means that
-    // using a mkspec starting with 'symbian*' will resolve both the 'symbian'
-    // and the 'unix' (because of Open C) scopes to true.
     if (x == "unix") {
         validateModes();
         return Option::target_mode == Option::TARG_UNIX_MODE
                || Option::target_mode == Option::TARG_MACX_MODE
-               || isForSymbian();
+               || Option::target_mode == Option::TARG_SYMBIAN_MODE;
     } else if (x == "macx" || x == "mac") {
         validateModes();
-        return Option::target_mode == Option::TARG_MACX_MODE && !isForSymbian();
+        return Option::target_mode == Option::TARG_MACX_MODE;
     } else if (x == "symbian") {
-        return isForSymbian();
+        validateModes();
+        return Option::target_mode == Option::TARG_SYMBIAN_MODE;
     } else if (x == "win32") {
         validateModes();
-        return Option::target_mode == Option::TARG_WIN_MODE && !isForSymbian();
+        return Option::target_mode == Option::TARG_WIN_MODE;
     }
 
     //mkspecs
@@ -1739,7 +1669,6 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
                 validateModes();
-                init_symbian(base_vars);
                 feature_roots = new QStringList(qmake_feature_paths(prop));
                 qmakeAddCacheClear(qmakeDeleteCacheClear_QStringList, (void**)&feature_roots);
             }

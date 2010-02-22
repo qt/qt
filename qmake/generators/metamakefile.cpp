@@ -512,7 +512,7 @@ MetaMakefileGenerator::modesForGenerator(const QString &gen,
 #else
         *host_mode = Option::HOST_WIN_MODE;
 #endif
-        *target_mode = Option::TARG_WIN_MODE; // anything, just not unknown
+        *target_mode = Option::TARG_SYMBIAN_MODE;
     } else {
         fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
         return false;

@@ -196,10 +196,6 @@ inline QString QMakeProject::first(const QString &v)
 inline QMap<QString, QStringList> &QMakeProject::variables()
 { return vars; }
 
-// Helper functions needed for Symbian
-bool isForSymbian();
-bool isForSymbianSbsv2();
-
 QT_END_NAMESPACE
 
 #endif // PROJECT_H

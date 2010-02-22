@@ -154,7 +154,8 @@ struct Option
     static QStringList before_user_vars, after_user_vars, user_configs, after_user_configs;
     enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
     static HOST_MODE host_mode;
-    enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE };
+    enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE,
+                     TARG_SYMBIAN_MODE };
     static TARG_MODE target_mode;
     static bool target_mode_overridden;
     static QString user_template, user_template_prefix;

@@ -248,6 +248,7 @@ public:
     virtual bool mergeBuildProject(MakefileGenerator * /*other*/) { return false; }
     virtual bool openOutput(QFile &, const QString &build) const;
     virtual bool isWindowsShell() const { return Option::host_mode == Option::HOST_WIN_MODE; }
+    virtual bool isForSymbianSbsv2() const { return false; } // FIXME: killme - i'm ugly!
 };
 
 inline void MakefileGenerator::setNoIO(bool o)
