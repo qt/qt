@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,22 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlmoduleplugin.h>
-#include <QtDeclarative/qml.h>
-#include <QtMultimedia/qml.h>
+#ifndef QTMULTIMEDIA_QML_H
+#define QTMULTIMEDIA_QML_H
 
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QMultimediaQmlModule : public QmlModulePlugin
+QT_MODULE(Multimedia)
+
+namespace QtMultimedia
 {
-    Q_OBJECT
-public:
-    QStringList keys() const
-    {
-        return QStringList() << QLatin1String("Qt.multimedia");
-    }
-
-    void defineModule(const QString& uri)
-    {
-        Q_UNUSED(uri)
-        Q_ASSERT(uri == QLatin1String("Qt.multimedia"));
-
-        QtMultimedia::qRegisterQmlElements();
-    }
-};
+extern void Q_MULTIMEDIA_EXPORT qRegisterQmlElements();
+}
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
-#include "multimedia.moc"
-
-Q_EXPORT_PLUGIN2(qmultimediaqmlmodule, QT_PREPEND_NAMESPACE(QMultimediaQmlModule));
-
+#endif  // ifndef QTMULTIMEDIA_QML_H

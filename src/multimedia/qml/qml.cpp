@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,30 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlmoduleplugin.h>
-#include <QtDeclarative/qml.h>
 #include <QtMultimedia/qml.h>
+#include <QtMultimedia/private/qsoundeffect_p.h>
+#include <QtMultimedia/private/qmlaudio_p.h>
+#include <QtMultimedia/private/qmlgraphicsvideo_p.h>
+
 
 QT_BEGIN_NAMESPACE
 
-class QMultimediaQmlModule : public QmlModulePlugin
+namespace QtMultimedia
 {
-    Q_OBJECT
-public:
-    QStringList keys() const
-    {
-        return QStringList() << QLatin1String("Qt.multimedia");
-    }
 
-    void defineModule(const QString& uri)
-    {
-        Q_UNUSED(uri)
-        Q_ASSERT(uri == QLatin1String("Qt.multimedia"));
+/*!
+    Register the Multimedia QML elements.
+    \internal
+*/
 
-        QtMultimedia::qRegisterQmlElements();
-    }
-};
+void qRegisterQmlElements()
+{
+    qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
+    qmlRegisterType<QmlAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
+    qmlRegisterType<QmlGraphicsVideo>("Qt.multimedia", 4, 7, "Video", "Video");
+}
+
+}
 
 QT_END_NAMESPACE
-
-#include "multimedia.moc"
-
-Q_EXPORT_PLUGIN2(qmultimediaqmlmodule, QT_PREPEND_NAMESPACE(QMultimediaQmlModule));
 
