@@ -90,6 +90,7 @@ class HtmlGenerator : public PageGenerator
         Typedef, 
         Property,
         Variable, 
+        QmlClass,
         QmlProperty,
         QmlSignal,
         QmlMethod,
@@ -185,6 +186,7 @@ class HtmlGenerator : public PageGenerator
                                    const InnerNode *relative,
                                    CodeMarker *marker);
     void generateQmlInherits(const QmlClassNode* cn, CodeMarker* marker);
+    void generateQmlInheritedBy(const QmlClassNode* cn, CodeMarker* marker);
     void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 #endif
@@ -325,6 +327,7 @@ class HtmlGenerator : public PageGenerator
     NewSinceMaps newSinceMaps;
     static QString sinceTitles[];
     NewClassMaps newClassMaps;
+    NewClassMaps newQmlClassMaps;
     static int id;
 };
 

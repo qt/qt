@@ -65,8 +65,8 @@
     Getting Started:
     \list
     \o \l {Introduction to the QML language}
-    \o \l {tutorial}{Tutorial: 'Hello World'}
-    \o \l {advtutorial.html}{Advanced Tutorial: 'Same Game'}
+    \o \l {QML Tutorial}{Tutorial: 'Hello World'}
+    \o \l {QML Advanced Tutorial}{Advanced Tutorial: 'Same Game'}
     \o \l {QML Examples and Walkthroughs}
     \endlist
 

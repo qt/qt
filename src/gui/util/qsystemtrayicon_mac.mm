@@ -93,6 +93,7 @@ extern bool qt_mac_execute_apple_script(const QString &script, AEDesc *ret); //q
 extern void qtsystray_sendActivated(QSystemTrayIcon *i, int r); //qsystemtrayicon.cpp
 extern NSString *keySequenceToKeyEqivalent(const QKeySequence &accel); // qmenu_mac.mm
 extern NSUInteger keySequenceModifierMask(const QKeySequence &accel);  // qmenu_mac.mm
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
@@ -382,7 +383,6 @@ QT_END_NAMESPACE
     [self menuTrackingDone:nil];
 }
 
-extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 - (void)otherMouseDown:(NSEvent *)mouseEvent
 {
     [self mousePressed:mouseEvent button:cocoaButton2QtButton([mouseEvent buttonNumber])];

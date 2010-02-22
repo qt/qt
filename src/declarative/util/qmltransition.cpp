@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transition QmlTransition
+  \since 4.7
     \brief The Transition element defines animated transitions that occur on state changes.
 
     \sa {qmlstates}{States}, {state-transitions}{Transitions}

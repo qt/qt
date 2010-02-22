@@ -206,7 +206,7 @@ JSC::JSValue JSC_HOST_CALL ClassObjectDelegate::call(JSC::ExecState *exec, JSC::
     QVariant result = scriptClass->extension(QScriptClass::Callable, qVariantFromValue(ctx));
     eng_p->popContext();
     eng_p->currentFrame = oldFrame;
-    return eng_p->jscValueFromVariant(result);
+    return QScriptEnginePrivate::jscValueFromVariant(exec, result);
 }
 
 JSC::ConstructType ClassObjectDelegate::getConstructData(QScriptObject*, JSC::ConstructData &constructData)

@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QmlParserStatus
+  \since 4.7
     \brief The QmlParserStatus class provides updates on the parser state.
 */
 
