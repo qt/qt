@@ -156,6 +156,7 @@ private slots:
     }
 
     void sizeSpeedWithoutFilterLowLevel() {
+        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
 #ifdef Q_OS_WIN
         const wchar_t *dirpath = (wchar_t*)testdir.absolutePath().utf16();
         wchar_t appendedPath[MAX_PATH];
@@ -173,7 +174,6 @@ private slots:
         }
         FindClose(hSearch);
 #else
-        QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         DIR *dir = opendir(qPrintable(testdir.absolutePath()));
         QVERIFY(dir);
 

@@ -42,7 +42,14 @@
 #include "view.h"
 
 #include <QtGui>
+
+#ifdef Q_WS_WIN
+#define CALLGRIND_START_INSTRUMENTATION  {}
+#define CALLGRIND_STOP_INSTRUMENTATION   {}
+#else
 #include "valgrind/callgrind.h"
+#endif
+
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #endif
