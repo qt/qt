@@ -486,6 +486,40 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
     return mkfile;
 }
 
+bool
+MetaMakefileGenerator::modesForGenerator(const QString &gen,
+        Option::HOST_MODE *host_mode, Option::TARG_MODE *target_mode)
+{
+    if (gen == "UNIX") {
+#ifdef Q_OS_MAC
+        *host_mode = Option::HOST_MACX_MODE;
+        *target_mode = Option::TARG_MACX_MODE;
+#else
+        *host_mode = Option::HOST_UNIX_MODE;
+        *target_mode = Option::TARG_UNIX_MODE;
+#endif
+    } else if (gen == "MSVC.NET" || gen == "MINGW" || gen == "BMAKE") {
+        *host_mode = Option::HOST_WIN_MODE;
+        *target_mode = Option::TARG_WIN_MODE;
+    } else if (gen == "PROJECTBUILDER" || gen == "XCODE") {
+        *host_mode = Option::HOST_MACX_MODE;
+        *target_mode = Option::TARG_MACX_MODE;
+    } else if (gen == "SYMBIAN_ABLD" || gen == "SYMBIAN_SBSV2") {
+#if defined(Q_OS_MAC)
+        *host_mode = Option::HOST_MACX_MODE;
+#elif defined(Q_OS_UNIX)
+        *host_mode = Option::HOST_UNIX_MODE;
+#else
+        *host_mode = Option::HOST_WIN_MODE;
+#endif
+        *target_mode = Option::TARG_WIN_MODE; // anything, just not unknown
+    } else {
+        fprintf(stderr, "Unknown generator specified: %s\n", gen.toLatin1().constData());
+        return false;
+    }
+    return true;
+}
+
 MetaMakefileGenerator *
 MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
 {

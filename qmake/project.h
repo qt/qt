@@ -106,6 +106,7 @@ class QMakeProject
     QStringList doVariableReplaceExpand(const QString &str, QMap<QString, QStringList> &place, bool *ok=0);
     void init(QMakeProperty *, const QMap<QString, QStringList> *);
     QStringList &values(const QString &v, QMap<QString, QStringList> &place);
+    void validateModes();
 
 public:
     QMakeProject() { init(0, 0); }

@@ -96,13 +96,9 @@ QStringList Option::after_user_configs;
 QString Option::user_template;
 QString Option::user_template_prefix;
 QStringList Option::shellPath;
-#if defined(Q_OS_WIN32)
-Option::TARG_MODE Option::target_mode = Option::TARG_WIN_MODE;
-#elif defined(Q_OS_MAC)
-Option::TARG_MODE Option::target_mode = Option::TARG_MACX_MODE;
-#else
-Option::TARG_MODE Option::target_mode = Option::TARG_UNIX_MODE;
-#endif
+Option::HOST_MODE Option::host_mode = Option::HOST_UNKNOWN_MODE;
+Option::TARG_MODE Option::target_mode = Option::TARG_UNKNOWN_MODE;
+bool Option::target_mode_overridden = false;
 
 //QMAKE_*_PROPERTY stuff
 QStringList Option::prop::properties;
@@ -251,11 +247,17 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "tp" || opt == "template_prefix") {
                 Option::user_template_prefix = argv[++x];
             } else if(opt == "macx") {
+                Option::host_mode = HOST_MACX_MODE;
                 Option::target_mode = TARG_MACX_MODE;
+                Option::target_mode_overridden = true;
             } else if(opt == "unix") {
+                Option::host_mode = HOST_UNIX_MODE;
                 Option::target_mode = TARG_UNIX_MODE;
+                Option::target_mode_overridden = true;
             } else if(opt == "win32") {
+                Option::host_mode = HOST_WIN_MODE;
                 Option::target_mode = TARG_WIN_MODE;
+                Option::target_mode_overridden = true;
             } else if(opt == "d") {
                 Option::debug_level++;
             } else if(opt == "version" || opt == "v" || opt == "-version") {
@@ -405,6 +407,7 @@ Option::init(int argc, char **argv)
 #ifdef Q_OS_WIN
     Option::dirlist_sep = ";";
     Option::shellPath = detectShellPath();
+    Option::res_ext = ".res";
 #else
     Option::dirlist_sep = ":";
 #endif
@@ -525,7 +528,8 @@ Option::init(int argc, char **argv)
     }
 
     //defaults for globals
-    applyHostMode();
+    if (Option::host_mode != Option::HOST_UNKNOWN_MODE)
+        applyHostMode();
     return QMAKE_CMDLINE_SUCCESS;
 }
 

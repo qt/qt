@@ -43,6 +43,7 @@
 #include "property.h"
 #include "option.h"
 #include "cachekeys.h"
+#include "generators/metamakefile.h"
 
 #include <qdatetime.h>
 #include <qfile.h>
@@ -592,6 +593,7 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             concat << base_concat + QDir::separator() + "macx";
             concat << base_concat + QDir::separator() + "unix";
             break;
+        default: // Can't happen, just make the compiler shut up
         case Option::TARG_UNIX_MODE:
             {
                 if (isForSymbian())
@@ -1445,6 +1447,7 @@ QMakeProject::read(uchar cmd)
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
                 return false;
             }
+            validateModes();
 
             init_symbian(base_vars);
 
@@ -1570,6 +1573,44 @@ QMakeProject::read(uchar cmd)
     return true;
 }
 
+void QMakeProject::validateModes()
+{
+    if (Option::host_mode == Option::HOST_UNKNOWN_MODE
+        || Option::target_mode == Option::TARG_UNKNOWN_MODE) {
+        Option::HOST_MODE host_mode;
+        Option::TARG_MODE target_mode;
+        const QStringList &gen = base_vars.value("MAKEFILE_GENERATOR");
+        if (gen.isEmpty()) {
+            fprintf(stderr, "%s:%d: Using OS scope before setting MAKEFILE_GENERATOR\n",
+                            parser.file.toLatin1().constData(), parser.line_no);
+        } else if (MetaMakefileGenerator::modesForGenerator(gen.first(),
+                                                            &host_mode, &target_mode)) {
+            if (Option::host_mode == Option::HOST_UNKNOWN_MODE) {
+                Option::host_mode = host_mode;
+                Option::applyHostMode();
+            }
+
+            if (Option::target_mode == Option::TARG_UNKNOWN_MODE) {
+                const QStringList &tgt = base_vars.value("TARGET_PLATFORM");
+                if (!tgt.isEmpty()) {
+                    const QString &os = tgt.first();
+                    if (os == "unix")
+                        Option::target_mode = Option::TARG_UNIX_MODE;
+                    else if (os == "macx")
+                        Option::target_mode = Option::TARG_MACX_MODE;
+                    else if (os == "win32")
+                        Option::target_mode = Option::TARG_WIN_MODE;
+                    else
+                        fprintf(stderr, "Unknown target platform specified: %s\n",
+                                os.toLatin1().constData());
+                } else {
+                    Option::target_mode = target_mode;
+                }
+            }
+        }
+    }
+}
+
 bool
 QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QStringList> *place)
 {
@@ -1588,14 +1629,17 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
     // using a mkspec starting with 'symbian*' will resolve both the 'symbian'
     // and the 'unix' (because of Open C) scopes to true.
     if (x == "unix") {
+        validateModes();
         return Option::target_mode == Option::TARG_UNIX_MODE
                || Option::target_mode == Option::TARG_MACX_MODE
                || isForSymbian();
     } else if (x == "macx" || x == "mac") {
+        validateModes();
         return Option::target_mode == Option::TARG_MACX_MODE && !isForSymbian();
     } else if (x == "symbian") {
         return isForSymbian();
     } else if (x == "win32") {
+        validateModes();
         return Option::target_mode == Option::TARG_WIN_MODE && !isForSymbian();
     }
 
@@ -1694,6 +1738,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
         if(file.indexOf(Option::dir_sep) == -1 || !QFile::exists(file)) {
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
+                validateModes();
                 init_symbian(base_vars);
                 feature_roots = new QStringList(qmake_feature_paths(prop));
                 qmakeAddCacheClear(qmakeDeleteCacheClear_QStringList, (void**)&feature_roots);
