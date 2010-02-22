@@ -555,12 +555,7 @@ inline void QList<T>::replace(int i, const T &t)
 {
     Q_ASSERT_X(i >= 0 && i < p.size(), "QList<T>::replace", "index out of range");
     detach();
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        reinterpret_cast<Node *>(p.at(i))->t() = t;
-    } else {
-        const T cpy(t);
-        reinterpret_cast<Node *>(p.at(i))->t() = cpy;
-    }
+    reinterpret_cast<Node *>(p.at(i))->t() = t;
 }
 
 template <typename T>
