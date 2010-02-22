@@ -65,8 +65,6 @@ class Q_DECLARATIVE_EXPORT QmlView : public QGraphicsView
     Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
 
-    Q_DECLARE_PRIVATE(QmlView)
-
 public:
     explicit QmlView(QWidget *parent = 0);
     virtual ~QmlView();
@@ -103,6 +101,8 @@ protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void paintEvent(QPaintEvent *event);
     void timerEvent(QTimerEvent*);
+
+    QmlViewPrivate *d;
 };
 
 QT_END_NAMESPACE
