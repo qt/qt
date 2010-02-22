@@ -255,6 +255,8 @@ public:
     int agentLineNumber;
     QScriptValuePrivate *registeredScriptValues;
     QScriptValuePrivate *freeScriptValues;
+    static const int maxFreeScriptValues = 256;
+    int freeScriptValuesCount;
     QScriptStringPrivate *registeredScriptStrings;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
@@ -377,6 +379,7 @@ inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(siz
     if (freeScriptValues) {
         QScriptValuePrivate *p = freeScriptValues;
         freeScriptValues = p->next;
+        --freeScriptValuesCount;
         return p;
     }
     return reinterpret_cast<QScriptValuePrivate*>(qMalloc(size));
@@ -384,8 +387,13 @@ inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(siz
 
 inline void QScriptEnginePrivate::freeScriptValuePrivate(QScriptValuePrivate *p)
 {
-    p->next = freeScriptValues;
-    freeScriptValues = p;
+    if (freeScriptValuesCount < maxFreeScriptValues) {
+        p->next = freeScriptValues;
+        freeScriptValues = p;
+        ++freeScriptValuesCount;
+    } else {
+        qFree(p);
+    }
 }
 
 inline void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)

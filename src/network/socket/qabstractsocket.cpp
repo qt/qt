@@ -155,6 +155,9 @@
     See the \l network/fortuneclient and \l network/blockingfortuneclient
     examples for an overview of both approaches.
 
+    \note We discourage the use of the blocking functions together
+    with signals. One of the two possibilities should be used.
+
     QAbstractSocket can be used with QTextStream and QDataStream's
     stream operators (operator<<() and operator>>()). There is one
     issue to be aware of, though: You must make sure that enough data
@@ -1682,8 +1685,11 @@ static int qt_timeout_value(int msecs, int elapsed)
 
     If msecs is -1, this function will not time out.
 
-    Note: This function may wait slightly longer than \a msecs,
+    \note This function may wait slightly longer than \a msecs,
     depending on the time it takes to complete the host lookup.
+
+    \note Multiple calls to this functions do not accumulate the time.
+    If the function times out, the connecting process will be aborted.
 
     \sa connectToHost(), connected()
 */
@@ -1722,7 +1728,7 @@ bool QAbstractSocket::waitForConnected(int msecs)
         d->_q_startConnecting(QHostInfo::fromName(d->hostName));
     }
     if (state() == UnconnectedState)
-        return false;
+        return false; // connect not im progress anymore!
 
     bool timedOut = true;
 #if defined (QABSTRACTSOCKET_DEBUG)
