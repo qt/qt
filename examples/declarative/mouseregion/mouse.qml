@@ -7,7 +7,7 @@ Rectangle {
         width: 50; height: 50
         color: "red"
         Text { text: "Click"; anchors.centerIn: parent }
-        MouseRegion {
+        MouseArea {
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             onPressed: { console.log('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') }
@@ -24,7 +24,7 @@ Rectangle {
         y: 100; width: 50; height: 50
         color: "blue"
         Text { text: "Drag"; anchors.centerIn: parent }
-        MouseRegion {
+        MouseArea {
             drag.target: parent
             drag.axis: "XAxis"
             drag.minimumX: 0

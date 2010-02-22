@@ -62,7 +62,7 @@ Item {
         anchors.right: container.right
     }
 
-    MouseRegion {
+    MouseArea {
         id: mouseRegion
         anchors.fill: buttonImage
         onClicked: { container.state = container.state=="Edit" ? "" : "Edit" }

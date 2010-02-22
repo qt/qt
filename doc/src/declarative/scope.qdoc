@@ -317,7 +317,7 @@ Rectangle {
         anchors.centerIn: parent
         text: root.text
     }
-    MouseRegion { 
+    MouseArea { 
         anchors.fill: parent
         onClicked: buttonClicked(text) 
     }

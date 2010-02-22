@@ -57,10 +57,10 @@ Rectangle {
             Column {
                 id: moveButtons; x: 5; width: childrenRect.width; anchors.verticalCenter: parent.verticalCenter
                 Image { source: "content/pics/go-up.png"
-                    MouseRegion { anchors.fill: parent; onClicked: fruitModel.move(index,index-1,1) }
+                    MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index-1,1) }
                 }
                 Image { source: "content/pics/go-down.png"
-                    MouseRegion { anchors.fill: parent; onClicked: fruitModel.move(index,index+1,1) }
+                    MouseArea { anchors.fill: parent; onClicked: fruitModel.move(index,index+1,1) }
                 }
             }
 
@@ -93,7 +93,7 @@ Rectangle {
             Image {
                 id: removeButton; source: "content/pics/archive-remove.png"
                 anchors { verticalCenter: parent.verticalCenter; right: parent.right; rightMargin: 10 }
-                MouseRegion { anchors.fill:parent; onClicked: fruitModel.remove(index) }
+                MouseArea { anchors.fill:parent; onClicked: fruitModel.remove(index) }
             }
         }
     }
@@ -131,7 +131,7 @@ Rectangle {
         spacing: 8
         id: buttons
         Image { source: "content/pics/archive-insert.png"
-            MouseRegion { anchors.fill: parent;
+            MouseArea { anchors.fill: parent;
                 onClicked: {
                     fruitModel.append({
                         "name":"Pizza Margarita",
@@ -142,7 +142,7 @@ Rectangle {
             }
         }
         Image { source: "content/pics/archive-insert.png"
-            MouseRegion { anchors.fill: parent;
+            MouseArea { anchors.fill: parent;
                 onClicked: {
                     fruitModel.insert(0,{
                         "name":"Pizza Supreme",
@@ -153,7 +153,7 @@ Rectangle {
             }
         }
         Image { source: "content/pics/archive-remove.png"
-            MouseRegion { anchors.fill: parent; onClicked: fruitModel.clear() }
+            MouseArea { anchors.fill: parent; onClicked: fruitModel.clear() }
         }
     }
 }

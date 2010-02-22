@@ -9,7 +9,7 @@ Rectangle {
         color: "green"
         color: Behavior { ColorAnimation { duration: 500; } }
     }
-    MouseRegion {
+    MouseArea {
         id: clicker
         anchors.fill: parent
     }

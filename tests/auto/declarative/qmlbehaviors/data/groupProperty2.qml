@@ -8,7 +8,7 @@ Rectangle {
         width: 100; height: 100; color: "green"
         pos.x: Behavior { NumberAnimation { duration: 500; } }
     }
-    MouseRegion {
+    MouseArea {
         id: clicker
         anchors.fill: parent
     }

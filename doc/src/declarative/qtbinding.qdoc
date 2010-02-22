@@ -212,7 +212,7 @@ Rectangle {
         text: "Hello Colorful World!"
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: {
             palette.text = "blue";
@@ -255,7 +255,7 @@ the following types:
 \o QVariant
 \endlist
 
-This example toggles the "LED Blinker" when the MouseRegion is clicked:
+This example toggles the "LED Blinker" when the MouseArea is clicked:
 
 \table
 \row
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
 import Qt 4.6
 
 Rectangle {
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: {
             if (ledBlinker.isRunning())
@@ -315,7 +315,7 @@ is to have a "running" property.  This leads to much nicer QML code:
 import Qt 4.6
 
 Rectangle {
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: ledBlinker.running = !ledBlinker.running
     }

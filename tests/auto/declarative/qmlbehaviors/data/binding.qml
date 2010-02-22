@@ -11,7 +11,7 @@ Rectangle {
         x: basex
         x: Behavior { NumberAnimation { duration: 500; } }
     }
-    MouseRegion {
+    MouseArea {
         id: clicker
         anchors.fill: parent
     }

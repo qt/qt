@@ -263,7 +263,7 @@ Rectangle {
 FocusScope {
     id: page; width: 240; height: 25
     MyWidget { focus: true }
-    MouseRegion { anchors.fill: parent; onClicked: { page.focus = true } }
+    MouseArea { anchors.fill: parent; onClicked: { page.focus = true } }
 }
 \endcode
 \endtable

@@ -97,7 +97,7 @@ public:
             NumberAnimation { properties: "angle"; duration: 2000 }
         }
 
-        MouseRegion {
+        MouseArea {
             // change between default and 'back' states
             onClicked: flipable.state = (flipable.state == 'back' ? '' : 'back')
             anchors.fill: parent

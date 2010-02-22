@@ -183,7 +183,7 @@ Item {
 
     For example, to react to a Shift key + Left mouse button click:
     \qml
-MouseRegion {
+MouseArea {
     onClicked: { if (mouse.button == Qt.LeftButton && mouse.modifiers & Qt.ShiftModifier) doSomething(); }
 }
     \endqml

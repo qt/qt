@@ -61,21 +61,21 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsMouseRegionPrivate : public QmlGraphicsItemPrivate
+class QmlGraphicsMouseAreaPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsMouseRegion)
+    Q_DECLARE_PUBLIC(QmlGraphicsMouseArea)
 
 public:
-    QmlGraphicsMouseRegionPrivate()
+    QmlGraphicsMouseAreaPrivate()
       : absorb(true), hovered(false), pressed(false), longPress(false), drag(0)
     {
     }
 
-    ~QmlGraphicsMouseRegionPrivate();
+    ~QmlGraphicsMouseAreaPrivate();
 
     void init()
     {
-        Q_Q(QmlGraphicsMouseRegion);
+        Q_Q(QmlGraphicsMouseArea);
         q->setAcceptedMouseButtons(Qt::LeftButton);
     }
 
@@ -87,7 +87,7 @@ public:
     }
 
     bool isConnected(const char *signal) {
-        Q_Q(QmlGraphicsMouseRegion);
+        Q_Q(QmlGraphicsMouseArea);
         int idx = QObjectPrivate::get(q)->signalIndex(signal);
         return QObjectPrivate::get(q)->isSignalConnected(idx);
     }

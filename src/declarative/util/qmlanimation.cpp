@@ -176,7 +176,7 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
 
     The \c running property can be set to declaratively control whether or not
     an animation is running.  The following example will animate a rectangle
-    whenever the \l MouseRegion is pressed.
+    whenever the \l MouseArea is pressed.
 
     \code
     Rectangle {
@@ -185,7 +185,7 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
             running: myMouse.pressed
             from: 0; to: 100
         }
-        MouseRegion { id: myMouse }
+        MouseArea { id: myMouse }
     }
     \endcode
 
@@ -1794,7 +1794,7 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 
     Fade out \c theObject when clicked:
     \qml
-    MouseRegion {
+    MouseArea {
         anchors.fill: theObject
         onClicked: PropertyAnimation { target: theObject; property: "opacity"; to: 0 }
     }
@@ -2214,7 +2214,7 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
            color: Qt.rgba(0,0,1)
            //need to explicitly specify target and property
            NumberAnimation { id: theAnim; target: theRect; property: "x" to: 500 }
-           MouseRegion {
+           MouseArea {
                anchors.fill: parent
                onClicked: theAnim.start()
            }
