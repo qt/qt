@@ -542,7 +542,7 @@ public:
 
     //Checks that the current brush is transparent or has BrushStyle NoBrush,
     //so that theme graphic background can be drawn.
-    static bool canDrawThemeBackground(const QBrush &backgroundBrush);
+    static bool canDrawThemeBackground(const QBrush &backgroundBrush, const QWidget *widget);
 
     static int currentAnimationFrame(QS60StyleEnums::SkinParts part);
 #ifdef Q_WS_S60
@@ -596,6 +596,7 @@ private:
     QPalette m_originalPalette;
 
     QPointer<QFocusFrame> m_focusFrame;
+    static qint64 m_webPaletteKey;
 
 #ifdef Q_WS_S60
     //list of progress bars having animation running

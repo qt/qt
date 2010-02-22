@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -167,10 +167,7 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     canvas->setFixedSize(width, height);
     vbox->addWidget(canvas);
 
-    QFile file(fileName);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, fileName);
+    canvas->setSource(QUrl::fromLocalFile(fileName));
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);

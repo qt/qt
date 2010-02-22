@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtDeclarative/qmlinfo.h>
 #include "qmlnetworkaccessmanagerfactory.h"
+
 
 QT_BEGIN_NAMESPACE
 
@@ -238,7 +239,12 @@ private:
     QAtomicInt m_ref;
     QmlWorkerListModel *m_model;
 };
+
+QT_END_NAMESPACE
+
 Q_DECLARE_METATYPE(QmlWorkerListModelAgent::VariantRef);
+
+QT_BEGIN_NAMESPACE
 
 QmlWorkerScriptEnginePrivate::QmlWorkerScriptEnginePrivate(QmlEngine *engine)
 : workerEngine(0), qmlengine(engine), m_nextId(0)
@@ -1030,8 +1036,10 @@ QVariant QmlWorkerListModel::data(int index, int role) const
         return m_values.at(index).value(role);
 }
 
+QT_END_NAMESPACE
+
 QML_DEFINE_TYPE(Qt,4,6,WorkerListModel,QmlWorkerListModel)
 
 #include "qmlworkerscript.moc"
 
-QT_END_NAMESPACE
+

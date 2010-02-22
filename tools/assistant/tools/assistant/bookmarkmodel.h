@@ -84,6 +84,7 @@ public:
 
     QModelIndex indexFromItem(BookmarkItem *item) const;
     BookmarkItem *itemFromIndex(const QModelIndex &index) const;
+    QList<QPersistentModelIndex> indexListFor(const QString &label) const;
 
     bool insertRows(int position, int rows, const QModelIndex &parent);
     bool removeRows(int position, int rows, const QModelIndex &parent);

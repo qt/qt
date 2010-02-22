@@ -38,10 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#if defined(QT_NO_WEBKIT)
-
 #ifndef HELPVIEWERQTB_H
 #define HELPVIEWERQTB_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(QT_NO_WEBKIT)
 
 #include "helpviewer.h"
 
@@ -79,8 +81,6 @@ public:
     inline bool hasSelection() const
     { return textCursor().hasSelection(); }
 
-    bool launchedWithExternalApp(const QUrl &url);
-
 public Q_SLOTS:
     void home();
 
@@ -111,6 +111,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif  // HELPVIEWERQTB_H
-
 #endif  // QT_NO_WEBKIT
+
+#endif  // HELPVIEWERQTB_H

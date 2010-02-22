@@ -38,20 +38,30 @@ Rectangle {
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
     Dialog {
         id: scoreName; anchors.centerIn: parent; z: 22;
+        property int initialWidth: 0
+        width: Behavior{NumberAnimation{} enabled: initialWidth!=0}
         Text {
             id: spacer
-            opacity: 0
-            text: "   You won! Please enter your name:"
+            anchors.left: scoreName.left
+            anchors.leftMargin: 20
+            anchors.verticalCenter: parent.verticalCenter
+            text: "You won! Please enter your name: "
         }
         TextInput {
             id: editor
+            onTextChanged: {
+                var newWidth = editor.width + spacer.width + 40;
+                if((newWidth > scoreName.width && newWidth < screen.width) 
+                        || (scoreName.width > scoreName.initialWidth))
+                    scoreName.width = newWidth;
+            }
             onAccepted: {
                 if(scoreName.opacity==1&&editor.text!="")
                     saveHighScore(editor.text);
                 scoreName.forceClose();
             }
             anchors.verticalCenter: parent.verticalCenter
-            width: 72; focus: true
+            focus: true
             anchors.left: spacer.right
         }
     }
@@ -79,7 +89,7 @@ Rectangle {
             text: "Score: " + gameCanvas.score; font.bold: true
             anchors.right: parent.right; anchors.rightMargin: 3
             anchors.verticalCenter: parent.verticalCenter
-            color: activePalette.text
+            color: activePalette.windowText
         }
     }
 }

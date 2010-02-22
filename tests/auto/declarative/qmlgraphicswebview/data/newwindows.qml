@@ -17,6 +17,7 @@ Grid {
 
             WebView {
                 id: webView
+                width: 150 // force predictable for test
                 newWindowComponent: webViewPage
                 newWindowParent: pages
                 url: "newwindows.html"

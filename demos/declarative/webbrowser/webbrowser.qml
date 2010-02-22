@@ -97,7 +97,7 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            matchProperties: "opacity"
+                            properties: "opacity"
                             easing: "easeInOutQuad"
                             duration: 300
                         }
@@ -153,7 +153,7 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            matchProperties: "opacity"
+                            properties: "opacity"
                             easing: "easeInOutQuad"
                             duration: 320
                         }

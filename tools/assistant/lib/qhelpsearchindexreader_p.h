@@ -66,8 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QHelpEngineCore;
 
-namespace qt {
-    namespace fulltextsearch {
+namespace fulltextsearch {
 
 class QHelpSearchIndexReader : public QThread
 {
@@ -100,8 +99,7 @@ private:
     virtual void run()=0;
 };
 
-    }   // namespace fulltextsearch
-}  // namespace qt
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE
 

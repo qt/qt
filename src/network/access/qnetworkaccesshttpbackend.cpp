@@ -213,6 +213,7 @@ QNetworkAccessHttpBackendFactory::create(QNetworkAccessManager::Operation op,
     case QNetworkAccessManager::HeadOperation:
     case QNetworkAccessManager::PutOperation:
     case QNetworkAccessManager::DeleteOperation:
+    case QNetworkAccessManager::CustomOperation:
         break;
 
     default:
@@ -525,6 +526,14 @@ void QNetworkAccessHttpBackend::postRequest()
     case QNetworkAccessManager::DeleteOperation:
         invalidateCache();
         httpRequest.setOperation(QHttpNetworkRequest::Delete);
+        break;
+
+    case QNetworkAccessManager::CustomOperation:
+        invalidateCache(); // for safety reasons, we don't know what the operation does
+        httpRequest.setOperation(QHttpNetworkRequest::Custom);
+        httpRequest.setUploadByteDevice(createUploadByteDevice());
+        httpRequest.setCustomVerb(request().attribute(
+                QNetworkRequest::CustomVerbAttribute).toByteArray());
         break;
 
     default:
@@ -1013,7 +1022,7 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
         // of writes to disk when using a QNetworkDiskCache (i.e. don't
         // write to disk when only the date changes).
         // However, without the date we cannot calculate the age of the page
-        // anymore. Consider a proper fix of that problem for 4.6.1.
+        // anymore.
         //if (header == "date")
             //continue;
 

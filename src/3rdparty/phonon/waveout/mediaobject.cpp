@@ -50,7 +50,7 @@ namespace Phonon
         {
             ushort b[256];
             waveOutGetErrorText(error, (LPWSTR)b, 256);
-            return QString::fromUtf16(b);
+            return QString((const QChar *)b);
         }
 
         class WorkerThread : public QThread

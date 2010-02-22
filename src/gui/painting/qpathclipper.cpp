@@ -1705,6 +1705,9 @@ QPainterPath QPathClipper::clip(Operation operation)
         if (subjectPath == clipPath)
             return op == BoolSub ? QPainterPath() : subjectPath;
 
+        bool subjectIsRect = pathToRect(subjectPath, 0);
+        bool clipIsRect = pathToRect(clipPath, 0);
+
         const QRectF clipBounds = clipPath.boundingRect();
         const QRectF subjectBounds = subjectPath.boundingRect();
 
@@ -1732,8 +1735,7 @@ QPainterPath QPathClipper::clip(Operation operation)
         }
 
         if (clipBounds.contains(subjectBounds)) {
-            QRectF clipRect;
-            if (pathToRect(clipPath, &clipRect) && clipRect.contains(subjectBounds)) {
+            if (clipIsRect) {
                 switch (op) {
                 case BoolSub:
                     return QPainterPath();
@@ -1746,17 +1748,16 @@ QPainterPath QPathClipper::clip(Operation operation)
                 }
             }
         } else if (subjectBounds.contains(clipBounds)) {
-            QRectF subjectRect;
-            if (pathToRect(subjectPath, &subjectRect) && subjectRect.contains(clipBounds)) {
+            if (subjectIsRect) {
                 switch (op) {
                 case BoolSub:
                     if (clipPath.fillRule() == Qt::OddEvenFill) {
                         QPainterPath result = clipPath;
-                        result.addRect(subjectRect);
+                        result.addRect(subjectBounds);
                         return result;
                     } else {
                         QPainterPath result = clipPath.simplified();
-                        result.addRect(subjectRect);
+                        result.addRect(subjectBounds);
                         return result;
                     }
                     break;
@@ -1768,6 +1769,13 @@ QPainterPath QPathClipper::clip(Operation operation)
                     break;
                 }
             }
+        }
+
+        if (op == BoolAnd) {
+            if (subjectIsRect)
+                return intersect(clipPath, subjectBounds);
+            else if (clipIsRect)
+                return intersect(subjectPath, clipBounds);
         }
     }
 
@@ -2050,6 +2058,245 @@ bool QPathClipper::handleCrossingEdges(QWingedEdge &list, qreal y, ClipperMode m
     }
 
     return false;
+}
+
+namespace {
+
+QList<QPainterPath> toSubpaths(const QPainterPath &path)
+{
+
+    QList<QPainterPath> subpaths;
+    if (path.isEmpty())
+        return subpaths;
+
+    QPainterPath current;
+    for (int i = 0; i < path.elementCount(); ++i) {
+        const QPainterPath::Element &e = path.elementAt(i);
+        switch (e.type) {
+        case QPainterPath::MoveToElement:
+            if (current.elementCount() > 1)
+                subpaths += current;
+            current = QPainterPath();
+            current.moveTo(e);
+            break;
+        case QPainterPath::LineToElement:
+            current.lineTo(e);
+            break;
+        case QPainterPath::CurveToElement: {
+            current.cubicTo(e, path.elementAt(i + 1), path.elementAt(i + 2));
+            i+=2;
+            break;
+        }
+        case QPainterPath::CurveToDataElement:
+            Q_ASSERT(!"toSubpaths(), bad element type");
+            break;
+        }
+    }
+
+    if (current.elementCount() > 1)
+        subpaths << current;
+
+    return subpaths;
+}
+
+enum Edge
+{
+    Left, Top, Right, Bottom
+};
+
+static bool isVertical(Edge edge)
+{
+    return edge == Left || edge == Right;
+}
+
+template <Edge edge>
+bool compare(const QPointF &p, qreal t)
+{
+    switch (edge)
+    {
+    case Left:
+        return p.x() < t;
+    case Right:
+        return p.x() > t;
+    case Top:
+        return p.y() < t;
+    default:
+        return p.y() > t;
+    }
+}
+
+template <Edge edge>
+QPointF intersectLine(const QPointF &a, const QPointF &b, qreal t)
+{
+    QLineF line(a, b);
+    switch (edge) {
+    case Left: // fall-through
+    case Right:
+        return line.pointAt((t - a.x()) / (b.x() - a.x()));
+    default:
+        return line.pointAt((t - a.y()) / (b.y() - a.y()));
+    }
+}
+
+void addLine(QPainterPath &path, const QLineF &line)
+{
+    if (path.elementCount() > 0)
+        path.lineTo(line.p1());
+    else
+        path.moveTo(line.p1());
+
+    path.lineTo(line.p2());
+}
+
+template <Edge edge>
+void clipLine(const QPointF &a, const QPointF &b, qreal t, QPainterPath &result)
+{
+    bool outA = compare<edge>(a, t);
+    bool outB = compare<edge>(b, t);
+    if (outA && outB)
+        return;
+
+    if (outA)
+        addLine(result, QLineF(intersectLine<edge>(a, b, t), b));
+    else if(outB)
+        addLine(result, QLineF(a, intersectLine<edge>(a, b, t)));
+    else
+        addLine(result, QLineF(a, b));
+}
+
+void addBezier(QPainterPath &path, const QBezier &bezier)
+{
+    if (path.elementCount() > 0)
+        path.lineTo(bezier.pt1());
+    else
+        path.moveTo(bezier.pt1());
+
+    path.cubicTo(bezier.pt2(), bezier.pt3(), bezier.pt4());
+}
+
+template <Edge edge>
+void clipBezier(const QPointF &a, const QPointF &b, const QPointF &c, const QPointF &d, qreal t, QPainterPath &result)
+{
+    QBezier bezier = QBezier::fromPoints(a, b, c, d);
+
+    bool outA = compare<edge>(a, t);
+    bool outB = compare<edge>(b, t);
+    bool outC = compare<edge>(c, t);
+    bool outD = compare<edge>(d, t);
+
+    int outCount = int(outA) + int(outB) + int(outC) + int(outD);
+
+    if (outCount == 4)
+        return;
+
+    if (outCount == 0) {
+        addBezier(result, bezier);
+        return;
+    }
+
+    QTransform flip = isVertical(edge) ? QTransform(0, 1, 1, 0, 0, 0) : QTransform();
+    QBezier unflipped = bezier;
+    QBezier flipped = bezier.mapBy(flip);
+
+    qreal t0 = 0, t1 = 1;
+    int stationary = flipped.stationaryYPoints(t0, t1);
+
+    qreal segments[4];
+    QPointF points[4];
+    points[0] = unflipped.pt1();
+    segments[0] = 0;
+
+    int segmentCount = 0;
+    if (stationary > 0) {
+        ++segmentCount;
+        segments[segmentCount] = t0;
+        points[segmentCount] = unflipped.pointAt(t0);
+    }
+    if (stationary > 1) {
+        ++segmentCount;
+        segments[segmentCount] = t1;
+        points[segmentCount] = unflipped.pointAt(t1);
+    }
+    ++segmentCount;
+    segments[segmentCount] = 1;
+    points[segmentCount] = unflipped.pt4();
+
+    qreal lastIntersection = 0;
+    for (int i = 0; i < segmentCount; ++i) {
+        outA = compare<edge>(points[i], t);
+        outB = compare<edge>(points[i+1], t);
+
+        if (outA != outB) {
+            qreal intersection = flipped.tForY(segments[i], segments[i+1], t);
+
+            if (outB)
+                addBezier(result, unflipped.getSubRange(lastIntersection, intersection));
+
+            lastIntersection = intersection;
+        }
+    }
+
+    if (!outB)
+        addBezier(result, unflipped.getSubRange(lastIntersection, 1));
+}
+
+// clips a single subpath against a single edge
+template <Edge edge>
+QPainterPath clip(const QPainterPath &path, qreal t)
+{
+    QPainterPath result;
+    for (int i = 1; i < path.elementCount(); ++i) {
+        const QPainterPath::Element &element = path.elementAt(i);
+        Q_ASSERT(!element.isMoveTo());
+        if (element.isLineTo()) {
+            clipLine<edge>(path.elementAt(i-1), path.elementAt(i), t, result);
+        } else {
+            clipBezier<edge>(path.elementAt(i-1), path.elementAt(i), path.elementAt(i+1), path.elementAt(i+2), t, result);
+            i += 2;
+        }
+    }
+
+    int last = path.elementCount() - 1;
+    if (QPointF(path.elementAt(last)) != QPointF(path.elementAt(0)))
+        clipLine<edge>(path.elementAt(last), path.elementAt(0), t, result);
+
+    return result;
+}
+
+QPainterPath intersectPath(const QPainterPath &path, const QRectF &rect)
+{
+    QList<QPainterPath> subpaths = toSubpaths(path);
+
+    QPainterPath result;
+    result.setFillRule(path.fillRule());
+    for (int i = 0; i < subpaths.size(); ++i) {
+        QPainterPath subPath = subpaths.at(i);
+        QRectF bounds = subPath.boundingRect();
+        if (bounds.intersects(rect)) {
+            if (bounds.left() < rect.left())
+                subPath = clip<Left>(subPath, rect.left());
+            if (bounds.right() > rect.right())
+                subPath = clip<Right>(subPath, rect.right());
+
+            bounds = subPath.boundingRect();
+
+            if (bounds.top() < rect.top())
+                subPath = clip<Top>(subPath, rect.top());
+            if (bounds.bottom() > rect.bottom())
+                subPath = clip<Bottom>(subPath, rect.bottom());
+
+            if (subPath.elementCount() > 1)
+                result.addPath(subPath);
+        }
+    }
+    return result;
+}
+
+}
+
+QPainterPath QPathClipper::intersect(const QPainterPath &path, const QRectF &rect)
+{
+    return intersectPath(path, rect);
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,7 @@
 #include <QNetworkProxy>
 #include "ui_proxysettings.h"
 
+QT_BEGIN_NAMESPACE
 /**
 */
 class ProxySettings : public QDialog, public Ui::ProxySettings
@@ -64,5 +65,7 @@ public:
 public slots:
     virtual void accept ();
 };
+
+QT_END_NAMESPACE
 
 #endif // PROXYSETTINGS_H

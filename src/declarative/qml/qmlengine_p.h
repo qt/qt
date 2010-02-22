@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,6 +75,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstack.h>
+#include <QtCore/qmutex.h>
 #include <QtScript/qscriptengine.h>
 
 #include <private/qobject_p.h>
@@ -211,9 +212,15 @@ public:
 
     bool inBeginCreate;
 
+    QNetworkAccessManager *createNetworkAccessManager(QObject *parent) const;
     QNetworkAccessManager *getNetworkAccessManager() const;
     mutable QNetworkAccessManager *networkAccessManager;
     mutable QmlNetworkAccessManagerFactory *networkAccessManagerFactory;
+
+    QHash<QString,QmlImageProvider*> imageProviders;
+    QImage getImageFromProvider(const QUrl &url);
+
+    mutable QMutex mutex;
 
     QmlCompositeTypeManager typeManager;
     QStringList fileImportPath;
@@ -309,6 +316,7 @@ public:
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
+    static QmlEnginePrivate *get(QmlContext *c) { return (c && c->engine()) ? QmlEnginePrivate::get(c->engine()) : 0; }
     static QmlEnginePrivate *get(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p; }
     static QmlEngine *get(QmlEnginePrivate *p) { return p->q_func(); }
     QmlContext *getContext(QScriptContext *);

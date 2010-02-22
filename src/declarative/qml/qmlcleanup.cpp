@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,8 @@
 
 #include "qmlengine_p.h"
 
+QT_BEGIN_NAMESPACE
+
 /*!
 \internal
 \class QmlCleanup
@@ -82,4 +84,4 @@ QmlCleanup::~QmlCleanup()
     prev = 0; 
     next = 0;
 }
-
+QT_END_NAMESPACE

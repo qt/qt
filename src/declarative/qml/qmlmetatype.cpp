@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -840,6 +840,8 @@ QList<QmlType*> QmlMetaType::qmlTypes()
     return data->nameToType.values();
 }
 
+QT_END_NAMESPACE
+
 #include <QtGui/qfont.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qbrush.h>
@@ -867,6 +869,7 @@ QList<QmlType*> QmlMetaType::qmlTypes()
 
 Q_DECLARE_METATYPE(QScriptValue);
 
+QT_BEGIN_NAMESPACE
 /*!
     Copies \a copy into \a data, assuming they both are of type \a type.  If
     \a copy is zero, a default type is copied.  Returns true if the copy was

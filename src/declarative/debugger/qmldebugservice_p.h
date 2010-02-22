@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,17 +68,19 @@ public:
     static int idForObject(QObject *);
     static QObject *objectForId(int);
 
-
     static bool isDebuggingEnabled();
     static QString objectToString(QObject *obj);
 
     static void waitForClients();
+
+    static void notifyOnServerStart(QObject *object, const char *receiver);
 
 protected:
     virtual void enabledChanged(bool);
     virtual void messageReceived(const QByteArray &);
 
 private:
+    void registerForStartNotification(QObject *object, const char *methodName);
     friend class QmlDebugServer;
 };
 

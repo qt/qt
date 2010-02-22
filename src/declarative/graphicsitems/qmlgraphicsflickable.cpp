@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,36 +55,6 @@ static const int FlickThreshold = 20;
 
 // Really slow flicks can be annoying.
 static const int minimumFlickVelocity = 200;
-
-class QmlGraphicsFlickableVisibleArea : public QObject
-{
-    Q_OBJECT
-
-    Q_PROPERTY(qreal xPosition READ xPosition NOTIFY pageChanged)
-    Q_PROPERTY(qreal yPosition READ yPosition NOTIFY pageChanged)
-    Q_PROPERTY(qreal widthRatio READ widthRatio NOTIFY pageChanged)
-    Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY pageChanged)
-
-public:
-    QmlGraphicsFlickableVisibleArea(QmlGraphicsFlickable *parent=0);
-
-    qreal xPosition() const;
-    qreal widthRatio() const;
-    qreal yPosition() const;
-    qreal heightRatio() const;
-
-    void updateVisible();
-
-signals:
-    void pageChanged();
-
-private:
-    QmlGraphicsFlickable *flickable;
-    qreal m_xPosition;
-    qreal m_widthRatio;
-    qreal m_yPosition;
-    qreal m_heightRatio;
-};
 
 QmlGraphicsFlickableVisibleArea::QmlGraphicsFlickableVisibleArea(QmlGraphicsFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
@@ -355,8 +325,6 @@ void QmlGraphicsFlickablePrivate::updateBeginningEnd()
     if (visibleArea)
         visibleArea->updateVisible();
 }
-
-QML_DEFINE_TYPE(Qt,4,6,Flickable,QmlGraphicsFlickable)
 
 /*!
     \qmlclass Flickable QmlGraphicsFlickable
@@ -1038,7 +1006,10 @@ bool QmlGraphicsFlickable::overShoot() const
 void QmlGraphicsFlickable::setOverShoot(bool o)
 {
     Q_D(QmlGraphicsFlickable);
+    if (d->overShoot == o)
+        return;
     d->overShoot = o;
+    emit overShootChanged();
 }
 
 /*!
@@ -1247,6 +1218,7 @@ void QmlGraphicsFlickable::setMaximumFlickVelocity(qreal v)
     if (v == d->maxVelocity)
         return;
     d->maxVelocity = v;
+    emit maximumFlickVelocityChanged();
 }
 
 /*!
@@ -1264,7 +1236,10 @@ qreal QmlGraphicsFlickable::flickDeceleration() const
 void QmlGraphicsFlickable::setFlickDeceleration(qreal deceleration)
 {
     Q_D(QmlGraphicsFlickable);
+    if (deceleration == d->deceleration)
+        return;
     d->deceleration = deceleration;
+    emit flickDecelerationChanged();
 }
 
 /*!
@@ -1302,6 +1277,7 @@ void QmlGraphicsFlickable::setPressDelay(int delay)
     if (d->pressDelay == delay)
         return;
     d->pressDelay = delay;
+    emit pressDelayChanged();
 }
 
 qreal QmlGraphicsFlickable::reportedVelocitySmoothing() const
@@ -1367,8 +1343,3 @@ void QmlGraphicsFlickablePrivate::updateVelocity()
 }
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlGraphicsFlickableVisibleArea)
-QML_DEFINE_TYPE(Qt,4,6,VisibleArea,QmlGraphicsFlickableVisibleArea)
-
-#include <qmlgraphicsflickable.moc>

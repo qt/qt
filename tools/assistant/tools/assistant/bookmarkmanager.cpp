@@ -41,6 +41,7 @@
 #include "tracer.h"
 
 #include "bookmarkmanager.h"
+#include "bookmarkmanagerwidget.h"
 #include "bookmarkdialog.h"
 #include "bookmarkfiltermodel.h"
 #include "bookmarkitem.h"
@@ -48,14 +49,10 @@
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 
-#include <QtGui/QFileDialog>
 #include <QtGui/QMenu>
 #include <QtGui/QKeyEvent>
 #include <QtGui/QMessageBox>
 #include <QtGui/QSortFilterProxyModel>
-
-#include <QFile>
-#include "xbelsupport.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -163,6 +160,7 @@ BookmarkManager::BookmarkManager()
     , bookmarkModel(new BookmarkModel)
     , bookmarkWidget(new BookmarkWidget)
     , bookmarkTreeView(new BookmarkTreeView)
+    , bookmarkManagerWidget(0)
 {
     TRACE_OBJ
     bookmarkWidget->installEventFilter(this);
@@ -187,6 +185,10 @@ BookmarkManager::BookmarkManager()
 
     connect(&HelpEngineWrapper::instance(), SIGNAL(setupFinished()), this,
         SLOT(setupFinished()));
+    connect(bookmarkModel, SIGNAL(rowsRemoved(QModelIndex, int, int)), this,
+        SLOT(refeshBookmarkMenu()));
+    connect(bookmarkModel, SIGNAL(rowsInserted(QModelIndex, int, int)), this,
+        SLOT(refeshBookmarkMenu()));
     connect(bookmarkModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)), this,
         SLOT(refeshBookmarkMenu()));
 }
@@ -194,7 +196,9 @@ BookmarkManager::BookmarkManager()
 BookmarkManager::~BookmarkManager()
 {
     TRACE_OBJ
+    delete bookmarkManagerWidget;
     HelpEngineWrapper::instance().setBookmarks(bookmarkModel->bookmarks());
+    delete bookmarkModel;
 }
 
 void BookmarkManager::removeItem(const QModelIndex &index)
@@ -323,10 +327,8 @@ void BookmarkManager::setupFinished()
 void BookmarkManager::addBookmark()
 {
     TRACE_OBJ
-    if (CentralWidget *widget = CentralWidget::instance()) {
-        showBookmarkDialog(widget->currentTitle(),
-            widget->currentSource().toString());
-    }
+    if (CentralWidget *widget = CentralWidget::instance())
+        addBookmark(widget->currentTitle(), widget->currentSource().toString());
 }
 
 void BookmarkManager::removeBookmark()
@@ -335,10 +337,21 @@ void BookmarkManager::removeBookmark()
     removeItem(bookmarkTreeView->currentIndex());
 }
 
-//void BookmarkManager::manageBookmarks()
-//{
-//    TRACE_OBJ
-//}
+void BookmarkManager::manageBookmarks()
+{
+    TRACE_OBJ
+    if (bookmarkManagerWidget == 0) {
+        bookmarkManagerWidget = new BookmarkManagerWidget(bookmarkModel);
+        connect(bookmarkManagerWidget, SIGNAL(setSource(QUrl)), this,
+            SIGNAL(setSource(QUrl)));
+        connect(bookmarkManagerWidget, SIGNAL(setSourceInNewTab(QUrl))
+            , this, SIGNAL(setSourceInNewTab(QUrl)));
+        connect(bookmarkManagerWidget, SIGNAL(managerWidgetAboutToClose())
+            , this, SLOT(managerWidgetAboutToClose()));
+    }
+    bookmarkManagerWidget->show();
+    bookmarkManagerWidget->raise();
+}
 
 void BookmarkManager::refeshBookmarkMenu()
 {
@@ -348,10 +361,8 @@ void BookmarkManager::refeshBookmarkMenu()
 
     bookmarkMenu->clear();
 
-    //bookmarkMenu->addAction(tr("Manage Bookmarks..."), this,
-    //    SLOT(manageBookmarks()));
-    bookmarkMenu->addAction(tr("Import..."), this, SLOT(importBookmarks()));
-    bookmarkMenu->addAction(tr("Export..."), this, SLOT(exportBookmarks()));
+    bookmarkMenu->addAction(tr("Manage Bookmarks..."), this,
+        SLOT(manageBookmarks()));
     bookmarkMenu->addAction(tr("Add Bookmark..."), this, SLOT(addBookmark()),
         QKeySequence(tr("Ctrl+D")));
     bookmarkMenu->addSeparator();
@@ -373,42 +384,6 @@ void BookmarkManager::renameBookmark(const QModelIndex &index)
     bookmarkModel->setItemsEditable(true);
     bookmarkTreeView->edit(index);
     bookmarkModel->setItemsEditable(false);
-}
-
-void BookmarkManager::importBookmarks()
-{
-    TRACE_OBJ
-    const QString &fileName = QFileDialog::getOpenFileName(0, tr("Open File"),
-        QDir::currentPath(), tr("Files (*.xbel)"));
-
-    if (fileName.isEmpty())
-        return;
-
-    QFile file(fileName);
-    if (file.open(QIODevice::ReadOnly)) {
-        XbelReader reader(bookmarkModel);
-        reader.readFromFile(&file);
-    }
-}
-
-void BookmarkManager::exportBookmarks()
-{
-    TRACE_OBJ
-    QString fileName = QFileDialog::getSaveFileName(0, tr("Save File"),
-        QLatin1String("untitled.xbel"), tr("Files (*.xbel)"));
-
-    const QLatin1String suffix(".xbel");
-    if (!fileName.endsWith(suffix))
-        fileName.append(suffix);
-
-    QFile file(fileName);
-    if (file.open(QIODevice::WriteOnly)) {
-        XbelWriter writer(bookmarkModel);
-        writer.writeToFile(&file);
-    } else {
-        QMessageBox::information(bookmarkTreeView, tr("Qt Assistant"),
-            tr("Unable to save bookmarks."), tr("OK"));
-    }
 }
 
 void BookmarkManager::setSourceFromAction(QAction *action)
@@ -482,6 +457,12 @@ void BookmarkManager::focusInEvent()
     const QModelIndex &index = bookmarkTreeView->indexAt(QPoint(2, 2));
     if (index.isValid())
         bookmarkTreeView->setCurrentIndex(index);
+}
+
+void BookmarkManager::managerWidgetAboutToClose()
+{
+    delete bookmarkManagerWidget;
+    bookmarkManagerWidget = 0;
 }
 
 void BookmarkManager::textChanged(const QString &text)

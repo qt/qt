@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -246,11 +246,35 @@ private:
     friend class QmlGraphicsWebPage;
 };
 
+class QmlGraphicsWebViewAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString windowObjectName READ windowObjectName WRITE setWindowObjectName)
+public:
+    QmlGraphicsWebViewAttached(QObject *parent)
+        : QObject(parent)
+    {
+    }
+
+    QString windowObjectName() const
+    {
+        return m_windowObjectName;
+    }
+
+    void setWindowObjectName(const QString &n)
+    {
+        m_windowObjectName = n;
+    }
+
+private:
+    QString m_windowObjectName;
+};
+
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsWebView)
 QML_DECLARE_TYPEINFO(QmlGraphicsWebView, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(QAction)
 
 QT_END_HEADER
 

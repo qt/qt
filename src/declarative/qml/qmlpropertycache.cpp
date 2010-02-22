@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,9 +45,9 @@
 #include "qmlbinding.h"
 #include "qdebug.h"
 
-QT_BEGIN_NAMESPACE
-
 Q_DECLARE_METATYPE(QScriptValue);
+
+QT_BEGIN_NAMESPACE
 
 void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
 {

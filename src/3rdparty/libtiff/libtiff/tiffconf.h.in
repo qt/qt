@@ -41,6 +41,9 @@
 /* Support JPEG compression (requires IJG JPEG library) */
 #undef JPEG_SUPPORT
 
+/* Support JBIG compression (requires JBIG-KIT library) */
+#undef JBIG_SUPPORT
+
 /* Support LogLuv high dynamic range encoding */
 #undef LOGLUV_SUPPORT
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -222,8 +222,10 @@ QT_END_NAMESPACE
 QML_DECLARE_TYPE(QmlGraphicsTextInput)
 QML_DECLARE_TYPE(QValidator)
 QML_DECLARE_TYPE(QIntValidator)
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
 QML_DECLARE_TYPE(QDoubleValidator)
 QML_DECLARE_TYPE(QRegExpValidator)
+#endif
 
 QT_END_HEADER
 

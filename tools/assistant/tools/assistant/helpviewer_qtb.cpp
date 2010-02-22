@@ -38,24 +38,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#if defined(QT_NO_WEBKIT)
-
 #include "helpviewer_qtb.h"
-#include "helpviewer_qwv.h"
+
+#if defined(QT_NO_WEBKIT)
 
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "tracer.h"
 
-#include <QtCore/QDir>
 #include <QtCore/QStringBuilder>
 
 #include <QtGui/QContextMenuEvent>
 #include <QtGui/QMenu>
 #include <QtGui/QClipboard>
 #include <QtGui/QApplication>
-#include <QtGui/QMessageBox>
-#include <QtGui/QDesktopServices>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,60 +132,26 @@ void HelpViewer::resetScale()
 void HelpViewer::setSource(const QUrl &url)
 {
     TRACE_OBJ
-    bool help = url.toString() == QLatin1String("help");
-    if (url.isValid() && !help) {
-        if (launchedWithExternalApp(url))
+    const QString &string = url.toString();
+    if (url.isValid() && string != QLatin1String("help")) {
+        if (launchWithExternalApp(url))
             return;
 
-        QUrl u = helpEngine.findFile(url);
-        if (u.isValid()) {
-            QTextBrowser::setSource(u);
+        const QUrl &resolvedUrl = helpEngine.findFile(url);
+        if (resolvedUrl.isValid()) {
+            QTextBrowser::setSource(resolvedUrl);
             return;
-        }
+        } 
     }
 
-    if (help) {
-        QTextBrowser::setSource(QUrl(QLatin1String("qthelp://com.trolltech.com."
-            "assistantinternal-1.0.0/assistant/assistant.html")));
-    } else {
+    if (string != QLatin1String("help")) {
         QTextBrowser::setSource(url);
-        setHtml(PageNotFoundMessage.arg(url.toString()));
+        setHtml(string == QLatin1String("about:blank") ? AboutBlank
+            : PageNotFoundMessage.arg(url.toString()));
         emit sourceChanged(url);
+    } else {
+        QTextBrowser::setSource(LocalHelpFile);
     }
-}
-
-bool HelpViewer::launchedWithExternalApp(const QUrl &url)
-{
-    TRACE_OBJ
-    const bool canOpen = canOpenPage(url.path());
-    if (!isLocalUrl(url) || !canOpen) {
-        bool launched = false;
-        if (!canOpen && url.scheme() == QLatin1String("qthelp")) {
-            const QString& path = url.path();
-            const int lastDash = path.lastIndexOf(QChar('/'));
-            QString fileName = QDir::tempPath() + QDir::separator();
-            if (lastDash < 0)
-                fileName += path;
-            else
-                fileName += path.mid(lastDash + 1, path.length());
-
-            QFile tmpFile(QDir::cleanPath(fileName));
-            if (tmpFile.open(QIODevice::ReadWrite)) {
-                tmpFile.write(helpEngine.fileData(url));
-                tmpFile.close();
-            }
-            launched = QDesktopServices::openUrl(QUrl(tmpFile.fileName()));
-        } else {
-            launched = QDesktopServices::openUrl(url);
-        }
-
-        if (!launched) {
-            QMessageBox::information(this, tr("Help"),
-                tr("Unable to launch external application.\n"), tr("OK"));
-        }
-        return true;
-    }
-    return false;
 }
 
 QVariant HelpViewer::loadResource(int type, const QUrl &name)

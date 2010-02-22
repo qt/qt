@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #ifndef QMLSQLDATABASE_P_H
 #define QMLSQLDATABASE_P_H
 
+#include <QtScript/qscriptengine.h>
 //
 //  W A R N I N G
 //  -------------
@@ -53,8 +54,14 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
+
 class QScriptEngine;
 void qt_add_qmlsqldatabase(QScriptEngine *engine);
+
+QT_END_NAMESPACE
 
 #endif // QMLSQLDATABASE_P_H
 
