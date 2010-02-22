@@ -8,6 +8,7 @@
 
 #include <private/qdrawhelper_p.h>
 
+#ifndef QT_NO_BLITTABLE
 static int global_ser_no = 0;
 
 QBlittablePixmapData::QBlittablePixmapData(QPixmapData::PixelType type)
@@ -52,7 +53,9 @@ void QBlittablePixmapData::resize(int width, int height)
     m_blittable = 0;
     delete m_engine;
     m_engine = 0;
+#ifdef Q_WS_LITE
     d = QApplicationPrivate::graphicsSystem()->screens().at(0)->depth();
+#endif
     w = width;
     h = height;
     is_null = (w <= 0 || h <= 0);
@@ -257,3 +260,5 @@ QRectF QBlittablePixmapData::clipAndTransformRect(const QRectF &rect) const
     return transformationRect;
 }
 #endif //QT_BLITTER_RASTEROVERLAY
+
+#endif //QT_NO_BLITTABLE

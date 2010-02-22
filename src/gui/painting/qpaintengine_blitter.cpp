@@ -4,6 +4,8 @@
 #include "private/qapplication_p.h"
 #include "private/qpixmap_blitter_p.h"
 
+#ifndef QT_NO_BLITTABLE
+
 #define STATE_XFORM_SCALE       0x00000001
 #define STATE_XFORM_COMPLEX     0x00000002
 
@@ -658,3 +660,5 @@ void QBlittable::unlock()
         d->locked = false;
     }
 }
+
+#endif //QT_NO_BLITTABLE

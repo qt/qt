@@ -55,6 +55,10 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window)
 {
     window->setWindowSurface(this);
 
+    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
+    DFBDisplayLayerConfig layerConfig;
+    layer->GetConfiguration(layer,&layerConfig);
+
     DFBWindowDescription description;
     memset(&description,0,sizeof(DFBWindowDescription));
     description.flags = DFBWindowDescriptionFlags(DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_POSX|DWDESC_POSY|DWDESC_SURFACE_CAPS
@@ -66,13 +70,17 @@ QDirectFbWindowSurface::QDirectFbWindowSurface(QWidget *window)
     description.height = window->rect().height();
     description.posx = window->rect().x();
     description.posy = window->rect().y();
+
+    if (layerConfig.surface_caps & DSCAPS_PREMULTIPLIED)
+        description.surface_caps = DSCAPS_PREMULTIPLIED;
+    description.pixelformat = layerConfig.pixelformat;
+
 #if DIRECTFB_MINOR_VERSION >= 1
     description.options = DFBWindowOptions(DWOP_ALPHACHANNEL);
 #endif
     description.caps = DFBWindowCapabilities(DWCAPS_DOUBLEBUFFER|DWCAPS_ALPHACHANNEL);
     description.surface_caps = DSCAPS_PREMULTIPLIED;
 
-    IDirectFBDisplayLayer *layer = QDirectFbConvenience::dfbDisplayLayer();
     DFBResult result = layer->CreateWindow(layer,&description,&m_dfbWindow);
     if (result != DFB_OK) {
         DirectFBError("QDirectFbGraphicsSystemScreen: failed to create window",result);

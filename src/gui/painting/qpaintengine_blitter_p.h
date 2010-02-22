@@ -4,6 +4,8 @@
 #include "private/qpaintengineex_p.h"
 #include "private/qpaintengine_raster_p.h"
 
+#ifndef QT_NO_BLITTABLE
+
 class QBlittablePrivate;
 class QBlitterPaintEnginePrivate;
 class QBlittablePixmapData;
@@ -98,4 +100,5 @@ private:
 
 };
 
+#endif //QT_NO_BLITTABLE
 #endif // QPAINTENGINE_BLITTER_P_H

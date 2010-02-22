@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEventDispatcherLitePrivate;
+class QEventDispatcherQWSPrivate;
 
 class QEventDispatcherQWS : public QEventDispatcherUNIX
 {
