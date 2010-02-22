@@ -180,9 +180,6 @@ bool usage(const char *a0)
             "   * processed as if it was in [files]. These assignments will be parsed *\n"
             "   * before [files].                                                     *\n"
             "  -o file        Write output to file\n"
-            "  -unix          Run in unix mode\n"
-            "  -win32         Run in win32 mode\n"
-            "  -macx          Run in Mac OS X mode\n"
             "  -d             Increase debug level\n"
             "  -t templ       Overrides TEMPLATE as templ\n"
             "  -tp prefix     Overrides TEMPLATE so that prefix is prefixed into the value\n"
@@ -247,14 +244,17 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "tp" || opt == "template_prefix") {
                 Option::user_template_prefix = argv[++x];
             } else if(opt == "macx") {
+                fprintf(stderr, "-macx is deprecated.\n");
                 Option::host_mode = HOST_MACX_MODE;
                 Option::target_mode = TARG_MACX_MODE;
                 Option::target_mode_overridden = true;
             } else if(opt == "unix") {
+                fprintf(stderr, "-unix is deprecated.\n");
                 Option::host_mode = HOST_UNIX_MODE;
                 Option::target_mode = TARG_UNIX_MODE;
                 Option::target_mode_overridden = true;
             } else if(opt == "win32") {
+                fprintf(stderr, "-win32 is deprecated.\n");
                 Option::host_mode = HOST_WIN_MODE;
                 Option::target_mode = TARG_WIN_MODE;
                 Option::target_mode_overridden = true;
