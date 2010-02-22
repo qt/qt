@@ -148,7 +148,8 @@ struct Option
     static QString output_dir;
     static int debug_level;
     static int warn_level;
-    static bool recursive;
+    enum QMAKE_RECURSIVE { QMAKE_RECURSIVE_DEFAULT, QMAKE_RECURSIVE_YES, QMAKE_RECURSIVE_NO };
+    static QMAKE_RECURSIVE recursive;
     static QStringList before_user_vars, after_user_vars, user_configs, after_user_configs;
     enum TARG_MODE { TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE };
     static TARG_MODE target_mode;

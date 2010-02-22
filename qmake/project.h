@@ -78,6 +78,7 @@ class QMakeProject
     FunctionBlock *function;
     QMap<QString, FunctionBlock*> testFunctions, replaceFunctions;
 
+    bool recursive;
     bool own_prop;
     QString pfile, cfile;
     QMakeProperty *prop;
@@ -153,6 +154,8 @@ public:
     QStringList &values(const QString &v);
     QString first(const QString &v);
     QMap<QString, QStringList> &variables();
+
+    bool isRecursive() const { return recursive; }
 
 protected:
     friend class MakefileGenerator;

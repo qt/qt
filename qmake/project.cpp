@@ -121,7 +121,7 @@ enum TestFunc { T_REQUIRES=1, T_GREATERTHAN, T_LESSTHAN, T_EQUALS,
                 T_EXISTS, T_EXPORT, T_CLEAR, T_UNSET, T_EVAL, T_CONFIG, T_SYSTEM,
                 T_RETURN, T_BREAK, T_NEXT, T_DEFINED, T_CONTAINS, T_INFILE,
                 T_COUNT, T_ISEMPTY, T_INCLUDE, T_LOAD, T_DEBUG, T_ERROR,
-                T_MESSAGE, T_WARNING, T_IF };
+                T_MESSAGE, T_WARNING, T_IF, T_OPTION };
 QMap<QString, TestFunc> qmake_testFunctions()
 {
     static QMap<QString, TestFunc> *qmake_test_functions = 0;
@@ -155,6 +155,7 @@ QMap<QString, TestFunc> qmake_testFunctions()
         qmake_test_functions->insert("error", T_ERROR);
         qmake_test_functions->insert("message", T_MESSAGE);
         qmake_test_functions->insert("warning", T_WARNING);
+        qmake_test_functions->insert("option", T_OPTION);
     }
     return *qmake_test_functions;
 }
@@ -547,7 +548,7 @@ static void init_symbian(const QMap<QString, QStringList>& vars)
 
     // Force recursive on Symbian, as non-recursive is not really a viable option there
     if (isForSymbian_value != isForSymbian_FALSE)
-        Option::recursive = true;
+        Option::recursive = Option::QMAKE_RECURSIVE_YES;
 }
 
 bool isForSymbian()
@@ -766,6 +767,7 @@ QMakeProject::reset()
     scope_blocks.push(ScopeBlock());
     iterator = 0;
     function = 0;
+    recursive = false;
 }
 
 bool
@@ -2768,6 +2770,21 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
             exit(2);
 #endif
         return true; }
+    case T_OPTION:
+        if (args.count() != 1) {
+            fprintf(stderr, "%s:%d: option() requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+            return false;
+        }
+        if (args.first() == "recursive") {
+            recursive = true;
+        } else {
+            fprintf(stderr, "%s:%d: unrecognized option() argument '%s'.\n",
+                    parser.file.toLatin1().constData(), parser.line_no,
+                    args.first().toLatin1().constData());
+            return false;
+        }
+        return true;
     default:
         fprintf(stderr, "%s:%d: Unknown test function: %s\n", parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());

@@ -293,7 +293,15 @@ SubdirsMetaMakefileGenerator::init()
     init_flag = true;
     bool hasError = false;
 
-    if(Option::recursive) {
+    // It might make sense to bequeath the CONFIG option to the recursed
+    // projects. OTOH, one would most likely have it in all projects anyway -
+    // either through a qmakespec, a .qmake.cache or explicitly - as otherwise
+    // running qmake in a subdirectory would have a different auto-recurse
+    // setting than in parent directories.
+    bool recurse = Option::recursive == Option::QMAKE_RECURSIVE_YES
+                   || (Option::recursive == Option::QMAKE_RECURSIVE_DEFAULT
+                       && project->isRecursive());
+    if(recurse) {
         QString old_output_dir = Option::output_dir;
 	QString old_output = Option::output.fileName();
         QString oldpwd = qmake_getpwd();
@@ -375,7 +383,7 @@ SubdirsMetaMakefileGenerator::init()
     Subdir *self = new Subdir;
     self->input_dir = qmake_getpwd();
     self->output_dir = Option::output_dir;
-    if(!Option::recursive || (!Option::output.fileName().endsWith(Option::dir_sep) && !QFileInfo(Option::output).isDir()))
+    if(!recurse || (!Option::output.fileName().endsWith(Option::dir_sep) && !QFileInfo(Option::output).isDir()))
 	self->output_file = Option::output.fileName();
     self->makefile = new BuildsMetaMakefileGenerator(project, name, false);
     self->makefile->init();
