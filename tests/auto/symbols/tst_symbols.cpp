@@ -212,6 +212,10 @@ void tst_Symbols::prefix()
                    << "winfnt_driver_class"
                    << "pshinter_module_class"
                    << "psnames_module_class"
+                   // C symbols from Qt
+                   << "qt_addObject"
+                   << "qt_removeObject"
+                   << "qt_startup_hook"
                    ;
 
     QHash<QString,QStringList> excusedPrefixes;
@@ -279,6 +283,10 @@ void tst_Symbols::prefix()
                       << "cti"  // ctiTrampoline and ctiVMThrowTrampoline from the JIT
 #ifdef QT_NAMESPACE
                       << "QWeb" // Webkit is only 'namespace aware'
+                      << "qWeb"
+                      << "qt"
+                      << "QGraphicsWebView"
+                      << "operator"
 #endif
         ;
 
@@ -331,6 +339,8 @@ void tst_Symbols::prefix()
                 symbol = symbol.mid(symbol.indexOf(' ') + 1);
             }
 
+            if (symbol.mid(symbol.indexOf(' ')+1).startsWith("std::"))
+                continue;
             if (symbol.startsWith("_") || symbol.startsWith("std::"))
                 continue;
             if (symbol.startsWith("vtable ") || symbol.startsWith("VTT for ") ||
@@ -341,6 +351,8 @@ void tst_Symbols::prefix()
             if (symbol.startsWith("non-virtual thunk ") || symbol.startsWith("virtual thunk"))
                 continue;
             if (symbol.startsWith(ns + "operator"))
+                continue;
+            if (symbol.startsWith("operator new") || symbol.startsWith("operator delete"))
                 continue;
             if (symbol.startsWith("guard variable for "))
                 continue;
