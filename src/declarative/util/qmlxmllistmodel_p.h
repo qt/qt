@@ -70,7 +70,7 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
     Q_PROPERTY(QString xml READ xml WRITE setXml)
     Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
-    Q_PROPERTY(QmlList<QmlXmlListModelRole *> *roles READ roleObjects)
+    Q_PROPERTY(QmlListProperty<QmlXmlListModelRole> roles READ roleObjects)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_CLASSINFO("DefaultProperty", "roles")
 
@@ -84,7 +84,7 @@ public:
     virtual QList<int> roles() const;
     virtual QString toString(int role) const;
 
-    QmlList<QmlXmlListModelRole *> *roleObjects();
+    QmlListProperty<QmlXmlListModelRole> roleObjects();
 
     QUrl source() const;
     void setSource(const QUrl&);

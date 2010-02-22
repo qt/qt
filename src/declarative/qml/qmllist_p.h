@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLLISTSCRIPTCLASS_P_H
-#define QMLLISTSCRIPTCLASS_P_H
+#ifndef QMLLIST_P_H
+#define QMLLIST_P_H
 
 //
 //  W A R N I N G
@@ -53,35 +53,33 @@
 // We mean it.
 //
 
-#include <private/qmlscriptclass_p.h>
 #include "qmllist.h"
+#include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlEngine;
-class QmlListScriptClass : public QmlScriptClass
+class QmlListReferencePrivate
 {
 public:
-    QmlListScriptClass(QmlEngine *);
-    ~QmlListScriptClass();
+    QmlListReferencePrivate();
 
-    QScriptValue newList(QObject *, int, int);
-    QScriptValue newList(const QmlListProperty<QObject> &, int);
+    static QmlListReference init(const QmlListProperty<QObject> &, int, QmlEngine *);
 
-protected:
-    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
-                                                   QScriptClass::QueryFlags flags);
-    virtual ScriptValue property(Object *, const Identifier &);
-    virtual QVariant toVariant(Object *, bool *ok);
+    QmlGuard<QObject> object;
+    const QMetaObject *elementType;
+    QmlListProperty<QObject> property;
+    int propertyType;
 
-private:
-    PersistentIdentifier m_lengthId;
-    QmlEngine *engine;
+    void addref();
+    void release();
+    int refCount;
 
-    quint32 lastIndex;
+    static inline QmlListReferencePrivate *get(QmlListReference *ref) {
+        return ref->d;
+    }
 };
+
 
 QT_END_NAMESPACE
 
-#endif // QMLLISTSCRIPTCLASS_P_H
-
+#endif // QMLLIST_P_H

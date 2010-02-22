@@ -945,51 +945,22 @@ void QmlGraphicsFlickable::cancelFlick()
     movementEnding();
 }
 
-void QmlGraphicsFlickablePrivate::data_removeAt(int)
+void QmlGraphicsFlickablePrivate::data_append(QmlListProperty<QObject> *prop, QObject *o)
 {
-    // ###
-}
-
-int QmlGraphicsFlickablePrivate::data_count() const
-{
-    // ###
-    return 0;
-}
-
-void QmlGraphicsFlickablePrivate::data_append(QObject *o)
-{
-    Q_Q(QmlGraphicsFlickable);
     QmlGraphicsItem *i = qobject_cast<QmlGraphicsItem *>(o);
     if (i)
-        viewport->fxChildren()->append(i);
+        i->setParentItem(static_cast<QmlGraphicsFlickablePrivate*>(prop->data)->viewport);
     else
-        o->setParent(q);
+        o->setParent(prop->object);
 }
 
-void QmlGraphicsFlickablePrivate::data_insert(int, QObject *)
-{
-    // ###
-}
-
-QObject *QmlGraphicsFlickablePrivate::data_at(int) const
-{
-    // ###
-    return 0;
-}
-
-void QmlGraphicsFlickablePrivate::data_clear()
-{
-    // ###
-}
-
-
-QmlList<QObject *> *QmlGraphicsFlickable::flickableData()
+QmlListProperty<QObject> QmlGraphicsFlickable::flickableData()
 {
     Q_D(QmlGraphicsFlickable);
-    return &d->data;
+    return QmlListProperty<QObject>(this, (void *)d, QmlGraphicsFlickablePrivate::data_append);
 }
 
-QmlList<QmlGraphicsItem *> *QmlGraphicsFlickable::flickableChildren()
+QmlListProperty<QmlGraphicsItem> QmlGraphicsFlickable::flickableChildren()
 {
     Q_D(QmlGraphicsFlickable);
     return d->viewport->fxChildren();

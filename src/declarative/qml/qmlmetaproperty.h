@@ -68,7 +68,6 @@ public:
         InvalidProperty,
         Bindable,
         List,
-        QmlList,    //XXX
         Object,
         Normal
     };

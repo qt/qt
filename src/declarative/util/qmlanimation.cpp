@@ -937,10 +937,10 @@ void QmlPropertyAction::setProperties(const QString &p)
     emit propertiesChanged(p);
 }
 
-QList<QObject *> *QmlPropertyAction::targets()
+QmlListProperty<QObject> QmlPropertyAction::targets()
 {
     Q_D(QmlPropertyAction);
-    return &d->targets;
+    return QmlListProperty<QObject>(this, d->targets);
 }
 
 /*!
@@ -948,10 +948,10 @@ QList<QObject *> *QmlPropertyAction::targets()
     This property holds the objects not to be affected by this animation.
     \sa targets
 */
-QList<QObject *> *QmlPropertyAction::exclude()
+QmlListProperty<QObject> QmlPropertyAction::exclude()
 {
     Q_D(QmlPropertyAction);
-    return &d->exclude;
+    return QmlListProperty<QObject>(this, d->exclude);
 }
 
 /*!
@@ -1577,14 +1577,36 @@ QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 {
 }
 
+void QmlAnimationGroupPrivate::append_animation(QmlListProperty<QmlAbstractAnimation> *list, QmlAbstractAnimation *a)
+{
+    QmlAnimationGroup *q = qobject_cast<QmlAnimationGroup *>(list->object);
+    if (q) {
+        q->d_func()->animations.append(a);
+        a->setGroup(q);
+    }
+}
+
+void QmlAnimationGroupPrivate::clear_animation(QmlListProperty<QmlAbstractAnimation> *list)
+{
+    QmlAnimationGroup *q = qobject_cast<QmlAnimationGroup *>(list->object);
+    if (q) {
+        for (int i = 0; i < q->d_func()->animations.count(); ++i)
+            q->d_func()->animations.at(i)->setGroup(0);
+        q->d_func()->animations.clear();
+    }
+}
+
 QmlAnimationGroup::~QmlAnimationGroup()
 {
 }
 
-QmlList<QmlAbstractAnimation *> *QmlAnimationGroup::animations()
+QmlListProperty<QmlAbstractAnimation> QmlAnimationGroup::animations()
 {
     Q_D(QmlAnimationGroup);
-    return &d->animations;
+    QmlListProperty<QmlAbstractAnimation> list(this, d->animations);
+    list.append = &QmlAnimationGroupPrivate::append_animation;
+    list.clear = &QmlAnimationGroupPrivate::clear_animation;
+    return list;
 }
 
 /*!
@@ -2226,10 +2248,10 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
 
     \sa exclude
 */
-QList<QObject *> *QmlPropertyAnimation::targets()
+QmlListProperty<QObject> QmlPropertyAnimation::targets()
 {
     Q_D(QmlPropertyAnimation);
-    return &d->targets;
+    return QmlListProperty<QObject>(this, d->targets);
 }
 
 /*!
@@ -2237,10 +2259,10 @@ QList<QObject *> *QmlPropertyAnimation::targets()
     This property holds the items not to be affected by this animation.
     \sa targets
 */
-QList<QObject *> *QmlPropertyAnimation::exclude()
+QmlListProperty<QObject> QmlPropertyAnimation::exclude()
 {
     Q_D(QmlPropertyAnimation);
-    return &d->exclude;
+    return QmlListProperty<QObject>(this, d->exclude);
 }
 
 QAbstractAnimation *QmlPropertyAnimation::qtAnimation()

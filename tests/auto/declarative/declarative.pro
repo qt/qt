@@ -40,7 +40,6 @@ SUBDIRS += \
            qmlinstruction \         # Cover
            qmllanguage \            # Cover
            qmllist \                # Cover
-           qmllistaccessor \        # Cover
            qmllistmodel \           # Cover
            qmlmetaproperty \        # Cover
            qmlmetatype \            # Cover

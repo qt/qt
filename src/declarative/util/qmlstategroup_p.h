@@ -58,8 +58,8 @@ class Q_DECLARATIVE_EXPORT QmlStateGroup : public QObject, public QmlParserStatu
     Q_DECLARE_PRIVATE(QmlStateGroup)
 
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(QmlList<QmlState *>* states READ statesProperty DESIGNABLE false)
-    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitionsProperty DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QmlState> states READ statesProperty DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QmlTransition> transitions READ transitionsProperty DESIGNABLE false)
 
 public:
     QmlStateGroup(QObject * = 0);
@@ -68,10 +68,10 @@ public:
     QString state() const;
     void setState(const QString &);
 
-    QmlList<QmlState *>* statesProperty();
+    QmlListProperty<QmlState> statesProperty();
     QList<QmlState *> states() const;
 
-    QmlList<QmlTransition *>* transitionsProperty();
+    QmlListProperty<QmlTransition> transitionsProperty();
 
     QmlState *findState(const QString &name) const;
 

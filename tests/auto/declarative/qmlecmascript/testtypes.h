@@ -77,8 +77,7 @@ class MyQmlObject : public QObject
     Q_PROPERTY(int value READ value WRITE setValue)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
-    Q_PROPERTY(QmlList<QObject *> *objectQmlListProperty READ objectQmlListProperty CONSTANT)
-    Q_PROPERTY(QList<QObject *> *objectListProperty READ objectListProperty CONSTANT)
+    Q_PROPERTY(QmlListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
 
 public:
@@ -107,8 +106,7 @@ public:
         emit objectChanged();
     }
 
-    QmlList<QObject *> *objectQmlListProperty() { return &m_objectQmlList; }
-    QList<QObject *> *objectListProperty() { return &m_objectQList; }
+    QmlListProperty<QObject> objectListProperty() { return QmlListProperty<QObject>(this, m_objectQList); }
 
     bool methodCalled() const { return m_methodCalled; }
     bool methodIntCalled() const { return m_methodIntCalled; }
@@ -150,7 +148,6 @@ private:
 
     QObject *m_object;
     QString m_string;
-    QmlConcreteList<QObject *> m_objectQmlList;
     QList<QObject *> m_objectQList;
     int m_value;
     int m_resetProperty;
@@ -162,11 +159,11 @@ QML_DECLARE_TYPE(MyQmlObject);
 class MyQmlContainer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<MyQmlObject*>* children READ children CONSTANT)
+    Q_PROPERTY(QmlListProperty<MyQmlObject> children READ children CONSTANT)
 public:
     MyQmlContainer() {}
 
-    QList<MyQmlObject*> *children() { return &m_children; }
+    QmlListProperty<MyQmlObject> children() { return QmlListProperty<MyQmlObject>(this, m_children); }
 
 private:
     QList<MyQmlObject*> m_children;

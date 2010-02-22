@@ -447,22 +447,19 @@ QML_DECLARE_TYPE(MyTypeObject);
 class MyContainer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<QObject*>* children READ children)
-    Q_PROPERTY(QList<MyInterface*>* qlistInterfaces READ qlistInterfaces)
-    Q_PROPERTY(QmlList<MyInterface*>* qmllistInterfaces READ qmllistInterfaces)
+    Q_PROPERTY(QmlListProperty<QObject> children READ children)
+    Q_PROPERTY(QmlListProperty<MyInterface> qlistInterfaces READ qlistInterfaces)
     Q_CLASSINFO("DefaultProperty", "children");
 public:
     MyContainer() {}
 
-    QList<QObject*> *children() { return &m_children; }
-    QList<MyInterface *> *qlistInterfaces() { return &m_interfaces; }
-    QmlList<MyInterface *> *qmllistInterfaces() { return &m_qmlinterfaces; }
-    const QmlConcreteList<MyInterface *> &qmllistAccessor() const { return m_qmlinterfaces; }
+    QmlListProperty<QObject> children() { return QmlListProperty<QObject>(this, m_children); }
+    QList<QObject *> *getChildren() { return &m_children; }
+    QmlListProperty<MyInterface> qlistInterfaces() { return QmlListProperty<MyInterface>(this, m_interfaces); }
+    QList<MyInterface *> *getQListInterfaces() { return &m_interfaces; }
 
-private:
     QList<QObject*> m_children;
     QList<MyInterface *> m_interfaces;
-    QmlConcreteList<MyInterface *> m_qmlinterfaces;
 };
 
 QML_DECLARE_TYPE(MyContainer);
@@ -534,12 +531,12 @@ namespace MyNamespace {
     class MySecondNamespacedType : public QObject
     {
         Q_OBJECT
-        Q_PROPERTY(QmlList<MyNamespace::MyNamespacedType *> *list READ list);
+        Q_PROPERTY(QmlListProperty<MyNamespace::MyNamespacedType> list READ list);
     public:
-        QmlList<MyNamespacedType *> *list() { return &m_list; }
+        QmlListProperty<MyNamespacedType> list() { return QmlListProperty<MyNamespacedType>(this, m_list); }
 
     private:
-        QmlConcreteList<MyNamespacedType *> m_list;
+        QList<MyNamespacedType *> m_list;
     };
 }
 QML_DECLARE_TYPE(MyNamespace::MyNamespacedType);
