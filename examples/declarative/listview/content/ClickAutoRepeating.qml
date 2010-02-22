@@ -23,7 +23,7 @@ Item {
             PauseAnimation { duration: repeatperiod }
         }
     }
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onPressed: autoRepeat.start()
         onReleased: { autoRepeat.stop(); parent.isPressed = false; page.released() }

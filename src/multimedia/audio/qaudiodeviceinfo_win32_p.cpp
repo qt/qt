@@ -218,7 +218,7 @@ void QAudioDeviceInfoInternal::updateLists()
 	for(i=0;i<iNumDevs;i++) {
 	    if(waveOutGetDevCaps(i, &woc, sizeof(WAVEOUTCAPS))
 	        == MMSYSERR_NOERROR) {
-		tmp = QString::fromUtf16((const unsigned short*)woc.szPname);
+		tmp = QString((const QChar *)woc.szPname);
 		if(tmp.compare(device) == 0) {
 		    match = true;
 		    fmt = woc.dwFormats;
@@ -238,7 +238,7 @@ void QAudioDeviceInfoInternal::updateLists()
 	for(i=0;i<iNumDevs;i++) {
 	    if(waveInGetDevCaps(i, &woc, sizeof(WAVEINCAPS))
 	        == MMSYSERR_NOERROR) {
-		tmp = QString::fromUtf16((const unsigned short*)woc.szPname);
+		tmp = QString((const QChar *)woc.szPname);
 		if(tmp.compare(device) == 0) {
 		    match = true;
 		    fmt = woc.dwFormats;
@@ -347,7 +347,7 @@ QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 	for(i=0;i<iNumDevs;i++) {
 	    if(waveOutGetDevCaps(i, &woc, sizeof(WAVEOUTCAPS))
 	        == MMSYSERR_NOERROR) {
-	        devices.append(QString::fromUtf16((const unsigned short*)woc.szPname).toLocal8Bit().constData());
+	        devices.append(QString((const QChar *)woc.szPname).toLocal8Bit().constData());
 	    }
 	}
     } else {
@@ -357,7 +357,7 @@ QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 	for(i=0;i<iNumDevs;i++) {
 	    if(waveInGetDevCaps(i, &woc, sizeof(WAVEINCAPS))
 	        == MMSYSERR_NOERROR) {
-	        devices.append(QString::fromUtf16((const unsigned short*)woc.szPname).toLocal8Bit().constData());
+	        devices.append(QString((const QChar *)woc.szPname).toLocal8Bit().constData());
 	    }
 	}
 

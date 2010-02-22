@@ -72,6 +72,9 @@ public:
     static void enableCleanupHooks(const QPixmap &pixmap);
     static void enableCleanupHooks(QPixmapData *pixmapData);
 
+    static bool isImageCached(const QImage &image);
+    static bool isPixmapCached(const QPixmap &pixmap);
+
     // Gets called when a pixmap data is about to be modified:
     void addPixmapDataModificationHook(_qt_pixmap_cleanup_hook_pmd);
 

@@ -193,6 +193,7 @@ private slots:
     void multiPointRawEventTranslationOnTouchPad();
     void deleteInEventHandler();
     void deleteInRawEventTranslation();
+    void crashInQGraphicsSceneAfterNotHandlingTouchBegin();
 };
 
 void tst_QTouchEvent::touchDisabledByDefault()
@@ -1301,6 +1302,36 @@ void tst_QTouchEvent::deleteInRawEventTranslation()
     rawTouchPoints[1].setState(Qt::TouchPointReleased);
     rawTouchPoints[2].setState(Qt::TouchPointReleased);
     qt_translateRawTouchEvent(&touchWidget, QTouchEvent::TouchScreen, rawTouchPoints);
+}
+
+void tst_QTouchEvent::crashInQGraphicsSceneAfterNotHandlingTouchBegin()
+{
+    QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 100, 100);
+    rect->setAcceptTouchEvents(true);
+
+    QGraphicsRectItem *mainRect = new QGraphicsRectItem(0, 0, 100, 100, rect);
+    mainRect->setBrush(Qt::lightGray);
+
+    QGraphicsRectItem *button = new QGraphicsRectItem(-20, -20, 40, 40, mainRect);
+    button->setPos(50, 50);
+    button->setBrush(Qt::darkGreen);
+
+    QGraphicsView view;
+    QGraphicsScene scene;
+    scene.addItem(rect);
+    scene.setSceneRect(0,0,100,100);
+    view.setScene(&scene);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QPoint centerPos = view.mapFromScene(rect->boundingRect().center());
+    // Touch the button
+    QTest::touchEvent(view.viewport()).press(0, centerPos);
+    QTest::touchEvent(view.viewport()).release(0, centerPos);
+    // Touch outside of the button
+    QTest::touchEvent(view.viewport()).press(0, view.mapFromScene(QPoint(10, 10)));
+    QTest::touchEvent(view.viewport()).release(0, view.mapFromScene(QPoint(10, 10)));
 }
 
 QTEST_MAIN(tst_QTouchEvent)

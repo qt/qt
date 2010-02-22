@@ -51,7 +51,7 @@ Rectangle {
                 Rectangle {
                     width: 5; height: 5
                     radius: 3
-                    MouseRegion { width: 20; height: 20; anchors.centerIn: parent; onClicked: view.currentIndex = index }
+                    MouseArea { width: 20; height: 20; anchors.centerIn: parent; onClicked: view.currentIndex = index }
                     color: view.currentIndex == index ? "blue" : "white"
                 }
             }

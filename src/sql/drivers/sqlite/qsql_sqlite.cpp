@@ -95,7 +95,7 @@ static QSqlError qMakeError(sqlite3 *access, const QString &descr, QSqlError::Er
                             int errorCode = -1)
 {
     return QSqlError(descr,
-                     QString::fromUtf16(static_cast<const ushort *>(sqlite3_errmsg16(access))),
+                     QString(reinterpret_cast<const QChar *>(sqlite3_errmsg16(access))),
                      type, errorCode);
 }
 
@@ -162,13 +162,13 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
     q->init(nCols);
 
     for (int i = 0; i < nCols; ++i) {
-        QString colName = QString::fromUtf16(
-                    static_cast<const ushort *>(sqlite3_column_name16(stmt, i))
+        QString colName = QString(reinterpret_cast<const QChar *>(
+                    sqlite3_column_name16(stmt, i))
                     ).remove(QLatin1Char('"'));
 
         // must use typeName for resolving the type to match QSqliteDriver::record
-        QString typeName = QString::fromUtf16(
-                    static_cast<const ushort *>(sqlite3_column_decltype16(stmt, i)));
+        QString typeName = QString(reinterpret_cast<const QChar *>(
+                    sqlite3_column_decltype16(stmt, i)));
 
         int dotIdx = colName.lastIndexOf(QLatin1Char('.'));
         QSqlField fld(colName.mid(dotIdx == -1 ? 0 : dotIdx + 1), qGetColumnType(typeName));

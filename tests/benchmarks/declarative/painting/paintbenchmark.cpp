@@ -43,15 +43,13 @@
 #include <QPixmap>
 #include <QImage>
 #include <QPainter>
+#include <QPainterPath>
 #include <QGLWidget>
 #include <QTextLayout>
 #include <QVBoxLayout>
 #include <QTime>
 #include <QDebug>
-
-#ifdef HAVE_STATICTEXT
-#include <private/qstatictext_p.h>
-#endif
+#include <QStaticText>
 
 int iterations = 20;
 const int count = 600;
@@ -106,7 +104,6 @@ void paint_QTextLayout_cache(QPainter &p)
     paint_QTextLayout(p, true);
 }
 
-#ifdef HAVE_STATICTEXT
 void paint_QStaticText(QPainter &p, bool useOptimizations)
 {
     static QStaticText *staticText[lines];
@@ -114,7 +111,10 @@ void paint_QStaticText(QPainter &p, bool useOptimizations)
     if (first) {
         for (int i = 0; i < lines; ++i) {
             staticText[i] = new QStaticText(strings[i]);
-            staticText[i]->setUseBackendOptimizations(useOptimizations);
+            if (useOptimizations)
+                staticText[i]->setPerformanceHint(QStaticText::AggressiveCaching);
+            else
+                staticText[i]->setPerformanceHint(QStaticText::ModerateCaching);
         }
         first = false;
     }
@@ -134,7 +134,6 @@ void paint_QStaticText_optimizations(QPainter &p)
 {
     paint_QStaticText(p, true);
 }
-#endif
 
 void paint_QPixmapCachedText(QPainter &p)
 {
@@ -220,6 +219,28 @@ void paint_QPixmapCachedRoundedRect(QPainter &p)
     }
 }
 
+void paint_pathCacheRoundedRect(QPainter &p)
+{
+    static bool first = true;
+    static QPainterPath path[lines];
+    if (first) {
+        for (int j = 0; j < lines; ++j) {
+            path[j].addRoundedRect(QRectF(0,0,(j+1)*50, spacing-1), 8, 8);
+        }
+        first = false;
+    }
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(Qt::black);
+    p.setBrush(Qt::red);
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < lines; ++j) {
+            p.translate(0,j*spacing);
+            p.drawPath(path[j]);
+            p.translate(0,-j*spacing);
+        }
+    }
+}
+
 void paint_QPixmap63x63_opaque(QPainter &p)
 {
     static bool first = true;
@@ -287,13 +308,12 @@ struct {
 } funcs[] = {
     { "QTextLayoutNoCache", &paint_QTextLayout_noCache },
     { "QTextLayoutWithCache", &paint_QTextLayout_cache },
-#ifdef HAVE_STATICTEXT
     { "QStaticTextNoBackendOptimizations", &paint_QStaticText_noOptimizations },
     { "QStaticTextWithBackendOptimizations", &paint_QStaticText_optimizations },
-#endif
     { "CachedText", &paint_QPixmapCachedText },
     { "RoundedRect", &paint_RoundedRect },
     { "CachedRoundedRect", &paint_QPixmapCachedRoundedRect },
+    { "PathCacheRoundedRect", &paint_pathCacheRoundedRect },
     { "QPixmap63x63_opaque", &paint_QPixmap63x63_opaque },
     { "QPixmap64x64_opaque", &paint_QPixmap64x64_opaque },
     { "QPixmap63x63", &paint_QPixmap63x63 },
@@ -319,7 +339,7 @@ public:
     void paintEvent(QPaintEvent *) {
         static int last = 0;
         static bool firstRun = true;
-        if (firstRun == 0) {
+        if (firstRun) {
             timer.start();
             firstRun = false;
         } else {

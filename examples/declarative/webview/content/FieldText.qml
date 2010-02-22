@@ -93,17 +93,17 @@ Item {
         }
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: cancelIcon
         onClicked: { reset() }
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: confirmIcon
         onClicked: { confirm() }
     }
 
-    MouseRegion {
+    MouseArea {
         id: editRegion
         anchors.fill: textEdit
         onClicked: { edit() }

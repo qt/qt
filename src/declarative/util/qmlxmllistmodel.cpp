@@ -130,19 +130,6 @@ QML_DECLARE_TYPE(QmlXmlListModelRole)
 QT_BEGIN_NAMESPACE
 
 
-class QmlXmlListModelPrivate;
-struct QmlXmlRoleList : public QmlConcreteList<QmlXmlListModelRole *>
-{
-    QmlXmlRoleList(QmlXmlListModelPrivate *p)
-        : model(p) {}
-    virtual void append(QmlXmlListModelRole *role);
-    virtual void clear();
-    virtual void removeAt(int i);
-    virtual void insert(int i, QmlXmlListModelRole *role);
-
-    QmlXmlListModelPrivate *model;
-};
-
 class QmlXmlQuery : public QThread
 {
     Q_OBJECT
@@ -164,7 +151,7 @@ public:
         m_abort = true;
     }
 
-    int doQuery(QString query, QString namespaces, QByteArray data, QmlXmlRoleList *roleObjects) {
+    int doQuery(QString query, QString namespaces, QByteArray data, QList<QmlXmlListModelRole *> *roleObjects) {
         QMutexLocker locker(&m_mutex);
         m_modelData.clear();
         m_size = 0;
@@ -229,7 +216,7 @@ private:
     QString m_prefix;
     int m_size;
     int m_queryId;
-    const QmlXmlRoleList *m_roleObjects;
+    const QList<QmlXmlListModelRole *> *m_roleObjects;
     QList<QList<QVariant> > m_modelData;
 };
 
@@ -347,7 +334,7 @@ public:
     QmlXmlListModelPrivate()
         : isComponentComplete(true), size(-1), highestRole(Qt::UserRole)
         , reply(0), status(QmlXmlListModel::Null), progress(0.0)
-        , queryId(-1), roleObjects(this) {}
+        , queryId(-1), roleObjects() {}
 
     bool isComponentComplete;
     QUrl src;
@@ -363,42 +350,39 @@ public:
     qreal progress;
     QmlXmlQuery qmlXmlQuery;
     int queryId;
-    QmlXmlRoleList roleObjects;
+    QList<QmlXmlListModelRole *> roleObjects;
+    static void append_role(QmlListProperty<QmlXmlListModelRole> *list, QmlXmlListModelRole *role);
+    static void clear_role(QmlListProperty<QmlXmlListModelRole> *list);
+    static void removeAt_role(QmlListProperty<QmlXmlListModelRole> *list, int i);
+    static void insert_role(QmlListProperty<QmlXmlListModelRole> *list, int i, QmlXmlListModelRole *role);
     QList<QList<QVariant> > data;
 };
 
 
-void QmlXmlRoleList::append(QmlXmlListModelRole *role)
+void QmlXmlListModelPrivate::append_role(QmlListProperty<QmlXmlListModelRole> *list, QmlXmlListModelRole *role)
 {
-    insert(size(), role);
-}
-
-//### clear, removeAt, and insert need to invalidate any cached data (in data table) as well
-//    (and the model should emit the appropriate signals)
-void QmlXmlRoleList::clear()
-{
-    model->roles.clear();
-    model->roleNames.clear();
-    QmlConcreteList<QmlXmlListModelRole *>::clear();
-}
-
-void QmlXmlRoleList::removeAt(int i)
-{
-    model->roles.removeAt(i);
-    model->roleNames.removeAt(i);
-    QmlConcreteList<QmlXmlListModelRole *>::removeAt(i);
-}
-
-void QmlXmlRoleList::insert(int i, QmlXmlListModelRole *role)
-{
-    QmlConcreteList<QmlXmlListModelRole *>::insert(i, role);
-    if (model->roleNames.contains(role->name())) {
-        qmlInfo(role) << QCoreApplication::translate("QmlXmlRoleList", "\"%1\" duplicates a previous role name and will be disabled.").arg(role->name());
-        return;
+    QmlXmlListModel *_this = qobject_cast<QmlXmlListModel *>(list->object);
+    if (_this) {
+        int i = _this->d_func()->roleObjects.count();
+        _this->d_func()->roleObjects.append(role);
+        if (_this->d_func()->roleNames.contains(role->name())) {
+            qmlInfo(role) << QObject::tr("\"%1\" duplicates a previous role name and will be disabled.").arg(role->name());
+            return;
+        }
+        _this->d_func()->roles.insert(i, _this->d_func()->highestRole);
+        _this->d_func()->roleNames.insert(i, role->name());
+        ++_this->d_func()->highestRole;
     }
-    model->roles.insert(i, model->highestRole);
-    model->roleNames.insert(i, role->name());
-    ++model->highestRole;
+}
+
+//### clear needs to invalidate any cached data (in data table) as well
+//    (and the model should emit the appropriate signals)
+void QmlXmlListModelPrivate::clear_role(QmlListProperty<QmlXmlListModelRole> *list)
+{
+    QmlXmlListModel *_this = static_cast<QmlXmlListModel *>(list->object);
+    _this->d_func()->roles.clear();
+    _this->d_func()->roleNames.clear();
+    _this->d_func()->roleObjects.clear();
 }
 
 /*!
@@ -446,10 +430,13 @@ QmlXmlListModel::~QmlXmlListModel()
 
     The roles to make available for this model.
 */
-QmlList<QmlXmlListModelRole *> *QmlXmlListModel::roleObjects()
+QmlListProperty<QmlXmlListModelRole> QmlXmlListModel::roleObjects()
 {
     Q_D(QmlXmlListModel);
-    return &d->roleObjects;
+    QmlListProperty<QmlXmlListModelRole> list(this, d->roleObjects);
+    list.append = &QmlXmlListModelPrivate::append_role;
+    list.clear = &QmlXmlListModelPrivate::clear_role;
+    return list;
 }
 
 QHash<int,QVariant> QmlXmlListModel::data(int index, const QList<int> &roles) const

@@ -68,6 +68,8 @@
 #include "qmlimageprovider.h"
 #include "qmldirparser_p.h"
 #include "qmlextensioninterface.h"
+#include "qmllist_p.h"
+
 #include <qfxperf_p_p.h>
 
 #include <QtCore/qmetaobject.h>
@@ -109,7 +111,6 @@
 #endif
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
-Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
@@ -1172,6 +1173,15 @@ QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 
 QScriptValue QmlEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
+    if (val.userType() == qMetaTypeId<QmlListReference>()) {
+        QmlListReferencePrivate *p = QmlListReferencePrivate::get((QmlListReference*)val.constData());
+        if (p->object) {
+            return listClass->newList(p->property, p->propertyType);
+        } else {
+            return scriptEngine.nullValue();
+        }
+    }
+
     bool objOk;
     QObject *obj = QmlMetaType::toQObject(val, &objOk);
     if (objOk) {
@@ -1673,7 +1683,7 @@ void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
     QByteArray name = data->root->className();
 
     QByteArray ptr = name + '*';
-    QByteArray lst = "QmlList<" + ptr + ">*";
+    QByteArray lst = "QmlListProperty<" + name + ">";
 
     int ptr_type = QMetaType::registerType(ptr.constData(), voidptr_destructor,
                                            voidptr_constructor);
@@ -1685,9 +1695,18 @@ void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
     data->addref();
 }
 
-bool QmlEnginePrivate::isQmlList(int t) const
+bool QmlEnginePrivate::isList(int t) const
 {
-    return m_qmlLists.contains(t) || QmlMetaType::isQmlList(t);
+    return m_qmlLists.contains(t) || QmlMetaType::isList(t);
+}
+
+int QmlEnginePrivate::listType(int t) const
+{
+    QHash<int, int>::ConstIterator iter = m_qmlLists.find(t);
+    if (iter != m_qmlLists.end())
+        return *iter;
+    else
+        return QmlMetaType::listType(t);
 }
 
 bool QmlEnginePrivate::isQObject(int t)
@@ -1706,21 +1725,12 @@ QObject *QmlEnginePrivate::toQObject(const QVariant &v, bool *ok) const
     }
 }
 
-int QmlEnginePrivate::qmlListType(int t) const
-{
-    QHash<int, int>::ConstIterator iter = m_qmlLists.find(t);
-    if (iter != m_qmlLists.end())
-        return *iter;
-    else
-        return QmlMetaType::qmlListType(t);
-}
-
 QmlMetaType::TypeCategory QmlEnginePrivate::typeCategory(int t) const
 {
     if (m_compositeTypes.contains(t))
         return QmlMetaType::Object;
     else if (m_qmlLists.contains(t))
-        return QmlMetaType::QmlList;
+        return QmlMetaType::List;
     else
         return QmlMetaType::typeCategory(t);
 }

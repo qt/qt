@@ -44,7 +44,7 @@ Rectangle {
     }
 
     // Follow mouse
-    MouseRegion {
+    MouseArea {
         id: mouseRegion
         anchors.fill: parent
         Rectangle {

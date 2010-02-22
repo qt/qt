@@ -645,45 +645,29 @@ void tst_QmlGraphicsGridView::currentIndex()
     QCOMPARE(gridview->viewportY(), 0.0);
 
     // Test keys
+    qApp->setActiveWindow(canvas);
     canvas->show();
     canvas->setFocus();
     qApp->processEvents();
 
-    QEvent wa(QEvent::WindowActivate);
-    QApplication::sendEvent(canvas, &wa);
-    QFocusEvent fe(QEvent::FocusIn);
-    QApplication::sendEvent(canvas, &fe);
-
-    QKeyEvent key(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Down);
     QCOMPARE(gridview->currentIndex(), 3);
 
-    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Up);
     QCOMPARE(gridview->currentIndex(), 0);
 
     gridview->setFlow(QmlGraphicsGridView::TopToBottom);
 
-    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Right);
     QCOMPARE(gridview->currentIndex(), 5);
 
-    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Left);
     QCOMPARE(gridview->currentIndex(), 0);
 
-    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Down);
     QCOMPARE(gridview->currentIndex(), 1);
 
-    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
-    QApplication::sendEvent(canvas, &key);
-    QVERIFY(key.isAccepted());
+    QTest::keyClick(canvas, Qt::Key_Up);
     QCOMPARE(gridview->currentIndex(), 0);
 
 

@@ -8,7 +8,7 @@ Rectangle {
         width: 100; height: 100; color: "green"
         x: Behavior {}
     }
-    MouseRegion {
+    MouseArea {
         id: clicker
         anchors.fill: parent
     }

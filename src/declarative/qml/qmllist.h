@@ -51,73 +51,89 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 template<typename T>
-class QmlList : private QmlPrivate::ListInterface
-{
-public:
-    virtual void append(T) = 0;
-    virtual void insert(int, T) = 0;
-    virtual void removeAt(int) = 0;
-    virtual T at(int) const = 0;
-    virtual int count() const = 0;
-    virtual void clear() = 0;
-    QmlList<T> &operator<<(T t) { append(t); return *this; }
+struct QmlListProperty {
+    typedef void (*AppendFunction)(QmlListProperty<T> *, T*);
+    typedef int (*CountFunction)(QmlListProperty<T> *);
+    typedef T *(*AtFunction)(QmlListProperty<T> *, int);
+    typedef void (*ClearFunction)(QmlListProperty<T> *);
 
-protected:
-    virtual int type() const  { return qMetaTypeId<T>(); }
-    virtual void append(void *d) { const T &v = *(T *)d; append(v); }
-    virtual void insert(int i, void *d) { const T &v = *(T *)d; insert(i, v); }
-    virtual void at(int i, void *p) const { const T &v = at(i); *((T*)p) = v; }
+    QmlListProperty() 
+        : object(0), data(0), append(0), count(0), at(0), clear(0), dummy1(0), dummy2(0) {}
+    QmlListProperty(QObject *o, QList<T *> &list)
+        : object(o), data(&list), append(qlist_append), count(qlist_count), at(qlist_at),
+          clear(qlist_clear), dummy1(0), dummy2(0) {}
+    QmlListProperty(QObject *o, void *d, AppendFunction a, CountFunction c = 0, AtFunction t = 0, 
+                    ClearFunction r = 0)
+        : object(o), data(d), append(a), count(c), at(t), clear(r), dummy1(0), dummy2(0) {}
+
+    bool operator==(const QmlListProperty &o) const {
+        return object == o.object &&
+               data == o.data &&
+               append == o.append &&
+               count == o.count &&
+               at == o.at &&
+               clear == o.clear;
+    }
+
+    QObject *object;
+    void *data;
+    
+    AppendFunction append;
+
+    CountFunction count;
+    AtFunction at;
+
+    ClearFunction clear;
+
+    void *dummy1;
+    void *dummy2;
+
+private:
+    static void qlist_append(QmlListProperty *p, T *v) {
+        ((QList<T *> *)p->data)->append(v); 
+    }
+    static int qlist_count(QmlListProperty *p) {
+        return ((QList<T *> *)p->data)->count();
+    }
+    static T *qlist_at(QmlListProperty *p, int idx) {
+        return ((QList<T *> *)p->data)->at(idx);
+    }
+    static void qlist_clear(QmlListProperty *p) {
+        return ((QList<T *> *)p->data)->clear();
+    }
 };
 
-template<typename T>
-class QmlConcreteList : public QList<T>, public QmlList<T>
+class QmlEngine;
+class QmlListReferencePrivate;
+class Q_DECLARATIVE_EXPORT QmlListReference
 {
 public:
-    virtual void append(T v) { QList<T>::append(v); }
-    virtual void insert(int i, T v) { QList<T>::insert(i, v); }
-    virtual void clear() { QList<T>::clear(); }
-    virtual T at(int i) const { return QList<T>::at(i); }
-    virtual void removeAt(int i) { QList<T>::removeAt(i); }
-    virtual int count() const { return QList<T>::count(); }
-};
+    QmlListReference();
+    QmlListReference(QObject *, const char *property, QmlEngine * = 0);
+    QmlListReference(const QmlListReference &);
+    QmlListReference &operator=(const QmlListReference &);
+    ~QmlListReference();
 
-#define QML_DECLARE_LIST_PROXY(ClassName, ListType, ListName) \
-class Qml_ProxyList_ ##ListName : public QmlList<ListType> \
-{ \
-    public: \
-        virtual void removeAt(int idx) \
-        { \
-            ClassName *p = (ClassName *)((char *)this + ((char *)(ClassName *)(0x10000000) - (char *)&((ClassName *)(0x10000000))->ListName)); \
-            p->ListName ## _removeAt(idx); \
-        } \
-        virtual int count() const \
-        { \
-            ClassName *p = (ClassName *)((char *)this + ((char *)(ClassName *)(0x10000000) - (char *)&((ClassName *)(0x10000000))->ListName)); \
-            return p->ListName ## _count(); \
-        } \
-        virtual void append(ListType v) \
-        { \
-            ClassName *p = (ClassName *)((char *)this + ((char *)(ClassName *)(0x10000000) - (char *)&((ClassName *)(0x10000000))->ListName)); \
-            p->ListName ## _append(v); \
-        } \
-        virtual void insert(int idx, ListType v) \
-        { \
-            ClassName *p = (ClassName *)((char *)this + ((char *)(ClassName *)(0x10000000) - (char *)&((ClassName *)(0x10000000))->ListName)); \
-            p->ListName ## _insert(idx, v); \
-        } \
-        virtual ListType at(int idx) const \
-        { \
-            ClassName *p = (ClassName *)((char *)this + ((char *)(ClassName *)(0x10000000) - (char *)&((ClassName *)(0x10000000))->ListName)); \
-            return p->ListName ## _at(idx); \
-        } \
-        virtual void clear() \
-        { \
-            ClassName *p = (ClassName *)((char *)this + ((char *)(ClassName *)(0x10000000) - (char *)&((ClassName *)(0x10000000))->ListName)); \
-            p->ListName ## _clear(); \
-        } \
-}; \
-friend class Qml_ProxyList_ ##ListName ; \
-Qml_ProxyList_##ListName ListName;
+    bool isValid() const;
+
+    QObject *object() const;
+    const QMetaObject *listElementType() const;
+
+    bool canAppend() const;
+    bool canAt() const;
+    bool canClear() const;
+    bool canCount() const;
+
+    bool append(QObject *) const;
+    QObject *at(int) const;
+    bool clear() const;
+    int count() const;
+
+private:
+    friend class QmlListReferencePrivate;
+    QmlListReferencePrivate* d;
+};
+Q_DECLARE_METATYPE(QmlListReference);
 
 QT_END_NAMESPACE
 

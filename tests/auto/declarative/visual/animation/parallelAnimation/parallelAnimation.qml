@@ -14,7 +14,7 @@ Rectangle {
         color: "red"
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: parent.state = "state1"
     }

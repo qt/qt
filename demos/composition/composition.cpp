@@ -48,6 +48,8 @@
 #include <QMouseEvent>
 #include <qmath.h>
 
+const int animationInterval = 15; // update every 16 ms = ~60FPS
+
 CompositionWidget::CompositionWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -236,6 +238,7 @@ CompositionRenderer::CompositionRenderer(QWidget *parent)
     : ArthurFrame(parent)
 {
     m_animation_enabled = true;
+    m_animationTimer = startTimer(animationInterval);
 #ifdef Q_WS_QWS
     m_image = QPixmap(":res/composition/flower.jpg");
     m_image.setAlphaChannel(QPixmap(":res/composition/flower_alpha.jpg"));
@@ -262,6 +265,20 @@ QRectF rectangle_around(const QPointF &p, const QSizeF &size = QSize(250, 200))
     QRectF rect(p, size);
     rect.translate(-size.width()/2, -size.height()/2);
     return rect;
+}
+
+void CompositionRenderer::setAnimationEnabled(bool enabled)
+{
+    if (m_animation_enabled == enabled)
+        return;
+    m_animation_enabled = enabled;
+    if (enabled) {
+        Q_ASSERT(!m_animationTimer);
+        m_animationTimer = startTimer(animationInterval);
+    } else {
+        killTimer(m_animationTimer);
+        m_animationTimer = 0;
+    }
 }
 
 void CompositionRenderer::updateCirclePos()
@@ -471,10 +488,6 @@ void CompositionRenderer::paint(QPainter *painter)
         painter->drawImage(0, 0, m_buffer);
 #endif
     }
-
-    if (m_animation_enabled && m_current_object == NoObject) {
-        updateCirclePos();
-    }
 }
 
 void CompositionRenderer::mousePressEvent(QMouseEvent *e)
@@ -489,6 +502,10 @@ void CompositionRenderer::mousePressEvent(QMouseEvent *e)
     } else {
         m_current_object = NoObject;
     }
+    if (m_animation_enabled) {
+        killTimer(m_animationTimer);
+        m_animationTimer = 0;
+    }
 }
 
 void CompositionRenderer::mouseMoveEvent(QMouseEvent *e)
@@ -500,7 +517,15 @@ void CompositionRenderer::mouseReleaseEvent(QMouseEvent *)
 {
     m_current_object = NoObject;
 
-    if (m_animation_enabled)
+    if (m_animation_enabled) {
+        Q_ASSERT(!m_animationTimer);
+        m_animationTimer = startTimer(animationInterval);
+    }
+}
+
+void CompositionRenderer::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == m_animationTimer)
         updateCirclePos();
 }
 

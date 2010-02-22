@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -87,10 +87,10 @@ In this case the rectangle will have the same size as its parent (see \l{anchor-
 
 \snippet examples/declarative/tutorials/helloworld/Cell.qml 3
 
-In order to change the color of the text when clicking on a cell, we create a \l MouseRegion element with
+In order to change the color of the text when clicking on a cell, we create a \l MouseArea element with
 the same size as its parent.
 
-A \l MouseRegion defines a signal called \e clicked.
+A \l MouseArea defines a signal called \e clicked.
 When this signal is triggered we want to emit our own \e clicked signal with the color as parameter.
 
 \section2 The main QML file

@@ -75,8 +75,16 @@ tst_QGraphicsScene::~tst_QGraphicsScene()
 {
 }
 
+static inline void processEvents()
+{
+    QApplication::flush();
+    QApplication::processEvents();
+    QApplication::processEvents();
+}
+
 void tst_QGraphicsScene::init()
 {
+    processEvents();
 }
 
 void tst_QGraphicsScene::cleanup()
@@ -148,6 +156,8 @@ void tst_QGraphicsScene::addItem()
     if (!sceneRect.isNull())
         scene.setSceneRect(sceneRect);
 
+    processEvents();
+
     QBENCHMARK {
         QGraphicsItem *item = 0;
         for (int y = 0; y < numItems_Y; ++y) {
@@ -209,7 +219,6 @@ void tst_QGraphicsScene::itemAt()
     if (!sceneRect.isNull())
         scene.setSceneRect(sceneRect);
 
-    QGraphicsItem *item = 0;
     for (int y = 0; y < numItems_Y; ++y) {
         for (int x = 0; x < numItems_X; ++x) {
             QGraphicsRectItem *item = new QGraphicsRectItem(itemRect);
@@ -219,9 +228,11 @@ void tst_QGraphicsScene::itemAt()
     }
 
     scene.itemAt(0, 0); // triggers indexing
+    processEvents();
 
+    QGraphicsItem *item = 0;
     QBENCHMARK {
-        scene.itemAt(0, 0);
+        item = scene.itemAt(0, 0);
     }
 
     //let QGraphicsScene::_q_polishItems be called so ~QGraphicsItem doesn't spend all his time cleaning the unpolished list

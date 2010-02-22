@@ -1772,6 +1772,7 @@ void QMainWindowLayout::setCentralWidget(QWidget *widget)
     if (savedState.isValid()) {
 #ifndef QT_NO_DOCKWIDGET
         savedState.dockAreaLayout.centralWidgetItem = layoutState.dockAreaLayout.centralWidgetItem;
+        savedState.dockAreaLayout.fallbackToSizeHints = true;
 #else
         savedState.centralWidgetItem = layoutState.centralWidgetItem;
 #endif

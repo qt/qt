@@ -27,7 +27,7 @@ Item {
                     Text { }
                     Text { }
                 }
-                MouseRegion { }
+                MouseArea { }
             }
         }
     }
