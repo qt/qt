@@ -362,7 +362,7 @@ void QSoundEffectPrivate::decoderReady()
     }
 
     if (m_name.isNull())
-        m_name = QString(QLatin1String("QtPulseSample-%1-%2")).arg(::getpid()).arg(int(this)).toUtf8();
+        m_name = QString(QLatin1String("QtPulseSample-%1-%2")).arg(::getpid()).arg(quintptr(this)).toUtf8();
 
     pa_sample_spec spec = audioFormatToSampleSpec(m_waveDecoder->audioFormat());
 
