@@ -71,7 +71,7 @@
             playSound.play()
         }
     }
-    \endeml
+    \endqml
 
     \sa SoundEffect
 */

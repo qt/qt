@@ -1528,7 +1528,7 @@ void QmlRotationAnimation::setTo(qreal t)
     Possible values are Numerical, Clockwise, Counterclockwise,
     or Shortest.
 
-    \list
+    \table
     \row
         \o Numerical
         \o Rotate by linearly interpolating between the two numbers.
@@ -1543,7 +1543,7 @@ void QmlRotationAnimation::setTo(qreal t)
         \o Shortest
         \o Rotate in the direction that produces the shortest animation path.
            A rotation from 10 to 350 will rotate 20 degrees counterclockwise.
-    \list
+    \endtable
 
     The default direction is Shortest.
 */

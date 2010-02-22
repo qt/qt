@@ -280,7 +280,7 @@ bool QmlGraphicsVideo::hasVideo() const
 */
 
 /*!
-    \qmlproperty qreal playbackRate
+    \qmlproperty qreal Video::playbackRate
 
     This property holds the rate at which video is played at as a multiple of the normal rate.
 */
@@ -314,9 +314,9 @@ QmlGraphicsVideo::Error QmlGraphicsVideo::error() const
 */
 
 /*!
-    \qmlproperty Video::onError(error, errorString)
+    \qmlsignal Video::onError(error, errorString)
 
-    This property is called when an \l {Error}{error} has occurred.  The errorString parameter
+    This handler is called when an \l {Error}{error} has occurred.  The errorString parameter
     may contain more detailed information about the error.
 */
 
