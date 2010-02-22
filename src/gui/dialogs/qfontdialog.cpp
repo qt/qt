@@ -994,7 +994,7 @@ void QFontDialog::setVisible(bool visible)
             return;
     } else if  (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
         return;
-
+#ifdef Q_WS_MAC
     if (d->canBeNativeDialog()){
         if (d->setVisible_sys(visible)){
             d->nativeDialogInUse = true;
@@ -1006,7 +1006,7 @@ void QFontDialog::setVisible(bool visible)
             setAttribute(Qt::WA_DontShowOnScreen, false);
         }
     }
-
+#endif // Q_WS_MAC
     QDialog::setVisible(visible);
 }
 
@@ -1038,6 +1038,7 @@ void QFontDialog::done(int result)
     d->memberToDisconnectOnClose.clear();
 }
 
+#ifdef Q_WS_MAC
 bool QFontDialogPrivate::canBeNativeDialog()
 {
     Q_Q(QFontDialog);
@@ -1052,6 +1053,7 @@ bool QFontDialogPrivate::canBeNativeDialog()
     QLatin1String dynamicName(q->metaObject()->className());
     return (staticName == dynamicName);
 }
+#endif // Q_WS_MAC
 
 /*!
     \fn QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget* parent, const char* name)
