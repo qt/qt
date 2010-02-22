@@ -564,11 +564,8 @@ struct QX11Data
         _MOTIF_WM_HINTS,
 
         DTWM_IS_RUNNING,
-        KDE_FULL_SESSION,
-        KWIN_RUNNING,
-        KWM_RUNNING,
-        GNOME_BACKGROUND_PROPERTIES,
         ENLIGHTENMENT_DESKTOP,
+        _DT_SAVE_MODE,
         _SGI_DESKS_MANAGER,
 
         // EWMH (aka NETWM)
