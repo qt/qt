@@ -45,11 +45,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QImage>
-#ifdef Q_WS_X11
-QT_BEGIN_NAMESPACE
-extern void qt_x11_wait_for_window_manager(QWidget *);
-QT_END_NAMESPACE
-#endif
+
 #include "chiptester/chiptester.h"
 //#define CALLGRIND_DEBUG
 #ifdef CALLGRIND_DEBUG
@@ -58,34 +54,65 @@ QT_END_NAMESPACE
 
 //TESTED_FILES=
 
-class QEventWaiter : public QEventLoop
+static inline void processEvents()
 {
+    QPixmapCache::clear();
+    QApplication::flush();
+    QApplication::processEvents();
+    QApplication::processEvents();
+}
+
+class TestView : public QGraphicsView
+{
+    Q_OBJECT
 public:
-    QEventWaiter(QObject *receiver, QEvent::Type type)
-        : waiting(false), t(type)
-    {
-        receiver->installEventFilter(this);
-    }
+    TestView() : QGraphicsView(), waiting(false), timerId(-1)
+    {}
 
-    void wait()
+    void waitForPaintEvent(int timeout = 4000)
     {
+        if (waiting)
+            return;
         waiting = true;
-        exec();
+        timerId = startTimer(timeout);
+        eventLoop.exec();
+        killTimer(timerId);
+        timerId = -1;
+        waiting = false;
     }
 
-    bool eventFilter(QObject *receiver, QEvent *event)
+    void tryResize(int width, int height)
     {
-        Q_UNUSED(receiver);
-        if (waiting && event->type() == t) {
-            waiting = false;
-            exit();
+        QDesktopWidget *desktop = QApplication::desktop();
+        if (desktop->width() < width)
+            width = desktop->width();
+        if (desktop->height() < height)
+            height = desktop->height();
+        if (size() != QSize(width, height)) {
+            resize(width, height);
+            QTest::qWait(250);
+            processEvents();
         }
-        return false;
+    }
+
+protected:
+    void paintEvent(QPaintEvent *event)
+    {
+        QGraphicsView::paintEvent(event);
+        if (waiting)
+            eventLoop.exit();
+    }
+
+    void timerEvent(QTimerEvent *event)
+    {
+        if (event->timerId() == timerId)
+            eventLoop.exit();
     }
 
 private:
+    QEventLoop eventLoop;
     bool waiting;
-    QEvent::Type t;
+    int timerId;
 };
 
 class tst_QGraphicsView : public QObject
@@ -97,6 +124,7 @@ public:
     virtual ~tst_QGraphicsView();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -126,6 +154,9 @@ private slots:
     void moveItemCache();
     void paintItemCache_data();
     void paintItemCache();
+
+private:
+    TestView mView;
 };
 
 tst_QGraphicsView::tst_QGraphicsView()
@@ -136,8 +167,25 @@ tst_QGraphicsView::~tst_QGraphicsView()
 {
 }
 
+void tst_QGraphicsView::initTestCase()
+{
+    mView.setFrameStyle(0);
+    mView.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    mView.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    mView.tryResize(100, 100);
+    mView.show();
+    QTest::qWaitForWindowShown(&mView);
+    QTest::qWait(300);
+    processEvents();
+}
+
 void tst_QGraphicsView::init()
 {
+    mView.setRenderHints(QPainter::RenderHints(0));
+    mView.viewport()->setMouseTracking(false);
+    mView.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    for (int i = 0; i < 3; ++i)
+        processEvents();
 }
 
 void tst_QGraphicsView::cleanup()
@@ -156,25 +204,18 @@ void tst_QGraphicsView::paintSingleItem()
     QGraphicsScene scene(0, 0, 100, 100);
     scene.addRect(0, 0, 10, 10);
 
-    QGraphicsView view(&scene);
-    view.show();
-    view.resize(100, 100);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    mView.setScene(&scene);
+    mView.tryResize(100, 100);
+    processEvents();
 
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
     QBENCHMARK {
-        view.viewport()->render(&painter);
+        mView.viewport()->render(&painter);
     }
 }
 
-#ifdef Q_OS_SYMBIAN
-#  define DEEP_STACKING_COUNT 85
-#else
-#  define DEEP_STACKING_COUNT 1000
-#endif
+#define DEEP_STACKING_COUNT 85
 
 void tst_QGraphicsView::paintDeepStackingItems()
 {
@@ -188,17 +229,14 @@ void tst_QGraphicsView::paintDeepStackingItems()
         lastRect = rect;
     }
 
-    QGraphicsView view(&scene);
-    view.show();
-    view.resize(100, 100);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    mView.setScene(&scene);
+    mView.tryResize(100, 100);
+    processEvents();
 
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
     QBENCHMARK {
-        view.viewport()->render(&painter);
+        mView.viewport()->render(&painter);
     }
 }
 
@@ -215,17 +253,14 @@ void tst_QGraphicsView::paintDeepStackingItems_clipped()
         lastRect = rect;
     }
 
-    QGraphicsView view(&scene);
-    view.show();
-    view.resize(100, 100);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    mView.setScene(&scene);
+    mView.tryResize(100, 100);
+    processEvents();
 
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
     QBENCHMARK {
-        view.viewport()->render(&painter);
+        mView.viewport()->render(&painter);
     }
 }
 
@@ -234,18 +269,14 @@ void tst_QGraphicsView::moveSingleItem()
     QGraphicsScene scene(0, 0, 100, 100);
     QGraphicsRectItem *item = scene.addRect(0, 0, 10, 10);
 
-    QGraphicsView view(&scene);
-    view.show();
-    view.resize(100, 100);
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    mView.setScene(&scene);
+    mView.tryResize(100, 100);
+    processEvents();
 
-    QEventWaiter waiter(view.viewport(), QEvent::Paint);
     int n = 1;
     QBENCHMARK {
         item->setPos(25 * n, 25 * n);
-        waiter.wait();
+        mView.waitForPaintEvent();
         n = n ? 0 : 1;
     }
 }
@@ -271,6 +302,8 @@ void tst_QGraphicsView::mapPointToScene()
 
     QGraphicsView view;
     view.setTransform(transform);
+    processEvents();
+
     QBENCHMARK {
         view.mapToScene(point);
     }
@@ -297,6 +330,8 @@ void tst_QGraphicsView::mapPointFromScene()
 
     QGraphicsView view;
     view.setTransform(transform);
+    processEvents();
+
     QBENCHMARK {
         view.mapFromScene(point);
     }
@@ -323,6 +358,8 @@ void tst_QGraphicsView::mapRectToScene()
 
     QGraphicsView view;
     view.setTransform(transform);
+    processEvents();
+
     QBENCHMARK {
         view.mapToScene(rect);
     }
@@ -349,6 +386,8 @@ void tst_QGraphicsView::mapRectFromScene()
 
     QGraphicsView view;
     view.setTransform(transform);
+    processEvents();
+
     QBENCHMARK {
         view.mapFromScene(rect);
     }
@@ -380,13 +419,14 @@ void tst_QGraphicsView::chipTester()
     QFETCH(int, operation);
 
     ChipTester tester;
-    tester.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&tester);
-#endif
     tester.setAntialias(antialias);
     tester.setOpenGL(opengl);
     tester.setOperation(ChipTester::Operation(operation));
+    tester.show();
+    QTest::qWaitForWindowShown(&tester);
+    QTest::qWait(250);
+    processEvents();
+
     QBENCHMARK {
         tester.runBenchmark();
     }
@@ -436,20 +476,20 @@ void tst_QGraphicsView::deepNesting()
     }
     scene.setItemIndexMethod(bsp ? QGraphicsScene::BspTreeIndex : QGraphicsScene::NoIndex);
     scene.setSortCacheEnabled(sortCache);
+    scene.setSceneRect(scene.sceneRect());
 
-    QGraphicsView view(&scene);
-    view.setRenderHint(QPainter::Antialiasing);
-    view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(250);
+    mView.setRenderHint(QPainter::Antialiasing);
+    mView.setScene(&scene);
+    mView.tryResize(600, 600);
+    (void)scene.itemAt(0, 0);
+    processEvents();
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
-        view.viewport()->repaint();
+        mView.viewport()->update();
+        mView.waitForPaintEvent();
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_STOP_INSTRUMENTATION
 #endif
@@ -503,23 +543,6 @@ private:
     bool scale;
 };
 
-class CountPaintEventView : public QGraphicsView
-{
-public:
-    CountPaintEventView(QGraphicsScene *scene = 0)
-        : QGraphicsView(scene), count(0)
-    { }
-
-    int count;
-
-protected:
-    void paintEvent(QPaintEvent *event)
-    {
-        ++count;
-        QGraphicsView::paintEvent(event);
-    };
-};
-
 void tst_QGraphicsView::imageRiver_data()
 {
     QTest::addColumn<int>("direction");
@@ -541,13 +564,6 @@ void tst_QGraphicsView::imageRiver()
 
     QGraphicsScene scene(0, 0, 300, 300);
 
-    CountPaintEventView view(&scene);
-    view.resize(300, 300);
-    view.setFrameStyle(0);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.show();
-
     QPixmap pix(":/images/designer.png");
     QVERIFY(!pix.isNull());
 
@@ -555,37 +571,31 @@ void tst_QGraphicsView::imageRiver()
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
-#if defined(Q_OS_SYMBIAN)
     for (int i = 0; i < 50; ++i) {
-#else
-    for (int i = 0; i < 100; ++i) {
-#endif
-        AnimatedPixmapItem *item;
+        AnimatedPixmapItem *item = 0;
         if (direction == 0) item = new AnimatedPixmapItem((i % 4) + 1, 0, rotation, scale);
         if (direction == 1) item = new AnimatedPixmapItem(0, (i % 4) + 1, rotation, scale);
         if (direction == 2) item = new AnimatedPixmapItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
         item->setPixmap(pix);
         int rnd1, rnd2;
         str >> rnd1 >> rnd2;
-        item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
-                     -pix.height() + rnd2 % (view.height() + pix.height()));
+        item->setPos(-pix.width() + rnd1 % (300 + pix.width()),
+                     -pix.height() + rnd2 % (300 + pix.height()));
         scene.addItem(item);
     }
+    scene.setSceneRect(0, 0, 300, 300);
 
-    view.count = 0;
+    mView.setScene(&scene);
+    mView.tryResize(300, 300);
+    processEvents();
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
-#if defined(Q_OS_SYMBIAN)
         for (int i = 0; i < 50; ++i) {
-#else
-        for (int i = 0; i < 100; ++i) {
-#endif
             scene.advance();
-            while (view.count < (i+1))
-                qApp->processEvents();
+            mView.waitForPaintEvent();
         }
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_STOP_INSTRUMENTATION
@@ -663,13 +673,6 @@ void tst_QGraphicsView::textRiver()
 
     QGraphicsScene scene(0, 0, 300, 300);
 
-    CountPaintEventView view(&scene);
-    view.resize(300, 300);
-    view.setFrameStyle(0);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.show();
-
     QPixmap pix(":/images/designer.png");
     QVERIFY(!pix.isNull());
 
@@ -677,36 +680,32 @@ void tst_QGraphicsView::textRiver()
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
-#if defined(Q_OS_SYMBIAN)
     for (int i = 0; i < 50; ++i) {
-#else
-    for (int i = 0; i < 100; ++i) {
-#endif
-        AnimatedTextItem *item;
+        AnimatedTextItem *item = 0;
         if (direction == 0) item = new AnimatedTextItem((i % 4) + 1, 0, rotation, scale);
         if (direction == 1) item = new AnimatedTextItem(0, (i % 4) + 1, rotation, scale);
         if (direction == 2) item = new AnimatedTextItem((i % 4) + 1, (i % 4) + 1, rotation, scale);
         int rnd1, rnd2;
         str >> rnd1 >> rnd2;
-        item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
-                     -pix.height() + rnd2 % (view.height() + pix.height()));
+        item->setPos(-pix.width() + rnd1 % (300 + pix.width()),
+                     -pix.height() + rnd2 % (300 + pix.height()));
+        item->setAcceptDrops(false);
+        item->setAcceptHoverEvents(false);
         scene.addItem(item);
     }
+    scene.setSceneRect(0, 0, 300, 300);
 
-    view.count = 0;
+    mView.setScene(&scene);
+    mView.tryResize(300, 300);
+    processEvents();
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
-#if defined(Q_OS_SYMBIAN)
         for (int i = 0; i < 50; ++i) {
-#else
-        for (int i = 0; i < 100; ++i) {
-#endif
             scene.advance();
-            while (view.count < (i+1))
-                qApp->processEvents();
+            mView.waitForPaintEvent();
         }
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_STOP_INSTRUMENTATION
@@ -773,13 +772,6 @@ void tst_QGraphicsView::moveItemCache()
 
     QGraphicsScene scene(0, 0, 300, 300);
 
-    CountPaintEventView view(&scene);
-    view.resize(600, 600);
-    view.setFrameStyle(0);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.show();
-
     QPixmap pix(":/images/wine.jpeg");
     QVERIFY(!pix.isNull());
 
@@ -787,12 +779,8 @@ void tst_QGraphicsView::moveItemCache()
     QFile file(":/random.data");
     QVERIFY(file.open(QIODevice::ReadOnly));
     QDataStream str(&file);
-#if defined(Q_OS_SYMBIAN)
     for (int i = 0; i < 5; ++i) {
-#else
-    for (int i = 0; i < 50; ++i) {
-#endif
-        AnimatedPixmapCacheItem *item;
+        AnimatedPixmapCacheItem *item = 0;
         if (direction == 0) item = new AnimatedPixmapCacheItem((i % 4) + 1, 0);
         if (direction == 1) item = new AnimatedPixmapCacheItem(0, (i % 4) + 1);
         if (direction == 2) item = new AnimatedPixmapCacheItem((i % 4) + 1, (i % 4) + 1);
@@ -802,25 +790,23 @@ void tst_QGraphicsView::moveItemCache()
             item->setTransform(QTransform().rotate(45));
         int rnd1, rnd2;
         str >> rnd1 >> rnd2;
-        item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
-                     -pix.height() + rnd2 % (view.height() + pix.height()));
+        item->setPos(-pix.width() + rnd1 % (400 + pix.width()),
+                     -pix.height() + rnd2 % (400 + pix.height()));
         scene.addItem(item);
     }
+    scene.setSceneRect(0, 0, 400, 400);
 
-    view.count = 0;
+    mView.setScene(&scene);
+    mView.tryResize(400, 400);
+    processEvents();
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
-#if defined(Q_OS_SYMBIAN)
-        for (int i = 0; i < 50; ++i) {
-#else
-        for (int i = 0; i < 100; ++i) {
-#endif
+        for (int i = 0; i < 5; ++i) {
             scene.advance();
-            while (view.count < (i+1))
-                qApp->processEvents();
+            mView.waitForPaintEvent();
         }
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_STOP_INSTRUMENTATION
@@ -843,6 +829,7 @@ public:
 protected:
     void advance(int i)
     {
+        Q_UNUSED(i);
         if (partial)
             update(QRectF(boundingRect().center().x(), boundingRect().center().x(), 30, 30));
         else
@@ -880,13 +867,6 @@ void tst_QGraphicsView::paintItemCache()
 
     QGraphicsScene scene(0, 0, 300, 300);
 
-    CountPaintEventView view(&scene);
-    view.resize(600, 600);
-    view.setFrameStyle(0);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.show();
-
     QPixmap pix(":/images/wine.jpeg");
     QVERIFY(!pix.isNull());
 
@@ -910,21 +890,19 @@ void tst_QGraphicsView::paintItemCache()
         item->setTransform(QTransform().rotate(45));
     item->setPos(0, 0);
     scene.addItem(item);
+    scene.setSceneRect(-100, -100, 600, 600);
 
-    view.count = 0;
+    mView.tryResize(600, 600);
+    mView.setScene(&scene);
+    processEvents();
 
     QBENCHMARK {
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_START_INSTRUMENTATION
 #endif
-#if defined(Q_OS_SYMBIAN)
         for (int i = 0; i < 5; ++i) {
-#else
-        for (int i = 0; i < 50; ++i) {
-#endif
             scene.advance();
-            while (view.count < (i+1))
-                qApp->processEvents();
+            mView.waitForPaintEvent();
         }
 #ifdef CALLGRIND_DEBUG
         CALLGRIND_STOP_INSTRUMENTATION

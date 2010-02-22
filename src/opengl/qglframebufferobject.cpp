@@ -128,7 +128,7 @@ void QGLFramebufferObjectFormat::detach()
     attachments, texture target \c GL_TEXTURE_2D, and internal format \c GL_RGBA8.
     On OpenGL/ES systems, the default internal format is \c GL_RGBA.
 
-    \sa samples(), attachment(), target(), internalTextureFormat()
+    \sa samples(), attachment(), internalTextureFormat()
 */
 
 QGLFramebufferObjectFormat::QGLFramebufferObjectFormat()
@@ -325,6 +325,13 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
     } else if (attachment == QGLFramebufferObject::Depth) {
         fboFormat.setDepth(true);
     }
+
+    GLenum format = f->format().internalTextureFormat();
+    reqAlpha = (format != GL_RGB
+#ifndef QT_OPENGL_ES
+                && format != GL_RGB5 && format != GL_RGB8
+#endif
+    );
 }
 
 QGLContext *QGLFBOGLPaintDevice::context() const

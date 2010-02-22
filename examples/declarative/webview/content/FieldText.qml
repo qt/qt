@@ -149,7 +149,7 @@ Item {
         to: "*"
         reversible: true
         NumberAnimation {
-            matchProperties: "opacity,leftMargin,rightMargin"
+            properties: "opacity,leftMargin,rightMargin"
             duration: 200
         }
         ColorAnimation {

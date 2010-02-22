@@ -45,7 +45,10 @@ struct PluginInterface {
     virtual ~PluginInterface() {}
     virtual QString pluginName() const = 0;
 };
+
+QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(PluginInterface, "com.trolltect.autotests.plugininterface/1.0")
+QT_END_NAMESPACE
 
 #endif // PLUGININTERFACE_H
 

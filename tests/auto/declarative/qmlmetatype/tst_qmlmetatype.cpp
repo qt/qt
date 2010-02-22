@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -157,9 +157,12 @@ void tst_qmlmetatype::copy()
     QT_COPY_TEST(QStringList, QStringList() << "QML" << "Rocks");
     QT_COPY_TEST(QByteArray, QByteArray("0x1102DDD"));
     QT_COPY_TEST(QBitArray, QBitArray(102, true));
-    QT_COPY_TEST(QDate, QDate::currentDate());
-    QT_COPY_TEST(QTime, QTime::currentTime());
-    QT_COPY_TEST(QDateTime, QDateTime::currentDateTime());
+    QDate cd = QDate::currentDate();
+    QT_COPY_TEST(QDate, cd);
+    QTime ct = QTime::currentTime();
+    QT_COPY_TEST(QTime, ct);
+    QDateTime cdt = QDateTime::currentDateTime();
+    QT_COPY_TEST(QDateTime, cdt);
     QT_COPY_TEST(QUrl, QUrl("http://www.nokia.com"));
     QT_COPY_TEST(QLocale, QLocale(QLocale::English, QLocale::Australia));
     QT_COPY_TEST(QRect, QRect(-10, 10, 102, 99));

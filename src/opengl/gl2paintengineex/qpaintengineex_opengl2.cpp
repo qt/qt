@@ -91,6 +91,9 @@
 QT_BEGIN_NAMESPACE
 
 //#define QT_GL_NO_SCISSOR_TEST
+#if defined(Q_WS_WIN)
+extern Q_GUI_EXPORT bool qt_cleartype_enabled;
+#endif
 
 extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
@@ -1354,7 +1357,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->deviceHasAlpha || txtype > QTransform::TxTranslate
+        if (d->device->alphaRequested() || txtype > QTransform::TxTranslate
             || (state()->composition_mode != QPainter::CompositionMode_Source
             && state()->composition_mode != QPainter::CompositionMode_SourceOver))
         {
@@ -1822,7 +1825,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
 #if !defined(QT_OPENGL_ES_2)
 #if defined(Q_WS_WIN)
-    extern Q_GUI_EXPORT bool qt_cleartype_enabled;
     if (qt_cleartype_enabled)
 #endif
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,7 +147,7 @@ void QmlGraphicsTester::imagefailure()
 void QmlGraphicsTester::complete()
 {
     if ((options & QmlViewer::TestErrorProperty) && !hasFailed) {
-        QString e = m_view->root()->property("error").toString();
+        QString e = m_view->rootObject()->property("error").toString();
         if (!e.isEmpty()) {
             qWarning() << "Test failed:" << e;
             hasFailed = true;

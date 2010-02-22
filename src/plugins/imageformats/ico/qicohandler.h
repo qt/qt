@@ -43,6 +43,8 @@
 
 #include <QtGui/QImageIOHandler>
 
+QT_BEGIN_NAMESPACE
+
 class ICOReader;
 class QtIcoHandler: public QImageIOHandler
 {
@@ -70,6 +72,8 @@ private:
     ICOReader *m_pICOReader;
 
 };
+
+QT_END_NAMESPACE
 
 #endif /* QTICOHANDLER_H */
 

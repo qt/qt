@@ -44,8 +44,6 @@
 #include <QtGui/QPainter>
 #include <QtGui/QImage>
 
-#include <QtOpenGl/QGLWidget>
-
 #include <qstatictext.h>
 #include <private/qstatictext_p.h>
 
@@ -114,6 +112,7 @@ void tst_QStaticText::drawToPoint()
     {
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
         text.setPerformanceHint(performanceHint);
         p.drawStaticText(QPointF(11, 12), text);
     }
@@ -146,6 +145,7 @@ void tst_QStaticText::drawToRect()
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", QSizeF(10, 500));
         text.setPerformanceHint(performanceHint);
+        text.setTextFormat(Qt::PlainText);
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -173,6 +173,7 @@ void tst_QStaticText::prepareToCorrectData()
         p.setTransform(transform);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.prepare(transform, p.font());
+        text.setTextFormat(Qt::PlainText);
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -198,6 +199,7 @@ void tst_QStaticText::prepareToWrongData()
         QPainter p(&imageDrawStaticText);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
         text.prepare(transform, p.font());
+        text.setTextFormat(Qt::PlainText);
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -228,6 +230,7 @@ void tst_QStaticText::setFont()
 
         QStaticText text;
         text.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
 
         p.drawStaticText(0, 0, text);
 
@@ -277,6 +280,8 @@ void tst_QStaticText::translatedPainter()
         p.translate(100, 200);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
+
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -297,6 +302,7 @@ void tst_QStaticText::rotatedPainter()
     imageDrawStaticText.fill(Qt::white);
     {
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
 
         QPainter p(&imageDrawStaticText);
         p.rotate(30.0);
@@ -329,6 +335,8 @@ void tst_QStaticText::scaledPainter()
         p.scale(2.0, 0.2);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
+
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -356,6 +364,8 @@ void tst_QStaticText::projectedPainter()
         p.setTransform(transform);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
+
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -385,6 +395,8 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
         p.translate(100, 200);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
+
         p.drawStaticText(QPointF(11, 12), text);
     }
 
@@ -419,6 +431,8 @@ void tst_QStaticText::transformationChanged()
         p.scale(0.5, 0.7);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        text.setTextFormat(Qt::PlainText);
+
         p.drawStaticText(QPointF(0, 0), text);
 
         p.scale(7.0, 5.0);

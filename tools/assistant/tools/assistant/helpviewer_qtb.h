@@ -81,8 +81,6 @@ public:
     inline bool hasSelection() const
     { return textCursor().hasSelection(); }
 
-    bool launchedWithExternalApp(const QUrl &url);
-
 public Q_SLOTS:
     void home();
 

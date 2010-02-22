@@ -710,13 +710,14 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
         bool penTextureAlpha = false;
         if (penBrush.style() == Qt::TexturePattern)
             penTextureAlpha = qHasPixmapTexture(penBrush)
-                              ? penBrush.texture().hasAlpha()
+                              ? (penBrush.texture().depth() > 1) && penBrush.texture().hasAlpha()
                               : penBrush.textureImage().hasAlphaChannel();
         bool brushTextureAlpha = false;
-        if (s->brush.style() == Qt::TexturePattern)
+        if (s->brush.style() == Qt::TexturePattern) {
             brushTextureAlpha = qHasPixmapTexture(s->brush)
-                                ? s->brush.texture().hasAlpha()
+                                ? (s->brush.texture().depth() > 1) && s->brush.texture().hasAlpha()
                                 : s->brush.textureImage().hasAlphaChannel();
+        }
         if (((penBrush.style() == Qt::TexturePattern && penTextureAlpha)
              || (s->brush.style() == Qt::TexturePattern && brushTextureAlpha))
             && !engine->hasFeature(QPaintEngine::MaskedBrush))
@@ -5768,7 +5769,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     // If we don't have an extended paint engine, or if the painter is projected,
     // we go through standard code path
     if (d->extended == 0 || !d->state->matrix.isAffine()) {
-        staticText_d->paintText(this);
+        staticText_d->paintText(position, this);
         return;
     }
 

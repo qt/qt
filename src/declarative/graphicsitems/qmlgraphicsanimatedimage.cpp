@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,7 +78,6 @@ Item {
     \endqml
     \endtable
 */
-QML_DEFINE_TYPE(Qt,4,6,AnimatedImage,QmlGraphicsAnimatedImage)
 
 QmlGraphicsAnimatedImage::QmlGraphicsAnimatedImage(QmlGraphicsItem *parent)
     : QmlGraphicsImage(*(new QmlGraphicsAnimatedImagePrivate), parent)
@@ -296,6 +295,7 @@ void QmlGraphicsAnimatedImage::playingStatusChanged()
 void QmlGraphicsAnimatedImage::componentComplete()
 {
     Q_D(QmlGraphicsAnimatedImage);
+    QmlGraphicsImage::componentComplete();
     if (!d->reply) {
         setCurrentFrame(d->preset_currentframe);
         d->preset_currentframe = 0;

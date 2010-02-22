@@ -132,7 +132,7 @@ namespace QtSharedPointer {
         typedef const value_type *const_pointer;
         typedef value_type &reference;
         typedef const value_type &const_reference;
-        typedef ptrdiff_t difference_type;
+        typedef qptrdiff difference_type;
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
@@ -541,7 +541,7 @@ public:
     typedef const value_type *const_pointer;
     typedef value_type &reference;
     typedef const value_type &const_reference;
-    typedef ptrdiff_t difference_type;
+    typedef qptrdiff difference_type;
 
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
 #ifndef Q_CC_NOKIAX86
@@ -653,6 +653,9 @@ public:
     T *value;
 };
 
+//
+// operator== and operator!=
+//
 template <class T, class X>
 bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
 {
@@ -674,7 +677,6 @@ bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2)
 {
     return ptr1 == ptr2.data();
 }
-
 template <class T, class X>
 bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
 {
@@ -697,11 +699,54 @@ bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     return ptr2 != ptr1;
 }
 
+//
+// operator-
+//
 template <class T, class X>
-Q_INLINE_TEMPLATE typename T::difference_type operator-(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+Q_INLINE_TEMPLATE typename QSharedPointer<T>::difference_type operator-(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
 {
     return ptr1.data() - ptr2.data();
 }
+template <class T, class X>
+Q_INLINE_TEMPLATE typename QSharedPointer<T>::difference_type operator-(const QSharedPointer<T> &ptr1, X *ptr2)
+{
+    return ptr1.data() - ptr2;
+}
+template <class T, class X>
+Q_INLINE_TEMPLATE typename QSharedPointer<X>::difference_type operator-(T *ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1 - ptr2.data();
+}
+
+//
+// operator<
+//
+template <class T, class X>
+Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1.data() < ptr2.data();
+}
+template <class T, class X>
+Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, X *ptr2)
+{
+    return ptr1.data() < ptr2;
+}
+template <class T, class X>
+Q_INLINE_TEMPLATE bool operator<(T *ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1 < ptr2.data();
+}
+
+//
+// qHash
+//
+template <class T> inline uint qHash(const T *key); // defined in qhash.h
+template <class T>
+Q_INLINE_TEMPLATE uint qHash(const QSharedPointer<T> &ptr)
+{
+    return QT_PREPEND_NAMESPACE(qHash)<T>(ptr.data());
+}
+
 
 template <class T>
 Q_INLINE_TEMPLATE QWeakPointer<T> QSharedPointer<T>::toWeakRef() const

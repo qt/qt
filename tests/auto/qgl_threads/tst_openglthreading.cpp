@@ -145,6 +145,10 @@ public:
 
 void tst_OpenGLThreading::swapInThread()
 {
+#ifdef Q_OS_MAC
+    QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots", SkipAll);
+#endif
+
     QGLFormat format;
     format.setSwapInterval(1);
     ForegroundWidget widget(format);
@@ -247,6 +251,10 @@ private:
 
 void tst_OpenGLThreading::textureUploadInThread()
 {
+#ifdef Q_OS_MAC
+    QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots", SkipAll);
+#endif
+
     TextureDisplay display;
     CreateAndUploadThread thread(&display);
 
@@ -417,6 +425,10 @@ void tst_OpenGLThreading::renderInThread_data()
 
 void tst_OpenGLThreading::renderInThread()
 {
+#ifdef Q_OS_MAC
+    QSKIP("OpenGL threading tests are currently disabled on mac as they were causing reboots", SkipAll);
+#endif
+
     QFETCH(bool, resize);
     QFETCH(bool, update);
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -190,13 +190,14 @@ void TestHTTPServer::disconnected()
             --ii;
         }
     }
+    socket->disconnect();
     socket->deleteLater();
 }
 
 void TestHTTPServer::readyRead()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
-    if (!socket) return;
+    if (!socket || socket->state() == QTcpSocket::ClosingState) return;
 
     QByteArray ba = socket->readAll();
 
@@ -222,14 +223,14 @@ void TestHTTPServer::readyRead()
             QByteArray data = ba.mid(ii);
             qWarning() << "TestHTTPServer: Unexpected data" << data << "\nExpected: " << waitData;
             m_hasFailed = true;
-            socket->disconnect();
+            socket->disconnectFromHost();
             return;
         }
     }
 
     if (waitData.isEmpty()) {
         socket->write(replyData);
-        socket->disconnect();
+        socket->disconnectFromHost();
     }
 }
 
@@ -316,8 +317,8 @@ void TestHTTPServer::serveGET(QTcpSocket *socket, const QByteArray &data)
         }
         dataCache.remove(socket);
 
-        if (close)
-            socket->close();
+        if (close) 
+            socket->disconnectFromHost();
     }
 }
 

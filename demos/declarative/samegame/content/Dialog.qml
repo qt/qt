@@ -11,6 +11,7 @@ Rectangle {
         page.opacity = 1;
     }
     signal closed();
+    property Item text: myText
     color: "white"; border.width: 1; width: myText.width + 20; height: myText.height + 40;
     opacity: 0
     opacity: Behavior {

@@ -50,6 +50,7 @@ SOURCES += \
     $$PWD/qmltypenamescriptclass.cpp \
     $$PWD/qmllistscriptclass.cpp \
     $$PWD/qmlworkerscript.cpp \
+    $$PWD/qmlimageprovider.cpp \
     $$PWD/qmlnetworkaccessmanagerfactory.cpp
 HEADERS += \
     $$PWD/qmlparser_p.h \
@@ -75,8 +76,8 @@ HEADERS += \
     $$PWD/qmlengine_p.h \
     $$PWD/qmlexpression_p.h \
     $$PWD/qmlprivate.h \
-    $$PWD/qmldom.h \
     $$PWD/qmldom_p.h \
+    $$PWD/qmldom_p_p.h \
     $$PWD/qmlrefcount_p.h \
     $$PWD/qmlmetatype.h \
     $$PWD/qmlengine.h \
@@ -117,6 +118,7 @@ HEADERS += \
     $$PWD/qmlworkerscript_p.h \
     $$PWD/qmlscriptclass_p.h \
     $$PWD/qmlguard_p.h \
+    $$PWD/qmlimageprovider.h \
     $$PWD/qmlnetworkaccessmanagerfactory.h
 QT += sql
 include(parser/parser.pri)

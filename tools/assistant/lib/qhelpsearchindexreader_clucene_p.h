@@ -63,7 +63,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
 namespace fulltextsearch {
 namespace clucene {
 
@@ -109,7 +108,6 @@ private:
 
 }   // namespace clucene
 }   // namespace fulltextsearch
-}   // namespace qt
 
 QT_END_NAMESPACE
 

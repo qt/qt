@@ -2637,7 +2637,7 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     QSize bottom_max = docks[QInternal::BottomDock].maximumSize();
     bottom_hint = bottom_hint.boundedTo(bottom_max).expandedTo(bottom_min);
 
-    fallbackToSizeHints = !have_central;
+    fallbackToSizeHints = false;
 
     if (_ver_struct_list != 0) {
         QVector<QLayoutStruct> &ver_struct_list = *_ver_struct_list;

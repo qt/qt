@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,8 +59,6 @@ QmlGraphicsRepeaterPrivate::~QmlGraphicsRepeaterPrivate()
     if (ownModel)
         delete model;
 }
-
-QML_DEFINE_TYPE(Qt,4,6,Repeater,QmlGraphicsRepeater)
 
 /*!
     \qmlclass Repeater QmlGraphicsRepeater
@@ -159,6 +157,9 @@ QVariant QmlGraphicsRepeater::model() const
 void QmlGraphicsRepeater::setModel(const QVariant &model)
 {
     Q_D(QmlGraphicsRepeater);
+    if (d->dataSource == model)
+        return;
+
     clear();
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
@@ -170,6 +171,7 @@ void QmlGraphicsRepeater::setModel(const QVariant &model)
     */
     }
     d->dataSource = model;
+    emit modelChanged();
     QObject *object = qvariant_cast<QObject*>(model);
     QmlGraphicsVisualModel *vim = 0;
     if (object && (vim = qobject_cast<QmlGraphicsVisualModel *>(object))) {
@@ -221,6 +223,10 @@ QmlComponent *QmlGraphicsRepeater::delegate() const
 void QmlGraphicsRepeater::setDelegate(QmlComponent *delegate)
 {
     Q_D(QmlGraphicsRepeater);
+    if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
+       if (delegate == dataModel->delegate())
+           return;
+
     if (!d->ownModel) {
         d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
         d->ownModel = true;
@@ -228,6 +234,7 @@ void QmlGraphicsRepeater::setDelegate(QmlComponent *delegate)
     if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
         regenerate();
+        emit delegateChanged();
     }
 }
 

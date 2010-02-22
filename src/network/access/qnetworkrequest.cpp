@@ -182,6 +182,12 @@ QT_BEGIN_NAMESPACE
         Indicates whether the HTTP pipelining was used for receiving
         this reply.
 
+    \value CustomVerbAttribute
+       Requests only, type: QVariant::ByteArray
+        Holds the value for the custom HTTP verb to send (destined for usage
+        of other verbs than GET, POST, PUT and DELETE). This verb is set
+        when calling QNetworkAccessManager::sendCustomRequest().
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

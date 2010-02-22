@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,6 +108,8 @@ public:
     {
         if (state() == Running)
             stop();
+        if (policy == DeleteWhenStopped)
+            delete animAction;
         animAction = action;
         policy = p;
     }
@@ -126,12 +128,12 @@ protected:
                     animAction = 0;
                 }
             }
-        } else if (newState == Stopped && policy == DeleteWhenStopped) {
+        } /*else if (newState == Stopped && policy == DeleteWhenStopped) {
             if (!running) {
                 delete animAction;
                 animAction = 0;
             }
-        }
+        }*/
     }
 
 private:
@@ -151,6 +153,8 @@ public:
     {
         if (state() == Running)
             stop();
+        if (policy == DeleteWhenStopped)
+            delete animValue;
         animValue = value;
         policy = p;
     }
@@ -165,16 +169,17 @@ protected:
             animValue->setValue(value.toReal());
     }
     virtual void updateState(State newState, State oldState)
-    {
+    {   
         QVariantAnimation::updateState(newState, oldState);
         if (newState == Running) {
             //check for new from every loop
             if (fromSourced)
                 *fromSourced = false;
-        } else if (newState == Stopped && policy == DeleteWhenStopped) {
+        } /*else if (newState == Stopped && policy == DeleteWhenStopped) {
             delete animValue;
             animValue = 0;
-        }
+        }*/ //### we get a stop each loop if we are in a group
+        //### top-level animation is the only reliable one for this
     }
 
 private:
@@ -204,24 +209,22 @@ class QmlAbstractAnimationPrivate : public QObjectPrivate
 public:
     QmlAbstractAnimationPrivate()
     : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
-      connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
-      avoidPropertyValueSourceStart(false), group(0) {}
+      connectedTimeLine(false), componentComplete(true),
+      avoidPropertyValueSourceStart(false), disableUserControl(false), group(0) {}
 
     bool running:1;
     bool paused:1;
     bool alwaysRunToEnd:1;
     bool repeat:1;
     bool connectedTimeLine:1;
-
     bool componentComplete:1;
-    bool startOnCompletion:1;
     bool avoidPropertyValueSourceStart:1;
+    bool disableUserControl:1;
 
     void commence();
 
-    QmlNullableValue<QmlMetaProperty> userProperty;
+    QmlMetaProperty defaultProperty;
 
-    QmlMetaProperty property;
     QmlAnimationGroup *group;
 
     static QmlMetaProperty createProperty(QObject *obj, const QString &str, QObject *infoObj);
@@ -265,7 +268,7 @@ class QmlPropertyActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlPropertyAction)
 public:
     QmlPropertyActionPrivate()
-    : QmlAbstractAnimationPrivate(), target(0), proxy(this), spa(0) {}
+    : QmlAbstractAnimationPrivate(), target(0), spa(0) {}
 
     void init();
 
@@ -277,10 +280,6 @@ public:
 
     QmlNullableValue<QVariant> value;
 
-    void doAction();
-
-    QAnimationActionProxy<QmlPropertyActionPrivate,
-                  &QmlPropertyActionPrivate::doAction> proxy;
     QActionAnimation *spa;
 };
 
@@ -289,12 +288,11 @@ class QmlParentActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlParentAction)
 public:
     QmlParentActionPrivate()
-    : QmlAbstractAnimationPrivate(), pcTarget(0), pcMatchTarget(0), pcParent(0) {}
+    : QmlAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
 
     void init();
 
     QmlGraphicsItem *pcTarget;
-    QmlGraphicsItem *pcMatchTarget;
     QmlGraphicsItem *pcParent;
 
     void doAction();
@@ -346,8 +344,7 @@ class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
 public:
     QmlPropertyAnimationPrivate()
     : QmlAbstractAnimationPrivate(), target(0), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0),
-      value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
+      rangeIsSet(false), defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0) {}
 
     void init();
 
@@ -361,6 +358,7 @@ public:
     QString properties;
     QList<QObject *> targets;
     QList<QObject *> exclude;
+    QString defaultProperties;
 
     bool fromSourced;
     bool fromIsDefined:1;
@@ -371,12 +369,18 @@ public:
     QVariantAnimation::Interpolator interpolator;
 
     QmlTimeLineValueAnimator *va;
-    virtual void valueChanged(qreal);
-
-    QmlTimeLineValueProxy<QmlPropertyAnimationPrivate> value;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, int type);
+};
+
+class QmlRotationAnimationPrivate : public QmlPropertyAnimationPrivate
+{
+    Q_DECLARE_PUBLIC(QmlRotationAnimation)
+public:
+    QmlRotationAnimationPrivate() : direction(QmlRotationAnimation::Shortest) {}
+
+    QmlRotationAnimation::RotationDirection direction;
 };
 
 QT_END_NAMESPACE

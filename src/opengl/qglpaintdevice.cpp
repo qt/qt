@@ -124,6 +124,11 @@ QGLFormat QGLPaintDevice::format() const
     return context()->format();
 }
 
+bool QGLPaintDevice::alphaRequested() const
+{
+    return context()->d_func()->reqFormat.alpha();
+}
+
 
 
 

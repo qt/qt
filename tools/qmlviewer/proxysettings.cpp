@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,8 @@
 #include <QSettings>
 
 #include "proxysettings.h"
+
+QT_BEGIN_NAMESPACE
 
 ProxySettings::ProxySettings (QWidget * parent)
         : QDialog (parent), Ui::ProxySettings()
@@ -104,3 +106,5 @@ bool ProxySettings::httpProxyInUse()
     QSettings settings;
     return settings.value ("http_proxy/use", 0).toBool ();
 }
+
+QT_END_NAMESPACE

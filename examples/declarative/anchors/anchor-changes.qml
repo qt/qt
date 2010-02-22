@@ -41,6 +41,6 @@ Item {
     }
 
     transitions : Transition {
-        NumberAnimation { matchProperties: "y,height" }
+        NumberAnimation { properties: "y,height" }
     }
 }

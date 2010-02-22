@@ -196,6 +196,8 @@ DEFINEFUNC(void  , dbus_free, (void  *memory), (memory), )
 /* dbus-message.h */
 DEFINEFUNC(DBusMessage* , dbus_message_copy, (const DBusMessage *message),
            (message), return)
+DEFINEFUNC(dbus_bool_t   , dbus_message_get_auto_start, (DBusMessage   *message),
+           (message), return)
 DEFINEFUNC(const char*   , dbus_message_get_error_name, (DBusMessage   *message),
            (message), return)
 DEFINEFUNC(const char*   , dbus_message_get_interface, (DBusMessage   *message),
@@ -268,6 +270,9 @@ DEFINEFUNC(DBusMessage* , dbus_message_new_signal, (const char  *path,
            (path, interface, name), return)
 DEFINEFUNC(DBusMessage*  , dbus_message_ref, (DBusMessage   *message),
            (message), return)
+DEFINEFUNC(void          , dbus_message_set_auto_start, (DBusMessage   *message,
+                                                         dbus_bool_t    auto_start),
+           (message, auto_start), return)
 DEFINEFUNC(dbus_bool_t   , dbus_message_set_destination, (DBusMessage   *message,
                                                           const char    *destination),
            (message, destination), return)

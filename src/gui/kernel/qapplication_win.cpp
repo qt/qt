@@ -2551,6 +2551,17 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             result = true;
             break;
         }
+#ifndef QT_NO_CURSOR
+        case WM_SETCURSOR: {
+            QCursor *ovr = QApplication::overrideCursor();
+            if (ovr) {
+                SetCursor(ovr->handle());
+                RETURN(TRUE);
+            }
+            result = false;
+            break;
+        }
+#endif
         default:
             result = false;                        // event was not processed
             break;
@@ -2973,7 +2984,10 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
                 // most recent one.
                 msgPtr->lParam = mouseMsg.lParam;
                 msgPtr->wParam = mouseMsg.wParam;
-                msgPtr->pt = mouseMsg.pt;
+                // Extract the x,y coordinates from the lParam as we do in the WndProc
+                msgPtr->pt.x = GET_X_LPARAM(mouseMsg.lParam);
+                msgPtr->pt.y = GET_Y_LPARAM(mouseMsg.lParam);
+                ClientToScreen(msg.hwnd, &(msgPtr->pt));
                 // Remove the mouse move message
                 PeekMessage(&mouseMsg, msg.hwnd, WM_MOUSEMOVE,
                             WM_MOUSEMOVE, PM_REMOVE);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,8 @@
 #include <private/qmldebugservice_p.h>
 
 #include "debugutil_p.h"
+
+#include <iostream>
 
 bool QmlDebugTest::waitForSignal(QObject *receiver, const char *member, int timeout) {
     QEventLoop loop;
@@ -117,21 +119,22 @@ void QmlDebugTestClient::messageReceived(const QByteArray &ba)
 
 
 tst_QmlDebug_Thread::tst_QmlDebug_Thread(QmlDebugTestData *data, QmlTestFactory *factory)
-    : m_ready(false), m_data(data), m_factory(factory)
+    : m_data(data), m_factory(factory)
 {
 }
 
 void tst_QmlDebug_Thread::run()
 {
-    QTest::qWait(1000);
+    bool ok = false;
 
     QmlDebugConnection conn;
     conn.connectToHost("127.0.0.1", 3768);
-    bool ok = conn.waitForConnected(5000);
+    ok = conn.waitForConnected();
     Q_ASSERT(ok);
 
-    while (!m_ready)
-        QTest::qWait(100);
+    QEventLoop loop;
+    connect(m_data, SIGNAL(engineCreated()), &loop, SLOT(quit()));
+    loop.exec();
 
     m_data->conn = &conn;
 
@@ -139,9 +142,9 @@ void tst_QmlDebug_Thread::run()
     QObject *test = m_factory->createTest(m_data);
     Q_ASSERT(test);
     int code = QTest::qExec(test, QCoreApplication::arguments()); 
+    delete test;
     emit testsFinished(code);
 }
-
 
 int QmlDebugTest::runTests(QmlTestFactory *factory, const QList<QByteArray> &qml)
 {
@@ -152,7 +155,8 @@ int QmlDebugTest::runTests(QmlTestFactory *factory, const QList<QByteArray> &qml
 
     tst_QmlDebug_Thread thread(&data, factory);
     QObject::connect(&thread, SIGNAL(testsFinished(int)), &data, SLOT(testsFinished(int)));
-    thread.start();
+    
+    QmlDebugService::notifyOnServerStart(&thread, "start");
 
     QmlEngine engine;  // blocks until client connects
 
@@ -165,12 +169,11 @@ int QmlDebugTest::runTests(QmlTestFactory *factory, const QList<QByteArray> &qml
 
     // start the test
     data.engine = &engine;
-    thread.m_ready = true;
+    emit data.engineCreated();
 
     loop.exec();
     thread.wait();
 
     return data.exitCode;
 }
-
 

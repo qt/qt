@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,15 +65,15 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsFlickable : public QmlGraphicsItem
     Q_PROPERTY(qreal verticalVelocity READ verticalVelocity NOTIFY verticalVelocityChanged)
     Q_PROPERTY(qreal reportedVelocitySmoothing READ reportedVelocitySmoothing WRITE setReportedVelocitySmoothing NOTIFY reportedVelocitySmoothingChanged)
 
-    Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot)
-    Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity)
-    Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration)
+    Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot NOTIFY overShootChanged)
+    Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity NOTIFY maximumFlickVelocityChanged)
+    Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration NOTIFY flickDecelerationChanged)
     Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
     Q_PROPERTY(FlickDirection flickDirection READ flickDirection WRITE setFlickDirection NOTIFY flickDirectionChanged)
 
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive NOTIFY interactiveChanged)
-    Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay)
+    Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay NOTIFY pressDelayChanged)
 
     Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged)
@@ -160,6 +160,10 @@ Q_SIGNALS:
     void pageChanged();
     void flickDirectionChanged();
     void interactiveChanged();
+    void overShootChanged();
+    void maximumFlickVelocityChanged();
+    void flickDecelerationChanged();
+    void pressDelayChanged();
 
 protected:
     virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
