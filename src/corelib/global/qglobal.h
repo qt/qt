@@ -2409,7 +2409,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #if defined(Q_OS_SYMBIAN)
 
-#ifdef SYMBIAN_GRAPHICS_USE_GCE
+#ifdef SYMBIAN_BUILD_GCE
 //RWsPointerCursor is fixed, so don't use low performance sprites
 #define Q_SYMBIAN_FIXED_POINTER_CURSORS
 #define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
