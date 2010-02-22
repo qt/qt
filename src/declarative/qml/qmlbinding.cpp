@@ -54,8 +54,6 @@
 #include <QVariant>
 #include <QtCore/qdebug.h>
 
-Q_DECLARE_METATYPE(QList<QObject *>);
-
 QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);

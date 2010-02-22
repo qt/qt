@@ -1427,6 +1427,11 @@ bool QMainWindow::event(QEvent *event)
            }
            break;
 #endif
+#ifdef QT_SOFTKEYS_ENABLED
+    case QEvent::LanguageChange:
+        d->menuBarAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::MenuSoftKey));
+        break;
+#endif
         default:
             break;
     }

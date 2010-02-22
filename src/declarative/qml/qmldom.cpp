@@ -1346,7 +1346,6 @@ QmlDomValue::Type QmlDomValue::type() const
 {
     if (d->property)
         if (QmlMetaType::isList(d->property->type) ||
-           QmlMetaType::isQmlList(d->property->type) ||
            (d->property && d->property->values.count() > 1))
             return List;
 

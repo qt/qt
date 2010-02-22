@@ -188,14 +188,14 @@ void tst_QmlGraphicsRepeater::objectList()
 {
     QmlView *canvas = createView(SRCDIR "/data/objlist.qml");
 
-    QObjectList* data = new QObjectList;
+    QObjectList data;
     for(int i=0; i<100; i++){
-        *data << new QObject();
-        data->back()->setProperty("idx", i);
+        data << new QObject();
+        data.back()->setProperty("idx", i);
     }
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("testData", QVariant::fromValue<QObjectList*>(data));
+    ctxt->setContextProperty("testData", QVariant::fromValue(data));
 
     canvas->execute();
     qApp->processEvents();

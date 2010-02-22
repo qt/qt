@@ -105,6 +105,11 @@ BookmarkDialog::~BookmarkDialog()
     TRACE_OBJ
 }
 
+bool BookmarkDialog::isRootItem(const QModelIndex &index) const
+{
+    return !bookmarkTreeModel->parent(index).isValid();
+}
+
 bool BookmarkDialog::eventFilter(QObject *object, QEvent *event)
 {
     TRACE_OBJ
@@ -115,9 +120,12 @@ bool BookmarkDialog::eventFilter(QObject *object, QEvent *event)
         QKeyEvent *ke = static_cast<QKeyEvent*>(event);
         switch (ke->key()) {
             case Qt::Key_F2: {
-                bookmarkModel->setItemsEditable(true);
-                ui.treeView->edit(ui.treeView->currentIndex());
-                bookmarkModel->setItemsEditable(false);
+                const QModelIndex &index = ui.treeView->currentIndex();
+                if (!isRootItem(index)) {
+                    bookmarkModel->setItemsEditable(true);
+                    ui.treeView->edit(index);
+                    bookmarkModel->setItemsEditable(false);
+                }
             }   break;
             default: break;
         }
@@ -212,13 +220,17 @@ void BookmarkDialog::textChanged(const QString& text)
 void BookmarkDialog::customContextMenuRequested(const QPoint &point)
 {
     TRACE_OBJ
+    const QModelIndex &index = ui.treeView->currentIndex();
+    if (isRootItem(index))
+        return; // check if we go to rename the "Bookmarks Menu", bail
+
     QMenu menu(QLatin1String(""), this);
     QAction *renameItem = menu.addAction(tr("Rename Folder"));
 
     QAction *picked = menu.exec(ui.treeView->mapToGlobal(point));
     if (picked == renameItem) {
         bookmarkModel->setItemsEditable(true);
-        ui.treeView->edit(ui.treeView->currentIndex());
+        ui.treeView->edit(index);
         bookmarkModel->setItemsEditable(false);
     }
 }

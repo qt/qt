@@ -58,6 +58,7 @@ public:
     ~BookmarkDialog();
 
 private:
+    bool isRootItem(const QModelIndex &index) const;
     bool eventFilter(QObject *object, QEvent *event);
 
 private slots:

@@ -268,31 +268,31 @@ void tst_QmlGraphicsPathView::path()
     QCOMPARE(obj->startY(), 100.);
     QVERIFY(obj->path() != QPainterPath());
 
-    QList<QmlGraphicsPathElement*> *list = obj->pathElements();
-    QCOMPARE(list->count(), 5);
+    QmlListReference list(obj, "pathElements");
+    QCOMPARE(list.count(), 5);
 
-    QmlGraphicsPathAttribute* attr = qobject_cast<QmlGraphicsPathAttribute*>(list->at(0));
+    QmlGraphicsPathAttribute* attr = qobject_cast<QmlGraphicsPathAttribute*>(list.at(0));
     QVERIFY(attr != 0);
     QCOMPARE(attr->name(), QString("scale"));
     QCOMPARE(attr->value(), 1.0);
 
-    QmlGraphicsPathQuad* quad = qobject_cast<QmlGraphicsPathQuad*>(list->at(1));
+    QmlGraphicsPathQuad* quad = qobject_cast<QmlGraphicsPathQuad*>(list.at(1));
     QVERIFY(quad != 0);
     QCOMPARE(quad->x(), 120.);
     QCOMPARE(quad->y(), 25.);
     QCOMPARE(quad->controlX(), 260.);
     QCOMPARE(quad->controlY(), 75.);
 
-    QmlGraphicsPathPercent* perc = qobject_cast<QmlGraphicsPathPercent*>(list->at(2));
+    QmlGraphicsPathPercent* perc = qobject_cast<QmlGraphicsPathPercent*>(list.at(2));
     QVERIFY(perc != 0);
     QCOMPARE(perc->value(), 0.3);
 
-    QmlGraphicsPathLine* line = qobject_cast<QmlGraphicsPathLine*>(list->at(3));
+    QmlGraphicsPathLine* line = qobject_cast<QmlGraphicsPathLine*>(list.at(3));
     QVERIFY(line != 0);
     QCOMPARE(line->x(), 120.);
     QCOMPARE(line->y(), 100.);
 
-    QmlGraphicsPathCubic* cubic = qobject_cast<QmlGraphicsPathCubic*>(list->at(4));
+    QmlGraphicsPathCubic* cubic = qobject_cast<QmlGraphicsPathCubic*>(list.at(4));
     QVERIFY(cubic != 0);
     QCOMPARE(cubic->x(), 180.);
     QCOMPARE(cubic->y(), 0.);

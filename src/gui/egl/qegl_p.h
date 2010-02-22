@@ -86,13 +86,11 @@ public:
     QEgl::API api() const { return apiType; }
     void setApi(QEgl::API api) { apiType = api; }
 
-    bool openDisplay(QPaintDevice *device);
     bool chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
     bool createContext(QEglContext *shareContext = 0, const QEglProperties *properties = 0);
+    void destroyContext();
     EGLSurface createSurface(QPaintDevice *device, const QEglProperties *properties = 0);
     void destroySurface(EGLSurface surface);
-
-    void destroy();
 
     bool makeCurrent(EGLSurface surface);
     bool doneCurrent();
@@ -108,7 +106,7 @@ public:
     static EGLint error() { return eglGetError(); }
     static QString errorString(EGLint code);
 
-    EGLDisplay display() const { return dpy; }
+    static EGLDisplay display();
 
     EGLContext context() const { return ctx; }
     void setContext(EGLContext context) { ctx = context; ownsContext = false;}
@@ -118,8 +116,6 @@ public:
 
     QEglProperties configProperties(EGLConfig cfg = 0) const;
 
-    static EGLDisplay defaultDisplay(QPaintDevice *device);
-
     void dumpAllConfigs();
 
     static QString extensions();
@@ -127,7 +123,6 @@ public:
 
 private:
     QEgl::API apiType;
-    EGLDisplay dpy;
     EGLContext ctx;
     EGLConfig cfg;
     EGLSurface currentSurface;
@@ -135,7 +130,8 @@ private:
     bool ownsContext;
     bool sharing;
 
-    static EGLDisplay getDisplay(QPaintDevice *device);
+    static EGLDisplay dpy;
+    static EGLNativeDisplayType nativeDisplay();
 
     static QEglContext *currentContext(QEgl::API api);
     static void setCurrentContext(QEgl::API api, QEglContext *context);

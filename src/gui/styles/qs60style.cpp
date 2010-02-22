@@ -120,6 +120,8 @@ QPixmap *QS60StylePrivate::m_background = 0;
 // theme palette
 QPalette *QS60StylePrivate::m_themePalette = 0;
 
+qint64 QS60StylePrivate::m_webPaletteKey = 0;
+
 const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameElementsData[] = {
     {SE_ButtonNormal,           QS60StyleEnums::SP_QsnFrButtonTbCenter},
     {SE_ButtonPressed,          QS60StyleEnums::SP_QsnFrButtonTbCenterPressed},
@@ -807,8 +809,12 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QPalette webPalette = *palette;
     webPalette.setColor(QPalette::WindowText, Qt::black);
     webPalette.setColor(QPalette::Text, Qt::black);
+    webPalette.setBrush(QPalette::Base, Qt::white);
+
     QApplication::setPalette(webPalette, "QWebView");
     QApplication::setPalette(webPalette, "QGraphicsWebView");
+
+    m_webPaletteKey = webPalette.cacheKey();
 }
 
 QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlags flags)
@@ -896,8 +902,11 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
     return result;
 }
 
-bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush)
+bool QS60StylePrivate::canDrawThemeBackground(const QBrush &backgroundBrush, const QWidget *widget)
 {
+    // Always return true for web pages.
+    if (widget && m_webPaletteKey == QApplication::palette(widget).cacheKey())
+        return true;
     //If brush is not changed from style's default values, draw theme graphics.
     return (backgroundBrush.color() == Qt::transparent ||
             backgroundBrush.style() == Qt::NoBrush) ? true : false;
@@ -1901,7 +1910,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ShapedFrame:
         if (const QTextEdit *textEdit = qobject_cast<const QTextEdit *>(widget)) {
             const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option);
-            if (QS60StylePrivate::canDrawThemeBackground(frame->palette.base()))
+            if (QS60StylePrivate::canDrawThemeBackground(frame->palette.base(), widget))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
             else
                 QCommonStyle::drawControl(element, option, painter, widget);
@@ -2013,7 +2022,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (widget && qobject_cast<const QComboBox *>(widget->parentWidget()))
                 break;
 #endif
-            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base()))
+            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_FrameLineEdit, painter, option->rect, flags);
             else
                 commonStyleDraws = true;
@@ -2093,7 +2102,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelButtonTool:
     case PE_PanelButtonBevel:
     case PE_FrameButtonBevel:
-        if (QS60StylePrivate::canDrawThemeBackground(option->palette.base())) {
+        if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget)) {
             const bool isPressed = option->state & State_Sunken;
             const QS60StylePrivate::SkinElements skinElement =
                 isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
@@ -2125,7 +2134,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorSpinDown:
     case PE_IndicatorSpinUp:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            if (QS60StylePrivate::canDrawThemeBackground(spinBox->palette.base())) {
+            if (QS60StylePrivate::canDrawThemeBackground(spinBox->palette.base(), widget)) {
                 QStyleOptionSpinBox optionSpinBox = *spinBox;
                 const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
                     QS60StyleEnums::SP_QgnGrafScrollArrowUp :
@@ -2140,7 +2149,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_SPINBOX
 #ifndef QT_NO_COMBOBOX
         if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            if (QS60StylePrivate::canDrawThemeBackground( option->palette.base())) {
+            if (QS60StylePrivate::canDrawThemeBackground( option->palette.base(), widget)) {
                 // We want to draw down arrow here for comboboxes as well.
                 QStyleOptionFrame optionsComboBox = *cmb;
                 const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
@@ -2179,7 +2188,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_MENU
             ) {
             //Need extra check since dialogs have their own theme background
-            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base()) &&
+            if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
                 option->palette.window().texture().cacheKey() ==
                     QS60StylePrivate::m_themePalette->window().texture().cacheKey())
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_OptionsMenu, painter, option->rect, flags);
@@ -2387,10 +2396,20 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         case CT_PushButton:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             //FIXME properly - style should calculate the location of border frame-part
-            sz += QSize(2 * pixelMetric(PM_ButtonMargin), 2 * pixelMetric(PM_ButtonMargin));
-            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))
+            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))  {
                 if (buttonWidget->isCheckable())
                     sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
+                const int iconHeight = (!buttonWidget->icon().isNull()) ? buttonWidget->iconSize().height() : 0;
+                const int textHeight = (buttonWidget->text().length() > 0) ?
+                    buttonWidget->fontMetrics().size(Qt::TextSingleLine, buttonWidget->text()).height() : 0;
+                const int decoratorHeight = (buttonWidget->isCheckable()) ? pixelMetric(PM_IndicatorHeight) : 0;
+
+                const int contentHeight =
+                        qMax(qMax(iconHeight, decoratorHeight) + pixelMetric(PM_ButtonMargin),
+                             textHeight + 2*pixelMetric(PM_ButtonMargin));
+                sz.setHeight(contentHeight);
+                sz += QSize(2 * pixelMetric(PM_ButtonMargin), 0);
+            }
             break;
         case CT_LineEdit:
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))

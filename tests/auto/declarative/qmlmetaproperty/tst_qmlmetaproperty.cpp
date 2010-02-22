@@ -73,13 +73,11 @@ private:
 class MyContainer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<MyQmlObject*>* children READ children)
-    Q_PROPERTY(QmlList<MyQmlObject*>* qmlChildren READ qmlChildren)
+    Q_PROPERTY(QmlListProperty<MyQmlObject> children READ children)
 public:
     MyContainer() {}
 
-    QList<MyQmlObject*> *children() { return &m_children; }
-    QmlConcreteList<MyQmlObject *> *qmlChildren() { return &m_qmlChildren; }
+    QmlListProperty<MyQmlObject> children() { return QmlListProperty<MyQmlObject>(this, m_children); }
 
     static MyAttached *qmlAttachedProperties(QObject *o) {
         return new MyAttached(o);
@@ -87,7 +85,6 @@ public:
 
 private:
     QList<MyQmlObject*> m_children;
-    QmlConcreteList<MyQmlObject *> m_qmlChildren;
 };
 
 QML_DECLARE_TYPE(MyContainer);
@@ -118,7 +115,6 @@ private slots:
     // Functionality
     void writeObjectToList();
     void writeListToList();
-    void writeObjectToQmlList();
 
     //writeToReadOnly();
 
@@ -1078,13 +1074,14 @@ void tst_qmlmetaproperty::writeObjectToList()
     containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
     MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
     QVERIFY(container != 0);
-    QVERIFY(container->children()->size() == 1);
+    QmlListReference list(container, "children");
+    QVERIFY(list.count() == 1);
 
     MyQmlObject *object = new MyQmlObject;
     QmlMetaProperty prop(container, "children");
     prop.write(qVariantFromValue(object));
-    QCOMPARE(container->children()->size(), 2);
-    QCOMPARE(container->children()->at(1), object);
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(list.at(0), object);
 }
 
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -1094,34 +1091,20 @@ void tst_qmlmetaproperty::writeListToList()
     containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
     MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
     QVERIFY(container != 0);
-    QVERIFY(container->children()->size() == 1);
+    QmlListReference list(container, "children");
+    QVERIFY(list.count() == 1);
 
     QList<QObject*> objList;
     objList << new MyQmlObject() << new MyQmlObject() << new MyQmlObject() << new MyQmlObject();
     QmlMetaProperty prop(container, "children");
     prop.write(qVariantFromValue(objList));
-    QCOMPARE(container->children()->size(), 4);
+    QCOMPARE(list.count(), 4);
 
     //XXX need to try this with read/write prop (for read-only it correctly doesn't write)
     /*QList<MyQmlObject*> typedObjList;
     typedObjList << new MyQmlObject();
     prop.write(qVariantFromValue(&typedObjList));
     QCOMPARE(container->children()->size(), 1);*/
-}
-
-void tst_qmlmetaproperty::writeObjectToQmlList()
-{
-    QmlComponent containerComponent(&engine);
-    containerComponent.setData("import Test 1.0\nMyContainer { qmlChildren: MyQmlObject {} }", QUrl());
-    MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
-    QVERIFY(container != 0);
-    QVERIFY(container->qmlChildren()->size() == 1);
-
-    MyQmlObject *object = new MyQmlObject;
-    QmlMetaProperty prop(container, "qmlChildren");
-    prop.write(qVariantFromValue(object));
-    QCOMPARE(container->qmlChildren()->size(), 2);
-    QCOMPARE(container->qmlChildren()->at(1), object);
 }
 
 void tst_qmlmetaproperty::crashOnValueProperty()

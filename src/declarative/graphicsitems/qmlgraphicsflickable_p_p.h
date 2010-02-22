@@ -149,15 +149,7 @@ public:
     void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
 
     // flickableData property
-    void data_removeAt(int);
-    int data_count() const;
-    void data_append(QObject *);
-    void data_insert(int, QObject *);
-    QObject *data_at(int) const;
-    void data_clear();
-
-    friend class QmlGraphicsFlickableVisibleArea;
-    QML_DECLARE_LIST_PROXY(QmlGraphicsFlickablePrivate, QObject *, data)
+    static void data_append(QmlListProperty<QObject> *, QObject *);
 };
 
 class QmlGraphicsFlickableVisibleArea : public QObject

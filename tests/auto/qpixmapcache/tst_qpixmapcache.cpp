@@ -483,7 +483,9 @@ void tst_QPixmapCache::pixmapKey()
     QVERIFY(!getPrivate(key8));
 }
 
+QT_BEGIN_NAMESPACE
 extern int q_QPixmapCache_keyHashSize();
+QT_END_NAMESPACE
 
 void tst_QPixmapCache::noLeak()
 {

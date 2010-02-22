@@ -1,5 +1,5 @@
 /*
-  Configuration defines by Trolltech.
+  Configuration defines for Qt.
   This file maintained for backward compatibility. Do not use definitions
   from this file in your programs.
 */

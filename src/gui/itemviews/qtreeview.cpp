@@ -2474,10 +2474,11 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
 
         QVector<QTreeViewItem> insertedItems(delta);
         for (int i = 0; i < delta; ++i) {
-            insertedItems[i].index = d->model->index(i + start, 0, parent);
-            insertedItems[i].level = childLevel;
-            insertedItems[i].hasChildren = d->hasVisibleChildren(insertedItems[i].index);
-            insertedItems[i].hasMoreSiblings = !((i == delta - 1) && (parentRowCount == end +1));
+            QTreeViewItem &item = insertedItems[i];
+            item.index = d->model->index(i + start, 0, parent);
+            item.level = childLevel;
+            item.hasChildren = d->hasVisibleChildren(item.index);
+            item.hasMoreSiblings = !((i == delta - 1) && (parentRowCount == end +1));
         }
         if (d->viewItems.isEmpty())
             d->defaultItemHeight = indexRowSizeHint(insertedItems[0].index);

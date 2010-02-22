@@ -47,7 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
 namespace fulltextsearch {
 namespace clucene {
     extern const QString AttributeField;
@@ -58,7 +57,6 @@ namespace clucene {
     extern const QString TitleTokenizedField;
 } // namespace clucene
 } // namespace fulltextsearch
-} // namespace qt
 
 QT_END_NAMESPACE
 
