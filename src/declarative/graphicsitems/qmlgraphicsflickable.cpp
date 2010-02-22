@@ -132,8 +132,6 @@ QmlGraphicsFlickablePrivate::QmlGraphicsFlickablePrivate()
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
     , flickDirection(QmlGraphicsFlickable::AutoFlickDirection)
 {
-    fixupXEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupX>(&_moveX, this);
-    fixupYEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupY>(&_moveY, this);
 }
 
 void QmlGraphicsFlickablePrivate::init()
@@ -176,7 +174,7 @@ void QmlGraphicsFlickablePrivate::flickX(qreal velocity)
         }
         timeline.reset(_moveX);
         timeline.accel(_moveX, v, deceleration, maxDistance);
-        timeline.execute(fixupXEvent);
+        timeline.callback(QmlTimeLineCallback(&_moveX, fixupX_callback, this));
         if (!flicked) {
             flicked = true;
             emit q->flickingChanged();
@@ -214,7 +212,7 @@ void QmlGraphicsFlickablePrivate::flickY(qreal velocity)
         }
         timeline.reset(_moveY);
         timeline.accel(_moveY, v, deceleration, maxDistance);
-        timeline.execute(fixupYEvent);
+        timeline.callback(QmlTimeLineCallback(&_moveY, fixupY_callback, this));
         if (!flicked) {
             flicked = true;
             emit q->flickingChanged();
@@ -253,6 +251,16 @@ void QmlGraphicsFlickablePrivate::fixupX()
     }
 
     vTime = timeline.time();
+}
+
+void QmlGraphicsFlickablePrivate::fixupY_callback(void *data)
+{
+    ((QmlGraphicsFlickablePrivate *)data)->fixupY();
+}
+
+void QmlGraphicsFlickablePrivate::fixupX_callback(void *data)
+{
+    ((QmlGraphicsFlickablePrivate *)data)->fixupX();
 }
 
 void QmlGraphicsFlickablePrivate::fixupY()
