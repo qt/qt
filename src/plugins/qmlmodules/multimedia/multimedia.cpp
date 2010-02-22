@@ -41,9 +41,7 @@
 
 #include <QtDeclarative/qmlmoduleplugin.h>
 #include <QtDeclarative/qml.h>
-#include <QtMultimedia/private/qsoundeffect_p.h>
-#include <QtMultimedia/private/qmlaudio_p.h>
-#include <QtMultimedia/private/qmlgraphicsvideo_p.h>
+#include <QtMultimedia/qml.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,9 +59,7 @@ public:
         Q_UNUSED(uri)
         Q_ASSERT(uri == QLatin1String("Qt.multimedia"));
 
-        qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
-        qmlRegisterType<QmlAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
-        qmlRegisterType<QmlGraphicsVideo>("Qt.multimedia", 4, 7, "Video", "Video");
+        QtMultimedia::qRegisterQmlElements();
     }
 };
 
