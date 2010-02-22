@@ -1549,7 +1549,7 @@ void tst_Gestures::graphicsViewParentPropagation()
 
     QCOMPARE(item1_c1_c1->gestureEventsReceived, TotalGestureEventsCount);
     QCOMPARE(item1_c1_c1->gestureOverrideEventsReceived, 1);
-    QCOMPARE(item1_c1->gestureEventsReceived, 0);
+    QCOMPARE(item1_c1->gestureEventsReceived, TotalGestureEventsCount-1);
     QCOMPARE(item1_c1->gestureOverrideEventsReceived, 1);
     QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount-1);
     QCOMPARE(item1->gestureOverrideEventsReceived, 1);
