@@ -109,6 +109,8 @@ QNativeWifiEngine::~QNativeWifiEngine()
 
 void QNativeWifiEngine::scanComplete()
 {
+    QMutexLocker locker(&mutex);
+
     QStringList previous = accessPointConfigurations.keys();
 
     // enumerate interfaces
@@ -227,6 +229,8 @@ void QNativeWifiEngine::scanComplete()
 
 QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
@@ -276,6 +280,8 @@ QString QNativeWifiEngine::getInterfaceFromId(const QString &id)
 
 bool QNativeWifiEngine::hasIdentifier(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
@@ -330,6 +336,8 @@ bool QNativeWifiEngine::hasIdentifier(const QString &id)
 
 void QNativeWifiEngine::connectToId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
     if (result != ERROR_SUCCESS) {
@@ -393,6 +401,8 @@ void QNativeWifiEngine::connectToId(const QString &id)
 
 void QNativeWifiEngine::disconnectFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QString interface = getInterfaceFromId(id);
 
     if (interface.isEmpty()) {
@@ -421,6 +431,8 @@ void QNativeWifiEngine::disconnectFromId(const QString &id)
 
 void QNativeWifiEngine::requestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     // enumerate interfaces
     WLAN_INTERFACE_INFO_LIST *interfaceList;
     DWORD result = local_WlanEnumInterfaces(handle, 0, &interfaceList);
@@ -440,6 +452,8 @@ void QNativeWifiEngine::requestUpdate()
 
 QNetworkSession::State QNativeWifiEngine::sessionStateForId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
     if (!ptr)

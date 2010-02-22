@@ -100,6 +100,8 @@ QIcdEngine::~QIcdEngine()
 
 bool QIcdEngine::hasIdentifier(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return accessPointConfigurations.contains(id) ||
            snapConfigurations.contains(id) ||
            userChoiceConfigurations.contains(id);
@@ -107,6 +109,8 @@ bool QIcdEngine::hasIdentifier(const QString &id)
 
 void QIcdEngine::requestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
 }
 
@@ -156,6 +160,8 @@ static uint32_t getNetworkAttrs(bool is_iap_id,
 
 void QIcdEngine::doRequestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     QStringList previous = accessPointConfigurations.keys();
 
     /* All the scanned access points */
@@ -371,6 +377,8 @@ void QIcdEngine::doRequestUpdate()
 
 void QIcdEngine::deleteConfiguration(const QString &iap_id)
 {
+    QMutexLocker locker(&mutex);
+
     /* Called when IAPs are deleted in gconf, in this case we do not scan
      * or read all the IAPs from gconf because it might take too much power
      * (multiple applications would need to scan and read all IAPs from gconf)
@@ -409,6 +417,8 @@ QNetworkSessionPrivate *QIcdEngine::createSessionBackend()
 
 QNetworkConfigurationPrivatePointer QIcdEngine::defaultConfiguration()
 {
+    QMutexLocker locker(&mutex);
+
     // Here we just return [ANY] request to icd and let the icd decide which IAP to connect.
     return userChoiceConfigurations.value(OSSO_IAP_ANY);
 }

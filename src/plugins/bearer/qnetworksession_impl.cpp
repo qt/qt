@@ -57,7 +57,7 @@ static QBearerEngineImpl *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
-    foreach (QBearerEngine *engine, priv->sessionEngines) {
+    foreach (QBearerEngine *engine, priv->engines()) {
         QBearerEngineImpl *engineImpl = qobject_cast<QBearerEngineImpl *>(engine);
         if (engineImpl && engineImpl->hasIdentifier(id))
             return engineImpl;

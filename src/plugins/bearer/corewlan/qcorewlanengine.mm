@@ -121,16 +121,22 @@ QCoreWlanEngine::~QCoreWlanEngine()
 
 QString QCoreWlanEngine::getInterfaceFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return configurationInterface.value(id);
 }
 
 bool QCoreWlanEngine::hasIdentifier(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return configurationInterface.contains(id);
 }
 
 void QCoreWlanEngine::connectToId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
     QString interfaceString = getInterfaceFromId(id);
 
@@ -205,6 +211,8 @@ void QCoreWlanEngine::connectToId(const QString &id)
 
 void QCoreWlanEngine::disconnectFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QString interfaceString = getInterfaceFromId(id);
     if(networkInterfaces.value(getInterfaceFromId(id)) == "WLAN") { //wifi only for now
 #if defined(MAC_SDK_10_6)
@@ -225,12 +233,16 @@ void QCoreWlanEngine::disconnectFromId(const QString &id)
 
 void QCoreWlanEngine::requestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     pollTimer.stop();
     QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
 }
 
 void QCoreWlanEngine::doRequestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     getAllScInterfaces();
 
     QStringList previous = accessPointConfigurations.keys();
@@ -330,6 +342,8 @@ void QCoreWlanEngine::doRequestUpdate()
 
 QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
 {
+    QMutexLocker locker(&mutex);
+
     QStringList found;
 
 #if defined(MAC_SDK_10_6)
@@ -422,6 +436,8 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
 
 bool QCoreWlanEngine::isWifiReady(const QString &wifiDeviceName)
 {
+    QMutexLocker locker(&mutex);
+
 #if defined(MAC_SDK_10_6)
     CWInterface *defaultInterface = [CWInterface interfaceWithName: qstringToNSString(wifiDeviceName)];
     if([defaultInterface power])
@@ -434,6 +450,8 @@ bool QCoreWlanEngine::isWifiReady(const QString &wifiDeviceName)
 
 bool QCoreWlanEngine::isKnownSsid(const QString &interfaceName, const QString &ssid)
 {
+    QMutexLocker locker(&mutex);
+
 #if defined(MAC_SDK_10_6)
     CWInterface *wifiInterface = [CWInterface interfaceWithName: qstringToNSString(interfaceName)];
     CWConfiguration *userConfig = [wifiInterface configuration];
@@ -451,6 +469,8 @@ bool QCoreWlanEngine::isKnownSsid(const QString &interfaceName, const QString &s
 
 bool QCoreWlanEngine::getAllScInterfaces()
 {
+    QMutexLocker locker(&mutex);
+
     networkInterfaces.clear();
     NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
 
@@ -491,6 +511,8 @@ bool QCoreWlanEngine::getAllScInterfaces()
 
 QNetworkSession::State QCoreWlanEngine::sessionStateForId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
     if (!ptr)

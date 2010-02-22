@@ -154,11 +154,15 @@ QGenericEngine::~QGenericEngine()
 
 QString QGenericEngine::getInterfaceFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return configurationInterface.value(id);
 }
 
 bool QGenericEngine::hasIdentifier(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return configurationInterface.contains(id);
 }
 
@@ -174,12 +178,16 @@ void QGenericEngine::disconnectFromId(const QString &id)
 
 void QGenericEngine::requestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     pollTimer.stop();
     QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
 }
 
 void QGenericEngine::doRequestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     // Immediately after connecting with a wireless access point
     // QNetworkInterface::allInterfaces() will sometimes return an empty list. Calling it again a
     // second time results in a non-empty list. If we loose interfaces we will end up removing
@@ -282,6 +290,8 @@ void QGenericEngine::doRequestUpdate()
 
 QNetworkSession::State QGenericEngine::sessionStateForId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
     if (!ptr)

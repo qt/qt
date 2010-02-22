@@ -63,6 +63,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qsharedpointer.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,6 +72,8 @@ class QNetworkConfiguration;
 class Q_NETWORK_EXPORT QBearerEngine : public QObject
 {
     Q_OBJECT
+
+    friend class QNetworkConfigurationManager;
 
 public:
     QBearerEngine(QObject *parent = 0);
@@ -86,7 +89,14 @@ public:
 
     virtual QNetworkConfigurationPrivatePointer defaultConfiguration() = 0;
 
-public:
+Q_SIGNALS:
+    void configurationAdded(QNetworkConfigurationPrivatePointer config);
+    void configurationRemoved(QNetworkConfigurationPrivatePointer config);
+    void configurationChanged(QNetworkConfigurationPrivatePointer config);
+
+    void updateCompleted();
+
+protected:
     //this table contains an up to date list of all configs at any time.
     //it must be updated if configurations change, are added/removed or
     //the members of ServiceNetworks change
@@ -94,12 +104,7 @@ public:
     QHash<QString, QNetworkConfigurationPrivatePointer> snapConfigurations;
     QHash<QString, QNetworkConfigurationPrivatePointer> userChoiceConfigurations;
 
-Q_SIGNALS:
-    void configurationAdded(QNetworkConfigurationPrivatePointer config);
-    void configurationRemoved(QNetworkConfigurationPrivatePointer config);
-    void configurationChanged(QNetworkConfigurationPrivatePointer config);
-
-    void updateCompleted();
+    mutable QMutex mutex;
 };
 
 QT_END_NAMESPACE

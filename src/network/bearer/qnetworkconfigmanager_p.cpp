@@ -47,19 +47,34 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/private/qcoreapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QBearerEngineFactoryInterface_iid, QLatin1String("/bearer")))
 
+QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
+:   capFlags(0), firstUpdate(true), mutex(QMutex::Recursive)
+{
+    updateConfigurations();
+
+    moveToThread(QCoreApplicationPrivate::mainThread());
+    foreach (QBearerEngine *engine, sessionEngines)
+        engine->moveToThread(QCoreApplicationPrivate::mainThread());
+}
+
 QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
 {
+    QMutexLocker locker(&mutex);
+
     qDeleteAll(sessionEngines);
 }
 
 void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurationPrivatePointer ptr)
 {
+    QMutexLocker locker(&mutex);
+
     if (!firstUpdate) {
         QNetworkConfiguration item;
         item.d = ptr;
@@ -75,6 +90,8 @@ void QNetworkConfigurationManagerPrivate::configurationAdded(QNetworkConfigurati
 
 void QNetworkConfigurationManagerPrivate::configurationRemoved(QNetworkConfigurationPrivatePointer ptr)
 {
+    QMutexLocker locker(&mutex);
+
     ptr->isValid = false;
 
     if (!firstUpdate) {
@@ -90,6 +107,8 @@ void QNetworkConfigurationManagerPrivate::configurationRemoved(QNetworkConfigura
 
 void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigurationPrivatePointer ptr)
 {
+    QMutexLocker locker(&mutex);
+
     if (!firstUpdate) {
         QNetworkConfiguration item;
         item.d = ptr;
@@ -111,6 +130,8 @@ void QNetworkConfigurationManagerPrivate::configurationChanged(QNetworkConfigura
 
 void QNetworkConfigurationManagerPrivate::updateConfigurations()
 {
+    QMutexLocker locker(&mutex);
+
     if (firstUpdate) {
         updating = false;
 
@@ -163,87 +184,10 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
         firstUpdate = false;
 }
 
-/*!
-    Returns the default configuration of the first plugin, if one exists; otherwise returns an
-    invalid configuration.
-
-    \internal
-*/
-QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration()
-{
-    foreach (QBearerEngine *engine, sessionEngines) {
-        QNetworkConfigurationPrivatePointer ptr = engine->defaultConfiguration();
-
-        if (ptr) {
-            QNetworkConfiguration config;
-            config.d = ptr;
-            return config;
-        }
-    }
-
-    // Engines don't have a default configuration.
-
-    // Return first active snap
-    QNetworkConfigurationPrivatePointer firstDiscovered;
-
-    foreach (QBearerEngine *engine, sessionEngines) {
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
-
-        for (it = engine->snapConfigurations.begin(), end = engine->snapConfigurations.end();
-             it != end; ++it) {
-            if ((it.value()->state & QNetworkConfiguration::Active) ==
-                QNetworkConfiguration::Active) {
-                QNetworkConfiguration config;
-                config.d = it.value();
-                return config;
-            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
-                       QNetworkConfiguration::Discovered) {
-                firstDiscovered = it.value();
-            }
-        }
-    }
-
-    // No Active SNAPs return first Discovered SNAP.
-    if (firstDiscovered) {
-        QNetworkConfiguration config;
-        config.d = firstDiscovered;
-        return config;
-    }
-
-    // No Active or Discovered SNAPs, do same for InternetAccessPoints.
-    firstDiscovered.reset();
-
-    foreach (QBearerEngine *engine, sessionEngines) {
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
-        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
-
-        for (it = engine->accessPointConfigurations.begin(),
-             end = engine->accessPointConfigurations.end(); it != end; ++it) {
-            if ((it.value()->state & QNetworkConfiguration::Active) ==
-                QNetworkConfiguration::Active) {
-                QNetworkConfiguration config;
-                config.d = it.value();
-                return config;
-            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
-                       QNetworkConfiguration::Discovered) {
-                firstDiscovered = it.value();
-            }
-        }
-    }
-
-    // No Active InternetAccessPoint return first Discovered InternetAccessPoint.
-    if (firstDiscovered) {
-        QNetworkConfiguration config;
-        config.d = firstDiscovered;
-        return config;
-    }
-
-    return QNetworkConfiguration();
-}
-
 void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     if (sessionEngines.isEmpty()) {
         emit configurationUpdateComplete();
         return;
@@ -255,6 +199,13 @@ void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
         updatingEngines.insert(i);
         sessionEngines.at(i)->requestUpdate();
     }
+}
+
+QList<QBearerEngine *> QNetworkConfigurationManagerPrivate::engines()
+{
+    QMutexLocker locker(&mutex);
+
+    return sessionEngines;
 }
 
 QT_END_NAMESPACE

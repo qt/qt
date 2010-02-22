@@ -44,7 +44,7 @@
 QT_BEGIN_NAMESPACE
 
 QBearerEngine::QBearerEngine(QObject *parent)
-:   QObject(parent)
+:   QObject(parent), mutex(QMutex::Recursive)
 {
 }
 

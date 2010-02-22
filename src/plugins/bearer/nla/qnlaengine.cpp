@@ -521,6 +521,8 @@ QNlaEngine::~QNlaEngine()
 
 void QNlaEngine::networksChanged()
 {
+    QMutexLocker locker(&mutex);
+
     QStringList previous = accessPointConfigurations.keys();
 
     QList<QNetworkConfigurationPrivate *> foundConfigurations = nlaThread->getConfigurations();
@@ -574,11 +576,15 @@ void QNlaEngine::networksChanged()
 
 QString QNlaEngine::getInterfaceFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return configurationInterface.value(id.toUInt());
 }
 
 bool QNlaEngine::hasIdentifier(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return configurationInterface.contains(id.toUInt());
 }
 
@@ -604,11 +610,15 @@ void QNlaEngine::disconnectFromId(const QString &id)
 
 void QNlaEngine::requestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     nlaThread->forceUpdate();
 }
 
 QNetworkSession::State QNlaEngine::sessionStateForId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
     if (!ptr)

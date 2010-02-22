@@ -120,6 +120,8 @@ QNetworkManagerEngine::~QNetworkManagerEngine()
 
 bool QNetworkManagerEngine::networkManagerAvailable() const
 {
+    QMutexLocker locker(&mutex);
+
     return interface->isValid();
 }
 
@@ -130,6 +132,8 @@ void QNetworkManagerEngine::doRequestUpdate()
 
 QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
         QNetworkManagerConnectionActive activeConnection(acPath.path());
 
@@ -152,6 +156,8 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
 
 bool QNetworkManagerEngine::hasIdentifier(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     if (connectionFromId(id))
         return true;
 
@@ -170,6 +176,8 @@ bool QNetworkManagerEngine::hasIdentifier(const QString &id)
 
 QString QNetworkManagerEngine::bearerName(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkManagerSettingsConnection *connection = connectionFromId(id);
 
     if (!connection)
@@ -192,6 +200,8 @@ QString QNetworkManagerEngine::bearerName(const QString &id)
 
 void QNetworkManagerEngine::connectToId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkManagerSettingsConnection *connection = connectionFromId(id);
 
     if (!connection)
@@ -223,6 +233,8 @@ void QNetworkManagerEngine::connectToId(const QString &id)
 
 void QNetworkManagerEngine::disconnectFromId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     foreach (const QDBusObjectPath &acPath, interface->activeConnections()) {
         QNetworkManagerConnectionActive activeConnection(acPath.path());
 
@@ -238,12 +250,16 @@ void QNetworkManagerEngine::disconnectFromId(const QString &id)
 
 void QNetworkManagerEngine::requestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
 }
 
 void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
                                                        const QMap<QString, QVariant> &properties)
 {
+    QMutexLocker locker(&mutex);
+
     Q_UNUSED(path)
 
     QMapIterator<QString, QVariant> i(properties);
@@ -310,6 +326,8 @@ void QNetworkManagerEngine::interfacePropertiesChanged(const QString &path,
 void QNetworkManagerEngine::activeConnectionPropertiesChanged(const QString &path,
                                                               const QMap<QString, QVariant> &properties)
 {
+    QMutexLocker locker(&mutex);
+
     Q_UNUSED(properties)
 
     QNetworkManagerConnectionActive *activeConnection = activeConnections.value(path);
@@ -333,10 +351,14 @@ void QNetworkManagerEngine::activeConnectionPropertiesChanged(const QString &pat
 void QNetworkManagerEngine::devicePropertiesChanged(const QString &path,
                                                     const QMap<QString, QVariant> &properties)
 {
+    Q_UNUSED(path);
+    Q_UNUSED(properties);
 }
 
 void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkManagerInterfaceDevice device(path.path());
     if (device.deviceType() == DEVICE_TYPE_802_11_WIRELESS) {
         QNetworkManagerInterfaceDeviceWireless *wirelessDevice =
@@ -358,12 +380,16 @@ void QNetworkManagerEngine::deviceAdded(const QDBusObjectPath &path)
 
 void QNetworkManagerEngine::deviceRemoved(const QDBusObjectPath &path)
 {
+    QMutexLocker locker(&mutex);
+
     delete wirelessDevices.value(path.path());
 }
 
 void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
                                           QNetworkManagerSettings *settings)
 {
+    QMutexLocker locker(&mutex);
+
     if (!settings)
         settings = qobject_cast<QNetworkManagerSettings *>(sender());
 
@@ -404,6 +430,8 @@ void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
 
 void QNetworkManagerEngine::removeConnection(const QString &path)
 {
+    QMutexLocker locker(&mutex);
+
     Q_UNUSED(path)
 
     QNetworkManagerSettingsConnection *connection =
@@ -423,6 +451,8 @@ void QNetworkManagerEngine::removeConnection(const QString &path)
 
 void QNetworkManagerEngine::updateConnection(const QNmSettingsMap &settings)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkManagerSettingsConnection *connection =
         qobject_cast<QNetworkManagerSettingsConnection *>(sender());
     if (!connection)
@@ -458,6 +488,8 @@ void QNetworkManagerEngine::updateConnection(const QNmSettingsMap &settings)
 
 void QNetworkManagerEngine::activationFinished(QDBusPendingCallWatcher *watcher)
 {
+    QMutexLocker locker(&mutex);
+
     QDBusPendingReply<QDBusObjectPath> reply = *watcher;
     if (!reply.isError()) {
         QDBusObjectPath result = reply.value();
@@ -480,6 +512,8 @@ void QNetworkManagerEngine::activationFinished(QDBusPendingCallWatcher *watcher)
 
 void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjectPath &objectPath)
 {
+    QMutexLocker locker(&mutex);
+
     Q_UNUSED(path)
 
     QNetworkManagerInterfaceAccessPoint *accessPoint =
@@ -535,6 +569,8 @@ void QNetworkManagerEngine::newAccessPoint(const QString &path, const QDBusObjec
 void QNetworkManagerEngine::removeAccessPoint(const QString &path,
                                               const QDBusObjectPath &objectPath)
 {
+    QMutexLocker locker(&mutex);
+
     Q_UNUSED(path)
 
     for (int i = 0; i < accessPoints.count(); ++i) {
@@ -579,6 +615,8 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
 
 void QNetworkManagerEngine::updateAccessPoint(const QMap<QString, QVariant> &map)
 {
+    QMutexLocker locker(&mutex);
+
     Q_UNUSED(map)
 
     QNetworkManagerInterfaceAccessPoint *accessPoint =
@@ -607,6 +645,8 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                                                                      const QString &settingsPath,
                                                                      const QNmSettingsMap &map)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivate *cpPriv = new QNetworkConfigurationPrivate;
     cpPriv->name = map.value("connection").value("id").toString();
     cpPriv->isValid = true;
@@ -664,6 +704,8 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
 
 QNetworkManagerSettingsConnection *QNetworkManagerEngine::connectionFromId(const QString &id) const
 {
+    QMutexLocker locker(&mutex);
+
     for (int i = 0; i < connections.count(); ++i) {
         QNetworkManagerSettingsConnection *connection = connections.at(i);
         const QString service = connection->connectionInterface()->service();
@@ -680,6 +722,8 @@ QNetworkManagerSettingsConnection *QNetworkManagerEngine::connectionFromId(const
 
 QNetworkSession::State QNetworkManagerEngine::sessionStateForId(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
     if (!ptr)
@@ -718,6 +762,8 @@ QNetworkSession::State QNetworkManagerEngine::sessionStateForId(const QString &i
 
 quint64 QNetworkManagerEngine::bytesWritten(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
     if (ptr && (ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
         const QString networkInterface = getInterfaceFromId(id);
@@ -744,6 +790,8 @@ quint64 QNetworkManagerEngine::bytesWritten(const QString &id)
 
 quint64 QNetworkManagerEngine::bytesReceived(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
     if (ptr && (ptr->state & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
         const QString networkInterface = getInterfaceFromId(id);
@@ -770,6 +818,8 @@ quint64 QNetworkManagerEngine::bytesReceived(const QString &id)
 
 quint64 QNetworkManagerEngine::startTime(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkManagerSettingsConnection *connection = connectionFromId(id);
     if (connection)
         return connection->getTimestamp();

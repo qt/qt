@@ -56,20 +56,17 @@
 #include "qnetworkconfigmanager.h"
 #include "qnetworkconfiguration_p.h"
 
+#include <QtCore/qmutex.h>
+
 QT_BEGIN_NAMESPACE
 
 class QBearerEngine;
 
-class QNetworkConfigurationManagerPrivate : public QObject
+class Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate : public QObject
 {
     Q_OBJECT
 public:
-    QNetworkConfigurationManagerPrivate()
-    :   QObject(0), capFlags(0), firstUpdate(true)
-    {
-        updateConfigurations();
-    }
-
+    QNetworkConfigurationManagerPrivate();
     virtual ~QNetworkConfigurationManagerPrivate();
 
     QNetworkConfiguration defaultConfiguration();
@@ -78,7 +75,7 @@ public:
 
     void performAsyncConfigurationUpdate();
 
-    bool firstUpdate;
+    QList<QBearerEngine *> engines();
 
 public slots:
     void updateConfigurations();
@@ -92,14 +89,17 @@ Q_SIGNALS:
 
     void abort();
 
-public:
+private:
+    QMutex mutex;
+
     QList<QBearerEngine *> sessionEngines;
 
-private:
     QSet<QNetworkConfigurationPrivatePointer> onlineConfigurations;
 
-    bool updating;
     QSet<int> updatingEngines;
+    bool updating;
+
+    bool firstUpdate;
 
 private Q_SLOTS:
     void configurationAdded(QNetworkConfigurationPrivatePointer ptr);

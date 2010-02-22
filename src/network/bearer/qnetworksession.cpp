@@ -225,7 +225,7 @@ QT_BEGIN_NAMESPACE
 QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, QObject* parent)
 :   QObject(parent), d(0)
 {
-    foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->sessionEngines) {
+    foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->engines()) {
         if (engine->hasIdentifier(connectionConfig.identifier())) {
             d = engine->createSessionBackend();
             d->q = this;

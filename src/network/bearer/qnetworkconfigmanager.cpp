@@ -206,7 +206,81 @@ QNetworkConfigurationManager::~QNetworkConfigurationManager()
 */
 QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
 {
-    return connManager()->defaultConfiguration();
+    QNetworkConfigurationManagerPrivate *conPriv = connManager();
+
+    foreach (QBearerEngine *engine, conPriv->engines()) {
+        QNetworkConfigurationPrivatePointer ptr = engine->defaultConfiguration();
+
+        if (ptr) {
+            QNetworkConfiguration config;
+            config.d = ptr;
+            return config;
+        }
+    }
+
+    // Engines don't have a default configuration.
+
+    // Return first active snap
+    QNetworkConfigurationPrivatePointer firstDiscovered;
+
+    foreach (QBearerEngine *engine, conPriv->engines()) {
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
+
+        QMutexLocker locker(&engine->mutex);
+
+        for (it = engine->snapConfigurations.begin(), end = engine->snapConfigurations.end();
+             it != end; ++it) {
+            if ((it.value()->state & QNetworkConfiguration::Active) ==
+                QNetworkConfiguration::Active) {
+                QNetworkConfiguration config;
+                config.d = it.value();
+                return config;
+            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
+                       QNetworkConfiguration::Discovered) {
+                firstDiscovered = it.value();
+            }
+        }
+    }
+
+    // No Active SNAPs return first Discovered SNAP.
+    if (firstDiscovered) {
+        QNetworkConfiguration config;
+        config.d = firstDiscovered;
+        return config;
+    }
+
+    // No Active or Discovered SNAPs, do same for InternetAccessPoints.
+    firstDiscovered.reset();
+
+    foreach (QBearerEngine *engine, conPriv->engines()) {
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
+        QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
+
+        QMutexLocker locker(&engine->mutex);
+
+        for (it = engine->accessPointConfigurations.begin(),
+             end = engine->accessPointConfigurations.end(); it != end; ++it) {
+            if ((it.value()->state & QNetworkConfiguration::Active) ==
+                QNetworkConfiguration::Active) {
+                QNetworkConfiguration config;
+                config.d = it.value();
+                return config;
+            } else if ((it.value()->state & QNetworkConfiguration::Discovered) ==
+                       QNetworkConfiguration::Discovered) {
+                firstDiscovered = it.value();
+            }
+        }
+    }
+
+    // No Active InternetAccessPoint return first Discovered InternetAccessPoint.
+    if (firstDiscovered) {
+        QNetworkConfiguration config;
+        config.d = firstDiscovered;
+        return config;
+    }
+
+    return QNetworkConfiguration();
 }
 
 /*!
@@ -234,9 +308,11 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
     QList<QNetworkConfiguration> result;
     QNetworkConfigurationManagerPrivate* conPriv = connManager();
 
-    foreach (QBearerEngine *engine, conPriv->sessionEngines) {
+    foreach (QBearerEngine *engine, conPriv->engines()) {
         QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator it;
         QHash<QString, QNetworkConfigurationPrivatePointer>::Iterator end;
+
+        QMutexLocker locker(&engine->mutex);
 
         //find all InternetAccessPoints
         for (it = engine->accessPointConfigurations.begin(),
@@ -274,7 +350,9 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 
     QNetworkConfiguration item;
 
-    foreach (QBearerEngine *engine, conPriv->sessionEngines) {
+    foreach (QBearerEngine *engine, conPriv->engines()) {
+        QMutexLocker locker(&engine->mutex);
+
         if (engine->accessPointConfigurations.contains(identifier))
             item.d = engine->accessPointConfigurations.value(identifier);
         else if (engine->snapConfigurations.contains(identifier))

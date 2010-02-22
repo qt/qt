@@ -158,6 +158,8 @@ SymbianEngine::~SymbianEngine()
 
 bool SymbianEngine::hasIdentifier(const QString &id)
 {
+    QMutexLocker locker(&mutex);
+
     return accessPointConfigurations.contains(id) ||
            snapConfigurations.contains(id) ||
            userChoiceConfigurations.contains(id);
@@ -187,6 +189,8 @@ QNetworkSessionPrivate *SymbianEngine::createSessionBackend()
 
 void SymbianEngine::requestUpdate()
 {
+    QMutexLocker locker(&mutex);
+
     if (!iInitOk || iUpdateGoingOn) {
         return;
     }
@@ -199,6 +203,8 @@ void SymbianEngine::requestUpdate()
 
 void SymbianEngine::updateConfigurations()
 {
+    QMutexLocker locker(&mutex);
+
     if (!iInitOk) {
         return;
     }
@@ -208,6 +214,8 @@ void SymbianEngine::updateConfigurations()
 
 void SymbianEngine::updateConfigurationsL()
 {
+    QMutexLocker locker(&mutex);
+
     QList<QString> knownConfigs = accessPointConfigurations.keys();
     QList<QString> knownSnapConfigs = snapConfigurations.keys();
     
@@ -381,6 +389,8 @@ void SymbianEngine::updateConfigurationsL()
 SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
         RCmConnectionMethod& connectionMethod)
 {
+    QMutexLocker locker(&mutex);
+
     SymbianNetworkConfigurationPrivate *cpPriv = new SymbianNetworkConfigurationPrivate;
     CleanupStack::PushL(cpPriv);
     
@@ -463,6 +473,8 @@ SymbianNetworkConfigurationPrivate *SymbianEngine::configFromConnectionMethodL(
 bool SymbianEngine::readNetworkConfigurationValuesFromCommsDb(
         TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration)
 {
+    QMutexLocker locker(&mutex);
+
     TRAPD(error, readNetworkConfigurationValuesFromCommsDbL(aApId,apNetworkConfiguration));
     if (error != KErrNone) {
         return false;        
@@ -473,6 +485,8 @@ bool SymbianEngine::readNetworkConfigurationValuesFromCommsDb(
 void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
         TUint32 aApId, SymbianNetworkConfigurationPrivate *apNetworkConfiguration)
 {
+    QMutexLocker locker(&mutex);
+
     CApDataHandler* pDataHandler = CApDataHandler::NewLC(*ipCommsDB); 
     CApAccessPointItem* pAPItem = CApAccessPointItem::NewLC(); 
     TBuf<KCommsDbSvrMaxColumnNameLength> name;
@@ -533,6 +547,8 @@ void SymbianEngine::readNetworkConfigurationValuesFromCommsDbL(
 
 QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfiguration()
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr;
 
     if (iInitOk) {
@@ -546,6 +562,8 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfiguration()
 
 QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfigurationPrivatePointer ptr;
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
@@ -571,6 +589,8 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
 
 void SymbianEngine::updateActiveAccessPoints()
 {
+    QMutexLocker locker(&mutex);
+
     bool online = false;
     QList<QString> inactiveConfigs = accessPointConfigurations.keys();
 
@@ -620,6 +640,8 @@ void SymbianEngine::updateActiveAccessPoints()
 
 void SymbianEngine::updateAvailableAccessPoints()
 {
+    QMutexLocker locker(&mutex);
+
     if (!ipAccessPointsAvailabilityScanner) {
         ipAccessPointsAvailabilityScanner = new AccessPointsAvailabilityScanner(*this, iConnectionMonitor);
     }
@@ -631,6 +653,8 @@ void SymbianEngine::updateAvailableAccessPoints()
 
 void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapInfo iapInfo)
 {
+    QMutexLocker locker(&mutex);
+
     iUpdateGoingOn = false;
     if (scanSuccessful) {
         QList<QString> unavailableConfigs = accessPointConfigurations.keys();
@@ -668,6 +692,8 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
 
 void SymbianEngine::updateStatesToSnaps()
 {
+    QMutexLocker locker(&mutex);
+
     // Go through SNAPs and set correct state to SNAPs
     QList<QString> snapConfigIdents = snapConfigurations.keys();
     foreach (QString iface, snapConfigIdents) {
@@ -700,6 +726,8 @@ void SymbianEngine::updateStatesToSnaps()
 bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePointer ptr,
                                                QNetworkConfiguration::StateFlags newState)
 {
+    QMutexLocker locker(&mutex);
+
     if (newState != ptr->state) {
         ptr->state = newState;
         emit configurationChanged(ptr);
@@ -715,6 +743,8 @@ bool SymbianEngine::changeConfigurationStateTo(QNetworkConfigurationPrivatePoint
 bool SymbianEngine::changeConfigurationStateAtMinTo(QNetworkConfigurationPrivatePointer ptr,
                                                     QNetworkConfiguration::StateFlags newState)
 {
+    QMutexLocker locker(&mutex);
+
     if ((newState | ptr->state) != ptr->state) {
         ptr->state = (ptr->state | newState);
         emit configurationChanged(ptr);
@@ -731,6 +761,8 @@ bool SymbianEngine::changeConfigurationStateAtMinTo(QNetworkConfigurationPrivate
 bool SymbianEngine::changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivatePointer ptr,
                                                     QNetworkConfiguration::StateFlags newState)
 {
+    QMutexLocker locker(&mutex);
+
     if ((newState & ptr->state) != ptr->state) {
         ptr->state = (newState & ptr->state);
         emit configurationChanged(ptr);
@@ -741,6 +773,8 @@ bool SymbianEngine::changeConfigurationStateAtMaxTo(QNetworkConfigurationPrivate
 
 void SymbianEngine::startCommsDatabaseNotifications()
 {
+    QMutexLocker locker(&mutex);
+
     if (!iWaitingCommsDatabaseNotifications) {
         iWaitingCommsDatabaseNotifications = ETrue;
         if (!IsActive()) {
@@ -753,6 +787,8 @@ void SymbianEngine::startCommsDatabaseNotifications()
 
 void SymbianEngine::stopCommsDatabaseNotifications()
 {
+    QMutexLocker locker(&mutex);
+
     if (iWaitingCommsDatabaseNotifications) {
         iWaitingCommsDatabaseNotifications = EFalse;
         if (!IsActive()) {
@@ -769,6 +805,8 @@ void SymbianEngine::stopCommsDatabaseNotifications()
 
 void SymbianEngine::RunL()
 {
+    QMutexLocker locker(&mutex);
+
     if (iStatus != KErrCancel) {
         RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
         switch (event) {
@@ -805,12 +843,16 @@ void SymbianEngine::RunL()
 
 void SymbianEngine::DoCancel()
 {
+    QMutexLocker locker(&mutex);
+
     ipCommsDB->CancelRequestNotification();
 }
 
 
 void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 {
+    QMutexLocker locker(&mutex);
+
     switch (aEvent.EventType()) {
     case EConnMonCreateConnection:
         {
@@ -902,6 +944,8 @@ void SymbianEngine::EventL(const CConnMonEventBase& aEvent)
 
 QNetworkConfigurationPrivatePointer SymbianEngine::dataByConnectionId(TUint aConnectionId)
 {
+    QMutexLocker locker(&mutex);
+
     QNetworkConfiguration item;
     
     QHash<QString, QNetworkConfigurationPrivatePointer>::const_iterator i =
