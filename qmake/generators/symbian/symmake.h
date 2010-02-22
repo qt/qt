@@ -84,7 +84,7 @@ protected:
 
     void removeSpecialCharacters(QString& str);
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
-    QString canonizePath(const QString& origPath);
+    QString absolutizePath(const QString& origPath);
 
     virtual bool writeMakefile(QTextStream &t);
     void generatePkgFile(const QString &iconFile, DeploymentList &depList);
