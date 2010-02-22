@@ -64,8 +64,24 @@ public:
         QStringList userRssRules;
         readRssRules(numberOfIcons, iconFile, userRssRules);
 
+        // Generate pkg files if there are any actual files to deploy
+        bool generatePkg = false;
         DeploymentList depList;
-        generatePkgFile(iconFile, depList, false);
+
+        if (targetType == TypeExe) {
+            generatePkg = true;
+        } else {
+            foreach(QString item, this->project->values("DEPLOYMENT")) {
+                if (!this->project->values(item + ".sources").isEmpty()) {
+                    generatePkg = true;
+                    break;
+                }
+            }
+        }
+
+        if (generatePkg) {
+            generatePkgFile(iconFile, depList, true);
+        }
 
         // Get the application translations and convert to symbian OS lang code, i.e. decical number
         QStringList symbianLangCodes = symbianLangCodesFromTsFiles();
