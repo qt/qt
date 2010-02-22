@@ -223,7 +223,7 @@ ListView {
    anchors.fill: parent
    model: myModel
    delegate: Component {
-       Rect {
+       Rectangle {
             height: 25
             Text { text: modelData }
        }
