@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSMOUSEREGION_H
-#define QMLGRAPHICSMOUSEREGION_H
+#ifndef QMLGRAPHICSMOUSEAREA_H
+#define QMLGRAPHICSMOUSEAREA_H
 
 #include "qmlgraphicsitem.h"
 
@@ -102,8 +102,8 @@ private:
 };
 
 class QmlGraphicsMouseEvent;
-class QmlGraphicsMouseRegionPrivate;
-class Q_DECLARATIVE_EXPORT QmlGraphicsMouseRegion : public QmlGraphicsItem
+class QmlGraphicsMouseAreaPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsMouseArea : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -118,8 +118,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsMouseRegion : public QmlGraphicsItem
     Q_PROPERTY(QmlGraphicsDrag *drag READ drag CONSTANT) //### add flicking to QmlGraphicsDrag or add a QmlGraphicsFlick ???
 
 public:
-    QmlGraphicsMouseRegion(QmlGraphicsItem *parent=0);
-    ~QmlGraphicsMouseRegion();
+    QmlGraphicsMouseArea(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsMouseArea();
 
     qreal mouseX() const;
     qreal mouseY() const;
@@ -171,15 +171,15 @@ private:
     void handleRelease();
 
 private:
-    Q_DISABLE_COPY(QmlGraphicsMouseRegion)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsMouseRegion)
+    Q_DISABLE_COPY(QmlGraphicsMouseArea)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsMouseArea)
 };
 
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsDrag)
-QML_DECLARE_TYPE(QmlGraphicsMouseRegion)
+QML_DECLARE_TYPE(QmlGraphicsMouseArea)
 
 QT_END_HEADER
 
-#endif // QMLGRAPHICSMOUSEREGION_H
+#endif // QMLGRAPHICSMOUSEAREA_H

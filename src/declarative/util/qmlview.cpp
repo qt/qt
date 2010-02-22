@@ -126,12 +126,13 @@ void FrameBreakAnimation::updateCurrentTime(int msecs)
     server->frameBreak();
 }
 
-class QmlViewPrivate : public QGraphicsViewPrivate
+class QmlViewPrivate
 {
-    Q_DECLARE_PUBLIC(QmlView)
 public:
-    QmlViewPrivate()
-        : root(0), component(0), resizeMode(QmlView::SizeViewToRootObject) {}
+    QmlViewPrivate(QmlView *view)
+        : q(view), root(0), component(0), resizeMode(QmlView::SizeViewToRootObject) {}
+
+    QmlView *q;
 
     QGuard<QGraphicsObject> root;
     QGuard<QmlGraphicsItem> qmlRoot;
@@ -213,16 +214,14 @@ public:
   Constructs a QmlView with the given \a parent.
 */
 QmlView::QmlView(QWidget *parent)
-: QGraphicsView(*(new QmlViewPrivate), parent)
+: QGraphicsView(parent), d(new QmlViewPrivate(this))
 {
-    Q_D(QmlView);
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     d->init();
 }
 
 void QmlViewPrivate::init()
 {
-    Q_Q(QmlView);
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     {
         QmlPerfTimer<QmlPerf::FontDatabase> perf;
@@ -251,7 +250,6 @@ void QmlViewPrivate::init()
  */
 QmlView::~QmlView()
 {
-    Q_D(QmlView);
     delete d->root;
 }
 
@@ -264,7 +262,6 @@ QmlView::~QmlView()
  */
 void QmlView::setSource(const QUrl& url)
 {
-    Q_D(QmlView);
     d->source = url;
 }
 
@@ -275,7 +272,6 @@ void QmlView::setSource(const QUrl& url)
  */
 QUrl QmlView::source() const
 {
-    Q_D(const QmlView);
     return d->source;
 }
 
@@ -285,7 +281,6 @@ QUrl QmlView::source() const
  */
 QmlEngine* QmlView::engine()
 {
-    Q_D(QmlView);
     return &d->engine;
 }
 
@@ -298,7 +293,6 @@ QmlEngine* QmlView::engine()
  */
 QmlContext* QmlView::rootContext()
 {
-    Q_D(QmlView);
     return d->engine.rootContext();
 }
 
@@ -309,7 +303,6 @@ QmlContext* QmlView::rootContext()
 */
 void QmlView::execute()
 {
-    Q_D(QmlView);
     delete d->root;
     delete d->component;
     d->component = new QmlComponent(&d->engine, d->source, this);
@@ -339,7 +332,6 @@ void QmlView::execute()
 
 QmlView::Status QmlView::status() const
 {
-    Q_D(const QmlView);
     if (!d->component)
         return QmlView::Null;
 
@@ -352,7 +344,6 @@ QmlView::Status QmlView::status() const
 */
 QList<QmlError> QmlView::errors() const
 {
-    Q_D(const QmlView);
     if (d->component)
         return d->component->errors();
     return QList<QmlError>();
@@ -378,7 +369,6 @@ QList<QmlError> QmlView::errors() const
 
 void QmlView::setResizeMode(ResizeMode mode)
 {
-    Q_D(QmlView);
     if (d->resizeMode == mode)
         return;
 
@@ -396,7 +386,6 @@ void QmlView::setResizeMode(ResizeMode mode)
 
 QmlView::ResizeMode QmlView::resizeMode() const
 {
-    Q_D(const QmlView);
     return d->resizeMode;
 }
 
@@ -405,7 +394,6 @@ QmlView::ResizeMode QmlView::resizeMode() const
  */
 void QmlView::continueExecute()
 {
-    Q_D(QmlView);
 
     disconnect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
 
@@ -482,7 +470,6 @@ void QmlView::continueExecute()
  */
 void QmlView::sizeChanged()
 {
-    Q_D(QmlView);
     // delay, so we catch both width and height changing.
     d->resizetimer.start(0,this);
 }
@@ -494,7 +481,6 @@ void QmlView::sizeChanged()
  */
 void QmlView::timerEvent(QTimerEvent* e)
 {
-    Q_D(QmlView);
     if (!e || e->timerId() == d->resizetimer.timerId()) {
         if (d->qmlRoot) {
             QSize sz(d->qmlRoot->width(),d->qmlRoot->height());
@@ -513,7 +499,6 @@ void QmlView::timerEvent(QTimerEvent* e)
 */
 QSize QmlView::sizeHint() const
 {
-    Q_D(const QmlView);
     if (d->qmlRoot) {
         if (d->initialSize.width() <= 0)
             d->initialSize.setWidth(d->qmlRoot->width());
@@ -528,7 +513,6 @@ QSize QmlView::sizeHint() const
  */
 QGraphicsObject *QmlView::rootObject() const
 {
-    Q_D(const QmlView);
     return d->root;
 }
 
@@ -539,7 +523,6 @@ QGraphicsObject *QmlView::rootObject() const
  */
 void QmlView::resizeEvent(QResizeEvent *e)
 {
-    Q_D(QmlView);
     if (d->resizeMode == SizeRootObjectToView && d->qmlRoot) {
         d->qmlRoot->setWidth(width());
         d->qmlRoot->setHeight(height());
@@ -559,7 +542,6 @@ void QmlView::resizeEvent(QResizeEvent *e)
 */
 void QmlView::paintEvent(QPaintEvent *event)
 {
-    Q_D(QmlView);
     int time = 0;
     if (frameRateDebug() || QmlViewDebugServer::isDebuggingEnabled())
         time = d->frameTimer.restart();

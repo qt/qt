@@ -14,7 +14,7 @@ Rectangle {
         transformOrigin: Item.Center
 
 //![1]
-        MouseRegion { id: mouseRegion; anchors.fill: parent }
+        MouseArea { id: mouseRegion; anchors.fill: parent }
 //![1]
 
 //![2]

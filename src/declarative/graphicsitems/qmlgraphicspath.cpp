@@ -155,10 +155,10 @@ bool QmlGraphicsPath::isClosed() const
     \snippet doc/src/snippets/declarative/pathview/pathattributes.qml 2
 */
 
-QList<QmlGraphicsPathElement *>* QmlGraphicsPath::pathElements()
+QmlListProperty<QmlGraphicsPathElement> QmlGraphicsPath::pathElements()
 {
     Q_D(QmlGraphicsPath);
-    return &(d->_pathElements);
+    return QmlListProperty<QmlGraphicsPathElement>(this, d->_pathElements);
 }
 
 void QmlGraphicsPath::interpolate(int idx, const QString &name, qreal value)

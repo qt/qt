@@ -51,7 +51,9 @@ SOURCES += \
     $$PWD/qmllistscriptclass.cpp \
     $$PWD/qmlworkerscript.cpp \
     $$PWD/qmlimageprovider.cpp \
-    $$PWD/qmlnetworkaccessmanagerfactory.cpp
+    $$PWD/qmlnetworkaccessmanagerfactory.cpp \
+    $$PWD/qmllist.cpp 
+
 HEADERS += \
     $$PWD/qmlparser_p.h \
     $$PWD/qmlglobal_p.h \
@@ -91,6 +93,7 @@ HEADERS += \
     $$PWD/qmlcompositetypedata_p.h \
     $$PWD/qmlcompositetypemanager_p.h \
     $$PWD/qmllist.h \
+    $$PWD/qmllist_p.h \
     $$PWD/qmldeclarativedata_p.h \
     $$PWD/qmlerror.h \
     $$PWD/qmlscriptparser_p.h \

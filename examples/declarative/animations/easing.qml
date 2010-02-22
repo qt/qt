@@ -68,7 +68,7 @@ Rectangle {
                 border.color: "White"; border.width: 2
                 height: 32; width: 32; radius: 8; anchors.verticalCenter: parent.verticalCenter
 
-                MouseRegion {
+                MouseArea {
                     onClicked: if (rect.state == '') rect.state = "right"; else rect.state = ''
                     anchors.fill: parent
                 }

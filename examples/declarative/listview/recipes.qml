@@ -32,7 +32,7 @@ Rectangle {
             // This mouse region covers the entire delegate.
             // When clicked it changes mode to 'Details'.  If we are already
             // in Details mode, then no change will happen.
-            MouseRegion {
+            MouseArea {
                 id: pageMouse
                 anchors.fill: parent
                 onClicked: wrapper.state = 'Details';

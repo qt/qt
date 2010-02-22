@@ -109,7 +109,7 @@ QSizeF QGraphicsLinearLayoutStretchItemObject::sizeHint(Qt::SizeHint which, cons
 
 
 QGraphicsLinearLayoutObject::QGraphicsLinearLayoutObject(QObject *parent)
-: QObject(parent), _children(this)
+: QObject(parent)
 {
 }
 
@@ -246,7 +246,7 @@ private:
 
 
 QGraphicsGridLayoutObject::QGraphicsGridLayoutObject(QObject *parent)
-: QObject(parent), _children(this)
+: QObject(parent)
 {
 }
 

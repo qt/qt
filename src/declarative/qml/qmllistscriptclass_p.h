@@ -54,6 +54,7 @@
 //
 
 #include <private/qmlscriptclass_p.h>
+#include "qmllist.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -64,8 +65,8 @@ public:
     QmlListScriptClass(QmlEngine *);
     ~QmlListScriptClass();
 
-    enum ListCategory { QListPtr, QmlListPtr };
-    QScriptValue newList(QObject *, int, ListCategory, int);
+    QScriptValue newList(QObject *, int, int);
+    QScriptValue newList(const QmlListProperty<QObject> &, int);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 

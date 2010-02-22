@@ -524,7 +524,7 @@ void QmlGraphicsPathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
         qreal dist = qAbs(velocity/2 - qmlMod(velocity/2, qreal(100.0 / d->model->count()) - inc));
         d->moveOffset.setValue(d->_offset);
         d->tl.accel(d->moveOffset, velocity, 10, dist);
-        d->tl.execute(d->fixupOffsetEvent);
+        d->tl.callback(QmlTimeLineCallback(&d->moveOffset, d->fixOffsetCallback, d));
     } else {
         d->fixOffset();
     }
@@ -886,6 +886,11 @@ void QmlGraphicsPathViewPrivate::updateCurrent()
     }
 }
 
+void QmlGraphicsPathViewPrivate::fixOffsetCallback(void *d)
+{
+    ((QmlGraphicsPathViewPrivate *)d)->fixOffset();
+}
+
 void QmlGraphicsPathViewPrivate::fixOffset()
 {
     Q_Q(QmlGraphicsPathView);
@@ -938,7 +943,7 @@ void QmlGraphicsPathViewPrivate::snapToCurrent()
             rounds++;
         tl.move(moveOffset, targetOffset + 100.0*(-rounds), QEasingCurve(QEasingCurve::InOutQuad),
                 int(100*items.count()*qMax((qreal)(2.0/items.count()),(qreal)qAbs(rounds))));
-        tl.execute(fixupOffsetEvent);
+        tl.callback(QmlTimeLineCallback(&moveOffset, fixOffsetCallback, this));
         return;
     }
 

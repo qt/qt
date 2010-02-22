@@ -28,7 +28,7 @@ Rectangle {
             width: parent.width - (parent.width % getTileSize());
             height: parent.height - (parent.height % getTileSize());
 
-            MouseRegion {
+            MouseArea {
                 id: gameMR
                 anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
             }

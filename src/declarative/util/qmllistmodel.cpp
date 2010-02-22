@@ -188,7 +188,7 @@ static void dump(ModelNode *node, int ind);
             Text { text: '$'+cost; anchors.right: parent.right }
 
             // Double the price when clicked.
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onClicked: fruitModel.set(index, "cost", cost*2)
             }

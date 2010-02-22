@@ -13,7 +13,7 @@ Item {
         anchors.centerIn: parent
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: parent.clicked()
     }

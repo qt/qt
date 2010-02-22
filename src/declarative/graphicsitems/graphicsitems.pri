@@ -28,8 +28,8 @@ HEADERS += \
     $$PWD/qmlgraphicspositioners_p_p.h \
     $$PWD/qmlgraphicsloader_p.h \
     $$PWD/qmlgraphicsloader_p_p.h \
-    $$PWD/qmlgraphicsmouseregion_p.h \
-    $$PWD/qmlgraphicsmouseregion_p_p.h \
+    $$PWD/qmlgraphicsmousearea_p.h \
+    $$PWD/qmlgraphicsmousearea_p_p.h \
     $$PWD/qmlgraphicspath_p.h \
     $$PWD/qmlgraphicspath_p_p.h \
     $$PWD/qmlgraphicspathview_p.h \
@@ -70,7 +70,7 @@ SOURCES += \
     $$PWD/qmlgraphicsfocusscope.cpp \
     $$PWD/qmlgraphicspositioners.cpp \
     $$PWD/qmlgraphicsloader.cpp \
-    $$PWD/qmlgraphicsmouseregion.cpp \
+    $$PWD/qmlgraphicsmousearea.cpp \
     $$PWD/qmlgraphicspath.cpp \
     $$PWD/qmlgraphicspathview.cpp \
     $$PWD/qmlgraphicsrectangle.cpp \

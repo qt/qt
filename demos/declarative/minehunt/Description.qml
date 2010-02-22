@@ -4,7 +4,7 @@ Item {
     id: page
     height: myText.height + 20
     property var text
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         drag.target: page
         drag.axis: "XandYAxis"
