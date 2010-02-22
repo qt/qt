@@ -11,7 +11,6 @@ TEMPLATE = subdirs
            maketestselftest \
            moc \
            uic \
-           uic3 \
            guiapplauncher \
            #atwrapper \     # These tests need significant updating,
            #uiloader \      # they have hardcoded machine names etc.
@@ -68,6 +67,9 @@ Q3SUBDIRS += \
            q3frame \
            q3uridrag \
            q3widgetstack
+
+!cross_compile:Q3SUBDIRS += \
+           uic3
 
 SUBDIRS += \
 #           exceptionsafety_objects \ shouldn't enable it
