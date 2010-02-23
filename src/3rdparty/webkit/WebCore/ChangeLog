@@ -44,6 +44,15 @@
         * loader/MainResourceLoader.cpp:
         (WebCore::MainResourceLoader::handleDataLoadNow): clear m_initialRequest
 
+2010-02-23  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Laszlo Gombos.
+
+        [Qt] Correct build problems while building QtWebKit inside Qt.
+        https://bugs.webkit.org/show_bug.cgi?id=34975
+
+        * WebCore.pro: Change the condition !standalone_package to !QTDIR_build
+
 2010-02-20  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
 
         Reviewed by Darin Adler.
