@@ -1132,10 +1132,10 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
     Property *idProp = 0;
     if (obj->properties.count() > 1 ||
        (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
-        COMPILE_EXCEPTION(*obj->properties.begin(), QCoreApplication::translate("QmlCompiler","Invalid component specification"));
+        COMPILE_EXCEPTION(*obj->properties.begin(), QCoreApplication::translate("QmlCompiler","Component elements may not contain properties other than id"));
        
     if (!obj->scriptBlockObjects.isEmpty())
-        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), QCoreApplication::translate("QmlCompiler","Invalid component specification"));
+        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), QCoreApplication::translate("QmlCompiler","Component elements may not contain script blocks"));
 
     if (obj->properties.count())
         idProp = *obj->properties.begin();
