@@ -69,7 +69,7 @@ private slots:
     void pathMoved();
 
 private:
-    QmlView *createView(const QString &filename);
+    QmlView *createView();
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &objectName, int index=-1);
     template<typename T>
@@ -191,7 +191,7 @@ void tst_QmlGraphicsPathView::initValues()
 
 void tst_QmlGraphicsPathView::items()
 {
-    QmlView *canvas = createView(SRCDIR "/data/pathview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     model.addItem("Fred", "12345");
@@ -201,7 +201,7 @@ void tst_QmlGraphicsPathView::items()
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview.qml"));
     qApp->processEvents();
 
     QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->rootObject(), "view");
@@ -304,7 +304,7 @@ void tst_QmlGraphicsPathView::path()
 
 void tst_QmlGraphicsPathView::dataModel()
 {
-    QmlView *canvas = createView(SRCDIR "/data/datamodel.qml");
+    QmlView *canvas = createView();
 
     QmlContext *ctxt = canvas->rootContext();
     TestObject *testObject = new TestObject;
@@ -323,7 +323,7 @@ void tst_QmlGraphicsPathView::dataModel()
 
     ctxt->setContextProperty("testData", &model);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/datamodel.qml"));
     qApp->processEvents();
 
     QmlGraphicsPathView *pathview = qobject_cast<QmlGraphicsPathView*>(canvas->rootObject());
@@ -384,7 +384,7 @@ void tst_QmlGraphicsPathView::dataModel()
 
 void tst_QmlGraphicsPathView::pathMoved()
 {
-    QmlView *canvas = createView(SRCDIR "/data/pathview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     model.addItem("Ben", "12345");
@@ -395,7 +395,7 @@ void tst_QmlGraphicsPathView::pathMoved()
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathview.qml"));
     qApp->processEvents();
 
     QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->rootObject(), "view");
@@ -425,12 +425,10 @@ void tst_QmlGraphicsPathView::pathMoved()
     delete canvas;
 }
 
-QmlView *tst_QmlGraphicsPathView::createView(const QString &filename)
+QmlView *tst_QmlGraphicsPathView::createView()
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
-
-    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
@@ -452,7 +450,6 @@ T *tst_QmlGraphicsPathView::findItem(QGraphicsObject *parent, const QString &obj
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);
-                e.setTrackChange(false);
                 if (e.value().toInt() == index)
                     return static_cast<T*>(item);
             } else {

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlmoduleplugin.h>
+#include <QtDeclarative/qmlextensionplugin.h>
 #include <QtDeclarative/qml.h>
 
 #include "graphicslayouts_p.h"
@@ -110,7 +110,7 @@ private:
     }
 };
 
-class QWidgetsQmlModule : public QmlModulePlugin
+class QWidgetsQmlModule : public QmlExtensionPlugin
 {
     Q_OBJECT
 public:
@@ -119,10 +119,12 @@ public:
         return QStringList() << QLatin1String("Qt.widgets");
     }
 
-    void defineModule(const QString& uri)
+    virtual void initialize(QmlEngine *engine, const char *uri)
     {
-        Q_UNUSED(uri)
-        Q_ASSERT(uri == QLatin1String("Qt.widgets"));
+        Q_UNUSED(uri);
+        Q_UNUSED(engine);
+
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.widgets"));
 
         QML_REGISTER_INTERFACE(QGraphicsLayoutItem);
         QML_REGISTER_INTERFACE(QGraphicsLayout);

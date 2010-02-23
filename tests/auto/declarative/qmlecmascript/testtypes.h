@@ -173,17 +173,21 @@ QML_DECLARE_TYPE(MyQmlContainer);
 
 class MyExpression : public QmlExpression
 {
+    Q_OBJECT
 public:
     MyExpression(QmlContext *ctxt, const QString &expr)
         : QmlExpression(ctxt, expr, 0), changed(false)
     {
+        QObject::connect(this, SIGNAL(valueChanged()), this, SLOT(expressionValueChanged()));
+        setNotifyOnValueChanged(true);
     }
 
-    void emitValueChanged() {
-        changed = true;
-        QmlExpression::emitValueChanged();
-    }
     bool changed;
+
+public slots:
+    void expressionValueChanged() {
+        changed = true;
+    }
 };
 
 

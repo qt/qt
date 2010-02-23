@@ -50,8 +50,7 @@
 #include "qmlexpression.h"
 #include "qmlcomponent.h"
 #include "qmlmetaproperty_p.h"
-#include "qmlmoduleplugin.h"
-#include "qmlbinding_p.h"
+#include "qmlbinding_p_p.h"
 #include "qmlvme_p.h"
 #include "qmlenginedebug_p.h"
 #include "qmlstringconverters_p.h"
@@ -66,6 +65,8 @@
 #include "qmlscriptclass_p.h"
 #include "qmlnetworkaccessmanagerfactory.h"
 #include "qmlimageprovider.h"
+#include "qmldirparser_p.h"
+#include "qmlextensioninterface.h"
 #include "qmllist_p.h"
 
 #include <qfxperf_p_p.h>
@@ -82,6 +83,7 @@
 #include <QDebug>
 #include <QMetaObject>
 #include <QStack>
+#include <QPluginLoader>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qthread.h>
@@ -94,7 +96,6 @@
 #include <QGraphicsObject>
 #include <QtCore/qcryptographichash.h>
 
-#include <private/qfactoryloader_p.h>
 #include <private/qobject_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
 
@@ -168,6 +169,21 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     }
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
     fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
+
+    // env import paths
+    QByteArray envImportPath = qgetenv("QML_IMPORT_PATH");
+    if (!envImportPath.isEmpty()) {
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        QLatin1Char pathSep(';');
+#else
+        QLatin1Char pathSep(':');
+#endif
+        foreach (const QString &path, QString::fromLatin1(envImportPath).split(pathSep, QString::SkipEmptyParts)) {
+            QString canonicalPath = QDir(path).canonicalPath();
+            if (!canonicalPath.isEmpty() && !environmentImportPath.contains(canonicalPath))
+                environmentImportPath.append(canonicalPath);
+        }
+    }
 }
 
 QUrl QmlScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
@@ -1247,7 +1263,6 @@ struct QmlEnginePrivate::ImportedNamespace {
     QList<int> majversions;
     QList<int> minversions;
     QList<bool> isLibrary;
-    QList<bool> isBuiltin; // Types provided by C++ code (including plugins)
     QList<QString> qmlDirContent;
 
     bool find(const QByteArray& type, int *vmajor, int *vminor, QmlType** type_return, QUrl* url_return) const
@@ -1256,23 +1271,23 @@ struct QmlEnginePrivate::ImportedNamespace {
             int vmaj = majversions.at(i);
             int vmin = minversions.at(i);
 
-            if (isBuiltin.at(i)) {
-                QByteArray qt = uris.at(i).toUtf8();
-                qt += '/';
-                qt += type;
-                if (qmlImportTrace())
-                    qDebug() << "Look in" << qt;
-                QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
+            QByteArray qt = uris.at(i).toUtf8();
+            qt += '/';
+            qt += type;
+
+            if (qmlImportTrace())
+                qDebug() << "Look in" << qt;
+            QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
+            if (t) {
                 if (vmajor) *vmajor = vmaj;
                 if (vminor) *vminor = vmin;
-                if (t) {
-                    if (qmlImportTrace())
-                        qDebug() << "Found" << qt;
-                    if (type_return)
-                        *type_return = t;
-                    return true;
-                }
+                if (qmlImportTrace())
+                    qDebug() << "Found" << qt;
+                if (type_return)
+                    *type_return = t;
+                return true;
             }
+
             QUrl url = QUrl(urls.at(i) + QLatin1Char('/') + QString::fromUtf8(type) + QLatin1String(".qml"));
             QString qmldircontent = qmlDirContent.at(i);
             if (vmaj>=0 || !qmldircontent.isEmpty()) {
@@ -1283,27 +1298,25 @@ struct QmlEnginePrivate::ImportedNamespace {
                         qmldircontent = QString::fromUtf8(qmldir.readAll());
                     }
                 }
-                QString typespace = QString::fromUtf8(type)+QLatin1Char(' ');
-                QStringList lines = qmldircontent.split(QLatin1Char('\n'));
-                foreach (QString line, lines) {
-                    if (line.isEmpty() || line.at(0) == QLatin1Char('#'))
-                        continue;
-                    if (line.startsWith(typespace)) {
-                        int space1 = line.indexOf(QLatin1Char(' '));
-                        int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
-                        QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-1:space2-space1-1);
-                        int dot = mapversions.indexOf(QLatin1Char('.'));
-                        int mapvmaj = mapversions.left(dot).toInt();
-                        if (mapvmaj<=vmaj) {
-                            if (mapvmaj<vmaj || vmin >= mapversions.mid(dot+1).toInt()) {
-                                QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-1);
-                                if (url_return)
-                                    *url_return = url.resolved(QUrl(mapfile.toString()));
-                                return true;
-                            }
+
+                const QString typeName = QString::fromUtf8(type);
+
+                QmlDirParser qmldirParser;
+                qmldirParser.setUrl(url);
+                qmldirParser.setSource(qmldircontent);
+                qmldirParser.parse();
+
+                foreach (const QmlDirParser::Component &c, qmldirParser.components()) { // ### TODO: cache the components
+                    if (c.majorVersion < vmaj || (c.majorVersion == vmaj && vmin >= c.minorVersion)) {
+                        if (c.typeName == typeName) {
+                            if (url_return)
+                                *url_return = url.resolved(QUrl(c.fileName));
+
+                            return true;
                         }
                     }
                 }
+
             } else {
                 // XXX search non-files too! (eg. zip files, see QT-524)
                 QFileInfo f(toLocalFileOrQrc(url));
@@ -1318,9 +1331,6 @@ struct QmlEnginePrivate::ImportedNamespace {
     }
 };
 
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QmlModuleFactoryInterface_iid, QLatin1String("/qmlmodules")))
-
 class QmlImportsPrivate {
 public:
     QmlImportsPrivate() : ref(1)
@@ -1333,7 +1343,9 @@ public:
             delete s;
     }
 
-    bool add(const QUrl& base, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath)
+    QSet<QString> qmlDirFilesForWhichPluginsHaveBeenLoaded;
+
+    bool add(const QUrl& base, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath, QmlEngine *engine)
     {
         QmlEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
@@ -1344,39 +1356,63 @@ public:
                 set.insert(prefix,(s=new QmlEnginePrivate::ImportedNamespace));
         }
         QString url = uri;
-        bool isbuiltin = false;
         if (importType == QmlScriptParser::Import::Library) {
-            url.replace(QLatin1Char('.'),QLatin1Char('/'));
+            url.replace(QLatin1Char('.'), QLatin1Char('/'));
             bool found = false;
-            foreach (QString p, importPath) {
-                QString dir = p+QLatin1Char('/')+url;
+            QString content;
+            QString dir;            
+
+            // user import paths
+            QStringList paths;
+
+            // base..
+            paths += QFileInfo(base.toLocalFile()).path();
+            paths += importPath;
+            paths += QmlEnginePrivate::get(engine)->environmentImportPath;
+
+            foreach (const QString &p, paths) {
+                dir = p+QLatin1Char('/')+url;
                 QFileInfo fi(dir+QLatin1String("/qmldir"));
+                const QString absoluteFilePath = fi.absoluteFilePath();
+
                 if (fi.isFile()) {
-                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
                     found = true;
+
+                    url = QUrl::fromLocalFile(fi.absolutePath()).toString();
+
+                    QFile file(absoluteFilePath);
+                    if (file.open(QFile::ReadOnly))
+                        content = QString::fromUtf8(file.readAll());
+
+                    if (! qmlDirFilesForWhichPluginsHaveBeenLoaded.contains(absoluteFilePath)) {
+                        qmlDirFilesForWhichPluginsHaveBeenLoaded.insert(absoluteFilePath);
+
+                        QmlDirParser qmldirParser;
+                        qmldirParser.setSource(content);
+                        qmldirParser.parse();
+
+                        foreach (const QmlDirParser::Plugin &plugin, qmldirParser.plugins()) {
+                            QString resolvedFilePath = QmlEnginePrivate::get(engine)->resolvePlugin(dir + QDir::separator() + plugin.path,
+                                                                                                    plugin.name);
+
+                            if (!resolvedFilePath.isEmpty())
+                                engine->importExtension(resolvedFilePath, uri);
+                        }
+                    }
+
                     break;
                 }
             }
-            if (!found) {
-                // XXX assume it is a built-in type qualifier
-                isbuiltin = true;
-            }
-            QFactoryLoader *l = loader();
-            QmlModuleFactoryInterface *factory =
-                qobject_cast<QmlModuleFactoryInterface*>(l->instance(uri));
-            if (factory) {
-                factory->defineModuleOnce(uri);
-                isbuiltin = true;
-            }
+
         } else {
             url = base.resolved(QUrl(url)).toString();
         }
+
         s->uris.prepend(uri);
         s->urls.prepend(url);
         s->majversions.prepend(vmaj);
         s->minversions.prepend(vmin);
         s->isLibrary.prepend(importType == QmlScriptParser::Import::Library);
-        s->isBuiltin.prepend(isbuiltin);
         s->qmlDirContent.prepend(qmldircontent);
         return true;
     }
@@ -1399,10 +1435,11 @@ public:
         if (s) {
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
-            if (s->urls.count() == 1 && !s->isBuiltin[0] && !s->isLibrary[0] && url_return) {
+            if (s->urls.count() == 1 && !s->isLibrary[0] && url_return) {
                 *url_return = QUrl(s->urls[0]+QLatin1Char('/')).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
                 return true;
             }
+
         }
         if (url_return) {
             *url_return = base.resolved(QUrl(QString::fromUtf8(type + ".qml")));
@@ -1463,9 +1500,6 @@ static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePri
     QList<QmlType *> types = QmlMetaType::qmlTypes();
 
     for (int ii = 0; ii < set.uris.count(); ++ii) {
-        if (!set.isBuiltin.at(ii))
-            continue;
-
         QByteArray base = set.uris.at(ii).toUtf8() + '/';
         int major = set.majversions.at(ii);
         int minor = set.minversions.at(ii);
@@ -1564,6 +1598,24 @@ void QmlEngine::addImportPath(const QString& path)
 }
 
 /*!
+  Imports the given \a extension into this QmlEngine.  Returns
+  true if the extension was successfully imported.
+
+  \sa QmlExtensionInterface
+*/
+bool QmlEngine::importExtension(const QString &fileName, const QString &uri)
+{
+    QPluginLoader loader(fileName);
+
+    if (QmlExtensionInterface *iface = qobject_cast<QmlExtensionInterface *>(loader.instance())) {
+        iface->initialize(this, uri.toUtf8().constData());
+        return true;
+    }
+
+    return false;
+}
+
+/*!
   \property QmlEngine::offlineStoragePath
   \brief the directory for storing offline user data
 
@@ -1592,6 +1644,87 @@ QString QmlEngine::offlineStoragePath() const
     return d->scriptEngine.offlineStoragePath;
 }
 
+/*!
+  \internal
+
+  Returns the result of the merge of \a baseName with \a dir, \a suffixes, and \a prefix.
+ */
+QString QmlEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName,
+                                        const QStringList &suffixes,
+                                        const QString &prefix)
+{
+    foreach (const QString &suffix, suffixes) {
+        QString pluginFileName = prefix;
+
+        pluginFileName += baseName;
+        pluginFileName += QLatin1Char('.');
+        pluginFileName += suffix;
+
+        QFileInfo fileInfo(dir, pluginFileName);
+
+        if (fileInfo.exists())
+            return fileInfo.absoluteFilePath();
+    }
+
+    return QString();
+}
+
+/*!
+  \internal
+
+  Returns the result of the merge of \a baseName with \a dir and the platform suffix.
+
+  \table
+  \header \i Platform \i Valid suffixes
+  \row \i Windows     \i \c .dll
+  \row \i Unix/Linux  \i \c .so
+  \row \i AIX  \i \c .a
+  \row \i HP-UX       \i \c .sl, \c .so (HP-UXi)
+  \row \i Mac OS X    \i \c .dylib, \c .bundle, \c .so
+  \row \i Symbian     \i \c .dll
+  \endtable
+
+  Version number on unix are ignored.
+*/
+QString QmlEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName)
+{
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+    return resolvePlugin(dir, baseName, QStringList(QLatin1String("dll")));
+#elif defined(Q_OS_SYMBIAN)
+    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dll") << QLatin1String("qtplugin"));
+#else
+
+# if defined(Q_OS_DARWIN)
+
+    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dylib") << QLatin1String("so") << QLatin1String("bundle"),
+                         QLatin1String("lib"));
+# else  // Generic Unix
+    QStringList validSuffixList;
+
+#  if defined(Q_OS_HPUX)
+/*
+    See "HP-UX Linker and Libraries User's Guide", section "Link-time Differences between PA-RISC and IPF":
+    "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
+    the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
+ */
+    validSuffixList << QLatin1String("sl");
+#   if defined __ia64
+    validSuffixList << QLatin1String("so");
+#   endif
+#  elif defined(Q_OS_AIX)
+    validSuffixList << QLatin1String("a") << QLatin1String("so");
+#  elif defined(Q_OS_UNIX)
+    validSuffixList << QLatin1String("so");
+#  endif
+
+    // Examples of valid library names:
+    //  libfoo.so
+
+    return resolvePlugin(dir, baseName, validSuffixList, QLatin1String("lib"));
+# endif
+
+#endif
+}
 
 /*!
   \internal
@@ -1609,7 +1742,8 @@ QString QmlEngine::offlineStoragePath() const
 */
 bool QmlEnginePrivate::addToImport(Imports* imports, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const
 {
-    bool ok = imports->d->add(imports->d->base,qmldircontent,uri,prefix,vmaj,vmin,importType,fileImportPath);
+    QmlEngine *engine = QmlEnginePrivate::get(const_cast<QmlEnginePrivate *>(this));
+    bool ok = imports->d->add(imports->d->base,qmldircontent,uri,prefix,vmaj,vmin,importType,fileImportPath, engine);
     if (qmlImportTrace())
         qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << '.' << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;

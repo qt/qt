@@ -55,11 +55,13 @@ namespace QtMultimedia
     \internal
 */
 
-void qRegisterQmlElements()
+void qRegisterQmlElements(QmlEngine *engine, const char *uri)
 {
-    qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
-    qmlRegisterType<QmlAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
-    qmlRegisterType<QmlGraphicsVideo>("Qt.multimedia", 4, 7, "Video", "Video");
+    Q_UNUSED(engine);
+
+    qmlRegisterType<QSoundEffect>(uri, 4, 7, "SoundEffect", "SoundEffect");
+    qmlRegisterType<QmlAudio>(uri, 4, 7, "Audio", "Audio");
+    qmlRegisterType<QmlGraphicsVideo>(uri, 4, 7, "Video", "Video");
 }
 
 }

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <QtTest/QtTest>
+#include <QtTest/QSignalSpy>
 #include <qmlview.h>
 #include <private/qmlgraphicsparticles_p.h>
 
@@ -50,6 +51,8 @@ public:
 
 private slots:
     void properties();
+    void motionGravity();
+    void motionWander();
     void runs();
 private:
     QmlView *createView(const QString &filename);
@@ -98,6 +101,91 @@ void tst_QmlGraphicsParticles::properties()
     QCOMPARE(particles->emissionRate(), 12);
 }
 
+void tst_QmlGraphicsParticles::motionGravity()
+{
+    QmlView *canvas = createView(SRCDIR "/data/particlemotion.qml");
+    QVERIFY(canvas->rootObject());
+    QmlGraphicsParticles* particles = canvas->rootObject()->findChild<QmlGraphicsParticles*>("particles");
+    QVERIFY(particles);
+
+    QmlGraphicsParticleMotionGravity* motionGravity = canvas->rootObject()->findChild<QmlGraphicsParticleMotionGravity*>("motionGravity");
+    QCOMPARE(particles->motion(), motionGravity);
+
+    QSignalSpy xattractorSpy(motionGravity, SIGNAL(xattractorChanged()));
+    QSignalSpy yattractorSpy(motionGravity, SIGNAL(yattractorChanged()));
+    QSignalSpy accelerationSpy(motionGravity, SIGNAL(accelerationChanged()));
+
+    QCOMPARE(motionGravity->xAttractor(), 0.0);
+    QCOMPARE(motionGravity->yAttractor(), 1000.0);
+    QCOMPARE(motionGravity->acceleration(), 25.0);
+
+    motionGravity->setXAttractor(20.0);
+    motionGravity->setYAttractor(10.0);
+    motionGravity->setAcceleration(10.0);
+
+    QCOMPARE(motionGravity->xAttractor(), 20.0);
+    QCOMPARE(motionGravity->yAttractor(), 10.0);
+    QCOMPARE(motionGravity->acceleration(), 10.0);
+
+    QCOMPARE(xattractorSpy.count(), 1);
+    QCOMPARE(yattractorSpy.count(), 1);
+    QCOMPARE(accelerationSpy.count(), 1);
+
+    motionGravity->setXAttractor(20.0);
+    motionGravity->setYAttractor(10.0);
+    motionGravity->setAcceleration(10.0);
+
+    QCOMPARE(xattractorSpy.count(), 1);
+    QCOMPARE(yattractorSpy.count(), 1);
+    QCOMPARE(accelerationSpy.count(), 1);
+}
+
+void tst_QmlGraphicsParticles::motionWander()
+{
+    QmlView *canvas = createView(SRCDIR "/data/particlemotion.qml");
+    QVERIFY(canvas->rootObject());
+    QmlGraphicsParticles* particles = canvas->rootObject()->findChild<QmlGraphicsParticles*>("particles");
+    QVERIFY(particles);
+    
+    QSignalSpy motionSpy(particles, SIGNAL(motionChanged()));
+    QmlGraphicsParticleMotionWander* motionWander = canvas->rootObject()->findChild<QmlGraphicsParticleMotionWander*>("motionWander");
+    
+    particles->setMotion(motionWander);
+    QCOMPARE(particles->motion(),motionWander);
+    QCOMPARE(motionSpy.count(), 1);
+    
+    particles->setMotion(motionWander);
+    QCOMPARE(motionSpy.count(), 1);
+
+    QSignalSpy xvarianceSpy(motionWander, SIGNAL(xvarianceChanged()));
+    QSignalSpy yvarianceSpy(motionWander, SIGNAL(yvarianceChanged()));
+    QSignalSpy paceSpy(motionWander, SIGNAL(paceChanged()));
+
+    QCOMPARE(motionWander->xVariance(), 30.0);
+    QCOMPARE(motionWander->yVariance(), 30.0);
+    QCOMPARE(motionWander->pace(), 100.0);
+
+    motionWander->setXVariance(20.0);
+    motionWander->setYVariance(10.0);
+    motionWander->setPace(10.0);
+
+    QCOMPARE(motionWander->xVariance(), 20.0);
+    QCOMPARE(motionWander->yVariance(), 10.0);
+    QCOMPARE(motionWander->pace(), 10.0);
+
+    QCOMPARE(xvarianceSpy.count(), 1);
+    QCOMPARE(yvarianceSpy.count(), 1);
+    QCOMPARE(paceSpy.count(), 1);
+
+    motionWander->setXVariance(20.0);
+    motionWander->setYVariance(10.0);
+    motionWander->setPace(10.0);
+
+    QCOMPARE(xvarianceSpy.count(), 1);
+    QCOMPARE(yvarianceSpy.count(), 1);
+    QCOMPARE(paceSpy.count(), 1);
+}
+
 void tst_QmlGraphicsParticles::runs()
 {
     QmlView *canvas = createView(SRCDIR "/data/particles.qml");
@@ -113,7 +201,6 @@ QmlView *tst_QmlGraphicsParticles::createView(const QString &filename)
     canvas->setFixedSize(240,320);
 
     canvas->setSource(QUrl::fromLocalFile(filename));
-    canvas->execute();
 
     return canvas;
 }

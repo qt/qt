@@ -42,20 +42,18 @@
 #include "qmlpropertycache_p.h"
 
 #include "qmlengine_p.h"
-#include "qmlbinding.h"
-#include "qdebug.h"
+#include "qmlbinding_p.h"
+#include <QtCore/qdebug.h>
 
 Q_DECLARE_METATYPE(QScriptValue);
 
 QT_BEGIN_NAMESPACE
 
-void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
+QmlPropertyCache::Data::Flags QmlPropertyCache::Data::flagsForProperty(const QMetaProperty &p, QmlEngine *engine) 
 {
-    propType = p.userType();
-    if (QVariant::Type(propType) == QVariant::LastType)
-        propType = qMetaTypeId<QVariant>();
-    coreIndex = p.propertyIndex();
-    notifyIndex = p.notifySignalIndex();
+    int propType = p.userType();
+
+    Flags flags;
 
     if (p.isConstant())
         flags |= Data::IsConstant;
@@ -78,6 +76,18 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
         else if (cat == QmlMetaType::List)
             flags |= Data::IsQList;
     }
+
+    return flags;
+}
+
+void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
+{
+    propType = p.userType();
+    if (QVariant::Type(propType) == QVariant::LastType)
+        propType = qMetaTypeId<QVariant>();
+    coreIndex = p.propertyIndex();
+    notifyIndex = p.notifySignalIndex();
+    flags = flagsForProperty(p, engine);
 }
 
 void QmlPropertyCache::Data::load(const QMetaMethod &m)

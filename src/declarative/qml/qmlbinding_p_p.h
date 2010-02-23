@@ -39,48 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QMLMODULEPLUGIN_H
-#define QMLMODULEPLUGIN_H
+#ifndef QMLBINDING_P_P_H
+#define QMLBINDING_P_P_H
 
-#include <QtCore/qplugin.h>
-#include <QtCore/qfactoryinterface.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qset.h>
-#include <QtCore/qbytearray.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qmlbinding_p.h"
+
+#include "qmlmetaproperty.h"
+#include "qmlexpression_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-struct Q_DECLARATIVE_EXPORT QmlModuleFactoryInterface : public QFactoryInterface
+class QmlBindingData : public QmlExpressionData
 {
-    virtual void defineModuleOnce(const QString& uri) = 0;
+public:
+    QmlBindingData();
+    virtual ~QmlBindingData();
+
+    bool updating:1;
+    bool enabled:1;
+
+    QmlMetaProperty property;
+
+    virtual void refresh();
 };
 
-#define QmlModuleFactoryInterface_iid "com.nokia.Qt.QmlModuleFactoryInterface"
-
-Q_DECLARE_INTERFACE(QmlModuleFactoryInterface, QmlModuleFactoryInterface_iid)
-
-
-class Q_DECLARATIVE_EXPORT QmlModulePlugin : public QObject, public QmlModuleFactoryInterface
+class QmlBindingPrivate : public QmlExpressionPrivate
 {
-    Q_OBJECT
-    Q_INTERFACES(QmlModuleFactoryInterface:QFactoryInterface)
+    Q_DECLARE_PUBLIC(QmlBinding)
 public:
-    explicit QmlModulePlugin(QObject *parent = 0);
-    ~QmlModulePlugin();
+    QmlBindingPrivate();
 
-    virtual void defineModule(const QString& uri) = 0;
+    QmlBindingData *bindingData() { return static_cast<QmlBindingData *>(data); }
+    const QmlBindingData *bindingData() const { return static_cast<const QmlBindingData *>(data); }
 
-private:
-    void defineModuleOnce(const QString& uri);
-    QSet<QString> defined;
+    virtual void emitValueChanged();
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLMODULEPLUGIN_H
+#endif // QMLBINDING_P_P_H

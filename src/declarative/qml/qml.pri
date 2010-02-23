@@ -7,7 +7,6 @@ SOURCES += \
     $$PWD/qmlexpression.cpp \
     $$PWD/qmlbinding.cpp \
     $$PWD/qmlmetaproperty.cpp \
-    $$PWD/qmlmoduleplugin.cpp \
     $$PWD/qmlcomponent.cpp \
     $$PWD/qmlcontext.cpp \
     $$PWD/qmlcustomparser.cpp \
@@ -52,6 +51,8 @@ SOURCES += \
     $$PWD/qmlworkerscript.cpp \
     $$PWD/qmlimageprovider.cpp \
     $$PWD/qmlnetworkaccessmanagerfactory.cpp \
+    $$PWD/qmldirparser.cpp \
+    $$PWD/qmlextensionplugin.cpp \
     $$PWD/qmllist.cpp 
 
 HEADERS += \
@@ -60,10 +61,9 @@ HEADERS += \
     $$PWD/qmlinstruction_p.h \
     $$PWD/qmlvmemetaobject_p.h \
     $$PWD/qml.h \
-    $$PWD/qmlbinding.h \
     $$PWD/qmlbinding_p.h \
+    $$PWD/qmlbinding_p_p.h \
     $$PWD/qmlmetaproperty.h \
-    $$PWD/qmlmoduleplugin.h \
     $$PWD/qmlcomponent.h \
     $$PWD/qmlcomponent_p.h \
     $$PWD/qmlcustomparser_p.h \
@@ -122,7 +122,11 @@ HEADERS += \
     $$PWD/qmlscriptclass_p.h \
     $$PWD/qmlguard_p.h \
     $$PWD/qmlimageprovider.h \
-    $$PWD/qmlnetworkaccessmanagerfactory.h
+    $$PWD/qmlnetworkaccessmanagerfactory.h \
+    $$PWD/qmldirparser_p.h \
+    $$PWD/qmlextensioninterface.h \
+    $$PWD/qmlextensionplugin.h
+
 QT += sql
 include(parser/parser.pri)
 include(rewriter/rewriter.pri)

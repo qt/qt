@@ -100,11 +100,22 @@ public:
     qreal valueForProgress(qreal progress) const;
 private:
     QEasingCurvePrivate *d_ptr;
+#ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QEasingCurve &item);
+#endif
+#ifndef QT_NO_DATASTREAM
+    friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QEasingCurve&);
+    friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QEasingCurve &);
+#endif
 };
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QEasingCurve &item);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QEasingCurve&);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QEasingCurve &);
 #endif
 
 QT_END_NAMESPACE

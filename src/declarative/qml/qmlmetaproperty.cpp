@@ -44,7 +44,7 @@
 
 #include "qmlcompositetypedata_p.h"
 #include "qml.h"
-#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include "qmlcontext.h"
 #include "qmlcontext_p.h"
 #include "qmlboundsignal_p.h"
@@ -777,6 +777,7 @@ bool QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
         writeBack->read(object, core.coreIndex);
 
         QmlPropertyCache::Data data = core;
+        data.flags = valueType.flags;
         data.coreIndex = valueType.valueTypeCoreIdx;
         data.propType = valueType.valueTypePropType;
         rv = write(writeBack, data, value, context, flags);
@@ -1082,15 +1083,20 @@ struct ValueTypeSerializedData : public SerializedData {
 };
 
 QByteArray QmlMetaPropertyPrivate::saveValueType(const QMetaObject *metaObject, int index, 
-                                                 int subIndex, int subType)
+                                                 const QMetaObject *subObject, int subIndex)
 {
+    QMetaProperty prop = metaObject->property(index);
+    QMetaProperty subProp = subObject->property(subIndex);
+
     ValueTypeSerializedData sd;
     sd.type = QmlMetaProperty::ValueTypeProperty;
     sd.core.load(metaObject->property(index));
+    sd.valueType.flags = QmlPropertyCache::Data::flagsForProperty(subProp);
     sd.valueType.valueTypeCoreIdx = subIndex;
-    sd.valueType.valueTypePropType = subType;
+    sd.valueType.valueTypePropType = subProp.userType();
 
     QByteArray rv((const char *)&sd, sizeof(sd));
+
     return rv;
 }
 

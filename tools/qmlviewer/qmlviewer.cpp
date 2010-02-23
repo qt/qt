@@ -1061,11 +1061,11 @@ void QmlViewer::openQml(const QString& file_or_url)
         }
     }
 
-    canvas->setSource(url);
-
     QTime t;
     t.start();
-    canvas->execute();
+
+    canvas->setSource(url);
+
     qWarning() << "Wall startup time:" << t.elapsed();
 
     if (!skin) {

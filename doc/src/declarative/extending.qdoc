@@ -554,18 +554,6 @@ to be used in bindings should have a NOTIFY signal instead.
 \l {Extending QML -  Binding Example} shows the BirthdayParty example updated to
 include NOTIFY signals for use in binding.
 
-\section1 Binding and Script Properties
-
-While generally no changes are needed to a C++ class to use property
-binding, sometimes more advanced interaction between the binding engine and
-an object is desirable.  To facilitate this, there is a special exception
-in the bind engine for allowing an object to access the binding directly.
-
-If a binding is assigned to a property with a type of QmlBinding
-pointer (ie. \c {QmlBinding *}), each time the binding value changes,
-a QmlBinding instance is assigned to that property.  The QmlBinding instance
-allows the object to read the binding and to evaluate the binding's current value.
-
 \section1 Extension Objects
 
 \snippet examples/declarative/extending/extended/example.qml 0

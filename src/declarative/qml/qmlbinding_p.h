@@ -53,36 +53,82 @@
 // We mean it.
 //
 
-#include "qmlbinding.h"
+#include "qml.h"
+#include "qmlpropertyvaluesource.h"
+#include "qmlexpression.h"
 
-#include "qmlmetaproperty.h"
-#include "qmlexpression_p.h"
+#include <QtCore/QObject>
+#include <QtCore/QMetaProperty>
 
 QT_BEGIN_NAMESPACE
 
-class QmlBindingData : public QmlExpressionData
+class Q_AUTOTEST_EXPORT QmlAbstractBinding
 {
 public:
-    QmlBindingData();
-    virtual ~QmlBindingData();
+    QmlAbstractBinding();
+    virtual ~QmlAbstractBinding();
 
-    bool updating:1;
-    bool enabled:1;
+    virtual void destroy();
 
-    QmlMetaProperty property;
+    virtual QString expression() const;
 
-    virtual void refresh();
+    void setEnabled(bool e) { setEnabled(e, QmlMetaProperty::DontRemoveBinding); }
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags) = 0;
+    virtual int propertyIndex() = 0;
+
+    void update() { update(QmlMetaProperty::DontRemoveBinding); }
+    virtual void update(QmlMetaProperty::WriteFlags) = 0;
+
+    void addToObject(QObject *);
+    void removeFromObject();
+
+protected:
+    void clear();
+
+private:
+    friend class QmlDeclarativeData;
+    friend class QmlMetaProperty;
+    friend class QmlMetaPropertyPrivate;
+    friend class QmlVME;
+
+    QObject *m_object;
+    QmlAbstractBinding **m_mePtr;
+    QmlAbstractBinding **m_prevBinding;
+    QmlAbstractBinding  *m_nextBinding;
 };
 
-class QmlBindingPrivate : public QmlExpressionPrivate
+class QmlContext;
+class QmlBindingPrivate;
+class Q_AUTOTEST_EXPORT QmlBinding : public QmlExpression, public QmlAbstractBinding
 {
-    Q_DECLARE_PUBLIC(QmlBinding)
+Q_OBJECT
 public:
-    QmlBindingPrivate();
+    QmlBinding(const QString &, QObject *, QmlContext *, QObject *parent=0);
+    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, const QString &, int, 
+               QObject *parent);
+    ~QmlBinding();
 
-    QmlBindingData *bindingData() { return static_cast<QmlBindingData *>(data); }
-    const QmlBindingData *bindingData() const { return static_cast<const QmlBindingData *>(data); }
+    void setTarget(const QmlMetaProperty &);
+    QmlMetaProperty property() const;
+
+    bool enabled() const;
+
+    // Inherited from  QmlAbstractBinding
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
+    virtual int propertyIndex();
+    virtual void update(QmlMetaProperty::WriteFlags flags);
+    virtual QString expression() const;
+
+public Q_SLOTS:
+    void update() { update(QmlMetaProperty::DontRemoveBinding); }
+
+protected:
+    void emitValueChanged();
+
+private:
+    Q_DECLARE_PRIVATE(QmlBinding)
 };
+Q_DECLARE_METATYPE(QmlBinding*);
 
 QT_END_NAMESPACE
 

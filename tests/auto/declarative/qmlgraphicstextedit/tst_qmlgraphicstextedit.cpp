@@ -604,7 +604,6 @@ void tst_qmlgraphicstextedit::selection()
 void tst_qmlgraphicstextedit::inputMethodHints()
 {
     QmlView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
 
@@ -619,7 +618,6 @@ void tst_qmlgraphicstextedit::inputMethodHints()
 void tst_qmlgraphicstextedit::cursorDelegate()
 {
     QmlView* view = createView(SRCDIR "/data/cursorTest.qml");
-    view->execute();
     view->show();
     view->setFocus();
     QmlGraphicsTextEdit *textEditObject = view->rootObject()->findChild<QmlGraphicsTextEdit*>("textEditObject");
@@ -651,7 +649,6 @@ void tst_qmlgraphicstextedit::delegateLoading()
     server.serveDirectory(SRCDIR "/data/http");
     QmlView* view = new QmlView(0);
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestPass.qml"));
-    view->execute();
     view->show();
     view->setFocus();
     QTRY_VERIFY(view->rootObject());//Wait for loading to finish.
@@ -665,12 +662,10 @@ void tst_qmlgraphicstextedit::delegateLoading()
     delegate = view->rootObject()->findChild<QmlGraphicsItem*>("delegateSlow");
     QVERIFY(delegate);
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
-    view->execute();
     view->show();
     view->setFocus();
     QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
-    view->execute();
     view->show();
     view->setFocus();
     QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
@@ -688,7 +683,6 @@ the extent of the text, then they should ignore the keys.
 void tst_qmlgraphicstextedit::navigation()
 {
     QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
 
@@ -711,7 +705,6 @@ void tst_qmlgraphicstextedit::navigation()
 void tst_qmlgraphicstextedit::readOnly()
 {
     QmlView *canvas = createView(SRCDIR "/data/readOnly.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
 

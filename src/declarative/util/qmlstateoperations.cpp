@@ -373,7 +373,6 @@ void QmlStateChangeScript::execute()
     const QString &script = d->script.script();
     if (!script.isEmpty()) {
         QmlExpression expr(d->script.context(), script, d->script.scopeObject());
-        expr.setTrackChange(false);
         expr.value();
     }
 }

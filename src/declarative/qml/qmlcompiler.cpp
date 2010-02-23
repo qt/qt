@@ -63,7 +63,7 @@
 #include "qmlscriptstring.h"
 #include "qmlglobal_p.h"
 #include "qmlscriptparser_p.h"
-#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include "qmlcompiledbindings_p.h"
 
 #include <qfxperf_p_p.h>
@@ -1132,10 +1132,10 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
     Property *idProp = 0;
     if (obj->properties.count() > 1 ||
        (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
-        COMPILE_EXCEPTION(*obj->properties.begin(), QCoreApplication::translate("QmlCompiler","Invalid component specification"));
+        COMPILE_EXCEPTION(*obj->properties.begin(), QCoreApplication::translate("QmlCompiler","Component elements may not contain properties other than id"));
        
     if (!obj->scriptBlockObjects.isEmpty())
-        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), QCoreApplication::translate("QmlCompiler","Invalid component specification"));
+        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), QCoreApplication::translate("QmlCompiler","Component elements may not contain script blocks"));
 
     if (obj->properties.count())
         idProp = *obj->properties.begin();
@@ -2609,7 +2609,13 @@ int QmlCompiler::genContextCache()
 int QmlCompiler::genValueTypeData(QmlParser::Property *valueTypeProp, 
                                   QmlParser::Property *prop)
 {
-    return output->indexForByteArray(QmlMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, valueTypeProp->index, valueTypeProp->type));
+    QByteArray data =
+        QmlMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, 
+                                              QmlEnginePrivate::get(engine)->valueTypes[prop->type]->metaObject(), 
+                                              valueTypeProp->index);
+//                valueTypeProp->index, valueTypeProp->type);
+
+    return output->indexForByteArray(data);
 }
 
 int QmlCompiler::genPropertyData(QmlParser::Property *prop)

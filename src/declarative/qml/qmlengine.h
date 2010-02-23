@@ -78,6 +78,7 @@ public:
     void clearComponentCache();
 
     void addImportPath(const QString& dir);
+    bool importExtension(const QString &fileName, const QString &uri);
 
     void setNetworkAccessManagerFactory(QmlNetworkAccessManagerFactory *);
     QmlNetworkAccessManagerFactory *networkAccessManagerFactory() const;

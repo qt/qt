@@ -97,9 +97,9 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
 
-    Q_PROPERTY(QString html READ html WRITE setHtml)
+    Q_PROPERTY(QString html READ html WRITE setHtml NOTIFY htmlChanged)
 
-    Q_PROPERTY(int pressGrabTime READ pressGrabTime WRITE setPressGrabTime)
+    Q_PROPERTY(int pressGrabTime READ pressGrabTime WRITE setPressGrabTime NOTIFY pressGrabTimeChanged)
 
     Q_PROPERTY(int preferredWidth READ preferredWidth WRITE setPreferredWidth NOTIFY preferredWidthChanged)
     Q_PROPERTY(int preferredHeight READ preferredHeight WRITE setPreferredHeight NOTIFY preferredHeightChanged)
@@ -116,10 +116,10 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
 
     Q_PROPERTY(QmlListProperty<QObject> javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
-    Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
-    Q_PROPERTY(QmlGraphicsItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
+    Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent NOTIFY newWindowComponentChanged)
+    Q_PROPERTY(QmlGraphicsItem* newWindowParent READ newWindowParent WRITE setNewWindowParent NOTIFY newWindowParentChanged)
 
-    Q_PROPERTY(bool renderingEnabled READ renderingEnabled WRITE setRenderingEnabled)
+    Q_PROPERTY(bool renderingEnabled READ renderingEnabled WRITE setRenderingEnabled NOTIFY renderingEnabledChanged)
 
 public:
     QmlGraphicsWebView(QmlGraphicsItem *parent=0);
@@ -192,7 +192,12 @@ Q_SIGNALS:
     void titleChanged(const QString&);
     void iconChanged();
     void statusTextChanged();
+    void htmlChanged();
+    void pressGrabTimeChanged();
     void zoomFactorChanged();
+    void newWindowComponentChanged();
+    void newWindowParentChanged();
+    void renderingEnabledChanged();
 
     void loadStarted();
     void loadFinished();

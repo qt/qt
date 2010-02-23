@@ -67,6 +67,7 @@ class Q_DECLARATIVE_EXPORT QmlView : public QGraphicsView
 
 public:
     explicit QmlView(QWidget *parent = 0);
+    QmlView(const QUrl &source, QWidget *parent = 0);
     virtual ~QmlView();
 
     QUrl source() const;
@@ -74,7 +75,6 @@ public:
 
     QmlEngine* engine();
     QmlContext* rootContext();
-    void execute();
 
     QGraphicsObject *rootObject() const;
 
@@ -100,8 +100,10 @@ private Q_SLOTS:
 protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void paintEvent(QPaintEvent *event);
-    void timerEvent(QTimerEvent*);
+    virtual void timerEvent(QTimerEvent*);
+    virtual void setRootObject(QObject *obj);
 
+    friend class QmlViewPrivate;
     QmlViewPrivate *d;
 };
 

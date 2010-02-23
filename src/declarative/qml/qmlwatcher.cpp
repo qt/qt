@@ -154,6 +154,7 @@ bool QmlWatcher::addWatch(int id, quint32 objectId, const QString &expr)
     QmlContext *context = qmlContext(object);
     if (context) {
         QmlExpression *exprObj = new QmlExpression(context, expr, object);
+        exprObj->setNotifyOnValueChanged(true);
         QmlWatchProxy *proxy = new QmlWatchProxy(id, exprObj, objectId, this);
         exprObj->setParent(proxy);
         m_proxies[id].append(proxy);

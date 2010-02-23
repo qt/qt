@@ -88,7 +88,7 @@ Rectangle {
                     ScriptAction { script: console.log("Fix PropertyAction with attached properties") }
 /*
                     PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: true }
-                    NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
+                    NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing.type: "InOutQuad" }
                     PropertyAction { target: wrapper; property: "ListView.delayRemove"; value: false }
 */
                 }

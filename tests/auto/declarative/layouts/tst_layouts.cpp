@@ -67,7 +67,6 @@ void tst_QmlGraphicsLayouts::test_qml()
 {
     QmlView *canvas = createView(SRCDIR "/data/layouts.qml");
 
-    canvas->execute();
     qApp->processEvents();
     QmlGraphicsLayoutItem *left = static_cast<QmlGraphicsLayoutItem*>(canvas->rootObject()->findChild<QmlGraphicsItem*>("left"));
     QVERIFY(left != 0);

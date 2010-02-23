@@ -169,7 +169,7 @@ private:
 class QmlWorkerListModelAgent : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int count READ count);
+    Q_PROPERTY(int count READ count)
 
 public:
     QmlWorkerListModelAgent(QmlWorkerListModel *);

@@ -39,27 +39,19 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlmoduleplugin.h>
+#include <QtDeclarative/qmlextensionplugin.h>
 #include <QtDeclarative/qml.h>
 #include <QtMultimedia/qml.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMultimediaQmlModule : public QmlModulePlugin
+class QMultimediaQmlModule : public QmlExtensionPlugin
 {
     Q_OBJECT
 public:
-    QStringList keys() const
+    virtual void initialize(QmlEngine *engine, const char *uri)
     {
-        return QStringList() << QLatin1String("Qt.multimedia");
-    }
-
-    void defineModule(const QString& uri)
-    {
-        Q_UNUSED(uri)
-        Q_ASSERT(uri == QLatin1String("Qt.multimedia"));
-
-        QtMultimedia::qRegisterQmlElements();
+        QtMultimedia::qRegisterQmlElements(engine, uri);
     }
 };
 

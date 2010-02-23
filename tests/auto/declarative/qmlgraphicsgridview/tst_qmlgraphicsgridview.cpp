@@ -68,7 +68,7 @@ private slots:
     void positionViewAtIndex();
 
 private:
-    QmlView *createView(const QString &filename);
+    QmlView *createView();
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &id, int index=-1);
     template<typename T>
@@ -142,7 +142,7 @@ tst_QmlGraphicsGridView::tst_QmlGraphicsGridView()
 
 void tst_QmlGraphicsGridView::items()
 {
-    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     model.addItem("Fred", "12345");
@@ -157,7 +157,7 @@ void tst_QmlGraphicsGridView::items()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
     qApp->processEvents();
 
     QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
@@ -190,7 +190,7 @@ void tst_QmlGraphicsGridView::items()
 
 void tst_QmlGraphicsGridView::changed()
 {
-    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     model.addItem("Fred", "12345");
@@ -205,7 +205,7 @@ void tst_QmlGraphicsGridView::changed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
     qApp->processEvents();
 
     QmlGraphicsFlickable *gridview = findItem<QmlGraphicsFlickable>(canvas->rootObject(), "grid");
@@ -227,7 +227,7 @@ void tst_QmlGraphicsGridView::changed()
 
 void tst_QmlGraphicsGridView::inserted()
 {
-    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     model.addItem("Fred", "12345");
@@ -238,7 +238,7 @@ void tst_QmlGraphicsGridView::inserted()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
     qApp->processEvents();
 
     QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
@@ -309,7 +309,7 @@ void tst_QmlGraphicsGridView::inserted()
 
 void tst_QmlGraphicsGridView::removed()
 {
-    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 40; i++)
@@ -319,7 +319,7 @@ void tst_QmlGraphicsGridView::removed()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
     qApp->processEvents();
 
     QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
@@ -469,7 +469,7 @@ void tst_QmlGraphicsGridView::removed()
 
 void tst_QmlGraphicsGridView::moved()
 {
-    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -479,7 +479,7 @@ void tst_QmlGraphicsGridView::moved()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
     qApp->processEvents();
 
     QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
@@ -580,7 +580,6 @@ void tst_QmlGraphicsGridView::currentIndex()
     QString filename(SRCDIR "/data/gridview-initCurrent.qml");
     canvas->setSource(QUrl::fromLocalFile(filename));
 
-    canvas->execute();
     qApp->processEvents();
 
     QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
@@ -690,7 +689,7 @@ void tst_QmlGraphicsGridView::currentIndex()
 
 void tst_QmlGraphicsGridView::changeFlow()
 {
-    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -700,7 +699,7 @@ void tst_QmlGraphicsGridView::changeFlow()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
     qApp->processEvents();
 
     QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
@@ -795,7 +794,7 @@ void tst_QmlGraphicsGridView::properties()
 
 void tst_QmlGraphicsGridView::positionViewAtIndex()
 {
-    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 40; i++)
@@ -805,7 +804,7 @@ void tst_QmlGraphicsGridView::positionViewAtIndex()
     ctxt->setContextProperty("testModel", &model);
     ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview.qml"));
     qApp->processEvents();
 
     QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->rootObject(), "grid");
@@ -883,12 +882,10 @@ void tst_QmlGraphicsGridView::positionViewAtIndex()
     delete canvas;
 }
 
-QmlView *tst_QmlGraphicsGridView::createView(const QString &filename)
+QmlView *tst_QmlGraphicsGridView::createView()
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
-
-    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }

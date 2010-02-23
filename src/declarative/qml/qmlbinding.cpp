@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlbinding.h"
 #include "qmlbinding_p.h"
+#include "qmlbinding_p_p.h"
 
 #include "qml.h"
 #include "qmlcontext.h"
@@ -83,12 +83,14 @@ QmlBinding::QmlBinding(void *data, QmlRefCount *rc, QObject *obj, QmlContext *ct
 : QmlExpression(ctxt, data, rc, obj, url, lineNumber, *new QmlBindingPrivate)
 {
     setParent(parent);
+    setNotifyOnValueChanged(true);
 }
 
 QmlBinding::QmlBinding(const QString &str, QObject *obj, QmlContext *ctxt, QObject *parent)
 : QmlExpression(ctxt, str, obj, *new QmlBindingPrivate)
 {
     setParent(parent);
+    setNotifyOnValueChanged(true);
 }
 
 QmlBinding::~QmlBinding()
@@ -196,17 +198,17 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
     data->release();
 }
 
-void QmlBinding::emitValueChanged()
+void QmlBindingPrivate::emitValueChanged()
 {
-    update();
-    // don't bother calling valueChanged()
+    Q_Q(QmlBinding);
+    q->update();
 }
 
 void QmlBinding::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
 {
     Q_D(QmlBinding);
     d->bindingData()->enabled = e;
-    setTrackChange(e);
+    setNotifyOnValueChanged(e);
 
     QmlAbstractBinding::setEnabled(e, flags);
 

@@ -68,7 +68,7 @@ private slots:
     void properties();
 
 private:
-    QmlView *createView(const QString &filename);
+    QmlView *createView();
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &id);
 };
@@ -164,14 +164,14 @@ tst_QmlGraphicsRepeater::tst_QmlGraphicsRepeater()
 
 void tst_QmlGraphicsRepeater::numberModel()
 {
-    QmlView *canvas = createView(SRCDIR "/data/intmodel.qml");
+    QmlView *canvas = createView();
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", 5);
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/intmodel.qml"));
     qApp->processEvents();
 
     QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
@@ -186,7 +186,7 @@ void tst_QmlGraphicsRepeater::numberModel()
 
 void tst_QmlGraphicsRepeater::objectList()
 {
-    QmlView *canvas = createView(SRCDIR "/data/objlist.qml");
+    QmlView *canvas = createView();
 
     QObjectList data;
     for(int i=0; i<100; i++){
@@ -197,7 +197,7 @@ void tst_QmlGraphicsRepeater::objectList()
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", QVariant::fromValue(data));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/objlist.qml"));
     qApp->processEvents();
 
     QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
@@ -213,7 +213,7 @@ elements to test this.
 */
 void tst_QmlGraphicsRepeater::stringList()
 {
-    QmlView *canvas = createView(SRCDIR "/data/repeater.qml");
+    QmlView *canvas = createView();
 
     QStringList data;
     data << "One";
@@ -224,7 +224,7 @@ void tst_QmlGraphicsRepeater::stringList()
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", data);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater.qml"));
     qApp->processEvents();
 
     QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
@@ -265,7 +265,7 @@ void tst_QmlGraphicsRepeater::stringList()
 
 void tst_QmlGraphicsRepeater::dataModel()
 {
-    QmlView *canvas = createView(SRCDIR "/data/repeater2.qml");
+    QmlView *canvas = createView();
     QmlContext *ctxt = canvas->rootContext();
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
@@ -277,7 +277,7 @@ void tst_QmlGraphicsRepeater::dataModel()
 
     ctxt->setContextProperty("testData", &testModel);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater2.qml"));
     qApp->processEvents();
 
     QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
@@ -297,12 +297,12 @@ void tst_QmlGraphicsRepeater::dataModel()
 
 void tst_QmlGraphicsRepeater::itemModel()
 {
-    QmlView *canvas = createView(SRCDIR "/data/itemlist.qml");
+    QmlView *canvas = createView();
     QmlContext *ctxt = canvas->rootContext();
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/itemlist.qml"));
     qApp->processEvents();
 
     QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
@@ -354,12 +354,10 @@ void tst_QmlGraphicsRepeater::properties()
     QCOMPARE(delegateSpy.count(),1);
 }
 
-QmlView *tst_QmlGraphicsRepeater::createView(const QString &filename)
+QmlView *tst_QmlGraphicsRepeater::createView()
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
-
-    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
