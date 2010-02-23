@@ -117,7 +117,7 @@ private:
 
     bool    m_muted;
     bool    m_playQueued;
-    int     m_volume;
+    int     m_vol;
     int     m_duration;
     int     m_dataUploaded;
     QTime  m_playbackTime;

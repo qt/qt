@@ -67,6 +67,8 @@
 #include <pulse/ext-stream-restore.h>
 #endif
 
+#include <unistd.h>
+
 // Less than ideal
 #define PA_SCACHE_ENTRY_SIZE_MAX (1024*1024*16)
 
@@ -128,13 +130,13 @@ public:
 
     int volume()
     {
-        return m_volume;
+        return m_vol;
     }
 
 private:
     void prepare()
     {
-        m_volume = 100;
+        m_vol = 100;
 
         m_mainLoop = pa_threaded_mainloop_new();
         if (m_mainLoop == 0) {
@@ -215,13 +217,13 @@ private:
                 const unsigned str_length = 256;
                 char str[str_length];
                 pa_cvolume_snprint(str, str_length, &info->volume);
-                self->m_volume = QString(str).replace(" ","").replace("%","").mid(2).toInt();
+                self->m_vol = QString(str).replace(" ","").replace("%","").mid(2).toInt();
             }
         }
     }
 #endif
 
-    int  m_volume;
+    int  m_vol;
     bool m_prepared;
     pa_context *m_context;
     pa_threaded_mainloop *m_mainLoop;
@@ -236,7 +238,7 @@ QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     QObject(parent),
     m_muted(false),
     m_playQueued(false),
-    m_volume(100),
+    m_vol(100),
     m_duration(0),
     m_dataUploaded(0),
     m_state(QMediaPlayer::StoppedState),
@@ -260,7 +262,7 @@ qint64 QSoundEffectPrivate::duration() const
 
 int QSoundEffectPrivate::volume() const
 {
-    return m_volume;
+    return m_vol;
 }
 
 bool QSoundEffectPrivate::isMuted() const
@@ -298,7 +300,7 @@ void QSoundEffectPrivate::play()
 
     daemon()->lock();
 #if(Q_WS_MAEMO_5)
-    m_vol = PA_VOLUME_NORM/100*((daemon()->volume()+m_volume)/2);
+    m_vol = PA_VOLUME_NORM/100*((daemon()->volume()+m_vol)/2);
 #endif
     pa_operation_unref(
             pa_context_play_sample(daemon()->context(),
@@ -322,7 +324,7 @@ void QSoundEffectPrivate::stop()
 
 void QSoundEffectPrivate::setVolume(int volume)
 {
-    m_volume = volume;
+    m_vol = volume;
 }
 
 void QSoundEffectPrivate::setMuted(bool muted)

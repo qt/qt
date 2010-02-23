@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextInput QmlGraphicsTextInput
+  \since 4.7
     The TextInput item allows you to add an editable line of text to a scene.
 
     TextInput can only display a single line of text, and can only display

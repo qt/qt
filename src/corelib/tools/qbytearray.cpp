@@ -1804,7 +1804,20 @@ QByteArray &QByteArray::replace(int pos, int len, const QByteArray &after)
 */
 QByteArray &QByteArray::replace(int pos, int len, const char *after)
 {
-    int alen = qstrlen(after);
+    return replace(pos,len,after,qstrlen(after));
+}
+
+/*! \fn QByteArray &QByteArray::replace(int pos, int len, const char *after, int alen)
+
+    \overload
+
+    Replaces \a len bytes from index position \a pos with \a alen bytes
+    from the string \a after. \a after is allowed to have '\0' characters.
+
+    \since 4.7
+*/
+QByteArray &QByteArray::replace(int pos, int len, const char *after, int alen)
+{
     if (len == alen && (pos + len <= d->size)) {
         detach();
         memcpy(d->data + pos, after, len*sizeof(char));

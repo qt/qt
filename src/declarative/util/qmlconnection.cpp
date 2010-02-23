@@ -66,6 +66,7 @@ public:
 
 /*!
     \qmlclass Connection QmlConnection
+  \since 4.7
     \brief A Connection object describes generalized connections to signals.
 
     When connecting to signals in QML, the usual way is to create an

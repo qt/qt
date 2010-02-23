@@ -55,9 +55,6 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qdebug.h>
 
-
-QT_BEGIN_NAMESPACE
-
 @interface QTMovieObserver : NSObject
 {
 @private
@@ -148,6 +145,8 @@ QT_BEGIN_NAMESPACE
 }
 
 @end
+
+QT_BEGIN_NAMESPACE
 
 static CFStringRef qString2CFStringRef(const QString &string)
 {
