@@ -8,5 +8,5 @@ Item {
     signal clicked
 
     Image { id: icon }
-    MouseRegion { anchors.fill: icon; onClicked: button.clicked() }
+    MouseArea { anchors.fill: icon; onClicked: button.clicked() }
 }

@@ -109,7 +109,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsVisualItemModel : public QmlGraphicsVisual
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlGraphicsVisualItemModel)
 
-    Q_PROPERTY(QmlList<QmlGraphicsItem *>* children READ children NOTIFY childrenChanged DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QmlGraphicsItem> children READ children NOTIFY childrenChanged DESIGNABLE false)
     Q_CLASSINFO("DefaultProperty", "children")
 
 public:
@@ -126,7 +126,7 @@ public:
 
     virtual int indexOf(QmlGraphicsItem *item, QObject *objectContext) const;
 
-    QmlList<QmlGraphicsItem *> *children();
+    QmlListProperty<QmlGraphicsItem> children();
 
     static QmlGraphicsVisualItemModelAttached *qmlAttachedProperties(QObject *obj);
 

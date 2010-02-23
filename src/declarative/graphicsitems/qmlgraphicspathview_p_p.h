@@ -82,7 +82,6 @@ public:
         , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1)
         , moveReason(Other)
     {
-        fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsPathViewPrivate, &QmlGraphicsPathViewPrivate::fixOffset>(&moveOffset, this);
     }
 
     void init()
@@ -104,6 +103,7 @@ public:
 
     int calcCurrentIndex();
     void updateCurrent();
+    static void fixOffsetCallback(void*);
     void fixOffset();
     void setOffset(qreal offset);
     void regenerate();
@@ -127,7 +127,6 @@ public:
     qreal dragMargin;
     QmlTimeLine tl;
     QmlTimeLineValueProxy<QmlGraphicsPathViewPrivate> moveOffset;
-    QmlTimeLineEvent fixupOffsetEvent;
     int firstIndex;
     int pathItems;
     int pathOffset;

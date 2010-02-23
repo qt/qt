@@ -49,8 +49,12 @@ how to turn that knowledge into a complete and functioning application.
 
 This tutorial involves a significant amount of JavaScript to implement the game logic. An understanding of JavaScript is helpful to understand the JavaScript parts of this tutorial, but if you don't understand JavaScript you can still get a feel for how to integrate QML elements with backend logic which creates and controls them. From the QML perspective, there is little difference between integrating with backend logic written in C++ and backend logic written in JavaScript.
 
-In this tutorial we recreate, step by step, the Same Game demo in $QTDIR/demos/declarative/samegame.qml.
+In this tutorial we recreate, step by step, a version of the Same Game demo in $QTDIR/demos/declarative/samegame.qml.
 The results of the individual steps are in the $QTDIR/examples/declarative/tutorials/samegame directory.
+
+The Same Game demo has been extended since this tutorial was written. This tutorial only covers the version in 
+the $QTDIR/examples/declarative/tutorials/samegame directory. However once you have completed the tutorial you should be able
+to understand the extensions in the most recent Same Game demo, and even extend it yourself.
 
 Tutorial chapters:
 

@@ -48,7 +48,7 @@ Rectangle {
                     x: stickyImage.x
                     width: stickyImage.width * stickyImage.scale
                     height: stickyImage.height * stickyImage.scale
-                    MouseRegion {
+                    MouseArea {
                         id: mouse
                         onClicked: { myText.focus = true }
                         anchors.fill: parent

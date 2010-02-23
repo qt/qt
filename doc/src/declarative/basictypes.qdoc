@@ -294,7 +294,7 @@
   Actions are used like this:
 
   \qml
-  MouseRegion { onClicked: MyItem.myaction.trigger() }
+  MouseArea { onClicked: MyItem.myaction.trigger() }
   State { name: "enabled"; when: MyItem.myaction.enabled == true }
   Text { text: MyItem.someaction.text }
   \endqml

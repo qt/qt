@@ -11,7 +11,7 @@ Grid {
             anchors.fill: parent
             settings.autoLoadImages: false
             url: "test-img.html"
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onClicked: { parent.settings.autoLoadImages=true; label.text=""; parent.reload.trigger() }
             }

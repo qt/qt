@@ -14,7 +14,7 @@ Item {
         source: "pics/button-pressed.png"
         opacity: 0
     }
-    MouseRegion {
+    MouseArea {
         id: clickRegion
         anchors.fill: normal
         onClicked: { container.clicked(); }

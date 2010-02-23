@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSMOUSEREGION_P_H
-#define QMLGRAPHICSMOUSEREGION_P_H
+#ifndef QMLLIST_P_H
+#define QMLLIST_P_H
 
 //
 //  W A R N I N G
@@ -53,65 +53,33 @@
 // We mean it.
 //
 
-#include "qmlgraphicsitem_p.h"
-
-#include <qdatetime.h>
-#include <qbasictimer.h>
-#include <qgraphicssceneevent.h>
+#include "qmllist.h"
+#include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsMouseRegionPrivate : public QmlGraphicsItemPrivate
+class QmlListReferencePrivate
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsMouseRegion)
-
 public:
-    QmlGraphicsMouseRegionPrivate()
-      : absorb(true), hovered(false), pressed(false), longPress(false), drag(0)
-    {
+    QmlListReferencePrivate();
+
+    static QmlListReference init(const QmlListProperty<QObject> &, int, QmlEngine *);
+
+    QmlGuard<QObject> object;
+    const QMetaObject *elementType;
+    QmlListProperty<QObject> property;
+    int propertyType;
+
+    void addref();
+    void release();
+    int refCount;
+
+    static inline QmlListReferencePrivate *get(QmlListReference *ref) {
+        return ref->d;
     }
-
-    ~QmlGraphicsMouseRegionPrivate();
-
-    void init()
-    {
-        Q_Q(QmlGraphicsMouseRegion);
-        q->setAcceptedMouseButtons(Qt::LeftButton);
-    }
-
-    void saveEvent(QGraphicsSceneMouseEvent *event) {
-        lastPos = event->pos();
-        lastButton = event->button();
-        lastButtons = event->buttons();
-        lastModifiers = event->modifiers();
-    }
-
-    bool isConnected(const char *signal) {
-        Q_Q(QmlGraphicsMouseRegion);
-        int idx = QObjectPrivate::get(q)->signalIndex(signal);
-        return QObjectPrivate::get(q)->isSignalConnected(idx);
-    }
-
-    bool absorb : 1;
-    bool hovered : 1;
-    bool pressed : 1;
-    bool longPress : 1;
-    bool moved : 1;
-    bool dragX : 1;
-    bool dragY : 1;
-    bool dragged : 1;
-    QmlGraphicsDrag *drag;
-    QPointF start;
-    QPointF startScene;
-    qreal startX;
-    qreal startY;
-    QPointF lastPos;
-    Qt::MouseButton lastButton;
-    Qt::MouseButtons lastButtons;
-    Qt::KeyboardModifiers lastModifiers;
-    QBasicTimer pressAndHoldTimer;
 };
+
 
 QT_END_NAMESPACE
 
-#endif // QMLGRAPHICSMOUSEREGION_P_H
+#endif // QMLLIST_P_H

@@ -90,7 +90,7 @@ Rectangle {
                 font.pixelSize: 32
                 color: (wrapper.ListView.isCurrentItem && root.keyPressed) ? palette.highlightedText : palette.windowText
             }
-            MouseRegion {
+            MouseArea {
                 id: mouseRegion
                 anchors.fill: parent
                 onClicked: { launch() }
@@ -211,7 +211,7 @@ Rectangle {
             color: "transparent"
 
             Image { anchors.centerIn: parent; source: "images/up.png" }
-            MouseRegion { id: upRegion; anchors.centerIn: parent
+            MouseArea { id: upRegion; anchors.centerIn: parent
                 width: 56
                 height: 56
                 onClicked: if (folders.parentFolder != "") up()

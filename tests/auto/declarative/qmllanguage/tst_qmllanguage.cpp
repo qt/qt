@@ -76,7 +76,6 @@ private slots:
     void simpleObject();
     void simpleContainer();
     void interfaceProperty();
-    void interfaceQmlList();
     void interfaceQList();
     void assignObjectToSignal();
     void assignObjectToVariant();
@@ -233,7 +232,6 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("readOnly.2") << "readOnly.2.qml" << "readOnly.2.errors.txt" << false;
     QTest::newRow("readOnly.3") << "readOnly.3.qml" << "readOnly.3.errors.txt" << false;
 
-    QTest::newRow("listAssignment.1") << "listAssignment.1.qml" << "listAssignment.1.errors.txt" << false;
     QTest::newRow("listAssignment.2") << "listAssignment.2.qml" << "listAssignment.2.errors.txt" << false;
     QTest::newRow("listAssignment.3") << "listAssignment.3.qml" << "listAssignment.3.errors.txt" << false;
 
@@ -354,7 +352,7 @@ void tst_qmllanguage::simpleContainer()
     VERIFY_ERRORS(0);
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
-    QCOMPARE(container->children()->count(),2);
+    QCOMPARE(container->getChildren()->count(),2);
 }
 
 void tst_qmllanguage::interfaceProperty()
@@ -367,26 +365,15 @@ void tst_qmllanguage::interfaceProperty()
     QVERIFY(object->interface()->id == 913);
 }
 
-void tst_qmllanguage::interfaceQmlList()
-{
-    QmlComponent component(&engine, TEST_FILE("interfaceQmlList.qml"));
-    VERIFY_ERRORS(0);
-    MyContainer *container= qobject_cast<MyContainer*>(component.create());
-    QVERIFY(container != 0);
-    QVERIFY(container->qmllistAccessor().count() == 2);
-    for(int ii = 0; ii < 2; ++ii)
-        QVERIFY(container->qmllistAccessor().at(ii)->id == 913);
-}
-
 void tst_qmllanguage::interfaceQList()
 {
     QmlComponent component(&engine, TEST_FILE("interfaceQList.qml"));
     VERIFY_ERRORS(0);
     MyContainer *container= qobject_cast<MyContainer*>(component.create());
     QVERIFY(container != 0);
-    QVERIFY(container->qlistInterfaces()->count() == 2);
+    QVERIFY(container->getQListInterfaces()->count() == 2);
     for(int ii = 0; ii < 2; ++ii)
-        QVERIFY(container->qlistInterfaces()->at(ii)->id == 913);
+        QVERIFY(container->getQListInterfaces()->at(ii)->id == 913);
 }
 
 void tst_qmllanguage::assignObjectToSignal()
@@ -425,8 +412,8 @@ void tst_qmllanguage::assignQmlComponent()
     VERIFY_ERRORS(0);
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
-    QVERIFY(object->children()->count() == 1);
-    QObject *child = object->children()->at(0);
+    QVERIFY(object->getChildren()->count() == 1);
+    QObject *child = object->getChildren()->at(0);
     QCOMPARE(child->property("x"), QVariant(10));
     QCOMPARE(child->property("y"), QVariant(11));
 }
@@ -504,7 +491,7 @@ void tst_qmllanguage::rootAsQmlComponent()
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
     QCOMPARE(object->property("x"), QVariant(11));
-    QCOMPARE(object->children()->count(), 2);
+    QCOMPARE(object->getChildren()->count(), 2);
 }
 
 // Tests that components can be specified inline
@@ -514,8 +501,8 @@ void tst_qmllanguage::inlineQmlComponents()
     VERIFY_ERRORS(0);
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
-    QCOMPARE(object->children()->count(), 1);
-    QmlComponent *comp = qobject_cast<QmlComponent *>(object->children()->at(0));
+    QCOMPARE(object->getChildren()->count(), 1);
+    QmlComponent *comp = qobject_cast<QmlComponent *>(object->getChildren()->at(0));
     QVERIFY(comp != 0);
     MyQmlObject *compObject = qobject_cast<MyQmlObject *>(comp->create());
     QVERIFY(compObject != 0);
@@ -529,9 +516,9 @@ void tst_qmllanguage::idProperty()
     VERIFY_ERRORS(0);
     MyContainer *object = qobject_cast<MyContainer *>(component.create());
     QVERIFY(object != 0);
-    QCOMPARE(object->children()->count(), 1);
+    QCOMPARE(object->getChildren()->count(), 1);
     MyTypeObject *child = 
-        qobject_cast<MyTypeObject *>(object->children()->at(0));
+        qobject_cast<MyTypeObject *>(object->getChildren()->at(0));
     QVERIFY(child != 0);
     QCOMPARE(child->id(), QString("myObjectId"));
     QCOMPARE(object->property("object"), QVariant::fromValue((QObject *)child));
@@ -1034,13 +1021,13 @@ void tst_qmllanguage::defaultPropertyListOrder()
     MyContainer *container = qobject_cast<MyContainer *>(component.create());
     QVERIFY(container  != 0);
 
-    QCOMPARE(container->children()->count(), 6);
-    QCOMPARE(container->children()->at(0)->property("index"), QVariant(0));
-    QCOMPARE(container->children()->at(1)->property("index"), QVariant(1));
-    QCOMPARE(container->children()->at(2)->property("index"), QVariant(2));
-    QCOMPARE(container->children()->at(3)->property("index"), QVariant(3));
-    QCOMPARE(container->children()->at(4)->property("index"), QVariant(4));
-    QCOMPARE(container->children()->at(5)->property("index"), QVariant(5));
+    QCOMPARE(container->getChildren()->count(), 6);
+    QCOMPARE(container->getChildren()->at(0)->property("index"), QVariant(0));
+    QCOMPARE(container->getChildren()->at(1)->property("index"), QVariant(1));
+    QCOMPARE(container->getChildren()->at(2)->property("index"), QVariant(2));
+    QCOMPARE(container->getChildren()->at(3)->property("index"), QVariant(3));
+    QCOMPARE(container->getChildren()->at(4)->property("index"), QVariant(4));
+    QCOMPARE(container->getChildren()->at(5)->property("index"), QVariant(5));
 }
 
 void tst_qmllanguage::declaredPropertyValues()

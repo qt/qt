@@ -407,8 +407,12 @@ void tst_qmlstates::parentChange()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
-        qmlExecuteDeferred(rect->states()->at(0));
-        QmlParentChange *pChange = qobject_cast<QmlParentChange*>(rect->states()->at(0)->changes()->at(0));
+        QmlListReference list(rect, "states");
+        QmlState *state = qobject_cast<QmlState*>(list.at(0));
+        QVERIFY(state != 0);
+
+        qmlExecuteDeferred(state);
+        QmlParentChange *pChange = qobject_cast<QmlParentChange*>(state->operationAt(0));
         QVERIFY(pChange != 0);
         QmlGraphicsItem *nParent = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("NewParent"));
         QVERIFY(nParent != 0);
@@ -510,8 +514,12 @@ void tst_qmlstates::anchorChanges()
     QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
     QVERIFY(innerRect != 0);
 
-    qmlExecuteDeferred(rect->states()->at(0));
-    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QmlListReference list(rect, "states");
+    QmlState *state = qobject_cast<QmlState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(state->operationAt(0));
     QVERIFY(aChanges != 0);
 
     rect->setState("right");
@@ -565,8 +573,12 @@ void tst_qmlstates::anchorChanges3()
     QmlGraphicsItem *bottomGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("BottomGuideline"));
     QVERIFY(bottomGuideline != 0);
 
-    qmlExecuteDeferred(rect->states()->at(0));
-    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QmlListReference list(rect, "states");
+    QmlState *state = qobject_cast<QmlState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(state->operationAt(0));
     QVERIFY(aChanges != 0);
 
     rect->setState("reanchored");
@@ -611,8 +623,12 @@ void tst_qmlstates::anchorChanges4()
     QmlGraphicsItem *bottomGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("BottomGuideline"));
     QVERIFY(bottomGuideline != 0);
 
-    qmlExecuteDeferred(rect->states()->at(0));
-    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QmlListReference list(rect, "states");
+    QmlState *state = qobject_cast<QmlState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(state->operationAt(0));
     QVERIFY(aChanges != 0);
 
     rect->setState("reanchored");
@@ -642,8 +658,12 @@ void tst_qmlstates::anchorChanges5()
     QmlGraphicsItem *bottomGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("BottomGuideline"));
     QVERIFY(bottomGuideline != 0);
 
-    qmlExecuteDeferred(rect->states()->at(0));
-    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QmlListReference list(rect, "states");
+    QmlState *state = qobject_cast<QmlState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(state->operationAt(0));
     QVERIFY(aChanges != 0);
 
     rect->setState("reanchored");
@@ -700,7 +720,11 @@ void tst_qmlstates::explicitChanges()
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 
-    qmlExecuteDeferred(rect->states()->at(0));
+    QmlListReference list(rect, "states");
+    QmlState *state = qobject_cast<QmlState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
     QmlPropertyChanges *changes = qobject_cast<QmlPropertyChanges*>(rect->findChild<QmlPropertyChanges*>("changes"));
     QVERIFY(changes != 0);
     QVERIFY(changes->isExplicit());
@@ -802,7 +826,7 @@ void tst_qmlstates::deletingChange()
     QmlState *state = rect->findChild<QmlState*>();
     QVERIFY(state != 0);
     qmlExecuteDeferred(state);
-    QCOMPARE(state->changes()->count(), 1);
+    QCOMPARE(state->operationCount(), 1);
 
     rect->setState("blue");
     QCOMPARE(rect->color(),QColor("red"));

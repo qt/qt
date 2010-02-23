@@ -101,7 +101,7 @@ Item {
                         }
                     }
                 ]
-                MouseRegion {
+                MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onPressed: {
@@ -188,7 +188,7 @@ Item {
         anchors.right: field.right
         anchors.rightMargin: 20
         source: isPlaying ? 'pics/face-smile.png' : hasWon ? 'pics/face-smile-big.png': 'pics/face-sad.png'
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onPressed: { reset() }
         }

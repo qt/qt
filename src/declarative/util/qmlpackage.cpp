@@ -51,28 +51,33 @@ class QmlPackagePrivate : public QObjectPrivate
 public:
     QmlPackagePrivate() {}
 
-    class DataList;
     struct DataGuard : public QmlGuard<QObject>
     {
-        DataGuard(QObject *obj, DataList *l) : list(l) { (QmlGuard<QObject>&)*this = obj; }
-        DataList *list;
+        DataGuard(QObject *obj, QList<DataGuard> *l) : list(l) { (QmlGuard<QObject>&)*this = obj; }
+        QList<DataGuard> *list;
         void objectDestroyed(QObject *) {
             // we assume priv will always be destroyed after objectDestroyed calls
             list->removeOne(*this);
         }
     };
 
-    class DataList : public QList<DataGuard>, public QmlList<QObject*>
-    {
-    public:
-        virtual void append(QObject* v) { QList<DataGuard>::append(DataGuard(v, this)); }
-        virtual void insert(int i, QObject* v) { QList<DataGuard>::insert(i, DataGuard(v, this)); }
-        virtual void clear() { QList<DataGuard>::clear(); }
-        virtual QObject* at(int i) const { return QList<DataGuard>::at(i); }
-        virtual void removeAt(int i) { QList<DataGuard>::removeAt(i); }
-        virtual int count() const { return QList<DataGuard>::count(); }
-    };
-    DataList dataList;
+    QList<DataGuard> dataList;
+    static void data_append(QmlListProperty<QObject> *prop, QObject *o) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        list->append(DataGuard(o, list));
+    }
+    static void data_clear(QmlListProperty<QObject> *prop) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        list->clear();
+    }
+    static QObject *data_at(QmlListProperty<QObject> *prop, int index) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        return list->at(index);
+    }
+    static int data_count(QmlListProperty<QObject> *prop) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        return list->count();
+    }
 };
 
 class QmlPackageAttached : public QObject
@@ -128,10 +133,13 @@ QmlPackage::~QmlPackage()
     }
 }
 
-QmlList<QObject *> *QmlPackage::data()
+QmlListProperty<QObject> QmlPackage::data()
 {
     Q_D(QmlPackage);
-    return &d->dataList;
+    return QmlListProperty<QObject>(this, &d->dataList, QmlPackagePrivate::data_append, 
+                                                        QmlPackagePrivate::data_count, 
+                                                        QmlPackagePrivate::data_at, 
+                                                        QmlPackagePrivate::data_clear);
 }
 
 bool QmlPackage::hasPart(const QString &name)

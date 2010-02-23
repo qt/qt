@@ -10,7 +10,7 @@ Rectangle {
         anchors { left: parent.left; top: parent.top; leftMargin: 10; topMargin: 20 }
         width: 64; height: 64; radius: 6
         color: "Transparent"; border.color: "Gray"
-        MouseRegion { anchors.fill: parent; onClicked: page.state = '' }
+        MouseArea { anchors.fill: parent; onClicked: page.state = '' }
     }
 
     // Another target region.  Clicking in here sets the state to 'Position1'
@@ -19,7 +19,7 @@ Rectangle {
         anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 20 }
         width: 64; height: 64; radius: 6
         color: "Transparent"; border.color: "Gray"
-        MouseRegion { anchors.fill: parent; onClicked: page.state = 'Position1' }
+        MouseArea { anchors.fill: parent; onClicked: page.state = 'Position1' }
     }
 
     // Another target region.  Clicking in here sets the state to 'Position2'
@@ -28,7 +28,7 @@ Rectangle {
         anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 20 }
         width: 64; height: 64; radius: 6
         color: "Transparent"; border.color: "Gray"
-        MouseRegion { anchors.fill: parent; onClicked: page.state = 'Position2' }
+        MouseArea { anchors.fill: parent; onClicked: page.state = 'Position2' }
     }
 
     // The image which will be moved when my state changes

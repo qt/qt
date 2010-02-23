@@ -465,7 +465,7 @@ static QString winToQtFormat(const QString &sys_fmt)
             if (text == QLatin1String("'"))
                 result += QLatin1String("''");
             else
-                result += QLatin1Char('\'') + text + QLatin1Char('\'');
+                result += QString(QLatin1Char('\'') + text + QLatin1Char('\''));
             continue;
         }
 
@@ -681,8 +681,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 
     case DateTimeFormatLong:
     case DateTimeFormatShort:
-        return query(type == DateTimeFormatLong ? DateFormatLong : DateFormatShort).toString()
-            + QLatin1Char(' ') + query(type == DateTimeFormatLong ? TimeFormatLong : TimeFormatShort).toString();
+        return QString(query(type == DateTimeFormatLong ? DateFormatLong : DateFormatShort).toString()
+            + QLatin1Char(' ') + query(type == DateTimeFormatLong ? TimeFormatLong : TimeFormatShort).toString());
     case DayNameLong:
     case DayNameShort:
         return winDayName(in.toInt(), (type == DayNameShort));
@@ -698,8 +698,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case DateTimeToStringShort:
     case DateTimeToStringLong: {
         const QDateTime dt = in.toDateTime();
-        return winDateToString(dt.date(), type == DateTimeToStringShort ? DATE_SHORTDATE : DATE_LONGDATE)
-            + QLatin1Char(' ') + winTimeToString(dt.time()); }
+        return QString(winDateToString(dt.date(), type == DateTimeToStringShort ? DATE_SHORTDATE : DATE_LONGDATE)
+            + QLatin1Char(' ') + winTimeToString(dt.time())); }
 
     case ZeroDigit:
         locale_info = LOCALE_SNATIVEDIGITS;

@@ -58,7 +58,7 @@
             console.log(otherinterestingitem.property);
         }
     }
-    MouseRegion { onClicked: debugMyComponent() }
+    MouseArea { onClicked: debugMyComponent() }
     \endqml
 
     \note While it is possible to use any JavaScript code within a Script element,

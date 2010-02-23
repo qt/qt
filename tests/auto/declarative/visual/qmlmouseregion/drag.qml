@@ -8,7 +8,7 @@ Rectangle{
         id: draggable
         width:40; height:40; color: "lightsteelblue"
             y:20
-        MouseRegion{
+        MouseArea{
             anchors.fill: parent
             drag.target: draggable
             drag.axis: "XandYAxis"
