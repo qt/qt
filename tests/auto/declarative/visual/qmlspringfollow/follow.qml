@@ -11,11 +11,11 @@ Rectangle {
             repeat: true
             NumberAnimation {
                 to: 20; duration: 500
-                easing: "easeInOutQuad"
+                easing.type: "InOutQuad"
             }
             NumberAnimation {
                 to: 200; duration: 2000
-                easing: "easeOutBounce"
+                easing.type: "OutBounce"
             }
             PauseAnimation { duration: 1000 }
         }

@@ -132,6 +132,8 @@ public:
     QmlViewPrivate(QmlView *view)
         : q(view), root(0), component(0), resizeMode(QmlView::SizeViewToRootObject) {}
 
+    void execute();
+
     QmlView *q;
 
     QGuard<QGraphicsObject> root;
@@ -151,6 +153,20 @@ public:
 
     QGraphicsScene scene;
 };
+
+void QmlViewPrivate::execute()
+{
+    delete root;
+    delete component;
+    component = new QmlComponent(&engine, source, q);
+
+    if (!component->isLoading()) {
+        q->continueExecute();
+    } else {
+        QObject::connect(component, SIGNAL(statusChanged(QmlComponent::Status)), q, SLOT(continueExecute()));
+    }
+}
+
 
 /*!
     \class QmlView
@@ -188,9 +204,6 @@ public:
 
     QUrl url(fileName);
     view->setSource(url);
-    ...
-    view->execute();
-    ...
     view->show();
     \endcode
 
@@ -218,6 +231,19 @@ QmlView::QmlView(QWidget *parent)
 {
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     d->init();
+}
+
+/*!
+  \fn QmlView::QmlView(const QUrl &source, QWidget *parent)
+
+  Constructs a QmlView with the given QML \a source and \a parent.
+*/
+QmlView::QmlView(const QUrl &source, QWidget *parent)
+: QGraphicsView(parent), d(new QmlViewPrivate(this))
+{
+    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    d->init();
+    setSource(source);
 }
 
 void QmlViewPrivate::init()
@@ -254,15 +280,14 @@ QmlView::~QmlView()
 }
 
 /*!
-    Sets the source to the \a url.
-
-    Call \l execute() to load the QML and instantiate the component.
-
-    \sa execute()
+    Sets the source to the \a url, loads the QML component and instantiates it.
  */
 void QmlView::setSource(const QUrl& url)
 {
-    d->source = url;
+    if (url != d->source) {
+        d->source = url;
+        d->execute();
+    }
 }
 
 /*!
@@ -296,23 +321,6 @@ QmlContext* QmlView::rootContext()
     return d->engine.rootContext();
 }
 
-/*!
-    Loads and instantiates the QML component set by the \l setSource() method.
-
-    \sa setSource()
-*/
-void QmlView::execute()
-{
-    delete d->root;
-    delete d->component;
-    d->component = new QmlComponent(&d->engine, d->source, this);
-
-    if (!d->component->isLoading()) {
-        continueExecute();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
-    }
-}
 
 /*!
   \enum QmlView::Status

@@ -49,8 +49,8 @@
 #include "qmlvme_p.h"
 #include "qml.h"
 #include "qmlengine.h"
-#include "qmlbinding.h"
 #include "qmlbinding_p.h"
+#include "qmlbinding_p_p.h"
 #include "qmlglobal_p.h"
 #include "qmlscriptparser_p.h"
 

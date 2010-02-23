@@ -38,7 +38,7 @@ Item {
         Transition {
             NumberAnimation {
                 properties: "opacity,scale,x,y"
-                easing: "easeOutBounce"
+                easing.type: "OutBounce"
             }
         }
     ]

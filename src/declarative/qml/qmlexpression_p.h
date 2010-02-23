@@ -177,6 +177,8 @@ public:
         return expr->q_func();
     }
 
+    virtual void emitValueChanged();
+
     static void exceptionToError(QScriptEngine *, QmlError &);
     static QScriptValue evalInObjectScope(QmlContext *, QObject *, const QString &);
     static QScriptValue evalInObjectScope(QmlContext *, QObject *, const QScriptProgram &);

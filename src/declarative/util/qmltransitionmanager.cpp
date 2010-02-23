@@ -43,7 +43,7 @@
 
 #include "qmlstate_p_p.h"
 
-#include <qmlbinding.h>
+#include <qmlbinding_p.h>
 #include <qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE

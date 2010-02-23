@@ -124,7 +124,6 @@ QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val,
     QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 
     m_expression = new QmlExpression(ctxt, val, scope);
-    m_expression->setTrackChange(false);
 }
 
 QmlBoundSignal::~QmlBoundSignal()
@@ -157,7 +156,7 @@ QmlExpression *QmlBoundSignal::setExpression(QmlExpression *e)
 {
     QmlExpression *rv = m_expression;
     m_expression = e;
-    if (m_expression) m_expression->setTrackChange(false);
+    if (m_expression) m_expression->setNotifyOnValueChanged(false);
     return rv;
 }
 

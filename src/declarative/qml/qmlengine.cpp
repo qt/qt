@@ -51,7 +51,7 @@
 #include "qmlcomponent.h"
 #include "qmlmetaproperty_p.h"
 #include "qmlmoduleplugin.h"
-#include "qmlbinding_p.h"
+#include "qmlbinding_p_p.h"
 #include "qmlvme_p.h"
 #include "qmlenginedebug_p.h"
 #include "qmlstringconverters_p.h"

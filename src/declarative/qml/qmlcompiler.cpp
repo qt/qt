@@ -63,7 +63,7 @@
 #include "qmlscriptstring.h"
 #include "qmlglobal_p.h"
 #include "qmlscriptparser_p.h"
-#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include "qmlcompiledbindings_p.h"
 
 #include <qfxperf_p_p.h>
@@ -2609,7 +2609,13 @@ int QmlCompiler::genContextCache()
 int QmlCompiler::genValueTypeData(QmlParser::Property *valueTypeProp, 
                                   QmlParser::Property *prop)
 {
-    return output->indexForByteArray(QmlMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, valueTypeProp->index, valueTypeProp->type));
+    QByteArray data =
+        QmlMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, 
+                                              QmlEnginePrivate::get(engine)->valueTypes[prop->type]->metaObject(), 
+                                              valueTypeProp->index);
+//                valueTypeProp->index, valueTypeProp->type);
+
+    return output->indexForByteArray(data);
 }
 
 int QmlCompiler::genPropertyData(QmlParser::Property *prop)

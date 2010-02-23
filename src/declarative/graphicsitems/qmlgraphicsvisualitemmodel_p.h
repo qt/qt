@@ -49,6 +49,8 @@
 
 QT_BEGIN_HEADER
 
+Q_DECLARE_METATYPE(QModelIndex)
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
@@ -147,6 +149,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsVisualDataModel : public QmlGraphicsVisual
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(QString part READ part WRITE setPart)
     Q_PROPERTY(QObject *parts READ parts CONSTANT)
+    Q_PROPERTY(QModelIndex rootIndex READ rootIndex WRITE setRootIndex NOTIFY rootIndexChanged)
     Q_CLASSINFO("DefaultProperty", "delegate")
 public:
     QmlGraphicsVisualDataModel();
@@ -158,6 +161,9 @@ public:
 
     QmlComponent *delegate() const;
     void setDelegate(QmlComponent *);
+
+    QModelIndex rootIndex() const;
+    void setRootIndex(const QModelIndex &root);
 
     QString part() const;
     void setPart(const QString &);
@@ -178,6 +184,7 @@ public:
 Q_SIGNALS:
     void createdPackage(int index, QmlPackage *package);
     void destroyingPackage(QmlPackage *package);
+    void rootIndexChanged();
 
 private Q_SLOTS:
     void _q_itemsChanged(int, int, const QList<int> &);

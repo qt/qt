@@ -188,13 +188,13 @@ void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interv
 */
 
 /*!
-    \qmlproperty int ParticleMotionGravity::xattractor
-    \qmlproperty int ParticleMotionGravity::yattractor
+    \qmlproperty qreal ParticleMotionGravity::xattractor
+    \qmlproperty qreal ParticleMotionGravity::yattractor
     These properties hold the x and y coordinates of the point attracting the particles.
 */
 
 /*!
-    \qmlproperty int ParticleMotionGravity::acceleration
+    \qmlproperty qreal ParticleMotionGravity::acceleration
     This property holds the acceleration to apply to the particles.
 */
 
@@ -212,6 +212,31 @@ void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interv
     \property QmlGraphicsParticleMotionGravity::acceleration
     \brief the acceleration to apply to the particles.
 */
+
+void QmlGraphicsParticleMotionGravity::setXAttractor(qreal x)
+{
+    if (qFuzzyCompare(x, _xAttr))
+        return;
+    _xAttr = x;
+    emit xattractorChanged();
+}
+
+void QmlGraphicsParticleMotionGravity::setYAttractor(qreal y)
+{
+    if (qFuzzyCompare(y, _yAttr))
+        return;
+    _yAttr = y;
+    emit yattractorChanged();
+}
+
+void QmlGraphicsParticleMotionGravity::setAcceleration(qreal accel)
+{
+    qreal scaledAccel = accel/1000000.0;
+    if (qFuzzyCompare(scaledAccel, _accel))
+        return;
+    _accel = scaledAccel;
+    emit accelerationChanged();
+}
 
 void QmlGraphicsParticleMotionGravity::advance(QmlGraphicsParticle &p, int interval)
 {
@@ -276,14 +301,14 @@ Rectangle {
 */
 
 /*!
-    \qmlproperty int QmlGraphicsParticleMotionWander::xvariance
-    \qmlproperty int QmlGraphicsParticleMotionWander::yvariance
+    \qmlproperty qreal QmlGraphicsParticleMotionWander::xvariance
+    \qmlproperty qreal QmlGraphicsParticleMotionWander::yvariance
 
     These properties set the amount to wander in the x and y directions.
 */
 
 /*!
-    \qmlproperty int QmlGraphicsParticleMotionWander::pace
+    \qmlproperty qreal QmlGraphicsParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
 
@@ -333,6 +358,33 @@ void QmlGraphicsParticleMotionWander::destroy(QmlGraphicsParticle &p)
 {
     if (p.data)
         delete (Data*)p.data;
+}
+
+void QmlGraphicsParticleMotionWander::setXVariance(qreal var)
+{
+    qreal scaledVar = var / 1000.0;
+    if (qFuzzyCompare(scaledVar, _xvariance))
+        return;
+    _xvariance = scaledVar;
+    emit xvarianceChanged();
+}
+
+void QmlGraphicsParticleMotionWander::setYVariance(qreal var)
+{
+    qreal scaledVar = var / 1000.0;
+    if (qFuzzyCompare(scaledVar, _yvariance))
+        return;
+    _yvariance = scaledVar;
+    emit yvarianceChanged();
+}
+
+void QmlGraphicsParticleMotionWander::setPace(qreal pace)
+{
+    qreal scaledPace = pace / 1000.0;
+    if (qFuzzyCompare(scaledPace, _pace))
+        return;
+    _pace = scaledPace;
+    emit paceChanged();
 }
 
 //---------------------------------------------------------------------------
@@ -1125,7 +1177,10 @@ QmlGraphicsParticleMotion *QmlGraphicsParticles::motion() const
 void QmlGraphicsParticles::setMotion(QmlGraphicsParticleMotion *motion)
 {
     Q_D(QmlGraphicsParticles);
+    if (motion == d->motion)
+        return;
     d->motion = motion;
+    emit motionChanged();
 }
 
 /*!

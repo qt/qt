@@ -70,12 +70,10 @@ public:
     QmlContext *context() const;
 
     QString expression() const;
-    void clearExpression();
-    virtual void setExpression(const QString &);
-    bool isConstant() const;
+    void setExpression(const QString &);
 
-    bool trackChange() const;
-    void setTrackChange(bool);
+    bool notifyOnValueChanged() const;
+    void setNotifyOnValueChanged(bool);
 
     QString sourceFile() const;
     int lineNumber() const;
@@ -87,15 +85,12 @@ public:
     void clearError();
     QmlError error() const;
 
-public Q_SLOTS:
     QVariant value(bool *isUndefined = 0);
 
 Q_SIGNALS:
     void valueChanged();
 
 protected:
-    virtual void emitValueChanged();
-
     QmlExpression(QmlContext *, const QString &, QObject *, 
                   QmlExpressionPrivate &dd);
     QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, const QString &,

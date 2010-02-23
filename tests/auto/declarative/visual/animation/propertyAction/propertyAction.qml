@@ -28,7 +28,7 @@ Rectangle {
         SequentialAnimation {
             ColorAnimation {}
             PropertyAction { properties: "x" }
-            NumberAnimation { properties: "y"; easing: "InOutQuad" }
+            NumberAnimation { properties: "y"; easing.type: "InOutQuad" }
         }
     }
 }

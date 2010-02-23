@@ -375,6 +375,37 @@ object will only be returned if it has previously been created.
 \l {Extending QML - Attached Properties Example} shows the complete code used to
 implement the rsvp attached property.
 
+\section1 Memory Management and QVariant types
+
+It is an elements responsibility to ensure that it does not access or return
+pointers to invalid objects.  QML makes the following guarentees:
+
+\list
+\o An object assigned to an QObject (or QObject-derived) pointer property will be 
+valid at the time of assignment.  
+
+Following assignment, it is the responsibility of the class to subsequently guard 
+this pointer, either through a class specific method or the generic QPointer class.
+
+\o An object assigned to a QVariant will be valid at the time of assignment.  
+
+When assigning an object to a QVariant property, QML will always use a QMetaType::QObjectStar 
+typed QVariant.  It is the responsibility of the class to guard the pointer.  A 
+general rule when writing a class that uses QVariant properties is to check the 
+type of the QVariant when it is set and if the type is not handled by your class, 
+reset it to an invalid variant.
+
+\o An object assigned to a QObject (or QObject-derived) list property will be 
+valid at the time of assignment.  
+
+Following assignment, it is the responsibility of the class to subsequently guard 
+this pointer, either through a class specific method or the generic QPointer class.
+\endlist
+
+Elements should assume that any QML assigned object can be deleted at any time, and
+respond accordingly.  If documented as such an element need not continue to work in 
+this situation, but it must not crash.
+
 \section1 Signal Support
 
 \snippet examples/declarative/extending/signal/example.qml 0
@@ -525,18 +556,6 @@ to be used in bindings should have a NOTIFY signal instead.
 
 \l {Extending QML -  Binding Example} shows the BirthdayParty example updated to
 include NOTIFY signals for use in binding.
-
-\section1 Binding and Script Properties
-
-While generally no changes are needed to a C++ class to use property
-binding, sometimes more advanced interaction between the binding engine and
-an object is desirable.  To facilitate this, there is a special exception
-in the bind engine for allowing an object to access the binding directly.
-
-If a binding is assigned to a property with a type of QmlBinding
-pointer (ie. \c {QmlBinding *}), each time the binding value changes,
-a QmlBinding instance is assigned to that property.  The QmlBinding instance
-allows the object to read the binding and to evaluate the binding's current value.
 
 \section1 Extension Objects
 

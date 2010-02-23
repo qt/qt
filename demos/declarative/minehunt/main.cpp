@@ -167,13 +167,11 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     canvas->setFixedSize(width, height);
     vbox->addWidget(canvas);
 
-    canvas->setSource(QUrl::fromLocalFile(fileName));
-
     QmlContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);
     ctxt->setContextProperty("tiles", QVariant::fromValue<QList<Tile*>*>(&_tiles));//QTBUG-5675
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(fileName));
 }
 
 MyWidget::~MyWidget()
