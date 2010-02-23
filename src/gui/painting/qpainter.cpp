@@ -5699,6 +5699,61 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     d->engine->drawImage(QRectF(x, y, w, h), image, QRectF(sx, sy, sw, sh), flags);
 }
 
+
+void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray, const QPointF *positionArray,
+                    int glyphCount)
+{
+    QPainterPrivate *painter_d = QPainterPrivate::get(painter);
+    painter_d->drawGlyphs(glyphArray, positionArray, glyphCount);
+}
+
+void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *positionArray,
+                                 int glyphCount)
+{
+    updateState(state);
+
+    QFontEngine *fontEngine = state->font.d->engineForScript(QUnicodeTables::Common);
+
+    QVarLengthArray<QFixedPoint, 128> positions;
+    for (int i=0; i<glyphCount; ++i) {
+        QFixedPoint fp = QFixedPoint::fromPointF(positionArray[i]);
+        positions.append(fp);
+    }
+
+    if (extended != 0) {
+        QStaticTextItem staticTextItem;
+        staticTextItem.color = state->pen.color();
+        staticTextItem.font = state->font;
+        staticTextItem.fontEngine = fontEngine;
+        staticTextItem.numGlyphs = glyphCount;
+        staticTextItem.glyphs = reinterpret_cast<glyph_t *>(const_cast<glyph_t *>(glyphArray));
+        staticTextItem.glyphPositions = positions.data();
+
+        extended->drawStaticTextItem(&staticTextItem);
+    } else {
+        QTextItemInt textItem;
+        textItem.f = &state->font;
+        textItem.fontEngine = fontEngine;
+
+        QVarLengthArray<QFixed, 128> advances(glyphCount);
+        QVarLengthArray<QGlyphJustification, 128> glyphJustifications(glyphCount);
+        QVarLengthArray<HB_GlyphAttributes, 128> glyphAttributes(glyphCount);
+        qMemSet(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(HB_GlyphAttributes));
+        qMemSet(advances.data(), 0, advances.size() * sizeof(QFixed));
+        qMemSet(glyphJustifications.data(), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
+
+        textItem.glyphs.numGlyphs = glyphCount;
+        textItem.glyphs.glyphs = reinterpret_cast<HB_Glyph *>(const_cast<quint32 *>(glyphArray));
+        textItem.glyphs.offsets = positions.data();
+        textItem.glyphs.advances_x = advances.data();
+        textItem.glyphs.advances_y = advances.data();
+        textItem.glyphs.justifications = glyphJustifications.data();
+        textItem.glyphs.attributes = glyphAttributes.data();
+
+        engine->drawTextItem(QPointF(0, 0), textItem);
+    }
+}
+
 /*!
 
     \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
