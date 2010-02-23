@@ -211,6 +211,13 @@ bool QAudioOutputPrivate::open()
     QTime now(QTime::currentTime());
     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :open()";
 #endif
+    if (!(settings.frequency() >= 8000 && settings.frequency() <= 48000)) {
+        errorState = QAudio::OpenError;
+        deviceState = QAudio::StoppedState;
+        emit stateChanged(deviceState);
+        qWarning("QAudioOutput: open error, frequency out of range.");
+        return false;
+    }
     if(buffer_size == 0) {
         // Default buffer size, 200ms, default period size is 40ms
         buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.2;
@@ -289,6 +296,7 @@ void QAudioOutputPrivate::close()
         return;
 
     deviceState = QAudio::StoppedState;
+    errorState = QAudio::NoError;
     int delay = (buffer_size-bytesFree())*1000/(settings.frequency()
                   *settings.channels()*(settings.sampleSize()/8));
     waveOutReset(hWaveOut);
@@ -340,12 +348,20 @@ int QAudioOutputPrivate::notifyInterval() const
 
 qint64 QAudioOutputPrivate::processedUSecs() const
 {
-    return totalTimeValue;
+    if (deviceState == QAudio::StoppedState)
+        return 0;
+    qint64 result = qint64(1000000) * totalTimeValue /
+        (settings.channels()*(settings.sampleSize()/8)) /
+        settings.frequency();
+
+    return result;
 }
 
 qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
 {
     // Write out some audio data
+    if (deviceState != QAudio::ActiveState && deviceState != QAudio::IdleState)
+        return 0;
 
     char* p = (char*)data;
     int l = (int)len;
@@ -385,13 +401,16 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
                 current->dwBufferLength,waveFreeBlockCount);
         LeaveCriticalSection(&waveOutCriticalSection);
 #endif
-        totalTimeValue += current->dwBufferLength
-            /(settings.channels()*(settings.sampleSize()/8))
-            *1000000/settings.frequency();;
+        totalTimeValue += current->dwBufferLength;
         waveCurrentBlock++;
         waveCurrentBlock %= buffer_size/period_size;
         current = &waveBlocks[waveCurrentBlock];
         current->dwUser = 0;
+        errorState = QAudio::NoError;
+        if (deviceState != QAudio::ActiveState) {
+            deviceState = QAudio::ActiveState;
+            emit stateChanged(deviceState);
+        }
     }
     return (len-l);
 }
@@ -409,8 +428,11 @@ void QAudioOutputPrivate::resume()
 
 void QAudioOutputPrivate::suspend()
 {
-    if(deviceState == QAudio::ActiveState) {
+    if(deviceState == QAudio::ActiveState || deviceState == QAudio::IdleState) {
+        int delay = (buffer_size-bytesFree())*1000/(settings.frequency()
+                *settings.channels()*(settings.sampleSize()/8));
         waveOutPause(hWaveOut);
+        Sleep(delay+10);
         deviceState = QAudio::SuspendedState;
         errorState = QAudio::NoError;
         emit stateChanged(deviceState);
@@ -465,8 +487,16 @@ bool QAudioOutputPrivate::deviceReady()
         int l = audioSource->read(audioBuffer,input);
         if(l > 0) {
             int out= write(audioBuffer,l);
-            if(out > 0)
-                deviceState = QAudio::ActiveState;
+            if(out > 0) {
+                if (deviceState != QAudio::ActiveState) {
+                    deviceState = QAudio::ActiveState;
+                    emit stateChanged(deviceState);
+                }
+            }
+            if ( out < l) {
+                // Didnt write all data
+                audioSource->seek(audioSource->pos()-(l-out));
+            }
 	    if(startup)
 	        waveOutRestart(hWaveOut);
         } else if(l == 0) {
@@ -478,16 +508,28 @@ bool QAudioOutputPrivate::deviceReady()
             LeaveCriticalSection(&waveOutCriticalSection);
             if(check == buffer_size/period_size) {
                 errorState = QAudio::UnderrunError;
-                deviceState = QAudio::IdleState;
-                emit stateChanged(deviceState);
+                if (deviceState != QAudio::IdleState) {
+                    deviceState = QAudio::IdleState;
+                    emit stateChanged(deviceState);
+                }
             }
 
         } else if(l < 0) {
             bytesAvailable = bytesFree();
             errorState = QAudio::IOError;
         }
+    } else {
+        int buffered;
+	EnterCriticalSection(&waveOutCriticalSection);
+	buffered = waveFreeBlockCount;
+	LeaveCriticalSection(&waveOutCriticalSection);
+        errorState = QAudio::UnderrunError;
+        if (buffered >= buffer_size/period_size && deviceState == QAudio::ActiveState) {
+            deviceState = QAudio::IdleState;
+            emit stateChanged(deviceState);
+        }
     }
-    if(deviceState != QAudio::ActiveState)
+    if(deviceState != QAudio::ActiveState && deviceState != QAudio::IdleState)
         return true;
 
     if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
