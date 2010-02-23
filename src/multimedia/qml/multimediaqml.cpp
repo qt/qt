@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtMultimedia/qml.h>
+#include <QtMultimedia/multimediaqml.h>
 #include <QtMultimedia/private/qsoundeffect_p.h>
 #include <QtMultimedia/private/qmlaudio_p.h>
 #include <QtMultimedia/private/qmlgraphicsvideo_p.h>

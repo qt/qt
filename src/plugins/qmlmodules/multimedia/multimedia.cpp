@@ -41,7 +41,7 @@
 
 #include <QtDeclarative/qmlmoduleplugin.h>
 #include <QtDeclarative/qml.h>
-#include <QtMultimedia/qml.h>
+#include <QtMultimedia/multimediaqml.h>
 
 QT_BEGIN_NAMESPACE
 
