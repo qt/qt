@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtDeclarative/qmlmoduleplugin.h>
+#include <QtDeclarative/qmlextensionplugin.h>
 #include <QtDeclarative/qml.h>
 #include <QDebug>
 
@@ -63,7 +63,7 @@ private:
 QML_DECLARE_TYPE(MyPluginType);
 
 
-class MyPlugin : public QmlModulePlugin
+class MyPlugin : public QmlExtensionPlugin
 {
     Q_OBJECT
 public:
@@ -77,9 +77,9 @@ public:
         return QStringList() << QLatin1String("com.nokia.AutoTestQmlPluginType");
     }
 
-    void defineModule(const QString& uri)
+    void initialize(QmlEngine*, const char *uri)
     {
-        Q_ASSERT(uri == "com.nokia.AutoTestQmlPluginType");
+        Q_ASSERT(QLatin1String(uri) == "com.nokia.AutoTestQmlPluginType");
         QML_REGISTER_TYPE(com.nokia.AutoTestQmlPluginType,1,0,MyPluginType,MyPluginType);
     }
 };
