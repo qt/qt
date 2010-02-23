@@ -1642,21 +1642,23 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         s->matrix = old;
 }
 
-void QGL2PaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)
+void QGL2PaintEngineEx::drawPixmapFragments(const QPainter::Fragment *fragments, int fragmentCount, const QPixmap &pixmap, QPainter::FragmentHints hints)
 {
     Q_D(QGL2PaintEngineEx);
     // Use fallback for extended composition modes.
     if (state()->composition_mode > QPainter::CompositionMode_Plus) {
-        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+        QPaintEngineEx::drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
         return;
     }
 
     ensureActive();
-    d->drawPixmaps(drawingData, dataCount, pixmap, hints);
+    d->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
 }
 
 
-void QGL2PaintEngineExPrivate::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints)
+void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::Fragment *fragments,
+                                                   int fragmentCount, const QPixmap &pixmap,
+                                                   QPainter::FragmentHints hints)
 {
     GLfloat dx = 1.0f / pixmap.size().width();
     GLfloat dy = 1.0f / pixmap.size().height();
@@ -1677,28 +1679,29 @@ void QGL2PaintEngineExPrivate::drawPixmaps(const QDrawPixmaps::Data *drawingData
 
     bool allOpaque = true;
 
-    for (int i = 0; i < dataCount; ++i) {
+    for (int i = 0; i < fragmentCount; ++i) {
         qreal s = 0;
         qreal c = 1;
-        if (drawingData[i].rotation != 0) {
-            s = qFastSin(drawingData[i].rotation * Q_PI / 180);
-            c = qFastCos(drawingData[i].rotation * Q_PI / 180);
+        if (fragments[i].rotation != 0) {
+            s = qFastSin(fragments[i].rotation * Q_PI / 180);
+            c = qFastCos(fragments[i].rotation * Q_PI / 180);
         }
 
-        qreal right = 0.5 * drawingData[i].scaleX * drawingData[i].source.width();
-        qreal bottom = 0.5 * drawingData[i].scaleY * drawingData[i].source.height();
+        qreal right = 0.5 * fragments[i].scaleX * fragments[i].width;
+        qreal bottom = 0.5 * fragments[i].scaleY * fragments[i].height;
         QGLPoint bottomRight(right * c - bottom * s, right * s + bottom * c);
         QGLPoint bottomLeft(-right * c - bottom * s, -right * s + bottom * c);
 
-        vertexCoordinateArray.lineToArray(bottomRight.x + drawingData[i].point.x(), bottomRight.y + drawingData[i].point.y());
-        vertexCoordinateArray.lineToArray(-bottomLeft.x + drawingData[i].point.x(), -bottomLeft.y + drawingData[i].point.y());
-        vertexCoordinateArray.lineToArray(-bottomRight.x + drawingData[i].point.x(), -bottomRight.y + drawingData[i].point.y());
-        vertexCoordinateArray.lineToArray(-bottomRight.x + drawingData[i].point.x(), -bottomRight.y + drawingData[i].point.y());
-        vertexCoordinateArray.lineToArray(bottomLeft.x + drawingData[i].point.x(), bottomLeft.y + drawingData[i].point.y());
-        vertexCoordinateArray.lineToArray(bottomRight.x + drawingData[i].point.x(), bottomRight.y + drawingData[i].point.y());
+        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.lineToArray(-bottomLeft.x + fragments[i].x, -bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.lineToArray(-bottomRight.x + fragments[i].x, -bottomRight.y + fragments[i].y);
+        vertexCoordinateArray.lineToArray(bottomLeft.x + fragments[i].x, bottomLeft.y + fragments[i].y);
+        vertexCoordinateArray.lineToArray(bottomRight.x + fragments[i].x, bottomRight.y + fragments[i].y);
 
-        QGLRect src(drawingData[i].source.left() * dx, drawingData[i].source.top() * dy,
-                    drawingData[i].source.right() * dx, drawingData[i].source.bottom() * dy);
+        QGLRect src(fragments[i].sourceLeft * dx, fragments[i].sourceTop * dy,
+                    (fragments[i].sourceLeft + fragments[i].width) * dx,
+                    (fragments[i].sourceTop + fragments[i].height) * dy);
 
         textureCoordinateArray.lineToArray(src.right, src.bottom);
         textureCoordinateArray.lineToArray(src.right, src.top);
@@ -1707,7 +1710,7 @@ void QGL2PaintEngineExPrivate::drawPixmaps(const QDrawPixmaps::Data *drawingData
         textureCoordinateArray.lineToArray(src.left, src.bottom);
         textureCoordinateArray.lineToArray(src.right, src.bottom);
 
-        qreal opacity = drawingData[i].opacity * q->state()->opacity;
+        qreal opacity = fragments[i].opacity * q->state()->opacity;
         opacityArray << opacity << opacity << opacity << opacity << opacity << opacity;
         allOpaque &= (opacity >= 0.99f);
     }
@@ -1720,21 +1723,22 @@ void QGL2PaintEngineExPrivate::drawPixmaps(const QDrawPixmaps::Data *drawingData
     if (texture->options & QGLContext::InvertedYBindOption) {
         // Flip texture y-coordinate.
         QGLPoint *data = textureCoordinateArray.data();
-        for (int i = 0; i < 6 * dataCount; ++i)
+        for (int i = 0; i < 6 * fragmentCount; ++i)
             data[i].y = 1 - data[i].y;
     }
 
     transferMode(ImageArrayDrawingMode);
 
     bool isBitmap = pixmap.isQBitmap();
-    bool isOpaque = !isBitmap && (!pixmap.hasAlphaChannel() || (hints & QDrawPixmaps::OpaqueHint)) && allOpaque;
+    bool isOpaque = !isBitmap && (!pixmap.hasAlphaChannel() || (hints & QPainter::OpaqueHint)) && allOpaque;
 
     updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            q->state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
 
     // Setup for texture drawing
     currentBrush = noBrush;
-    shaderManager->setSrcPixelType(isBitmap ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
+    shaderManager->setSrcPixelType(isBitmap ? QGLEngineShaderManager::PatternSrc
+                                            : QGLEngineShaderManager::ImageSrc);
     if (prepareForDraw(isOpaque))
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
 
@@ -1743,7 +1747,7 @@ void QGL2PaintEngineExPrivate::drawPixmaps(const QDrawPixmaps::Data *drawingData
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
     }
 
-    glDrawArrays(GL_TRIANGLES, 0, 6 * dataCount);
+    glDrawArrays(GL_TRIANGLES, 0, 6 * fragmentCount);
 }
 
 bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)

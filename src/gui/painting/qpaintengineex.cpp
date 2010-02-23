@@ -970,23 +970,26 @@ void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
     fill(path, brush);
 }
 
-void QPaintEngineEx::drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints /*hints*/)
+void QPaintEngineEx::drawPixmapFragments(const QPainter::Fragment *fragments, int fragmentCount,
+                                         const QPixmap &pixmap, QPainter::FragmentHints /*hints*/)
 {
     qreal oldOpacity = state()->opacity;
     QTransform oldTransform = state()->matrix;
 
-    for (int i = 0; i < dataCount; ++i) {
+    for (int i = 0; i < fragmentCount; ++i) {
         QTransform transform = oldTransform;
-        transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
-        transform.rotate(drawingData[i].rotation);
-        state()->opacity = oldOpacity * drawingData[i].opacity;
+        transform.translate(fragments[i].x, fragments[i].y);
+        transform.rotate(fragments[i].rotation);
+        state()->opacity = oldOpacity * fragments[i].opacity;
         state()->matrix = transform;
         opacityChanged();
         transformChanged();
 
-        qreal w = drawingData[i].scaleX * drawingData[i].source.width();
-        qreal h = drawingData[i].scaleY * drawingData[i].source.height();
-        drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, drawingData[i].source);
+        qreal w = fragments[i].scaleX * fragments[i].width;
+        qreal h = fragments[i].scaleY * fragments[i].height;
+        QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
+                          fragments[i].width, fragments[i].height);
+        drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, sourceRect);
     }
 
     state()->opacity = oldOpacity;
