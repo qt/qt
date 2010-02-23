@@ -82,6 +82,8 @@ public:
 
     QmlBindingData *bindingData() { return static_cast<QmlBindingData *>(data); }
     const QmlBindingData *bindingData() const { return static_cast<const QmlBindingData *>(data); }
+
+    virtual void emitValueChanged();
 };
 
 QT_END_NAMESPACE

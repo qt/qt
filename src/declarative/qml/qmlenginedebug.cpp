@@ -408,14 +408,13 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
         QmlContext *context = qmlContext(object);
         QVariant result;
         if (object && context) {
-            QmlExpression *exprObj = new QmlExpression(context, expr, object);
+            QmlExpression exprObj(context, expr, object);
             bool undefined = false;
-            QVariant value = exprObj->value(&undefined);
+            QVariant value = exprObj.value(&undefined);
             if (undefined)
                 result = QLatin1String("<undefined>");
             else
                 result = valueContents(value);
-            delete exprObj;
         } else {
             result = QLatin1String("<unknown context>");
         }

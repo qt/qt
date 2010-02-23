@@ -70,7 +70,7 @@ bool QmlDelayedError::addError(QmlEnginePrivate *e)
 
 QmlExpressionData::QmlExpressionData()
 : q(0), dataRef(0), expressionFunctionValid(false), expressionRewritten(false), me(0), 
-  trackChange(true), isShared(false), line(-1), guardList(0), guardListLength(0)
+  trackChange(false), isShared(false), line(-1), guardList(0), guardListLength(0)
 {
 }
 
@@ -270,14 +270,6 @@ QString QmlExpression::expression() const
 {
     Q_D(const QmlExpression);
     return d->data->expression;
-}
-
-/*!
-    Clear the expression.
-*/
-void QmlExpression::clearExpression()
-{
-    setExpression(QString());
 }
 
 /*!
@@ -495,44 +487,34 @@ QVariant QmlExpression::value(bool *isUndefined)
 }
 
 /*!
-    Returns true if the expression results in a constant value.
-    QmlExpression::value() must have been invoked at least once before the
-    return from this method is valid.
- */
-bool QmlExpression::isConstant() const
-{
-    Q_D(const QmlExpression);
-    return !d->data->guardList;
-}
-
-/*!
-    Returns true if the changes are tracked in the expression's value.
+Returns true if the valueChanged() signal is emitted when the expression's evaluated
+value changes.
 */
-bool QmlExpression::trackChange() const
+bool QmlExpression::notifyOnValueChanged() const
 {
     Q_D(const QmlExpression);
     return d->data->trackChange;
 }
 
 /*!
-    Set whether changes are tracked in the expression's value to \a trackChange.
+Sets whether the valueChanged() signal is emitted when the expression's evaluated
+value changes.
 
-    If true, the QmlExpression will monitor properties involved in the
-    expression's evaluation, and call QmlExpression::valueChanged() if they have
-    changed.  This allows an application to ensure that any value associated
-    with the result of the expression remains up to date.
+If true, the QmlExpression will monitor properties involved in the expression's 
+evaluation, and emit QmlExpression::valueChanged() if they have changed.  This allows 
+an application to ensure that any value associated with the result of the expression 
+remains up to date.
 
-    If false, the QmlExpression will not montitor properties involved in the
-    expression's evaluation, and QmlExpression::valueChanged() will never be
-    called.  This is more efficient if an application wants a "one off"
-    evaluation of the expression.
+If false, the QmlExpression will not montitor properties involved in the expression's 
+evaluation, and QmlExpression::valueChanged() will never be emitted.  This is more efficient 
+if an application wants a "one off" evaluation of the expression.
 
-    By default, trackChange is true.
+By default, notifyOnChange is false.
 */
-void QmlExpression::setTrackChange(bool trackChange)
+void QmlExpression::setNotifyOnValueChanged(bool notifyOnChange)
 {
     Q_D(QmlExpression);
-    d->data->trackChange = trackChange;
+    d->data->trackChange = notifyOnChange;
 }
 
 /*!
@@ -618,7 +600,8 @@ QmlError QmlExpression::error() const
 /*! \internal */
 void QmlExpression::__q_notify()
 {
-    emitValueChanged();
+    Q_D(QmlExpression);
+    d->emitValueChanged();
 }
 
 void QmlExpressionPrivate::clearGuards()
@@ -765,13 +748,10 @@ void QmlExpressionPrivate::updateGuards(const QPODVector<QmlEnginePrivate::Captu
     calling QmlExpression::value()) before this signal will be emitted.
 */
 
-/*!
-    Subclasses can capture the emission of the valueChanged() signal by overriding
-    this function. They can choose whether to then call valueChanged().
-*/
-void QmlExpression::emitValueChanged()
+void QmlExpressionPrivate::emitValueChanged()
 {
-    emit valueChanged();
+    Q_Q(QmlExpression);
+    emit q->valueChanged();
 }
 
 QmlAbstractExpression::QmlAbstractExpression()
