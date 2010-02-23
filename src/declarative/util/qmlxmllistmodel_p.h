@@ -132,9 +132,10 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModelRole : public QObject
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString query READ query WRITE setQuery)
+    Q_PROPERTY(bool isKey READ isKey WRITE setIsKey)
 
 public:
-    QmlXmlListModelRole() {}
+    QmlXmlListModelRole() : m_isKey(false) {}
     ~QmlXmlListModelRole() {}
 
     QString name() const { return m_name; }
@@ -150,6 +151,9 @@ public:
         m_query = query;
     }
 
+    bool isKey() const { return m_isKey; }
+    void setIsKey(bool b) { m_isKey = b; }
+
     bool isValid() {
         return !m_name.isEmpty() && !m_query.isEmpty();
     }
@@ -157,6 +161,7 @@ public:
 private:
     QString m_name;
     QString m_query;
+    bool m_isKey;
 };
 
 QT_END_NAMESPACE
