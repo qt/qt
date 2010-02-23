@@ -73,11 +73,11 @@ uint qDetectCPUFeatures()
 #elif defined(QT_HAVE_IWMMXT)
     // runtime detection only available when running as a previlegied process
     static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
-    features = doIWMMXT ? IWMMXT : 0
+    features = doIWMMXT ? IWMMXT : 0;
     return features;
 #elif defined(QT_HAVE_NEON)
     static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
-    features = doNEON ? NEON : 0
+    features = doNEON ? NEON : 0;
     return features;
 #else
     features = 0;

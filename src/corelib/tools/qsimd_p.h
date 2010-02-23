@@ -96,11 +96,13 @@ QT_MODULE(Core)
 #endif
 #endif
 
+#if defined(QT_HAVE_IWMMXT)
 #if !defined(__IWMMXT__) && !defined(Q_OS_WINCE)
 #  include <xmmintrin.h>
 #elif defined(Q_OS_WINCE_STD) && defined(_X86_)
 #  pragma warning(disable: 4391)
 #  include <xmmintrin.h>
+#endif
 #endif
 
 // 3D now intrinsics
