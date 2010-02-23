@@ -46,6 +46,7 @@
 #include <qtextcodec.h>
 #endif
 #include <private/qutfcodec_p.h>
+#include "qsimd_p.h"
 #include <qdatastream.h>
 #include <qlist.h>
 #include "qlocale.h"
@@ -3612,10 +3613,29 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         d->alloc = d->size = size;
         d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
         d->data = d->array;
-        ushort *i = d->data;
         d->array[size] = '\0';
+        ushort *dst = d->data;
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (size >= 16) {
+            int chunkCount = size >> 4; // divided by 16
+            const __m128i nullMask = _mm_set1_epi32(0);
+            for (int i = 0; i < chunkCount; ++i) {
+                const __m128i chunk = _mm_loadu_si128((__m128i*)str);
+                str += 16;
+
+                const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, firstHalf);
+                dst += 8;
+
+                const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, secondHalf);
+                dst += 8;
+            }
+            size = size % 16;
+        }
+#endif
         while (size--)
-            *i++ = (uchar)*str++;
+            *dst++ = (uchar)*str++;
     }
     return d;
 }

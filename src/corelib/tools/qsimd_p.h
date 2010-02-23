@@ -60,6 +60,15 @@ QT_MODULE(Core)
 #undef QT_HAVE_MMX
 #endif
 
+
+#if defined(__x86_64__) || defined(Q_OS_WIN64) || defined(__ia64__) || defined(__SSE2__)
+#if defined(QT_HAVE_SSE2)
+// Defined for small fast functions that can take advantages of SSE2 intrinsics
+#define QT_ALWAYS_HAVE_SSE2
+#endif
+#endif
+
+
 // SSE intrinsics
 #if defined(QT_HAVE_SSE2) || defined(QT_HAVE_SSE) || defined(QT_HAVE_MMX)
 #if defined(QT_LINUXBASE)
