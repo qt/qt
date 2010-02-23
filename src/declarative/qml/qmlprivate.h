@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,19 +72,6 @@ public:
 
 namespace QmlPrivate
 {
-    class ListInterface
-    {
-    public:
-        virtual ~ListInterface() {}
-        virtual int type() const = 0;
-        virtual void append(void *) = 0;
-        virtual void insert(int, void *) = 0;
-        virtual void removeAt(int) = 0;
-        virtual void at(int, void *) const = 0;
-        virtual int count() const = 0;
-        virtual void clear() = 0;
-    };
-
     template<typename T>
     QObject *create() { return new T; }
 
@@ -183,7 +170,6 @@ namespace QmlPrivate
     struct MetaTypeIds {
         int typeId;
         int listId;
-        int qmlListId;
     };
     typedef QObject *(*CreateFunc)(QObject *);
 

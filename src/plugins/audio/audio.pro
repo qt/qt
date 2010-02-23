@@ -1,3 +1,9 @@
 TEMPLATE = subdirs
+SUBDIRS =
 
-#SUBDIRS += ossaudio
+contains(QT_CONFIG, audio-backend) {
+    symbian {
+        SUBDIRS += symbian
+    }
+}
+

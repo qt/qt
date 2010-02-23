@@ -159,6 +159,8 @@ public:
     QRect cursorRect(const QTextCursor &cursor) const;
     QRect cursorRect() const;
 
+    QString anchorAt(const QPoint &pos) const;
+
     bool overwriteMode() const;
     void setOverwriteMode(bool overwrite);
 

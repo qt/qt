@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,9 +171,6 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::BeginObject:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "BEGIN\t\t\t" << instr->begin.castValue;
         break;
-    case QmlInstruction::StoreObjectQmlList:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJECT_QMLLIST";
-        break;
     case QmlInstruction::StoreObjectQList:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJECT_QLIST";
         break;
@@ -182,9 +179,6 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
         break;
     case QmlInstruction::FetchAttached:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_ATTACHED\t\t" << instr->fetchAttached.id;
-        break;
-    case QmlInstruction::FetchQmlList:
-        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_QMLLIST\t\t" << instr->fetchQmlList.property << "\t" << instr->fetchQmlList.type;
         break;
     case QmlInstruction::FetchQList:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_QLIST\t\t" << instr->fetch.property;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -132,8 +132,6 @@ QmlGraphicsFlickablePrivate::QmlGraphicsFlickablePrivate()
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
     , flickDirection(QmlGraphicsFlickable::AutoFlickDirection)
 {
-    fixupXEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupX>(&_moveX, this);
-    fixupYEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupY>(&_moveY, this);
 }
 
 void QmlGraphicsFlickablePrivate::init()
@@ -176,7 +174,7 @@ void QmlGraphicsFlickablePrivate::flickX(qreal velocity)
         }
         timeline.reset(_moveX);
         timeline.accel(_moveX, v, deceleration, maxDistance);
-        timeline.execute(fixupXEvent);
+        timeline.callback(QmlTimeLineCallback(&_moveX, fixupX_callback, this));
         if (!flicked) {
             flicked = true;
             emit q->flickingChanged();
@@ -214,7 +212,7 @@ void QmlGraphicsFlickablePrivate::flickY(qreal velocity)
         }
         timeline.reset(_moveY);
         timeline.accel(_moveY, v, deceleration, maxDistance);
-        timeline.execute(fixupYEvent);
+        timeline.callback(QmlTimeLineCallback(&_moveY, fixupY_callback, this));
         if (!flicked) {
             flicked = true;
             emit q->flickingChanged();
@@ -253,6 +251,16 @@ void QmlGraphicsFlickablePrivate::fixupX()
     }
 
     vTime = timeline.time();
+}
+
+void QmlGraphicsFlickablePrivate::fixupY_callback(void *data)
+{
+    ((QmlGraphicsFlickablePrivate *)data)->fixupY();
+}
+
+void QmlGraphicsFlickablePrivate::fixupX_callback(void *data)
+{
+    ((QmlGraphicsFlickablePrivate *)data)->fixupX();
 }
 
 void QmlGraphicsFlickablePrivate::fixupY()
@@ -937,51 +945,22 @@ void QmlGraphicsFlickable::cancelFlick()
     movementEnding();
 }
 
-void QmlGraphicsFlickablePrivate::data_removeAt(int)
+void QmlGraphicsFlickablePrivate::data_append(QmlListProperty<QObject> *prop, QObject *o)
 {
-    // ###
-}
-
-int QmlGraphicsFlickablePrivate::data_count() const
-{
-    // ###
-    return 0;
-}
-
-void QmlGraphicsFlickablePrivate::data_append(QObject *o)
-{
-    Q_Q(QmlGraphicsFlickable);
     QmlGraphicsItem *i = qobject_cast<QmlGraphicsItem *>(o);
     if (i)
-        viewport->fxChildren()->append(i);
+        i->setParentItem(static_cast<QmlGraphicsFlickablePrivate*>(prop->data)->viewport);
     else
-        o->setParent(q);
+        o->setParent(prop->object);
 }
 
-void QmlGraphicsFlickablePrivate::data_insert(int, QObject *)
-{
-    // ###
-}
-
-QObject *QmlGraphicsFlickablePrivate::data_at(int) const
-{
-    // ###
-    return 0;
-}
-
-void QmlGraphicsFlickablePrivate::data_clear()
-{
-    // ###
-}
-
-
-QmlList<QObject *> *QmlGraphicsFlickable::flickableData()
+QmlListProperty<QObject> QmlGraphicsFlickable::flickableData()
 {
     Q_D(QmlGraphicsFlickable);
-    return &d->data;
+    return QmlListProperty<QObject>(this, (void *)d, QmlGraphicsFlickablePrivate::data_append);
 }
 
-QmlList<QmlGraphicsItem *> *QmlGraphicsFlickable::flickableChildren()
+QmlListProperty<QmlGraphicsItem> QmlGraphicsFlickable::flickableChildren()
 {
     Q_D(QmlGraphicsFlickable);
     return d->viewport->fxChildren();
@@ -1006,7 +985,10 @@ bool QmlGraphicsFlickable::overShoot() const
 void QmlGraphicsFlickable::setOverShoot(bool o)
 {
     Q_D(QmlGraphicsFlickable);
+    if (d->overShoot == o)
+        return;
     d->overShoot = o;
+    emit overShootChanged();
 }
 
 /*!
@@ -1215,6 +1197,7 @@ void QmlGraphicsFlickable::setMaximumFlickVelocity(qreal v)
     if (v == d->maxVelocity)
         return;
     d->maxVelocity = v;
+    emit maximumFlickVelocityChanged();
 }
 
 /*!
@@ -1232,7 +1215,10 @@ qreal QmlGraphicsFlickable::flickDeceleration() const
 void QmlGraphicsFlickable::setFlickDeceleration(qreal deceleration)
 {
     Q_D(QmlGraphicsFlickable);
+    if (deceleration == d->deceleration)
+        return;
     d->deceleration = deceleration;
+    emit flickDecelerationChanged();
 }
 
 /*!
@@ -1270,6 +1256,7 @@ void QmlGraphicsFlickable::setPressDelay(int delay)
     if (d->pressDelay == delay)
         return;
     d->pressDelay = delay;
+    emit pressDelayChanged();
 }
 
 qreal QmlGraphicsFlickable::reportedVelocitySmoothing() const

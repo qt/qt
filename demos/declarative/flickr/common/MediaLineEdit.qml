@@ -42,7 +42,7 @@ Item {
     ]
     transitions: [
         Transition {
-            NumberAnimation { matchProperties: "x,width"; duration: 500; easing: "easeInOutQuad" }
+            NumberAnimation { properties: "x,width"; duration: 500; easing: "easeInOutQuad" }
         }
     ]
 
@@ -62,7 +62,7 @@ Item {
         anchors.right: container.right
     }
 
-    MouseRegion {
+    MouseArea {
         id: mouseRegion
         anchors.fill: buttonImage
         onClicked: { container.state = container.state=="Edit" ? "" : "Edit" }

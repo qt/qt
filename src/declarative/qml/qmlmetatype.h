@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,22 +84,15 @@ public:
     static QObject *toQObject(const QVariant &, bool *ok = 0);
 
     static int listType(int);
-    static bool clear(const QVariant &);
-    static bool append(const QVariant &, const QVariant &);
     static int attachedPropertiesFuncId(const QMetaObject *);
     static QmlAttachedPropertiesFunc attachedPropertiesFuncById(int);
 
-    enum TypeCategory { Unknown, Object, List, QmlList };
+    enum TypeCategory { Unknown, Object, List };
     static TypeCategory typeCategory(int);
         
     static bool isInterface(int);
     static const char *interfaceIId(int);
     static bool isList(int);
-    static bool isList(const QVariant &);
-    static bool isQmlList(int);
-    static int qmlListType(int);
-    static int listCount(const QVariant &);
-    static QVariant listAt(const QVariant &, int);
 
     typedef QVariant (*StringConverter)(const QString &);
     static void registerCustomStringConverter(int, StringConverter);
@@ -124,12 +117,6 @@ public:
     bool isInterface() const;
     int typeId() const;
     int qListTypeId() const;
-    int qmlListTypeId() const;
-
-    void listClear(const QVariant &);
-    void listAppend(const QVariant &, const QVariant &);
-    QVariant listAt(const QVariant &, int);
-    int listCount(const QVariant &);
 
     const QMetaObject *metaObject() const;
     const QMetaObject *baseMetaObject() const;
@@ -148,8 +135,8 @@ private:
     friend class QmlMetaType;
     friend class QmlTypePrivate;
     friend struct QmlMetaTypeData;
-    QmlType(int, int, int, const char *, int);
-    QmlType(int, int, int, QObject *(*)(), const char *, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, int, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
+    QmlType(int, int, const char *, int);
+    QmlType(int, int, QObject *(*)(), const char *, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, int, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
     ~QmlType();
 
     QmlTypePrivate *d;
@@ -162,7 +149,6 @@ int qmlRegisterType(const char *typeName)
     QmlPrivate::MetaTypeIds ids = {
         qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<QmlListProperty<T> >(QByteArray("QmlListProperty<" + name + ">").constData()),
-        qRegisterMetaType<QmlList<T *>*>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
     return QmlMetaType::registerType(ids, 0, 0, 0, 0, 0,
@@ -183,7 +169,6 @@ int qmlRegisterType(const char *uri, int version_maj, int version_min, const cha
     QmlPrivate::MetaTypeIds ids = {
         qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<QmlListProperty<T> >(QByteArray("QmlListProperty<" + name + ">").constData()),
-        qRegisterMetaType<QmlList<T *>*>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
     return QmlMetaType::registerType(ids, QmlPrivate::create<T>, 
@@ -205,7 +190,6 @@ int qmlRegisterExtendedType(const char *typeName)
     QmlPrivate::MetaTypeIds ids = {
         qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<QmlListProperty<T> >(QByteArray("QmlListProperty<" + name + ">").constData()),
-        qRegisterMetaType<QmlList<T *>*>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
     QmlAttachedPropertiesFunc attached = 
@@ -233,7 +217,6 @@ int qmlRegisterExtendedType(const char *uri, int version_maj, int version_min, c
     QmlPrivate::MetaTypeIds ids = {
         qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<QmlListProperty<T> >(QByteArray("QmlListProperty<" + name + ">").constData()),
-        qRegisterMetaType<QmlList<T *>*>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
     QmlAttachedPropertiesFunc attached = 
@@ -264,7 +247,6 @@ int qmlRegisterInterface(const char *typeName)
     QmlPrivate::MetaTypeIds ids = {
         qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<QmlListProperty<T> >(QByteArray("QmlListProperty<" + name + ">").constData()),
-        qRegisterMetaType<QmlList<T *>*>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
     return QmlMetaType::registerInterface(ids, qobject_interface_iid<T *>());
@@ -277,7 +259,6 @@ int qmlRegisterCustomType(const char *uri, int version_maj, int version_min, con
     QmlPrivate::MetaTypeIds ids = {
         qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
         qRegisterMetaType<QmlListProperty<T> >(QByteArray("QmlListProperty<" + name + ">").constData()),
-        qRegisterMetaType<QmlList<T *>*>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
     return QmlMetaType::registerType(ids, QmlPrivate::create<T>, 

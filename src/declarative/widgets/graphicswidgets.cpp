@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,63 +63,31 @@ class QGraphicsSceneDeclarativeUI : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QmlList<QObject *> *children READ children)
+    Q_PROPERTY(QmlListProperty<QObject> children READ children)
     Q_CLASSINFO("DefaultProperty", "children")
 public:
-    QGraphicsSceneDeclarativeUI(QObject *other) : QObject(other), _children(other) {}
+    QGraphicsSceneDeclarativeUI(QObject *other) : QObject(other) {}
 
-    QmlList<QObject *> *children() { return &_children; }
+    QmlListProperty<QObject> children() { return QmlListProperty<QObject>(this->parent(), 0, children_append); }
 
 private:
-    class Children : public QmlConcreteList<QObject *>
-    {
-    public:
-        Children(QObject *scene) : q(scene) {}
-        virtual void append(QObject *o)
-        {
-            insert(-1, o);
-        }
-        virtual void clear()
-        {
-            for (int i = 0; i < count(); ++i)
-                if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(at(i)))
-                    static_cast<QGraphicsScene *>(q)->removeItem(go);
-            QmlConcreteList<QObject *>::clear();
-        }
-        virtual void removeAt(int i)
-        {
-            if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(at(i)))
-                static_cast<QGraphicsScene *>(q)->removeItem(go);
-            QmlConcreteList<QObject *>::removeAt(i);
-        }
-        virtual void insert(int i, QObject *o)
-        {
-            QmlConcreteList<QObject *>::insert(i, o);
-            if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(o))
-                static_cast<QGraphicsScene *>(q)->addItem(go);
-            //else if (QWidget *w = qobject_cast<QWidget *>(o))
-            //    static_cast<QGraphicsScene *>(q)->addWidget(w);
-        }
-    private:
-        QObject *q;
-    };
-    Children _children;
+    static void children_append(QmlListProperty<QObject> *prop, QObject *o) {
+        if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(o))
+            static_cast<QGraphicsScene *>(prop->object)->addItem(go);
+    }
 };
 
 class QGraphicsWidgetDeclarativeUI : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QmlList<QObject *> *data READ data)
-    Q_PROPERTY(QmlList<QGraphicsItem *> *children READ children)
+    Q_PROPERTY(QmlListProperty<QGraphicsItem> children READ children)
     Q_PROPERTY(QGraphicsLayout *layout READ layout WRITE setLayout)
     Q_CLASSINFO("DefaultProperty", "children")
 public:
-    QGraphicsWidgetDeclarativeUI(QObject *other) : QObject(other), _widgets(this) {}
+    QGraphicsWidgetDeclarativeUI(QObject *other) : QObject(other) {}
 
-    QmlList<QObject *> *data() { return &_data; }
-
-    QmlList<QGraphicsItem *> *children() { return &_widgets; }
+    QmlListProperty<QGraphicsItem> children() { return QmlListProperty<QGraphicsItem>(this, 0, children_append); }
 
     QGraphicsLayout *layout() const { return static_cast<QGraphicsWidget *>(parent())->layout(); }
     void setLayout(QGraphicsLayout *lo)
@@ -128,28 +96,14 @@ public:
     }
 
 private:
-    friend class WidgetList;
     void setItemParent(QGraphicsItem *wid)
     {
         wid->setParentItem(static_cast<QGraphicsWidget *>(parent()));
     }
 
-    class WidgetList : public QmlConcreteList<QGraphicsItem *>
-    {
-    public:
-        WidgetList(QGraphicsWidgetDeclarativeUI *o)
-            : obj(o) {}
-
-        virtual void append(QGraphicsItem *w)  { QmlConcreteList<QGraphicsItem *>::append(w); obj->setItemParent(w); }
-        virtual void clear() { QmlConcreteList<QGraphicsItem *>::clear(); } //###
-        virtual void removeAt(int i) { QmlConcreteList<QGraphicsItem *>::removeAt(i); }     //###
-        virtual void insert(int i, QGraphicsItem *item) { QmlConcreteList<QGraphicsItem *>::insert(i, item); obj->setItemParent(item); }
-
-    private:
-        QGraphicsWidgetDeclarativeUI *obj;
-    };
-    WidgetList _widgets;
-    QmlConcreteList<QObject *> _data;
+    static void children_append(QmlListProperty<QGraphicsItem> *prop, QGraphicsItem *i) {
+        static_cast<QGraphicsWidgetDeclarativeUI*>(prop->object)->setItemParent(i);
+    }
 };
 
 QML_DEFINE_EXTENDED_TYPE(Qt,4,6,QGraphicsView,QGraphicsView,QGraphicsViewDeclarativeUI)

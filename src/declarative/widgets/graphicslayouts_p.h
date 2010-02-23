@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,7 +69,7 @@ class QGraphicsLinearLayoutObject : public QObject, public QGraphicsLinearLayout
     Q_OBJECT
     Q_INTERFACES(QGraphicsLayout QGraphicsLayoutItem)
 
-    Q_PROPERTY(QmlList<QGraphicsLayoutItem *> *children READ children)
+    Q_PROPERTY(QmlListProperty<QGraphicsLayoutItem> children READ children)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing)
     Q_CLASSINFO("DefaultProperty", "children")
@@ -77,7 +77,7 @@ public:
     QGraphicsLinearLayoutObject(QObject * = 0);
     ~QGraphicsLinearLayoutObject();
 
-    QmlList<QGraphicsLayoutItem *> *children() { return &_children; }
+    QmlListProperty<QGraphicsLayoutItem> children() { return QmlListProperty<QGraphicsLayoutItem>(this, 0, children_append, children_count, children_at, children_clear); }
 
     static LinearLayoutAttached *qmlAttachedProperties(QObject *);
 
@@ -91,27 +91,21 @@ private:
     void insertLayoutItem(int, QGraphicsLayoutItem *);
     static QHash<QGraphicsLayoutItem*, LinearLayoutAttached*> attachedProperties;
 
-    class ChildList : public QmlList<QGraphicsLayoutItem *>
-    {
-    public:
-        ChildList(QGraphicsLinearLayoutObject *o)
-            : obj(o) {}
+    static void children_append(QmlListProperty<QGraphicsLayoutItem> *prop, QGraphicsLayoutItem *item) {
+        static_cast<QGraphicsLinearLayoutObject*>(prop->object)->insertLayoutItem(-1, item);
+    }
 
-        virtual void append(QGraphicsLayoutItem *item)
-        {
-            insert(-1, item);
-        }
-        virtual void clear() { obj->clearChildren(); }
-        virtual int count() const { return obj->count(); }
-        virtual void removeAt(int i) { obj->removeAt(i); }
-        virtual QGraphicsLayoutItem *at(int i) const { return obj->itemAt(i); }
-        virtual void insert(int i, QGraphicsLayoutItem *item) { obj->insertLayoutItem(i, item); }
+    static void children_clear(QmlListProperty<QGraphicsLayoutItem> *prop) {
+        static_cast<QGraphicsLinearLayoutObject*>(prop->object)->clearChildren();
+    }
 
-    private:
-        QGraphicsLinearLayoutObject *obj;
-    };
+    static int children_count(QmlListProperty<QGraphicsLayoutItem> *prop) {
+        return static_cast<QGraphicsLinearLayoutObject*>(prop->object)->count();
+    }
 
-    ChildList _children;
+    static QGraphicsLayoutItem *children_at(QmlListProperty<QGraphicsLayoutItem> *prop, int index) {
+        return static_cast<QGraphicsLinearLayoutObject*>(prop->object)->itemAt(index);
+    }
 };
 
 class GridLayoutAttached;
@@ -120,7 +114,7 @@ class QGraphicsGridLayoutObject : public QObject, public QGraphicsGridLayout
     Q_OBJECT
     Q_INTERFACES(QGraphicsLayout QGraphicsLayoutItem)
 
-    Q_PROPERTY(QmlList<QGraphicsLayoutItem *> *children READ children)
+    Q_PROPERTY(QmlListProperty<QGraphicsLayoutItem> children READ children)
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing)
     Q_PROPERTY(qreal verticalSpacing READ verticalSpacing WRITE setVerticalSpacing)
     Q_PROPERTY(qreal horizontalSpacing READ horizontalSpacing WRITE setHorizontalSpacing)
@@ -129,7 +123,7 @@ public:
     QGraphicsGridLayoutObject(QObject * = 0);
     ~QGraphicsGridLayoutObject();
 
-    QmlList<QGraphicsLayoutItem *> *children() { return &_children; }
+    QmlListProperty<QGraphicsLayoutItem> children() { return QmlListProperty<QGraphicsLayoutItem>(this, 0, children_append, children_count, children_at, children_clear); }
 
     qreal spacing() const;
 
@@ -142,30 +136,21 @@ private:
     void addLayoutItem(QGraphicsLayoutItem *);
     static QHash<QGraphicsLayoutItem*, GridLayoutAttached*> attachedProperties;
 
-    class ChildList : public QmlList<QGraphicsLayoutItem *>
-    {
-    public:
-        ChildList(QGraphicsGridLayoutObject *o)
-            : obj(o) {}
+    static void children_append(QmlListProperty<QGraphicsLayoutItem> *prop, QGraphicsLayoutItem *item) {
+        static_cast<QGraphicsGridLayoutObject*>(prop->object)->addLayoutItem(item);
+    }
 
-        virtual void append(QGraphicsLayoutItem *o)
-        {
-            obj->addLayoutItem(o);
-        }
-        virtual void clear() { obj->clearChildren(); }
-        virtual int count() const { return obj->count(); }
-        virtual void removeAt(int i) { obj->removeAt(i); }
-        virtual QGraphicsLayoutItem *at(int i) const { return obj->itemAt(i); }
-        //### GridLayout doesn't have an insert, so for now we treat it as an append.
-        //    this is obviously potenitally dangerous -- perhaps should be a concrete
-        //    list with no relation to layout index, etc at all.
-        virtual void insert(int, QGraphicsLayoutItem *item) { append(item); }
+    static void children_clear(QmlListProperty<QGraphicsLayoutItem> *prop) {
+        static_cast<QGraphicsGridLayoutObject*>(prop->object)->clearChildren();
+    }
 
-    private:
-        QGraphicsGridLayoutObject *obj;
-    };
+    static int children_count(QmlListProperty<QGraphicsLayoutItem> *prop) {
+        return static_cast<QGraphicsGridLayoutObject*>(prop->object)->count();
+    }
 
-    ChildList _children;
+    static QGraphicsLayoutItem *children_at(QmlListProperty<QGraphicsLayoutItem> *prop, int index) {
+        return static_cast<QGraphicsGridLayoutObject*>(prop->object)->itemAt(index);
+    }
 };
 
 QT_END_NAMESPACE

@@ -61,7 +61,7 @@ Item {
                 }
             }
 
-            MouseRegion { anchors.fill: wrapper; onClicked: { photoClicked() } }
+            MouseArea { anchors.fill: wrapper; onClicked: { photoClicked() } }
 
             states: [
                 State {
@@ -86,15 +86,15 @@ Item {
                     from: "*"; to: "Details"
                     SequentialAnimation {
                         ParentAction { }
-                        NumberAnimation { matchProperties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                     }
                 },
                 Transition {
                     from: "Details"; to: "*"
                     SequentialAnimation {
                         ParentAction { }
-                        NumberAnimation { matchProperties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                        PropertyAction { matchTargets: wrapper; matchProperties: "z" }
+                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        PropertyAction { targets: wrapper; properties: "z" }
                     }
                 }
             ]
@@ -180,7 +180,7 @@ Item {
         transitions: [
             Transition {
                 from: "*"; to: "*"
-                NumberAnimation { matchProperties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
+                NumberAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
             }
         ]
     }

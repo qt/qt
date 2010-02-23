@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -188,7 +188,7 @@ static void dump(ModelNode *node, int ind);
             Text { text: '$'+cost; anchors.right: parent.right }
 
             // Double the price when clicked.
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onClicked: fruitModel.set(index, "cost", cost*2)
             }
@@ -806,7 +806,23 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
                 qvariant_cast<QmlParser::Variant>(value);
 
             int ref = data.count();
-            QByteArray d = variant.asScript().toUtf8();
+
+            QByteArray d;
+            d += char(variant.type()); // type tag
+            if (variant.isString()) {
+                d += variant.asString().toUtf8();
+            } else if (variant.isNumber()) {
+                d += QByteArray::number(variant.asNumber(),'g',20);
+            } else if (variant.isBoolean()) {
+                d += char(variant.asBoolean());
+            } else if (variant.isScript()) {
+                if (definesEmptyList(variant.asScript())) {
+                    d[0] = 0; // QmlParser::Variant::Invalid - marks empty list
+                } else {
+                    error(prop, QmlListModel::tr("ListElement: cannot use script for property value"));
+                    return false;
+                }
+            }
             d.append('\0');
             data.append(d);
 
@@ -814,7 +830,6 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
             li.type = ListInstruction::Value;
             li.dataIdx = ref;
             instr << li;
-
         }
     }
 
@@ -892,15 +907,22 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
         case ListInstruction::Value:
             {
                 ModelNode *n = nodes.top();
-                QString s = QString::fromUtf8(QByteArray(data + instr.dataIdx));
-
-                bool isEmptyList = false;
-                if (!n->isArray)
-                    isEmptyList = definesEmptyList(s);
-                if (isEmptyList)
+                switch (QmlParser::Variant::Type(data[instr.dataIdx])) {
+                 case QmlParser::Variant::Invalid:
                     n->isArray = true;
-                else
-                    n->values.append(s);
+                    break;
+                 case QmlParser::Variant::Boolean:
+                    n->values.append(bool(data[1 + instr.dataIdx]));
+                    break;
+                 case QmlParser::Variant::Number:
+                    n->values.append(QByteArray(data + 1 + instr.dataIdx).toDouble());
+                    break;
+                 case QmlParser::Variant::String:
+                    n->values.append(QString::fromUtf8(data + 1 + instr.dataIdx));
+                    break;
+                 default:
+                    Q_ASSERT("Format error in ListInstruction");
+                }
 
                 processingSet = false;
             }

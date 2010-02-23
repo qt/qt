@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -70,11 +70,11 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsItem : public QGraphicsObject, public QmlP
     Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(QmlGraphicsItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
-    Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
-    Q_PROPERTY(QmlList<QmlGraphicsItem *>* children READ fxChildren DESIGNABLE false NOTIFY childrenChanged)
-    Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
-    Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
-    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QObject> data READ data DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QmlGraphicsItem> children READ fxChildren DESIGNABLE false NOTIFY childrenChanged)
+    Q_PROPERTY(QmlListProperty<QObject> resources READ resources DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QmlState> states READ states DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QmlTransition> transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged RESET resetWidth FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged RESET resetHeight FINAL)
@@ -88,12 +88,12 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsItem : public QGraphicsObject, public QmlP
     Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter CONSTANT FINAL)
     Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline CONSTANT FINAL)
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
-    Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
+    Q_PROPERTY(bool clip READ clip WRITE setClip NOTIFY clipChanged) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
     Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
-    Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
+    Q_PROPERTY(QmlListProperty<QGraphicsTransform> transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin NOTIFY transformOriginChanged)
-    Q_PROPERTY(bool smooth READ smooth WRITE setSmooth)
+    Q_PROPERTY(bool smooth READ smooth WRITE setSmooth NOTIFY smoothChanged)
     Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -112,9 +112,9 @@ public:
     void setParentItem(QmlGraphicsItem *parent);
     void setParent(QmlGraphicsItem *parent) { setParentItem(parent); }
 
-    QmlList<QObject *> *data();
-    QmlList<QmlGraphicsItem *> *fxChildren();
-    QmlList<QObject *> *resources();
+    QmlListProperty<QObject> data();
+    QmlListProperty<QmlGraphicsItem> fxChildren();
+    QmlListProperty<QObject> resources();
 
     QmlGraphicsAnchors *anchors();
     QRectF childrenRect();
@@ -122,8 +122,8 @@ public:
     bool clip() const;
     void setClip(bool);
 
-    QmlList<QmlState *>* states();
-    QmlList<QmlTransition *>* transitions();
+    QmlListProperty<QmlState> states();
+    QmlListProperty<QmlTransition> transitions();
 
     QString state() const;
     void setState(const QString &);
@@ -131,7 +131,7 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
-    QmlList<QGraphicsTransform *> *transform();
+    QmlListProperty<QGraphicsTransform> transform();
 
     qreal width() const;
     void setWidth(qreal);
@@ -178,6 +178,8 @@ Q_SIGNALS:
     void wantsFocusChanged();
     void parentChanged();
     void transformOriginChanged(TransformOrigin);
+    void smoothChanged();
+    void clipChanged();
 
 protected:
     bool isComponentComplete() const;

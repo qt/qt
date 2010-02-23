@@ -45,6 +45,9 @@
 
 extern "C" {
     int __declspec(dllexport) qRemoteLaunch(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream*);
+    int __declspec(dllexport) qRemoteSoftReset(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream);
+    int __declspec(dllexport) qRemoteToggleUnattendedPowerMode(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream);
+    int __declspec(dllexport) qRemotePowerButton(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream);
     bool __declspec(dllexport) qRemoteExecute(const wchar_t* program, const wchar_t* arguments = NULL, int *returnValue = NULL , DWORD* error = NULL, int timeout = -1);
 }
 

@@ -64,9 +64,8 @@ QT_BEGIN_NAMESPACE
 struct Entry;
 struct PosEntry;
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace std {
+namespace fulltextsearch {
+namespace std {
 
 class Reader
 {
@@ -127,9 +126,8 @@ private:
     Reader m_reader;
 };
 
-        }   // namespace std
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace std
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE
 

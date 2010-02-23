@@ -10,7 +10,7 @@ Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onClicked: if (wrapper.state == "state1") wrapper.state = ""; else wrapper.state = "state1";
         }
@@ -21,7 +21,7 @@ Rectangle {
     }
     transitions: Transition {
         //comment out each in turn to make sure each only animates the relevant property
-        ColorAnimation { matchProperties: "x,color"; duration: 1000 } //x is real, color is color
-        NumberAnimation { matchProperties: "x,color"; duration: 1000 } //x is real, color is color
+        ColorAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
+        NumberAnimation { properties: "x,color"; duration: 1000 } //x is real, color is color
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -274,11 +274,12 @@ public:
 
 
     void registerCompositeType(QmlCompiledData *);
-    bool isQmlList(int) const;
+
     bool isQObject(int);
     QObject *toQObject(const QVariant &, bool *ok = 0) const;
-    int qmlListType(int) const;
     QmlMetaType::TypeCategory typeCategory(int) const;
+    bool isList(int) const;
+    int listType(int) const;
     const QMetaObject *rawMetaObjectForType(int) const;
     const QMetaObject *metaObjectForType(int) const;
     QHash<int, int> m_qmlLists;
@@ -321,7 +322,6 @@ public:
     static QmlEngine *get(QmlEnginePrivate *p) { return p->q_func(); }
     QmlContext *getContext(QScriptContext *);
 };
-
 
 QT_END_NAMESPACE
 

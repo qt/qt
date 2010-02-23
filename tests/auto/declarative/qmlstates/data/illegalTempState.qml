@@ -14,7 +14,7 @@ Rectangle {
         }
     ]
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: card.state = "placed"
     }

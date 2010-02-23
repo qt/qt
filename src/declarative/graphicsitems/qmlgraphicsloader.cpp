@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -124,7 +124,7 @@ void QmlGraphicsLoaderPrivate::initResize()
     \code
     Loader { id: pageLoader }
     Rectangle {
-        MouseRegion { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
+        MouseArea { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
     }
     \endcode
 
@@ -398,6 +398,7 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
     }
 
     d->resizeMode = mode;
+    emit resizeModeChanged();
     d->initResize();
 }
 

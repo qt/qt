@@ -1690,10 +1690,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     \o
 
     The hasAlphaChannel() returns true if the pixmap has a format that
-    respects the alpha channel, otherwise returns false, while the
-    hasAlpha() function returns true if the pixmap has an alpha
-    channel \e or a mask (otherwise false). The mask() function returns
-    the mask as a QBitmap object, which can be set using setMask().
+    respects the alpha channel, otherwise returns false. The hasAlpha(),
+    setMask() and mask() functions are legacy and should not be used.
+    They are potentially very slow.
 
     The createHeuristicMask() function creates and returns a 1-bpp
     heuristic mask (i.e. a QBitmap) for this pixmap. It works by
@@ -1779,6 +1778,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 /*!
     Returns true if this pixmap has an alpha channel, \e or has a
     mask, otherwise returns false.
+
+    \warning This is potentially an expensive operation.
 
     \sa hasAlphaChannel(), mask()
 */

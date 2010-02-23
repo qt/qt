@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,7 +71,7 @@ Q_OBJECT
 // ![0]
 Q_PROPERTY(Person *celebrant READ celebrant WRITE setCelebrant NOTIFY celebrantChanged)
 // ![0]
-Q_PROPERTY(QmlList<Person *> *guests READ guests)
+Q_PROPERTY(QmlListProperty<Person> guests READ guests)
 Q_PROPERTY(QString speaker READ speaker WRITE setSpeaker)
 Q_CLASSINFO("DefaultProperty", "guests")
 public:
@@ -80,7 +80,9 @@ public:
     Person *celebrant() const;
     void setCelebrant(Person *);
 
-    QmlList<Person *> *guests();
+    QmlListProperty<Person> guests();
+    int guestCount() const;
+    Person *guest(int) const;
 
     QString speaker() const;
     void setSpeaker(const QString &);
@@ -94,7 +96,7 @@ signals:
 
 private:
     Person *m_celebrant;
-    QmlConcreteList<Person *> m_guests;
+    QList<Person *> m_guests;
 };
 
 QML_DECLARE_TYPEINFO(BirthdayParty, QML_HAS_ATTACHED_PROPERTIES)

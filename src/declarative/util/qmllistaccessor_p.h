@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,12 +65,7 @@ public:
     int count() const;
     QVariant at(int) const;
 
-    bool append(const QVariant &);
-    bool insert(int, const QVariant &);
-    bool removeAt(int);
-    bool clear();
-
-    enum Type { Invalid, StringList, VariantList, QmlList, ListProperty, Instance, Integer };
+    enum Type { Invalid, StringList, VariantList, ListProperty, Instance, Integer };
     Type type() const { return m_type; }
 
 private:

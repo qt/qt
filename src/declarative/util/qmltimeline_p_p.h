@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,10 +60,10 @@ QT_BEGIN_NAMESPACE
 
 class QEasingCurve;
 class QmlTimeLineValue;
-class QmlTimeLineEvent;
+class QmlTimeLineCallback;
 struct QmlTimeLinePrivate;
 class QmlTimeLineObject;
-class Q_DECLARATIVE_EXPORT QmlTimeLine : public QAbstractAnimation
+class QmlTimeLine : public QAbstractAnimation
 {
 Q_OBJECT
 public:
@@ -75,7 +75,7 @@ public:
     void setSyncMode(SyncMode);
 
     void pause(QmlTimeLineObject &, int);
-    void execute(const QmlTimeLineEvent &);
+    void callback(const QmlTimeLineCallback &);
     void set(QmlTimeLineValue &, qreal);
 
     int accel(QmlTimeLineValue &, qreal velocity, qreal accel);
@@ -117,7 +117,7 @@ private:
     QmlTimeLinePrivate *d;
 };
 
-class Q_DECLARATIVE_EXPORT QmlTimeLineObject
+class QmlTimeLineObject
 {
 public:
     QmlTimeLineObject();
@@ -129,7 +129,7 @@ protected:
     QmlTimeLine *_t;
 };
 
-class Q_DECLARATIVE_EXPORT QmlTimeLineValue : public QmlTimeLineObject
+class QmlTimeLineValue : public QmlTimeLineObject
 {
 public:
     QmlTimeLineValue(qreal v = 0.) : _v(v) {}
@@ -147,44 +147,21 @@ private:
     qreal _v;
 };
 
-class Q_DECLARATIVE_EXPORT QmlTimeLineEvent
+class QmlTimeLineCallback
 {
 public:
-    QmlTimeLineEvent();
-    QmlTimeLineEvent(const QmlTimeLineEvent &o);
+    typedef void (*Callback)(void *);
 
-    template<class T, void (T::*method)()>
-    QmlTimeLineEvent(QmlTimeLineObject *b, T *c)
-    {
-	d0 = &callFunc<T, method>;
-	d1 = (void *)c;
-	d2 = b;
-    }
+    QmlTimeLineCallback();
+    QmlTimeLineCallback(QmlTimeLineObject *b, Callback, void * = 0);
+    QmlTimeLineCallback(const QmlTimeLineCallback &o);
 
-    template<class T, void (T::*method)()>
-    static QmlTimeLineEvent timeLineEvent(QmlTimeLineObject *b, T *c)
-    {
-        QmlTimeLineEvent rv;
-	rv.d0 = &callFunc<T, method>;
-	rv.d1 = (void *)c;
-	rv.d2 = b;
-	return rv;
-    }
-
-    QmlTimeLineEvent &operator=(const QmlTimeLineEvent &o);
-    void execute() const;
-    QmlTimeLineObject *eventObject() const;
+    QmlTimeLineCallback &operator=(const QmlTimeLineCallback &o);
+    QmlTimeLineObject *callbackObject() const;
 
 private:
-    typedef void (*CallFunc)(void *c);
-
-    template <class T, void (T::*method)()>
-    static void callFunc(void *c)
-    {
-        T *cls = (T *)c;
-	(cls->*method)();
-    }
-    CallFunc d0;
+    friend class QmlTimeLinePrivate; 
+    Callback d0;
     void *d1;
     QmlTimeLineObject *d2;
 };

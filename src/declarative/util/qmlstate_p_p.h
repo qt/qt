@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,28 +107,33 @@ public:
     QString name;
     QmlBinding *when;
 
-    class OperationList;
     struct OperationGuard : public QmlGuard<QmlStateOperation>
     {
-        OperationGuard(QObject *obj, OperationList *l) : list(l) { (QmlGuard<QObject>&)*this = obj; }
-        OperationList *list;
+        OperationGuard(QObject *obj, QList<OperationGuard> *l) : list(l) { (QmlGuard<QObject>&)*this = obj; }
+        QList<OperationGuard> *list;
         void objectDestroyed(QmlStateOperation *) {
             // we assume priv will always be destroyed after objectDestroyed calls
             list->removeOne(*this);
         }
     };
+    QList<OperationGuard> operations;
 
-    class OperationList : public QList<OperationGuard>, public QmlList<QmlStateOperation*>
-    {
-    public:
-        virtual void append(QmlStateOperation* v) { QList<OperationGuard>::append(OperationGuard(v, this)); }
-        virtual void insert(int i, QmlStateOperation* v) { QList<OperationGuard>::insert(i, OperationGuard(v, this)); }
-        virtual void clear() { QList<OperationGuard>::clear(); }
-        virtual QmlStateOperation* at(int i) const { return QList<OperationGuard>::at(i); }
-        virtual void removeAt(int i) { QList<OperationGuard>::removeAt(i); }
-        virtual int count() const { return QList<OperationGuard>::count(); }
-    };
-    OperationList operations;
+    static void operations_append(QmlListProperty<QmlStateOperation> *prop, QmlStateOperation *op) {
+        QList<OperationGuard> *list = static_cast<QList<OperationGuard> *>(prop->data);
+        list->append(OperationGuard(op, list));
+    }
+    static void operations_clear(QmlListProperty<QmlStateOperation> *prop) {
+        QList<OperationGuard> *list = static_cast<QList<OperationGuard> *>(prop->data);
+        list->clear();
+    }
+    static int operations_count(QmlListProperty<QmlStateOperation> *prop) {
+        QList<OperationGuard> *list = static_cast<QList<OperationGuard> *>(prop->data);
+        return list->count();
+    }
+    static QmlStateOperation *operations_at(QmlListProperty<QmlStateOperation> *prop, int index) {
+        QList<OperationGuard> *list = static_cast<QList<OperationGuard> *>(prop->data);
+        return list->at(index);
+    }
 
     QmlTransitionManager transitionManager;
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -300,6 +300,13 @@ Rectangle {
 }
 \endcode
 
+    The default velocity of EaseFollow is 200 units/second.  Note that if the range of the
+    value being animated is small, then the velocity will need to be adjusted
+    appropriately.  For example, the opacity of an item ranges from 0 - 1.0.
+    To enable a smooth animation in this range the velocity will need to be
+    set to a value such as 0.5 units/second.  Animating from 0 to 1.0 with a velocity
+    of 0.5 will take 2000 ms to complete.
+
     \sa SpringFollow
 */
 
@@ -415,7 +422,7 @@ void QmlEaseFollow::setSourceValue(qreal s)
 
     This property holds the animation duration used when tracking the source.
 
-    Setting this to -1 disables the duration value.
+    Setting this to -1 (the default) disables the duration value.
 */
 qreal QmlEaseFollow::duration() const
 {
@@ -448,6 +455,8 @@ qreal QmlEaseFollow::velocity() const
     \qmlproperty qreal EaseFollow::velocity
 
     This property holds the average velocity allowed when tracking the source.
+
+    The default velocity of EaseFollow is 200 units/second.
 
     Setting this to -1 disables the velocity value.
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtTest/QSignalSpy>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicsflickable_p.h>
@@ -56,6 +57,10 @@ private slots:
     void horizontalViewportSize();
     void verticalViewportSize();
     void properties();
+    void overShoot();
+    void maximumFlickVelocity();
+    void flickDeceleration();
+    void pressDelay();
 
 private:
     QmlEngine engine;
@@ -138,6 +143,80 @@ void tst_qmlgraphicsflickable::properties()
     QCOMPARE(obj->maximumFlickVelocity(), 2000.);
 
     delete obj;
+}
+
+void tst_qmlgraphicsflickable::overShoot()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6; Flickable { overShoot: false; }", QUrl::fromLocalFile(""));
+    QmlGraphicsFlickable *flickable = qobject_cast<QmlGraphicsFlickable*>(component.create());
+    QSignalSpy spy(flickable, SIGNAL(overShootChanged()));
+
+    QVERIFY(flickable);
+    QVERIFY(!flickable->overShoot());
+
+    flickable->setOverShoot(true);
+    QVERIFY(flickable->overShoot());
+    QCOMPARE(spy.count(),1);
+    flickable->setOverShoot(true);
+    QCOMPARE(spy.count(),1);
+
+    flickable->setOverShoot(false);
+    QVERIFY(!flickable->overShoot());
+    QCOMPARE(spy.count(),2);
+    flickable->setOverShoot(false);
+    QCOMPARE(spy.count(),2);
+}
+
+void tst_qmlgraphicsflickable::maximumFlickVelocity()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
+    QmlGraphicsFlickable *flickable = qobject_cast<QmlGraphicsFlickable*>(component.create());
+    QSignalSpy spy(flickable, SIGNAL(maximumFlickVelocityChanged()));
+
+    QVERIFY(flickable);
+    QCOMPARE(flickable->maximumFlickVelocity(), 1.0);
+
+    flickable->setMaximumFlickVelocity(2.0);
+    QCOMPARE(flickable->maximumFlickVelocity(), 2.0);
+    QCOMPARE(spy.count(),1);
+    flickable->setMaximumFlickVelocity(2.0);
+    QCOMPARE(spy.count(),1);
+}
+
+void tst_qmlgraphicsflickable::flickDeceleration()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
+    QmlGraphicsFlickable *flickable = qobject_cast<QmlGraphicsFlickable*>(component.create());
+    QSignalSpy spy(flickable, SIGNAL(flickDecelerationChanged()));
+
+    QVERIFY(flickable);
+    QCOMPARE(flickable->flickDeceleration(), 1.0);
+
+    flickable->setFlickDeceleration(2.0);
+    QCOMPARE(flickable->flickDeceleration(), 2.0);
+    QCOMPARE(spy.count(),1);
+    flickable->setFlickDeceleration(2.0);
+    QCOMPARE(spy.count(),1);
+}
+
+void tst_qmlgraphicsflickable::pressDelay()
+{
+    QmlComponent component(&engine);
+    component.setData("import Qt 4.6; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
+    QmlGraphicsFlickable *flickable = qobject_cast<QmlGraphicsFlickable*>(component.create());
+    QSignalSpy spy(flickable, SIGNAL(pressDelayChanged()));
+
+    QVERIFY(flickable);
+    QCOMPARE(flickable->pressDelay(), 100);
+
+    flickable->setPressDelay(200);
+    QCOMPARE(flickable->pressDelay(), 200);
+    QCOMPARE(spy.count(),1);
+    flickable->setPressDelay(200);
+    QCOMPARE(spy.count(),1);
 }
 
 QTEST_MAIN(tst_qmlgraphicsflickable)

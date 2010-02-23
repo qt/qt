@@ -9,7 +9,7 @@ Rectangle {
     Rectangle {
         width: 98; height: 48
         color: "red"
-        MouseRegion {
+        MouseArea {
             id: mr1
             anchors.fill: parent
             enabled: false
@@ -22,7 +22,7 @@ Rectangle {
         x: 100
         width: 98; height: 48
         color: "red"
-        MouseRegion {
+        MouseArea {
             id: mr2
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
@@ -42,7 +42,7 @@ Rectangle {
         x: 200
         width: 98; height: 48
         color: "red"
-        MouseRegion {
+        MouseArea {
             id: mr3
             anchors.fill: parent
             onPressAndHold: {
@@ -56,7 +56,7 @@ Rectangle {
         x: 300
         width: 98; height: 48
         color: "red"
-        MouseRegion {
+        MouseArea {
             id: mr4
             anchors.fill: parent
             onPressed: {
@@ -74,7 +74,7 @@ Rectangle {
         y: 50
         width: 98; height: 48
         color: "red"
-        MouseRegion {
+        MouseArea {
             id: mr5
             anchors.fill: parent
             hoverEnabled: true
@@ -93,7 +93,7 @@ Rectangle {
         y: 50
         width: 98; height: 48
         color: "red"
-        MouseRegion {
+        MouseArea {
             id: mr6
             anchors.fill: parent
             onClicked: {
@@ -111,7 +111,7 @@ Rectangle {
         y: 50
         width: 98; height: 48
         color: "red"
-        MouseRegion {
+        MouseArea {
             id: mr7
             anchors.fill: parent
             enabled: false

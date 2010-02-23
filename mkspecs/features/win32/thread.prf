@@ -23,8 +23,4 @@ debug {
  }
 }
 
-win32-msvc|win32-msvc.net {
-  !contains(DEFINES, QT_DLL):!target_qt:!isEqual(TARGET, qtmain):QMAKE_LFLAGS += /NODEFAULTLIB:"libc"
-}
-
 QMAKE_LIBS += $$QMAKE_LIBS_RTMT

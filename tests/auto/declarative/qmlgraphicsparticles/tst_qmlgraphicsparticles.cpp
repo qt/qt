@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,8 +63,8 @@ tst_QmlGraphicsParticles::tst_QmlGraphicsParticles()
 void tst_QmlGraphicsParticles::properties()
 {
     QmlView *canvas = createView(SRCDIR "/data/particles.qml");
-    QVERIFY(canvas->root());
-    QmlGraphicsParticles* particles = canvas->root()->findChild<QmlGraphicsParticles*>("particles");
+    QVERIFY(canvas->rootObject());
+    QmlGraphicsParticles* particles = canvas->rootObject()->findChild<QmlGraphicsParticles*>("particles");
     QVERIFY(particles);
 
     particles->setSource(QUrl::fromLocalFile(SRCDIR "/data/particle.png"));
@@ -101,8 +101,8 @@ void tst_QmlGraphicsParticles::properties()
 void tst_QmlGraphicsParticles::runs()
 {
     QmlView *canvas = createView(SRCDIR "/data/particles.qml");
-    QVERIFY(canvas->root());
-    QmlGraphicsParticles* particles = canvas->root()->findChild<QmlGraphicsParticles*>("particles");
+    QVERIFY(canvas->rootObject());
+    QmlGraphicsParticles* particles = canvas->rootObject()->findChild<QmlGraphicsParticles*>("particles");
     QVERIFY(particles);
     QTest::qWait(1000);//Run for one second. Test passes if it doesn't crash.
 }
@@ -112,10 +112,7 @@ QmlView *tst_QmlGraphicsParticles::createView(const QString &filename)
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
     canvas->execute();
 
     return canvas;

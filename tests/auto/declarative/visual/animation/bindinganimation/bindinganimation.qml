@@ -20,7 +20,7 @@ Rectangle {
                 x: 50 + 50
             }
             PropertyChanges {
-                target: myMouseRegion
+                target: myMouseArea
                 onClicked: page.state = ''
             }
         }
@@ -28,12 +28,12 @@ Rectangle {
     transitions: [
         Transition {
             NumberAnimation {
-                matchProperties: "x"
+                properties: "x"
             }
         }
     ]
-    MouseRegion {
-        id: myMouseRegion
+    MouseArea {
+        id: myMouseArea
         anchors.fill: parent
         onClicked: { page.state= 'hello' }
     }

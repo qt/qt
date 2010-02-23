@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,10 +94,10 @@ public:
         }
 
         transitions: Transition {
-            NumberAnimation { matchProperties: "angle"; duration: 2000 }
+            NumberAnimation { properties: "angle"; duration: 2000 }
         }
 
-        MouseRegion {
+        MouseArea {
             // change between default and 'back' states
             onClicked: flipable.state = (flipable.state == 'back' ? '' : 'back')
             anchors.fill: parent
@@ -149,7 +149,7 @@ void QmlGraphicsFlipable::setFront(QmlGraphicsItem *front)
         return;
     }
     d->front = front;
-    fxChildren()->append(d->front);
+    d->front->setParentItem(this);
     if (Back == d->current)
         d->front->setOpacity(0.);
 }
@@ -168,7 +168,7 @@ void QmlGraphicsFlipable::setBack(QmlGraphicsItem *back)
         return;
     }
     d->back = back;
-    fxChildren()->append(d->back);
+    d->back->setParentItem(this);
     if (Front == d->current)
         d->back->setOpacity(0.);
 }

@@ -20,7 +20,7 @@ Rectangle {
             }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: blurEffect.running = !blurEffect.running }
+        MouseArea { anchors.fill: parent; onClicked: blurEffect.running = !blurEffect.running }
     }
 
     Text { text: "Blur"; anchors.top: blur.bottom; anchors.horizontalCenter: blur.horizontalCenter }
@@ -36,7 +36,7 @@ Rectangle {
             offset.y: NumberAnimation { id: dropShadowEffect; from: 0; to: 10; duration: 1000; running: false; repeat: true; }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: dropShadowEffect.running = !dropShadowEffect.running }
+        MouseArea { anchors.fill: parent; onClicked: dropShadowEffect.running = !dropShadowEffect.running }
     }
 
     Image {

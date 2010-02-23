@@ -230,6 +230,7 @@ void QHttpNetworkReplyPrivate::clear()
     currentChunkRead = 0;
     connectionCloseEnabled = true;
     connection = 0;
+    connectionChannel = 0;
 #ifndef QT_NO_COMPRESS
     if (initInflate)
         inflateEnd(&inflateStrm);
@@ -803,9 +804,15 @@ void QHttpNetworkReplyPrivate::eraseData()
 QSslConfiguration QHttpNetworkReply::sslConfiguration() const
 {
     Q_D(const QHttpNetworkReply);
-    if (d->connection)
-        return d->connection->d_func()->sslConfiguration(*this);
-    return QSslConfiguration();
+
+    if (!d->connectionChannel)
+        return QSslConfiguration();
+
+    QSslSocket *sslSocket = qobject_cast<QSslSocket*>(d->connectionChannel->socket);
+    if (!sslSocket)
+        return QSslConfiguration();
+
+    return sslSocket->sslConfiguration();
 }
 
 void QHttpNetworkReply::setSslConfiguration(const QSslConfiguration &config)

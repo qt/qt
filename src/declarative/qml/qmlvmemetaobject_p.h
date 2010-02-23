@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -138,33 +138,18 @@ private:
     QAbstractDynamicMetaObject *parent;
 
     void listChanged(int);
-    class List : public QmlConcreteList<QObject*>
+    class List : public QList<QObject*>
     {
     public:
-        List(QmlVMEMetaObject *p, int propIdx) 
-            : parent(p), parentProperty(propIdx) { }
-
-        virtual void append(QObject *v) { 
-            QmlConcreteList<QObject*>::append(v); 
-            parent->listChanged(parentProperty);
-        }
-        virtual void insert(int i, QObject *v) { 
-            QmlConcreteList<QObject*>::insert(i, v); 
-            parent->listChanged(parentProperty);
-        }
-        virtual void clear() { 
-            QmlConcreteList<QObject*>::clear();
-            parent->listChanged(parentProperty);
-        }
-        virtual void removeAt(int i) { 
-            QmlConcreteList<QObject*>::removeAt(i);
-            parent->listChanged(parentProperty);
-        }
-    private:
-        QmlVMEMetaObject *parent;
-        int parentProperty;
+        List(int lpi) : notifyIndex(lpi) {}
+        int notifyIndex;
     };
     QList<List *> listProperties;
+
+    static void list_append(QmlListProperty<QObject> *, QObject *);
+    static int list_count(QmlListProperty<QObject> *);
+    static QObject *list_at(QmlListProperty<QObject> *, int);
+    static void list_clear(QmlListProperty<QObject> *);
 };
 
 QT_END_NAMESPACE

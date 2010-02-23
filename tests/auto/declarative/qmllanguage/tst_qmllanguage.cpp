@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,7 +76,6 @@ private slots:
     void simpleObject();
     void simpleContainer();
     void interfaceProperty();
-    void interfaceQmlList();
     void interfaceQList();
     void assignObjectToSignal();
     void assignObjectToVariant();
@@ -233,7 +232,6 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("readOnly.2") << "readOnly.2.qml" << "readOnly.2.errors.txt" << false;
     QTest::newRow("readOnly.3") << "readOnly.3.qml" << "readOnly.3.errors.txt" << false;
 
-    QTest::newRow("listAssignment.1") << "listAssignment.1.qml" << "listAssignment.1.errors.txt" << false;
     QTest::newRow("listAssignment.2") << "listAssignment.2.qml" << "listAssignment.2.errors.txt" << false;
     QTest::newRow("listAssignment.3") << "listAssignment.3.qml" << "listAssignment.3.errors.txt" << false;
 
@@ -365,17 +363,6 @@ void tst_qmllanguage::interfaceProperty()
     QVERIFY(object != 0);
     QVERIFY(object->interface());
     QVERIFY(object->interface()->id == 913);
-}
-
-void tst_qmllanguage::interfaceQmlList()
-{
-    QmlComponent component(&engine, TEST_FILE("interfaceQmlList.qml"));
-    VERIFY_ERRORS(0);
-    MyContainer *container= qobject_cast<MyContainer*>(component.create());
-    QVERIFY(container != 0);
-    QVERIFY(container->qmllistAccessor().count() == 2);
-    for(int ii = 0; ii < 2; ++ii)
-        QVERIFY(container->qmllistAccessor().at(ii)->id == 913);
 }
 
 void tst_qmllanguage::interfaceQList()

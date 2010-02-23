@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -109,7 +109,7 @@ QSizeF QGraphicsLinearLayoutStretchItemObject::sizeHint(Qt::SizeHint which, cons
 
 
 QGraphicsLinearLayoutObject::QGraphicsLinearLayoutObject(QObject *parent)
-: QObject(parent), _children(this)
+: QObject(parent)
 {
 }
 
@@ -246,7 +246,7 @@ private:
 
 
 QGraphicsGridLayoutObject::QGraphicsGridLayoutObject(QObject *parent)
-: QObject(parent), _children(this)
+: QObject(parent)
 {
 }
 

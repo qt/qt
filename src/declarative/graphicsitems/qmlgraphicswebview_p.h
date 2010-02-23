@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -114,7 +114,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
 
     Q_PROPERTY(QmlGraphicsWebSettings* settings READ settingsObject CONSTANT)
 
-    Q_PROPERTY(QmlList<QObject *>* javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
+    Q_PROPERTY(QmlListProperty<QObject> javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
     Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
     Q_PROPERTY(QmlGraphicsItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
@@ -174,7 +174,7 @@ public:
     bool renderingEnabled() const;
     void setRenderingEnabled(bool);
 
-    QmlList<QObject *> *javaScriptWindowObjects();
+    QmlListProperty<QObject> javaScriptWindowObjects();
 
     static QmlGraphicsWebViewAttached *qmlAttachedProperties(QObject *);
 

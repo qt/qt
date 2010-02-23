@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qobject.h>
 #include <QtScript/qscriptvalue.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_HEADER
 
@@ -97,8 +98,9 @@ private:
     QmlContext(QmlContext *parent, QObject *objParent, bool);
     QmlContext(QmlEngine *, bool);
 };
-
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QList<QObject*>);
 
 QT_END_HEADER
 

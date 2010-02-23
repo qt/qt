@@ -310,7 +310,7 @@ void CentralWidget::setLastShownPages()
 {
     TRACE_OBJ
     HelpEngineWrapper &helpEngine = HelpEngineWrapper::instance();
-    const QStringList lastShownPageList = helpEngine.lastShownPages();
+    const QStringList &lastShownPageList = helpEngine.lastShownPages();
     const int pageCount = lastShownPageList.count();
     if (pageCount == 0) {
         if (usesDefaultCollection)
@@ -333,9 +333,10 @@ void CentralWidget::setLastShownPages()
 
     for (int curTab = 0; curTab < pageCount; ++curTab) {
         const QString &curFile = lastShownPageList.at(curTab);
-        if (helpEngine.findFile(curFile).isValid())
+        if (helpEngine.findFile(curFile).isValid()
+            || curFile == QLatin1String("about:blank")) {
             setSourceInNewTab(curFile, zoomFactors.at(curTab).toFloat());
-        else if (curTab + searchIsAttached <= tabToShow)
+        } else if (curTab + searchIsAttached <= tabToShow)
             --tabToShow;
     }
 
@@ -514,15 +515,12 @@ void CentralWidget::setGlobalActions(const QList<QAction*> &actions)
 void CentralWidget::setSourceInNewTab(const QUrl &url, qreal zoom)
 {
     TRACE_OBJ
-    HelpViewer *viewer;
+    if (HelpViewer *viewer = currentHelpViewer()) {
+        if (viewer->launchWithExternalApp(url))
+            return;
+    }
 
-#if defined(QT_NO_WEBKIT)
-    viewer = currentHelpViewer();
-    if (viewer && viewer->launchedWithExternalApp(url))
-        return;
-#endif
-
-    viewer = new HelpViewer(this, zoom);
+    HelpViewer *viewer = new HelpViewer(this, zoom);
     viewer->installEventFilter(this);
     viewer->setSource(url);
     viewer->setFocus(Qt::OtherFocusReason);

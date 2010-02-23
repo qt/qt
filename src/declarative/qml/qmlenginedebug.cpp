@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -119,8 +119,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
         rv.type = QmlObjectProperty::Basic;
     } else if (QmlMetaType::isQObject(prop.userType()))  {
         rv.type = QmlObjectProperty::Object;
-    } else if (QmlMetaType::isList(prop.userType()) ||
-               QmlMetaType::isQmlList(prop.userType())) {
+    } else if (QmlMetaType::isList(prop.userType())) {
         rv.type = QmlObjectProperty::List;
     }
 
@@ -133,14 +132,15 @@ QVariant QmlEngineDebugServer::valueContents(const QVariant &value) const
     if (QVariant::Type(userType) < QVariant::UserType)
         return value;
 
-
-    if (QmlMetaType::isList(userType) || QmlMetaType::isQmlList(userType)) {
+    /*
+    if (QmlMetaType::isList(userType)) {
         int count = QmlMetaType::listCount(value);
         QVariantList contents;
         for (int i=0; i<count; i++)
             contents << valueContents(QmlMetaType::listAt(value, i));
         return contents;
-    } else if (QmlMetaType::isQObject(userType)) {
+    } else */
+    if (QmlMetaType::isQObject(userType)) {
         QObject *o = QmlMetaType::toQObject(value);
         if (o) {
             QString name = o->objectName();

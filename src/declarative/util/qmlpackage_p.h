@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,13 +64,13 @@ class QmlPackage : public QObject
     Q_DECLARE_PRIVATE(QmlPackage)
 
     Q_CLASSINFO("DefaultProperty", "data")
-    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false)
+    Q_PROPERTY(QmlListProperty<QObject> data READ data SCRIPTABLE false)
 
 public:
     QmlPackage(QObject *parent=0);
     virtual ~QmlPackage();
 
-    QmlList<QObject *> *data();
+    QmlListProperty<QObject> data();
 
     QObject *part(const QString & = QString());
     bool hasPart(const QString &);

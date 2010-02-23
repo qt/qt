@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -137,40 +137,23 @@ public:
     QString _id;
 
     // data property
-    void data_removeAt(int);
-    int data_count() const;
-    void data_append(QObject *);
-    void data_insert(int, QObject *);
-    QObject *data_at(int) const;
-    void data_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QObject *, data)
+    static void data_append(QmlListProperty<QObject> *, QObject *);
 
     // resources property
-    void resources_removeAt(int);
-    int resources_count() const;
-    void resources_append(QObject *);
-    void resources_insert(int, QObject *);
-    QObject *resources_at(int) const;
-    void resources_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QObject *, resources)
+    static QObject *resources_at(QmlListProperty<QObject> *, int);
+    static void resources_append(QmlListProperty<QObject> *, QObject *);
+    static int resources_count(QmlListProperty<QObject> *);
 
     // children property
-    void children_removeAt(int);
-    int children_count() const;
-    void children_append(QmlGraphicsItem *);
-    void children_insert(int, QmlGraphicsItem *);
-    QmlGraphicsItem *children_at(int) const;
-    void children_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QmlGraphicsItem *, children)
+    static QmlGraphicsItem *children_at(QmlListProperty<QmlGraphicsItem> *, int);
+    static void children_append(QmlListProperty<QmlGraphicsItem> *, QmlGraphicsItem *);
+    static int children_count(QmlListProperty<QmlGraphicsItem> *);
 
     // transform property
-    void transform_removeAt(int);
-    int transform_count() const;
-    void transform_append(QGraphicsTransform *);
-    void transform_insert(int, QGraphicsTransform *);
-    QGraphicsTransform *transform_at(int) const;
-    void transform_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QGraphicsTransform *, transform)
+    static int transform_count(QmlListProperty<QGraphicsTransform> *list);
+    static void transform_append(QmlListProperty<QGraphicsTransform> *list, QGraphicsTransform *);
+    static QGraphicsTransform *transform_at(QmlListProperty<QGraphicsTransform> *list, int);
+    static void transform_clear(QmlListProperty<QGraphicsTransform> *list);
 
     QmlGraphicsAnchors *anchors() {
         if (!_anchors) {

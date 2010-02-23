@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,6 +40,10 @@
 ****************************************************************************/
 
 #include <qmlview.h>
+
+#ifdef hz
+#undef hz
+#endif
 #include "ui_recopts.h"
 
 #include "qmlviewer.h"
@@ -80,6 +84,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QTimer>
+#include <QGraphicsObject>
 #include <QNetworkProxyFactory>
 #include <QKeyEvent>
 #include <QMutex>
@@ -134,9 +139,9 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(Screen)
 
-QT_BEGIN_NAMESPACE
-
 QML_DEFINE_TYPE(QmlViewer, 1, 0, Screen, Screen)
+
+QT_BEGIN_NAMESPACE
 
 class SizedMenuBar : public QMenuBar
 {
@@ -473,13 +478,12 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas = new QmlView(this);
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
-    canvas->setContentResizable(!skin || !scaleSkin);
+    canvas->setResizeMode((!skin || !scaleSkin) ? QmlView::SizeRootObjectToView : QmlView::SizeViewToRootObject);
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
-    QObject::connect(canvas, SIGNAL(initialSize(QSize)), this, SLOT(adjustSizeSlot()));
-    QObject::connect(canvas, SIGNAL(errors(QList<QmlError>)), this, SLOT(executeErrors()));
-    QObject::connect(canvas, SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
+    QObject::connect(canvas, SIGNAL(statusChanged(QmlView::Status)), this, SLOT(statusChanged()));
+    QObject::connect(canvas->engine(), SIGNAL(quit()), QCoreApplication::instance (), SLOT(quit()));
 
     if (!(flags & Qt::FramelessWindowHint)) {
         createMenu(menuBar(),0);
@@ -514,11 +518,6 @@ QmlViewer::~QmlViewer()
 {
     canvas->engine()->setNetworkAccessManagerFactory(0);
     delete namFactory;
-}
-
-void QmlViewer::adjustSizeSlot()
-{
-    resize(sizeHint());
 }
 
 QMenuBar *QmlViewer::menuBar() const
@@ -731,7 +730,7 @@ void QmlViewer::setScaleSkin()
     if (scaleSkin)
         return;
     scaleSkin = true;
-    canvas->setContentResizable(!skin || !scaleSkin);
+    canvas->setResizeMode((!skin || !scaleSkin) ? QmlView::SizeRootObjectToView : QmlView::SizeViewToRootObject);
     if (skin) {
         canvas->setFixedSize(canvas->sizeHint());
         skin->setScreenSize(canvas->sizeHint());
@@ -744,7 +743,7 @@ void QmlViewer::setScaleView()
         return;
     scaleSkin = false;
     if (skin) {
-        canvas->setContentResizable(!skin || !scaleSkin);
+        canvas->setResizeMode((!skin || !scaleSkin) ? QmlView::SizeRootObjectToView : QmlView::SizeViewToRootObject);
         canvas->setMinimumSize(QSize(0,0));
         canvas->setMaximumSize(QSize(16777215,16777215));
         canvas->resize(skin->standardScreenSize());
@@ -889,7 +888,8 @@ void QmlViewer::openWgt(const QString& doc)
     QUrl url(doc);
     if (url.isRelative())
         url = QUrl::fromLocalFile(doc);
-    canvas->reset();
+    delete canvas->rootObject();
+    canvas->engine()->clearComponentCache();
     QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
     wgtreply = nam->get(QNetworkRequest(url));
     connect(wgtreply,SIGNAL(finished()),this,SLOT(unpackWgt()));
@@ -971,7 +971,7 @@ void QmlViewer::unpackWgt()
 
 void QmlViewer::openFile()
 {
-    QString cur = canvas->url().toLocalFile();
+    QString cur = canvas->source().toLocalFile();
     if (useQmlFileBrowser) {
         openQml("qrc:/content/Browser.qml");
     } else {
@@ -983,9 +983,13 @@ void QmlViewer::openFile()
     }
 }
 
-void QmlViewer::executeErrors()
+void QmlViewer::statusChanged()
 {
-    if (tester) tester->executefailure();
+    if (canvas->status() == QmlView::Error && tester)
+        tester->executefailure();
+
+    if (canvas->status() == QmlView::Ready)
+        resize(sizeHint());
 }
 
 void QmlViewer::launch(const QString& file_or_url)
@@ -1008,7 +1012,8 @@ void QmlViewer::openQml(const QString& file_or_url)
     if (!m_script.isEmpty()) 
         tester = new QmlGraphicsTester(m_script, m_scriptOptions, canvas);
 
-    canvas->reset();
+    delete canvas->rootObject();
+    canvas->engine()->clearComponentCache();
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("qmlViewer", this);
 #ifdef Q_OS_SYMBIAN
@@ -1058,7 +1063,7 @@ void QmlViewer::openQml(const QString& file_or_url)
         }
     }
 
-    canvas->setUrl(url);
+    canvas->setSource(url);
 
     QTime t;
     t.start();
@@ -1125,7 +1130,7 @@ void QmlViewer::setSkin(const QString& skinDirOrName)
         skin->deleteLater();
     }
 
-    canvas->setContentResizable(!skin || !scaleSkin);
+    canvas->setResizeMode((!skin || !scaleSkin) ? QmlView::SizeRootObjectToView : QmlView::SizeViewToRootObject);
 
     DeviceSkinParameters parameters;
     if (!skinDirectory.isEmpty() && parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {

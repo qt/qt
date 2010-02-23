@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,7 +75,7 @@ public:
         dirty(true), wrap(false), richText(false), singleline(false), cache(true), doc(0),
         format(QmlGraphicsText::AutoText)
     {
-#ifdef QML_NO_TEXT_CACHE
+#if defined(QML_NO_TEXT_CACHE)
         cache = false;
 #endif
     }

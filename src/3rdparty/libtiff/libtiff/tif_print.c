@@ -1,4 +1,4 @@
-/* $Id: tif_print.c,v 1.35 2006/03/13 07:53:28 dron Exp $ */
+/* $Id: tif_print.c,v 1.36.2.2 2009-09-17 18:00:28 bfriesen Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -31,7 +31,7 @@
  */
 #include "tiffiop.h"
 #include <stdio.h>
-
+#include <string.h>
 #include <ctype.h>
 
 static const char *photoNames[] = {
@@ -491,7 +491,7 @@ TIFFPrintDirectory(TIFF* tif, FILE* fd, long flags)
 		} else
 			fprintf(fd, "(present)\n");
 	}
-	if (TIFFFieldSet(tif, FIELD_SUBIFD)) {
+	if (TIFFFieldSet(tif, FIELD_SUBIFD) && (td->td_subifd)) {
 		fprintf(fd, "  SubIFD Offsets:");
 		for (i = 0; i < td->td_nsubifd; i++)
 			fprintf(fd, " %5lu", (long) td->td_subifd[i]);
@@ -509,7 +509,7 @@ TIFFPrintDirectory(TIFF* tif, FILE* fd, long flags)
             for(i = 0; i < count; i++) {
                 ttag_t  tag = TIFFGetTagListEntry(tif, i);
                 const TIFFFieldInfo *fip;
-                uint16 value_count;
+                uint32 value_count;
                 int mem_alloc = 0;
                 void *raw_data;
 

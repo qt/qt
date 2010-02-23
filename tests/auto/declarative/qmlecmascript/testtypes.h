@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,7 +77,6 @@ class MyQmlObject : public QObject
     Q_PROPERTY(int value READ value WRITE setValue)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
-    Q_PROPERTY(QmlList<QObject *> *objectQmlListProperty READ objectQmlListProperty CONSTANT)
     Q_PROPERTY(QmlListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
 
@@ -107,7 +106,6 @@ public:
         emit objectChanged();
     }
 
-    QmlList<QObject *> *objectQmlListProperty() { return &m_objectQmlList; }
     QmlListProperty<QObject> objectListProperty() { return QmlListProperty<QObject>(this, m_objectQList); }
 
     bool methodCalled() const { return m_methodCalled; }
@@ -150,7 +148,6 @@ private:
 
     QObject *m_object;
     QString m_string;
-    QmlConcreteList<QObject *> m_objectQmlList;
     QList<QObject *> m_objectQList;
     int m_value;
     int m_resetProperty;

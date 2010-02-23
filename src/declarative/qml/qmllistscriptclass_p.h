@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@
 //
 
 #include <private/qmlscriptclass_p.h>
+#include "qmllist.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -64,8 +65,8 @@ public:
     QmlListScriptClass(QmlEngine *);
     ~QmlListScriptClass();
 
-    enum ListCategory { ListProperty, QmlListPtr };
-    QScriptValue newList(QObject *, int, ListCategory, int);
+    QScriptValue newList(QObject *, int, int);
+    QScriptValue newList(const QmlListProperty<QObject> &, int);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 

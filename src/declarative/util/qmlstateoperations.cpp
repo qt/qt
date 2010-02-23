@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
         bool ok;
         const QTransform &transform = target->itemTransform(targetParent, &ok);
         if (transform.type() >= QTransform::TxShear || !ok) {
-            qmlInfo(q) << QObject::tr("Unable to preserve appearance under complex transform");
+            qmlInfo(q) << QmlParentChange::tr("Unable to preserve appearance under complex transform");
             ok = false;
         }
 
@@ -92,21 +92,21 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
             if (transform.m11() == transform.m22())
                 scale = transform.m11();
             else {
-                qmlInfo(q) << QObject::tr("Unable to preserve appearance under non-uniform scale");
+                qmlInfo(q) << QmlParentChange::tr("Unable to preserve appearance under non-uniform scale");
                 ok = false;
             }
         } else if (ok && transform.type() == QTransform::TxRotate) {
             if (transform.m11() == transform.m22())
                 scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
             else {
-                qmlInfo(q) << QObject::tr("Unable to preserve appearance under non-uniform scale");
+                qmlInfo(q) << QmlParentChange::tr("Unable to preserve appearance under non-uniform scale");
                 ok = false;
             }
 
             if (scale != 0)
                 rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/M_PI;
             else {
-                qmlInfo(q) << QObject::tr("Unable to preserve appearance under scale of 0");
+                qmlInfo(q) << QmlParentChange::tr("Unable to preserve appearance under scale of 0");
                 ok = false;
             }
         }
@@ -403,7 +403,7 @@ QString QmlStateChangeScript::typeName() const
     so you can animate them as you would normally changes to these properties:
     \qml
     //animate our anchor changes
-    NumberAnimation { matchTargets: content; matchProperties: "x,y,width,height" }
+    NumberAnimation { targets: content; properties: "x,y,width,height" }
     \endqml
 
     For more information on anchors see \l {anchor-layout}{Anchor Layouts}.

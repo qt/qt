@@ -68,7 +68,7 @@ Rectangle {
                 border.color: "White"; border.width: 2
                 height: 32; width: 32; radius: 8; anchors.verticalCenter: parent.verticalCenter
 
-                MouseRegion {
+                MouseArea {
                     onClicked: if (rect.state == '') rect.state = "right"; else rect.state = ''
                     anchors.fill: parent
                 }
@@ -80,8 +80,8 @@ Rectangle {
 
                 transitions: Transition {
                     ParallelAnimation {
-                        NumberAnimation { matchProperties: "x"; easing: type; duration: 1000 }
-                        ColorAnimation { matchProperties: "color"; easing: type; duration: 1000 }
+                        NumberAnimation { properties: "x"; easing: type; duration: 1000 }
+                        ColorAnimation { properties: "color"; easing: type; duration: 1000 }
                     }
                 }
             }

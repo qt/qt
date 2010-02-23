@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -131,7 +131,7 @@ class Q_DECLARATIVE_EXPORT QmlState : public QObject
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QmlBinding *when READ when WRITE setWhen)
     Q_PROPERTY(QString extend READ extends WRITE setExtends)
-    Q_PROPERTY(QmlList<QmlStateOperation *>* changes READ changes)
+    Q_PROPERTY(QmlListProperty<QmlStateOperation> changes READ changes)
     Q_CLASSINFO("DefaultProperty", "changes")
     Q_CLASSINFO("DeferredPropertyNames", "changes")
 
@@ -151,7 +151,10 @@ public:
     QString extends() const;
     void setExtends(const QString &);
 
-    QmlList<QmlStateOperation *> *changes();
+    QmlListProperty<QmlStateOperation> changes();
+    int operationCount() const;
+    QmlStateOperation *operationAt(int) const;
+
     QmlState &operator<<(QmlStateOperation *);
 
     void apply(QmlStateGroup *, QmlTransition *, QmlState *revert);

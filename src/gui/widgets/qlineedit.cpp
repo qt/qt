@@ -1637,12 +1637,8 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
                 if (!hasEditFocus() && !(event->modifiers() & Qt::ControlModifier)) {
                     if (!event->text().isEmpty() && event->text().at(0).isPrint()
                         && !isReadOnly())
-                    {
                         setEditFocus(true);
-#ifndef Q_OS_SYMBIAN
-                        clear();
-#endif
-                    } else {
+                    else {
                         event->ignore();
                         return;
                     }
@@ -1698,12 +1694,8 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
     // commit text as they focus out without interfering with focus
     if (QApplication::keypadNavigationEnabled()
         && hasFocus() && !hasEditFocus()
-        && !e->preeditString().isEmpty()) {
+        && !e->preeditString().isEmpty())
         setEditFocus(true);
-#ifndef Q_OS_SYMBIAN
-        selectAll();        // so text is replaced rather than appended to
-#endif
-    }
 #endif
 
     d->control->processInputMethodEvent(e);

@@ -27,7 +27,7 @@ Item {
             GradientStop { position: 1.0; color: "gray" }
         }
 
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent; drag.target: parent
             drag.axis: "XAxis"; drag.minimumX: 2; drag.maximumX: slider.xMax+2
             onPositionChanged: { value = (maximum - minimum) * (handle.x-2) / slider.xMax + minimum; }

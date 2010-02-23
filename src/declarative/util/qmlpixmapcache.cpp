@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -179,11 +179,19 @@ bool QmlImageRequestHandler::event(QEvent *event)
             if (reader->cancelled.count()) {
                 for (int i = 0; i < reader->cancelled.count(); ++i) {
                     QmlPixmapReply *job = reader->cancelled.at(i);
+                    // cancel any jobs already started
                     QNetworkReply *reply = replies.key(job, 0);
                     if (reply && reply->isRunning()) {
                         replies.remove(reply);
                         reply->close();
-                        job->release(true);
+                    }
+                    // remove from pending job list
+                    for (int j = 0; j < reader->jobs.count(); ++j) {
+                        if (reader->jobs.at(j) == job) {
+                            reader->jobs.removeAt(j);
+                            job->release(true);
+                            break;
+                        }
                     }
                 }
                 reader->cancelled.clear();
@@ -195,8 +203,6 @@ bool QmlImageRequestHandler::event(QEvent *event)
             }
 
             QmlPixmapReply *runningJob = reader->jobs.takeLast();
-            runningJob->addRef();
-            runningJob->setLoading();
             QUrl url = runningJob->url();
             reader->mutex.unlock();
 
@@ -267,12 +273,12 @@ QmlImageReader::QmlImageReader(QmlEngine *eng)
 
 QmlImageReader::~QmlImageReader()
 {
-    quit();
-    wait();
     readerMutex.lock();
     readers.remove(engine);
     readerMutex.unlock();
-    delete handler;
+
+    quit();
+    wait();
 }
 
 QmlImageReader *QmlImageReader::instance(QmlEngine *engine)
@@ -292,6 +298,8 @@ QmlPixmapReply *QmlImageReader::getImage(const QUrl &url)
 {
     mutex.lock();
     QmlPixmapReply *reply = new QmlPixmapReply(this, url);
+    reply->addRef();
+    reply->setLoading();
     jobs.append(reply);
     if (jobs.count() == 1 && handler)
         QCoreApplication::postEvent(handler, new QEvent(QEvent::User));
@@ -303,21 +311,10 @@ void QmlImageReader::cancel(QmlPixmapReply *reply)
 {
     mutex.lock();
     if (reply->isLoading()) {
-        // Already requested.  Add to cancel list to be cancelled in reader thread.
+        // Add to cancel list to be cancelled in reader thread.
         cancelled.append(reply);
         if (cancelled.count() == 1 && handler)
             QCoreApplication::postEvent(handler, new QEvent(QEvent::User));
-    } else {
-        // Not yet processed - just remove from waiting list
-        QList<QmlPixmapReply*>::iterator it = jobs.begin();
-        while (it != jobs.end()) {
-            QmlPixmapReply *job = *it;
-            if (job == reply) {
-                jobs.erase(it);
-                break;
-            }
-            ++it;
-        }
     }
     mutex.unlock();
 }
@@ -335,6 +332,9 @@ void QmlImageReader::run()
     handler = new QmlImageRequestHandler(this, engine);
 
     exec();
+
+    delete handler;
+    handler = 0;
 }
 
 //===========================================================================
@@ -479,8 +479,6 @@ bool QmlPixmapReply::release(bool defer)
     --d->refCount;
     if (d->refCount == 0) {
         qmlActivePixmapReplies()->remove(d->url);
-        if (d->status == Loading && !d->loading)
-            d->reader->cancel(this);
         if (defer)
             deleteLater();
         else

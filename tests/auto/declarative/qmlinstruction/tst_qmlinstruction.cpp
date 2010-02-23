@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -421,13 +421,6 @@ void tst_qmlinstruction::dump()
 
     {
         QmlInstruction i;
-        i.line = 37;
-        i.type = QmlInstruction::StoreObjectQmlList;
-        data->bytecode << i;
-    }
-
-    {
-        QmlInstruction i;
         i.line = 38;
         i.type = QmlInstruction::StoreObjectQList;
         data->bytecode << i;
@@ -445,15 +438,6 @@ void tst_qmlinstruction::dump()
         i.line = 40;
         i.type = QmlInstruction::FetchAttached;
         i.fetchAttached.id = 23;
-        data->bytecode << i;
-    }
-
-    {
-        QmlInstruction i;
-        i.line = 41;
-        i.type = QmlInstruction::FetchQmlList;
-        i.fetchQmlList.property = 31;
-        i.fetchQmlList.type = 3;
         data->bytecode << i;
     }
 
@@ -569,20 +553,18 @@ void tst_qmlinstruction::dump()
         << "34\t\t34\tSTORE_VALUE_SOURCE\t29\t4"
         << "35\t\t35\tSTORE_VALUE_INTERCEPTOR\t30\t-4"
         << "36\t\t36\tBEGIN\t\t\t4"
-        << "37\t\t37\tSTORE_OBJECT_QMLLIST"
-        << "38\t\t38\tSTORE_OBJECT_QLIST"
-        << "39\t\t39\tASSIGN_OBJECT_LIST"
-        << "40\t\t40\tFETCH_ATTACHED\t\t23"
-        << "41\t\t41\tFETCH_QMLLIST\t\t31\t3"
-        << "42\t\t42\tFETCH_QLIST\t\t32"
-        << "43\t\t43\tFETCH\t\t\t33"
-        << "44\t\t44\tFETCH_VALUE\t\t34\t6"
-        << "45\t\t45\tPOP"
-        << "46\t\t46\tPOP_QLIST"
-        << "47\t\t47\tPOP_VALUE\t\t35\t8"
-        << "48\t\t48\tDEFER\t\t\t7"
-        << "49\t\tNA\tDEFER\t\t\t7"
-        << "50\t\t50\tXXX UNKOWN INSTRUCTION\t49"
+        << "37\t\t38\tSTORE_OBJECT_QLIST"
+        << "38\t\t39\tASSIGN_OBJECT_LIST"
+        << "39\t\t40\tFETCH_ATTACHED\t\t23"
+        << "40\t\t42\tFETCH_QLIST\t\t32"
+        << "41\t\t43\tFETCH\t\t\t33"
+        << "42\t\t44\tFETCH_VALUE\t\t34\t6"
+        << "43\t\t45\tPOP"
+        << "44\t\t46\tPOP_QLIST"
+        << "45\t\t47\tPOP_VALUE\t\t35\t8"
+        << "46\t\t48\tDEFER\t\t\t7"
+        << "47\t\tNA\tDEFER\t\t\t7"
+        << "48\t\t50\tXXX UNKOWN INSTRUCTION\t47"
         << "-------------------------------------------------------------------------------";
 
     messages = QStringList();

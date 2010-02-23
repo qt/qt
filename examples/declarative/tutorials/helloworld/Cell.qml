@@ -23,7 +23,7 @@ Item {
 //![2]
 
 //![3]
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: container.clicked(container.color)
     }

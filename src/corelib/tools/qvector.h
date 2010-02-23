@@ -164,7 +164,7 @@ public:
     public:
         T *i;
         typedef std::random_access_iterator_tag  iterator_category;
-        typedef ptrdiff_t difference_type;
+        typedef qptrdiff difference_type;
         typedef T value_type;
         typedef T *pointer;
         typedef T &reference;
@@ -197,7 +197,7 @@ public:
     public:
         T *i;
         typedef std::random_access_iterator_tag  iterator_category;
-        typedef ptrdiff_t difference_type;
+        typedef qptrdiff difference_type;
         typedef T value_type;
         typedef const T *pointer;
         typedef const T &reference;
@@ -261,7 +261,7 @@ public:
     typedef const value_type* const_pointer;
     typedef value_type& reference;
     typedef const value_type& const_reference;
-    typedef ptrdiff_t difference_type;
+    typedef qptrdiff difference_type;
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
     typedef int size_type;
@@ -728,9 +728,10 @@ Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int length) const
         length = size() - pos;
     if (pos == 0 && length == size())
         return *this;
-    QVector<T> copy;
     if (pos + length > size())
         length = size() - pos;
+    QVector<T> copy;
+    copy.reserve(length);
     for (int i = pos; i < pos + length; ++i)
         copy += at(i);
     return copy;
@@ -740,6 +741,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> QVector<T>::toList() const
 {
     QList<T> result;
+    result.reserve(size());
     for (int i = 0; i < size(); ++i)
         result.append(at(i));
     return result;

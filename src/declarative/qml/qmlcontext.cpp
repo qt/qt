@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -428,7 +428,7 @@ void QmlContextPrivate::setIdPropertyData(QmlIntegerCache *data)
 }
 
 /*!
-    Set a the \a value of the \a name property on this context.
+    Set the \a value of the \a name property on this context.
 
     QmlContext does \bold not take ownership of \a value.
 */
@@ -452,6 +452,10 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
     }
 }
 
+/*!
+  Returns the value of the \a name property for this context
+  as a QVariant.
+ */
 QVariant QmlContext::contextProperty(const QString &name) const
 {
     Q_D(const QmlContext);
@@ -540,5 +544,30 @@ QUrl QmlContext::baseUrl() const
         return QUrl();
 }
 
+int QmlContextPrivate::context_count(QmlListProperty<QObject> *prop)
+{
+    QmlContext *context = static_cast<QmlContext*>(prop->object);
+    QmlContextPrivate *d = QmlContextPrivate::get(context);
+    int contextProperty = (int)(intptr_t)prop->data;
+
+    if (d->propertyValues.at(contextProperty).userType() != qMetaTypeId<QList<QObject*> >()) {
+        return 0;
+    } else {
+        return ((const QList<QObject> *)d->propertyValues.at(contextProperty).constData())->count();
+    }
+}
+
+QObject *QmlContextPrivate::context_at(QmlListProperty<QObject> *prop, int index)
+{
+    QmlContext *context = static_cast<QmlContext*>(prop->object);
+    QmlContextPrivate *d = QmlContextPrivate::get(context);
+    int contextProperty = (int)(intptr_t)prop->data;
+
+    if (d->propertyValues.at(contextProperty).userType() != qMetaTypeId<QList<QObject*> >()) {
+        return 0;
+    } else {
+        return ((const QList<QObject*> *)d->propertyValues.at(contextProperty).constData())->at(index);
+    }
+}
 
 QT_END_NAMESPACE

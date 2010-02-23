@@ -37,7 +37,7 @@ Item {
     Row{
         y:20
         id: row2
-        move: Transition{NumberAnimation{matchProperties:"x"}}
+        move: Transition{NumberAnimation{properties:"x"}}
         Repeater{ 
             id: repeater 
             model: 0; 
@@ -48,7 +48,7 @@ Item {
         Rectangle{id: r2c; width:20; height:20; color: "blue"}
     }
     Row{
-        move: Transition{NumberAnimation{matchProperties:"x"}}
+        move: Transition{NumberAnimation{properties:"x"}}
         y:40
         id: row3
         Rectangle{id: r3a; width:20; height:20; color: "red"}

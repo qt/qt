@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,26 +60,19 @@ class QmlStateGroupPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlStateGroup)
 public:
     QmlStateGroupPrivate(QmlStateGroup *p)
-    : nullState(0), states(p), componentComplete(true),
+    : nullState(0), componentComplete(true),
       ignoreTrans(false), applyingState(false) {}
 
     QString currentState;
     QmlState *nullState;
 
-    struct StateList : public QmlConcreteList<QmlState *>
-    {
-        StateList(QmlStateGroup *g)
-            :group(g) {}
-        void append(QmlState *s) {
-            QmlConcreteList<QmlState *>::append(s);
-            if (s) s->setStateGroup(group);
-        }
-    private:
-        QmlStateGroup *group;
-    };
-    StateList states;
+    static void append_state(QmlListProperty<QmlState> *list, QmlState *state);
+    static int count_state(QmlListProperty<QmlState> *list);
+    static QmlState *at_state(QmlListProperty<QmlState> *list, int index);
 
-    QmlConcreteList<QmlTransition *> transitions;
+    QList<QmlState *> states;
+    QList<QmlTransition *> transitions;
+
     bool componentComplete;
     bool ignoreTrans;
     bool applyingState;
@@ -151,10 +144,34 @@ QList<QmlState *> QmlStateGroup::states() const
 
   \sa {qmlstate}{States}
 */
-QmlList<QmlState *>* QmlStateGroup::statesProperty()
+QmlListProperty<QmlState> QmlStateGroup::statesProperty()
 {
     Q_D(QmlStateGroup);
-    return &(d->states);
+    return QmlListProperty<QmlState>(this, &d->states, &QmlStateGroupPrivate::append_state,
+                                                       &QmlStateGroupPrivate::count_state,
+                                                       &QmlStateGroupPrivate::at_state);
+}
+
+void QmlStateGroupPrivate::append_state(QmlListProperty<QmlState> *list, QmlState *state)
+{
+    QmlStateGroup *_this = static_cast<QmlStateGroup *>(list->object);
+    if (state) {
+        _this->d_func()->states.append(state);
+        state->setStateGroup(_this);
+    }
+
+}
+
+int QmlStateGroupPrivate::count_state(QmlListProperty<QmlState> *list)
+{
+    QmlStateGroup *_this = static_cast<QmlStateGroup *>(list->object);
+    return _this->d_func()->states.count();
+}
+
+QmlState *QmlStateGroupPrivate::at_state(QmlListProperty<QmlState> *list, int index)
+{
+    QmlStateGroup *_this = static_cast<QmlStateGroup *>(list->object);
+    return _this->d_func()->states.at(index);
 }
 
 /*!
@@ -173,10 +190,10 @@ QmlList<QmlState *>* QmlStateGroup::statesProperty()
 
   \sa {state-transitions}{Transitions}
 */
-QmlList<QmlTransition *>* QmlStateGroup::transitionsProperty()
+QmlListProperty<QmlTransition> QmlStateGroup::transitionsProperty()
 {
     Q_D(QmlStateGroup);
-    return &(d->transitions);
+    return QmlListProperty<QmlTransition>(this, d->transitions);
 }
 
 /*!

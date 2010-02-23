@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,8 +77,6 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
             flags |= Data::IsQObjectDerived;
         else if (cat == QmlMetaType::List)
             flags |= Data::IsQList;
-        else if (cat == QmlMetaType::QmlList)
-            flags |= Data::IsQmlList;
     }
 }
 

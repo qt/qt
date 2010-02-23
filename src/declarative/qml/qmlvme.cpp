@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -92,15 +92,12 @@ QmlVME::QmlVME()
 struct ListInstance
 {
     ListInstance() 
-        : type(0), qmlListInterface(0) {}
+        : type(0) {}
     ListInstance(int t) 
-        : type(t), qmlListInterface(0) {}
-    ListInstance(QmlPrivate::ListInterface *q, int t)
-        : type(t), qmlListInterface(q) {}
+        : type(t) {}
 
     int type;
     QmlListProperty<void> qListProperty;
-    QmlPrivate::ListInterface *qmlListInterface;
 };
 
 QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledData *comp, 
@@ -655,16 +652,6 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
             }
             break;
 
-        case QmlInstruction::StoreObjectQmlList:
-            {
-                QObject *assign = stack.pop();
-                const ListInstance &list = qliststack.top();
-
-                void *d = (void *)&assign;
-                list.qmlListInterface->append(d);
-            }
-            break;
-
         case QmlInstruction::StoreObjectQList:
             {
                 QObject *assign = stack.pop();
@@ -691,12 +678,7 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                     VME_EXCEPTION(QCoreApplication::translate("QmlVME","Cannot assign object to list"));
 
 
-                if (list.qmlListInterface) {
-                    void *d = (void *)&ptr;
-                    list.qmlListInterface->append(d);
-                } else {
-                    list.qListProperty.append((QmlListProperty<void>*)&list.qListProperty, ptr);
-                }
+                list.qListProperty.append((QmlListProperty<void>*)&list.qListProperty, ptr);
             }
             break;
 
@@ -748,24 +730,6 @@ QObject *QmlVME::run(QmlVMEStack<QObject *> &stack, QmlContext *ctxt,
                     VME_EXCEPTION(QCoreApplication::translate("QmlVME","Unable to create attached object"));
 
                 stack.push(qmlObject);
-            }
-            break;
-
-        case QmlInstruction::FetchQmlList:
-            {
-                QObject *target = stack.top();
-
-                void *a[1];
-                // We know that QmlList<*> can be converted to 
-                // QmlPrivate::ListInterface
-                QmlPrivate::ListInterface *list = 0;
-                a[0] = &list;
-                QMetaObject::metacall(target, QMetaObject::ReadProperty, 
-                                      instr.fetchQmlList.property, a);
-                if (!list) 
-                    VME_EXCEPTION(QCoreApplication::translate("QmlVME","Cannot assign to null list"));
-
-                qliststack.push(ListInstance(list, instr.fetchQmlList.type));
             }
             break;
 

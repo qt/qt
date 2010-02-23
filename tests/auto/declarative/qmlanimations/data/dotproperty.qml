@@ -9,7 +9,7 @@ Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onClicked: if (wrapper.state == "state1") wrapper.state = ""; else wrapper.state = "state1";
         }
@@ -19,6 +19,6 @@ Rectangle {
         PropertyChanges { target: myRect; border.color: "blue" }
     }
     transitions: Transition {
-        ColorAnimation { matchProperties: "border.color"; duration: 1000 }
+        ColorAnimation { properties: "border.color"; duration: 1000 }
     }
 }

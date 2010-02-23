@@ -497,6 +497,14 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
         case NSOtherMouseDown:   
         case NSOtherMouseUp:     
         case NSOtherMouseDragged:
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+        case NSEventTypeGesture: // touch events
+        case NSEventTypeMagnify:
+        case NSEventTypeSwipe:
+        case NSEventTypeRotate:
+        case NSEventTypeBeginGesture:
+        case NSEventTypeEndGesture:
+#endif
             result    = true;
         break;
 
@@ -1064,10 +1072,9 @@ void QEventDispatcherMacPrivate::cancelWaitForMoreEvents()
     // In case the event dispatcher is waiting for more
     // events somewhere, we post a dummy event to wake it up:
     QMacCocoaAutoReleasePool pool;
-    static const short NSAppShouldStopForQt = SHRT_MAX;
     [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
         modifierFlags:0 timestamp:0. windowNumber:0 context:0
-        subtype:NSAppShouldStopForQt data1:0 data2:0] atStart:NO];
+        subtype:QtCocoaEventSubTypeWakeup data1:0 data2:0] atStart:NO];
 }
 #endif
 

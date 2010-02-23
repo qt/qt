@@ -18,7 +18,7 @@ Item {
         source: "images/toolbutton.sci"
         width: container.width; height: container.height
     }
-    MouseRegion {
+    MouseArea {
         id: mouseRegion
         anchors.fill: buttonImage
         onClicked: { container.clicked(); }

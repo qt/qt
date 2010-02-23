@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -50,7 +50,7 @@ class BirthdayParty : public QObject
 {
 Q_OBJECT
 Q_PROPERTY(Person *celebrant READ celebrant WRITE setCelebrant)
-Q_PROPERTY(QmlList<Person *> *guests READ guests)
+Q_PROPERTY(QmlListProperty<Person> guests READ guests)
 Q_CLASSINFO("DefaultProperty", "guests")
 public:
     BirthdayParty(QObject *parent = 0);
@@ -58,11 +58,13 @@ public:
     Person *celebrant() const;
     void setCelebrant(Person *);
 
-    QmlList<Person *> *guests();
+    QmlListProperty<Person> guests();
+    int guestCount() const;
+    Person *guest(int) const;
 
 private:
     Person *m_celebrant;
-    QmlConcreteList<Person *> m_guests;
+    QList<Person *> m_guests;
 };
 // ![0]
 QML_DECLARE_TYPE(BirthdayParty);

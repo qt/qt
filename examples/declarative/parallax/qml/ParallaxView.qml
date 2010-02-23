@@ -58,7 +58,7 @@ Item {
                 transformOrigin: "Center"
             }
 
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onClicked: { root.currentIndex = index }
             }
@@ -74,7 +74,7 @@ Item {
             }
             transitions: Transition {
                 NumberAnimation {
-                    matchProperties: "scale,y"
+                    properties: "scale,y"
                 }
              }
         }

@@ -29,6 +29,7 @@ SUBDIRS += \
            qmlgraphicsitem \        # Cover
            qmlgraphicslistview \    # Cover
            qmlgraphicsloader \      # Cover
+           qmlgraphicsmousearea \   # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicspathview \    # Cover
            qmlgraphicspositioners \ # Cover
@@ -38,11 +39,11 @@ SUBDIRS += \
            qmlinfo \                # Cover
            qmlinstruction \         # Cover
            qmllanguage \            # Cover
-           qmllist \                # Cover
-           qmllistaccessor \        # Cover
+           qmllistreference \       # Cover
            qmllistmodel \           # Cover
            qmlmetaproperty \        # Cover
            qmlmetatype \            # Cover
+           qmlmoduleplugin \        # Cover
            qmlnumberformatter \     # Cover
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover

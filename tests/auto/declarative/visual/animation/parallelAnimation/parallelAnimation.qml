@@ -14,7 +14,7 @@ Rectangle {
         color: "red"
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: parent.state = "state1"
     }
@@ -34,10 +34,10 @@ Rectangle {
     }
 
     transitions: Transition {
-        PropertyAnimation { matchTargets: redRect; matchProperties: "x,color"; duration: 300 }
+        PropertyAnimation { targets: redRect; properties: "x,color"; duration: 300 }
         ParallelAnimation {
-            NumberAnimation { matchTargets: redRect2; matchProperties: "x"; duration: 300 }
-            ColorAnimation { matchTargets: redRect2; matchProperties: "color"; duration: 300 }
+            NumberAnimation { targets: redRect2; properties: "x"; duration: 300 }
+            ColorAnimation { targets: redRect2; properties: "color"; duration: 300 }
         }
     }
 }

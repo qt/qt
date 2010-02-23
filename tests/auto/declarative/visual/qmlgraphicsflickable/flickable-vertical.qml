@@ -25,7 +25,7 @@ Rectangle {
             Repeater {
                 model: list
                 Rectangle { width: 300; height: 200; color: mr.pressed ? "black" : dayColor
-                    MouseRegion {
+                    MouseArea {
                         id: mr
                         anchors.fill: parent
                     }
@@ -49,7 +49,7 @@ Rectangle {
         height: 48
         y: parent.height - 50
         color: "red"
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onClicked: flick.interactive = flick.interactive ? false : true
         }
@@ -62,7 +62,7 @@ Rectangle {
         x: 66
         y: parent.height - 50
         color: "green"
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onClicked: flick.pressDelay = flick.pressDelay > 0 ? 0 : 500
         }
@@ -75,7 +75,7 @@ Rectangle {
         x: 130
         y: parent.height - 50
         color: "yellow"
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onClicked: flick.overShoot = flick.overShoot > 0 ? 0 : 30
         }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,7 +86,6 @@ public:
                     IsFunction        = 0x00000008,
                     IsQObjectDerived  = 0x00000010,
                     IsEnumType        = 0x00000020,
-                    IsQmlList         = 0x00000040,
                     IsQList           = 0x00000080,
                     IsQmlBinding      = 0x00000100,
                     IsQScriptValue    = 0x00000200,

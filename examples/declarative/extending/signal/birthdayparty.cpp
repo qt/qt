@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,9 +72,19 @@ void BirthdayParty::setCelebrant(Person *c)
     m_celebrant = c;
 }
 
-QmlList<Person *> *BirthdayParty::guests() 
+QmlListProperty<Person> BirthdayParty::guests() 
 {
-    return &m_guests;
+    return QmlListProperty<Person>(this, m_guests);
+}
+
+int BirthdayParty::guestCount() const
+{
+    return m_guests.count();
+}
+
+Person *BirthdayParty::guest(int index) const
+{
+    return m_guests.at(index);
 }
 
 void BirthdayParty::startParty()

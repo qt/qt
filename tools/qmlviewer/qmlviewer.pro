@@ -33,6 +33,7 @@ FORMS = recopts.ui \
     proxysettings.ui
 INCLUDEPATH += ../../include/QtDeclarative
 INCLUDEPATH += ../../src/declarative/util
+INCLUDEPATH += ../../src/declarative/graphicsitems
 include(../shared/deviceskin/deviceskin.pri)
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target

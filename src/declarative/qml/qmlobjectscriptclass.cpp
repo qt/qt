@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -239,9 +239,7 @@ QmlObjectScriptClass::property(QObject *obj, const Identifier &name)
         }
 
         if (lastData->flags & QmlPropertyCache::Data::IsQList) {
-            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::ListProperty, lastData->propType));
-        } else if (lastData->flags & QmlPropertyCache::Data::IsQmlList) {
-            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, QmlListScriptClass::QmlListPtr, lastData->propType));
+            return Value(scriptEngine, enginePriv->listClass->newList(obj, lastData->coreIndex, lastData->propType));
         } else if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             QObject *rv = 0;
             void *args[] = { &rv, 0 };
@@ -313,7 +311,7 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     Q_ASSERT(lastData);
 
     if (!lastData->isValid()) {
-        QString error = QLatin1String("Cannot assign to non-existant property \"") +
+        QString error = QLatin1String("Cannot assign to non-existent property \"") +
                         toString(name) + QLatin1Char('\"');
         if (context())
             context()->throwError(error);
@@ -628,11 +626,11 @@ QmlObjectMethodScriptClass::Value QmlObjectMethodScriptClass::call(Object *o, QS
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
             if (argTypes[ii] == QVariant::Invalid) 
-                return Value(ctxt, ctxt->throwError(QString(QLatin1String("Unknown method parameter type: %1")).arg(QLatin1String(argTypeNames.at(ii)))));
+                return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }
 
         if (argTypes.count() > ctxt->argumentCount()) 
-            return Value(ctxt, ctxt->throwError("Insufficient arguments"));
+            return Value(ctxt, ctxt->throwError(QLatin1String("Insufficient arguments")));
 
         QVarLengthArray<MetaCallArgument, 9> args(argTypes.count() + 1);
         args[0].initAsType(method->data.propType, engine);

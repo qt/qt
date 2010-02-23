@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,12 +55,12 @@ QT_BEGIN_NAMESPACE
 struct Update {
     Update(QmlTimeLineValue *_g, qreal _v)
         : g(_g), v(_v) {}
-    Update(const QmlTimeLineEvent &_e)
+    Update(const QmlTimeLineCallback &_e)
         : g(0), v(0), e(_e) {}
 
     QmlTimeLineValue *g;
     qreal v;
-    QmlTimeLineEvent e;
+    QmlTimeLineCallback e;
 };
 
 struct QmlTimeLinePrivate
@@ -79,7 +79,7 @@ struct QmlTimeLinePrivate
         };
         Op() {}
         Op(Type t, int l, qreal v, qreal v2, int o, 
-           const QmlTimeLineEvent &ev = QmlTimeLineEvent(), const QEasingCurve &es = QEasingCurve())
+           const QmlTimeLineCallback &ev = QmlTimeLineCallback(), const QEasingCurve &es = QEasingCurve())
             : type(t), length(l), value(v), value2(v2), order(o), event(ev),
               easing(es) {}
         Op(const Op &o)
@@ -98,7 +98,7 @@ struct QmlTimeLinePrivate
         qreal value2;
 
         int order;
-        QmlTimeLineEvent event;
+        QmlTimeLineCallback event;
         QEasingCurve easing;
     };
     struct TimeLine
@@ -244,7 +244,7 @@ qreal QmlTimeLinePrivate::value(const Op &op, int time, qreal base, bool *change
 
             }
         case Op::Execute:
-            op.event.execute();
+            op.event.d0(op.event.d1);
             *changed = false;
             return -1;
     }
@@ -364,10 +364,10 @@ void QmlTimeLine::pause(QmlTimeLineObject &obj, int time)
 /*!
     Execute the \a event.
  */
-void QmlTimeLine::execute(const QmlTimeLineEvent &event)
+void QmlTimeLine::callback(const QmlTimeLineCallback &callback)
 {
-    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Execute, 0, 0, 0., d->order++, event);
-    d->add(*event.eventObject(), op);
+    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Execute, 0, 0, 0., d->order++, callback);
+    d->add(*callback.callbackObject(), op);
 }
 
 /*!
@@ -466,7 +466,7 @@ void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, int t
 void QmlTimeLine::move(QmlTimeLineValue &timeLineValue, qreal destination, const QEasingCurve &easing, int time)
 {
     if (time <= 0) return;
-    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, QmlTimeLineEvent(), easing);
+    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::Move, time, destination, 0.0f, d->order++, QmlTimeLineCallback(), easing);
     d->add(timeLineValue, op);
 }
 
@@ -488,7 +488,7 @@ void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, int time
 void QmlTimeLine::moveBy(QmlTimeLineValue &timeLineValue, qreal change, const QEasingCurve &easing, int time)
 {
     if (time <= 0) return;
-    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, QmlTimeLineEvent(), easing);
+    QmlTimeLinePrivate::Op op(QmlTimeLinePrivate::Op::MoveBy, time, change, 0.0f, d->order++, QmlTimeLineCallback(), easing);
     d->add(timeLineValue, op);
 }
 
@@ -805,10 +805,11 @@ int QmlTimeLinePrivate::advance(int t)
         updateQueue = &updates;
         for (int ii = 0; ii < updates.count(); ++ii) {
             const Update &v = updates.at(ii).second;
-            if (v.g)
+            if (v.g) {
                 v.g->setValue(v.v);
-            else
-                v.e.execute();
+            } else {
+                v.e.d0(v.e.d1);
+            }
         }
         updateQueue = 0;
     } while(t);
@@ -854,7 +855,7 @@ void QmlTimeLine::remove(QmlTimeLineObject *v)
     if (d->updateQueue) {
         for (int ii = 0; ii < d->updateQueue->count(); ++ii) {
             if (d->updateQueue->at(ii).second.g == v ||
-               d->updateQueue->at(ii).second.e.eventObject() == v) {
+               d->updateQueue->at(ii).second.e.callbackObject() == v) {
                 d->updateQueue->removeAt(ii);
                 --ii;
             }
@@ -910,17 +911,22 @@ QmlTimeLineObject::~QmlTimeLineObject()
     }
 }
 
-QmlTimeLineEvent::QmlTimeLineEvent()
+QmlTimeLineCallback::QmlTimeLineCallback()
 : d0(0), d1(0), d2(0)
 {
 }
 
-QmlTimeLineEvent::QmlTimeLineEvent(const QmlTimeLineEvent &o)
+QmlTimeLineCallback::QmlTimeLineCallback(QmlTimeLineObject *b, Callback f, void *d)
+: d0(f), d1(d), d2(b)
+{
+}
+
+QmlTimeLineCallback::QmlTimeLineCallback(const QmlTimeLineCallback &o)
 : d0(o.d0), d1(o.d1), d2(o.d2)
 {
 }
 
-QmlTimeLineEvent &QmlTimeLineEvent::operator=(const QmlTimeLineEvent &o)
+QmlTimeLineCallback &QmlTimeLineCallback::operator=(const QmlTimeLineCallback &o)
 {
     d0 = o.d0;
     d1 = o.d1;
@@ -928,12 +934,7 @@ QmlTimeLineEvent &QmlTimeLineEvent::operator=(const QmlTimeLineEvent &o)
     return *this;
 }
 
-void QmlTimeLineEvent::execute() const
-{
-    d0(d1);
-}
-
-QmlTimeLineObject *QmlTimeLineEvent::eventObject() const
+QmlTimeLineObject *QmlTimeLineCallback::callbackObject() const
 {
     return d2;
 }

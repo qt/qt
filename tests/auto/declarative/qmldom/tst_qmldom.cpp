@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmldom.h>
+#include <QtDeclarative/private/qmldom_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -394,7 +394,7 @@ void tst_qmldom::loadErrors()
     QCOMPARE(error.url(), QUrl());
     QCOMPARE(error.line(), 3);
     QCOMPARE(error.column(), 3);
-    QCOMPARE(error.description(), QString("Cannot assign to non-existant property \"foo\""));
+    QCOMPARE(error.description(), QString("Cannot assign to non-existent property \"foo\""));
 }
 
 // Test loading a file with syntax errors
