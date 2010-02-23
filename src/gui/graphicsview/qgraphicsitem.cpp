@@ -414,12 +414,6 @@
 /*!
     \enum QGraphicsItem::GraphicsItemChange
 
-        ItemVisibleHasChanged,
-        ItemEnabledHasChanged,
-        ItemSelectedHasChanged,
-        ItemParentHasChanged,
-        ItemSceneHasChanged
-
     This enum describes the state changes that are notified by
     QGraphicsItem::itemChange(). The notifications are sent as the state
     changes, and in some cases, adjustments can be made (see the documentation
