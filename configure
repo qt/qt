@@ -5024,32 +5024,33 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 
-    if [ "$CFG_PHONON" != "no" ]; then
-        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
-            if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-                if [ -n "$PKG_CONFIG" ]; then
-                    QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                    QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                fi
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
-                    CFG_GSTREAMER=yes
-                    QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-                    QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
-                else
-                    if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                        echo "Gstreamer support cannot be enabled due to functionality tests!"
-                        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                        echo " If you believe this message is in error you may use the continue"
-                        echo " switch (-continue) to $0 to continue."
-                        exit 101
-                    else
-                        CFG_GSTREAMER=no
-                    fi
-                fi
-            elif [ "$CFG_GLIB" = "no" ]; then
+    # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
+    if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ]; then
+            QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+            QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
+            CFG_GSTREAMER=yes
+            QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
+            QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
+        else
+            if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                echo "Gstreamer support cannot be enabled due to functionality tests!"
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            else
                 CFG_GSTREAMER=no
             fi
+        fi
+    elif [ "$CFG_GLIB" = "no" ]; then
+        CFG_GSTREAMER=no
+    fi
 
+    if [ "$CFG_PHONON" != "no" ]; then
+        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
             if [ "$CFG_GSTREAMER" = "yes" ]; then
                 CFG_PHONON=yes
             else
