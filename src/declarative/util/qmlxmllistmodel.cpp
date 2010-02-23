@@ -635,9 +635,9 @@ void QmlXmlListModel::setXml(const QString &xml)
 }
 
 /*!
-    \qmlproperty url XmlListModel::query
+    \qmlproperty string XmlListModel::query
     An absolute XPath query representing the base query for the model items. The query should start with
-    a '/' or '//'.
+    '/' or '//'.
 */
 QString QmlXmlListModel::query() const
 {
