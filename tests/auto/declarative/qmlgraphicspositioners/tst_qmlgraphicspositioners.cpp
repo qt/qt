@@ -249,7 +249,7 @@ void tst_QmlGraphicsPositioners::test_vertical_animated()
 
 void tst_QmlGraphicsPositioners::test_grid()
 {
-    QmlView *canvas = createView("data/grid.qml");
+    QmlView *canvas = createView(SRCDIR "/data/grid.qml");
 
     canvas->execute();
 
@@ -278,7 +278,7 @@ void tst_QmlGraphicsPositioners::test_grid()
 
 void tst_QmlGraphicsPositioners::test_grid_spacing()
 {
-    QmlView *canvas = createView("data/grid-spacing.qml");
+    QmlView *canvas = createView(SRCDIR "/data/grid-spacing.qml");
 
     canvas->execute();
 
@@ -381,7 +381,7 @@ void tst_QmlGraphicsPositioners::test_grid_animated()
 
 void tst_QmlGraphicsPositioners::test_repeater()
 {
-    QmlView *canvas = createView("data/repeater.qml");
+    QmlView *canvas = createView(SRCDIR "/data/repeater.qml");
 
     canvas->execute();
 
