@@ -1200,7 +1200,7 @@ void QmlGraphicsListViewPrivate::flickX(qreal velocity)
             }
             timeline.reset(_moveX);
             timeline.accel(_moveX, v, accel, maxDistance + overshootDist);
-            timeline.execute(fixupXEvent);
+            timeline.callback(QmlTimeLineCallback(&_moveX, fixupX_callback, this));
             flicked = true;
             emit q->flickingChanged();
             emit q->flickStarted();
@@ -1226,7 +1226,7 @@ void QmlGraphicsListViewPrivate::flickX(qreal velocity)
             }
             timeline.reset(_moveX);
             timeline.accelDistance(_moveX, v, -dist + (v < 0 ? -overshootDist : overshootDist));
-            timeline.execute(fixupXEvent);
+            timeline.callback(QmlTimeLineCallback(&_moveX, fixupX_callback, this));
         }
     } else {
         correctFlick = false;
@@ -1298,7 +1298,7 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
             }
             timeline.reset(_moveY);
             timeline.accel(_moveY, v, accel, maxDistance + overshootDist);
-            timeline.execute(fixupYEvent);
+            timeline.callback(QmlTimeLineCallback(&_moveY, fixupY_callback, this));
             flicked = true;
             emit q->flickingChanged();
             emit q->flickStarted();
@@ -1324,7 +1324,7 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
             }
             timeline.reset(_moveY);
             timeline.accelDistance(_moveY, v, -dist + (v < 0 ? -overshootDist : overshootDist));
-            timeline.execute(fixupYEvent);
+            timeline.callback(QmlTimeLineCallback(&_moveY, fixupY_callback, this));
         }
     } else {
         correctFlick = false;

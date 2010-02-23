@@ -664,6 +664,8 @@ QString QtResourceView::selectedResource() const
 
 void QtResourceView::selectResource(const QString &resource)
 {
+    if (resource.isEmpty())
+        return;
     QFileInfo fi(resource);
     QDir dir = fi.absoluteDir();
     if (fi.isDir())

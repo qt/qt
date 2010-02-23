@@ -125,22 +125,23 @@ QListData::Data *QListData::detach2()
 }
 
 /*!
- *  Detaches the QListData by reallocating new memory.
+ *  Detaches the QListData by allocating new memory for a list which possibly
+ *  has a different size than the copied one.
  *  Returns the old (shared) data, it is up to the caller to deref() and free()
  *  For the new data node_copy needs to be called.
  *
  *  \internal
  */
-QListData::Data *QListData::detach3()
+QListData::Data *QListData::detach(int alloc)
 {
     Data *x = d;
-    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
+    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
     t->ref = 1;
     t->sharable = true;
-    t->alloc = x->alloc;
-    if (!t->alloc) {
+    t->alloc = alloc;
+    if (!alloc) {
         t->begin = 0;
         t->end = 0;
     } else {
@@ -150,6 +151,21 @@ QListData::Data *QListData::detach3()
     d = t;
 
     return x;
+}
+
+/*!
+ *  Detaches the QListData by reallocating new memory.
+ *  Returns the old (shared) data, it is up to the caller to deref() and free()
+ *  For the new data node_copy needs to be called.
+ *
+ *  \internal
+ */
+#if QT_VERSION >= 0x050000
+#  error "Remove QListData::detach3(), it is only required for binary compatibility for 4.5.x to 4.6.x"
+#endif
+QListData::Data *QListData::detach3()
+{
+    return detach(d->alloc);
 }
 
 void QListData::realloc(int alloc)
@@ -645,6 +661,19 @@ void **QListData::erase(void **xi)
     \overload
 
     Same as at().
+*/
+
+/*! \fn QList::reserve(int alloc)
+
+    Reserve space for \a alloc elements.
+
+    If \a alloc is smaller than the current size of the list, nothing will happen.
+
+    Use this function to avoid repetetive reallocation of QList's internal
+    data if you can predict how many elements will be appended.
+    Note that the reservation applies only to the internal pointer array.
+
+    \since 4.7
 */
 
 /*! \fn void QList::append(const T &value)

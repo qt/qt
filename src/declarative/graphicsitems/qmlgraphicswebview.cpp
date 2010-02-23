@@ -77,7 +77,6 @@ public:
             progress(1.0), status(QmlGraphicsWebView::Null), pending(PendingNone),
             newWindowComponent(0), newWindowParent(0),
             pressTime(400),
-            windowObjects(this),
             rendering(true)
     {
     }
@@ -101,19 +100,14 @@ public:
     QPoint pressPoint;
     int pressTime; // milliseconds before it's a "hold"
 
+
+    static void windowObjects_append(QmlListProperty<QObject> *prop, QObject *o) {
+        static_cast<QmlGraphicsWebViewPrivate *>(prop->data)->windowObjects.append(o);
+        static_cast<QmlGraphicsWebViewPrivate *>(prop->data)->updateWindowObjects();
+    }
+
     void updateWindowObjects();
-    class WindowObjectList : public QmlConcreteList<QObject *>
-    {
-    public:
-        WindowObjectList(QmlGraphicsWebViewPrivate *p)
-            : priv(p) {}
-        virtual void append(QObject *v) {
-            QmlConcreteList<QObject *>::append(v);
-            priv->updateWindowObjects();
-        }
-    private:
-        QmlGraphicsWebViewPrivate *priv;
-    } windowObjects;
+    QObjectList windowObjects;
 
     bool rendering;
 };
@@ -451,10 +445,10 @@ void QmlGraphicsWebView::paintPage(const QRect& r)
 
     If Javascript is not enabled for this page, then this property does nothing.
 */
-QmlList<QObject *> *QmlGraphicsWebView::javaScriptWindowObjects()
+QmlListProperty<QObject> QmlGraphicsWebView::javaScriptWindowObjects()
 {
     Q_D(QmlGraphicsWebView);
-    return &d->windowObjects;
+    return QmlListProperty<QObject>(this, d, &QmlGraphicsWebViewPrivate::windowObjects_append);
 }
 
 QmlGraphicsWebViewAttached *QmlGraphicsWebView::qmlAttachedProperties(QObject *o)

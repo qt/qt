@@ -41,14 +41,13 @@
 
 #include <math.h>
 
-#define BUFFER_SIZE 32768
-
 #include <QObject>
 #include <QMainWindow>
 #include <QIODevice>
 #include <QTimer>
 #include <QPushButton>
 #include <QComboBox>
+#include <QByteArray>
 
 #include <QAudioOutput>
 
@@ -56,26 +55,22 @@ class Generator : public QIODevice
 {
     Q_OBJECT
 public:
-    Generator(QObject *parent);
+    Generator(const QAudioFormat &format, qint64 durationUs, int frequency, QObject *parent);
     ~Generator();
 
     void start();
     void stop();
 
-    char *t;
-    int  len;
-    int  pos;
-    int  total;
-    char *buffer;
-    bool finished;
-    int  chunk_size;
-
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
+    qint64 bytesAvailable() const;
 
 private:
-    int putShort(char *t, unsigned int value);
-    int fillData(char *start, int frequency, int seconds);
+    void generateData(const QAudioFormat &format, qint64 durationUs, int frequency);
+
+private:
+    qint64 m_pos;
+    QByteArray m_buffer;
 };
 
 class AudioTest : public QMainWindow
@@ -85,26 +80,39 @@ public:
     AudioTest();
     ~AudioTest();
 
-    QAudioDeviceInfo  device;
-    Generator*        gen;
-    QAudioOutput*     audioOutput;
-    QIODevice*        output;
-    QTimer*           timer;
-    QAudioFormat      settings;
+private:
+    void initializeWindow();
+    void initializeAudio();
+    void createAudioOutput();
 
-    bool              pullMode;
-    char*             buffer;
+private:
+    QTimer*          m_pullTimer;
 
-    QPushButton*      button;
-    QPushButton*      button2;
-    QComboBox*     deviceBox;
+    // Owned by layout
+    QPushButton*     m_modeButton;
+    QPushButton*     m_suspendResumeButton;
+    QComboBox*       m_deviceBox;
+
+    QAudioDeviceInfo m_device;
+    Generator*       m_generator;
+    QAudioOutput*    m_audioOutput;
+    QIODevice*       m_output; // not owned
+    QAudioFormat     m_format;
+
+    bool             m_pullMode;
+    QByteArray       m_buffer;
+
+    static const QString PushModeLabel;
+    static const QString PullModeLabel;
+    static const QString SuspendLabel;
+    static const QString ResumeLabel;
 
 private slots:
-    void status();
-    void writeMore();
-    void toggle();
-    void togglePlay();
-    void state(QAudio::State s);
-    void deviceChanged(int idx);
+    void notified();
+    void pullTimerExpired();
+    void toggleMode();
+    void toggleSuspendResume();
+    void stateChanged(QAudio::State state);
+    void deviceChanged(int index);
 };
 

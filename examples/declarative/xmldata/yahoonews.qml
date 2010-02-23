@@ -22,7 +22,7 @@ Rectangle {
             id: delegate
             height: wrapper.height + 10
 
-            MouseRegion {
+            MouseArea {
                 anchors.fill: wrapper
                 onPressed: delegate.ListView.view.currentIndex = index;
                 onClicked: if (wrapper.state == 'Details') wrapper.state = ''; else wrapper.state = 'Details';

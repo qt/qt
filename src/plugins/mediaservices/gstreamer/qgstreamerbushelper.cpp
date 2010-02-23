@@ -174,7 +174,7 @@ static GstBusSyncReply syncGstBusFilter(GstBus* bus, GstMessage* message, QGstre
 
 
 /*!
-    \class gstreamer::QGstreamerBusHelper
+    \class QGstreamerBusHelper
     \internal
 */
 

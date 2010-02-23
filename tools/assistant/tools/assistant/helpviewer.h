@@ -64,9 +64,13 @@ public:
     virtual void resetScale() = 0;
     virtual qreal scale() const = 0;
 
+    static QString AboutBlank;
+    static QString LocalHelpFile;
     static QString PageNotFoundMessage;
+
     static bool isLocalUrl(const QUrl &url);
     static bool canOpenPage(const QString &url);
+    static bool launchWithExternalApp(const QUrl &url);
 };
 
 QT_END_NAMESPACE

@@ -82,10 +82,10 @@ class QmlTransitionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlTransition)
 public:
-    QmlTransitionPrivate() : fromState(QLatin1String("*")), toState(QLatin1String("*"))
-    , reversed(false), reversible(false), endState(0)
+    QmlTransitionPrivate() 
+    : fromState(QLatin1String("*")), toState(QLatin1String("*")), 
+      reversed(false), reversible(false), endState(0)
     {
-        animations.parent = this;
         group.trans = this;
     }
 
@@ -100,23 +100,15 @@ public:
     {
         endState->complete();
     }
-
-    class AnimationList : public QmlConcreteList<QmlAbstractAnimation *>
-    {
-    public:
-        AnimationList() : parent(0) {}
-        virtual void append(QmlAbstractAnimation *a);
-        virtual void clear() {  QmlConcreteList<QmlAbstractAnimation *>::clear(); } //###
-
-        QmlTransitionPrivate *parent;
-    };
-    AnimationList animations;
+    static void append_animation(QmlListProperty<QmlAbstractAnimation> *list, QmlAbstractAnimation *a);
+    QList<QmlAbstractAnimation *> animations;
 };
 
-void QmlTransitionPrivate::AnimationList::append(QmlAbstractAnimation *a)
+void QmlTransitionPrivate::append_animation(QmlListProperty<QmlAbstractAnimation> *list, QmlAbstractAnimation *a)
 {
-    QmlConcreteList<QmlAbstractAnimation *>::append(a);
-    parent->group.addAnimation(a->qtAnimation());
+    QmlTransition *q = static_cast<QmlTransition *>(list->object);
+    q->d_func()->animations.append(a);
+    q->d_func()->group.addAnimation(a->qtAnimation());
     a->setDisableUserControl();
 }
 
@@ -245,10 +237,10 @@ void QmlTransition::setToState(const QString &t)
     and assign that to animations the animations property.
     \default
 */
-QmlList<QmlAbstractAnimation *>* QmlTransition::animations()
+QmlListProperty<QmlAbstractAnimation> QmlTransition::animations()
 {
     Q_D(QmlTransition);
-    return &d->animations;
+    return QmlListProperty<QmlAbstractAnimation>(this, &d->animations, QmlTransitionPrivate::append_animation);
 }
 
 QT_END_NAMESPACE

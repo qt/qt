@@ -44,6 +44,7 @@
 #include "qmlengine_p.h"
 #include "qmlcontext_p.h"
 #include "qmltypenamescriptclass_p.h"
+#include "qmllistscriptclass_p.h"
 #include "qmlguard_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -227,8 +228,12 @@ QmlContextScriptClass::property(Object *object, const Identifier &name)
         if (lastPropertyIndex < cp->idValueCount) {
             rv =  ep->objectClass->newQObject(cp->idValues[lastPropertyIndex].data());
         } else {
-            QVariant value = cp->propertyValues.at(lastPropertyIndex);
-            rv = ep->scriptValueFromVariant(value);
+            const QVariant &value = cp->propertyValues.at(lastPropertyIndex);
+            if (value.userType() == qMetaTypeId<QList<QObject*> >()) {
+                rv = ep->listClass->newList(QmlListProperty<QObject>(bindContext, (void*)lastPropertyIndex, 0, QmlContextPrivate::context_count, QmlContextPrivate::context_at), qMetaTypeId<QmlListProperty<QObject> >());
+            } else {
+                rv = ep->scriptValueFromVariant(value);
+            }
         }
 
         ep->capturedProperties << 

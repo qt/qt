@@ -51,7 +51,7 @@
 #include "qmlgraphicsanimatedimage_p.h"
 #include "qmlgraphicsborderimage_p.h"
 #include "qmlgraphicspositioners_p.h"
-#include "qmlgraphicsmouseregion_p.h"
+#include "qmlgraphicsmousearea_p.h"
 #include "qmlgraphicsflickable_p.h"
 #include "qmlgraphicsflickable_p_p.h"
 #include "qmlgraphicsflipable_p.h"
@@ -64,7 +64,7 @@
 #include "qmlgraphicslayoutitem_p.h"
 #include "qmlgraphicslistview_p.h"
 #include "qmlgraphicsloader_p.h"
-#include "qmlgraphicsmouseregion_p.h"
+#include "qmlgraphicsmousearea_p.h"
 #include "qmlgraphicsparticles_p.h"
 #include "qmlgraphicspath_p.h"
 #include "qmlgraphicspathview_p.h"
@@ -112,7 +112,8 @@ void QmlGraphicsItemModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,LayoutItem,QmlGraphicsLayoutItem);
     QML_REGISTER_TYPE(Qt,4,6,ListView,QmlGraphicsListView);
     QML_REGISTER_TYPE(Qt,4,6,Loader,QmlGraphicsLoader);
-    QML_REGISTER_TYPE(Qt,4,6,MouseRegion,QmlGraphicsMouseRegion);
+    QML_REGISTER_TYPE(Qt,4,6,MouseRegion,QmlGraphicsMouseArea);
+    QML_REGISTER_TYPE(Qt,4,6,MouseArea,QmlGraphicsMouseArea);
     QML_REGISTER_TYPE(Qt,4,6,Opacity,QGraphicsOpacityEffect);
     QML_REGISTER_TYPE(Qt,4,6,ParticleMotion,QmlGraphicsParticleMotion);
     QML_REGISTER_TYPE(Qt,4,6,ParticleMotionGravity,QmlGraphicsParticleMotionGravity);

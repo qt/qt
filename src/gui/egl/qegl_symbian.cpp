@@ -78,20 +78,12 @@ EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties
         props = 0;
     EGLSurface surf;
     if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, 0);
+        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
     else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, 0);
+        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
     if (surf == EGL_NO_SURFACE)
         qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
     return surf;
-}
-
-EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
-{
-    EGLDisplay dpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (dpy == EGL_NO_DISPLAY)
-        qWarning("QEglContext::defaultDisplay(): Falling back to EGL_DEFAULT_DISPLAY");
-    return dpy;
 }
 
 // Set pixel format and other properties based on a paint device.

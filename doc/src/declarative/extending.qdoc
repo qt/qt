@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -169,7 +169,7 @@ for assignment to appropriately typed properties.
 
 The guests property is a list of \c Person objects.  Properties that are lists
 of objects or Qt interfaces are also declared with the Q_PROPERTY() macro, just
-like other properties.  List properties must have the type \c {QmlList<T *>*}.
+like other properties.  List properties must have the type \c {QmlListProperty<T>}.
 As with object properties, the type \a T must be registered with QML.
 
 The guest property declaration looks like this:

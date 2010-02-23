@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -110,7 +110,7 @@ PropertyAnimation {
 Image {
     id: image
     source: "image.png"
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onPressed: animation.start()
     }
@@ -251,7 +251,7 @@ State {
 \o Update x from a script
 
 \qml
-MouseRegion {
+MouseArea {
     ....
     onClicked: redRect.x = 24;
 }

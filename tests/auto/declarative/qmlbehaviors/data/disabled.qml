@@ -12,7 +12,7 @@ Rectangle {
             NumberAnimation { duration: 200; }
         }
     }
-    MouseRegion {
+    MouseArea {
         id: clicker
         anchors.fill: parent
     }

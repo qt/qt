@@ -69,9 +69,8 @@ QT_BEGIN_NAMESPACE
 
 class QCLuceneIndexWriter;
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace clucene {
+namespace fulltextsearch {
+namespace clucene {
 
 class QHelpSearchIndexWriter : public QThread
 {
@@ -116,9 +115,9 @@ private:
     QString m_indexFilesFolder;
 };
 
-        }   // namespace clucene
-    }   // namespace fulltextsearch
 }   // namespace clucene
+}   // namespace fulltextsearch
+
 
 QT_END_NAMESPACE
 

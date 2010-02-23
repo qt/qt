@@ -152,6 +152,9 @@ public:
 
     // Only used for debugging
     QList<QPointer<QObject> > instances;
+
+    static int context_count(QmlListProperty<QObject> *);
+    static QObject *context_at(QmlListProperty<QObject> *, int);
 };
 
 QmlContextPrivate::IdNotifier::IdNotifier()

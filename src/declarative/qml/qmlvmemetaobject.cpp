@@ -77,13 +77,14 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
     data = new QVariant[metaData->propertyCount];
     aConnected.resize(metaData->aliasCount);
 
-    int list_type = qMetaTypeId<QmlList<QObject*>* >();
+    int list_type = qMetaTypeId<QmlListProperty<QObject> >();
     // ### Optimize
     for (int ii = 0; ii < metaData->propertyCount; ++ii) {
         int t = (metaData->propertyData() + ii)->propertyType;
         if (t == list_type) {
-            listProperties.append(new List(this, ii));
-            data[ii] = QVariant::fromValue((QmlList<QObject *>*)listProperties.last());
+            listProperties.append(new List(methodOffset + ii));
+            data[ii] = QVariant::fromValue(QmlListProperty<QObject>(obj, listProperties.last(), list_append,
+                                                                    list_count, list_at, list_clear));
         } else if (t != -1) {
             data[ii] = QVariant((QVariant::Type)t);
         }
@@ -182,8 +183,9 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                         default:
                             break;
                         }
-                        if (t == qMetaTypeId<QmlList<QObject*>* >()) {
-                            *reinterpret_cast<QmlList<QObject *> **>(a[0]) = data[id].value<QmlList<QObject*>*>();
+                        if (t == qMetaTypeId<QmlListProperty<QObject> >()) {
+                            *reinterpret_cast<QmlListProperty<QObject> *>(a[0]) = 
+                                data[id].value<QmlListProperty<QObject> >();
                         }
 
                     } else if (c == QMetaObject::WriteProperty) {
@@ -316,6 +318,30 @@ QScriptValue QmlVMEMetaObject::method(int index)
 void QmlVMEMetaObject::listChanged(int id)
 {
     activate(object, methodOffset + id, 0);
+}
+
+void QmlVMEMetaObject::list_append(QmlListProperty<QObject> *prop, QObject *o)
+{
+    List *list = static_cast<List *>(prop->data);
+    list->append(o);
+    QMetaObject::activate(prop->object, list->notifyIndex, 0);
+}
+
+int QmlVMEMetaObject::list_count(QmlListProperty<QObject> *prop)
+{
+    return static_cast<List *>(prop->data)->count();
+}
+
+QObject *QmlVMEMetaObject::list_at(QmlListProperty<QObject> *prop, int index)
+{
+    return static_cast<List *>(prop->data)->at(index);
+}
+
+void QmlVMEMetaObject::list_clear(QmlListProperty<QObject> *prop)
+{
+    List *list = static_cast<List *>(prop->data);
+    list->clear();
+    QMetaObject::activate(prop->object, list->notifyIndex, 0);
 }
 
 void QmlVMEMetaObject::registerInterceptor(int index, int valueIndex, QmlPropertyValueInterceptor *interceptor)

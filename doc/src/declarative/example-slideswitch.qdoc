@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -84,15 +84,15 @@ the text will only be visible when the switch is on.
 \snippet examples/declarative/slideswitch/content/Switch.qml 4
 
 First, we create the background image of the switch.
-In order for the switch to toggle when the user clicks on the background, we add a \l{MouseRegion} as a child item of the image.
-A \c MouseRegion has a \c onClicked property that is triggered when the item is clicked. For the moment we will just call a
+In order for the switch to toggle when the user clicks on the background, we add a \l{MouseArea} as a child item of the image.
+A \c MouseArea has a \c onClicked property that is triggered when the item is clicked. For the moment we will just call a
 \c toggle() function. We will see what this function does in a moment.
 
 \snippet examples/declarative/slideswitch/content/Switch.qml 5
 
 Then, we place the image of the knob on top of the background.
 The interaction here is a little more complex. We want the knob to move with the finger when it is clicked. That is what the \c drag
-property of the \c MouseRegion is for. We also want to toggle the switch if the knob is released between state. We handle this case
+property of the \c MouseArea is for. We also want to toggle the switch if the knob is released between state. We handle this case
 in the \c dorelease() function that is called in the \c onReleased property.
 
 \section2 States

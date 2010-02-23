@@ -19,6 +19,6 @@ Rectangle {
             color: if(!mr.pressed){activePalette.button;}else{activePalette.dark;}
         }
     }
-    MouseRegion { id:mr; anchors.fill: parent; onClicked: container.clicked() }
+    MouseArea { id:mr; anchors.fill: parent; onClicked: container.clicked() }
     Text { id: text; anchors.centerIn:parent; font.pointSize: 10; text: parent.text; color: activePalette.buttonText }
 }

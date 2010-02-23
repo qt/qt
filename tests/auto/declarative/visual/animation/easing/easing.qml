@@ -186,7 +186,7 @@ Rectangle {
             }
         }
     }
-    MouseRegion {
+    MouseArea {
         id: mouse
         anchors.fill: layout
     }
