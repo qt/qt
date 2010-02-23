@@ -32,7 +32,7 @@ Item {
 //![4]
     Image {
         id: background; source: "background.svg"
-        MouseRegion { anchors.fill: parent; onClicked: toggle() }
+        MouseArea { anchors.fill: parent; onClicked: toggle() }
     }
 //![4]
 
@@ -40,7 +40,7 @@ Item {
     Image {
         id: knob; source: "knob.svg"; x: 1; y: 2
 
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             drag.target: knob; drag.axis: "XAxis"; drag.minimumX: 1; drag.maximumX: 78
             onClicked: toggle()

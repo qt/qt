@@ -61,7 +61,7 @@ Item {
                 }
             }
 
-            MouseRegion { anchors.fill: wrapper; onClicked: { photoClicked() } }
+            MouseArea { anchors.fill: wrapper; onClicked: { photoClicked() } }
 
             states: [
                 State {

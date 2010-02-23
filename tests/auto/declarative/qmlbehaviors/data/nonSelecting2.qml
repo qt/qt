@@ -11,7 +11,7 @@ Rectangle {
             NumberAnimation { targets: rect; properties: "y"; duration: 200; }
         }
     }
-    MouseRegion {
+    MouseArea {
         id: clicker
         anchors.fill: parent
     }

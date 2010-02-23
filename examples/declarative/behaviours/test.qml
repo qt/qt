@@ -5,7 +5,7 @@ Rectangle {
     width: 800
     height: 600
     id: page
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: { bluerect.parent = page; console.log(mouseX); bluerect.x = mouseX; }
     }

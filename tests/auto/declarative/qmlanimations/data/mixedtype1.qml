@@ -10,7 +10,7 @@ Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onClicked: if (wrapper.state == "state1") wrapper.state = ""; else wrapper.state = "state1";
         }

@@ -3,7 +3,7 @@ contains(QT_CONFIG,declarative): QT += declarative gui network
 macx:CONFIG -= app_bundle
 
 HEADERS += ../shared/testhttpserver.h
-SOURCES += tst_qmlgraphicsmouseregion.cpp ../shared/testhttpserver.cpp
+SOURCES += tst_qmlgraphicsmousearea.cpp ../shared/testhttpserver.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"

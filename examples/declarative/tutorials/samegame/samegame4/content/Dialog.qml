@@ -17,5 +17,5 @@ Rectangle {
         NumberAnimation { duration: 1000 }
     }
     Text { id: myText; anchors.centerIn: parent; text: "Hello World!" }
-    MouseRegion { id: mr; anchors.fill: parent; onClicked: forceClose(); }
+    MouseArea { id: mr; anchors.fill: parent; onClicked: forceClose(); }
 }

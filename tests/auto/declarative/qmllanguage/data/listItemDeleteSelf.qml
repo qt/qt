@@ -23,7 +23,7 @@ Item {
             width: 200; height: 50
             Text { text: name }
             Text { text: '$'+cost; anchors.right: parent.right }
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onClicked: fruitModel.remove(index)
             }

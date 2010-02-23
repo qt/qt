@@ -110,7 +110,7 @@ PropertyAnimation {
 Image {
     id: image
     source: "image.png"
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onPressed: animation.start()
     }
@@ -251,7 +251,7 @@ State {
 \o Update x from a script
 
 \qml
-MouseRegion {
+MouseArea {
     ....
     onClicked: redRect.x = 24;
 }

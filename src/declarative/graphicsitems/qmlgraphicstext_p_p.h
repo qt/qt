@@ -75,7 +75,7 @@ public:
         dirty(true), wrap(false), richText(false), singleline(false), cache(true), doc(0),
         format(QmlGraphicsText::AutoText)
     {
-#ifdef QML_NO_TEXT_CACHE
+#if defined(QML_NO_TEXT_CACHE)
         cache = false;
 #endif
     }

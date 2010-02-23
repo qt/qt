@@ -22,7 +22,7 @@ Rectangle {
         NumberAnimation { target: theRect; property: "y"; to: 200 }
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: parent.state = "moved"
     }

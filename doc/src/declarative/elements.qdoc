@@ -126,7 +126,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l MouseRegion
+\o \l MouseArea
 \o \l FocusScope
 \endlist
 

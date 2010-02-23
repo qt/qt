@@ -825,7 +825,7 @@ int main(int argc, char *argv[])
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
                 "Text { color: blueRect.color; }"
-                "MouseRegion {"
+                "MouseArea {"
                     "onEntered: { console.log('hello') }"
                 "}"
             "}";

@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
             }
         }
 
-        MouseRegion { anchors.fill: parent; onClicked: myText.state = 'myState' }
+        MouseArea { anchors.fill: parent; onClicked: myText.state = 'myState' }
     }
     \endqml
     
@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
 
     \qml
     PropertyChanges {
-        target: myMouseRegion
+        target: myMouseArea
         onClicked: doSomethingDifferent()
     }
     \endqml

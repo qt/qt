@@ -25,7 +25,7 @@ Item {
                         text: stack.children[index].title
                         elide: Text.ElideRight
                     }
-                    MouseRegion {
+                    MouseArea {
                         anchors.fill: parent
                         onClicked: page.current = index
                     }

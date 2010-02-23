@@ -56,8 +56,8 @@ int main(int argc, char ** argv)
     if (party && party->celebrant()) {
         qWarning() << party->celebrant()->name() << "is having a birthday!";
         qWarning() << "They are inviting:";
-        for (int ii = 0; ii < party->guests()->count(); ++ii)
-            qWarning() << "   " << party->guests()->at(ii)->name();
+        for (int ii = 0; ii < party->guestCount(); ++ii)
+            qWarning() << "   " << party->guest(ii)->name();
     } else {
         qWarning() << "An error occured";
     }

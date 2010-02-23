@@ -79,7 +79,7 @@ void tst_qmlbehaviors::simpleBehavior()
     QVERIFY(qobject_cast<QmlBehavior*>(rect->findChild<QmlBehavior*>("MyBehavior"))->animation());
 
     rect->setState("moved");
-    QTest::qWait(100);
+    QTest::qWait(200);
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
@@ -92,7 +92,7 @@ void tst_qmlbehaviors::scriptTriggered()
     QVERIFY(rect);
 
     rect->setColor(QColor("red"));
-    QTest::qWait(100);
+    QTest::qWait(200);
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
@@ -108,7 +108,7 @@ void tst_qmlbehaviors::cppTriggered()
     QVERIFY(innerRect);
 
     innerRect->setProperty("x", 200);
-    QTest::qWait(100);
+    QTest::qWait(200);
     qreal x = innerRect->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
@@ -132,7 +132,7 @@ void tst_qmlbehaviors::colorBehavior()
     QVERIFY(rect);
 
     rect->setState("red");
-    QTest::qWait(100);
+    QTest::qWait(200);
     QColor color = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->color();
     QVERIFY(color != QColor("red") && color != QColor("green"));  //i.e. the behavior has been triggered
 }
@@ -145,11 +145,11 @@ void tst_qmlbehaviors::parentBehavior()
     QVERIFY(rect);
 
     rect->setState("reparented");
-    QTest::qWait(100);
+    QTest::qWait(200);
     QmlGraphicsItem *newParent = rect->findChild<QmlGraphicsItem*>("NewParent");
     QmlGraphicsItem *parent = rect->findChild<QmlGraphicsRectangle*>("MyRect")->parentItem();
     QVERIFY(parent != newParent);
-    QTest::qWait(300);
+    QTest::qWait(600);
     parent = rect->findChild<QmlGraphicsRectangle*>("MyRect")->parentItem();
     QVERIFY(parent == newParent);
 }
@@ -162,29 +162,29 @@ void tst_qmlbehaviors::replaceBinding()
     QVERIFY(rect);
 
     rect->setState("moved");
-    QTest::qWait(100);
+    QTest::qWait(200);
     QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
     QVERIFY(innerRect);
     qreal x = innerRect->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("basex", 10);
     QCOMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("movedx", 210);
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)210);
 
     rect->setState("");
-    QTest::qWait(100);
+    QTest::qWait(200);
     x = innerRect->x();
     QVERIFY(x > 10 && x < 210);  //i.e. the behavior has been triggered
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("movedx", 200);
     QCOMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("basex", 20);
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)20);
 }
 
@@ -197,7 +197,7 @@ void tst_qmlbehaviors::group()
         QVERIFY(rect);
 
         rect->setState("moved");
-        QTest::qWait(100);
+        QTest::qWait(200);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
@@ -209,7 +209,7 @@ void tst_qmlbehaviors::group()
         QVERIFY(rect);
 
         rect->setState("moved");
-        QTest::qWait(100);
+        QTest::qWait(200);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
@@ -236,7 +236,7 @@ void tst_qmlbehaviors::explicitSelection()
         QVERIFY(rect);
 
         rect->setState("moved");
-        QTest::qWait(100);
+        QTest::qWait(200);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
