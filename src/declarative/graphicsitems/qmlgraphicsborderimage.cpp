@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
     \qmlclass BorderImage QmlGraphicsBorderImage
     \brief The BorderImage element provides an image that can be used as a border.
     \inherits Item
+    \since 4.7
 
     \snippet snippets/declarative/border-image.qml 0
 
@@ -61,8 +62,8 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \internal
     \class QmlGraphicsBorderImage BorderImage
+    \internal
     \brief The QmlGraphicsBorderImage class provides an image item that you can add to a QmlView.
 */
 

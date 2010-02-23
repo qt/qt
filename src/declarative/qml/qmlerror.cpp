@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QmlError
+  \since 4.7
     \brief The QmlError class encapsulates a QML error
 */
 class QmlErrorPrivate

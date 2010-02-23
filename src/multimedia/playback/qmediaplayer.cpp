@@ -952,5 +952,3 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #include "moc_qmediaplayer.cpp"
-
-

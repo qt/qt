@@ -124,7 +124,6 @@ class Generator
                           Node::SubType subtype,
                           const QString& tag);
     void generateExampleFiles(const FakeNode *fake, CodeMarker *marker);
-    void generateModuleWarning(const ClassNode *classe, CodeMarker *marker);
 
     virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
     virtual QString fullName(const Node *node, 
@@ -170,6 +169,13 @@ class Generator
                            const QList<RelatedClass> &classes,
                            CodeMarker *marker);
 
+ protected:
+    void appendSortedNames(Text& text,
+                           const Node* base,
+                           const NodeList& subs,
+                           CodeMarker *marker);
+
+ private:
     QString amp;
     QString lt;
     QString gt;

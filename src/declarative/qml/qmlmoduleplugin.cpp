@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QmlModulePlugin
+  \since 4.7
     \brief The QmlModulePlugin class provides an abstract base for custom QML module plugins.
     \reentrant
     \ingroup plugins

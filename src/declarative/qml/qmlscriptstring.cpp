@@ -55,6 +55,7 @@ public:
 
 /*!
 \class QmlScriptString
+  \since 4.7
 \brief The QmlScriptString class encapsulates a script and its context.
 
 The QmlScriptString is used by properties that want to accept a script "assignment" from QML.

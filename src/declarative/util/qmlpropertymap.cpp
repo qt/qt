@@ -90,6 +90,7 @@ void QmlPropertyMapMetaObject::propertyWrite(int index)
 
 /*!
     \class QmlPropertyMap
+  \since 4.7
     \brief The QmlPropertyMap class allows you to set key-value pairs that can be used in bindings.
 
     QmlPropertyMap provides a convenient way to expose domain data to the UI layer.

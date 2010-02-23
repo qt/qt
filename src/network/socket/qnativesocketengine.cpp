@@ -185,6 +185,9 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
         // socket to recreate its engine after an error. Note: There's
         // one exception: SocketError(11) bypasses this as it's purely
         // a temporary internal error condition.
+        // Another exception is the way the waitFor*() functions set
+        // an error when a timeout occurs. After the call to setError()
+        // they reset the hasSetSocketError to false
         return;
     }
     if (error != QAbstractSocket::SocketError(11))
@@ -859,6 +862,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
             *timedOut = true;
         d->setError(QAbstractSocket::SocketTimeoutError,
             QNativeSocketEnginePrivate::TimeOutErrorString);
+        d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
     } else if (state() == QAbstractSocket::ConnectingState) {
         connectToHost(d->peerAddress, d->peerPort);
@@ -927,6 +931,7 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
             *timedOut = true;
         d->setError(QAbstractSocket::SocketTimeoutError,
                     QNativeSocketEnginePrivate::TimeOutErrorString);
+        d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
     } else if (state() == QAbstractSocket::ConnectingState) {
         connectToHost(d->peerAddress, d->peerPort);
@@ -978,6 +983,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
             *timedOut = true;
         d->setError(QAbstractSocket::SocketTimeoutError,
                     QNativeSocketEnginePrivate::TimeOutErrorString);
+        d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
     } else if (state() == QAbstractSocket::ConnectingState) {
         connectToHost(d->peerAddress, d->peerPort);

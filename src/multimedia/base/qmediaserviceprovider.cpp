@@ -699,5 +699,7 @@ QT_END_NAMESPACE
     Returns a set of features supported by a plug-in \a service.
 */
 
+QT_END_NAMESPACE
+
 #include "moc_qmediaserviceprovider.cpp"
 #include "moc_qmediaserviceproviderplugin.cpp"
