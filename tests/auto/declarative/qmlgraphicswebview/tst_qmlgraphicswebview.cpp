@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QtTest/QSignalSpy>
 #include "../../../shared/util.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
@@ -69,6 +70,10 @@ private slots:
     void javaScript();
     void cleanupTestCase();
     void pixelCache();
+    void newWindowParent();
+    void newWindowComponent();
+    void renderingEnabled();
+    void pressGrabTime();
 
 private:
     void checkNoErrors(const QmlComponent& component);
@@ -335,6 +340,10 @@ void tst_qmlgraphicswebview::setHtml()
     QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
     QVERIFY(wv != 0);
     QCOMPARE(wv->html(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
+
+    QSignalSpy spy(wv, SIGNAL(htmlChanged()));
+    wv->setHtml(QString("<html><head><title>Basic</title></head><body><p>text</p></body></html>"));
+    QCOMPARE(spy.count(),1);
 }
 
 void tst_qmlgraphicswebview::elementAreaAt()
@@ -389,6 +398,106 @@ void tst_qmlgraphicswebview::pixelCache()
     wv->setPixelCacheSize(expected-1); // too small - will clear the cache
     wv->paint(&p,0,0);
     QCOMPARE(wv->pixelsPainted(), expected*3); // repainted
+}
+
+void tst_qmlgraphicswebview::newWindowParent()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    checkNoErrors(component);
+    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(component.create());
+    QmlGraphicsWebView *wv = rootItem->findChild<QmlGraphicsWebView*>("webView");
+    QVERIFY(rootItem != 0);
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+
+    QmlGraphicsItem* oldWindowParent = rootItem->findChild<QmlGraphicsItem*>("oldWindowParent");
+    QCOMPARE(wv->newWindowParent(), oldWindowParent);
+    QSignalSpy newWindowParentSpy(wv, SIGNAL(newWindowParentChanged()));
+
+    QmlGraphicsItem* newWindowParent = rootItem->findChild<QmlGraphicsItem*>("newWindowParent");
+    wv->setNewWindowParent(newWindowParent);
+    QVERIFY(oldWindowParent);
+    QVERIFY(oldWindowParent->childItems().count() == 0);
+    QCOMPARE(wv->newWindowParent(), newWindowParent);
+    QCOMPARE(newWindowParentSpy.count(),1);
+
+    wv->setNewWindowParent(newWindowParent);
+    QCOMPARE(newWindowParentSpy.count(),1);
+
+    wv->setNewWindowParent(0);
+    QCOMPARE(newWindowParentSpy.count(),2);
+}
+
+void tst_qmlgraphicswebview::newWindowComponent()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    checkNoErrors(component);
+    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(component.create());
+    QmlGraphicsWebView *wv = rootItem->findChild<QmlGraphicsWebView*>("webView");
+    QVERIFY(rootItem != 0);
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+
+    QmlComponent substituteComponent(&engine);
+    substituteComponent.setData("import Qt 4.6; WebView { objectName: 'newWebView'; url: 'basic.html'; }", QUrl::fromLocalFile(""));
+    QSignalSpy newWindowComponentSpy(wv, SIGNAL(newWindowComponentChanged()));
+
+    wv->setNewWindowComponent(&substituteComponent);
+    QCOMPARE(wv->newWindowComponent(), &substituteComponent);
+    QCOMPARE(newWindowComponentSpy.count(),1);
+
+    wv->setNewWindowComponent(&substituteComponent);
+    QCOMPARE(newWindowComponentSpy.count(),1);
+
+    wv->setNewWindowComponent(0);
+    QCOMPARE(newWindowComponentSpy.count(),2);
+}
+
+void tst_qmlgraphicswebview::renderingEnabled()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    checkNoErrors(component);
+    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(component.create());
+    QmlGraphicsWebView *wv = rootItem->findChild<QmlGraphicsWebView*>("webView");
+    QVERIFY(rootItem != 0);
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+
+    QVERIFY(wv->renderingEnabled());
+    QSignalSpy renderingEnabledSpy(wv, SIGNAL(renderingEnabledChanged()));
+
+    wv->setRenderingEnabled(false);
+    QVERIFY(!wv->renderingEnabled());
+    QCOMPARE(renderingEnabledSpy.count(),1);
+
+    wv->setRenderingEnabled(false);
+    QCOMPARE(renderingEnabledSpy.count(),1);
+
+    wv->setRenderingEnabled(true);
+    QCOMPARE(renderingEnabledSpy.count(),2);
+}
+
+void tst_qmlgraphicswebview::pressGrabTime()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+    checkNoErrors(component);
+    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(component.create());
+    QmlGraphicsWebView *wv = rootItem->findChild<QmlGraphicsWebView*>("webView");
+    QVERIFY(rootItem != 0);
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+    QCOMPARE(wv->pressGrabTime(), 200);
+    QSignalSpy pressGrabTimeSpy(wv, SIGNAL(pressGrabTimeChanged()));
+
+    wv->setPressGrabTime(100);
+    QCOMPARE(wv->pressGrabTime(), 100);
+    QCOMPARE(pressGrabTimeSpy.count(),1);
+
+    wv->setPressGrabTime(100);
+    QCOMPARE(pressGrabTimeSpy.count(),1);
+
+    wv->setPressGrabTime(0);
+    QCOMPARE(pressGrabTimeSpy.count(),2);
 }
 
 QTEST_MAIN(tst_qmlgraphicswebview)

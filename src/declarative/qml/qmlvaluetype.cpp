@@ -75,6 +75,8 @@ QmlValueType *QmlValueTypeFactory::valueType(int t)
         return new QmlRectFValueType;
     case QVariant::Vector3D:
         return new QmlVector3DValueType;
+    case QVariant::EasingCurve:
+        return new QmlEasingValueType;
     case QVariant::Font:
         return new QmlFontValueType;
     default:
@@ -471,6 +473,74 @@ void QmlVector3DValueType::setY(qreal y)
 void QmlVector3DValueType::setZ(qreal z)
 {
     vector.setZ(z);
+}
+
+QmlEasingValueType::QmlEasingValueType(QObject *parent)
+: QmlValueType(parent)
+{
+}
+
+void QmlEasingValueType::read(QObject *obj, int idx)
+{
+    void *a[] = { &easing, 0 };
+    QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
+}
+
+void QmlEasingValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
+{
+    int status = -1;
+    void *a[] = { &easing, 0, &status, &flags };
+    QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QVariant QmlEasingValueType::value()
+{
+    return QVariant(easing);
+}
+
+void QmlEasingValueType::setValue(QVariant value)
+{
+    easing = qvariant_cast<QEasingCurve>(value);
+}
+
+QmlEasingValueType::Type QmlEasingValueType::type() const
+{
+    return (QmlEasingValueType::Type)easing.type();
+}
+
+qreal QmlEasingValueType::amplitude() const
+{
+    return easing.amplitude();
+}
+
+qreal QmlEasingValueType::overshoot() const
+{
+    return easing.overshoot();
+}
+
+qreal QmlEasingValueType::period() const
+{
+    return easing.period();
+}
+
+void QmlEasingValueType::setType(QmlEasingValueType::Type type)
+{
+    easing.setType((QEasingCurve::Type)type);
+}
+
+void QmlEasingValueType::setAmplitude(qreal amplitude)
+{
+    easing.setAmplitude(amplitude);
+}
+
+void QmlEasingValueType::setOvershoot(qreal overshoot)
+{
+    easing.setOvershoot(overshoot);
+}
+
+void QmlEasingValueType::setPeriod(qreal period)
+{
+    easing.setPeriod(period);
 }
 
 QmlFontValueType::QmlFontValueType(QObject *parent)

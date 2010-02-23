@@ -977,7 +977,7 @@ void QmlGraphicsGridView::setHighlight(QmlComponent *highlight)
   Component {
       id: myHighlight
       Rectangle {
-          id: wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60 >
+          id: wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60
           y: SpringFollow { source: Wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
           x: SpringFollow { source: Wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
       }

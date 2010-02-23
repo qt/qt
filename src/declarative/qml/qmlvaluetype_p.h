@@ -57,6 +57,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qeasingcurve.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qfont.h>
@@ -254,6 +255,62 @@ public:
 
 private:
     QVector3D vector;
+};
+
+class Q_AUTOTEST_EXPORT QmlEasingValueType : public QmlValueType
+{
+    Q_OBJECT
+    Q_ENUMS(Type)
+
+    Q_PROPERTY(QmlEasingValueType::Type type READ type WRITE setType)
+    Q_PROPERTY(qreal amplitude READ amplitude WRITE setAmplitude)
+    Q_PROPERTY(qreal overshoot READ overshoot WRITE setOvershoot)
+    Q_PROPERTY(qreal period READ period WRITE setPeriod)
+public:
+    enum Type {
+        Linear = QEasingCurve::Linear,
+        InQuad = QEasingCurve::InQuad, OutQuad = QEasingCurve::OutQuad,
+        InOutQuad = QEasingCurve::InOutQuad, OutInQuad = QEasingCurve::OutInQuad,
+        InCubic = QEasingCurve::InCubic, OutCubic = QEasingCurve::OutCubic,
+        InOutCubic = QEasingCurve::InOutCubic, OutInCubic = QEasingCurve::OutInCubic,
+        InQuart = QEasingCurve::InQuart, OutQuart = QEasingCurve::OutQuart,
+        InOutQuart = QEasingCurve::InOutQuart, OutInQuart = QEasingCurve::OutInQuart,
+        InQuint = QEasingCurve::InQuint, OutQuint = QEasingCurve::OutQuint,
+        InOutQuint = QEasingCurve::InOutQuint, OutInQuint = QEasingCurve::OutInQuint,
+        InSine = QEasingCurve::InSine, OutSine = QEasingCurve::OutSine,
+        InOutSine = QEasingCurve::InOutSine, OutInSine = QEasingCurve::OutInSine,
+        InExpo = QEasingCurve::InExpo, OutExpo = QEasingCurve::OutExpo,
+        InOutExpo = QEasingCurve::InOutExpo, OutInExpo = QEasingCurve::OutInExpo,
+        InCirc = QEasingCurve::InCirc, OutCirc = QEasingCurve::OutCirc,
+        InOutCirc = QEasingCurve::InOutCirc, OutInCirc = QEasingCurve::OutInCirc,
+        InElastic = QEasingCurve::InElastic, OutElastic = QEasingCurve::OutElastic,
+        InOutElastic = QEasingCurve::InOutElastic, OutInElastic = QEasingCurve::OutInElastic,
+        InBack = QEasingCurve::InBack, OutBack = QEasingCurve::OutBack,
+        InOutBack = QEasingCurve::InOutBack, OutInBack = QEasingCurve::OutInBack,
+        InBounce = QEasingCurve::InBounce, OutBounce = QEasingCurve::OutBounce,
+        InOutBounce = QEasingCurve::InOutBounce, OutInBounce = QEasingCurve::OutInBounce,
+        InCurve = QEasingCurve::InCurve, OutCurve = QEasingCurve::OutCurve,
+        SineCurve = QEasingCurve::SineCurve, CosineCurve = QEasingCurve::CosineCurve,
+    };
+
+    QmlEasingValueType(QObject *parent = 0);
+
+    virtual void read(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
+
+    Type type() const;
+    qreal amplitude() const;
+    qreal overshoot() const;
+    qreal period() const;
+    void setType(Type);
+    void setAmplitude(qreal);
+    void setOvershoot(qreal);
+    void setPeriod(qreal);
+
+private:
+    QEasingCurve easing;
 };
 
 class Q_AUTOTEST_EXPORT QmlFontValueType : public QmlValueType

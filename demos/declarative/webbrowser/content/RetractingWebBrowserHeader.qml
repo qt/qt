@@ -98,7 +98,7 @@ Image {
             NumberAnimation {
                 targets: header
                 properties: "progressOff"
-                easing: "easeInOutQuad"
+                easing.type: "InOutQuad"
                 duration: 300
             }
         }

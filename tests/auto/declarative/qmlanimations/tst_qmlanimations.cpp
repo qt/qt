@@ -45,6 +45,7 @@
 #include <private/qmlgraphicsrectangle_p.h>
 #include <private/qmlanimation_p.h>
 #include <QVariantAnimation>
+#include <QEasingCurve>
 
 class tst_qmlanimations : public QObject
 {
@@ -67,11 +68,11 @@ private slots:
     void mixedTypes();
     void properties();
     void propertiesTransition();
-    void easingStringConversion();
     void invalidDuration();
     void attached();
     void propertyValueSourceDefaultStart();
     void dontStart();
+    void easingProperties();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -517,57 +518,6 @@ void tst_qmlanimations::propertiesTransition()
     }*/
 }
 
-void tst_qmlanimations::easingStringConversion()
-{
-    QmlNumberAnimation *animation = new QmlNumberAnimation;
-    animation->setEasing("easeInOutQuad");
-    QCOMPARE(animation->easing(),QLatin1String("easeInOutQuad"));
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve(), QEasingCurve(QEasingCurve::InOutQuad));
-
-    animation->setEasing("OutQuad");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve(), QEasingCurve(QEasingCurve::OutQuad));
-
-    animation->setEasing("easeOutBounce(amplitude: 5)");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutBounce);
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude(), qreal(5));
-
-    animation->setEasing("easeOutElastic(amplitude: 5, period: 3)");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutElastic);
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude(), qreal(5));
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().period(), qreal(3));
-
-    animation->setEasing("easeInOutBack(overshoot: 2)");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutBack);
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().overshoot(), qreal(2));
-
-    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unmatched parenthesis in easing function \"easeInOutBack(overshoot: 2\"");
-    animation->setEasing("easeInOutBack(overshoot: 2");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
-
-    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Easing function \"InOutBack(overshoot: 2)\" must start with \"ease\"");
-    animation->setEasing("InOutBack(overshoot: 2)");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
-
-    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unknown easing curve \"NonExistantEase\"");
-    animation->setEasing("NonExistantEase");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
-
-    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude 5)\"");
-    animation->setEasing("easeInOutElastic(amplitude 5)");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutElastic);
-
-    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude: yes)\"");
-    animation->setEasing("easeInOutElastic(amplitude: yes)");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutElastic);
-    QVERIFY(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude() != qreal(5));
-
-    QTest::ignoreMessage(QtWarningMsg, "QML NumberAnimation (unknown location) Unknown easing parameter \"nonexistentproperty\"");
-    animation->setEasing("easeOutQuad(nonexistentproperty: 12)");
-    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutQuad);
-
-    delete animation;
-}
-
 void tst_qmlanimations::invalidDuration()
 {
     QmlPropertyAnimation *animation = new QmlPropertyAnimation;
@@ -663,6 +613,57 @@ void tst_qmlanimations::dontStart()
         QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
         QVERIFY(myAnim && myAnim->qtAnimation());
         QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+    }
+}
+
+void tst_qmlanimations::easingProperties()
+{
+    {
+        QmlEngine engine;
+        QString componentStr = "import Qt 4.6\nNumberAnimation { easing.type: \"InOutQuad\" }";
+        QmlComponent animationComponent(&engine);
+        animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+        QmlPropertyAnimation *animObject = qobject_cast<QmlPropertyAnimation*>(animationComponent.create());
+
+        QVERIFY(animObject != 0);
+        QCOMPARE(animObject->easing().type(), QEasingCurve::InOutQuad);
+    }
+
+    {
+        QmlEngine engine;
+        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
+        QmlComponent animationComponent(&engine);
+        animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+        QmlPropertyAnimation *animObject = qobject_cast<QmlPropertyAnimation*>(animationComponent.create());
+
+        QVERIFY(animObject != 0);
+        QCOMPARE(animObject->easing().type(), QEasingCurve::OutBounce);
+        QCOMPARE(animObject->easing().amplitude(), 5.0);
+    }
+
+    {
+        QmlEngine engine;
+        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
+        QmlComponent animationComponent(&engine);
+        animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+        QmlPropertyAnimation *animObject = qobject_cast<QmlPropertyAnimation*>(animationComponent.create());
+
+        QVERIFY(animObject != 0);
+        QCOMPARE(animObject->easing().type(), QEasingCurve::OutElastic);
+        QCOMPARE(animObject->easing().amplitude(), 5.0);
+        QCOMPARE(animObject->easing().period(), 3.0);
+    }
+
+    {
+        QmlEngine engine;
+        QString componentStr = "import Qt 4.6\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
+        QmlComponent animationComponent(&engine);
+        animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+        QmlPropertyAnimation *animObject = qobject_cast<QmlPropertyAnimation*>(animationComponent.create());
+
+        QVERIFY(animObject != 0);
+        QCOMPARE(animObject->easing().type(), QEasingCurve::InOutBack);
+        QCOMPARE(animObject->easing().overshoot(), 2.0);
     }
 }
 

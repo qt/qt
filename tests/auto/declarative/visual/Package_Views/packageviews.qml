@@ -64,7 +64,7 @@ Rectangle {
                         from: "*"; to: "*"
                         SequentialAnimation {
                             ParentAction{}
-                            NumberAnimation { properties: "x,y,width"; easing: "easeInOutQuad" }
+                            NumberAnimation { properties: "x,y,width"; easing.type: "InOutQuad" }
                         }
                     }
                 ]

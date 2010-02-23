@@ -104,6 +104,7 @@ public:
         int coreIndex;
         int notifyIndex;
 
+        static Flags flagsForProperty(const QMetaProperty &, QmlEngine *engine = 0);
         void load(const QMetaProperty &, QmlEngine *engine = 0);
         void load(const QMetaMethod &);
         QString name(QObject *);
@@ -113,6 +114,7 @@ public:
     struct ValueTypeData {
         inline ValueTypeData();
         inline bool operator==(const ValueTypeData &);
+        Data::Flags flags;     // flags on the value type wrapper
         int valueTypeCoreIdx;  // The prop index of the access property on the value type wrapper
         int valueTypePropType; // The QVariant::Type of access property on the value type wrapper
     };
@@ -173,13 +175,14 @@ QmlPropertyCache::property(const QScriptDeclarativeClass::Identifier &id) const
 }
 
 QmlPropertyCache::ValueTypeData::ValueTypeData()
-: valueTypeCoreIdx(-1), valueTypePropType(0) 
+: flags(QmlPropertyCache::Data::NoFlags), valueTypeCoreIdx(-1), valueTypePropType(0) 
 {
 }
 
 bool QmlPropertyCache::ValueTypeData::operator==(const ValueTypeData &o) 
 { 
-    return valueTypeCoreIdx == o.valueTypeCoreIdx &&
+    return flags == o.flags &&
+           valueTypeCoreIdx == o.valueTypeCoreIdx &&
            valueTypePropType == o.valueTypePropType; 
 }
 

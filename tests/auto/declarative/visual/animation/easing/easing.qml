@@ -9,127 +9,127 @@ Rectangle {
         ListModel {
             id: easingtypes
             ListElement {
-                type: "easeLinear"
+                type: "Linear"
             }
             ListElement {
-                type: "easeInQuad"
+                type: "InQuad"
             }
             ListElement {
-                type: "easeOutQuad"
+                type: "OutQuad"
             }
             ListElement {
-                type: "easeInOutQuad"
+                type: "InOutQuad"
             }
             ListElement {
-                type: "easeOutInQuad"
+                type: "OutInQuad"
             }
             ListElement {
-                type: "easeInCubic"
+                type: "InCubic"
             }
             ListElement {
-                type: "easeOutCubic"
+                type: "OutCubic"
             }
             ListElement {
-                type: "easeInOutCubic"
+                type: "InOutCubic"
             }
             ListElement {
-                type: "easeOutInCubic"
+                type: "OutInCubic"
             }
             ListElement {
-                type: "easeInQuart"
+                type: "InQuart"
             }
             ListElement {
-                type: "easeOutQuart"
+                type: "OutQuart"
             }
             ListElement {
-                type: "easeInOutQuart"
+                type: "InOutQuart"
             }
             ListElement {
-                type: "easeOutInQuart"
+                type: "OutInQuart"
             }
             ListElement {
-                type: "easeInQuint"
+                type: "InQuint"
             }
             ListElement {
-                type: "easeOutQuint"
+                type: "OutQuint"
             }
             ListElement {
-                type: "easeInOutQuint"
+                type: "InOutQuint"
             }
             ListElement {
-                type: "easeOutInQuint"
+                type: "OutInQuint"
             }
             ListElement {
-                type: "easeInSine"
+                type: "InSine"
             }
             ListElement {
-                type: "easeOutSine"
+                type: "OutSine"
             }
             ListElement {
-                type: "easeInOutSine"
+                type: "InOutSine"
             }
             ListElement {
-                type: "easeOutInSine"
+                type: "OutInSine"
             }
             ListElement {
-                type: "easeInExpo"
+                type: "InExpo"
             }
             ListElement {
-                type: "easeOutExpo"
+                type: "OutExpo"
             }
             ListElement {
-                type: "easeInOutExpo"
+                type: "InOutExpo"
             }
             ListElement {
-                type: "easeOutInExpo"
+                type: "OutInExpo"
             }
             ListElement {
-                type: "easeInCirc"
+                type: "InCirc"
             }
             ListElement {
-                type: "easeOutCirc"
+                type: "OutCirc"
             }
             ListElement {
-                type: "easeInOutCirc"
+                type: "InOutCirc"
             }
             ListElement {
-                type: "easeOutInCirc"
+                type: "OutInCirc"
             }
             ListElement {
-                type: "easeInElastic"
+                type: "InElastic"
             }
             ListElement {
-                type: "easeOutElastic"
+                type: "OutElastic"
             }
             ListElement {
-                type: "easeInOutElastic"
+                type: "InOutElastic"
             }
             ListElement {
-                type: "easeOutInElastic"
+                type: "OutInElastic"
             }
             ListElement {
-                type: "easeInBack"
+                type: "InBack"
             }
             ListElement {
-                type: "easeOutBack"
+                type: "OutBack"
             }
             ListElement {
-                type: "easeInOutBack"
+                type: "InOutBack"
             }
             ListElement {
-                type: "easeOutInBack"
+                type: "OutInBack"
             }
             ListElement {
-                type: "easeOutBounce"
+                type: "OutBounce"
             }
             ListElement {
-                type: "easeInBounce"
+                type: "InBounce"
             }
             ListElement {
-                type: "easeInOutBounce"
+                type: "InOutBounce"
             }
             ListElement {
-                type: "easeOutInBounce"
+                type: "OutInBounce"
             }
         }
     ]
@@ -177,7 +177,7 @@ Rectangle {
                             reversible: true
                             NumberAnimation {
                                 properties: "x"
-                                easing: type
+                                easing.type: type
                                 duration: 1000
                             }
                         }
