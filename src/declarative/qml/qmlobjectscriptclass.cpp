@@ -46,7 +46,7 @@
 #include "qmldeclarativedata_p.h"
 #include "qmltypenamescriptclass_p.h"
 #include "qmllistscriptclass_p.h"
-#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include "qmlguard_p.h"
 #include "qmlvmemetaobject_p.h"
 

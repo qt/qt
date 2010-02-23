@@ -47,7 +47,7 @@
 #include <qmlcustomparser_p.h>
 #include <qmlparser_p.h>
 #include <qmlexpression.h>
-#include <qmlbinding.h>
+#include <qmlbinding_p.h>
 #include <qmlcontext.h>
 #include <qmlguard_p.h>
 
@@ -277,14 +277,12 @@ void QmlPropertyChangesPrivate::decode()
         QmlMetaProperty prop = property(name);      //### better way to check for signal property?
         if (prop.type() & QmlMetaProperty::SignalProperty) {
             QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
-            expression->setTrackChange(false);
             QmlReplaceSignalHandler *handler = new QmlReplaceSignalHandler;
             handler->property = prop;
             handler->expression = expression;
             signalReplacements << handler;
         } else if (isScript) {
             QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
-            expression->setTrackChange(false);
             expressions << qMakePair(name, expression);
         } else {
             properties << qMakePair(name, data);

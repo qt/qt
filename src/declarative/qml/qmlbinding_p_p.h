@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDINGOPTIMIZATIONS_P_H
-#define QMLBINDINGOPTIMIZATIONS_P_H
+#ifndef QMLBINDING_P_P_H
+#define QMLBINDING_P_P_H
 
 //
 //  W A R N I N G
@@ -53,64 +53,39 @@
 // We mean it.
 //
 
-#include "qmlexpression_p.h"
 #include "qmlbinding_p.h"
 
-QT_BEGIN_HEADER
+#include "qmlmetaproperty.h"
+#include "qmlexpression_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlBindingCompilerPrivate;
-class QmlBindingCompiler
+class QmlBindingData : public QmlExpressionData
 {
 public:
-    QmlBindingCompiler();
-    ~QmlBindingCompiler();
+    QmlBindingData();
+    virtual ~QmlBindingData();
 
-    // Returns true if bindings were compiled
-    bool isValid() const;
+    bool updating:1;
+    bool enabled:1;
 
-    struct Expression
-    {
-        QmlParser::Object *component;
-        QmlParser::Object *context;
-        QmlParser::Property *property;
-        QmlParser::Variant expression;
-        QHash<QString, QmlParser::Object *> ids;
-        QmlEnginePrivate::Imports imports;
-    };
+    QmlMetaProperty property;
 
-    // -1 on failure, otherwise the binding index to use
-    int compile(const Expression &, QmlEnginePrivate *);
-
-    // Returns the compiled program
-    QByteArray program() const;
-
-    static void dump(const QByteArray &);
-private:
-    QmlBindingCompilerPrivate *d;
+    virtual void refresh();
 };
 
-class QmlCompiledBindingsPrivate;
-class QmlCompiledBindings : public QObject, public QmlAbstractExpression, public QmlRefCount
+class QmlBindingPrivate : public QmlExpressionPrivate
 {
+    Q_DECLARE_PUBLIC(QmlBinding)
 public:
-    QmlCompiledBindings(const char *program, QmlContext *context);
-    virtual ~QmlCompiledBindings();
+    QmlBindingPrivate();
 
-    QmlAbstractBinding *configBinding(int index, QObject *target, QObject *scope, int property);
+    QmlBindingData *bindingData() { return static_cast<QmlBindingData *>(data); }
+    const QmlBindingData *bindingData() const { return static_cast<const QmlBindingData *>(data); }
 
-protected:
-    int qt_metacall(QMetaObject::Call, int, void **);
-
-private:
-    Q_DISABLE_COPY(QmlCompiledBindings);
-    Q_DECLARE_PRIVATE(QmlCompiledBindings);
+    virtual void emitValueChanged();
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLBINDINGOPTIMIZATIONS_P_H
-
+#endif // QMLBINDING_P_P_H

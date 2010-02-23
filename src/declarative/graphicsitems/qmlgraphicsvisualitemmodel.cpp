@@ -187,7 +187,6 @@ QVariant QmlGraphicsVisualItemModel::evaluate(int index, const QString &expressi
     QmlContext *ctxt = new QmlContext(ccontext);
     ctxt->addDefaultObject(d->children.at(index));
     QmlExpression e(ctxt, expression, objectContext);
-    e.setTrackChange(false);
     QVariant value = e.value();
     delete ctxt;
     return value;
@@ -327,7 +326,7 @@ public:
         if (m_listModelInterface)
             return m_listModelInterface->count();
         if (m_abstractItemModel)
-            return m_abstractItemModel->rowCount();
+            return m_abstractItemModel->rowCount(m_root);
         if (m_listAccessor)
             return m_listAccessor->count();
         return 0;
@@ -348,6 +347,8 @@ public:
 
     QVariant m_modelVariant;
     QmlListAccessor *m_listAccessor;
+
+    QModelIndex m_root;
 };
 
 class QmlGraphicsVisualDataModelDataMetaObject : public QmlOpenMetaObject
@@ -461,7 +462,7 @@ QVariant QmlGraphicsVisualDataModelDataMetaObject::initialValue(int propId)
         QHash<QByteArray,int>::const_iterator it = model->m_roleNames.find(propName);
         if (it != model->m_roleNames.end()) {
             roleToProp.insert(*it, propId);
-            QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0);
+            QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0, model->m_root);
             return model->m_abstractItemModel->data(index, *it);
         }
     }
@@ -560,6 +561,39 @@ QmlGraphicsVisualDataModelData *QmlGraphicsVisualDataModelPrivate::data(QObject 
 
 //---------------------------------------------------------------------------
 
+/*!
+    \qmlclass VisualDataModel QmlGraphicsVisualDataModel
+    \brief The VisualDataModel encapsulates a model and delegate
+
+    A VisualDataModel encapsulates a model and the delegate that will
+    be instantiated for items in the model.
+
+    It is usually not necessary to create a VisualDataModel directly,
+    since the QML views will create one internally.
+
+    The example below illustrates using a VisualDataModel with a ListView.
+
+    \code
+    VisualDataModel {
+        id: visualModel
+        model: myModel
+        delegate: Component {
+            Rectangle {
+                height: 25
+                width: 100
+                Text { text: "Name:" + name}
+            }
+        }
+    }
+    ListView {
+        width: 100
+        height: 100
+        anchors.fill: parent
+        model: visualModel
+    }
+    \endcode
+*/
+
 QmlGraphicsVisualDataModel::QmlGraphicsVisualDataModel()
 : QmlGraphicsVisualModel(*(new QmlGraphicsVisualDataModelPrivate(0)))
 {
@@ -579,6 +613,20 @@ QmlGraphicsVisualDataModel::~QmlGraphicsVisualDataModel()
         d->m_delegateDataType->release();
 }
 
+/*!
+    \qmlproperty model VisualDataModel::model
+    This property holds the model providing data for the VisualDataModel.
+
+    The model provides a set of data that is used to create the items
+    for a view.  For large or dynamic datasets the model is usually
+    provided by a C++ model object.  The C++ model object must be a \l
+    {QAbstractItemModel} subclass or a simple list.
+
+    Models can also be created directly in QML, using a \l{ListModel} or
+    \l{XmlListModel}.
+
+    \sa {qmlmodels}{Data Models}
+*/
 QVariant QmlGraphicsVisualDataModel::model() const
 {
     Q_D(const QmlGraphicsVisualDataModel);
@@ -682,6 +730,16 @@ void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
     }
 }
 
+/*!
+    \qmlproperty component VisualDataModel::delegate
+
+    The delegate provides a template defining each item instantiated by a view.
+    The index is exposed as an accessible \c index property.  Properties of the
+    model are also available depending upon the type of \l {qmlmodels}{Data Model}.
+
+    Here is an example delegate:
+    \snippet doc/src/snippets/declarative/listview/listview.qml 0
+*/
 QmlComponent *QmlGraphicsVisualDataModel::delegate() const
 {
     Q_D(const QmlGraphicsVisualDataModel);
@@ -702,6 +760,105 @@ void QmlGraphicsVisualDataModel::setDelegate(QmlComponent *delegate)
     if (wasValid && !d->m_delegate && d->modelCount()) {
         emit itemsRemoved(0, d->modelCount());
         emit countChanged();
+    }
+}
+
+/*!
+    \qmlproperty QModelIndex VisualDataModel::rootIndex
+
+    QAbstractItemModel provides a heirachical tree of data, whereas
+    QML only operates on list data. rootIndex allows the children of
+    any node in a QAbstractItemModel to be provided by this model.
+
+    This property only affects models of type QAbstractItemModel.
+
+    \code
+    // main.cpp
+    Q_DECLARE_METATYPE(QModelIndex)
+
+    class MyModel : public QDirModel
+    {
+        Q_OBJECT
+    public:
+        MyModel(QmlContext *ctxt) : QDirModel(), context(ctxt) {
+            QHash<int,QByteArray> roles = roleNames();
+            roles.insert(FilePathRole, "path");
+            setRoleNames(roles);
+            context->setContextProperty("myModel", this);
+            context->setContextProperty("myRoot", QVariant::fromValue(index(0,0,QModelIndex())));
+        }
+
+        Q_INVOKABLE void setRoot(const QString &path) {
+            QModelIndex root = index(path);
+            context->setContextProperty("myRoot", QVariant::fromValue(root));
+        }
+
+        QmlContext *context;
+    };
+
+    int main(int argc, char ** argv)
+    {
+        QApplication app(argc, argv);
+
+        QmlView view;
+        view.setSource(QUrl("qrc:view.qml"));
+
+        MyModel model(view.rootContext());
+
+        view.execute();
+        view.show();
+
+        return app.exec();
+    }
+
+    #include "main.moc"
+    \endcode
+
+    \code
+    // view.qml
+    import Qt 4.6
+
+    ListView {
+        width: 200
+        height: 200
+        model: VisualDataModel {
+            model: myModel
+            rootIndex: myRoot
+            delegate: Component {
+                Rectangle {
+                    height: 25; width: 100
+                    Text { text: path }
+                    MouseRegion {
+                        anchors.fill: parent;
+                        onClicked: myModel.setRoot(path)
+                    }
+                }
+            }
+        }
+    }
+    \endcode
+
+*/
+QModelIndex QmlGraphicsVisualDataModel::rootIndex() const
+{
+    Q_D(const QmlGraphicsVisualDataModel);
+    return d->m_root;
+}
+
+void QmlGraphicsVisualDataModel::setRootIndex(const QModelIndex &root)
+{
+    Q_D(QmlGraphicsVisualDataModel);
+    if (d->m_root != root) {
+        int oldCount = d->modelCount();
+        d->m_root = root;
+        int newCount = d->modelCount();
+        if (d->m_delegate && oldCount)
+            emit itemsRemoved(0, oldCount);
+        if (d->m_delegate && newCount)
+            emit itemsInserted(0, newCount);
+        if (newCount != oldCount)
+            emit countChanged();
+        emit rootIndexChanged();
     }
 }
 
@@ -786,7 +943,6 @@ QmlGraphicsItem *QmlGraphicsVisualDataModel::item(int index, const QByteArray &v
 
     if (d->modelCount() <= 0 || !d->m_delegate)
         return 0;
-
     QObject *nobj = d->m_cache.getItem(index);
     if (!nobj) {
         QmlContext *ccontext = d->m_context;
@@ -900,7 +1056,6 @@ QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expressi
         QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(nobj);
         if (item) {
             QmlExpression e(qmlContext(item), expression, objectContext);
-            e.setTrackChange(false);
             value = e.value();
         }
     } else {
@@ -910,7 +1065,6 @@ QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expressi
         QmlGraphicsVisualDataModelData *data = new QmlGraphicsVisualDataModelData(index, this);
         ctxt->addDefaultObject(data);
         QmlExpression e(ctxt, expression, objectContext);
-        e.setTrackChange(false);
         value = e.value();
         delete data;
         delete ctxt;
@@ -943,7 +1097,7 @@ void QmlGraphicsVisualDataModel::_q_itemsChanged(int index, int count,
                     if (d->m_listModelInterface) {
                         data->setValue(propId, d->m_listModelInterface->data(ii, QList<int>() << role).value(role));
                     } else if (d->m_abstractItemModel) {
-                        QModelIndex index = d->m_abstractItemModel->index(ii, 0);
+                        QModelIndex index = d->m_abstractItemModel->index(ii, 0, d->m_root);
                         data->setValue(propId, d->m_abstractItemModel->data(index, role));
                     }
                 }

@@ -44,7 +44,7 @@
 
 #include "qmlcompositetypedata_p.h"
 #include "qml.h"
-#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include "qmlcontext.h"
 #include "qmlcontext_p.h"
 #include "qmlboundsignal_p.h"

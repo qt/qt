@@ -48,7 +48,7 @@
 #include "qmlanimation_p.h"
 #include "qmlanimation_p_p.h"
 
-#include <qmlbinding.h>
+#include <qmlbinding_p.h>
 #include <qmlglobal_p.h>
 
 #include <QtCore/qdebug.h>

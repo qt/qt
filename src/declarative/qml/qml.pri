@@ -60,8 +60,8 @@ HEADERS += \
     $$PWD/qmlinstruction_p.h \
     $$PWD/qmlvmemetaobject_p.h \
     $$PWD/qml.h \
-    $$PWD/qmlbinding.h \
     $$PWD/qmlbinding_p.h \
+    $$PWD/qmlbinding_p_p.h \
     $$PWD/qmlmetaproperty.h \
     $$PWD/qmlmoduleplugin.h \
     $$PWD/qmlcomponent.h \
