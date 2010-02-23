@@ -35,6 +35,11 @@ void PlaceholderDocument::attach()
 {
     ASSERT(!attached());
 
+    if (!styleSelector()) {
+        RefPtr<StyleSheetList> styleSheetList = StyleSheetList::create(this);
+        setStyleSelector(new CSSStyleSelector(this, styleSheetList.get(), 0, pageUserSheet(), pageGroupUserSheets(), true, false));
+    }
+
     // Skipping Document::attach().
     ContainerNode::attach();
 }

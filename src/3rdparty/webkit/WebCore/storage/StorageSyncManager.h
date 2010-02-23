@@ -32,7 +32,7 @@
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/OwnPtr.h>
+#include <wtf/RefPtr.h>
 
 namespace WebCore {
 
@@ -53,12 +53,12 @@ namespace WebCore {
     private:
         StorageSyncManager(const String& path);
 
-        OwnPtr<LocalStorageThread> m_thread;
+        RefPtr<LocalStorageThread> m_thread;
 
     // The following members are subject to thread synchronization issues
     public:
         // To be called from the background thread:
-        String fullDatabaseFilename(const String& databaseIdentifier);
+        String fullDatabaseFilename(SecurityOrigin*);
 
     private:
         String m_path;

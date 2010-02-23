@@ -49,7 +49,7 @@ typedef struct _cairo_surface cairo_surface_t;
 class NativeImageSkia;
 #elif PLATFORM(HAIKU)
 class BBitmap;
-#elif OS(WINCE)
+#elif PLATFORM(WINCE)
 #include "SharedBitmap.h"
 #endif
 
@@ -81,7 +81,7 @@ typedef cairo_surface_t* NativeImagePtr;
 typedef NativeImageSkia* NativeImagePtr;
 #elif PLATFORM(HAIKU)
 typedef BBitmap* NativeImagePtr;
-#elif OS(WINCE)
+#elif PLATFORM(WINCE)
 typedef RefPtr<SharedBitmap> NativeImagePtr;
 #endif
 #endif

@@ -48,9 +48,13 @@
 #endif
 #include <QCoreApplication>
 #include <QUrl>
+#if QT_VERSION >= 0x040400
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#else
+#include "qwebnetworkinterface_p.h"
+#endif
 
 namespace WebCore {
 
@@ -137,15 +141,23 @@ bool ResourceHandle::start(Frame* frame)
     }
 
     getInternal()->m_frame = static_cast<FrameLoaderClientQt*>(frame->loader()->client())->webFrame();
+#if QT_VERSION < 0x040400
+    return QWebNetworkManager::self()->add(this, getInternal()->m_frame->page()->d->networkInterface);
+#else
     ResourceHandleInternal *d = getInternal();
     d->m_job = new QNetworkReplyHandler(this, QNetworkReplyHandler::LoadMode(d->m_defersLoading));
     return true;
+#endif
 }
 
 void ResourceHandle::cancel()
 {
+#if QT_VERSION < 0x040400
+    QWebNetworkManager::self()->cancel(this);
+#else
     if (d->m_job)
         d->m_job->abort();
+#endif
 }
 
 bool ResourceHandle::loadsBlocked()
@@ -193,6 +205,13 @@ void ResourceHandle::loadResourceSynchronously(const ResourceRequest& request, S
     WebCoreSynchronousLoader syncLoader;
     ResourceHandle handle(request, &syncLoader, true, false, true);
 
+#if QT_VERSION < 0x040400
+    if (!QWebNetworkManager::self()->add(&handle, QWebNetworkInterface::defaultInterface(), QWebNetworkManager::SynchronousJob)) {
+        // FIXME Create a sane ResourceError
+        error = ResourceError(String(), -1, String(), String());
+        return;
+    }
+#else
     ResourceHandleInternal *d = handle.getInternal();
     if (!(d->m_user.isEmpty() || d->m_pass.isEmpty())) {
         // If credentials were specified for this request, add them to the url,
@@ -204,6 +223,7 @@ void ResourceHandle::loadResourceSynchronously(const ResourceRequest& request, S
     }
     d->m_frame = static_cast<FrameLoaderClientQt*>(frame->loader()->client())->webFrame();
     d->m_job = new QNetworkReplyHandler(&handle, QNetworkReplyHandler::LoadNormal);
+#endif
 
     syncLoader.waitForCompletion();
     error = syncLoader.resourceError();
@@ -216,8 +236,10 @@ void ResourceHandle::setDefersLoading(bool defers)
 {
     d->m_defersLoading = defers;
 
+#if QT_VERSION >= 0x040400
     if (d->m_job)
         d->m_job->setLoadMode(QNetworkReplyHandler::LoadMode(defers));
+#endif
 }
 
 } // namespace WebCore

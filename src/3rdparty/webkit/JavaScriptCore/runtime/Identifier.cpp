@@ -28,8 +28,6 @@
 #include <wtf/FastMalloc.h>
 #include <wtf/HashSet.h>
 
-using WTF::ThreadSpecific;
-
 namespace JSC {
 
 typedef HashMap<const char*, RefPtr<UString::Rep>, PtrHash<const char*> > LiteralIdentifierTable;
@@ -40,13 +38,13 @@ public:
     {
         HashSet<UString::Rep*>::iterator end = m_table.end();
         for (HashSet<UString::Rep*>::iterator iter = m_table.begin(); iter != end; ++iter)
-            (*iter)->setIsIdentifier(false);
+            (*iter)->setIdentifierTable(0);
     }
     
     std::pair<HashSet<UString::Rep*>::iterator, bool> add(UString::Rep* value)
     {
         std::pair<HashSet<UString::Rep*>::iterator, bool> result = m_table.add(value);
-        (*result.first)->setIsIdentifier(true);
+        (*result.first)->setIdentifierTable(this);
         return result;
     }
 
@@ -54,7 +52,7 @@ public:
     std::pair<HashSet<UString::Rep*>::iterator, bool> add(U value)
     {
         std::pair<HashSet<UString::Rep*>::iterator, bool> result = m_table.add<U, V>(value);
-        (*result.first)->setIsIdentifier(true);
+        (*result.first)->setIdentifierTable(this);
         return result;
     }
 
@@ -79,7 +77,7 @@ void deleteIdentifierTable(IdentifierTable* table)
 
 bool Identifier::equal(const UString::Rep* r, const char* s)
 {
-    int length = r->length();
+    int length = r->len;
     const UChar* d = r->data();
     for (int i = 0; i != length; ++i)
         if (d[i] != (unsigned char)s[i])
@@ -87,12 +85,12 @@ bool Identifier::equal(const UString::Rep* r, const char* s)
     return s[length] == 0;
 }
 
-bool Identifier::equal(const UString::Rep* r, const UChar* s, unsigned length)
+bool Identifier::equal(const UString::Rep* r, const UChar* s, int length)
 {
-    if (r->length() != length)
+    if (r->len != length)
         return false;
     const UChar* d = r->data();
-    for (unsigned i = 0; i != length; ++i)
+    for (int i = 0; i != length; ++i)
         if (d[i] != s[i])
             return false;
     return true;
@@ -112,19 +110,23 @@ struct CStringTranslator {
     static void translate(UString::Rep*& location, const char* c, unsigned hash)
     {
         size_t length = strlen(c);
-        UChar* d;
-        UString::Rep* r = UString::Rep::createUninitialized(length, d).releaseRef();
+        UChar* d = static_cast<UChar*>(fastMalloc(sizeof(UChar) * length));
         for (size_t i = 0; i != length; i++)
             d[i] = static_cast<unsigned char>(c[i]); // use unsigned char to zero-extend instead of sign-extend
-        r->setHash(hash);
+        
+        UString::Rep* r = UString::Rep::create(d, static_cast<int>(length)).releaseRef();
+        r->_hash = hash;
+
         location = r;
     }
 };
 
 PassRefPtr<UString::Rep> Identifier::add(JSGlobalData* globalData, const char* c)
 {
-    ASSERT(c);
-
+    if (!c) {
+        UString::Rep::null().hash();
+        return &UString::Rep::null();
+    }
     if (!c[0]) {
         UString::Rep::empty().hash();
         return &UString::Rep::empty();
@@ -173,11 +175,13 @@ struct UCharBufferTranslator {
 
     static void translate(UString::Rep*& location, const UCharBuffer& buf, unsigned hash)
     {
-        UChar* d;
-        UString::Rep* r = UString::Rep::createUninitialized(buf.length, d).releaseRef();
+        UChar* d = static_cast<UChar*>(fastMalloc(sizeof(UChar) * buf.length));
         for (unsigned i = 0; i != buf.length; i++)
             d[i] = buf.s[i];
-        r->setHash(hash);
+        
+        UString::Rep* r = UString::Rep::create(d, buf.length).releaseRef();
+        r->_hash = hash;
+        
         location = r; 
     }
 };
@@ -208,19 +212,19 @@ PassRefPtr<UString::Rep> Identifier::add(ExecState* exec, const UChar* s, int le
 
 PassRefPtr<UString::Rep> Identifier::addSlowCase(JSGlobalData* globalData, UString::Rep* r)
 {
-    ASSERT(!r->isIdentifier());
-    if (r->length() == 1) {
+    ASSERT(!r->identifierTable());
+    if (r->len == 1) {
         UChar c = r->data()[0];
         if (c <= 0xFF)
             r = globalData->smallStrings.singleCharacterStringRep(c);
-            if (r->isIdentifier()) {
+            if (r->identifierTable()) {
 #ifndef NDEBUG
                 checkSameIdentifierTable(globalData, r);
 #endif
                 return r;
             }
     }
-    if (!r->length()) {
+    if (!r->len) {
         UString::Rep::empty().hash();
         return &UString::Rep::empty();
     }
@@ -234,19 +238,19 @@ PassRefPtr<UString::Rep> Identifier::addSlowCase(ExecState* exec, UString::Rep* 
 
 void Identifier::remove(UString::Rep* r)
 {
-    currentIdentifierTable()->remove(r);
+    r->identifierTable()->remove(r);
 }
 
 #ifndef NDEBUG
 
-void Identifier::checkSameIdentifierTable(ExecState* exec, UString::Rep*)
+void Identifier::checkSameIdentifierTable(ExecState* exec, UString::Rep* rep)
 {
-    ASSERT_UNUSED(exec, exec->globalData().identifierTable == currentIdentifierTable());
+    ASSERT(rep->identifierTable() == exec->globalData().identifierTable);
 }
 
-void Identifier::checkSameIdentifierTable(JSGlobalData* globalData, UString::Rep*)
+void Identifier::checkSameIdentifierTable(JSGlobalData* globalData, UString::Rep* rep)
 {
-    ASSERT_UNUSED(globalData, globalData->identifierTable == currentIdentifierTable());
+    ASSERT(rep->identifierTable() == globalData->identifierTable);
 }
 
 #else
@@ -257,32 +261,6 @@ void Identifier::checkSameIdentifierTable(ExecState*, UString::Rep*)
 
 void Identifier::checkSameIdentifierTable(JSGlobalData*, UString::Rep*)
 {
-}
-
-#endif
-
-ThreadSpecific<ThreadIdentifierTableData>* g_identifierTableSpecific = 0;
-
-#if ENABLE(JSC_MULTIPLE_THREADS)
-
-pthread_once_t createIdentifierTableSpecificOnce = PTHREAD_ONCE_INIT;
-static void createIdentifierTableSpecificCallback()
-{
-    ASSERT(!g_identifierTableSpecific);
-    g_identifierTableSpecific = new ThreadSpecific<ThreadIdentifierTableData>();
-}
-void createIdentifierTableSpecific()
-{
-    pthread_once(&createIdentifierTableSpecificOnce, createIdentifierTableSpecificCallback);
-    ASSERT(g_identifierTableSpecific);
-}
-
-#else 
-
-void createIdentifierTableSpecific()
-{
-    ASSERT(!g_identifierTableSpecific);
-    g_identifierTableSpecific = new ThreadSpecific<ThreadIdentifierTableData>();
 }
 
 #endif

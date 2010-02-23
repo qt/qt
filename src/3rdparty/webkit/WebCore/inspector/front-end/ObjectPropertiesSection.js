@@ -50,7 +50,7 @@ WebInspector.ObjectPropertiesSection.prototype = {
                 return;
             self.updateProperties(properties);
         };
-        InjectedScriptAccess.get(this.object.injectedScriptId).getProperties(this.object, this.ignoreHasOwnProperty, true, callback);
+        InjectedScriptAccess.getProperties(this.object, this.ignoreHasOwnProperty, callback);
     },
 
     updateProperties: function(properties, rootTreeElementConstructor, rootPropertyComparer)
@@ -77,7 +77,6 @@ WebInspector.ObjectPropertiesSection.prototype = {
             var infoElement = new TreeElement(title, null, false);
             this.propertiesTreeOutline.appendChild(infoElement);
         }
-        this.propertiesForTest = properties;
     }
 }
 
@@ -87,10 +86,6 @@ WebInspector.ObjectPropertiesSection.CompareProperties = function(propertyA, pro
 {
     var a = propertyA.name;
     var b = propertyB.name;
-    if (a === "__proto__")
-        return 1;
-    if (b === "__proto__")
-        return -1;
 
     // if used elsewhere make sure to
     //  - convert a and b to strings (not needed here, properties are all strings)
@@ -152,10 +147,10 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
                 this.appendChild(new this.treeOutline.section.treeElementConstructor(properties[i]));
             }
         };
-        InjectedScriptAccess.get(this.property.value.injectedScriptId).getProperties(this.property.value, false, true, callback.bind(this));
+        InjectedScriptAccess.getProperties(this.property.value, false, callback.bind(this));
     },
 
-    ondblclick: function(event)
+    ondblclick: function(element, event)
     {
         this.startEditing();
     },
@@ -178,12 +173,8 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         this.valueElement = document.createElement("span");
         this.valueElement.className = "value";
         this.valueElement.textContent = this.property.value.description;
-        if (typeof this.property.value.propertyLength !== "undefined")
-            this.valueElement.textContent += " (" + this.property.value.propertyLength + ")";
         if (this.property.isGetter)
-            this.valueElement.addStyleClass("dimmed");
-        if (this.property.isError)
-            this.valueElement.addStyleClass("error");
+           this.valueElement.addStyleClass("dimmed");
 
         this.listItemElement.removeChildren();
 
@@ -242,7 +233,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     applyExpression: function(expression, updateInterface)
     {
-        expression = expression.trim();
+        expression = expression.trimWhitespace();
         var expressionLength = expression.length;
         var self = this;
         var callback = function(success) {
@@ -260,7 +251,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
                 self.updateSiblings();
             }
         };
-        InjectedScriptAccess.get(this.property.parentObjectProxy.injectedScriptId).setPropertyValue(this.property.parentObjectProxy, this.property.name, expression.trim(), callback);
+        InjectedScriptAccess.setPropertyValue(this.property.parentObjectProxy, this.property.name, expression.trimWhitespace(), callback);
     }
 }
 

@@ -32,8 +32,7 @@ module threads {
 
     interface [
         Conditional=NOTIFICATIONS,
-        EventTarget,
-        OmitConstructor
+        EventTarget
     ] Notification {
         void show();
         void cancel();

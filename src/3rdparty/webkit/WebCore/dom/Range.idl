@@ -21,7 +21,7 @@
 module ranges {
 
     // Introduced in DOM Level 2:
-    interface Range {
+    interface [GenerateConstructor] Range {
 
         readonly attribute Node startContainer
             getter raises(DOMException);

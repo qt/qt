@@ -41,7 +41,7 @@ class ResourceError;
 class ResourceLoader;
 class ResourceResponse;
 class ScriptString;
-class ResourceRequest;
+struct ResourceRequest;
 
 class ResourceLoadNotifier : public Noncopyable {
 public:

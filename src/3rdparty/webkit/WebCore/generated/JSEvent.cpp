@@ -109,7 +109,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -222,8 +222,7 @@ JSValue jsEventType(ExecState* exec, const Identifier&, const PropertySlot& slot
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->type());
-    return result;
+    return jsString(exec, imp->type());
 }
 
 JSValue jsEventTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -231,8 +230,7 @@ JSValue jsEventTarget(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->target()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->target()));
 }
 
 JSValue jsEventCurrentTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -240,8 +238,7 @@ JSValue jsEventCurrentTarget(ExecState* exec, const Identifier&, const PropertyS
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->currentTarget()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->currentTarget()));
 }
 
 JSValue jsEventEventPhase(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -249,8 +246,7 @@ JSValue jsEventEventPhase(ExecState* exec, const Identifier&, const PropertySlot
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->eventPhase());
-    return result;
+    return jsNumber(exec, imp->eventPhase());
 }
 
 JSValue jsEventBubbles(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -258,8 +254,7 @@ JSValue jsEventBubbles(ExecState* exec, const Identifier&, const PropertySlot& s
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->bubbles());
-    return result;
+    return jsBoolean(imp->bubbles());
 }
 
 JSValue jsEventCancelable(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -267,8 +262,7 @@ JSValue jsEventCancelable(ExecState* exec, const Identifier&, const PropertySlot
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->cancelable());
-    return result;
+    return jsBoolean(imp->cancelable());
 }
 
 JSValue jsEventTimeStamp(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -276,8 +270,7 @@ JSValue jsEventTimeStamp(ExecState* exec, const Identifier&, const PropertySlot&
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->timeStamp());
-    return result;
+    return jsNumber(exec, imp->timeStamp());
 }
 
 JSValue jsEventSrcElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -285,8 +278,7 @@ JSValue jsEventSrcElement(ExecState* exec, const Identifier&, const PropertySlot
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->srcElement()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->srcElement()));
 }
 
 JSValue jsEventReturnValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -294,8 +286,7 @@ JSValue jsEventReturnValue(ExecState* exec, const Identifier&, const PropertySlo
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->returnValue());
-    return result;
+    return jsBoolean(imp->returnValue());
 }
 
 JSValue jsEventCancelBubble(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -303,8 +294,7 @@ JSValue jsEventCancelBubble(ExecState* exec, const Identifier&, const PropertySl
     JSEvent* castedThis = static_cast<JSEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Event* imp = static_cast<Event*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->cancelBubble());
-    return result;
+    return jsBoolean(imp->cancelBubble());
 }
 
 JSValue jsEventClipboardData(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -325,15 +315,13 @@ void JSEvent::put(ExecState* exec, const Identifier& propertyName, JSValue value
 
 void setJSEventReturnValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSEvent* castedThisObj = static_cast<JSEvent*>(thisObject);
-    Event* imp = static_cast<Event*>(castedThisObj->impl());
+    Event* imp = static_cast<Event*>(static_cast<JSEvent*>(thisObject)->impl());
     imp->setReturnValue(value.toBoolean(exec));
 }
 
 void setJSEventCancelBubble(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSEvent* castedThisObj = static_cast<JSEvent*>(thisObject);
-    Event* imp = static_cast<Event*>(castedThisObj->impl());
+    Event* imp = static_cast<Event*>(static_cast<JSEvent*>(thisObject)->impl());
     imp->setCancelBubble(value.toBoolean(exec));
 }
 

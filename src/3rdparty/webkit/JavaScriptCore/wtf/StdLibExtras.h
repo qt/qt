@@ -48,10 +48,6 @@
 // NULL can cause compiler problems, especially in cases of multiple inheritance.
 #define OBJECT_OFFSETOF(class, field) (reinterpret_cast<ptrdiff_t>(&(reinterpret_cast<class*>(0x4000)->field)) - 0x4000)
 
-// STRINGIZE: Can convert any value to quoted string, even expandable macros
-#define STRINGIZE(exp) #exp
-#define STRINGIZE_VALUE_OF(exp) STRINGIZE(exp)
-
 namespace WTF {
 
     /*
@@ -67,14 +63,6 @@ namespace WTF {
         } u;
         u.from = from;
         return u.to;
-    }
-
-    // Returns a count of the number of bits set in 'bits'.
-    inline size_t bitCount(unsigned bits)
-    {
-        bits = bits - ((bits >> 1) & 0x55555555);
-        bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
-        return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
     }
 
 } // namespace WTF

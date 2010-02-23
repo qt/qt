@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -147,8 +147,7 @@ JSValue jsHTMLLabelElementForm(ExecState* exec, const Identifier&, const Propert
     JSHTMLLabelElement* castedThis = static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLLabelElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,8 +155,7 @@ JSValue jsHTMLLabelElementAccessKey(ExecState* exec, const Identifier&, const Pr
     JSHTMLLabelElement* castedThis = static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->accessKey());
-    return result;
+    return jsString(exec, imp->accessKey());
 }
 
 JSValue jsHTMLLabelElementHtmlFor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -165,8 +163,7 @@ JSValue jsHTMLLabelElementHtmlFor(ExecState* exec, const Identifier&, const Prop
     JSHTMLLabelElement* castedThis = static_cast<JSHTMLLabelElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->htmlFor());
-    return result;
+    return jsString(exec, imp->htmlFor());
 }
 
 JSValue jsHTMLLabelElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,15 +178,13 @@ void JSHTMLLabelElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLLabelElementAccessKey(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLLabelElement* castedThisObj = static_cast<JSHTMLLabelElement*>(thisObject);
-    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThisObj->impl());
+    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(static_cast<JSHTMLLabelElement*>(thisObject)->impl());
     imp->setAccessKey(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLabelElementHtmlFor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLLabelElement* castedThisObj = static_cast<JSHTMLLabelElement*>(thisObject);
-    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(castedThisObj->impl());
+    HTMLLabelElement* imp = static_cast<HTMLLabelElement*>(static_cast<JSHTMLLabelElement*>(thisObject)->impl());
     imp->setHtmlFor(valueToStringWithNullCheck(exec, value));
 }
 

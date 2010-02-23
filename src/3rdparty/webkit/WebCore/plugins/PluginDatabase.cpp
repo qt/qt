@@ -257,9 +257,8 @@ PluginPackage* PluginDatabase::findPlugin(const KURL& url, String& mimeType)
             if (extensionPos != -1) {
                 String extension = filename.substring(extensionPos + 1);
 
-                String mimeTypeForExtension = MIMETypeForExtension(extension);
-                if ((plugin = pluginForMIMEType(mimeTypeForExtension)))
-                    mimeType = mimeTypeForExtension;
+                mimeType = MIMETypeForExtension(extension);
+                plugin = pluginForMIMEType(mimeType);
             }
         }
     }
@@ -321,7 +320,7 @@ void PluginDatabase::clear()
     m_preferredPlugins.clear();
 }
 
-#if (!OS(WINCE)) && (!OS(SYMBIAN)) && (!OS(WINDOWS) || !ENABLE(NETSCAPE_PLUGIN_API))
+#if (!PLATFORM(WINCE)) && (!PLATFORM(SYMBIAN)) && (!PLATFORM(WIN_OS) || PLATFORM(WX) || !ENABLE(NETSCAPE_PLUGIN_API))
 // For Safari/Win the following three methods are implemented
 // in PluginDatabaseWin.cpp, but if we can use WebCore constructs
 // for the logic we should perhaps move it here under XP_WIN?
@@ -429,6 +428,6 @@ void PluginDatabase::getPluginPathsInDirectories(HashSet<String>& paths) const
     }
 }
 
-#endif // !OS(SYMBIAN) && !OS(WINDOWS)
+#endif // !PLATFORM(SYMBIAN) && !PLATFORM(WIN_OS)
 
 }

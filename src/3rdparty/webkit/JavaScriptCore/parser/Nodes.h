@@ -40,7 +40,6 @@ namespace JSC {
     class ArgumentListNode;
     class BytecodeGenerator;
     class FunctionBodyNode;
-    class Label;
     class PropertyListNode;
     class ReadModifyResolveNode;
     class RegisterID;
@@ -152,9 +151,6 @@ namespace JSC {
         virtual bool isCommaNode() const { return false; }
         virtual bool isSimpleArray() const { return false; }
         virtual bool isAdd() const { return false; }
-        virtual bool hasConditionContextCodegen() const { return false; }
-
-        virtual void emitBytecodeInConditionContext(BytecodeGenerator&, Label*, Label*, bool) { ASSERT_NOT_REACHED(); }
 
         virtual ExpressionNode* stripUnaryPlus() { return this; }
 
@@ -761,7 +757,6 @@ namespace JSC {
 
     protected:
         ExpressionNode* expr() { return m_expr; }
-        const ExpressionNode* expr() const { return m_expr; }
 
     private:
         virtual RegisterID* emitBytecode(BytecodeGenerator&, RegisterID* = 0);
@@ -793,9 +788,6 @@ namespace JSC {
     class LogicalNotNode : public UnaryOpNode {
     public:
         LogicalNotNode(JSGlobalData*, ExpressionNode*);
-    private:
-        void emitBytecodeInConditionContext(BytecodeGenerator&, Label* trueTarget, Label* falseTarget, bool fallThroughMeansTrue);
-        virtual bool hasConditionContextCodegen() const { return expr()->hasConditionContextCodegen(); }
     };
 
     class BinaryOpNode : public ExpressionNode {
@@ -960,8 +952,6 @@ namespace JSC {
 
     private:
         virtual RegisterID* emitBytecode(BytecodeGenerator&, RegisterID* = 0);
-        void emitBytecodeInConditionContext(BytecodeGenerator&, Label* trueTarget, Label* falseTarget, bool fallThroughMeansTrue);
-        virtual bool hasConditionContextCodegen() const { return true; }
 
         ExpressionNode* m_expr1;
         ExpressionNode* m_expr2;

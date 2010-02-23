@@ -33,8 +33,7 @@ namespace WebCore {
     class SVGTransformList;
 
     class SVGViewSpec : public SVGFitToViewBox,
-                        public SVGZoomAndPan,
-                        public Noncopyable {
+                        public SVGZoomAndPan {
     public:
         SVGViewSpec(const SVGSVGElement*);
         virtual ~SVGViewSpec();
@@ -52,14 +51,14 @@ namespace WebCore {
         String viewTargetString() const { return m_viewTargetString; }
         SVGElement* viewTarget() const;
 
-        SVGSVGElement* contextElement() const { return const_cast<SVGSVGElement*>(m_contextElement); }
+        const SVGSVGElement* contextElement() const { return m_contextElement; }
 
     private:
         const SVGSVGElement* m_contextElement;
 
         // SVGFitToViewBox
-        DECLARE_ANIMATED_PROPERTY(SVGViewSpec, SVGNames::viewBoxAttr, FloatRect, ViewBox, viewBox)
-        DECLARE_ANIMATED_PROPERTY(SVGViewSpec, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGViewSpec, SVGFitToViewBoxIdentifier, SVGNames::viewBoxAttrString, FloatRect, ViewBox, viewBox)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGViewSpec, SVGFitToViewBoxIdentifier, SVGNames::preserveAspectRatioAttrString, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
 
         mutable RefPtr<SVGTransformList> m_transform;
         String m_viewTargetString;

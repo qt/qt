@@ -36,66 +36,18 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGFEMergeNodeElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGFEMergeNodeElementTableValues[3] =
+static const HashTableValue JSSVGFEMergeNodeElementTableValues[2] =
 {
     { "in1", DontDelete|ReadOnly, (intptr_t)jsSVGFEMergeNodeElementIn1, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGFEMergeNodeElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGFEMergeNodeElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 1, JSSVGFEMergeNodeElementTableValues, 0 };
+    { 0, JSSVGFEMergeNodeElementTableValues, 0 };
 #else
-    { 4, 3, JSSVGFEMergeNodeElementTableValues, 0 };
+    { 2, 1, JSSVGFEMergeNodeElementTableValues, 0 };
 #endif
-
-/* Hash table for constructor */
-
-static const HashTableValue JSSVGFEMergeNodeElementConstructorTableValues[1] =
-{
-    { 0, 0, 0, 0 }
-};
-
-static JSC_CONST_HASHTABLE HashTable JSSVGFEMergeNodeElementConstructorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGFEMergeNodeElementConstructorTableValues, 0 };
-#else
-    { 1, 0, JSSVGFEMergeNodeElementConstructorTableValues, 0 };
-#endif
-
-class JSSVGFEMergeNodeElementConstructor : public DOMConstructorObject {
-public:
-    JSSVGFEMergeNodeElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-        : DOMConstructorObject(JSSVGFEMergeNodeElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
-    {
-        putDirect(exec->propertyNames().prototype, JSSVGFEMergeNodeElementPrototype::self(exec, globalObject), None);
-    }
-    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
-    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
-    virtual const ClassInfo* classInfo() const { return &s_info; }
-    static const ClassInfo s_info;
-
-    static PassRefPtr<Structure> createStructure(JSValue proto) 
-    { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
-    }
-    
-protected:
-    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
-};
-
-const ClassInfo JSSVGFEMergeNodeElementConstructor::s_info = { "SVGFEMergeNodeElementConstructor", 0, &JSSVGFEMergeNodeElementConstructorTable, 0 };
-
-bool JSSVGFEMergeNodeElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticValueSlot<JSSVGFEMergeNodeElementConstructor, DOMObject>(exec, &JSSVGFEMergeNodeElementConstructorTable, this, propertyName, slot);
-}
-
-bool JSSVGFEMergeNodeElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
-{
-    return getStaticValueDescriptor<JSSVGFEMergeNodeElementConstructor, DOMObject>(exec, &JSSVGFEMergeNodeElementConstructorTable, this, propertyName, descriptor);
-}
 
 /* Hash table for prototype */
 
@@ -146,18 +98,7 @@ JSValue jsSVGFEMergeNodeElementIn1(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     SVGFEMergeNodeElement* imp = static_cast<SVGFEMergeNodeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
-}
-
-JSValue jsSVGFEMergeNodeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSSVGFEMergeNodeElement* domObject = static_cast<JSSVGFEMergeNodeElement*>(asObject(slot.slotBase()));
-    return JSSVGFEMergeNodeElement::getConstructor(exec, domObject->globalObject());
-}
-JSValue JSSVGFEMergeNodeElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
-{
-    return getDOMConstructor<JSSVGFEMergeNodeElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 

@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -143,8 +143,7 @@ JSValue jsHTMLTitleElementText(ExecState* exec, const Identifier&, const Propert
     JSHTMLTitleElement* castedThis = static_cast<JSHTMLTitleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->text());
-    return result;
+    return jsString(exec, imp->text());
 }
 
 JSValue jsHTMLTitleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -159,8 +158,7 @@ void JSHTMLTitleElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLTitleElementText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTitleElement* castedThisObj = static_cast<JSHTMLTitleElement*>(thisObject);
-    HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(castedThisObj->impl());
+    HTMLTitleElement* imp = static_cast<HTMLTitleElement*>(static_cast<JSHTMLTitleElement*>(thisObject)->impl());
     imp->setText(valueToStringWithNullCheck(exec, value));
 }
 

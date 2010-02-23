@@ -54,8 +54,6 @@ enum MediaControlElementType {
     MediaSliderThumb,
     MediaRewindButton,
     MediaReturnToRealtimeButton,
-    MediaShowClosedCaptionsButton,
-    MediaHideClosedCaptionsButton,
     MediaUnMuteButton,
     MediaPauseButton,
     MediaTimelineContainer,
@@ -223,15 +221,6 @@ public:
 
 // ----------------------------
 
-class MediaControlToggleClosedCaptionsButtonElement : public MediaControlInputElement {
-public:
-    MediaControlToggleClosedCaptionsButtonElement(Document*, HTMLMediaElement*);
-    virtual void defaultEventHandler(Event*);
-    virtual void updateDisplayType();
-};    
-
-// ----------------------------
-
 class MediaControlTimelineElement : public MediaControlInputElement {
 public:
     MediaControlTimelineElement(Document*, HTMLMediaElement*);
@@ -268,6 +257,8 @@ public:
     float currentValue() const { return m_currentValue; }
 
 private:
+    String formatTime(float time);
+
     float m_currentValue;
     bool m_isVisible;
 };

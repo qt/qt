@@ -114,7 +114,7 @@ JSValue JSNode::addEventListener(ExecState* exec, const ArgList& args)
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)), args.at(2).toBoolean(exec));
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -124,7 +124,7 @@ JSValue JSNode::removeEventListener(ExecState* exec, const ArgList& args)
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -137,45 +137,42 @@ void JSNode::markChildren(MarkStack& markStack)
     Base::markChildren(markStack);
 
     Node* node = m_impl.get();
-    node->markJSEventListeners(markStack);
+    node->markEventListeners(markStack);
 
     // Nodes in the document are kept alive by JSDocument::mark, so, if we're in
     // the document, we need to mark the document, but we don't need to explicitly
     // mark any other nodes.
     if (node->inDocument()) {
         if (Document* doc = node->ownerDocument())
-            markDOMNodeWrapper(markStack, doc, doc);
+            markDOMObjectWrapper(markStack, *Heap::heap(this)->globalData(), doc);
         return;
     }
 
-    // This is a node outside the document.
-    // Find the the root, and the highest ancestor with a wrapper.
+    // This is a node outside the document, so find the root of the tree it is in,
+    // and start marking from there.
     Node* root = node;
-    Node* outermostNodeWithWrapper = node;
-    for (Node* current = m_impl.get(); current; current = current->parentNode()) {
+    for (Node* current = m_impl.get(); current; current = current->parentNode())
         root = current;
-        if (hasCachedDOMNodeWrapperUnchecked(current->document(), current))
-            outermostNodeWithWrapper = current;
-    }
 
-    // Only nodes that have no ancestors with wrappers mark the subtree. In the common
-    // case, the root of the detached subtree has a wrapper, so the tree will only
-    // get marked once. Nodes that aren't outermost need to mark the outermost
-    // in case it is otherwise unreachable.
-    if (node != outermostNodeWithWrapper) {
-        markDOMNodeWrapper(markStack, m_impl->document(), outermostNodeWithWrapper);
+    // Nodes in a subtree are marked by the tree's root, so, if the root is already
+    // marking the tree, we don't need to explicitly mark any other nodes.
+    if (root->inSubtreeMark())
         return;
-    }
 
     // Mark the whole tree subtree.
-    for (Node* nodeToMark = root; nodeToMark; nodeToMark = nodeToMark->traverseNextNode())
-        markDOMNodeWrapper(markStack, m_impl->document(), nodeToMark);
+    root->setInSubtreeMark(true);
+    for (Node* nodeToMark = root; nodeToMark; nodeToMark = nodeToMark->traverseNextNode()) {
+        JSNode* wrapper = getCachedDOMNodeWrapper(m_impl->document(), nodeToMark);
+        if (wrapper)
+            markStack.append(wrapper);
+    }
+    root->setInSubtreeMark(false);
 }
 
 static ALWAYS_INLINE JSValue createWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, Node* node)
 {
     ASSERT(node);
-    ASSERT(!getCachedDOMNodeWrapper(exec, node->document(), node));
+    ASSERT(!getCachedDOMNodeWrapper(node->document(), node));
     
     JSNode* wrapper;    
     switch (node->nodeType()) {
@@ -242,7 +239,7 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, Node* node)
     if (!node)
         return jsNull();
 
-    JSNode* wrapper = getCachedDOMNodeWrapper(exec, node->document(), node);
+    JSNode* wrapper = getCachedDOMNodeWrapper(node->document(), node);
     if (wrapper)
         return wrapper;
 

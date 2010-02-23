@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !OS(WINDOWS)
+#if !PLATFORM(WIN_OS)
 #include <unistd.h>
 #endif
 
@@ -54,10 +54,10 @@
 #include <signal.h>
 #endif
 
-#if COMPILER(MSVC) && !OS(WINCE)
+#if COMPILER(MSVC) && !PLATFORM(WINCE)
 #include <crtdbg.h>
-#include <mmsystem.h>
 #include <windows.h>
+#include <mmsystem.h>
 #endif
 
 #if PLATFORM(QT)
@@ -88,8 +88,8 @@ static JSValue JSC_HOST_CALL functionClearSamplingFlags(ExecState*, JSObject*, J
 
 struct Script {
     bool isFile;
-    char* argument;
-
+    char *argument;
+    
     Script(bool isFile, char *argument)
         : isFile(isFile)
         , argument(argument)
@@ -174,12 +174,12 @@ GlobalObject::GlobalObject(const Vector<UString>& arguments)
 JSValue JSC_HOST_CALL functionPrint(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     for (unsigned i = 0; i < args.size(); ++i) {
-        if (i)
+        if (i != 0)
             putchar(' ');
-
+        
         printf("%s", args.at(i).toString(exec).UTF8String().c_str());
     }
-
+    
     putchar('\n');
     fflush(stdout);
     return jsUndefined();
@@ -194,7 +194,7 @@ JSValue JSC_HOST_CALL functionDebug(ExecState* exec, JSObject*, JSValue, const A
 JSValue JSC_HOST_CALL functionGC(ExecState* exec, JSObject*, JSValue, const ArgList&)
 {
     JSLock lock(SilenceAssertionsOnly);
-    exec->heap()->collectAllGarbage();
+    exec->heap()->collect();
     return jsUndefined();
 }
 
@@ -292,18 +292,8 @@ JSValue JSC_HOST_CALL functionReadline(ExecState* exec, JSObject*, JSValue, cons
 
 JSValue JSC_HOST_CALL functionQuit(ExecState* exec, JSObject*, JSValue, const ArgList&)
 {
-    // Technically, destroying the heap in the middle of JS execution is a no-no,
-    // but we want to maintain compatibility with the Mozilla test suite, so
-    // we pretend that execution has terminated to avoid ASSERTs, then tear down the heap.
-    exec->globalData().dynamicGlobalObject = 0;
-
     cleanupGlobalData(&exec->globalData());
     exit(EXIT_SUCCESS);
-
-#if COMPILER(MSVC) && OS(WINCE)
-    // Without this, Visual Studio will complain that this method does not return a value.
-    return jsUndefined();
-#endif
 }
 
 // Use SEH for Release builds only to get rid of the crash report dialog
@@ -323,7 +313,7 @@ int jscmain(int argc, char** argv, JSGlobalData*);
 
 int main(int argc, char** argv)
 {
-#if defined(_DEBUG) && OS(WINDOWS)
+#if defined(_DEBUG) && PLATFORM(WIN_OS)
     _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
@@ -332,7 +322,7 @@ int main(int argc, char** argv)
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
 #endif
 
-#if COMPILER(MSVC) && !OS(WINCE)
+#if COMPILER(MSVC) && !PLATFORM(WINCE)
     timeBeginPeriod(1);
 #endif
 
@@ -473,27 +463,30 @@ static void parseArguments(int argc, char** argv, Options& options, JSGlobalData
     int i = 1;
     for (; i < argc; ++i) {
         const char* arg = argv[i];
-        if (!strcmp(arg, "-f")) {
+        if (strcmp(arg, "-f") == 0) {
             if (++i == argc)
                 printUsageStatement(globalData);
             options.scripts.append(Script(true, argv[i]));
             continue;
         }
-        if (!strcmp(arg, "-e")) {
+        if (strcmp(arg, "-e") == 0) {
             if (++i == argc)
                 printUsageStatement(globalData);
             options.scripts.append(Script(false, argv[i]));
             continue;
         }
-        if (!strcmp(arg, "-i")) {
+        if (strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0) {
+            printUsageStatement(globalData, true);
+        }
+        if (strcmp(arg, "-i") == 0) {
             options.interactive = true;
             continue;
         }
-        if (!strcmp(arg, "-d")) {
+        if (strcmp(arg, "-d") == 0) {
             options.dump = true;
             continue;
         }
-        if (!strcmp(arg, "-s")) {
+        if (strcmp(arg, "-s") == 0) {
 #if HAVE(SIGNAL_H)
             signal(SIGILL, _exit);
             signal(SIGFPE, _exit);
@@ -502,18 +495,16 @@ static void parseArguments(int argc, char** argv, Options& options, JSGlobalData
 #endif
             continue;
         }
-        if (!strcmp(arg, "--")) {
+        if (strcmp(arg, "--") == 0) {
             ++i;
             break;
         }
-        if (!strcmp(arg, "-h") || !strcmp(arg, "--help"))
-            printUsageStatement(globalData, true);
         options.scripts.append(Script(true, argv[i]));
     }
-
+    
     if (options.scripts.isEmpty())
         options.interactive = true;
-
+    
     for (; i < argc; ++i)
         options.arguments.append(argv[i]);
 }
@@ -541,20 +532,20 @@ static bool fillBufferWithContentsOfFile(const UString& fileName, Vector<char>& 
         return false;
     }
 
-    size_t bufferSize = 0;
-    size_t bufferCapacity = 1024;
+    size_t buffer_size = 0;
+    size_t buffer_capacity = 1024;
 
-    buffer.resize(bufferCapacity);
+    buffer.resize(buffer_capacity);
 
     while (!feof(f) && !ferror(f)) {
-        bufferSize += fread(buffer.data() + bufferSize, 1, bufferCapacity - bufferSize, f);
-        if (bufferSize == bufferCapacity) { // guarantees space for trailing '\0'
-            bufferCapacity *= 2;
-            buffer.resize(bufferCapacity);
+        buffer_size += fread(buffer.data() + buffer_size, 1, buffer_capacity - buffer_size, f);
+        if (buffer_size == buffer_capacity) { // guarantees space for trailing '\0'
+            buffer_capacity *= 2;
+            buffer.resize(buffer_capacity);
         }
     }
     fclose(f);
-    buffer[bufferSize] = '\0';
+    buffer[buffer_size] = '\0';
 
     return true;
 }

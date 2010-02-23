@@ -71,9 +71,7 @@ namespace JSC {
             return m_getValue(exec, Identifier::from(exec, propertyName), *this);
         }
 
-        bool isGetter() const { return m_isGetter; }
-        bool isCacheable() const { return m_isCacheable; }
-        bool isCacheableValue() const { return m_isCacheable && !m_isGetter; }
+        bool isCacheable() const { return m_offset != WTF::notFound; }
         size_t cachedOffset() const
         {
             ASSERT(isCacheable());
@@ -104,8 +102,6 @@ namespace JSC {
             m_slotBase = slotBase;
             m_data.valueSlot = valueSlot;
             m_offset = offset;
-            m_isCacheable = true;
-            m_isGetter = false;
         }
         
         void setValue(JSValue value)
@@ -143,28 +139,14 @@ namespace JSC {
             m_slotBase = slotBase;
             m_data.index = index;
         }
-
+        
         void setGetterSlot(JSObject* getterFunc)
         {
             ASSERT(getterFunc);
-            m_thisValue = m_slotBase;
             m_getValue = functionGetter;
             m_data.getterFunc = getterFunc;
-            m_isGetter = true;
         }
-
-        void setCacheableGetterSlot(JSValue slotBase, JSObject* getterFunc, unsigned offset)
-        {
-            ASSERT(getterFunc);
-            m_getValue = functionGetter;
-            m_thisValue = m_slotBase;
-            m_slotBase = slotBase;
-            m_data.getterFunc = getterFunc;
-            m_offset = offset;
-            m_isCacheable = true;
-            m_isGetter = true;
-        }
-
+        
         void setUndefined()
         {
             setValue(jsUndefined());
@@ -200,14 +182,11 @@ namespace JSC {
         {
             // Clear offset even in release builds, in case this PropertySlot has been used before.
             // (For other data members, we don't need to clear anything because reuse would meaningfully overwrite them.)
-            m_offset = 0;
-            m_isCacheable = false;
-            m_isGetter = false;
+            m_offset = WTF::notFound;
         }
 
         unsigned index() const { return m_data.index; }
 
-        JSValue thisValue() const { return m_thisValue; }
     private:
         static JSValue functionGetter(ExecState*, const Identifier&, const PropertySlot&);
 
@@ -222,11 +201,8 @@ namespace JSC {
         } m_data;
 
         JSValue m_value;
-        JSValue m_thisValue;
 
         size_t m_offset;
-        bool m_isCacheable : 1;
-        bool m_isGetter : 1;
     };
 
 } // namespace JSC

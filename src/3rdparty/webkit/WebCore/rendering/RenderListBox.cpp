@@ -321,8 +321,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, int tx, int ty, in
             textColor = theme()->inactiveListBoxSelectionForegroundColor();
     }
 
-    ColorSpace colorSpace = itemStyle->colorSpace();
-    paintInfo.context->setFillColor(textColor, colorSpace);
+    paintInfo.context->setFillColor(textColor);
 
     Font itemFont = style()->font();
     if (isOptionGroupElement(element)) {
@@ -359,10 +358,9 @@ void RenderListBox::paintItemBackground(PaintInfo& paintInfo, int tx, int ty, in
 
     // Draw the background for this list box item
     if (!element->renderStyle() || element->renderStyle()->visibility() != HIDDEN) {
-        ColorSpace colorSpace = element->renderStyle() ? element->renderStyle()->colorSpace() : style()->colorSpace();
         IntRect itemRect = itemBoundingBoxRect(tx, ty, listIndex);
         itemRect.intersect(controlClipRect(tx, ty));
-        paintInfo.context->fillRect(itemRect, backColor, colorSpace);
+        paintInfo.context->fillRect(itemRect, backColor);
     }
 }
 

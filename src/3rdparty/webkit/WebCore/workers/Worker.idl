@@ -28,7 +28,6 @@ module threads {
 
     interface [
         Conditional=WORKERS,
-        CustomConstructor,
         GenerateNativeConverter,
         GenerateToJS
     ] Worker : AbstractWorker {

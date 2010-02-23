@@ -84,7 +84,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -148,8 +148,6 @@ const ClassInfo JSMessageEvent::s_info = { "MessageEvent", &JSEvent::s_info, 0, 
 JSMessageEvent::JSMessageEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MessageEvent> impl)
     : JSEvent(structure, globalObject, impl)
 {
-    for (unsigned i = Base::AnonymousSlotCount; i < AnonymousSlotCount; i++)
-        putAnonymousValue(i, JSValue());
 }
 
 JSObject* JSMessageEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -171,12 +169,8 @@ JSValue jsMessageEventData(ExecState* exec, const Identifier&, const PropertySlo
 {
     JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    if (JSValue cachedValue = castedThis->getAnonymousValue(JSMessageEvent::dataSlot))
-        return cachedValue;
     MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
-    JSValue result = imp->data() ? imp->data()->deserialize(exec, castedThis->globalObject()) : jsNull();
-    castedThis->putAnonymousValue(JSMessageEvent::dataSlot, result);
-    return result;
+    return imp->data()->deserialize(exec);
 }
 
 JSValue jsMessageEventOrigin(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -184,8 +178,7 @@ JSValue jsMessageEventOrigin(ExecState* exec, const Identifier&, const PropertyS
     JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->origin());
-    return result;
+    return jsString(exec, imp->origin());
 }
 
 JSValue jsMessageEventLastEventId(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -193,8 +186,7 @@ JSValue jsMessageEventLastEventId(ExecState* exec, const Identifier&, const Prop
     JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->lastEventId());
-    return result;
+    return jsString(exec, imp->lastEventId());
 }
 
 JSValue jsMessageEventSource(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -202,8 +194,7 @@ JSValue jsMessageEventSource(ExecState* exec, const Identifier&, const PropertyS
     JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->source()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->source()));
 }
 
 JSValue jsMessageEventPorts(ExecState* exec, const Identifier&, const PropertySlot& slot)

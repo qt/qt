@@ -32,7 +32,7 @@ using std::pair;
 namespace WTF {
 
     template<bool isPod, typename T>
-    struct VectorTraitsBase;
+    class VectorTraitsBase;
 
     template<typename T>
     struct VectorTraitsBase<false, T>

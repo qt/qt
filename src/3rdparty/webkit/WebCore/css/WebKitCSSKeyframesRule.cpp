@@ -108,16 +108,8 @@ WebKitCSSKeyframeRule* WebKitCSSKeyframesRule::findRule(const String& s)
 
 int WebKitCSSKeyframesRule::findRuleIndex(const String& key) const
 {
-    String percentageString;
-    if (equalIgnoringCase(key, "from"))
-        percentageString = "0%";
-    else if (equalIgnoringCase(key, "to"))
-        percentageString = "100%";
-    else
-        percentageString = key;
-
     for (unsigned i = 0; i < length(); ++i) {
-        if (item(i)->keyText() == percentageString)
+        if (item(i)->keyText() == key)
             return i;
     }
 

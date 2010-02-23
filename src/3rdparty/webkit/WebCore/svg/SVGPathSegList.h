@@ -36,7 +36,7 @@ namespace WebCore {
         static PassRefPtr<SVGPathSegList> create(const QualifiedName& attributeName) { return adoptRef(new SVGPathSegList(attributeName)); }
         virtual ~SVGPathSegList();
 
-        unsigned getPathSegAtLength(double, ExceptionCode&);
+        unsigned getPathSegAtLength(double);
         Path toPathData();
         
         static PassRefPtr<SVGPathSegList> createAnimated(const SVGPathSegList* fromList, const SVGPathSegList* toList, float progress);

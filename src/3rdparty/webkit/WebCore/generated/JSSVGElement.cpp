@@ -41,13 +41,12 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGElementTableValues[6] =
+static const HashTableValue JSSVGElementTableValues[5] =
 {
     { "id", DontDelete, (intptr_t)jsSVGElementId, (intptr_t)setJSSVGElementId },
     { "xmlbase", DontDelete, (intptr_t)jsSVGElementXmlbase, (intptr_t)setJSSVGElementXmlbase },
     { "ownerSVGElement", DontDelete|ReadOnly, (intptr_t)jsSVGElementOwnerSVGElement, (intptr_t)0 },
     { "viewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGElementViewportElement, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -55,55 +54,8 @@ static JSC_CONST_HASHTABLE HashTable JSSVGElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGElementTableValues, 0 };
 #else
-    { 16, 15, JSSVGElementTableValues, 0 };
+    { 9, 7, JSSVGElementTableValues, 0 };
 #endif
-
-/* Hash table for constructor */
-
-static const HashTableValue JSSVGElementConstructorTableValues[1] =
-{
-    { 0, 0, 0, 0 }
-};
-
-static JSC_CONST_HASHTABLE HashTable JSSVGElementConstructorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGElementConstructorTableValues, 0 };
-#else
-    { 1, 0, JSSVGElementConstructorTableValues, 0 };
-#endif
-
-class JSSVGElementConstructor : public DOMConstructorObject {
-public:
-    JSSVGElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-        : DOMConstructorObject(JSSVGElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
-    {
-        putDirect(exec->propertyNames().prototype, JSSVGElementPrototype::self(exec, globalObject), None);
-    }
-    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
-    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
-    virtual const ClassInfo* classInfo() const { return &s_info; }
-    static const ClassInfo s_info;
-
-    static PassRefPtr<Structure> createStructure(JSValue proto) 
-    { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
-    }
-    
-protected:
-    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
-};
-
-const ClassInfo JSSVGElementConstructor::s_info = { "SVGElementConstructor", 0, &JSSVGElementConstructorTable, 0 };
-
-bool JSSVGElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticValueSlot<JSSVGElementConstructor, DOMObject>(exec, &JSSVGElementConstructorTable, this, propertyName, slot);
-}
-
-bool JSSVGElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
-{
-    return getStaticValueDescriptor<JSSVGElementConstructor, DOMObject>(exec, &JSSVGElementConstructorTable, this, propertyName, descriptor);
-}
 
 /* Hash table for prototype */
 
@@ -153,8 +105,7 @@ JSValue jsSVGElementId(ExecState* exec, const Identifier&, const PropertySlot& s
     JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::idAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::idAttr));
 }
 
 JSValue jsSVGElementXmlbase(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,8 +113,7 @@ JSValue jsSVGElementXmlbase(ExecState* exec, const Identifier&, const PropertySl
     JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->xmlbase());
-    return result;
+    return jsString(exec, imp->xmlbase());
 }
 
 JSValue jsSVGElementOwnerSVGElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -171,8 +121,7 @@ JSValue jsSVGElementOwnerSVGElement(ExecState* exec, const Identifier&, const Pr
     JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerSVGElement()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerSVGElement()));
 }
 
 JSValue jsSVGElementViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,15 +129,9 @@ JSValue jsSVGElementViewportElement(ExecState* exec, const Identifier&, const Pr
     JSSVGElement* castedThis = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGElement* imp = static_cast<SVGElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->viewportElement()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->viewportElement()));
 }
 
-JSValue jsSVGElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSSVGElement* domObject = static_cast<JSSVGElement*>(asObject(slot.slotBase()));
-    return JSSVGElement::getConstructor(exec, domObject->globalObject());
-}
 void JSSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGElement, Base>(exec, propertyName, value, &JSSVGElementTable, this, slot);
@@ -196,8 +139,7 @@ void JSSVGElement::put(ExecState* exec, const Identifier& propertyName, JSValue 
 
 void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGElement* castedThisObj = static_cast<JSSVGElement*>(thisObject);
-    SVGElement* imp = static_cast<SVGElement*>(castedThisObj->impl());
+    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setAttribute(HTMLNames::idAttr, valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
@@ -205,16 +147,10 @@ void setJSSVGElementId(ExecState* exec, JSObject* thisObject, JSValue value)
 
 void setJSSVGElementXmlbase(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGElement* castedThisObj = static_cast<JSSVGElement*>(thisObject);
-    SVGElement* imp = static_cast<SVGElement*>(castedThisObj->impl());
+    SVGElement* imp = static_cast<SVGElement*>(static_cast<JSSVGElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setXmlbase(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
-}
-
-JSValue JSSVGElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
-{
-    return getDOMConstructor<JSSVGElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 SVGElement* toSVGElement(JSC::JSValue value)

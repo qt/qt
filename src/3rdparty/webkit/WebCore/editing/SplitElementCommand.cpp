@@ -41,39 +41,35 @@ SplitElementCommand::SplitElementCommand(PassRefPtr<Element> element, PassRefPtr
     ASSERT(m_atChild->parentNode() == m_element2);
 }
 
-void SplitElementCommand::executeApply()
+void SplitElementCommand::doApply()
 {
+    RefPtr<Element> prefixElement = m_element2->cloneElementWithoutChildren();
+
     if (m_atChild->parentNode() != m_element2)
         return;
-    
+
     Vector<RefPtr<Node> > children;
     for (Node* node = m_element2->firstChild(); node != m_atChild; node = node->nextSibling())
         children.append(node);
-    
+
     ExceptionCode ec = 0;
-    
+
     Node* parent = m_element2->parentNode();
-    if (!parent || !parent->isContentEditable())
+    if (!parent)
         return;
-    parent->insertBefore(m_element1.get(), m_element2.get(), ec);
+    parent->insertBefore(prefixElement.get(), m_element2.get(), ec);
     if (ec)
         return;
-    
+    m_element1 = prefixElement.release();
+
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
         m_element1->appendChild(children[i], ec);
 }
-    
-void SplitElementCommand::doApply()
-{
-    m_element1 = m_element2->cloneElementWithoutChildren();
-    
-    executeApply();
-}
 
 void SplitElementCommand::doUnapply()
 {
-    if (!m_element1 || !m_element1->isContentEditable() || !m_element2->isContentEditable())
+    if (!m_element1)
         return;
 
     Vector<RefPtr<Node> > children;
@@ -89,14 +85,7 @@ void SplitElementCommand::doUnapply()
         m_element2->insertBefore(children[i].get(), refChild.get(), ec);
 
     m_element1->remove(ec);
+    m_element1 = 0;
 }
 
-void SplitElementCommand::doReapply()
-{
-    if (!m_element1)
-        return;
-    
-    executeApply();
-}
-    
 } // namespace WebCore

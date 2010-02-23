@@ -63,7 +63,7 @@ static bool hasSource(const HTMLMediaElement* mediaElement)
 static bool paintMediaButton(GraphicsContext* context, const IntRect& rect, Image* image)
 {
     IntRect imageRect = image->rect();
-    context->drawImage(image, DeviceColorSpace, rect);
+    context->drawImage(image, rect);
     return true;
 }
 
@@ -114,9 +114,9 @@ static bool paintMediaSlider(RenderObject* object, const RenderObject::PaintInfo
     context->save();
     context->setShouldAntialias(true);
     context->setStrokeStyle(SolidStroke);
-    context->setStrokeColor(style->borderLeftColor(), DeviceColorSpace);
+    context->setStrokeColor(style->borderLeftColor());
     context->setStrokeThickness(style->borderLeftWidth());
-    context->setFillColor(style->backgroundColor(), DeviceColorSpace);
+    context->setFillColor(style->backgroundColor());
     context->drawRect(rect);
     context->restore();
 
@@ -172,13 +172,13 @@ static bool paintMediaVolumeSlider(RenderObject* object, const RenderObject::Pai
     GraphicsContext* context = paintInfo.context;
     Color originalColor = context->strokeColor();
     if (originalColor != Color::white)
-        context->setStrokeColor(Color::white, DeviceColorSpace);
+        context->setStrokeColor(Color::white);
 
     int x = rect.x() + rect.width() / 2;
     context->drawLine(IntPoint(x, rect.y()),  IntPoint(x, rect.y() + rect.height()));
 
     if (originalColor != Color::white)
-        context->setStrokeColor(originalColor, DeviceColorSpace);
+        context->setStrokeColor(originalColor);
     return true;
 }
 
@@ -207,17 +207,17 @@ static bool paintMediaTimelineContainer(RenderObject* object, const RenderObject
 
         // Draw the left border using CSS defined width and color.
         context->setStrokeThickness(object->style()->borderLeftWidth());
-        context->setStrokeColor(object->style()->borderLeftColor().rgb(), DeviceColorSpace);
+        context->setStrokeColor(object->style()->borderLeftColor().rgb());
         context->drawLine(IntPoint(rect.x() + 1, rect.y()),
                           IntPoint(rect.x() + 1, rect.y() + rect.height()));
 
         // Draw the right border using CSS defined width and color.
         context->setStrokeThickness(object->style()->borderRightWidth());
-        context->setStrokeColor(object->style()->borderRightColor().rgb(), DeviceColorSpace);
+        context->setStrokeColor(object->style()->borderRightColor().rgb());
         context->drawLine(IntPoint(rect.x() + rect.width() - 1, rect.y()),
                           IntPoint(rect.x() + rect.width() - 1, rect.y() + rect.height()));
 
-        context->setStrokeColor(originalColor, DeviceColorSpace);
+        context->setStrokeColor(originalColor);
         context->setStrokeThickness(originalThickness);
         context->setStrokeStyle(originalStyle);
     }
@@ -275,8 +275,6 @@ bool RenderMediaControlsChromium::paintMediaControlsPart(MediaControlElementType
     case MediaRewindButton:
     case MediaReturnToRealtimeButton:
     case MediaStatusDisplay:
-    case MediaShowClosedCaptionsButton:
-    case MediaHideClosedCaptionsButton:
         ASSERT_NOT_REACHED();
         break;
     }

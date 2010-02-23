@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class CounterContent : public FastAllocBase {
+class CounterContent {
 public:
     CounterContent(const AtomicString& identifier, EListStyleType style, const AtomicString& separator)
         : m_identifier(identifier)

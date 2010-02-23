@@ -26,12 +26,8 @@
 module html {
 
     interface [
-        GenerateNativeConverter,
-        GenerateToJS
-    ] File : Blob {
-        readonly attribute DOMString name;
-
-        // FIXME: obsolete attributes. To be removed.
+        GenerateConstructor
+    ] File {
         readonly attribute DOMString fileName;
         readonly attribute unsigned long long fileSize;
     };

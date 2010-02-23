@@ -34,16 +34,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if OS(WINCE)
+#if PLATFORM(WINCE)
 extern "C" {
 #include "wince/mt19937ar.c"
 }
-#endif
-
-#if PLATFORM(BREWMP)
-#include <AEEAppGen.h>
-#include <AEESource.h>
-#include <AEEStdLib.h>
 #endif
 
 namespace WTF {
@@ -53,10 +47,6 @@ double weakRandomNumber()
 #if COMPILER(MSVC) && defined(_CRT_RAND_S)
     // rand_s is incredibly slow on windows so we fall back on rand for Math.random
     return (rand() + (rand() / (RAND_MAX + 1.0))) / (RAND_MAX + 1.0);
-#elif PLATFORM(BREWMP)
-    uint32_t bits;
-    GETRAND(reinterpret_cast<byte*>(&bits), sizeof(uint32_t));
-    return static_cast<double>(bits) / (static_cast<double>(std::numeric_limits<uint32_t>::max()) + 1.0);
 #else
     return randomNumber();
 #endif
@@ -76,10 +66,10 @@ double randomNumber()
     uint32_t bits;
     rand_s(&bits);
     return static_cast<double>(bits) / (static_cast<double>(std::numeric_limits<uint32_t>::max()) + 1.0);
-#elif OS(DARWIN)
+#elif PLATFORM(DARWIN)
     uint32_t bits = arc4random();
     return static_cast<double>(bits) / (static_cast<double>(std::numeric_limits<uint32_t>::max()) + 1.0);
-#elif OS(UNIX)
+#elif PLATFORM(UNIX)
     uint32_t part1 = random() & (RAND_MAX - 1);
     uint32_t part2 = random() & (RAND_MAX - 1);
     // random only provides 31 bits
@@ -90,9 +80,9 @@ double randomNumber()
     // Mask off the low 53bits
     fullRandom &= (1LL << 53) - 1;
     return static_cast<double>(fullRandom)/static_cast<double>(1LL << 53);
-#elif OS(WINCE)
+#elif PLATFORM(WINCE)
     return genrand_res53();
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN_OS)
     uint32_t part1 = rand() & (RAND_MAX - 1);
     uint32_t part2 = rand() & (RAND_MAX - 1);
     uint32_t part3 = rand() & (RAND_MAX - 1);
@@ -109,16 +99,6 @@ double randomNumber()
     // Mask off the low 53bits
     fullRandom &= (1LL << 53) - 1;
     return static_cast<double>(fullRandom)/static_cast<double>(1LL << 53);
-#elif PLATFORM(BREWMP)
-    uint32_t bits;
-    ISource* randomSource;
-
-    IShell* shell = reinterpret_cast<AEEApplet*>(GETAPPINSTANCE())->m_pIShell;
-    ISHELL_CreateInstance(shell, AEECLSID_RANDOM, reinterpret_cast<void**>(&randomSource));
-    ISOURCE_Read(randomSource, reinterpret_cast<char*>(&bits), 4);
-    ISOURCE_Release(randomSource);
-
-    return static_cast<double>(bits) / (static_cast<double>(std::numeric_limits<uint32_t>::max()) + 1.0);
 #else
     uint32_t part1 = rand() & (RAND_MAX - 1);
     uint32_t part2 = rand() & (RAND_MAX - 1);

@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -143,8 +143,7 @@ JSValue jsHTMLDivElementAlign(ExecState* exec, const Identifier&, const Property
     JSHTMLDivElement* castedThis = static_cast<JSHTMLDivElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDivElement* imp = static_cast<HTMLDivElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->align());
-    return result;
+    return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLDivElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -159,8 +158,7 @@ void JSHTMLDivElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSHTMLDivElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDivElement* castedThisObj = static_cast<JSHTMLDivElement*>(thisObject);
-    HTMLDivElement* imp = static_cast<HTMLDivElement*>(castedThisObj->impl());
+    HTMLDivElement* imp = static_cast<HTMLDivElement*>(static_cast<JSHTMLDivElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 

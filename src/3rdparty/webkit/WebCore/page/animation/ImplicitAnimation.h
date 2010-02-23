@@ -47,9 +47,8 @@ public:
     int animatingProperty() const { return m_animatingProperty; }
 
     virtual void onAnimationEnd(double elapsedTime);
-    virtual bool startAnimation(double timeOffset);
-    virtual void pauseAnimation(double /*timeOffset*/) { }
-    virtual void endAnimation();
+    virtual bool startAnimation(double beginTime);
+    virtual void endAnimation(bool reset);
 
     virtual void animate(CompositeAnimation*, RenderObject*, const RenderStyle* currentStyle, RenderStyle* targetStyle, RefPtr<RenderStyle>& animatedStyle);
     virtual void getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle);

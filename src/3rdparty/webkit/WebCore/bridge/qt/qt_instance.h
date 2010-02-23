@@ -20,11 +20,11 @@
 #ifndef BINDINGS_QT_INSTANCE_H_
 #define BINDINGS_QT_INSTANCE_H_
 
-#include "Bridge.h"
-#include "runtime_root.h"
 #include <QtScript/qscriptengine.h>
-#include <qhash.h>
+#include "runtime.h"
+#include "runtime_root.h"
 #include <qpointer.h>
+#include <qhash.h>
 #include <qset.h>
 
 namespace JSC {

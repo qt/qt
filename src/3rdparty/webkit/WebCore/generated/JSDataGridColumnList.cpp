@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -219,8 +219,7 @@ JSValue jsDataGridColumnListLength(ExecState* exec, const Identifier&, const Pro
     JSDataGridColumnList* castedThis = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumnList* imp = static_cast<DataGridColumnList*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->length());
-    return result;
+    return jsNumber(exec, imp->length());
 }
 
 JSValue jsDataGridColumnListSortColumn(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -228,8 +227,7 @@ JSValue jsDataGridColumnListSortColumn(ExecState* exec, const Identifier&, const
     JSDataGridColumnList* castedThis = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumnList* imp = static_cast<DataGridColumnList*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sortColumn()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sortColumn()));
 }
 
 JSValue jsDataGridColumnListPrimaryColumn(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -237,8 +235,7 @@ JSValue jsDataGridColumnListPrimaryColumn(ExecState* exec, const Identifier&, co
     JSDataGridColumnList* castedThis = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumnList* imp = static_cast<DataGridColumnList*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->primaryColumn()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->primaryColumn()));
 }
 
 JSValue jsDataGridColumnListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -246,11 +243,11 @@ JSValue jsDataGridColumnListConstructor(ExecState* exec, const Identifier&, cons
     JSDataGridColumnList* domObject = static_cast<JSDataGridColumnList*>(asObject(slot.slotBase()));
     return JSDataGridColumnList::getConstructor(exec, domObject->globalObject());
 }
-void JSDataGridColumnList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void JSDataGridColumnList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<DataGridColumnList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames, mode);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSDataGridColumnList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

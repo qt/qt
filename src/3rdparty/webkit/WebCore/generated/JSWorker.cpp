@@ -25,6 +25,8 @@
 #include "JSWorker.h"
 
 #include "EventListener.h"
+#include "Frame.h"
+#include "JSDOMGlobalObject.h"
 #include "JSEventListener.h"
 #include "Worker.h"
 #include <runtime/Error.h>
@@ -112,10 +114,8 @@ JSValue jsWorkerOnmessage(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     Worker* imp = static_cast<Worker*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
-                return jsFunction;
-        }
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
+            return jsFunction;
     }
     return jsNull();
 }
@@ -129,7 +129,10 @@ void setJSWorkerOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Worker* imp = static_cast<Worker*>(static_cast<JSWorker*>(thisObject)->impl());
-    imp->setOnmessage(createJSAttributeEventListener(exec, value, thisObject));
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
+    if (!globalObject)
+        return;
+    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
 }
 
 JSValue JSC_HOST_CALL jsWorkerPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

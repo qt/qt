@@ -123,11 +123,6 @@ const AtomicString& WMLInputElement::formControlName() const
     return m_data.name();
 }
 
-const String& WMLInputElement::suggestedValue() const
-{
-    return m_data.suggestedValue();
-}
-
 String WMLInputElement::value() const
 {
     String value = m_data.value();
@@ -137,7 +132,7 @@ String WMLInputElement::value() const
     return value;
 }
 
-void WMLInputElement::setValue(const String& value, bool sendChangeEvent)
+void WMLInputElement::setValue(const String& value)
 {
     setFormControlValueMatchesRenderer(false);
     m_data.setValue(constrainValue(value));
@@ -154,13 +149,6 @@ void WMLInputElement::setValue(const String& value, bool sendChangeEvent)
         cacheSelection(max, max);
 
     InputElement::notifyFormStateChanged(this);
-}
-
-void WMLInputElement::setValueForUser(const String& value)
-{
-    /* InputElement class defines pure virtual function 'setValueForUser', which 
-       will be useful only in HTMLInputElement. Do nothing in 'WMLInputElement'.
-     */
 }
 
 void WMLInputElement::setValueFromRenderer(const String& value)
@@ -292,13 +280,13 @@ void WMLInputElement::defaultEventHandler(Event* evt)
     if (clickDefaultFormButton) {
         // Fire onChange for text fields.
         RenderObject* r = renderer();
-        if (r && toRenderTextControl(r)->wasChangedSinceLastChangeEvent()) {
-            dispatchEvent(Event::create(eventNames().changeEvent, true, false));
+        if (r && toRenderTextControl(r)->isEdited()) {
+            dispatchEvent(eventNames().changeEvent, true, false);
             
             // Refetch the renderer since arbitrary JS code run during onchange can do anything, including destroying it.
             r = renderer();
             if (r)
-                toRenderTextControl(r)->setChangedSinceLastChangeEvent(false);
+                toRenderTextControl(r)->setEdited(false);
         }
 
         evt->setDefaultHandled();

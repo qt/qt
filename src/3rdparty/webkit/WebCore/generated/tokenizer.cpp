@@ -1,4 +1,6 @@
 /*
+ * This file is part of the DOM implementation for KDE.
+ *
  * Copyright (C) 2003 Lars Knoll (knoll@kde.org)
  *
  *
@@ -2190,7 +2192,7 @@ YY_RULE_SETUP
 #line 111 "<stdin>"
 ECHO;
 	YY_BREAK
-#line 2731 "<stdout>"
+#line 2745 "<stdout>"
 case YY_END_OF_BUFFER:
 	yy_c_buf_p = yy_cp - 1;
 	yy_cp = yy_c_buf_p;

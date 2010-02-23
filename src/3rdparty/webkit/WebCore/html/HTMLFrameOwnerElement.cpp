@@ -35,7 +35,6 @@ namespace WebCore {
 HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document, CreateElement)
     , m_contentFrame(0)
-    , m_sandboxFlags(SandboxNone)
 {
 }
 
@@ -63,17 +62,6 @@ Document* HTMLFrameOwnerElement::contentDocument() const
 DOMWindow* HTMLFrameOwnerElement::contentWindow() const
 {
     return m_contentFrame ? m_contentFrame->domWindow() : 0;
-}
-
-void HTMLFrameOwnerElement::setSandboxFlags(SandboxFlags flags)
-{
-    if (m_sandboxFlags == flags)
-        return;
-
-    m_sandboxFlags = flags;
-
-    if (Frame* frame = contentFrame())
-        frame->loader()->ownerElementSandboxFlagsChanged();
 }
 
 #if ENABLE(SVG)

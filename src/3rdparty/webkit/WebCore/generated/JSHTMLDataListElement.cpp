@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -146,8 +146,7 @@ JSValue jsHTMLDataListElementOptions(ExecState* exec, const Identifier&, const P
     JSHTMLDataListElement* castedThis = static_cast<JSHTMLDataListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDataListElement* imp = static_cast<HTMLDataListElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->options()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->options()));
 }
 
 JSValue jsHTMLDataListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

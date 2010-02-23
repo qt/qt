@@ -28,15 +28,14 @@
 #include "FontPlatformData.h"
 #include "GlyphPageTreeNode.h"
 #include "GlyphWidthMap.h"
-#include "TypesettingFeatures.h"
+#include "TextRenderingMode.h"
 #include <wtf/OwnPtr.h>
 
 #if USE(ATSUI)
 typedef struct OpaqueATSUStyle* ATSUStyle;
 #endif
 
-#if (PLATFORM(WIN) && !OS(WINCE)) \
-    || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(WIN) && !PLATFORM(WINCE)
 #include <usp10.h>
 #endif
 
@@ -87,7 +86,7 @@ public:
     float spaceWidth() const { return m_spaceWidth; }
     float adjustedSpaceWidth() const { return m_adjustedSpaceWidth; }
 
-#if PLATFORM(CG) || PLATFORM(CAIRO) || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(CG) || PLATFORM(CAIRO)
     float syntheticBoldOffset() const { return m_syntheticBoldOffset; }
 #endif
 
@@ -116,13 +115,13 @@ public:
     virtual String description() const;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if PLATFORM(MAC)
     NSFont* getNSFont() const { return m_platformData.font(); }
 #endif
 
 #if USE(CORE_TEXT)
     CTFontRef getCTFont() const;
-    CFDictionaryRef getCFStringAttributes(TypesettingFeatures) const;
+    CFDictionaryRef getCFStringAttributes(TextRenderingMode) const;
 #endif
 
 #if USE(ATSUI)
@@ -139,9 +138,9 @@ public:
     QFont getQtFont() const { return m_platformData.font(); }
 #endif
 
-#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(WIN)
     bool isSystemFont() const { return m_isSystemFont; }
-#if !OS(WINCE) // disable unused members to save space
+#if !PLATFORM(WINCE)    // disable unused members to save space
     SCRIPT_FONTPROPERTIES* scriptFontProperties() const;
     SCRIPT_CACHE* scriptCache() const { return &m_scriptCache; }
 #endif
@@ -163,8 +162,7 @@ private:
 
     void commonInit();
 
-#if (PLATFORM(WIN) && !OS(WINCE)) \
-    || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(WIN) && !PLATFORM(WINCE)
     void initGDIFont();
     void platformCommonDestroy();
     float widthForGDIGlyph(Glyph glyph) const;
@@ -200,7 +198,7 @@ private:
 
     mutable SimpleFontData* m_smallCapsFontData;
 
-#if PLATFORM(CG) || PLATFORM(CAIRO) || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(CG) || PLATFORM(CAIRO)
     float m_syntheticBoldOffset;
 #endif
 
@@ -213,7 +211,8 @@ private:
 
 #if USE(ATSUI)
 public:
-    mutable HashMap<unsigned, ATSUStyle> m_ATSUStyleMap;
+    mutable ATSUStyle m_ATSUStyle;
+    mutable bool m_ATSUStyleInitialized;
     mutable bool m_ATSUMirrors;
     mutable bool m_checkedShapesArabic;
     mutable bool m_shapesArabic;
@@ -223,12 +222,12 @@ private:
 
 #if USE(CORE_TEXT)
     mutable RetainPtr<CTFontRef> m_CTFont;
-    mutable HashMap<unsigned, RetainPtr<CFDictionaryRef> > m_CFStringAttributes;
+    mutable RetainPtr<CFDictionaryRef> m_CFStringAttributes;
 #endif
 
-#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(WIN)
     bool m_isSystemFont;
-#if !OS(WINCE) // disable unused members to save space
+#if !PLATFORM(WINCE)    // disable unused members to save space
     mutable SCRIPT_CACHE m_scriptCache;
     mutable SCRIPT_FONTPROPERTIES* m_scriptFontProperties;
 #endif

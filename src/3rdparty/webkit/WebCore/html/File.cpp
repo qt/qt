@@ -27,13 +27,25 @@
 #include "File.h"
 
 #include "FileSystem.h"
+#include "PlatformString.h"
 
 namespace WebCore {
 
 File::File(const String& path)
-    : Blob(path)
-    , m_name(pathGetFileName(path))
+    : m_path(path)
+    , m_fileName(pathGetFileName(path))
 {
+}
+
+unsigned long long File::fileSize()
+{
+    // FIXME: Should we cache this?
+    // FIXME: JavaScript cannot represent sizes as large as unsigned long long, we need to
+    // come up with an exception to throw if file size is not represetable.
+    long long size;
+    if (!getFileSize(m_path, size))
+        return 0;
+    return size;
 }
 
 } // namespace WebCore

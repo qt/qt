@@ -57,19 +57,19 @@ WebInspector.DOMStorage.prototype = {
     getEntries: function(callback)
     {
         var callId = WebInspector.Callback.wrap(callback);
-        InspectorBackend.getDOMStorageEntries(callId, this._id);
+        InspectorController.getDOMStorageEntries(callId, this._id);
     },
     
     setItem: function(key, value, callback)
     {
         var callId = WebInspector.Callback.wrap(callback);
-        InspectorBackend.setDOMStorageItem(callId, this._id, key, value);
+        InspectorController.setDOMStorageItem(callId, this._id, key, value);
     },
     
     removeItem: function(key, callback)
     {
         var callId = WebInspector.Callback.wrap(callback);
-        InspectorBackend.removeDOMStorageItem(callId, this._id, key);
+        InspectorController.removeDOMStorageItem(callId, this._id, key);
     }
 }
 

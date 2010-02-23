@@ -143,8 +143,4 @@ abort:
     return false;
 }
 
-uint16 PluginPackage::NPVersion() const
-{
-    return NP_VERSION_MINOR;
-}
 }

@@ -70,7 +70,8 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document* document, Threadabl
     ASSERT(client);
 
     if (m_sameOriginRequest || m_options.crossOriginRequestPolicy == AllowCrossOriginRequests) {
-        loadRequest(request, DoSecurityCheck);
+        bool skipCanLoadCheck = false;
+        loadRequest(request, skipCanLoadCheck);
         return;
     }
 
@@ -110,7 +111,8 @@ void DocumentThreadableLoader::makeSimpleCrossOriginAccessRequest(const Resource
     crossOriginRequest.setAllowCookies(m_options.allowCredentials);
     crossOriginRequest.setHTTPOrigin(m_document->securityOrigin()->toString());
 
-    loadRequest(crossOriginRequest, DoSecurityCheck);
+    bool skipCanLoadCheck = false;
+    loadRequest(crossOriginRequest, skipCanLoadCheck);
 }
 
 void DocumentThreadableLoader::makeCrossOriginAccessRequestWithPreflight(const ResourceRequest& request)
@@ -140,7 +142,8 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequestWithPreflight(const R
         preflightRequest.setHTTPHeaderField("Access-Control-Request-Headers", String::adopt(headerBuffer));
     }
 
-    loadRequest(preflightRequest, DoSecurityCheck);
+    bool skipCanLoadCheck = false;
+    loadRequest(preflightRequest, skipCanLoadCheck);
 }
 
 DocumentThreadableLoader::~DocumentThreadableLoader()
@@ -281,8 +284,8 @@ void DocumentThreadableLoader::preflightSuccess()
     OwnPtr<ResourceRequest> actualRequest;
     actualRequest.swap(m_actualRequest);
 
-    // It should be ok to skip the security check since we already asked about the preflight request.
-    loadRequest(*actualRequest, SkipSecurityCheck);
+    bool skipCanLoadCheck = true;  // ok to skip load check since we already asked about the preflight request
+    loadRequest(*actualRequest, skipCanLoadCheck);
 }
 
 void DocumentThreadableLoader::preflightFailure()
@@ -290,7 +293,7 @@ void DocumentThreadableLoader::preflightFailure()
     m_client->didFail(ResourceError());
 }
 
-void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, SecurityCheckPolicy securityCheck)
+void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, bool skipCanLoadCheck)
 {
     if (m_async) {
         // Don't sniff content or send load callbacks for the preflight request.
@@ -299,7 +302,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
 
         // Clear the loader so that any callbacks from SubresourceLoader::create will not have the old loader.
         m_loader = 0;
-        m_loader = SubresourceLoader::create(m_document->frame(), this, request, securityCheck, sendLoadCallbacks, sniffContent);
+        m_loader = SubresourceLoader::create(m_document->frame(), this, request, skipCanLoadCheck, sendLoadCallbacks, sniffContent);
         return;
     }
     

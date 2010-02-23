@@ -32,7 +32,6 @@
 #include "JSArray.h"
 #include "LiteralParser.h"
 #include "PropertyNameArray.h"
-#include "StringBuilder.h"
 #include <wtf/MathExtras.h>
 
 namespace JSC {
@@ -71,6 +70,8 @@ public:
     void markAggregate(MarkStack&);
 
 private:
+    typedef UString StringBuilder;
+
     class Holder {
     public:
         Holder(JSObject*);
@@ -135,7 +136,7 @@ static inline JSValue unwrapBoxedPrimitive(ExecState* exec, JSValue value)
 
 static inline UString gap(ExecState* exec, JSValue space)
 {
-    const unsigned maxGapLength = 10;
+    const int maxGapLength = 10;
     space = unwrapBoxedPrimitive(exec, space);
 
     // If the space value is a number, create a gap string with that number of spaces.
@@ -155,7 +156,7 @@ static inline UString gap(ExecState* exec, JSValue space)
     }
 
     // If the space value is a string, use it as the gap string, otherwise use no gap string.
-    UString spaces = space.getString(exec);
+    UString spaces = space.getString();
     if (spaces.size() > maxGapLength) {
         spaces = spaces.substr(0, maxGapLength);
     }
@@ -212,7 +213,7 @@ Stringifier::Stringifier(ExecState* exec, JSValue replacer, JSValue space)
                 break;
 
             UString propertyName;
-            if (name.getString(exec, propertyName)) {
+            if (name.getString(propertyName)) {
                 m_arrayReplacerPropertyNames.add(Identifier(exec, propertyName));
                 continue;
             }
@@ -268,7 +269,7 @@ JSValue Stringifier::stringify(JSValue value)
     if (m_exec->hadException())
         return jsNull();
 
-    return jsString(m_exec, result.build());
+    return jsString(m_exec, result);
 }
 
 void Stringifier::appendQuotedString(StringBuilder& builder, const UString& value)
@@ -388,7 +389,7 @@ Stringifier::StringifyResult Stringifier::appendStringifiedValue(StringBuilder& 
     }
 
     UString stringValue;
-    if (value.getString(m_exec, stringValue)) {
+    if (value.getString(stringValue)) {
         appendQuotedString(builder, stringValue);
         return StringifySucceeded;
     }
@@ -456,9 +457,9 @@ inline bool Stringifier::willIndent() const
 inline void Stringifier::indent()
 {
     // Use a single shared string, m_repeatedGap, so we don't keep allocating new ones as we indent and unindent.
-    unsigned newSize = m_indent.size() + m_gap.size();
+    int newSize = m_indent.size() + m_gap.size();
     if (newSize > m_repeatedGap.size())
-        m_repeatedGap = makeString(m_repeatedGap, m_gap);
+        m_repeatedGap.append(m_gap);
     ASSERT(newSize <= m_repeatedGap.size());
     m_indent = m_repeatedGap.substr(0, newSize);
 }
@@ -501,7 +502,7 @@ bool Stringifier::Holder::appendNextProperty(Stringifier& stringifier, StringBui
                 m_propertyNames = stringifier.m_arrayReplacerPropertyNames.data();
             else {
                 PropertyNameArray objectPropertyNames(exec);
-                m_object->getOwnPropertyNames(exec, objectPropertyNames);
+                m_object->getPropertyNames(exec, objectPropertyNames);
                 m_propertyNames = objectPropertyNames.releaseData();
             }
             m_size = m_propertyNames->propertyNameVector().size();
@@ -585,7 +586,7 @@ bool Stringifier::Holder::appendNextProperty(Stringifier& stringifier, StringBui
             // This only occurs when get an undefined value for an object property.
             // In this case we don't want the separator and property name that we
             // already appended, so roll back.
-            builder.resize(rollBackPoint);
+            builder = builder.substr(0, rollBackPoint);
             break;
     }
 
@@ -746,7 +747,7 @@ NEVER_INLINE JSValue Walker::walk(JSValue unfiltered)
                 objectStack.append(object);
                 indexStack.append(0);
                 propertyStack.append(PropertyNameArray(m_exec));
-                object->getOwnPropertyNames(m_exec, propertyStack.last());
+                object->getPropertyNames(m_exec, propertyStack.last());
                 // fallthrough
             }
             objectStartVisitMember:

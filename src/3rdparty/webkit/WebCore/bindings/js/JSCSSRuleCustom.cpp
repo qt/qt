@@ -54,7 +54,7 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, CSSRule* rule)
     if (!rule)
         return jsNull();
 
-    DOMObject* wrapper = getCachedDOMObjectWrapper(exec, rule);
+    DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), rule);
     if (wrapper)
         return wrapper;
 

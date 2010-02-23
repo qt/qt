@@ -193,8 +193,7 @@ void PlatformMessagePortChannel::postMessageToRemote(PassOwnPtr<MessagePortChann
 bool PlatformMessagePortChannel::tryGetMessageFromRemote(OwnPtr<MessagePortChannel::EventData>& result)
 {
     MutexLocker lock(m_mutex);
-    result = m_incomingQueue->tryGetMessage();
-    return result;
+    return m_incomingQueue->tryGetMessage(result);
 }
 
 bool PlatformMessagePortChannel::isConnectedTo(MessagePort* port)

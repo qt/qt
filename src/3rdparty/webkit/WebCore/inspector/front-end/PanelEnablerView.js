@@ -71,6 +71,8 @@ WebInspector.PanelEnablerView = function(identifier, headingText, disclaimerText
     this.enableButton.textContent = buttonTitle;
     this.enableButton.addEventListener("click", this._enableButtonCicked.bind(this), false);
     this.choicesForm.appendChild(this.enableButton);
+
+    window.addEventListener("resize", this._windowResized.bind(this), true);
 }
 
 WebInspector.PanelEnablerView.prototype = {
@@ -79,14 +81,7 @@ WebInspector.PanelEnablerView.prototype = {
         this.dispatchEventToListeners("enable clicked");
     },
 
-    show: function(parentElement)
-    {
-        WebInspector.View.prototype.show.call(this, parentElement);
-
-        setTimeout(this.resize.bind(this), 0);
-    },
-
-    resize: function()
+    _windowResized: function()
     {
         this.imageElement.removeStyleClass("hidden");
 

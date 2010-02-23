@@ -55,10 +55,6 @@ PassRefPtr<AccessibilityList> AccessibilityList::create(RenderObject* renderer)
 
 bool AccessibilityList::accessibilityIsIgnored() const
 {
-    // Is the platform interested in the object?
-    if (accessibilityPlatformIncludesObject() == IgnoreObject)
-        return true;
-    
     // lists don't appear on tiger/leopard on the mac
 #if ACCESSIBILITY_LISTS
     return false;
@@ -87,11 +83,7 @@ bool AccessibilityList::isOrderedList() const
 {
     if (!m_renderer)
         return false;
-
-    // ARIA says a directory is like a static table of contents, which sounds like an ordered list.
-    if (ariaRoleAttribute() == DirectoryRole)
-        return true;
-
+    
     Node* node = m_renderer->node();
     return node && node->hasTagName(olTag);    
 }

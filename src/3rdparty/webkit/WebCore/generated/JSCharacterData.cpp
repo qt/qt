@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -162,8 +162,7 @@ JSValue jsCharacterDataData(ExecState* exec, const Identifier&, const PropertySl
     JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CharacterData* imp = static_cast<CharacterData*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->data());
-    return result;
+    return jsString(exec, imp->data());
 }
 
 JSValue jsCharacterDataLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -171,8 +170,7 @@ JSValue jsCharacterDataLength(ExecState* exec, const Identifier&, const Property
     JSCharacterData* castedThis = static_cast<JSCharacterData*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CharacterData* imp = static_cast<CharacterData*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->length());
-    return result;
+    return jsNumber(exec, imp->length());
 }
 
 JSValue jsCharacterDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -187,8 +185,7 @@ void JSCharacterData::put(ExecState* exec, const Identifier& propertyName, JSVal
 
 void setJSCharacterDataData(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSCharacterData* castedThisObj = static_cast<JSCharacterData*>(thisObject);
-    CharacterData* imp = static_cast<CharacterData*>(castedThisObj->impl());
+    CharacterData* imp = static_cast<CharacterData*>(static_cast<JSCharacterData*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setData(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

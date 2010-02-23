@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -144,8 +144,7 @@ JSValue jsEntityPublicId(ExecState* exec, const Identifier&, const PropertySlot&
     JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->publicId());
-    return result;
+    return jsStringOrNull(exec, imp->publicId());
 }
 
 JSValue jsEntitySystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,8 +152,7 @@ JSValue jsEntitySystemId(ExecState* exec, const Identifier&, const PropertySlot&
     JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->systemId());
-    return result;
+    return jsStringOrNull(exec, imp->systemId());
 }
 
 JSValue jsEntityNotationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,8 +160,7 @@ JSValue jsEntityNotationName(ExecState* exec, const Identifier&, const PropertyS
     JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Entity* imp = static_cast<Entity*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->notationName());
-    return result;
+    return jsStringOrNull(exec, imp->notationName());
 }
 
 JSValue jsEntityConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

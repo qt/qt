@@ -22,7 +22,6 @@
 #include "config.h"
 #include "XMLHttpRequest.h"
 
-#include "Blob.h"
 #include "Cache.h"
 #include "CString.h"
 #include "CrossOriginAccessControl.h"
@@ -32,6 +31,7 @@
 #include "EventException.h"
 #include "EventListener.h"
 #include "EventNames.h"
+#include "File.h"
 #include "HTTPParsers.h"
 #include "InspectorTimelineAgent.h"
 #include "ResourceError.h"
@@ -59,7 +59,7 @@ namespace WebCore {
 static WTF::RefCountedLeakCounter xmlHttpRequestCounter("XMLHttpRequest");
 #endif
 
-struct XMLHttpRequestStaticData : Noncopyable {
+struct XMLHttpRequestStaticData {
     XMLHttpRequestStaticData();
     String m_proxyHeaderPrefix;
     String m_secHeaderPrefix;
@@ -253,30 +253,27 @@ void XMLHttpRequest::callReadyStateChangeListener()
 
 #if ENABLE(INSPECTOR)
     InspectorTimelineAgent* timelineAgent = InspectorTimelineAgent::retrieve(scriptExecutionContext());
-    bool callTimelineAgentOnReadyStateChange = timelineAgent && hasEventListeners(eventNames().readystatechangeEvent);
-    if (callTimelineAgentOnReadyStateChange)
+    if (timelineAgent)
         timelineAgent->willChangeXHRReadyState(m_url.string(), m_state);
 #endif
 
     dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().readystatechangeEvent));
 
 #if ENABLE(INSPECTOR)
-    if (callTimelineAgentOnReadyStateChange && (timelineAgent = InspectorTimelineAgent::retrieve(scriptExecutionContext())))
+    if (timelineAgent)
         timelineAgent->didChangeXHRReadyState();
 #endif
 
     if (m_state == DONE && !m_error) {
 #if ENABLE(INSPECTOR)
-        timelineAgent = InspectorTimelineAgent::retrieve(scriptExecutionContext());
-        bool callTimelineAgentOnLoad = timelineAgent && hasEventListeners(eventNames().loadEvent);
-        if (callTimelineAgentOnLoad)
+        if (timelineAgent)
             timelineAgent->willLoadXHR(m_url.string());
 #endif
 
         dispatchEvent(XMLHttpRequestProgressEvent::create(eventNames().loadEvent));
 
 #if ENABLE(INSPECTOR)
-        if (callTimelineAgentOnLoad && (timelineAgent = InspectorTimelineAgent::retrieve(scriptExecutionContext())))
+        if (timelineAgent)
             timelineAgent->didLoadXHR();
 #endif
     }
@@ -435,7 +432,7 @@ void XMLHttpRequest::send(const String& body, ExceptionCode& ec)
     createRequest(ec);
 }
 
-void XMLHttpRequest::send(Blob* body, ExceptionCode& ec)
+void XMLHttpRequest::send(File* body, ExceptionCode& ec)
 {
     if (!initSend(ec))
         return;
@@ -632,9 +629,8 @@ void XMLHttpRequest::dropProtection()
     // out. But it is protected from GC while loading, so this
     // can't be recouped until the load is done, so only
     // report the extra cost at that point.
-    JSC::JSGlobalData* globalData = scriptExecutionContext()->globalData();
-    if (hasCachedDOMObjectWrapper(globalData, this))
-        globalData->heap.reportExtraMemoryCost(m_responseText.size() * 2);
+    if (DOMObject* wrapper = getCachedDOMObjectWrapper(*scriptExecutionContext()->globalData(), this))
+        JSC::Heap::heap(wrapper)->reportExtraMemoryCost(m_responseText.size() * 2);
 #endif
 
     unsetPendingActivity(this);

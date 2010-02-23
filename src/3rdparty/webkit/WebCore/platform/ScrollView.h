@@ -89,13 +89,8 @@ public:
     void scrollbarModes(ScrollbarMode& horizontalMode, ScrollbarMode& verticalMode) const;
     ScrollbarMode horizontalScrollbarMode() const { ScrollbarMode horizontal, vertical; scrollbarModes(horizontal, vertical); return horizontal; }
     ScrollbarMode verticalScrollbarMode() const { ScrollbarMode horizontal, vertical; scrollbarModes(horizontal, vertical); return vertical; }
-    virtual void setCanHaveScrollbars(bool);
+    void setCanHaveScrollbars(bool flag);
     bool canHaveScrollbars() const { return horizontalScrollbarMode() != ScrollbarAlwaysOff || verticalScrollbarMode() != ScrollbarAlwaysOff; }
-
-    // By default you only receive paint events for the area that is visible. In the case of using a
-    // tiled backing store, this method can be set, so that the view paints the entire contents.
-    bool paintsEntireContents() const { return m_paintsEntireContents; }
-    void setPaintsEntireContents(bool);
 
     // Overridden by FrameView to create custom CSS scrollbars if applicable.
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
@@ -277,8 +272,6 @@ private:
     bool m_drawPanScrollIcon;
     bool m_useFixedLayout;
 
-    bool m_paintsEntireContents;
-
     void init();
     void destroy();
 
@@ -314,7 +307,7 @@ private:
 
 #if PLATFORM(GTK)
 public:
-    void setGtkAdjustments(GtkAdjustment* hadj, GtkAdjustment* vadj, bool resetValues = true);
+    void setGtkAdjustments(GtkAdjustment* hadj, GtkAdjustment* vadj);
     GtkAdjustment* m_horizontalAdjustment;
     GtkAdjustment* m_verticalAdjustment;
     void setScrollOffset(const IntSize& offset) { m_scrollOffset = offset; }

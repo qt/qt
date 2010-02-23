@@ -64,7 +64,7 @@ namespace WebCore {
     // if possible in the future.
     enum EditingBehavior { EditingMacBehavior, EditingWindowsBehavior };
 
-    class Settings : public Noncopyable {
+    class Settings {
     public:
         Settings(Page*);
 
@@ -98,8 +98,6 @@ namespace WebCore {
         void setDefaultFixedFontSize(int);
         int defaultFixedFontSize() const { return m_defaultFixedFontSize; }
 
-        // Unlike areImagesEnabled, this only suppresses the network load of
-        // the image URL.  A cached image will still be rendered if requested.
         void setLoadsImagesAutomatically(bool);
         bool loadsImagesAutomatically() const { return m_loadsImagesAutomatically; }
 
@@ -112,17 +110,11 @@ namespace WebCore {
         void setAllowUniversalAccessFromFileURLs(bool);
         bool allowUniversalAccessFromFileURLs() const { return m_allowUniversalAccessFromFileURLs; }
 
-        void setAllowFileAccessFromFileURLs(bool);
-        bool allowFileAccessFromFileURLs() const { return m_allowFileAccessFromFileURLs; }
-
         void setJavaScriptCanOpenWindowsAutomatically(bool);
         bool javaScriptCanOpenWindowsAutomatically() const { return m_javaScriptCanOpenWindowsAutomatically; }
 
         void setJavaEnabled(bool);
         bool isJavaEnabled() const { return m_isJavaEnabled; }
-
-        void setImagesEnabled(bool);
-        bool areImagesEnabled() const { return m_areImagesEnabled; }
 
         void setPluginsEnabled(bool);
         bool arePluginsEnabled() const { return m_arePluginsEnabled; }
@@ -132,6 +124,9 @@ namespace WebCore {
 
         void setLocalStorageEnabled(bool);
         bool localStorageEnabled() const { return m_localStorageEnabled; }
+
+        void setSessionStorageEnabled(bool);
+        bool sessionStorageEnabled() const { return m_sessionStorageEnabled; }
 
         void setLocalStorageQuota(unsigned);
         unsigned localStorageQuota() const { return m_localStorageQuota; }
@@ -203,10 +198,7 @@ namespace WebCore {
         
         void setDeveloperExtrasEnabled(bool);
         bool developerExtrasEnabled() const { return m_developerExtrasEnabled; }
-
-        void setFrameSetFlatteningEnabled(bool);
-        bool frameSetFlatteningEnabled() const { return m_frameSetFlatteningEnabled; }
-
+        
         void setAuthorAndUserStylesEnabled(bool);
         bool authorAndUserStylesEnabled() const { return m_authorAndUserStylesEnabled; }
         
@@ -264,16 +256,10 @@ namespace WebCore {
         void setAcceleratedCompositingEnabled(bool);
         bool acceleratedCompositingEnabled() const { return m_acceleratedCompositingEnabled; }
 
-        void setShowDebugBorders(bool);
-        bool showDebugBorders() const { return m_showDebugBorders; }
-
-        void setShowRepaintCounter(bool);
-        bool showRepaintCounter() const { return m_showRepaintCounter; }
-
         void setExperimentalNotificationsEnabled(bool);
         bool experimentalNotificationsEnabled() const { return m_experimentalNotificationsEnabled; }
 
-#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
         static void setShouldUseHighResolutionTimers(bool);
         static bool shouldUseHighResolutionTimers() { return gShouldUseHighResolutionTimers; }
 #endif
@@ -283,12 +269,6 @@ namespace WebCore {
 
         void setWebGLEnabled(bool);
         bool webGLEnabled() const { return m_webGLEnabled; }
-
-        void setGeolocationEnabled(bool);
-        bool geolocationEnabled() const { return m_geolocationEnabled; }
-
-        void setLoadDeferringEnabled(bool);
-        bool loadDeferringEnabled() const { return m_loadDeferringEnabled; }
 
     private:
         Page* m_page;
@@ -316,14 +296,13 @@ namespace WebCore {
         bool m_loadsImagesAutomatically : 1;
         bool m_privateBrowsingEnabled : 1;
         bool m_caretBrowsingEnabled : 1;
-        bool m_areImagesEnabled : 1;
         bool m_arePluginsEnabled : 1;
         bool m_databasesEnabled : 1;
         bool m_localStorageEnabled : 1;
+        bool m_sessionStorageEnabled : 1;
         bool m_isJavaScriptEnabled : 1;
         bool m_isWebSecurityEnabled : 1;
         bool m_allowUniversalAccessFromFileURLs: 1;
-        bool m_allowFileAccessFromFileURLs: 1;
         bool m_javaScriptCanOpenWindowsAutomatically : 1;
         bool m_shouldPrintBackgrounds : 1;
         bool m_textAreasAreResizable : 1;
@@ -344,7 +323,6 @@ namespace WebCore {
         bool m_authorAndUserStylesEnabled : 1;
         bool m_needsSiteSpecificQuirks : 1;
         unsigned m_fontRenderingMode : 1;
-        bool m_frameSetFlatteningEnabled : 1;
         bool m_webArchiveDebugModeEnabled : 1;
         bool m_localFileContentSniffingEnabled : 1;
         bool m_inApplicationChromeMode : 1;
@@ -358,17 +336,13 @@ namespace WebCore {
         bool m_downloadableBinaryFontsEnabled : 1;
         bool m_xssAuditorEnabled : 1;
         bool m_acceleratedCompositingEnabled : 1;
-        bool m_showDebugBorders : 1;
-        bool m_showRepaintCounter : 1;
         bool m_experimentalNotificationsEnabled : 1;
         bool m_webGLEnabled : 1;
-        bool m_geolocationEnabled : 1;
-        bool m_loadDeferringEnabled : 1;
 
 #if USE(SAFARI_THEME)
         static bool gShouldPaintNativeControls;
 #endif
-#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
+#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
         static bool gShouldUseHighResolutionTimers;
 #endif
     };

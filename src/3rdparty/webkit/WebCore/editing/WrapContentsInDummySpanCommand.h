@@ -44,8 +44,6 @@ private:
 
     virtual void doApply();
     virtual void doUnapply();
-    virtual void doReapply();
-    void executeApply();
 
     RefPtr<Element> m_element;
     RefPtr<HTMLElement> m_dummySpan;

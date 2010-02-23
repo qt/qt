@@ -26,8 +26,6 @@
 
 #include "KURLHash.h"
 #include "StringHash.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
 
 namespace WebCore {
 

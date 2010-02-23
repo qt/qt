@@ -31,7 +31,6 @@
 #include "config.h"
 #include "SocketStreamHandleBase.h"
 
-#include "SocketStreamHandle.h"
 #include "SocketStreamHandleClient.h"
 
 namespace WebCore {
@@ -65,7 +64,7 @@ bool SocketStreamHandleBase::send(const char* data, int length)
     int bytesWritten = 0;
     if (m_state == Open)
         bytesWritten = platformSend(data, length);
-    if (bytesWritten < 0)
+    if (bytesWritten <= 0)
         return false;
     if (m_buffer.size() + length - bytesWritten > bufferSize) {
         // FIXME: report error to indicate that buffer has no more space.
@@ -78,8 +77,6 @@ bool SocketStreamHandleBase::send(const char* data, int length)
 
 void SocketStreamHandleBase::close()
 {
-    RefPtr<SocketStreamHandle> protect(static_cast<SocketStreamHandle*>(this)); // platformClose calls the client, which may make the handle get deallocated immediately.
-
     platformClose();
     m_state = Closed;
 }

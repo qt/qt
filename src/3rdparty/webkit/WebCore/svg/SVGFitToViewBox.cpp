@@ -23,7 +23,6 @@
 #if ENABLE(SVG)
 #include "SVGFitToViewBox.h"
 
-#include "AffineTransform.h"
 #include "Attr.h"
 #include "Document.h"
 #include "FloatRect.h"
@@ -32,8 +31,11 @@
 #include "SVGParserUtilities.h"
 #include "SVGPreserveAspectRatio.h"
 #include "StringImpl.h"
+#include "TransformationMatrix.h"
 
 namespace WebCore {
+
+char SVGFitToViewBoxIdentifier[] = "SVGFitToViewBox";
 
 SVGFitToViewBox::SVGFitToViewBox()
 {
@@ -75,12 +77,13 @@ bool SVGFitToViewBox::parseViewBox(Document* doc, const UChar*& c, const UChar* 
     return true;
 }
 
-AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, const SVGPreserveAspectRatio& preserveAspectRatio, float viewWidth, float viewHeight)
+TransformationMatrix SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, SVGPreserveAspectRatio* preserveAspectRatio, float viewWidth, float viewHeight)
 {
+    ASSERT(preserveAspectRatio);
     if (!viewBoxRect.width() || !viewBoxRect.height())
-        return AffineTransform();
+        return TransformationMatrix();
 
-    return preserveAspectRatio.getCTM(viewBoxRect.x(), viewBoxRect.y(), viewBoxRect.width(), viewBoxRect.height(), 0, 0, viewWidth, viewHeight);
+    return preserveAspectRatio->getCTM(viewBoxRect.x(), viewBoxRect.y(), viewBoxRect.width(), viewBoxRect.height(), 0, 0, viewWidth, viewHeight);
 }
 
 bool SVGFitToViewBox::parseMappedAttribute(Document* document, MappedAttribute* attr)
@@ -93,7 +96,9 @@ bool SVGFitToViewBox::parseMappedAttribute(Document* document, MappedAttribute* 
             setViewBoxBaseValue(FloatRect(x, y, w, h));
         return true;
     } else if (attr->name() == SVGNames::preserveAspectRatioAttr) {
-        SVGPreserveAspectRatio::parsePreserveAspectRatio(this, attr->value());
+        const UChar* c = attr->value().characters();
+        const UChar* end = c + attr->value().length();
+        preserveAspectRatioBaseValue()->parsePreserveAspectRatio(c, end);
         return true;
     }
 

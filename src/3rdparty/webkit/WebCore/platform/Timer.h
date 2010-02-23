@@ -101,12 +101,6 @@ private:
     TimerFiredFunction m_function;
 };
 
-inline bool TimerBase::isActive() const
-{
-    ASSERT(m_thread == currentThread());
-    return m_nextFireTime;
-}
-
 }
 
 #endif

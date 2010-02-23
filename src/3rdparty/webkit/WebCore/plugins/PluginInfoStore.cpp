@@ -27,7 +27,6 @@
 #include "PluginInfoStore.h"
 
 #include "KURL.h"
-#include "Page.h"
 #include "PluginData.h"
 #include "PluginDatabase.h"
 #include "PluginPackage.h"
@@ -94,7 +93,11 @@ bool PluginInfoStore::supportsMIMEType(const WebCore::String& mimeType)
 
 void refreshPlugins(bool reloadOpenPages)
 {
-    Page::refreshPlugins(reloadOpenPages);
+    PluginDatabase::installedPlugins()->refresh();
+
+    if (reloadOpenPages) {
+        // FIXME: reload open pages
+    }
 }
 
 }

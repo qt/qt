@@ -28,8 +28,6 @@
 #ifndef DatabaseAuthorizer_h
 #define DatabaseAuthorizer_h
 
-#include "StringHash.h"
-#include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/Threading.h>
 
@@ -96,15 +94,12 @@ public:
 
 private:
     DatabaseAuthorizer();
-    void addWhitelistedFunctions();
     int denyBasedOnTableName(const String&);
 
     bool m_securityEnabled : 1;
     bool m_lastActionWasInsert : 1;
     bool m_lastActionChangedDatabase : 1;
     bool m_readOnly : 1;
-
-    HashSet<String, CaseFoldingHash> m_whitelistedFunctions;
 };
 
 } // namespace WebCore

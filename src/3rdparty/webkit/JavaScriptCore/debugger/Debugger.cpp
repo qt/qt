@@ -67,9 +67,8 @@ void Debugger::recompileAllJSFunctions(JSGlobalData* globalData)
     FunctionExecutableSet functionExecutables;
     SourceProviderMap sourceProviders;
 
-    LiveObjectIterator it = globalData->heap.primaryHeapBegin();
-    LiveObjectIterator heapEnd = globalData->heap.primaryHeapEnd();
-    for ( ; it != heapEnd; ++it) {
+    Heap::iterator heapEnd = globalData->heap.primaryHeapEnd();
+    for (Heap::iterator it = globalData->heap.primaryHeapBegin(); it != heapEnd; ++it) {
         if (!(*it)->inherits(&JSFunction::info))
             continue;
 
@@ -94,7 +93,7 @@ void Debugger::recompileAllJSFunctions(JSGlobalData* globalData)
     // JavaScript in the inspector.
     SourceProviderMap::const_iterator end = sourceProviders.end();
     for (SourceProviderMap::const_iterator iter = sourceProviders.begin(); iter != end; ++iter)
-        sourceParsed(iter->second, SourceCode(iter->first), -1, UString());
+        sourceParsed(iter->second, SourceCode(iter->first), -1, 0);
 }
 
 JSValue evaluateInGlobalCallFrame(const UString& script, JSValue& exception, JSGlobalObject* globalObject)

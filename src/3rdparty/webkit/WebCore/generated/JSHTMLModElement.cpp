@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -144,8 +144,7 @@ JSValue jsHTMLModElementCite(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLModElement* castedThis = static_cast<JSHTMLModElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLModElement* imp = static_cast<HTMLModElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->cite());
-    return result;
+    return jsString(exec, imp->cite());
 }
 
 JSValue jsHTMLModElementDateTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,8 +152,7 @@ JSValue jsHTMLModElementDateTime(ExecState* exec, const Identifier&, const Prope
     JSHTMLModElement* castedThis = static_cast<JSHTMLModElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLModElement* imp = static_cast<HTMLModElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->dateTime());
-    return result;
+    return jsString(exec, imp->dateTime());
 }
 
 JSValue jsHTMLModElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,15 +167,13 @@ void JSHTMLModElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSHTMLModElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLModElement* castedThisObj = static_cast<JSHTMLModElement*>(thisObject);
-    HTMLModElement* imp = static_cast<HTMLModElement*>(castedThisObj->impl());
+    HTMLModElement* imp = static_cast<HTMLModElement*>(static_cast<JSHTMLModElement*>(thisObject)->impl());
     imp->setCite(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLModElementDateTime(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLModElement* castedThisObj = static_cast<JSHTMLModElement*>(thisObject);
-    HTMLModElement* imp = static_cast<HTMLModElement*>(castedThisObj->impl());
+    HTMLModElement* imp = static_cast<HTMLModElement*>(static_cast<JSHTMLModElement*>(thisObject)->impl());
     imp->setDateTime(valueToStringWithNullCheck(exec, value));
 }
 

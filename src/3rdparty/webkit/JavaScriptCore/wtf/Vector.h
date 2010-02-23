@@ -24,7 +24,6 @@
 #include "FastAllocBase.h"
 #include "Noncopyable.h"
 #include "NotFound.h"
-#include "ValueCheck.h"
 #include "VectorTraits.h"
 #include <limits>
 #include <utility>
@@ -72,7 +71,7 @@ namespace WTF {
     }
 
     template <bool needsDestruction, typename T>
-    struct VectorDestructor;
+    class VectorDestructor;
 
     template<typename T>
     struct VectorDestructor<false, T>
@@ -91,7 +90,7 @@ namespace WTF {
     };
 
     template <bool needsInitialization, bool canInitializeWithMemset, typename T>
-    struct VectorInitializer;
+    class VectorInitializer;
 
     template<bool ignore, typename T>
     struct VectorInitializer<false, ignore, T>
@@ -119,7 +118,7 @@ namespace WTF {
     };
 
     template <bool canMoveWithMemcpy, typename T>
-    struct VectorMover;
+    class VectorMover;
 
     template<typename T>
     struct VectorMover<false, T>
@@ -163,7 +162,7 @@ namespace WTF {
     };
 
     template <bool canCopyWithMemcpy, typename T>
-    struct VectorCopier;
+    class VectorCopier;
 
     template<typename T>
     struct VectorCopier<false, T>
@@ -188,7 +187,7 @@ namespace WTF {
     };
 
     template <bool canFillWithMemset, typename T>
-    struct VectorFiller;
+    class VectorFiller;
 
     template<typename T>
     struct VectorFiller<false, T>
@@ -213,7 +212,7 @@ namespace WTF {
     };
     
     template<bool canCompareWithMemcmp, typename T>
-    struct VectorComparer;
+    class VectorComparer;
     
     template<typename T>
     struct VectorComparer<false, T>
@@ -586,8 +585,6 @@ namespace WTF {
             std::swap(m_size, other.m_size);
             m_buffer.swap(other.m_buffer);
         }
-
-        void checkConsistency();
 
     private:
         void expandCapacity(size_t newMinCapacity);
@@ -990,15 +987,6 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity>
-    inline void Vector<T, inlineCapacity>::checkConsistency()
-    {
-#if !ASSERT_DISABLED
-        for (size_t i = 0; i < size(); ++i)
-            ValueCheck<T>::checkConsistency(at(i));
-#endif
-    }
-
-    template<typename T, size_t inlineCapacity>
     void deleteAllValues(const Vector<T, inlineCapacity>& collection)
     {
         typedef typename Vector<T, inlineCapacity>::const_iterator iterator;
@@ -1028,15 +1016,6 @@ namespace WTF {
         return !(a == b);
     }
 
-#if !ASSERT_DISABLED
-    template<typename T> struct ValueCheck<Vector<T> > {
-        typedef Vector<T> TraitType;
-        static void checkConsistency(const Vector<T>& v)
-        {
-            v.checkConsistency();
-        }
-    };
-#endif
 
 } // namespace WTF
 

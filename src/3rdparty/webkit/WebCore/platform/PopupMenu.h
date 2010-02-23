@@ -42,13 +42,15 @@ typedef struct HDC__* HDC;
 typedef struct HBITMAP__* HBITMAP;
 #elif PLATFORM(QT)
 namespace WebCore {
-class QtAbstractWebPopup;
+    class QWebPopup;
 }
+QT_BEGIN_NAMESPACE
+class QGraphicsProxyWidget;
+QT_END_NAMESPACE
 #elif PLATFORM(GTK)
 typedef struct _GtkMenu GtkMenu;
 typedef struct _GtkMenuItem GtkMenuItem;
 typedef struct _GtkWidget GtkWidget;
-#include "GRefPtrGtk.h"
 #include <wtf/HashMap.h>
 #include <glib.h>
 #elif PLATFORM(WX)
@@ -145,7 +147,10 @@ private:
 
     RetainPtr<NSPopUpButtonCell> m_popup;
 #elif PLATFORM(QT)
-    QtAbstractWebPopup* m_popup;
+    void clear();
+    void populate(const IntRect&);
+    QWebPopup* m_popup;
+    QGraphicsProxyWidget* m_proxy;
 #elif PLATFORM(WIN)
     // ScrollBarClient
     virtual void valueChanged(Scrollbar*);
@@ -174,7 +179,7 @@ private:
     bool m_showPopup;
 #elif PLATFORM(GTK)
     IntPoint m_menuPosition;
-    GRefPtr<GtkMenu> m_popup;
+    GtkMenu* m_popup;
     HashMap<GtkWidget*, int> m_indexMap;
     static void menuItemActivated(GtkMenuItem* item, PopupMenu*);
     static void menuUnmapped(GtkWidget*, PopupMenu*);

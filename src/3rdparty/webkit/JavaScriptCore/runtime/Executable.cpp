@@ -30,7 +30,6 @@
 #include "CodeBlock.h"
 #include "JIT.h"
 #include "Parser.h"
-#include "StringBuilder.h"
 #include "Vector.h"
 
 namespace JSC {
@@ -266,13 +265,14 @@ PassRefPtr<FunctionExecutable> FunctionExecutable::fromGlobalCode(const Identifi
 UString FunctionExecutable::paramString() const
 {
     FunctionParameters& parameters = *m_parameters;
-    StringBuilder builder;
+    UString s("");
     for (size_t pos = 0; pos < parameters.size(); ++pos) {
-        if (!builder.isEmpty())
-            builder.append(", ");
-        builder.append(parameters[pos].ustring());
+        if (!s.isEmpty())
+            s += ", ";
+        s += parameters[pos].ustring();
     }
-    return builder.build();
+
+    return s;
 }
 
 };

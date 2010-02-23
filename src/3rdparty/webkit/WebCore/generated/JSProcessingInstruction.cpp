@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -146,8 +146,7 @@ JSValue jsProcessingInstructionTarget(ExecState* exec, const Identifier&, const 
     JSProcessingInstruction* castedThis = static_cast<JSProcessingInstruction*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ProcessingInstruction* imp = static_cast<ProcessingInstruction*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->target());
-    return result;
+    return jsStringOrNull(exec, imp->target());
 }
 
 JSValue jsProcessingInstructionData(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -155,8 +154,7 @@ JSValue jsProcessingInstructionData(ExecState* exec, const Identifier&, const Pr
     JSProcessingInstruction* castedThis = static_cast<JSProcessingInstruction*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ProcessingInstruction* imp = static_cast<ProcessingInstruction*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->data());
-    return result;
+    return jsStringOrNull(exec, imp->data());
 }
 
 JSValue jsProcessingInstructionSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -164,8 +162,7 @@ JSValue jsProcessingInstructionSheet(ExecState* exec, const Identifier&, const P
     JSProcessingInstruction* castedThis = static_cast<JSProcessingInstruction*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ProcessingInstruction* imp = static_cast<ProcessingInstruction*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
 }
 
 JSValue jsProcessingInstructionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,8 +177,7 @@ void JSProcessingInstruction::put(ExecState* exec, const Identifier& propertyNam
 
 void setJSProcessingInstructionData(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSProcessingInstruction* castedThisObj = static_cast<JSProcessingInstruction*>(thisObject);
-    ProcessingInstruction* imp = static_cast<ProcessingInstruction*>(castedThisObj->impl());
+    ProcessingInstruction* imp = static_cast<ProcessingInstruction*>(static_cast<JSProcessingInstruction*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setData(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

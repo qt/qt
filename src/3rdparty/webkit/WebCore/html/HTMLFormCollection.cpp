@@ -110,8 +110,7 @@ Element* HTMLFormCollection::getNamedFormItem(const QualifiedName& attrName, con
     bool foundInputElements = false;
     for (unsigned i = 0; i < form->formElements.size(); ++i) {
         HTMLFormControlElement* e = form->formElements[i];
-        const QualifiedName& attributeName = (attrName == idAttr) ? e->idAttributeName() : attrName;
-        if (e->isEnumeratable() && e->getAttribute(attributeName) == name) {
+        if (e->isEnumeratable() && e->getAttribute(attrName) == name) {
             foundInputElements = true;
             if (!duplicateNumber)
                 return e;
@@ -122,8 +121,7 @@ Element* HTMLFormCollection::getNamedFormItem(const QualifiedName& attrName, con
     if (!foundInputElements) {
         for (unsigned i = 0; i < form->imgElements.size(); ++i) {
             HTMLImageElement* e = form->imgElements[i];
-            const QualifiedName& attributeName = (attrName == idAttr) ? e->idAttributeName() : attrName;
-            if (e->getAttribute(attributeName) == name) {
+            if (e->getAttribute(attrName) == name) {
                 if (!duplicateNumber)
                     return e;
                 --duplicateNumber;
@@ -173,10 +171,10 @@ Node* HTMLFormCollection::nextNamedItem(const AtomicString& name) const
     // The nextNamedItemInternal function can return the same item twice if it has
     // both an id and name that are equal to the name parameter. So this function
     // checks if we are on the nameAttr half of the iteration and skips over any
-    // that also have the same idAttributeName.
+    // that also have the same idAttr.
     Element* impl = nextNamedItemInternal(name);
     if (m_idsDone)
-        while (impl && impl->getAttribute(impl->idAttributeName()) == name)
+        while (impl && impl->getAttribute(idAttr) == name)
             impl = nextNamedItemInternal(name);
     return impl;
 }
@@ -193,7 +191,7 @@ void HTMLFormCollection::updateNameCache() const
     for (unsigned i = 0; i < f->formElements.size(); ++i) {
         HTMLFormControlElement* e = f->formElements[i];
         if (e->isEnumeratable()) {
-            const AtomicString& idAttrVal = e->getAttribute(e->idAttributeName());
+            const AtomicString& idAttrVal = e->getAttribute(idAttr);
             const AtomicString& nameAttrVal = e->getAttribute(nameAttr);
             if (!idAttrVal.isEmpty()) {
                 // add to id cache
@@ -220,7 +218,7 @@ void HTMLFormCollection::updateNameCache() const
 
     for (unsigned i = 0; i < f->imgElements.size(); ++i) {
         HTMLImageElement* e = f->imgElements[i];
-        const AtomicString& idAttrVal = e->getAttribute(e->idAttributeName());
+        const AtomicString& idAttrVal = e->getAttribute(idAttr);
         const AtomicString& nameAttrVal = e->getAttribute(nameAttr);
         if (!idAttrVal.isEmpty() && !foundInputElements.contains(idAttrVal.impl())) {
             // add to id cache

@@ -101,7 +101,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -186,8 +186,7 @@ JSValue jsSVGFEBlendElementIn1(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementIn2(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -196,8 +195,7 @@ JSValue jsSVGFEBlendElementIn2(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in2Animated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -206,8 +204,7 @@ JSValue jsSVGFEBlendElementMode(ExecState* exec, const Identifier&, const Proper
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->modeAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -216,8 +213,7 @@ JSValue jsSVGFEBlendElementX(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -226,8 +222,7 @@ JSValue jsSVGFEBlendElementY(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -236,8 +231,7 @@ JSValue jsSVGFEBlendElementWidth(ExecState* exec, const Identifier&, const Prope
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -246,8 +240,7 @@ JSValue jsSVGFEBlendElementHeight(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -256,8 +249,7 @@ JSValue jsSVGFEBlendElementResult(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -266,8 +258,7 @@ JSValue jsSVGFEBlendElementClassName(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEBlendElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -275,8 +266,7 @@ JSValue jsSVGFEBlendElementStyle(ExecState* exec, const Identifier&, const Prope
     JSSVGFEBlendElement* castedThis = static_cast<JSSVGFEBlendElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEBlendElement* imp = static_cast<SVGFEBlendElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsSVGFEBlendElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -89,7 +89,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -173,8 +173,7 @@ JSValue jsSVGTextPathElementStartOffset(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->startOffsetAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementMethod(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -183,8 +182,7 @@ JSValue jsSVGTextPathElementMethod(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->methodAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementSpacing(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -193,8 +191,7 @@ JSValue jsSVGTextPathElementSpacing(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->spacingAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,8 +200,7 @@ JSValue jsSVGTextPathElementHref(ExecState* exec, const Identifier&, const Prope
     UNUSED_PARAM(exec);
     SVGTextPathElement* imp = static_cast<SVGTextPathElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextPathElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

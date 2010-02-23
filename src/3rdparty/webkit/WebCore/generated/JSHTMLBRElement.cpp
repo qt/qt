@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -144,8 +144,7 @@ JSValue jsHTMLBRElementClear(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLBRElement* castedThis = static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLBRElement* imp = static_cast<HTMLBRElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::clearAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::clearAttr));
 }
 
 JSValue jsHTMLBRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -160,8 +159,7 @@ void JSHTMLBRElement::put(ExecState* exec, const Identifier& propertyName, JSVal
 
 void setJSHTMLBRElementClear(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLBRElement* castedThisObj = static_cast<JSHTMLBRElement*>(thisObject);
-    HTMLBRElement* imp = static_cast<HTMLBRElement*>(castedThisObj->impl());
+    HTMLBRElement* imp = static_cast<HTMLBRElement*>(static_cast<JSHTMLBRElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::clearAttr, valueToStringWithNullCheck(exec, value));
 }
 

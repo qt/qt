@@ -33,8 +33,7 @@ module xml {
     // http://bugs.webkit.org/show_bug.cgi?id=5446
 
     interface [
-        Conditional=XSLT,
-        CustomConstructor
+        Conditional=XSLT
     ] XSLTProcessor {
         
         [Custom] void importStylesheet(in Node stylesheet);

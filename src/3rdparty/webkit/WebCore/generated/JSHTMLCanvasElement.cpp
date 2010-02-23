@@ -22,6 +22,7 @@
 #include "JSHTMLCanvasElement.h"
 
 #include "HTMLCanvasElement.h"
+#include "JSCanvasRenderingContext2D.h"
 #include "KURL.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
@@ -79,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -158,8 +159,7 @@ JSValue jsHTMLCanvasElementWidth(ExecState* exec, const Identifier&, const Prope
     JSHTMLCanvasElement* castedThis = static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->width());
-    return result;
+    return jsNumber(exec, imp->width());
 }
 
 JSValue jsHTMLCanvasElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -167,8 +167,7 @@ JSValue jsHTMLCanvasElementHeight(ExecState* exec, const Identifier&, const Prop
     JSHTMLCanvasElement* castedThis = static_cast<JSHTMLCanvasElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->height());
-    return result;
+    return jsNumber(exec, imp->height());
 }
 
 JSValue jsHTMLCanvasElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -183,15 +182,13 @@ void JSHTMLCanvasElement::put(ExecState* exec, const Identifier& propertyName, J
 
 void setJSHTMLCanvasElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLCanvasElement* castedThisObj = static_cast<JSHTMLCanvasElement*>(thisObject);
-    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(castedThisObj->impl());
+    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(static_cast<JSHTMLCanvasElement*>(thisObject)->impl());
     imp->setWidth(value.toInt32(exec));
 }
 
 void setJSHTMLCanvasElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLCanvasElement* castedThisObj = static_cast<JSHTMLCanvasElement*>(thisObject);
-    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(castedThisObj->impl());
+    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(static_cast<JSHTMLCanvasElement*>(thisObject)->impl());
     imp->setHeight(value.toInt32(exec));
 }
 
@@ -222,7 +219,12 @@ JSValue JSC_HOST_CALL jsHTMLCanvasElementPrototypeFunctionGetContext(ExecState* 
     if (!thisValue.inherits(&JSHTMLCanvasElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLCanvasElement* castedThisObj = static_cast<JSHTMLCanvasElement*>(asObject(thisValue));
-    return castedThisObj->getContext(exec, args);
+    HTMLCanvasElement* imp = static_cast<HTMLCanvasElement*>(castedThisObj->impl());
+    const UString& contextId = args.at(0).toString(exec);
+
+
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getContext(contextId)));
+    return result;
 }
 
 

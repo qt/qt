@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -147,8 +147,7 @@ JSValue jsWebKitCSSKeyframeRuleKeyText(ExecState* exec, const Identifier&, const
     JSWebKitCSSKeyframeRule* castedThis = static_cast<JSWebKitCSSKeyframeRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitCSSKeyframeRule* imp = static_cast<WebKitCSSKeyframeRule*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->keyText());
-    return result;
+    return jsString(exec, imp->keyText());
 }
 
 JSValue jsWebKitCSSKeyframeRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,8 +155,7 @@ JSValue jsWebKitCSSKeyframeRuleStyle(ExecState* exec, const Identifier&, const P
     JSWebKitCSSKeyframeRule* castedThis = static_cast<JSWebKitCSSKeyframeRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitCSSKeyframeRule* imp = static_cast<WebKitCSSKeyframeRule*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsWebKitCSSKeyframeRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,8 +170,7 @@ void JSWebKitCSSKeyframeRule::put(ExecState* exec, const Identifier& propertyNam
 
 void setJSWebKitCSSKeyframeRuleKeyText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSWebKitCSSKeyframeRule* castedThisObj = static_cast<JSWebKitCSSKeyframeRule*>(thisObject);
-    WebKitCSSKeyframeRule* imp = static_cast<WebKitCSSKeyframeRule*>(castedThisObj->impl());
+    WebKitCSSKeyframeRule* imp = static_cast<WebKitCSSKeyframeRule*>(static_cast<JSWebKitCSSKeyframeRule*>(thisObject)->impl());
     imp->setKeyText(value.toString(exec));
 }
 

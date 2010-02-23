@@ -114,33 +114,33 @@ void CanvasStyle::applyStrokeColor(GraphicsContext* context)
         case ColorString: {
             Color c = Color(m_color);
             if (c.isValid()) {
-                context->setStrokeColor(c.rgb(), DeviceColorSpace);
+                context->setStrokeColor(c.rgb());
                 break;
             }
             RGBA32 color = 0; // default is transparent black
             if (CSSParser::parseColor(color, m_color))
-                context->setStrokeColor(color, DeviceColorSpace);
+                context->setStrokeColor(color);
             break;
         }
         case ColorStringWithAlpha: {
             Color c = Color(m_color);
             if (c.isValid()) {
-                context->setStrokeColor(colorWithOverrideAlpha(c.rgb(), m_alpha), DeviceColorSpace);
+                context->setStrokeColor(colorWithOverrideAlpha(c.rgb(), m_alpha));
                 break;
             }
             RGBA32 color = 0; // default is transparent black
             if (CSSParser::parseColor(color, m_color))
-                context->setStrokeColor(colorWithOverrideAlpha(color, m_alpha), DeviceColorSpace);
+                context->setStrokeColor(colorWithOverrideAlpha(color, m_alpha));
             break;
         }
         case GrayLevel:
             // We're only supporting 255 levels of gray here.  Since this isn't
             // even part of HTML5, I don't expect anyone will care.  If they do
             // we'll make a fancier Color abstraction.
-            context->setStrokeColor(Color(m_grayLevel, m_grayLevel, m_grayLevel, m_alpha), DeviceColorSpace);
+            context->setStrokeColor(Color(m_grayLevel, m_grayLevel, m_grayLevel, m_alpha));
             break;
         case RGBA:
-            context->setStrokeColor(Color(m_red, m_green, m_blue, m_alpha), DeviceColorSpace);
+            context->setStrokeColor(Color(m_red, m_green, m_blue, m_alpha));
             break;
         case CMYKA: {
             // FIXME: Do this through platform-independent GraphicsContext API.
@@ -154,7 +154,7 @@ void CanvasStyle::applyStrokeColor(GraphicsContext* context)
             currentPen.setColor(clr);
             context->platformContext()->setPen(currentPen);
 #else
-            context->setStrokeColor(Color(m_cyan, m_magenta, m_yellow, m_black, m_alpha), DeviceColorSpace);
+            context->setStrokeColor(Color(m_cyan, m_magenta, m_yellow, m_black, m_alpha));
 #endif
             break;
         }
@@ -175,33 +175,33 @@ void CanvasStyle::applyFillColor(GraphicsContext* context)
         case ColorString: {
             Color c = Color(m_color);
             if (c.isValid()) {
-                context->setFillColor(c.rgb(), DeviceColorSpace);
+                context->setFillColor(c.rgb());
                 break;
             }
             RGBA32 rgba = 0; // default is transparent black
             if (CSSParser::parseColor(rgba, m_color))
-                context->setFillColor(rgba, DeviceColorSpace);
+                context->setFillColor(rgba);
             break;
         }
         case ColorStringWithAlpha: {
             Color c = Color(m_color);
             if (c.isValid()) {
-                context->setFillColor(colorWithOverrideAlpha(c.rgb(), m_alpha), DeviceColorSpace);
+                context->setFillColor(colorWithOverrideAlpha(c.rgb(), m_alpha));
                 break;
             }
             RGBA32 color = 0; // default is transparent black
             if (CSSParser::parseColor(color, m_color))
-                context->setFillColor(colorWithOverrideAlpha(color, m_alpha), DeviceColorSpace);
+                context->setFillColor(colorWithOverrideAlpha(color, m_alpha));
             break;
         }
         case GrayLevel:
             // We're only supporting 255 levels of gray here.  Since this isn't
             // even part of HTML5, I don't expect anyone will care.  If they do
             // we'll make a fancier Color abstraction.
-            context->setFillColor(Color(m_grayLevel, m_grayLevel, m_grayLevel, m_alpha), DeviceColorSpace);
+            context->setFillColor(Color(m_grayLevel, m_grayLevel, m_grayLevel, m_alpha));
             break;
         case RGBA:
-            context->setFillColor(Color(m_red, m_green, m_blue, m_alpha), DeviceColorSpace);
+            context->setFillColor(Color(m_red, m_green, m_blue, m_alpha));
             break;
         case CMYKA: {
             // FIXME: Do this through platform-independent GraphicsContext API.
@@ -215,7 +215,7 @@ void CanvasStyle::applyFillColor(GraphicsContext* context)
             currentBrush.setColor(clr);
             context->platformContext()->setBrush(currentBrush);
 #else
-            context->setFillColor(Color(m_cyan, m_magenta, m_yellow, m_black, m_alpha), DeviceColorSpace);
+            context->setFillColor(Color(m_cyan, m_magenta, m_yellow, m_black, m_alpha));
 #endif
             break;
         }

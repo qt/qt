@@ -3,6 +3,8 @@
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
                   2007 Apple Inc.  All rights reserved.
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -280,16 +282,15 @@ float SVGLength::PercentageOfViewport(float value, const SVGElement* context, SV
     float width = 0.0f, height = 0.0f;
     SVGElement* viewportElement = context->viewportElement();
 
-    // PercentageOfViewport() is used to resolve all relative-positioned values within a SVG document (fragment)
     Document* doc = context->document();
     if (doc->documentElement() == context) {
-        // Resolve value against outermost <svg> element
-        if (RenderView* view = toRenderView(doc->renderer())) {
-            width = view->viewWidth();
-            height = view->viewHeight();
+        // We have to ask the canvas for the full "canvas size"...
+        RenderView* view = toRenderView(doc->renderer());
+        if (view && view->frameView()) {
+            width = view->frameView()->visibleWidth(); // TODO: recheck!
+            height = view->frameView()->visibleHeight(); // TODO: recheck!
          }
     } else if (viewportElement && viewportElement->isSVG()) {
-        // Resolve value against nearest viewport element (common case: inner <svg> elements)
         const SVGSVGElement* svg = static_cast<const SVGSVGElement*>(viewportElement);
         if (svg->hasAttribute(SVGNames::viewBoxAttr)) {
             width = svg->viewBox().width();
@@ -299,7 +300,6 @@ float SVGLength::PercentageOfViewport(float value, const SVGElement* context, SV
             height = svg->height().value(svg);
         }
     } else if (context->parent() && !context->parent()->isSVGElement()) {
-        // Resolve value against enclosing non-SVG RenderBox
         if (RenderObject* renderer = context->renderer()) {
             if (renderer->isBox()) {
                 RenderBox* box = toRenderBox(renderer);
@@ -321,4 +321,6 @@ float SVGLength::PercentageOfViewport(float value, const SVGElement* context, SV
 
 }
 
-#endif
+#endif // ENABLE(SVG)
+
+// vim:ts=4:noet

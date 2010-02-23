@@ -4,7 +4,6 @@
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
  *           (C) 2004 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -26,7 +25,6 @@
 #ifndef RenderObject_h
 #define RenderObject_h
 
-#include "AffineTransform.h"
 #include "CachedResourceClient.h"
 #include "Document.h"
 #include "Element.h"
@@ -53,10 +51,6 @@ class RenderLayer;
 class RenderTheme;
 class TransformState;
 class VisiblePosition;
-#if ENABLE(SVG)
-class RenderSVGResource;
-class SVGRenderBase;
-#endif
 
 /*
  *  The painting of a layer occurs in three distinct phases.  Each phase involves
@@ -82,13 +76,11 @@ enum PaintPhase {
     PaintPhaseMask
 };
 
-enum PaintBehaviorFlags {
-    PaintBehaviorNormal = 0,
-    PaintBehaviorSelectionOnly = 1 << 0,
-    PaintBehaviorForceBlackText = 1 << 1,
-    PaintBehaviorFlattenCompositingLayers = 1 << 2
+enum PaintRestriction {
+    PaintRestrictionNone,
+    PaintRestrictionSelectionOnly,
+    PaintRestrictionSelectionOnlyBlackText
 };
-typedef unsigned PaintBehavior;
 
 enum HitTestFilter {
     HitTestAll,
@@ -236,12 +228,6 @@ private:
 public:
 #ifndef NDEBUG
     void showTreeForThis() const;
-
-    void showRenderObject() const;
-    // We don't make printedCharacters an optional parameter so that
-    // showRenderObject can be called from gdb easily.
-    void showRenderObject(int printedCharacters) const;
-    void showRenderTreeAndMark(const RenderObject* markedObject1 = 0, const char* markedLabel1 = 0, const RenderObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
 #endif
 
     static RenderObject* createObject(Node*, RenderStyle*);
@@ -265,9 +251,7 @@ public:
     virtual bool isBlockFlow() const { return false; }
     virtual bool isBoxModelObject() const { return false; }
     virtual bool isCounter() const { return false; }
-    virtual bool isEmbeddedObject() const { return false; }
     virtual bool isFieldset() const { return false; }
-    virtual bool isFileUploadControl() const { return false; }
     virtual bool isFrame() const { return false; }
     virtual bool isFrameSet() const { return false; }
     virtual bool isImage() const { return false; }
@@ -283,13 +267,6 @@ public:
     virtual bool isRenderInline() const { return false; }
     virtual bool isRenderPart() const { return false; }
     virtual bool isRenderView() const { return false; }
-    virtual bool isReplica() const { return false; }
-#if ENABLE(RUBY)
-    virtual bool isRuby() const { return false; }
-    virtual bool isRubyBase() const { return false; }
-    virtual bool isRubyRun() const { return false; }
-    virtual bool isRubyText() const { return false; }
-#endif
     virtual bool isSlider() const { return false; }
     virtual bool isTable() const { return false; }
     virtual bool isTableCell() const { return false; }
@@ -319,10 +296,6 @@ public:
     bool cellWidthChanged() const { return m_cellWidthChanged; }
     void setCellWidthChanged(bool b = true) { m_cellWidthChanged = b; }
 
-#if ENABLE(MATHML)
-    virtual bool isRenderMathMLBlock() const { return false; }
-#endif // ENABLE(MATHML)
-
 #if ENABLE(SVG)
     // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
     // to add SVG renderer methods to RenderObject with an ASSERT_NOT_REACHED() default implementation.
@@ -333,10 +306,6 @@ public:
     virtual bool isSVGText() const { return false; }
     virtual bool isSVGImage() const { return false; }
     virtual bool isSVGForeignObject() const { return false; }
-    virtual bool isSVGResource() const { return false; }
-
-    virtual const SVGRenderBase* toSVGRenderBase() const;
-    virtual RenderSVGResource* toRenderSVGResource();
 
     // Per SVG 1.1 objectBoundingBox ignores clipping, masking, filter effects, opacity and stroke-width.
     // This is used for all computation of objectBoundingBox relative units and by SVGLocateable::getBBox().
@@ -353,11 +322,16 @@ public:
     // FIXME: This accessor is deprecated and mostly around for SVGRenderTreeAsText.
     // This only returns the transform="" value from the element
     // most callsites want localToParentTransform() instead.
-    virtual AffineTransform localTransform() const;
+    virtual TransformationMatrix localTransform() const;
 
     // Returns the full transform mapping from local coordinates to local coords for the parent SVG renderer
     // This includes any viewport transforms and x/y offsets as well as the transform="" value off the element.
-    virtual const AffineTransform& localToParentTransform() const;
+    virtual TransformationMatrix localToParentTransform() const;
+
+    // Walks up the parent chain to create a transform which maps from local to document coords
+    // NOTE: This method is deprecated!  It doesn't respect scroll offsets or repaint containers.
+    // FIXME: This is only virtual so that RenderSVGHiddenContainer can override it to match old LayoutTest results.
+    virtual TransformationMatrix absoluteTransform() const;
 
     // SVG uses FloatPoint precise hit testing, and passes the point in parent
     // coordinates instead of in repaint container coordinates.  Eventually the
@@ -565,9 +539,8 @@ public:
     // Convert a local quad into the coordinate system of container, taking transforms into account.
     FloatQuad localToContainerQuad(const FloatQuad&, RenderBoxModelObject* repaintContainer, bool fixed = false) const;
 
-    // Return the offset from the container() renderer (excluding transforms). In multi-column layout,
-    // different offsets apply at different points, so return the offset that applies to the given point.
-    virtual IntSize offsetFromContainer(RenderObject*, const IntPoint&) const;
+    // Return the offset from the container() renderer (excluding transforms)
+    virtual IntSize offsetFromContainer(RenderObject*) const;
     // Return the offset from an object up the container() chain. Asserts that none of the intermediate objects have transforms.
     IntSize offsetFromAncestorContainer(RenderObject*) const;
     
@@ -577,8 +550,6 @@ public:
 
     // Build an array of quads in absolute coords for line boxes
     virtual void absoluteQuads(Vector<FloatQuad>&) { }
-
-    void absoluteFocusRingQuads(Vector<FloatQuad>&);
 
     // the rect that will be painted if this object is passed as the paintingRoot
     IntRect paintingRootRect(IntRect& topLevelRect);
@@ -645,10 +616,6 @@ public:
     // Given a rect in the object's coordinate space, compute a rect suitable for repainting
     // that rect in the coordinate space of repaintContainer.
     virtual void computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect&, bool fixed = false);
-
-    // If multiple-column layout results in applying an offset to the given point, add the same
-    // offset to the given size.
-    virtual void adjustForColumns(IntSize&, const IntPoint&) const { }
 
     virtual unsigned int length() const { return 1; }
 
@@ -769,7 +736,7 @@ public:
     bool shouldUseTransformFromContainer(const RenderObject* container) const;
     void getTransformFromContainer(const RenderObject* container, const IntSize& offsetInContainer, TransformationMatrix&) const;
     
-    virtual void addFocusRingRects(Vector<IntRect>&, int /*tx*/, int /*ty*/) { };
+    virtual void addFocusRingRects(GraphicsContext*, int /*tx*/, int /*ty*/) { };
 
     IntRect absoluteOutlineBounds() const
     {
@@ -1061,10 +1028,6 @@ inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject* render
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
 void showTree(const WebCore::RenderObject*);
-void showRenderTree(const WebCore::RenderObject* object1);
-// We don't make object2 an optional parameter so that showRenderTree
-// can be called from gdb easily.
-void showRenderTree(const WebCore::RenderObject* object1, const WebCore::RenderObject* object2);
 #endif
 
 #endif // RenderObject_h

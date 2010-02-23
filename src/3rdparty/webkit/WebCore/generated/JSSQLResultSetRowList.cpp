@@ -115,8 +115,7 @@ JSValue jsSQLResultSetRowListLength(ExecState* exec, const Identifier&, const Pr
     JSSQLResultSetRowList* castedThis = static_cast<JSSQLResultSetRowList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SQLResultSetRowList* imp = static_cast<SQLResultSetRowList*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->length());
-    return result;
+    return jsNumber(exec, imp->length());
 }
 
 JSValue JSC_HOST_CALL jsSQLResultSetRowListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

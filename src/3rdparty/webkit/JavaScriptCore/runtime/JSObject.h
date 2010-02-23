@@ -122,8 +122,8 @@ namespace JSC {
 
         virtual bool hasInstance(ExecState*, JSValue, JSValue prototypeProperty);
 
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
+        virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
 
         virtual JSValue toPrimitive(ExecState*, PreferredPrimitiveType = NoPreference) const;
         virtual bool getPrimitiveNumber(ExecState*, double& number, JSValue& value);
@@ -135,6 +135,7 @@ namespace JSC {
         virtual JSObject* toThisObject(ExecState*) const;
         virtual JSObject* unwrappedObject();
 
+        virtual bool getPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned& attributes) const;
         bool getPropertySpecificValue(ExecState* exec, const Identifier& propertyName, JSCell*& specificFunction) const;
 
         // This get function only looks at the property map.
@@ -206,25 +207,19 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
-        }
-
-        void flattenDictionaryObject()
-        {
-            m_structure->flattenDictionaryStructure(this);
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
 
     protected:
         static const unsigned StructureFlags = 0;
 
+        void addAnonymousSlots(unsigned count);
         void putAnonymousValue(unsigned index, JSValue value)
         {
-            ASSERT(index < m_structure->anonymousSlotCount());
             *locationForOffset(index) = value;
         }
-        JSValue getAnonymousValue(unsigned index) const
+        JSValue getAnonymousValue(unsigned index)
         {
-            ASSERT(index < m_structure->anonymousSlotCount());
             return *locationForOffset(index);
         }
 
@@ -234,7 +229,7 @@ namespace JSC {
         using JSCell::isGetterSetter;
         using JSCell::toObject;
         void getObject();
-        void getString(ExecState* exec);
+        void getString();
         void isObject();
         void isString();
 #if USE(JSVALUE32)
@@ -382,7 +377,7 @@ ALWAYS_INLINE bool JSCell::fastGetOwnPropertySlot(ExecState* exec, const Identif
 
 // It may seem crazy to inline a function this large but it makes a big difference
 // since this is function very hot in variable lookup
-ALWAYS_INLINE bool JSObject::getPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+inline bool JSObject::getPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     JSObject* object = this;
     while (true) {
@@ -395,7 +390,7 @@ ALWAYS_INLINE bool JSObject::getPropertySlot(ExecState* exec, const Identifier& 
     }
 }
 
-ALWAYS_INLINE bool JSObject::getPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)
+inline bool JSObject::getPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)
 {
     JSObject* object = this;
     while (true) {
@@ -527,6 +522,17 @@ inline void JSObject::putDirectInternal(JSGlobalData& globalData, const Identifi
 {
     PutPropertySlot slot;
     putDirectInternal(propertyName, value, attributes, false, slot, getJSFunction(globalData, value));
+}
+
+inline void JSObject::addAnonymousSlots(unsigned count)
+{
+    size_t currentCapacity = m_structure->propertyStorageCapacity();
+    RefPtr<Structure> structure = Structure::addAnonymousSlotsTransition(m_structure, count);
+
+    if (currentCapacity != structure->propertyStorageCapacity())
+        allocatePropertyStorage(currentCapacity, structure->propertyStorageCapacity());
+
+    setStructure(structure.release());
 }
 
 inline void JSObject::putDirect(const Identifier& propertyName, JSValue value, unsigned attributes, bool checkReadOnly, PutPropertySlot& slot)

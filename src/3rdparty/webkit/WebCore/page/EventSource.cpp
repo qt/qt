@@ -57,7 +57,6 @@ EventSource::EventSource(const String& url, ScriptExecutionContext* context, Exc
     : ActiveDOMObject(context, this)
     , m_state(CONNECTING)
     , m_reconnectTimer(this, &EventSource::reconnectTimerFired)
-    , m_discardTrailingNewline(false)
     , m_failSilently(false)
     , m_requestInFlight(false)
     , m_reconnectDelay(defaultReconnectDelay)
@@ -211,24 +210,21 @@ void EventSource::parseEventStream()
 {
     unsigned int bufPos = 0;
     unsigned int bufSize = m_receiveBuf.size();
-    while (bufPos < bufSize) {
-        if (m_discardTrailingNewline) {
-            if (m_receiveBuf[bufPos] == '\n')
-                bufPos++;
-            m_discardTrailingNewline = false;
-        }
-
+    for (;;) {
         int lineLength = -1;
         int fieldLength = -1;
+        int carriageReturn = 0;
         for (unsigned int i = bufPos; lineLength < 0 && i < bufSize; i++) {
             switch (m_receiveBuf[i]) {
             case ':':
                 if (fieldLength < 0)
                     fieldLength = i - bufPos;
                 break;
-            case '\r':
-                m_discardTrailingNewline = true;
             case '\n':
+                if (i > bufPos && m_receiveBuf[i - 1] == '\r') {
+                    carriageReturn++;
+                    i--;
+                }
                 lineLength = i - bufPos;
                 break;
             }
@@ -238,7 +234,7 @@ void EventSource::parseEventStream()
             break;
 
         parseEventStreamLine(bufPos, fieldLength, lineLength);
-        bufPos += lineLength + 1;
+        bufPos += lineLength + carriageReturn + 1;
     }
 
     if (bufPos == bufSize)

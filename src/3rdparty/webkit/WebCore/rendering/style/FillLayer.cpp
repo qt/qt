@@ -270,15 +270,4 @@ bool FillLayer::containsImage(StyleImage* s) const
     return false;
 }
 
-bool FillLayer::imagesAreLoaded() const
-{
-    const FillLayer* curr;
-    for (curr = this; curr; curr = curr->next()) {
-        if (curr->m_image && !curr->m_image->isLoaded())
-            return false;
-    }
-
-    return true;
-}
-
 } // namespace WebCore

@@ -88,7 +88,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -180,8 +180,7 @@ JSValue jsHTMLEmbedElementAlign(ExecState* exec, const Identifier&, const Proper
     JSHTMLEmbedElement* castedThis = static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::alignAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::alignAttr));
 }
 
 JSValue jsHTMLEmbedElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -189,8 +188,7 @@ JSValue jsHTMLEmbedElementHeight(ExecState* exec, const Identifier&, const Prope
     JSHTMLEmbedElement* castedThis = static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::heightAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::heightAttr));
 }
 
 JSValue jsHTMLEmbedElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -198,8 +196,7 @@ JSValue jsHTMLEmbedElementName(ExecState* exec, const Identifier&, const Propert
     JSHTMLEmbedElement* castedThis = static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::nameAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::nameAttr));
 }
 
 JSValue jsHTMLEmbedElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -207,8 +204,7 @@ JSValue jsHTMLEmbedElementSrc(ExecState* exec, const Identifier&, const Property
     JSHTMLEmbedElement* castedThis = static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::srcAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::srcAttr));
 }
 
 JSValue jsHTMLEmbedElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -216,8 +212,7 @@ JSValue jsHTMLEmbedElementType(ExecState* exec, const Identifier&, const Propert
     JSHTMLEmbedElement* castedThis = static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::typeAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::typeAttr));
 }
 
 JSValue jsHTMLEmbedElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -225,8 +220,7 @@ JSValue jsHTMLEmbedElementWidth(ExecState* exec, const Identifier&, const Proper
     JSHTMLEmbedElement* castedThis = static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::widthAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::widthAttr));
 }
 
 JSValue jsHTMLEmbedElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -243,43 +237,37 @@ void JSHTMLEmbedElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLEmbedElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLEmbedElement* castedThisObj = static_cast<JSHTMLEmbedElement*>(thisObject);
-    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThisObj->impl());
+    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::alignAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLEmbedElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLEmbedElement* castedThisObj = static_cast<JSHTMLEmbedElement*>(thisObject);
-    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThisObj->impl());
+    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::heightAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLEmbedElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLEmbedElement* castedThisObj = static_cast<JSHTMLEmbedElement*>(thisObject);
-    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThisObj->impl());
+    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::nameAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLEmbedElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLEmbedElement* castedThisObj = static_cast<JSHTMLEmbedElement*>(thisObject);
-    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThisObj->impl());
+    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::srcAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLEmbedElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLEmbedElement* castedThisObj = static_cast<JSHTMLEmbedElement*>(thisObject);
-    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThisObj->impl());
+    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::typeAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLEmbedElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLEmbedElement* castedThisObj = static_cast<JSHTMLEmbedElement*>(thisObject);
-    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThisObj->impl());
+    HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::widthAttr, valueToStringWithNullCheck(exec, value));
 }
 

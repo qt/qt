@@ -2,6 +2,8 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -28,42 +30,44 @@
 
 namespace WebCore {
 
-class AffineTransform;
+    extern char SVGStyledTransformableElementIdentifier[];
 
-class SVGStyledTransformableElement : public SVGStyledLocatableElement,
-                                      public SVGTransformable {
-public:
-    SVGStyledTransformableElement(const QualifiedName&, Document*);
-    virtual ~SVGStyledTransformableElement();
-    
-    virtual bool isStyledTransformable() const { return true; }
+    class TransformationMatrix;
 
-    virtual AffineTransform getCTM() const;
-    virtual AffineTransform getScreenCTM() const;
-    virtual SVGElement* nearestViewportElement() const;
-    virtual SVGElement* farthestViewportElement() const;
-    
-    virtual AffineTransform animatedLocalTransform() const;
-    virtual AffineTransform* supplementalTransform();
+    class SVGStyledTransformableElement : public SVGStyledLocatableElement,
+                                          public SVGTransformable {
+    public:
+        SVGStyledTransformableElement(const QualifiedName&, Document*);
+        virtual ~SVGStyledTransformableElement();
+        
+        virtual bool isStyledTransformable() const { return true; }
 
-    virtual FloatRect getBBox() const;
+        virtual TransformationMatrix getCTM() const;
+        virtual TransformationMatrix getScreenCTM() const;
+        virtual SVGElement* nearestViewportElement() const;
+        virtual SVGElement* farthestViewportElement() const;
+        
+        virtual TransformationMatrix animatedLocalTransform() const;
+        virtual TransformationMatrix* supplementalTransform();
 
-    virtual void parseMappedAttribute(MappedAttribute*);
-    virtual void synchronizeProperty(const QualifiedName&);
-    bool isKnownAttribute(const QualifiedName&);
+        virtual FloatRect getBBox() const;
 
-    // "base class" methods for all the elements which render as paths
-    virtual Path toPathData() const { return Path(); }
-    virtual Path toClipPath() const;
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+        virtual void parseMappedAttribute(MappedAttribute*);
+        bool isKnownAttribute(const QualifiedName&);
 
-protected:
-    DECLARE_ANIMATED_PROPERTY(SVGStyledTransformableElement, SVGNames::transformAttr, SVGTransformList*, Transform, transform)
+        // "base class" methods for all the elements which render as paths
+        virtual Path toPathData() const { return Path(); }
+        virtual Path toClipPath() const;
+        virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
 
-private:
-    // Used by <animateMotion>
-    OwnPtr<AffineTransform> m_supplementalTransform;
-};
+    protected:
+        ANIMATED_PROPERTY_DECLARATIONS(SVGStyledTransformableElement, SVGStyledTransformableElementIdentifier,
+                                       SVGNames::transformAttrString, SVGTransformList, Transform, transform)
+
+    private:
+        // Used by <animateMotion>
+        OwnPtr<TransformationMatrix> m_supplementalTransform;
+    };
 
 } // namespace WebCore
 

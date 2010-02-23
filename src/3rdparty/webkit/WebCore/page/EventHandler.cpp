@@ -29,7 +29,6 @@
 
 #include "AXObjectCache.h"
 #include "CachedImage.h"
-#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Cursor.h"
 #include "Document.h"
@@ -73,11 +72,6 @@
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGUseElement.h"
-#endif
-
-#if ENABLE(TOUCH_EVENTS)
-#include "PlatformTouchEvent.h"
-#include "TouchEvent.h"
 #endif
 
 namespace WebCore {
@@ -126,7 +120,7 @@ static inline void scrollAndAcceptEvent(float delta, ScrollDirection positiveDir
         e.accept();
 }
 
-#if !PLATFORM(MAC) || ENABLE(EXPERIMENTAL_SINGLE_VIEW_MODE)
+#if !PLATFORM(MAC)
 
 inline bool EventHandler::eventLoopHandleMouseUp(const MouseEventWithHitTestResults&)
 {
@@ -170,7 +164,7 @@ EventHandler::EventHandler(Frame* frame)
     , m_mouseDownTimestamp(0)
     , m_useLatchedWheelEventNode(false)
     , m_widgetIsLatched(false)
-#if PLATFORM(MAC) && !ENABLE(EXPERIMENTAL_SINGLE_VIEW_MODE)
+#if PLATFORM(MAC)
     , m_mouseDownView(nil)
     , m_sendingEventToSubview(false)
     , m_activationEventNumber(0)
@@ -207,7 +201,6 @@ void EventHandler::clear()
     m_frameSetBeingResized = 0;
 #if ENABLE(DRAG_SUPPORT)
     m_dragTarget = 0;
-    m_shouldOnlyFireDragOverEvent = false;
 #endif
     m_currentMousePosition = IntPoint();
     m_mousePressNode = 0;
@@ -694,14 +687,6 @@ void EventHandler::autoscrollTimerFired(Timer<EventHandler>*)
 }
 
 #if ENABLE(PAN_SCROLLING)
-
-void EventHandler::startPanScrolling(RenderObject* renderer)
-{
-    m_panScrollInProgress = true;
-    m_panScrollButtonPressed = true;
-    handleAutoscroll(renderer);
-    invalidateClick();
-}
 
 void EventHandler::updatePanScrollState()
 {
@@ -1202,6 +1187,25 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         invalidateClick();
         return true;
     }
+
+    if (mouseEvent.button() == MiddleButton && !mev.isOverLink()) {
+        RenderObject* renderer = mev.targetNode()->renderer();
+
+        while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea())) {
+            if (!renderer->parent() && renderer->node() == renderer->document() && renderer->document()->ownerElement())
+                renderer = renderer->document()->ownerElement()->renderer();
+            else
+                renderer = renderer->parent();
+        }
+
+        if (renderer) {
+            m_panScrollInProgress = true;
+            m_panScrollButtonPressed = true;
+            handleAutoscroll(renderer);
+            invalidateClick();
+            return true;
+        }
+    }
 #endif
 
     m_clickCount = mouseEvent.clickCount();
@@ -1396,18 +1400,8 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& mouseEvent, Hi
             scrollbar->mouseMoved(mouseEvent); // Handle hover effects on platforms that support visual feedback on scrollbar hovering.
         if (Page* page = m_frame->page()) {
             if ((!m_resizeLayer || !m_resizeLayer->inResizeMode()) && !page->mainFrame()->eventHandler()->panScrollInProgress()) {
-                // Plugins set cursor on their own. The only case WebKit intervenes is resetting cursor to arrow on mouse enter,
-                // in case the particular plugin doesn't manipulate cursor at all. Thus,  even a CSS cursor set on body has no
-                // effect on plugins (which matches Firefox).
-                bool overPluginElement = false;
-                if (mev.targetNode() && mev.targetNode()->isHTMLElement()) {
-                    HTMLElement* el = static_cast<HTMLElement*>(mev.targetNode());
-                    overPluginElement = el->hasTagName(appletTag) || el->hasTagName(objectTag) || el->hasTagName(embedTag);
-                }
-                if (!overPluginElement) {
-                    if (FrameView* view = m_frame->view())
-                        view->setCursor(selectCursor(mev, scrollbar));
-                }
+                if (FrameView* view = m_frame->view())
+                    view->setCursor(selectCursor(mev, scrollbar));
             }
         }
     }
@@ -1514,35 +1508,6 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
     return me->defaultPrevented();
 }
 
-bool EventHandler::canHandleDragAndDropForTarget(DragAndDropHandleType type, Node* target, const PlatformMouseEvent& event, Clipboard* clipboard, bool* accepted)
-{
-    bool canHandle = false;
-    bool wasAccepted = false;
-
-    if (target->hasTagName(frameTag) || target->hasTagName(iframeTag)) {
-        Frame* frame = static_cast<HTMLFrameElementBase*>(target)->contentFrame();
-        if (frame) {
-            switch (type) {
-                case UpdateDragAndDrop:
-                    wasAccepted = frame->eventHandler()->updateDragAndDrop(event, clipboard);
-                    break;
-                case CancelDragAndDrop:
-                    frame->eventHandler()->cancelDragAndDrop(event, clipboard);
-                    break;
-                case PerformDragAndDrop:
-                    wasAccepted = frame->eventHandler()->performDragAndDrop(event, clipboard);
-                    break;
-            }
-        }
-    } else
-        canHandle = true;
-
-    if (accepted)
-        *accepted = wasAccepted;
-
-    return canHandle;
-}
-
 bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard* clipboard)
 {
     bool accept = false;
@@ -1564,34 +1529,28 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
         // FIXME: this ordering was explicitly chosen to match WinIE. However,
         // it is sometimes incorrect when dragging within subframes, as seen with
         // LayoutTests/fast/events/drag-in-frames.html.
-        //
-        // Moreover, this ordering conforms to section 7.9.4 of the HTML 5 spec. <http://dev.w3.org/html5/spec/Overview.html#drag-and-drop-processing-model>.
-        if (newTarget && canHandleDragAndDropForTarget(UpdateDragAndDrop, newTarget, event, clipboard, &accept)) {
-            // As per section 7.9.4 of the HTML 5 spec., we must always fire a drag event before firing a dragenter, dragleave, or dragover event.
-            if (dragState().m_dragSrc && dragState().m_dragSrcMayBeDHTML) {
-                // for now we don't care if event handler cancels default behavior, since there is none
-                dispatchDragSrcEvent(eventNames().dragEvent, event);
-            }
-            accept = dispatchDragEvent(eventNames().dragenterEvent, newTarget, event, clipboard);
+        if (newTarget) {
+            Frame* frame = (newTarget->hasTagName(frameTag) || newTarget->hasTagName(iframeTag)) ? static_cast<HTMLFrameElementBase*>(newTarget)->contentFrame() : 0;
+            if (frame)
+                accept = frame->eventHandler()->updateDragAndDrop(event, clipboard);
+            else
+                accept = dispatchDragEvent(eventNames().dragenterEvent, newTarget, event, clipboard);
         }
 
-        if (m_dragTarget && canHandleDragAndDropForTarget(UpdateDragAndDrop, m_dragTarget.get(), event, clipboard, &accept))
-            dispatchDragEvent(eventNames().dragleaveEvent, m_dragTarget.get(), event, clipboard);
-        
-        if (newTarget) {
-            // We do not explicitly call dispatchDragEvent here because it could ultimately result in the appearance that
-            // two dragover events fired. So, we mark that we should only fire a dragover event on the next call to this function.
-            m_shouldOnlyFireDragOverEvent = true;
+        if (m_dragTarget) {
+            Frame* frame = (m_dragTarget->hasTagName(frameTag) || m_dragTarget->hasTagName(iframeTag)) ? static_cast<HTMLFrameElementBase*>(m_dragTarget.get())->contentFrame() : 0;
+            if (frame)
+                accept = frame->eventHandler()->updateDragAndDrop(event, clipboard);
+            else
+                dispatchDragEvent(eventNames().dragleaveEvent, m_dragTarget.get(), event, clipboard);
         }
     } else {
-        if (newTarget && canHandleDragAndDropForTarget(UpdateDragAndDrop, newTarget, event, clipboard, &accept)) {
-            // Note, when dealing with sub-frames, we may need to fire only a dragover event as a drag event may have been fired earlier.
-            if (!m_shouldOnlyFireDragOverEvent && dragState().m_dragSrc && dragState().m_dragSrcMayBeDHTML) {
-                // for now we don't care if event handler cancels default behavior, since there is none
-                dispatchDragSrcEvent(eventNames().dragEvent, event);
-            }
-            accept = dispatchDragEvent(eventNames().dragoverEvent, newTarget, event, clipboard);
-            m_shouldOnlyFireDragOverEvent = false;
+        if (newTarget) {
+            Frame* frame = (newTarget->hasTagName(frameTag) || newTarget->hasTagName(iframeTag)) ? static_cast<HTMLFrameElementBase*>(newTarget)->contentFrame() : 0;
+            if (frame)
+                accept = frame->eventHandler()->updateDragAndDrop(event, clipboard);
+            else
+                accept = dispatchDragEvent(eventNames().dragoverEvent, newTarget, event, clipboard);
         }
     }
     m_dragTarget = newTarget;
@@ -1601,10 +1560,13 @@ bool EventHandler::updateDragAndDrop(const PlatformMouseEvent& event, Clipboard*
 
 void EventHandler::cancelDragAndDrop(const PlatformMouseEvent& event, Clipboard* clipboard)
 {
-    if (m_dragTarget && canHandleDragAndDropForTarget(CancelDragAndDrop, m_dragTarget.get(), event, clipboard)) {
-        if (dragState().m_dragSrc && dragState().m_dragSrcMayBeDHTML)
-            dispatchDragSrcEvent(eventNames().dragEvent, event);
-        dispatchDragEvent(eventNames().dragleaveEvent, m_dragTarget.get(), event, clipboard);
+    if (m_dragTarget) {
+        Frame* frame = (m_dragTarget->hasTagName(frameTag) || m_dragTarget->hasTagName(iframeTag)) 
+                        ? static_cast<HTMLFrameElementBase*>(m_dragTarget.get())->contentFrame() : 0;
+        if (frame)
+            frame->eventHandler()->cancelDragAndDrop(event, clipboard);
+        else
+            dispatchDragEvent(eventNames().dragleaveEvent, m_dragTarget.get(), event, clipboard);
     }
     clearDragState();
 }
@@ -1612,8 +1574,14 @@ void EventHandler::cancelDragAndDrop(const PlatformMouseEvent& event, Clipboard*
 bool EventHandler::performDragAndDrop(const PlatformMouseEvent& event, Clipboard* clipboard)
 {
     bool accept = false;
-    if (m_dragTarget && canHandleDragAndDropForTarget(PerformDragAndDrop, m_dragTarget.get(), event, clipboard, &accept))
-        dispatchDragEvent(eventNames().dropEvent, m_dragTarget.get(), event, clipboard);
+    if (m_dragTarget) {
+        Frame* frame = (m_dragTarget->hasTagName(frameTag) || m_dragTarget->hasTagName(iframeTag)) 
+                        ? static_cast<HTMLFrameElementBase*>(m_dragTarget.get())->contentFrame() : 0;
+        if (frame)
+            accept = frame->eventHandler()->performDragAndDrop(event, clipboard);
+        else
+            accept = dispatchDragEvent(eventNames().dropEvent, m_dragTarget.get(), event, clipboard);
+    }
     clearDragState();
     return accept;
 }
@@ -1622,8 +1590,7 @@ void EventHandler::clearDragState()
 {
     m_dragTarget = 0;
     m_capturingMouseEventsNode = 0;
-    m_shouldOnlyFireDragOverEvent = false;
-#if PLATFORM(MAC) && !ENABLE(EXPERIMENTAL_SINGLE_VIEW_MODE)
+#if PLATFORM(MAC)
     m_sendingEventToSubview = false;
 #endif
 }
@@ -1796,7 +1763,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
     return swallowEvent;
 }
 
-#if !PLATFORM(GTK) && !(PLATFORM(CHROMIUM) && OS(LINUX))
+#if !PLATFORM(GTK)
 bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult&) const
 {
     return false;
@@ -2219,7 +2186,14 @@ bool EventHandler::shouldDragAutoNode(Node* node, const IntPoint& point) const
     Page* page = m_frame->page();
     return page && page->dragController()->mayStartDragAtEventLocation(m_frame, point);
 }
-
+    
+void EventHandler::dragSourceMovedTo(const PlatformMouseEvent& event)
+{
+    if (dragState().m_dragSrc && dragState().m_dragSrcMayBeDHTML)
+        // for now we don't care if event handler cancels default behavior, since there is none
+        dispatchDragSrcEvent(eventNames().dragEvent, event);
+}
+    
 void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperation operation)
 {
     if (dragState().m_dragSrc && dragState().m_dragSrcMayBeDHTML) {
@@ -2302,11 +2276,9 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event)
         return !mouseDownMayStartSelect() && !m_mouseDownMayStartAutoscroll;
     
     // We are starting a text/image/url drag, so the cursor should be an arrow
-    if (FrameView* view = m_frame->view()) {
-        // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and drop (default to pointer).
+    if (FrameView* view = m_frame->view())
         view->setCursor(pointerCursor());
-    }
-
+    
     if (!dragHysteresisExceeded(event.event().pos())) 
         return true;
     
@@ -2345,12 +2317,11 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event)
         
         if (m_mouseDownMayStartDrag) {
             // gather values from DHTML element, if it set any
-            srcOp = dragState().m_dragClipboard->sourceOperation();
+            dragState().m_dragClipboard->sourceOperation(srcOp);
             
-            // Yuck, a draggedImage:moveTo: message can be fired as a result of kicking off the
-            // drag with dragImage!  Because of that dumb reentrancy, we may think we've not
-            // started the drag when that happens.  So we have to assume it's started before we
-            // kick it off.
+            // Yuck, dragSourceMovedTo() can be called as a result of kicking off the drag with
+            // dragImage!  Because of that dumb reentrancy, we may think we've not started the
+            // drag when that happens.  So we have to assume it's started before we kick it off.
             dragState().m_dragClipboard->setDragHasStarted();
         }
     }
@@ -2545,143 +2516,5 @@ void EventHandler::updateLastScrollbarUnderMouse(Scrollbar* scrollbar, bool setL
         m_lastScrollbarUnderMouse = setLast ? scrollbar : 0;
     }
 }
-
-#if ENABLE(TOUCH_EVENTS)
-bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
-{
-    RefPtr<TouchList> touches = TouchList::create();
-    RefPtr<TouchList> pressedTouches = TouchList::create();
-    RefPtr<TouchList> releasedTouches = TouchList::create();
-    RefPtr<TouchList> movedTouches = TouchList::create();
-    RefPtr<TouchList> targetTouches = TouchList::create();
-    RefPtr<TouchList> cancelTouches = TouchList::create();
-
-    const Vector<PlatformTouchPoint>& points = event.touchPoints();
-    AtomicString* eventName = 0;
-
-    for (int i = 0; i < points.size(); ++i) {
-        const PlatformTouchPoint& point = points[i];
-        IntPoint pagePoint = documentPointForWindowPoint(m_frame, point.pos());
-        HitTestResult result = hitTestResultAtPoint(pagePoint, /*allowShadowContent*/ false);
-        Node* target = result.innerNode();
-
-        // Touch events should not go to text nodes
-        if (target && target->isTextNode())
-            target = target->parentNode();
-
-        Document* doc = target->document();
-        if (!doc)
-            continue;
-        if (!doc->hasListenerType(Document::TOUCH_LISTENER))
-            continue;
-
-        if (m_frame != doc->frame()) {
-            // pagePoint should always be relative to the target elements containing frame.
-            pagePoint = documentPointForWindowPoint(doc->frame(), point.pos());
-        }
-
-        int adjustedPageX = lroundf(pagePoint.x() / m_frame->pageZoomFactor());
-        int adjustedPageY = lroundf(pagePoint.y() / m_frame->pageZoomFactor());
-
-        RefPtr<Touch> touch = Touch::create(doc->frame(), target, point.id(),
-                                            point.screenPos().x(), point.screenPos().y(),
-                                            adjustedPageX, adjustedPageY);
-
-        if (event.type() == TouchStart && !i) {
-            m_touchEventTarget = target;
-            m_firstTouchScreenPos = point.screenPos();
-            m_firstTouchPagePos = pagePoint;
-        }
-
-        if (point.state() == PlatformTouchPoint::TouchReleased)
-            releasedTouches->append(touch);
-        else if (point.state() == PlatformTouchPoint::TouchCancelled)
-            cancelTouches->append(touch);
-        else {
-            if (point.state() == PlatformTouchPoint::TouchPressed)
-                pressedTouches->append(touch);
-            else {
-                touches->append(touch);
-                if (m_touchEventTarget == target)
-                    targetTouches->append(touch);
-                if (point.state() == PlatformTouchPoint::TouchMoved)
-                    movedTouches->append(touch);
-            }
-        }
-    }
-
-    if (!m_touchEventTarget)
-        return false;
-
-    bool defaultPrevented = false;
-
-    if (event.type() == TouchCancel) {
-        eventName = &eventNames().touchcancelEvent;
-        RefPtr<TouchEvent> cancelEv =
-            TouchEvent::create(TouchList::create().get(), TouchList::create().get(), cancelTouches.get(),
-                                                   *eventName, m_touchEventTarget->document()->defaultView(),
-                                                   m_firstTouchScreenPos.x(), m_firstTouchScreenPos.y(),
-                                                   m_firstTouchPagePos.x(), m_firstTouchPagePos.y(),
-                                                   event.ctrlKey(), event.altKey(), event.shiftKey(),
-                                                   event.metaKey());
-
-        ExceptionCode ec = 0;
-        m_touchEventTarget->dispatchEvent(cancelEv.get(), ec);
-        defaultPrevented |= cancelEv->defaultPrevented();
-    }
-
-    if (releasedTouches->length() > 0) {
-        eventName = &eventNames().touchendEvent;
-        RefPtr<TouchEvent> endEv = 
-            TouchEvent::create(touches.get(), targetTouches.get(), releasedTouches.get(),
-                                                   *eventName, m_touchEventTarget->document()->defaultView(),
-                                                   m_firstTouchScreenPos.x(), m_firstTouchScreenPos.y(),
-                                                   m_firstTouchPagePos.x(), m_firstTouchPagePos.y(),
-                                                   event.ctrlKey(), event.altKey(), event.shiftKey(),
-                                                   event.metaKey());
-        ExceptionCode ec = 0;
-        m_touchEventTarget->dispatchEvent(endEv.get(), ec);
-        defaultPrevented = endEv->defaultPrevented();
-    }
-    if (pressedTouches->length() > 0) {
-        // Add pressed touchpoints to touches and targetTouches
-        for (int i = 0; i < pressedTouches->length(); ++i) {
-            touches->append(pressedTouches->item(i));
-            if (m_touchEventTarget == pressedTouches->item(i)->target())
-                targetTouches->append(pressedTouches->item(i));
-        }
-
-        eventName = &eventNames().touchstartEvent;
-        RefPtr<TouchEvent> startEv = 
-            TouchEvent::create(touches.get(), targetTouches.get(), pressedTouches.get(),
-                                                   *eventName, m_touchEventTarget->document()->defaultView(),
-                                                   m_firstTouchScreenPos.x(), m_firstTouchScreenPos.y(),
-                                                   m_firstTouchPagePos.x(), m_firstTouchPagePos.y(),
-                                                   event.ctrlKey(), event.altKey(), event.shiftKey(),
-                                                   event.metaKey());
-        ExceptionCode ec = 0;
-        m_touchEventTarget->dispatchEvent(startEv.get(), ec);
-        defaultPrevented |= startEv->defaultPrevented();
-    }
-    if (movedTouches->length() > 0) {
-        eventName = &eventNames().touchmoveEvent;
-        RefPtr<TouchEvent> moveEv = 
-            TouchEvent::create(touches.get(), targetTouches.get(), movedTouches.get(),
-                                                   *eventName, m_touchEventTarget->document()->defaultView(),
-                                                   m_firstTouchScreenPos.x(), m_firstTouchScreenPos.y(),
-                                                   m_firstTouchPagePos.x(), m_firstTouchPagePos.y(),
-                                                   event.ctrlKey(), event.altKey(), event.shiftKey(),
-                                                   event.metaKey());
-        ExceptionCode ec = 0;
-        m_touchEventTarget->dispatchEvent(moveEv.get(), ec);
-        defaultPrevented |= moveEv->defaultPrevented();
-    }
-
-    if (event.type() == TouchEnd || event.type() == TouchCancel)
-        m_touchEventTarget = 0;
-
-    return defaultPrevented;
-}
-#endif
 
 }

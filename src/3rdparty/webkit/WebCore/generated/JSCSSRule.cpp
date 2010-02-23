@@ -92,7 +92,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -185,8 +185,7 @@ JSValue jsCSSRuleType(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->type());
-    return result;
+    return jsNumber(exec, imp->type());
 }
 
 JSValue jsCSSRuleCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,8 +193,7 @@ JSValue jsCSSRuleCssText(ExecState* exec, const Identifier&, const PropertySlot&
     JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->cssText());
-    return result;
+    return jsStringOrNull(exec, imp->cssText());
 }
 
 JSValue jsCSSRuleParentStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,8 +201,7 @@ JSValue jsCSSRuleParentStyleSheet(ExecState* exec, const Identifier&, const Prop
     JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentStyleSheet()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentStyleSheet()));
 }
 
 JSValue jsCSSRuleParentRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -212,8 +209,7 @@ JSValue jsCSSRuleParentRule(ExecState* exec, const Identifier&, const PropertySl
     JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
 }
 
 JSValue jsCSSRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -228,8 +224,7 @@ void JSCSSRule::put(ExecState* exec, const Identifier& propertyName, JSValue val
 
 void setJSCSSRuleCssText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSCSSRule* castedThisObj = static_cast<JSCSSRule*>(thisObject);
-    CSSRule* imp = static_cast<CSSRule*>(castedThisObj->impl());
+    CSSRule* imp = static_cast<CSSRule*>(static_cast<JSCSSRule*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setCssText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

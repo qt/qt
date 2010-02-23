@@ -36,7 +36,7 @@ RegisterFile::~RegisterFile()
 #if HAVE(MMAP)
     munmap(m_buffer, ((m_max - m_start) + m_maxGlobals) * sizeof(Register));
 #elif HAVE(VIRTUALALLOC)
-#if OS(WINCE)
+#if PLATFORM(WINCE)
     VirtualFree(m_buffer, DWORD(m_commitEnd) - DWORD(m_buffer), MEM_DECOMMIT);
 #endif
     VirtualFree(m_buffer, 0, MEM_RELEASE);

@@ -136,7 +136,7 @@ static NSAttributedString *stripAttachmentCharacters(NSAttributedString *string)
 void Pasteboard::writeSelection(NSPasteboard* pasteboard, Range* selectedRange, bool canSmartCopyOrDelete, Frame* frame)
 {
     if (!WebArchivePboardType)
-        Pasteboard::generalPasteboard(); // Initializes pasteboard types.
+        Pasteboard::generalPasteboard(); // Initialises pasteboard types
     ASSERT(selectedRange);
     
     NSAttributedString *attributedString = [[[NSAttributedString alloc] _initWithDOMRange:kit(selectedRange)] autorelease];
@@ -197,14 +197,6 @@ void Pasteboard::writeSelection(NSPasteboard* pasteboard, Range* selectedRange, 
         [pasteboard setData:nil forType:WebSmartPastePboardType];
     }
 }
-
-void Pasteboard::writePlainText(NSPasteboard* pasteboard, const String& text)
-{
-    NSArray *types = [NSArray arrayWithObject:NSStringPboardType];
-    [pasteboard declareTypes:types owner:nil];
-    
-    [pasteboard setString:text forType:NSStringPboardType];
-}
     
 void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete, Frame* frame)
 {
@@ -214,7 +206,7 @@ void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete,
 void Pasteboard::writePlainText(const String& text)
 {
     if (!WebArchivePboardType)
-        Pasteboard::generalPasteboard(); // Initializes pasteboard types.
+        Pasteboard::generalPasteboard(); // Initialises pasteboard types
 
     NSArray *types = [NSArray arrayWithObject:NSStringPboardType];
     NSPasteboard *pasteboard = m_pasteboard.get();
@@ -226,7 +218,7 @@ void Pasteboard::writePlainText(const String& text)
 void Pasteboard::writeURL(NSPasteboard* pasteboard, NSArray* types, const KURL& url, const String& titleStr, Frame* frame)
 {
     if (!WebArchivePboardType)
-        Pasteboard::generalPasteboard(); // Initializes pasteboard types.
+        Pasteboard::generalPasteboard(); // Initialises pasteboard types
    
     if (!types) {
         types = writableTypesForURL();
@@ -300,7 +292,9 @@ void Pasteboard::writeImage(Node* node, const KURL& url, const String& title)
     ASSERT(node->renderer() && node->renderer()->isImage());
     RenderImage* renderer = toRenderImage(node->renderer());
     CachedImage* cachedImage = renderer->cachedImage();
-    if (!cachedImage || cachedImage->errorOccurred())
+    ASSERT(cachedImage);
+    
+    if (cachedImage->errorOccurred())
         return;
 
     NSArray* types = writableTypesForImage();
@@ -378,7 +372,7 @@ PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefP
             }
         }
         if ([HTMLString length] != 0) {
-            RefPtr<DocumentFragment> fragment = createFragmentFromMarkup(frame->document(), HTMLString, "", FragmentScriptingNotAllowed);
+            RefPtr<DocumentFragment> fragment = createFragmentFromMarkup(frame->document(), HTMLString, "");
             if (fragment)
                 return fragment.release();
         }

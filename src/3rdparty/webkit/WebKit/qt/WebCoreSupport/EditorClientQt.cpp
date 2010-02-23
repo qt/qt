@@ -407,38 +407,28 @@ void EditorClientQt::handleKeyboardEvent(KeyboardEvent* event)
             case VK_LEFT:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveLeftAndModifySelection").execute();
-                else
-                    frame->editor()->command("MoveLeft").execute();
+                else frame->editor()->command("MoveLeft").execute();
                 break;
             case VK_RIGHT:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveRightAndModifySelection").execute();
-                else
-                    frame->editor()->command("MoveRight").execute();
+                else frame->editor()->command("MoveRight").execute();
                 break;
             case VK_UP:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveUpAndModifySelection").execute();
-                else
-                    frame->editor()->command("MoveUp").execute();
+                else frame->editor()->command("MoveUp").execute();
                 break;
             case VK_DOWN:
                 if (kevent->shiftKey())
                     frame->editor()->command("MoveDownAndModifySelection").execute();
-                else
-                    frame->editor()->command("MoveDown").execute();
+                else frame->editor()->command("MoveDown").execute();
                 break;
             case VK_PRIOR:  // PageUp
-                if (kevent->shiftKey())
-                    frame->editor()->command("MovePageUpAndModifySelection").execute();
-                else
-                    frame->editor()->command("MovePageUp").execute();
+                frame->editor()->command("MovePageUp").execute();
                 break;
             case VK_NEXT:  // PageDown
-                if (kevent->shiftKey())
-                    frame->editor()->command("MovePageDownAndModifySelection").execute();
-                else
-                    frame->editor()->command("MovePageDown").execute();
+                frame->editor()->command("MovePageDown").execute();
                 break;
             case VK_TAB:
                 return;

@@ -27,7 +27,7 @@
 #include "JavaScriptCallFrame.h"
 #include "JSDOMBinding.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "PlatformString.h"
 #include <debugger/DebuggerCallFrame.h>
@@ -106,7 +106,7 @@ JSValue JavaScriptCallFrame::evaluate(const UString& script, JSValue& exception)
         return jsNull();
 
     JSLock lock(SilenceAssertionsOnly);
-    return m_debuggerCallFrame.evaluate(script, exception);
+    return DebuggerCallFrame_evaluateInWorld(m_debuggerCallFrame, script, exception);
 }
 
 } // namespace WebCore

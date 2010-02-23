@@ -28,22 +28,18 @@ namespace WebCore {
 
 JSValue JSSVGLength::value(ExecState* exec) const
 {
-    JSSVGPODTypeWrapper<SVGLength>* imp = impl();
-    SVGElement* context = JSSVGContextCache::svgContextForDOMObject(const_cast<JSSVGLength*>(this));
-
-    SVGLength podImp(*imp);
-    return jsNumber(exec, podImp.value(context));
+    SVGLength imp(*impl());
+    return jsNumber(exec, imp.value(context()));
 }
 
 JSValue JSSVGLength::convertToSpecifiedUnits(ExecState* exec, const ArgList& args)
 {
-    JSSVGPODTypeWrapper<SVGLength>* imp = impl();
-    SVGElement* context = JSSVGContextCache::svgContextForDOMObject(this);
+    JSSVGPODTypeWrapper<SVGLength>* wrapper = impl();
 
-    SVGLength podImp(*imp);
-    podImp.convertToSpecifiedUnits(args.at(0).toInt32(exec), context);
+    SVGLength imp(*wrapper);
+    imp.convertToSpecifiedUnits(args.at(0).toInt32(exec), context());
 
-    imp->commitChange(podImp, this);
+    wrapper->commitChange(imp, context());
     return jsUndefined();
 }
 

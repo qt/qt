@@ -136,7 +136,7 @@ void WMLCardElement::handleIntrinsicEventIfNeeded()
     // Calculate the entry method of current card 
     WMLIntrinsicEventType eventType = WMLIntrinsicEventUnknown;
 
-    switch (loader->policyChecker()->loadType()) {
+    switch (loader->loadType()) {
     case FrameLoadTypeReload:
         break;
     case FrameLoadTypeBack:

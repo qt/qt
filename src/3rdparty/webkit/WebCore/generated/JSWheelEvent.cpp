@@ -89,7 +89,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -156,8 +156,7 @@ JSValue jsWheelEventScreenX(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->screenX());
-    return result;
+    return jsNumber(exec, imp->screenX());
 }
 
 JSValue jsWheelEventScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -165,8 +164,7 @@ JSValue jsWheelEventScreenY(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->screenY());
-    return result;
+    return jsNumber(exec, imp->screenY());
 }
 
 JSValue jsWheelEventClientX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -174,8 +172,7 @@ JSValue jsWheelEventClientX(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->clientX());
-    return result;
+    return jsNumber(exec, imp->clientX());
 }
 
 JSValue jsWheelEventClientY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -183,8 +180,7 @@ JSValue jsWheelEventClientY(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->clientY());
-    return result;
+    return jsNumber(exec, imp->clientY());
 }
 
 JSValue jsWheelEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -192,8 +188,7 @@ JSValue jsWheelEventCtrlKey(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->ctrlKey());
-    return result;
+    return jsBoolean(imp->ctrlKey());
 }
 
 JSValue jsWheelEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -201,8 +196,7 @@ JSValue jsWheelEventShiftKey(ExecState* exec, const Identifier&, const PropertyS
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->shiftKey());
-    return result;
+    return jsBoolean(imp->shiftKey());
 }
 
 JSValue jsWheelEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -210,8 +204,7 @@ JSValue jsWheelEventAltKey(ExecState* exec, const Identifier&, const PropertySlo
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->altKey());
-    return result;
+    return jsBoolean(imp->altKey());
 }
 
 JSValue jsWheelEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -219,8 +212,7 @@ JSValue jsWheelEventMetaKey(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->metaKey());
-    return result;
+    return jsBoolean(imp->metaKey());
 }
 
 JSValue jsWheelEventWheelDelta(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -228,8 +220,7 @@ JSValue jsWheelEventWheelDelta(ExecState* exec, const Identifier&, const Propert
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->wheelDelta());
-    return result;
+    return jsNumber(exec, imp->wheelDelta());
 }
 
 JSValue jsWheelEventWheelDeltaX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -237,8 +228,7 @@ JSValue jsWheelEventWheelDeltaX(ExecState* exec, const Identifier&, const Proper
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->wheelDeltaX());
-    return result;
+    return jsNumber(exec, imp->wheelDeltaX());
 }
 
 JSValue jsWheelEventWheelDeltaY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -246,8 +236,7 @@ JSValue jsWheelEventWheelDeltaY(ExecState* exec, const Identifier&, const Proper
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->wheelDeltaY());
-    return result;
+    return jsNumber(exec, imp->wheelDeltaY());
 }
 
 JSValue jsWheelEventOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -255,8 +244,7 @@ JSValue jsWheelEventOffsetX(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->offsetX());
-    return result;
+    return jsNumber(exec, imp->offsetX());
 }
 
 JSValue jsWheelEventOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -264,8 +252,7 @@ JSValue jsWheelEventOffsetY(ExecState* exec, const Identifier&, const PropertySl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->offsetY());
-    return result;
+    return jsNumber(exec, imp->offsetY());
 }
 
 JSValue jsWheelEventX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -273,8 +260,7 @@ JSValue jsWheelEventX(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->x());
-    return result;
+    return jsNumber(exec, imp->x());
 }
 
 JSValue jsWheelEventY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -282,8 +268,7 @@ JSValue jsWheelEventY(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSWheelEvent* castedThis = static_cast<JSWheelEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WheelEvent* imp = static_cast<WheelEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->y());
-    return result;
+    return jsNumber(exec, imp->y());
 }
 
 JSValue jsWheelEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -135,8 +135,7 @@ JSValue jsLocationHref(ExecState* exec, const Identifier&, const PropertySlot& s
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->href());
-    return result;
+    return jsString(exec, imp->href());
 }
 
 JSValue jsLocationProtocol(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -144,8 +143,7 @@ JSValue jsLocationProtocol(ExecState* exec, const Identifier&, const PropertySlo
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->protocol());
-    return result;
+    return jsString(exec, imp->protocol());
 }
 
 JSValue jsLocationHost(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,8 +151,7 @@ JSValue jsLocationHost(ExecState* exec, const Identifier&, const PropertySlot& s
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->host());
-    return result;
+    return jsString(exec, imp->host());
 }
 
 JSValue jsLocationHostname(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,8 +159,7 @@ JSValue jsLocationHostname(ExecState* exec, const Identifier&, const PropertySlo
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->hostname());
-    return result;
+    return jsString(exec, imp->hostname());
 }
 
 JSValue jsLocationPort(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -171,8 +167,7 @@ JSValue jsLocationPort(ExecState* exec, const Identifier&, const PropertySlot& s
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->port());
-    return result;
+    return jsString(exec, imp->port());
 }
 
 JSValue jsLocationPathname(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,8 +175,7 @@ JSValue jsLocationPathname(ExecState* exec, const Identifier&, const PropertySlo
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->pathname());
-    return result;
+    return jsString(exec, imp->pathname());
 }
 
 JSValue jsLocationSearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -189,8 +183,7 @@ JSValue jsLocationSearch(ExecState* exec, const Identifier&, const PropertySlot&
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->search());
-    return result;
+    return jsString(exec, imp->search());
 }
 
 JSValue jsLocationHash(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -198,8 +191,7 @@ JSValue jsLocationHash(ExecState* exec, const Identifier&, const PropertySlot& s
     JSLocation* castedThis = static_cast<JSLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->hash());
-    return result;
+    return jsString(exec, imp->hash());
 }
 
 void JSLocation::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)

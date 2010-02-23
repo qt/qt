@@ -32,7 +32,6 @@ namespace WebCore {
 
     class SVGElementInstance;
     class SVGLength;
-    class SVGShadowTreeRootElement;
 
     class SVGUseElement : public SVGStyledTransformableElement,
                           public SVGTests,
@@ -53,10 +52,11 @@ namespace WebCore {
         virtual void buildPendingResource();
 
         virtual void parseMappedAttribute(MappedAttribute*);
-        virtual void svgAttributeChanged(const QualifiedName&);
-        virtual void synchronizeProperty(const QualifiedName&);
+        virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
+        virtual void svgAttributeChanged(const QualifiedName&);
         virtual void recalcStyle(StyleChange = NoChange);
+
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
         virtual void attach();
         virtual void detach();
@@ -65,26 +65,20 @@ namespace WebCore {
 
         static void removeDisallowedElementsFromSubtree(Node* element);
         SVGElementInstance* instanceForShadowTreeElement(Node* element) const;
-        void invalidateShadowTree();
 
     private:
-        friend class RenderSVGShadowTreeRootContainer;
-        bool isPendingResource() const { return m_isPendingResource; }
-        void buildShadowAndInstanceTree(SVGShadowTreeRootElement*);
-
-    private:
-        virtual bool hasRelativeValues() const;
-
-        DECLARE_ANIMATED_PROPERTY(SVGUseElement, SVGNames::xAttr, SVGLength, X, x)
-        DECLARE_ANIMATED_PROPERTY(SVGUseElement, SVGNames::yAttr, SVGLength, Y, y)
-        DECLARE_ANIMATED_PROPERTY(SVGUseElement, SVGNames::widthAttr, SVGLength, Width, width)
-        DECLARE_ANIMATED_PROPERTY(SVGUseElement, SVGNames::heightAttr, SVGLength, Height, height)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGUseElement, SVGNames::useTagString, SVGNames::xAttrString, SVGLength, X, x)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGUseElement, SVGNames::useTagString, SVGNames::yAttrString, SVGLength, Y, y)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGUseElement, SVGNames::useTagString, SVGNames::widthAttrString, SVGLength, Width, width)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGUseElement, SVGNames::useTagString, SVGNames::heightAttrString, SVGLength, Height, height)
 
         // SVGURIReference
-        DECLARE_ANIMATED_PROPERTY(SVGUseElement, XLinkNames::hrefAttr, String, Href, href)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGUseElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
 
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGUseElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGUseElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
 
     private:
         // Instance tree handling
@@ -92,12 +86,17 @@ namespace WebCore {
         void handleDeepUseReferencing(SVGUseElement* use, SVGElementInstance* targetInstance, bool& foundCycle);
 
         // Shadow tree handling
-        void buildShadowTree(SVGShadowTreeRootElement*, SVGElement* target, SVGElementInstance* targetInstance);
+        PassRefPtr<SVGSVGElement> buildShadowTreeForSymbolTag(SVGElement* target, SVGElementInstance* targetInstance);
+        void alterShadowTreeForSVGTag(SVGElement* target);
+
+        void buildShadowTree(SVGElement* target, SVGElementInstance* targetInstance);
 
 #if ENABLE(SVG) && ENABLE(SVG_USE)
-        void expandUseElementsInShadowTree(SVGShadowTreeRootElement*, Node* element);
-        void expandSymbolElementsInShadowTree(SVGShadowTreeRootElement*, Node* element);
+        void expandUseElementsInShadowTree(Node* element);
+        void expandSymbolElementsInShadowTree(Node* element);
 #endif
+
+        void attachShadowTree();
 
         // "Tree connector" 
         void associateInstancesWithShadowTreeElements(Node* target, SVGElementInstance* targetInstance);
@@ -106,16 +105,11 @@ namespace WebCore {
         void transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const;
         void transferEventListenersToShadowTree(SVGElementInstance* target);
 
-        void updateContainerOffsets();
-        void updateContainerSizes();
-
-        bool m_isPendingResource;
-        bool m_needsShadowTreeRecreation;
-        String m_resourceId;
+        RefPtr<SVGElement> m_shadowTreeRootElement;
         RefPtr<SVGElementInstance> m_targetElementInstance;
     };
 
-}
+} // namespace WebCore
 
-#endif
+#endif // ENABLE(SVG)
 #endif

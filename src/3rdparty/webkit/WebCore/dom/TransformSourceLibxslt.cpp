@@ -24,8 +24,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(XSLT)
 #include "TransformSource.h"
 
 #include <libxml/tree.h>
@@ -43,5 +41,3 @@ TransformSource::~TransformSource()
 }
 
 }
-
-#endif

@@ -21,10 +21,9 @@
 
 #ifndef RenderForeignObject_h
 #define RenderForeignObject_h
-
 #if ENABLE(SVG) && ENABLE(SVG_FOREIGN_OBJECT)
-#include "AffineTransform.h"
-#include "FloatPoint.h"
+
+#include "TransformationMatrix.h"
 #include "RenderSVGBlock.h"
 
 namespace WebCore {
@@ -39,35 +38,28 @@ public:
 
     virtual void paint(PaintInfo&, int parentX, int parentY);
 
-    virtual IntRect clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer);
-    virtual void computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect&, bool fixed = false);
+    virtual TransformationMatrix localToParentTransform() const;
 
+    virtual void computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect&, bool fixed = false);
     virtual bool requiresLayer() const { return false; }
     virtual void layout();
 
-    virtual FloatRect objectBoundingBox() const { return m_viewport; }
-    virtual FloatRect strokeBoundingBox() const { return m_viewport; }
-    virtual FloatRect repaintRectInLocalCoordinates() const { return m_viewport; }
+    virtual FloatRect objectBoundingBox() const;
+    virtual FloatRect repaintRectInLocalCoordinates() const;
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
     virtual bool isSVGForeignObject() const { return true; }
 
-    virtual void mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool fixed , bool useTransforms, TransformState& transformState) const;
-
  private:
-    virtual void calcWidth();
-    virtual void calcHeight();
+    TransformationMatrix translationForAttributes() const;
 
-    virtual const AffineTransform& localToParentTransform() const;
-    virtual AffineTransform localTransform() const { return m_localTransform; }
+    virtual TransformationMatrix localTransform() const { return m_localTransform; }
 
-    FloatRect m_viewport;
-    AffineTransform m_localTransform;
-    mutable AffineTransform m_localToParentTransform;
+    TransformationMatrix m_localTransform;
 };
 
-}
+} // namespace WebCore
 
-#endif
-#endif
+#endif // ENABLE(SVG) && ENABLE(SVG_FOREIGN_OBJECT)
+#endif // RenderForeignObject_h

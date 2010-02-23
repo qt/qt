@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -143,8 +143,7 @@ JSValue jsNotationPublicId(ExecState* exec, const Identifier&, const PropertySlo
     JSNotation* castedThis = static_cast<JSNotation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Notation* imp = static_cast<Notation*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->publicId());
-    return result;
+    return jsStringOrNull(exec, imp->publicId());
 }
 
 JSValue jsNotationSystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -152,8 +151,7 @@ JSValue jsNotationSystemId(ExecState* exec, const Identifier&, const PropertySlo
     JSNotation* castedThis = static_cast<JSNotation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Notation* imp = static_cast<Notation*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->systemId());
-    return result;
+    return jsStringOrNull(exec, imp->systemId());
 }
 
 JSValue jsNotationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

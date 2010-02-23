@@ -31,7 +31,6 @@
 #include "config.h"
 #include "HistoryController.h"
 
-#include "BackForwardList.h"
 #include "CachedPage.h"
 #include "CString.h"
 #include "DocumentLoader.h"
@@ -106,14 +105,6 @@ void HistoryController::restoreScrollPositionAndViewState()
 void HistoryController::updateBackForwardListForFragmentScroll()
 {
     updateBackForwardListClippedAtTarget(false);
-    
-    // Since the document isn't changed as a result of a fragment scroll, we should
-    // preserve the DocumentSequenceNumber of the previous item.
-    if (!m_previousItem)
-        return;
-
-    ASSERT(m_currentItem);
-    m_currentItem->setDocumentSequenceNumber(m_previousItem->documentSequenceNumber());
 }
 
 void HistoryController::saveDocumentState()
@@ -411,7 +402,7 @@ void HistoryController::updateForCommit()
     }
 }
 
-void HistoryController::updateForSameDocumentNavigation()
+void HistoryController::updateForAnchorScroll()
 {
     if (m_frame->loader()->url().isEmpty())
         return;
@@ -631,40 +622,6 @@ void HistoryController::updateBackForwardListClippedAtTarget(bool doClip)
     RefPtr<HistoryItem> item = frameLoader->history()->createItemTree(m_frame, doClip);
     LOG(BackForward, "WebCoreBackForward - Adding backforward item %p for frame %s", item.get(), m_frame->loader()->documentLoader()->url().string().ascii().data());
     page->backForwardList()->addItem(item);
-}
-
-void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject, const String& title, const String& urlString)
-{
-    Page* page = m_frame->page();
-    ASSERT(page);
-
-    // Get a HistoryItem tree for the current frame tree.
-    RefPtr<HistoryItem> item = createItemTree(m_frame, false);
-    ASSERT(item->isTargetItem());
-    
-    // Override data in the target item to reflect the pushState() arguments.
-    item->setTitle(title);
-    item->setStateObject(stateObject);
-    item->setURLString(urlString);
-
-    // Since the document isn't changed as a result of a pushState call, we
-    // should preserve the DocumentSequenceNumber of the previous item.
-    item->setDocumentSequenceNumber(m_previousItem->documentSequenceNumber());
-    
-    page->backForwardList()->pushStateItem(item.release());
-}
-
-void HistoryController::replaceState(PassRefPtr<SerializedScriptValue> stateObject, const String& title, const String& urlString)
-{
-    Page* page = m_frame->page();
-    ASSERT(page);
-    HistoryItem* current = page->backForwardList()->currentItem();
-    ASSERT(current);
-
-    if (!urlString.isEmpty())
-        current->setURLString(urlString);
-    current->setTitle(title);
-    current->setStateObject(stateObject);
 }
 
 } // namespace WebCore

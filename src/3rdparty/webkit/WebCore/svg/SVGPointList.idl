@@ -28,19 +28,19 @@ module svg {
     interface [Conditional=SVG] SVGPointList {
         readonly attribute unsigned long numberOfItems;
 
-        void clear()
+        [JSCCustom] void clear()
             raises(DOMException);
-        SVGPoint initialize(in SVGPoint item)
+        [JSCCustom] SVGPoint initialize(in SVGPoint item)
             raises(DOMException, SVGException);
-        SVGPoint getItem(in unsigned long index)
+        [JSCCustom] SVGPoint getItem(in unsigned long index)
             raises(DOMException);
-        SVGPoint insertItemBefore(in SVGPoint item, in unsigned long index)
+        [JSCCustom] SVGPoint insertItemBefore(in SVGPoint item, in unsigned long index)
             raises(DOMException, SVGException);
-        SVGPoint replaceItem(in SVGPoint item, in unsigned long index)
+        [JSCCustom] SVGPoint replaceItem(in SVGPoint item, in unsigned long index)
             raises(DOMException, SVGException);
-        SVGPoint removeItem(in unsigned long index)
+        [JSCCustom] SVGPoint removeItem(in unsigned long index)
             raises(DOMException);
-        SVGPoint appendItem(in SVGPoint item)
+        [JSCCustom] SVGPoint appendItem(in SVGPoint item)
             raises(DOMException, SVGException);
     };
 

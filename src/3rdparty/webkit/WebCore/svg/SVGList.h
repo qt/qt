@@ -2,6 +2,8 @@
     Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -39,10 +41,6 @@ namespace WebCore {
         {
             return SVGListTraits<UsesDefaultInitializer<Item>::value, Item>::nullItem();
         }
-        static bool isNull(const Item& it)
-        {
-            return SVGListTraits<UsesDefaultInitializer<Item>::value, Item>::isNull(it);
-        }
     };
 
     template<typename Item>
@@ -60,10 +58,6 @@ namespace WebCore {
 
         Item initialize(Item newItem, ExceptionCode& ec)
         {
-            if (TypeOperations::isNull(newItem)) {
-                ec = TYPE_MISMATCH_ERR;
-                return TypeOperations::nullItem();
-            }
             clear(ec);
             return appendItem(newItem, ec);
         }
@@ -100,13 +94,8 @@ namespace WebCore {
             return m_vector[index];
         }
 
-        Item insertItemBefore(Item newItem, unsigned int index, ExceptionCode& ec)
+        Item insertItemBefore(Item newItem, unsigned int index, ExceptionCode&)
         {
-            if (TypeOperations::isNull(newItem)) {
-                ec = TYPE_MISMATCH_ERR;
-                return TypeOperations::nullItem();
-            }
-
             if (index < m_vector.size()) {
                 m_vector.insert(index, newItem);
             } else {
@@ -119,11 +108,6 @@ namespace WebCore {
         {
             if (index >= m_vector.size()) {
                 ec = INDEX_SIZE_ERR;
-                return TypeOperations::nullItem();
-            }
-    
-            if (TypeOperations::isNull(newItem)) {
-                ec = TYPE_MISMATCH_ERR;
                 return TypeOperations::nullItem();
             }
 
@@ -143,13 +127,8 @@ namespace WebCore {
             return item;
         }
 
-        Item appendItem(Item newItem, ExceptionCode& ec)
+        Item appendItem(Item newItem, ExceptionCode&)
         {
-            if (TypeOperations::isNull(newItem)) {
-                ec = TYPE_MISMATCH_ERR;
-                return TypeOperations::nullItem();
-            }
-
             m_vector.append(newItem);
             return newItem;
         }
@@ -176,7 +155,7 @@ namespace WebCore {
 
         // Updating facilities, used by JSSVGPODTypeWrapperCreatorForList
         Item value() const { return m_item; }
-        void setValue(const Item& newItem) { m_item = newItem; }
+        void setValue(Item newItem) { m_item = newItem; }
 
     private:
         SVGPODListItem() : m_item() { }

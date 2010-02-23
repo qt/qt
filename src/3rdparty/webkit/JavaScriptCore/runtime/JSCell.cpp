@@ -59,10 +59,10 @@ static const union {
     } doubles;
     
 } NaNInf = { {
-#if CPU(BIG_ENDIAN)
+#if PLATFORM(BIG_ENDIAN)
     { 0x7f, 0xf8, 0, 0, 0, 0, 0, 0 },
     { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 }
-#elif CPU(MIDDLE_ENDIAN)
+#elif PLATFORM(MIDDLE_ENDIAN)
     { 0, 0, 0xf8, 0x7f, 0, 0, 0, 0 },
     { 0, 0, 0xf0, 0x7f, 0, 0, 0, 0 }
 #else
@@ -76,22 +76,27 @@ extern const double Inf = NaNInf.doubles.Inf_Double;
  
 #endif // !(defined NAN && defined INFINITY)
 
+void* JSCell::operator new(size_t size, ExecState* exec)
+{
+    return exec->heap()->allocate(size);
+}
+
 bool JSCell::getUInt32(uint32_t&) const
 {
     return false;
 }
 
-bool JSCell::getString(ExecState* exec, UString&stringValue) const
+bool JSCell::getString(UString&stringValue) const
 {
     if (!isString())
         return false;
-    stringValue = static_cast<const JSString*>(this)->value(exec);
+    stringValue = static_cast<const JSString*>(this)->value();
     return true;
 }
 
-UString JSCell::getString(ExecState* exec) const
+UString JSCell::getString() const
 {
-    return isString() ? static_cast<const JSString*>(this)->value(exec) : UString();
+    return isString() ? static_cast<const JSString*>(this)->value() : UString();
 }
 
 JSObject* JSCell::getObject()

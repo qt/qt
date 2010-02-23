@@ -74,7 +74,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -141,8 +141,7 @@ JSValue jsHTMLDListElementCompact(ExecState* exec, const Identifier&, const Prop
     JSHTMLDListElement* castedThis = static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDListElement* imp = static_cast<HTMLDListElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->compact());
-    return result;
+    return jsBoolean(imp->compact());
 }
 
 JSValue jsHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -157,8 +156,7 @@ void JSHTMLDListElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLDListElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDListElement* castedThisObj = static_cast<JSHTMLDListElement*>(thisObject);
-    HTMLDListElement* imp = static_cast<HTMLDListElement*>(castedThisObj->impl());
+    HTMLDListElement* imp = static_cast<HTMLDListElement*>(static_cast<JSHTMLDListElement*>(thisObject)->impl());
     imp->setCompact(value.toBoolean(exec));
 }
 

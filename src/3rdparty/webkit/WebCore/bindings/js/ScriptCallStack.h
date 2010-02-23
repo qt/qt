@@ -49,7 +49,6 @@ namespace WebCore {
         ~ScriptCallStack();
 
         ScriptState* state() const { return m_exec; }
-        ScriptState* globalState() const { return m_exec->lexicalGlobalObject()->globalExec(); }
         // frame retrieval methods
         const ScriptCallFrame &at(unsigned);
         unsigned size();

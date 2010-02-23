@@ -86,7 +86,7 @@ private:
             return transformMode == KeepTransform ? NoLayer : OpaqueCompositeLayer;
     }
 
-    static TransformMode getTransformMode(const AffineTransform& matrix)
+    static TransformMode getTransformMode(const TransformationMatrix& matrix)
     {
         if (matrix.b() != 0 || matrix.c() != 0)  // Skew.
             return Untransform;

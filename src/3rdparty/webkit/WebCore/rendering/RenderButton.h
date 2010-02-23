@@ -1,4 +1,6 @@
 /*
+ * This file is part of the html renderer for KDE.
+ *
  * Copyright (C) 2005 Apple Computer
  *
  * This library is free software; you can redistribute it and/or

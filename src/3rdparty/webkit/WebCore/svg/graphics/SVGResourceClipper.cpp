@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
- *           (C) 2009 Dirk Schulze <krit@webkit.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
 #if ENABLE(SVG)
 #include "SVGResourceClipper.h"
 
-#include "AffineTransform.h"
+#include "TransformationMatrix.h"
 #include "GraphicsContext.h"
 #include "SVGRenderTreeAsText.h"
 
@@ -51,36 +50,6 @@ SVGResourceClipper::~SVGResourceClipper()
 void SVGResourceClipper::resetClipData()
 {
     m_clipData.clear();
-    m_clipperBoundingBox = FloatRect();
-}
-
-void SVGResourceClipper::invalidate()
-{
-    SVGResource::invalidate();
-    resetClipData();
-}
-
-FloatRect SVGResourceClipper::clipperBoundingBox(const FloatRect& objectBoundingBox)
-{
-    // FIXME: We need a different calculation for other clip content than paths.
-    if (!m_clipperBoundingBox.isEmpty())
-        return m_clipperBoundingBox;
-
-    if (m_clipData.clipData().isEmpty())
-        return FloatRect();
-
-    for (unsigned x = 0; x < m_clipData.clipData().size(); x++) {
-        ClipData clipData = m_clipData.clipData()[x];
-
-        FloatRect clipPathRect = clipData.path.boundingRect();
-        if (clipData.bboxUnits) {
-            clipPathRect.scale(objectBoundingBox.width(), objectBoundingBox.height());
-            clipPathRect.move(objectBoundingBox.x(), objectBoundingBox.y());
-        }
-        m_clipperBoundingBox.unite(clipPathRect);
-    }
-
-    return m_clipperBoundingBox;
 }
 
 void SVGResourceClipper::applyClip(GraphicsContext* context, const FloatRect& boundingBox) const
@@ -101,7 +70,7 @@ void SVGResourceClipper::applyClip(GraphicsContext* context, const FloatRect& bo
         Path clipPath = clipData.path;
 
         if (clipData.bboxUnits) {
-            AffineTransform transform;
+            TransformationMatrix transform;
             transform.translate(boundingBox.x(), boundingBox.y());
             transform.scaleNonUniform(boundingBox.width(), boundingBox.height());
             clipPath.transform(transform);
@@ -156,9 +125,9 @@ TextStream& operator<<(TextStream& ts, const ClipData& d)
     return ts;
 }
 
-SVGResourceClipper* getClipperById(Document* document, const AtomicString& id, const RenderObject* object)
+SVGResourceClipper* getClipperById(Document* document, const AtomicString& id)
 {
-    SVGResource* resource = getResourceById(document, id, object);
+    SVGResource* resource = getResourceById(document, id);
     if (resource && resource->isClipper())
         return static_cast<SVGResourceClipper*>(resource);
 

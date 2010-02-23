@@ -37,7 +37,6 @@
 #include "CString.h"
 #include "ChildNodeList.h"
 #include "ClassNodeList.h"
-#include "ContextMenuController.h"
 #include "DOMImplementation.h"
 #include "Document.h"
 #include "DynamicNodeList.h"
@@ -54,7 +53,6 @@
 #include "InspectorTimelineAgent.h"
 #include "KeyboardEvent.h"
 #include "Logging.h"
-#include "MappedAttribute.h"
 #include "MouseEvent.h"
 #include "MutationEvent.h"
 #include "NameNodeList.h"
@@ -145,7 +143,7 @@ void Node::dumpStatistics()
     size_t attrMaps = 0;
     size_t mappedAttrMaps = 0;
 
-    for (HashSet<Node*>::iterator it = liveNodeSet.begin(); it != liveNodeSet.end(); ++it) {
+    for (HashSet<Node*>::const_iterator it = liveNodeSet.begin(); it != liveNodeSet.end(); ++it) {
         Node* node = *it;
 
         if (node->hasRareData())
@@ -251,7 +249,7 @@ void Node::dumpStatistics()
     printf("  Number of XPathNS nodes: %zu\n", xpathNSNodes);
 
     printf("Element tag name distibution:\n");
-    for (HashMap<String, size_t>::iterator it = perTagCount.begin(); it != perTagCount.end(); ++it)
+    for (HashMap<String, size_t>::const_iterator it = perTagCount.begin(); it != perTagCount.end(); ++it)
         printf("  Number of <%s> tags: %zu\n", it->first.utf8().data(), it->second);
 
     printf("Attribute Maps:\n");
@@ -313,20 +311,25 @@ Node::StyleChange Node::diff(const RenderStyle* s1, const RenderStyle* s2)
 
     // If the pseudoStyles have changed, we want any StyleChange that is not NoChange
     // because setStyle will do the right thing with anything else.
-    if (ch == NoChange && s1->hasAnyPublicPseudoStyles()) {
-        for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; ch == NoChange && pseudoId < FIRST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
-            if (s1->hasPseudoStyle(pseudoId)) {
-                RenderStyle* ps2 = s2->getCachedPseudoStyle(pseudoId);
-                if (!ps2)
-                    ch = NoInherit;
-                else {
-                    RenderStyle* ps1 = s1->getCachedPseudoStyle(pseudoId);
-                    ch = ps1 && *ps1 == *ps2 ? NoChange : NoInherit;
-                }
-            }
+    if (ch == NoChange && s1->hasPseudoStyle(BEFORE)) {
+        RenderStyle* ps2 = s2->getCachedPseudoStyle(BEFORE);
+        if (!ps2)
+            ch = NoInherit;
+        else {
+            RenderStyle* ps1 = s1->getCachedPseudoStyle(BEFORE);
+            ch = ps1 && *ps1 == *ps2 ? NoChange : NoInherit;
         }
     }
-
+    if (ch == NoChange && s1->hasPseudoStyle(AFTER)) {
+        RenderStyle* ps2 = s2->getCachedPseudoStyle(AFTER);
+        if (!ps2)
+            ch = NoInherit;
+        else {
+            RenderStyle* ps1 = s1->getCachedPseudoStyle(AFTER);
+            ch = ps2 && *ps1 == *ps2 ? NoChange : NoInherit;
+        }
+    }
+    
     return ch;
 }
 
@@ -407,6 +410,7 @@ Node::Node(Document* document, ConstructionType type)
     , m_hovered(false)
     , m_inActiveChain(false)
     , m_inDetach(false)
+    , m_inSubtreeMark(false)
     , m_hasRareData(false)
     , m_isElement(isElement(type))
     , m_isContainer(isContainer(type))
@@ -417,7 +421,6 @@ Node::Node(Document* document, ConstructionType type)
 #if ENABLE(SVG)
     , m_areSVGAttributesValid(true)
     , m_synchronizingSVGAttributes(false)
-    , m_hasRareSVGData(false)
 #endif
 {
     if (m_document)
@@ -515,12 +518,6 @@ void Node::setDocument(Document* document)
 #if USE(JSC)
     updateDOMNodeDocument(this, m_document, document);
 #endif
-
-    if (hasRareData() && rareData()->nodeLists()) {
-        if (m_document)
-            m_document->removeNodeListCache();
-        document->addNodeListCache();
-    }
 
     if (m_document)
         m_document->selfOnlyDeref();
@@ -677,7 +674,7 @@ void Node::normalize()
 
         // Merge text nodes.
         while (Node* nextSibling = node->nextSibling()) {
-            if (nextSibling->nodeType() != TEXT_NODE)
+            if (!nextSibling->isTextNode())
                 break;
             RefPtr<Text> nextText = static_cast<Text*>(nextSibling);
 
@@ -845,7 +842,7 @@ bool Node::isFocusable() const
         ASSERT(!renderer()->needsLayout());
     else
         // If the node is in a display:none tree it might say it needs style recalc but
-        // the whole document is actually up to date.
+        // the whole document is atually up to date.
         ASSERT(!document()->childNeedsStyleRecalc());
     
     // FIXME: Even if we are not visible, we might have a child that is visible.
@@ -913,10 +910,7 @@ void Node::notifyLocalNodeListsAttributeChanged()
     if (!data->nodeLists())
         return;
 
-    if (!isAttributeNode())
-        data->nodeLists()->invalidateCachesThatDependOnAttributes();
-    else
-        data->nodeLists()->invalidateCaches();
+    data->nodeLists()->invalidateCachesThatDependOnAttributes();
 
     if (data->nodeLists()->isEmpty()) {
         data->clearNodeLists();
@@ -1039,27 +1033,34 @@ Node* Node::traversePreviousSiblingPostOrder(const Node* stayWithin) const
     return 0;
 }
 
-void Node::checkSetPrefix(const AtomicString& prefix, ExceptionCode& ec)
+void Node::checkSetPrefix(const AtomicString&, ExceptionCode& ec)
 {
     // Perform error checking as required by spec for setting Node.prefix. Used by
     // Element::setPrefix() and Attr::setPrefix()
 
     // FIXME: Implement support for INVALID_CHARACTER_ERR: Raised if the specified prefix contains an illegal character.
     
+    // NO_MODIFICATION_ALLOWED_ERR: Raised if this node is readonly.
     if (isReadOnlyNode()) {
         ec = NO_MODIFICATION_ALLOWED_ERR;
         return;
     }
 
-    // FIXME: Raise NAMESPACE_ERR if prefix is malformed per the Namespaces in XML specification.
-
-    const AtomicString& nodeNamespaceURI = namespaceURI();
-    if ((nodeNamespaceURI.isEmpty() && !prefix.isEmpty())
-        || (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI)) {
+    // FIXME: Implement NAMESPACE_ERR: - Raised if the specified prefix is malformed
+    // We have to comment this out, since it's used for attributes and tag names, and we've only
+    // switched one over.
+    /*
+    // - if the namespaceURI of this node is null,
+    // - if the specified prefix is "xml" and the namespaceURI of this node is different from
+    //   "http://www.w3.org/XML/1998/namespace",
+    // - if this node is an attribute and the specified prefix is "xmlns" and
+    //   the namespaceURI of this node is different from "http://www.w3.org/2000/xmlns/",
+    // - or if this node is an attribute and the qualifiedName of this node is "xmlns" [Namespaces].
+    if ((namespacePart(id()) == noNamespace && id() > ID_LAST_TAG) ||
+        (_prefix == "xml" && String(document()->namespaceURI(id())) != "http://www.w3.org/XML/1998/namespace")) {
         ec = NAMESPACE_ERR;
         return;
-    }
-    // Attribute-specific checks are in Attr::setPrefix().
+    }*/
 }
 
 bool Node::canReplaceChild(Node* newChild, Node*)
@@ -1463,7 +1464,7 @@ bool Node::canStartSelection() const
 Node* Node::shadowAncestorNode()
 {
 #if ENABLE(SVG)
-    // SVG elements living in a shadow tree only occur when <use> created them.
+    // SVG elements living in a shadow tree only occour when <use> created them.
     // For these cases we do NOT want to return the shadowParentNode() here
     // but the actual shadow tree element - as main difference to the HTML forms
     // shadow tree concept. (This function _could_ be made virtual - opinions?)
@@ -1652,6 +1653,7 @@ PassRefPtr<Element> Node::querySelector(const String& selectors, ExceptionCode& 
 
     // FIXME: we could also optimize for the the [id="foo"] case
     if (strictParsing && inDocument() && querySelectorList.hasOneSelector() && querySelectorList.first()->m_match == CSSSelector::Id) {
+        ASSERT(querySelectorList.first()->attribute() == idAttr);
         Element* element = document()->getElementById(querySelectorList.first()->m_value);
         if (element && (isDocumentNode() || element->isDescendantOf(this)) && selectorChecker.checkSelector(querySelectorList.first(), element))
             return element;
@@ -1761,24 +1763,25 @@ bool Node::isEqualNode(Node *other) const
     return true;
 }
 
-bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
+bool Node::isDefaultNamespace(const AtomicString &namespaceURI) const
 {
-    const AtomicString& namespaceURI = namespaceURIMaybeEmpty.isEmpty() ? nullAtom : namespaceURIMaybeEmpty;
-
+    // Implemented according to
+    // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#isDefaultNamespaceAlgo
+    
     switch (nodeType()) {
         case ELEMENT_NODE: {
-            const Element* elem = static_cast<const Element*>(this);
+            const Element *elem = static_cast<const Element *>(this);
             
             if (elem->prefix().isNull())
                 return elem->namespaceURI() == namespaceURI;
 
             if (elem->hasAttributes()) {
-                NamedNodeMap* attrs = elem->attributes();
+                NamedNodeMap *attrs = elem->attributes();
                 
                 for (unsigned i = 0; i < attrs->length(); i++) {
-                    Attribute* attr = attrs->attributeItem(i);
+                    Attribute *attr = attrs->attributeItem(i);
                     
-                    if (attr->localName() == xmlnsAtom)
+                    if (attr->localName() == "xmlns")
                         return attr->value() == namespaceURI;
                 }
             }
@@ -1798,7 +1801,7 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
         case DOCUMENT_FRAGMENT_NODE:
             return false;
         case ATTRIBUTE_NODE: {
-            const Attr* attr = static_cast<const Attr*>(this);
+            const Attr *attr = static_cast<const Attr *>(this);
             if (attr->ownerElement())
                 return attr->ownerElement()->isDefaultNamespace(namespaceURI);
             return false;
@@ -1864,12 +1867,12 @@ String Node::lookupNamespaceURI(const String &prefix) const
                 for (unsigned i = 0; i < attrs->length(); i++) {
                     Attribute *attr = attrs->attributeItem(i);
                     
-                    if (attr->prefix() == xmlnsAtom && attr->localName() == prefix) {
+                    if (attr->prefix() == "xmlns" && attr->localName() == prefix) {
                         if (!attr->value().isEmpty())
                             return attr->value();
                         
                         return String();
-                    } else if (attr->localName() == xmlnsAtom && prefix.isNull()) {
+                    } else if (attr->localName() == "xmlns" && prefix.isNull()) {
                         if (!attr->value().isEmpty())
                             return attr->value();
                         
@@ -1919,7 +1922,7 @@ String Node::lookupNamespacePrefix(const AtomicString &_namespaceURI, const Elem
         for (unsigned i = 0; i < attrs->length(); i++) {
             Attribute *attr = attrs->attributeItem(i);
             
-            if (attr->prefix() == xmlnsAtom &&
+            if (attr->prefix() == "xmlns" &&
                 attr->value() == _namespaceURI &&
                 originalElement->lookupNamespaceURI(attr->localName()) == _namespaceURI)
                 return attr->localName();
@@ -2286,19 +2289,6 @@ ContainerNode* Node::eventParentNode()
     return static_cast<ContainerNode*>(parent);
 }
 
-Node* Node::enclosingLinkEventParentOrSelf()
-{
-    for (Node* node = this; node; node = node->eventParentNode()) {
-        // For imagemaps, the enclosing link node is the associated area element not the image itself.
-        // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
-        // for them.
-        if (node->isLink() && !node->hasTagName(imgTag))
-            return node;
-    }
-
-    return 0;
-}
-
 // --------
 
 ScriptExecutionContext* Node::scriptExecutionContext() const
@@ -2328,159 +2318,49 @@ void Node::didMoveToNewOwnerDocument()
     setDidMoveToNewOwnerDocumentWasCalled(true);
 }
 
-#if ENABLE(SVG)
-static inline HashSet<SVGElementInstance*> instancesForSVGElement(Node* node)
+static inline void updateSVGElementInstancesAfterEventListenerChange(Node* referenceNode)
 {
-    HashSet<SVGElementInstance*> instances;
- 
-    ASSERT(node);
-    if (!node->isSVGElement() || node->shadowTreeRootNode())
-        return HashSet<SVGElementInstance*>();
+#if !ENABLE(SVG)
+    UNUSED_PARAM(referenceNode);
+#else
+    ASSERT(referenceNode);
+    if (!referenceNode->isSVGElement())
+        return;
 
-    SVGElement* element = static_cast<SVGElement*>(node);
-    if (!element->isStyled())
-        return HashSet<SVGElementInstance*>();
+    // Elements living inside a <use> shadow tree, never cause any updates!
+    if (referenceNode->shadowTreeRootNode())
+        return;
 
-    SVGStyledElement* styledElement = static_cast<SVGStyledElement*>(element);
-    ASSERT(!styledElement->instanceUpdatesBlocked());
+    // We're possibly (a child of) an element that is referenced by a <use> client
+    // If an event listeners changes on a referenced element, update all instances.
+    for (Node* node = referenceNode; node; node = node->parentNode()) {
+        if (!node->hasID() || !node->isSVGElement())
+            continue;
 
-    return styledElement->instancesForElement();
-}
+        SVGElementInstance::invalidateAllInstancesOfElement(static_cast<SVGElement*>(node));
+        break;
+    }
 #endif
-
-static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
-{
-    if (!targetNode->EventTarget::addEventListener(eventType, listener, useCapture))
-        return false;
-
-    if (Document* document = targetNode->document())
-        document->addListenerTypeIfNeeded(eventType);
-
-    return true;
 }
 
 bool Node::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
-#if !ENABLE(SVG)
-    return tryAddEventListener(this, eventType, listener, useCapture);
-#else
-    if (!isSVGElement())
-        return tryAddEventListener(this, eventType, listener, useCapture);
-
-    HashSet<SVGElementInstance*> instances = instancesForSVGElement(this);
-    if (instances.isEmpty())
-        return tryAddEventListener(this, eventType, listener, useCapture);
-
-    RefPtr<EventListener> listenerForRegularTree = listener;
-    RefPtr<EventListener> listenerForShadowTree = listenerForRegularTree;
-
-    // Add event listener to regular DOM element
-    if (!tryAddEventListener(this, eventType, listenerForRegularTree.release(), useCapture))
+    if (!EventTarget::addEventListener(eventType, listener, useCapture))
         return false;
 
-    // Add event listener to all shadow tree DOM element instances
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        ASSERT((*it)->shadowTreeElement());
-        ASSERT((*it)->correspondingElement() == this);
-
-        RefPtr<EventListener> listenerForCurrentShadowTreeElement = listenerForShadowTree;
-        bool result = tryAddEventListener((*it)->shadowTreeElement(), eventType, listenerForCurrentShadowTreeElement.release(), useCapture);
-        ASSERT_UNUSED(result, result);
-    }
-
-    return true;
-#endif
-}
-
-static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& eventType, EventListener* listener, bool useCapture)
-{
-    if (!targetNode->EventTarget::removeEventListener(eventType, listener, useCapture))
-        return false;
-
-    // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
-    // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
-
+    if (Document* document = this->document())
+        document->addListenerTypeIfNeeded(eventType);
+    updateSVGElementInstancesAfterEventListenerChange(this);
     return true;
 }
 
 bool Node::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
-#if !ENABLE(SVG)
-    return tryRemoveEventListener(this, eventType, listener, useCapture);
-#else
-    if (!isSVGElement())
-        return tryRemoveEventListener(this, eventType, listener, useCapture);
-
-    HashSet<SVGElementInstance*> instances = instancesForSVGElement(this);
-    if (instances.isEmpty())
-        return tryRemoveEventListener(this, eventType, listener, useCapture);
-
-    // EventTarget::removeEventListener creates a PassRefPtr around the given EventListener
-    // object when creating a temporary RegisteredEventListener object used to look up the
-    // event listener in a cache. If we want to be able to call removeEventListener() multiple
-    // times on different nodes, we have to delay its immediate destruction, which would happen
-    // after the first call below.
-    RefPtr<EventListener> protector(listener);
-
-    // Remove event listener from regular DOM element
-    if (!tryRemoveEventListener(this, eventType, listener, useCapture))
+    if (!EventTarget::removeEventListener(eventType, listener, useCapture))
         return false;
 
-    // Remove event listener from all shadow tree DOM element instances
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
-        ASSERT((*it)->correspondingElement() == this);
-
-        SVGElement* shadowTreeElement = (*it)->shadowTreeElement();
-        ASSERT(shadowTreeElement);
-
-        if (tryRemoveEventListener(shadowTreeElement, eventType, listener, useCapture))
-            continue;
-
-        // This case can only be hit for event listeners created from markup
-        ASSERT(listener->wasCreatedFromMarkup());
-
-        // If the event listener 'listener' has been created from markup and has been fired before
-        // then JSLazyEventListener::parseCode() has been called and m_jsFunction of that listener
-        // has been created (read: it's not 0 anymore). During shadow tree creation, the event
-        // listener DOM attribute has been cloned, and another event listener has been setup in
-        // the shadow tree. If that event listener has not been used yet, m_jsFunction is still 0,
-        // and tryRemoveEventListener() above will fail. Work around that very seldom problem.
-        EventTargetData* data = shadowTreeElement->eventTargetData();
-        ASSERT(data);
-
-        EventListenerMap::iterator result = data->eventListenerMap.find(eventType);
-        ASSERT(result != data->eventListenerMap.end());
-
-        EventListenerVector* entry = result->second;
-        ASSERT(entry);
-
-        unsigned int index = 0;
-        bool foundListener = false;
-
-        EventListenerVector::iterator end = entry->end();
-        for (EventListenerVector::iterator it = entry->begin(); it != end; ++it) {
-            if (!(*it).listener->wasCreatedFromMarkup()) {
-                ++index;
-                continue;
-            }
-
-            foundListener = true;
-            entry->remove(index);
-            break;
-        }
-
-        ASSERT(foundListener);
-
-        if (entry->isEmpty()) {                
-            delete entry;
-            data->eventListenerMap.remove(result);
-        }
-    }
-
+    updateSVGElementInstancesAfterEventListenerChange(this);
     return true;
-#endif
 }
 
 EventTargetData* Node::eventTargetData()
@@ -2567,23 +2447,6 @@ bool Node::dispatchEvent(PassRefPtr<Event> prpEvent)
     return dispatchGenericEvent(event.release());
 }
 
-static bool eventHasListeners(const AtomicString& eventType, DOMWindow* window, Node* node, Vector<RefPtr<ContainerNode> >& ancestors)
-{
-    if (window && window->hasEventListeners(eventType))
-        return true;
-
-    if (node->hasEventListeners(eventType))
-        return true;
-
-    for (size_t i = 0; i < ancestors.size(); i++) {
-        ContainerNode* ancestor = ancestors[i].get();
-        if (ancestor->hasEventListeners(eventType))
-            return true;
-    }
-
-   return false;    
-}
-
 bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
 {
     RefPtr<Event> event(prpEvent);
@@ -2591,6 +2454,12 @@ bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
     ASSERT(!eventDispatchForbidden());
     ASSERT(event->target());
     ASSERT(!event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
+
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* timelineAgent = document()->inspectorTimelineAgent();
+    if (timelineAgent)
+        timelineAgent->willDispatchDOMEvent(*event);
+#endif
 
     // Make a vector of ancestors to send the event to.
     // If the node is not in a document just send the event to it.
@@ -2608,13 +2477,6 @@ bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
         if (topLevelContainer->isDocumentNode())
             targetForWindowEvents = static_cast<Document*>(topLevelContainer)->domWindow();
     }
-
-#if ENABLE(INSPECTOR)
-    InspectorTimelineAgent* timelineAgent = document()->inspectorTimelineAgent();
-    bool timelineAgentIsActive = timelineAgent && eventHasListeners(event->type(), targetForWindowEvents, this, ancestors);
-    if (timelineAgentIsActive)
-        timelineAgent->willDispatchEvent(*event);
-#endif
 
     // Give the target node a chance to do some work before DOM event handlers get a crack.
     void* data = preDispatchEventHandler(event.get());
@@ -2697,8 +2559,8 @@ doneDispatching:
 
 doneWithDefault:
 #if ENABLE(INSPECTOR)
-    if (timelineAgentIsActive && (timelineAgent = document()->inspectorTimelineAgent()))
-        timelineAgent->didDispatchEvent();
+    if (timelineAgent)
+        timelineAgent->didDispatchDOMEvent();
 #endif
 
     Document::updateStyleForAllDocuments();
@@ -2949,23 +2811,6 @@ void Node::defaultEventHandler(Event* event)
         if (event->isTextEvent())
             if (Frame* frame = document()->frame())
                 frame->eventHandler()->defaultTextInputEventHandler(static_cast<TextEvent*>(event));
-#if ENABLE(PAN_SCROLLING)
-    } else if (eventType == eventNames().mousedownEvent) {
-        MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
-        if (mouseEvent->button() == MiddleButton) {
-            if (enclosingLinkEventParentOrSelf())
-                return;
-
-            RenderObject* renderer = this->renderer();
-            while (renderer && (!renderer->isBox() || !toRenderBox(renderer)->canBeScrolledAndHasScrollableArea()))
-                renderer = renderer->parent();
-
-            if (renderer) {
-                if (Frame* frame = document()->frame())
-                    frame->eventHandler()->startPanScrolling(renderer);
-            }
-        }
-#endif
     }
 }
 

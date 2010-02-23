@@ -45,6 +45,7 @@
 #include "FontCache.h"
 #include "FontFamilyValue.h"
 #include "Frame.h"
+#include "NodeList.h"
 #include "RenderObject.h"
 #include "Settings.h"
 #include "SimpleFontData.h"
@@ -394,7 +395,7 @@ static FontData* fontDataForGenericFamily(Document* document, const FontDescript
         genericFamily = settings->standardFontFamily();
 
     if (!genericFamily.isEmpty())
-        return fontCache()->getCachedFontData(fontDescription, genericFamily);
+        return fontCache()->getCachedFontData(fontCache()->getCachedFontPlatformData(fontDescription, genericFamily));
 
     return 0;
 }

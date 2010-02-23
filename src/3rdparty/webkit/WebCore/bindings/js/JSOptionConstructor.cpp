@@ -49,18 +49,21 @@ static JSObject* constructHTMLOptionElement(ExecState* exec, JSObject* construct
     if (!document)
         return throwError(exec, ReferenceError, "Option constructor associated document is unavailable");
 
-    String data;
-    if (!args.at(0).isUndefined())
-        data = args.at(0).toString(exec);
-
-    String value;
-    if (!args.at(1).isUndefined())
-        value = args.at(1).toString(exec);
-    bool defaultSelected = args.at(2).toBoolean(exec);
-    bool selected = args.at(3).toBoolean(exec);
+    RefPtr<HTMLOptionElement> element = static_pointer_cast<HTMLOptionElement>(document->createElement(HTMLNames::optionTag, false));
 
     ExceptionCode ec = 0;
-    RefPtr<HTMLOptionElement> element = HTMLOptionElement::createForJSConstructor(document, data, value, defaultSelected, selected, ec);
+    RefPtr<Text> text = document->createTextNode("");
+    if (!args.at(0).isUndefined())
+        text->setData(args.at(0).toString(exec), ec);
+    if (ec == 0)
+        element->appendChild(text.release(), ec);
+    if (ec == 0 && !args.at(1).isUndefined())
+        element->setValue(args.at(1).toString(exec));
+    if (ec == 0)
+        element->setDefaultSelected(args.at(2).toBoolean(exec));
+    if (ec == 0)
+        element->setSelected(args.at(3).toBoolean(exec));
+
     if (ec) {
         setDOMException(exec, ec);
         return 0;

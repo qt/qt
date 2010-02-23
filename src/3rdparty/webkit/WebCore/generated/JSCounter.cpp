@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -151,8 +151,7 @@ JSValue jsCounterIdentifier(ExecState* exec, const Identifier&, const PropertySl
     JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->identifier());
-    return result;
+    return jsString(exec, imp->identifier());
 }
 
 JSValue jsCounterListStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -160,8 +159,7 @@ JSValue jsCounterListStyle(ExecState* exec, const Identifier&, const PropertySlo
     JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->listStyle());
-    return result;
+    return jsString(exec, imp->listStyle());
 }
 
 JSValue jsCounterSeparator(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,8 +167,7 @@ JSValue jsCounterSeparator(ExecState* exec, const Identifier&, const PropertySlo
     JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->separator());
-    return result;
+    return jsString(exec, imp->separator());
 }
 
 JSValue jsCounterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

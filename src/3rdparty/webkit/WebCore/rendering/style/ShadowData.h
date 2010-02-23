@@ -26,7 +26,6 @@
 #define ShadowData_h
 
 #include "Color.h"
-#include <wtf/FastAllocBase.h>
 
 namespace WebCore {
 
@@ -34,7 +33,7 @@ enum ShadowStyle { Normal, Inset };
 
 // This struct holds information about shadows for the text-shadow and box-shadow properties.
 
-struct ShadowData : FastAllocBase {
+struct ShadowData {
     ShadowData()
         : x(0)
         , y(0)

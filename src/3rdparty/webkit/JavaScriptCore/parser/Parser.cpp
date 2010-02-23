@@ -50,7 +50,7 @@ void Parser::parse(JSGlobalData* globalData, int* errLine, UString* errMsg)
         errMsg = &defaultErrMsg;
 
     *errLine = -1;
-    *errMsg = UString();
+    *errMsg = 0;
 
     Lexer& lexer = *globalData->lexer;
     lexer.setCode(*m_source, m_arena);

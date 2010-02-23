@@ -111,7 +111,9 @@ inline void arithmetic(const RefPtr<CanvasPixelArray>& srcPixelArrayA, CanvasPix
             unsigned char i1 = srcPixelArrayA->get(pixelOffset + channel);
             unsigned char i2 = srcPixelArrayB->get(pixelOffset + channel);
 
-            double result = scaledK1 * i1 * i2 + k2 * i1 + k3 * i2 + scaledK4;
+            unsigned char result = scaledK1 * i1 * i2 + k2 * i1 + k3 * i2 + scaledK4;
+            if (channel == 3 && i1 == 0 && i2 == 0)
+                result = 0;
             srcPixelArrayB->set(pixelOffset + channel, result);
         }
     }
@@ -131,32 +133,32 @@ void FEComposite::apply(Filter* filter)
     FloatRect srcRect = FloatRect(0.f, 0.f, -1.f, -1.f);
     switch (m_type) {
     case FECOMPOSITE_OPERATOR_OVER:
-        filterContext->drawImage(m_in2->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in2->scaledSubRegion()));
-        filterContext->drawImage(m_in->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in->scaledSubRegion()));
+        filterContext->drawImage(m_in2->resultImage()->image(), calculateDrawingRect(m_in2->subRegion()));
+        filterContext->drawImage(m_in->resultImage()->image(), calculateDrawingRect(m_in->subRegion()));
         break;
     case FECOMPOSITE_OPERATOR_IN:
         filterContext->save();
-        filterContext->clipToImageBuffer(calculateDrawingRect(m_in2->scaledSubRegion()), m_in2->resultImage());
-        filterContext->drawImage(m_in->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in->scaledSubRegion()));
+        filterContext->clipToImageBuffer(calculateDrawingRect(m_in2->subRegion()), m_in2->resultImage());
+        filterContext->drawImage(m_in->resultImage()->image(), calculateDrawingRect(m_in->subRegion()));
         filterContext->restore();
         break;
     case FECOMPOSITE_OPERATOR_OUT:
-        filterContext->drawImage(m_in->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in->scaledSubRegion()));
-        filterContext->drawImage(m_in2->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in2->scaledSubRegion()), srcRect, CompositeDestinationOut);
+        filterContext->drawImage(m_in->resultImage()->image(), calculateDrawingRect(m_in->subRegion()));
+        filterContext->drawImage(m_in2->resultImage()->image(), calculateDrawingRect(m_in2->subRegion()), srcRect, CompositeDestinationOut);
         break;
     case FECOMPOSITE_OPERATOR_ATOP:
-        filterContext->drawImage(m_in2->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in2->scaledSubRegion()));
-        filterContext->drawImage(m_in->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in->scaledSubRegion()), srcRect, CompositeSourceAtop);
+        filterContext->drawImage(m_in2->resultImage()->image(), calculateDrawingRect(m_in2->subRegion()));
+        filterContext->drawImage(m_in->resultImage()->image(), calculateDrawingRect(m_in->subRegion()), srcRect, CompositeSourceAtop);
         break;
     case FECOMPOSITE_OPERATOR_XOR:
-        filterContext->drawImage(m_in2->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in2->scaledSubRegion()));
-        filterContext->drawImage(m_in->resultImage()->image(), DeviceColorSpace, calculateDrawingRect(m_in->scaledSubRegion()), srcRect, CompositeXOR);
+        filterContext->drawImage(m_in2->resultImage()->image(), calculateDrawingRect(m_in2->subRegion()));
+        filterContext->drawImage(m_in->resultImage()->image(), calculateDrawingRect(m_in->subRegion()), srcRect, CompositeXOR);
         break;
     case FECOMPOSITE_OPERATOR_ARITHMETIC: {
-        IntRect effectADrawingRect = calculateDrawingIntRect(m_in->scaledSubRegion());
+        IntRect effectADrawingRect = calculateDrawingIntRect(m_in->subRegion());
         RefPtr<CanvasPixelArray> srcPixelArrayA(m_in->resultImage()->getPremultipliedImageData(effectADrawingRect)->data());
 
-        IntRect effectBDrawingRect = calculateDrawingIntRect(m_in2->scaledSubRegion());
+        IntRect effectBDrawingRect = calculateDrawingIntRect(m_in2->subRegion());
         RefPtr<ImageData> imageData(m_in2->resultImage()->getPremultipliedImageData(effectBDrawingRect));
         CanvasPixelArray* srcPixelArrayB(imageData->data());
 

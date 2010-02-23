@@ -90,7 +90,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -157,8 +157,7 @@ JSValue jsHTMLAreaElementAccessKey(ExecState* exec, const Identifier&, const Pro
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::accesskeyAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::accesskeyAttr));
 }
 
 JSValue jsHTMLAreaElementAlt(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -166,8 +165,7 @@ JSValue jsHTMLAreaElementAlt(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::altAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::altAttr));
 }
 
 JSValue jsHTMLAreaElementCoords(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -175,8 +173,7 @@ JSValue jsHTMLAreaElementCoords(ExecState* exec, const Identifier&, const Proper
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::coordsAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::coordsAttr));
 }
 
 JSValue jsHTMLAreaElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -184,8 +181,7 @@ JSValue jsHTMLAreaElementHref(ExecState* exec, const Identifier&, const Property
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getURLAttribute(HTMLNames::hrefAttr));
-    return result;
+    return jsString(exec, imp->getURLAttribute(HTMLNames::hrefAttr));
 }
 
 JSValue jsHTMLAreaElementNoHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -193,8 +189,7 @@ JSValue jsHTMLAreaElementNoHref(ExecState* exec, const Identifier&, const Proper
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->noHref());
-    return result;
+    return jsBoolean(imp->noHref());
 }
 
 JSValue jsHTMLAreaElementShape(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -202,8 +197,7 @@ JSValue jsHTMLAreaElementShape(ExecState* exec, const Identifier&, const Propert
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::shapeAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::shapeAttr));
 }
 
 JSValue jsHTMLAreaElementTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -211,8 +205,7 @@ JSValue jsHTMLAreaElementTarget(ExecState* exec, const Identifier&, const Proper
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::targetAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::targetAttr));
 }
 
 JSValue jsHTMLAreaElementHash(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -220,8 +213,7 @@ JSValue jsHTMLAreaElementHash(ExecState* exec, const Identifier&, const Property
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->hash());
-    return result;
+    return jsString(exec, imp->hash());
 }
 
 JSValue jsHTMLAreaElementHost(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -229,8 +221,7 @@ JSValue jsHTMLAreaElementHost(ExecState* exec, const Identifier&, const Property
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->host());
-    return result;
+    return jsString(exec, imp->host());
 }
 
 JSValue jsHTMLAreaElementHostname(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -238,8 +229,7 @@ JSValue jsHTMLAreaElementHostname(ExecState* exec, const Identifier&, const Prop
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->hostname());
-    return result;
+    return jsString(exec, imp->hostname());
 }
 
 JSValue jsHTMLAreaElementPathname(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -247,8 +237,7 @@ JSValue jsHTMLAreaElementPathname(ExecState* exec, const Identifier&, const Prop
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->pathname());
-    return result;
+    return jsString(exec, imp->pathname());
 }
 
 JSValue jsHTMLAreaElementPort(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -256,8 +245,7 @@ JSValue jsHTMLAreaElementPort(ExecState* exec, const Identifier&, const Property
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->port());
-    return result;
+    return jsString(exec, imp->port());
 }
 
 JSValue jsHTMLAreaElementProtocol(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -265,8 +253,7 @@ JSValue jsHTMLAreaElementProtocol(ExecState* exec, const Identifier&, const Prop
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->protocol());
-    return result;
+    return jsString(exec, imp->protocol());
 }
 
 JSValue jsHTMLAreaElementSearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -274,8 +261,7 @@ JSValue jsHTMLAreaElementSearch(ExecState* exec, const Identifier&, const Proper
     JSHTMLAreaElement* castedThis = static_cast<JSHTMLAreaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->search());
-    return result;
+    return jsString(exec, imp->search());
 }
 
 JSValue jsHTMLAreaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -290,50 +276,43 @@ void JSHTMLAreaElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLAreaElementAccessKey(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLAreaElement* castedThisObj = static_cast<JSHTMLAreaElement*>(thisObject);
-    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThisObj->impl());
+    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(static_cast<JSHTMLAreaElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::accesskeyAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLAreaElementAlt(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLAreaElement* castedThisObj = static_cast<JSHTMLAreaElement*>(thisObject);
-    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThisObj->impl());
+    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(static_cast<JSHTMLAreaElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::altAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLAreaElementCoords(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLAreaElement* castedThisObj = static_cast<JSHTMLAreaElement*>(thisObject);
-    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThisObj->impl());
+    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(static_cast<JSHTMLAreaElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::coordsAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLAreaElementHref(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLAreaElement* castedThisObj = static_cast<JSHTMLAreaElement*>(thisObject);
-    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThisObj->impl());
+    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(static_cast<JSHTMLAreaElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::hrefAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLAreaElementNoHref(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLAreaElement* castedThisObj = static_cast<JSHTMLAreaElement*>(thisObject);
-    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThisObj->impl());
+    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(static_cast<JSHTMLAreaElement*>(thisObject)->impl());
     imp->setNoHref(value.toBoolean(exec));
 }
 
 void setJSHTMLAreaElementShape(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLAreaElement* castedThisObj = static_cast<JSHTMLAreaElement*>(thisObject);
-    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThisObj->impl());
+    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(static_cast<JSHTMLAreaElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::shapeAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLAreaElementTarget(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLAreaElement* castedThisObj = static_cast<JSHTMLAreaElement*>(thisObject);
-    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(castedThisObj->impl());
+    HTMLAreaElement* imp = static_cast<HTMLAreaElement*>(static_cast<JSHTMLAreaElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::targetAttr, valueToStringWithNullCheck(exec, value));
 }
 

@@ -83,7 +83,7 @@ WebInspector.CPUProfileView = function(profile)
     var self = this;
     function profileCallback(profile)
     {
-        self.profile = profile;
+        self.profile.representedObject = profile;
         self._assignParentsInProfile();
       
         self.profileDataGridTree = self.bottomUpProfileDataGridTree;
@@ -95,7 +95,7 @@ WebInspector.CPUProfileView = function(profile)
     }
 
     var callId = WebInspector.Callback.wrap(profileCallback);
-    InspectorBackend.getProfile(callId, this.profile.uid);
+    InspectorController.getProfile(callId, this.profile.uid);
 }
 
 WebInspector.CPUProfileView.prototype = {
@@ -233,7 +233,7 @@ WebInspector.CPUProfileView.prototype = {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
 
-        query = query.trim();
+        query = query.trimWhitespace();
 
         if (!query.length)
             return;
@@ -505,7 +505,7 @@ WebInspector.CPUProfileView.prototype = {
 
     _sortData: function(event)
     {
-        this._sortProfile(this.profile);
+        this._sortProfile(this.profile.representedObject);
     },
 
     _sortProfile: function()
@@ -594,14 +594,9 @@ WebInspector.CPUProfileType.prototype = {
         this._recording = !this._recording;
 
         if (this._recording)
-            InspectorBackend.startProfiling();
+            InspectorController.startProfiling();
         else
-            InspectorBackend.stopProfiling();
-    },
-
-    get welcomeMessage()
-    {
-        return WebInspector.UIString("Start CPU profiling by pressing<br>the %s button on the status bar.");
+            InspectorController.stopProfiling();
     },
 
     setRecordingProfile: function(isProfiling)
@@ -621,3 +616,26 @@ WebInspector.CPUProfileType.prototype = {
 }
 
 WebInspector.CPUProfileType.prototype.__proto__ = WebInspector.ProfileType.prototype;
+
+WebInspector.CPUProfile = function(profile)
+{
+    this.representedObject = profile;
+    this.typeId = WebInspector.CPUProfileType.TypeId;
+}
+
+WebInspector.CPUProfile.prototype = {
+    get title()
+    {
+        return this.representedObject.title;
+    },
+
+    get uid()
+    {
+        return this.representedObject.uid;
+    },
+
+    get head()
+    {
+        return this.representedObject.head;
+    }
+}

@@ -25,10 +25,8 @@
 #include "Event.h"
 #include "EventNames.h"
 #include "Frame.h"
-#include "FrameLoaderClient.h"
 #include "GCController.h"
 #include "HTMLPlugInElement.h"
-#include "InspectorTimelineAgent.h"
 #include "JSDocument.h"
 #include "NP_jsobject.h"
 #include "Page.h"
@@ -45,7 +43,6 @@
 #include <runtime/JSLock.h>
 
 using namespace JSC;
-using namespace std;
 
 namespace WebCore {
 
@@ -82,6 +79,9 @@ ScriptController::ScriptController(Frame* frame)
 ScriptController::~ScriptController()
 {
     if (!m_windowShells.isEmpty()) {
+        for (ShellMap::iterator iter = m_windowShells.begin(); iter != m_windowShells.end(); ++iter)
+            iter->first->forgetScriptController(this);
+
         m_windowShells.clear();
     
         // It's likely that releasing the global object has created a lot of garbage.
@@ -102,7 +102,7 @@ ScriptValue ScriptController::evaluateInWorld(const ScriptSourceCode& sourceCode
     }
 
     // evaluate code. Returns the JS return value or 0
-    // if there was none, an error occurred or the type couldn't be converted.
+    // if there was none, an error occured or the type couldn't be converted.
 
     // inlineCode is true for <a href="javascript:doSomething()">
     // and false for <script>doSomething()</script>. Check if it has the
@@ -117,19 +117,9 @@ ScriptValue ScriptController::evaluateInWorld(const ScriptSourceCode& sourceCode
 
     RefPtr<Frame> protect = m_frame;
 
-#if ENABLE(INSPECTOR)
-    if (InspectorTimelineAgent* timelineAgent = m_frame->page() ? m_frame->page()->inspectorTimelineAgent() : 0)
-        timelineAgent->willEvaluateScript(sourceURL, sourceCode.startLine());
-#endif
-
     exec->globalData().timeoutChecker.start();
-    Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), jsSourceCode, shell);
+    Completion comp = WebCore::evaluateInWorld(exec, exec->dynamicGlobalObject()->globalScopeChain(), jsSourceCode, shell, world);
     exec->globalData().timeoutChecker.stop();
-
-#if ENABLE(INSPECTOR)
-    if (InspectorTimelineAgent* timelineAgent = m_frame->page() ? m_frame->page()->inspectorTimelineAgent() : 0)
-        timelineAgent->didEvaluateScript();
-#endif
 
     // Evaluating the JavaScript could cause the frame to be deallocated
     // so we start the keep alive timer here.
@@ -155,26 +145,53 @@ ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode)
 // An DOMWrapperWorld other than the thread's normal world.
 class IsolatedWorld : public DOMWrapperWorld {
 public:
-    static PassRefPtr<IsolatedWorld> create(JSGlobalData* globalData) { return adoptRef(new IsolatedWorld(globalData)); }
-
-protected:
     IsolatedWorld(JSGlobalData* globalData)
-        : DOMWrapperWorld(globalData, false)
+        : DOMWrapperWorld(globalData)
     {
         JSGlobalData::ClientData* clientData = globalData->clientData;
         ASSERT(clientData);
         static_cast<WebCoreJSClientData*>(clientData)->rememberWorld(this);
     }
+
+    static PassRefPtr<IsolatedWorld> create(JSGlobalData* globalData) { return adoptRef(new IsolatedWorld(globalData)); }
 };
 
-PassRefPtr<DOMWrapperWorld> ScriptController::createWorld()
+static PassRefPtr<IsolatedWorld> findWorld(unsigned worldID)
 {
-    return IsolatedWorld::create(JSDOMWindow::commonJSGlobalData());
+    if (!worldID)
+        return IsolatedWorld::create(JSDOMWindow::commonJSGlobalData());
+
+    typedef HashMap<unsigned, RefPtr<IsolatedWorld> > WorldMap;
+    DEFINE_STATIC_LOCAL(WorldMap, isolatedWorlds, ());
+
+    WorldMap::iterator iter = isolatedWorlds.find(worldID);
+    if (iter != isolatedWorlds.end())
+        return iter->second;
+
+    RefPtr<IsolatedWorld> newWorld = IsolatedWorld::create(JSDOMWindow::commonJSGlobalData());
+    isolatedWorlds.add(worldID, newWorld);
+    return newWorld;
 }
 
-void ScriptController::getAllWorlds(Vector<DOMWrapperWorld*>& worlds)
+JSDOMWindow* ScriptController::globalObject(unsigned worldID)
 {
-    static_cast<WebCoreJSClientData*>(JSDOMWindow::commonJSGlobalData()->clientData)->getAllWorlds(worlds);
+    RefPtr<DOMWrapperWorld> world = findWorld(worldID);
+    return windowShell(world.get())->window();
+}
+
+ScriptValue ScriptController::evaluateInIsolatedWorld(unsigned worldID, const ScriptSourceCode& sourceCode) 
+{
+    RefPtr<DOMWrapperWorld> world = findWorld(worldID);
+    return evaluateInWorld(sourceCode, world.get());
+}
+
+void ScriptController::evaluateInIsolatedWorld(unsigned worldID, const Vector<ScriptSourceCode>& sourceCode) 
+{
+    RefPtr<DOMWrapperWorld> world = findWorld(worldID);
+
+    unsigned size = sourceCode.size();
+    for (unsigned i = 0; i < size; ++i)
+        evaluateInWorld(sourceCode[i], world.get());
 }
 
 void ScriptController::clearWindowShell()
@@ -184,17 +201,19 @@ void ScriptController::clearWindowShell()
 
     JSLock lock(SilenceAssertionsOnly);
 
+    // Clear the debugger from the current window before setting the new window.
+    DOMWrapperWorld* debugWorld = debuggerWorld();
+    attachDebugger(0);
+
     for (ShellMap::iterator iter = m_windowShells.begin(); iter != m_windowShells.end(); ++iter) {
+        DOMWrapperWorld* world = iter->first;
         JSDOMWindowShell* windowShell = iter->second;
-
-        // Clear the debugger from the current window before setting the new window.
-        attachDebugger(windowShell, 0);
-
         windowShell->window()->willRemoveFromWindowShell();
         windowShell->setWindow(m_frame->domWindow());
 
         if (Page* page = m_frame->page()) {
-            attachDebugger(windowShell, page->debugger());
+            if (world == debugWorld)
+                attachDebugger(page->debugger());
             windowShell->window()->setProfileGroup(page->group().identifier());
         }
     }
@@ -209,33 +228,53 @@ JSDOMWindowShell* ScriptController::initScript(DOMWrapperWorld* world)
 
     JSLock lock(SilenceAssertionsOnly);
 
-    JSDOMWindowShell* windowShell = new JSDOMWindowShell(m_frame->domWindow(), world);
+    JSDOMWindowShell* windowShell = new JSDOMWindowShell(m_frame->domWindow());
     m_windowShells.add(world, windowShell);
-    windowShell->window()->updateDocument();
+    world->rememberScriptController(this);
+    windowShell->window()->updateDocument(world);
 
     if (Page* page = m_frame->page()) {
-        attachDebugger(windowShell, page->debugger());
+        if (world == debuggerWorld())
+            attachDebugger(page->debugger());
         windowShell->window()->setProfileGroup(page->group().identifier());
     }
 
-    m_frame->loader()->dispatchDidClearWindowObjectInWorld(world);
+    {
+        EnterDOMWrapperWorld worldEntry(*JSDOMWindow::commonJSGlobalData(), world);
+        m_frame->loader()->dispatchWindowObjectAvailable();
+    }
 
     return windowShell;
 }
 
-bool ScriptController::processingUserGesture(DOMWrapperWorld* world) const
+bool ScriptController::processingUserGesture() const
 {
-    return m_allowPopupsFromPlugin || processingUserGestureEvent(world) || isJavaScriptAnchorNavigation();
+    return m_allowPopupsFromPlugin || processingUserGestureEvent() || isJavaScriptAnchorNavigation();
 }
 
-bool ScriptController::processingUserGestureEvent(DOMWrapperWorld* world) const
+bool ScriptController::processingUserGestureEvent() const
 {
-    JSDOMWindowShell* shell = existingWindowShell(world);
+    JSDOMWindowShell* shell = existingWindowShell(mainThreadNormalWorld());
     if (!shell)
         return false;
 
-    if (Event* event = shell->window()->currentEvent())
-        return event->fromUserGesture();
+    if (Event* event = shell->window()->currentEvent()) {
+        if (event->createdByDOM())
+            return false;
+
+        const AtomicString& type = event->type();
+        if ( // mouse events
+            type == eventNames().clickEvent || type == eventNames().mousedownEvent ||
+            type == eventNames().mouseupEvent || type == eventNames().dblclickEvent ||
+            // keyboard events
+            type == eventNames().keydownEvent || type == eventNames().keypressEvent ||
+            type == eventNames().keyupEvent ||
+            // other accepted events
+            type == eventNames().selectEvent || type == eventNames().changeEvent ||
+            type == eventNames().focusEvent || type == eventNames().blurEvent ||
+            type == eventNames().submitEvent)
+            return true;
+    }
     
     return false;
 }
@@ -261,20 +300,7 @@ bool ScriptController::anyPageIsProcessingUserGesture() const
     HashSet<Page*>::const_iterator end = pages.end();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
         for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-            ScriptController* script = frame->script();
-
-            if (script->m_allowPopupsFromPlugin)
-                return true;
-
-            const ShellMap::const_iterator iterEnd = m_windowShells.end();
-            for (ShellMap::const_iterator iter = m_windowShells.begin(); iter != iterEnd; ++iter) {
-                JSDOMWindowShell* shell = iter->second.get();
-                Event* event = shell->window()->currentEvent();
-                if (event && event->fromUserGesture())
-                    return true;
-            }
-
-            if (isJavaScriptAnchorNavigation())
+            if (frame->script()->processingUserGesture())
                 return true;
         }
     }
@@ -282,14 +308,16 @@ bool ScriptController::anyPageIsProcessingUserGesture() const
     return false;
 }
 
-void ScriptController::attachDebugger(JSC::Debugger* debugger)
+bool ScriptController::isEnabled()
 {
-    for (ShellMap::iterator iter = m_windowShells.begin(); iter != m_windowShells.end(); ++iter)
-        attachDebugger(iter->second, debugger);
+    Settings* settings = m_frame->settings();
+    return (settings && settings->isJavaScriptEnabled());
 }
 
-void ScriptController::attachDebugger(JSDOMWindowShell* shell, JSC::Debugger* debugger)
+void ScriptController::attachDebugger(JSC::Debugger* debugger)
 {
+    // FIXME: Should be able to debug isolated worlds.
+    JSDOMWindowShell* shell = existingWindowShell(debuggerWorld());
     if (!shell)
         return;
 
@@ -307,7 +335,7 @@ void ScriptController::updateDocument()
 
     JSLock lock(SilenceAssertionsOnly);
     for (ShellMap::iterator iter = m_windowShells.begin(); iter != m_windowShells.end(); ++iter)
-        iter->second->window()->updateDocument();
+        iter->second->window()->updateDocument(iter->first);
 }
 
 void ScriptController::updateSecurityOrigin()
@@ -317,7 +345,7 @@ void ScriptController::updateSecurityOrigin()
 
 Bindings::RootObject* ScriptController::bindingRootObject()
 {
-    if (!canExecuteScripts())
+    if (!isEnabled())
         return 0;
 
     if (!m_bindingRootObject) {
@@ -344,7 +372,7 @@ PassRefPtr<Bindings::RootObject> ScriptController::createRootObject(void* native
 NPObject* ScriptController::windowScriptNPObject()
 {
     if (!m_windowScriptNPObject) {
-        if (canExecuteScripts()) {
+        if (isEnabled()) {
             // JavaScript is enabled, so there is a JavaScript window object.
             // Return an NPObject bound to the window object.
             JSC::JSLock lock(SilenceAssertionsOnly);
@@ -377,7 +405,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
 JSObject* ScriptController::jsObjectForPluginElement(HTMLPlugInElement* plugin)
 {
     // Can't create JSObjects when JavaScript is disabled
-    if (!canExecuteScripts())
+    if (!isEnabled())
         return 0;
 
     // Create a JSObject bound to this element
@@ -440,11 +468,31 @@ void ScriptController::clearScriptObjects()
 #endif
 }
 
-ScriptValue ScriptController::executeScriptInWorld(DOMWrapperWorld* world, const String& script, bool forceUserGesture)
+ScriptValue ScriptController::executeScriptInIsolatedWorld(unsigned worldID, const String& script, bool forceUserGesture)
 {
     ScriptSourceCode sourceCode(script, forceUserGesture ? KURL() : m_frame->loader()->url());
 
-    if (!canExecuteScripts() || isPaused())
+    if (!isEnabled() || isPaused())
+        return ScriptValue();
+
+    bool wasInExecuteScript = m_inExecuteScript;
+    m_inExecuteScript = true;
+
+    ScriptValue result = evaluateInIsolatedWorld(worldID, sourceCode);
+
+    if (!wasInExecuteScript) {
+        m_inExecuteScript = false;
+        Document::updateStyleForAllDocuments();
+    }
+
+    return result;
+}
+
+ScriptValue ScriptController::executeScriptInIsolatedWorld(DOMWrapperWorld* world, const String& script, bool forceUserGesture)
+{
+    ScriptSourceCode sourceCode(script, forceUserGesture ? KURL() : m_frame->loader()->url());
+
+    if (!isEnabled() || isPaused())
         return ScriptValue();
 
     bool wasInExecuteScript = m_inExecuteScript;
