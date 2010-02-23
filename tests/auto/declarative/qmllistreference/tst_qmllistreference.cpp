@@ -60,11 +60,11 @@ inline QUrl TEST_FILE(const char *filename)
     return TEST_FILE(QLatin1String(filename));
 }
 
-class tst_QmlList : public QObject
+class tst_qmllistreference : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlList() {}
+    tst_qmllistreference() {}
 
 private slots:
     void qmllistreference();
@@ -103,7 +103,7 @@ public:
 QML_DECLARE_TYPE(TestType);
 QML_DEFINE_NOCREATE_TYPE(TestType);
 
-void tst_QmlList::qmllistreference()
+void tst_qmllistreference::qmllistreference()
 {
     TestType tt;
 
@@ -115,7 +115,7 @@ void tst_QmlList::qmllistreference()
     QCOMPARE(r.count(), 1);
 }
 
-void tst_QmlList::qmllistreference_invalid()
+void tst_qmllistreference::qmllistreference_invalid()
 {
     TestType tt;
 
@@ -165,7 +165,7 @@ void tst_QmlList::qmllistreference_invalid()
     }
 }
 
-void tst_QmlList::isValid()
+void tst_qmllistreference::isValid()
 {
     TestType *tt = new TestType;
 
@@ -187,7 +187,7 @@ void tst_QmlList::isValid()
     }
 }
 
-void tst_QmlList::object()
+void tst_qmllistreference::object()
 {
     TestType *tt = new TestType;
 
@@ -209,7 +209,7 @@ void tst_QmlList::object()
     }
 }
 
-void tst_QmlList::listElementType()
+void tst_qmllistreference::listElementType()
 {
     TestType *tt = new TestType;
 
@@ -231,7 +231,7 @@ void tst_QmlList::listElementType()
     }
 }
 
-void tst_QmlList::canAppend()
+void tst_qmllistreference::canAppend()
 {
     TestType *tt = new TestType;
 
@@ -260,7 +260,7 @@ void tst_QmlList::canAppend()
     }
 }
 
-void tst_QmlList::canAt()
+void tst_qmllistreference::canAt()
 {
     TestType *tt = new TestType;
 
@@ -289,7 +289,7 @@ void tst_QmlList::canAt()
     }
 }
 
-void tst_QmlList::canClear()
+void tst_qmllistreference::canClear()
 {
     TestType *tt = new TestType;
 
@@ -318,7 +318,7 @@ void tst_QmlList::canClear()
     }
 }
 
-void tst_QmlList::canCount()
+void tst_qmllistreference::canCount()
 {
     TestType *tt = new TestType;
 
@@ -347,7 +347,7 @@ void tst_QmlList::canCount()
     }
 }
 
-void tst_QmlList::append()
+void tst_qmllistreference::append()
 {
     TestType *tt = new TestType;
     QObject object;
@@ -386,7 +386,7 @@ void tst_QmlList::append()
     }
 }
 
-void tst_QmlList::at()
+void tst_qmllistreference::at()
 {
     TestType *tt = new TestType;
     tt->data.append(tt);
@@ -421,7 +421,7 @@ void tst_QmlList::at()
     }
 }
 
-void tst_QmlList::clear()
+void tst_qmllistreference::clear()
 {
     TestType *tt = new TestType;
     tt->data.append(tt);
@@ -454,7 +454,7 @@ void tst_QmlList::clear()
     }
 }
 
-void tst_QmlList::count()
+void tst_qmllistreference::count()
 {
     TestType *tt = new TestType;
     tt->data.append(tt);
@@ -489,7 +489,7 @@ void tst_QmlList::count()
     }
 }
 
-void tst_QmlList::copy()
+void tst_qmllistreference::copy()
 {
     TestType tt;
     tt.data.append(&tt);
@@ -517,7 +517,7 @@ void tst_QmlList::copy()
     QVERIFY(r3.count() == 2);
 }
 
-void tst_QmlList::qmlmetaproperty()
+void tst_qmllistreference::qmlmetaproperty()
 {
     TestType tt;
     tt.data.append(&tt);
@@ -532,7 +532,7 @@ void tst_QmlList::qmlmetaproperty()
     QVERIFY(ref.listElementType() == &TestType::staticMetaObject);
 }
 
-void tst_QmlList::engineTypes()
+void tst_qmllistreference::engineTypes()
 {
     QmlEngine engine;
     QmlComponent component(&engine, TEST_FILE("engineTypes.qml"));
@@ -555,7 +555,7 @@ void tst_QmlList::engineTypes()
     delete o;
 }
 
-void tst_QmlList::variantToList()
+void tst_qmllistreference::variantToList()
 {
     QmlEngine engine;
     QmlComponent component(&engine, TEST_FILE("variantToList.qml"));
@@ -569,6 +569,6 @@ void tst_QmlList::variantToList()
     delete o;
 }
 
-QTEST_MAIN(tst_QmlList)
+QTEST_MAIN(tst_qmllistreference)
 
-#include "tst_qmllist.moc"
+#include "tst_qmllistreference.moc"

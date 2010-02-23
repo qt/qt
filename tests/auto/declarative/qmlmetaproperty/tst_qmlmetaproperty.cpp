@@ -121,6 +121,7 @@ private slots:
     // Bugs
     void crashOnValueProperty();
 
+    void copy();
 private:
     QmlEngine engine;
 };
@@ -129,7 +130,7 @@ void tst_qmlmetaproperty::qmlmetaproperty()
 {
     QmlMetaProperty prop;
 
-    QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+    QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
     QVERIFY(binding != 0);
     QGuard<QmlExpression> expression(new QmlExpression());
     QVERIFY(expression != 0);
@@ -218,7 +219,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object()
     {
         QmlMetaProperty prop(&object);
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -264,7 +265,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object()
     {
         QmlMetaProperty prop(&dobject);
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -319,7 +320,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
     {
         QmlMetaProperty prop(&object, QString("defaultProperty"));
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -365,7 +366,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
     {
         QmlMetaProperty prop(&dobject, QString("defaultProperty"));
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -414,7 +415,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
     {
         QmlMetaProperty prop(&dobject, QString("onClicked"));
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -468,7 +469,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_context()
     {
         QmlMetaProperty prop(&object, engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -514,7 +515,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_context()
     {
         QmlMetaProperty prop(&dobject, engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -569,7 +570,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
     {
         QmlMetaProperty prop(&object, QString("defaultProperty"), engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -615,7 +616,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
     {
         QmlMetaProperty prop(&dobject, QString("defaultProperty"), engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -664,7 +665,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
     {
         QmlMetaProperty prop(&dobject, QString("onClicked"), engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -1129,6 +1130,48 @@ void tst_qmlmetaproperty::crashOnValueProperty()
     QCOMPARE(p.read(), QVariant(10));
     p.write(QVariant(20));
     QCOMPARE(p.read(), QVariant(20));
+}
+
+void tst_qmlmetaproperty::copy()
+{
+    PropertyObject object;
+
+    QmlMetaProperty *property = new QmlMetaProperty(&object, QLatin1String("defaultProperty"));
+    QCOMPARE(property->name(), QString("defaultProperty"));
+    QCOMPARE(property->read(), QVariant(10));
+    QCOMPARE(property->type(), QmlMetaProperty::Property);
+    QCOMPARE(property->propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(property->propertyType(), (int)QVariant::Int);
+
+    QmlMetaProperty p1(*property);
+    QCOMPARE(p1.name(), QString("defaultProperty"));
+    QCOMPARE(p1.read(), QVariant(10));
+    QCOMPARE(p1.type(), QmlMetaProperty::Property);
+    QCOMPARE(p1.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p1.propertyType(), (int)QVariant::Int);
+
+    QmlMetaProperty p2(&object, QLatin1String("url"));
+    QCOMPARE(p2.name(), QString("url"));
+    p2 = *property;
+    QCOMPARE(p2.name(), QString("defaultProperty"));
+    QCOMPARE(p2.read(), QVariant(10));
+    QCOMPARE(p2.type(), QmlMetaProperty::Property);
+    QCOMPARE(p2.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p2.propertyType(), (int)QVariant::Int);
+
+    delete property; property = 0;
+
+    QCOMPARE(p1.name(), QString("defaultProperty"));
+    QCOMPARE(p1.read(), QVariant(10));
+    QCOMPARE(p1.type(), QmlMetaProperty::Property);
+    QCOMPARE(p1.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p1.propertyType(), (int)QVariant::Int);
+
+    QCOMPARE(p2.name(), QString("defaultProperty"));
+    QCOMPARE(p2.read(), QVariant(10));
+    QCOMPARE(p2.type(), QmlMetaProperty::Property);
+    QCOMPARE(p2.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p2.propertyType(), (int)QVariant::Int);
 }
 
 QTEST_MAIN(tst_qmlmetaproperty)
