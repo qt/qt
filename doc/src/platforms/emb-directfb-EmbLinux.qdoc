@@ -327,4 +327,9 @@ QT_DIRECTFB_DISABLE_RASTERFALLBACKS is defined, DirectFB will only return
 instead of falling back to QRasterPaintEngine. Please note that these
 defines should only be used when optimizing the application. 
 
+\section2 Top level transparency
+\note DirectFB supports partially or fully transparent top level windows,
+either through QWidget::setWindowOpacity or through setting a non-opaque
+background brush. Note that for the latter it is not supported to change an
+opaque window to be transparent at runtime.
 */
