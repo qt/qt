@@ -34,7 +34,7 @@ Rectangle {
             }
         }
     ]
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: { mainrect.state = 'second' }
     }

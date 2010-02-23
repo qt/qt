@@ -223,7 +223,7 @@ ListView {
    anchors.fill: parent
    model: myModel
    delegate: Component {
-       Rect {
+       Rectangle {
             height: 25
             Text { text: modelData }
        }
@@ -258,7 +258,7 @@ dataList.append(new DataObject("Item 3", "blue"));
 dataList.append(new DataObject("Item 4", "yellow"));
 
 QmlContext *ctxt = view.rootContext();
-ctxt->setContextProperty("myModel", QVariant::fromValue(&dataList));
+ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 \endcode
 
 The properties of the object may then be accessed in the delegate:

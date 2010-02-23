@@ -7,7 +7,7 @@ Rectangle {
         width: 100; height: 100
         color: "red"
     }
-    MouseRegion {
+    MouseArea {
         id: clickable
         anchors.fill: parent
     }

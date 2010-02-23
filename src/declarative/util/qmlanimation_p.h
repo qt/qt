@@ -190,8 +190,8 @@ class QmlPropertyAction : public QmlAbstractAnimation
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* targets READ targets)
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
+    Q_PROPERTY(QmlListProperty<QObject> targets READ targets)
+    Q_PROPERTY(QmlListProperty<QObject> exclude READ exclude)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
 public:
@@ -207,8 +207,8 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *targets();
-    QList<QObject *> *exclude();
+    QmlListProperty<QObject> targets();
+    QmlListProperty<QObject> exclude();
 
     QVariant value() const;
     void setValue(const QVariant &);
@@ -265,8 +265,8 @@ class Q_AUTOTEST_EXPORT QmlPropertyAnimation : public QmlAbstractAnimation
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* targets READ targets)
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
+    Q_PROPERTY(QmlListProperty<QObject> targets READ targets)
+    Q_PROPERTY(QmlListProperty<QObject> exclude READ exclude)
 
 public:
     QmlPropertyAnimation(QObject *parent=0);
@@ -293,8 +293,8 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *targets();
-    QList<QObject *> *exclude();
+    QmlListProperty<QObject> targets();
+    QmlListProperty<QObject> exclude();
 
 protected:
     QmlPropertyAnimation(QmlPropertyAnimationPrivate &dd, QObject *parent);
@@ -404,13 +404,13 @@ class QmlAnimationGroup : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlAnimationGroup)
 
     Q_CLASSINFO("DefaultProperty", "animations")
-    Q_PROPERTY(QmlList<QmlAbstractAnimation *> *animations READ animations)
+    Q_PROPERTY(QmlListProperty<QmlAbstractAnimation> animations READ animations)
 
 public:
     QmlAnimationGroup(QObject *parent);
     virtual ~QmlAnimationGroup();
 
-    QmlList<QmlAbstractAnimation *>* animations();
+    QmlListProperty<QmlAbstractAnimation> animations();
     friend class QmlAbstractAnimation;
 };
 

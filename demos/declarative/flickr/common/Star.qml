@@ -17,7 +17,7 @@ Item {
         opacity: 0.4
         scale: 0.5
     }
-    MouseRegion {
+    MouseArea {
         anchors.fill: container
         onClicked: { container.clicked() }
     }

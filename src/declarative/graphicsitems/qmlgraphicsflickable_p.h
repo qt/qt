@@ -82,8 +82,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsFlickable : public QmlGraphicsItem
 
     Q_PROPERTY(QmlGraphicsFlickableVisibleArea *visibleArea READ visibleArea CONSTANT)
 
-    Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
-    Q_PROPERTY(QmlList<QmlGraphicsItem *>* flickableChildren READ flickableChildren)
+    Q_PROPERTY(QmlListProperty<QObject> flickableData READ flickableData)
+    Q_PROPERTY(QmlListProperty<QmlGraphicsItem> flickableChildren READ flickableChildren)
     Q_CLASSINFO("DefaultProperty", "flickableData")
 
     Q_ENUMS(FlickDirection)
@@ -92,8 +92,8 @@ public:
     QmlGraphicsFlickable(QmlGraphicsItem *parent=0);
     ~QmlGraphicsFlickable();
 
-    QmlList<QObject *> *flickableData();
-    QmlList<QmlGraphicsItem *> *flickableChildren();
+    QmlListProperty<QObject> flickableData();
+    QmlListProperty<QmlGraphicsItem> flickableChildren();
 
     bool overShoot() const;
     void setOverShoot(bool);

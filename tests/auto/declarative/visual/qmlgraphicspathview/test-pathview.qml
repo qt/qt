@@ -22,7 +22,7 @@ Rectangle {
             width: 85; height: 85; color: lColor
             scale: wrapper.PathView.scale
 
-            MouseRegion { anchors.fill: parent }
+            MouseArea { anchors.fill: parent }
             
             transform: Rotation {
                 id: itemRotation; origin.x: wrapper.width/2; origin.y: wrapper.height/2

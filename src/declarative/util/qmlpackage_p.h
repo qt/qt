@@ -64,13 +64,13 @@ class QmlPackage : public QObject
     Q_DECLARE_PRIVATE(QmlPackage)
 
     Q_CLASSINFO("DefaultProperty", "data")
-    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false)
+    Q_PROPERTY(QmlListProperty<QObject> data READ data SCRIPTABLE false)
 
 public:
     QmlPackage(QObject *parent=0);
     virtual ~QmlPackage();
 
-    QmlList<QObject *> *data();
+    QmlListProperty<QObject> data();
 
     QObject *part(const QString & = QString());
     bool hasPart(const QString &);

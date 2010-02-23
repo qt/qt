@@ -94,7 +94,7 @@ Item {
         }
     ]
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: myItem.state = 'moved'
     }

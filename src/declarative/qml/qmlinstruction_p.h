@@ -134,12 +134,10 @@ public:
 
         BeginObject,              /* begin */
 
-        StoreObjectQmlList,       /* NA */
         StoreObjectQList,         /* NA */
         AssignObjectList,         /* NA */
 
         FetchAttached,            /* fetchAttached */
-        FetchQmlList,             /* fetchQmlList */ 
         FetchQList,               /* fetch */
         FetchObject,              /* fetch */
         FetchValueType,           /* fetchValue */

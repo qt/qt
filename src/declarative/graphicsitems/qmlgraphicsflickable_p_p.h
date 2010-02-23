@@ -110,8 +110,6 @@ public:
     qreal velocityX;
     qreal velocityY;
     QTime pressTime;
-    QmlTimeLineEvent fixupXEvent;
-    QmlTimeLineEvent fixupYEvent;
     qreal deceleration;
     qreal maxVelocity;
     QTime velocityTime;
@@ -124,6 +122,9 @@ public:
     QBasicTimer delayedPressTimer;
     int pressDelay;
     int fixupDuration;
+
+    static void fixupY_callback(void *);
+    static void fixupX_callback(void *);
 
     void updateVelocity();
     struct Velocity : public QmlTimeLineValue
@@ -148,15 +149,7 @@ public:
     void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
 
     // flickableData property
-    void data_removeAt(int);
-    int data_count() const;
-    void data_append(QObject *);
-    void data_insert(int, QObject *);
-    QObject *data_at(int) const;
-    void data_clear();
-
-    friend class QmlGraphicsFlickableVisibleArea;
-    QML_DECLARE_LIST_PROXY(QmlGraphicsFlickablePrivate, QObject *, data)
+    static void data_append(QmlListProperty<QObject> *, QObject *);
 };
 
 class QmlGraphicsFlickableVisibleArea : public QObject

@@ -105,15 +105,15 @@ The BirthdayParty class is declared like this:
 \snippet examples/declarative/extending/properties/birthdayparty.h 3
 
 The class contains a member to store the celebrant object, and also a 
-QmlConcreteList<Person *> member.  
+QList<Person *> member.  
 
 In QML, the type of a list properties - and the guests property is a list of 
-people - are all of type QmlList<T *>*.  QmlList is an abstract list interface
-that allows a developer to react to QML accessing and modifying the contents of
-the list.  This is useful for implementing "virtual lists" or other advanced
-scenarios, but can't be used directly for the common case of just wanting a
-regular list of things.  For this a concrete implementation, QmlConcreteList, is
-provided and that is used here.
+people - are all of type QmlListProperty<T>.  QmlListProperty is simple value
+type that contains a set of function pointers.  QML calls these function 
+pointers whenever it needs to read from, write to or otherwise interact with
+the list.  In addition to concrete lists like the people list used in this
+example, the use of QmlListProperty allows for "virtual lists" and other advanced
+scenarios.
 
 \section2 Define the BirthdayParty
 

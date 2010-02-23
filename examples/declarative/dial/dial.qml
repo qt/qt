@@ -26,7 +26,7 @@ Rectangle {
                 GradientStop { position: 0.0; color: "#424242" }
                 GradientStop { position: 1.0; color: "black" }
             }
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 drag.target: parent; drag.axis: "XAxis"; drag.minimumX: 2; drag.maximumX: container.width - 32
             }
