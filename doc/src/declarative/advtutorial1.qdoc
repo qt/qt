@@ -51,20 +51,20 @@ Here is the QML code for the basic elements. The game window:
 
 \snippet declarative/tutorials/samegame/samegame1/samegame.qml 0
 
-This gives you a basic game window, with room for the game canvas. A new game
-button and room to display the score. The one thing you may not recognize here
+This gives you a basic game window, with room for the game canvas, a new game
+button and room to display the score. One thing you may not recognize here
 is the \l SystemPalette item. This item provides access to the Qt system palette
 and is used to make the button look more like a system button (for exact native
-feel you would use a \l QPushButton). Since we want a fully functional button, 
-we use the QML elements Text and MouseArea inside a Rectangle to assemble a 
-button. Below is the code which we wrote to do this:
+feel you would use a \l QPushButton). In this case we've created our own custom
+Button element using the QML elements Text and MouseArea inside a Rectangle.
+Below is the code which we wrote to do this (Button.qml):
 
 \snippet declarative/tutorials/samegame/samegame1/Button.qml 0
 
 Note that this Button component was written to be fairly generic, in case we
 want to use a similarly styled button later.
 
-And here is a simple block:
+And here is a simple block (Block.qml):
 
 \snippet declarative/tutorials/samegame/samegame1/Block.qml 0
 
