@@ -1536,7 +1536,7 @@ HWND QAxServerBase::create(HWND hWndParent, RECT& rcPos)
     HINSTANCE hInst = (HINSTANCE)qAxInstance;
     EnterCriticalSection(&createWindowSection);
     QString cn(QLatin1String("QAxControl"));
-    cn += QString::number((int)ActiveXProc);
+    cn += QString::number((quintptr)ActiveXProc);
     if (!atom) {
         WNDCLASS wcTemp;
         wcTemp.style = CS_DBLCLKS;
@@ -1599,10 +1599,10 @@ HMENU QAxServerBase::createPopup(QMenu *popup, HMENU oldMenu)
 	ushort itemId;
         if (flags & MF_POPUP) {
             itemId = static_cast<ushort>(
-                reinterpret_cast<ulong>(createPopup(action->menu()))
+                reinterpret_cast<quintptr>(createPopup(action->menu()))
             );
         } else {
-            itemId = static_cast<ushort>(reinterpret_cast<ulong>(action));
+            itemId = static_cast<ushort>(reinterpret_cast<quintptr>(action));
             actionMap.remove(itemId);
             actionMap.insert(itemId, action);
         }
@@ -1646,10 +1646,10 @@ void QAxServerBase::createMenu(QMenuBar *menuBar)
 	ushort itemId;
         if (flags & MF_POPUP) {
             itemId = static_cast<ushort>(
-                reinterpret_cast<ulong>(createPopup(action->menu()))
+                reinterpret_cast<quintptr>(createPopup(action->menu()))
             );
         } else {
-            itemId = static_cast<ushort>(reinterpret_cast<ulong>(action));
+            itemId = static_cast<ushort>(reinterpret_cast<quintptr>(action));
             actionMap.insert(itemId, action);
         }
         AppendMenu(hmenuShared, flags, itemId, (const wchar_t *)action->text().utf16());
