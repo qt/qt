@@ -245,7 +245,7 @@ void QT7MovieViewRenderer::setupVideoOutput()
 {
     AutoReleasePool pool;
 
-    qDebug() << "QT7MovieViewRenderer::setupVideoOutput" << m_movie << m_surface;
+//    qDebug() << "QT7MovieViewRenderer::setupVideoOutput" << m_movie << m_surface;
 
     HiddenQTMovieView *movieView = (HiddenQTMovieView*)m_movieView;
 
@@ -272,14 +272,15 @@ void QT7MovieViewRenderer::setupVideoOutput()
         QVideoSurfaceFormat format(m_nativeSize, QVideoFrame::Format_RGB32);
 
         if (m_surface->isActive() && m_surface->surfaceFormat() != format) {
-            qDebug() << "Surface format was changed, stop the surface.";
+//            qDebug() << "Surface format was changed, stop the surface.";
             m_surface->stop();
         }
 
         if (!m_surface->isActive()) {
-            qDebug() << "Starting the surface with format" << format;
-            if (!m_surface->start(format))
-                qDebug() << "failed to start video surface" << m_surface->error();
+//            qDebug() << "Starting the surface with format" << format;
+            m_surface->start(format);
+//            if (!m_surface->start(format))
+//                qDebug() << "failed to start video surface" << m_surface->error();
         }
     }
 }
