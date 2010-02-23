@@ -461,8 +461,9 @@ extern "C" {
     if (QApplicationPrivate::graphicsSystem() != 0) {
         if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore()) {
             // Drawing is handled on the window level
-            // See qcocoasharedwindowmethods_mac_p.
-            return;
+            // See qcocoasharedwindowmethods_mac_p.h
+            if (!qwidget->testAttribute(Qt::WA_PaintOnScreen))
+                return;
         }
     }
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
