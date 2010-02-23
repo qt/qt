@@ -1,0 +1,952 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qmlscriptparser_p.h"
+
+#include "qmlparser_p.h"
+#include "parser/qmljsengine_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsnodepool_p.h"
+#include "parser/qmljsastvisitor_p.h"
+#include "parser/qmljsast_p.h"
+#include "qmlrewrite_p.h"
+
+#include <qfxperf_p_p.h>
+
+#include <QStack>
+#include <QCoreApplication>
+#include <QtDebug>
+
+QT_BEGIN_NAMESPACE
+
+using namespace QmlJS;
+using namespace QmlParser;
+
+namespace {
+
+class ProcessAST: protected AST::Visitor
+{
+    struct State {
+        State() : object(0), property(0) {}
+        State(Object *o) : object(o), property(0) {}
+        State(Object *o, Property *p) : object(o), property(p) {}
+
+        Object *object;
+        Property *property;
+    };
+
+    struct StateStack : public QStack<State>
+    {
+        void pushObject(Object *obj)
+        {
+            push(State(obj));
+        }
+
+        void pushProperty(const QString &name, const LocationSpan &location)
+        {
+            const State &state = top();
+            if (state.property) {
+                State s(state.property->getValue(),
+                        state.property->getValue()->getProperty(name.toUtf8()));
+                s.property->location = location;
+                push(s);
+            } else {
+                State s(state.object,
+                        state.object->getProperty(name.toUtf8()));
+
+                s.property->location = location;
+                push(s);
+            }
+        }
+    };
+
+public:
+    ProcessAST(QmlScriptParser *parser);
+    virtual ~ProcessAST();
+
+    void operator()(const QString &code, AST::Node *node);
+
+protected:
+    Object *defineObjectBinding(AST::UiQualifiedId *propertyName,
+                                AST::UiQualifiedId *objectTypeName,
+                                LocationSpan location,
+                                AST::UiObjectInitializer *initializer = 0);
+
+    Object *defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
+                                       const QString &objectType,
+                                       AST::SourceLocation typeLocation,
+                                       LocationSpan location,
+                                       AST::UiObjectInitializer *initializer = 0);
+
+    QmlParser::Variant getVariant(AST::ExpressionNode *expr);
+
+    LocationSpan location(AST::SourceLocation start, AST::SourceLocation end);
+    LocationSpan location(AST::UiQualifiedId *);
+
+    using AST::Visitor::visit;
+    using AST::Visitor::endVisit;
+
+    virtual bool visit(AST::UiProgram *node);
+    virtual bool visit(AST::UiImport *node);
+    virtual bool visit(AST::UiObjectDefinition *node);
+    virtual bool visit(AST::UiPublicMember *node);
+    virtual bool visit(AST::UiObjectBinding *node);
+
+    virtual bool visit(AST::UiScriptBinding *node);
+    virtual bool visit(AST::UiArrayBinding *node);
+    virtual bool visit(AST::UiSourceElement *node);
+
+    void accept(AST::Node *node);
+
+    QString asString(AST::UiQualifiedId *node) const;
+
+    const State state() const;
+    Object *currentObject() const;
+    Property *currentProperty() const;
+
+    QString qualifiedNameId() const;
+
+    QString textAt(const AST::SourceLocation &loc) const
+    { return _contents.mid(loc.offset, loc.length); }
+
+
+    QString textAt(const AST::SourceLocation &first,
+                   const AST::SourceLocation &last) const
+    { return _contents.mid(first.offset, last.offset + last.length - first.offset); }
+
+    QString asString(AST::ExpressionNode *expr)
+    {
+        if (! expr)
+            return QString();
+
+        return textAt(expr->firstSourceLocation(), expr->lastSourceLocation());
+    }
+
+    QString asString(AST::Statement *stmt)
+    {
+        if (! stmt)
+            return QString();
+
+        QString s = textAt(stmt->firstSourceLocation(), stmt->lastSourceLocation());
+        s += QLatin1Char('\n');
+        return s;
+    }
+
+private:
+    QmlScriptParser *_parser;
+    StateStack _stateStack;
+    QStringList _scope;
+    QString _contents;
+
+    inline bool isSignalProperty(const QByteArray &propertyName) const {
+        return (propertyName.length() >= 3 && propertyName.startsWith("on") &&
+                ('A' <= propertyName.at(2) && 'Z' >= propertyName.at(2)));
+    }
+
+};
+
+ProcessAST::ProcessAST(QmlScriptParser *parser)
+    : _parser(parser)
+{
+}
+
+ProcessAST::~ProcessAST()
+{
+}
+
+void ProcessAST::operator()(const QString &code, AST::Node *node)
+{
+    _contents = code;
+    accept(node);
+}
+
+void ProcessAST::accept(AST::Node *node)
+{
+    AST::Node::acceptChild(node, this);
+}
+
+const ProcessAST::State ProcessAST::state() const
+{
+    if (_stateStack.isEmpty())
+        return State();
+
+    return _stateStack.back();
+}
+
+Object *ProcessAST::currentObject() const
+{
+    return state().object;
+}
+
+Property *ProcessAST::currentProperty() const
+{
+    return state().property;
+}
+
+QString ProcessAST::qualifiedNameId() const
+{
+    return _scope.join(QLatin1String("/"));
+}
+
+QString ProcessAST::asString(AST::UiQualifiedId *node) const
+{
+    QString s;
+
+    for (AST::UiQualifiedId *it = node; it; it = it->next) {
+        s.append(it->name->asString());
+
+        if (it->next)
+            s.append(QLatin1Char('.'));
+    }
+
+    return s;
+}
+
+Object *
+ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
+                                       const QString &objectType,
+                                       AST::SourceLocation typeLocation,
+                                       LocationSpan location,
+                                       AST::UiObjectInitializer *initializer)
+{
+    int lastTypeDot = objectType.lastIndexOf(QLatin1Char('.'));
+    bool isType = !objectType.isEmpty() &&
+                    (objectType.at(0).isUpper() ||
+                        (lastTypeDot >= 0 && objectType.at(lastTypeDot+1).isUpper()));
+
+    int propertyCount = 0;
+    for (; propertyName; propertyName = propertyName->next){
+        ++propertyCount;
+        _stateStack.pushProperty(propertyName->name->asString(),
+                                 this->location(propertyName));
+    }
+
+    if (!isType) {
+
+        if(propertyCount || !currentObject()) {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","Expected type name"));
+            error.setLine(typeLocation.startLine);
+            error.setColumn(typeLocation.startColumn);
+            _parser->_errors << error;
+            return 0;
+        }
+
+        LocationSpan loc = ProcessAST::location(typeLocation, typeLocation);
+        if (propertyName)
+            loc = ProcessAST::location(propertyName);
+
+        _stateStack.pushProperty(objectType, loc);
+       accept(initializer);
+        _stateStack.pop();
+
+        return 0;
+
+    } else {
+        // Class
+
+        QString resolvableObjectType = objectType;
+        if (lastTypeDot >= 0)
+            resolvableObjectType.replace(QLatin1Char('.'),QLatin1Char('/'));
+
+        bool isScript = resolvableObjectType == QLatin1String("Script");
+
+        if (isScript) {
+            if (_stateStack.isEmpty() || _stateStack.top().property) {
+                QmlError error;
+                error.setDescription(QCoreApplication::translate("QmlParser","Invalid use of Script block"));
+                error.setLine(typeLocation.startLine);
+                error.setColumn(typeLocation.startColumn);
+                _parser->_errors << error;
+                return 0;
+            }
+        }
+
+        Object *obj = new Object;
+
+        if (!isScript) {
+            QmlScriptParser::TypeReference *typeRef = _parser->findOrCreateType(resolvableObjectType);
+            obj->type = typeRef->id;
+
+            typeRef->refObjects.append(obj);
+        }
+
+        // XXX this doesn't do anything (_scope never builds up)
+        _scope.append(resolvableObjectType);
+        obj->typeName = qualifiedNameId().toUtf8();
+        _scope.removeLast();
+
+        obj->location = location;
+
+        if (isScript) {
+
+            _stateStack.top().object->scriptBlockObjects.append(obj);
+
+        } else if (propertyCount) {
+
+            Property *prop = currentProperty();
+            Value *v = new Value;
+            v->object = obj;
+            v->location = obj->location;
+            prop->addValue(v);
+
+            while (propertyCount--)
+                _stateStack.pop();
+
+        } else {
+
+            if (! _parser->tree()) {
+                _parser->setTree(obj);
+            } else {
+                const State state = _stateStack.top();
+                Value *v = new Value;
+                v->object = obj;
+                v->location = obj->location;
+                if (state.property) {
+                    state.property->addValue(v);
+                } else {
+                    Property *defaultProp = state.object->getDefaultProperty();
+                    if (defaultProp->location.start.line == -1) {
+                        defaultProp->location = v->location;
+                        defaultProp->location.end = defaultProp->location.start;
+                        defaultProp->location.range.length = 0;
+                    }
+                    defaultProp->addValue(v);
+                }
+            }
+        }
+
+        _stateStack.pushObject(obj);
+        accept(initializer);
+        _stateStack.pop();
+
+        return obj;
+    }
+}
+
+Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
+                                        AST::UiQualifiedId *objectTypeName,
+                                        LocationSpan location,
+                                        AST::UiObjectInitializer *initializer)
+{
+    const QString objectType = asString(objectTypeName);
+    const AST::SourceLocation typeLocation = objectTypeName->identifierToken;
+
+    if (objectType == QLatin1String("Script")) {
+
+        AST::UiObjectMemberList *it = initializer->members;
+        for (; it; it = it->next) {
+            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
+            if (! scriptBinding)
+                continue;
+
+            QString propertyName = asString(scriptBinding->qualifiedId);
+            if (propertyName == QLatin1String("source")) {
+                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
+                    QmlParser::Variant string = getVariant(stmt->expression);
+                    if (string.isStringList()) {
+                        QStringList urls = string.asStringList();
+                        // We need to add this as a resource
+                        for (int ii = 0; ii < urls.count(); ++ii) 
+                            _parser->_refUrls << QUrl(urls.at(ii));
+                    }
+                }
+            }
+        }
+
+    }
+
+    return defineObjectBinding_helper(qualifiedId, objectType, typeLocation, location, initializer);
+}
+
+LocationSpan ProcessAST::location(AST::UiQualifiedId *id)
+{
+    return location(id->identifierToken, id->identifierToken);
+}
+
+LocationSpan ProcessAST::location(AST::SourceLocation start, AST::SourceLocation end)
+{
+    LocationSpan rv;
+    rv.start.line = start.startLine;
+    rv.start.column = start.startColumn;
+    rv.end.line = end.startLine;
+    rv.end.column = end.startColumn + end.length - 1;
+    rv.range.offset = start.offset;
+    rv.range.length = end.offset + end.length - start.offset;
+    return rv;
+}
+
+// UiProgram: UiImportListOpt UiObjectMemberList ;
+bool ProcessAST::visit(AST::UiProgram *node)
+{
+    accept(node->imports);
+    accept(node->members->member);
+    return false;
+}
+
+// UiImport: T_IMPORT T_STRING_LITERAL ;
+bool ProcessAST::visit(AST::UiImport *node)
+{
+    QString uri;
+    QmlScriptParser::Import import;
+
+    if (node->fileName) {
+        import.type = QmlScriptParser::Import::File;
+        uri = node->fileName->asString();
+    } else {
+        import.type = QmlScriptParser::Import::Library;
+        uri = asString(node->importUri);
+    }
+
+    AST::SourceLocation startLoc = node->importToken;
+    AST::SourceLocation endLoc = node->semicolonToken;
+
+    if (node->importId) {
+        import.qualifier = node->importId->asString();
+        if (!import.qualifier.at(0).isUpper()) {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","Invalid import qualifier ID"));
+            error.setLine(node->importIdToken.startLine);
+            error.setColumn(node->importIdToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
+    }
+    if (node->versionToken.isValid())
+        import.version = textAt(node->versionToken);
+    else if (import.type == QmlScriptParser::Import::Library) {
+        QmlError error;
+        error.setDescription(QCoreApplication::translate("QmlParser","Library import requires a version"));
+        error.setLine(node->importIdToken.startLine);
+        error.setColumn(node->importIdToken.startColumn);
+        _parser->_errors << error;
+        return false;
+    }
+
+    import.location = location(startLoc, endLoc);
+    import.uri = uri;
+
+    _parser->_imports << import;
+
+    return false;
+}
+
+bool ProcessAST::visit(AST::UiPublicMember *node)
+{
+    const struct TypeNameToType {
+        const char *name;
+        Object::DynamicProperty::Type type;
+        const char *qtName;
+    } propTypeNameToTypes[] = {
+        { "int", Object::DynamicProperty::Int, "int" },
+        { "bool", Object::DynamicProperty::Bool, "bool" },
+        { "double", Object::DynamicProperty::Real, "double" },
+        { "real", Object::DynamicProperty::Real, "qreal" },
+        { "string", Object::DynamicProperty::String, "QString" },
+        { "url", Object::DynamicProperty::Url, "QUrl" },
+        { "color", Object::DynamicProperty::Color, "QColor" },
+        { "date", Object::DynamicProperty::Date, "QDate" },
+        { "var", Object::DynamicProperty::Variant, "QVariant" },
+        { "variant", Object::DynamicProperty::Variant, "QVariant" }
+    };
+    const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
+                                         sizeof(propTypeNameToTypes[0]);
+
+    if(node->type == AST::UiPublicMember::Signal) {
+        const QString name = node->name->asString();
+
+        Object::DynamicSignal signal;
+        signal.name = name.toUtf8();
+
+        AST::UiParameterList *p = node->parameters;
+        while (p) {
+            const QString memberType = p->type->asString();
+            const char *qtType = 0;
+            for(int ii = 0; !qtType && ii < propTypeNameToTypesCount; ++ii) {
+                if(QLatin1String(propTypeNameToTypes[ii].name) == memberType)
+                    qtType = propTypeNameToTypes[ii].qtName;
+            }
+
+            if (!qtType) {
+                QmlError error;
+                error.setDescription(QCoreApplication::translate("QmlParser","Expected parameter type"));
+                error.setLine(node->typeToken.startLine);
+                error.setColumn(node->typeToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+
+            signal.parameterTypes << qtType;
+            signal.parameterNames << p->name->asString().toUtf8();
+            p = p->finish();
+        }
+
+        _stateStack.top().object->dynamicSignals << signal;
+    } else {
+        const QString memberType = node->memberType->asString();
+        const QString name = node->name->asString();
+
+        bool typeFound = false;
+        Object::DynamicProperty::Type type;
+
+        if (memberType == QLatin1String("alias")) {
+            type = Object::DynamicProperty::Alias;
+            typeFound = true;
+        }
+
+        for(int ii = 0; !typeFound && ii < propTypeNameToTypesCount; ++ii) {
+            if(QLatin1String(propTypeNameToTypes[ii].name) == memberType) {
+                type = propTypeNameToTypes[ii].type;
+                typeFound = true;
+            }
+        }
+
+        if (!typeFound && memberType.at(0).isUpper()) {
+            QString typemodifier;
+            if(node->typeModifier)
+                typemodifier = node->typeModifier->asString();
+            if (typemodifier == QString()) {
+                type = Object::DynamicProperty::Custom;
+            } else if(typemodifier == QLatin1String("list")) {
+                type = Object::DynamicProperty::CustomList;
+            } else {
+                QmlError error;
+                error.setDescription(QCoreApplication::translate("QmlParser","Invalid property type modifier"));
+                error.setLine(node->typeModifierToken.startLine);
+                error.setColumn(node->typeModifierToken.startColumn);
+                _parser->_errors << error;
+                return false;
+            }
+            typeFound = true;
+        } else if (node->typeModifier) {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","Unexpected property type modifier"));
+            error.setLine(node->typeModifierToken.startLine);
+            error.setColumn(node->typeModifierToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
+
+        if(!typeFound) {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","Expected property type"));
+            error.setLine(node->typeToken.startLine);
+            error.setColumn(node->typeToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
+
+        if (node->isReadonlyMember) {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","Readonly not yet supported"));
+            error.setLine(node->readonlyToken.startLine);
+            error.setColumn(node->readonlyToken.startColumn);
+            _parser->_errors << error;
+            return false;
+
+        }
+        Object::DynamicProperty property;
+        property.isDefaultProperty = node->isDefaultMember;
+        property.type = type;
+        if (type >= Object::DynamicProperty::Custom) {
+            QmlScriptParser::TypeReference *typeRef = 
+                _parser->findOrCreateType(memberType);
+            typeRef->refObjects.append(_stateStack.top().object);
+        }
+        property.customType = memberType.toUtf8();
+        property.name = name.toUtf8();
+        property.location = location(node->firstSourceLocation(),
+                                     node->lastSourceLocation());
+
+        if (node->expression) { // default value
+            property.defaultValue = new Property;
+            property.defaultValue->parent = _stateStack.top().object;
+            property.defaultValue->location =
+                    location(node->expression->firstSourceLocation(),
+                             node->expression->lastSourceLocation());
+            Value *value = new Value;
+            value->location = location(node->expression->firstSourceLocation(),
+                                       node->expression->lastSourceLocation());
+            value->value = getVariant(node->expression);
+            property.defaultValue->values << value;
+        }
+
+        _stateStack.top().object->dynamicProperties << property;
+    }
+
+    return true;
+}
+
+
+// UiObjectMember: UiQualifiedId UiObjectInitializer ;
+bool ProcessAST::visit(AST::UiObjectDefinition *node)
+{
+    LocationSpan l = location(node->firstSourceLocation(),
+                              node->lastSourceLocation());
+
+    defineObjectBinding(/*propertyName = */ 0,
+                        node->qualifiedTypeNameId,
+                        l,
+                        node->initializer);
+
+    return false;
+}
+
+
+// UiObjectMember: UiQualifiedId T_COLON UiQualifiedId UiObjectInitializer ;
+bool ProcessAST::visit(AST::UiObjectBinding *node)
+{
+    LocationSpan l = location(node->qualifiedTypeNameId->identifierToken,
+                              node->initializer->rbraceToken);
+
+    defineObjectBinding(node->qualifiedId,
+                        node->qualifiedTypeNameId,
+                        l,
+                        node->initializer);
+
+    return false;
+}
+
+QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
+{
+    if (AST::StringLiteral *lit = AST::cast<AST::StringLiteral *>(expr)) {
+        return QmlParser::Variant(lit->value->asString());
+    } else if (expr->kind == AST::Node::Kind_TrueLiteral) {
+        return QmlParser::Variant(true);
+    } else if (expr->kind == AST::Node::Kind_FalseLiteral) {
+        return QmlParser::Variant(false);
+    } else if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(expr)) {
+        return QmlParser::Variant(lit->value, asString(expr));
+    } else {
+
+        if (AST::UnaryMinusExpression *unaryMinus = AST::cast<AST::UnaryMinusExpression *>(expr)) {
+           if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(unaryMinus->expression)) {
+               return QmlParser::Variant(-lit->value, asString(expr));
+           }
+        }
+
+        return  QmlParser::Variant(asString(expr), expr);
+    }
+}
+
+
+// UiObjectMember: UiQualifiedId T_COLON Statement ;
+bool ProcessAST::visit(AST::UiScriptBinding *node)
+{
+    int propertyCount = 0;
+    AST::UiQualifiedId *propertyName = node->qualifiedId;
+    for (; propertyName; propertyName = propertyName->next){
+        ++propertyCount;
+        _stateStack.pushProperty(propertyName->name->asString(),
+                                 location(propertyName));
+    }
+
+    Property *prop = currentProperty();
+
+    QmlParser::Variant primitive;
+
+    if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
+        primitive = getVariant(stmt->expression);
+    } else { // do binding
+        primitive = QmlParser::Variant(asString(node->statement),
+                                       node->statement);
+    }
+
+    prop->location.range.length = prop->location.range.offset + prop->location.range.length - node->qualifiedId->identifierToken.offset;
+    prop->location.range.offset = node->qualifiedId->identifierToken.offset;
+    Value *v = new Value;
+    v->value = primitive;
+    v->location = location(node->statement->firstSourceLocation(),
+                           node->statement->lastSourceLocation());
+
+    prop->addValue(v);
+
+    while (propertyCount--)
+        _stateStack.pop();
+
+    return true;
+}
+
+static QList<int> collectCommas(AST::UiArrayMemberList *members)
+{
+    QList<int> commas;
+
+    if (members) {
+        for (AST::UiArrayMemberList *it = members->next; it; it = it->next) {
+            commas.append(it->commaToken.offset);
+        }
+    }
+
+    return commas;
+}
+
+// UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiArrayMemberList T_RBRACKET ;
+bool ProcessAST::visit(AST::UiArrayBinding *node)
+{
+    int propertyCount = 0;
+    AST::UiQualifiedId *propertyName = node->qualifiedId;
+    for (; propertyName; propertyName = propertyName->next){
+        ++propertyCount;
+        _stateStack.pushProperty(propertyName->name->asString(),
+                                 location(propertyName));
+    }
+
+    accept(node->members);
+
+    // For the DOM, store the position of the T_LBRACKET upto the T_RBRACKET as the range:
+    Property* prop = currentProperty();
+    prop->listValueRange.offset = node->lbracketToken.offset;
+    prop->listValueRange.length = node->rbracketToken.offset + node->rbracketToken.length - node->lbracketToken.offset;
+
+    // Store the positions of the comma token too, again for the DOM to be able to retreive it.
+    prop->listCommaPositions = collectCommas(node->members);
+
+    while (propertyCount--)
+        _stateStack.pop();
+
+    return false;
+}
+
+bool ProcessAST::visit(AST::UiSourceElement *node)
+{
+    QmlParser::Object *obj = currentObject();
+
+    bool isScript = (obj && obj->typeName == "Script");
+
+    if (!isScript) {
+
+        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
+
+            Object::DynamicSlot slot;
+
+            AST::FormalParameterList *f = funDecl->formals;
+            while (f) {
+                slot.parameterNames << f->name->asString().toUtf8();
+                f = f->finish();
+            }
+
+            QString body = textAt(funDecl->lbraceToken, funDecl->rbraceToken);
+            slot.name = funDecl->name->asString().toUtf8();
+            slot.body = body;
+            obj->dynamicSlots << slot;
+
+        } else {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","QmlJS declaration outside Script element"));
+            error.setLine(node->firstSourceLocation().startLine);
+            error.setColumn(node->firstSourceLocation().startColumn);
+            _parser->_errors << error;
+        }
+        return false;
+
+    } else {
+        QString source;
+
+        int line = 0;
+        if (AST::FunctionDeclaration *funDecl = AST::cast<AST::FunctionDeclaration *>(node->sourceElement)) {
+            line = funDecl->functionToken.startLine;
+            source = asString(funDecl);
+        } else if (AST::VariableStatement *varStmt = AST::cast<AST::VariableStatement *>(node->sourceElement)) {
+            // ignore variable declarations
+            line = varStmt->declarationKindToken.startLine;
+
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser", "Variable declarations not allow in inline Script blocks"));
+            error.setLine(node->firstSourceLocation().startLine);
+            error.setColumn(node->firstSourceLocation().startColumn);
+            _parser->_errors << error;
+            return false;
+        }
+
+        Value *value = new Value;
+        value->location = location(node->firstSourceLocation(),
+                                   node->lastSourceLocation());
+        value->value = QmlParser::Variant(source);
+
+        obj->getDefaultProperty()->addValue(value);
+    }
+
+    return false;
+}
+
+} // end of anonymous namespace
+
+
+QmlScriptParser::QmlScriptParser()
+: root(0), data(0)
+{
+
+}
+
+QmlScriptParser::~QmlScriptParser()
+{
+    clear();
+}
+
+class QmlScriptParserJsASTData
+{
+public:
+    QmlScriptParserJsASTData(const QString &filename)
+        : nodePool(filename, &engine) {}
+
+    Engine engine;
+    NodePool nodePool;
+};
+
+bool QmlScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
+{
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QmlPerfTimer<QmlPerf::QmlParsing> pt;
+#endif
+    clear();
+
+    const QString fileName = url.toString();
+
+    QTextStream stream(qmldata, QIODevice::ReadOnly);
+    stream.setCodec("UTF-8");
+    const QString code = stream.readAll();
+
+    data = new QmlScriptParserJsASTData(fileName);
+
+    Lexer lexer(&data->engine);
+    lexer.setCode(code, /*line = */ 1);
+
+    Parser parser(&data->engine);
+
+    if (! parser.parse() || !_errors.isEmpty()) {
+
+        // Extract errors from the parser
+        foreach (const DiagnosticMessage &m, parser.diagnosticMessages()) {
+
+            if (m.isWarning())
+                continue;
+
+            QmlError error;
+            error.setUrl(url);
+            error.setDescription(m.message);
+            error.setLine(m.loc.startLine);
+            error.setColumn(m.loc.startColumn);
+            _errors << error;
+
+        }
+    }
+
+    if (_errors.isEmpty()) {
+        ProcessAST process(this);
+        process(code, parser.ast());
+
+        // Set the url for process errors
+        for(int ii = 0; ii < _errors.count(); ++ii)
+            _errors[ii].setUrl(url);
+    }
+
+    return _errors.isEmpty();
+}
+
+QList<QmlScriptParser::TypeReference*> QmlScriptParser::referencedTypes() const
+{
+    return _refTypes;
+}
+
+QList<QUrl> QmlScriptParser::referencedResources() const
+{
+    return _refUrls;
+}
+
+Object *QmlScriptParser::tree() const
+{
+    return root;
+}
+
+QList<QmlScriptParser::Import> QmlScriptParser::imports() const
+{
+    return _imports;
+}
+
+QList<QmlError> QmlScriptParser::errors() const
+{
+    return _errors;
+}
+
+void QmlScriptParser::clear()
+{
+    if (root) {
+        root->release();
+        root = 0;
+    }
+    _imports.clear();
+    qDeleteAll(_refTypes);
+    _refTypes.clear();
+    _errors.clear();
+
+    if (data) {
+        delete data;
+        data = 0;
+    }
+}
+
+QmlScriptParser::TypeReference *QmlScriptParser::findOrCreateType(const QString &name)
+{
+    TypeReference *type = 0;
+    int i = 0;
+    for (; i < _refTypes.size(); ++i) {
+        if (_refTypes.at(i)->name == name) {
+            type = _refTypes.at(i);
+            break;
+        }
+    }
+    if (!type) {
+        type = new TypeReference(i, name);
+        _refTypes.append(type);
+    }
+
+    return type;
+}
+
+void QmlScriptParser::setTree(Object *tree)
+{
+    Q_ASSERT(! root);
+
+    root = tree;
+}
+
+QT_END_NAMESPACE

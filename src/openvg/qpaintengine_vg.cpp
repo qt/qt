@@ -50,10 +50,10 @@
 #endif
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qdrawhelper_p.h>
-#include <QtGui/private/qtextureglyphcache_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
+#include <QtGui/private/qstatictext_p.h>
 #include <QDebug>
 #include <QSet>
 
@@ -86,10 +86,9 @@ public:
     QVGFontGlyphCache();
     ~QVGFontGlyphCache();
 
-    void cacheGlyphs(QVGPaintEnginePrivate *d,
-                     const QTextItemInt &ti,
-                     const QVarLengthArray<glyph_t> &glyphs);
-    void setScaleFromText(const QTextItemInt &ti);
+    void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
+
+    void setScaleFromText(const QFont &font, QFontEngine *fontEngine);
 
     VGFont font;
     VGfloat scaleX;
@@ -188,6 +187,7 @@ public:
 
     bool maskValid;         // True if vgMask() contains valid data.
     bool maskIsSet;         // True if mask would be fully set if it was valid.
+    bool scissorMask;       // True if scissor is used in place of the mask.
     bool rawVG;             // True if processing a raw VG escape.
 
     QRect maskRect;         // Rectangle version of mask if it is simple.
@@ -355,6 +355,7 @@ void QVGPaintEnginePrivate::init()
 
     maskValid = false;
     maskIsSet = false;
+    scissorMask = false;
     rawVG = false;
 
     scissorActive = false;
@@ -1539,7 +1540,28 @@ void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 static inline bool clipTransformIsSimple(const QTransform& transform)
 {
     QTransform::TransformationType type = transform.type();
-    return (type == QTransform::TxNone || type == QTransform::TxTranslate);
+    if (type == QTransform::TxNone || type == QTransform::TxTranslate)
+        return true;
+    if (type == QTransform::TxRotate) {
+        // Check for 0, 90, 180, and 270 degree rotations.
+        // (0 might happen after 4 rotations of 90 degrees).
+        qreal m11 = transform.m11();
+        qreal m12 = transform.m12();
+        qreal m21 = transform.m21();
+        qreal m22 = transform.m22();
+        if (m11 == 0.0f && m22 == 0.0f) {
+            if (m12 == 1.0f && m21 == -1.0f)
+                return true;    // 90 degrees.
+            else if (m12 == -1.0f && m21 == 1.0f)
+                return true;    // 270 degrees.
+        } else if (m12 == 0.0f && m21 == 0.0f) {
+            if (m11 == -1.0f && m22 == -1.0f)
+                return true;    // 180 degrees.
+            else if (m11 == 1.0f && m22 == 1.0f)
+                return true;    // 0 degrees.
+        }
+    }
+    return false;
 }
 
 #if defined(QVG_SCISSOR_CLIP)
@@ -1661,12 +1683,12 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         d->maskValid = false;
         d->maskIsSet = true;
+        d->scissorMask = false;
         d->maskRect = QRect();
         vgSeti(VG_MASKING, VG_FALSE);
         return;
     }
 
-#if defined(QVG_NO_RENDER_TO_MASK)
     // We don't have vgRenderToMask(), so handle simple QRectF's only.
     if (path.shape() == QVectorPath::RectangleHint &&
             path.elementCount() == 4 && clipTransformIsSimple(d->transform)) {
@@ -1676,8 +1698,10 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         QRectF rect(points[0], points[1], points[2] - points[0],
                     points[5] - points[1]);
         clip(rect.toRect(), op);
+        return;
     }
-#else
+
+#if !defined(QVG_NO_RENDER_TO_MASK)
     QPaintDevice *pdev = paintDevice();
     int width = pdev->width();
     int height = pdev->height();
@@ -1708,6 +1732,7 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
     d->maskIsSet = false;
+    d->scissorMask = false;
 #endif
 }
 
@@ -1728,6 +1753,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         {
             d->maskValid = false;
             d->maskIsSet = true;
+            d->scissorMask = false;
             d->maskRect = QRect();
             vgSeti(VG_MASKING, VG_FALSE);
         }
@@ -1743,6 +1769,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 // Special case: if the intersection of the system
@@ -1760,6 +1787,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                     if (clip.rectCount() != 1) {
                         d->maskValid = false;
                         d->maskIsSet = false;
+                        d->scissorMask = false;
                         d->maskRect = QRect();
                         d->modifyMask(this, VG_FILL_MASK, r);
                         break;
@@ -1768,6 +1796,7 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 }
                 d->maskValid = false;
                 d->maskIsSet = false;
+                d->scissorMask = true;
                 d->maskRect = clipRect;
                 vgSeti(VG_MASKING, VG_FALSE);
                 updateScissor();
@@ -1778,13 +1807,30 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         case Qt::IntersectClip:
         {
             QRect r = d->transform.mapRect(rect);
-            if (d->maskIsSet && isDefaultClipRect(r)) {
+            if (!d->maskValid) {
+                // Mask has not been used yet, so intersect with
+                // the previous scissor-based region in maskRect.
+                if (d->scissorMask)
+                    r = r.intersect(d->maskRect);
+                if (isDefaultClipRect(r)) {
+                    // The clip is the full window, so turn off clipping.
+                    d->maskIsSet = true;
+                    d->maskRect = QRect();
+                } else {
+                    // Activate the scissor on a smaller maskRect.
+                    d->maskIsSet = false;
+                    d->maskRect = r;
+                }
+                d->scissorMask = true;
+                updateScissor();
+            } else if (d->maskIsSet && isDefaultClipRect(r)) {
                 // Intersecting a full-window clip with a full-window
                 // region is the same as turning off clipping.
                 if (d->maskValid)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 d->modifyMask(this, VG_INTERSECT_MASK, r);
@@ -1826,6 +1872,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
         {
             d->maskValid = false;
             d->maskIsSet = true;
+            d->scissorMask = false;
             d->maskRect = QRect();
             vgSeti(VG_MASKING, VG_FALSE);
         }
@@ -1841,6 +1888,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 // Special case: if the intersection of the system
@@ -1854,12 +1902,14 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                 if (clip.rectCount() == 1) {
                     d->maskValid = false;
                     d->maskIsSet = false;
+                    d->scissorMask = true;
                     d->maskRect = clip.boundingRect();
                     vgSeti(VG_MASKING, VG_FALSE);
                     updateScissor();
                 } else {
                     d->maskValid = false;
                     d->maskIsSet = false;
+                    d->scissorMask = false;
                     d->maskRect = QRect();
                     d->modifyMask(this, VG_FILL_MASK, r);
                 }
@@ -1884,6 +1934,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     vgSeti(VG_MASKING, VG_FALSE);
                 d->maskValid = false;
                 d->maskIsSet = true;
+                d->scissorMask = false;
                 d->maskRect = QRect();
             } else {
                 d->modifyMask(this, VG_INTERSECT_MASK, r);
@@ -1962,6 +2013,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
     if (op == Qt::NoClip) {
         d->maskValid = false;
         d->maskIsSet = true;
+        d->scissorMask = false;
         d->maskRect = QRect();
         vgSeti(VG_MASKING, VG_FALSE);
         return;
@@ -1997,6 +2049,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
     d->maskIsSet = false;
+    d->scissorMask = false;
 #else
     QPaintEngineEx::clip(path, op);
 #endif
@@ -2040,6 +2093,7 @@ void QVGPaintEnginePrivate::modifyMask
     vgSeti(VG_MASKING, VG_TRUE);
     maskValid = true;
     maskIsSet = false;
+    scissorMask = false;
 }
 
 void QVGPaintEnginePrivate::modifyMask
@@ -2061,6 +2115,7 @@ void QVGPaintEnginePrivate::modifyMask
     vgSeti(VG_MASKING, VG_TRUE);
     maskValid = true;
     maskIsSet = false;
+    scissorMask = false;
 }
 
 #endif // !QVG_SCISSOR_CLIP
@@ -2093,7 +2148,7 @@ void QVGPaintEngine::updateScissor()
     {
 #if !defined(QVG_SCISSOR_CLIP)
         // Combine the system clip with the simple mask rectangle.
-        if (!d->maskRect.isNull()) {
+        if (d->scissorMask) {
             if (region.isEmpty())
                 region = d->maskRect;
             else
@@ -2184,6 +2239,7 @@ void QVGPaintEngine::clipEnabledChanged()
         // Replay the entire clip stack to put the mask into the right state.
         d->maskValid = false;
         d->maskIsSet = true;
+        d->scissorMask = false;
         d->maskRect = QRect();
         s->clipRegion = defaultClipRegion();
         d->replayClipOperations();
@@ -2193,6 +2249,7 @@ void QVGPaintEngine::clipEnabledChanged()
         vgSeti(VG_MASKING, VG_FALSE);
         d->maskValid = false;
         d->maskIsSet = false;
+        d->scissorMask = false;
         d->maskRect = QRect();
     }
 #endif
@@ -2311,12 +2368,7 @@ bool QVGPaintEngine::clearRect(const QRectF &rect, const QColor &color)
     Q_D(QVGPaintEngine);
     QVGPainterState *s = state();
     if (!s->clipEnabled || s->clipOperation == Qt::NoClip) {
-        // The transform will either be identity or a simple translation,
-        // so do a simpler version of "r = d->transform.map(rect).toRect()".
-        QRect r = QRect(qRound(rect.x() + d->transform.dx()),
-                        qRound(rect.y() + d->transform.dy()),
-                        qRound(rect.width()),
-                        qRound(rect.height()));
+        QRect r = d->transform.mapRect(rect).toRect();
         int height = paintDevice()->height();
         if (d->clearColor != color || d->clearOpacity != s->opacity) {
             VGfloat values[4];
@@ -3132,22 +3184,20 @@ QVGFontGlyphCache::~QVGFontGlyphCache()
         vgDestroyFont(font);
 }
 
-void QVGFontGlyphCache::setScaleFromText(const QTextItemInt &ti)
+void QVGFontGlyphCache::setScaleFromText(const QFont &font, QFontEngine *fontEngine)
 {
-    QFontInfo fi(ti.font());
+    QFontInfo fi(font);
     qreal pixelSize = fi.pixelSize();
-    qreal emSquare = ti.fontEngine->properties().emSquare.toReal();
+    qreal emSquare = fontEngine->properties().emSquare.toReal();
     scaleX = scaleY = static_cast<VGfloat>(pixelSize / emSquare);
 }
 
-void QVGFontGlyphCache::cacheGlyphs
-        (QVGPaintEnginePrivate *d, const QTextItemInt &ti,
-         const QVarLengthArray<glyph_t> &glyphs)
+void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
+                                    QFontEngine *fontEngine,
+                                    const glyph_t *g, int count)
 {
     VGfloat origin[2];
     VGfloat escapement[2];
-    const glyph_t *g = glyphs.constData();
-    int count = glyphs.size();
     glyph_metrics_t metrics;
     // Some Qt font engines don't set yoff in getUnscaledGlyph().
     // Zero the metric structure so that everything has a default value.
@@ -3166,9 +3216,9 @@ void QVGFontGlyphCache::cacheGlyphs
         }
 #if !defined(QVG_NO_IMAGE_GLYPHS)
         Q_UNUSED(d);
-        QImage scaledImage = ti.fontEngine->alphaMapForGlyph(glyph);
+        QImage scaledImage = fontEngine->alphaMapForGlyph(glyph);
         VGImage vgImage = VG_INVALID_HANDLE;
-        metrics = ti.fontEngine->boundingBox(glyph);
+        metrics = fontEngine->boundingBox(glyph);
         if (!scaledImage.isNull()) {  // Not a space character
             if (scaledImage.format() == QImage::Format_Indexed8) {
                 vgImage = vgCreateImage(VG_A_8, scaledImage.width(), scaledImage.height(), VG_IMAGE_QUALITY_FASTER);
@@ -3192,7 +3242,7 @@ void QVGFontGlyphCache::cacheGlyphs
 #else
         // Calculate the path for the glyph and cache it.
         QPainterPath path;
-        ti.fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
+        fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
         VGPath vgPath;
         if (!path.isEmpty()) {
             vgPath = d->painterPathToVGPath(path);
@@ -3233,8 +3283,28 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     ti.fontEngine->getGlyphPositions
         (ti.glyphs, matrix, ti.flags, glyphs, positions);
 
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
+        QPaintEngineEx::drawTextItem(p, textItem);    
+#else
+    // OpenGL 1.0 does not have support for VGFont and glyphs,
+    // so fall back to the default Qt path stroking algorithm.
+    QPaintEngineEx::drawTextItem(p, textItem);
+#endif
+}
+
+void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
+                     QPointF(0, 0));
+}
+
+ bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
+                                       QFontEngine *fontEngine, const QPointF &p)
+ {
+    Q_D(QVGPaintEngine);
+
     // Find the glyph cache for this font.
-    QVGFontCache::ConstIterator it = d->fontCache.constFind(ti.fontEngine);
+    QVGFontCache::ConstIterator it = d->fontCache.constFind(fontEngine);
     QVGFontGlyphCache *glyphCache;
     if (it != d->fontCache.constEnd()) {
         glyphCache = it.value();
@@ -3242,15 +3312,14 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         glyphCache = new QVGFontGlyphCache();
         if (glyphCache->font == VG_INVALID_HANDLE) {
             qWarning("QVGPaintEngine::drawTextItem: OpenVG fonts are not supported by the OpenVG engine");
-            delete glyphCache;
-            QPaintEngineEx::drawTextItem(p, textItem);
-            return;
+            delete glyphCache;            
+            return false;
         }
-        glyphCache->setScaleFromText(ti);
-        d->fontCache.insert(ti.fontEngine, glyphCache);
+        glyphCache->setScaleFromText(font, fontEngine);
+        d->fontCache.insert(fontEngine, glyphCache);
         if (!d->fontEngineCleaner)
             d->fontEngineCleaner = new QVGFontEngineCleaner(d);
-        QObject::connect(ti.fontEngine, SIGNAL(destroyed()),
+        QObject::connect(fontEngine, SIGNAL(destroyed()),
                          d->fontEngineCleaner, SLOT(fontEngineDestroyed()));
     }
 
@@ -3263,7 +3332,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, glyphTransform);
 
     // Add the glyphs from the text item into the glyph cache.
-    glyphCache->cacheGlyphs(d, ti, glyphs);
+    glyphCache->cacheGlyphs(d, fontEngine, glyphs, numGlyphs);
 
     // Set the glyph drawing origin.
     VGfloat origin[2];
@@ -3282,13 +3351,10 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, glyphs.size(), (VGuint*)glyphs.data(),
+    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs,
                  NULL, NULL, VG_FILL_PATH, VG_TRUE);
-#else
-    // OpenGL 1.0 does not have support for VGFont and glyphs,
-    // so fall back to the default Qt path stroking algorithm.
-    QPaintEngineEx::drawTextItem(p, textItem);
-#endif
+
+    return true;
 }
 
 void QVGPaintEngine::setState(QPainterState *s)
@@ -3395,6 +3461,7 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
                   QPaintEngine::DirtyClipEnabled)) != 0) {
         d->maskValid = false;
         d->maskIsSet = false;
+        d->scissorMask = false;
         d->maskRect = QRect();
         clipEnabledChanged();
     }

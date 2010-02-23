@@ -65,6 +65,7 @@
     \row \o \l{QtWebKit} \o Classes for displaying and editing Web content
     \row \o \l{QtXml} \o Classes for handling XML
     \row \o \l{QtXmlPatterns} \o An XQuery & XPath engine for XML and custom data models
+    \row \o \l{QtDeclarative} \o An engine for declaratively building fluid user interfaces.
     \row \o \l{Phonon Module}{Phonon} \o Multimedia framework classes
     \row \o \l{Qt3Support} \o Qt 3 compatibility classes
     \header \o {2,1} \bold{Modules for working with Qt's tools}
@@ -108,8 +109,6 @@
     definitions of the module's classes, use the following directive:
 
     \snippet doc/src/snippets/code/doc_src_qtcore.qdoc 0
-
-    The QtCore module is part of all \l{Qt editions}.
 */
 
 
@@ -127,9 +126,6 @@
     following directive:
 
     \snippet doc/src/snippets/code/doc_src_qtgui.qdoc 0
-
-    The QtGui module is part of the \l{Qt GUI Framework Edition},
-    the \l{Qt Full Framework Edition}, and the \l{Open Source Versions of Qt}.
 */
 
 /*!
@@ -176,9 +172,6 @@
     .pro file:
 
     \snippet doc/src/snippets/code/doc_src_qtnetwork.qdoc 0
-
-    The QtNetwork module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}.
 */
 
 /*!
@@ -224,9 +217,9 @@
     OpenGL module can take advantage of the whole Qt API for
     non-OpenGL-specific GUI functionality.
 
-    The QtOpenGL module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}. It is available on Windows, X11, and Mac OS X.
-    \l{Qt for Embedded Linux and OpenGL} supports OpenGL ES (OpenGL for Embedded Systems).
+    The QtOpenGL module is available on Windows, X11 and Mac OS X.
+    \l{Qt for Embedded Linux and OpenGL} supports OpenGL ES (OpenGL for
+    Embedded Systems).
     \note To be able to use the OpenGL API in \l{Qt for Embedded Linux}, it must be
     integrated with the Q Window System (QWS). See the
     \l{Qt for Embedded Linux and OpenGL} documentation for details.
@@ -318,9 +311,6 @@
         scriptable with QtScript, see \l{Making Applications
         Scriptable}.
 
-	The QtScript module is part of the \l{Qt Full Framework Edition} and the
-	\l{Open Source Versions of Qt}.
-
         \section1 License Information
 
         Qt Commercial Edition licensees that wish to distribute applications that
@@ -378,9 +368,6 @@
   To link against the module, add this line to your \l qmake \c .pro file:
 
   \snippet doc/src/snippets/code/doc.src.qtscripttools.qdoc 1
-
-  The QtScriptTools module is part of the \l{Qt Full Framework Edition} and
-  the \l{Open Source Versions of Qt}.
 */
 
 /*!
@@ -400,9 +387,6 @@
     .pro file:
 
     \snippet doc/src/snippets/code/doc_src_qtsql.qdoc 1
-
-    The QtSql module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}.
 
     See the \l{SQL Programming} guide for information about using this
     module in your applications.
@@ -428,9 +412,6 @@
         .pro file:
 
         \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
-
-        The QtSvg module is part of the \l{Qt Full Framework Edition} and the
-        \l{Open Source Versions of Qt}.
 
         \section1 License Information
 
@@ -487,9 +468,6 @@
     Further XML support is provided by the \l{Qt Solutions} group who
     provide, for example, classes that support SOAP and MML with the
     Qt XML classes. 
-
-    This module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}.
 */
 
 /*!
@@ -513,9 +491,6 @@
     .pro file:
 
     \snippet doc/src/snippets/code/doc_src_qtxmlpatterns.qdoc 1
-
-    This module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}.
 
     \section1 License Information
 
@@ -593,9 +568,6 @@
 
     \snippet doc/src/snippets/code/doc_src_phonon.qdoc 1
 
-    The Phonon module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}.
-
     \section1 Qt Backends
 
     Qt Backends are currently developed for Phonon version 4.1. The Phonon
@@ -671,12 +643,6 @@
     diverse parts of the Qt 3 API, it has dependencies on the QtCore,
     QtGui, QtNetwork, QtSql, and QtXml modules.
 
-    This module is part of the \l{Qt Full Framework Edition} and the
-    \l{Open Source Versions of Qt}. Most classes offered by this module are
-    also part of the \l{Qt GUI Framework Edition}.
-    Classes that are not available for \l{Qt GUI Framework Edition}
-    users are marked as such in the class documentation.
-
     \sa {Porting to Qt 4}
 */
 
@@ -704,10 +670,6 @@
     file:
 
     \snippet doc/src/snippets/code/doc_src_qtdesigner.qdoc 1
-
-    \note These classes are part of the \l{Open Source Versions of Qt} and
-    \l{Qt Commercial Editions}{Qt Full Framework Edition} for commercial
-    users.
 */
 
 /*!
@@ -744,10 +706,6 @@
 
     \snippet doc/src/snippets/code/doc_src_qtuiloader.qdoc 1
 
-    \note These classes are part of the \l{Open Source Versions of Qt} and
-    \l{Qt Commercial Editions}{Qt Full Framework Edition} for commercial
-    users.
-
     \sa{Calculator Builder Example}, {World Time Clock Builder Example}
 */
 
@@ -771,10 +729,6 @@
     .pro file:
 
     \snippet doc/src/snippets/code/doc_src_qthelp.qdoc 1
-
-    These classes are part of the \l{Open Source Versions of Qt} and
-    \l{Qt Commercial Editions}{Qt Full Framework Edition} for commercial
-    users.
 
     \section1 License Information
 
@@ -859,7 +813,7 @@
 
     The QAxContainer module is not covered by the \l{GNU General Public License (GPL)},
     the \l{GNU Lesser General Public License (LGPL)}, or the
-    \l{Qt Commercial Editions}{Qt Commercial License}. Instead, it is distributed under
+    \l{Qt Commercial Edition}{Qt Commercial License}. Instead, it is distributed under
     the following license.
 
     \legalese
@@ -909,7 +863,7 @@
 
     The QAxContainer module is not covered by the \l{GNU General Public License (GPL)},
     the \l{GNU Lesser General Public License (LGPL)}, or the
-    \l{Qt Commercial Editions}{Qt Commercial License}. Instead, it is distributed under
+    \l{Qt Commercial Edition}{Qt Commercial License}. Instead, it is distributed under
     the following license.
 
     \legalese
@@ -1004,7 +958,7 @@
 
     The QAxContainer module is not covered by the \l{GNU General Public License (GPL)},
     the \l{GNU Lesser General Public License (LGPL)}, or the
-    \l{Qt Commercial Editions}{Qt Commercial License}. Instead, it is distributed under
+    \l{Qt Commercial Edition}{Qt Commercial License}. Instead, it is distributed under
     the following license.
     
     \legalese
@@ -1042,7 +996,7 @@
     located in the \c{src/s60main} directory are not covered by the
     \l{GNU General Public License (GPL)}, the
     \l{GNU Lesser General Public License (LGPL)}, or the
-    \l{Qt Commercial Editions}{Qt Commercial License}. Instead, they are
+    \l{Qt Commercial Edition}{Qt Commercial License}. Instead, they are
     distributed under the following license.
     
     \legalese

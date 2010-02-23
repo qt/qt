@@ -91,7 +91,8 @@ class Q_CORE_EXPORT QString
 {
 public:
     inline QString();
-    QString(const QChar *unicode, int size);
+    QString(const QChar *unicode, int size); // Qt5: don't cap size < 0
+    explicit QString(const QChar *unicode); // Qt5: merge with the above
     QString(QChar c);
     QString(int size, QChar c);
     inline QString(const QLatin1String &latin1);
@@ -595,7 +596,7 @@ private:
     struct Data {
         QBasicAtomicInt ref;
         int alloc, size;
-        ushort *data;
+        ushort *data; // QT5: put that after the bit field to fill alignment gap; don't use sizeof any more then
         ushort clean : 1;
         ushort simpletext : 1;
         ushort righttoleft : 1;

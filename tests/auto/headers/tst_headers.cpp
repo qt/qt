@@ -65,6 +65,7 @@ private:
                                 const QRegExp &exclude);
     static QStringList getHeaders(const QString &path);
     static QStringList getSourceFiles(const QString &path);
+    static QStringList getQDocFiles(const QString &path);
 
     void allSourceFilesData();
     void allHeadersData();
@@ -111,6 +112,11 @@ QStringList tst_Headers::getSourceFiles(const QString &path)
     return getFiles(path, QStringList("*.cpp"), QRegExp("^(?!(moc_|qrc_))"));
 }
 
+QStringList tst_Headers::getQDocFiles(const QString &path)
+{
+    return getFiles(path, QStringList("*.qdoc"), QRegExp("."));
+}
+
 void tst_Headers::initTestCase()
 {
     qtSrcDir = QString::fromLocal8Bit(qgetenv("QTSRCDIR").isEmpty()
@@ -149,6 +155,7 @@ void tst_Headers::allSourceFilesData()
     for (int i = 0; i < sizeof(subdirs) / sizeof(subdirs[0]); ++i) {
         sourceFiles << getSourceFiles(qtSrcDir + subdirs[i]);
         sourceFiles << getHeaders(qtSrcDir + subdirs[i]);
+        sourceFiles << getQDocFiles(qtSrcDir + subdirs[i]);
     }
 
     foreach (QString sourceFile, sourceFiles) {
@@ -192,20 +199,26 @@ void tst_Headers::licenseCheck()
     QByteArray data = f.readAll();
     data.replace("\r\n", "\n"); // Windows
     data.replace('\r', '\n'); // Mac OS9
-    QStringList content = QString::fromLocal8Bit(data).split("\n");
+    QStringList content = QString::fromLocal8Bit(data).split("\n", QString::SkipEmptyParts);
+
+    if (content.count() <= 2) // likely a #include line and empty line only. Not a copyright issue.
+        return;
 
     if (content.first().contains("generated")) {
         content.takeFirst();
-        if (content.first().isEmpty())
-            content.takeFirst();
     }
 
     if (sourceFile.endsWith("/tests/auto/linguist/lupdate/testdata/good/merge_ordering/foo.cpp")
         || sourceFile.endsWith("/tests/auto/linguist/lupdate/testdata/good/mergecpp/finddialog.cpp"))
     {
         // These files are meant to start with empty lines.
-        while (content.first().isEmpty() || content.first().startsWith("//"))
+        while (content.first().startsWith("//"))
             content.takeFirst();
+    }
+
+    if (sourceFile.endsWith("/doc/src/classes/phonon-api.qdoc")) {
+        // This is an external file
+        return;
     }
 
     QVERIFY(licensePattern.exactMatch(content.value(8)) ||

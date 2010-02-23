@@ -236,6 +236,16 @@ tst_Suite::tst_Suite()
     addExpectedFailure("global-const-var-conflicts", "false", "true", willFixInNextReleaseMessage);
     addExpectedFailure("string-lastindexof", "0", "-1", "test is wrong?");
 
+#ifndef Q_OS_LINUX
+    addExpectedFailure("to-precision", "1.235e+27", "1.234e+27", "QTBUG-8053: toPrecision(4) gives wrong result on Mac");
+#endif
+
+#ifdef Q_OS_SOLARIS
+    addExpectedFailure("math-min-max", "Infinity", "-Infinity", willFixInNextReleaseMessage);
+    addExpectedFailure("negate-zero", "false", "true", willFixInNextReleaseMessage);
+    addExpectedFailure("str-to-num", "Infinity", "-Infinity", willFixInNextReleaseMessage);
+#endif
+
     addTestExclusion("debug-*", "not applicable");
     addTestExclusion("mirror-*", "not applicable");
 
@@ -244,6 +254,10 @@ tst_Suite::tst_Suite()
     addTestExclusion("sparse-array-reverse", "Hangs on JSC backend");
 
     addTestExclusion("string-case", "V8-specific behavior? (Doesn't pass on SpiderMonkey either)");
+
+#ifdef Q_CC_MINGW
+    addTestExclusion("date$", "QTBUG-7698: Date.prototype.setMonth() crashes on win32-g++");
+#endif
 
 #ifdef Q_OS_WINCE
     addTestExclusion("deep-recursion", "Demands too much memory on WinCE");

@@ -1,0 +1,243 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qmlglobalobject.html
+\title QML Global Object
+
+Contains all the properties of the JavaScript global object, plus:
+
+\tableofcontents
+
+\section1 Qt Object
+
+The Qt object provides useful enums and functions from Qt, for use in all QML
+files. 
+
+\section2 Enums
+The Qt object contains all enums in the Qt namespace. For example, you can
+access the AlignLeft member of the Qt::AlignmentFlag enum with \c Qt.AlignLeft.
+
+For a full list of enums, see the \l{Qt Namespace} documentation.
+
+\section2 Types
+The Qt object also contains helper functions for creating objects of specific
+data types. This is primarily useful when setting the properties of an item
+when the property has one of the following types:
+
+\list
+\o Color
+\o Rect
+\o Point
+\o Size
+\o Vector3D
+\endlist
+
+There are also string based constructors for these types, see \l{qmlbasictypes.html}{Qml Types}.
+
+\section3 Qt.rgba(qreal red, qreal green, qreal blue, qreal alpha)
+This function returns a Color with the specified \c red, \c green, \c blue and \c alpha components. All components should be in the range 0-1 inclusive.
+
+\section3 Qt.hsla(qreal hue, qreal saturation, qreal lightness, qreal alpha)
+This function returns a Color with the specified \c hue, \c saturation, \c lightness and \c alpha components. All components should be in the range 0-1 inclusive.
+
+\section3 Qt.rect(int x, int y, int width, int height) 
+This function returns a Rect with the top-left corner at \c x, \c y and the specified \c width and \c height.
+\section3 Qt.point(int x, int y)
+This function returns a Point with the specified \c x and \c y coordinates.
+\section3 Qt.size(int width, int height)
+This function returns as Size with the specified \c width and \c height.
+\section3 Qt.vector3d(real x, real y, real z)
+This function returns a Vector3D with the specified \c x, \c y and \c z.
+\section2 Functions
+The Qt object also contains the following miscellaneous functions which expose Qt functionality for use in QML.
+
+\section3 Qt.lighter(color baseColor)
+This function returns a color 50% lighter than \c baseColor. See QColor::lighter() for further details.
+\section3 Qt.darker(color baseColor)
+This function returns a color 50% darker than \c baseColor. See QColor::darker() for further details.
+\section3 Qt.tint(color baseColor, color tintColor)
+    This function allows tinting one color with another.
+
+    The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
+
+    \qml
+    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rectangle { x: 100; width: 80; height: 80; color: Qt.tint("lightsteelblue", "#10FF0000") }
+    \endqml
+    \image declarative-rect_tint.png
+
+    Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
+\section3 Qt.closestAngle(number fromAngle, number toAngle)
+This function returns an equivalent angle to toAngle, such that the difference between fromAngle and toAngle is never more than 180 degrees. This is useful when animating angles using a NumberAnimation, which does not know about equivalent angles, when you always want to take the shortest path. 
+
+For example, the following would rotate myItem counterclockwise from 350 degrees to 10 degrees, for a total of 340 degrees of rotation.
+\qml
+NumberAnimation { target: myItem; property: "rotation"; from: 350; to: 10 }
+\endqml
+
+while the following would rotate myItem clockwise from 350 degrees to 370 degrees (which is visually equivilant to 10 degrees), for a total of 20 degrees of rotation.
+\qml
+NumberAnimation { target: myItem; property: "rotation"; from: 350; to: Qt.closetAngle(350, 10) }
+\endqml
+
+\section3 Qt.playSound(url soundLocation)
+This function plays the audio file located at \c soundLocation. Only .wav files are supported.
+
+\section3 Qt.openUrlExternally(url target)
+This function attempts to open the specified \c target url in an external application, based on the user's desktop preferences. It will return true if it succeeds, and false otherwise.
+
+\section3 Qt.md5(data)
+This function returns a hex string of the md5 hash of \c data.
+
+\section1 Dynamic Object Creation
+The following functions on the global object allow you to dynamically create QML
+items from files or strings. See \l{Dynamic Object Management} for an overview
+of their use.
+
+\section2 createComponent(url file)
+    This function takes the URL of a QML file as its only argument. It returns
+    a component object which can be used to create and load that QML file.
+
+    Example QML script is below. Remember that QML files that might be loaded
+    over the network cannot be expected to be ready immediately.
+    \code
+        var component;
+        var sprite;
+        function finishCreation(){
+            if(component.isReady()){
+                sprite = component.createObject();
+                if(sprite == 0){
+                    // Error Handling
+                }else{
+                    sprite.parent = page;
+                    sprite.x = 200;
+                    //...
+                }
+            }else if(component.isError()){
+                // Error Handling
+            }
+        }
+
+        component = createComponent("Sprite.qml");
+        if(component.isReady()){
+            finishCreation();
+        }else{
+            component.statusChanged.connect(finishCreation);
+        }
+    \endcode
+
+    If you are certain the files will be local, you could simplify to
+
+    \code
+        component = createComponent("Sprite.qml");
+        sprite = component.createObject();
+        if(sprite == 0){
+            // Error Handling
+            console.log(component.errorsString());
+        }else{
+            sprite.parent = page;
+            sprite.x = 200;
+            //...
+        }
+    \endcode
+
+    If you want to just create an arbitrary string of QML, instead of
+    loading a QML file, consider the createQmlObject() function.
+
+\section2 createQmlObject(string qml, object parent, string filepath)
+    Creates a new object from the specified string of QML. It requires a
+    second argument, which is the id of an existing QML object to use as
+    the new object's parent. If a third argument is provided, this is used
+    for error reporting as the filepath that the QML came from.
+
+    Example (where targetItem is the id of an existing QML item):
+    \code
+    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
+        targetItem, "dynamicSnippet1");
+    \endcode
+
+    This function is intended for use inside QML only. It is intended to behave
+    similarly to eval, but for creating QML elements.
+
+    Returns the created object, or null if there is an error. In the case of an
+    error, details of the error are output using qWarning().
+
+    Note that this function returns immediately, and therefore may not work if
+    the QML loads new components. If you are trying to load a new component,
+    for example from a QML file, consider the createComponent() function
+    instead. 'New components' refers to external QML files that have not yet
+    been loaded, and so it is safe to use createQmlObject to load built-in
+    components.
+
+\section1 Asynchronous JavaScript and XML 
+QML script supports the XMLHttpRequest object, which can be used to asynchronously obtain data from over a network.
+\section2 XMLHttpRequest()
+In QML you can construct an XMLHttpRequest object just like in a web browser! TODO: Real documentation for this object.
+\section1 Offline Storage API
+
+The \c openDatabase() and related functions
+provide the ability to access local offline storage in an SQL database.
+
+These databases are user-specific and QML-specific. They are stored in the \c Databases subdirectory
+of QmlEngine::offlineStoragePath(), currently as SQLite databases.
+
+The API conforms to the Synchronous API of the HTML5 Web Database API,
+\link http://www.w3.org/TR/2009/WD-webdatabase-20091029/ W3C Working Draft 29 October 2009\endlink.
+
+The API can be used from JavaScript functions in your QML:
+
+\quotefile declarative/sql/hello.qml
+
+When a database is first created, an INI file is also created specifying its characteristics:
+
+\table
+\header \o \bold {Key} \o \bold {Value}
+\row \o Name \o The name of the database passed to \c openDatabase()
+\row \o Version \o The version of the database passed to \c openDatabase()
+\row \o Description \o The description of the database passed to \c openDatabase()
+\row \o EstimatedSize \o The estimated size of the database passed to \c openDatabase()
+\row \o Driver \o Currently "QSQLITE"
+\endtable
+
+This data can be used by application tools.
+
+*/

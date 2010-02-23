@@ -99,6 +99,10 @@ QT_BEGIN_NAMESPACE
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
+#ifdef Q_WS_X11
+extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
+#endif
+
 struct QGLThreadContext {
     QGLContext *context;
 };
@@ -1688,26 +1692,23 @@ QGLTextureCache::QGLTextureCache()
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
 
-    QImagePixmapCleanupHooks::instance()->addPixmapModificationHook(cleanupTextures);
-#ifdef Q_WS_X11
-    QImagePixmapCleanupHooks::instance()->addPixmapDestructionHook(cleanupPixmapSurfaces);
-#endif
-    QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
+    QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(cleanupTexturesForPixampData);
+    QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(cleanupBeforePixmapDestruction);
+    QImagePixmapCleanupHooks::instance()->addImageHook(cleanupTexturesForCacheKey);
 }
 
 QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
 
-    QImagePixmapCleanupHooks::instance()->removePixmapModificationHook(cleanupTextures);
-#ifdef Q_WS_X11
-    QImagePixmapCleanupHooks::instance()->removePixmapDestructionHook(cleanupPixmapSurfaces);
-#endif
-    QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
+    QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
+    QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
+    QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
 }
 
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
+    QWriteLocker locker(&m_lock);
     if (m_cache.totalCost() + cost > m_cache.maxCost()) {
         // the cache is full - make an attempt to remove something
         const QList<qint64> keys = m_cache.keys();
@@ -1725,6 +1726,7 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
 
 bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 {
+    QWriteLocker locker(&m_lock);
     QList<qint64> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         QGLTexture *tex = m_cache.object(keys.at(i));
@@ -1739,6 +1741,7 @@ bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 
 void QGLTextureCache::removeContextTextures(QGLContext* ctx)
 {
+    QWriteLocker locker(&m_lock);
     QList<qint64> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         const qint64 &key = keys.at(i);
@@ -1759,41 +1762,30 @@ QGLTextureCache* QGLTextureCache::instance()
   a hook that removes textures from the cache when a pixmap/image
   is deref'ed
 */
-void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
+void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 {
-    // ### remove when the GL texture cache becomes thread-safe
-    if (qApp->thread() != QThread::currentThread())
-        return;
-    QGLTexture *texture = instance()->getTexture(cacheKey);
-    if (texture && texture->options & QGLContext::MemoryManagedBindOption)
-        instance()->remove(cacheKey);
+    instance()->remove(cacheKey);
+    Q_ASSERT(instance()->getTexture(cacheKey) == 0);
 }
 
 
-void QGLTextureCache::cleanupTextures(QPixmap* pixmap)
+void QGLTextureCache::cleanupTexturesForPixampData(QPixmapData* pmd)
 {
-    // ### remove when the GL texture cache becomes thread-safe
-    if (qApp->thread() == QThread::currentThread()) {
-        const qint64 cacheKey = pixmap->cacheKey();
-        QGLTexture *texture = instance()->getTexture(cacheKey);
-        if (texture && texture->options & QGLContext::MemoryManagedBindOption)
-            instance()->remove(cacheKey);
-    }
+    cleanupTexturesForCacheKey(pmd->cacheKey());
 }
 
-#if defined(Q_WS_X11)
-void QGLTextureCache::cleanupPixmapSurfaces(QPixmap* pixmap)
+void QGLTextureCache::cleanupBeforePixmapDestruction(QPixmapData* pmd)
 {
     // Remove any bound textures first:
-    cleanupTextures(pixmap);
+    cleanupTexturesForPixampData(pmd);
 
-    QPixmapData *pd = pixmap->data_ptr().data();
-    if (pd->classId() == QPixmapData::X11Class) {
-        Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
-        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
+#if defined(Q_WS_X11)
+    if (pmd->classId() == QPixmapData::X11Class) {
+        Q_ASSERT(pmd->ref == 0); // Make sure reference counting isn't broken
+        QGLContextPrivate::destroyGlSurfaceForPixmap(pmd);
     }
-}
 #endif
+}
 
 void QGLTextureCache::deleteIfEmpty()
 {
@@ -2186,8 +2178,9 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
     Q_ASSERT(texture);
 
-    if (texture->id > 0)
-        QImagePixmapCleanupHooks::enableCleanupHooks(image);
+    // Enable the cleanup hooks for this image so that the texture cache entry is removed when the
+    // image gets deleted:
+    QImagePixmapCleanupHooks::enableCleanupHooks(image);
 
     return texture;
 }
@@ -2241,6 +2234,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     int tx_h = qt_next_power_of_two(image.height());
 
     QImage img = image;
+
     if (!(QGLExtensions::glExtensions() & QGLExtensions::NPOTTextures)
         && !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0)
         && (target == GL_TEXTURE_2D && (tx_w != image.width() || tx_h != image.height())))
@@ -2394,7 +2388,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        qWarning(" - texture upload failed, error code 0x%x\n", error);
+        qWarning(" - texture upload failed, error code 0x%x, enum: %d (%x)\n", error, target, target);
     }
 #endif
 
@@ -2409,6 +2403,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     int cost = img.width()*img.height()*4/1024;
     QGLTexture *texture = new QGLTexture(q, tx_id, target, options);
     QGLTextureCache::instance()->insert(q, key, texture, cost);
+
     return texture;
 }
 
@@ -2453,7 +2448,10 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 
 #if defined(Q_WS_X11)
     // Try to use texture_from_pixmap
-    if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType) {
+    const QX11Info *xinfo = qt_x11Info(paintDevice);
+    if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType
+        && xinfo && xinfo->screen() == pixmap.x11Info().screen())
+    {
         texture = bindTextureFromNativePixmap(pd, key, options);
         if (texture) {
             texture->options |= QGLContext::MemoryManagedBindOption;
@@ -2522,7 +2520,7 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
         return 0;
 
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(image, target, format, false, DefaultBindOption);
+    QGLTexture *texture = d->bindTexture(image, target, format, DefaultBindOption);
     return texture->id;
 }
 
@@ -2662,11 +2660,13 @@ void QGLContext::deleteTexture(GLuint id)
     for (int i = 0; i < ddsKeys.size(); ++i) {
         GLuint texture = dds_cache->value(ddsKeys.at(i));
         if (id == texture) {
-            glDeleteTextures(1, &texture);
             dds_cache->remove(ddsKeys.at(i));
-            return;
+            break;
         }
     }
+
+    // Finally, actually delete the texture ID
+    glDeleteTextures(1, &id);
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
@@ -3290,6 +3290,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 */
 
 
+
 /*****************************************************************************
   QGLWidget implementation
  *****************************************************************************/
@@ -3409,6 +3410,15 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     Overpainting 2D content on top of 3D content takes a little more effort.
     One approach to doing this is shown in the
     \l{Overpainting Example}{Overpainting} example.
+
+    \section1 Threading
+
+    It is possible to render into a QGLWidget from another thread, but it
+    requires that all access to the GL context is safe guarded. The Qt GUI
+    thread will try to use the context in resizeEvent and paintEvent, so in
+    order for threaded rendering using a GL widget to work, these functions
+    need to be intercepted in the GUI thread and handled accordingly in the
+    application.
 
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}

@@ -83,21 +83,7 @@ extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); // qapplication.cpp
 extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
-
-Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
-{
-    if (buttonNum == 0)
-        return Qt::LeftButton;
-    if (buttonNum == 1)
-        return Qt::RightButton;
-    if (buttonNum == 2)
-        return Qt::MidButton;
-    if (buttonNum == 3)
-        return Qt::XButton1;
-    if (buttonNum == 4)
-        return Qt::XButton2;
-    return Qt::NoButton;
-}
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 
 struct dndenum_mapper
 {
@@ -474,10 +460,11 @@ extern "C" {
 - (void)drawRect:(NSRect)aRect
 {
     if (QApplicationPrivate::graphicsSystem() != 0) {
-        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
-            bs->markDirty(qwidget->rect(), qwidget);
-        qwidgetprivate->syncBackingStore(qwidget->rect());
-        return;
+        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore()) {
+            // Drawing is handled on the window level
+            // See qcocoasharedwindowmethods_mac_p.
+            return;
+        }
     }
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
@@ -488,7 +475,15 @@ extern "C" {
             qWarning("QWidget::repaint: Recursive repaint detected");
 
         const QRect qrect = QRect(aRect.origin.x, aRect.origin.y, aRect.size.width, aRect.size.height);
-        QRegion qrgn(qrect);
+        QRegion qrgn;
+
+	const NSRect *rects;
+	NSInteger count;
+	[self getRectsBeingDrawn:&rects count:&count];
+	for (int i = 0; i < count; ++i) {
+	    QRect tmpRect = QRect(rects[i].origin.x, rects[i].origin.y, rects[i].size.width, rects[i].size.height);
+	    qrgn += tmpRect;
+	}
 
         if (!qwidget->isWindow() && !qobject_cast<QAbstractScrollArea *>(qwidget->parent())) {
             const QRegion &parentMask = qwidget->window()->mask();
@@ -785,6 +780,7 @@ extern "C" {
         deltaZ = qBound(-120, int([theEvent deltaZ] * 10000), 120);
     }
 
+#ifndef QT_NO_WHEELEVENT
     if (deltaX != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaX, buttons, keyMods, Qt::Horizontal);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
@@ -825,6 +821,8 @@ extern "C" {
             wheelOK = qwe2.isAccepted();
         }
     }
+#endif //QT_NO_WHEELEVENT
+
     if (!wheelOK) {
         return [super scrollWheel:theEvent];
     }
@@ -1361,7 +1359,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
     // setup the data
     QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacPasteboardMime::MIME_DND);
-    dragPrivate()->data->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray());
+    dragPrivate()->data->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
     dragBoard.setMimeData(dragPrivate()->data);
 
     // create the image

@@ -198,11 +198,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     // Get the display and initialize it.
     d->eglContext = new QEglContext();
     d->eglContext->setApi(QEgl::OpenGL);
-    if (!d->eglContext->openDisplay(device())) {
-        delete d->eglContext;
-        d->eglContext = 0;
-        return false;
-    }
 
     // Construct the configuration we need for this surface.
     QEglProperties configProps;

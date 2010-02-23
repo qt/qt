@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,6 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
+    const QString Unfiltered;
     const QString AppFontKey(QLatin1String("appFont"));
     const QString AppWritingSystemKey(QLatin1String("appWritingSystem"));
     const QString BookmarksKey(QLatin1String("Bookmarks"));
@@ -67,7 +68,6 @@ namespace {
     const QString MainWindowGeometryKey(QLatin1String("MainWindowGeometry"));
     const QString SearchWasAttachedKey(QLatin1String("SearchWasAttached"));
     const QString StartOptionKey(QLatin1String("StartOption"));
-    const QString UnfilteredInsertedKey(QLatin1String("UnfilteredFilterInserted"));
     const QString UseAppFontKey(QLatin1String("useAppFont"));
     const QString UseBrowserFontKey(QLatin1String("useBrowserFont"));
     const QString VersionKey(QString(QLatin1String("qtVersion%1$$$%2")).
@@ -103,7 +103,7 @@ private:
     HelpEngineWrapperPrivate(const QString &collectionFile);
 
     void initFileSystemWatchers();
-    void assertDocFilesWatched();
+    void checkDocFilesWatched();
     void qchFileChanged(const QString &fileName, bool fromTimeout);
 
     static const int UpdateGracePeriod = 2000;
@@ -112,7 +112,10 @@ private:
     QFileSystemWatcher * const m_qchWatcher;
     typedef QPair<QDateTime, QSharedPointer<TimeoutForwarder> > RecentSignal;
     QMap<QString, RecentSignal> m_recentQchUpdates;
+    bool m_initialReindexingNeeded;
 };
+
+const QString HelpEngineWrapper::TrUnfiltered = tr("Unfiltered");
 
 HelpEngineWrapper *HelpEngineWrapper::helpEngineWrapper = 0;
 
@@ -139,12 +142,24 @@ HelpEngineWrapper::HelpEngineWrapper(const QString &collectionFile)
     : d(new HelpEngineWrapperPrivate(collectionFile))
 {
     TRACE_OBJ
+
+    /*
+     * Otherwise we will waste time if several new docs are found,
+     * because we will start to index them, only to be interupted
+     * by the next request. Also, there is a nasty SQLITE bug that will
+     * cause the application to hang for minutes in that case.
+     * This call is reverted by initalDocSetupDone(), which must be
+     * called after the new docs have been installed.
+     */
+    disconnect(d->m_helpEngine, SIGNAL(setupFinished()),
+            searchEngine(), SLOT(indexDocumentation()));
+
     connect(d, SIGNAL(documentationRemoved(QString)),
             this, SIGNAL(documentationRemoved(QString)));
     connect(d, SIGNAL(documentationUpdated(QString)),
             this, SIGNAL(documentationUpdated(QString)));
     connect(d->m_helpEngine, SIGNAL(currentFilterChanged(QString)),
-            this, SIGNAL(currentFilterChanged(QString)));
+            this, SLOT(handleCurrentFilterChanged(QString)));
     connect(d->m_helpEngine, SIGNAL(setupFinished()),
             this, SIGNAL(setupFinished()));
 }
@@ -153,6 +168,15 @@ HelpEngineWrapper::~HelpEngineWrapper()
 {
     TRACE_OBJ
     delete d;
+}
+
+void HelpEngineWrapper::initialDocSetupDone()
+{
+    TRACE_OBJ
+    connect(d->m_helpEngine, SIGNAL(setupFinished()),
+            searchEngine(), SLOT(indexDocumentation()));
+    if (d->m_initialReindexingNeeded)
+        setupData();
 }
 
 QHelpSearchEngine *HelpEngineWrapper::searchEngine() const
@@ -200,23 +224,25 @@ const QString HelpEngineWrapper::collectionFile() const
 bool HelpEngineWrapper::registerDocumentation(const QString &docFile)
 {
     TRACE_OBJ
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
     if (!d->m_helpEngine->registerDocumentation(docFile))
         return false;
     d->m_qchWatcher->addPath(docFile);
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
+    d->m_initialReindexingNeeded = true;
     return true;
 }
 
 bool HelpEngineWrapper::unregisterDocumentation(const QString &namespaceName)
 {
     TRACE_OBJ
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
     const QString &file = d->m_helpEngine->documentationFileName(namespaceName);
     if (!d->m_helpEngine->unregisterDocumentation(namespaceName))
         return false;
     d->m_qchWatcher->removePath(file);
-    d->assertDocFilesWatched();
+    d->checkDocFilesWatched();
+    d->m_initialReindexingNeeded = true;
     return true;
 }
 
@@ -242,19 +268,25 @@ bool HelpEngineWrapper::removeCustomFilter(const QString &filterName)
 void HelpEngineWrapper::setCurrentFilter(const QString &currentFilter)
 {
     TRACE_OBJ
-    d->m_helpEngine->setCurrentFilter(currentFilter);
+    const QString &filter
+        = currentFilter == TrUnfiltered ? Unfiltered : currentFilter;
+    d->m_helpEngine->setCurrentFilter(filter);
 }
 
 const QString HelpEngineWrapper::currentFilter() const
 {
     TRACE_OBJ
-    return d->m_helpEngine->currentFilter();
+    const QString &filter = d->m_helpEngine->currentFilter();
+    return filter == Unfiltered ? TrUnfiltered : filter;
 }
 
 const QStringList HelpEngineWrapper::customFilters() const
 {
     TRACE_OBJ
-    return d->m_helpEngine->customFilters();
+    QStringList filters = d->m_helpEngine->customFilters();
+    filters.removeOne(Unfiltered);
+    filters.prepend(TrUnfiltered);
+    return filters;
 }
 
 QUrl HelpEngineWrapper::findFile(const QUrl &url) const
@@ -291,18 +323,6 @@ QString HelpEngineWrapper::error() const
 {
     TRACE_OBJ
     return d->m_helpEngine->error();
-}
-
-bool HelpEngineWrapper::unfilteredInserted() const
-{
-    TRACE_OBJ
-    return d->m_helpEngine->customValue(UnfilteredInsertedKey).toInt() == 1;
-}
-
-void HelpEngineWrapper::setUnfilteredInserted()
-{
-    TRACE_OBJ
-    d->m_helpEngine->setCustomValue(UnfilteredInsertedKey, 1);
 }
 
 const QStringList HelpEngineWrapper::qtDocInfo(const QString &component) const
@@ -679,6 +699,13 @@ void HelpEngineWrapper::setBrowserWritingSystem(QFontDatabase::WritingSystem sys
     d->m_helpEngine->setCustomValue(BrowserWritingSystemKey, system);
 }
 
+void HelpEngineWrapper::handleCurrentFilterChanged(const QString &filter)
+{
+    const QString &filterToReport
+        = filter == Unfiltered ? TrUnfiltered : filter;
+    emit currentFilterChanged(filterToReport);
+}
+
 
 TimeoutForwarder::TimeoutForwarder(const QString &fileName)
     : m_fileName(fileName)
@@ -695,9 +722,12 @@ void TimeoutForwarder::forward()
 
 HelpEngineWrapperPrivate::HelpEngineWrapperPrivate(const QString &collectionFile)
     : m_helpEngine(new QHelpEngine(collectionFile, this)),
-      m_qchWatcher(new QFileSystemWatcher(this))
+      m_qchWatcher(new QFileSystemWatcher(this)),
+      m_initialReindexingNeeded(false)
 {
     TRACE_OBJ
+    if (!m_helpEngine->customFilters().contains(Unfiltered))
+        m_helpEngine->addCustomFilter(Unfiltered, QStringList());
     initFileSystemWatchers();
 }
 
@@ -710,7 +740,7 @@ void HelpEngineWrapperPrivate::initFileSystemWatchers()
         connect(m_qchWatcher, SIGNAL(fileChanged(QString)),
                 this, SLOT(qchFileChanged(QString)));
     }
-    assertDocFilesWatched();
+    checkDocFilesWatched();
 }
 
 void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName)
@@ -719,11 +749,15 @@ void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName)
     qchFileChanged(fileName, false);
 }
 
-void HelpEngineWrapperPrivate::assertDocFilesWatched()
+void HelpEngineWrapperPrivate::checkDocFilesWatched()
 {
     TRACE_OBJ
-    Q_ASSERT(m_qchWatcher->files().count()
-             == m_helpEngine->registeredDocumentations().count());
+    const int watchedFilesCount = m_qchWatcher->files().count();
+    const int docFilesCount = m_helpEngine->registeredDocumentations().count();
+    if (watchedFilesCount != docFilesCount) {
+        qWarning("Strange: Have %d docs, but %d are being watched",
+                 watchedFilesCount, docFilesCount);
+    }
 }
 
 void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName,
@@ -788,6 +822,7 @@ void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName,
         } else {
             emit documentationUpdated(ns);
         }
+        m_initialReindexingNeeded = true;
         m_helpEngine->setupData();
     }
     m_recentQchUpdates.erase(it);

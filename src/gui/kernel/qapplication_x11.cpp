@@ -208,11 +208,8 @@ static const char * x11_atomnames = {
     "_MOTIF_WM_HINTS\0"
 
     "DTWM_IS_RUNNING\0"
-    "KDE_FULL_SESSION\0"
-    "KWIN_RUNNING\0"
-    "KWM_RUNNING\0"
-    "GNOME_BACKGROUND_PROPERTIES\0"
     "ENLIGHTENMENT_DESKTOP\0"
+    "_DT_SAVE_MODE\0"
     "_SGI_DESKS_MANAGER\0"
 
     // EWMH (aka NETWM)
@@ -626,8 +623,6 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
                 || err->resourceid == XA_RGB_DEFAULT_MAP
                 || err->resourceid == ATOM(_NET_SUPPORTED)
                 || err->resourceid == ATOM(_NET_SUPPORTING_WM_CHECK)
-                || err->resourceid == ATOM(KDE_FULL_SESSION)
-                || err->resourceid == ATOM(KWIN_RUNNING)
                 || err->resourceid == ATOM(XdndProxy)
                 || err->resourceid == ATOM(XdndAware))) {
             // Perhaps we're running under SECURITY reduction? :/
@@ -949,10 +944,12 @@ bool QApplicationPrivate::x11_apply_settings()
                        QApplication::cursorFlashTime()).toInt();
     QApplication::setCursorFlashTime(num);
 
+#ifndef QT_NO_WHEELEVENT
     num =
         settings.value(QLatin1String("wheelScrollLines"),
                        QApplication::wheelScrollLines()).toInt();
     QApplication::setWheelScrollLines(num);
+#endif
 
     QString colorspec = settings.value(QLatin1String("colorSpec"),
                                        QVariant(QLatin1String("default"))).toString();
@@ -2220,87 +2217,36 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->desktopEnvironment = DE_UNKNOWN;
         X11->desktopVersion = 0;
 
-        // See if the current window manager is using the freedesktop.org spec to give its name
-        Window windowManagerWindow = XNone;
-        Atom typeReturned;
-        int formatReturned;
-        unsigned long nitemsReturned;
-        unsigned long unused;
-        unsigned char *data = 0;
-        if (XGetWindowProperty(QX11Info::display(), QX11Info::appRootWindow(),
-                           ATOM(_NET_SUPPORTING_WM_CHECK),
-                           0, 1024, False, XA_WINDOW, &typeReturned,
-                           &formatReturned, &nitemsReturned, &unused, &data)
-              == Success) {
-            if (typeReturned == XA_WINDOW && formatReturned == 32)
-                windowManagerWindow = *((Window*) data);
-            if (data)
-                XFree(data);
+        Atom type;
+        int format;
+        unsigned long length, after;
+        uchar *data = 0;
 
-            if (windowManagerWindow != XNone) {
-                QString wmName;
-                Atom utf8atom = ATOM(UTF8_STRING);
-                if (XGetWindowProperty(QX11Info::display(), windowManagerWindow, ATOM(_NET_WM_NAME),
-                                       0, 1024, False, utf8atom, &typeReturned,
-                                       &formatReturned, &nitemsReturned, &unused, &data)
-                    == Success) {
-                    if (typeReturned == utf8atom && formatReturned == 8)
-                        wmName = QString::fromUtf8((const char*)data);
-                    if (data)
-                        XFree(data);
-                    if (wmName == QLatin1String("KWin"))
-                        X11->desktopEnvironment = DE_KDE;
-                    if (wmName == QLatin1String("Metacity"))
-                        X11->desktopEnvironment = DE_GNOME;
-                }
-            }
+        if (!qgetenv("KDE_FULL_SESSION").isEmpty()) {
+            X11->desktopEnvironment = DE_KDE;
+            X11->desktopVersion = qgetenv("KDE_SESSION_VERSION").toInt();
+        } else if (!qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty() // Deprecated for some reason.
+                   || qgetenv("DESKTOP_SESSION") == "gnome") { // De-facto-standardized by GNOME.
+            X11->desktopEnvironment = DE_GNOME;
+        } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_DT_SAVE_MODE),
+                                      0, 2, False, XA_STRING, &type, &format, &length,
+                               &after, &data) == Success
+                   && !strcmp(reinterpret_cast<char *>(data), "xfce4")) {
+            // Pretend that xfce4 is gnome, as it uses the same libraries.
+            // The detection above is stolen from xdg-open.
+            X11->desktopEnvironment = DE_GNOME;
+        } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
+                                      0, 1, False, AnyPropertyType, &type, &format, &length,
+                               &after, &data) == Success && length) {
+            // DTWM is running, meaning most likely CDE is running...
+            X11->desktopEnvironment = DE_CDE;
+        } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_SGI_DESKS_MANAGER),
+                                      0, 1, False, XA_WINDOW, &type, &format, &length, &after, &data) == Success
+                   && length) {
+            X11->desktopEnvironment = DE_4DWM;
         }
-
-        // Running a different/newer/older window manager?  Try some other things
-        if (X11->desktopEnvironment == DE_UNKNOWN){
-            Atom type;
-            int format;
-            unsigned long length, after;
-            uchar *data = 0;
-
-            QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
-            if (session == QLatin1String("kde")) {
-                X11->desktopEnvironment = DE_KDE;
-            } else if (session == QLatin1String("gnome") || session == QLatin1String("xfce")) {
-                X11->desktopEnvironment = DE_GNOME;
-            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
-                                          0, 1, False, AnyPropertyType, &type, &format, &length,
-                                   &after, &data) == Success && length) {
-                // DTWM is running, meaning most likely CDE is running...
-                X11->desktopEnvironment = DE_CDE;
-            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(),
-                                          ATOM(GNOME_BACKGROUND_PROPERTIES), 0, 1, False, AnyPropertyType,
-                                          &type, &format, &length, &after, &data) == Success && length) {
-                X11->desktopEnvironment = DE_GNOME;
-            } else if (!qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty()) {
-                X11->desktopEnvironment = DE_GNOME;
-            } else if ((XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(KDE_FULL_SESSION),
-                                           0, 1, False, AnyPropertyType, &type, &format, &length, &after, &data) == Success
-                        && length)
-                       || (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(KWIN_RUNNING),
-                                              0, 1, False, AnyPropertyType, &type, &format, &length,
-                                              &after, &data) == Success
-                           && length)
-                       || (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(KWM_RUNNING),
-                                              0, 1, False, AnyPropertyType, &type, &format, &length,
-                                              &after, &data) == Success && length)) {
-                X11->desktopEnvironment = DE_KDE;
-            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_SGI_DESKS_MANAGER),
-                                          0, 1, False, XA_WINDOW, &type, &format, &length, &after, &data) == Success
-                       && length) {
-                X11->desktopEnvironment = DE_4DWM;
-            }
-            if (data)
-                XFree((char *)data);
-        }
-
-        if (X11->desktopEnvironment == DE_KDE)
-            X11->desktopVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
+        if (data)
+            XFree((char *)data);
 
 #if !defined(QT_NO_STYLE_GTK)
         if (X11->desktopEnvironment == DE_GNOME) {
@@ -4406,8 +4352,10 @@ bool QETWidget::translateWheelEvent(int global_x, int global_y, int delta,
         QWidget* popup = qApp->activePopupWidget();
         if (popup && window() != popup)
             popup->close();
+#ifndef QT_NO_WHEELEVENT
         QWheelEvent e(pos, globalPos, delta, buttons, modifiers, orient);
         if (QApplication::sendSpontaneousEvent(widget, &e))
+#endif
             return true;
     }
 
@@ -4418,8 +4366,10 @@ bool QETWidget::translateWheelEvent(int global_x, int global_y, int delta,
         QWidget* popup = qApp->activePopupWidget();
         if (popup && widget != popup)
             popup->hide();
+#ifndef QT_NO_WHEELEVENT
         QWheelEvent e(pos, globalPos, delta, buttons, modifiers, orient);
         if (QApplication::sendSpontaneousEvent(widget, &e))
+#endif
             return true;
     }
     return false;
@@ -5318,6 +5268,7 @@ int QApplication::keyboardInputInterval()
     return QApplicationPrivate::keyboard_input_time;
 }
 
+#ifndef QT_NO_WHEELEVENT
 void QApplication::setWheelScrollLines(int n)
 {
     QApplicationPrivate::wheel_scroll_lines = n;
@@ -5327,6 +5278,7 @@ int QApplication::wheelScrollLines()
 {
     return QApplicationPrivate::wheel_scroll_lines;
 }
+#endif
 
 void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 {

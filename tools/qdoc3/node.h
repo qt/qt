@@ -137,6 +137,13 @@ class Node
         AppendixLink */ 
     };
 
+    enum PageType {
+        NoPageType,
+        ApiPage,
+        ArticlePage,
+        ExamplePage
+    };
+
     virtual ~Node();
 
     void setAccess(Access access) { acc = access; }
@@ -150,6 +157,8 @@ class Node
     void setLink(LinkType linkType, const QString &link, const QString &desc);
     void setUrl(const QString &url);
     void setTemplateStuff(const QString &templateStuff) { tpl = templateStuff; }
+    void setPageType(PageType t) { pageTyp = t; }
+    void setPageType(const QString& t);
 
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
@@ -173,6 +182,8 @@ class Node
     ThreadSafeness inheritedThreadSafeness() const;
     QString since() const { return sinc; }
     QString templateStuff() const { return tpl; }
+    PageType pageType() const { return pageTyp; }
+    virtual void addPageKeywords(const QString& ) { }
 
     void clearRelated() { rel = 0; }
 
@@ -186,13 +197,15 @@ class Node
 #ifdef Q_WS_WIN
     Type typ;
     Access acc;
-    Status sta;
     ThreadSafeness saf;
+    PageType pageTyp;
+    Status sta;
 #else
     Type typ : 4;
     Access acc : 2;
-    Status sta : 3;
     ThreadSafeness saf : 2;
+    PageType pageTyp : 4;
+    Status sta : 3;
 #endif
     InnerNode *par;
     InnerNode *rel;
@@ -244,6 +257,8 @@ class InnerNode : public Node
 
     QStringList primaryKeys();
     QStringList secondaryKeys();
+    const QStringList& pageKeywords() const { return pageKeywds; }
+    virtual void addPageKeywords(const QString& t) { pageKeywds << t; }
 
  protected:
     InnerNode(Type type, InnerNode *parent, const QString& name);
@@ -256,6 +271,7 @@ class InnerNode : public Node
     void removeChild(Node *child);
     void removeRelated(Node *pseudoChild);
 
+    QStringList pageKeywds;
     QStringList inc;
     NodeList children;
     NodeList enumChildren;
@@ -367,11 +383,15 @@ class QmlClassNode : public FakeNode
 
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;
+    static void addInheritedBy(const QString& base, Node* sub);
+    static void subclasses(const QString& base, NodeList& subs);
 
+ public:
     static bool qmlOnly;
+    static QMultiMap<QString,Node*> inheritedBy;
 
  private:
-    const ClassNode* cnode;
+    const ClassNode*    cnode;
 };
 
 class QmlBasicTypeNode : public FakeNode

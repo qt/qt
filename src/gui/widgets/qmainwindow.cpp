@@ -1393,6 +1393,7 @@ bool QMainWindow::event(QEvent *event)
 #endif // QT_NO_STATUSTIP
 
         case QEvent::StyleChange:
+            d->layout->layoutState.dockAreaLayout.styleChangedEvent();
             if (!d->explicitIconSize)
                 setIconSize(QSize());
             break;
@@ -1425,6 +1426,11 @@ bool QMainWindow::event(QEvent *event)
                d->hasOldCursor = testAttribute(Qt::WA_SetCursor);
            }
            break;
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+    case QEvent::LanguageChange:
+        d->menuBarAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::MenuSoftKey));
+        break;
 #endif
         default:
             break;
@@ -1554,11 +1560,15 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
 
 #ifndef QT_NO_MENU
     QMenu *popup = createPopupMenu();
-    if (popup && !popup->isEmpty()) {
-        popup->exec(event->globalPos());
-        event->accept();
+    if (popup) {
+        if (!popup->isEmpty()) {
+            popup->setAttribute(Qt::WA_DeleteOnClose);
+            popup->popup(event->globalPos());
+            event->accept();
+        } else {
+            delete popup;
+        }
     }
-    delete popup;
 #endif
 }
 #endif // QT_NO_CONTEXTMENU

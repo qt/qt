@@ -1,0 +1,967 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qml-extending.html
+\title Extending QML
+
+The QML syntax declaratively describes how to construct an in memory object
+tree.  In Qt, QML is mainly used to describe a visual scene graph, but it is
+not conceptually limited to this: the QML format is an abstract description of
+any object tree.  All the QML element types included in Qt are implemented using
+the C++ extension mechanisms describe on this page.  Programmers can use these
+APIs to add new types that interact with the existing Qt types, or to repurpose
+QML for their own independent use.
+
+\tableofcontents
+
+\section1 Adding Types
+\target adding-types
+
+\snippet examples/declarative/extending/adding/example.qml 0
+
+The QML snippet shown above instantiates one \c Person instance and sets
+the name and shoeSize properties on it.  Everything in QML ultimately comes down
+to either instantiating an object instance, or assigning a property a value.
+QML relies heavily on Qt's meta object system and can only instantiate classes
+that derive from QObject.
+
+The QML engine has no intrinsic knowledge of any class types.  Instead the
+programmer must define the C++ types, and their corresponding QML name.
+
+Custom C++ types are made available to QML using these two macros:
+
+\quotation
+\code
+#define QML_DECLARE_TYPE(T)
+#define QML_DEFINE_TYPE(URI,VMAJ,VMIN,QmlName,T)
+\endcode
+
+Register the C++ type \a T with the QML system, and make it available in QML
+under the name \a QmlName in library URI version VMAJ.VMIN.
+\a T and \a QmlName may be the same.
+
+Generally the QML_DECLARE_TYPE() macro should be included immediately following
+the type declaration (usually in its header file), and the QML_DEFINE_TYPE()
+macro in the implementation file.  QML_DEFINE_TYPE() must not be present in
+a header file.
+
+Type \a T must be a concrete type that inherits QObject and has a default
+constructor.
+\endquotation
+
+Types can be registered by libraries (such as Qt does), application code,
+or by plugins (see QmlModulePlugin).
+
+Once registered, all of the \l {Qt's Property System}{properties} of a supported
+type are available for use within QML.  QML has intrinsic support for properties
+of these types:
+
+\list
+\o bool
+\o unsigned int, int
+\o float, double, qreal
+\o QString
+\o QUrl
+\o QColor
+\o QDate, QTime, QDateTime
+\o QPoint, QPointF
+\o QSize, QSizeF
+\o QRect, QRectF
+\o QVariant
+\endlist
+
+QML is typesafe.  Attempting to assign an invalid value to a property will
+generate an error.  For example, assuming the name property of the \c Person
+element had a type of QString, this would cause an error:
+
+\code
+Person {
+    // Will NOT work
+    name: 12
+}
+\endcode
+
+\l {Extending QML - Adding Types Example} shows the complete code used to create
+the \c Person type.
+
+\section1 Object and List Property Types
+
+\snippet examples/declarative/extending/properties/example.qml 0
+
+The QML snippet shown above assigns a \c Person object to the \c BirthdayParty's
+celebrant property, and assigns three \c Person objects to the guests property.
+
+QML can set properties of types that are more complex than basic intrinsics like
+integers and strings.  Properties can also be object pointers, Qt interface
+pointers,  lists of object points, and lists of Qt interface pointers.  As QML
+is typesafe it ensures that only valid types are assigned to these properties,
+just like it does for primitive types.
+
+Properties that are pointers to objects or Qt interfaces are declared with the
+Q_PROPERTY() macro, just like other properties.  The celebrant property
+declaration looks like this:
+
+\snippet examples/declarative/extending/properties/birthdayparty.h 1
+
+As long as the property type, in this case Person, is registered with QML the
+property can be assigned.
+
+QML also supports assigning Qt interfaces.  To assign to a property whose type
+is a Qt interface pointer, the interface must also be registered with QML.  As
+they cannot be instantiated directly, registering a Qt interface is different
+from registering a new QML type.  The following macros are used instead:
+
+\quotation
+\code
+    #define QML_DECLARE_INTERFACE(T)
+    #define QML_DEFINE_INTERFACE(T)
+\endcode
+
+Register the C++ interface \a T with the QML system.
+
+Generally the QML_DECLARE_INTERFACE() macro should be included immediately
+following the interface declaration (usually in its header file), and the
+QML_DEFINE_INTERFACE() macro in an implementation file.  QML_DEFINE_INTERFACE()
+must not be present in a header file.
+
+Following registration, QML can coerce objects that implement this interface
+for assignment to appropriately typed properties.
+\endquotation
+
+The guests property is a list of \c Person objects.  Properties that are lists
+of objects or Qt interfaces are also declared with the Q_PROPERTY() macro, just
+like other properties.  List properties must have the type \c {QmlListProperty<T>}.
+As with object properties, the type \a T must be registered with QML.
+
+The guest property declaration looks like this:
+
+\snippet examples/declarative/extending/properties/birthdayparty.h 2
+
+\l {Extending QML - Object and List Property Types Example} shows the complete
+code used to create the \c BirthdayParty type.
+
+\section1 Inheritance and Coercion
+
+\snippet examples/declarative/extending/coercion/example.qml 0
+
+The QML snippet shown above assigns a \c Boy object to the \c BirthdayParty's
+celebrant property, and assigns three other objects to the guests property.
+
+QML supports C++ inheritance heirarchies and can freely coerce between known,
+valid object types.  This enables the creation of common base classes that allow
+the assignment of specialized classes to object or list properties.  In the
+snippet shown, both the celebrant and the guests properties retain the Person
+type used in the previous section, but the assignment is valid as both the Boy
+and Girl objects inherit from Person.
+
+To assign to a property, the property's type must have been registered with QML.
+Both the QML_DEFINE_TYPE() and QML_DEFINE_INTERFACE() macros already shown can
+be used to register a type with QML.  Additionally, if a type that acts purely
+as a base class that cannot be instantiated from QML needs to be
+registered these macros can be used:
+
+\quotation
+\code
+    #define QML_DECLARE_TYPE(T)
+    #define QML_DEFINE_NOCREATE_TYPE(T)
+\endcode
+
+Register the C++ type \a T with the QML system. QML_DEFINE_NOCREATE_TYPE()
+differs from QML_DEFINE_TYPE() in that it does not define a mapping between the
+C++ class and a QML element name, so the type is not instantiable from QML, but
+it is available for type coercion.
+
+Generally the QML_DECLARE_TYPE() macro should be included immediately following
+the type declaration (usually in its header file), and the
+QML_DEFINE_NOCREATE_TYPE() macro in the implementation file.
+QML_DEFINE_NOCREATE_TYPE() must not be present in a header file.
+
+Type \a T must inherit QObject, but there are no restrictions on whether it is
+concrete or the signature of its constructor.
+\endquotation
+
+QML will automatically coerce C++ types when assigning to either an object
+property, or to a list property.  Only if coercion fails does an assignment
+error occur.
+
+\l {Extending QML - Inheritance and Coercion Example} shows the complete
+code used to create the \c Boy and \c Girl types.
+
+\section1 Default Property
+
+\snippet examples/declarative/extending/default/example.qml 0
+
+The QML snippet shown above assigns a collection of objects to the
+\c BirthdayParty's default property.
+
+The default property is a syntactic convenience that allows a type designer to
+specify a single property as the type's default.  The default property is
+assigned to whenever no explicit property is specified.  As a convenience, it is
+behaviorally identical to assigning the default property explicitly by name.
+
+From C++, type designers mark the default property using a Q_CLASSINFO()
+annotation:
+
+\quotation
+\code
+Q_CLASSINFO("DefaultProperty", "property")
+\endcode
+
+Mark \a property as the class's default property.  \a property must be either
+an object property, or a list property.
+
+A default property is optional.  A derived class inherits its base class's
+default property, but may override it in its own declaration.  \a property can
+refer to a property declared in the class itself, or a property inherited from a
+base class.
+\endquotation
+
+\l {Extending QML - Default Property Example} shows the complete code used to
+specify a default property.
+
+\section1 Grouped Properties
+
+\snippet examples/declarative/extending/grouped/example.qml 1
+
+The QML snippet shown above assigns a number properties to the \c Boy object,
+including four properties using the grouped property syntax.
+
+Grouped properties collect similar properties together into a single named
+block.  Grouped properties can be used to present a nicer API to developers, and
+may also simplify the implementation of common property collections across
+different types through implementation reuse.
+
+A grouped property block is implemented as a read-only object property.  The
+shoe property shown is declared like this:
+
+\snippet examples/declarative/extending/grouped/person.h 1
+
+The ShoeDescription type declares the properties available to the grouped
+property block - in this case the size, color, brand and price properties.
+
+Grouped property blocks may declared and accessed be recusively.
+
+\l {Extending QML - Grouped Properties Example} shows the complete code used to
+implement the \c shoe property grouping.
+
+\section1 Attached Properties
+
+\snippet examples/declarative/extending/attached/example.qml 1
+
+The QML snippet shown above assigns the rsvp property using the attached
+property syntax.
+
+Attached properties allow unrelated types to annotate other types with some
+additional properties, generally for their own use.  Attached properties are
+identified through the use of the attacher type name, in the case shown
+\c BirthdayParty, as a suffix to the property name.
+
+In the example shown, \c BirthdayParty is called the attaching type, and the
+Boy instance the attachee object instance.
+
+For the attaching type, an attached property block is implemented as a new
+QObject derived type, called the attachment object.  The properties on the
+attachment object are those that become available for use as the attached
+property block.
+
+Any QML type can become an attaching type by declaring the
+\c qmlAttachedProperties() public function and declaring that the class has
+QML_HAS_ATTACHED_PROPERTIES:
+
+\quotation
+\code
+class MyType : public QObject {
+    Q_OBJECT
+public:
+
+    ...
+
+    static AttachedPropertiesType *qmlAttachedProperties(QObject *object);
+};
+
+QML_DECLARE_TYPEINFO(MyType, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(MyType)
+\endcode
+Return an attachment object, of type \a AttachedPropertiesType, for the
+attachee \a object instance.  It is customary, though not strictly required, for
+the attachment object to be parented to \a object to prevent memory leaks.
+
+\a AttachedPropertiesType must be a QObject derived type.  The properties on
+this type will be accessible through the attached properties syntax.
+
+This method will be called at most once for each attachee object instance.  The
+QML engine will cache the returned instance pointer for subsequent attached
+property accesses.  Consequently the attachment object may not be deleted until
+\a object is destroyed.
+\endquotation
+
+Conceptually, attached properties are a \e type exporting a set of additional
+properties that can be set on \e any other object instance.  Attached properties
+cannot be limited to only attaching to a sub-set of object instances, although
+their effect may be so limited.
+
+For example, a common usage scenario is for a type to enhance the properties
+available to its children in order to gather instance specific data.  Here we
+add a rsvp field to all the guests coming to a birthday party:
+\code
+BirthdayParty {
+    Boy { BirthdayParty.rsvp: "2009-06-01" }
+}
+\endcode
+However, as a type cannot limit the instances to which the attachment object
+must attach, the following is also allowed, even though adding a birthday party
+rsvp in this context will have no effect.
+\code
+GraduationParty {
+    Boy { BirthdayParty.rsvp: "2009-06-01" }
+}
+\endcode
+
+From C++, including the attaching type implementation, the attachment object for
+an instance can be accessed using the following method:
+
+\quotation
+\code
+template<typename T>
+QObject *qmlAttachedPropertiesObject<T>(QObject *attachee, bool create = true);
+\endcode
+Returns the attachment object attached to \a attachee by the attaching type
+\a T.  If type \a T is not a valid attaching type, this method always returns 0.
+
+If \a create is true, a valid attachment object will always be returned,
+creating it if it does not already exist.  If \a create is false, the attachment
+object will only be returned if it has previously been created.
+\endquotation
+
+\l {Extending QML - Attached Properties Example} shows the complete code used to
+implement the rsvp attached property.
+
+\section1 Signal Support
+
+\snippet examples/declarative/extending/signal/example.qml 0
+\snippet examples/declarative/extending/signal/example.qml 1
+
+The QML snippet shown above associates the evaluation of a JavaScript expression
+with the emission of a Qt signal.
+
+All Qt signals on a registered class become available as special "signal
+properties" within QML to which the user can assign a single JavaScript
+expression.  The signal property's name is a transformed version of the Qt
+signal name: "on" is prepended, and the first letter of the signal name upper
+cased.  For example, the signal used in the example above has the following
+C++ signature:
+
+\snippet examples/declarative/extending/signal/birthdayparty.h 0
+
+In classes with multiple signals with the same name, only the final signal
+is accessible as a signal property.  Although QML provides an element,
+\l Connection, for accessing the other signals it is less elegant.  For the best
+QML API, class developers should avoid overloading signal names.
+
+Signal parameters become accessible by name to the assigned script.  An
+unnamed parameter cannot be accessed, so care should be taken to name all the
+signal parameters in the C++ class declaration.  The intrinsic types
+listed in \l {Adding Types}, as well registered object types are permitted as
+signal parameter types.  Using other types is not an error, but the parameter
+value will not be accessible from script.
+
+\l {Extending QML - Signal Support Example} shows the complete code used to
+implement the onPartyStarted signal property.
+
+\section1 Property Value Sources
+
+\snippet examples/declarative/extending/valuesource/example.qml 0
+\snippet examples/declarative/extending/valuesource/example.qml 1
+
+The QML snippet shown above assigns a property value to the speaker property.
+A property value source generates a value for a property that changes over time.
+
+Property value sources are most commonly used to do animation.  Rather than
+constructing an animation object and manually setting the animation's "target"
+property, a property value source can be assigned directly to a property of any
+type and automatically set up this association.
+
+The example shown here is rather contrived: the speaker property of the
+BirthdayParty object is a string that is printed every time it is assigned and
+the HappyBirthday value source generates the lyrics of the song
+"Happy Birthday".
+
+\snippet examples/declarative/extending/valuesource/birthdayparty.h 0
+
+Normally, assigning an object to a string property would not be allowed.  In
+the case of a property value source, rather than assigning the object instance
+itself, the QML engine sets up an association between the value source and
+the property.
+
+Property value sources are special types that derive from the
+QmlPropertyValueSource base class.  This base class contains a single method,
+QmlPropertyValueSource::setTarget(), that the QML engine invokes when
+associating the property value source with a property.  The relevant part of
+the HappyBirthday type declaration looks like this:
+
+\snippet examples/declarative/extending/valuesource/happybirthday.h 0
+\snippet examples/declarative/extending/valuesource/happybirthday.h 1
+\snippet examples/declarative/extending/valuesource/happybirthday.h 2
+
+In all other respects, property value sources are regular QML types.  They must
+be registered with the QML engine using the same macros as other types, and can
+contain properties, signals and methods just like other types.
+
+When a property value source object is assigned to a property, QML first tries
+to assign it normally, as though it were a regular QML type.  Only if this
+assignment fails does the engine call the setTarget() method.  This allows
+the type to also be used in contexts other than just as a value source.
+
+\l {Extending QML -  Property Value Source Example} shows the complete code used
+implement the HappyBirthday property value source.
+
+\section1 Property Binding
+
+\snippet examples/declarative/extending/binding/example.qml 0
+\snippet examples/declarative/extending/binding/example.qml 1
+
+The QML snippet shown above uses a property binding to ensure the
+HappyBirthday's name property remains up to date with the celebrant.
+
+Property binding is a core feature of QML.  In addition to assigning literal
+values, property bindings allow the developer to assign an arbitrarily complex
+JavaScript expression that may include dependencies on other property values.
+Whenever the expression's result changes - through a change in one of its
+constituent values - the expression is automatically reevaluated and
+the new result assigned to the property.
+
+All properties on custom types automatically support property binding.  However,
+for binding to work correctly, QML must be able to reliably determine when a
+property has changed so that it knows to reevaluate any bindings that depend on
+the property's value.  QML relies on the presence of a
+\c {Qt's Property System}{NOTIFY signal} for this determination.
+
+Here is the celebrant property declaration:
+
+\snippet examples/declarative/extending/binding/birthdayparty.h 0
+
+The NOTIFY attribute is followed by a signal name.  It is the responsibility of
+the class implementer to ensure that whenever the property's value changes, the
+NOTIFY signal is emitted.  The signature of the NOTIFY signal is not important to QML.
+
+To prevent loops or excessive evaluation, developers should ensure that the
+signal is only emitted whenever the property's value is actually changed.  If
+a property, or group of properties, is infrequently used it is permitted to use
+the same NOTIFY signal for several properties.  This should be done with care to
+ensure that performance doesn't suffer.
+
+To keep QML reliable, if a property does not have a NOTIFY signal, it cannot be
+used in a binding expression.  However, the property can still be assigned
+a binding as QML does not need to monitor the property for change in that
+scenario.
+
+Consider a custom type, \c TestElement, that has two properties, "a" and "b".
+Property "a" does not have a NOTIFY signal, and property "b" does have a NOTIFY
+signal.
+
+\code
+TestElement {
+    // This is OK
+    a: b
+}
+TestElement {
+    // Will NOT work
+    b: a
+}
+\endcode
+
+The presence of a NOTIFY signal does incur a small overhead.  There are cases
+where a property's value is set at object construction time, and does not
+subsequently change.  The most common case of this is when a type uses
+\l {Grouped Properties}, and the grouped property object is allocated once, and
+only freed when the object is deleted.  In these cases, the CONSTANT attribute
+may be added to the property declaration instead of a NOTIFY signal.
+
+\snippet examples/declarative/extending/binding/person.h 0
+
+Extreme care must be taken here or applications using your type may misbehave.
+The CONSTANT attribute should only be used for properties whose value is set,
+and finalized, only in the class constructor.  All other properties that want
+to be used in bindings should have a NOTIFY signal instead.
+
+\l {Extending QML -  Binding Example} shows the BirthdayParty example updated to
+include NOTIFY signals for use in binding.
+
+\section1 Binding and Script Properties
+
+While generally no changes are needed to a C++ class to use property
+binding, sometimes more advanced interaction between the binding engine and
+an object is desirable.  To facilitate this, there is a special exception
+in the bind engine for allowing an object to access the binding directly.
+
+If a binding is assigned to a property with a type of QmlBinding
+pointer (ie. \c {QmlBinding *}), each time the binding value changes,
+a QmlBinding instance is assigned to that property.  The QmlBinding instance
+allows the object to read the binding and to evaluate the binding's current value.
+
+\section1 Extension Objects
+
+\snippet examples/declarative/extending/extended/example.qml 0
+
+The QML snippet shown above adds a new property to an existing C++ type without
+modifying its source code.
+
+When integrating existing classes and technology into QML, their APIs will often
+need to be tweaked to fit better into the declarative environment.  Although
+the best results are usually obtained by modifying the original classes
+directly, if this is either not possible or is complicated by some other
+concerns, extension objects allow limited extension possibilities without
+direct modifications.
+
+Extension objects are used to add additional properties to an existing type.
+Extension objects can only add properties, not signals or methods.  An extended
+type definition allows the programmer to supply an additional type - known as the
+extension type - when registering the target class whose properties are
+transparently merged with the original target class when used from within QML.
+
+An extension class is a regular QObject, with a constructor that takes a QObject
+pointer.  When needed (extension classes are delay created until the first extended
+property is accessed) the extension class is created and the target object is
+passed in as the parent.  When an extended property on the original is accessed,
+the appropriate property on the extension object is used instead.
+
+When an extended type is installed, one of the
+\code
+    #define QML_DEFINE_EXTENDED_TYPE(URI, VMAJ, VFROM, VTO, QmlName,T, ExtendedT)
+    #define QML_DEFINE_EXTENDED_NOCREATE_TYPE(T, ExtendedT)
+\endcode
+macros should be used instead of the regular \c QML_DEFINE_TYPE or
+\c QML_DEFINE_NOCREATE_TYPE.  The arguments are identical to the corresponding
+non-extension object macro, except for the ExtendedT parameter which is the type
+of the extension object.
+
+\section1 Optimization
+
+Often to develop high performance elements it is helpful to know more about the
+status of the QML engine. For example, it might be beneficial to delay
+initializing some costly data structures until after all the properties have been
+set.
+
+The QML engine defines an interface class called QmlParserStatus, which contains a
+number of virtual methods that are invoked at various stages during component
+instantiation.  To receive these notifications, an element implementation inherits
+QmlParserStatus and notifies the Qt meta system using the Q_INTERFACES() macro.
+
+For example,
+
+\code
+class Example : public QObject, public QmlParserStatus
+{
+    Q_OBJECT
+    Q_INTERFACES(QmlParserStatus)
+public:
+    virtual void componentComplete()
+    {
+        qDebug() << "Woohoo!  Now to do my costly initialization";
+    }
+};
+\endcode
+
+*/
+
+/*!
+\page qml-extending-types.html
+\title Extending types from QML
+
+Many of the elements available for use in QML are implemented in
+\l {Extending QML}{C++}.  These types are know as "core types".  QML
+allows programmers to build new, fully functional elements without using C++.
+Existing core types can be extended, and new types defined entirely in the QML
+language.
+
+\tableofcontents
+
+\section1 Adding new properties
+
+New properties can be added to an existing type.  These new properties are
+available for use within QML, and also appear as regular Qt properties on the
+C++ object, accessible through the regular property access mechanisms.
+
+Like all properties in QML, custom properties are typed.  The type is used to
+define the property's behavior, and also determines the C++ type of the created
+Qt property.  The following table shows the list of types available when
+declaring a new property, and the corresponding C++ type.
+
+\table
+\header \o QML Type Name \o C++ Type Name
+\row \o int \o int
+\row \o bool \o bool
+\row \o double \o double
+\row \o real \o double
+\row \o string \o QString
+\row \o url \o QUrl
+\row \o color \o QColor
+\row \o date \o QDate
+\row \o var \o QVariant
+\row \o variant \o QVariant
+\endtable
+
+QML supports two methods for adding a new property to a type: a new property
+definition, and a property alias.
+
+\section2 Property definitions
+
+Property definitions add a new property to an existing type.  The storage of the
+property is managed by QML.  The defined property may be read, written and bound
+to and from.
+
+The syntax for defining a new property is:
+\code
+    [default] property <type> <name>[: defaultValue]
+\endcode
+
+This declaration may appear anywhere within a type body, but it is customary to
+include it at the top.  Attempting to declare two properties with the same name
+in the same type block is an error.  However, a new property may reuse the name
+of an existing property on the type.  This should be done with caution, as the
+existing property will be hidden, and become inaccessible.
+
+The <type> must be one of the QML type names shown in the above table.
+Additionally, an optional default value of the property can be provided.  The
+default value is a convenient shortcut, but is behaviorally identical to doing
+it in two steps, like this:
+
+\code
+    // Use default value
+    property int myProperty: 10
+
+    // Longer, but behaviorally identical
+    property int myProperty
+    myProperty: 10
+\endcode
+
+If specified, the optional "default" attribute marks the new property as the
+types default property, overriding any existing default property.  Using the
+default attribute twice in the same type block is an error.
+
+The following example shows how to declare a new "innerColor" property that
+controls the color of the inner rectangle.
+
+\code
+    Rectangle {
+        property color innerColor: "black"
+
+        color: "red"; width: 100; height: 100
+        Rectangle {
+            anchors.centerIn: parent
+            width: parent.width - 10
+            height: parent.height - 10
+            color: innerColor
+        }
+    }
+\endcode
+
+\target qml-property-aliases
+\section2 Property aliases
+
+Property aliases are a more advanced form of property declaration.  Unlike a
+property definition, that allocates a new, unique storage space for the
+property, a property alias connects the newly declared property (called the
+aliasing property) to an existing property (the aliased property).  Read
+operations on the aliasing property act as read operations on the aliased
+property, and write operations on the aliasing property as write operations on
+the aliased property.
+
+A property alias declaration looks a lot like a property definition:
+\code
+    [default] property alias <name>: <alias reference>
+\endcode
+
+As the aliasing property has the same type as the aliased property, an explicit
+type is omitted, and the special "alias" keyword is used.  Instead of a default
+value, a property alias includes a compulsary alias reference.  The alias
+reference is used to locate the aliased property.  While similar to a property
+binding, the alias reference syntax is highly restricted.
+
+An alias reference takes one of the following forms
+\code
+    <id>.<property>
+    <id>
+\endcode
+
+where <id> must refer to an object id within the same component as the type
+declaring the alias, and, optionally, <property> refers to a property on that object.
+
+Here is the property definition example rewritten to use property aliases.
+\code
+Rectangle {
+    property alias innerColor: innerRect.color
+
+    color: "red"; width: 100; height: 100
+    Rectangle {
+        id: innerRect
+        anchors.centerIn: parent
+        width: parent.width - 10
+        height: parent.height - 10
+        color: "black"
+    }
+}
+\endcode
+
+Aliases are most useful when \l {Defining new Components}.  Consequently
+they have several apparent limitations that only make sense in this context.
+
+Aliases are only activated once the component specifying them is completed.  The
+most obvious consequence of this is that the component itself cannot generally
+use the aliased property directly.  For example, this will not work:
+
+\code
+    // Does NOT work
+    property alias innerColor: innerRect.color
+    innerColor: "black"
+\endcode
+
+This behavior is required to allow type developers to redefine the behavior
+of existing property names while continuing to use the existing behavior within
+the type they are building, something that is not possible with property
+definitions.  In the example used so far, this could allows the developer to fix
+the external rectangle's color as "red" and redefine the "color" property to
+refer to the inner rectangle, like this:
+
+\code
+Rectangle {
+    property alias color: innerRect.color
+
+    color: "red"; width: 100; height: 100
+    Rectangle {
+        id: innerRect
+        anchors.centerIn: parent
+        width: parent.width - 10
+        height: parent.height - 10
+        color: "black"
+    }
+}
+\endcode
+
+Users of this type would not be able to affect the color of the red rectangle,
+but would find using the "color" property, rather than the strange new
+"innerColor" property, much more familiar.
+
+A second, much less significant, consequence of the delayed activation of
+aliases is that an alias reference cannot refer to another aliasing property
+declared within the same component.  This will not work:
+
+\code
+    // Does NOT work
+    id: root
+    property alias innerColor: innerRect.color
+    property alias innerColor2: root.innerColor
+\endcode
+
+From outside the component, aliasing properties appear as regular Qt properties
+and consequently can be used in alias references.
+
+\section1 Adding new signals
+
+New signals can be added to an existing type.  These new signals are available
+for use within QML, and also appear as regular Qt signals on the C++ object that
+can be used in Qt signal/slot connections.
+
+The syntax for defining a new signal is:
+\code
+signal <name>[([<type> <parameter name>[, ...]])]
+\endcode
+
+This declaration may appear anywhere within a type body, but it is customary to
+include it at the top.  Attempting to declare two signals or methods with the
+same name in the same type block is an error.  However, a new signal may reuse
+the name of an existing signal on the type.  This should be done with caution,
+as the existing signal may be hidden and become inaccessible.
+
+The options for parameter types are the same as for property types (see
+\l {Adding new properties}.  If this signal has no parameters, the parameter
+list may be omitted entirely.
+
+Here are three examples of signal declarations:
+\code
+    Item {
+        signal clicked
+        signal hovered()
+        signal performAction(string action, var actionArgument)
+    }
+\endcode
+
+Adding a signal to an item automatically adds a signal handler to it.
+The signal hander is named on<Signal name>, with the first letter of the
+signal name being upper cased. The above example item would now have the
+following signal handlers:
+
+\list
+   \o onClicked
+   \o onHovered
+   \o onPerformAction
+\endlist
+
+\section1 Adding new methods
+
+New methods can be added to an existing type.  These new methods are available
+for use within QML, and also appear as regular Qt slots on the C++ object that
+can be used in Qt signal/slot connections.
+
+\code
+function <name>([<parameter name>[, ...]]) { <body> }
+\endcode
+
+This declaration may appear anywhere within a type body, but it is customary to
+include it at the top.  Attempting to declare two methods or signals with the
+same name in the same type block is an error.  However, a new method may reuse
+the name of an existing method on the type.  This should be done with caution,
+as the existing method may be hidden and become inaccessible.
+
+Methods parameters are not typed.  In C++ these parameters are of type QVariant.
+The body of the method is written in JavaScript and may access the parameters by
+name.
+
+This example adds a new method that behaves like a child:
+\code
+Item {
+    function say(text) {
+        console.log("You said " + text);
+    }
+}
+\endcode
+
+\section1 Defining new Components
+\target components
+
+A component is a reusable type with a well-defined interface built entirely in
+QML.  Components appear as regular QML elements, and can be used interchangably
+with core types.  Components allow developers to create new types to be reused
+in other projects without the use of C++.  Components can also help to reduce
+duplication inside one project by limiting the need for large numbers of
+copy-and-pasted blocks.
+
+Any snippet of QML code can become a component, just by placing it in the file
+"<Name>.qml" where <Name> is the new element name, and begins with an uppercase
+letter.  These QML files automatically become available as new QML element types
+to other QML components and applications in the same directory.
+
+For example, here we show how a component named "Box" is defined and used
+multiple times by an application.
+
+\table
+\row
+\o application.qml
+\code
+Rectangle {
+    width: 100; height: 400;
+    Box { x: 0; y: 0 }
+    Box { x: 0; y: 150 }
+    Box { x: 0; y: 300 }
+}
+\endcode
+\o Box.qml
+\code
+Rectangle {
+    width: 100; height: 100;
+    color: "blue"
+}
+\endcode
+\endtable
+
+Components may be collected into \l {Modules} that gives the
+developer more freedom than just putting files in the same directory.
+
+\section2 Building reusable components
+
+A component type built to be reused by others must have a well defined
+interface.  In QML, an interface consists of a defined collection of
+properties, signals and methods.  Users of a component have access to all the
+properties, signals and methods defined on the root element of the component.
+
+In the component example above, the root element of the "Box" component is a
+Rect.  As the Rect type has a "color" property, this property is accessible to
+users of the Box component.  For example, the application.qml can be modified
+to show three different colored boxes like this:
+\code
+Rectangle {
+    width: 100; height: 400;
+    Box { x: 0; y: 0; color: "red"; }
+    Box { x: 0; y: 150; color: "yellow";  }
+    Box { x: 0; y: 300; color: "green"; }
+}
+\endcode
+
+As expected, adding additional properties to the root element of Box, makes them
+available externally.  Here we add a "text" property:
+
+\table
+\row
+\o application.qml
+\code
+Rectangle {
+    width: 100; height: 400;
+    Box { x: 0; y: 0; color: "red"; text: "stop" }
+    Box { x: 0; y: 150; color: "yellow"; text: "slow" }
+    Box { x: 0; y: 300; color: "green"; text: "go" }
+}
+\endcode
+\o Box.qml
+\code
+Rectangle {
+    property alias text: myText.text
+    width: 100; height: 100;
+    color: "blue"
+    Text {
+        id: myText
+        anchors.centerIn: parent
+    }
+}
+\endcode
+\endtable
+
+Methods and signals may be added in the same way.
+
+As all external methods, signals and properties are accessible to external
+users, developers should ensure that setting these properties does not have
+any undesirable side-effects.  For most resiliance, root level properties should
+only be used for literal default values.  When a root level property must be
+used inside the component - such as the children property - property aliases
+can be used to redirect this property to a "safe" location for external users.
+Try to think of the root level properties as being "owned" by the components
+user, rather than the component itself.
+*/

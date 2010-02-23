@@ -48,8 +48,6 @@
 #include <QtCore/QList>
 
 
-template<typename T> class QList;
-
 class DynamicTreeModel : public QAbstractItemModel
 {
   Q_OBJECT

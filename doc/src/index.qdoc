@@ -103,6 +103,7 @@
             <li><a href="paintsystem.html">Painting and Printing</a></li>
             <li><a href="graphicsview.html">Canvas UI with Graphics View</a></li>
             <li><a href="webintegration.html">Integrating Web Content</a></li>
+            <li><a href="declarativeui.html">Declarative UI (QML)</a></li>
         </ul>
         </td>
         <td valign="top">
@@ -141,7 +142,7 @@
         <td valign="top">
         <ul>
             <li><a href="gpl.html">GNU GPL</a>, <a href="lgpl.html">GNU LGPL</a></li>
-            <li><a href="commercialeditions.html">Commercial Editions</a></li>
+            <li><a href="commercialedition.html">Commercial Edition</a></li>
             <li><a href="licensing.html">Licenses Used in Qt</a></li>
         </ul>
         </td>

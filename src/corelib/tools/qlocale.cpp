@@ -2917,7 +2917,7 @@ QDate QLocale::toDate(const QString &string, FormatType format) const
 #ifndef QT_NO_DATESTRING
 QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 {
-    return toDateTime(string, dateFormat(format));
+    return toDateTime(string, dateTimeFormat(format));
 }
 #endif
 

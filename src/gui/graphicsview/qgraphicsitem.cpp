@@ -319,7 +319,7 @@
     QGraphicsItem::keyPressEvent() and QGraphicsItem::keyReleaseEvent().
 
     \value ItemClipsToShape The item clips to its own shape. The item cannot
-    draw or receive mouse, tablet, drag and drop or hover events outside ts
+    draw or receive mouse, tablet, drag and drop or hover events outside its
     shape. It is disabled by default. This behavior is enforced by
     QGraphicsView::drawItems() or QGraphicsScene::drawItems(). This flag was
     introduced in Qt 4.3.
@@ -357,19 +357,22 @@
     default, child items are stacked on top of the parent item. But setting
     this flag, the child will be stacked behind it. This flag is useful for
     drop shadow effects and for decoration objects that follow the parent
-    item's geometry without drawing on top of it.
+    item's geometry without drawing on top of it. This flag was introduced
+    in Qt 4.5.
 
     \value ItemUsesExtendedStyleOption The item makes use of either
-    \l{QStyleOptionGraphicsItem::}{exposedRect} or
-    \l{QStyleOptionGraphicsItem::}{matrix} in QStyleOptionGraphicsItem. By default,
-    the \l{QStyleOptionGraphicsItem::}{exposedRect} is initialized to the item's
-    boundingRect() and the \l{QStyleOptionGraphicsItem::}{matrix} is untransformed.
-    You can enable this flag for the style options to be set up with more
-    fine-grained values.
-    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
+    \l{QStyleOptionGraphicsItem::} {exposedRect} or
+    \l{QStyleOptionGraphicsItem::} {matrix} in
+    QStyleOptionGraphicsItem. By default, the
+    \l{QStyleOptionGraphicsItem::} {exposedRect} is initialized to the
+    item's boundingRect() and the
+    \l{QStyleOptionGraphicsItem::}{matrix} is untransformed.  You can
+    enable this flag for the style options to be set up with more
+    fine-grained values.  Note that
+    QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
     and always initialized to 1. Use
-    QStyleOptionGraphicsItem::levelOfDetailFromTransform() if you need a higher
-    value.
+    QStyleOptionGraphicsItem::levelOfDetailFromTransform() if you need
+    a higher value. This flag was introduced in Qt 4.6.
 
     \value ItemHasNoContents The item does not paint anything (i.e., calling
     paint() on the item has no effect). You should set this flag on items that
@@ -387,9 +390,10 @@
     used for Asian languages.
     This flag was introduced in Qt 4.6.
 
-    \value ItemNegativeZStacksBehindParent The item automatically stacks behind
-    it's parent if it's z-value is negative. This flag enables setZValue() to
-    toggle ItemStacksBehindParent.
+    \value ItemNegativeZStacksBehindParent The item automatically
+    stacks behind it's parent if it's z-value is negative. This flag
+    enables setZValue() to toggle ItemStacksBehindParent. This flag
+    was introduced in Qt 4.6.
 
     \value ItemIsPanel The item is a panel. A panel provides activation and
     contained focus handling. Only one panel can be active at a time (see
@@ -668,6 +672,7 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qnumeric.h>
 #include <QtGui/qapplication.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qpainter.h>
@@ -1392,7 +1397,8 @@ QGraphicsItem::~QGraphicsItem()
     }
     delete d_ptr->transformData;
 
-    qt_dataStore()->data.remove(this);
+    if (QGraphicsItemCustomDataStore *dataStore = qt_dataStore())
+        dataStore->data.remove(this);
 }
 
 /*!
@@ -2569,6 +2575,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
     if (newOpacity == d_ptr->opacity)
         return;
 
+    bool wasFullyTransparent = d_ptr->isOpacityNull();
     d_ptr->opacity = newOpacity;
 
     // Notify change.
@@ -2584,7 +2591,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*force=*/false,
-                                          /*ignoreOpacity=*/true);
+                                          /*ignoreOpacity=*/d_ptr->isOpacityNull());
+        if (wasFullyTransparent)
+            d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
     }
 
     if (d_ptr->isObject)
@@ -3169,8 +3178,9 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 */
 void QGraphicsItem::clearFocus()
 {
-    // Pass focus to the closest parent focus scope.
-    if (!d_ptr->inDestructor) {
+    // Pass focus to the closest parent focus scope when clearing focus
+    // from a focus scope.
+    if (!d_ptr->inDestructor && (d_ptr->flags & ItemIsFocusScope)) {
         QGraphicsItem *p = d_ptr->parent;
         while (p) {
             if (p->flags() & ItemIsFocusScope) {
@@ -3438,6 +3448,9 @@ void QGraphicsItem::setX(qreal x)
     if (d_ptr->inDestructor)
         return;
 
+    if (qIsNaN(x))
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3460,6 +3473,9 @@ void QGraphicsItem::setX(qreal x)
 void QGraphicsItem::setY(qreal y)
 {
     if (d_ptr->inDestructor)
+        return;
+
+    if (qIsNaN(y))
         return;
 
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));

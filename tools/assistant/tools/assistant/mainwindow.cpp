@@ -41,20 +41,19 @@
 #include "tracer.h"
 
 #include "mainwindow.h"
+
+#include "bookmarkmanager.h"
 #include "centralwidget.h"
-#include "helpviewer.h"
 #include "indexwindow.h"
 #include "topicchooser.h"
 #include "contentwindow.h"
 #include "preferencesdialog.h"
-#include "bookmarkmanager.h"
 #include "helpenginewrapper.h"
 #include "remotecontrol.h"
 #include "cmdlineparser.h"
 #include "aboutdialog.h"
 #include "searchwidget.h"
 #include "qtdocinstaller.h"
-#include "xbelsupport.h"
 
 // #define TRACING_REQUESTED
 
@@ -95,6 +94,7 @@ QT_BEGIN_NAMESPACE
 
 MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     : QMainWindow(parent)
+    , m_bookmarkWidget(0)
     , m_filterCombo(0)
     , m_toolBarMenu(0)
     , m_cmdLine(cmdLine)
@@ -131,10 +131,22 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     contentDock->setWidget(m_contentWindow);
     addDockWidget(Qt::LeftDockWidgetArea, contentDock);
 
-    QDockWidget *bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
-    bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
-    bookmarkDock->setWidget(setupBookmarkWidget());
-    addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
+    QDockWidget *bookmarkDock = 0;
+    if (BookmarkManager *manager = BookmarkManager::instance()) {
+        bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
+        bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
+        bookmarkDock->setWidget(m_bookmarkWidget = manager->bookmarkDockWidget());
+        addDockWidget(Qt::LeftDockWidgetArea, bookmarkDock);
+
+        connect(manager, SIGNAL(escapePressed()), this,
+            SLOT(activateCurrentCentralWidgetTab()));
+        connect(manager, SIGNAL(setSource(QUrl)), m_centralWidget,
+            SLOT(setSource(QUrl)));
+        connect(manager, SIGNAL(setSourceInNewTab(QUrl)), m_centralWidget,
+            SLOT(setSourceInNewTab(QUrl)));
+        connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)), manager,
+            SLOT(addBookmark(QString, QString)));
+    }
 
     QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
@@ -152,14 +164,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     if (initHelpDB()) {
         setupFilterToolbar();
         setupAddressToolbar();
-
-        m_bookmarkManager->setupBookmarkModels();
-        m_bookmarkMenu->addSeparator();
-        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
-        connect(m_bookmarkMenu, SIGNAL(triggered(QAction*)), this,
-            SLOT(showBookmark(QAction*)));
-        connect(m_bookmarkManager, SIGNAL(bookmarksChanged()), this,
-            SLOT(updateBookmarkMenu()));
 
         const QString windowTitle = helpEngineWrapper.windowTitle();
         setWindowTitle(windowTitle.isEmpty() ? defWindowTitle : windowTitle);
@@ -186,7 +190,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             restoreGeometry(ba);
         } else {
             tabifyDockWidget(contentDock, indexDock);
-            tabifyDockWidget(indexDock, bookmarkDock);
+            if (bookmarkDock)
+                tabifyDockWidget(indexDock, bookmarkDock);
             contentDock->raise();
             resize(QSize(800, 600));
         }
@@ -219,9 +224,9 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
             hideIndex();
 
         if (m_cmdLine->bookmarks() == CmdLineParser::Show)
-            showBookmarks();
+            showBookmarksDockWidget();
         else if (m_cmdLine->bookmarks() == CmdLineParser::Hide)
-            hideBookmarks();
+            hideBookmarksDockWidget();
 
         if (m_cmdLine->search() == CmdLineParser::Show)
             showSearch();
@@ -233,7 +238,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else if (m_cmdLine->index() == CmdLineParser::Activate)
             showIndex();
         else if (m_cmdLine->bookmarks() == CmdLineParser::Activate)
-            showBookmarks();
+            showBookmarksDockWidget();
 
         if (!m_cmdLine->currentFilter().isEmpty()) {
             const QString &curFilter = m_cmdLine->currentFilter();
@@ -270,7 +275,7 @@ bool MainWindow::usesDefaultCollection() const
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     TRACE_OBJ
-    m_bookmarkManager->saveBookmarks();
+    BookmarkManager::destroy();
     HelpEngineWrapper::instance().setMainWindow(saveState());
     HelpEngineWrapper::instance().setMainWindowGeometry(saveGeometry());
     QMainWindow::closeEvent(e);
@@ -315,13 +320,6 @@ bool MainWindow::initHelpDB()
         needsSetup = true;
     }
 
-    if (!helpEngineWrapper.unfilteredInserted()) {
-        helpEngineWrapper.addCustomFilter(tr("Unfiltered"), QStringList());
-        helpEngineWrapper.setUnfilteredInserted();
-        helpEngineWrapper.setCurrentFilter(tr("Unfiltered"));
-        needsSetup = true;
-    }
-
     if (needsSetup)
         helpEngineWrapper.setupData();
     return true;
@@ -356,8 +354,6 @@ void MainWindow::lookForNewQtDocumentation()
 void MainWindow::qtDocumentationInstalled(bool newDocsInstalled)
 {
     TRACE_OBJ
-    if (newDocsInstalled)
-        HelpEngineWrapper::instance().setupData();
     statusBar()->clearMessage();
     checkInitState();
 }
@@ -385,35 +381,7 @@ void MainWindow::checkInitState()
         }
         emit initDone();
     }
-}
-
-void MainWindow::updateBookmarkMenu()
-{
-    TRACE_OBJ
-    if (m_bookmarkManager) {
-        m_bookmarkMenu->removeAction(m_importBookmarkAction);
-        m_bookmarkMenu->removeAction(m_exportBookmarkAction);
-        m_bookmarkMenu->removeAction(m_bookmarkMenuAction);
-
-        m_bookmarkMenu->clear();
-
-        m_bookmarkMenu->addAction(m_importBookmarkAction);
-        m_bookmarkMenu->addAction(m_exportBookmarkAction);
-        m_bookmarkMenu->addAction(m_bookmarkMenuAction);
-        m_bookmarkMenu->addSeparator();
-
-        m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
-    }
-}
-
-void MainWindow::showBookmark(QAction *action)
-{
-    TRACE_OBJ
-    if (m_bookmarkManager) {
-        const QUrl &url = m_bookmarkManager->urlForAction(action);
-        if (url.isValid())
-            m_centralWidget->setSource(url);
-    }
+    HelpEngineWrapper::instance().initialDocSetupDone();
 }
 
 void MainWindow::insertLastPages()
@@ -520,7 +488,7 @@ void MainWindow::setupActions()
         QKeySequence(tr("ALT+C")));
     m_viewMenu->addAction(tr("Index"), this, SLOT(showIndex()),
         QKeySequence(tr("ALT+I")));
-    m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarks()),
+    m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarksDockWidget()),
         QKeySequence(tr("ALT+O")));
     m_viewMenu->addAction(tr("Search"), this, SLOT(showSearchWidget()),
         QKeySequence(tr("ALT+S")));
@@ -556,14 +524,8 @@ void MainWindow::setupActions()
     tmp->setShortcuts(QList<QKeySequence>() << QKeySequence(tr("Ctrl+Alt+Left"))
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
-    m_bookmarkMenu = menuBar()->addMenu(tr("&Bookmarks"));
-    m_importBookmarkAction = m_bookmarkMenu->addAction(tr("Import..."),
-        this, SLOT(importBookmarks()));
-    m_exportBookmarkAction = m_bookmarkMenu->addAction(tr("Export..."),
-        this, SLOT(exportBookmarks()));
-    m_bookmarkMenuAction = m_bookmarkMenu->addAction(tr("Add Bookmark..."),
-        this, SLOT(addBookmark()));
-    m_bookmarkMenuAction->setShortcut(tr("CTRL+D"));
+    if (BookmarkManager *manager = BookmarkManager::instance())
+        manager->takeBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));
@@ -624,14 +586,6 @@ void MainWindow::setupActions()
         SLOT(updateNavigationItems()));
     connect(m_centralWidget, SIGNAL(highlighted(QString)), statusBar(),
         SLOT(showMessage(QString)));
-    connect(m_centralWidget, SIGNAL(addNewBookmark(QString,QString)), this,
-        SLOT(addNewBookmark(QString,QString)));
-
-    // bookmarks
-    connect(m_bookmarkWidget, SIGNAL(requestShowLink(QUrl)), m_centralWidget,
-        SLOT(setSource(QUrl)));
-    connect(m_bookmarkWidget, SIGNAL(escapePressed()), this,
-        SLOT(activateCurrentCentralWidgetTab()));
 
     // index window
     connect(m_indexWindow, SIGNAL(linkActivated(QUrl)), m_centralWidget,
@@ -764,13 +718,6 @@ void MainWindow::showNewAddress(const QUrl &url)
     m_addressLineEdit->setText(url.toString());
 }
 
-void MainWindow::addBookmark()
-{
-    TRACE_OBJ
-    addNewBookmark(m_centralWidget->currentTitle(),
-        m_centralWidget->currentSource().toString());
-}
-
 void MainWindow::gotoAddress()
 {
     TRACE_OBJ
@@ -811,12 +758,10 @@ void MainWindow::showPreferences()
 {
     TRACE_OBJ
     PreferencesDialog dia(this);
-
     connect(&dia, SIGNAL(updateApplicationFont()), this,
         SLOT(updateApplicationFont()));
     connect(&dia, SIGNAL(updateBrowserFont()), m_centralWidget,
         SLOT(updateBrowserFont()));
-
     dia.showDialog();
 }
 
@@ -836,15 +781,6 @@ void MainWindow::copyAvailable(bool yes)
 {
     TRACE_OBJ
     m_copyAction->setEnabled(yes);
-}
-
-void MainWindow::addNewBookmark(const QString &title, const QString &url)
-{
-    TRACE_OBJ
-    if (url.isEmpty() || url == QLatin1String("about:blank"))
-        return;
-
-    m_bookmarkManager->showBookmarkDialog(this, title, url);
 }
 
 void MainWindow::showAboutDialog()
@@ -947,22 +883,23 @@ void MainWindow::setBookmarksVisible(bool visible)
 {
     TRACE_OBJ
     if (visible)
-        showBookmarks();
+        showBookmarksDockWidget();
     else
-        hideBookmarks();
+        hideBookmarksDockWidget();
 }
 
-
-void MainWindow::showBookmarks()
+void MainWindow::showBookmarksDockWidget()
 {
     TRACE_OBJ
-    activateDockWidget(m_bookmarkWidget);
+    if (m_bookmarkWidget)
+        activateDockWidget(m_bookmarkWidget);
 }
 
-void MainWindow::hideBookmarks()
+void MainWindow::hideBookmarksDockWidget()
 {
     TRACE_OBJ
-    m_bookmarkWidget->parentWidget()->hide();
+    if (m_bookmarkWidget)
+        m_bookmarkWidget->parentWidget()->hide();
 }
 
 void MainWindow::setSearchVisible(bool visible)
@@ -1029,7 +966,9 @@ void MainWindow::updateApplicationFont()
     if (helpEngine.usesAppFont())
         font = helpEngine.appFont();
 
-    qApp->setFont(font, "QWidget");
+    const QWidgetList &widgets = qApp->allWidgets();
+    foreach (QWidget* widget, widgets)
+        widget->setFont(font);
 }
 
 void MainWindow::setupFilterCombo()
@@ -1094,15 +1033,6 @@ void MainWindow::indexingFinished()
     m_progressWidget = 0;
 }
 
-QWidget* MainWindow::setupBookmarkWidget()
-{
-    TRACE_OBJ
-    m_bookmarkManager = new BookmarkManager;
-    m_bookmarkWidget = new BookmarkWidget(m_bookmarkManager, this);
-    connect(m_bookmarkWidget, SIGNAL(addBookmark()), this, SLOT(addBookmark()));
-    return m_bookmarkWidget;
-}
-
 QString MainWindow::collectionFileDirectory(bool createDir, const QString &cacheDir)
 {
     TRACE_OBJ
@@ -1136,43 +1066,6 @@ QString MainWindow::defaultHelpCollectionFileName()
     return collectionFileDirectory(true) + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
-}
-
-void MainWindow::importBookmarks()
-{
-    TRACE_OBJ
-    const QString &fileName = QFileDialog::getOpenFileName(0, tr("Open File"),
-        QDir::currentPath(), tr("Files (*.xbel)"));
-
-    if (fileName.isEmpty())
-        return;
-
-    QFile file(fileName);
-    if (file.open(QIODevice::ReadOnly)) {
-        XbelReader reader(m_bookmarkManager->treeBookmarkModel(),
-            m_bookmarkManager->listBookmarkModel());
-        reader.readFromFile(&file);
-    }
-}
-
-void MainWindow::exportBookmarks()
-{
-    TRACE_OBJ
-    QString fileName = QFileDialog::getSaveFileName(0, tr("Save File"),
-        "untitled.xbel", tr("Files (*.xbel)"));
-
-    QLatin1String suffix(".xbel");
-    if (!fileName.endsWith(suffix))
-        fileName.append(suffix);
-
-    QFile file(fileName);
-    if (file.open(QIODevice::WriteOnly)) {
-        XbelWriter writer(m_bookmarkManager->treeBookmarkModel());
-        writer.writeToFile(&file);
-    } else {
-        QMessageBox::information(this, tr("Qt Assistant"),
-            tr("Unable to save bookmarks."), tr("OK"));
-    }
 }
 
 void MainWindow::currentFilterChanged(const QString &filter)

@@ -50,6 +50,7 @@
 #include <private/qgraphicssceneindex_p.h>
 #include <math.h>
 #include "../../shared/util.h"
+#include "../qpathclipper/pathcompare.h"
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
@@ -2806,14 +2807,14 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
 
     {
         QPoint pos(50, 50);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(event.isAccepted());
     }
     {
         QPoint pos(150, 150);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(!event.isAccepted());
@@ -2821,14 +2822,14 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
     view.scale(1.5, 1.5);
     {
         QPoint pos(25, 25);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(event.isAccepted());
     }
     {
         QPoint pos(55, 55);
-        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.mapToGlobal(pos));
+        QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(!event.isAccepted());
@@ -3560,7 +3561,7 @@ void tst_QGraphicsScene::task250680_childClip()
 
     QPainterPath path;
     path.addRect(-25, -25, 50, 50);
-    QCOMPARE(rect->clipPath(), path);
+    QVERIFY(QPathCompare::comparePaths(rect->clipPath().simplified(), path));
 
     QCOMPARE(scene.items(QRectF(320, 240, 5, 5)).size(), 2);
     rect->rotate(45);

@@ -641,33 +641,6 @@ void Generator::generateExampleFiles(const FakeNode *fake, CodeMarker *marker)
     }
 #endif
 
-void Generator::generateModuleWarning(const ClassNode *classe,
-                                      CodeMarker *marker)
-{
-    QString module = classe->moduleName();
-    if (!module.isEmpty()) {
-        Text text;
-        if (!editionModuleMap["DesktopLight"].contains(module)) {
-            text << Atom::ParaLeft
-                 << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
-                 << "This class is not part of the Qt GUI Framework Edition."
-                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
-                 << Atom::ParaRight;
-        }
-        else if (module == "Qt3Support") {
-            text << Atom::ParaLeft
-                 << Atom(Atom::FormattingLeft, ATOM_FORMATTING_BOLD)
-                 << "Note to Qt GUI Framework Edition users:"
-                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_BOLD)
-                 << " This class is only available in the "
-                 << Atom(Atom::AutoLink, "Qt Full Framework Edition")
-                 << "." << Atom::ParaRight;
-        }
-
-        generateText(text, classe, marker);
-    }
-}
-
 QString Generator::indent(int level, const QString& markedCode)
 {
     if (level == 0)
@@ -1201,6 +1174,32 @@ void Generator::appendSortedNames(Text& text,
             appendFullName(className, (*r).node, classe, marker);
             classMap[className.toString().toLower()] = className;
         }
+        ++r;
+    }
+
+    QStringList classNames = classMap.keys();
+    classNames.sort();
+
+    foreach (const QString &className, classNames) {
+        text << classMap[className];
+        text << separator(index++, classNames.count());
+    }
+}
+
+void Generator::appendSortedNames(Text& text,
+                                  const Node* base,
+                                  const NodeList& subs,
+                                  CodeMarker *marker)
+{
+    NodeList::ConstIterator r;
+    QMap<QString,Text> classMap;
+    int index = 0;
+
+    r = subs.begin();
+    while (r != subs.end()) {
+        Text className;
+        appendFullName(className, (*r), base, marker);
+        classMap[className.toString().toLower()] = className;
         ++r;
     }
 

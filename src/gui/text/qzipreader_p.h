@@ -49,7 +49,7 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
+// of the QZipReader class.  This header file may change from
 // version to version without notice, or even be removed.
 //
 // We mean it.
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QZipReaderPrivate;
 
-class Q_AUTOTEST_EXPORT QZipReader
+class Q_GUI_EXPORT QZipReader
 {
 public:
     QZipReader(const QString &fileName, QIODevice::OpenMode mode = QIODevice::ReadOnly );
@@ -73,7 +73,7 @@ public:
     bool isReadable() const;
     bool exists() const;
 
-    struct Q_AUTOTEST_EXPORT FileInfo
+    struct Q_GUI_EXPORT FileInfo
     {
         FileInfo();
         FileInfo(const FileInfo &other);

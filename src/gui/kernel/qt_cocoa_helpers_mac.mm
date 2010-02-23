@@ -83,6 +83,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qapplication_p.h>
+#include <private/qcocoaapplication_mac_p.h>
 #include <private/qcocoawindow_mac_p.h>
 #include <private/qcocoaview_mac_p.h>
 #include <private/qkeymapper_p.h>
@@ -137,7 +138,6 @@ void QMacWindowFader::performFade()
 }
 
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // qapplication.cpp;
-extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QWidget * mac_mouse_grabber;
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
@@ -647,6 +647,21 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
 }
 #endif
 
+Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
+{
+    if (buttonNum == 0)
+        return Qt::LeftButton;
+    if (buttonNum == 1)
+        return Qt::RightButton;
+    if (buttonNum == 2)
+        return Qt::MidButton;
+    if (buttonNum == 3)
+        return Qt::XButton1;
+    if (buttonNum == 4)
+        return Qt::XButton2;
+    return Qt::NoButton;
+}
+
 // Helper to share code between QCocoaWindow and QCocoaView
 bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent)
 {
@@ -955,7 +970,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
 #ifndef QT_NAMESPACE
         Q_ASSERT(clickCount > 0);
 #endif
-        if (clickCount % 2 == 0)
+        if (clickCount % 2 == 0 && buttons == button)
             eventType = QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
@@ -967,6 +982,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
             button = Qt::RightButton;
             [theView qt_setLeftButtonIsRightButton: false];
         }
+        qt_button_down = 0;
         break;
     }
     [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->localPoint = localPoint;
@@ -1162,7 +1178,7 @@ CGContextRef qt_mac_graphicsContextFor(QWidget *widget)
     CGrafPtr port = GetWindowPort(qt_mac_window_for(widget));
     QDBeginCGContext(port, &context);
 #else
-    CGContextRef context = (CGContextRef)[[NSGraphicsContext graphicsContextWithWindow:qt_mac_window_for(widget)] graphicsPort];
+    CGContextRef context = reinterpret_cast<CGContextRef>([[qt_mac_window_for(widget) graphicsContext] graphicsPort]);
 #endif
     return context;
 }
@@ -1279,22 +1295,42 @@ void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
     QMacCocoaAutoReleasePool pool;
     [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) set];
 }
+
+//  WARNING: If Qt did not create NSApplication (e.g. in case it is
+//  used as a plugin), and at the same time, there is no window on
+//  screen (or the window that the event is sendt to becomes hidden etc
+//  before the event gets delivered), the message will not be performed.
+bool qt_cocoaPostMessage(id target, SEL selector)
+{
+    if (!target)
+        return false;
+
+    NSInteger windowNumber = 0;
+    if (![NSApp isMemberOfClass:[QNSApplication class]]) {
+        // INVARIANT: Cocoa is not using our NSApplication subclass. That means
+        // we don't control the main event handler either. So target the event
+        // for one of the windows on screen:
+        NSWindow *nswin = [NSApp mainWindow];
+        if (!nswin) {
+            nswin = [NSApp keyWindow];
+            if (!nswin)
+                return false;
+        }
+        windowNumber = [nswin windowNumber];
+    }
+
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+    // That is why we need to split the address in two parts:
+    QCocoaPostMessageArgs *args = new QCocoaPostMessageArgs(target, selector);
+    quint32 lower = quintptr(args);
+    quint32 upper = quintptr(args) >> 32;
+    NSEvent *e = [NSEvent otherEventWithType:NSApplicationDefined
+        location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:windowNumber
+        context:nil subtype:QtCocoaEventSubTypePostMessage data1:lower data2:upper];
+    [NSApp postEvent:e atStart:NO];
+    return true;
+}
 #endif
-
-@implementation DebugNSApplication {
-}
-- (void)sendEvent:(NSEvent *)event
-{
-    NSLog(@"NSAppDebug: sendEvent: %@", event);
-    return [super sendEvent:event];
-}
-
-- (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)sender
-{
-    NSLog(@"NSAppDebug: sendAction: %s to %@ from %@", anAction, aTarget, sender);
-    return [super sendAction:anAction to:aTarget from:sender];
-}
-@end
 
 QMacCocoaAutoReleasePool::QMacCocoaAutoReleasePool()
 {

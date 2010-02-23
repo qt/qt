@@ -35,7 +35,113 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+\class QScriptDeclarativeClass::Value
+\internal
+\brief The QScriptDeclarativeClass::Value class acts as a container for JavaScript data types.
+
+QScriptDeclarativeClass::Value class is similar to QScriptValue, but it is slightly faster.  
+Unlike QScriptValue, however, Value instances cannot be stored as they may not survive garbage 
+collection.  If you need to store a Value, convert it to a QScriptValue and store that.
+*/
+
+QScriptDeclarativeClass::Value::Value()
+{
+    new (this) JSC::JSValue(JSC::jsUndefined());
+}
+
+QScriptDeclarativeClass::Value::Value(const Value &other)
+{
+    new (this) JSC::JSValue((JSC::JSValue &)other);
+}
+
+static QScriptDeclarativeClass::Value jscToValue(const JSC::JSValue &val)
+{
+    return QScriptDeclarativeClass::Value((QScriptDeclarativeClass::Value &)val);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, int value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, uint value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, bool value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, double value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, float value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::frameForContext(ctxt), value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, const QString &value)
+{
+    new (this) JSC::JSValue(JSC::jsString(QScriptEnginePrivate::frameForContext(ctxt), value));
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptContext *ctxt, const QScriptValue &value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::get(ctxt->engine())->scriptValueToJSCValue(value));
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, int value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, uint value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, bool value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, double value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, float value)
+{
+    new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->currentFrame, value);
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, const QString &value)
+{
+    new (this) JSC::JSValue(JSC::jsString(QScriptEnginePrivate::get(eng)->currentFrame, value));
+}
+
+QScriptDeclarativeClass::Value::Value(QScriptEngine *eng, const QScriptValue &value)
+{
+        new (this) JSC::JSValue(QScriptEnginePrivate::get(eng)->scriptValueToJSCValue(value));
+}
+
+QScriptDeclarativeClass::Value::~Value()
+{
+    ((JSC::JSValue *)(this))->~JSValue();
+}
+
+QScriptValue QScriptDeclarativeClass::Value::toScriptValue(QScriptEngine *engine) const
+{
+    return QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue((JSC::JSValue &)*this);
+}
+
 QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier()
+: identifier(0)
 {
     new (&d) JSC::Identifier();
 }
@@ -82,28 +188,36 @@ QScriptValue QScriptDeclarativeClass::newObject(QScriptEngine *engine,
     return p->scriptValueFromJSCValue(result);
 }
 
+QScriptDeclarativeClass::Value 
+QScriptDeclarativeClass::newObjectValue(QScriptEngine *engine, 
+                                        QScriptDeclarativeClass *scriptClass, 
+                                        Object *object)
+{
+    Q_ASSERT(engine);
+    Q_ASSERT(scriptClass);
+
+    QScriptEnginePrivate *p = static_cast<QScriptEnginePrivate *>(QObjectPrivate::get(engine)); 
+
+    JSC::ExecState* exec = p->currentFrame;
+    QScriptObject *result = new (exec) QScriptObject(p->scriptObjectStructure);
+    result->setDelegate(new QScript::DeclarativeObjectDelegate(scriptClass, object));
+    return jscToValue(JSC::JSValue(result));
+}
+
 QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue &v)
 {
     QScriptValuePrivate *d = QScriptValuePrivate::get(v);
-    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
+    if (!d || !d->isJSC())
         return 0;
-    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-    QScriptObjectDelegate *delegate = scriptObject->delegate();
-    if (!delegate || (delegate->type() != QScriptObjectDelegate::DeclarativeClassObject))
-        return 0;
-    return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->scriptClass();
+    return QScriptEnginePrivate::declarativeClass(d->jscValue);
 }
 
 QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &v)
 {
     QScriptValuePrivate *d = QScriptValuePrivate::get(v);
-    if (!d || !d->isJSC() || !d->jscValue.inherits(&QScriptObject::info))
+    if (!d || !d->isJSC())
         return 0;
-    QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
-    QScriptObjectDelegate *delegate = scriptObject->delegate();
-    if (!delegate || (delegate->type() != QScriptObjectDelegate::DeclarativeClassObject))
-        return 0;
-    return static_cast<QScript::DeclarativeObjectDelegate*>(delegate)->object();
+    return QScriptEnginePrivate::declarativeObject(d->jscValue);
 }
 
 QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Identifier &name)
@@ -149,6 +263,53 @@ QScriptValue QScriptDeclarativeClass::property(const QScriptValue &v, const Iden
     }
 
     return QScriptValue();
+}
+
+QScriptDeclarativeClass::Value
+QScriptDeclarativeClass::functionValue(const QScriptValue &v, const Identifier &name)
+{
+    QScriptValuePrivate *d = QScriptValuePrivate::get(v);
+
+    if (!d->isObject())
+        return Value();
+
+    JSC::ExecState *exec = d->engine->currentFrame;
+    JSC::JSObject *object = d->jscValue.getObject();
+    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
+    JSC::JSValue result;
+
+    JSC::Identifier id(exec, (JSC::UString::Rep *)name);
+
+    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
+        result = slot.getValue(exec, id);
+        if (QScript::isFunction(result))
+            return jscToValue(result);
+    }
+
+    return Value();
+}
+
+QScriptDeclarativeClass::Value
+QScriptDeclarativeClass::propertyValue(const QScriptValue &v, const Identifier &name)
+{
+    QScriptValuePrivate *d = QScriptValuePrivate::get(v);
+
+    if (!d->isObject())
+        return Value();
+
+    JSC::ExecState *exec = d->engine->currentFrame;
+    JSC::JSObject *object = d->jscValue.getObject();
+    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
+    JSC::JSValue result;
+
+    JSC::Identifier id(exec, (JSC::UString::Rep *)name);
+
+    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
+        result = slot.getValue(exec, id);
+        return jscToValue(result);
+    }
+
+    return Value();
 }
 
 /*
@@ -241,6 +402,16 @@ QScriptEngine *QScriptDeclarativeClass::engine() const
     return d_ptr->engine;
 }
 
+bool QScriptDeclarativeClass::supportsCall() const
+{
+    return d_ptr->supportsCall;
+}
+
+void QScriptDeclarativeClass::setSupportsCall(bool c)
+{
+    d_ptr->supportsCall = c;
+}
+
 QScriptDeclarativeClass::PersistentIdentifier 
 QScriptDeclarativeClass::createPersistentIdentifier(const QString &str)
 {
@@ -290,11 +461,12 @@ QScriptDeclarativeClass::queryProperty(Object *object, const Identifier &name,
     return 0;
 }
 
-QScriptValue QScriptDeclarativeClass::property(Object *object, const Identifier &name)
+QScriptDeclarativeClass::Value
+QScriptDeclarativeClass::property(Object *object, const Identifier &name)
 {
     Q_UNUSED(object);
     Q_UNUSED(name);
-    return QScriptValue();
+    return Value();
 }
 
 void QScriptDeclarativeClass::setProperty(Object *object, const Identifier &name, 
@@ -311,6 +483,14 @@ QScriptDeclarativeClass::propertyFlags(Object *object, const Identifier &name)
     Q_UNUSED(object);
     Q_UNUSED(name);
     return 0;
+}
+
+QScriptDeclarativeClass::Value QScriptDeclarativeClass::call(Object *object, 
+                                                             QScriptContext *ctxt)
+{
+    Q_UNUSED(object);
+    Q_UNUSED(ctxt);
+    return Value();
 }
 
 QStringList QScriptDeclarativeClass::propertyNames(Object *object)

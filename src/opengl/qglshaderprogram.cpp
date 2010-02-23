@@ -143,6 +143,8 @@ QT_BEGIN_NAMESPACE
 
     \value Vertex Vertex shader written in the OpenGL Shading Language (GLSL).
     \value Fragment Fragment shader written in the OpenGL Shading Language (GLSL).
+    \value Geometry Geometry shaders written in the OpenGL Shading
+           Language (GLSL), based on the GL_EXT_geometry_shader4 extension.
 */
 
 #ifndef GL_FRAGMENT_SHADER
@@ -226,6 +228,8 @@ bool QGLShaderPrivate::create()
         GLuint shader;
         if (shaderType == QGLShader::Vertex)
             shader = glCreateShader(GL_VERTEX_SHADER);
+        else if (shaderType == QGLShader::Geometry)
+            shader = glCreateShader(GL_GEOMETRY_SHADER_EXT);
         else
             shader = glCreateShader(GL_FRAGMENT_SHADER);
         if (!shader) {
@@ -509,6 +513,10 @@ GLuint QGLShader::shaderId() const
     return d->shaderGuard.id();
 }
 
+
+
+
+
 #undef ctx
 #define ctx programGuard.context()
 
@@ -521,8 +529,9 @@ public:
         , linked(false)
         , inited(false)
         , removingShaders(false)
-        , vertexShader(0)
-        , fragmentShader(0)
+        , geometryVertexCount(64)
+        , geometryInputType(0)
+        , geometryOutputType(0)
     {
     }
     ~QGLShaderProgramPrivate();
@@ -531,11 +540,14 @@ public:
     bool linked;
     bool inited;
     bool removingShaders;
+
+    int geometryVertexCount;
+    GLenum geometryInputType;
+    GLenum geometryOutputType;
+
     QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
-    QGLShader *vertexShader;
-    QGLShader *fragmentShader;
 
     bool hasShader(QGLShader::ShaderType type) const;
 };
@@ -604,6 +616,7 @@ bool QGLShaderProgram::init()
         context = QGLContext::currentContext();
         d->programGuard.setContext(context);
     }
+
     if (!context)
         return false;
     if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
@@ -831,6 +844,7 @@ bool QGLShaderProgram::link()
     GLuint program = d->programGuard.id();
     if (!program)
         return false;
+
     GLint value;
     if (d->shaders.isEmpty()) {
         // If there are no explicit shaders, then it is possible that the
@@ -843,6 +857,22 @@ bool QGLShaderProgram::link()
         if (d->linked)
             return true;
     }
+
+    // Set up the geometry shader parameters
+    if (glProgramParameteriEXT) {
+        foreach (QGLShader *shader, d->shaders) {
+            if (shader->shaderType() & QGLShader::Geometry) {
+                glProgramParameteriEXT(program, GL_GEOMETRY_INPUT_TYPE_EXT,
+                                       d->geometryInputType);
+                glProgramParameteriEXT(program, GL_GEOMETRY_OUTPUT_TYPE_EXT,
+                                       d->geometryOutputType);
+                glProgramParameteriEXT(program, GL_GEOMETRY_VERTICES_OUT_EXT,
+                                       d->geometryVertexCount);
+                break;
+            }
+        }
+    }
+
     glLinkProgram(program);
     value = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &value);
@@ -3047,6 +3077,108 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
 #undef ctx
 
 /*!
+    Returns the hardware limit for how many vertices a geometry shader
+    can output.
+
+    \since 4.7
+
+    \sa setGeometryOutputVertexCount()
+*/
+int QGLShaderProgram::maxGeometryOutputVertices() const
+{
+    GLint n;
+    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
+    return n;
+}
+
+/*!
+    Sets the maximum number of vertices the current geometry shader
+    program will produce, if active, to \a count.
+
+    \since 4.7
+
+    This parameter takes effect the next time the program is linked.
+*/
+void QGLShaderProgram::setGeometryOutputVertexCount(int count)
+{
+#ifndef QT_NO_DEBUG
+    int max = maxGeometryOutputVertices();
+    if (count > max) {
+        qWarning("QGLShaderProgram::setGeometryOutputVertexCount: count: %d higher than maximum: %d",
+                 count, max);
+    }
+#endif
+    d_func()->geometryVertexCount = count;
+}
+
+
+/*!
+    Returns the maximum number of vertices the current geometry shader
+    program will produce, if active.
+
+    \since 4.7
+
+    This parameter takes effect the ntext time the program is linked.
+*/
+int QGLShaderProgram::geometryOutputVertexCount() const
+{
+    return d_func()->geometryVertexCount;
+}
+
+
+/*!
+    Sets the input type from \a inputType.
+
+    This parameter takes effect the next time the program is linked.
+*/
+void QGLShaderProgram::setGeometryInputType(GLenum inputType)
+{
+    d_func()->geometryInputType = inputType;
+}
+
+
+/*!
+    Returns the geometry shader input type, if active.
+
+    This parameter takes effect the next time the program is linked.
+
+    \since 4.7
+ */
+
+GLenum QGLShaderProgram::geometryInputType() const
+{
+    return d_func()->geometryInputType;
+}
+
+
+/*!
+    Sets the output type from the geometry shader, if active, to
+    \a outputType.
+
+    This parameter takes effect the next time the program is linked.
+
+    \since 4.7
+*/
+void QGLShaderProgram::setGeometryOutputType(GLenum outputType)
+{
+    d_func()->geometryOutputType = outputType;
+}
+
+
+/*!
+    Returns the geometry shader output type, if active.
+
+    This parameter takes effect the next time the program is linked.
+
+    \since 4.7
+ */
+GLenum QGLShaderProgram::geometryOutputType() const
+{
+    return d_func()->geometryOutputType;
+}
+
+
+/*!
     Returns true if shader programs written in the OpenGL Shading
     Language (GLSL) are supported on this system; false otherwise.
 
@@ -3077,6 +3209,41 @@ void QGLShaderProgram::shaderDestroyed()
     if (shader && !d->removingShaders)
         removeShader(shader);
 }
+
+
+#undef ctx
+#undef context
+
+/*!
+    Returns true if shader programs of type \a type are supported on
+    this system; false otherwise.
+
+    The \a context is used to resolve the GLSL extensions.
+    If \a context is null, then QGLContext::currentContext() is used.
+
+    \since 4.7
+*/
+bool QGLShader::hasOpenGLShaders(ShaderType type, const QGLContext *context)
+{
+    if (!context)
+        context = QGLContext::currentContext();
+    if (!context)
+        return false;
+
+    if ((type & ~(Geometry | Vertex | Fragment)) || type == 0)
+        return false;
+
+    bool resolved = qt_resolve_glsl_extensions(const_cast<QGLContext *>(context));
+    if (!resolved)
+        return false;
+
+    if ((type & Geometry) && !QByteArray((const char *) glGetString(GL_EXTENSIONS)).contains("GL_EXT_geometry_shader4"))
+        return false;
+
+    return true;
+}
+
+
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
 /*! \internal */

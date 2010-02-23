@@ -319,14 +319,14 @@ public:
     ~QGLBlurTextureCache();
 
     QGLBlurTextureInfo *takeBlurTextureInfo(const QPixmap &pixmap);
-    bool hasBlurTextureInfo(const QPixmap &pixmap) const;
+    bool hasBlurTextureInfo(quint64 cacheKey) const;
     void insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTextureInfo *info);
-    void clearBlurTextureInfo(const QPixmap &pixmap);
+    void clearBlurTextureInfo(quint64 cacheKey);
 
     void timerEvent(QTimerEvent *event);
 
 private:
-    static void pixmapDestroyed(QPixmap *pixmap);
+    static void pixmapDestroyed(QPixmapData *pixmap);
 
     QCache<quint64, QGLBlurTextureInfo > cache;
 
@@ -379,21 +379,22 @@ QGLBlurTextureInfo *QGLBlurTextureCache::takeBlurTextureInfo(const QPixmap &pixm
     return cache.take(pixmap.cacheKey());
 }
 
-void QGLBlurTextureCache::clearBlurTextureInfo(const QPixmap &pixmap)
+void QGLBlurTextureCache::clearBlurTextureInfo(quint64 cacheKey)
 {
-    cache.remove(pixmap.cacheKey());
+    cache.remove(cacheKey);
 }
 
-bool QGLBlurTextureCache::hasBlurTextureInfo(const QPixmap &pixmap) const
+bool QGLBlurTextureCache::hasBlurTextureInfo(quint64 cacheKey) const
 {
-    return cache.contains(pixmap.cacheKey());
+    return cache.contains(cacheKey);
 }
 
 void QGLBlurTextureCache::insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTextureInfo *info)
 {
     static bool hookAdded = false;
     if (!hookAdded) {
-        QImagePixmapCleanupHooks::instance()->addPixmapDestructionHook(pixmapDestroyed);
+        QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(pixmapDestroyed);
+        QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(pixmapDestroyed);
         hookAdded = true;
     }
 
@@ -406,11 +407,11 @@ void QGLBlurTextureCache::insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTe
     timerId = startTimer(8000);
 }
 
-void QGLBlurTextureCache::pixmapDestroyed(QPixmap *pixmap)
+void QGLBlurTextureCache::pixmapDestroyed(QPixmapData *pmd)
 {
     foreach (QGLBlurTextureCache *cache, blurTextureCaches) {
-        if (cache->hasBlurTextureInfo(*pixmap))
-            cache->clearBlurTextureInfo(*pixmap);
+        if (cache->hasBlurTextureInfo(pmd->cacheKey()))
+            cache->clearBlurTextureInfo(pmd->cacheKey());
     }
 }
 

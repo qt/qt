@@ -1,0 +1,402 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qtbinding.html
+\target qtbinding
+\title Using QML in C++ Applications
+
+\tableofcontents
+
+The QML API is split into three main classes - QmlEngine, QmlComponent and QmlContext.  
+QmlEngine provides the environment in which QML is run, QmlComponent encapsulates 
+\l {QML Documents}, and QmlContext allows applications to expose data to QML component instances.
+
+QML also includes a convenience API, QmlView, for applications that simply want to embed QML
+components into a new QGraphicsView.  QmlView covers up many of the details discussed below.  
+While QmlView is mainly intended for rapid prototyping it can have uses in production applications.
+
+If you are looking at retrofitting an existing Qt application with QML,
+read \l{Integrating QML with existing Qt UI code}.
+\section1 Basic Usage
+
+Every application requires at least one QmlEngine.  A QmlEngine allows the configuration of
+global settings that apply to all the QML component instances - such as the QNetworkAccessManager
+that is used for network communications, and the path used for persistent storage.  
+Multiple QmlEngine's are only needed if the application requires these settings to differ 
+between QML component instances.
+
+\l {QML Documents} are loaded using the QmlComponent class.  Each QmlComponent instance 
+represents a single QML document.  A QmlComponent can be passed a document URL, or raw text
+representing the content of the document.  The document URL can be a local filesystem URL, or
+any network URL supported by QNetworkAccessManager.
+
+QML component instances can then be created by calling the QmlComponent::create() method.  Here's
+an example of loading a QML document, and creating an object from it.
+
+\code
+QmlEngine *engine = new QmlEngine(parent);
+QmlComponent component(engine, QUrl("main.qml"));
+QObject *myObject = component.create();
+\endcode
+
+\section1 Exposing Data
+
+QML components are instantiated in a QmlContext.  A context allows the application to expose data
+to the QML component instance.  A single QmlContext can be used to instantiate all the objects
+used by an application, or several QmlContext can be created for more fine grained control over
+the data exposed to each instance.  If a context is not passed to the QmlComponent::create()
+method, the QmlEngine's \l {QmlEngine::rootContext()}{root context} is used.  Data exposed through
+the root context is available to all object instances.
+
+\section1 Simple Data
+
+To expose data to a QML component instance, applications set \l {QmlContext::setContextProperty()}
+{context properties} which are then accessible by name from QML  \l {Property Binding}s and 
+\l {JavaScript Blocks}.  The following example shows how to expose a background color to a QML
+file.
+
+\table
+\row
+\o
+\code
+// main.cpp
+QmlContext *windowContext = new QmlContext(engine->rootContext());
+windowContext->setContextProperty("backgroundColor", 
+                                  QColor(Qt::lightsteelblue));
+
+QmlComponent component(&engine, "main.qml");
+QObject *window = component.create(windowContext);
+\endcode
+\o
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    color: backgroundColor
+
+    Text {
+        anchors.centerIn: parent
+        text: "Hello Light Steel Blue World!"
+    }
+}
+\endcode
+\endtable
+
+Context properties work just like normal properties in QML bindings - if the \c backgroundColor
+context property in the previous example was changed to red, the component object instances would
+all be automatically updated.  Note that it is the responsibility of the creator to delete any
+QmlContext it constructs.  If the \c windowContext in the example above is no longer needed when
+the \c window component instantiation is destroyed, the \c windowContext must be destroyed
+explicitly.  The simplest way to ensure this is to set \c window as \c windowContext's parent.
+
+QmlContexts form a tree - each QmlContext except for the root context has a parent.  Child 
+QmlContexts effectively inherit the context properties present in their parents.  This gives
+applications more freedom in partitioning the data exposed to different QML object instances.  
+If a QmlContext sets a context property that is also set in one of its parents, the new context
+property shadows that in the parent.  In The following example, the \c background context property
+in \c {Context 1} shadows the \c background context property in the root context.
+
+\image qml-context-tree.png
+
+\section2 Structured Data
+
+Context properties can also be used to expose structured and writable data to QML objects.  In 
+addition to all the types already supported by QVariant, QObject derived types can be assigned to
+context properties.  QObject context properties allow the data exposed to be more structured, and
+allow QML to set values.
+
+The following example creates a \c CustomPalette object, and sets it as the \c palette context
+property.
+
+\code
+class CustomPalette : public QObject
+{
+Q_OBJECT
+Q_PROPERTY(QColor background READ background WRITE setBackground NOTIFY backgroundChanged)
+Q_PROPERTY(QColor text READ text WRITE setText NOTIFY textChanged)
+public:
+    CustomPalette() : m_background(Qt::white), m_text(Qt::black) {}
+
+    QColor background() const { return m_background; }
+    void setBackground(const QColor &c) { 
+        if (c != m_background) {
+            m_background = c;
+            emit backgroundChanged();
+        }
+    }
+
+    QColor text() const { return m_text; }
+    void setText(const QColor &c) { 
+        if (c != m_text) {
+            m_text = c;
+            emit textChanged();
+        }
+    }
+signals:
+    void textChanged();
+    void backgroundChanged():
+
+private:
+    QColor m_background;
+    QColor m_text;
+};
+
+int main(int argc, char **argv) 
+{
+    // ...
+
+    QmlContext *windowContext = new QmlContext(engine->rootContext());
+    windowContext->setContextProperty("palette", new CustomPalette);
+
+    QmlComponent component(&engine, "main.qml");
+    QObject *window = component.create(windowContext);
+}
+\endcode
+
+The QML that follows references the palette object, and its properties, to set the appropriate
+background and text colors.  When the window is clicked, the palette's text color is changed, and
+the window text will update accordingly.
+
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    width: 240
+    height: 320
+    color: palette.background
+
+    Text {
+        anchors.centerIn: parent
+        color: palette.text
+        text: "Hello Colorful World!"
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            palette.text = "blue";
+        }
+    }
+}
+\endcode
+
+To detect when a C++ property value - in this case the \c CustomPalette's \c text property - 
+changes, the property must have a corresponding NOTIFY signal.  The NOTIFY signal specifies a signal
+that is emitted whenever the property changes value.  Implementers should take care to only emit the
+signal if the value \e changes to prevent loops from occuring.  Accessing a property from a 
+binding that does not have a NOTIFY signal will cause QML to issue a warning at runtime.
+
+\section2 Dynamic Structured Data
+
+If an application is too dynamic to structure data as compile-time QObject types, dynamically
+structured data can be constructed at runtime using the QmlPropertyMap class.
+
+
+\section1 Calling C++ methods from QML
+
+It is possible to call methods of QObject derived types by either exposing the
+methods as public slots, or by marking the methods Q_INVOKABLE.
+
+The C++ methods can also have parameters and return values.  QML has support for
+the following types:
+
+\list
+\o bool
+\o unsigned int, int
+\o float, double, qreal
+\o QString
+\o QUrl
+\o QColor
+\o QDate, QTime, QDateTime
+\o QPoint, QPointF
+\o QSize, QSizeF
+\o QRect, QRectF
+\o QVariant
+\endlist
+
+This example toggles the "LED Blinker" when the MouseArea is clicked:
+
+\table
+\row
+\o
+\code
+// main.cpp
+class LEDBlinker : public QObject
+{
+    Q_OBJECT
+public:
+    LEDBlinker();
+
+    Q_INVOKABLE bool isRunning();
+
+public slots:
+    void start();
+    void stop();
+};
+
+int main(int argc, char **argv)
+{
+    // ...
+
+    QmlContext *context = engine->rootContext();
+    context->setContextProperty("ledBlinker", new LEDBlinker);
+
+    // ...
+}
+\endcode
+\o
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            if (ledBlinker.isRunning())
+                ledBlinker.stop()
+            else
+                ledBlicker.start();
+        }
+    }
+}
+\endcode
+\endtable
+
+Note that in this particular example a better way to achieve the same result
+is to have a "running" property.  This leads to much nicer QML code:
+
+\table
+\row
+\o
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    MouseArea {
+        anchors.fill: parent
+        onClicked: ledBlinker.running = !ledBlinker.running
+    }
+}
+\endcode
+\endtable
+
+
+Of course, it is also possible to call \l {Adding new methods}{functions declared in QML from C++}.
+
+
+\section1 Network Components
+
+If the URL passed to QmlComponent is a network resource, or if the QML document references a
+network resource, the QmlComponent has to fetch the network data before it is able to create
+objects.  In this case, the QmlComponent will have a \l {QmlComponent::Loading}{Loading}
+\l {QmlComponent::status()}{status}.  An application will have to wait until the component
+is \l {QmlComponent::Ready}{Ready} before calling \l {QmlComponent::create()}.
+
+The following example shows how to load a QML file from a network resource.  After creating
+the QmlComponent, it tests whether the component is loading.  If it is, it connects to the
+QmlComponent::statusChanged() signal and otherwise calls the \c {continueLoading()} method
+directly.  This test is necessary, even for URLs that are known to be remote, just in case
+the component has been cached and is ready immediately.
+
+\code
+MyApplication::MyApplication()
+{
+    // ...
+    component = new QmlComponent(engine, QUrl("http://www.example.com/main.qml"));
+    if (component->isLoading())
+        QObject::connect(component, SIGNAL(statusChanged(QmlComponent::Status)),
+                         this, SLOT(continueLoading()));
+    else
+        continueLoading();
+}
+
+void MyApplication::continueLoading()
+{
+    if (component->isError()) {
+        qWarning() << component->errors();
+    } else {
+        QObject *myObject = component->create();
+    }
+}
+\endcode
+
+\section1 Qt Resources
+
+QML content can be loaded from \l {The Qt Resource System} using the \e qrc: URL scheme.
+For example:
+
+\code
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>main.qml</file>
+    <file>images/background.png</file>
+</qresource>
+</RCC>
+\endcode
+\code
+// main.cpp
+MyApplication::MyApplication()
+{
+    // ...
+    component = new QmlComponent(engine, QUrl("qrc:/main.qml"));
+    if (component->isError()) {
+        qWarning() << component->errors();
+    } else {
+        QObject *myObject = component->create();
+    }
+}
+\endcode
+\code
+// main.qml
+import Qt 4.6
+
+Image {
+    source: "images/background.png"
+}
+\endcode
+
+*/
+

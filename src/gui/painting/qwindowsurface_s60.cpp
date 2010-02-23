@@ -145,12 +145,23 @@ QImage* QS60WindowSurface::buffer(const QWidget *widget)
 
 void QS60WindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &)
 {
-    QWExtra *extra = widget->d_func()->extraData();
-    if (extra && !extra->inExpose) {
-        extra->inExpose = true; // Prevent DrawNow() from calling syncBackingStore() again
-        TRect tr = qt_QRect2TRect(region.boundingRect());
+    QWidget *window = widget->window();
+    Q_ASSERT(window);
+    QTLWExtra *topExtra = window->d_func()->maybeTopData();
+    Q_ASSERT(topExtra);
+    QRect qr = region.boundingRect();
+    if (!topExtra->inExpose) {
+        topExtra->inExpose = true; // Prevent DrawNow() from calling syncBackingStore() again
+        TRect tr = qt_QRect2TRect(qr);
         widget->winId()->DrawNow(tr);
-        extra->inExpose = false;
+        topExtra->inExpose = false;
+    } else {
+        // This handles the case when syncBackingStore updates content outside of the
+        // original drawing rectangle. This might happen if there are pending update()
+        // events at the same time as we get a Draw() from Symbian.
+        QRect drawRect = qt_TRect2QRect(widget->winId()->DrawableWindow()->GetDrawRect());
+        if (!drawRect.contains(qr))
+            widget->winId()->DrawDeferred();
     }
 }
 

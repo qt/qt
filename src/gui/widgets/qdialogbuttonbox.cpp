@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
     You can mix and match normal buttons and standard buttons.
 
     Currently the buttons are laid out in the following way if the button box is horizontal:
-    \table 100%
+    \table
     \row \o \inlineimage buttonbox-gnomelayout-horizontal.png GnomeLayout Horizontal
          \o Button box laid out in horizontal GnomeLayout
     \row \o \inlineimage buttonbox-kdelayout-horizontal.png KdeLayout Horizontal
@@ -116,25 +116,23 @@ QT_BEGIN_NAMESPACE
 
     The buttons are laid out the following way if the button box is vertical:
 
-    \table 100%
+    \table
+    \row \o GnomeLayout
+         \o KdeLayout
+         \o MacLayout
+         \o WinLayout
     \row \o \inlineimage buttonbox-gnomelayout-vertical.png GnomeLayout Vertical
-         \o Button box laid out in vertical GnomeLayout
-    \row \o \inlineimage buttonbox-kdelayout-vertical.png KdeLayout Vertical
-         \o Button box laid out in vertical KdeLayout
-    \row \o \inlineimage buttonbox-maclayout-vertical.png MacLayout Vertical
-         \o Button box laid out in vertical MacLayout
-    \row \o \inlineimage buttonbox-winlayout-vertical.png WinLayout Vertical
-         \o Button box laid out in vertical WinLayout
+         \o \inlineimage buttonbox-kdelayout-vertical.png KdeLayout Vertical
+         \o \inlineimage buttonbox-maclayout-vertical.png MacLayout Vertical
+         \o \inlineimage buttonbox-winlayout-vertical.png WinLayout Vertical
     \endtable
 
     Additionally, button boxes that contain only buttons with ActionRole or
-    HelpRole can be considered modeless and have an alternate look on the mac:
+    HelpRole can be considered modeless and have an alternate look on Mac OS X:
 
-    \table 100%
-    \row \o \inlineimage buttonbox-mac-modeless-horizontal.png Screenshot of modeless horizontal MacLayout
-         \o modeless horizontal MacLayout
-    \row \o \inlineimage buttonbox-mac-modeless-vertical.png Screenshot of modeless vertical MacLayout
-         \o modeless vertical MacLayout
+    \table
+    \row \o modeless horizontal MacLayout
+         \o \inlineimage buttonbox-mac-modeless-horizontal.png Screenshot of modeless horizontal MacLayout
     \endtable
 
     When a button is clicked in the button box, the clicked() signal is emitted
@@ -1016,6 +1014,8 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
 
     If the button has already been added, it is removed and added again with the
     new role.
+
+    \note The button box takes ownership of the button.
 
     \sa removeButton(), clear()
 */

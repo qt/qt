@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/" >
+    <qresource prefix="/">
         <file>images/appicon.png</file>
         <file>images/mac/accelerator.png</file>
         <file>images/mac/book.png</file>
@@ -28,7 +28,6 @@
         <file>images/s_check_on.png</file>
         <file>images/s_check_warning.png</file>
         <file>images/splash.png</file>
-        <file>images/transbox.png</file>
         <file>images/up.png</file>
         <file>images/down.png</file>
         <file>images/editdelete.png</file>

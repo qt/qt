@@ -683,8 +683,72 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 7", willFixInNextReleaseMessage);
     addExpectedFailure("ecma_3/String/15.5.4.11.js", "Section 26", willFixInNextReleaseMessage);
 
+#ifndef Q_CC_MINGW
     addExpectedFailure("ecma/Expressions/11.4.7-02.js", "-(-2147483648) == 2147483648", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "- -\"0x80000000\"", willFixInNextReleaseMessage);
+#endif
+
+#ifdef Q_CC_MSVC
+    addExpectedFailure("ecma_3/Expressions/11.7.3-01.js", "11.7.3 - >>> should evaluate operands in order: order", "QTBUG-8056");
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.7.3 >>>", "QTBUG-8056");
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.13.2 >>>=", "QTBUG-8056");
+#endif
+
+#ifdef Q_CC_MINGW
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(NaN,0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(NaN,-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Math.atan2(Infinity, Infinity)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Math.atan2(Infinity, -Infinity)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Math.atan2(-Infinity, Infinity)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Math.atan2(-Infinity, -Infinity)", willFixInNextReleaseMessage);
+#endif
+
+#ifdef Q_OS_SOLARIS
+    addExpectedFailure("ecma/Expressions/11.13.2-2.js", "VAR1 = -0; VAR2= Infinity; VAR2 /= VAR1", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.13.2-2.js", "VAR1 = -0; VAR2= -Infinity; VAR2 /= VAR1", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.13.2-2.js", "VAR1 = 1; VAR2= -0; VAR1 /= VAR2", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.13.2-2.js", "VAR1 = -1; VAR2= -0; VAR1 /= VAR2", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.5.2.js", "Number.POSITIVE_INFINITY / -0", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.5.2.js", "Number.NEGATIVE_INFINITY / -0", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.5.2.js", "1 / -0", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Expressions/11.5.2.js", "-1 / -0", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.10.js", "Math.log(-0.0000001)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.10.js", "Math.log(-1)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.11.js", "Infinity/Math.max(-0,-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.12.js", "Infinity/Math.min(0,-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.12.js", "Infinity/Math.min(-0,-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(NaN,0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(NaN,-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Infinity/Math.pow(-Infinity, -1)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(0, -1)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(0, -0.5)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(0, -1000)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Infinity/Math.pow(-0, 1)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Infinity/Math.pow(-0, 3)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(-0, -2)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.15.js", "Infinity/Math.round(-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.15.js", "Infinity/Math.round(-0.49)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.15.js", "Infinity/Math.round(-0.5)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.17.js", "Infinity/Math.sqrt(-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.18.js", "Infinity/Math.tan(-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.2.js", "Math.acos(1.00000001)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.2.js", "Math.acos(11.00000001)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.3.js", "Math.asin(1.000001)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.3.js", "Math.asin(-1.000001)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.3.js", "Infinity/Math.asin(-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.4.js", "Infinity/Math.atan(-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Math.atan2(0, -0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Infinity/Math.atan2(-0, 1)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Math.atan2(-0,\t-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.5.js", "Math.atan2(-0,\t-1)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.6.js", "Infinity/Math.ceil('-0')", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.6.js", "Infinity/Math.ceil(-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.6.js", "Infinity/Math.ceil(-Number.MIN_VALUE)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.6.js", "Infinity/Math.ceil(-0.9)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.9.js", "Infinity/Math.floor(-0)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "var z = 0; print(1/-z)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "1/-1e-2000", willFixInNextReleaseMessage);
+#endif
 
     static const char klass[] = "tst_QScriptJsTestSuite";
 

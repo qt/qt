@@ -1007,7 +1007,7 @@
   Because of the presence of the built-in \c arguments object,
   implementing functions that take a variable number of arguments
   is simple. In fact, as we have seen, in the technical sense \e{all}
-  Qt Script functions can be seen as variable-argument functions).
+  Qt Script functions can be seen as variable-argument functions.
   As an example, consider a concat() function that takes an arbitrary
   number of arguments, converts the arguments to their string
   representation and concatenates the results; for example,

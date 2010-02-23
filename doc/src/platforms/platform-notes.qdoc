@@ -285,6 +285,9 @@
 
     \section1 General Information
 
+    Qt 4.6 applications can only be deployed on Mac OS X 10.4 (Tiger)
+    and higher. 
+
     Qt 4.4 and Qt 4.5 development is only supported on Mac OS X 10.4 and up.
     Applications built against these version of Qt can be deployed on Mac OS X
     10.3, but cannot be developed on that version of the operating system due

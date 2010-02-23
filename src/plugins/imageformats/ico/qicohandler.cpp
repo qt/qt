@@ -53,6 +53,10 @@
 #include <QtGui/QImage>
 #include <QtCore/QFile>
 #include <QtCore/QBuffer>
+#include <qvariant.h>
+
+QT_BEGIN_NAMESPACE
+
 // These next two structs represent how the icon information is stored
 // in an ICO file.
 typedef struct
@@ -772,6 +776,29 @@ QtIcoHandler::~QtIcoHandler()
     delete m_pICOReader;
 }
 
+QVariant QtIcoHandler::option(ImageOption option) const
+{
+    if (option == Size) {
+        QIODevice *device = QImageIOHandler::device();
+        qint64 oldPos = device->pos();
+        ICONDIRENTRY iconEntry;
+        if (device->seek(oldPos + ICONDIR_SIZE + (m_currentIconIndex * ICONDIRENTRY_SIZE))) {
+            if (readIconDirEntry(device, &iconEntry)) {
+                device->seek(oldPos);
+                return QSize(iconEntry.bWidth, iconEntry.bHeight);
+            }
+        }
+        if (!device->isSequential())
+            device->seek(oldPos);
+    }
+    return QVariant();
+}
+
+bool QtIcoHandler::supportsOption(ImageOption option) const
+{
+    return option == Size;
+}
+
 /*!
  * Verifies if some values (magic bytes) are set as expected in the header of the file.
  * If the magic bytes were found, it is assumed that the QtIcoHandler can read the file.
@@ -867,3 +894,4 @@ bool QtIcoHandler::jumpToNextImage()
     return jumpToImage(m_currentIconIndex + 1);
 }
 
+QT_END_NAMESPACE

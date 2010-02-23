@@ -1627,6 +1627,13 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
             tb->d_func()->plug(currentGapRect);
 #endif
 
+        savedState.clear();
+        currentGapPos.clear();
+        pluggingWidget = 0;
+        //applying the state will make sure that the currentGap is updated correctly
+        //and all the geometries (especially the one from the central widget) is correct
+        layoutState.apply(false);
+
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
         if (qobject_cast<QDockWidget*>(widget) != 0) {
@@ -1637,13 +1644,6 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         }
 #endif
 #endif
-
-        savedState.clear();
-        currentGapPos.clear();
-        pluggingWidget = 0;
-        //applying the state will make sure that the currentGap is updated correctly
-        //and all the geometries (especially the one from the central widget) is correct
-        layoutState.apply(false);
     }
 
     if (!widgetAnimator.animating()) {
@@ -1772,6 +1772,7 @@ void QMainWindowLayout::setCentralWidget(QWidget *widget)
     if (savedState.isValid()) {
 #ifndef QT_NO_DOCKWIDGET
         savedState.dockAreaLayout.centralWidgetItem = layoutState.dockAreaLayout.centralWidgetItem;
+        savedState.dockAreaLayout.fallbackToSizeHints = true;
 #else
         savedState.centralWidgetItem = layoutState.centralWidgetItem;
 #endif

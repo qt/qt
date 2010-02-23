@@ -138,6 +138,7 @@ public:
         }
         q->triggerAction(repeatAction);
     }
+    bool scrollByDelta(Qt::Orientation orientation, Qt::KeyboardModifiers modifiers, int delta);
 };
 
 QT_END_NAMESPACE

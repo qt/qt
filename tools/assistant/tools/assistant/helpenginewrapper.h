@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -101,9 +101,11 @@ public:
     const QStringList filterAttributes(const QString &filterName) const;
     QString	error() const;   
 
-    // Access to a collection's custom values.
-    bool unfilteredInserted() const;
-    void setUnfilteredInserted();
+    /*
+     * To be called after assistant has finished looking for new documentation.
+     * This will mainly cause the search index to be updated, if necessary.
+     */
+    void initialDocSetupDone();
 
     const QStringList qtDocInfo(const QString &component) const;
     void setQtDocInfo(const QString &component, const QStringList &doc);
@@ -185,6 +187,8 @@ public:
     QFontDatabase::WritingSystem browserWritingSystem() const;
     void setBrowserWritingSystem(QFontDatabase::WritingSystem system);
 
+    static const QString TrUnfiltered;
+
 signals:
 
     // For asynchronous doc updates triggered by external actions.
@@ -194,6 +198,9 @@ signals:
     // Forwarded from QHelpEngineCore.
     void currentFilterChanged(const QString &currentFilter);
     void setupFinished();
+
+private slots:
+    void handleCurrentFilterChanged(const QString &filter);
 
 private:
     HelpEngineWrapper(const QString &collectionFile);

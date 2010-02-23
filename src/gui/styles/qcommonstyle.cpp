@@ -1149,10 +1149,10 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
     int vpadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
     if (opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth)
         verticalShift = -verticalShift;
-    tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
+    tr.adjust(hpadding, verticalShift - vpadding, horizontalShift - hpadding, vpadding);
     bool selected = opt->state & QStyle::State_Selected;
     if (selected) {
-        tr.setBottom(tr.bottom() - verticalShift);
+        tr.setTop(tr.top() - verticalShift);
         tr.setRight(tr.right() - horizontalShift);
     }
 
@@ -5761,88 +5761,88 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG
      case SP_FileDialogNewFolder:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/newdirectory-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/newdirectory-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/newdirectory-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/newdirectory-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/newdirectory-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/newdirectory-128.png"), QSize(128, 128));
         break;
     case SP_FileDialogBack:
         return standardIconImplementation(SP_ArrowBack, option, widget);
     case SP_FileDialogToParent:
         return standardIconImplementation(SP_ArrowUp, option, widget);
     case SP_FileDialogDetailedView:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewdetailed-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewdetailed-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewdetailed-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewdetailed-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewdetailed-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewdetailed-128.png"), QSize(128, 128));
         break;
     case SP_FileDialogInfoView:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/fileinfo-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/fileinfo-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/fileinfo-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/fileinfo-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/fileinfo-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/fileinfo-128.png"), QSize(128, 128));
         break;
     case SP_FileDialogContentsView:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filecontents-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filecontents-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filecontents-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filecontents-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filecontents-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filecontents-128.png"), QSize(128, 128));
         break;
     case SP_FileDialogListView:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewlist-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewlist-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewlist-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewlist-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewlist-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/viewlist-128.png"), QSize(128, 128));
         break;
     case SP_DialogOkButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-ok-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-ok-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-ok-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-ok-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-ok-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-ok-128.png"), QSize(128, 128));
         break;
     case SP_DialogCancelButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-cancel-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-cancel-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-cancel-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-cancel-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-cancel-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-cancel-128.png"), QSize(128, 128));
         break;
     case SP_DialogHelpButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-help-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-help-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-help-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-help-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-help-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-help-128.png"), QSize(128, 128));
         break;
     case SP_DialogOpenButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-open-128.png"), QSize(128, 128));
         break;
     case SP_DialogSaveButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-save-128.png"), QSize(128, 128));
         break;
     case SP_DialogCloseButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-close-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-close-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-close-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-close-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-close-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-close-128.png"), QSize(128, 128));
         break;
     case SP_DialogApplyButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-apply-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-apply-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-apply-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-apply-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-apply-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-apply-128.png"), QSize(128, 128));
         break;
     case SP_DialogResetButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-clear-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-clear-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-clear-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-clear-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-clear-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-clear-128.png"), QSize(128, 128));
         break;
     case SP_DialogDiscardButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-delete-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-delete-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-delete-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-delete-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-delete-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-delete-128.png"), QSize(128, 128));
         break;
     case SP_DialogYesButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-yes-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-yes-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-yes-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-yes-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-yes-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-yes-128.png"), QSize(128, 128));
         break;
     case SP_DialogNoButton:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-128.png"), QSize(128, 128));
         break;
     case SP_ArrowForward:
         if (rtl)
@@ -5853,24 +5853,24 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
             return standardIconImplementation(SP_ArrowRight, option, widget);
         return standardIconImplementation(SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/left-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/left-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/left-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/left-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/left-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/left-128.png"), QSize(128, 128));
         break;
     case SP_ArrowRight:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/right-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/right-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/right-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/right-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/right-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/right-128.png"), QSize(128, 128));
         break;
     case SP_ArrowUp:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/up-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/up-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/up-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/up-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/up-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/up-128.png"), QSize(128, 128));
         break;
     case SP_ArrowDown:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/down-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/down-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/down-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/down-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/down-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/down-128.png"), QSize(128, 128));
         break;
    case SP_DirHomeIcon:
    case SP_DirIcon:
@@ -5888,71 +5888,71 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                      QSize(128, 128), QIcon::Normal, QIcon::On);
         break;
     case SP_DriveCDIcon:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/cdr-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/cdr-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/cdr-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/cdr-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/cdr-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/cdr-128.png"), QSize(128, 128));
         break;
     case SP_DriveDVDIcon:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/dvd-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/dvd-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/dvd-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/dvd-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/dvd-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/dvd-128.png"), QSize(128, 128));
         break;
     case SP_FileIcon:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/file-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/file-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/file-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/file-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/file-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/file-128.png"), QSize(128, 128));
         break;
     case SP_FileLinkIcon:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filelink-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filelink-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filelink-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filelink-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filelink-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/filelink-128.png"), QSize(128, 128));
         break;
     case SP_TrashIcon:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/trash-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/trash-32.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/trash-128.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/trash-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/trash-32.png"), QSize(32, 32));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/trash-128.png"), QSize(128, 128));
         break;
     case SP_BrowserReload:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/refresh-24.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/refresh-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/refresh-24.png"), QSize(24, 24));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/refresh-32.png"), QSize(32, 32));
         break;
     case SP_BrowserStop:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/stop-24.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/stop-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/stop-24.png"), QSize(24, 24));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/stop-32.png"), QSize(32, 32));
         break;
     case SP_MediaPlay:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-play-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-play-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-play-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-play-32.png"), QSize(32, 32));
         break;
     case SP_MediaPause:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-pause-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-pause-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-pause-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-pause-32.png"), QSize(32, 32));
         break;
     case SP_MediaStop:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-stop-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-stop-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-stop-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-stop-32.png"), QSize(32, 32));
         break;
     case SP_MediaSeekForward:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-forward-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-forward-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-forward-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-forward-32.png"), QSize(32, 32));
         break;
     case SP_MediaSeekBackward:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-backward-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-backward-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-backward-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-seek-backward-32.png"), QSize(32, 32));
         break;
     case SP_MediaSkipForward:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-forward-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-forward-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-forward-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-forward-32.png"), QSize(32, 32));
         break;
     case SP_MediaSkipBackward:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-backward-16.png"));
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-backward-32.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-backward-16.png"), QSize(16, 16));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-skip-backward-32.png"), QSize(32, 32));
         break;
     case SP_MediaVolume:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-volume-16.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-volume-16.png"), QSize(16, 16));
         break;
     case SP_MediaVolumeMuted:
-        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-volume-muted-16.png"));
+        icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/media-volume-muted-16.png"), QSize(16, 16));
         break;
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:
