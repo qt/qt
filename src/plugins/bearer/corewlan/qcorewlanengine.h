@@ -77,7 +77,7 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    static bool getAllScInterfaces();
+    bool getAllScInterfaces();
 
 private Q_SLOTS:
     void doRequestUpdate();
