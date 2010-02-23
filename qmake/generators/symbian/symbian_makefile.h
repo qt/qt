@@ -80,7 +80,7 @@ public:
         }
 
         if (generatePkg) {
-            generatePkgFile(iconFile, depList, true);
+            generatePkgFile(iconFile, depList, false);
         }
 
         // Get the application translations and convert to symbian OS lang code, i.e. decical number
