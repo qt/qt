@@ -42,6 +42,7 @@
 #ifndef SYMBIANENGINE_H
 #define SYMBIANENGINE_H
 
+#include <QtCore/qstringlist.h>
 #include <QtNetwork/private/qbearerengine_p.h>
 #include <QtNetwork/qnetworkconfigmanager.h>
 
@@ -115,6 +116,8 @@ public:
     QNetworkSessionPrivate *createSessionBackend();
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
+
+    QStringList accessPointConfigurationIdentifiers();
 
 Q_SIGNALS:
     void onlineStateChanged(bool isOnline);

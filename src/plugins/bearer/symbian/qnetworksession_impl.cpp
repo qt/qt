@@ -322,7 +322,7 @@ void QNetworkSessionPrivateImpl::open()
         }
         newState(QNetworkSession::Connecting);
     } else if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
-        iKnownConfigsBeforeConnectionStart = engine->accessPointConfigurations.keys();
+        iKnownConfigsBeforeConnectionStart = engine->accessPointConfigurationIdentifiers();
         iConnection.Start(iStatus);
         if (!IsActive()) {
             SetActive();
@@ -699,7 +699,7 @@ QNetworkConfiguration QNetworkSessionPrivateImpl::activeConfiguration(TUint32 ia
                 // 1. Sync internal configurations array to commsdb first
                 engine->updateConfigurations();
                 // 2. Check if new configuration was created during connection creation
-                QList<QString> knownConfigs = engine->accessPointConfigurations.keys();
+                QStringList knownConfigs = engine->accessPointConfigurationIdentifiers();
                 if (knownConfigs.count() > iKnownConfigsBeforeConnectionStart.count()) {
                     // Configuration count increased => new configuration was created
                     // => Search new, created configuration

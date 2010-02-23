@@ -560,6 +560,13 @@ QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfiguration()
     return ptr;
 }
 
+QStringList SymbianEngine::accessPointConfigurationIdentifiers()
+{
+    QMutexLocker locker(&mutex);
+
+    return accessPointConfigurations.keys();
+}
+
 QNetworkConfigurationPrivatePointer SymbianEngine::defaultConfigurationL()
 {
     QMutexLocker locker(&mutex);
