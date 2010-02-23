@@ -63,7 +63,7 @@
 #include "qmlscriptstring.h"
 #include "qmlglobal_p.h"
 #include "qmlscriptparser_p.h"
-#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include "qmlcompiledbindings_p.h"
 
 #include <qfxperf_p_p.h>

@@ -47,7 +47,7 @@
 #include <qmlcustomparser_p.h>
 #include <qmlparser_p.h>
 #include <qmlexpression.h>
-#include <qmlbinding.h>
+#include <qmlbinding_p.h>
 #include <qmlcontext.h>
 #include <qmlguard_p.h>
 

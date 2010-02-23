@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlbinding.h"
 #include "qmlbinding_p.h"
+#include "qmlbinding_p_p.h"
 
 #include "qml.h"
 #include "qmlcontext.h"

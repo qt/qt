@@ -45,7 +45,7 @@
 #include "qmlengine.h"
 #include "qmlmetatype.h"
 #include "qmlmetaproperty.h"
-#include "qmlbinding.h"
+#include "qmlbinding_p.h"
 #include "qmlcontext_p.h"
 #include "qmlwatcher_p.h"
 
