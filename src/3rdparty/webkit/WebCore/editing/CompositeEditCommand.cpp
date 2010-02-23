@@ -746,8 +746,9 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(Position& start, Positi
 {
     // First we clone the outerNode
     
-    RefPtr<Node> lastNode = outerNode->cloneNode(isTableElement(outerNode));
-    appendNode(lastNode, blockElement);
+    RefPtr<Node> topNode = outerNode->cloneNode(isTableElement(outerNode));
+    appendNode(topNode, blockElement);
+    RefPtr<Node> lastNode = topNode;
 
     if (start.node() != outerNode) {
         Vector<RefPtr<Node> > ancestors;
@@ -769,12 +770,23 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(Position& start, Positi
     // Handle the case of paragraphs with more than one node,
     // cloning all the siblings until end.node() is reached.
     
-    if (start.node() != end.node()) {
-        for (Node* n = start.node()->nextSibling(); n != NULL; n = n->nextSibling()) {
+    if (start.node() != end.node() && !start.node()->isDescendantOf(end.node())) {
+        // If end is not a descendant of outerNode we need to
+        // find the first common ancestor and adjust the insertion
+        // point accordingly.
+        while (!end.node()->isDescendantOf(outerNode)) {
+            outerNode = outerNode->parentNode();
+            topNode = topNode->parentNode();
+        }
+            
+        for (Node* n = start.node()->traverseNextSibling(outerNode); n; n = n->nextSibling()) {
+            if (n->parentNode() != start.node()->parentNode())
+                lastNode = topNode->lastChild();
+
             RefPtr<Node> clonedNode = n->cloneNode(true);
             insertNodeAfter(clonedNode, lastNode);
             lastNode = clonedNode.release();
-            if (n == end.node())
+            if (n == end.node() || end.node()->isDescendantOf(n))
                 break;
         }
     }
@@ -1078,7 +1090,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     
     Position caretPos(caret.deepEquivalent());
     // A line break is either a br or a preserved newline.
-    ASSERT(caretPos.node()->hasTagName(brTag) || caretPos.node()->isTextNode() && caretPos.node()->renderer()->style()->preserveNewline());
+    ASSERT(caretPos.node()->hasTagName(brTag) || (caretPos.node()->isTextNode() && caretPos.node()->renderer()->style()->preserveNewline()));
     
     if (caretPos.node()->hasTagName(brTag)) {
         Position beforeBR(positionInParentBeforeNode(caretPos.node()));

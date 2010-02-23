@@ -36,7 +36,7 @@ WebInspector.ElementsPanel = function()
 
     this.contentElement = document.createElement("div");
     this.contentElement.id = "elements-content";
-    this.contentElement.className = "outline-disclosure";
+    this.contentElement.className = "outline-disclosure source-code";
 
     this.treeOutline = new WebInspector.ElementsTreeOutline();
     this.treeOutline.panel = this;
@@ -46,7 +46,7 @@ WebInspector.ElementsPanel = function()
     this.treeOutline.focusedNodeChanged = function(forceUpdate)
     {
         if (this.panel.visible && WebInspector.currentFocusElement !== document.getElementById("search"))
-            WebInspector.currentFocusElement = document.getElementById("main-panels");
+            WebInspector.currentFocusElement = this.element;
 
         this.panel.updateBreadcrumb(forceUpdate);
 
@@ -58,12 +58,12 @@ WebInspector.ElementsPanel = function()
         this.panel.updateProperties();
         this.panel.updateEventListeners();
 
-        if (InspectorController.searchingForNode()) {
-            InspectorController.toggleNodeSearch();
+        if (InspectorBackend.searchingForNode()) {
+            InspectorBackend.toggleNodeSearch();
             this.panel.nodeSearchButton.toggled = false;
         }
         if (this._focusedDOMNode)
-            InjectedScriptAccess.addInspectedNode(this._focusedDOMNode.id, function() {});
+            InjectedScriptAccess.get(this._focusedDOMNode.injectedScriptId).addInspectedNode(this._focusedDOMNode.id, function() {});
     };
 
     this.contentElement.appendChild(this.treeOutline.element);
@@ -129,6 +129,11 @@ WebInspector.ElementsPanel.prototype = {
         return [this.nodeSearchButton.element, this.crumbsElement];
     },
 
+    get defaultFocusedElement()
+    {
+        return this.treeOutline.element;
+    },
+
     updateStatusBarItems: function()
     {
         this.updateBreadcrumbSizes();
@@ -141,7 +146,7 @@ WebInspector.ElementsPanel.prototype = {
         this.updateBreadcrumb();
         this.treeOutline.updateSelection();
         if (this.recentlyModifiedNodes.length)
-            this._updateModifiedNodes();
+            this.updateModifiedNodes();
     },
 
     hide: function()
@@ -150,8 +155,8 @@ WebInspector.ElementsPanel.prototype = {
 
         WebInspector.hoveredDOMNode = null;
 
-        if (InspectorController.searchingForNode()) {
-            InspectorController.toggleNodeSearch();
+        if (InspectorBackend.searchingForNode()) {
+            InspectorBackend.toggleNodeSearch();
             this.nodeSearchButton.toggled = false;
         }
     },
@@ -164,13 +169,24 @@ WebInspector.ElementsPanel.prototype = {
 
     reset: function()
     {
+        if (this.focusedDOMNode) {
+            this._selectedPathOnReset = [];
+            var node = this.focusedDOMNode;
+            while ("index" in node) {
+                this._selectedPathOnReset.push(node.nodeName);
+                this._selectedPathOnReset.push(node.index);
+                node = node.parentNode;
+            }
+            this._selectedPathOnReset.reverse();
+        }
+
         this.rootDOMNode = null;
         this.focusedDOMNode = null;
 
         WebInspector.hoveredDOMNode = null;
 
-        if (InspectorController.searchingForNode()) {
-            InspectorController.toggleNodeSearch();
+        if (InspectorBackend.searchingForNode()) {
+            InspectorBackend.toggleNodeSearch();
             this.nodeSearchButton.toggled = false;
         }
 
@@ -178,48 +194,65 @@ WebInspector.ElementsPanel.prototype = {
 
         delete this.currentQuery;
         this.searchCanceled();
+    },
 
-        var domWindow = WebInspector.domAgent.domWindow;
-        if (!domWindow || !domWindow.document || !domWindow.document.firstChild)
+    setDocument: function(inspectedRootDocument)
+    {
+        this.reset();
+
+        if (!inspectedRootDocument)
             return;
 
-        // If the window isn't visible, return early so the DOM tree isn't built
-        // and mutation event listeners are not added.
-        if (!InspectorController.isWindowVisible())
-            return;
-
-        var inspectedRootDocument = domWindow.document;
         inspectedRootDocument.addEventListener("DOMNodeInserted", this._nodeInserted.bind(this));
         inspectedRootDocument.addEventListener("DOMNodeRemoved", this._nodeRemoved.bind(this));
+        inspectedRootDocument.addEventListener("DOMAttrModified", this._attributesUpdated.bind(this));
 
+        this.treeOutline.suppressSelectHighlight = true;
         this.rootDOMNode = inspectedRootDocument;
+        this.treeOutline.suppressSelectHighlight = false;
 
-        var canidateFocusNode = inspectedRootDocument.body || inspectedRootDocument.documentElement;
-        if (canidateFocusNode) {
+        function selectNode(candidateFocusNode)
+        {
+            if (!candidateFocusNode)
+                candidateFocusNode = inspectedRootDocument.body || inspectedRootDocument.documentElement;
+
+            if (!candidateFocusNode)
+                return;
+
             this.treeOutline.suppressSelectHighlight = true;
-            this.focusedDOMNode = canidateFocusNode;
-            this.treeOutline.suppressSelectHighlight = false;
-
+            this.focusedDOMNode = candidateFocusNode;
             if (this.treeOutline.selectedTreeElement)
                 this.treeOutline.selectedTreeElement.expand();
+            this.treeOutline.suppressSelectHighlight = false;
         }
+
+        function selectLastSelectedNode(nodeId)
+        {
+            if (this.focusedDOMNode) {
+                // Focused node has been explicitly set while reaching out for the last selected node.
+                return;
+            }
+            var node = nodeId ? WebInspector.domAgent.nodeForId(nodeId) : 0;
+            selectNode.call(this, node);
+        }
+
+        if (this._selectedPathOnReset)
+            InjectedScriptAccess.getDefault().nodeByPath(this._selectedPathOnReset, selectLastSelectedNode.bind(this));
+        else
+            selectNode.call(this);
+        delete this._selectedPathOnReset;
     },
 
     searchCanceled: function()
     {
-        if (this._searchResults) {
-            for (var i = 0; i < this._searchResults.length; ++i) {
-                var treeElement = this.treeOutline.findTreeElement(this._searchResults[i]);
-                if (treeElement)
-                    treeElement.highlighted = false;
-            }
-        }
+        delete this._searchQuery;
+        this._hideSearchHighlights();
 
         WebInspector.updateSearchMatchesCount(0, this);
 
         this._currentSearchResultIndex = 0;
         this._searchResults = [];
-        InjectedScriptAccess.searchCanceled(function() {});
+        InjectedScriptAccess.getDefault().searchCanceled(function() {});
     },
 
     performSearch: function(query)
@@ -227,14 +260,15 @@ WebInspector.ElementsPanel.prototype = {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
 
-        const whitespaceTrimmedQuery = query.trimWhitespace();
+        const whitespaceTrimmedQuery = query.trim();
         if (!whitespaceTrimmedQuery.length)
             return;
 
         this._updatedMatchCountOnce = false;
         this._matchesCountUpdateTimeout = null;
+        this._searchQuery = query;
 
-        InjectedScriptAccess.performSearch(whitespaceTrimmedQuery, function() {});
+        InjectedScriptAccess.getDefault().performSearch(whitespaceTrimmedQuery, function() {});
     },
 
     _updateMatchesCount: function()
@@ -266,25 +300,10 @@ WebInspector.ElementsPanel.prototype = {
             if (!node)
                 continue;
 
-            if (!this._searchResults.length) {
-                this._currentSearchResultIndex = 0;
-
-                // Only change the focusedDOMNode if the search was manually performed, because
-                // the search may have been performed programmatically and we wouldn't want to
-                // change the current focusedDOMNode.
-                if (WebInspector.currentFocusElement === document.getElementById("search"))
-                    this.focusedDOMNode = node;
-            }
-
+            this._currentSearchResultIndex = 0;
             this._searchResults.push(node);
-
-            // Highlight the tree element to show it matched the search.
-            // FIXME: highlight the substrings in text nodes and attributes.
-            var treeElement = this.treeOutline.findTreeElement(node);
-            if (treeElement)
-                treeElement.highlighted = true;
         }
-
+        this._highlightCurrentSearchResult();
         this._updateMatchesCountSoon();
     },
 
@@ -292,18 +311,41 @@ WebInspector.ElementsPanel.prototype = {
     {
         if (!this._searchResults || !this._searchResults.length)
             return;
+
         if (++this._currentSearchResultIndex >= this._searchResults.length)
             this._currentSearchResultIndex = 0;
-        this.focusedDOMNode = this._searchResults[this._currentSearchResultIndex];
+        this._highlightCurrentSearchResult();
     },
 
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
             return;
+
         if (--this._currentSearchResultIndex < 0)
             this._currentSearchResultIndex = (this._searchResults.length - 1);
-        this.focusedDOMNode = this._searchResults[this._currentSearchResultIndex];
+        this._highlightCurrentSearchResult();
+    },
+
+    _highlightCurrentSearchResult: function()
+    {
+        this._hideSearchHighlights();
+        var node = this._searchResults[this._currentSearchResultIndex];
+        var treeElement = this.treeOutline.findTreeElement(node);
+        if (treeElement) {
+            treeElement.highlightSearchResults(this._searchQuery);
+            treeElement.reveal();
+        }
+    },
+
+    _hideSearchHighlights: function(node)
+    {
+        for (var i = 0; this._searchResults && i < this._searchResults.length; ++i) {
+            var node = this._searchResults[i];
+            var treeElement = this.treeOutline.findTreeElement(node);
+            if (treeElement)
+                treeElement.highlightSearchResults(null);
+        }
     },
 
     renameSelector: function(oldIdentifier, newIdentifier, oldSelector, newSelector)
@@ -440,6 +482,13 @@ WebInspector.ElementsPanel.prototype = {
         this.treeOutline.focusedDOMNode = x;
     },
 
+    _attributesUpdated: function(event)
+    {
+        this.recentlyModifiedNodes.push({node: event.target, updated: true});
+        if (this.visible)
+            this._updateModifiedNodesSoon();
+    },
+
     _nodeInserted: function(event)
     {
         this.recentlyModifiedNodes.push({node: event.target, parent: event.relatedNode, inserted: true});
@@ -458,10 +507,10 @@ WebInspector.ElementsPanel.prototype = {
     {
         if ("_updateModifiedNodesTimeout" in this)
             return;
-        this._updateModifiedNodesTimeout = setTimeout(this._updateModifiedNodes.bind(this), 0);
+        this._updateModifiedNodesTimeout = setTimeout(this.updateModifiedNodes.bind(this), 0);
     },
 
-    _updateModifiedNodes: function()
+    updateModifiedNodes: function()
     {
         if ("_updateModifiedNodesTimeout" in this) {
             clearTimeout(this._updateModifiedNodesTimeout);
@@ -474,6 +523,15 @@ WebInspector.ElementsPanel.prototype = {
         for (var i = 0; i < this.recentlyModifiedNodes.length; ++i) {
             var replaced = this.recentlyModifiedNodes[i].replaced;
             var parent = this.recentlyModifiedNodes[i].parent;
+            var node = this.recentlyModifiedNodes[i].node;
+
+            if (this.recentlyModifiedNodes[i].updated) {
+                var nodeItem = this.treeOutline.findTreeElement(node);
+                if (nodeItem)
+                    nodeItem.updateTitle();
+                continue;
+            }
+            
             if (!parent)
                 continue;
 
@@ -525,7 +583,7 @@ WebInspector.ElementsPanel.prototype = {
     _mouseMovedOutOfCrumbs: function(event)
     {
         var nodeUnderMouse = document.elementFromPoint(event.pageX, event.pageY);
-        if (nodeUnderMouse.isDescendant(this.crumbsElement))
+        if (nodeUnderMouse && nodeUnderMouse.isDescendant(this.crumbsElement))
             return;
 
         WebInspector.hoveredDOMNode = null;
@@ -996,9 +1054,22 @@ WebInspector.ElementsPanel.prototype = {
         eventListenersSidebarPane.needsUpdate = false;
     },
 
-    handleKeyEvent: function(event)
+    handleShortcut: function(event)
     {
-        this.treeOutline.handleKeyEvent(event);
+        // Cmd/Control + Shift + C should be a shortcut to clicking the Node Search Button.
+        // This shortcut matches Firebug.
+        if (event.keyIdentifier === "U+0043") {     // C key
+            if (WebInspector.isMac())
+                var isNodeSearchKey = event.metaKey && !event.ctrlKey && !event.altKey && event.shiftKey;
+            else
+                var isNodeSearchKey = event.ctrlKey && !event.metaKey && !event.altKey && event.shiftKey;
+
+            if (isNodeSearchKey) {
+                this._nodeSearchButtonClicked(event);
+                event.handled = true;
+                return;
+            }
+        }
     },
 
     handleCopyEvent: function(event)
@@ -1008,7 +1079,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
         event.clipboardData.clearData();
         event.preventDefault();
-        InspectorController.copyNode(this.focusedDOMNode.id);
+        InspectorBackend.copyNode(this.focusedDOMNode.id);
     },
 
     rightSidebarResizerDragStart: function(event)
@@ -1037,9 +1108,9 @@ WebInspector.ElementsPanel.prototype = {
 
     _nodeSearchButtonClicked: function(event)
     {
-        InspectorController.toggleNodeSearch();
+        InspectorBackend.toggleNodeSearch();
 
-        this.nodeSearchButton.toggled = InspectorController.searchingForNode();
+        this.nodeSearchButton.toggled = InspectorBackend.searchingForNode();
     }
 }
 

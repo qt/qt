@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -143,7 +143,8 @@ JSValue jsHTMLPreElementWidth(ExecState* exec, const Identifier&, const Property
     JSHTMLPreElement* castedThis = static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThis->impl());
-    return jsNumber(exec, imp->width());
+    JSValue result = jsNumber(exec, imp->width());
+    return result;
 }
 
 JSValue jsHTMLPreElementWrap(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -151,7 +152,8 @@ JSValue jsHTMLPreElementWrap(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLPreElement* castedThis = static_cast<JSHTMLPreElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThis->impl());
-    return jsBoolean(imp->wrap());
+    JSValue result = jsBoolean(imp->wrap());
+    return result;
 }
 
 JSValue jsHTMLPreElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -166,13 +168,15 @@ void JSHTMLPreElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSHTMLPreElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(thisObject)->impl());
+    JSHTMLPreElement* castedThisObj = static_cast<JSHTMLPreElement*>(thisObject);
+    HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThisObj->impl());
     imp->setWidth(value.toInt32(exec));
 }
 
 void setJSHTMLPreElementWrap(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLPreElement* imp = static_cast<HTMLPreElement*>(static_cast<JSHTMLPreElement*>(thisObject)->impl());
+    JSHTMLPreElement* castedThisObj = static_cast<JSHTMLPreElement*>(thisObject);
+    HTMLPreElement* imp = static_cast<HTMLPreElement*>(castedThisObj->impl());
     imp->setWrap(value.toBoolean(exec));
 }
 

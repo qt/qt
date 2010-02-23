@@ -53,7 +53,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGCircleElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGCircleElementTableValues[15] =
+static const HashTableValue JSSVGCircleElementTableValues[16] =
 {
     { "cx", DontDelete|ReadOnly, (intptr_t)jsSVGCircleElementCx, (intptr_t)0 },
     { "cy", DontDelete|ReadOnly, (intptr_t)jsSVGCircleElementCy, (intptr_t)0 },
@@ -69,6 +69,7 @@ static const HashTableValue JSSVGCircleElementTableValues[15] =
     { "transform", DontDelete|ReadOnly, (intptr_t)jsSVGCircleElementTransform, (intptr_t)0 },
     { "nearestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGCircleElementNearestViewportElement, (intptr_t)0 },
     { "farthestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGCircleElementFarthestViewportElement, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGCircleElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -76,8 +77,55 @@ static JSC_CONST_HASHTABLE HashTable JSSVGCircleElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSSVGCircleElementTableValues, 0 };
 #else
-    { 34, 31, JSSVGCircleElementTableValues, 0 };
+    { 35, 31, JSSVGCircleElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGCircleElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGCircleElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGCircleElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGCircleElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGCircleElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGCircleElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGCircleElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGCircleElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGCircleElementConstructor::s_info = { "SVGCircleElementConstructor", 0, &JSSVGCircleElementConstructorTable, 0 };
+
+bool JSSVGCircleElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGCircleElementConstructor, DOMObject>(exec, &JSSVGCircleElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGCircleElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGCircleElementConstructor, DOMObject>(exec, &JSSVGCircleElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -144,7 +192,8 @@ JSValue jsSVGCircleElementCx(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->cxAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementCy(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,7 +202,8 @@ JSValue jsSVGCircleElementCy(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->cyAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementR(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,7 +212,8 @@ JSValue jsSVGCircleElementR(ExecState* exec, const Identifier&, const PropertySl
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->rAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,7 +221,8 @@ JSValue jsSVGCircleElementRequiredFeatures(ExecState* exec, const Identifier&, c
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -178,7 +230,8 @@ JSValue jsSVGCircleElementRequiredExtensions(ExecState* exec, const Identifier&,
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -186,7 +239,8 @@ JSValue jsSVGCircleElementSystemLanguage(ExecState* exec, const Identifier&, con
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,7 +248,8 @@ JSValue jsSVGCircleElementXmllang(ExecState* exec, const Identifier&, const Prop
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return jsString(exec, imp->xmllang());
+    JSValue result = jsString(exec, imp->xmllang());
+    return result;
 }
 
 JSValue jsSVGCircleElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -202,7 +257,8 @@ JSValue jsSVGCircleElementXmlspace(ExecState* exec, const Identifier&, const Pro
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlspace());
+    JSValue result = jsString(exec, imp->xmlspace());
+    return result;
 }
 
 JSValue jsSVGCircleElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -211,7 +267,8 @@ JSValue jsSVGCircleElementExternalResourcesRequired(ExecState* exec, const Ident
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -220,7 +277,8 @@ JSValue jsSVGCircleElementClassName(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -228,7 +286,8 @@ JSValue jsSVGCircleElementStyle(ExecState* exec, const Identifier&, const Proper
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
 JSValue jsSVGCircleElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -237,7 +296,8 @@ JSValue jsSVGCircleElementTransform(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGCircleElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -245,7 +305,8 @@ JSValue jsSVGCircleElementNearestViewportElement(ExecState* exec, const Identifi
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    return result;
 }
 
 JSValue jsSVGCircleElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -253,9 +314,15 @@ JSValue jsSVGCircleElementFarthestViewportElement(ExecState* exec, const Identif
     JSSVGCircleElement* castedThis = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    return result;
 }
 
+JSValue jsSVGCircleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSSVGCircleElement* domObject = static_cast<JSSVGCircleElement*>(asObject(slot.slotBase()));
+    return JSSVGCircleElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGCircleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGCircleElement, Base>(exec, propertyName, value, &JSSVGCircleElementTable, this, slot);
@@ -263,14 +330,21 @@ void JSSVGCircleElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSSVGCircleElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGCircleElement* imp = static_cast<SVGCircleElement*>(static_cast<JSSVGCircleElement*>(thisObject)->impl());
+    JSSVGCircleElement* castedThisObj = static_cast<JSSVGCircleElement*>(thisObject);
+    SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThisObj->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGCircleElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGCircleElement* imp = static_cast<SVGCircleElement*>(static_cast<JSSVGCircleElement*>(thisObject)->impl());
+    JSSVGCircleElement* castedThisObj = static_cast<JSSVGCircleElement*>(thisObject);
+    SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThisObj->impl());
     imp->setXmlspace(value.toString(exec));
+}
+
+JSValue JSSVGCircleElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGCircleElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGCircleElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -310,7 +384,7 @@ JSValue JSC_HOST_CALL jsSVGCircleElementPrototypeFunctionGetBBox(ExecState* exec
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -323,7 +397,7 @@ JSValue JSC_HOST_CALL jsSVGCircleElementPrototypeFunctionGetCTM(ExecState* exec,
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -336,7 +410,7 @@ JSValue JSC_HOST_CALL jsSVGCircleElementPrototypeFunctionGetScreenCTM(ExecState*
     SVGCircleElement* imp = static_cast<SVGCircleElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getScreenCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -351,7 +425,7 @@ JSValue JSC_HOST_CALL jsSVGCircleElementPrototypeFunctionGetTransformToElement(E
     SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getTransformToElement(element, ec)).get(), 0 /* no context on purpose */);
     setDOMException(exec, ec);
     return result;
 }

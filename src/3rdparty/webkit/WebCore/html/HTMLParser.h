@@ -29,6 +29,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>
 #include "HTMLParserErrorCodes.h"
+#include "MappedAttributeEntry.h"
 
 namespace WebCore {
 
@@ -52,7 +53,7 @@ struct Token;
 class HTMLParser : public Noncopyable {
 public:
     HTMLParser(HTMLDocument*, bool reportErrors);
-    HTMLParser(DocumentFragment*);
+    HTMLParser(DocumentFragment*, FragmentScriptingPermission = FragmentScriptingAllowed);
     virtual ~HTMLParser();
 
     /**
@@ -111,6 +112,9 @@ private:
 
     void processCloseTag(Token*);
 
+    void limitBlockDepth(int tagPriority);
+
+    bool insertNodeAfterLimitBlockDepth(Node*, bool flat = false);
     bool insertNode(Node*, bool flat = false);
     bool handleError(Node*, bool flat, const AtomicString& localName, int tagPriority);
     
@@ -133,8 +137,7 @@ private:
 
     bool allowNestedRedundantTag(const AtomicString& tagName);
     
-    static bool isHeaderTag(const AtomicString& tagName);
-    void popNestedHeaderTag();
+    static bool isHeadingTag(const AtomicString& tagName);
 
     bool isInline(Node*) const;
     
@@ -186,6 +189,7 @@ private:
     bool m_reportErrors;
     bool m_handlingResidualStyleAcrossBlocks;
     int m_inStrayTableContent;
+    FragmentScriptingPermission m_scriptingPermission;
 
     OwnPtr<HTMLParserQuirks> m_parserQuirks;
 };

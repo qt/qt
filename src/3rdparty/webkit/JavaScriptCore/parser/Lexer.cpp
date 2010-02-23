@@ -39,10 +39,7 @@ using namespace Unicode;
 // We can't specify the namespace in yacc's C output, so do it here instead.
 using namespace JSC;
 
-#ifndef KDE_USE_FINAL
 #include "Grammar.h"
-#endif
-
 #include "Lookup.h"
 #include "Lexer.lut.h"
 
@@ -642,6 +639,8 @@ inStringEscapeSequence:
         shiftLineTerminator();
         goto inString;
     }
+    if (m_current == -1)
+        goto returnError;
     record16(singleEscape(m_current));
     shift1();
     goto inString;

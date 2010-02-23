@@ -202,9 +202,10 @@ public:
 
     bool isTransparent() const;
     RenderLayer* transparentPaintingAncestor();
-    void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer);
+    void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer, PaintBehavior);
 
     bool hasReflection() const { return renderer()->hasReflection(); }
+    bool isReflection() const { return renderer()->isReplica(); }
     RenderReplica* reflection() const { return m_reflection; }
     RenderLayer* reflectionLayer() const;
 
@@ -262,6 +263,7 @@ public:
     int verticalScrollbarWidth() const;
     int horizontalScrollbarHeight() const;
 
+    bool hasOverflowControls() const;
     void positionOverflowControls(int tx, int ty);
     bool isPointInResizeControl(const IntPoint& absolutePoint) const;
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
@@ -312,6 +314,10 @@ public:
     void clearClipRectsIncludingDescendants();
     void clearClipRects();
 
+    void addBlockSelectionGapsBounds(const IntRect&);
+    void clearBlockSelectionGapsBounds();
+    void repaintBlockSelectionGaps();
+
     // Get the enclosing stacking context for this layer.  A stacking context is a layer
     // that has a non-auto z-index.
     RenderLayer* stackingContext() const;
@@ -336,6 +342,9 @@ public:
     // the <html> layer and the root layer).
     RenderLayer* enclosingPositionedAncestor() const;
 
+    // The layer relative to which clipping rects for this layer are computed.
+    RenderLayer* clippingRoot() const;
+
 #if USE(ACCELERATED_COMPOSITING)
     // Enclosing compositing layer; if includeSelf is true, may return this.
     RenderLayer* enclosingCompositingLayer(bool includeSelf = true) const;
@@ -352,7 +361,7 @@ public:
     // paints the layers that intersect the damage rect from back to
     // front.  The hitTest method looks for mouse events by walking
     // layers that intersect the point from front to back.
-    void paint(GraphicsContext*, const IntRect& damageRect, PaintRestriction = PaintRestrictionNone, RenderObject* paintingRoot = 0);
+    void paint(GraphicsContext*, const IntRect& damageRect, PaintBehavior = PaintBehaviorNormal, RenderObject* paintingRoot = 0);
     bool hitTest(const HitTestRequest&, HitTestResult&);
 
     // This method figures out our layerBounds in coordinates relative to
@@ -390,7 +399,7 @@ public:
     int staticX() const { return m_staticX; }
     int staticY() const { return m_staticY; }
     void setStaticX(int staticX) { m_staticX = staticX; }
-    void setStaticY(int staticY);
+    void setStaticY(int staticY) { m_staticY = staticY; }
 
     bool hasTransform() const { return renderer()->hasTransform(); }
     // Note that this transform has the transform-origin baked in.
@@ -399,6 +408,7 @@ public:
     // resulting transform has transform-origin baked in. If the layer does not have a transform,
     // returns the identity matrix.
     TransformationMatrix currentTransform() const;
+    TransformationMatrix renderableTransform(PaintBehavior) const;
     
     // Get the perspective transform, which is applied to transformed sublayers.
     // Returns true if the layer has a -webkit-perspective.
@@ -426,14 +436,14 @@ public:
     bool hasCompositedMask() const { return false; }
 #endif
 
-    bool paintsWithTransparency() const
+    bool paintsWithTransparency(PaintBehavior paintBehavior) const
     {
-        return isTransparent() && !isComposited();
+        return isTransparent() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || !isComposited());
     }
 
-    bool paintsWithTransform() const
+    bool paintsWithTransform(PaintBehavior paintBehavior) const
     {
-        return transform() && !isComposited();
+        return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || !isComposited());
     }
 
 private:
@@ -465,7 +475,7 @@ private:
     typedef unsigned PaintLayerFlags;
 
     void paintLayer(RenderLayer* rootLayer, GraphicsContext*, const IntRect& paintDirtyRect,
-                    PaintRestriction, RenderObject* paintingRoot, RenderObject::OverlapTestRequestMap* = 0,
+                    PaintBehavior, RenderObject* paintingRoot, RenderObject::OverlapTestRequestMap* = 0,
                     PaintLayerFlags paintFlags = 0);
 
     RenderLayer* hitTestLayer(RenderLayer* rootLayer, RenderLayer* containerLayer, const HitTestRequest& request, HitTestResult& result,
@@ -644,11 +654,19 @@ protected:
     RenderScrollbarPart* m_scrollCorner;
     RenderScrollbarPart* m_resizer;
 
+private:
+    IntRect m_blockSelectionGapsBounds;
+
 #if USE(ACCELERATED_COMPOSITING)
     OwnPtr<RenderLayerBacking> m_backing;
 #endif
 };
 
 } // namespace WebCore
+
+#ifndef NDEBUG
+// Outside the WebCore namespace for ease of invocation from gdb.
+void showLayerTree(const WebCore::RenderLayer* layer);
+#endif
 
 #endif // RenderLayer_h

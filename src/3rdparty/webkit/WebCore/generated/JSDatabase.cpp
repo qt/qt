@@ -118,7 +118,8 @@ JSValue jsDatabaseVersion(ExecState* exec, const Identifier&, const PropertySlot
     JSDatabase* castedThis = static_cast<JSDatabase*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Database* imp = static_cast<Database*>(castedThis->impl());
-    return jsString(exec, imp->version());
+    JSValue result = jsString(exec, imp->version());
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionChangeVersion(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -50,6 +50,8 @@ FloatRect SourceAlpha::calculateEffectRect(Filter* filter)
     if (filter->sourceImageRect().y() < filter->filterRegion().y())
         clippedSourceRect.setY(filter->filterRegion().y());
     setSubRegion(clippedSourceRect);
+    clippedSourceRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
+    setScaledSubRegion(clippedSourceRect);
     return filter->filterRegion();
 }
 
@@ -64,7 +66,7 @@ void SourceAlpha::apply(Filter* filter)
     FloatRect imageRect(FloatPoint(), filter->sourceImage()->image()->size());
     filterContext->save();
     filterContext->clipToImageBuffer(imageRect, filter->sourceImage());
-    filterContext->fillRect(imageRect, Color::black);
+    filterContext->fillRect(imageRect, Color::black, DeviceColorSpace);
     filterContext->restore();
 }
 

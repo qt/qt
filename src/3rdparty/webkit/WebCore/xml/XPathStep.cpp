@@ -34,6 +34,7 @@
 #include "Document.h"
 #include "Element.h"
 #include "NamedNodeMap.h"
+#include "XMLNSNames.h"
 #include "XPathParser.h"
 #include "XPathUtil.h"
 
@@ -173,7 +174,7 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
                 ASSERT(node->isAttributeNode());
 
                 // In XPath land, namespace nodes are not accessible on the attribute axis.
-                if (node->namespaceURI() == "http://www.w3.org/2000/xmlns/")
+                if (node->namespaceURI() == XMLNSNames::xmlnsNamespaceURI)
                     return false;
 
                 if (name == starAtom)
@@ -193,9 +194,13 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
             if (name == starAtom)
                 return namespaceURI.isEmpty() || namespaceURI == node->namespaceURI();
 
-            if (node->isHTMLElement() && node->document()->isHTMLDocument()) {
-                // Paths without namespaces should match HTML elements in HTML documents despite those having an XHTML namespace. Names are compared case-insensitively.
-                return equalIgnoringCase(static_cast<Element*>(node)->localName(), name) && (namespaceURI.isNull() || namespaceURI == node->namespaceURI());
+            if (node->document()->isHTMLDocument()) {
+                if (node->isHTMLElement()) {
+                    // Paths without namespaces should match HTML elements in HTML documents despite those having an XHTML namespace. Names are compared case-insensitively.
+                    return equalIgnoringCase(static_cast<Element*>(node)->localName(), name) && (namespaceURI.isNull() || namespaceURI == node->namespaceURI());
+                }
+                // An expression without any prefix shouldn't match no-namespace nodes (because HTML5 says so).
+                return static_cast<Element*>(node)->hasLocalName(name) && namespaceURI == node->namespaceURI() && !namespaceURI.isNull();
             }
             return static_cast<Element*>(node)->hasLocalName(name) && namespaceURI == node->namespaceURI();
         }
@@ -331,7 +336,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             // Avoid lazily creating attribute nodes for attributes that we do not need anyway.
             if (m_nodeTest.kind() == NodeTest::NameTest && m_nodeTest.data() != starAtom) {
                 RefPtr<Node> n = static_cast<Element*>(context)->getAttributeNodeNS(m_nodeTest.namespaceURI(), m_nodeTest.data());
-                if (n && n->namespaceURI() != "http://www.w3.org/2000/xmlns/") { // In XPath land, namespace nodes are not accessible on the attribute axis.
+                if (n && n->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) { // In XPath land, namespace nodes are not accessible on the attribute axis.
                     if (nodeMatches(n.get(), AttributeAxis, m_nodeTest)) // Still need to check merged predicates.
                         nodes.append(n.release());
                 }

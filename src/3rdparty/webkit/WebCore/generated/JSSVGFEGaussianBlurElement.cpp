@@ -44,7 +44,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGFEGaussianBlurElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGFEGaussianBlurElementTableValues[11] =
+static const HashTableValue JSSVGFEGaussianBlurElementTableValues[12] =
 {
     { "in1", DontDelete|ReadOnly, (intptr_t)jsSVGFEGaussianBlurElementIn1, (intptr_t)0 },
     { "stdDeviationX", DontDelete|ReadOnly, (intptr_t)jsSVGFEGaussianBlurElementStdDeviationX, (intptr_t)0 },
@@ -56,6 +56,7 @@ static const HashTableValue JSSVGFEGaussianBlurElementTableValues[11] =
     { "result", DontDelete|ReadOnly, (intptr_t)jsSVGFEGaussianBlurElementResult, (intptr_t)0 },
     { "className", DontDelete|ReadOnly, (intptr_t)jsSVGFEGaussianBlurElementClassName, (intptr_t)0 },
     { "style", DontDelete|ReadOnly, (intptr_t)jsSVGFEGaussianBlurElementStyle, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGFEGaussianBlurElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -65,6 +66,53 @@ static JSC_CONST_HASHTABLE HashTable JSSVGFEGaussianBlurElementTable =
 #else
     { 34, 31, JSSVGFEGaussianBlurElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGFEGaussianBlurElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGFEGaussianBlurElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGFEGaussianBlurElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGFEGaussianBlurElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGFEGaussianBlurElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGFEGaussianBlurElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGFEGaussianBlurElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGFEGaussianBlurElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGFEGaussianBlurElementConstructor::s_info = { "SVGFEGaussianBlurElementConstructor", 0, &JSSVGFEGaussianBlurElementConstructorTable, 0 };
+
+bool JSSVGFEGaussianBlurElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGFEGaussianBlurElementConstructor, DOMObject>(exec, &JSSVGFEGaussianBlurElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFEGaussianBlurElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEGaussianBlurElementConstructor, DOMObject>(exec, &JSSVGFEGaussianBlurElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -127,7 +175,8 @@ JSValue jsSVGFEGaussianBlurElementIn1(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementStdDeviationX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -136,7 +185,8 @@ JSValue jsSVGFEGaussianBlurElementStdDeviationX(ExecState* exec, const Identifie
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->stdDeviationXAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementStdDeviationY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -145,7 +195,8 @@ JSValue jsSVGFEGaussianBlurElementStdDeviationY(ExecState* exec, const Identifie
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->stdDeviationYAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,7 +205,8 @@ JSValue jsSVGFEGaussianBlurElementX(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -163,7 +215,8 @@ JSValue jsSVGFEGaussianBlurElementY(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +225,8 @@ JSValue jsSVGFEGaussianBlurElementWidth(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,7 +235,8 @@ JSValue jsSVGFEGaussianBlurElementHeight(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -190,7 +245,8 @@ JSValue jsSVGFEGaussianBlurElementResult(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -199,7 +255,8 @@ JSValue jsSVGFEGaussianBlurElementClassName(ExecState* exec, const Identifier&, 
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEGaussianBlurElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -207,7 +264,18 @@ JSValue jsSVGFEGaussianBlurElementStyle(ExecState* exec, const Identifier&, cons
     JSSVGFEGaussianBlurElement* castedThis = static_cast<JSSVGFEGaussianBlurElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEGaussianBlurElement* imp = static_cast<SVGFEGaussianBlurElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
+}
+
+JSValue jsSVGFEGaussianBlurElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSSVGFEGaussianBlurElement* domObject = static_cast<JSSVGFEGaussianBlurElement*>(asObject(slot.slotBase()));
+    return JSSVGFEGaussianBlurElement::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGFEGaussianBlurElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGFEGaussianBlurElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGFEGaussianBlurElementPrototypeFunctionSetStdDeviation(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

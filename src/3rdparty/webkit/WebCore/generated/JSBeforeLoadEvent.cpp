@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -155,7 +155,8 @@ JSValue jsBeforeLoadEventUrl(ExecState* exec, const Identifier&, const PropertyS
     JSBeforeLoadEvent* castedThis = static_cast<JSBeforeLoadEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     BeforeLoadEvent* imp = static_cast<BeforeLoadEvent*>(castedThis->impl());
-    return jsString(exec, imp->url());
+    JSValue result = jsString(exec, imp->url());
+    return result;
 }
 
 JSValue jsBeforeLoadEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -30,27 +28,32 @@
 
 namespace WebCore {
     
-    class TransformationMatrix;
-    class AtomicString;
-    class SVGTransform;
-    class QualifiedName;
+class AffineTransform;
+class AtomicString;
+class SVGTransform;
+class QualifiedName;
 
-    class SVGTransformable : virtual public SVGLocatable {
-    public:
-        SVGTransformable();
-        virtual ~SVGTransformable();
+class SVGTransformable : virtual public SVGLocatable {
+public:
+    SVGTransformable();
+    virtual ~SVGTransformable();
 
-        static bool parseTransformAttribute(SVGTransformList*, const AtomicString& transform);
-        static bool parseTransformAttribute(SVGTransformList*, const UChar*& ptr, const UChar* end);
-        static bool parseTransformValue(unsigned type, const UChar*& ptr, const UChar* end, SVGTransform&);
-        
-        TransformationMatrix getCTM(const SVGElement*) const;
-        TransformationMatrix getScreenCTM(const SVGElement*) const;
-        
-        virtual TransformationMatrix animatedLocalTransform() const = 0;
-
-        bool isKnownAttribute(const QualifiedName&);
+    enum TransformParsingMode {
+        ClearList,
+        DoNotClearList
     };
+
+    static bool parseTransformAttribute(SVGTransformList*, const AtomicString& transform);
+    static bool parseTransformAttribute(SVGTransformList*, const UChar*& ptr, const UChar* end, TransformParsingMode mode = ClearList);
+    static bool parseTransformValue(unsigned type, const UChar*& ptr, const UChar* end, SVGTransform&);
+    
+    AffineTransform getCTM(const SVGElement*) const;
+    AffineTransform getScreenCTM(const SVGElement*) const;
+    
+    virtual AffineTransform animatedLocalTransform() const = 0;
+
+    bool isKnownAttribute(const QualifiedName&);
+};
 
 } // namespace WebCore
 

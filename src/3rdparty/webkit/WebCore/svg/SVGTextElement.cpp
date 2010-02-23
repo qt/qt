@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2008 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -25,6 +23,7 @@
 #if ENABLE(SVG)
 #include "SVGTextElement.h"
 
+#include "AffineTransform.h"
 #include "FloatRect.h"
 #include "MappedAttribute.h"
 #include "RenderSVGText.h"
@@ -32,14 +31,13 @@
 #include "SVGRenderStyle.h"
 #include "SVGTSpanElement.h"
 #include "SVGTransformList.h"
-#include "TransformationMatrix.h"
 
 namespace WebCore {
 
 SVGTextElement::SVGTextElement(const QualifiedName& tagName, Document* doc)
     : SVGTextPositioningElement(tagName, doc)
     , SVGTransformable()
-    , m_transform(this, SVGNames::transformAttr, SVGTransformList::create(SVGNames::transformAttr))
+    , m_transform(SVGTransformList::create(SVGNames::transformAttr))
 {
 }
 
@@ -49,18 +47,11 @@ SVGTextElement::~SVGTextElement()
 
 void SVGTextElement::parseMappedAttribute(MappedAttribute* attr)
 {
-    if (attr->name() == SVGNames::transformAttr) {
+    if (SVGTransformable::isKnownAttribute(attr->name())) {
         SVGTransformList* localTransforms = transformBaseValue();
-
-        ExceptionCode ec = 0;
-        localTransforms->clear(ec);
-
-        if (!SVGTransformable::parseTransformAttribute(localTransforms, attr->value()))
+        if (!SVGTransformable::parseTransformAttribute(localTransforms, attr->value())) {
+            ExceptionCode ec = 0;
             localTransforms->clear(ec);
-        else {
-            setTransformBaseValue(localTransforms);
-            if (renderer())
-                renderer()->setNeedsLayout(true); // should be in setTransformBaseValue
         }
     } else
         SVGTextPositioningElement::parseMappedAttribute(attr);
@@ -81,25 +72,25 @@ FloatRect SVGTextElement::getBBox() const
     return SVGTransformable::getBBox(this);
 }
 
-TransformationMatrix SVGTextElement::getScreenCTM() const
+AffineTransform SVGTextElement::getScreenCTM() const
 {
     return SVGTransformable::getScreenCTM(this);
 }
 
-TransformationMatrix SVGTextElement::getCTM() const
+AffineTransform SVGTextElement::getCTM() const
 {
     return SVGTransformable::getCTM(this);
 }
 
-TransformationMatrix SVGTextElement::animatedLocalTransform() const
+AffineTransform SVGTextElement::animatedLocalTransform() const
 {
     return m_supplementalTransform ? transform()->concatenate().matrix() * *m_supplementalTransform : transform()->concatenate().matrix();
 }
 
-TransformationMatrix* SVGTextElement::supplementalTransform()
+AffineTransform* SVGTextElement::supplementalTransform()
 {
     if (!m_supplementalTransform)
-        m_supplementalTransform.set(new TransformationMatrix());
+        m_supplementalTransform.set(new AffineTransform());
     return m_supplementalTransform.get();
 }
 
@@ -126,8 +117,26 @@ void SVGTextElement::svgAttributeChanged(const QualifiedName& attrName)
     if (!renderer())
         return;
 
-    if (SVGTextPositioningElement::isKnownAttribute(attrName))
+    if (SVGTransformable::isKnownAttribute(attrName))
         renderer()->setNeedsLayout(true);
+}
+
+void SVGTextElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGTextPositioningElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName() || SVGTransformable::isKnownAttribute(attrName))
+        synchronizeTransform();
+}
+
+void SVGTextElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
+{
+    SVGTextPositioningElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
+
+    if (!renderer())
+        return;
+
+    renderer()->setNeedsLayout(true);
 }
 
 }

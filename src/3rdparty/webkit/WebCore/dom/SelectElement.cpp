@@ -22,6 +22,7 @@
 #include "SelectElement.h"
 
 #include "CharacterNames.h"
+#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Element.h"
 #include "EventHandler.h"
@@ -49,10 +50,10 @@
 
 // Configure platform-specific behavior when focused pop-up receives arrow/space/return keystroke.
 // (PLATFORM(MAC) and PLATFORM(GTK) are always false in Chromium, hence the extra tests.)
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
 #define ARROW_KEYS_POP_MENU 1
 #define SPACE_OR_RETURN_POP_MENU 0
-#elif PLATFORM(GTK) || (PLATFORM(CHROMIUM) && PLATFORM(LINUX))
+#elif PLATFORM(GTK) || (PLATFORM(CHROMIUM) && OS(LINUX))
 #define ARROW_KEYS_POP_MENU 0
 #define SPACE_OR_RETURN_POP_MENU 1
 #else
@@ -221,28 +222,21 @@ void SelectElement::scrollToSelection(SelectElementData& data, Element* element)
         toRenderListBox(renderer)->selectionChanged();
 }
 
-void SelectElement::recalcStyle(SelectElementData& data, Element* element)
+void SelectElement::setOptionsChangedOnRenderer(SelectElementData& data, Element* element)
 {
-    RenderObject* renderer = element->renderer();
-    if (element->childNeedsStyleRecalc() && renderer) {
-        if (data.usesMenuList())
-            toRenderMenuList(renderer)->setOptionsChanged(true);
-        else
-            toRenderListBox(renderer)->setOptionsChanged(true);
-    } else if (data.shouldRecalcListItems())
-        recalcListItems(data, element);
-}
-
-void SelectElement::setRecalcListItems(SelectElementData& data, Element* element)
-{
-    data.setShouldRecalcListItems(true);
-    data.setActiveSelectionAnchorIndex(-1); // Manual selection anchor is reset when manipulating the select programmatically.
     if (RenderObject* renderer = element->renderer()) {
         if (data.usesMenuList())
             toRenderMenuList(renderer)->setOptionsChanged(true);
         else
             toRenderListBox(renderer)->setOptionsChanged(true);
     }
+}
+
+void SelectElement::setRecalcListItems(SelectElementData& data, Element* element)
+{
+    data.setShouldRecalcListItems(true);
+    data.setActiveSelectionAnchorIndex(-1); // Manual selection anchor is reset when manipulating the select programmatically.
+    setOptionsChangedOnRenderer(data, element);
     element->setNeedsStyleRecalc();
 }
 
@@ -250,6 +244,8 @@ void SelectElement::recalcListItems(SelectElementData& data, const Element* elem
 {
     Vector<Element*>& listItems = data.rawListItems();
     listItems.clear();
+
+    data.setShouldRecalcListItems(false);
 
     OptionElement* foundSelected = 0;
     for (Node* currentNode = element->firstChild(); currentNode;) {
@@ -296,8 +292,6 @@ void SelectElement::recalcListItems(SelectElementData& data, const Element* elem
         // <select>'s subtree at this point.
         currentNode = currentNode->traverseNextSibling(element);
     }
-
-    data.setShouldRecalcListItems(false);
 }
 
 int SelectElement::selectedIndex(const SelectElementData& data, const Element* element)
@@ -348,6 +342,8 @@ void SelectElement::setSelectedIndex(SelectElementData& data, Element* element, 
         data.setUserDrivenChange(userDrivenChange);
         if (fireOnChangeNow)
             menuListOnChange(data, element);
+        if (RenderMenuList* menuList = toRenderMenuList(element->renderer()))
+            menuList->didSetSelectedIndex();
     }
 
     if (Frame* frame = element->document()->frame())
@@ -444,7 +440,7 @@ void SelectElement::restoreFormControlState(SelectElementData& data, Element* el
             optionElement->setSelectedState(state[i] == 'X');
     }
 
-    element->setNeedsStyleRecalc();
+    setOptionsChangedOnRenderer(data, element);
 }
 
 void SelectElement::parseMultipleAttribute(SelectElementData& data, Element* element, MappedAttribute* attribute)
@@ -518,6 +514,7 @@ void SelectElement::reset(SelectElementData& data, Element* element)
     if (!selectedOption && firstOption && data.usesMenuList())
         firstOption->setSelectedState(true);
 
+    setOptionsChangedOnRenderer(data, element);
     element->setNeedsStyleRecalc();
 }
     
@@ -680,7 +677,7 @@ void SelectElement::listBoxDefaultEventHandler(SelectElementData& data, Element*
             data.setActiveSelectionState(true);
             
             bool multiSelectKeyPressed = false;
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
             multiSelectKeyPressed = mouseEvent->metaKey();
 #else
             multiSelectKeyPressed = mouseEvent->ctrlKey();
@@ -892,6 +889,8 @@ void SelectElement::typeAheadFind(SelectElementData& data, Element* element, Key
             setSelectedIndex(data, element, listToOptionIndex(data, element, index));
             if (!data.usesMenuList())
                 listBoxOnChange(data, element);
+
+            setOptionsChangedOnRenderer(data, element);
             element->setNeedsStyleRecalc();
             return;
         }
@@ -954,7 +953,7 @@ SelectElementData::SelectElementData()
 
 void SelectElementData::checkListItems(const Element* element) const
 {
-#ifndef NDEBUG
+#if !ASSERT_DISABLED
     const Vector<Element*>& items = m_listItems;
     SelectElement::recalcListItems(*const_cast<SelectElementData*>(this), element, false);
     ASSERT(items == m_listItems);

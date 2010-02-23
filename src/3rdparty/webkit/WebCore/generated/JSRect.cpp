@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -152,7 +152,8 @@ JSValue jsRectTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
     JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->top()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->top()));
+    return result;
 }
 
 JSValue jsRectRight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -160,7 +161,8 @@ JSValue jsRectRight(ExecState* exec, const Identifier&, const PropertySlot& slot
     JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->right()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->right()));
+    return result;
 }
 
 JSValue jsRectBottom(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -168,7 +170,8 @@ JSValue jsRectBottom(ExecState* exec, const Identifier&, const PropertySlot& slo
     JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->bottom()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->bottom()));
+    return result;
 }
 
 JSValue jsRectLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -176,7 +179,8 @@ JSValue jsRectLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
     JSRect* castedThis = static_cast<JSRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Rect* imp = static_cast<Rect*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->left()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->left()));
+    return result;
 }
 
 JSValue jsRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -91,7 +91,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -170,7 +170,8 @@ JSValue jsSVGFEFloodElementX(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEFloodElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -179,7 +180,8 @@ JSValue jsSVGFEFloodElementY(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEFloodElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -188,7 +190,8 @@ JSValue jsSVGFEFloodElementWidth(ExecState* exec, const Identifier&, const Prope
     UNUSED_PARAM(exec);
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEFloodElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -197,7 +200,8 @@ JSValue jsSVGFEFloodElementHeight(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEFloodElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -206,7 +210,8 @@ JSValue jsSVGFEFloodElementResult(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEFloodElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -215,7 +220,8 @@ JSValue jsSVGFEFloodElementClassName(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEFloodElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -223,7 +229,8 @@ JSValue jsSVGFEFloodElementStyle(ExecState* exec, const Identifier&, const Prope
     JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
 JSValue jsSVGFEFloodElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

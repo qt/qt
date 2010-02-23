@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -158,7 +158,8 @@ JSValue jsTextWholeText(ExecState* exec, const Identifier&, const PropertySlot& 
     JSText* castedThis = static_cast<JSText*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Text* imp = static_cast<Text*>(castedThis->impl());
-    return jsString(exec, imp->wholeText());
+    JSValue result = jsString(exec, imp->wholeText());
+    return result;
 }
 
 JSValue jsTextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

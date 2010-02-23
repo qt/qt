@@ -71,11 +71,13 @@ namespace WebCore {
         virtual void setRadioSize(RenderStyle*) const;
 
         virtual bool paintButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
+        virtual void adjustButtonStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
 
         virtual bool paintTextField(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
 
         virtual bool paintTextArea(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
 
+        virtual void adjustSearchFieldStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
         virtual bool paintSearchField(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
 
         virtual void adjustSearchFieldCancelButtonStyle(CSSStyleSelector*, RenderStyle*, Element*) const;

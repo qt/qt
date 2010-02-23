@@ -53,7 +53,7 @@ FontCache::FontCache()
 {
 }
 
-struct FontPlatformDataCacheKey {
+struct FontPlatformDataCacheKey : FastAllocBase {
     FontPlatformDataCacheKey(const AtomicString& family = AtomicString(), unsigned size = 0, unsigned weight = 0, bool italic = false,
                              bool isPrinterFont = false, FontRenderingMode renderingMode = NormalRenderingMode)
         : m_family(family)
@@ -139,7 +139,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
     DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New"));
     if (equalIgnoringCase(familyName, courier))
         return courierNew;
-#if !PLATFORM(WIN_OS)
+#if !OS(WINDOWS)
     // On Windows, Courier New (truetype font) is always present and
     // Courier is a bitmap font. So, we don't want to map Courier New to
     // Courier.
@@ -163,7 +163,7 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
     if (equalIgnoringCase(familyName, helvetica))
         return arial;
 
-#if PLATFORM(WIN_OS)
+#if OS(WINDOWS)
     // On Windows, bitmap fonts are blocked altogether so that we have to 
     // alias MS Sans Serif (bitmap font) -> Microsoft Sans Serif (truetype font)
     DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif"));
@@ -256,6 +256,15 @@ static FontDataCache* gFontDataCache = 0;
 const int cMaxInactiveFontData = 120;  // Pretty Low Threshold
 const float cTargetInactiveFontData = 100;
 static ListHashSet<const SimpleFontData*>* gInactiveFontData = 0;
+
+SimpleFontData* FontCache::getCachedFontData(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName)
+{
+    FontPlatformData* platformData = getCachedFontPlatformData(fontDescription, family, checkingAlternateName);
+    if (!platformData)
+        return 0;
+
+    return getCachedFontData(platformData);
+}
 
 SimpleFontData* FontCache::getCachedFontData(const FontPlatformData* platformData)
 {
@@ -361,7 +370,7 @@ size_t FontCache::inactiveFontDataCount()
 
 const FontData* FontCache::getFontData(const Font& font, int& familyIndex, FontSelector* fontSelector)
 {
-    FontPlatformData* result = 0;
+    SimpleFontData* result = 0;
 
     int startIndex = familyIndex;
     const FontFamily* startFamily = &font.fontDescription().family();
@@ -376,7 +385,7 @@ const FontData* FontCache::getFontData(const Font& font, int& familyIndex, FontS
                 if (data)
                     return data;
             }
-            result = getCachedFontPlatformData(font.fontDescription(), currFamily->family());
+            result = getCachedFontData(font.fontDescription(), currFamily->family());
         }
         currFamily = currFamily->next();
     }
@@ -403,9 +412,7 @@ const FontData* FontCache::getFontData(const Font& font, int& familyIndex, FontS
         // Still no result.  Hand back our last resort fallback font.
         result = getLastResortFallbackFont(font.fontDescription());
     }
-
-    // Now that we have a result, we need to go from FontPlatformData -> FontData.
-    return getCachedFontData(result);
+    return result;
 }
 
 static HashSet<FontSelector*>* gClients;

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "Settings.h"
 
+#include "BackForwardList.h"
 #include "Frame.h"
 #include "FrameTree.h"
 #include "FrameView.h"
@@ -48,7 +49,7 @@ static void setNeedsReapplyStylesInAllFrames(Page* page)
 bool Settings::gShouldPaintNativeControls = true;
 #endif
 
-#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
+#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
 bool Settings::gShouldUseHighResolutionTimers = true;
 #endif
 
@@ -67,13 +68,14 @@ Settings::Settings(Page* page)
     , m_loadsImagesAutomatically(false)
     , m_privateBrowsingEnabled(false)
     , m_caretBrowsingEnabled(false)
+    , m_areImagesEnabled(true)
     , m_arePluginsEnabled(false)
     , m_databasesEnabled(false)
     , m_localStorageEnabled(false)
-    , m_sessionStorageEnabled(true)
     , m_isJavaScriptEnabled(false)
     , m_isWebSecurityEnabled(true)
     , m_allowUniversalAccessFromFileURLs(true)
+    , m_allowFileAccessFromFileURLs(true)
     , m_javaScriptCanOpenWindowsAutomatically(false)
     , m_shouldPrintBackgrounds(false)
     , m_textAreasAreResizable(false)
@@ -94,6 +96,7 @@ Settings::Settings(Page* page)
     , m_authorAndUserStylesEnabled(true)
     , m_needsSiteSpecificQuirks(false)
     , m_fontRenderingMode(0)
+    , m_frameSetFlatteningEnabled(false)
     , m_webArchiveDebugModeEnabled(false)
     , m_localFileContentSniffingEnabled(false)
     , m_inApplicationChromeMode(false)
@@ -104,7 +107,7 @@ Settings::Settings(Page* page)
     , m_usesEncodingDetector(false)
     , m_allowScriptsToCloseWindows(false)
     , m_editingBehavior(
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
         // (PLATFORM(MAC) is always false in Chromium, hence the extra condition.)
         EditingMacBehavior
 #else
@@ -116,8 +119,12 @@ Settings::Settings(Page* page)
     , m_downloadableBinaryFontsEnabled(true)
     , m_xssAuditorEnabled(false)
     , m_acceleratedCompositingEnabled(true)
+    , m_showDebugBorders(false)
+    , m_showRepaintCounter(false)
     , m_experimentalNotificationsEnabled(false)
     , m_webGLEnabled(false)
+    , m_geolocationEnabled(true)
+    , m_loadDeferringEnabled(true)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.
@@ -234,9 +241,19 @@ void Settings::setAllowUniversalAccessFromFileURLs(bool allowUniversalAccessFrom
     m_allowUniversalAccessFromFileURLs = allowUniversalAccessFromFileURLs;
 }
 
+void Settings::setAllowFileAccessFromFileURLs(bool allowFileAccessFromFileURLs)
+{
+    m_allowFileAccessFromFileURLs = allowFileAccessFromFileURLs;
+}
+
 void Settings::setJavaEnabled(bool isJavaEnabled)
 {
     m_isJavaEnabled = isJavaEnabled;
+}
+
+void Settings::setImagesEnabled(bool areImagesEnabled)
+{
+    m_areImagesEnabled = areImagesEnabled;
 }
 
 void Settings::setPluginsEnabled(bool arePluginsEnabled)
@@ -252,11 +269,6 @@ void Settings::setDatabasesEnabled(bool databasesEnabled)
 void Settings::setLocalStorageEnabled(bool localStorageEnabled)
 {
     m_localStorageEnabled = localStorageEnabled;
-}
-
-void Settings::setSessionStorageEnabled(bool sessionStorageEnabled)
-{
-    m_sessionStorageEnabled = sessionStorageEnabled;
 }
 
 void Settings::setLocalStorageQuota(unsigned localStorageQuota)
@@ -421,6 +433,11 @@ void Settings::setNeedsSiteSpecificQuirks(bool needsQuirks)
     m_needsSiteSpecificQuirks = needsQuirks;
 }
 
+void Settings::setFrameSetFlatteningEnabled(bool frameSetFlatteningEnabled)
+{
+    m_frameSetFlatteningEnabled = frameSetFlatteningEnabled;
+}
+
 void Settings::setWebArchiveDebugModeEnabled(bool enabled)
 {
     m_webArchiveDebugModeEnabled = enabled;
@@ -506,6 +523,24 @@ void Settings::setAcceleratedCompositingEnabled(bool enabled)
     setNeedsReapplyStylesInAllFrames(m_page);
 }
 
+void Settings::setShowDebugBorders(bool enabled)
+{
+    if (m_showDebugBorders == enabled)
+        return;
+        
+    m_showDebugBorders = enabled;
+    setNeedsReapplyStylesInAllFrames(m_page);
+}
+
+void Settings::setShowRepaintCounter(bool enabled)
+{
+    if (m_showRepaintCounter == enabled)
+        return;
+        
+    m_showRepaintCounter = enabled;
+    setNeedsReapplyStylesInAllFrames(m_page);
+}
+
 void Settings::setExperimentalNotificationsEnabled(bool enabled)
 {
     m_experimentalNotificationsEnabled = enabled;
@@ -517,7 +552,7 @@ void Settings::setPluginAllowedRunTime(unsigned runTime)
     m_page->pluginAllowedRunTimeChanged();
 }
 
-#if PLATFORM(WIN) || (PLATFORM(WIN_OS) && PLATFORM(WX))
+#if PLATFORM(WIN) || (OS(WINDOWS) && PLATFORM(WX))
 void Settings::setShouldUseHighResolutionTimers(bool shouldUseHighResolutionTimers)
 {
     gShouldUseHighResolutionTimers = shouldUseHighResolutionTimers;
@@ -527,6 +562,16 @@ void Settings::setShouldUseHighResolutionTimers(bool shouldUseHighResolutionTime
 void Settings::setWebGLEnabled(bool enabled)
 {
     m_webGLEnabled = enabled;
+}
+
+void Settings::setGeolocationEnabled(bool enabled)
+{
+    m_geolocationEnabled = enabled;
+}
+
+void Settings::setLoadDeferringEnabled(bool enabled)
+{
+    m_loadDeferringEnabled = enabled;
 }
 
 } // namespace WebCore

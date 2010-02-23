@@ -29,18 +29,14 @@
 #define Frame_h
 
 #include "AnimationController.h"
-#include "Document.h"
 #include "DragImage.h"
-#include "EditAction.h"
 #include "Editor.h"
 #include "EventHandler.h"
 #include "FrameLoader.h"
 #include "FrameTree.h"
-#include "Range.h"
 #include "ScriptController.h"
 #include "ScrollBehavior.h"
 #include "SelectionController.h"
-#include "TextGranularity.h"
 #include "UserScriptTypes.h"
 
 #if PLATFORM(WIN)
@@ -64,24 +60,8 @@ typedef struct HBITMAP__* HBITMAP;
 namespace WebCore {
 
     class CSSMutableStyleDeclaration;
-    class Editor;
-    class EventHandler;
-    class FrameLoader;
-    class RedirectScheduler;
-    class FrameLoaderClient;
-    class FrameTree;
-    class FrameView;
-    class HTMLFrameOwnerElement;
     class HTMLTableCellElement;
     class RegularExpression;
-    class RenderPart;
-    class ScriptController;
-    class SelectionController;
-    class Settings;
-    class VisibleSelection;
-    class Widget;
-
-    template <typename T> class Timer;
 
     class Frame : public RefCounted<Frame> {
     public:
@@ -96,6 +76,8 @@ namespace WebCore {
 
         Page* page() const;
         void detachFromPage();
+        void transferChildFrameToNewDocument();
+
         HTMLFrameOwnerElement* ownerElement() const;
 
         void pageDestroyed();
@@ -131,7 +113,7 @@ namespace WebCore {
         void injectUserScripts(UserScriptInjectionTime);
 
     private:
-        void injectUserScriptsForWorld(unsigned worldID, const UserScriptVector&, UserScriptInjectionTime);
+        void injectUserScriptsForWorld(DOMWrapperWorld*, const UserScriptVector&, UserScriptInjectionTime);
 
     private:
         Frame(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
@@ -254,15 +236,9 @@ namespace WebCore {
 
         bool shouldChangeSelection(const VisibleSelection&) const;
         bool shouldDeleteSelection(const VisibleSelection&) const;
-        void clearCaretRectIfNeeded();
         void setFocusedNodeIfNeeded();
-        void selectionLayoutChanged();
         void notifyRendererOfSelectionChange(bool userTriggered);
 
-        void invalidateSelection();
-
-        void setCaretVisible(bool = true);
-        void paintCaret(GraphicsContext*, int tx, int ty, const IntRect& clipRect) const;
         void paintDragCaret(GraphicsContext*, int tx, int ty, const IntRect& clipRect) const;
 
         bool isContentEditable() const; // if true, everything in frame is editable
@@ -274,7 +250,8 @@ namespace WebCore {
         void clearTypingStyle();
 
         FloatRect selectionBounds(bool clipToVisibleContent = true) const;
-        void selectionTextRects(Vector<FloatRect>&, bool clipToVisibleContent = true) const;
+        enum SelectionRectRespectTransforms { RespectTransforms = true, IgnoreTransforms = false };
+        void selectionTextRects(Vector<FloatRect>&, SelectionRectRespectTransforms respectTransforms, bool clipToVisibleContent = true) const;
 
         HTMLFormElement* currentForm() const;
 
@@ -283,14 +260,10 @@ namespace WebCore {
 
         void setUseSecureKeyboardEntry(bool);
 
-    private:
-        void caretBlinkTimerFired(Timer<Frame>*);
-
-    public:
         SelectionController* dragCaretController() const;
 
-        String searchForLabelsAboveCell(RegularExpression*, HTMLTableCellElement*);
-        String searchForLabelsBeforeElement(const Vector<String>& labels, Element*);
+        String searchForLabelsAboveCell(RegularExpression*, HTMLTableCellElement*, size_t* resultDistanceFromStartOfCell);
+        String searchForLabelsBeforeElement(const Vector<String>& labels, Element*, size_t* resultDistance, bool* resultIsInCellAbove);
         String matchLabelsAgainstElement(const Vector<String>& labels, Element*);
 
         VisiblePosition visiblePositionForPoint(const IntPoint& framePoint);
@@ -301,8 +274,8 @@ namespace WebCore {
     // === undecided, would like to consider moving to another class
 
     public:
-        NSString* searchForNSLabelsAboveCell(RegularExpression*, HTMLTableCellElement*);
-        NSString* searchForLabelsBeforeElement(NSArray* labels, Element*);
+        NSString* searchForNSLabelsAboveCell(RegularExpression*, HTMLTableCellElement*, size_t* resultDistanceFromStartOfCell);
+        NSString* searchForLabelsBeforeElement(NSArray* labels, Element*, size_t* resultDistance, bool* resultIsInCellAbove);
         NSString* matchLabelsAgainstElement(NSArray* labels, Element*);
 
     #if ENABLE(DASHBOARD_SUPPORT)
@@ -356,7 +329,6 @@ namespace WebCore {
 
         mutable SelectionController m_selectionController;
         mutable VisibleSelection m_mark;
-        Timer<Frame> m_caretBlinkTimer;
         mutable Editor m_editor;
         mutable EventHandler m_eventHandler;
         mutable AnimationController m_animationController;
@@ -368,9 +340,6 @@ namespace WebCore {
 #if ENABLE(ORIENTATION_EVENTS)
         int m_orientation;
 #endif
-        
-        bool m_caretVisible;
-        bool m_caretPaint;
 
         bool m_highlightTextMatches;
         bool m_inViewSourceMode;

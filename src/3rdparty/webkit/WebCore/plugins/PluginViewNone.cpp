@@ -73,7 +73,7 @@ NPError PluginView::getValue(NPNVariable, void*)
 }
 
 #if ENABLE(NETSCAPE_PLUGIN_API)
-NPError PluginView::getValueStatic(NPNVariable variable, void* value)
+NPError PluginView::getValueStatic(NPNVariable, void*)
 {
     return 0;
 }
@@ -117,6 +117,10 @@ void PluginView::halt()
 }
 
 void PluginView::restart()
+{
+}
+
+void PluginView::keepAlive(NPP)
 {
 }
 

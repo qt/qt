@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -211,7 +211,8 @@ JSValue jsPluginArrayLength(ExecState* exec, const Identifier&, const PropertySl
     JSPluginArray* castedThis = static_cast<JSPluginArray*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     PluginArray* imp = static_cast<PluginArray*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsPluginArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -219,11 +220,11 @@ JSValue jsPluginArrayConstructor(ExecState* exec, const Identifier&, const Prope
     JSPluginArray* domObject = static_cast<JSPluginArray*>(asObject(slot.slotBase()));
     return JSPluginArray::getConstructor(exec, domObject->globalObject());
 }
-void JSPluginArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSPluginArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<PluginArray*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSPluginArray::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

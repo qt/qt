@@ -99,7 +99,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -177,7 +177,8 @@ JSValue jsMouseEventScreenX(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->screenX());
+    JSValue result = jsNumber(exec, imp->screenX());
+    return result;
 }
 
 JSValue jsMouseEventScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -185,7 +186,8 @@ JSValue jsMouseEventScreenY(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->screenY());
+    JSValue result = jsNumber(exec, imp->screenY());
+    return result;
 }
 
 JSValue jsMouseEventClientX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -193,7 +195,8 @@ JSValue jsMouseEventClientX(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->clientX());
+    JSValue result = jsNumber(exec, imp->clientX());
+    return result;
 }
 
 JSValue jsMouseEventClientY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -201,7 +204,8 @@ JSValue jsMouseEventClientY(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->clientY());
+    JSValue result = jsNumber(exec, imp->clientY());
+    return result;
 }
 
 JSValue jsMouseEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -209,7 +213,8 @@ JSValue jsMouseEventCtrlKey(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsBoolean(imp->ctrlKey());
+    JSValue result = jsBoolean(imp->ctrlKey());
+    return result;
 }
 
 JSValue jsMouseEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -217,7 +222,8 @@ JSValue jsMouseEventShiftKey(ExecState* exec, const Identifier&, const PropertyS
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsBoolean(imp->shiftKey());
+    JSValue result = jsBoolean(imp->shiftKey());
+    return result;
 }
 
 JSValue jsMouseEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -225,7 +231,8 @@ JSValue jsMouseEventAltKey(ExecState* exec, const Identifier&, const PropertySlo
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsBoolean(imp->altKey());
+    JSValue result = jsBoolean(imp->altKey());
+    return result;
 }
 
 JSValue jsMouseEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -233,7 +240,8 @@ JSValue jsMouseEventMetaKey(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsBoolean(imp->metaKey());
+    JSValue result = jsBoolean(imp->metaKey());
+    return result;
 }
 
 JSValue jsMouseEventButton(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -241,7 +249,8 @@ JSValue jsMouseEventButton(ExecState* exec, const Identifier&, const PropertySlo
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->button());
+    JSValue result = jsNumber(exec, imp->button());
+    return result;
 }
 
 JSValue jsMouseEventRelatedTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -249,7 +258,8 @@ JSValue jsMouseEventRelatedTarget(ExecState* exec, const Identifier&, const Prop
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->relatedTarget()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->relatedTarget()));
+    return result;
 }
 
 JSValue jsMouseEventOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -257,7 +267,8 @@ JSValue jsMouseEventOffsetX(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->offsetX());
+    JSValue result = jsNumber(exec, imp->offsetX());
+    return result;
 }
 
 JSValue jsMouseEventOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -265,7 +276,8 @@ JSValue jsMouseEventOffsetY(ExecState* exec, const Identifier&, const PropertySl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->offsetY());
+    JSValue result = jsNumber(exec, imp->offsetY());
+    return result;
 }
 
 JSValue jsMouseEventX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -273,7 +285,8 @@ JSValue jsMouseEventX(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->x());
+    JSValue result = jsNumber(exec, imp->x());
+    return result;
 }
 
 JSValue jsMouseEventY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -281,7 +294,8 @@ JSValue jsMouseEventY(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->y());
+    JSValue result = jsNumber(exec, imp->y());
+    return result;
 }
 
 JSValue jsMouseEventFromElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -289,7 +303,8 @@ JSValue jsMouseEventFromElement(ExecState* exec, const Identifier&, const Proper
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->fromElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->fromElement()));
+    return result;
 }
 
 JSValue jsMouseEventToElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -297,7 +312,8 @@ JSValue jsMouseEventToElement(ExecState* exec, const Identifier&, const Property
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->toElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->toElement()));
+    return result;
 }
 
 JSValue jsMouseEventDataTransfer(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -305,7 +321,8 @@ JSValue jsMouseEventDataTransfer(ExecState* exec, const Identifier&, const Prope
     JSMouseEvent* castedThis = static_cast<JSMouseEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->dataTransfer()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->dataTransfer()));
+    return result;
 }
 
 JSValue jsMouseEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

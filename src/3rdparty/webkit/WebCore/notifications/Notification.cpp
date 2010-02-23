@@ -38,7 +38,7 @@
 
 #include "Document.h"
 #include "EventNames.h"
-#include "WorkerContext.h" 
+#include "WorkerContext.h"
 
 namespace WebCore {
 
@@ -48,7 +48,9 @@ Notification::Notification(const String& url, ScriptExecutionContext* context, E
     , m_isShowing(false)
     , m_presenter(provider)
 {
-    if (m_presenter->checkPermission(context->securityOrigin()) != NotificationPresenter::PermissionAllowed) {
+    ASSERT(m_presenter);
+    Document* document = context->isDocument() ? static_cast<Document*>(context) : 0;
+    if (m_presenter->checkPermission(context->url(), document) != NotificationPresenter::PermissionAllowed) {
         ec = SECURITY_ERR;
         return;
     }
@@ -67,11 +69,13 @@ Notification::Notification(const NotificationContents& contents, ScriptExecution
     , m_isShowing(false)
     , m_presenter(provider)
 {
-    if (m_presenter->checkPermission(context->securityOrigin()) != NotificationPresenter::PermissionAllowed) {
+    ASSERT(m_presenter);
+    Document* document = context->isDocument() ? static_cast<Document*>(context) : 0;
+    if (m_presenter->checkPermission(context->url(), document) != NotificationPresenter::PermissionAllowed) {
         ec = SECURITY_ERR;
         return;
     }
-
+    
     KURL icon = context->completeURL(contents.icon());
     if (!icon.isEmpty() && !icon.isValid()) {
         ec = SYNTAX_ERR;

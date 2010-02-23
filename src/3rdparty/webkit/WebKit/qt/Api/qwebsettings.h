@@ -67,13 +67,17 @@ public:
         LocalStorageDatabaseEnabled = LocalStorageEnabled,
 #endif
         LocalContentCanAccessRemoteUrls,
-        DnsPrefetchEnabled
+        LocalContentCanAccessFileUrls,
+        DnsPrefetchEnabled,
+        XSSAuditorEnabled,
+        AcceleratedCompositingEnabled
     };
     enum WebGraphic {
         MissingImageGraphic,
         MissingPluginGraphic,
         DefaultFrameIconGraphic,
-        TextAreaSizeGripCornerGraphic
+        TextAreaSizeGripCornerGraphic,
+        DeleteButtonGraphic
     };
     enum FontSize {
         MinimumFontSize,

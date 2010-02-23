@@ -666,7 +666,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     }
 
     // Complex case: Start and end containers are different.
-    // There are three possiblities here:
+    // There are three possibilities here:
     // 1. Start container == commonRoot (End container must be a descendant)
     // 2. End container == commonRoot (Start container must be a descendant)
     // 3. Neither is commonRoot, they are both descendants
@@ -1417,7 +1417,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
     // although this will fail below for another reason).
     if (parentOfNewParent->isCharacterDataNode())
         parentOfNewParent = parentOfNewParent->parentNode();
-    if (!parentOfNewParent->childTypeAllowed(newParent->nodeType())) {
+    if (!parentOfNewParent || !parentOfNewParent->childTypeAllowed(newParent->nodeType())) {
         ec = HIERARCHY_REQUEST_ERR;
         return;
     }
@@ -1595,11 +1595,11 @@ IntRect Range::boundingBox()
 
 void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight)
 {
-    if (!m_start.container() || !m_end.container())
-        return;
-
     Node* startContainer = m_start.container();
     Node* endContainer = m_end.container();
+
+    if (!startContainer || !endContainer)
+        return;
 
     Node* stopNode = pastLastNode();
     for (Node* node = firstNode(); node != stopNode; node = node->traverseNextNode()) {
@@ -1608,8 +1608,28 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight)
             continue;
         RenderText* renderText = toRenderText(r);
         int startOffset = node == startContainer ? m_start.offset() : 0;
-        int endOffset = node == endContainer ? m_end.offset() : INT_MAX;
+        int endOffset = node == endContainer ? m_end.offset() : numeric_limits<int>::max();
         renderText->absoluteRectsForRange(rects, startOffset, endOffset, useSelectionHeight);
+    }
+}
+
+void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight)
+{
+    Node* startContainer = m_start.container();
+    Node* endContainer = m_end.container();
+
+    if (!startContainer || !endContainer)
+        return;
+
+    Node* stopNode = pastLastNode();
+    for (Node* node = firstNode(); node != stopNode; node = node->traverseNextNode()) {
+        RenderObject* r = node->renderer();
+        if (!r || !r->isText())
+            continue;
+        RenderText* renderText = toRenderText(r);
+        int startOffset = node == startContainer ? m_start.offset() : 0;
+        int endOffset = node == endContainer ? m_end.offset() : numeric_limits<int>::max();
+        renderText->absoluteQuadsForRange(quads, startOffset, endOffset, useSelectionHeight);
     }
 }
 
@@ -1910,3 +1930,17 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
 }
 
 } // namespace WebCore
+
+#ifndef NDEBUG
+
+void showTree(const WebCore::Range* range)
+{
+    if (range && range->boundaryPointsValid()) {
+        WebCore::Position start = range->startPosition();
+        WebCore::Position end = range->endPosition();
+        start.node()->showTreeAndMark(start.node(), "S", end.node(), "E");
+        fprintf(stderr, "start offset: %d, end offset: %d\n", start.deprecatedEditingOffset(), end.deprecatedEditingOffset());
+    }
+}
+
+#endif

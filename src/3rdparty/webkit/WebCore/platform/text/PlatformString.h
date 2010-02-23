@@ -31,17 +31,7 @@
 #include <objc/objc.h>
 #endif
 
-#if USE(JSC)
-#include <runtime/Identifier.h>
-#else
-// runtime/Identifier.h brings in a variety of wtf headers.  We explicitly
-// include them in the case of non-JSC builds to keep things consistent.
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/OwnPtr.h>
-#endif
-
-#if PLATFORM(CF) || (PLATFORM(QT) && PLATFORM(DARWIN))
+#if PLATFORM(CF)
 typedef const struct __CFString * CFStringRef;
 #endif
 
@@ -58,6 +48,13 @@ class wxString;
 
 #if PLATFORM(HAIKU)
 class BString;
+#endif
+
+#if USE(JSC)
+namespace JSC {
+class Identifier;
+class UString;
+}
 #endif
 
 namespace WebCore {
@@ -206,7 +203,7 @@ public:
 
     StringImpl* impl() const { return m_impl.get(); }
 
-#if PLATFORM(CF) || (PLATFORM(QT) && PLATFORM(DARWIN))
+#if PLATFORM(CF)
     String(CFStringRef);
     CFStringRef createCFString() const;
 #endif
@@ -285,6 +282,11 @@ inline bool operator!=(const char* a, const String& b) { return !equal(a, b.impl
 inline bool equalIgnoringCase(const String& a, const String& b) { return equalIgnoringCase(a.impl(), b.impl()); }
 inline bool equalIgnoringCase(const String& a, const char* b) { return equalIgnoringCase(a.impl(), b); }
 inline bool equalIgnoringCase(const char* a, const String& b) { return equalIgnoringCase(a, b.impl()); }
+
+inline bool equalPossiblyIgnoringCase(const String& a, const String& b, bool ignoreCase) 
+{
+    return ignoreCase ? equalIgnoringCase(a, b) : (a == b);
+}
 
 inline bool equalIgnoringNullity(const String& a, const String& b) { return equalIgnoringNullity(a.impl(), b.impl()); }
 

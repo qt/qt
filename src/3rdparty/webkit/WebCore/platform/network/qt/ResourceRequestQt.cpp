@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -21,12 +21,25 @@
 #include "ResourceRequest.h"
 
 #include <qglobal.h>
-#if QT_VERSION >= 0x040400
 
 #include <QNetworkRequest>
 #include <QUrl>
 
 namespace WebCore {
+
+// Currently Qt allows three connections per host on symbian and six
+// for everyone else. The limit can be found in qhttpnetworkconnection.cpp.
+// To achieve the best result we want WebKit to schedule the jobs so we
+// are using the limit as found in Qt. To allow Qt to fill its queue
+// and prepare jobs we will schedule two more downloads.
+unsigned initializeMaximumHTTPConnectionCountPerHost()
+{
+#ifdef Q_OS_SYMBIAN
+    return 3 + 2;
+#else
+    return 6 + 2;
+#endif
+}
 
 QNetworkRequest ResourceRequest::toNetworkRequest(QObject* originatingFrame) const
 {
@@ -70,4 +83,3 @@ QNetworkRequest ResourceRequest::toNetworkRequest(QObject* originatingFrame) con
 
 }
 
-#endif

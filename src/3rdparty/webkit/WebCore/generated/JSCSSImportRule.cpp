@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -148,7 +148,8 @@ JSValue jsCSSImportRuleHref(ExecState* exec, const Identifier&, const PropertySl
     JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->href());
+    JSValue result = jsStringOrNull(exec, imp->href());
+    return result;
 }
 
 JSValue jsCSSImportRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,7 +157,8 @@ JSValue jsCSSImportRuleMedia(ExecState* exec, const Identifier&, const PropertyS
     JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    return result;
 }
 
 JSValue jsCSSImportRuleStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -164,7 +166,8 @@ JSValue jsCSSImportRuleStyleSheet(ExecState* exec, const Identifier&, const Prop
     JSCSSImportRule* castedThis = static_cast<JSCSSImportRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSImportRule* imp = static_cast<CSSImportRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->styleSheet()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->styleSheet()));
+    return result;
 }
 
 JSValue jsCSSImportRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

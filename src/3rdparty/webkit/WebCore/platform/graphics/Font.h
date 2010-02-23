@@ -25,10 +25,13 @@
 #ifndef Font_h
 #define Font_h
 
+#include "CharacterNames.h"
 #include "TextRun.h"
 #include "FontDescription.h"
 #include "SimpleFontData.h"
+#include "TypesettingFeatures.h"
 #include <wtf/HashMap.h>
+#include <wtf/HashSet.h>
 #include <wtf/MathExtras.h>
 
 #if PLATFORM(QT)
@@ -95,6 +98,12 @@ public:
     bool isPrinterFont() const { return m_fontDescription.usePrinterFont(); }
     
     FontRenderingMode renderingMode() const { return m_fontDescription.renderingMode(); }
+
+    TypesettingFeatures typesettingFeatures() const
+    {
+        TextRenderingMode textRenderingMode = m_fontDescription.textRenderingMode();
+        return textRenderingMode == OptimizeLegibility || textRenderingMode == GeometricPrecision ? Kerning | Ligatures : 0;
+    }
 
     FontFamily& firstFamily() { return m_fontDescription.firstFamily(); }
     const FontFamily& family() const { return m_fontDescription.family(); }
@@ -174,6 +183,19 @@ public:
     FontSelector* fontSelector() const;
     static bool treatAsSpace(UChar c) { return c == ' ' || c == '\t' || c == '\n' || c == 0x00A0; }
     static bool treatAsZeroWidthSpace(UChar c) { return c < 0x20 || (c >= 0x7F && c < 0xA0) || c == 0x200e || c == 0x200f || (c >= 0x202a && c <= 0x202e) || c == 0xFFFC; }
+
+    static inline UChar normalizeSpaces(UChar character)
+    {
+        if (treatAsSpace(character))
+            return space;
+
+        if (treatAsZeroWidthSpace(character))
+            return zeroWidthSpace;
+
+        return character;
+    }
+
+    static String normalizeSpaces(const String&);
 
 #if ENABLE(SVG_FONTS)
     bool isSVGFont() const;

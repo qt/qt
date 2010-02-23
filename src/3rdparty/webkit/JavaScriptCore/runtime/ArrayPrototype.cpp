@@ -28,6 +28,7 @@
 #include "CachedCall.h"
 #include "Interpreter.h"
 #include "JIT.h"
+#include "JSStringBuilder.h"
 #include "ObjectPrototype.h"
 #include "Lookup.h"
 #include "Operations.h"
@@ -182,8 +183,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncToString(ExecState* exec, JSObject*, JSValue
         totalSize += str.size();
         
         if (!strBuffer.data()) {
-            JSObject* error = Error::create(exec, GeneralError, "Out of memory");
-            exec->setException(error);
+            throwOutOfMemoryError(exec);
         }
         
         if (exec->hadException())
@@ -195,17 +195,16 @@ JSValue JSC_HOST_CALL arrayProtoFuncToString(ExecState* exec, JSObject*, JSValue
     Vector<UChar> buffer;
     buffer.reserveCapacity(totalSize);
     if (!buffer.data())
-        return throwError(exec, GeneralError, "Out of memory");
+        return throwOutOfMemoryError(exec);
         
     for (unsigned i = 0; i < length; i++) {
         if (i)
             buffer.append(',');
         if (RefPtr<UString::Rep> rep = strBuffer[i])
-            buffer.append(rep->data(), rep->size());
+            buffer.append(rep->data(), rep->length());
     }
     ASSERT(buffer.size() == totalSize);
-    unsigned finalSize = buffer.size();
-    return jsString(exec, UString(buffer.releaseBuffer(), finalSize, false));
+    return jsString(exec, UString::adopt(buffer));
 }
 
 JSValue JSC_HOST_CALL arrayProtoFuncToLocaleString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
@@ -224,42 +223,28 @@ JSValue JSC_HOST_CALL arrayProtoFuncToLocaleString(ExecState* exec, JSObject*, J
     if (alreadyVisited)
         return jsEmptyString(exec); // return an empty string, avoding infinite recursion.
 
-    Vector<UChar, 256> strBuffer;
+    JSStringBuilder strBuffer;
     unsigned length = thisObj->get(exec, exec->propertyNames().length).toUInt32(exec);
     for (unsigned k = 0; k < length; k++) {
         if (k >= 1)
             strBuffer.append(',');
-        if (!strBuffer.data()) {
-            JSObject* error = Error::create(exec, GeneralError, "Out of memory");
-            exec->setException(error);
-            break;
-        }
 
         JSValue element = thisObj->get(exec, k);
-        if (element.isUndefinedOrNull())
-            continue;
-
-        JSObject* o = element.toObject(exec);
-        JSValue conversionFunction = o->get(exec, exec->propertyNames().toLocaleString);
-        UString str;
-        CallData callData;
-        CallType callType = conversionFunction.getCallData(callData);
-        if (callType != CallTypeNone)
-            str = call(exec, conversionFunction, callType, callData, element, exec->emptyList()).toString(exec);
-        else
-            str = element.toString(exec);
-        strBuffer.append(str.data(), str.size());
-
-        if (!strBuffer.data()) {
-            JSObject* error = Error::create(exec, GeneralError, "Out of memory");
-            exec->setException(error);
+        if (!element.isUndefinedOrNull()) {
+            JSObject* o = element.toObject(exec);
+            JSValue conversionFunction = o->get(exec, exec->propertyNames().toLocaleString);
+            UString str;
+            CallData callData;
+            CallType callType = conversionFunction.getCallData(callData);
+            if (callType != CallTypeNone)
+                str = call(exec, conversionFunction, callType, callData, element, exec->emptyList()).toString(exec);
+            else
+                str = element.toString(exec);
+            strBuffer.append(str);
         }
-
-        if (exec->hadException())
-            break;
     }
     arrayVisitedElements.remove(thisObj);
-    return jsString(exec, UString(strBuffer.data(), strBuffer.data() ? strBuffer.size() : 0));
+    return strBuffer.build(exec);
 }
 
 JSValue JSC_HOST_CALL arrayProtoFuncJoin(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -276,38 +261,27 @@ JSValue JSC_HOST_CALL arrayProtoFuncJoin(ExecState* exec, JSObject*, JSValue thi
     if (alreadyVisited)
         return jsEmptyString(exec); // return an empty string, avoding infinite recursion.
 
-    Vector<UChar, 256> strBuffer;
+    JSStringBuilder strBuffer;
 
-    UChar comma = ',';
-    UString separator = args.at(0).isUndefined() ? UString(&comma, 1) : args.at(0).toString(exec);
+    UString separator;
+    if (!args.at(0).isUndefined())
+        separator = args.at(0).toString(exec);
 
     unsigned length = thisObj->get(exec, exec->propertyNames().length).toUInt32(exec);
     for (unsigned k = 0; k < length; k++) {
-        if (k >= 1)
-            strBuffer.append(separator.data(), separator.size());
-        if (!strBuffer.data()) {
-            JSObject* error = Error::create(exec, GeneralError, "Out of memory");
-            exec->setException(error);
-            break;
+        if (k >= 1) {
+            if (separator.isNull())
+                strBuffer.append(',');
+            else
+                strBuffer.append(separator);
         }
 
         JSValue element = thisObj->get(exec, k);
-        if (element.isUndefinedOrNull())
-            continue;
-
-        UString str = element.toString(exec);
-        strBuffer.append(str.data(), str.size());
-
-        if (!strBuffer.data()) {
-            JSObject* error = Error::create(exec, GeneralError, "Out of memory");
-            exec->setException(error);
-        }
-
-        if (exec->hadException())
-            break;
+        if (!element.isUndefinedOrNull())
+            strBuffer.append(element.toString(exec));
     }
     arrayVisitedElements.remove(thisObj);
-    return jsString(exec, UString(strBuffer.data(), strBuffer.data() ? strBuffer.size() : 0));
+    return strBuffer.build(exec);
 }
 
 JSValue JSC_HOST_CALL arrayProtoFuncConcat(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -745,8 +719,8 @@ JSValue JSC_HOST_CALL arrayProtoFuncEvery(ExecState* exec, JSObject*, JSValue th
             cachedCall.setArgument(0, array->getIndex(k));
             cachedCall.setArgument(1, jsNumber(exec, k));
             cachedCall.setArgument(2, thisObj);
-            
-            if (!cachedCall.call().toBoolean(exec))
+            JSValue result = cachedCall.call();
+            if (!result.toBoolean(cachedCall.newCallFrame(exec)))
                 return jsBoolean(false);
         }
     }
@@ -846,8 +820,8 @@ JSValue JSC_HOST_CALL arrayProtoFuncSome(ExecState* exec, JSObject*, JSValue thi
             cachedCall.setArgument(0, array->getIndex(k));
             cachedCall.setArgument(1, jsNumber(exec, k));
             cachedCall.setArgument(2, thisObj);
-            
-            if (cachedCall.call().toBoolean(exec))
+            JSValue result = cachedCall.call();
+            if (result.toBoolean(cachedCall.newCallFrame(exec)))
                 return jsBoolean(true);
         }
     }
@@ -1034,7 +1008,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncIndexOf(ExecState* exec, JSObject*, JSValue 
         JSValue e = getProperty(exec, thisObj, index);
         if (!e)
             continue;
-        if (JSValue::strictEqual(searchElement, e))
+        if (JSValue::strictEqual(exec, searchElement, e))
             return jsNumber(exec, index);
     }
 
@@ -1065,7 +1039,7 @@ JSValue JSC_HOST_CALL arrayProtoFuncLastIndexOf(ExecState* exec, JSObject*, JSVa
         JSValue e = getProperty(exec, thisObj, index);
         if (!e)
             continue;
-        if (JSValue::strictEqual(searchElement, e))
+        if (JSValue::strictEqual(exec, searchElement, e))
             return jsNumber(exec, index);
     }
 

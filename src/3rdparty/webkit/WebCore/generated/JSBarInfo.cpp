@@ -99,7 +99,8 @@ JSValue jsBarInfoVisible(ExecState* exec, const Identifier&, const PropertySlot&
     JSBarInfo* castedThis = static_cast<JSBarInfo*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     BarInfo* imp = static_cast<BarInfo*>(castedThis->impl());
-    return jsBoolean(imp->visible());
+    JSValue result = jsBoolean(imp->visible());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, BarInfo* object)

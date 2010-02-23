@@ -49,10 +49,27 @@ namespace WebCore {
         virtual Color inactiveListBoxSelectionBackgroundColor() const;
         virtual Color inactiveListBoxSelectionForegroundColor() const;
 
+        virtual Color platformActiveSelectionBackgroundColor() const;
+        virtual Color platformInactiveSelectionBackgroundColor() const;
+        virtual Color platformActiveSelectionForegroundColor() const;
+        virtual Color platformInactiveSelectionForegroundColor() const;
+
         virtual void adjustSliderThumbSize(RenderObject*) const;
 
-        void setCaretBlinkInterval(double interval);
+        static void setCaretBlinkInterval(double interval);
         virtual double caretBlinkIntervalInternal() const;
+
+        static void setSelectionColors(unsigned activeBackgroundColor,
+                                       unsigned activeForegroundColor,
+                                       unsigned inactiveBackgroundColor,
+                                       unsigned inactiveForegroundColor);
+
+        static void setScrollbarColors(unsigned inactive_color,
+                                       unsigned active_color,
+                                       unsigned track_color);
+        static unsigned thumbInactiveColor() { return m_thumbInactiveColor; }
+        static unsigned thumbActiveColor() { return m_thumbActiveColor; }
+        static unsigned trackColor() { return m_trackColor; }
 
     private:
         RenderThemeChromiumLinux();
@@ -61,7 +78,16 @@ namespace WebCore {
         // A general method asking if any control tinting is supported at all.
         virtual bool supportsControlTints() const;
 
-        double m_caretBlinkInterval;
+        static double m_caretBlinkInterval;
+
+        static unsigned m_activeSelectionBackgroundColor;
+        static unsigned m_activeSelectionForegroundColor;
+        static unsigned m_inactiveSelectionBackgroundColor;
+        static unsigned m_inactiveSelectionForegroundColor;
+
+        static unsigned m_thumbInactiveColor;
+        static unsigned m_thumbActiveColor;
+        static unsigned m_trackColor;
     };
 
 } // namespace WebCore

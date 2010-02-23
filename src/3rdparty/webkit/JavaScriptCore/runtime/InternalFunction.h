@@ -36,13 +36,13 @@ namespace JSC {
         virtual const ClassInfo* classInfo() const; 
         static JS_EXPORTDATA const ClassInfo info;
 
-        const UString& name(JSGlobalData*);
-        const UString displayName(JSGlobalData*);
-        const UString calculatedDisplayName(JSGlobalData*);
+        const UString& name(ExecState*);
+        const UString displayName(ExecState*);
+        const UString calculatedDisplayName(ExecState*);
 
         static PassRefPtr<Structure> createStructure(JSValue proto) 
         { 
-            return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+            return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
         }
 
     protected:

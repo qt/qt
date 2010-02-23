@@ -32,9 +32,10 @@
 #include "AnimationBase.h"
 #include "Document.h"
 #include "KeyframeList.h"
-#include "RenderStyle.h"
 
 namespace WebCore {
+
+class RenderStyle;
 
 // A KeyframeAnimation tracks the state of an explicit animation
 // for a single RenderObject.
@@ -63,8 +64,9 @@ protected:
     virtual void onAnimationStart(double elapsedTime);
     virtual void onAnimationIteration(double elapsedTime);
     virtual void onAnimationEnd(double elapsedTime);
-    virtual bool startAnimation(double beginTime);
-    virtual void endAnimation(bool reset);
+    virtual bool startAnimation(double timeOffset);
+    virtual void pauseAnimation(double timeOffset);
+    virtual void endAnimation();
 
     virtual void overrideAnimations();
     virtual void resumeOverriddenAnimations();

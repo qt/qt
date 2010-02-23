@@ -43,6 +43,30 @@
 #include "SVGDefsElement.h"
 #include "SVGDescElement.h"
 #include "SVGEllipseElement.h"
+#include "SVGFEBlendElement.h"
+#include "SVGFEColorMatrixElement.h"
+#include "SVGFEComponentTransferElement.h"
+#include "SVGFECompositeElement.h"
+#include "SVGFEDiffuseLightingElement.h"
+#include "SVGFEDisplacementMapElement.h"
+#include "SVGFEDistantLightElement.h"
+#include "SVGFEFloodElement.h"
+#include "SVGFEFuncAElement.h"
+#include "SVGFEFuncBElement.h"
+#include "SVGFEFuncGElement.h"
+#include "SVGFEFuncRElement.h"
+#include "SVGFEGaussianBlurElement.h"
+#include "SVGFEImageElement.h"
+#include "SVGFEMergeElement.h"
+#include "SVGFEMergeNodeElement.h"
+#include "SVGFEMorphologyElement.h"
+#include "SVGFEOffsetElement.h"
+#include "SVGFEPointLightElement.h"
+#include "SVGFESpecularLightingElement.h"
+#include "SVGFESpotLightElement.h"
+#include "SVGFETileElement.h"
+#include "SVGFETurbulenceElement.h"
+#include "SVGFilterElement.h"
 #include "SVGFontElement.h"
 #include "SVGFontFaceElement.h"
 #include "SVGFontFaceFormatElement.h"
@@ -156,6 +180,126 @@ static PassRefPtr<SVGElement> descConstructor(const QualifiedName& tagName, Docu
 static PassRefPtr<SVGElement> ellipseConstructor(const QualifiedName& tagName, Document* document, bool)
 {
     return new SVGEllipseElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> feblendConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEBlendElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fecolormatrixConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEColorMatrixElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fecomponenttransferConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEComponentTransferElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fecompositeConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFECompositeElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fediffuselightingConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEDiffuseLightingElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fedisplacementmapConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEDisplacementMapElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fedistantlightConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEDistantLightElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fefloodConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEFloodElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fefuncaConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEFuncAElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fefuncbConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEFuncBElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fefuncgConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEFuncGElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fefuncrConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEFuncRElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fegaussianblurConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEGaussianBlurElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> feimageConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEImageElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> femergeConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEMergeElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> femergenodeConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEMergeNodeElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> femorphologyConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEMorphologyElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> feoffsetConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEOffsetElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fepointlightConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFEPointLightElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fespecularlightingConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFESpecularLightingElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fespotlightConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFESpotLightElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> fetileConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFETileElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> feturbulenceConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFETurbulenceElement(tagName, document);
+}
+
+static PassRefPtr<SVGElement> filterConstructor(const QualifiedName& tagName, Document* document, bool)
+{
+    return new SVGFilterElement(tagName, document);
 }
 
 static PassRefPtr<SVGElement> fontConstructor(const QualifiedName& tagName, Document* document, bool)
@@ -375,6 +519,30 @@ static void createFunctionMap()
     addTag(defsTag, defsConstructor);
     addTag(descTag, descConstructor);
     addTag(ellipseTag, ellipseConstructor);
+    addTag(feBlendTag, feblendConstructor);
+    addTag(feColorMatrixTag, fecolormatrixConstructor);
+    addTag(feComponentTransferTag, fecomponenttransferConstructor);
+    addTag(feCompositeTag, fecompositeConstructor);
+    addTag(feDiffuseLightingTag, fediffuselightingConstructor);
+    addTag(feDisplacementMapTag, fedisplacementmapConstructor);
+    addTag(feDistantLightTag, fedistantlightConstructor);
+    addTag(feFloodTag, fefloodConstructor);
+    addTag(feFuncATag, fefuncaConstructor);
+    addTag(feFuncBTag, fefuncbConstructor);
+    addTag(feFuncGTag, fefuncgConstructor);
+    addTag(feFuncRTag, fefuncrConstructor);
+    addTag(feGaussianBlurTag, fegaussianblurConstructor);
+    addTag(feImageTag, feimageConstructor);
+    addTag(feMergeTag, femergeConstructor);
+    addTag(feMergeNodeTag, femergenodeConstructor);
+    addTag(feMorphologyTag, femorphologyConstructor);
+    addTag(feOffsetTag, feoffsetConstructor);
+    addTag(fePointLightTag, fepointlightConstructor);
+    addTag(feSpecularLightingTag, fespecularlightingConstructor);
+    addTag(feSpotLightTag, fespotlightConstructor);
+    addTag(feTileTag, fetileConstructor);
+    addTag(feTurbulenceTag, feturbulenceConstructor);
+    addTag(filterTag, filterConstructor);
     addTag(fontTag, fontConstructor);
     addTag(font_faceTag, fontfaceConstructor);
     addTag(font_face_formatTag, fontfaceformatConstructor);

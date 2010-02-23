@@ -50,6 +50,10 @@ QT_END_NAMESPACE
 #include "KURLGooglePrivate.h"
 #endif
 
+#if USE(JSC)
+#include <runtime/UString.h>
+#endif
+
 namespace WebCore {
 
 class TextEncoding;
@@ -78,6 +82,7 @@ public:
     KURL(const KURL& base, const String& relative);
     KURL(const KURL& base, const String& relative, const TextEncoding&);
 
+
 #if USE(GOOGLEURL)
     // For conversions for other structures that have already parsed and
     // canonicalized the URL. The input must be exactly what KURL would have
@@ -104,6 +109,12 @@ public:
     // non-hierarchical (like "javascript:") URLs will have no path.
     bool hasPath() const;
 
+    // Returns true if you can set the host and port for the URL.
+    // Non-hierarchical URLs don't have a host and port.
+    bool canSetHostOrPort() const { return isHierarchical(); }
+
+    bool canSetPathname() const { return isHierarchical(); }
+    
 #if USE(GOOGLEURL)
     const String& string() const { return m_url.string(); }
 #else
@@ -113,6 +124,7 @@ public:
     String protocol() const;
     String host() const;
     unsigned short port() const;
+    bool hasPort() const;
     String user() const;
     String pass() const;
     String path() const;
@@ -132,10 +144,10 @@ public:
     bool protocolInHTTPFamily() const;
     bool isLocalFile() const;
 
-    void setProtocol(const String&);
+    bool setProtocol(const String&);
     void setHost(const String&);
 
-    // Setting the port to 0 will clear any port from the URL.
+    void removePort();
     void setPort(unsigned short);
 
     // Input is like "foo.com" or "foo.com:8000".
@@ -255,6 +267,9 @@ const KURL& blankURL();
 bool protocolIs(const String& url, const char* protocol);
 bool protocolIsJavaScript(const String& url);
 
+bool isDefaultPortForProtocol(unsigned short port, const String& protocol);
+bool portAllowed(const KURL&); // Blacklist ports that should never be used for Web resources.
+
 String mimeTypeFromDataURL(const String& url);
 
 // Unescapes the given string using URL escaping rules, given an optional
@@ -315,6 +330,11 @@ inline bool KURL::isEmpty() const
 inline bool KURL::isValid() const
 {
     return m_isValid;
+}
+
+inline bool KURL::hasPort() const
+{
+    return m_hostEnd < m_portEnd;
 }
 
 inline bool KURL::protocolInHTTPFamily() const

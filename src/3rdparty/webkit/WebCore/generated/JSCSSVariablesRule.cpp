@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -146,7 +146,8 @@ JSValue jsCSSVariablesRuleMedia(ExecState* exec, const Identifier&, const Proper
     JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
+    return result;
 }
 
 JSValue jsCSSVariablesRuleVariables(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,7 +155,8 @@ JSValue jsCSSVariablesRuleVariables(ExecState* exec, const Identifier&, const Pr
     JSCSSVariablesRule* castedThis = static_cast<JSCSSVariablesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSVariablesRule* imp = static_cast<CSSVariablesRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->variables()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->variables()));
+    return result;
 }
 
 JSValue jsCSSVariablesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

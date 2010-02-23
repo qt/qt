@@ -29,7 +29,7 @@ namespace WebCore {
 class AtomicStringImpl;
 class Element;
 
-struct CollectionCache {
+struct CollectionCache : FastAllocBase {
     CollectionCache();
     CollectionCache(const CollectionCache&);
     CollectionCache& operator=(const CollectionCache& other)
@@ -42,6 +42,8 @@ struct CollectionCache {
 
     void reset();
     void swap(CollectionCache&);
+
+    void checkConsistency();
 
     typedef HashMap<AtomicStringImpl*, Vector<Element*>*> NodeCacheMap;
 
@@ -58,6 +60,10 @@ struct CollectionCache {
 private:
     static void copyCacheMap(NodeCacheMap&, const NodeCacheMap&);
 };
+
+#if ASSERT_DISABLED
+    inline void CollectionCache::checkConsistency() { }
+#endif
 
 } // namespace
 

@@ -142,7 +142,8 @@ JSValue jsDOMSelectionAnchorNode(ExecState* exec, const Identifier&, const Prope
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->anchorNode()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->anchorNode()));
+    return result;
 }
 
 JSValue jsDOMSelectionAnchorOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -150,7 +151,8 @@ JSValue jsDOMSelectionAnchorOffset(ExecState* exec, const Identifier&, const Pro
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return jsNumber(exec, imp->anchorOffset());
+    JSValue result = jsNumber(exec, imp->anchorOffset());
+    return result;
 }
 
 JSValue jsDOMSelectionFocusNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -158,7 +160,8 @@ JSValue jsDOMSelectionFocusNode(ExecState* exec, const Identifier&, const Proper
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->focusNode()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->focusNode()));
+    return result;
 }
 
 JSValue jsDOMSelectionFocusOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -166,7 +169,8 @@ JSValue jsDOMSelectionFocusOffset(ExecState* exec, const Identifier&, const Prop
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return jsNumber(exec, imp->focusOffset());
+    JSValue result = jsNumber(exec, imp->focusOffset());
+    return result;
 }
 
 JSValue jsDOMSelectionIsCollapsed(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -174,7 +178,8 @@ JSValue jsDOMSelectionIsCollapsed(ExecState* exec, const Identifier&, const Prop
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return jsBoolean(imp->isCollapsed());
+    JSValue result = jsBoolean(imp->isCollapsed());
+    return result;
 }
 
 JSValue jsDOMSelectionRangeCount(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -182,7 +187,8 @@ JSValue jsDOMSelectionRangeCount(ExecState* exec, const Identifier&, const Prope
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return jsNumber(exec, imp->rangeCount());
+    JSValue result = jsNumber(exec, imp->rangeCount());
+    return result;
 }
 
 JSValue jsDOMSelectionBaseNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -190,7 +196,8 @@ JSValue jsDOMSelectionBaseNode(ExecState* exec, const Identifier&, const Propert
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->baseNode()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->baseNode()));
+    return result;
 }
 
 JSValue jsDOMSelectionBaseOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -198,7 +205,8 @@ JSValue jsDOMSelectionBaseOffset(ExecState* exec, const Identifier&, const Prope
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return jsNumber(exec, imp->baseOffset());
+    JSValue result = jsNumber(exec, imp->baseOffset());
+    return result;
 }
 
 JSValue jsDOMSelectionExtentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -206,7 +214,8 @@ JSValue jsDOMSelectionExtentNode(ExecState* exec, const Identifier&, const Prope
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->extentNode()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->extentNode()));
+    return result;
 }
 
 JSValue jsDOMSelectionExtentOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -214,7 +223,8 @@ JSValue jsDOMSelectionExtentOffset(ExecState* exec, const Identifier&, const Pro
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return jsNumber(exec, imp->extentOffset());
+    JSValue result = jsNumber(exec, imp->extentOffset());
+    return result;
 }
 
 JSValue jsDOMSelectionType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -222,7 +232,8 @@ JSValue jsDOMSelectionType(ExecState* exec, const Identifier&, const PropertySlo
     JSDOMSelection* castedThis = static_cast<JSDOMSelection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMSelection* imp = static_cast<DOMSelection*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsDOMSelectionPrototypeFunctionCollapse(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

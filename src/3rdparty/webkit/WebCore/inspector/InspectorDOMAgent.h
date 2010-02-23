@@ -83,6 +83,8 @@ namespace WebCore {
         InspectorDOMAgent(InspectorFrontend* frontend);
         ~InspectorDOMAgent();
 
+        void reset();
+
         virtual bool operator==(const EventListener& other);
 
         // Methods called from the frontend.
@@ -96,8 +98,14 @@ namespace WebCore {
         void setDocument(Document* document);
         void releaseDanglingNodes();
 
+        void didInsertDOMNode(Node*);
+        void didRemoveDOMNode(Node*);
+        void didModifyDOMAttr(Element*);
+
         Node* nodeForId(long nodeId);
+        Node* nodeForPath(const String& path);
         long pushNodePathToFrontend(Node* node);
+        void pushChildNodesToFrontend(long nodeId);
 
    private:
         void startListening(Document* document);
@@ -109,8 +117,7 @@ namespace WebCore {
         long bind(Node* node, NodeToIdMap* nodesMap);
         void unbind(Node* node, NodeToIdMap* nodesMap);
 
-        void pushDocumentToFrontend();
-        void pushChildNodesToFrontend(long nodeId);
+        bool pushDocumentToFrontend();
 
         ScriptObject buildObjectForNode(Node* node, int depth, NodeToIdMap* nodesMap);
         ScriptArray buildArrayForElementAttributes(Element* element);
@@ -123,11 +130,12 @@ namespace WebCore {
         Node* innerFirstChild(Node* node);
         Node* innerNextSibling(Node* node);
         Node* innerPreviousSibling(Node* node);
-        int innerChildNodeCount(Node* node);
+        unsigned innerChildNodeCount(Node* node);
         Node* innerParentNode(Node* node);
         bool isWhitespace(Node* node);
 
         Document* mainFrameDocument() const;
+        String documentURLString(Document* document) const;
         void discardBindings();
 
         InspectorFrontend* m_frontend;

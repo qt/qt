@@ -42,6 +42,8 @@ public:
     int width() const;
     int height() const;
 
+    void setRemainsAliveOnRemovalFromTree(bool);
+
 protected:
     HTMLFrameElementBase(const QualifiedName&, Document*);
 
@@ -62,6 +64,12 @@ private:
     
     virtual bool isURLAttribute(Attribute*) const;
 
+    virtual void setName();
+
+    virtual void willRemove();
+    void checkAttachedTimerFired(Timer<HTMLFrameElementBase>*);
+    void updateOnReparenting();
+
     bool viewSourceMode() const { return m_viewSource; }
 
     void setNameAndOpenURL();
@@ -77,9 +85,13 @@ private:
     int m_marginWidth;
     int m_marginHeight;
 
+    Timer<HTMLFrameElementBase> m_checkAttachedTimer;
+
     bool m_viewSource;
 
     bool m_shouldOpenURLAfterAttach;
+
+    bool m_remainsAliveOnRemovalFromTree;
 };
 
 } // namespace WebCore

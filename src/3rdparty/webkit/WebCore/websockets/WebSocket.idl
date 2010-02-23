@@ -32,6 +32,7 @@ module websockets {
 
     interface [
         Conditional=WEB_SOCKETS,
+        CustomConstructor,    
         EventTarget,
         NoStaticTables
     ] WebSocket {

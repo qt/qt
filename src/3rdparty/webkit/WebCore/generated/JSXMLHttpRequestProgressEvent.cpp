@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -151,7 +151,8 @@ JSValue jsXMLHttpRequestProgressEventPosition(ExecState* exec, const Identifier&
     JSXMLHttpRequestProgressEvent* castedThis = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequestProgressEvent* imp = static_cast<XMLHttpRequestProgressEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->position());
+    JSValue result = jsNumber(exec, imp->position());
+    return result;
 }
 
 JSValue jsXMLHttpRequestProgressEventTotalSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -159,7 +160,8 @@ JSValue jsXMLHttpRequestProgressEventTotalSize(ExecState* exec, const Identifier
     JSXMLHttpRequestProgressEvent* castedThis = static_cast<JSXMLHttpRequestProgressEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequestProgressEvent* imp = static_cast<XMLHttpRequestProgressEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->totalSize());
+    JSValue result = jsNumber(exec, imp->totalSize());
+    return result;
 }
 
 JSValue jsXMLHttpRequestProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

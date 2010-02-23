@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -199,7 +199,8 @@ JSValue jsClientRectListLength(ExecState* exec, const Identifier&, const Propert
     JSClientRectList* castedThis = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ClientRectList* imp = static_cast<ClientRectList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsClientRectListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -207,11 +208,11 @@ JSValue jsClientRectListConstructor(ExecState* exec, const Identifier&, const Pr
     JSClientRectList* domObject = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
     return JSClientRectList::getConstructor(exec, domObject->globalObject());
 }
-void JSClientRectList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSClientRectList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<ClientRectList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSClientRectList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -92,7 +92,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -176,7 +176,8 @@ JSValue jsSVGComponentTransferFunctionElementType(ExecState* exec, const Identif
     UNUSED_PARAM(exec);
     SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->typeAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGComponentTransferFunctionElementTableValues(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -185,7 +186,8 @@ JSValue jsSVGComponentTransferFunctionElementTableValues(ExecState* exec, const 
     UNUSED_PARAM(exec);
     SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumberList> obj = imp->tableValuesAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGComponentTransferFunctionElementSlope(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,7 +196,8 @@ JSValue jsSVGComponentTransferFunctionElementSlope(ExecState* exec, const Identi
     UNUSED_PARAM(exec);
     SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->slopeAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGComponentTransferFunctionElementIntercept(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,7 +206,8 @@ JSValue jsSVGComponentTransferFunctionElementIntercept(ExecState* exec, const Id
     UNUSED_PARAM(exec);
     SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->interceptAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGComponentTransferFunctionElementAmplitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -212,7 +216,8 @@ JSValue jsSVGComponentTransferFunctionElementAmplitude(ExecState* exec, const Id
     UNUSED_PARAM(exec);
     SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->amplitudeAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGComponentTransferFunctionElementExponent(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -221,7 +226,8 @@ JSValue jsSVGComponentTransferFunctionElementExponent(ExecState* exec, const Ide
     UNUSED_PARAM(exec);
     SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->exponentAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGComponentTransferFunctionElementOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -230,7 +236,8 @@ JSValue jsSVGComponentTransferFunctionElementOffset(ExecState* exec, const Ident
     UNUSED_PARAM(exec);
     SVGComponentTransferFunctionElement* imp = static_cast<SVGComponentTransferFunctionElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->offsetAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGComponentTransferFunctionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

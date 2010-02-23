@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -143,7 +143,8 @@ JSValue jsHTMLHeadElementProfile(ExecState* exec, const Identifier&, const Prope
     JSHTMLHeadElement* castedThis = static_cast<JSHTMLHeadElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(castedThis->impl());
-    return jsString(exec, imp->profile());
+    JSValue result = jsString(exec, imp->profile());
+    return result;
 }
 
 JSValue jsHTMLHeadElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLHeadElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLHeadElementProfile(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(static_cast<JSHTMLHeadElement*>(thisObject)->impl());
+    JSHTMLHeadElement* castedThisObj = static_cast<JSHTMLHeadElement*>(thisObject);
+    HTMLHeadElement* imp = static_cast<HTMLHeadElement*>(castedThisObj->impl());
     imp->setProfile(valueToStringWithNullCheck(exec, value));
 }
 

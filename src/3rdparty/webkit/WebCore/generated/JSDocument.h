@@ -34,7 +34,6 @@ class JSDocument : public JSNode {
     typedef JSNode Base;
 public:
     JSDocument(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Document>);
-    virtual ~JSDocument();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -44,7 +43,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -85,7 +84,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSDocumentPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -251,6 +250,14 @@ JSC::JSValue jsDocumentOnsearch(JSC::ExecState*, const JSC::Identifier&, const J
 void setJSDocumentOnsearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDocumentOnselectstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDocumentOnselectstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOntouchstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOntouchstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOntouchmove(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOntouchmove(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOntouchend(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOntouchend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentOntouchcancel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDocumentOntouchcancel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDocumentConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore

@@ -115,7 +115,8 @@ JSValue jsGeolocationLastPosition(ExecState* exec, const Identifier&, const Prop
     JSGeolocation* castedThis = static_cast<JSGeolocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Geolocation* imp = static_cast<Geolocation*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->lastPosition()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->lastPosition()));
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

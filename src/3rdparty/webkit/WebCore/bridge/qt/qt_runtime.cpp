@@ -29,7 +29,10 @@
 #include "JSArray.h"
 #include "JSByteArray.h"
 #include "JSDOMBinding.h"
+#include "JSDOMWindow.h"
+#include <JSFunction.h>
 #include "JSGlobalObject.h"
+#include "JSHTMLElement.h"
 #include "JSLock.h"
 #include "JSObject.h"
 #include "ObjectPrototype.h"
@@ -43,10 +46,10 @@
 #include "qobject.h"
 #include "qstringlist.h"
 #include "qt_instance.h"
+#include "qt_pixmapruntime.h"
 #include "qvarlengtharray.h"
-#include <JSFunction.h>
+#include "qwebelement.h"
 #include <limits.h>
-#include <runtime.h>
 #include <runtime/Error.h>
 #include <runtime_array.h>
 #include <runtime_object.h>
@@ -113,6 +116,21 @@ QDebug operator<<(QDebug dbg, const JSRealType &c)
      return dbg.space();
 }
 #endif
+
+// this is here as a proxy, so we'd have a class to friend in QWebElement,
+// as getting/setting a WebCore in QWebElement is private
+class QtWebElementRuntime {
+public:
+    static QWebElement create(Element* element)
+    {
+        return QWebElement(element);
+    }
+
+    static Element* get(const QWebElement& element)
+    {
+        return element.m_element;
+    }
+};
 
 static JSRealType valueRealType(ExecState* exec, JSValue val)
 {
@@ -457,8 +475,8 @@ QVariant convertValueToQVariant(ExecState* exec, JSValue value, QMetaType::Type 
         case QMetaType::QTime:
             if (type == Date) {
                 DateInstance* date = static_cast<DateInstance*>(object);
-                WTF::GregorianDateTime gdt;
-                WTF::msToGregorianDateTime(date->internalNumber(), true, gdt);
+                GregorianDateTime gdt;
+                msToGregorianDateTime(exec, date->internalNumber(), true, gdt);
                 if (hint == QMetaType::QDateTime) {
                     ret = QDateTime(QDate(gdt.year + 1900, gdt.month + 1, gdt.monthDay), QTime(gdt.hour, gdt.minute, gdt.second), Qt::UTC);
                     dist = 0;
@@ -471,8 +489,8 @@ QVariant convertValueToQVariant(ExecState* exec, JSValue value, QMetaType::Type 
                 }
             } else if (type == Number) {
                 double b = value.toNumber(exec);
-                WTF::GregorianDateTime gdt;
-                msToGregorianDateTime(b, true, gdt);
+                GregorianDateTime gdt;
+                msToGregorianDateTime(exec, b, true, gdt);
                 if (hint == QMetaType::QDateTime) {
                     ret = QDateTime(QDate(gdt.year + 1900, gdt.month + 1, gdt.monthDay), QTime(gdt.hour, gdt.minute, gdt.second), Qt::UTC);
                     dist = 6;
@@ -720,6 +738,13 @@ QVariant convertValueToQVariant(ExecState* exec, JSValue value, QMetaType::Type 
                     }
                 }
                 break;
+            } else if (QtPixmapInstance::canHandle(static_cast<QMetaType::Type>(hint))) {
+                ret = QtPixmapInstance::variantFromObject(object, static_cast<QMetaType::Type>(hint));
+            } else if (hint == (QMetaType::Type) qMetaTypeId<QWebElement>()) {
+                if (object && object->inherits(&JSHTMLElement::s_info))
+                    ret = QVariant::fromValue<QWebElement>(QtWebElementRuntime::create((static_cast<JSHTMLElement*>(object))->impl()));
+                else
+                    ret = QVariant::fromValue<QWebElement>(QWebElement());
             } else if (hint == (QMetaType::Type) qMetaTypeId<QVariant>()) {
                 if (value.isUndefinedOrNull()) {
                     if (distance)
@@ -824,7 +849,7 @@ JSValue convertQVariantToValue(ExecState* exec, PassRefPtr<RootObject> root, con
         }
 
         // Dates specified this way are in local time (we convert DateTimes above)
-        WTF::GregorianDateTime dt;
+        GregorianDateTime dt;
         dt.year = date.year() - 1900;
         dt.month = date.month() - 1;
         dt.monthDay = date.day();
@@ -832,7 +857,7 @@ JSValue convertQVariantToValue(ExecState* exec, PassRefPtr<RootObject> root, con
         dt.minute = time.minute();
         dt.second = time.second();
         dt.isDST = -1;
-        double ms = WTF::gregorianDateTimeToMS(dt, time.msec(), /*inputIsUTC*/ false);
+        double ms = gregorianDateTimeToMS(exec, dt, time.msec(), /*inputIsUTC*/ false);
 
         return new (exec) DateInstance(exec, trunc(ms));
     }
@@ -847,6 +872,20 @@ JSValue convertQVariantToValue(ExecState* exec, PassRefPtr<RootObject> root, con
     if (type == QMetaType::QObjectStar || type == QMetaType::QWidgetStar) {
         QObject* obj = variant.value<QObject*>();
         return QtInstance::getQtInstance(obj, root, QScriptEngine::QtOwnership)->createRuntimeObject(exec);
+    }
+
+    if (QtPixmapInstance::canHandle(static_cast<QMetaType::Type>(variant.type())))
+        return QtPixmapInstance::createRuntimeObject(exec, root, variant);
+
+    if (type == qMetaTypeId<QWebElement>()) {
+        if (!root->globalObject()->inherits(&JSDOMWindow::s_info))
+            return jsUndefined();
+
+        Document* document = (static_cast<JSDOMWindow*>(root->globalObject()))->impl()->document();
+        if (!document)
+            return jsUndefined();
+
+        return toJS(exec, toJSDOMGlobalObject(document, exec), QtWebElementRuntime::get(variant.value<QWebElement>()));
     }
 
     if (type == QMetaType::QVariantMap) {
@@ -1395,6 +1434,43 @@ bool QtRuntimeMetaMethod::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return QtRuntimeMethod::getOwnPropertySlot(exec, propertyName, slot);
 }
 
+bool QtRuntimeMetaMethod::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    if (propertyName == "connect") {
+        PropertySlot slot;
+        slot.setCustom(this, connectGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly | DontEnum);
+        return true;
+    }
+
+    if (propertyName == "disconnect") {
+        PropertySlot slot;
+        slot.setCustom(this, disconnectGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly | DontEnum);
+        return true;
+    }
+
+    if (propertyName == exec->propertyNames().length) {
+        PropertySlot slot;
+        slot.setCustom(this, lengthGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly | DontEnum);
+        return true;
+    }
+
+    return QtRuntimeMethod::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+}
+
+void QtRuntimeMetaMethod::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+{
+    if (mode == IncludeDontEnumProperties) {
+        propertyNames.add(Identifier(exec, "connect"));
+        propertyNames.add(Identifier(exec, "disconnect"));
+        propertyNames.add(exec->propertyNames().length);
+    }
+
+    QtRuntimeMethod::getOwnPropertyNames(exec, propertyNames, mode);
+}
+
 JSValue QtRuntimeMetaMethod::lengthGetter(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     // QtScript always returns 0
@@ -1581,6 +1657,26 @@ bool QtRuntimeConnectionMethod::getOwnPropertySlot(ExecState* exec, const Identi
     return QtRuntimeMethod::getOwnPropertySlot(exec, propertyName, slot);
 }
 
+bool QtRuntimeConnectionMethod::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    if (propertyName == exec->propertyNames().length) {
+        PropertySlot slot;
+        slot.setCustom(this, lengthGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly | DontEnum);
+        return true;
+    }
+
+    return QtRuntimeMethod::getOwnPropertyDescriptor(exec, propertyName, descriptor);
+}
+
+void QtRuntimeConnectionMethod::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+{
+    if (mode == IncludeDontEnumProperties)
+        propertyNames.add(exec->propertyNames().length);
+
+    QtRuntimeMethod::getOwnPropertyNames(exec, propertyNames, mode);
+}
+
 JSValue QtRuntimeConnectionMethod::lengthGetter(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     // we have one formal argument, and one optional
@@ -1744,7 +1840,7 @@ template <typename T> QtArray<T>::~QtArray ()
 
 template <typename T> RootObject* QtArray<T>::rootObject() const
 {
-    return _rootObject && _rootObject->isValid() ? _rootObject.get() : 0;
+    return m_rootObject && m_rootObject->isValid() ? m_rootObject.get() : 0;
 }
 
 template <typename T> void QtArray<T>::setValueAt(ExecState* exec, unsigned index, JSValue aValue) const

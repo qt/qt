@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -39,17 +37,12 @@
 
 namespace WebCore {
 
-char SVGGradientElementIdentifier[] = "SVGGradientElement";
-
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document* doc)
     : SVGStyledElement(tagName, doc)
     , SVGURIReference()
     , SVGExternalResourcesRequired()
-    , m_spreadMethod(this, SVGNames::spreadMethodAttr)
-    , m_gradientUnits(this, SVGNames::gradientUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-    , m_gradientTransform(this, SVGNames::gradientTransformAttr, SVGTransformList::create(SVGNames::gradientTransformAttr))
-    , m_href(this, XLinkNames::hrefAttr)
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
+    , m_gradientUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+    , m_gradientTransform(SVGTransformList::create(SVGNames::gradientTransformAttr))
 {
 }
 
@@ -103,6 +96,31 @@ void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)
         m_resource->invalidate();
 }
 
+void SVGGradientElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeGradientUnits();
+        synchronizeGradientTransform();
+        synchronizeSpreadMethod();
+        synchronizeExternalResourcesRequired();
+        synchronizeHref();
+        return;
+    }
+
+    if (attrName == SVGNames::gradientUnitsAttr)
+        synchronizeGradientUnits();
+    else if (attrName == SVGNames::gradientTransformAttr)
+        synchronizeGradientTransform();
+    else if (attrName == SVGNames::spreadMethodAttr)
+        synchronizeSpreadMethod();
+    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
+    else if (SVGURIReference::isKnownAttribute(attrName))
+        synchronizeHref();
+}
+
 void SVGGradientElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGStyledElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
@@ -116,7 +134,7 @@ RenderObject* SVGGradientElement::createRenderer(RenderArena* arena, RenderStyle
     return new (arena) RenderSVGHiddenContainer(this);
 }
 
-SVGResource* SVGGradientElement::canvasResource()
+SVGResource* SVGGradientElement::canvasResource(const RenderObject*)
 {
     if (!m_resource) {
         if (gradientType() == LinearGradientPaintServer)

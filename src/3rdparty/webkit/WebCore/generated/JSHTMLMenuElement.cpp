@@ -74,7 +74,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -141,7 +141,8 @@ JSValue jsHTMLMenuElementCompact(ExecState* exec, const Identifier&, const Prope
     JSHTMLMenuElement* castedThis = static_cast<JSHTMLMenuElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMenuElement* imp = static_cast<HTMLMenuElement*>(castedThis->impl());
-    return jsBoolean(imp->compact());
+    JSValue result = jsBoolean(imp->compact());
+    return result;
 }
 
 JSValue jsHTMLMenuElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,7 +157,8 @@ void JSHTMLMenuElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLMenuElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLMenuElement* imp = static_cast<HTMLMenuElement*>(static_cast<JSHTMLMenuElement*>(thisObject)->impl());
+    JSHTMLMenuElement* castedThisObj = static_cast<JSHTMLMenuElement*>(thisObject);
+    HTMLMenuElement* imp = static_cast<HTMLMenuElement*>(castedThisObj->impl());
     imp->setCompact(value.toBoolean(exec));
 }
 

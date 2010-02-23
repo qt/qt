@@ -25,6 +25,7 @@
 #include "config.h"
 #include "HTMLFormControlElement.h"
 
+#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
 #include "Event.h"
@@ -51,6 +52,7 @@ using namespace HTMLNames;
 HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Document* doc, HTMLFormElement* f)
     : HTMLElement(tagName, doc)
     , m_form(f)
+    , m_hasName(false)
     , m_disabled(false)
     , m_readOnly(false)
     , m_required(false)
@@ -88,8 +90,9 @@ ValidityState* HTMLFormControlElement::validity()
 
 void HTMLFormControlElement::parseMappedAttribute(MappedAttribute *attr)
 {
+    bool oldWillValidate = willValidate();
     if (attr->name() == nameAttr)
-        setNeedsStyleRecalc();
+        m_hasName = !attr->isEmpty();
     else if (attr->name() == disabledAttr) {
         bool oldDisabled = m_disabled;
         m_disabled = !attr->isNull();
@@ -113,6 +116,8 @@ void HTMLFormControlElement::parseMappedAttribute(MappedAttribute *attr)
             setNeedsStyleRecalc();
     } else
         HTMLElement::parseMappedAttribute(attr);
+    if (oldWillValidate != willValidate())
+        setNeedsWillValidateCheck();
 }
 
 void HTMLFormControlElement::attach()
@@ -148,9 +153,10 @@ void HTMLFormControlElement::insertedIntoTree(bool deep)
         // setting a form, we will already have a non-null value for m_form, 
         // and so we don't need to do anything.
         m_form = findFormAncestor();
-        if (m_form)
+        if (m_form) {
             m_form->registerFormElement(this);
-        else
+            setNeedsWillValidateCheck();
+        } else
             document()->checkedRadioButtons().addButton(this);
     }
 
@@ -177,9 +183,17 @@ void HTMLFormControlElement::removedFromTree(bool deep)
     if (m_form && !(parser && parser->isHandlingResidualStyleAcrossBlocks()) && findRoot(this) != findRoot(m_form)) {
         m_form->removeFormElement(this);
         m_form = 0;
+        setNeedsWillValidateCheck();
     }
 
     HTMLElement::removedFromTree(deep);
+}
+
+void HTMLFormControlElement::formDestroyed()
+{
+    if (m_form)
+        setNeedsWillValidateCheck();
+    m_form = 0;
 }
 
 const AtomicString& HTMLFormControlElement::formControlName() const
@@ -196,11 +210,6 @@ void HTMLFormControlElement::setName(const AtomicString &value)
 void HTMLFormControlElement::dispatchFormControlChangeEvent()
 {
     dispatchEvent(Event::create(eventNames().changeEvent, true, false));
-}
-
-bool HTMLFormControlElement::disabled() const
-{
-    return m_disabled;
 }
 
 void HTMLFormControlElement::setDisabled(bool b)
@@ -233,12 +242,23 @@ void HTMLFormControlElement::setRequired(bool b)
     setAttribute(requiredAttr, b ? "required" : 0);
 }
 
+static void updateFromElementCallback(Node* node)
+{
+    ASSERT_ARG(node, node->isElementNode());
+    ASSERT_ARG(node, static_cast<Element*>(node)->isFormControlElement());
+    ASSERT(node->renderer());
+    if (RenderObject* renderer = node->renderer())
+        renderer->updateFromElement();
+}
+
 void HTMLFormControlElement::recalcStyle(StyleChange change)
 {
     HTMLElement::recalcStyle(change);
 
+    // updateFromElement() can cause the selection to change, and in turn
+    // trigger synchronous layout, so it must not be called during style recalc.
     if (renderer())
-        renderer()->updateFromElement();
+        queuePostAttachCallback(updateFromElementCallback, this);
 }
 
 bool HTMLFormControlElement::supportsFocus() const
@@ -285,25 +305,37 @@ bool HTMLFormControlElement::willValidate() const
     //      The control does not have a repetition template as an ancestor.
     //      The control does not have a datalist element as an ancestor.
     //      The control is not an output element.
-    return form() && !name().isEmpty() && !disabled() && !isReadOnlyFormControl();
+    return m_form && m_hasName && !m_disabled && !m_readOnly;
+}
+
+String HTMLFormControlElement::validationMessage()
+{
+    return validity()->validationMessage();
+}
+
+void HTMLFormControlElement::setNeedsWillValidateCheck()
+{
+    setNeedsStyleRecalc();
+    // FIXME: Show/hide a validation message.
 }
 
 bool HTMLFormControlElement::checkValidity()
 {
     if (willValidate() && !isValidFormControlElement()) {
-        dispatchEvent(Event::create(EventNames().invalidEvent, false, true));
+        dispatchEvent(Event::create(eventNames().invalidEvent, false, true));
         return false;
     }
 
     return true;
 }
 
-void HTMLFormControlElement::updateValidity()
+void HTMLFormControlElement::setNeedsValidityCheck()
 {
     if (willValidate()) {
         // Update style for pseudo classes such as :valid :invalid.
         setNeedsStyleRecalc();
     }
+    // FIXME: show/hide a validation message.
 }
 
 void HTMLFormControlElement::setCustomValidity(const String& error)

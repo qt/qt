@@ -26,7 +26,44 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+var injectedScriptConstructor = (function (InjectedScriptHost, inspectedWindow, injectedScriptId) {
+
 var InjectedScript = {};
+
+InjectedScript.lastBoundObjectId = 1;
+InjectedScript.idToWrappedObject = {};
+InjectedScript.objectGroups = {};
+InjectedScript.wrapObject = function(object, objectGroupName)
+{
+    var objectId;
+    if (typeof object === "object" || typeof object === "function" ||
+        (typeof object === "undefined" && object instanceof inspectedWindow.HTMLAllCollection)) { // FIXME(33716)
+        var id = InjectedScript.lastBoundObjectId++;
+        objectId = "object#" + id;
+        InjectedScript.idToWrappedObject[objectId] = object;
+
+        var group = InjectedScript.objectGroups[objectGroupName];
+        if (!group) {
+            group = [];
+            InjectedScript.objectGroups[objectGroupName] = group;
+        }
+        group.push(objectId);
+    }
+    return InjectedScript.createProxyObject(object, objectId);
+};
+
+InjectedScript.unwrapObject = function(objectId) {
+    return InjectedScript.idToWrappedObject[objectId];
+};
+
+InjectedScript.releaseWrapperObjectGroup = function(objectGroupName) {
+    var group = InjectedScript.objectGroups[objectGroupName];
+    if (!group)
+        return;
+    for (var i = 0; i < group.length; i++)
+        delete InjectedScript.idToWrappedObject[group[i]];
+    delete InjectedScript.objectGroups[objectGroupName];
+};
 
 // Called from within InspectorController on the 'inspected page' side.
 InjectedScript.reset = function()
@@ -43,7 +80,7 @@ InjectedScript.reset();
 
 InjectedScript.dispatch = function(methodName, args, callId)
 {
-    var argsArray = JSON.parse(args);
+    var argsArray = eval("(" + args + ")");
     if (callId)
         argsArray.splice(0, 0, callId);  // Methods that run asynchronously have a call back id parameter.
     var result = InjectedScript[methodName].apply(InjectedScript, argsArray);
@@ -51,7 +88,7 @@ InjectedScript.dispatch = function(methodName, args, callId)
         InjectedScript._window().console.error("Web Inspector error: InjectedScript.%s returns undefined", methodName);
         result = null;
     }
-    return JSON.stringify(result);
+    return result;
 }
 
 InjectedScript.getStyles = function(nodeId, authorOnly)
@@ -59,7 +96,8 @@ InjectedScript.getStyles = function(nodeId, authorOnly)
     var node = InjectedScript._nodeForId(nodeId);
     if (!node)
         return false;
-    var matchedRules = InjectedScript._window().getMatchedCSSRules(node, "", authorOnly);
+    var defaultView = node.ownerDocument.defaultView;
+    var matchedRules = defaultView.getMatchedCSSRules(node, "", authorOnly);
     var matchedCSSRules = [];
     for (var i = 0; matchedRules && i < matchedRules.length; ++i)
         matchedCSSRules.push(InjectedScript._serializeRule(matchedRules[i]));
@@ -72,7 +110,7 @@ InjectedScript.getStyles = function(nodeId, authorOnly)
     }
     var result = {};
     result.inlineStyle = InjectedScript._serializeStyle(node.style, true);
-    result.computedStyle = InjectedScript._serializeStyle(InjectedScript._window().getComputedStyle(node));
+    result.computedStyle = InjectedScript._serializeStyle(defaultView.getComputedStyle(node));
     result.matchedCSSRules = matchedCSSRules;
     result.styleAttributes = styleAttributes;
     return result;
@@ -83,7 +121,7 @@ InjectedScript.getComputedStyle = function(nodeId)
     var node = InjectedScript._nodeForId(nodeId);
     if (!node)
         return false;
-    return InjectedScript._serializeStyle(InjectedScript._window().getComputedStyle(node));
+    return InjectedScript._serializeStyle(node.ownerDocument.defaultView.getComputedStyle(node));
 }
 
 InjectedScript.getInlineStyle = function(nodeId)
@@ -168,10 +206,9 @@ InjectedScript.toggleStyleEnabled = function(styleId, propertyName, disabled)
 
     if (disabled) {
         if (!style.__disabledPropertyValues || !style.__disabledPropertyPriorities) {
-            var inspectedWindow = InjectedScript._window();
-            style.__disabledProperties = new inspectedWindow.Object;
-            style.__disabledPropertyValues = new inspectedWindow.Object;
-            style.__disabledPropertyPriorities = new inspectedWindow.Object;
+            style.__disabledProperties = {};
+            style.__disabledPropertyValues = {};
+            style.__disabledPropertyPriorities = {};
         }
 
         style.__disabledPropertyValues[propertyName] = style.getPropertyValue(propertyName);
@@ -230,15 +267,19 @@ InjectedScript.applyStyleRuleText = function(ruleId, newContent, selectedNodeId)
 
 InjectedScript.addStyleSelector = function(newContent, selectedNodeId)
 {
-    var stylesheet = InjectedScript.stylesheet;
+    var selectedNode = InjectedScript._nodeForId(selectedNodeId);
+    if (!selectedNode)
+        return false;
+    var ownerDocument = selectedNode.ownerDocument;
+
+    var stylesheet = ownerDocument.__stylesheet;
     if (!stylesheet) {
-        var inspectedDocument = InjectedScript._window().document;
-        var head = inspectedDocument.getElementsByTagName("head")[0];
-        var styleElement = inspectedDocument.createElement("style");
+        var head = ownerDocument.head;
+        var styleElement = ownerDocument.createElement("style");
         styleElement.type = "text/css";
         head.appendChild(styleElement);
-        stylesheet = inspectedDocument.styleSheets[inspectedDocument.styleSheets.length - 1];
-        InjectedScript.stylesheet = stylesheet;
+        stylesheet = ownerDocument.styleSheets[ownerDocument.styleSheets.length - 1];
+        ownerDocument.__stylesheet = stylesheet;
     }
 
     try {
@@ -248,7 +289,6 @@ InjectedScript.addStyleSelector = function(newContent, selectedNodeId)
         return false;
     }
 
-    var selectedNode = InjectedScript._nodeForId(selectedNodeId);
     var rule = stylesheet.cssRules[stylesheet.cssRules.length - 1];
     rule.__isViaInspector = true;
 
@@ -302,6 +342,7 @@ InjectedScript._serializeRule = function(rule)
             InjectedScript._styleRules[rule.id] = rule;
         }
         ruleValue.id = rule.id;
+        ruleValue.injectedScriptId = injectedScriptId;
     }
     return ruleValue;
 }
@@ -340,6 +381,7 @@ InjectedScript._serializeStyle = function(style, doBind)
             InjectedScript._styles[style.id] = style;
         }
         result.id = style.id;
+        result.injectedScriptId = injectedScriptId;
     }
     return result;
 }
@@ -429,7 +471,7 @@ InjectedScript.getPrototypes = function(nodeId)
 
     var result = [];
     for (var prototype = node; prototype; prototype = prototype.__proto__) {
-        var title = Object.describe(prototype, true);
+        var title = InjectedScript._describe(prototype, true);
         if (title.match(/Prototype$/)) {
             title = title.replace(/Prototype$/, "");
         }
@@ -438,30 +480,35 @@ InjectedScript.getPrototypes = function(nodeId)
     return result;
 }
 
-InjectedScript.getProperties = function(objectProxy, ignoreHasOwnProperty)
+InjectedScript.getProperties = function(objectProxy, ignoreHasOwnProperty, abbreviate)
 {
     var object = InjectedScript._resolveObject(objectProxy);
-    if (!object)
+    if (!InjectedScript._isDefined(object))
         return false;
-
     var properties = [];
+    var propertyNames = ignoreHasOwnProperty ? InjectedScript._getPropertyNames(object) : Object.getOwnPropertyNames(object);
+    if (!ignoreHasOwnProperty && object.__proto__)
+        propertyNames.push("__proto__");
 
     // Go over properties, prepare results.
-    for (var propertyName in object) {
-        if (!ignoreHasOwnProperty && "hasOwnProperty" in object && !object.hasOwnProperty(propertyName))
-            continue;
+    for (var i = 0; i < propertyNames.length; ++i) {
+        var propertyName = propertyNames[i];
 
         var property = {};
-        property.name = propertyName;
+        property.name = propertyName + "";
         property.parentObjectProxy = objectProxy;
         var isGetter = object["__lookupGetter__"] && object.__lookupGetter__(propertyName);
         if (!property.isGetter) {
-            var childObject = object[propertyName];
-            var childObjectProxy = new InjectedScript.createProxyObject(childObject, objectProxy.objectId, true);
-            childObjectProxy.path = objectProxy.path ? objectProxy.path.slice() : [];
-            childObjectProxy.path.push(propertyName);
-            childObjectProxy.protoDepth = objectProxy.protoDepth || 0;
-            property.value = childObjectProxy;
+            try {
+                var childObject = object[propertyName];
+                var childObjectProxy = new InjectedScript.createProxyObject(childObject, objectProxy.objectId, abbreviate);
+                childObjectProxy.path = objectProxy.path ? objectProxy.path.slice() : [];
+                childObjectProxy.path.push(propertyName);
+                property.value = childObjectProxy;
+            } catch(e) {
+                property.value = { description: e.toString() };
+                property.isError = true;
+            }
         } else {
             // FIXME: this should show something like "getter" (bug 16734).
             property.value = { description: "\u2014" }; // em dash
@@ -475,7 +522,7 @@ InjectedScript.getProperties = function(objectProxy, ignoreHasOwnProperty)
 InjectedScript.setPropertyValue = function(objectProxy, propertyName, expression)
 {
     var object = InjectedScript._resolveObject(objectProxy);
-    if (!object)
+    if (!InjectedScript._isDefined(object))
         return false;
 
     var expressionLength = expression.length;
@@ -497,7 +544,7 @@ InjectedScript.setPropertyValue = function(objectProxy, propertyName, expression
         return true;
     } catch(e) {
         try {
-            var result = InjectedScript._window().eval("\"" + expression.escapeCharacters("\"") + "\"");
+            var result = InjectedScript._window().eval("\"" + InjectedScript._escapeCharacters(expression, "\"") + "\"");
             object[propertyName] = result;
             return true;
         } catch(e) {
@@ -506,6 +553,47 @@ InjectedScript.setPropertyValue = function(objectProxy, propertyName, expression
     }
 }
 
+InjectedScript.getNodePropertyValue = function(nodeId, propertyName)
+{
+    var node = InjectedScript._nodeForId(nodeId);
+    if (!node)
+        return false;
+    var result = node[propertyName];
+    return result !== undefined ? result : false;
+}
+
+InjectedScript.setOuterHTML = function(nodeId, value, expanded)
+{
+    var node = InjectedScript._nodeForId(nodeId);
+    if (!node)
+        return false;
+
+    var parent = node.parentNode;
+    var prevSibling = node.previousSibling;
+    node.outerHTML = value;
+    var newNode = prevSibling ? prevSibling.nextSibling : parent.firstChild;
+
+    return InjectedScriptHost.pushNodePathToFrontend(newNode, expanded, false);
+}
+
+InjectedScript._populatePropertyNames = function(object, resultSet)
+{
+    for (var o = object; o; o = o.__proto__) {
+        try {
+            var names = Object.getOwnPropertyNames(o);
+            for (var i = 0; i < names.length; ++i)
+                resultSet[names[i] + ""] = true;
+        } catch (e) {
+        }
+    }
+}
+
+InjectedScript._getPropertyNames = function(object, resultSet)
+{
+    var propertyNameSet = {};
+    InjectedScript._populatePropertyNames(object, propertyNameSet);
+    return Object.keys(propertyNameSet);
+}
 
 InjectedScript.getCompletions = function(expression, includeInspectorCommandLineAPI, callFrameId)
 {
@@ -522,23 +610,16 @@ InjectedScript.getCompletions = function(expression, includeInspectorCommandLine
             else {
                 // Evaluate into properties in scope of the selected call frame.
                 var scopeChain = callFrame.scopeChain;
-                for (var i = 0; i < scopeChain.length; ++i) {
-                    var scopeObject = scopeChain[i];
-                    try {
-                        for (var propertyName in scopeObject)
-                            props[propertyName] = true;
-                    } catch (e) {
-                    }
-                }
+                for (var i = 0; i < scopeChain.length; ++i)
+                    InjectedScript._populatePropertyNames(scopeChain[i], props);
             }
         } else {
             if (!expression)
                 expression = "this";
             expressionResult = InjectedScript._evaluateOn(InjectedScript._window().eval, InjectedScript._window(), expression);
         }
-        if (expressionResult)
-            for (var prop in expressionResult)
-                props[prop] = true;
+        if (typeof expressionResult == "object")
+            InjectedScript._populatePropertyNames(expressionResult, props);
         if (includeInspectorCommandLineAPI)
             for (var prop in InjectedScript._window().console._inspectorCommandLineAPI)
                 if (prop.charAt(0) !== '_')
@@ -557,7 +638,8 @@ InjectedScript._evaluateAndWrap = function(evalFunction, object, expression, obj
 {
     var result = {};
     try {
-        result.value = InspectorController.wrapObject(InjectedScript._evaluateOn(evalFunction, object, expression), objectGroup);
+        result.value = InjectedScript.wrapObject(InjectedScript._evaluateOn(evalFunction, object, expression), objectGroup);
+
         // Handle error that might have happened while describing result.
         if (result.value.errorText) {
             result.value = result.value.errorText;
@@ -575,11 +657,11 @@ InjectedScript._evaluateOn = function(evalFunction, object, expression)
     InjectedScript._ensureCommandLineAPIInstalled(evalFunction, object);
     // Surround the expression in with statements to inject our command line API so that
     // the window object properties still take more precedent than our API functions.
-    expression = "with (window.console._inspectorCommandLineAPI) { with (window) { " + expression + " } }";
+    expression = "with (window.console._inspectorCommandLineAPI) { with (window) {\n" + expression + "\n} }";
     var value = evalFunction.call(object, expression);
 
     // When evaluating on call frame error is not thrown, but returned as a value.
-    if (Object.type(value) === "error")
+    if (InjectedScript._type(value) === "error")
         throw value.toString();
 
     return value;
@@ -601,6 +683,12 @@ InjectedScript.addInspectedNode = function(nodeId)
 
 InjectedScript.performSearch = function(whitespaceTrimmedQuery)
 {
+    // FIXME: Few things are missing here:
+    // 1) Search works with node granularity - number of matches within node is not calculated.
+    // 2) Search does not work outside main documents' domain - we need to use specific InjectedScript instances
+    //    for other domains.
+    // 3) There is no need to push all search results to the front-end at a time, pushing next / previous result
+    //    is sufficient.
     var tagNameQuery = whitespaceTrimmedQuery;
     var attributeNameQuery = whitespaceTrimmedQuery;
     var startTagFound = (tagNameQuery.indexOf("<") === 0);
@@ -619,9 +707,9 @@ InjectedScript.performSearch = function(whitespaceTrimmedQuery)
     if (!/^[a-zA-Z0-9\-_:]+$/.test(attributeNameQuery))
         attributeNameQuery = null;
 
-    const escapedQuery = whitespaceTrimmedQuery.escapeCharacters("'");
-    const escapedTagNameQuery = (tagNameQuery ? tagNameQuery.escapeCharacters("'") : null);
-    const escapedWhitespaceTrimmedQuery = whitespaceTrimmedQuery.escapeCharacters("'");
+    const escapedQuery = InjectedScript._escapeCharacters(whitespaceTrimmedQuery, "'");
+    const escapedTagNameQuery = (tagNameQuery ?  InjectedScript._escapeCharacters(tagNameQuery, "'") : null);
+    const escapedWhitespaceTrimmedQuery = InjectedScript._escapeCharacters(whitespaceTrimmedQuery, "'");
     const searchResultsProperty = InjectedScript._includedInSearchResultsPropertyName;
 
     function addNodesToResults(nodes, length, getItem)
@@ -642,10 +730,10 @@ InjectedScript.performSearch = function(whitespaceTrimmedQuery)
 
             node[searchResultsProperty] = true;
             InjectedScript._searchResults.push(node);
-            var nodeId = InspectorController.pushNodePathToFrontend(node, false);
+            var nodeId = InjectedScriptHost.pushNodePathToFrontend(node, false, false);
             nodeIds.push(nodeId);
         }
-        InspectorController.addNodesToSearchResult(nodeIds.join(","));
+        InjectedScriptHost.addNodesToSearchResult(nodeIds.join(","));
     }
 
     function matchExactItems(doc)
@@ -842,9 +930,9 @@ InjectedScript.openInInspectedWindow = function(url)
     return true;
 }
 
-InjectedScript.getCallFrames = function()
+InjectedScript.callFrames = function()
 {
-    var callFrame = InspectorController.currentCallFrame();
+    var callFrame = InjectedScriptHost.currentCallFrame();
     if (!callFrame)
         return false;
 
@@ -867,15 +955,16 @@ InjectedScript.evaluateInCallFrame = function(callFrameId, code, objectGroup)
 
 InjectedScript._callFrameForId = function(id)
 {
-    var callFrame = InspectorController.currentCallFrame();
+    var callFrame = InjectedScriptHost.currentCallFrame();
     while (--id >= 0 && callFrame)
         callFrame = callFrame.caller;
     return callFrame;
 }
 
-InjectedScript._clearConsoleMessages = function()
+InjectedScript.clearConsoleMessages = function()
 {
-    InspectorController.clearMessages(true);
+    InjectedScriptHost.clearConsoleMessages();
+    return true;
 }
 
 InjectedScript._inspectObject = function(o)
@@ -883,19 +972,28 @@ InjectedScript._inspectObject = function(o)
     if (arguments.length === 0)
         return;
 
-    var inspectedWindow = InjectedScript._window();
     inspectedWindow.console.log(o);
-    if (Object.type(o) === "node") {
-        InspectorController.pushNodePathToFrontend(o, true);
+    if (InjectedScript._type(o) === "node") {
+        InjectedScriptHost.pushNodePathToFrontend(o, false, true);
     } else {
-        switch (Object.describe(o)) {
+        switch (InjectedScript._describe(o)) {
             case "Database":
-                InspectorController.selectDatabase(o);
+                InjectedScriptHost.selectDatabase(o);
                 break;
             case "Storage":
-                InspectorController.selectDOMStorage(o);
+                InjectedScriptHost.selectDOMStorage(o);
                 break;
         }
+    }
+}
+
+InjectedScript._copy = function(o)
+{
+    if (InjectedScript._type(o) === "node") {
+        var nodeId = InjectedScriptHost.pushNodePathToFrontend(o, false, false);
+        InjectedScriptHost.copyNode(nodeId);
+    } else {
+        InjectedScriptHost.copyText(o);
     }
 }
 
@@ -903,73 +1001,78 @@ InjectedScript._ensureCommandLineAPIInstalled = function(evalFunction, evalObjec
 {
     if (evalFunction.call(evalObject, "window.console._inspectorCommandLineAPI"))
         return;
-    var inspectorCommandLineAPI = evalFunction.call(evalObject, "window.console._inspectorCommandLineAPI = { \
-        $: function() { return document.getElementById.apply(document, arguments) }, \
-        $$: function() { return document.querySelectorAll.apply(document, arguments) }, \
-        $x: function(xpath, context) { \
-            var nodes = []; \
-            try { \
-                var doc = context || document; \
-                var results = doc.evaluate(xpath, doc, null, XPathResult.ANY_TYPE, null); \
-                var node; \
-                while (node = results.iterateNext()) nodes.push(node); \
-            } catch (e) {} \
-            return nodes; \
-        }, \
-        dir: function() { return console.dir.apply(console, arguments) }, \
-        dirxml: function() { return console.dirxml.apply(console, arguments) }, \
-        keys: function(o) { var a = []; for (var k in o) a.push(k); return a; }, \
-        values: function(o) { var a = []; for (var k in o) a.push(o[k]); return a; }, \
-        profile: function() { return console.profile.apply(console, arguments) }, \
-        profileEnd: function() { return console.profileEnd.apply(console, arguments) }, \
-        _logEvent: function _inspectorCommandLineAPI_logEvent(e) { console.log(e.type, e); }, \
-        _allEventTypes: [\"mouse\", \"key\", \"load\", \"unload\", \"abort\", \"error\", \
-            \"select\", \"change\", \"submit\", \"reset\", \"focus\", \"blur\", \
-            \"resize\", \"scroll\"], \
-        _normalizeEventTypes: function(t) { \
-            if (typeof t === \"undefined\") \
-                t = _inspectorCommandLineAPI._allEventTypes; \
-            else if (typeof t === \"string\") \
-                t = [t]; \
-            var i, te = []; \
-            for (i = 0; i < t.length; i++) { \
-                if (t[i] === \"mouse\") \
-                    te.splice(0, 0, \"mousedown\", \"mouseup\", \"click\", \"dblclick\", \
-                        \"mousemove\", \"mouseover\", \"mouseout\"); \
-                else if (t[i] === \"key\") \
-                    te.splice(0, 0, \"keydown\", \"keyup\", \"keypress\"); \
-                else \
-                    te.push(t[i]); \
-            } \
-            return te; \
-        }, \
-        monitorEvent: function(o, t) { \
-            if (!o || !o.addEventListener || !o.removeEventListener) \
-                return; \
-            t = _inspectorCommandLineAPI._normalizeEventTypes(t); \
-            for (i = 0; i < t.length; i++) { \
-                o.removeEventListener(t[i], _inspectorCommandLineAPI._logEvent, false); \
-                o.addEventListener(t[i], _inspectorCommandLineAPI._logEvent, false); \
-            } \
-        }, \
-        unmonitorEvent: function(o, t) { \
-            if (!o || !o.removeEventListener) \
-                return; \
-            t = _inspectorCommandLineAPI._normalizeEventTypes(t); \
-            for (i = 0; i < t.length; i++) { \
-                o.removeEventListener(t[i], _inspectorCommandLineAPI._logEvent, false); \
-            } \
-        }, \
-        _inspectedNodes: [], \
-        get $0() { return console._inspectorCommandLineAPI._inspectedNodes[0] }, \
-        get $1() { return console._inspectorCommandLineAPI._inspectedNodes[1] }, \
-        get $2() { return console._inspectorCommandLineAPI._inspectedNodes[2] }, \
-        get $3() { return console._inspectorCommandLineAPI._inspectedNodes[3] }, \
-        get $4() { return console._inspectorCommandLineAPI._inspectedNodes[4] } \
+    var inspectorCommandLineAPI = evalFunction.call(evalObject, "window.console._inspectorCommandLineAPI = { \n\
+        $: function() { return document.getElementById.apply(document, arguments) }, \n\
+        $$: function() { return document.querySelectorAll.apply(document, arguments) }, \n\
+        $x: function(xpath, context) \n\
+        { \n\
+            var nodes = []; \n\
+            try { \n\
+                var doc = context || document; \n\
+                var results = doc.evaluate(xpath, doc, null, XPathResult.ANY_TYPE, null); \n\
+                var node; \n\
+                while (node = results.iterateNext()) nodes.push(node); \n\
+            } catch (e) {} \n\
+            return nodes; \n\
+        }, \n\
+        dir: function() { return console.dir.apply(console, arguments) }, \n\
+        dirxml: function() { return console.dirxml.apply(console, arguments) }, \n\
+        keys: function(o) { var a = []; for (var k in o) a.push(k); return a; }, \n\
+        values: function(o) { var a = []; for (var k in o) a.push(o[k]); return a; }, \n\
+        profile: function() { return console.profile.apply(console, arguments) }, \n\
+        profileEnd: function() { return console.profileEnd.apply(console, arguments) }, \n\
+        _logEvent: function _inspectorCommandLineAPI_logEvent(e) { console.log(e.type, e); }, \n\
+        _allEventTypes: [\"mouse\", \"key\", \"load\", \"unload\", \"abort\", \"error\", \n\
+            \"select\", \"change\", \"submit\", \"reset\", \"focus\", \"blur\", \n\
+            \"resize\", \"scroll\"], \n\
+        _normalizeEventTypes: function(t) \n\
+        { \n\
+            if (typeof t === \"undefined\") \n\
+                t = console._inspectorCommandLineAPI._allEventTypes; \n\
+            else if (typeof t === \"string\") \n\
+                t = [t]; \n\
+            var i, te = []; \n\
+            for (i = 0; i < t.length; i++) { \n\
+                if (t[i] === \"mouse\") \n\
+                    te.splice(0, 0, \"mousedown\", \"mouseup\", \"click\", \"dblclick\", \n\
+                        \"mousemove\", \"mouseover\", \"mouseout\"); \n\
+                else if (t[i] === \"key\") \n\
+                    te.splice(0, 0, \"keydown\", \"keyup\", \"keypress\"); \n\
+                else \n\
+                    te.push(t[i]); \n\
+            } \n\
+            return te; \n\
+        }, \n\
+        monitorEvents: function(o, t) \n\
+        { \n\
+            if (!o || !o.addEventListener || !o.removeEventListener) \n\
+                return; \n\
+            t = console._inspectorCommandLineAPI._normalizeEventTypes(t); \n\
+            for (i = 0; i < t.length; i++) { \n\
+                o.removeEventListener(t[i], console._inspectorCommandLineAPI._logEvent, false); \n\
+                o.addEventListener(t[i], console._inspectorCommandLineAPI._logEvent, false); \n\
+            } \n\
+        }, \n\
+        unmonitorEvents: function(o, t) \n\
+        { \n\
+            if (!o || !o.removeEventListener) \n\
+                return; \n\
+            t = console._inspectorCommandLineAPI._normalizeEventTypes(t); \n\
+            for (i = 0; i < t.length; i++) { \n\
+                o.removeEventListener(t[i], console._inspectorCommandLineAPI._logEvent, false); \n\
+            } \n\
+        }, \n\
+        _inspectedNodes: [], \n\
+        get $0() { return console._inspectorCommandLineAPI._inspectedNodes[0] }, \n\
+        get $1() { return console._inspectorCommandLineAPI._inspectedNodes[1] }, \n\
+        get $2() { return console._inspectorCommandLineAPI._inspectedNodes[2] }, \n\
+        get $3() { return console._inspectorCommandLineAPI._inspectedNodes[3] }, \n\
+        get $4() { return console._inspectorCommandLineAPI._inspectedNodes[4] }, \n\
     };");
 
-    inspectorCommandLineAPI.clear = InspectorController.wrapCallback(InjectedScript._clearConsoleMessages);
-    inspectorCommandLineAPI.inspect = InspectorController.wrapCallback(InjectedScript._inspectObject);
+    inspectorCommandLineAPI.clear = InjectedScript.clearConsoleMessages;
+    inspectorCommandLineAPI.inspect = InjectedScript._inspectObject;
+    inspectorCommandLineAPI.copy = InjectedScript._copy;
 }
 
 InjectedScript._resolveObject = function(objectProxy)
@@ -979,12 +1082,8 @@ InjectedScript._resolveObject = function(objectProxy)
     var protoDepth = objectProxy.protoDepth;
 
     // Follow the property path.
-    for (var i = 0; object && path && i < path.length; ++i)
+    for (var i = 0; InjectedScript._isDefined(object) && path && i < path.length; ++i)
         object = object[path[i]];
-
-    // Get to the necessary proto layer.
-    for (var i = 0; object && protoDepth && i < protoDepth; ++i)
-        object = object.__proto__;
 
     return object;
 }
@@ -993,14 +1092,14 @@ InjectedScript._window = function()
 {
     // TODO: replace with 'return window;' once this script is injected into
     // the page's context.
-    return InspectorController.inspectedWindow();
+    return inspectedWindow;
 }
 
 InjectedScript._nodeForId = function(nodeId)
 {
     if (!nodeId)
         return null;
-    return InspectorController.nodeForId(nodeId);
+    return InjectedScriptHost.nodeForId(nodeId);
 }
 
 InjectedScript._objectForId = function(objectId)
@@ -1012,7 +1111,7 @@ InjectedScript._objectForId = function(objectId)
     if (typeof objectId === "number") {
         return InjectedScript._nodeForId(objectId);
     } else if (typeof objectId === "string") {
-        return InspectorController.unwrapObject(objectId);
+        return InjectedScript.unwrapObject(objectId);
     } else if (typeof objectId === "object") {
         var callFrame = InjectedScript._callFrameForId(objectId.callFrame);
         if (objectId.thisObject)
@@ -1026,31 +1125,42 @@ InjectedScript._objectForId = function(objectId)
 InjectedScript.pushNodeToFrontend = function(objectProxy)
 {
     var object = InjectedScript._resolveObject(objectProxy);
-    if (!object || Object.type(object) !== "node")
+    if (!object || InjectedScript._type(object) !== "node")
         return false;
-    return InspectorController.pushNodePathToFrontend(object, false);
+    return InjectedScriptHost.pushNodePathToFrontend(object, false, false);
+}
+
+InjectedScript.nodeByPath = function(path)
+{
+    // We make this call through the injected script only to get a nice
+    // callback for it.
+    return InjectedScriptHost.pushNodeByPathToFrontend(path.join(","));
 }
 
 // Called from within InspectorController on the 'inspected page' side.
 InjectedScript.createProxyObject = function(object, objectId, abbreviate)
 {
     var result = {};
+    result.injectedScriptId = injectedScriptId;
     result.objectId = objectId;
-    result.type = Object.type(object);
+    result.type = InjectedScript._type(object);
+    if (result.type === "array")
+        result.propertyLength = object.length;
 
     var type = typeof object;
-    if ((type === "object" && object !== null) || type === "function") {
-        for (var subPropertyName in object) {
-            result.hasChildren = true;
-            break;
-        }
-    }
+    
+    result.hasChildren = (type === "object" && object !== null && (Object.getOwnPropertyNames(object).length || object.__proto__)) || type === "function";
     try {
-        result.description = Object.describe(object, abbreviate);
+        result.description = InjectedScript._describe(object, abbreviate);
     } catch (e) {
         result.errorText = e.toString();
     }
     return result;
+}
+
+InjectedScript.evaluateOnSelf = function(funcBody)
+{
+    return window.eval("(" + funcBody + ")();");
 }
 
 InjectedScript.CallFrameProxy = function(id, callFrame)
@@ -1073,7 +1183,7 @@ InjectedScript.CallFrameProxy.prototype = {
             var scopeObject = scopeChain[i];
             var scopeObjectProxy = InjectedScript.createProxyObject(scopeObject, { callFrame: this.id, chainIndex: i }, true);
 
-            if (Object.prototype.toString.call(scopeObject) === "[object JSActivation]") {
+            if (InjectedScriptHost.isActivation(scopeObject)) {
                 if (!foundLocalScope)
                     scopeObjectProxy.thisObject = InjectedScript.createProxyObject(callFrame.thisObject, { callFrame: this.id, thisObject: true }, true);
                 else
@@ -1111,30 +1221,39 @@ InjectedScript.executeSql = function(callId, databaseId, query)
                 data[columnIdentifier] = String(text);
             }
         }
-        InspectorController.reportDidDispatchOnInjectedScript(callId, JSON.stringify(result), false);
+        InjectedScriptHost.reportDidDispatchOnInjectedScript(callId, result, false);
     }
 
     function errorCallback(tx, error)
     {
-        InspectorController.reportDidDispatchOnInjectedScript(callId, JSON.stringify(error), false);
+        InjectedScriptHost.reportDidDispatchOnInjectedScript(callId, error, false);
     }
 
     function queryTransaction(tx)
     {
-        tx.executeSql(query, null, InspectorController.wrapCallback(successCallback), InspectorController.wrapCallback(errorCallback));
+        tx.executeSql(query, null, successCallback, errorCallback);
     }
 
-    var database = InspectorController.databaseForId(databaseId);
+    var database = InjectedScriptHost.databaseForId(databaseId);
     if (!database)
         errorCallback(null, { code : 2 });  // Return as unexpected version.
-    database.transaction(InspectorController.wrapCallback(queryTransaction), InspectorController.wrapCallback(errorCallback));
+    database.transaction(queryTransaction, errorCallback);
     return true;
 }
 
-Object.type = function(obj)
+InjectedScript._isDefined = function(object)
+{
+    return object || object instanceof inspectedWindow.HTMLAllCollection;
+}
+
+InjectedScript._type = function(obj)
 {
     if (obj === null)
         return "null";
+
+    // FIXME(33716): typeof document.all is always 'undefined'.
+    if (obj instanceof inspectedWindow.HTMLAllCollection)
+        return "array";
 
     var type = typeof obj;
     if (type !== "object" && type !== "function")
@@ -1165,19 +1284,10 @@ Object.type = function(obj)
     return type;
 }
 
-Object.hasProperties = function(obj)
+InjectedScript._describe = function(obj, abbreviated)
 {
-    if (typeof obj === "undefined" || typeof obj === "null")
-        return false;
-    for (var name in obj)
-        return true;
-    return false;
-}
-
-Object.describe = function(obj, abbreviated)
-{
-    var type1 = Object.type(obj);
-    var type2 = Object.className(obj);
+    var type1 = InjectedScript._type(obj);
+    var type2 = InjectedScript._className(obj);
 
     switch (type1) {
     case "object":
@@ -1197,47 +1307,38 @@ Object.describe = function(obj, abbreviated)
         else if (abbreviated)
             objectText = /.*/.exec(obj)[0].replace(/ +$/g, "");
         return objectText;
-    case "regexp":
-        return String(obj).replace(/([\\\/])/g, "\\$1").replace(/\\(\/[gim]*)$/, "$1").substring(1);
     default:
         return String(obj);
     }
 }
 
-Object.className = function(obj)
+InjectedScript._className = function(obj)
 {
     return Object.prototype.toString.call(obj).replace(/^\[object (.*)\]$/i, "$1")
 }
 
-// Although Function.prototype.bind and String.prototype.escapeCharacters are defined in utilities.js they will soon become
-// unavailable in the InjectedScript context. So we define them here for the local use.
-// TODO: remove this comment once InjectedScript runs in a separate context.
-Function.prototype.bind = function(thisObject)
-{
-    var func = this;
-    var args = Array.prototype.slice.call(arguments, 1);
-    return function() { return func.apply(thisObject, args.concat(Array.prototype.slice.call(arguments, 0))) };
-}
-
-String.prototype.escapeCharacters = function(chars)
+InjectedScript._escapeCharacters = function(str, chars)
 {
     var foundChar = false;
     for (var i = 0; i < chars.length; ++i) {
-        if (this.indexOf(chars.charAt(i)) !== -1) {
+        if (str.indexOf(chars.charAt(i)) !== -1) {
             foundChar = true;
             break;
         }
     }
 
     if (!foundChar)
-        return this;
+        return str;
 
     var result = "";
-    for (var i = 0; i < this.length; ++i) {
-        if (chars.indexOf(this.charAt(i)) !== -1)
+    for (var i = 0; i < str.length; ++i) {
+        if (chars.indexOf(str.charAt(i)) !== -1)
             result += "\\";
-        result += this.charAt(i);
+        result += str.charAt(i);
     }
 
     return result;
 }
+
+return InjectedScript;
+});

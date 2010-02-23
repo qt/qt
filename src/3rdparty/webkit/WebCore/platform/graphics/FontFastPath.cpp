@@ -135,13 +135,7 @@ GlyphData Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceSmallCap
     UChar codeUnits[2];
     int codeUnitsLength;
     if (c <= 0xFFFF) {
-        UChar c16 = c;
-        if (Font::treatAsSpace(c16))
-            codeUnits[0] = ' ';
-        else if (Font::treatAsZeroWidthSpace(c16))
-            codeUnits[0] = zeroWidthSpace;
-        else
-            codeUnits[0] = c16;
+        codeUnits[0] = Font::normalizeSpaces(c);
         codeUnitsLength = 1;
     } else {
         codeUnits[0] = U16_LEAD(c);
@@ -157,7 +151,7 @@ GlyphData Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceSmallCap
         GlyphData data = fallbackPage && fallbackPage->fontDataForCharacter(c) ? fallbackPage->glyphDataForCharacter(c) : characterFontData->missingGlyphData();
         // Cache it so we don't have to do system fallback again next time.
         if (!useSmallCapsFont) {
-#if PLATFORM(WINCE)
+#if OS(WINCE)
             // missingGlyphData returns a null character, which is not suitable for GDI to display.
             // Also, sometimes we cannot map a font for the character on WINCE, but GDI can still
             // display the character, probably because the font package is not installed correctly.
@@ -175,7 +169,7 @@ GlyphData Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceSmallCap
     // FIXME: It would be nicer to use the missing glyph from the last resort font instead.
     GlyphData data = primaryFont()->missingGlyphData();
     if (!useSmallCapsFont) {
-#if PLATFORM(WINCE)
+#if OS(WINCE)
         // See comment about WINCE GDI handling near setGlyphDataForCharacter above.
         page->setGlyphDataForCharacter(c, c, data.fontData);
         return page->glyphDataForCharacter(c);
@@ -251,8 +245,7 @@ bool Font::canUseGlyphCache(const TextRun& run) const
             return false;
     }
 
-    TextRenderingMode textMode = m_fontDescription.textRenderingMode();
-    if (textMode == OptimizeLegibility || textMode == GeometricPrecision)
+    if (typesettingFeatures())
         return false;
 
     return true;

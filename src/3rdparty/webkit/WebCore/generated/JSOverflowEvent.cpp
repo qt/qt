@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -162,7 +162,8 @@ JSValue jsOverflowEventOrient(ExecState* exec, const Identifier&, const Property
     JSOverflowEvent* castedThis = static_cast<JSOverflowEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     OverflowEvent* imp = static_cast<OverflowEvent*>(castedThis->impl());
-    return jsNumber(exec, imp->orient());
+    JSValue result = jsNumber(exec, imp->orient());
+    return result;
 }
 
 JSValue jsOverflowEventHorizontalOverflow(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,7 +171,8 @@ JSValue jsOverflowEventHorizontalOverflow(ExecState* exec, const Identifier&, co
     JSOverflowEvent* castedThis = static_cast<JSOverflowEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     OverflowEvent* imp = static_cast<OverflowEvent*>(castedThis->impl());
-    return jsBoolean(imp->horizontalOverflow());
+    JSValue result = jsBoolean(imp->horizontalOverflow());
+    return result;
 }
 
 JSValue jsOverflowEventVerticalOverflow(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -178,7 +180,8 @@ JSValue jsOverflowEventVerticalOverflow(ExecState* exec, const Identifier&, cons
     JSOverflowEvent* castedThis = static_cast<JSOverflowEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     OverflowEvent* imp = static_cast<OverflowEvent*>(castedThis->impl());
-    return jsBoolean(imp->verticalOverflow());
+    JSValue result = jsBoolean(imp->verticalOverflow());
+    return result;
 }
 
 JSValue jsOverflowEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

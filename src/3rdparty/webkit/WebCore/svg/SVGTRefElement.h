@@ -34,6 +34,8 @@ namespace WebCore {
         virtual ~SVGTRefElement();
 
         virtual void parseMappedAttribute(MappedAttribute*);
+        virtual void svgAttributeChanged(const QualifiedName&);
+        virtual void synchronizeProperty(const QualifiedName&);
 
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
         bool childShouldCreateRenderer(Node*) const;
@@ -42,7 +44,7 @@ namespace WebCore {
         void updateReferencedText();
 
         // SVGURIReference
-        ANIMATED_PROPERTY_DECLARATIONS(SVGTRefElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
+        DECLARE_ANIMATED_PROPERTY(SVGTRefElement, XLinkNames::hrefAttr, String, Href, href)
     };
 
 } // namespace WebCore

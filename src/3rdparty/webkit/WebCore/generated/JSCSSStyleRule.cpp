@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -146,7 +146,8 @@ JSValue jsCSSStyleRuleSelectorText(ExecState* exec, const Identifier&, const Pro
     JSCSSStyleRule* castedThis = static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleRule* imp = static_cast<CSSStyleRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->selectorText());
+    JSValue result = jsStringOrNull(exec, imp->selectorText());
+    return result;
 }
 
 JSValue jsCSSStyleRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,7 +155,8 @@ JSValue jsCSSStyleRuleStyle(ExecState* exec, const Identifier&, const PropertySl
     JSCSSStyleRule* castedThis = static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleRule* imp = static_cast<CSSStyleRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
 JSValue jsCSSStyleRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,7 +171,8 @@ void JSCSSStyleRule::put(ExecState* exec, const Identifier& propertyName, JSValu
 
 void setJSCSSStyleRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CSSStyleRule* imp = static_cast<CSSStyleRule*>(static_cast<JSCSSStyleRule*>(thisObject)->impl());
+    JSCSSStyleRule* castedThisObj = static_cast<JSCSSStyleRule*>(thisObject);
+    CSSStyleRule* imp = static_cast<CSSStyleRule*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setSelectorText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

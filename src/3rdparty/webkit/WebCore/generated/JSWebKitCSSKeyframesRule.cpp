@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -197,7 +197,8 @@ JSValue jsWebKitCSSKeyframesRuleName(ExecState* exec, const Identifier&, const P
     JSWebKitCSSKeyframesRule* castedThis = static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->name());
+    JSValue result = jsStringOrNull(exec, imp->name());
+    return result;
 }
 
 JSValue jsWebKitCSSKeyframesRuleCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -205,7 +206,8 @@ JSValue jsWebKitCSSKeyframesRuleCssRules(ExecState* exec, const Identifier&, con
     JSWebKitCSSKeyframesRule* castedThis = static_cast<JSWebKitCSSKeyframesRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
+    return result;
 }
 
 JSValue jsWebKitCSSKeyframesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -220,15 +222,16 @@ void JSWebKitCSSKeyframesRule::put(ExecState* exec, const Identifier& propertyNa
 
 void setJSWebKitCSSKeyframesRuleName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(static_cast<JSWebKitCSSKeyframesRule*>(thisObject)->impl());
+    JSWebKitCSSKeyframesRule* castedThisObj = static_cast<JSWebKitCSSKeyframesRule*>(thisObject);
+    WebKitCSSKeyframesRule* imp = static_cast<WebKitCSSKeyframesRule*>(castedThisObj->impl());
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
-void JSWebKitCSSKeyframesRule::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSWebKitCSSKeyframesRule::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<WebKitCSSKeyframesRule*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSWebKitCSSKeyframesRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

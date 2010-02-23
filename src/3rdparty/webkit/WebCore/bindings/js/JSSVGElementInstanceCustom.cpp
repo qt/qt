@@ -43,9 +43,7 @@ void JSSVGElementInstance::markChildren(MarkStack& markStack)
     Base::markChildren(markStack);
 
     // Mark the wrapper for our corresponding element, so it can mark its event handlers.
-    JSNode* correspondingWrapper = getCachedDOMNodeWrapper(impl()->correspondingElement()->document(), impl()->correspondingElement());
-    if (correspondingWrapper)
-        markStack.append(correspondingWrapper);
+    markDOMNodeWrapper(markStack, impl()->correspondingElement()->document(), impl()->correspondingElement());
 }
 
 JSValue JSSVGElementInstance::addEventListener(ExecState* exec, const ArgList& args)
@@ -54,7 +52,7 @@ JSValue JSSVGElementInstance::addEventListener(ExecState* exec, const ArgList& a
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)), args.at(2).toBoolean(exec));
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -64,7 +62,7 @@ JSValue JSSVGElementInstance::removeEventListener(ExecState* exec, const ArgList
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
