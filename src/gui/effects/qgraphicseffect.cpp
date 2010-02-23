@@ -726,7 +726,8 @@ void QGraphicsColorizeEffect::draw(QPainter *painter)
     elements. The level of detail can be modified using the setBlurRadius()
     function. Use setBlurHints() to choose the blur hints.
 
-    By default, the blur radius is 5 pixels.
+    By default, the blur radius is 5 pixels. The blur radius is specified in
+    device coordinates.
 
     \img graphicseffect-blur.png
 
@@ -781,6 +782,9 @@ QGraphicsBlurEffect::~QGraphicsBlurEffect()
     radius results in a more blurred appearance.
 
     By default, the blur radius is 5 pixels.
+
+    The radius is given in device coordinates, meaning it is
+    unaffected by scale.
 */
 qreal QGraphicsBlurEffect::blurRadius() const
 {
@@ -884,7 +888,8 @@ void QGraphicsBlurEffect::draw(QPainter *painter)
 
     By default, the drop shadow is a semi-transparent dark gray
     (QColor(63, 63, 63, 180)) shadow, blurred with a radius of 1 at an offset
-    of 8 pixels towards the lower right.
+    of 8 pixels towards the lower right. The drop shadow offset is specified
+    in device coordinates.
 
     \img graphicseffect-drop-shadow.png
 
@@ -912,6 +917,9 @@ QGraphicsDropShadowEffect::~QGraphicsDropShadowEffect()
     \brief the shadow offset in pixels.
 
     By default, the offset is 8 pixels towards the lower right.
+
+    The offset is given in device coordinates, which means it is
+    unaffected by scale.
 
     \sa xOffset(), yOffset(), blurRadius(), color()
 */

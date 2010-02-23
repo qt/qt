@@ -989,34 +989,24 @@ void QFontDialog::open(QObject *receiver, const char *member)
 void QFontDialog::setVisible(bool visible)
 {
     Q_D(QFontDialog);
-    if (visible)
-        d->selectedFont = QFont();
-
-#if defined(Q_WS_MAC)
-    bool isCurrentlyVisible = (isVisible() || d->delegate);
-
-    if (!visible == !isCurrentlyVisible)
-        return;
-
     if (visible) {
-        if (!(d->opts & DontUseNativeDialog) && QFontDialogPrivate::sharedFontPanelAvailable) {
-            d->delegate = QFontDialogPrivate::openCocoaFontPanel(
-                              currentFont(), parentWidget(), windowTitle(), options(), d);
-            QFontDialogPrivate::sharedFontPanelAvailable = false;
+        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
             return;
-        }
-
-        setWindowFlags(windowModality() == Qt::WindowModal ? Qt::Sheet : DefaultWindowFlags);
-    } else {
-        if (d->delegate) {
-            QFontDialogPrivate::closeCocoaFontPanel(d->delegate);
-            d->delegate = 0;
-            QFontDialogPrivate::sharedFontPanelAvailable = true;
-            return;
+    } else if  (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
+        return;
+#ifdef Q_WS_MAC
+    if (d->canBeNativeDialog()){
+        if (d->setVisible_sys(visible)){
+            d->nativeDialogInUse = true;
+            // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
+            // updates the state correctly, but skips showing the non-native version:
+            setAttribute(Qt::WA_DontShowOnScreen, true);
+        } else {
+            d->nativeDialogInUse = false;
+            setAttribute(Qt::WA_DontShowOnScreen, false);
         }
     }
-#endif
-
+#endif // Q_WS_MAC
     QDialog::setVisible(visible);
 }
 
@@ -1032,11 +1022,14 @@ void QFontDialog::done(int result)
     Q_D(QFontDialog);
     QDialog::done(result);
     if (result == Accepted) {
-        d->selectedFont = currentFont();
+        // We check if this is the same font we had before, if so we emit currentFontChanged
+        QFont selectedFont = currentFont();
+        if(selectedFont != d->selectedFont)
+            emit(currentFontChanged(selectedFont));
+        d->selectedFont = selectedFont;
         emit fontSelected(d->selectedFont);
-    } else {
+    } else
         d->selectedFont = QFont();
-    }
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, SIGNAL(fontSelected(QFont)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
@@ -1044,6 +1037,23 @@ void QFontDialog::done(int result)
     }
     d->memberToDisconnectOnClose.clear();
 }
+
+#ifdef Q_WS_MAC
+bool QFontDialogPrivate::canBeNativeDialog()
+{
+    Q_Q(QFontDialog);
+    if (nativeDialogInUse)
+        return true;
+    if (q->testAttribute(Qt::WA_DontShowOnScreen))
+        return false;
+    if (opts & QFontDialog::DontUseNativeDialog)
+        return false;
+
+    QLatin1String staticName(QFontDialog::staticMetaObject.className());
+    QLatin1String dynamicName(q->metaObject()->className());
+    return (staticName == dynamicName);
+}
+#endif // Q_WS_MAC
 
 /*!
     \fn QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget* parent, const char* name)

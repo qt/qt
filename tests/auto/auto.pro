@@ -11,7 +11,6 @@ TEMPLATE = subdirs
            maketestselftest \
            moc \
            uic \
-           uic3 \
            guiapplauncher \
            #atwrapper \     # These tests need significant updating,
            #uiloader \      # they have hardcoded machine names etc.
@@ -68,6 +67,9 @@ Q3SUBDIRS += \
            q3frame \
            q3uridrag \
            q3widgetstack
+
+!cross_compile:Q3SUBDIRS += \
+           uic3
 
 SUBDIRS += \
 #           exceptionsafety_objects \ shouldn't enable it
@@ -445,17 +447,16 @@ SUBDIRS += \
            qplugin \
            qpluginloader \
            qscrollbar \
-           qsharedmemory \
            qsidebar \
            qsizegrip \
            qsqldriver \
-           qsystemsemaphore \
            qtconcurrentfilter \
            qtconcurrentiteratekernel \
            qtconcurrentmap \
            qtconcurrentrun \
            qtconcurrentthreadengine \
            qthreadpool \
+           qtipc \
            qtokenautomaton \
            qtouchevent \
            qwidget_window \
@@ -519,15 +520,16 @@ SUBDIRS += checkxmlfiles                \
            xmlpatternsdiagnosticsts     \
            xmlpatternsschema            \
            xmlpatternsschemats          \
+           xmlpatternssdk               \
            xmlpatternsvalidator         \
            xmlpatternsview              \
            xmlpatternsxqts              \
            xmlpatternsxslts
 
-xmlpatternsdiagnosticsts.depends = xmlpatternsxqts
-xmlpatternsview.depends = xmlpatternsxqts
-xmlpatternsxslts.depends = xmlpatternsxqts
-xmlpatternsschemats.depends = xmlpatternsxqts
+xmlpatternsdiagnosticsts.depends = xmlpatternssdk
+xmlpatternsview.depends = xmlpatternssdk
+xmlpatternsxslts.depends = xmlpatternssdk
+xmlpatternsschemats.depends = xmlpatternssdk
 }
 
 unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \

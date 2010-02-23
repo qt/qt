@@ -138,6 +138,8 @@ QT_BEGIN_NAMESPACE
         default follow redirections: it's up to the application to
         determine if the requested redirection should be allowed,
         according to its security policies.
+        The returned URL might be relative. Use QUrl::resolved()
+        to create an absolute URL out of it.
 
     \value ConnectionEncryptedAttribute
         Replies only, type: QVariant::Bool (default: false)

@@ -55,9 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace qt {
-    namespace fulltextsearch {
-        namespace clucene {
+namespace fulltextsearch {
+namespace clucene {
 
 QHelpSearchIndexReaderClucene::QHelpSearchIndexReaderClucene()
     : QHelpSearchIndexReader()
@@ -387,8 +386,7 @@ void QHelpSearchIndexReaderClucene::boostSearchHits(const QHelpEngineCore &engin
     }
 }
 
-        }   // namespace clucene
-    }   // namespace fulltextsearch
-}   // namespace qt
+}   // namespace clucene
+}   // namespace fulltextsearch
 
 QT_END_NAMESPACE

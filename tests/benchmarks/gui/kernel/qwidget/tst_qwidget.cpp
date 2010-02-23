@@ -42,33 +42,35 @@
 #include <qtest.h>
 #include <QtGui>
 
-class tst_QWidget : public QObject
+static void processEvents()
 {
-    Q_OBJECT
-
-
-private slots:
-    void update_data();
-    void updateOpaque_data();
-    void updateOpaque();
-    void updateTransparent_data();
-    void updateTransparent();
-    void updatePartial_data();
-    void updatePartial();
-    void updateComplex_data();
-    void updateComplex();
-
-    void complexToplevelResize();
-};
+    QApplication::flush();
+    QApplication::processEvents();
+    QApplication::processEvents();
+}
 
 class UpdateWidget : public QWidget
 {
 public:
-    UpdateWidget(int rows, int columns) : QWidget(0)
+    UpdateWidget(int rows, int columns)
+        : QWidget(0), rowCount(0), columnCount(0), opaqueChildren(false)
     {
+        fill(rows, columns);
+    }
+
+    UpdateWidget(QWidget *parent = 0)
+        : QWidget(parent), rowCount(0), columnCount(0), opaqueChildren(false) {}
+
+    void fill(int rows, int columns)
+    {
+        if (rows == rowCount && columns == columnCount)
+            return;
+        delete layout();
         QGridLayout *layout = new QGridLayout;
-        for (int row = 0; row < rows; ++row) {
-            for (int column = 0; column < columns; ++column) {
+        rowCount = rows;
+        columnCount = columns;
+        for (int row = 0; row < rowCount; ++row) {
+            for (int column = 0; column < columnCount; ++column) {
                 UpdateWidget *widget = new UpdateWidget;
                 widget->setFixedSize(20, 20);
                 layout->addWidget(widget, row, column);
@@ -76,9 +78,20 @@ public:
             }
         }
         setLayout(layout);
+        adjustSize();
+        QTest::qWait(250);
+        processEvents();
     }
 
-    UpdateWidget(QWidget *parent = 0) : QWidget(parent) {}
+    void setOpaqueChildren(bool enable)
+    {
+        if (opaqueChildren != enable) {
+            foreach (QWidget *w, children)
+                w->setAttribute(Qt::WA_OpaquePaintEvent, enable);
+            opaqueChildren = enable;
+            processEvents();
+        }
+    }
 
     void paintEvent(QPaintEvent *)
     {
@@ -93,75 +106,86 @@ public:
 
     QRegion updateRegion;
     QList<UpdateWidget*> children;
+    int rowCount;
+    int columnCount;
+    bool opaqueChildren;
 };
+
+class tst_QWidget : public QObject
+{
+    Q_OBJECT
+
+public slots:
+    void initTestCase();
+    void init();
+
+private slots:
+    void update_data();
+    void update();
+    void updatePartial_data();
+    void updatePartial();
+    void updateComplex_data();
+    void updateComplex();
+
+private:
+    UpdateWidget widget;
+};
+
+void tst_QWidget::initTestCase()
+{
+    widget.show();
+    QTest::qWaitForWindowShown(&widget);
+    QTest::qWait(300);
+    processEvents();
+}
+
+void tst_QWidget::init()
+{
+    QVERIFY(widget.isVisible());
+    for (int i = 0; i < 3; ++i)
+        processEvents();
+}
 
 void tst_QWidget::update_data()
 {
     QTest::addColumn<int>("rows");
     QTest::addColumn<int>("columns");
     QTest::addColumn<int>("numUpdates");
+    QTest::addColumn<bool>("opaque");
 
-    QTest::newRow("10x10x1") << 10 << 10 << 1;
-    QTest::newRow("10x10x10") << 10 << 10 << 10;
-    QTest::newRow("25x25x1") << 25 << 25 << 1;
-    QTest::newRow("25x25x10") << 25 << 25 << 10;
-    QTest::newRow("25x25x100") << 25 << 25 << 100;
+    QTest::newRow("10x10x1 transparent")   << 10 << 10 << 1   << false;
+    QTest::newRow("10x10x10 transparent")  << 10 << 10 << 10  << false;
+    QTest::newRow("10x10x100 transparent") << 10 << 10 << 100 << false;
+    QTest::newRow("10x10x1 opaque")        << 10 << 10 << 1   << true;
+    QTest::newRow("10x10x10 opaque")       << 10 << 10 << 10  << true;
+    QTest::newRow("10x10x100 opaque")      << 10 << 10 << 100 << true;
+    QTest::newRow("25x25x1 transparent ")  << 25 << 25 << 1   << false;
+    QTest::newRow("25x25x10 transparent")  << 25 << 25 << 10  << false;
+    QTest::newRow("25x25x100 transparent") << 25 << 25 << 100 << false;
+    QTest::newRow("25x25x1 opaque")        << 25 << 25 << 1   << true;
+    QTest::newRow("25x25x10 opaque")       << 25 << 25 << 10  << true;
+    QTest::newRow("25x25x100 opaque")      << 25 << 25 << 100 << true;
 }
 
-void tst_QWidget::updateOpaque_data()
-{
-    update_data();
-}
-
-void tst_QWidget::updateOpaque()
-{
-    QFETCH(int, rows);
-    QFETCH(int, columns);
-    QFETCH(int, numUpdates);
-
-    UpdateWidget widget(rows, columns);
-    foreach (QWidget *w, widget.children) {
-        w->setAttribute(Qt::WA_OpaquePaintEvent);
-    }
-
-    widget.show();
-    QApplication::processEvents();
-
-    int i = 0;
-    const int n = widget.children.size();
-    QBENCHMARK {
-        for (int j = 0; j < numUpdates; ++j) {
-            widget.children[i]->update();
-            QApplication::processEvents();
-            i = (i + 1) % n;
-        }
-    }
-}
-
-void tst_QWidget::updateTransparent_data()
-{
-    update_data();
-}
-
-void tst_QWidget::updateTransparent()
+void tst_QWidget::update()
 {
     QFETCH(int, rows);
     QFETCH(int, columns);
     QFETCH(int, numUpdates);
+    QFETCH(bool, opaque);
 
-    UpdateWidget widget(rows, columns);
-    widget.show();
-    QApplication::processEvents();
+    widget.fill(rows, columns);
+    widget.setOpaqueChildren(opaque);
 
-    int i = 0;
-    const int n = widget.children.size();
     QBENCHMARK {
-        for (int j = 0; j < numUpdates; ++j) {
-            widget.children[i]->update();
+        for (int i = 0; i < widget.children.size(); ++i) {
+            for (int j = 0; j < numUpdates; ++j)
+                widget.children.at(i)->update();
             QApplication::processEvents();
-            i = (i + 1) % n;
         }
     }
+
+    QApplication::flush();
 }
 
 void tst_QWidget::updatePartial_data()
@@ -174,24 +198,23 @@ void tst_QWidget::updatePartial()
     QFETCH(int, rows);
     QFETCH(int, columns);
     QFETCH(int, numUpdates);
+    QFETCH(bool, opaque);
 
-    UpdateWidget widget(rows, columns);
-    widget.show();
-    QApplication::processEvents();
+    widget.fill(rows, columns);
+    widget.setOpaqueChildren(opaque);
 
-    int i = 0;
-    const int n = widget.children.size();
     QBENCHMARK {
-        for (int j = 0; j < numUpdates; ++j) {
+        for (int i = 0; i < widget.children.size(); ++i) {
             QWidget *w = widget.children[i];
             const int x = w->width() / 2;
             const int y = w->height() / 2;
-            w->update(0, 0, x, y);
-            w->update(x, 0, x, y);
-            w->update(0, y, x, y);
-            w->update(x, y, x, y);
+            for (int j = 0; j < numUpdates; ++j) {
+                w->update(0, 0, x, y);
+                w->update(x, 0, x, y);
+                w->update(0, y, x, y);
+                w->update(x, y, x, y);
+            }
             QApplication::processEvents();
-            i = (i + 1) % n;
         }
     }
 }
@@ -206,124 +229,24 @@ void tst_QWidget::updateComplex()
     QFETCH(int, rows);
     QFETCH(int, columns);
     QFETCH(int, numUpdates);
+    QFETCH(bool, opaque);
 
-    UpdateWidget widget(rows, columns);
-    widget.show();
-    QApplication::processEvents();
+    widget.fill(rows, columns);
+    widget.setOpaqueChildren(opaque);
 
-    int i = 0;
-    const int n = widget.children.size();
     QBENCHMARK {
-        for (int j = 0; j < numUpdates; ++j) {
+        for (int i = 0; i < widget.children.size(); ++i) {
             QWidget *w = widget.children[i];
             const int x = w->width() / 2;
             const int y = w->height() / 2;
-            w->update(QRegion(0, 0, x, y, QRegion::Ellipse));
-            w->update(QRegion(x, y, x, y, QRegion::Ellipse));
+            QRegion r1(0, 0, x, y, QRegion::Ellipse);
+            QRegion r2(x, y, x, y, QRegion::Ellipse);
+            for (int j = 0; j < numUpdates; ++j) {
+                w->update(r1);
+                w->update(r2);
+            }
             QApplication::processEvents();
-            i = (i + 1) % n;
         }
-    }
-}
-
-class ResizeWidget : public QWidget
-{
-public:
-    ResizeWidget();
-};
-
-ResizeWidget::ResizeWidget() : QWidget(0)
-{
-    QBoxLayout *topLayout = new QVBoxLayout;
-
-    QMenuBar *menubar = new QMenuBar;
-    QMenu* popup = menubar->addMenu("&File");
-    popup->addAction("&Quit", qApp, SLOT(quit()));
-    topLayout->setMenuBar(menubar);
-
-    QBoxLayout *buttons = new QHBoxLayout;
-    buttons->setMargin(5);
-    buttons->addStretch(10);
-    for (int i = 1; i <= 4; i++ ) {
-        QPushButton* button = new QPushButton;
-        button->setText(QString("Button %1").arg(i));
-        buttons->addWidget(button);
-    }
-    topLayout->addLayout(buttons);
-
-    buttons = new QHBoxLayout;
-    buttons->addStretch(10);
-    for (int i = 11; i <= 16; i++) {
-        QPushButton* button = new QPushButton;
-        button->setText(QString("Button %1").arg(i));
-        buttons->addWidget(button);
-    }
-    topLayout->addLayout(buttons);
-
-    QBoxLayout *buttons2 = new QHBoxLayout;
-    buttons2->addStretch(10);
-    topLayout->addLayout(buttons2);
-
-    QPushButton *button = new QPushButton;
-    button->setText("Button five");
-    buttons2->addWidget(button);
-
-    button = new QPushButton;
-    button->setText("Button 6");
-    buttons2->addWidget(button);
-
-    QTextEdit *bigWidget = new QTextEdit;
-    bigWidget->setText("This widget will get all the remaining space");
-    bigWidget->setFrameStyle(QFrame::Panel | QFrame::Plain);
-    topLayout->addWidget(bigWidget);
-
-    const int numRows = 6;
-    const int labelCol = 0;
-    const int linedCol = 1;
-    const int multiCol = 2;
-
-    QGridLayout *grid = new QGridLayout;
-    for (int row = 0; row < numRows; row++) {
-        QLineEdit *lineEdit = new QLineEdit;
-        grid->addWidget(lineEdit, row, linedCol);
-        QLabel *label = new QLabel(QString("Line &%1").arg(row + 1));
-        grid->addWidget(label, row, labelCol);
-    }
-    topLayout->addLayout(grid);
-
-    QTextEdit *multiLineEdit = new QTextEdit;
-    grid->addWidget(multiLineEdit, 0, labelCol + 1, multiCol, multiCol);
-
-    grid->setColumnStretch(linedCol, 10);
-    grid->setColumnStretch(multiCol, 20);
-
-    QLabel* statusBar = new QLabel;
-    statusBar->setText("Let's pretend this is a status bar");
-    statusBar->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-    statusBar->setFixedHeight(statusBar->sizeHint().height());
-    statusBar->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-    topLayout->addWidget(statusBar);
-
-    topLayout->activate();
-    setLayout(topLayout);
-}
-
-void tst_QWidget::complexToplevelResize()
-{
-    ResizeWidget w;
-    w.show();
-
-    QApplication::processEvents();
-
-    const int minSize = 100;
-    const int maxSize = 800;
-    int size = minSize;
-
-    QBENCHMARK {
-        w.resize(size, size);
-        size = qMax(minSize, (size + 10) % maxSize);
-        QApplication::processEvents();
-        QApplication::processEvents();
     }
 }
 

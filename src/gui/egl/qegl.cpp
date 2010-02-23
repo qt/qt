@@ -101,7 +101,7 @@ bool QEglContext::chooseConfig
         // If we want the best pixel format, then return the first
         // matching configuration.
         if (match == QEgl::BestPixelFormat) {
-            eglChooseConfig(dpy, props.properties(), &cfg, 1, &matching);
+            eglChooseConfig(display(), props.properties(), &cfg, 1, &matching);
             if (matching < 1)
                 continue;
             return true;
@@ -111,13 +111,13 @@ bool QEglContext::chooseConfig
         // first that matches the pixel format we wanted.
         EGLint size = matching;
         EGLConfig *configs = new EGLConfig [size];
-        eglChooseConfig(dpy, props.properties(), configs, size, &matching);
+        eglChooseConfig(display(), props.properties(), configs, size, &matching);
         for (EGLint index = 0; index < size; ++index) {
             EGLint red, green, blue, alpha;
-            eglGetConfigAttrib(dpy, configs[index], EGL_RED_SIZE, &red);
-            eglGetConfigAttrib(dpy, configs[index], EGL_GREEN_SIZE, &green);
-            eglGetConfigAttrib(dpy, configs[index], EGL_BLUE_SIZE, &blue);
-            eglGetConfigAttrib(dpy, configs[index], EGL_ALPHA_SIZE, &alpha);
+            eglGetConfigAttrib(display(), configs[index], EGL_RED_SIZE, &red);
+            eglGetConfigAttrib(display(), configs[index], EGL_GREEN_SIZE, &green);
+            eglGetConfigAttrib(display(), configs[index], EGL_BLUE_SIZE, &blue);
+            eglGetConfigAttrib(display(), configs[index], EGL_ALPHA_SIZE, &alpha);
             if (red == props.value(EGL_RED_SIZE) &&
                     green == props.value(EGL_GREEN_SIZE) &&
                     blue == props.value(EGL_BLUE_SIZE) &&
@@ -181,7 +181,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
         }
     }
     if (ctx == EGL_NO_CONTEXT) {
-        ctx = eglCreateContext(dpy, cfg, 0, contextProps.properties());
+        ctx = eglCreateContext(display(), cfg, 0, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
             qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << errorString(eglGetError());
             return false;
@@ -197,7 +197,7 @@ void QEglContext::destroySurface(EGLSurface surface)
     if (surface != EGL_NO_SURFACE) {
         if (surface == currentSurface)
             doneCurrent();
-        eglDestroySurface(dpy, surface);
+        eglDestroySurface(display(), surface);
     }
 }
 
@@ -205,8 +205,7 @@ void QEglContext::destroySurface(EGLSurface surface)
 void QEglContext::destroyContext()
 {
     if (ctx != EGL_NO_CONTEXT && ownsContext)
-        eglDestroyContext(dpy, ctx);
-    dpy = EGL_NO_DISPLAY;
+        eglDestroyContext(display(), ctx);
     ctx = EGL_NO_CONTEXT;
     cfg = 0;
 }
@@ -343,7 +342,7 @@ QEglProperties QEglContext::configProperties(EGLConfig cfg) const
     QEglProperties props;
     for (int name = 0x3020; name <= 0x304F; ++name) {
         EGLint value;
-        if (name != EGL_NONE && eglGetConfigAttrib(dpy, cfg, name, &value))
+        if (name != EGL_NONE && eglGetConfigAttrib(display(), cfg, name, &value))
             props.setValue(name, value);
     }
     eglGetError();  // Clear the error state.
@@ -417,7 +416,7 @@ void QEglContext::dumpAllConfigs()
     if (!eglGetConfigs(display(), 0, 0, &count) || count < 1)
         return;
     EGLConfig *configs = new EGLConfig [count];
-    eglGetConfigs(dpy, configs, count, &count);
+    eglGetConfigs(display(), configs, count, &count);
     for (EGLint index = 0; index < count; ++index) {
         props = configProperties(configs[index]);
         qWarning() << props.toString();

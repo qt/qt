@@ -113,7 +113,7 @@ public:
     {
     public:
         typedef std::bidirectional_iterator_tag  iterator_category;
-        typedef ptrdiff_t  difference_type;
+        typedef qptrdiff difference_type;
         typedef T value_type;
         typedef T *pointer;
         typedef T &reference;
@@ -146,7 +146,7 @@ public:
     {
     public:
         typedef std::bidirectional_iterator_tag  iterator_category;
-        typedef ptrdiff_t  difference_type;
+        typedef qptrdiff difference_type;
         typedef T value_type;
         typedef const T *pointer;
         typedef const T &reference;
@@ -212,7 +212,7 @@ public:
     typedef const value_type *const_pointer;
     typedef value_type &reference;
     typedef const value_type &const_reference;
-    typedef ptrdiff_t difference_type;
+    typedef qptrdiff difference_type;
 
 #ifndef QT_NO_STL
     static inline QLinkedList<T> fromStdList(const std::list<T> &list)

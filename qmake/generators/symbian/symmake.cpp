@@ -49,6 +49,9 @@
 #include <stdlib.h>
 #include <qdebug.h>
 
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
 #define RESOURCE_DIRECTORY_MMP "/resource/apps"
 #define RESOURCE_DIRECTORY_RESOURCE "\\\\resource\\\\apps\\\\"
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
@@ -106,11 +109,13 @@ QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const Q
 {
     static QString epocRootStr;
     if (epocRootStr.isEmpty()) {
-        QFileInfo efi(epocRoot());
-        epocRootStr = efi.canonicalFilePath();
-        if (epocRootStr.isEmpty()) {
+        epocRootStr = epocRoot();
+        QFileInfo efi(epocRootStr);
+        if (!efi.exists() || epocRootStr.isEmpty()) {
             fprintf(stderr, "Unable to resolve epocRoot '%s' to real dir on current drive, defaulting to '/' for mmp paths\n", qPrintable(epocRoot()));
             epocRootStr = "/";
+        } else {
+            epocRootStr = efi.absoluteFilePath();
         }
         if (!epocRootStr.endsWith("/"))
             epocRootStr += "/";
@@ -134,16 +139,8 @@ QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const Q
     return resultPath;
 }
 
-QString SymbianMakefileGenerator::canonizePath(const QString& origPath)
+QString SymbianMakefileGenerator::absolutizePath(const QString& origPath)
 {
-    // Since current path gets appended almost always anyway, use it as default
-    // for nonexisting paths.
-    static QString defaultPath;
-    if (defaultPath.isEmpty()) {
-        QFileInfo fi(".");
-        defaultPath = fi.canonicalFilePath();
-    }
-
     // Prepend epocroot to any paths beginning with "/epoc32/"
     QString resultPath = QDir::fromNativeSeparators(origPath);
     if (resultPath.startsWith("/epoc32/", Qt::CaseInsensitive))
@@ -151,15 +148,12 @@ QString SymbianMakefileGenerator::canonizePath(const QString& origPath)
 
     QFileInfo fi(fileInfo(resultPath));
     if (fi.isDir()) {
-        resultPath = fi.canonicalFilePath();
+        resultPath = fi.absoluteFilePath();
     } else {
-        resultPath = fi.canonicalPath();
+        resultPath = fi.absolutePath();
     }
 
     resultPath = QDir::cleanPath(resultPath);
-
-    if (resultPath.isEmpty())
-        resultPath = defaultPath;
 
     return resultPath;
 }
@@ -692,7 +686,7 @@ void SymbianMakefileGenerator::initMmpVariables()
     srcpaths << project->values("UI_DIR");
 
     QDir current = QDir::current();
-    QString canonizedCurrent = canonizePath(".");
+    QString absolutizedCurrent = absolutizePath(".");
 
     for (int j = 0; j < srcpaths.size(); ++j) {
         QFileInfo fi(fileInfo(srcpaths.at(j)));
@@ -700,10 +694,10 @@ void SymbianMakefileGenerator::initMmpVariables()
         if (fi.suffix().startsWith("c")) {
             if (fi.filePath().length() > fi.fileName().length()) {
                 appendIfnotExist(srcincpaths, fi.path());
-                sources[canonizePath(fi.path())] += fi.fileName();
+                sources[absolutizePath(fi.path())] += fi.fileName();
             } else {
-                sources[canonizedCurrent] += fi.fileName();
-                appendIfnotExist(srcincpaths, canonizedCurrent);
+                sources[absolutizedCurrent] += fi.fileName();
+                appendIfnotExist(srcincpaths, absolutizedCurrent);
             }
         }
     }
@@ -717,7 +711,7 @@ void SymbianMakefileGenerator::initMmpVariables()
     incpaths << project->values("UI_DIR");
 
     for (int j = 0; j < incpaths.size(); ++j) {
-        QString includepath = canonizePath(incpaths.at(j));
+        QString includepath = absolutizePath(incpaths.at(j));
         appendIfnotExist(sysincspaths, includepath);
         appendAbldTempDirs(sysincspaths, includepath);
     }
@@ -1348,7 +1342,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         removeSpecialCharacters(bldinfDefine);
 
         t << "#ifndef " << bldinfDefine << endl;
-        t << "\t#include \"" << QDir::toNativeSeparators(bldinfFilename) << "\"" << endl;
+        t << "\t#include \"" << bldinfFilename << "\"" << endl;
         t << "#endif // " << bldinfDefine << endl;
     }
 

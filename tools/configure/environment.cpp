@@ -60,6 +60,8 @@ using namespace std;
 #include <qt_windows.h>
 #endif
 
+#include <symbian/epocroot.h> // from tools/shared
+#include <windows/registry.h> // from tools/shared
 
 QT_BEGIN_NAMESPACE
 
@@ -94,126 +96,6 @@ CompilerInfo *Environment::compilerInfo(Compiler compiler)
     while(compiler_info[i].compiler != compiler && compiler_info[i].compiler != CC_UNKNOWN)
         ++i;
     return &(compiler_info[i]);
-}
-
-/*!
-    Returns the path part of a registry key.
-    Ei.
-        For a key
-            "Software\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\ProductDir"
-        it returns
-            "Software\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\"
-*/
-QString Environment::keyPath(const QString &rKey)
-{
-    int idx = rKey.lastIndexOf(QLatin1Char('\\'));
-    if (idx == -1)
-        return QString();
-    return rKey.left(idx + 1);
-}
-
-/*!
-    Returns the name part of a registry key.
-    Ei.
-        For a key
-            "Software\\Microsoft\\VisualStudio\\8.0\\Setup\\VC\\ProductDir"
-        it returns
-            "ProductDir"
-*/
-QString Environment::keyName(const QString &rKey)
-{
-    int idx = rKey.lastIndexOf(QLatin1Char('\\'));
-    if (idx == -1)
-        return rKey;
-
-    QString res(rKey.mid(idx + 1));
-    if (res == "Default" || res == ".")
-        res = "";
-    return res;
-}
-
-/*!
-    Returns a registry keys value in string form.
-    If the registry key does not exist, or cannot be accessed, a
-    QString() is returned.
-*/
-QString Environment::readRegistryKey(HKEY parentHandle, const QString &rSubkey)
-{
-#ifndef Q_OS_WIN32
-    return QString();
-#else
-    QString rSubkeyName = keyName(rSubkey);
-    QString rSubkeyPath = keyPath(rSubkey);
-
-    HKEY handle = 0;
-    LONG res = RegOpenKeyEx(parentHandle, (wchar_t*)rSubkeyPath.utf16(), 0, KEY_READ, &handle);
-    if (res != ERROR_SUCCESS)
-        return QString();
-
-    // get the size and type of the value
-    DWORD dataType;
-    DWORD dataSize;
-    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, &dataType, 0, &dataSize);
-    if (res != ERROR_SUCCESS) {
-        RegCloseKey(handle);
-        return QString();
-    }
-
-    // get the value
-    QByteArray data(dataSize, 0);
-    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, 0,
-                           reinterpret_cast<unsigned char*>(data.data()), &dataSize);
-    if (res != ERROR_SUCCESS) {
-        RegCloseKey(handle);
-        return QString();
-    }
-
-    QString result;
-    switch (dataType) {
-        case REG_EXPAND_SZ:
-        case REG_SZ: {
-            result = QString::fromWCharArray(((const wchar_t *)data.constData()));
-            break;
-        }
-
-        case REG_MULTI_SZ: {
-            QStringList l;
-            int i = 0;
-            for (;;) {
-                QString s = QString::fromWCharArray((const wchar_t *)data.constData() + i);
-                i += s.length() + 1;
-
-                if (s.isEmpty())
-                    break;
-                l.append(s);
-            }
-            result = l.join(", ");
-            break;
-        }
-
-        case REG_NONE:
-        case REG_BINARY: {
-            result = QString::fromWCharArray((const wchar_t *)data.constData(), data.size() / 2);
-            break;
-        }
-
-        case REG_DWORD_BIG_ENDIAN:
-        case REG_DWORD: {
-            Q_ASSERT(data.size() == sizeof(int));
-            int i;
-            memcpy((char*)&i, data.constData(), sizeof(int));
-            result = QString::number(i);
-            break;
-        }
-
-        default:
-            qWarning("QSettings: unknown data %d type in windows registry", dataType);
-            break;
-    }
-
-    RegCloseKey(handle);
-    return result;
-#endif
 }
 
 /*!
@@ -577,6 +459,12 @@ bool Environment::rmdir(const QString &name)
     }
     result &= dir.rmdir(cleanName);
     return result;
+}
+
+QString Environment::symbianEpocRoot()
+{
+    // Call function defined in tools/shared/symbian/epocroot.h
+    return ::epocRoot();
 }
 
 QT_END_NAMESPACE
