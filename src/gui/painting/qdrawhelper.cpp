@@ -46,6 +46,7 @@
 #include <private/qdrawhelper_armv6_p.h>
 #include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
+#include <private/qsimd_p.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -7720,199 +7721,6 @@ static void qt_memfill16_setup(quint16 *dest, quint16 value, int count);
 qt_memfill32_func qt_memfill32 = qt_memfill32_setup;
 qt_memfill16_func qt_memfill16 = qt_memfill16_setup;
 
-enum CPUFeatures {
-    None        = 0,
-    MMX         = 0x1,
-    MMXEXT      = 0x2,
-    MMX3DNOW    = 0x4,
-    MMX3DNOWEXT = 0x8,
-    SSE         = 0x10,
-    SSE2        = 0x20,
-    CMOV        = 0x40,
-    IWMMXT      = 0x80,
-    NEON        = 0x100
-};
-
-static uint detectCPUFeatures()
-{
-#if defined (Q_OS_WINCE)
-#if defined (ARM)
-    if (IsProcessorFeaturePresent(PF_ARM_INTEL_WMMX))
-        return IWMMXT;
-#elif defined(_X86_)
-    uint features = 0;
-#if defined QT_HAVE_MMX
-    if (IsProcessorFeaturePresent(PF_MMX_INSTRUCTIONS_AVAILABLE))
-        features |= MMX;
-#endif
-#if defined QT_HAVE_3DNOW
-    if (IsProcessorFeaturePresent(PF_3DNOW_INSTRUCTIONS_AVAILABLE))
-        features |= MMX3DNOW;
-#endif
-    return features;
-#endif
-    return 0;
-#elif defined(QT_HAVE_IWMMXT)
-    // runtime detection only available when running as a previlegied process
-    static const bool doIWMMXT = !qgetenv("QT_NO_IWMMXT").toInt();
-    return doIWMMXT ? IWMMXT : 0;
-#elif defined(QT_HAVE_NEON)
-    static const bool doNEON = !qgetenv("QT_NO_NEON").toInt();
-    return doNEON ? NEON : 0;
-#else
-    uint features = 0;
-#if defined(__x86_64__) || defined(Q_OS_WIN64)
-    features = MMX|SSE|SSE2|CMOV;
-#elif defined(__ia64__)
-    features = MMX|SSE|SSE2;
-#elif defined(__i386__) || defined(_M_IX86)
-    unsigned int extended_result = 0;
-    uint result = 0;
-    /* see p. 118 of amd64 instruction set manual Vol3 */
-#if defined(Q_CC_GNU)
-    asm ("push %%ebx\n"
-         "pushf\n"
-         "pop %%eax\n"
-         "mov %%eax, %%ebx\n"
-         "xor $0x00200000, %%eax\n"
-         "push %%eax\n"
-         "popf\n"
-         "pushf\n"
-         "pop %%eax\n"
-         "xor %%edx, %%edx\n"
-         "xor %%ebx, %%eax\n"
-         "jz 1f\n"
-
-         "mov $0x00000001, %%eax\n"
-         "cpuid\n"
-         "1:\n"
-         "pop %%ebx\n"
-         "mov %%edx, %0\n"
-        : "=r" (result)
-        :
-        : "%eax", "%ecx", "%edx"
-        );
-
-    asm ("push %%ebx\n"
-         "pushf\n"
-         "pop %%eax\n"
-         "mov %%eax, %%ebx\n"
-         "xor $0x00200000, %%eax\n"
-         "push %%eax\n"
-         "popf\n"
-         "pushf\n"
-         "pop %%eax\n"
-         "xor %%edx, %%edx\n"
-         "xor %%ebx, %%eax\n"
-         "jz 2f\n"
-
-         "mov $0x80000000, %%eax\n"
-         "cpuid\n"
-         "cmp $0x80000000, %%eax\n"
-         "jbe 2f\n"
-         "mov $0x80000001, %%eax\n"
-         "cpuid\n"
-         "2:\n"
-         "pop %%ebx\n"
-         "mov %%edx, %0\n"
-        : "=r" (extended_result)
-        :
-        : "%eax", "%ecx", "%edx"
-        );
-#elif defined (Q_OS_WIN)
-    _asm {
-        push eax
-        push ebx
-        push ecx
-        push edx
-        pushfd
-        pop eax
-        mov ebx, eax
-        xor eax, 00200000h
-        push eax
-        popfd
-        pushfd
-        pop eax
-        mov edx, 0
-        xor eax, ebx
-        jz skip
-
-        mov eax, 1
-        cpuid
-        mov result, edx
-    skip:
-        pop edx
-        pop ecx
-        pop ebx
-        pop eax
-    }
-
-    _asm {
-        push eax
-        push ebx
-        push ecx
-        push edx
-        pushfd
-        pop eax
-        mov ebx, eax
-        xor eax, 00200000h
-        push eax
-        popfd
-        pushfd
-        pop eax
-        mov edx, 0
-        xor eax, ebx
-        jz skip2
-
-        mov eax, 80000000h
-        cpuid
-        cmp eax, 80000000h
-        jbe skip2
-        mov eax, 80000001h
-        cpuid
-        mov extended_result, edx
-    skip2:
-        pop edx
-        pop ecx
-        pop ebx
-        pop eax
-    }
-#endif
-
-    // result now contains the standard feature bits
-    if (result & (1u << 15))
-        features |= CMOV;
-    if (result & (1u << 23))
-        features |= MMX;
-    if (extended_result & (1u << 22))
-        features |= MMXEXT;
-    if (extended_result & (1u << 31))
-        features |= MMX3DNOW;
-    if (extended_result & (1u << 30))
-        features |= MMX3DNOWEXT;
-    if (result & (1u << 25))
-        features |= SSE;
-    if (result & (1u << 26))
-        features |= SSE2;
-#endif // i386
-
-    if (qgetenv("QT_NO_MMX").toInt())
-        features ^= MMX;
-    if (qgetenv("QT_NO_MMXEXT").toInt())
-        features ^= MMXEXT;
-    if (qgetenv("QT_NO_3DNOW").toInt())
-        features ^= MMX3DNOW;
-    if (qgetenv("QT_NO_3DNOWEXT").toInt())
-        features ^= MMX3DNOWEXT;
-    if (qgetenv("QT_NO_SSE").toInt())
-        features ^= SSE;
-    if (qgetenv("QT_NO_SSE2").toInt())
-        features ^= SSE2;
-
-    return features;
-#endif
-}
-
 #if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
 // Move these to qdrawhelper_arm.c when all
 // functions are implemented using arm assembly.
@@ -8008,7 +7816,7 @@ void qInitDrawhelperAsm()
     static uint features = 0xffffffff;
     if (features != 0xffffffff)
         return;
-    features = detectCPUFeatures();
+    features = qDetectCPUFeatures();
 
     qt_memfill32 = qt_memfill_template<quint32, quint32>;
     qt_memfill16 = qt_memfill_quint16; //qt_memfill_template<quint16, quint16>;
