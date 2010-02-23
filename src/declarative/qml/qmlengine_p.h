@@ -104,6 +104,7 @@ class QmlCleanup;
 class QmlDelayedError;
 class QmlWorkerScriptEngine;
 class QmlGlobalScriptClass;
+class QDir;
 
 class QmlScriptEngine : public QScriptEngine
 {
@@ -262,6 +263,11 @@ public:
         friend class QmlEnginePrivate;
         QmlImportsPrivate *d;
     };
+
+    QString resolvePlugin(const QDir &dir, const QString &baseName,
+                          const QStringList &suffixes,
+                          const QString &prefix = QString());
+    QString resolvePlugin(const QDir &dir, const QString &baseName);
 
 
     bool addToImport(Imports*, const QString& qmlDirContent,const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const;

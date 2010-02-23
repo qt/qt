@@ -1359,9 +1359,11 @@ public:
                         qmldirParser.parse();
 
                         foreach (const QmlDirParser::Plugin &plugin, qmldirParser.plugins()) {
-                            const QFileInfo pluginFileInfo(dir + QDir::separator() + plugin.path, plugin.name);
-                            const QString pluginFilePath = pluginFileInfo.absoluteFilePath();
-                            engine->importExtension(pluginFilePath, uri);
+                            QString resolvedFilePath = QmlEnginePrivate::get(engine)->resolvePlugin(dir + QDir::separator() + plugin.path,
+                                                                                                    plugin.name);
+
+                            if (!resolvedFilePath.isEmpty())
+                                engine->importExtension(resolvedFilePath, uri);
                         }
                     }
 
@@ -1609,6 +1611,87 @@ QString QmlEngine::offlineStoragePath() const
     return d->scriptEngine.offlineStoragePath;
 }
 
+/*!
+  \internal
+
+  Returns the result of the merge of \a baseName with \a dir, \a suffixes, and \a prefix.
+ */
+QString QmlEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName,
+                                        const QStringList &suffixes,
+                                        const QString &prefix)
+{
+    foreach (const QString &suffix, suffixes) {
+        QString pluginFileName = prefix;
+
+        pluginFileName += baseName;
+        pluginFileName += QLatin1Char('.');
+        pluginFileName += suffix;
+
+        QFileInfo fileInfo(dir, pluginFileName);
+
+        if (fileInfo.exists())
+            return fileInfo.absoluteFilePath();
+    }
+
+    return QString();
+}
+
+/*!
+  \internal
+
+  Returns the result of the merge of \a baseName with \a dir and the platform suffix.
+
+  \table
+  \header \i Platform \i Valid suffixes
+  \row \i Windows     \i \c .dll
+  \row \i Unix/Linux  \i \c .so
+  \row \i AIX  \i \c .a
+  \row \i HP-UX       \i \c .sl, \c .so (HP-UXi)
+  \row \i Mac OS X    \i \c .dylib, \c .bundle, \c .so
+  \row \i Symbian     \i \c .dll
+  \endtable
+
+  Version number on unix are ignored.
+*/
+QString QmlEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName)
+{
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+    return resolvePlugin(dir, baseName, QStringList(QLatin1String("dll")));
+#elif defined(Q_OS_SYMBIAN)
+    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dll") << QLatin1String("qtplugin"));
+#else
+
+# if defined(Q_OS_DARWIN)
+
+    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dylib") << QLatin1String("so") << QLatin1String("bundle"),
+                         QLatin1String("lib"));
+# else  // Generic Unix
+    QStringList validSuffixList;
+
+#  if defined(Q_OS_HPUX)
+/*
+    See "HP-UX Linker and Libraries User's Guide", section "Link-time Differences between PA-RISC and IPF":
+    "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
+    the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
+ */
+    validSuffixList << QLatin1String("sl");
+#   if defined __ia64
+    validSuffixList << QLatin1String("so");
+#   endif
+#  elif defined(Q_OS_AIX)
+    validSuffixList << QLatin1String("a") << QLatin1String("so");
+#  elif defined(Q_OS_UNIX)
+    validSuffixList << QLatin1String("so");
+#  endif
+
+    // Examples of valid library names:
+    //  libfoo.so
+
+    return resolvePlugin(dir, baseName, validSuffixList, QLatin1String("lib"));
+# endif
+
+#endif
+}
 
 /*!
   \internal
