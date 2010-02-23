@@ -111,7 +111,8 @@ public:
     static QmlAbstractBinding *setBinding(QObject *, const QmlPropertyCache::Data &, QmlAbstractBinding *,
                                           QmlMetaProperty::WriteFlags flags = QmlMetaProperty::DontRemoveBinding);
 
-    static QByteArray saveValueType(const QMetaObject *, int, int, int);
+    static QByteArray saveValueType(const QMetaObject *, int, 
+                                    const QMetaObject *, int);
     static QByteArray saveProperty(const QMetaObject *, int);
     static QmlMetaProperty restore(const QByteArray &, QObject *, QmlContext * = 0);
 

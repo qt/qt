@@ -2609,7 +2609,13 @@ int QmlCompiler::genContextCache()
 int QmlCompiler::genValueTypeData(QmlParser::Property *valueTypeProp, 
                                   QmlParser::Property *prop)
 {
-    return output->indexForByteArray(QmlMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, valueTypeProp->index, valueTypeProp->type));
+    QByteArray data =
+        QmlMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, 
+                                              QmlEnginePrivate::get(engine)->valueTypes[prop->type]->metaObject(), 
+                                              valueTypeProp->index);
+//                valueTypeProp->index, valueTypeProp->type);
+
+    return output->indexForByteArray(data);
 }
 
 int QmlCompiler::genPropertyData(QmlParser::Property *prop)
