@@ -51,8 +51,8 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlmetatype.h>
 #include <QtDeclarative/qmlmetaproperty.h>
-#include <QtDeclarative/qmlbinding.h>
 
+#include <private/qmlbinding_p.h>
 #include <private/qmldebug_p.h>
 #include <private/qmlenginedebug_p.h>
 #include <private/qmldebugclient_p.h>

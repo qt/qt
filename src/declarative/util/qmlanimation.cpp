@@ -793,7 +793,6 @@ void QmlScriptActionPrivate::execute()
     const QString &str = scriptStr.script();
     if (!str.isEmpty()) {
         QmlExpression expr(scriptStr.context(), str, scriptStr.scopeObject());
-        expr.setTrackChange(false);
         expr.value();
     }
 }

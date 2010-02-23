@@ -42,8 +42,8 @@
 #include "qmlpropertycache_p.h"
 
 #include "qmlengine_p.h"
-#include "qmlbinding.h"
-#include "qdebug.h"
+#include "qmlbinding_p.h"
+#include <QtCore/qdebug.h>
 
 Q_DECLARE_METATYPE(QScriptValue);
 

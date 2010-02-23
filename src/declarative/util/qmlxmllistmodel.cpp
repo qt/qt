@@ -63,6 +63,8 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,XmlRole,QmlXmlListModelRole)
 QML_DEFINE_TYPE(Qt,4,6,XmlListModel,QmlXmlListModel)
 
+typedef QPair<int, int> QmlXmlListRange;
+
 /*!
     \qmlclass XmlRole QmlXmlListModelRole
     \brief The XmlRole element allows you to specify a role for an XmlListModel.
@@ -94,14 +96,26 @@ QML_DEFINE_TYPE(Qt,4,6,XmlListModel,QmlXmlListModel)
     \endqml
 */
 
+/*!
+    \qmlproperty bool XmlRole::isKey
+    Defines whether this is a key role.
+    
+    Key roles are used to to determine whether a set of values should
+    be updated or added to the XML list model when XmlListModel::reload()
+    is called.
+
+    \sa XmlListModel
+*/
+
 class Q_DECLARATIVE_EXPORT QmlXmlListModelRole : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString query READ query WRITE setQuery)
+    Q_PROPERTY(bool isKey READ isKey WRITE setIsKey)
 
 public:
-    QmlXmlListModelRole() {}
+    QmlXmlListModelRole() : m_isKey(false) {}
     ~QmlXmlListModelRole() {}
 
     QString name() const { return m_name; }
@@ -117,6 +131,9 @@ public:
         m_query = query;
     }
 
+    bool isKey() const { return m_isKey; }
+    void setIsKey(bool b) { m_isKey = b; }
+
     bool isValid() {
         return !m_name.isEmpty() && !m_query.isEmpty();
     }
@@ -124,6 +141,7 @@ public:
 private:
     QString m_name;
     QString m_query;
+    bool m_isKey;
 };
 QT_END_NAMESPACE
 QML_DECLARE_TYPE(QmlXmlListModelRole)
@@ -153,7 +171,6 @@ public:
 
     int doQuery(QString query, QString namespaces, QByteArray data, QList<QmlXmlListModelRole *> *roleObjects) {
         QMutexLocker locker(&m_mutex);
-        m_modelData.clear();
         m_size = 0;
         m_data = data;
         m_query = QLatin1String("doc($src)") + query;
@@ -175,6 +192,16 @@ public:
         return m_modelData;
     }
 
+    QList<QmlXmlListRange> insertedItemRanges() {
+        QMutexLocker locker(&m_mutex);
+        return m_insertedItemRanges;
+    }
+
+    QList<QmlXmlListRange> removedItemRanges() {
+        QMutexLocker locker(&m_mutex);
+        return m_removedItemRanges;
+    }
+
 Q_SIGNALS:
     void queryCompleted(int queryId, int size);
 
@@ -184,13 +211,12 @@ protected:
             m_mutex.lock();
             int queryId = m_queryId;
             doQueryJob();
-            if (m_size > 0)
-                doSubQueryJob();
+            doSubQueryJob();
             m_data.clear(); // no longer needed
             m_mutex.unlock();
 
             m_mutex.lock();
-            if (!m_abort && m_size > 0)
+            if (!m_abort)
                 emit queryCompleted(queryId, m_size);
             if (!m_restart)
                 m_condition.wait(&m_mutex);
@@ -203,6 +229,8 @@ protected:
 private:
     void doQueryJob();
     void doSubQueryJob();
+    void getValuesOfKeyRoles(QStringList *values, QXmlQuery *query) const;
+    void addIndexToRangeList(QList<QmlXmlListRange> *ranges, int index) const;
 
 private:
     QMutex m_mutex;
@@ -218,6 +246,9 @@ private:
     int m_queryId;
     const QList<QmlXmlListModelRole *> *m_roleObjects;
     QList<QList<QVariant> > m_modelData;
+    QStringList m_keysValues;
+    QList<QmlXmlListRange> m_insertedItemRanges;
+    QList<QmlXmlListRange> m_removedItemRanges;
 };
 
 void QmlXmlQuery::doQueryJob()
@@ -262,6 +293,40 @@ void QmlXmlQuery::doQueryJob()
         m_size = count;
 }
 
+void QmlXmlQuery::getValuesOfKeyRoles(QStringList *values, QXmlQuery *query) const
+{
+    QStringList keysQueries;
+    for (int i=0; i<m_roleObjects->count(); i++) {
+        if (m_roleObjects->at(i)->isKey())
+            keysQueries << m_roleObjects->at(i)->query();
+    }
+    QString keysQuery;
+    if (keysQueries.count() == 1)
+        keysQuery = m_prefix + keysQueries[0];
+    else if (keysQueries.count() > 1)
+        keysQuery = m_prefix + QLatin1String("concat(") + keysQueries.join(QLatin1String(",")) + QLatin1String(")");
+
+    if (!keysQuery.isEmpty()) {
+        query->setQuery(keysQuery);
+        QXmlResultItems resultItems;
+        query->evaluateTo(&resultItems);
+        QXmlItem item(resultItems.next());
+        while (!item.isNull()) {
+            values->append(item.toAtomicValue().toString());
+            item = resultItems.next();
+        }
+    }
+}
+
+void QmlXmlQuery::addIndexToRangeList(QList<QmlXmlListRange> *ranges, int index) const {
+    if (ranges->isEmpty())
+        ranges->append(qMakePair(index, 1));
+    else if (ranges->last().first + ranges->last().second == index)
+        ranges->last().second += 1;
+    else
+        ranges->append(qMakePair(index, 1));
+}
+
 void QmlXmlQuery::doSubQueryJob()
 {
     m_modelData.clear();
@@ -272,6 +337,35 @@ void QmlXmlQuery::doSubQueryJob()
     QXmlQuery subquery;
     subquery.bindVariable(QLatin1String("inputDocument"), &b);
 
+    QStringList keysValues;
+    getValuesOfKeyRoles(&keysValues, &subquery);
+
+    // See if any values of key roles have been inserted or removed.
+    m_insertedItemRanges.clear();
+    m_removedItemRanges.clear();
+    if (m_keysValues.isEmpty()) {
+        m_insertedItemRanges << qMakePair(0, m_size);
+    } else {
+        if (keysValues != m_keysValues) {
+            QStringList temp;
+            for (int i=0; i<m_keysValues.count(); i++) {
+                if (!keysValues.contains(m_keysValues[i]))
+                    addIndexToRangeList(&m_removedItemRanges, i);
+                else 
+                    temp << m_keysValues[i];
+            }
+
+            for (int i=0; i<keysValues.count(); i++) {
+                if (temp.count() == i || keysValues[i] != temp[i]) {
+                    temp.insert(i, keysValues[i]);
+                    addIndexToRangeList(&m_insertedItemRanges, i);
+                }
+            }
+        }
+    }
+    m_keysValues = keysValues;
+
+    // Get the new values for each role.
     //### we might be able to condense even further (query for everything in one go)
     for (int i = 0; i < m_roleObjects->size(); ++i) {
         QmlXmlListModelRole *role = m_roleObjects->at(i);
@@ -283,13 +377,13 @@ void QmlXmlQuery::doSubQueryJob()
             continue;
         }
         subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + role->query() + QLatin1String(" return if ($v) then ") + role->query() + QLatin1String(" else \"\")"));
-        QXmlResultItems output3;
-        subquery.evaluateTo(&output3);
-        QXmlItem item(output3.next());
+        QXmlResultItems resultItems;
+        subquery.evaluateTo(&resultItems);
+        QXmlItem item(resultItems.next());
         QList<QVariant> resultList;
         while (!item.isNull()) {
             resultList << item.toAtomicValue(); //### we used to trim strings
-            item = output3.next();
+            item = resultItems.next();
         }
         //### should warn here if things have gone wrong.
         while (resultList.count() < m_size)
@@ -392,25 +486,40 @@ void QmlXmlListModelPrivate::clear_role(QmlListProperty<QmlXmlListModelRole> *li
 
 /*!
     \qmlclass XmlListModel QmlXmlListModel
-    \brief The XmlListModel element allows you to specify a model using XPath expressions.
+    \brief The XmlListModel element is used to specify a model using XPath expressions.
 
-    XmlListModel allows you to construct a model from XML data that can then be used as a data source
-    for the view classes (ListView, PathView, GridView) and any other classes that interact with model
-    data (like Repeater).
+    XmlListModel is used to create a model from XML data that can be used as a data source
+    for the view classes (such as ListView, PathView, GridView) and other classes that interact with model
+    data (such as Repeater).
 
-    The following is an example of a model containing news from a Yahoo RSS feed:
+    Here is an example of a model containing news from a Yahoo RSS feed:
     \qml
     XmlListModel {
         id: feedModel
         source: "http://rss.news.yahoo.com/rss/oceania"
         query: "/rss/channel/item"
         XmlRole { name: "title"; query: "title/string()" }
-        XmlRole { name: "link"; query: "link/string()" }
+        XmlRole { name: "pubDate"; query: "pubDate/string()" }
         XmlRole { name: "description"; query: "description/string()" }
     }
     \endqml
-    \note The model is currently static, so the above is really just a snapshot of an RSS feed. To force a
-    reload of the entire model, you can call the reload function.
+
+    You can also define certain roles as "keys" so that the model only adds data
+    that contains new values for these keys when reload() is called.
+
+    For example, if the roles above were defined like this:
+
+    \qml
+        XmlRole { name: "title"; query: "title/string()"; isKey: true }
+        XmlRole { name: "pubDate"; query: "pubDate/string()"; isKey: true }
+    \endqml
+
+    Then when reload() is called, the model will only add new items with a
+    "title" and "pubDate" value combination that is not already present in
+    the model.
+
+    This is useful to provide incremental updates and avoid repainting an
+    entire model in a view.
 */
 
 QmlXmlListModel::QmlXmlListModel(QObject *parent)
@@ -526,9 +635,9 @@ void QmlXmlListModel::setXml(const QString &xml)
 }
 
 /*!
-    \qmlproperty url XmlListModel::query
+    \qmlproperty string XmlListModel::query
     An absolute XPath query representing the base query for the model items. The query should start with
-    a '/' or '//'.
+    '/' or '//'.
 */
 QString QmlXmlListModel::query() const
 {
@@ -619,8 +728,13 @@ void QmlXmlListModel::componentComplete()
 /*!
     \qmlmethod XmlListModel::reload()
 
-    Reloads the model. All the existing model data will be removed, and the model
-    will be rebuilt from scratch.
+    Reloads the model.
+    
+    If no key roles have been specified, all existing model
+    data is removed, and the model is rebuilt from scratch.
+
+    Otherwise, items are only added if the model does not already
+    contain items with matching key role values.
 */
 void QmlXmlListModel::reload()
 {
@@ -632,12 +746,8 @@ void QmlXmlListModel::reload()
     d->qmlXmlQuery.abort();
     d->queryId = -1;
 
-    //clear existing data
-    int count = d->size;
-    d->size = 0;
-    d->data.clear();
-    if (count > 0)
-        emit itemsRemoved(0, count);
+    if (d->size < 0)
+        d->size = 0;
 
     if (d->src.isEmpty() && d->xml.isEmpty())
         return;
@@ -704,12 +814,19 @@ void QmlXmlListModel::queryCompleted(int id, int size)
     Q_D(QmlXmlListModel);
     if (id != d->queryId)
         return;
+    bool sizeChanged = size != d->size;
     d->size = size;
-    if (size > 0) {
-        d->data = d->qmlXmlQuery.modelData();
-        emit itemsInserted(0, d->size);
+    d->data = d->qmlXmlQuery.modelData();
+
+    QList<QmlXmlListRange> removed = d->qmlXmlQuery.removedItemRanges();
+    for (int i=0; i<removed.count(); i++)
+        emit itemsRemoved(removed[i].first, removed[i].second);
+    QList<QmlXmlListRange> inserted = d->qmlXmlQuery.insertedItemRanges();
+    for (int i=0; i<inserted.count(); i++)
+        emit itemsInserted(inserted[i].first, inserted[i].second);
+
+    if (sizeChanged)
         emit countChanged();
-    }
 }
 
 QT_END_NAMESPACE

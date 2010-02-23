@@ -43,7 +43,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlmetaproperty.h>
 #include <private/qguard_p.h>
-#include <QtDeclarative/qmlbinding.h>
+#include <private/qmlbinding_p.h>
 #include <QtGui/QLineEdit>
 
 class MyQmlObject : public QObject

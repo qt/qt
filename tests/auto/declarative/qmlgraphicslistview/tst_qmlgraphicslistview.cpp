@@ -1319,7 +1319,6 @@ T *tst_QmlGraphicsListView::findItem(QGraphicsObject *parent, const QString &obj
         if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);
-                e.setTrackChange(false);
                 if (e.value().toInt() == index)
                     return static_cast<T*>(item);
             } else {

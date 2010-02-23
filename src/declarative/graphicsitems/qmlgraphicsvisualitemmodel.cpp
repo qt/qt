@@ -187,7 +187,6 @@ QVariant QmlGraphicsVisualItemModel::evaluate(int index, const QString &expressi
     QmlContext *ctxt = new QmlContext(ccontext);
     ctxt->addDefaultObject(d->children.at(index));
     QmlExpression e(ctxt, expression, objectContext);
-    e.setTrackChange(false);
     QVariant value = e.value();
     delete ctxt;
     return value;
@@ -1056,7 +1055,6 @@ QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expressi
         QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(nobj);
         if (item) {
             QmlExpression e(qmlContext(item), expression, objectContext);
-            e.setTrackChange(false);
             value = e.value();
         }
     } else {
@@ -1066,7 +1064,6 @@ QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expressi
         QmlGraphicsVisualDataModelData *data = new QmlGraphicsVisualDataModelData(index, this);
         ctxt->addDefaultObject(data);
         QmlExpression e(ctxt, expression, objectContext);
-        e.setTrackChange(false);
         value = e.value();
         delete data;
         delete ctxt;
