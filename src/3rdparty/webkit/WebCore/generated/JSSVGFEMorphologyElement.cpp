@@ -100,7 +100,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -183,8 +183,7 @@ JSValue jsSVGFEMorphologyElementIn1(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementOperator(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -193,8 +192,7 @@ JSValue jsSVGFEMorphologyElementOperator(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->_operatorAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementRadiusX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,8 +201,7 @@ JSValue jsSVGFEMorphologyElementRadiusX(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->radiusXAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementRadiusY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -213,8 +210,7 @@ JSValue jsSVGFEMorphologyElementRadiusY(ExecState* exec, const Identifier&, cons
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->radiusYAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -223,8 +219,7 @@ JSValue jsSVGFEMorphologyElementX(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -233,8 +228,7 @@ JSValue jsSVGFEMorphologyElementY(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -243,8 +237,7 @@ JSValue jsSVGFEMorphologyElementWidth(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -253,8 +246,7 @@ JSValue jsSVGFEMorphologyElementHeight(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -263,8 +255,7 @@ JSValue jsSVGFEMorphologyElementResult(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -273,8 +264,7 @@ JSValue jsSVGFEMorphologyElementClassName(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEMorphologyElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -282,8 +272,7 @@ JSValue jsSVGFEMorphologyElementStyle(ExecState* exec, const Identifier&, const 
     JSSVGFEMorphologyElement* castedThis = static_cast<JSSVGFEMorphologyElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEMorphologyElement* imp = static_cast<SVGFEMorphologyElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsSVGFEMorphologyElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

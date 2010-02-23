@@ -2,6 +2,8 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -41,8 +43,8 @@ namespace WebCore {
         virtual SVGElement* farthestViewportElement() const;
 
         virtual FloatRect getBBox() const;
-        virtual AffineTransform getCTM() const;
-        virtual AffineTransform getScreenCTM() const;
+        virtual TransformationMatrix getCTM() const;
+        virtual TransformationMatrix getScreenCTM() const;
     };
 
 } // namespace WebCore

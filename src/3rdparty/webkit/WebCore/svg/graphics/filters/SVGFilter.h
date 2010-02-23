@@ -24,7 +24,6 @@
 #include "Filter.h"
 #include "FilterEffect.h"
 #include "FloatRect.h"
-#include "FloatSize.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -36,18 +35,15 @@ namespace WebCore {
     public:
         static PassRefPtr<SVGFilter> create(const FloatRect&, const FloatRect&, bool);
 
-        virtual bool effectBoundingBoxMode() const { return m_effectBBoxMode; }
+        bool effectBoundingBoxMode() { return m_effectBBoxMode; }
 
-        virtual FloatRect filterRegion() const { return m_filterRect; }
-        virtual FloatRect sourceImageRect() const { return m_itemBox; }
-
-        virtual FloatSize maxImageSize() const { return m_maxImageSize; }
-        virtual void calculateEffectSubRegion(FilterEffect*);
+        FloatRect filterRegion() { return m_filterRect; }
+        FloatRect sourceImageRect() { return m_itemBox; }
+        void calculateEffectSubRegion(FilterEffect*);
 
     private:
         SVGFilter(const FloatRect& itemBox, const FloatRect& filterRect, bool effectBBoxMode);
 
-        FloatSize m_maxImageSize;
         FloatRect m_itemBox;
         FloatRect m_filterRect;
         bool m_effectBBoxMode;

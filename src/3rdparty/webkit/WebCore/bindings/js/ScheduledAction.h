@@ -24,7 +24,6 @@
 #include <JSDOMBinding.h>
 #include <runtime/JSCell.h>
 #include <runtime/Protect.h>
-#include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
 namespace JSC {
@@ -41,9 +40,9 @@ namespace WebCore {
     * time interval, either once or repeatedly. Used for window.setTimeout()
     * and window.setInterval()
     */
-    class ScheduledAction : public Noncopyable {
+    class ScheduledAction {
     public:
-        static PassOwnPtr<ScheduledAction> create(JSC::ExecState*, const JSC::ArgList&, DOMWrapperWorld* isolatedWorld);
+        static ScheduledAction* create(JSC::ExecState*, const JSC::ArgList&, DOMWrapperWorld* isolatedWorld);
 
         void execute(ScriptExecutionContext*);
 
@@ -57,7 +56,7 @@ namespace WebCore {
 
         void executeFunctionInContext(JSC::JSGlobalObject*, JSC::JSValue thisValue);
         void execute(Document*);
-#if ENABLE(WORKERS)
+#if ENABLE(WORKERS)        
         void execute(WorkerContext*);
 #endif
 

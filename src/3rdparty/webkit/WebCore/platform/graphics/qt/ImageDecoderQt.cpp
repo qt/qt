@@ -47,12 +47,16 @@ ImageDecoder* ImageDecoder::create(const SharedBuffer& data)
 }
 
 ImageDecoderQt::ImageDecoderQt()
-    : m_repetitionCount(cAnimationNone)
+    :  m_buffer(0)
+    , m_reader(0)
+    , m_repetitionCount(cAnimationNone)
 {
 }
 
 ImageDecoderQt::~ImageDecoderQt()
 {
+    delete m_reader;
+    delete m_buffer;
 }
 
 void ImageDecoderQt::setData(SharedBuffer* data, bool allDataReceived)
@@ -73,16 +77,10 @@ void ImageDecoderQt::setData(SharedBuffer* data, bool allDataReceived)
 
     // Attempt to load the data
     QByteArray imageData = QByteArray::fromRawData(m_data->data(), m_data->size());
-    m_buffer.set(new QBuffer);
+    m_buffer = new QBuffer;
     m_buffer->setData(imageData);
     m_buffer->open(QBuffer::ReadOnly);
-    m_reader.set(new QImageReader(m_buffer.get(), m_format));
-
-    // This will force the JPEG decoder to use JDCT_IFAST
-    m_reader->setQuality(49);
-
-    // QImageReader only allows retrieving the format before reading the image
-    m_format = m_reader->format();
+    m_reader = new QImageReader(m_buffer, m_format);
 }
 
 bool ImageDecoderQt::isSizeAvailable()
@@ -102,7 +100,7 @@ size_t ImageDecoderQt::frameCount()
             // Fixup for Qt decoders... imageCount() is wrong
             // and jumpToNextImage does not work either... so
             // we will have to parse everything...
-            if (!imageCount)
+            if (imageCount == 0)
                 forceLoadEverything();
             else
                 m_frameBufferCache.resize(imageCount);
@@ -132,13 +130,13 @@ RGBA32Buffer* ImageDecoderQt::frameBufferAtIndex(size_t index)
     // In case the ImageDecoderQt got recreated we don't know
     // yet how many images we are going to have and need to
     // find that out now.
-    size_t count = m_frameBufferCache.size();
-    if (!m_failed && !count) {
+    int count = m_frameBufferCache.size();
+    if (!m_failed && count == 0) {
         internalDecodeSize();
         count = frameCount();
     }
 
-    if (index >= count)
+    if (index >= static_cast<size_t>(count))
         return 0;
 
     RGBA32Buffer& frame = m_frameBufferCache[index];
@@ -160,6 +158,7 @@ void ImageDecoderQt::internalDecodeSize()
     if (size.isEmpty())
         return failRead();
 
+    m_format = m_reader->format();
     setSize(size.width(), size.height());
 }
 
@@ -179,8 +178,10 @@ void ImageDecoderQt::internalReadImage(size_t frameIndex)
         if (m_frameBufferCache[i].status() != RGBA32Buffer::FrameComplete)
             return;
 
-    m_reader.clear();
-    m_buffer.clear();
+    delete m_reader;
+    delete m_buffer;
+    m_buffer = 0;
+    m_reader = 0;
 }
 
 void ImageDecoderQt::internalHandleCurrentImage(size_t frameIndex)
@@ -215,7 +216,7 @@ void ImageDecoderQt::forceLoadEverything()
     do {
         m_frameBufferCache.resize(++imageCount);
         internalHandleCurrentImage(imageCount - 1);
-    } while (!m_failed);
+    } while(!m_failed);
 
     // If we failed decoding the first image we actually
     // have no images and need to keep m_failed set to
@@ -228,8 +229,10 @@ void ImageDecoderQt::forceLoadEverything()
 void ImageDecoderQt::failRead()
 {
     setFailed();
-    m_reader.clear();
-    m_buffer.clear();
+    delete m_reader;
+    delete m_buffer;
+    m_reader = 0;
+    m_buffer = 0;
 }
 }
 

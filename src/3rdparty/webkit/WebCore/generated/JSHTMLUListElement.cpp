@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -144,8 +144,7 @@ JSValue jsHTMLUListElementCompact(ExecState* exec, const Identifier&, const Prop
     JSHTMLUListElement* castedThis = static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->compact());
-    return result;
+    return jsBoolean(imp->compact());
 }
 
 JSValue jsHTMLUListElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,8 +152,7 @@ JSValue jsHTMLUListElementType(ExecState* exec, const Identifier&, const Propert
     JSHTMLUListElement* castedThis = static_cast<JSHTMLUListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->type());
-    return result;
+    return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLUListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,15 +167,13 @@ void JSHTMLUListElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLUListElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLUListElement* castedThisObj = static_cast<JSHTMLUListElement*>(thisObject);
-    HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThisObj->impl());
+    HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(thisObject)->impl());
     imp->setCompact(value.toBoolean(exec));
 }
 
 void setJSHTMLUListElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLUListElement* castedThisObj = static_cast<JSHTMLUListElement*>(thisObject);
-    HTMLUListElement* imp = static_cast<HTMLUListElement*>(castedThisObj->impl());
+    HTMLUListElement* imp = static_cast<HTMLUListElement*>(static_cast<JSHTMLUListElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 

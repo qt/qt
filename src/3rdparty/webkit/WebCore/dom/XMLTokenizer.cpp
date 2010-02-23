@@ -91,8 +91,7 @@ void XMLTokenizer::pushCurrentNode(Node* n)
 
 void XMLTokenizer::popCurrentNode()
 {
-    if (!m_currentNode)
-        return;
+    ASSERT(m_currentNode);
     ASSERT(m_currentNodeStack.size());
 
     if (m_currentNode != m_doc)
@@ -134,8 +133,8 @@ void XMLTokenizer::write(const SegmentedString& s, bool /*appendData*/)
     
     doWrite(s.toString());
     
-    // After parsing, go ahead and dispatch image beforeload events.
-    ImageLoader::dispatchPendingBeforeLoadEvents();
+    // After parsing, go ahead and dispatch image beforeload/load events.
+    ImageLoader::dispatchPendingEvents();
 }
 
 void XMLTokenizer::handleError(ErrorType type, const char* m, int lineNumber, int columnNumber)

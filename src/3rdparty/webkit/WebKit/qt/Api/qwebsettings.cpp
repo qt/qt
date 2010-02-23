@@ -90,7 +90,6 @@ static WebGraphicHash* graphics()
         hash->insert(QWebSettings::MissingPluginGraphic, QPixmap(QLatin1String(":webkit/resources/nullPlugin.png")));
         hash->insert(QWebSettings::DefaultFrameIconGraphic, QPixmap(QLatin1String(":webkit/resources/urlIcon.png")));
         hash->insert(QWebSettings::TextAreaSizeGripCornerGraphic, QPixmap(QLatin1String(":webkit/resources/textAreaResizeCorner.png")));
-        hash->insert(QWebSettings::DeleteButtonGraphic, QPixmap(QLatin1String(":webkit/resources/deleteButton.png")));
     }
 
     return hash;
@@ -152,12 +151,7 @@ void QWebSettingsPrivate::apply()
         value = attributes.value(QWebSettings::JavascriptEnabled,
                                       global->attributes.value(QWebSettings::JavascriptEnabled));
         settings->setJavaScriptEnabled(value);
-#if USE(ACCELERATED_COMPOSITING)
-        value = attributes.value(QWebSettings::AcceleratedCompositingEnabled,
-                                      global->attributes.value(QWebSettings::AcceleratedCompositingEnabled));
 
-        settings->setAcceleratedCompositingEnabled(value);
-#endif
         value = attributes.value(QWebSettings::JavascriptCanOpenWindows,
                                       global->attributes.value(QWebSettings::JavascriptCanOpenWindows));
         settings->setJavaScriptCanOpenWindowsAutomatically(value);
@@ -209,20 +203,12 @@ void QWebSettingsPrivate::apply()
 
         value = attributes.value(QWebSettings::LocalStorageEnabled,
                                       global->attributes.value(QWebSettings::LocalStorageEnabled));
+                                                                                                                                  
         settings->setLocalStorageEnabled(value);
 
         value = attributes.value(QWebSettings::LocalContentCanAccessRemoteUrls,
                                       global->attributes.value(QWebSettings::LocalContentCanAccessRemoteUrls));
         settings->setAllowUniversalAccessFromFileURLs(value);
-
-        value = attributes.value(QWebSettings::LocalContentCanAccessFileUrls,
-                                      global->attributes.value(QWebSettings::LocalContentCanAccessFileUrls));
-        settings->setAllowFileAccessFromFileURLs(value);
-
-        value = attributes.value(QWebSettings::XSSAuditorEnabled,
-                                      global->attributes.value(QWebSettings::XSSAuditorEnabled));
-        settings->setXSSAuditorEnabled(value);
-
         settings->setUsesPageCache(WebCore::pageCache()->capacity());
     } else {
         QList<QWebSettingsPrivate*> settings = *::allSettings();
@@ -367,8 +353,6 @@ QWebSettings* QWebSettings::globalSettings()
     \value LocalStorageDatabaseEnabled \e{This enum value is deprecated.} Use
         QWebSettings::LocalStorageEnabled instead.
     \value LocalContentCanAccessRemoteUrls Specifies whether locally loaded documents are allowed to access remote urls.
-    \value LocalContentCanAccessFileUrls Specifies whether locally loaded documents are allowed to access other local  urls.
-    \value XSSAuditorEnabled Specifies whether load requests should be monitored for cross-site scripting attempts.
 */
 
 /*!
@@ -399,8 +383,6 @@ QWebSettings::QWebSettings()
     d->attributes.insert(QWebSettings::OfflineWebApplicationCacheEnabled, false);
     d->attributes.insert(QWebSettings::LocalStorageEnabled, false);
     d->attributes.insert(QWebSettings::LocalContentCanAccessRemoteUrls, false);
-    d->attributes.insert(QWebSettings::LocalContentCanAccessFileUrls, true);
-    d->attributes.insert(QWebSettings::AcceleratedCompositingEnabled, false);
     d->offlineStorageDefaultQuota = 5 * 1024 * 1024;
     d->defaultTextEncoding = QLatin1String("iso-8859-1");
 }

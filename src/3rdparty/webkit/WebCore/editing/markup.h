@@ -27,7 +27,6 @@
 #define markup_h
 
 #include "HTMLInterchange.h"
-#include "MappedAttributeEntry.h"
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 
@@ -42,10 +41,8 @@ namespace WebCore {
     enum EChildrenOnly { IncludeNode, ChildrenOnly };
 
     PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text);
-    PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document*, const String& markup, const String& baseURL, FragmentScriptingPermission = FragmentScriptingAllowed);
+    PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document*, const String& markup, const String& baseURL);
     PassRefPtr<DocumentFragment> createFragmentFromNodes(Document*, const Vector<Node*>&);
-
-    bool isPlainTextMarkup(Node *node);
 
     String createMarkup(const Range*,
         Vector<Node*>* = 0, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false);

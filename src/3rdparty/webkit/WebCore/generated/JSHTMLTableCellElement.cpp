@@ -91,7 +91,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -158,8 +158,7 @@ JSValue jsHTMLTableCellElementCellIndex(ExecState* exec, const Identifier&, cons
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->cellIndex());
-    return result;
+    return jsNumber(exec, imp->cellIndex());
 }
 
 JSValue jsHTMLTableCellElementAbbr(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -167,8 +166,7 @@ JSValue jsHTMLTableCellElementAbbr(ExecState* exec, const Identifier&, const Pro
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->abbr());
-    return result;
+    return jsString(exec, imp->abbr());
 }
 
 JSValue jsHTMLTableCellElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -176,8 +174,7 @@ JSValue jsHTMLTableCellElementAlign(ExecState* exec, const Identifier&, const Pr
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->align());
-    return result;
+    return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLTableCellElementAxis(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -185,8 +182,7 @@ JSValue jsHTMLTableCellElementAxis(ExecState* exec, const Identifier&, const Pro
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->axis());
-    return result;
+    return jsString(exec, imp->axis());
 }
 
 JSValue jsHTMLTableCellElementBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,8 +190,7 @@ JSValue jsHTMLTableCellElementBgColor(ExecState* exec, const Identifier&, const 
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->bgColor());
-    return result;
+    return jsString(exec, imp->bgColor());
 }
 
 JSValue jsHTMLTableCellElementCh(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,8 +198,7 @@ JSValue jsHTMLTableCellElementCh(ExecState* exec, const Identifier&, const Prope
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->ch());
-    return result;
+    return jsString(exec, imp->ch());
 }
 
 JSValue jsHTMLTableCellElementChOff(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -212,8 +206,7 @@ JSValue jsHTMLTableCellElementChOff(ExecState* exec, const Identifier&, const Pr
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->chOff());
-    return result;
+    return jsString(exec, imp->chOff());
 }
 
 JSValue jsHTMLTableCellElementColSpan(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -221,8 +214,7 @@ JSValue jsHTMLTableCellElementColSpan(ExecState* exec, const Identifier&, const 
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->colSpan());
-    return result;
+    return jsNumber(exec, imp->colSpan());
 }
 
 JSValue jsHTMLTableCellElementHeaders(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -230,8 +222,7 @@ JSValue jsHTMLTableCellElementHeaders(ExecState* exec, const Identifier&, const 
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->headers());
-    return result;
+    return jsString(exec, imp->headers());
 }
 
 JSValue jsHTMLTableCellElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -239,8 +230,7 @@ JSValue jsHTMLTableCellElementHeight(ExecState* exec, const Identifier&, const P
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->height());
-    return result;
+    return jsString(exec, imp->height());
 }
 
 JSValue jsHTMLTableCellElementNoWrap(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -248,8 +238,7 @@ JSValue jsHTMLTableCellElementNoWrap(ExecState* exec, const Identifier&, const P
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->noWrap());
-    return result;
+    return jsBoolean(imp->noWrap());
 }
 
 JSValue jsHTMLTableCellElementRowSpan(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -257,8 +246,7 @@ JSValue jsHTMLTableCellElementRowSpan(ExecState* exec, const Identifier&, const 
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->rowSpan());
-    return result;
+    return jsNumber(exec, imp->rowSpan());
 }
 
 JSValue jsHTMLTableCellElementScope(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -266,8 +254,7 @@ JSValue jsHTMLTableCellElementScope(ExecState* exec, const Identifier&, const Pr
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->scope());
-    return result;
+    return jsString(exec, imp->scope());
 }
 
 JSValue jsHTMLTableCellElementVAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -275,8 +262,7 @@ JSValue jsHTMLTableCellElementVAlign(ExecState* exec, const Identifier&, const P
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->vAlign());
-    return result;
+    return jsString(exec, imp->vAlign());
 }
 
 JSValue jsHTMLTableCellElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -284,8 +270,7 @@ JSValue jsHTMLTableCellElementWidth(ExecState* exec, const Identifier&, const Pr
     JSHTMLTableCellElement* castedThis = static_cast<JSHTMLTableCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->width());
-    return result;
+    return jsString(exec, imp->width());
 }
 
 JSValue jsHTMLTableCellElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -300,99 +285,85 @@ void JSHTMLTableCellElement::put(ExecState* exec, const Identifier& propertyName
 
 void setJSHTMLTableCellElementAbbr(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setAbbr(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementAxis(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setAxis(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementBgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setBgColor(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementCh(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setCh(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementChOff(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setChOff(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementColSpan(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setColSpan(value.toInt32(exec));
 }
 
 void setJSHTMLTableCellElementHeaders(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setHeaders(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setHeight(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementNoWrap(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setNoWrap(value.toBoolean(exec));
 }
 
 void setJSHTMLTableCellElementRowSpan(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setRowSpan(value.toInt32(exec));
 }
 
 void setJSHTMLTableCellElementScope(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setScope(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementVAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setVAlign(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableCellElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCellElement* castedThisObj = static_cast<JSHTMLTableCellElement*>(thisObject);
-    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(castedThisObj->impl());
+    HTMLTableCellElement* imp = static_cast<HTMLTableCellElement*>(static_cast<JSHTMLTableCellElement*>(thisObject)->impl());
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 

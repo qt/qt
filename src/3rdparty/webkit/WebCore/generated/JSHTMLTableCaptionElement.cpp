@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -143,8 +143,7 @@ JSValue jsHTMLTableCaptionElementAlign(ExecState* exec, const Identifier&, const
     JSHTMLTableCaptionElement* castedThis = static_cast<JSHTMLTableCaptionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->align());
-    return result;
+    return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLTableCaptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -159,8 +158,7 @@ void JSHTMLTableCaptionElement::put(ExecState* exec, const Identifier& propertyN
 
 void setJSHTMLTableCaptionElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLTableCaptionElement* castedThisObj = static_cast<JSHTMLTableCaptionElement*>(thisObject);
-    HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(castedThisObj->impl());
+    HTMLTableCaptionElement* imp = static_cast<HTMLTableCaptionElement*>(static_cast<JSHTMLTableCaptionElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 

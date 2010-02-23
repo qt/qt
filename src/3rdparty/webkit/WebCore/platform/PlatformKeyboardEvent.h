@@ -63,15 +63,9 @@ class wxKeyEvent;
 class BMessage;
 #endif
 
-#if PLATFORM(BREWMP)
-typedef unsigned short    uint16;
-typedef unsigned long int uint32;
-#define AEEEvent uint16
-#endif
-
 namespace WebCore {
 
-    class PlatformKeyboardEvent : public FastAllocBase {
+    class PlatformKeyboardEvent {
     public:
         enum Type {
             // KeyDown is sent by platforms such as Mac OS X, gtk and Qt, and has information about both physical pressed key, and its translation.
@@ -136,7 +130,6 @@ namespace WebCore {
         static bool currentCapsLockState();
 
 #if PLATFORM(MAC)
-        PlatformKeyboardEvent();
         PlatformKeyboardEvent(NSEvent*);
         NSEvent* macEvent() const { return m_macEvent.get(); }
 #endif
@@ -161,10 +154,6 @@ namespace WebCore {
 
 #if PLATFORM(HAIKU)
         PlatformKeyboardEvent(BMessage*);
-#endif
-
-#if PLATFORM(BREWMP)
-        PlatformKeyboardEvent(AEEEvent, uint16, uint32, Type);
 #endif
 
 #if PLATFORM(WIN) || PLATFORM(CHROMIUM)

@@ -62,6 +62,8 @@ WebCore::QualifiedName** getXMLAttrs(size_t* size)
     return XMLAttr;
 }
 
+// Attributes as strings
+
 void init()
 {
     static bool initialized = false;
@@ -78,9 +80,12 @@ void init()
     new ((void*)&xmlNamespaceURI) AtomicString(xmlNS);
 
     // Attributes
-    new ((void*)&baseAttr) QualifiedName(nullAtom, "base", xmlNS);
-    new ((void*)&langAttr) QualifiedName(nullAtom, "lang", xmlNS);
-    new ((void*)&spaceAttr) QualifiedName(nullAtom, "space", xmlNS);
+    const char *baseAttrString = "base";
+    const char *langAttrString = "lang";
+    const char *spaceAttrString = "space";
+    new ((void*)&baseAttr) QualifiedName(nullAtom, baseAttrString, xmlNS);
+    new ((void*)&langAttr) QualifiedName(nullAtom, langAttrString, xmlNS);
+    new ((void*)&spaceAttr) QualifiedName(nullAtom, spaceAttrString, xmlNS);
 }
 
 } }

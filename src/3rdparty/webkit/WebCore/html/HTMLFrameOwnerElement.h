@@ -21,7 +21,6 @@
 #ifndef HTMLFrameOwnerElement_h
 #define HTMLFrameOwnerElement_h
 
-#include "FrameLoaderTypes.h"
 #include "HTMLElement.h"
 
 namespace WebCore {
@@ -47,24 +46,18 @@ public:
 
     virtual ScrollbarMode scrollingMode() const { return ScrollbarAuto; }
 
-    SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
-
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document*);
-
-    void setSandboxFlags(SandboxFlags);
-
-    virtual void willRemove();
 
 private:
     friend class Frame;
 
-    virtual void setName() { }
     virtual bool isFrameOwnerElement() const { return true; }
     virtual bool isKeyboardFocusable(KeyboardEvent*) const { return m_contentFrame; }
+    
+    virtual void willRemove();
 
     Frame* m_contentFrame;
-    SandboxFlags m_sandboxFlags;
 };
 
 } // namespace WebCore

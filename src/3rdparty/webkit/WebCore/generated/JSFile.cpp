@@ -35,9 +35,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSFile);
 
 /* Hash table */
 
-static const HashTableValue JSFileTableValues[5] =
+static const HashTableValue JSFileTableValues[4] =
 {
-    { "name", DontDelete|ReadOnly, (intptr_t)jsFileName, (intptr_t)0 },
     { "fileName", DontDelete|ReadOnly, (intptr_t)jsFileFileName, (intptr_t)0 },
     { "fileSize", DontDelete|ReadOnly, (intptr_t)jsFileFileSize, (intptr_t)0 },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsFileConstructor, (intptr_t)0 },
@@ -46,9 +45,9 @@ static const HashTableValue JSFileTableValues[5] =
 
 static JSC_CONST_HASHTABLE HashTable JSFileTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 127, JSFileTableValues, 0 };
+    { 7, JSFileTableValues, 0 };
 #else
-    { 9, 7, JSFileTableValues, 0 };
+    { 8, 7, JSFileTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -79,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -119,16 +118,22 @@ JSObject* JSFilePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
     return getDOMPrototype<JSFile>(exec, globalObject);
 }
 
-const ClassInfo JSFile::s_info = { "File", &JSBlob::s_info, &JSFileTable, 0 };
+const ClassInfo JSFile::s_info = { "File", 0, &JSFileTable, 0 };
 
 JSFile::JSFile(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<File> impl)
-    : JSBlob(structure, globalObject, impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
+    , m_impl(impl)
 {
+}
+
+JSFile::~JSFile()
+{
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSFile::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSFilePrototype(JSFilePrototype::createStructure(JSBlobPrototype::self(exec, globalObject)));
+    return new (exec) JSFilePrototype(JSFilePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSFile::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,22 +146,12 @@ bool JSFile::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propert
     return getStaticValueDescriptor<JSFile, Base>(exec, &JSFileTable, this, propertyName, descriptor);
 }
 
-JSValue jsFileName(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSFile* castedThis = static_cast<JSFile*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    File* imp = static_cast<File*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->name());
-    return result;
-}
-
 JSValue jsFileFileName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSFile* castedThis = static_cast<JSFile*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     File* imp = static_cast<File*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->fileName());
-    return result;
+    return jsString(exec, imp->fileName());
 }
 
 JSValue jsFileFileSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -164,8 +159,7 @@ JSValue jsFileFileSize(ExecState* exec, const Identifier&, const PropertySlot& s
     JSFile* castedThis = static_cast<JSFile*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     File* imp = static_cast<File*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->fileSize());
-    return result;
+    return jsNumber(exec, imp->fileSize());
 }
 
 JSValue jsFileConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -2,9 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
+ * Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
- * Copyright (C) 2004, 2005, 2006, 2010 Apple Inc. All rights reserved.
- * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -42,31 +41,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLOptionElement::HTMLOptionElement(const QualifiedName& tagName, Document* document, HTMLFormElement* form)
-    : HTMLFormControlElement(tagName, document, form)
+HTMLOptionElement::HTMLOptionElement(const QualifiedName& tagName, Document* doc, HTMLFormElement* f)
+    : HTMLFormControlElement(tagName, doc, f)
     , m_style(0)
 {
     ASSERT(hasTagName(optionTag));
-}
-
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document* document, const String& data, const String& value,
-        bool defaultSelected, bool selected, ExceptionCode& ec)
-{
-    RefPtr<HTMLOptionElement> element = new HTMLOptionElement(optionTag, document);
-
-    RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
-
-    ec = 0;
-    element->appendChild(text.release(), ec);
-    if (ec)
-        return 0;
-
-    if (!value.isNull())
-        element->setValue(value);
-    element->setDefaultSelected(defaultSelected);
-    element->setSelected(selected);
-
-    return element.release();
 }
 
 bool HTMLOptionElement::checkDTD(const Node* newChild)
@@ -158,8 +137,6 @@ void HTMLOptionElement::setValue(const String& value)
 
 bool HTMLOptionElement::selected() const
 {
-    if (HTMLSelectElement* select = ownerSelectElement())
-        select->recalcListItemsIfNeeded();
     return m_data.selected();
 }
 
@@ -195,7 +172,7 @@ HTMLSelectElement* HTMLOptionElement::ownerSelectElement() const
 
     if (!select)
         return 0;
-
+    
     return static_cast<HTMLSelectElement*>(select);
 }
 
@@ -224,9 +201,9 @@ void HTMLOptionElement::setRenderStyle(PassRefPtr<RenderStyle> newStyle)
     m_style = newStyle;
 }
 
-RenderStyle* HTMLOptionElement::nonRendererRenderStyle() const
-{
-    return m_style.get();
+RenderStyle* HTMLOptionElement::nonRendererRenderStyle() const 
+{ 
+    return m_style.get(); 
 }
 
 String HTMLOptionElement::textIndentedToRespectGroupLabel() const
@@ -235,20 +212,19 @@ String HTMLOptionElement::textIndentedToRespectGroupLabel() const
 }
 
 bool HTMLOptionElement::disabled() const
-{
-    return ownElementDisabled() || (parentNode() && static_cast<HTMLFormControlElement*>(parentNode())->disabled());
+{ 
+    return HTMLFormControlElement::disabled() || (parentNode() && static_cast<HTMLFormControlElement*>(parentNode())->disabled()); 
 }
 
 void HTMLOptionElement::insertedIntoTree(bool deep)
 {
     if (HTMLSelectElement* select = ownerSelectElement()) {
         select->setRecalcListItems();
-        // Avoid our selected() getter since it will recalculate list items incorrectly for us.
-        if (m_data.selected())
+        if (selected())
             select->setSelectedIndex(index(), false);
         select->scrollToSelection();
     }
-
+    
     HTMLFormControlElement::insertedIntoTree(deep);
 }
 

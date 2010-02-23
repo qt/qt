@@ -49,7 +49,6 @@ JSValue CField::valueFromInstance(ExecState* exec, const Instance* inst) const
         {
             JSLock::DropAllLocks dropAllLocks(SilenceAssertionsOnly);
             result = obj->_class->getProperty(obj, _fieldIdentifier, &property);
-            CInstance::moveGlobalExceptionToExecState(exec);
         }
         if (result) {
             JSValue result = convertNPVariantToValue(exec, &property, instance->rootObject());
@@ -71,7 +70,6 @@ void CField::setValueToInstance(ExecState *exec, const Instance *inst, JSValue a
         {
             JSLock::DropAllLocks dropAllLocks(SilenceAssertionsOnly);
             obj->_class->setProperty(obj, _fieldIdentifier, &variant);
-            CInstance::moveGlobalExceptionToExecState(exec);
         }
 
         _NPN_ReleaseVariantValue(&variant);

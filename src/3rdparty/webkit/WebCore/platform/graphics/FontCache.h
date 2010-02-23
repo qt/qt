@@ -50,7 +50,7 @@ class FontDescription;
 class FontSelector;
 class SimpleFontData;
 
-class FontCache : public Noncopyable {
+class FontCache {
 public:
     friend FontCache* fontCache();
 
@@ -64,7 +64,7 @@ public:
     // Also implemented by the platform.
     void platformInit();
 
-#if OS(WINCE) && !PLATFORM(QT)
+#if PLATFORM(WINCE) && !PLATFORM(QT)
 #if defined(IMLANG_FONT_LINK) && (IMLANG_FONT_LINK == 2)
     IMLangFontLink2* getFontLinkInterface();
 #else
@@ -78,8 +78,9 @@ public:
 
     void getTraitsInFamily(const AtomicString&, Vector<unsigned>&);
 
-    SimpleFontData* getCachedFontData(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName = false);
-    SimpleFontData* getLastResortFallbackFont(const FontDescription&);
+    FontPlatformData* getCachedFontPlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
+    SimpleFontData* getCachedFontData(const FontPlatformData*);
+    FontPlatformData* getLastResortFallbackFont(const FontDescription&);
 
     void addClient(FontSelector*);
     void removeClient(FontSelector*);
@@ -95,22 +96,16 @@ private:
     FontCache();
     ~FontCache();
 
-    // FIXME: This method should eventually be removed.
-    FontPlatformData* getCachedFontPlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
-
     // These methods are implemented by each platform.
-    SimpleFontData* getSimilarFontPlatformData(const Font&);
+    FontPlatformData* getSimilarFontPlatformData(const Font&);
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family);
 
-    SimpleFontData* getCachedFontData(const FontPlatformData*);
-
-    friend class SimpleFontData; // For getCachedFontData(const FontPlatformData*)
+    friend class SimpleFontData;
     friend class FontFallbackList;
 };
 
 // Get the global fontCache.
 FontCache* fontCache();
-
 }
 
 #endif

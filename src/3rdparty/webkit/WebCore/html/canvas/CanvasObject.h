@@ -33,14 +33,14 @@
 
 namespace WebCore {
 
-    class WebGLRenderingContext;
+    class CanvasRenderingContext3D;
     
     class CanvasObject : public RefCounted<CanvasObject> {
     public:
         virtual ~CanvasObject();
         
         Platform3DObject object() const { return m_object; }
-        void setObject(Platform3DObject, bool shouldDeleteObject = true);
+        void setObject(Platform3DObject);
         void deleteObject();
         
         void detachContext()
@@ -49,22 +49,15 @@ namespace WebCore {
             m_context = 0;
         }
 
-        WebGLRenderingContext* context() const { return m_context; }
+        CanvasRenderingContext3D* context() const { return m_context; }
 
     protected:
-        CanvasObject(WebGLRenderingContext*);
+        CanvasObject(CanvasRenderingContext3D*);
         virtual void _deleteObject(Platform3DObject) = 0;
     
     private:
         Platform3DObject m_object;
-        // The shouldDeleteObject flag indicates whether this wrapper
-        // owns the underlying resource and should delete it when the
-        // wrapper is unreferenced for the last time and deleted. It
-        // is only set to false for certain objects returned from get
-        // queries. FIXME: should consider canonicalizing all of these
-        // objects in the future.
-        bool m_shouldDeleteObject;
-        WebGLRenderingContext* m_context;
+        CanvasRenderingContext3D* m_context;
     };
     
 } // namespace WebCore

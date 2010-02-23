@@ -92,7 +92,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -181,8 +181,7 @@ JSValue jsSVGPaintPaintType(ExecState* exec, const Identifier&, const PropertySl
     JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPaint* imp = static_cast<SVGPaint*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->paintType());
-    return result;
+    return jsNumber(exec, imp->paintType());
 }
 
 JSValue jsSVGPaintUri(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -190,8 +189,7 @@ JSValue jsSVGPaintUri(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSSVGPaint* castedThis = static_cast<JSSVGPaint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPaint* imp = static_cast<SVGPaint*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->uri());
-    return result;
+    return jsString(exec, imp->uri());
 }
 
 JSValue jsSVGPaintConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

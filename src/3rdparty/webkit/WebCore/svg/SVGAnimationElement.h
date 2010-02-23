@@ -46,10 +46,9 @@ namespace WebCore {
     public:
         SVGAnimationElement(const QualifiedName&, Document*);
         virtual ~SVGAnimationElement();
-
+        
         virtual void parseMappedAttribute(MappedAttribute*);
         virtual void attributeChanged(Attribute*, bool preserveDecls);
-        virtual void synchronizeProperty(const QualifiedName&);
 
         // SVGAnimationElement
         float getStartTime() const;
@@ -107,7 +106,9 @@ namespace WebCore {
         
     protected:
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGAnimationElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGAnimationElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
 
         bool m_animationValid;
 

@@ -47,7 +47,7 @@ class ImageLoader;
 class KURL;
 
 // The DocLoader manages the loading of scripts/images/stylesheets for a single document.
-class DocLoader : public Noncopyable
+class DocLoader
 {
 friend class Cache;
 friend class ImageLoader;

@@ -31,8 +31,6 @@
 #ifndef JSWebSocketConstructor_h
 #define JSWebSocketConstructor_h
 
-#if ENABLE(WEB_SOCKETS)
-
 #include "JSDOMBinding.h"
 
 namespace WebCore {
@@ -47,8 +45,6 @@ class JSWebSocketConstructor : public DOMConstructorObject {
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
 };
 
-} // namespace WebCore
+}  // namespace WebCore
 
-#endif // ENABLE(WEB_SOCKETS)
-
-#endif // JSWebSocketConstructor_h
+#endif  // JSWebSocketConstructor_h

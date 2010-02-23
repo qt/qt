@@ -34,7 +34,10 @@ char SVGRadiusYAttrIdentifier[] = "SVGRadiusYAttr";
 
 SVGFEMorphologyElement::SVGFEMorphologyElement(const QualifiedName& tagName, Document* document)
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
-    , m__operator(FEMORPHOLOGY_OPERATOR_ERODE)
+    , m_in1(this, SVGNames::inAttr)
+    , m__operator(this, SVGNames::operatorAttr, FEMORPHOLOGY_OPERATOR_ERODE)
+    , m_radiusX(this, SVGNames::radiusAttr)
+    , m_radiusY(this, SVGNames::radiusAttr)
 {
 }
 
@@ -65,28 +68,6 @@ void SVGFEMorphologyElement::parseMappedAttribute(MappedAttribute* attr)
         }
     } else
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
-}
-
-void SVGFEMorphologyElement::synchronizeProperty(const QualifiedName& attrName)
-{
-    SVGFilterPrimitiveStandardAttributes::synchronizeProperty(attrName);
-
-    if (attrName == anyQName()) {
-        synchronize_operator();
-        synchronizeIn1();
-        synchronizeRadiusX();
-        synchronizeRadiusY();
-        return;
-    }
-
-    if (attrName == SVGNames::operatorAttr)
-        synchronize_operator();
-    else if (attrName == SVGNames::inAttr)
-        synchronizeIn1();
-    else if (attrName == SVGNames::radiusAttr) {
-        synchronizeRadiusX();
-        synchronizeRadiusY();
-    }
 }
 
 bool SVGFEMorphologyElement::build(SVGResourceFilter* filterResource)

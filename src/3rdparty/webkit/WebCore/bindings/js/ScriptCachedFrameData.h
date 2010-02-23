@@ -38,11 +38,8 @@ namespace WebCore {
     class Frame;
     class JSDOMWindow;
     class DOMWindow;
-    class DOMWrapperWorld;
 
-    class ScriptCachedFrameData  : public Noncopyable {
-        typedef HashMap< RefPtr<DOMWrapperWorld>, JSC::ProtectedPtr<JSDOMWindow> > JSDOMWindowSet;
-
+    class ScriptCachedFrameData  {
     public:
         ScriptCachedFrameData(Frame*);
         ~ScriptCachedFrameData();
@@ -52,8 +49,7 @@ namespace WebCore {
         DOMWindow* domWindow() const;
 
     private:
-        JSDOMWindowSet m_windows;
-        DOMWindow* m_domWindow;
+        JSC::ProtectedPtr<JSDOMWindow> m_window;
     };
 
 } // namespace WebCore

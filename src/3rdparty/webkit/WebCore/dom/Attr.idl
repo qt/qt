@@ -22,7 +22,10 @@ module core {
 
     interface [
         CustomMarkFunction,
-        GenerateNativeConverter
+        GenerateConstructor,
+        GenerateNativeConverter,
+        InterfaceUUID=EEE8E22B-22C3-4e50-95F4-5E0B8AAD8231,
+        ImplementationUUID=41B16348-D8E7-4d21-BFDB-125705B7E91F
     ] Attr : Node {
 
         // DOM Level 1
@@ -35,13 +38,11 @@ module core {
         // DOM Level 2
 
         readonly attribute Element ownerElement;
-
-        // DOM Level 3
-
-        readonly attribute boolean isId;
-
+        
         // extensions
+#if !defined(LANGUAGE_COM) || !LANGUAGE_COM
         readonly attribute CSSStyleDeclaration style;
+#endif
     };
 
 }

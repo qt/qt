@@ -21,6 +21,7 @@
 module window {
 
     interface [
+        GenerateConstructor,
         HasNameGetter, 
         HasIndexGetter
     ] PluginArray {

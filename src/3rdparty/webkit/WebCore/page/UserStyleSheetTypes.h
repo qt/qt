@@ -31,11 +31,10 @@
 
 namespace WebCore {
 
-class DOMWrapperWorld;
 class UserStyleSheet;
 
 typedef Vector<OwnPtr<UserStyleSheet> > UserStyleSheetVector;
-typedef HashMap<RefPtr<DOMWrapperWorld>, UserStyleSheetVector*> UserStyleSheetMap;
+typedef HashMap<unsigned, UserStyleSheetVector*> UserStyleSheetMap;
 
 } // namespace WebCore
  

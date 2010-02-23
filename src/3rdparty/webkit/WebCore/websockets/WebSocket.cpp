@@ -43,14 +43,36 @@
 #include "Logging.h"
 #include "MessageEvent.h"
 #include "ScriptExecutionContext.h"
-#include "StringBuilder.h"
-#include "ThreadableWebSocketChannel.h"
+#include "SecurityOrigin.h"
 #include "WebSocketChannel.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 
-static bool isValidProtocolString(const String& protocol)
+class ProcessWebSocketEventTask : public ScriptExecutionContext::Task {
+public:
+    typedef void (WebSocket::*Method)(Event*);
+    static PassRefPtr<ProcessWebSocketEventTask> create(PassRefPtr<WebSocket> webSocket, PassRefPtr<Event> event)
+    {
+        return adoptRef(new ProcessWebSocketEventTask(webSocket, event));
+    }
+    virtual void performTask(ScriptExecutionContext*)
+    {
+        ExceptionCode ec = 0;
+        m_webSocket->dispatchEvent(m_event.get(), ec);
+        ASSERT(!ec);
+    }
+
+  private:
+    ProcessWebSocketEventTask(PassRefPtr<WebSocket> webSocket, PassRefPtr<Event> event)
+        : m_webSocket(webSocket)
+        , m_event(event) { }
+
+    RefPtr<WebSocket> m_webSocket;
+    RefPtr<Event> m_event;
+};
+
+static bool isValidProtocolString(const WebCore::String& protocol)
 {
     if (protocol.isNull())
         return true;
@@ -58,24 +80,10 @@ static bool isValidProtocolString(const String& protocol)
         return false;
     const UChar* characters = protocol.characters();
     for (size_t i = 0; i < protocol.length(); i++) {
-        if (characters[i] < 0x20 || characters[i] > 0x7E)
+        if (characters[i] < 0x21 || characters[i] > 0x7E)
             return false;
     }
     return true;
-}
-
-static String encodeProtocolString(const String& protocol)
-{
-    StringBuilder builder;
-    for (size_t i = 0; i < protocol.length(); i++) {
-        if (protocol[i] < 0x20 || protocol[i] > 0x7E)
-            builder.append(String::format("\\u%04X", protocol[i]));
-        else if (protocol[i] == 0x5c)
-            builder.append("\\\\");
-        else
-            builder.append(protocol[i]);
-    }
-    return builder.toString();
 }
 
 #if USE(V8)
@@ -97,13 +105,12 @@ bool WebSocket::isAvailable()
 WebSocket::WebSocket(ScriptExecutionContext* context)
     : ActiveDOMObject(context, this)
     , m_state(CONNECTING)
-    , m_bufferedAmountAfterClose(0)
 {
 }
 
 WebSocket::~WebSocket()
 {
-    if (m_channel)
+    if (m_channel.get())
         m_channel->disconnect();
 }
 
@@ -118,41 +125,22 @@ void WebSocket::connect(const KURL& url, const String& protocol, ExceptionCode& 
     m_url = url;
     m_protocol = protocol;
 
-    if (!m_url.isValid()) {
-        scriptExecutionContext()->addMessage(ConsoleDestination, JSMessageSource, LogMessageType, ErrorMessageLevel, "Invalid url for WebSocket " + url.string(), 0, scriptExecutionContext()->securityOrigin()->toString());
-        m_state = CLOSED;
-        ec = SYNTAX_ERR;
-        return;
-    }
-
     if (!m_url.protocolIs("ws") && !m_url.protocolIs("wss")) {
-        scriptExecutionContext()->addMessage(ConsoleDestination, JSMessageSource, LogMessageType, ErrorMessageLevel, "Wrong url scheme for WebSocket " + url.string(), 0, scriptExecutionContext()->securityOrigin()->toString());
-        m_state = CLOSED;
-        ec = SYNTAX_ERR;
-        return;
-    }
-    if (m_url.hasFragmentIdentifier()) {
-        scriptExecutionContext()->addMessage(ConsoleDestination, JSMessageSource, LogMessageType, ErrorMessageLevel, "URL has fragment component " + url.string(), 0, scriptExecutionContext()->securityOrigin()->toString());
+        LOG_ERROR("Error: wrong url for WebSocket %s", url.string().utf8().data());
         m_state = CLOSED;
         ec = SYNTAX_ERR;
         return;
     }
     if (!isValidProtocolString(m_protocol)) {
-        scriptExecutionContext()->addMessage(ConsoleDestination, JSMessageSource, LogMessageType, ErrorMessageLevel, "Wrong protocol for WebSocket '" + encodeProtocolString(m_protocol) + "'", 0, scriptExecutionContext()->securityOrigin()->toString());
+        LOG_ERROR("Error: wrong protocol for WebSocket %s", m_protocol.utf8().data());
         m_state = CLOSED;
         ec = SYNTAX_ERR;
         return;
     }
-    if (!portAllowed(url)) {
-        scriptExecutionContext()->addMessage(ConsoleDestination, JSMessageSource, LogMessageType, ErrorMessageLevel, String::format("WebSocket port %d blocked", url.port()), 0, scriptExecutionContext()->securityOrigin()->toString());
-        m_state = CLOSED;
-        ec = SECURITY_ERR;
-        return;
-    }
+    // FIXME: if m_url.port() is blocking port, raise SECURITY_ERR.
 
-    m_channel = ThreadableWebSocketChannel::create(scriptExecutionContext(), this, m_url, m_protocol);
+    m_channel = WebSocketChannel::create(scriptExecutionContext(), this, m_url, m_protocol);
     m_channel->connect();
-    ActiveDOMObject::setPendingActivity(this);
 }
 
 bool WebSocket::send(const String& message, ExceptionCode& ec)
@@ -163,12 +151,9 @@ bool WebSocket::send(const String& message, ExceptionCode& ec)
         return false;
     }
     // No exception is raised if the connection was once established but has subsequently been closed.
-    if (m_state == CLOSED) {
-        m_bufferedAmountAfterClose += message.utf8().length() + 2; // 2 for frameing
+    if (m_state == CLOSED)
         return false;
-    }
     // FIXME: check message is valid utf8.
-    ASSERT(m_channel);
     return m_channel->send(message);
 }
 
@@ -178,7 +163,6 @@ void WebSocket::close()
     if (m_state == CLOSED)
         return;
     m_state = CLOSED;
-    m_bufferedAmountAfterClose = m_channel->bufferedAmount();
     m_channel->close();
 }
 
@@ -196,7 +180,7 @@ unsigned long WebSocket::bufferedAmount() const
 {
     if (m_state == OPEN)
         return m_channel->bufferedAmount();
-    return m_bufferedAmountAfterClose;
+    return 0;
 }
 
 ScriptExecutionContext* WebSocket::scriptExecutionContext() const
@@ -204,35 +188,15 @@ ScriptExecutionContext* WebSocket::scriptExecutionContext() const
     return ActiveDOMObject::scriptExecutionContext();
 }
 
-void WebSocket::contextDestroyed()
-{
-    LOG(Network, "WebSocket %p scriptExecutionContext destroyed", this);
-    ASSERT(!m_channel);
-    ASSERT(m_state == CLOSED);
-    ActiveDOMObject::contextDestroyed();
-}
-
-void WebSocket::stop()
-{
-    bool pending = hasPendingActivity();
-    if (m_channel)
-        m_channel->disconnect();
-    m_channel = 0;
-    m_state = CLOSED;
-    ActiveDOMObject::stop();
-    if (pending)
-        ActiveDOMObject::unsetPendingActivity(this);
-}
-
 void WebSocket::didConnect()
 {
     LOG(Network, "WebSocket %p didConnect", this);
     if (m_state != CONNECTING || !scriptExecutionContext()) {
-        didClose(0);
+        didClose();
         return;
     }
     m_state = OPEN;
-    dispatchEvent(Event::create(eventNames().openEvent, false, false));
+    scriptExecutionContext()->postTask(ProcessWebSocketEventTask::create(this, Event::create(eventNames().openEvent, false, false)));
 }
 
 void WebSocket::didReceiveMessage(const String& msg)
@@ -241,19 +205,17 @@ void WebSocket::didReceiveMessage(const String& msg)
     if (m_state != OPEN || !scriptExecutionContext())
         return;
     RefPtr<MessageEvent> evt = MessageEvent::create();
+    // FIXME: origin, lastEventId, source, messagePort.
     evt->initMessageEvent(eventNames().messageEvent, false, false, SerializedScriptValue::create(msg), "", "", 0, 0);
-    dispatchEvent(evt);
+    scriptExecutionContext()->postTask(ProcessWebSocketEventTask::create(this, evt));
 }
 
-void WebSocket::didClose(unsigned long unhandledBufferedAmount)
+void WebSocket::didClose()
 {
     LOG(Network, "WebSocket %p didClose", this);
     m_state = CLOSED;
-    m_bufferedAmountAfterClose += unhandledBufferedAmount;
-    dispatchEvent(Event::create(eventNames().closeEvent, false, false));
-    m_channel = 0;
-    if (hasPendingActivity())
-        ActiveDOMObject::unsetPendingActivity(this);
+    if (scriptExecutionContext())
+        scriptExecutionContext()->postTask(ProcessWebSocketEventTask::create(this, Event::create(eventNames().closeEvent, false, false)));
 }
 
 EventTargetData* WebSocket::eventTargetData()

@@ -23,7 +23,6 @@
 #include "config.h"
 #include "RenderInline.h"
 
-#include "Chrome.h"
 #include "FloatQuad.h"
 #include "GraphicsContext.h"
 #include "HitTestResult.h"
@@ -710,7 +709,7 @@ void RenderInline::computeRectForRepaint(RenderBoxModelObject* repaintContainer,
     o->computeRectForRepaint(repaintContainer, rect, fixed);
 }
 
-IntSize RenderInline::offsetFromContainer(RenderObject* container, const IntPoint& point) const
+IntSize RenderInline::offsetFromContainer(RenderObject* container) const
 {
     ASSERT(container == this->container());
 
@@ -718,7 +717,13 @@ IntSize RenderInline::offsetFromContainer(RenderObject* container, const IntPoin
     if (isRelPositioned())
         offset += relativePositionOffset();
 
-    container->adjustForColumns(offset, point);
+    if (!isInline() || isReplaced()) {
+        RenderBlock* cb;
+        if (container->isBlockFlow() && (cb = toRenderBlock(container))->hasColumns()) {
+            IntRect rect(0, 0, 1, 1);
+            cb->adjustRectForColumns(rect);
+        }
+    }
 
     if (container->hasOverflowClip())
         offset -= toRenderBox(container)->layer()->scrolledContentOffset();
@@ -747,7 +752,7 @@ void RenderInline::mapLocalToContainer(RenderBoxModelObject* repaintContainer, b
     if (!o)
         return;
 
-    IntSize containerOffset = offsetFromContainer(o, roundedIntPoint(transformState.mappedPoint()));
+    IntSize containerOffset = offsetFromContainer(o);
 
     bool preserve3D = useTransforms && (o->style()->preserves3D() || style()->preserves3D());
     if (useTransforms && shouldUseTransformFromContainer(o)) {
@@ -779,7 +784,7 @@ void RenderInline::mapAbsoluteToLocalPoint(bool fixed, bool useTransforms, Trans
 
     o->mapAbsoluteToLocalPoint(fixed, useTransforms, transformState);
 
-    IntSize containerOffset = offsetFromContainer(o, IntPoint());
+    IntSize containerOffset = offsetFromContainer(o);
 
     bool preserve3D = useTransforms && (o->style()->preserves3D() || style()->preserves3D());
     if (useTransforms && shouldUseTransformFromContainer(o)) {
@@ -926,15 +931,13 @@ void RenderInline::imageChanged(WrappedImagePtr, const IntRect*)
     repaint();
 }
 
-void RenderInline::addFocusRingRects(Vector<IntRect>& rects, int tx, int ty)
+void RenderInline::addFocusRingRects(GraphicsContext* graphicsContext, int tx, int ty)
 {
     for (InlineRunBox* curr = firstLineBox(); curr; curr = curr->nextLineBox()) {
         RootInlineBox* root = curr->root();
         int top = max(root->lineTop(), curr->y());
         int bottom = min(root->lineBottom(), curr->y() + curr->height());
-        IntRect rect(tx + curr->x(), ty + top, curr->width(), bottom - top);
-        if (!rect.isEmpty())
-            rects.append(rect);
+        graphicsContext->addFocusRingRect(IntRect(tx + curr->x(), ty + top, curr->width(), bottom - top));
     }
 
     for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
@@ -945,17 +948,17 @@ void RenderInline::addFocusRingRects(Vector<IntRect>& rects, int tx, int ty)
                 pos = curr->localToAbsolute();
             else if (curr->isBox())
                 pos.move(toRenderBox(curr)->x(), toRenderBox(curr)->y());
-           curr->addFocusRingRects(rects, pos.x(), pos.y());
+           curr->addFocusRingRects(graphicsContext, pos.x(), pos.y());
         }
     }
 
     if (continuation()) {
         if (continuation()->isInline())
-            continuation()->addFocusRingRects(rects, 
+            continuation()->addFocusRingRects(graphicsContext, 
                                               tx - containingBlock()->x() + continuation()->containingBlock()->x(),
                                               ty - containingBlock()->y() + continuation()->containingBlock()->y());
         else
-            continuation()->addFocusRingRects(rects, 
+            continuation()->addFocusRingRects(graphicsContext, 
                                               tx - containingBlock()->x() + toRenderBox(continuation())->x(),
                                               ty - containingBlock()->y() + toRenderBox(continuation())->y());
     }
@@ -972,12 +975,13 @@ void RenderInline::paintOutline(GraphicsContext* graphicsContext, int tx, int ty
         if (!oc.isValid())
             oc = style()->color();
 
-        Vector<IntRect> focusRingRects;
-        addFocusRingRects(focusRingRects, tx, ty);
+        graphicsContext->initFocusRing(ow, style()->outlineOffset());
+        addFocusRingRects(graphicsContext, tx, ty);
         if (style()->outlineStyleIsAuto())
-            graphicsContext->drawFocusRing(focusRingRects, ow, style()->outlineOffset(), oc);
+            graphicsContext->drawFocusRing(oc);
         else
-            addPDFURLRect(graphicsContext, unionRect(focusRingRects));
+            addPDFURLRect(graphicsContext, graphicsContext->focusRingBoundingRect());
+        graphicsContext->clearFocusRing();
     }
 
     if (style()->outlineStyleIsAuto() || style()->outlineStyle() == BNONE)

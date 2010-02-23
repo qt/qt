@@ -82,7 +82,6 @@ WebInspector.TopDownProfileDataGridTree.prototype = {
             return;
 
         this._save();
-        profileDataGrideNode.savePosition();
 
         this.children = [profileDataGrideNode];
         this.totalTime = profileDataGrideNode.totalTime;
@@ -101,16 +100,6 @@ WebInspector.TopDownProfileDataGridTree.prototype = {
 
         if (this.lastComparator)
             this.sort(this.lastComparator, true);
-    },
-
-    restore: function()
-    {
-        if (!this._savedChildren)
-            return;
-
-        this.children[0].restorePosition();
-
-        WebInspector.ProfileDataGridTree.prototype.restore.call(this);
     },
 
     _merge: WebInspector.TopDownProfileDataGridNode.prototype._merge,

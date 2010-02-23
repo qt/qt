@@ -36,16 +36,17 @@ namespace WebCore {
         virtual ~SVGMPathElement();
         
         virtual void parseMappedAttribute(MappedAttribute*);
-        virtual void synchronizeProperty(const QualifiedName&);
         
         SVGPathElement* pathElement();
         
     private:
         // SVGURIReference
-        DECLARE_ANIMATED_PROPERTY(SVGMPathElement, XLinkNames::hrefAttr, String, Href, href)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGMPathElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
 
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGMPathElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGMPathElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

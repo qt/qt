@@ -45,16 +45,13 @@ static void drawRectIntoContext(IntRect rect, FrameView* view, GraphicsContext* 
     rect.move(-offset.width(), -offset.height());
     rect = view->convertToContainingWindow(rect);
 
-    gc->concatCTM(AffineTransform().translate(-rect.x(), -rect.y()));
+    gc->concatCTM(TransformationMatrix().translate(-rect.x(), -rect.y()));
 
     view->paint(gc, rect);
 }
 
 static HBITMAP imageFromRect(const Frame* frame, IntRect& ir)
 {
-    PaintBehavior oldPaintBehavior = frame->view()->paintBehavior();
-    frame->view()->setPaintBehavior(oldPaintBehavior | PaintBehaviorFlattenCompositingLayers);
-
     void* bits;
     HDC hdc = CreateCompatibleDC(0);
     int w = ir.width();
@@ -77,8 +74,6 @@ static HBITMAP imageFromRect(const Frame* frame, IntRect& ir)
     SelectObject(hdc, hbmpOld);
     DeleteDC(hdc);
 
-    frame->view()->setPaintBehavior(oldPaintBehavior);
-
     return hbmp;
 }
 
@@ -86,12 +81,12 @@ HBITMAP imageFromSelection(Frame* frame, bool forceBlackText)
 {
     frame->document()->updateLayout();
 
-    frame->view()->setPaintBehavior(PaintBehaviorSelectionOnly | (forceBlackText ? PaintBehaviorForceBlackText : 0));
+    frame->view()->setPaintRestriction(forceBlackText ? PaintRestrictionSelectionOnlyBlackText : PaintRestrictionSelectionOnly);
     FloatRect fr = frame->selectionBounds();
     IntRect ir(static_cast<int>(fr.x()), static_cast<int>(fr.y()),
                static_cast<int>(fr.width()), static_cast<int>(fr.height()));
     HBITMAP image = imageFromRect(frame, ir);
-    frame->view()->setPaintBehavior(PaintBehaviorNormal);
+    frame->view()->setPaintRestriction(PaintRestrictionNone);
     return image;
 }
 

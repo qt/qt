@@ -167,12 +167,10 @@ HTMLTokenizer::HTMLTokenizer(HTMLDocument* doc, bool reportErrors)
     , m_requestingScript(false)
     , m_hasScriptsWaitingForStylesheets(false)
     , m_timer(this, &HTMLTokenizer::timerFired)
-    , m_externalScriptsTimer(this, &HTMLTokenizer::executeExternalScriptsTimerFired)
     , m_doc(doc)
     , m_parser(new HTMLParser(doc, reportErrors))
     , m_inWrite(false)
     , m_fragment(false)
-    , m_scriptingPermission(FragmentScriptingAllowed)
 {
     begin();
 }
@@ -188,17 +186,15 @@ HTMLTokenizer::HTMLTokenizer(HTMLViewSourceDocument* doc)
     , m_requestingScript(false)
     , m_hasScriptsWaitingForStylesheets(false)
     , m_timer(this, &HTMLTokenizer::timerFired)
-    , m_externalScriptsTimer(this, &HTMLTokenizer::executeExternalScriptsTimerFired)
     , m_doc(doc)
     , m_parser(0)
     , m_inWrite(false)
     , m_fragment(false)
-    , m_scriptingPermission(FragmentScriptingAllowed)
 {
     begin();
 }
 
-HTMLTokenizer::HTMLTokenizer(DocumentFragment* frag, FragmentScriptingPermission scriptingPermission)
+HTMLTokenizer::HTMLTokenizer(DocumentFragment* frag)
     : m_buffer(0)
     , m_scriptCode(0)
     , m_scriptCodeSize(0)
@@ -208,12 +204,10 @@ HTMLTokenizer::HTMLTokenizer(DocumentFragment* frag, FragmentScriptingPermission
     , m_requestingScript(false)
     , m_hasScriptsWaitingForStylesheets(false)
     , m_timer(this, &HTMLTokenizer::timerFired)
-    , m_externalScriptsTimer(this, &HTMLTokenizer::executeExternalScriptsTimerFired)
     , m_doc(frag->document())
-    , m_parser(new HTMLParser(frag, scriptingPermission))
+    , m_parser(new HTMLParser(frag))
     , m_inWrite(false)
     , m_fragment(true)
-    , m_scriptingPermission(scriptingPermission)
 {
     begin();
 }
@@ -238,8 +232,6 @@ void HTMLTokenizer::reset()
     m_scriptCodeSize = m_scriptCodeCapacity = m_scriptCodeResync = 0;
 
     m_timer.stop();
-    m_externalScriptsTimer.stop();
-
     m_state.setAllowYield(false);
     m_state.setForceSynchronous(false);
 
@@ -471,13 +463,6 @@ HTMLTokenizer::State HTMLTokenizer::scriptHandler(State state)
 
     state = processListing(SegmentedString(m_scriptCode, m_scriptCodeSize), state);
     RefPtr<Node> node = processToken();
-    
-    if (node && m_scriptingPermission == FragmentScriptingNotAllowed) {
-        ExceptionCode ec;
-        node->remove(ec);
-        node = 0;
-    }
-    
     String scriptString = node ? node->textContent() : "";
     m_currentToken.tagName = scriptTag.localName();
     m_currentToken.beginTag = false;
@@ -567,6 +552,12 @@ HTMLTokenizer::State HTMLTokenizer::scriptExecution(const ScriptSourceCode& sour
         return state;
     m_executingScript++;
     
+#if ENABLE(INSPECTOR)
+    InspectorTimelineAgent* timelineAgent = m_doc->inspectorTimelineAgent();
+    if (timelineAgent)
+        timelineAgent->willEvaluateScriptTag(sourceCode.url().isNull() ? String() : sourceCode.url().string(), sourceCode.startLine());
+#endif
+    
     SegmentedString* savedPrependingSrc = m_currentPrependingSrc;
     SegmentedString prependingSrc;
     m_currentPrependingSrc = &prependingSrc;
@@ -623,6 +614,11 @@ HTMLTokenizer::State HTMLTokenizer::scriptExecution(const ScriptSourceCode& sour
     }
 
     m_currentPrependingSrc = savedPrependingSrc;
+    
+#if ENABLE(INSPECTOR)
+    if (timelineAgent)
+        timelineAgent->didEvaluateScriptTag();
+#endif
     
     return state;
 }
@@ -1511,7 +1507,7 @@ HTMLTokenizer::State HTMLTokenizer::parseTag(SegmentedString& src, State state)
                 m_scriptTagSrcAttrValue = String();
                 m_scriptTagCharsetAttrValue = String();
                 if (m_currentToken.attrs && !m_fragment) {
-                    if (m_doc->frame() && m_doc->frame()->script()->canExecuteScripts()) {
+                    if (m_doc->frame() && m_doc->frame()->script()->isEnabled()) {
                         if ((a = m_currentToken.attrs->getAttributeItem(srcAttr)))
                             m_scriptTagSrcAttrValue = m_doc->completeURL(deprecatedParseURL(a->value())).string();
                     }
@@ -1682,8 +1678,9 @@ void HTMLTokenizer::write(const SegmentedString& str, bool appendData)
     double startTime = currentTime();
 
 #if ENABLE(INSPECTOR)
-    if (InspectorTimelineAgent* timelineAgent = m_doc->inspectorTimelineAgent())
-        timelineAgent->willWriteHTML(source.length(), m_lineNumber);
+    InspectorTimelineAgent* timelineAgent = m_doc->inspectorTimelineAgent();
+    if (timelineAgent)
+        timelineAgent->willWriteHTML();
 #endif
   
     Frame* frame = m_doc->frame();
@@ -1808,8 +1805,8 @@ void HTMLTokenizer::write(const SegmentedString& str, bool appendData)
 #endif
 
 #if ENABLE(INSPECTOR)
-    if (InspectorTimelineAgent* timelineAgent = m_doc->inspectorTimelineAgent())
-        timelineAgent->didWriteHTML(m_lineNumber);
+    if (timelineAgent)
+        timelineAgent->didWriteHTML();
 #endif
 
     m_inWrite = wasInWrite;
@@ -1819,8 +1816,8 @@ void HTMLTokenizer::write(const SegmentedString& str, bool appendData)
     if (m_noMoreData && !m_inWrite && !state.loadingExtScript() && !m_executingScript && !m_timer.isActive())
         end(); // this actually causes us to be deleted
     
-    // After parsing, go ahead and dispatch image beforeload events.
-    ImageLoader::dispatchPendingBeforeLoadEvents();
+    // After parsing, go ahead and dispatch image beforeload/load events.
+    ImageLoader::dispatchPendingEvents();
 }
 
 void HTMLTokenizer::stopParsing()
@@ -1922,7 +1919,7 @@ void HTMLTokenizer::finish()
 PassRefPtr<Node> HTMLTokenizer::processToken()
 {
     ScriptController* scriptController = (!m_fragment && m_doc->frame()) ? m_doc->frame()->script() : 0;
-    if (scriptController && scriptController->canExecuteScripts())
+    if (scriptController && scriptController->isEnabled())
         // FIXME: Why isn't this m_currentScriptTagStartLineNumber?  I suspect this is wrong.
         scriptController->setEventHandlerLineNumber(m_currentTagStartLineNumber + 1); // Script line numbers are 1 based.
     if (m_dest > m_buffer) {
@@ -2023,11 +2020,6 @@ void HTMLTokenizer::executeScriptsWaitingForStylesheets()
 
 void HTMLTokenizer::notifyFinished(CachedResource*)
 {
-    executeExternalScriptsIfReady();
-}
-
-void HTMLTokenizer::executeExternalScriptsIfReady()
-{
 #ifdef INSTRUMENT_LAYOUT_SCHEDULING
     if (!m_doc->ownerElement())
         printf("script loaded at %d\n", m_doc->elapsedTime());
@@ -2042,12 +2034,7 @@ void HTMLTokenizer::executeExternalScriptsIfReady()
         return;
 
     bool finished = false;
-    
-    double startTime = currentTime();
     while (!finished && m_pendingScripts.first()->isLoaded()) {
-        if (!continueExecutingExternalScripts(startTime))
-            break;
-
         CachedScript* cs = m_pendingScripts.first().get();
         m_pendingScripts.removeFirst();
         ASSERT(cache()->disabled() || cs->accessCount() > 0);
@@ -2107,31 +2094,6 @@ void HTMLTokenizer::executeExternalScriptsIfReady()
     }
 }
 
-void HTMLTokenizer::executeExternalScriptsTimerFired(Timer<HTMLTokenizer>*)
-{
-    if (m_doc->view() && m_doc->view()->layoutPending() && !m_doc->minimumLayoutDelay()) {
-        // Restart the timer and do layout first.
-        m_externalScriptsTimer.startOneShot(0);
-        return;
-    }
-
-    // Continue executing external scripts.
-    executeExternalScriptsIfReady();
-}
-
-bool HTMLTokenizer::continueExecutingExternalScripts(double startTime)
-{
-    if (m_externalScriptsTimer.isActive())
-        return false;
-
-    if (currentTime() - startTime > m_tokenizerTimeDelay) {
-        // Schedule the timer to keep processing as soon as possible.
-        m_externalScriptsTimer.startOneShot(0);
-        return false;
-    }
-    return true;
-}
-
 bool HTMLTokenizer::isWaitingForScripts() const
 {
     return m_state.loadingExtScript();
@@ -2142,9 +2104,9 @@ void HTMLTokenizer::setSrc(const SegmentedString& source)
     m_src = source;
 }
 
-void parseHTMLDocumentFragment(const String& source, DocumentFragment* fragment, FragmentScriptingPermission scriptingPermission)
+void parseHTMLDocumentFragment(const String& source, DocumentFragment* fragment)
 {
-    HTMLTokenizer tok(fragment, scriptingPermission);
+    HTMLTokenizer tok(fragment);
     tok.setForceSynchronous(true);
     tok.write(source, true);
     tok.finish();

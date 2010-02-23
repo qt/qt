@@ -37,8 +37,7 @@
 extern "C" {
 #endif
 
-#if !defined(WIN32) && !defined(_WIN32) && !defined(__WINSCW__) \
-    && !(defined(__CC_ARM) || defined(__ARMCC__)) /* RVCT */
+#if !defined(WIN32) && !defined(_WIN32) && !defined(__WINSCW__)
 /*!
 @typedef JSChar
 @abstract A Unicode character.

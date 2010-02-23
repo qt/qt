@@ -198,7 +198,7 @@ void RenderView::paintBoxDecorations(PaintInfo& paintInfo, int, int)
         if (baseColor.alpha() > 0) {
             paintInfo.context->save();
             paintInfo.context->setCompositeOperation(CompositeCopy);
-            paintInfo.context->fillRect(paintInfo.rect, baseColor, style()->colorSpace());
+            paintInfo.context->fillRect(paintInfo.rect, baseColor);
             paintInfo.context->restore();
         } else
             paintInfo.context->clearRect(paintInfo.rect);
@@ -326,13 +326,7 @@ IntRect RenderView::selectionBounds(bool clipToVisibleContent) const
     SelectionMap::iterator end = selectedObjects.end();
     for (SelectionMap::iterator i = selectedObjects.begin(); i != end; ++i) {
         RenderSelectionInfo* info = i->second;
-        // RenderSelectionInfo::rect() is in the coordinates of the repaintContainer, so map to page coordinates.
-        IntRect currRect = info->rect();
-        if (RenderBoxModelObject* repaintContainer = info->repaintContainer()) {
-            FloatQuad absQuad = repaintContainer->localToAbsoluteQuad(FloatRect(currRect));
-            currRect = absQuad.enclosingBoundingBox(); 
-        }
-        selRect.unite(currRect);
+        selRect.unite(info->rect());
         delete info;
     }
     return selRect;
@@ -431,7 +425,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
         o = o->nextInPreOrder();
     }
 
-    m_layer->clearBlockSelectionGapsBounds();
+    m_cachedSelectionBounds = IntRect();
 
     // Now that the selection state has been updated for the new objects, walk them again and
     // put them in the new objects list.
@@ -444,7 +438,9 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
                 RenderBlockSelectionInfo* blockInfo = newSelectedBlocks.get(cb);
                 if (blockInfo)
                     break;
-                newSelectedBlocks.set(cb, new RenderBlockSelectionInfo(cb));
+                blockInfo = new RenderBlockSelectionInfo(cb);
+                newSelectedBlocks.set(cb, blockInfo);
+                m_cachedSelectionBounds.unite(blockInfo->rects());
                 cb = cb->containingBlock();
             }
         }
@@ -521,7 +517,7 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
 
 void RenderView::clearSelection()
 {
-    m_layer->repaintBlockSelectionGaps();
+    repaintViewRectangle(m_cachedSelectionBounds);
     setSelection(0, -1, 0, -1, RepaintNewMinusOld);
 }
 
@@ -650,17 +646,6 @@ void RenderView::pushLayoutState(RenderObject* root)
     ASSERT(m_layoutState == 0);
 
     m_layoutState = new (renderArena()) LayoutState(root);
-}
-
-bool RenderView::shouldDisableLayoutStateForSubtree(RenderObject* renderer) const
-{
-    RenderObject* o = renderer;
-    while (o) {
-        if (o->hasColumns() || o->hasTransform() || o->hasReflection())
-            return true;
-        o = o->container();
-    }
-    return false;
 }
 
 void RenderView::updateHitTestResult(HitTestResult& result, const IntPoint& point)

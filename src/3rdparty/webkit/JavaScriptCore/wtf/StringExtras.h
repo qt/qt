@@ -34,7 +34,6 @@
 #endif 
 
 #if COMPILER(MSVC)
-// FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
 
 inline int snprintf(char* buffer, size_t count, const char* format, ...) 
 {
@@ -46,7 +45,7 @@ inline int snprintf(char* buffer, size_t count, const char* format, ...)
     return result;
 }
 
-#if COMPILER(MSVC7) || OS(WINCE)
+#if COMPILER(MSVC7) || PLATFORM(WINCE)
 
 inline int vsnprintf(char* buffer, size_t count, const char* format, va_list args)
 {
@@ -55,7 +54,7 @@ inline int vsnprintf(char* buffer, size_t count, const char* format, va_list arg
 
 #endif
 
-#if OS(WINCE)
+#if PLATFORM(WINCE)
 
 inline int strnicmp(const char* string1, const char* string2, size_t count)
 {
@@ -86,8 +85,7 @@ inline int strcasecmp(const char* s1, const char* s2)
 
 #endif
 
-#if OS(WINDOWS) || OS(LINUX) || OS(SOLARIS)
-// FIXME: should check HAVE_STRNSTR
+#if PLATFORM(WIN_OS) || PLATFORM(LINUX)
 
 inline char* strnstr(const char* buffer, const char* target, size_t bufferLength)
 {
@@ -100,13 +98,6 @@ inline char* strnstr(const char* buffer, const char* target, size_t bufferLength
     }
     return 0;
 }
-
-#endif
-
-#if COMPILER(RVCT) && __ARMCC_VERSION < 400000
-
-int strcasecmp(const char* s1, const char* s2);
-int strncasecmp(const char* s1, const char* s2, size_t len);
 
 #endif
 

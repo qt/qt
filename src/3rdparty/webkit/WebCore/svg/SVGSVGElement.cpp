@@ -24,7 +24,6 @@
 #if ENABLE(SVG)
 #include "SVGSVGElement.h"
 
-#include "AffineTransform.h"
 #include "CSSHelper.h"
 #include "CSSPropertyNames.h"
 #include "Document.h"
@@ -49,6 +48,7 @@
 #include "SVGZoomEvent.h"
 #include "ScriptEventListener.h"
 #include "SelectionController.h"
+#include "TransformationMatrix.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
@@ -63,13 +63,15 @@ SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document* doc)
     , SVGExternalResourcesRequired()
     , SVGFitToViewBox()
     , SVGZoomAndPan()
-    , m_x(LengthModeWidth)
-    , m_y(LengthModeHeight)
-    , m_width(LengthModeWidth, "100%")
-    , m_height(LengthModeHeight, "100%") 
+    , m_x(this, SVGNames::xAttr, LengthModeWidth)
+    , m_y(this, SVGNames::yAttr, LengthModeHeight)
+    , m_width(this, SVGNames::widthAttr, LengthModeWidth, "100%")
+    , m_height(this, SVGNames::heightAttr, LengthModeHeight, "100%") 
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
+    , m_viewBox(this, SVGNames::viewBoxAttr)
+    , m_preserveAspectRatio(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create())
     , m_useCurrentView(false)
     , m_timeContainer(SMILTimeContainer::create(this))
-    , m_scale(1)
     , m_viewSpec(0)
     , m_containerSize(300, 150)
     , m_hasSetContainerSize(false)
@@ -83,6 +85,12 @@ SVGSVGElement::~SVGSVGElement()
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
     document()->accessSVGExtensions()->removeTimeContainer(this);
+
+    // Call detach() here because if we wait until ~Node() calls it, we crash during
+    // RenderSVGViewportContainer destruction, as the renderer assumes that the element
+    // is still fully constructed. See <https://bugs.webkit.org/show_bug.cgi?id=21293>.
+    if (renderer())
+        detach();
 }
 
 const AtomicString& SVGSVGElement::contentScriptType() const
@@ -119,7 +127,7 @@ FloatRect SVGSVGElement::viewport() const
     }
     float w = width().value(this);
     float h = height().value(this);
-    AffineTransform viewBox = viewBoxToViewTransform(w, h);
+    TransformationMatrix viewBox = viewBoxToViewTransform(w, h);
     double wDouble = w;
     double hDouble = h;
     viewBox.map(_x, _y, _x, _y);
@@ -187,25 +195,15 @@ SVGViewSpec* SVGSVGElement::currentView() const
 
 float SVGSVGElement::currentScale() const
 {
-    // Only the page zoom factor is relevant for SVG
-    if (Frame* frame = document()->frame())
-        return frame->pageZoomFactor();
-    return m_scale;
+    if (document() && document()->frame())
+        return document()->frame()->zoomFactor();
+    return 1.0f;
 }
 
 void SVGSVGElement::setCurrentScale(float scale)
 {
-    if (Frame* frame = document()->frame()) {
-        // Calling setCurrentScale() on the outermost <svg> element in a standalone SVG document
-        // is allowed to change the page zoom factor, influencing the document size, scrollbars etc.
-        if (parentNode() == document())
-            frame->setZoomFactor(scale, false);
-        return;
-    }
-
-    m_scale = scale;
-    if (renderer())
-        renderer()->setNeedsLayout(true);
+    if (document() && document()->frame())
+        document()->frame()->setZoomFactor(scale, true);
 }
 
 FloatPoint SVGSVGElement::currentTranslate() const
@@ -312,37 +310,6 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
         renderer()->setNeedsLayout(true);
 }
 
-void SVGSVGElement::synchronizeProperty(const QualifiedName& attrName)
-{
-    SVGStyledElement::synchronizeProperty(attrName);
-
-    if (attrName == anyQName()) {
-        synchronizeX();
-        synchronizeY();
-        synchronizeWidth();
-        synchronizeHeight();
-        synchronizeExternalResourcesRequired();
-        synchronizeViewBox();
-        synchronizePreserveAspectRatio();
-        return;
-    }
-
-    if (attrName == SVGNames::xAttr)
-        synchronizeX();
-    else if (attrName == SVGNames::yAttr)
-        synchronizeY();
-    else if (attrName == SVGNames::widthAttr)
-        synchronizeWidth();
-    else if (attrName == SVGNames::heightAttr)
-        synchronizeHeight();
-    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
-        synchronizeExternalResourcesRequired();
-    else if (SVGFitToViewBox::isKnownAttribute(attrName)) {
-        synchronizeViewBox();
-        synchronizePreserveAspectRatio();
-    }
-}
-
 unsigned SVGSVGElement::suspendRedraw(unsigned /* maxWaitMilliseconds */)
 {
     // FIXME: Implement me (see bug 11275)
@@ -407,9 +374,9 @@ SVGLength SVGSVGElement::createSVGLength()
     return SVGLength();
 }
 
-SVGAngle SVGSVGElement::createSVGAngle()
+PassRefPtr<SVGAngle> SVGSVGElement::createSVGAngle()
 {
-    return SVGAngle();
+    return SVGAngle::create();
 }
 
 FloatPoint SVGSVGElement::createSVGPoint()
@@ -417,9 +384,9 @@ FloatPoint SVGSVGElement::createSVGPoint()
     return FloatPoint();
 }
 
-AffineTransform SVGSVGElement::createSVGMatrix()
+TransformationMatrix SVGSVGElement::createSVGMatrix()
 {
-    return AffineTransform();
+    return TransformationMatrix();
 }
 
 FloatRect SVGSVGElement::createSVGRect()
@@ -432,26 +399,26 @@ SVGTransform SVGSVGElement::createSVGTransform()
     return SVGTransform();
 }
 
-SVGTransform SVGSVGElement::createSVGTransformFromMatrix(const AffineTransform& matrix)
+SVGTransform SVGSVGElement::createSVGTransformFromMatrix(const TransformationMatrix& matrix)
 {
     return SVGTransform(matrix);
 }
 
-AffineTransform SVGSVGElement::getCTM() const
+TransformationMatrix SVGSVGElement::getCTM() const
 {
-    AffineTransform mat;
+    TransformationMatrix mat;
     if (!isOutermostSVG())
         mat.translate(x().value(this), y().value(this));
 
     if (attributes()->getAttributeItem(SVGNames::viewBoxAttr)) {
-        AffineTransform viewBox = viewBoxToViewTransform(width().value(this), height().value(this));
+        TransformationMatrix viewBox = viewBoxToViewTransform(width().value(this), height().value(this));
         mat = viewBox * mat;
     }
 
     return mat;
 }
 
-AffineTransform SVGSVGElement::getScreenCTM() const
+TransformationMatrix SVGSVGElement::getScreenCTM() const
 {
     document()->updateLayoutIgnorePendingStylesheets();
     FloatPoint rootLocation;
@@ -467,11 +434,11 @@ AffineTransform SVGSVGElement::getScreenCTM() const
             rootLocation.move(x().value(this), y().value(this));
     }
     
-    AffineTransform mat = SVGStyledLocatableElement::getScreenCTM();
+    TransformationMatrix mat = SVGStyledLocatableElement::getScreenCTM();
     mat.translate(rootLocation.x(), rootLocation.y());
 
     if (attributes()->getAttributeItem(SVGNames::viewBoxAttr)) {
-        AffineTransform viewBox = viewBoxToViewTransform(width().value(this), height().value(this));
+        TransformationMatrix viewBox = viewBoxToViewTransform(width().value(this), height().value(this));
         mat = viewBox * mat;
     }
 
@@ -541,7 +508,7 @@ bool SVGSVGElement::isOutermostSVG() const
     return !parentNode()->isSVGElement();
 }
 
-AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
+TransformationMatrix SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
     FloatRect viewBoxRect;
     if (useCurrentView()) {
@@ -550,7 +517,7 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
     } else
         viewBoxRect = viewBox();
 
-    AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(viewBoxRect, preserveAspectRatio(), viewWidth, viewHeight);
+    TransformationMatrix ctm = SVGFitToViewBox::viewBoxToViewTransform(viewBoxRect, preserveAspectRatio(), viewWidth, viewHeight);
     if (useCurrentView() && currentView())
         return currentView()->transform()->concatenate().matrix() * ctm;
 
@@ -564,14 +531,13 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
         currentView()->setViewBox(viewElement->viewBox());
     else
         currentView()->setViewBox(viewBox());
-
-    SVGPreserveAspectRatio aspectRatio;
-    if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr))
-        aspectRatio = viewElement->preserveAspectRatioBaseValue();
-    else
-        aspectRatio = preserveAspectRatioBaseValue();
-    currentView()->setPreserveAspectRatioBaseValue(aspectRatio);
-
+    if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr)) {
+        currentView()->preserveAspectRatio()->setAlign(viewElement->preserveAspectRatio()->align());
+        currentView()->preserveAspectRatio()->setMeetOrSlice(viewElement->preserveAspectRatio()->meetOrSlice());
+    } else {
+        currentView()->preserveAspectRatio()->setAlign(preserveAspectRatio()->align());
+        currentView()->preserveAspectRatio()->setMeetOrSlice(preserveAspectRatio()->meetOrSlice());
+    }
     if (viewElement->hasAttribute(SVGNames::zoomAndPanAttr))
         currentView()->setZoomAndPan(viewElement->zoomAndPan());
     renderer()->setNeedsLayout(true);

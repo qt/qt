@@ -27,6 +27,8 @@
 
 namespace WebCore {
 
+char SVGURIReferenceIdentifier[] = "SVGURIReference";
+
 SVGURIReference::SVGURIReference()
 {
 }

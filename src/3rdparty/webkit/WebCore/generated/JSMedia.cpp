@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -161,8 +161,7 @@ JSValue jsMediaType(ExecState* exec, const Identifier&, const PropertySlot& slot
     JSMedia* castedThis = static_cast<JSMedia*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Media* imp = static_cast<Media*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->type());
-    return result;
+    return jsString(exec, imp->type());
 }
 
 JSValue jsMediaConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

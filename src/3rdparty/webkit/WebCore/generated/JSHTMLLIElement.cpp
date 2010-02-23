@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -145,8 +145,7 @@ JSValue jsHTMLLIElementType(ExecState* exec, const Identifier&, const PropertySl
     JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->type());
-    return result;
+    return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLLIElementValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,8 +153,7 @@ JSValue jsHTMLLIElementValue(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLLIElement* castedThis = static_cast<JSHTMLLIElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->value());
-    return result;
+    return jsNumber(exec, imp->value());
 }
 
 JSValue jsHTMLLIElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,15 +168,13 @@ void JSHTMLLIElement::put(ExecState* exec, const Identifier& propertyName, JSVal
 
 void setJSHTMLLIElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLLIElement* castedThisObj = static_cast<JSHTMLLIElement*>(thisObject);
-    HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThisObj->impl());
+    HTMLLIElement* imp = static_cast<HTMLLIElement*>(static_cast<JSHTMLLIElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLIElementValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLLIElement* castedThisObj = static_cast<JSHTMLLIElement*>(thisObject);
-    HTMLLIElement* imp = static_cast<HTMLLIElement*>(castedThisObj->impl());
+    HTMLLIElement* imp = static_cast<HTMLLIElement*>(static_cast<JSHTMLLIElement*>(thisObject)->impl());
     imp->setValue(value.toInt32(exec));
 }
 

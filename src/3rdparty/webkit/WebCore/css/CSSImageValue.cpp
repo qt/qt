@@ -25,6 +25,7 @@
 #include "Cache.h"
 #include "CachedImage.h"
 #include "DocLoader.h"
+#include "RenderStyle.h"
 #include "StyleCachedImage.h"
 
 namespace WebCore {

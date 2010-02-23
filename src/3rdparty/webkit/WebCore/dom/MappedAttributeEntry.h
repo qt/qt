@@ -1,4 +1,6 @@
 /*
+ * This file is part of the DOM implementation for KDE.
+ *
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Peter Kelly (pmk@post.com)
@@ -47,9 +49,7 @@ enum MappedAttributeEntry {
 // When adding new entries, make sure to keep eLastEntry at the end of the list.
     , eLastEntry
 };
-
-enum FragmentScriptingPermission { FragmentScriptingAllowed, FragmentScriptingNotAllowed };
-
+    
 }
 
 #endif

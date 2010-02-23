@@ -116,8 +116,7 @@ JSValue jsWorkerNavigatorAppName(ExecState* exec, const Identifier&, const Prope
     JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->appName());
-    return result;
+    return jsString(exec, imp->appName());
 }
 
 JSValue jsWorkerNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -125,8 +124,7 @@ JSValue jsWorkerNavigatorAppVersion(ExecState* exec, const Identifier&, const Pr
     JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->appVersion());
-    return result;
+    return jsString(exec, imp->appVersion());
 }
 
 JSValue jsWorkerNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -134,8 +132,7 @@ JSValue jsWorkerNavigatorPlatform(ExecState* exec, const Identifier&, const Prop
     JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->platform());
-    return result;
+    return jsString(exec, imp->platform());
 }
 
 JSValue jsWorkerNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -143,8 +140,7 @@ JSValue jsWorkerNavigatorUserAgent(ExecState* exec, const Identifier&, const Pro
     JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->userAgent());
-    return result;
+    return jsString(exec, imp->userAgent());
 }
 
 JSValue jsWorkerNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -152,8 +148,7 @@ JSValue jsWorkerNavigatorOnLine(ExecState* exec, const Identifier&, const Proper
     JSWorkerNavigator* castedThis = static_cast<JSWorkerNavigator*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerNavigator* imp = static_cast<WorkerNavigator*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->onLine());
-    return result;
+    return jsBoolean(imp->onLine());
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, WorkerNavigator* object)

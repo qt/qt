@@ -25,7 +25,6 @@
 #include "JSSVGTransformList.h"
 
 #include "JSSVGMatrix.h"
-#include "JSSVGPODListCustom.h"
 #include "JSSVGTransform.h"
 #include "SVGTransform.h"
 #include "SVGTransformList.h"
@@ -41,66 +40,18 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGTransformList);
 
 /* Hash table */
 
-static const HashTableValue JSSVGTransformListTableValues[3] =
+static const HashTableValue JSSVGTransformListTableValues[2] =
 {
     { "numberOfItems", DontDelete|ReadOnly, (intptr_t)jsSVGTransformListNumberOfItems, (intptr_t)0 },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGTransformListConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGTransformListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 3, JSSVGTransformListTableValues, 0 };
+    { 0, JSSVGTransformListTableValues, 0 };
 #else
-    { 4, 3, JSSVGTransformListTableValues, 0 };
+    { 2, 1, JSSVGTransformListTableValues, 0 };
 #endif
-
-/* Hash table for constructor */
-
-static const HashTableValue JSSVGTransformListConstructorTableValues[1] =
-{
-    { 0, 0, 0, 0 }
-};
-
-static JSC_CONST_HASHTABLE HashTable JSSVGTransformListConstructorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGTransformListConstructorTableValues, 0 };
-#else
-    { 1, 0, JSSVGTransformListConstructorTableValues, 0 };
-#endif
-
-class JSSVGTransformListConstructor : public DOMConstructorObject {
-public:
-    JSSVGTransformListConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-        : DOMConstructorObject(JSSVGTransformListConstructor::createStructure(globalObject->objectPrototype()), globalObject)
-    {
-        putDirect(exec->propertyNames().prototype, JSSVGTransformListPrototype::self(exec, globalObject), None);
-    }
-    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
-    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
-    virtual const ClassInfo* classInfo() const { return &s_info; }
-    static const ClassInfo s_info;
-
-    static PassRefPtr<Structure> createStructure(JSValue proto) 
-    { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
-    }
-    
-protected:
-    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
-};
-
-const ClassInfo JSSVGTransformListConstructor::s_info = { "SVGTransformListConstructor", 0, &JSSVGTransformListConstructorTable, 0 };
-
-bool JSSVGTransformListConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticValueSlot<JSSVGTransformListConstructor, DOMObject>(exec, &JSSVGTransformListConstructorTable, this, propertyName, slot);
-}
-
-bool JSSVGTransformListConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
-{
-    return getStaticValueDescriptor<JSSVGTransformListConstructor, DOMObject>(exec, &JSSVGTransformListConstructorTable, this, propertyName, descriptor);
-}
 
 /* Hash table for prototype */
 
@@ -144,8 +95,8 @@ bool JSSVGTransformListPrototype::getOwnPropertyDescriptor(ExecState* exec, cons
 
 const ClassInfo JSSVGTransformList::s_info = { "SVGTransformList", 0, &JSSVGTransformListTable, 0 };
 
-JSSVGTransformList::JSSVGTransformList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTransformList> impl)
-    : DOMObjectWithGlobalPointer(structure, globalObject)
+JSSVGTransformList::JSSVGTransformList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTransformList> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -153,7 +104,6 @@ JSSVGTransformList::JSSVGTransformList(NonNullPassRefPtr<Structure> structure, J
 JSSVGTransformList::~JSSVGTransformList()
 {
     forgetDOMObject(this, impl());
-    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGTransformList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -176,18 +126,7 @@ JSValue jsSVGTransformListNumberOfItems(ExecState* exec, const Identifier&, cons
     JSSVGTransformList* castedThis = static_cast<JSSVGTransformList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGTransformList* imp = static_cast<SVGTransformList*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->numberOfItems());
-    return result;
-}
-
-JSValue jsSVGTransformListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSSVGTransformList* domObject = static_cast<JSSVGTransformList*>(asObject(slot.slotBase()));
-    return JSSVGTransformList::getConstructor(exec, domObject->globalObject());
-}
-JSValue JSSVGTransformList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
-{
-    return getDOMConstructor<JSSVGTransformListConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+    return jsNumber(exec, imp->numberOfItems());
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -196,7 +135,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionClear(ExecState* exec, 
     if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
-    return JSSVGPODListCustom::clear<JSSVGTransformList, SVGTransform>(castedThisObj, exec, args, toSVGTransform);
+    return castedThisObj->clear(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInitialize(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -205,7 +144,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInitialize(ExecState* e
     if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
-    return JSSVGPODListCustom::initialize<JSSVGTransformList, SVGTransform>(castedThisObj, exec, args, toSVGTransform);
+    return castedThisObj->initialize(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -214,7 +153,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionGetItem(ExecState* exec
     if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
-    return JSSVGPODListCustom::getItem<JSSVGTransformList, SVGTransform>(castedThisObj, exec, args, toSVGTransform);
+    return castedThisObj->getItem(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInsertItemBefore(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -223,7 +162,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionInsertItemBefore(ExecSt
     if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
-    return JSSVGPODListCustom::insertItemBefore<JSSVGTransformList, SVGTransform>(castedThisObj, exec, args, toSVGTransform);
+    return castedThisObj->insertItemBefore(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionReplaceItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -232,7 +171,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionReplaceItem(ExecState* 
     if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
-    return JSSVGPODListCustom::replaceItem<JSSVGTransformList, SVGTransform>(castedThisObj, exec, args, toSVGTransform);
+    return castedThisObj->replaceItem(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -241,7 +180,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionRemoveItem(ExecState* e
     if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
-    return JSSVGPODListCustom::removeItem<JSSVGTransformList, SVGTransform>(castedThisObj, exec, args, toSVGTransform);
+    return castedThisObj->removeItem(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionAppendItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -250,7 +189,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionAppendItem(ExecState* e
     if (!thisValue.inherits(&JSSVGTransformList::s_info))
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
-    return JSSVGPODListCustom::appendItem<JSSVGTransformList, SVGTransform>(castedThisObj, exec, args, toSVGTransform);
+    return castedThisObj->appendItem(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionCreateSVGTransformFromMatrix(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -260,10 +199,10 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionCreateSVGTransformFromM
         return throwError(exec, TypeError);
     JSSVGTransformList* castedThisObj = static_cast<JSSVGTransformList*>(asObject(thisValue));
     SVGTransformList* imp = static_cast<SVGTransformList*>(castedThisObj->impl());
-    AffineTransform matrix = toSVGMatrix(args.at(0));
+    TransformationMatrix matrix = toSVGMatrix(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransformFromMatrix(matrix)).get(), 0 /* no context on purpose */);
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->createSVGTransformFromMatrix(matrix)).get(), castedThisObj->context());
     return result;
 }
 
@@ -276,7 +215,7 @@ JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionConsolidate(ExecState* 
     SVGTransformList* imp = static_cast<SVGTransformList*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->consolidate()).get(), 0 /* no context on purpose */);
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<SVGTransform>::create(imp->consolidate()).get(), castedThisObj->context());
     return result;
 }
 

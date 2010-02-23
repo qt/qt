@@ -25,17 +25,16 @@
 
 #include "config.h"
 #include "GeolocationService.h"
-
-#include "GeolocationServiceMock.h"
 #include "Geoposition.h"
+#include "GeolocationServiceMock.h"
 #include "PositionError.h"
 
-#include <wtf/Assertions.h>
 #include <wtf/CurrentTime.h>
+#include <wtf/Assertions.h>
 
 namespace WebCore {
 
-#if !ENABLE(GEOLOCATION) || ENABLE(CLIENT_BASED_GEOLOCATION)
+#if !ENABLE(GEOLOCATION)
 static GeolocationService* createGeolocationServiceNull(GeolocationServiceClient*)
 {
     return 0;

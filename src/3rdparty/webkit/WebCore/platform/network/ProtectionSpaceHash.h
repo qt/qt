@@ -27,7 +27,6 @@
 #define ProtectionSpaceHash_h
 
 #include "ProtectionSpace.h"
-#include <wtf/HashTraits.h>
 
 namespace WebCore {
 
@@ -38,15 +37,11 @@ struct ProtectionSpaceHash {
             protectionSpace.host().impl() ? protectionSpace.host().impl()->hash() : 0, 
             protectionSpace.port(), 
             protectionSpace.serverType(),
-            protectionSpace.authenticationScheme(),
-            protectionSpace.realm().impl() ? protectionSpace.realm().impl()->hash() : 0
+            protectionSpace.realm().impl() ? protectionSpace.realm().impl()->hash() : 0,
+            protectionSpace.authenticationScheme()
         };
 
-        unsigned codeCount = sizeof(hashCodes) / sizeof(UChar);
-        // Ignore realm for proxies.
-        if (protectionSpace.isProxy())
-            codeCount -= sizeof(hashCodes[0]) / sizeof(UChar);
-        return StringImpl::computeHash(reinterpret_cast<UChar*>(hashCodes), codeCount);
+        return StringImpl::computeHash(reinterpret_cast<UChar*>(hashCodes), sizeof(hashCodes) / sizeof(UChar));    
     }
     
     static bool equal(const ProtectionSpace& a, const ProtectionSpace& b) { return a == b; }

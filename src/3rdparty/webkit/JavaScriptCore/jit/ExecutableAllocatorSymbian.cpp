@@ -22,7 +22,7 @@
 
 #include "ExecutableAllocator.h"
 
-#if ENABLE(ASSEMBLER) && OS(SYMBIAN)
+#if ENABLE(ASSEMBLER) && PLATFORM(SYMBIAN)
 
 #include <e32hal.h>
 #include <e32std.h>
@@ -34,7 +34,7 @@ namespace JSC {
 
 void ExecutableAllocator::intializePageSize()
 {
-#if CPU(ARMV5_OR_LOWER)
+#if PLATFORM_ARM_ARCH(5)
     // The moving memory model (as used in ARMv5 and earlier platforms)
     // on Symbian OS limits the number of chunks for each process to 16. 
     // To mitigate this limitation increase the pagesize to 

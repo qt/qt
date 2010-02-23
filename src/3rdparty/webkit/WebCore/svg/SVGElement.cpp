@@ -38,8 +38,8 @@
 #include "RegisteredEventListener.h"
 #include "RenderObject.h"
 #include "SVGCursorElement.h"
+#include "SVGDocumentExtensions.h"
 #include "SVGElementInstance.h"
-#include "SVGElementRareData.h"
 #include "SVGNames.h"
 #include "SVGResource.h"
 #include "SVGSVGElement.h"
@@ -54,6 +54,9 @@ using namespace HTMLNames;
 
 SVGElement::SVGElement(const QualifiedName& tagName, Document* document)
     : StyledElement(tagName, document, CreateElementZeroRefCount)
+    , m_shadowParent(0)
+    , m_cursorElement(0)
+    , m_cursorImageValue(0)
 {
 }
 
@@ -64,40 +67,10 @@ PassRefPtr<SVGElement> SVGElement::create(const QualifiedName& tagName, Document
 
 SVGElement::~SVGElement()
 {
-    if (!hasRareSVGData())
-        ASSERT(!SVGElementRareData::rareDataMap().contains(this));
-    else {
-        SVGElementRareData::SVGElementRareDataMap& rareDataMap = SVGElementRareData::rareDataMap();
-        SVGElementRareData::SVGElementRareDataMap::iterator it = rareDataMap.find(this);
-        ASSERT(it != rareDataMap.end());
-
-        SVGElementRareData* rareData = it->second;
-        if (SVGCursorElement* cursorElement = rareData->cursorElement())
-            cursorElement->removeClient(this);
-        if (CSSCursorImageValue* cursorImageValue = rareData->cursorImageValue())
-            cursorImageValue->removeReferencedElement(this);
-
-        delete rareData;
-        rareDataMap.remove(it);
-    }
-}
-
-SVGElementRareData* SVGElement::rareSVGData() const
-{
-    ASSERT(hasRareSVGData());
-    return SVGElementRareData::rareDataFromMap(this);
-}
-
-SVGElementRareData* SVGElement::ensureRareSVGData()
-{
-    if (hasRareSVGData())
-        return rareSVGData();
-
-    ASSERT(!SVGElementRareData::rareDataMap().contains(this));
-    SVGElementRareData* data = new SVGElementRareData;
-    SVGElementRareData::rareDataMap().set(this, data);
-    m_hasRareSVGData = true;
-    return data;
+    if (m_cursorElement)
+        m_cursorElement->removeClient(this);
+    if (m_cursorImageValue)
+        m_cursorImageValue->removeReferencedElement(this);
 }
 
 bool SVGElement::isSupported(StringImpl* feature, StringImpl* version) const
@@ -145,6 +118,7 @@ SVGElement* SVGElement::viewportElement() const
 
 SVGDocumentExtensions* SVGElement::accessDocumentSVGExtensions() const
 {
+
     // This function is provided for use by SVGAnimatedProperty to avoid
     // global inclusion of Document.h in SVG code.
     return document() ? document()->accessSVGExtensions() : 0;
@@ -153,41 +127,20 @@ SVGDocumentExtensions* SVGElement::accessDocumentSVGExtensions() const
 void SVGElement::mapInstanceToElement(SVGElementInstance* instance)
 {
     ASSERT(instance);
-
-    HashSet<SVGElementInstance*>& instances = ensureRareSVGData()->elementInstances();
-    ASSERT(!instances.contains(instance));
-
-    instances.add(instance);
+    ASSERT(!m_elementInstances.contains(instance));
+    m_elementInstances.add(instance);
 }
  
 void SVGElement::removeInstanceMapping(SVGElementInstance* instance)
 {
     ASSERT(instance);
-    ASSERT(hasRareSVGData());
-
-    HashSet<SVGElementInstance*>& instances = rareSVGData()->elementInstances();
-    ASSERT(instances.contains(instance));
-
-    instances.remove(instance);
+    ASSERT(m_elementInstances.contains(instance));
+    m_elementInstances.remove(instance);
 }
 
-const HashSet<SVGElementInstance*>& SVGElement::instancesForElement() const
+HashSet<SVGElementInstance*> SVGElement::instancesForElement() const
 {
-    if (!hasRareSVGData()) {
-        DEFINE_STATIC_LOCAL(HashSet<SVGElementInstance*>, emptyInstances, ());
-        return emptyInstances;
-    }
-    return rareSVGData()->elementInstances();
-}
-
-void SVGElement::setCursorElement(SVGCursorElement* cursorElement)
-{
-    ensureRareSVGData()->setCursorElement(cursorElement);
-}
-
-void SVGElement::setCursorImageValue(CSSCursorImageValue* cursorImageValue)
-{
-    ensureRareSVGData()->setCursorImageValue(cursorImageValue);
+    return m_elementInstances;
 }
 
 void SVGElement::parseMappedAttribute(MappedAttribute* attr)
@@ -281,7 +234,7 @@ void SVGElement::insertedIntoDocument()
     StyledElement::insertedIntoDocument();
     SVGDocumentExtensions* extensions = document()->accessSVGExtensions();
 
-    String resourceId = SVGURIReference::getTarget(getAttribute(idAttributeName()));
+    String resourceId = SVGURIReference::getTarget(getAttribute(idAttr));
     if (extensions->isPendingResource(resourceId)) {
         std::auto_ptr<HashSet<SVGStyledElement*> > clients(extensions->removePendingResource(resourceId));
         if (clients->isEmpty())
@@ -307,7 +260,7 @@ void SVGElement::attributeChanged(Attribute* attr, bool preserveDecls)
     svgAttributeChanged(attr->name());
 }
 
-void SVGElement::updateAnimatedSVGAttribute(const QualifiedName& name) const
+void SVGElement::updateAnimatedSVGAttribute(const String& name) const
 {
     ASSERT(!m_areSVGAttributesValid);
 
@@ -316,20 +269,23 @@ void SVGElement::updateAnimatedSVGAttribute(const QualifiedName& name) const
 
     m_synchronizingSVGAttributes = true;
 
-    const_cast<SVGElement*>(this)->synchronizeProperty(name);
-    if (name == anyQName())
-        m_areSVGAttributesValid = true;
+    if (name.isEmpty()) {
+        m_propertyController.synchronizeAllProperties();
+        setSynchronizedSVGAttributes(true);
+    } else
+        m_propertyController.synchronizeProperty(name);
 
     m_synchronizingSVGAttributes = false;
 }
 
+void SVGElement::setSynchronizedSVGAttributes(bool value) const
+{
+    m_areSVGAttributesValid = value;
+}
+
 ContainerNode* SVGElement::eventParentNode()
 {
-    if (Node* shadowParent = shadowParentNode()) {
-        ASSERT(shadowParent->isContainerNode());
-        return static_cast<ContainerNode*>(shadowParent);
-    }
-    return StyledElement::eventParentNode();
+    return m_shadowParent ? m_shadowParent : StyledElement::eventParentNode();
 }
 
 }

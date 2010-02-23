@@ -43,7 +43,7 @@ namespace JSC {
 
         ~BatchedTransitionOptimizer()
         {
-            m_object->flattenDictionaryObject();
+            m_object->setStructure(Structure::fromDictionaryTransition(m_object->structure()));
         }
 
     private:

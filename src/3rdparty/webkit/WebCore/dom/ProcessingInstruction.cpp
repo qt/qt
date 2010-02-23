@@ -42,7 +42,6 @@ inline ProcessingInstruction::ProcessingInstruction(Document* document, const St
     , m_cachedSheet(0)
     , m_loading(false)
     , m_alternate(false)
-    , m_createdByParser(false)
 #if ENABLE(XSLT)
     , m_isXSL(false)
 #endif
@@ -139,8 +138,7 @@ void ProcessingInstruction::checkStyleSheet()
             // We need to make a synthetic XSLStyleSheet that is embedded.  It needs to be able
             // to kick off import/include loads that can hang off some parent sheet.
             if (m_isXSL) {
-                KURL finalURL(ParsedURLString, m_localHref);
-                m_sheet = XSLStyleSheet::createInline(this, finalURL);
+                m_sheet = XSLStyleSheet::createEmbedded(this, m_localHref);
                 m_loading = false;
             }
 #endif
@@ -198,27 +196,24 @@ bool ProcessingInstruction::sheetLoaded()
     return false;
 }
 
-void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet* sheet)
+void ProcessingInstruction::setCSSStyleSheet(const String& url, const String& charset, const CachedCSSStyleSheet* sheet)
 {
 #if ENABLE(XSLT)
     ASSERT(!m_isXSL);
 #endif
-    RefPtr<CSSStyleSheet> newSheet = CSSStyleSheet::create(this, href, baseURL, charset);
+    RefPtr<CSSStyleSheet> newSheet = CSSStyleSheet::create(this, url, charset);
     m_sheet = newSheet;
-    // We don't need the cross-origin security check here because we are
-    // getting the sheet text in "strict" mode. This enforces a valid CSS MIME
-    // type.
-    parseStyleSheet(sheet->sheetText(true));
+    parseStyleSheet(sheet->sheetText());
     newSheet->setTitle(m_title);
     newSheet->setMedia(MediaList::create(newSheet.get(), m_media));
     newSheet->setDisabled(m_alternate);
 }
 
 #if ENABLE(XSLT)
-void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)
+void ProcessingInstruction::setXSLStyleSheet(const String& url, const String& sheet)
 {
     ASSERT(m_isXSL);
-    m_sheet = XSLStyleSheet::create(this, href, baseURL);
+    m_sheet = XSLStyleSheet::create(this, url);
     parseStyleSheet(sheet);
 }
 #endif

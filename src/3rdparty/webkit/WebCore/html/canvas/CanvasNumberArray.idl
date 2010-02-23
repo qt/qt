@@ -26,6 +26,7 @@
 module html {
     interface [
         Conditional=3D_CANVAS,
+        GenerateConstructor,
         HasCustomIndexGetter
     ] CanvasNumberArray {
         readonly attribute unsigned long length;

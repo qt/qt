@@ -39,10 +39,9 @@
 #if defined(Q_OS_WIN32)
 #include <windows.h>
 #endif
-#endif
-
-#if PLATFORM(CF) || (PLATFORM(QT) && defined(Q_WS_MAC))
+#if defined(Q_WS_MAC)
 #include <CoreFoundation/CFBundle.h>
+#endif
 #endif
 
 #include <time.h>
@@ -54,7 +53,7 @@
 
 typedef const struct __CFData* CFDataRef;
 
-#if OS(WINDOWS)
+#if PLATFORM(WIN_OS)
 // These are to avoid including <winbase.h> in a header for Chromium
 typedef void *HANDLE;
 // Assuming STRICT
@@ -67,7 +66,7 @@ namespace WebCore {
 class CString;
 
 // PlatformModule
-#if OS(WINDOWS)
+#if PLATFORM(WIN_OS)
 typedef HMODULE PlatformModule;
 #elif PLATFORM(QT)
 #if defined(Q_WS_MAC)
@@ -77,14 +76,12 @@ typedef QLibrary* PlatformModule;
 #endif // defined(Q_WS_MAC)
 #elif PLATFORM(GTK)
 typedef GModule* PlatformModule;
-#elif PLATFORM(CF)
-typedef CFBundleRef PlatformModule;
 #else
 typedef void* PlatformModule;
 #endif
 
 // PlatformModuleVersion
-#if OS(WINDOWS)
+#if PLATFORM(WIN_OS)
 struct PlatformModuleVersion {
     unsigned leastSig;
     unsigned mostSig;
@@ -121,7 +118,7 @@ typedef unsigned PlatformModuleVersion;
 #if PLATFORM(QT)
 typedef QFile* PlatformFileHandle;
 const PlatformFileHandle invalidPlatformFileHandle = 0;
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN_OS)
 typedef HANDLE PlatformFileHandle;
 // FIXME: -1 is INVALID_HANDLE_VALUE, defined in <winbase.h>. Chromium tries to
 // avoid using Windows headers in headers.  We'd rather move this into the .cpp.

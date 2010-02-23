@@ -45,7 +45,7 @@ class Node;
 class PlatformMouseEvent;
 class RenderLayer;
 class RenderObject;
-class RenderEmbeddedObject;
+class RenderPartObject;
 class ScheduledEvent;
 class String;
 
@@ -72,9 +72,6 @@ public:
     void setMarginWidth(int);
     void setMarginHeight(int);
 
-    virtual void setCanHaveScrollbars(bool);
-    void updateCanHaveScrollbars();
-
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
 
     virtual void setContentsSize(const IntSize&);
@@ -90,6 +87,7 @@ public:
     RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
     int layoutCount() const { return m_layoutCount; }
 
+    // These two helper functions just pass through to the RenderView.
     bool needsLayout() const;
     void setNeedsLayout();
 
@@ -105,10 +103,6 @@ public:
     // Only used with accelerated compositing, but outside the #ifdef to make linkage easier.
     // Returns true if the sync was completed.
     bool syncCompositingStateRecursive();
-
-    // Returns true when a paint with the PaintBehaviorFlattenCompositingLayers flag set gives
-    // a faithful representation of the content.
-    bool isSoftwareRenderable() const;
 
     void didMoveOnscreen();
     void willMoveOffscreen();
@@ -169,12 +163,11 @@ public:
     bool wasScrolledByUser() const;
     void setWasScrolledByUser(bool);
 
-    void addWidgetToUpdate(RenderEmbeddedObject*);
-    void removeWidgetToUpdate(RenderEmbeddedObject*);
+    void addWidgetToUpdate(RenderPartObject*);
+    void removeWidgetToUpdate(RenderPartObject*);
 
     virtual void paintContents(GraphicsContext*, const IntRect& damageRect);
-    void setPaintBehavior(PaintBehavior);
-    PaintBehavior paintBehavior() const;
+    void setPaintRestriction(PaintRestriction);
     bool isPainting() const;
     void setNodeToDraw(Node*);
 
@@ -213,7 +206,6 @@ private:
 
     friend class RenderWidget;
     bool useSlowRepaints() const;
-    bool useSlowRepaintsIfNotOverlapped() const;
 
     void applyOverflowToViewport(RenderObject*, ScrollbarMode& hMode, ScrollbarMode& vMode);
 
@@ -260,14 +252,11 @@ private:
 
     IntSize m_size;
     IntSize m_margins;
-    
-    typedef HashSet<RenderEmbeddedObject*> RenderEmbeddedObjectSet;
-    OwnPtr<RenderEmbeddedObjectSet> m_widgetUpdateSet;
+    OwnPtr<HashSet<RenderPartObject*> > m_widgetUpdateSet;
     RefPtr<Frame> m_frame;
 
     bool m_doFullRepaint;
     
-    bool m_canHaveScrollbars;
     bool m_useSlowRepaints;
     bool m_isOverlapped;
     bool m_contentIsOpaque;
@@ -318,7 +307,7 @@ private:
     bool m_setNeedsLayoutWasDeferred;
 
     RefPtr<Node> m_nodeToDraw;
-    PaintBehavior m_paintBehavior;
+    PaintRestriction m_paintRestriction;
     bool m_isPainting;
 
     bool m_isVisuallyNonEmpty;

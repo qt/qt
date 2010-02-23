@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -140,8 +140,8 @@ bool JSSVGRenderingIntentPrototype::getOwnPropertyDescriptor(ExecState* exec, co
 
 const ClassInfo JSSVGRenderingIntent::s_info = { "SVGRenderingIntent", 0, &JSSVGRenderingIntentTable, 0 };
 
-JSSVGRenderingIntent::JSSVGRenderingIntent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRenderingIntent> impl)
-    : DOMObjectWithGlobalPointer(structure, globalObject)
+JSSVGRenderingIntent::JSSVGRenderingIntent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGRenderingIntent> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -149,7 +149,6 @@ JSSVGRenderingIntent::JSSVGRenderingIntent(NonNullPassRefPtr<Structure> structur
 JSSVGRenderingIntent::~JSSVGRenderingIntent()
 {
     forgetDOMObject(this, impl());
-    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGRenderingIntent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -169,8 +168,8 @@ bool JSSVGRenderingIntent::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 JSValue jsSVGRenderingIntentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    JSSVGRenderingIntent* domObject = static_cast<JSSVGRenderingIntent*>(asObject(slot.slotBase()));
-    return JSSVGRenderingIntent::getConstructor(exec, domObject->globalObject());
+    UNUSED_PARAM(slot);
+    return JSSVGRenderingIntent::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
 }
 JSValue JSSVGRenderingIntent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {

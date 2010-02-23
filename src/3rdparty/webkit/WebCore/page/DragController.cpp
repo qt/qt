@@ -482,6 +482,21 @@ bool DragController::canProcessDrag(DragData* dragData)
     return true;
 }
 
+static DragOperation defaultOperationForDrag(DragOperation srcOpMask)
+{
+    // This is designed to match IE's operation fallback for the case where
+    // the page calls preventDefault() in a drag event but doesn't set dropEffect.
+    if (srcOpMask & DragOperationCopy)
+         return DragOperationCopy;
+    if (srcOpMask & DragOperationMove || srcOpMask & DragOperationGeneric)
+        return DragOperationMove;
+    if (srcOpMask & DragOperationLink)
+        return DragOperationLink;
+
+    // FIXME: Does IE really return "generic" even if no operations were allowed by the source?
+    return DragOperationGeneric;
+}
+
 bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
 {
     ASSERT(dragData);
@@ -502,8 +517,10 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
         return false;
     }
 
-    operation = clipboard->destinationOperation();
-    if (!(srcOpMask & operation)) {
+    if (!clipboard->destinationOperation(operation)) {
+        // The element accepted but they didn't pick an operation, so we pick one (to match IE).
+        operation = defaultOperationForDrag(srcOpMask);
+    } else if (!(srcOpMask & operation)) {
         // The element picked an operation which is not supported by the source
         operation = DragOperationNone;
     }
@@ -556,9 +573,14 @@ static CachedImage* getCachedImage(Element* element)
 static Image* getImage(Element* element)
 {
     ASSERT(element);
-    CachedImage* cachedImage = getCachedImage(element);
-    return (cachedImage && !cachedImage->errorOccurred()) ?
-        cachedImage->image() : 0;
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isImage())
+        return 0;
+
+    RenderImage* image = toRenderImage(renderer);
+    if (image->cachedImage() && !image->cachedImage()->errorOccurred())
+        return image->cachedImage()->image();
+    return 0;
 }
 
 static void prepareClipboardForImageDrag(Frame* src, Clipboard* clipboard, Element* node, const KURL& linkURL, const KURL& imageURL, const String& label)
@@ -692,16 +714,10 @@ bool DragController::startDrag(Frame* src, Clipboard* clipboard, DragOperation s
         }
         doSystemDrag(dragImage, dragLoc, mouseDraggedPoint, clipboard, src, true);
     } else if (isSelected && (m_dragSourceAction & DragSourceActionSelection)) {
-        if (!clipboard->hasData()) {
-            if (isNodeInTextFormControl(src->selection()->start().node()))
-                clipboard->writePlainText(src->selectedText());
-            else {
-                RefPtr<Range> selectionRange = src->selection()->toNormalizedRange();
-                ASSERT(selectionRange);
-
-                clipboard->writeRange(selectionRange.get(), src);
-            }
-        }
+        RefPtr<Range> selectionRange = src->selection()->toNormalizedRange();
+        ASSERT(selectionRange);
+        if (!clipboard->hasData())
+            clipboard->writeRange(selectionRange.get(), src);
         m_client->willPerformDragSourceAction(DragSourceActionSelection, dragOrigin, clipboard);
         if (!dragImage) {
             dragImage = createDragImageForSelection(src);

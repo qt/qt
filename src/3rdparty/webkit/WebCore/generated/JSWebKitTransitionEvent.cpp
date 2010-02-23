@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -157,8 +157,7 @@ JSValue jsWebKitTransitionEventPropertyName(ExecState* exec, const Identifier&, 
     JSWebKitTransitionEvent* castedThis = static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->propertyName());
-    return result;
+    return jsString(exec, imp->propertyName());
 }
 
 JSValue jsWebKitTransitionEventElapsedTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -166,8 +165,7 @@ JSValue jsWebKitTransitionEventElapsedTime(ExecState* exec, const Identifier&, c
     JSWebKitTransitionEvent* castedThis = static_cast<JSWebKitTransitionEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitTransitionEvent* imp = static_cast<WebKitTransitionEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->elapsedTime());
-    return result;
+    return jsNumber(exec, imp->elapsedTime());
 }
 
 JSValue jsWebKitTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

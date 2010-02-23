@@ -139,25 +139,25 @@ void* fastZeroedMalloc(size_t n)
     return p;
 }
 
-TryMallocReturnValue tryFastMalloc(size_t n)
+void* tryFastMalloc(size_t n)
 {
     MemoryAllocationCanFail canFail;
     return fastMalloc(n);
 }
 
-TryMallocReturnValue tryFastZeroedMalloc(size_t n)
+void* tryFastZeroedMalloc(size_t n)
 {
     MemoryAllocationCanFail canFail;
     return fastZeroedMalloc(n);
 }
 
-TryMallocReturnValue tryFastCalloc(size_t n_elements, size_t element_size)
+void* tryFastCalloc(size_t n_elements, size_t element_size)
 {
     MemoryAllocationCanFail canFail;
     return fastCalloc(n_elements, element_size);
 }
 
-TryMallocReturnValue tryFastRealloc(void* p, size_t n)
+void* tryFastRealloc(void* p, size_t n)
 {
     MemoryAllocationCanFail canFail;
     return fastRealloc(p, n);

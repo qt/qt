@@ -59,7 +59,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
 
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);

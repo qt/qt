@@ -72,7 +72,6 @@ public:
 #endif
     virtual void writeRange(Range*, Frame* frame);
     virtual void writeURL(const KURL&, const String&, Frame* frame);
-    virtual void writePlainText(const String&);
     
     // Methods for getting info in Cocoa's type system
     NSImage *dragNSImage(NSPoint&) const; // loc converted from dragLoc, based on whole image size

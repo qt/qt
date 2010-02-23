@@ -24,6 +24,7 @@
 #define RenderSVGViewportContainer_h
 
 #if ENABLE(SVG)
+
 #include "RenderSVGContainer.h"
 
 namespace WebCore {
@@ -34,19 +35,19 @@ class RenderSVGViewportContainer : public RenderSVGContainer {
 public:
     RenderSVGViewportContainer(SVGStyledElement*);
 
-    // Calculates marker boundaries, mapped to the target element's coordinate space
-    FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
+    // FIXME: This is only public for SVGResourceMarker::draw, likely the callsite should be changed.
+    TransformationMatrix viewportTransform() const;
 
-    // Generates a transformation matrix usable to render marker content. Handles scaling the marker content
-    // acording to SVGs markerUnits="strokeWidth" concept, when a strokeWidth value != -1 is passed in.
-    AffineTransform markerContentTransformation(const AffineTransform& contentTransformation, const FloatPoint& origin, float strokeWidth = -1) const;
+    virtual void paint(PaintInfo&, int parentX, int parentY);
 
 private:
     virtual bool isSVGContainer() const { return true; }
     virtual const char* renderName() const { return "RenderSVGViewportContainer"; }
 
-    AffineTransform viewportTransform() const;
-    virtual const AffineTransform& localToParentTransform() const;
+    virtual TransformationMatrix localToParentTransform() const;
+
+    // FIXME: This override should be removed once callers of RenderBox::absoluteTransform() can be removed.
+    virtual TransformationMatrix absoluteTransform() const;
 
     virtual void calcViewport();
 
@@ -54,7 +55,6 @@ private:
     virtual bool pointIsInsideViewportClip(const FloatPoint& pointInParent);
 
     FloatRect m_viewport;
-    mutable AffineTransform m_localToParentTransform;
 };
   
 inline RenderSVGViewportContainer* toRenderSVGViewportContainer(RenderObject* object)
@@ -70,3 +70,5 @@ void toRenderSVGViewportContainer(const RenderSVGViewportContainer*);
 
 #endif // ENABLE(SVG)
 #endif // RenderSVGViewportContainer_h
+
+// vim:ts=4:noet

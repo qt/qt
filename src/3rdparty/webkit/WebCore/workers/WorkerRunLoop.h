@@ -36,7 +36,7 @@
 #include "ScriptExecutionContext.h"
 #include <wtf/MessageQueue.h>
 #include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include <wtf/PassRefPtr.h>
 
 namespace WebCore {
 
@@ -58,32 +58,18 @@ namespace WebCore {
         void terminate();
         bool terminated() { return m_messageQueue.killed(); }
 
-        void postTask(PassOwnPtr<ScriptExecutionContext::Task>);
-        void postTaskForMode(PassOwnPtr<ScriptExecutionContext::Task>, const String& mode);
+        void postTask(PassRefPtr<ScriptExecutionContext::Task>);
+        void postTaskForMode(PassRefPtr<ScriptExecutionContext::Task>, const String& mode);
 
         unsigned long createUniqueId() { return ++m_uniqueId; }
 
         static String defaultMode();
-
-        class Task : public Noncopyable {
-        public:
-            static PassOwnPtr<Task> create(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode);
-            ~Task() { }
-            const String& mode() const { return m_mode; }
-            void performTask(ScriptExecutionContext* context);
-
-        private:
-            Task(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode);
-        
-            OwnPtr<ScriptExecutionContext::Task> m_task;
-            String m_mode;
-        };
-
+        class Task;
     private:
         friend class RunLoopSetup;
         MessageQueueWaitResult runInMode(WorkerContext*, const ModePredicate&);
 
-        MessageQueue<Task> m_messageQueue;
+        MessageQueue<RefPtr<Task> > m_messageQueue;
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
         int m_nestedCount;
         unsigned long m_uniqueId;

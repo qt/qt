@@ -30,7 +30,6 @@
 #include "CachedResourceClientWalker.h"
 #include "DocLoader.h"
 #include "Frame.h"
-#include "FrameLoaderTypes.h"
 #include "FrameView.h"
 #include "Request.h"
 #include "Settings.h"
@@ -82,7 +81,7 @@ void CachedImage::decodedDataDeletionTimerFired(Timer<CachedImage>*)
 void CachedImage::load(DocLoader* docLoader)
 {
     if (!docLoader || docLoader->autoLoadImages())
-        CachedResource::load(docLoader, true, DoSecurityCheck, true);
+        CachedResource::load(docLoader, true, false, true);
     else
         m_loading = false;
 }

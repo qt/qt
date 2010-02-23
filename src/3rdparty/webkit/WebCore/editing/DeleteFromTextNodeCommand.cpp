@@ -45,9 +45,6 @@ void DeleteFromTextNodeCommand::doApply()
 {
     ASSERT(m_node);
 
-    if (!m_node->isContentEditable())
-        return;
-
     ExceptionCode ec = 0;
     m_text = m_node->substringData(m_offset, m_count, ec);
     if (ec)
@@ -60,9 +57,6 @@ void DeleteFromTextNodeCommand::doUnapply()
 {
     ASSERT(m_node);
 
-    if (!m_node->isContentEditable())
-        return;
-        
     ExceptionCode ec;
     m_node->insertData(m_offset, m_text, ec);
 }

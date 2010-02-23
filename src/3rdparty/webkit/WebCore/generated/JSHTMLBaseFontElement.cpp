@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -147,8 +147,7 @@ JSValue jsHTMLBaseFontElementColor(ExecState* exec, const Identifier&, const Pro
     JSHTMLBaseFontElement* castedThis = static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::colorAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::colorAttr));
 }
 
 JSValue jsHTMLBaseFontElementFace(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,8 +155,7 @@ JSValue jsHTMLBaseFontElementFace(ExecState* exec, const Identifier&, const Prop
     JSHTMLBaseFontElement* castedThis = static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::faceAttr));
-    return result;
+    return jsString(exec, imp->getAttribute(HTMLNames::faceAttr));
 }
 
 JSValue jsHTMLBaseFontElementSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -165,8 +163,7 @@ JSValue jsHTMLBaseFontElementSize(ExecState* exec, const Identifier&, const Prop
     JSHTMLBaseFontElement* castedThis = static_cast<JSHTMLBaseFontElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->size());
-    return result;
+    return jsNumber(exec, imp->size());
 }
 
 JSValue jsHTMLBaseFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,22 +178,19 @@ void JSHTMLBaseFontElement::put(ExecState* exec, const Identifier& propertyName,
 
 void setJSHTMLBaseFontElementColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLBaseFontElement* castedThisObj = static_cast<JSHTMLBaseFontElement*>(thisObject);
-    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThisObj->impl());
+    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::colorAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBaseFontElementFace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLBaseFontElement* castedThisObj = static_cast<JSHTMLBaseFontElement*>(thisObject);
-    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThisObj->impl());
+    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
     imp->setAttribute(HTMLNames::faceAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBaseFontElementSize(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLBaseFontElement* castedThisObj = static_cast<JSHTMLBaseFontElement*>(thisObject);
-    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(castedThisObj->impl());
+    HTMLBaseFontElement* imp = static_cast<HTMLBaseFontElement*>(static_cast<JSHTMLBaseFontElement*>(thisObject)->impl());
     imp->setSize(value.toInt32(exec));
 }
 

@@ -55,9 +55,9 @@ JSValue JSJavaScriptCallFrame::type(ExecState* exec) const
 {
     switch (impl()->type()) {
         case DebuggerCallFrame::FunctionType:
-            return jsString(exec, UString("function"));
+            return jsString(exec, "function");
         case DebuggerCallFrame::ProgramType:
-            return jsString(exec, UString("program"));
+            return jsString(exec, "program");
     }
 
     ASSERT_NOT_REACHED();

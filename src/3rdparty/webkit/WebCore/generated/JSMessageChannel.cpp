@@ -110,8 +110,7 @@ JSValue jsMessageChannelPort1(ExecState* exec, const Identifier&, const Property
     JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MessageChannel* imp = static_cast<MessageChannel*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port1()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port1()));
 }
 
 JSValue jsMessageChannelPort2(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -119,8 +118,7 @@ JSValue jsMessageChannelPort2(ExecState* exec, const Identifier&, const Property
     JSMessageChannel* castedThis = static_cast<JSMessageChannel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MessageChannel* imp = static_cast<MessageChannel*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port2()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port2()));
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MessageChannel* object)

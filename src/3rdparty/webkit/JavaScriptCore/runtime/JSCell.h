@@ -42,19 +42,14 @@ namespace JSC {
         friend class JSString;
         friend class JSValue;
         friend class JSAPIValueWrapper;
-        friend class JSZombie;
-        friend class JSGlobalData;
+        friend struct VPtrSet;
 
     private:
         explicit JSCell(Structure*);
+        JSCell(); // Only used for initializing Collector blocks.
         virtual ~JSCell();
 
     public:
-        static PassRefPtr<Structure> createDummyStructure()
-        {
-            return Structure::create(jsNull(), TypeInfo(UnspecifiedType), AnonymousSlotCount);
-        }
-
         // Querying the type.
 #if USE(JSVALUE32)
         bool isNumber() const;
@@ -69,8 +64,8 @@ namespace JSC {
         Structure* structure() const;
 
         // Extracting the value.
-        bool getString(ExecState* exec, UString&) const;
-        UString getString(ExecState* exec) const; // null string if not a string
+        bool getString(UString&) const;
+        UString getString() const; // null string if not a string
         JSObject* getObject(); // NULL if not an object
         const JSObject* getObject() const; // NULL if not an object
         
@@ -95,9 +90,6 @@ namespace JSC {
         void* operator new(size_t, void* placementNewDestination) { return placementNewDestination; }
 
         virtual void markChildren(MarkStack&);
-#if ENABLE(JSC_ZOMBIES)
-        virtual bool isZombie() const { return false; }
-#endif
 
         // Object operations, with the toObject operation included.
         virtual const ClassInfo* classInfo() const;
@@ -111,10 +103,6 @@ namespace JSC {
         virtual JSString* toThisJSString(ExecState*);
         virtual JSValue getJSNumber();
         void* vptr() { return *reinterpret_cast<void**>(this); }
-        void setVPtr(void* vptr) { *reinterpret_cast<void**>(this) = vptr; }
-
-    protected:
-        static const unsigned AnonymousSlotCount = 0;
 
     private:
         // Base implementation; for non-object classes implements getPropertySlot.
@@ -130,6 +118,11 @@ namespace JSC {
     {
     }
 
+    // Only used for initializing Collector blocks.
+    inline JSCell::JSCell()
+    {
+    }
+
     inline JSCell::~JSCell()
     {
     }
@@ -137,7 +130,7 @@ namespace JSC {
 #if USE(JSVALUE32)
     inline bool JSCell::isNumber() const
     {
-        return m_structure->typeInfo().type() == NumberType;
+        return Heap::isNumber(const_cast<JSCell*>(this));
     }
 #endif
 
@@ -165,11 +158,6 @@ namespace JSC {
         return globalData->heap.allocate(size);
     }
 
-    inline void* JSCell::operator new(size_t size, ExecState* exec)
-    {
-        return exec->heap()->allocate(size);
-    }
-
     // --- JSValue inlines ----------------------------
 
     inline bool JSValue::isString() const
@@ -187,14 +175,14 @@ namespace JSC {
         return isCell() && asCell()->isObject();
     }
 
-    inline bool JSValue::getString(ExecState* exec, UString& s) const
+    inline bool JSValue::getString(UString& s) const
     {
-        return isCell() && asCell()->getString(exec, s);
+        return isCell() && asCell()->getString(s);
     }
 
-    inline UString JSValue::getString(ExecState* exec) const
+    inline UString JSValue::getString() const
     {
-        return isCell() ? asCell()->getString(exec) : UString();
+        return isCell() ? asCell()->getString() : UString();
     }
 
     inline JSObject* JSValue::getObject() const
@@ -354,13 +342,7 @@ namespace JSC {
     {
         return cellBlock(c)->heap;
     }
-    
-#if ENABLE(JSC_ZOMBIES)
-    inline bool JSValue::isZombie() const
-    {
-        return isCell() && asCell() && asCell()->isZombie();
-    }
-#endif
+
 } // namespace JSC
 
 #endif // JSCell_h

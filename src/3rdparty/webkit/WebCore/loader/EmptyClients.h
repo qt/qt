@@ -76,8 +76,6 @@ public:
     virtual bool canTakeFocus(FocusDirection) { return false; }
     virtual void takeFocus(FocusDirection) { }
 
-    virtual void focusedNodeChanged(Node*) { }
-
     virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&) { return 0; }
     virtual void show() { }
 
@@ -146,7 +144,6 @@ public:
 #endif
 
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) { }
-    virtual void iconForFiles(const Vector<String>&, PassRefPtr<FileChooser>) { }
 
     virtual void formStateDidChange(const Node*) { }
 
@@ -166,13 +163,9 @@ public:
     virtual void setNeedsOneShotDrawingSynchronization() {};
     virtual void scheduleCompositingLayerSync() {};
 #endif
-
-#if ENABLE(TOUCH_EVENTS)
-    virtual void needTouchEvents(bool) { }
-#endif
 };
 
-class EmptyFrameLoaderClient : public FrameLoaderClient, public Noncopyable {
+class EmptyFrameLoaderClient : public FrameLoaderClient {
 public:
     virtual ~EmptyFrameLoaderClient() {  }
     virtual void frameLoaderDestroyed() { }
@@ -207,9 +200,6 @@ public:
     virtual void dispatchDidCancelClientRedirect() { }
     virtual void dispatchWillPerformClientRedirect(const KURL&, double, double) { }
     virtual void dispatchDidChangeLocationWithinPage() { }
-    virtual void dispatchDidPushStateWithinPage() { }
-    virtual void dispatchDidReplaceStateWithinPage() { }
-    virtual void dispatchDidPopStateWithinPage() { }
     virtual void dispatchWillClose() { }
     virtual void dispatchDidReceiveIcon() { }
     virtual void dispatchDidStartProvisionalLoad() { }
@@ -289,15 +279,11 @@ public:
     virtual void updateGlobalHistory() { }
     virtual void updateGlobalHistoryRedirectLinks() { }
     virtual bool shouldGoToHistoryItem(HistoryItem*) const { return false; }
-    virtual void dispatchDidAddBackForwardItem(HistoryItem*) const { }
-    virtual void dispatchDidRemoveBackForwardItem(HistoryItem*) const { };
-    virtual void dispatchDidChangeBackForwardIndex() const { }
     virtual void saveViewStateToItem(HistoryItem*) { }
     virtual bool canCachePage() const { return false; }
     virtual void didDisplayInsecureContent() { }
     virtual void didRunInsecureContent(SecurityOrigin*) { }
     virtual PassRefPtr<Frame> createFrame(const KURL&, const String&, HTMLFrameOwnerElement*, const String&, bool, int, int) { return 0; }
-    virtual void didTransferChildFrameToNewDocument() { }
     virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool) { return 0; }
     virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) { return 0; }
 
@@ -305,7 +291,7 @@ public:
     virtual String overrideMediaType() const { return String(); }
 
     virtual void redirectDataToPlugin(Widget*) { }
-    virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) { }
+    virtual void windowObjectCleared() { }
     virtual void documentElementAvailable() { }
     virtual void didPerformFirstNavigation() const { }
 
@@ -326,7 +312,7 @@ public:
 
 };
 
-class EmptyEditorClient : public EditorClient, public Noncopyable {
+class EmptyEditorClient : public EditorClient {
 public:
     virtual ~EmptyEditorClient() { }
     virtual void pageDestroyed() { }
@@ -431,7 +417,7 @@ public:
 };
 
 #if ENABLE(CONTEXT_MENUS)
-class EmptyContextMenuClient : public ContextMenuClient, public Noncopyable {
+class EmptyContextMenuClient : public ContextMenuClient {
 public:
     virtual ~EmptyContextMenuClient() {  }
     virtual void contextMenuDestroyed() { }
@@ -454,7 +440,7 @@ public:
 #endif // ENABLE(CONTEXT_MENUS)
 
 #if ENABLE(DRAG_SUPPORT)
-class EmptyDragClient : public DragClient, public Noncopyable {
+class EmptyDragClient : public DragClient {
 public:
     virtual ~EmptyDragClient() {}
     virtual void willPerformDragDestinationAction(DragDestinationAction, DragData*) { }
@@ -467,7 +453,7 @@ public:
 };
 #endif // ENABLE(DRAG_SUPPORT)
 
-class EmptyInspectorClient : public InspectorClient, public Noncopyable {
+class EmptyInspectorClient : public InspectorClient {
 public:
     virtual ~EmptyInspectorClient() { }
 
@@ -491,10 +477,18 @@ public:
     virtual void hideHighlight() { }
     virtual void inspectedURLChanged(const String&) { }
 
-    virtual void populateSetting(const String&, String*) { }
-    virtual void storeSetting(const String&, const String&) { }
+    virtual void populateSetting(const String&, InspectorController::Setting&) { }
+    virtual void storeSetting(const String&, const InspectorController::Setting&) { }
+    virtual void removeSetting(const String&) { }
 
     virtual void inspectorWindowObjectCleared() { }
+};
+
+class EmptyPluginHalterClient : public PluginHalterClient
+{
+public:
+    virtual bool shouldHaltPlugin(Node*) const { return false; }
+    virtual bool enabled() const { return false; }
 };
 
 }

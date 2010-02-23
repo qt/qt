@@ -42,13 +42,11 @@
 #include "FrameView.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "InspectorController.h"
 #include "NamedNodeMap.h"
 #include "NodeList.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
 #include "RenderView.h"
-#include "RenderWidget.h"
 #include "TextIterator.h"
 #include "XMLNames.h"
 
@@ -113,11 +111,11 @@ PassRefPtr<Element> Element::cloneElementWithoutChildren()
     // This is a sanity check as HTML overloads some of the DOM methods.
     ASSERT(isHTMLElement() == clone->isHTMLElement());
 
-    clone->copyNonAttributeProperties(this);
-
     // Clone attributes.
     if (namedAttrMap)
         clone->attributes()->setAttributes(*attributes(true)); // Call attributes(true) to force attribute synchronization to occur (for svg and style) before cloning happens.
+
+    clone->copyNonAttributeProperties(this);
     
     return clone.release();
 }
@@ -137,12 +135,6 @@ void Element::setAttribute(const QualifiedName& name, const AtomicString& value)
     ExceptionCode ec;
     setAttribute(name, value, ec);
 }
-    
-void Element::setCStringAttribute(const QualifiedName& name, const char* cStringValue)
-{
-    ExceptionCode ec;
-    setAttribute(name, AtomicString(cStringValue), ec);
-}
 
 void Element::setBooleanAttribute(const QualifiedName& name, bool b)
 {
@@ -158,6 +150,21 @@ void Element::setBooleanAttribute(const QualifiedName& name, bool b)
 NamedNodeMap* Element::attributes() const
 {
     return attributes(false);
+}
+
+NamedNodeMap* Element::attributes(bool readonly) const
+{
+    if (!m_isStyleAttributeValid)
+        updateStyleAttribute();
+
+#if ENABLE(SVG)
+    if (!m_areSVGAttributesValid)
+        updateAnimatedSVGAttribute(String());
+#endif
+
+    if (!readonly && !namedAttrMap)
+        createAttributeMap();
+    return namedAttrMap.get();
 }
 
 Node::NodeType Element::nodeType() const
@@ -182,7 +189,7 @@ const AtomicString& Element::getAttribute(const QualifiedName& name) const
 
 #if ENABLE(SVG)
     if (!m_areSVGAttributesValid)
-        updateAnimatedSVGAttribute(name);
+        updateAnimatedSVGAttribute(name.localName());
 #endif
 
     if (namedAttrMap)
@@ -481,22 +488,18 @@ static inline bool shouldIgnoreAttributeCase(const Element* e)
 
 const AtomicString& Element::getAttribute(const String& name) const
 {
-    bool ignoreCase = shouldIgnoreAttributeCase(this);
-    
-    // Update the 'style' attribute if it's invalid and being requested:
-    if (!m_isStyleAttributeValid && equalPossiblyIgnoringCase(name, styleAttr.localName(), ignoreCase))
+    String localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
+    if (localName == styleAttr.localName() && !m_isStyleAttributeValid)
         updateStyleAttribute();
 
 #if ENABLE(SVG)
-    if (!m_areSVGAttributesValid) {
-        // We're not passing a namespace argument on purpose. SVGNames::*Attr are defined w/o namespaces as well.
-        updateAnimatedSVGAttribute(QualifiedName(nullAtom, name, nullAtom));
-    }
+    if (!m_areSVGAttributesValid)
+        updateAnimatedSVGAttribute(name);
 #endif
 
     if (namedAttrMap)
-        if (Attribute* attribute = namedAttrMap->getAttributeItem(name, ignoreCase))
-            return attribute->value();
+        if (Attribute* a = namedAttrMap->getAttributeItem(name, shouldIgnoreAttributeCase(this)))
+            return a->value();
     
     return nullAtom;
 }
@@ -524,9 +527,9 @@ void Element::setAttribute(const AtomicString& name, const AtomicString& value, 
 
     document()->incDOMTreeVersion();
 
-    if (localName == idAttributeName().localName())
+    if (localName == idAttr.localName())
         updateId(old ? old->value() : nullAtom, value);
-
+    
     if (old && value.isNull())
         namedAttrMap->removeAttribute(old->name());
     else if (!old && !value.isNull())
@@ -535,15 +538,6 @@ void Element::setAttribute(const AtomicString& name, const AtomicString& value, 
         old->setValue(value);
         attributeChanged(old);
     }
-
-#if ENABLE(INSPECTOR)
-    if (Page* page = document()->page()) {
-        if (InspectorController* inspectorController = page->inspectorController()) {
-            if (!m_synchronizingStyleAttribute)
-                inspectorController->didModifyDOMAttr(this);
-        }
-    }
-#endif
 }
 
 void Element::setAttribute(const QualifiedName& name, const AtomicString& value, ExceptionCode&)
@@ -553,9 +547,9 @@ void Element::setAttribute(const QualifiedName& name, const AtomicString& value,
     // allocate attributemap if necessary
     Attribute* old = attributes(false)->getAttributeItem(name);
 
-    if (name == idAttributeName())
+    if (name == idAttr)
         updateId(old ? old->value() : nullAtom, value);
-
+    
     if (old && value.isNull())
         namedAttrMap->removeAttribute(name);
     else if (!old && !value.isNull())
@@ -564,15 +558,6 @@ void Element::setAttribute(const QualifiedName& name, const AtomicString& value,
         old->setValue(value);
         attributeChanged(old);
     }
-
-#if ENABLE(INSPECTOR)
-    if (Page* page = document()->page()) {
-        if (InspectorController* inspectorController = page->inspectorController()) {
-            if (!m_synchronizingStyleAttribute)
-                inspectorController->didModifyDOMAttr(this);
-        }
-    }
-#endif
 }
 
 PassRefPtr<Attribute> Element::createAttribute(const QualifiedName& name, const AtomicString& value)
@@ -588,22 +573,20 @@ void Element::attributeChanged(Attribute* attr, bool)
 
 void Element::updateAfterAttributeChanged(Attribute* attr)
 {
-    if (!AXObjectCache::accessibilityEnabled())
+    AXObjectCache* axObjectCache = document()->axObjectCache();
+    if (!axObjectCache->accessibilityEnabled())
         return;
 
     const QualifiedName& attrName = attr->name();
     if (attrName == aria_activedescendantAttr) {
         // any change to aria-activedescendant attribute triggers accessibility focus change, but document focus remains intact
-        document()->axObjectCache()->handleActiveDescendantChanged(renderer());
+        axObjectCache->handleActiveDescendantChanged(renderer());
     } else if (attrName == roleAttr) {
         // the role attribute can change at any time, and the AccessibilityObject must pick up these changes
-        document()->axObjectCache()->handleAriaRoleChanged(renderer());
+        axObjectCache->handleAriaRoleChanged(renderer());
     } else if (attrName == aria_valuenowAttr) {
         // If the valuenow attribute changes, AX clients need to be notified.
-        document()->axObjectCache()->postNotification(renderer(), AXObjectCache::AXValueChanged, true);
-    } else if (attrName == aria_labelAttr || attrName == aria_labeledbyAttr || attrName == altAttr || attrName == titleAttr) {
-        // If the content of an element changes due to an attribute change, notify accessibility.
-        document()->axObjectCache()->contentChanged(renderer());
+        axObjectCache->postNotification(renderer(), AXObjectCache::AXValueChanged, true);
     }
 }
     
@@ -612,31 +595,15 @@ void Element::recalcStyleIfNeededAfterAttributeChanged(Attribute* attr)
     if (document()->attached() && document()->styleSelector()->hasSelectorForAttribute(attr->name().localName()))
         setNeedsStyleRecalc();
 }
-
-// Returns true is the given attribute is an event handler.
-// We consider an event handler any attribute that begins with "on".
-// It is a simple solution that has the advantage of not requiring any
-// code or configuration change if a new event handler is defined.
-
-static bool isEventHandlerAttribute(const QualifiedName& name)
-{
-    return name.namespaceURI().isNull() && name.localName().startsWith("on");
-}
-
-static bool isAttributeToRemove(const QualifiedName& name, const AtomicString& value)
-{    
-    return (name.localName().endsWith(hrefAttr.localName()) || name == srcAttr || name == actionAttr) && protocolIsJavaScript(deprecatedParseURL(value));       
-}
-
-void Element::setAttributeMap(PassRefPtr<NamedNodeMap> list, FragmentScriptingPermission scriptingPermission)
+        
+void Element::setAttributeMap(PassRefPtr<NamedNodeMap> list)
 {
     document()->incDOMTreeVersion();
 
     // If setting the whole map changes the id attribute, we need to call updateId.
 
-    const QualifiedName& idName = idAttributeName();
-    Attribute* oldId = namedAttrMap ? namedAttrMap->getAttributeItem(idName) : 0;
-    Attribute* newId = list ? list->getAttributeItem(idName) : 0;
+    Attribute* oldId = namedAttrMap ? namedAttrMap->getAttributeItem(idAttr) : 0;
+    Attribute* newId = list ? list->getAttributeItem(idAttr) : 0;
 
     if (oldId || newId)
         updateId(oldId ? oldId->value() : nullAtom, newId ? newId->value() : nullAtom);
@@ -648,22 +615,6 @@ void Element::setAttributeMap(PassRefPtr<NamedNodeMap> list, FragmentScriptingPe
 
     if (namedAttrMap) {
         namedAttrMap->m_element = this;
-        // If the element is created as result of a paste or drag-n-drop operation
-        // we want to remove all the script and event handlers.
-        if (scriptingPermission == FragmentScriptingNotAllowed) {
-            unsigned i = 0;
-            while (i < namedAttrMap->length()) {
-                const QualifiedName& attributeName = namedAttrMap->m_attributes[i]->name();
-                if (isEventHandlerAttribute(attributeName)) {
-                    namedAttrMap->m_attributes.remove(i);
-                    continue;
-                }
-
-                if (isAttributeToRemove(attributeName, namedAttrMap->m_attributes[i]->value()))
-                    namedAttrMap->m_attributes[i]->setValue(nullAtom);
-                i++;
-            }
-        }
         unsigned len = namedAttrMap->length();
         for (unsigned i = 0; i < len; i++)
             attributeChanged(namedAttrMap->m_attributes[i].get());
@@ -678,7 +629,7 @@ bool Element::hasAttributes() const
 
 #if ENABLE(SVG)
     if (!m_areSVGAttributesValid)
-        updateAnimatedSVGAttribute(anyQName());
+        updateAnimatedSVGAttribute(String());
 #endif
 
     return namedAttrMap && namedAttrMap->length() > 0;
@@ -694,20 +645,19 @@ String Element::nodeNamePreservingCase() const
     return m_tagName.toString();
 }
 
-void Element::setPrefix(const AtomicString& prefix, ExceptionCode& ec)
+void Element::setPrefix(const AtomicString &_prefix, ExceptionCode& ec)
 {
     ec = 0;
-    checkSetPrefix(prefix, ec);
+    checkSetPrefix(_prefix, ec);
     if (ec)
         return;
 
-    m_tagName.setPrefix(prefix.isEmpty() ? AtomicString() : prefix);
+    m_tagName.setPrefix(_prefix);
 }
 
 KURL Element::baseURI() const
 {
-    const AtomicString& baseAttribute = getAttribute(baseAttr);
-    KURL base(KURL(), baseAttribute);
+    KURL base(KURL(), getAttribute(baseAttr));
     if (!base.protocol().isEmpty())
         return base;
 
@@ -719,7 +669,7 @@ KURL Element::baseURI() const
     if (parentBase.isNull())
         return base;
 
-    return KURL(parentBase, baseAttribute);
+    return KURL(parentBase, base.string());
 }
 
 void Element::createAttributeMap() const
@@ -758,7 +708,7 @@ void Element::insertedIntoDocument()
 
     if (hasID()) {
         if (NamedNodeMap* attrs = namedAttrMap.get()) {
-            Attribute* idItem = attrs->getAttributeItem(idAttributeName());
+            Attribute* idItem = attrs->getAttributeItem(idAttr);
             if (idItem && !idItem->isNull())
                 updateId(nullAtom, idItem->value());
         }
@@ -769,7 +719,7 @@ void Element::removedFromDocument()
 {
     if (hasID()) {
         if (NamedNodeMap* attrs = namedAttrMap.get()) {
-            Attribute* idItem = attrs->getAttributeItem(idAttributeName());
+            Attribute* idItem = attrs->getAttributeItem(idAttr);
             if (idItem && !idItem->isNull())
                 updateId(idItem->value(), nullAtom);
         }
@@ -781,7 +731,6 @@ void Element::removedFromDocument()
 void Element::attach()
 {
     suspendPostAttachCallbacks();
-    RenderWidget::suspendWidgetHierarchyUpdates();
 
     createRendererIfNeeded();
     ContainerNode::attach();
@@ -789,25 +738,20 @@ void Element::attach()
         ElementRareData* data = rareData();
         if (data->needsFocusAppearanceUpdateSoonAfterAttach()) {
             if (isFocusable() && document()->focusedNode() == this)
-                document()->updateFocusAppearanceSoon(false /* don't restore selection */);
+                document()->updateFocusAppearanceSoon();
             data->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
         }
     }
 
-    RenderWidget::resumeWidgetHierarchyUpdates();
     resumePostAttachCallbacks();
 }
 
 void Element::detach()
 {
-    RenderWidget::suspendWidgetHierarchyUpdates();
-
     cancelFocusAppearanceUpdate();
     if (hasRareData())
         rareData()->resetComputedStyle();
     ContainerNode::detach();
-
-    RenderWidget::resumeWidgetHierarchyUpdates();
 }
 
 bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle)
@@ -1046,7 +990,6 @@ void Element::finishParsingChildren()
 void Element::dispatchAttrRemovalEvent(Attribute*)
 {
     ASSERT(!eventDispatchForbidden());
-
 #if 0
     if (!document()->hasListenerType(Document::DOMATTRMODIFIED_LISTENER))
         return;
@@ -1059,7 +1002,6 @@ void Element::dispatchAttrRemovalEvent(Attribute*)
 void Element::dispatchAttrAdditionEvent(Attribute*)
 {
     ASSERT(!eventDispatchForbidden());
-
 #if 0
     if (!document()->hasListenerType(Document::DOMATTRMODIFIED_LISTENER))
         return;
@@ -1094,6 +1036,21 @@ String Element::openTagStartToString() const
     return result;
 }
 
+void Element::updateId(const AtomicString& oldId, const AtomicString& newId)
+{
+    if (!inDocument())
+        return;
+
+    if (oldId == newId)
+        return;
+
+    Document* doc = document();
+    if (!oldId.isEmpty())
+        doc->removeElementById(oldId, this);
+    if (!newId.isEmpty())
+        doc->addElementById(newId, this);
+}
+
 #ifndef NDEBUG
 void Element::formatForDebugger(char* buffer, unsigned length) const
 {
@@ -1105,7 +1062,7 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
         result += s;
     }
           
-    s = getAttribute(idAttributeName());
+    s = getAttribute(idAttr);
     if (s.length() > 0) {
         if (result.length() > 0)
             result += "; ";
@@ -1165,17 +1122,13 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionCode& ec)
     return static_pointer_cast<Attr>(attrs->removeNamedItem(attr->qualifiedName(), ec));
 }
 
-void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionCode& ec, FragmentScriptingPermission scriptingPermission)
+void Element::setAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& value, ExceptionCode& ec)
 {
     String prefix, localName;
     if (!Document::parseQualifiedName(qualifiedName, prefix, localName, ec))
         return;
 
     QualifiedName qName(prefix, localName, namespaceURI);
-
-    if (scriptingPermission == FragmentScriptingNotAllowed && (isEventHandlerAttribute(qName) || isAttributeToRemove(qName, value)))
-        return;
-
     setAttribute(qName, value, ec);
 }
 
@@ -1188,14 +1141,6 @@ void Element::removeAttribute(const String& name, ExceptionCode& ec)
         if (ec == NOT_FOUND_ERR)
             ec = 0;
     }
-    
-#if ENABLE(INSPECTOR)
-    if (Page* page = document()->page()) {
-        if (InspectorController* inspectorController = page->inspectorController())
-            inspectorController->didModifyDOMAttr(this);
-    }
-#endif
-    
 }
 
 void Element::removeAttributeNS(const String& namespaceURI, const String& localName, ExceptionCode& ec)
@@ -1294,7 +1239,7 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
         }
     }
     // FIXME: I'm not sure all devices will want this off, but this is
-    // currently turned off for Android.
+    // currently turned off for Andriod.
 #if !ENABLE(DIRECTIONAL_PAD_NAVIGATION)
     else if (renderer() && !renderer()->isWidget())
         renderer()->enclosingLayer()->scrollRectToVisible(getRect());
@@ -1363,7 +1308,7 @@ RenderStyle* Element::computedStyle()
 
     ElementRareData* data = ensureRareData();
     if (!data->m_computedStyle)
-        data->m_computedStyle = document()->styleForElementIgnoringPendingStylesheets(this);
+        data->m_computedStyle = document()->styleSelector()->styleForElement(this, parent() ? parent()->computedStyle() : 0);
     return data->m_computedStyle.get();
 }
 
@@ -1467,18 +1412,13 @@ bool Element::webkitMatchesSelector(const String& selector, ExceptionCode& ec)
 
 KURL Element::getURLAttribute(const QualifiedName& name) const
 {
-#if !ASSERT_DISABLED
+#ifndef NDEBUG
     if (namedAttrMap) {
         if (Attribute* attribute = namedAttrMap->getAttributeItem(name))
             ASSERT(isURLAttribute(attribute));
     }
 #endif
     return document()->completeURL(deprecatedParseURL(getAttribute(name)));
-}
-
-const QualifiedName& Element::rareIDAttributeName() const
-{
-    return rareData()->m_idAttributeName;
 }
 
 } // namespace WebCore

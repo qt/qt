@@ -28,8 +28,7 @@
 #if ENABLE(MAC_JAVA_BRIDGE)
 
 #import <Foundation/Foundation.h>
-#import "JNIUtility.h"
-#import "JNIUtilityPrivate.h"
+#import "jni_utility.h"
 #import "objc_utility.h"
 #include <runtime/JSLock.h>
 

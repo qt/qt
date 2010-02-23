@@ -30,9 +30,7 @@
 
 #include "IntSize.h"
 #include "LocalizedStrings.h"
-#include "NotImplemented.h"
 #include "PlatformString.h"
-#include <wtf/MathExtras.h>
 
 #include <QCoreApplication>
 #include <QLocale>
@@ -341,16 +339,6 @@ String AXLinkActionVerb()
     return String();
 }
 
-String AXMenuListPopupActionVerb()
-{
-    return String();
-}
-
-String AXMenuListActionVerb()
-{
-    return String();
-}
-
 String multipleFileUploadText(unsigned)
 {
     return String();
@@ -481,48 +469,6 @@ String localizedMediaTimeDescription(float time)
     return QCoreApplication::translate("QWebPage", "%1 seconds", "Media time description").arg(seconds);
 }
 #endif  // ENABLE(VIDEO)
-
-String validationMessageValueMissingText()
-{
-    notImplemented();
-    return String();
-}
-
-String validationMessageTypeMismatchText()
-{
-    notImplemented();
-    return String();
-}
-
-String validationMessagePatternMismatchText()
-{
-    notImplemented();
-    return String();
-}
-
-String validationMessageTooLongText()
-{
-    notImplemented();
-    return String();
-}
-
-String validationMessageRangeUnderflowText()
-{
-    notImplemented();
-    return String();
-}
-
-String validationMessageRangeOverflowText()
-{
-    notImplemented();
-    return String();
-}
-
-String validationMessageStepMismatchText()
-{
-    notImplemented();
-    return String();
-}
 
 }
 // vim: ts=4 sw=4 et

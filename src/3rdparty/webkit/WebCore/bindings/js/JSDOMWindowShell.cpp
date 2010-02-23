@@ -43,10 +43,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMWindowShell);
 
 const ClassInfo JSDOMWindowShell::s_info = { "JSDOMWindowShell", 0, 0, 0 };
 
-JSDOMWindowShell::JSDOMWindowShell(PassRefPtr<DOMWindow> window, DOMWrapperWorld* world)
+JSDOMWindowShell::JSDOMWindowShell(PassRefPtr<DOMWindow> window)
     : Base(JSDOMWindowShell::createStructure(jsNull()))
     , m_window(0)
-    , m_world(world)
 {
     setWindow(window);
 }
@@ -114,14 +113,19 @@ bool JSDOMWindowShell::deleteProperty(ExecState* exec, const Identifier& propert
     return m_window->deleteProperty(exec, propertyName);
 }
 
-void JSDOMWindowShell::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void JSDOMWindowShell::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
-    m_window->getPropertyNames(exec, propertyNames, mode);
+    m_window->getPropertyNames(exec, propertyNames);
 }
 
-void JSDOMWindowShell::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void JSDOMWindowShell::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
-    m_window->getOwnPropertyNames(exec, propertyNames, mode);
+    m_window->getOwnPropertyNames(exec, propertyNames);
+}
+
+bool JSDOMWindowShell::getPropertyAttributes(JSC::ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
+{
+    return m_window->getPropertyAttributes(exec, propertyName, attributes);
 }
 
 void JSDOMWindowShell::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction, unsigned attributes)

@@ -57,8 +57,6 @@ protected:
     virtual IntRect forwardButtonRect(Scrollbar*, ScrollbarPart, bool painting = false);
     virtual IntRect trackRect(Scrollbar*, bool painting = false);
 
-    virtual int maxOverlapBetweenPages() { return 40; }
-
     virtual int minimumThumbLength(Scrollbar*);
     
     virtual bool shouldCenterOnThumb(Scrollbar*, const PlatformMouseEvent&);

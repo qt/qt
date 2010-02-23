@@ -97,10 +97,10 @@ public:
     void rendererContentChanged();
 
     // Interface to start, finish, suspend and resume animations and transitions
-    bool startAnimation(double timeOffset, const Animation* anim, const KeyframeList& keyframes);
-    bool startTransition(double timeOffset, int property, const RenderStyle* fromStyle, const RenderStyle* toStyle);
+    bool startAnimation(double beginTime, const Animation* anim, const KeyframeList& keyframes);
+    bool startTransition(double beginTime, int property, const RenderStyle* fromStyle, const RenderStyle* toStyle);
     void animationFinished(const String& name);
-    void animationPaused(double timeOffset, const String& name);
+    void animationPaused(const String& name);
     void transitionFinished(int property);
 
     void suspendAnimations(double time = 0);
@@ -118,9 +118,6 @@ public:
     virtual void notifySyncRequired(const GraphicsLayer*);
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip);
-
-    virtual bool showDebugBorders() const;
-    virtual bool showRepaintCounter() const;
 
     IntRect contentsBox() const;
     
@@ -149,12 +146,12 @@ private:
     // Return the opacity value that this layer should use for compositing.
     float compositingOpacity(float rendererOpacity) const;
     
-    // Returns true if this compositing layer has no visible content.
+    // Returns true if this RenderLayer only has content that can be rendered directly
+    // by the compositing layer, without drawing (e.g. solid background color).
     bool isSimpleContainerCompositingLayer() const;
-    // Returns true if this layer has content that needs to be rendered by painting into the backing store.
-    bool containsPaintedContent() const;
-    // Returns true if the RenderLayer just contains an image that we can composite directly.
-    bool isDirectlyCompositedImage() const;
+    // Returns true if we can optimize the RenderLayer to draw the replaced content
+    // directly into a compositing buffer
+    bool canUseDirectCompositing() const;
     void updateImageContents();
 
     bool rendererHasBackground() const;
@@ -163,7 +160,7 @@ private:
     bool hasNonCompositingContent() const;
     
     void paintIntoLayer(RenderLayer* rootLayer, GraphicsContext*, const IntRect& paintDirtyRect,
-                    PaintBehavior paintBehavior, GraphicsLayerPaintingPhase, RenderObject* paintingRoot);
+                    PaintRestriction paintRestriction, GraphicsLayerPaintingPhase, RenderObject* paintingRoot);
 
     static int graphicsLayerToCSSProperty(AnimatedPropertyID);
     static AnimatedPropertyID cssToGraphicsLayerProperty(int);
@@ -179,6 +176,7 @@ private:
 
     IntRect m_compositedBounds;
 
+    bool m_hasDirectlyCompositedContent;
     bool m_artificiallyInflatedBounds;      // bounds had to be made non-zero to make transform-origin work
 };
 

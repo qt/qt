@@ -23,9 +23,10 @@
 #ifndef SVGAnimateMotionElement_h
 #define SVGAnimateMotionElement_h
 #if ENABLE(SVG_ANIMATION)
-#include "AffineTransform.h"
-#include "Path.h"
+
 #include "SVGAnimationElement.h"
+#include "TransformationMatrix.h"
+#include "Path.h"
 
 namespace WebCore {
             

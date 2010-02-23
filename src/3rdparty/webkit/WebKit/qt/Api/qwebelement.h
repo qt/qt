@@ -32,12 +32,6 @@ namespace WebCore {
     class Node;
 }
 
-namespace JSC {
-namespace Bindings {
-    class QtWebElementRuntime;
-}
-}
-
 QT_BEGIN_NAMESPACE
 class QPainter;
 QT_END_NAMESPACE
@@ -159,7 +153,6 @@ private:
     friend class QWebHitTestResult;
     friend class QWebHitTestResultPrivate;
     friend class QWebPage;
-    friend class JSC::Bindings::QtWebElementRuntime;
 
     QWebElementPrivate* d;
     WebCore::Element* m_element;
@@ -261,7 +254,5 @@ public:
 private:
     QExplicitlySharedDataPointer<QWebElementCollectionPrivate> d;
 };
-
-Q_DECLARE_METATYPE(QWebElement)
 
 #endif // QWEBELEMENT_H

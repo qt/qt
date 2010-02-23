@@ -104,8 +104,7 @@ JSValue jsSharedWorkerContextName(ExecState* exec, const Identifier&, const Prop
     JSSharedWorkerContext* castedThis = static_cast<JSSharedWorkerContext*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SharedWorkerContext* imp = static_cast<SharedWorkerContext*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->name());
-    return result;
+    return jsString(exec, imp->name());
 }
 
 JSValue jsSharedWorkerContextOnconnect(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -114,10 +113,8 @@ JSValue jsSharedWorkerContextOnconnect(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SharedWorkerContext* imp = static_cast<SharedWorkerContext*>(castedThis->impl());
     if (EventListener* listener = imp->onconnect()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp))
-                return jsFunction;
-        }
+        if (JSObject* jsFunction = listener->jsFunction(imp))
+            return jsFunction;
     }
     return jsNull();
 }
@@ -131,7 +128,8 @@ void setJSSharedWorkerContextOnconnect(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     SharedWorkerContext* imp = static_cast<SharedWorkerContext*>(static_cast<JSSharedWorkerContext*>(thisObject)->impl());
-    imp->setOnconnect(createJSAttributeEventListener(exec, value, thisObject));
+    JSDOMGlobalObject* globalObject = static_cast<JSSharedWorkerContext*>(thisObject);
+    imp->setOnconnect(globalObject->createJSAttributeEventListener(value));
 }
 
 SharedWorkerContext* toSharedWorkerContext(JSC::JSValue value)

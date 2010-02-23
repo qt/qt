@@ -97,7 +97,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -192,8 +192,7 @@ JSValue jsHTMLDocumentEmbeds(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->embeds()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->embeds()));
 }
 
 JSValue jsHTMLDocumentPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -201,8 +200,7 @@ JSValue jsHTMLDocumentPlugins(ExecState* exec, const Identifier&, const Property
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->plugins()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->plugins()));
 }
 
 JSValue jsHTMLDocumentScripts(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -210,8 +208,7 @@ JSValue jsHTMLDocumentScripts(ExecState* exec, const Identifier&, const Property
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->scripts()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->scripts()));
 }
 
 JSValue jsHTMLDocumentAll(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -225,8 +222,7 @@ JSValue jsHTMLDocumentWidth(ExecState* exec, const Identifier&, const PropertySl
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->width());
-    return result;
+    return jsNumber(exec, imp->width());
 }
 
 JSValue jsHTMLDocumentHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -234,8 +230,7 @@ JSValue jsHTMLDocumentHeight(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->height());
-    return result;
+    return jsNumber(exec, imp->height());
 }
 
 JSValue jsHTMLDocumentDir(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -243,8 +238,7 @@ JSValue jsHTMLDocumentDir(ExecState* exec, const Identifier&, const PropertySlot
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->dir());
-    return result;
+    return jsString(exec, imp->dir());
 }
 
 JSValue jsHTMLDocumentDesignMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -252,8 +246,7 @@ JSValue jsHTMLDocumentDesignMode(ExecState* exec, const Identifier&, const Prope
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->designMode());
-    return result;
+    return jsString(exec, imp->designMode());
 }
 
 JSValue jsHTMLDocumentCompatMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -261,8 +254,7 @@ JSValue jsHTMLDocumentCompatMode(ExecState* exec, const Identifier&, const Prope
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->compatMode());
-    return result;
+    return jsString(exec, imp->compatMode());
 }
 
 JSValue jsHTMLDocumentActiveElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -270,8 +262,7 @@ JSValue jsHTMLDocumentActiveElement(ExecState* exec, const Identifier&, const Pr
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->activeElement()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->activeElement()));
 }
 
 JSValue jsHTMLDocumentBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -279,8 +270,7 @@ JSValue jsHTMLDocumentBgColor(ExecState* exec, const Identifier&, const Property
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->bgColor());
-    return result;
+    return jsString(exec, imp->bgColor());
 }
 
 JSValue jsHTMLDocumentFgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -288,8 +278,7 @@ JSValue jsHTMLDocumentFgColor(ExecState* exec, const Identifier&, const Property
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->fgColor());
-    return result;
+    return jsString(exec, imp->fgColor());
 }
 
 JSValue jsHTMLDocumentAlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -297,8 +286,7 @@ JSValue jsHTMLDocumentAlinkColor(ExecState* exec, const Identifier&, const Prope
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->alinkColor());
-    return result;
+    return jsString(exec, imp->alinkColor());
 }
 
 JSValue jsHTMLDocumentLinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -306,8 +294,7 @@ JSValue jsHTMLDocumentLinkColor(ExecState* exec, const Identifier&, const Proper
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->linkColor());
-    return result;
+    return jsString(exec, imp->linkColor());
 }
 
 JSValue jsHTMLDocumentVlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -315,8 +302,7 @@ JSValue jsHTMLDocumentVlinkColor(ExecState* exec, const Identifier&, const Prope
     JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->vlinkColor());
-    return result;
+    return jsString(exec, imp->vlinkColor());
 }
 
 JSValue jsHTMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -336,50 +322,43 @@ void setJSHTMLDocumentAll(ExecState* exec, JSObject* thisObject, JSValue value)
 
 void setJSHTMLDocumentDir(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(thisObject);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setDir(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLDocumentDesignMode(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(thisObject);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setDesignMode(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLDocumentBgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(thisObject);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setBgColor(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLDocumentFgColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(thisObject);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setFgColor(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLDocumentAlinkColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(thisObject);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setAlinkColor(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLDocumentLinkColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(thisObject);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setLinkColor(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLDocumentVlinkColor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDocument* castedThisObj = static_cast<JSHTMLDocument*>(thisObject);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThisObj->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(thisObject)->impl());
     imp->setVlinkColor(valueToStringWithNullCheck(exec, value));
 }
 

@@ -39,7 +39,6 @@ namespace WebCore {
         virtual ~SVGViewElement();
 
         virtual void parseMappedAttribute(MappedAttribute*);
-        virtual void synchronizeProperty(const QualifiedName&);
 
         SVGStringList* viewTarget() const;
 
@@ -47,11 +46,13 @@ namespace WebCore {
 
     private:
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGViewElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGViewElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
  
         // SVGFitToViewBox
-        DECLARE_ANIMATED_PROPERTY(SVGViewElement, SVGNames::viewBoxAttr, FloatRect, ViewBox, viewBox)
-        DECLARE_ANIMATED_PROPERTY(SVGViewElement, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGViewElement, SVGFitToViewBoxIdentifier, SVGNames::viewBoxAttrString, FloatRect, ViewBox, viewBox)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGViewElement, SVGFitToViewBoxIdentifier, SVGNames::preserveAspectRatioAttrString, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
  
         mutable RefPtr<SVGStringList> m_viewTarget;
     };

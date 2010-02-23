@@ -29,7 +29,6 @@
 #include "JSArray.h"
 #include "JSString.h"
 #include "Lexer.h"
-#include "StringBuilder.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/dtoa.h>
 
@@ -135,48 +134,48 @@ template <LiteralParser::ParserMode mode> inline LiteralParser::TokenType Litera
 {
     ++m_ptr;
     const UChar* runStart;
-    StringBuilder builder;
+    token.stringToken = UString();
     do {
         runStart = m_ptr;
         while (m_ptr < m_end && isSafeStringCharacter<mode>(*m_ptr))
             ++m_ptr;
         if (runStart < m_ptr)
-            builder.append(runStart, m_ptr - runStart);
+            token.stringToken.append(runStart, m_ptr - runStart);
         if ((mode == StrictJSON) && m_ptr < m_end && *m_ptr == '\\') {
             ++m_ptr;
             if (m_ptr >= m_end)
                 return TokError;
             switch (*m_ptr) {
                 case '"':
-                    builder.append('"');
+                    token.stringToken.append('"');
                     m_ptr++;
                     break;
                 case '\\':
-                    builder.append('\\');
+                    token.stringToken.append('\\');
                     m_ptr++;
                     break;
                 case '/':
-                    builder.append('/');
+                    token.stringToken.append('/');
                     m_ptr++;
                     break;
                 case 'b':
-                    builder.append('\b');
+                    token.stringToken.append('\b');
                     m_ptr++;
                     break;
                 case 'f':
-                    builder.append('\f');
+                    token.stringToken.append('\f');
                     m_ptr++;
                     break;
                 case 'n':
-                    builder.append('\n');
+                    token.stringToken.append('\n');
                     m_ptr++;
                     break;
                 case 'r':
-                    builder.append('\r');
+                    token.stringToken.append('\r');
                     m_ptr++;
                     break;
                 case 't':
-                    builder.append('\t');
+                    token.stringToken.append('\t');
                     m_ptr++;
                     break;
 
@@ -187,7 +186,7 @@ template <LiteralParser::ParserMode mode> inline LiteralParser::TokenType Litera
                         if (!isASCIIHexDigit(m_ptr[i]))
                             return TokError;
                     }
-                    builder.append(JSC::Lexer::convertUnicode(m_ptr[1], m_ptr[2], m_ptr[3], m_ptr[4]));
+                    token.stringToken.append(JSC::Lexer::convertUnicode(m_ptr[1], m_ptr[2], m_ptr[3], m_ptr[4]));
                     m_ptr += 5;
                     break;
 
@@ -200,7 +199,6 @@ template <LiteralParser::ParserMode mode> inline LiteralParser::TokenType Litera
     if (m_ptr >= m_end || *m_ptr != '"')
         return TokError;
 
-    token.stringToken = builder.build();
     token.type = TokString;
     token.end = ++m_ptr;
     return TokString;

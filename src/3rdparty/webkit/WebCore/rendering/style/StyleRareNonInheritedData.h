@@ -29,7 +29,6 @@
 #include "CursorData.h"
 #include "DataRef.h"
 #include "FillLayer.h"
-#include "LineClampValue.h"
 #include "NinePieceImage.h"
 #include "StyleTransformData.h"
 #include <wtf/OwnPtr.h>
@@ -78,7 +77,7 @@ public:
     bool animationDataEquivalent(const StyleRareNonInheritedData&) const;
     bool transitionDataEquivalent(const StyleRareNonInheritedData&) const;
 
-    LineClampValue lineClamp; // An Apple extension.
+    int lineClamp; // An Apple extension.
 #if ENABLE(DASHBOARD_SUPPORT)
     Vector<StyleDashboardRegion> m_dashboardRegions;
 #endif

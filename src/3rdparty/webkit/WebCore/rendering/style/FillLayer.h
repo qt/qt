@@ -59,7 +59,7 @@ struct FillSize {
     LengthSize size;
 };
 
-struct FillLayer : FastAllocBase {
+struct FillLayer {
 public:
     FillLayer(EFillLayerType);
     ~FillLayer();
@@ -126,7 +126,6 @@ public:
     }
 
     bool containsImage(StyleImage*) const;
-    bool imagesAreLoaded() const;
 
     bool hasImage() const
     {

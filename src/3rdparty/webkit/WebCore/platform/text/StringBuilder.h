@@ -42,9 +42,6 @@ namespace WebCore {
         void append(const String&);
         void append(UChar);
         void append(char);
-        
-        void clear();
-        unsigned length() const;
 
         String toString() const;
 

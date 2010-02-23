@@ -1,4 +1,4 @@
-// Automatically generated from runtime/DatePrototype.cpp using JavaScriptCore/create_hash_table. DO NOT EDIT!
+// Automatically generated from ../runtime/DatePrototype.cpp using JavaScriptCore/create_hash_table. DO NOT EDIT!
 
 #include "Lookup.h"
 

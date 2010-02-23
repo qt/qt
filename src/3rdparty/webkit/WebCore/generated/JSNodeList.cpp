@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -210,8 +210,7 @@ JSValue jsNodeListLength(ExecState* exec, const Identifier&, const PropertySlot&
     JSNodeList* castedThis = static_cast<JSNodeList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     NodeList* imp = static_cast<NodeList*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->length());
-    return result;
+    return jsNumber(exec, imp->length());
 }
 
 JSValue jsNodeListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -219,11 +218,11 @@ JSValue jsNodeListConstructor(ExecState* exec, const Identifier&, const Property
     JSNodeList* domObject = static_cast<JSNodeList*>(asObject(slot.slotBase()));
     return JSNodeList::getConstructor(exec, domObject->globalObject());
 }
-void JSNodeList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void JSNodeList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<NodeList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames, mode);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSNodeList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

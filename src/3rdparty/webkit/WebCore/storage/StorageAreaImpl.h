@@ -48,16 +48,17 @@ namespace WebCore {
         virtual unsigned length() const;
         virtual String key(unsigned index) const;
         virtual String getItem(const String& key) const;
-        virtual String setItem(const String& key, const String& value, ExceptionCode& ec, Frame* sourceFrame);
-        virtual String removeItem(const String& key, Frame* sourceFrame);
-        virtual bool clear(Frame* sourceFrame);
+        virtual void setItem(const String& key, const String& value, ExceptionCode& ec, Frame* sourceFrame);
+        virtual void removeItem(const String& key, Frame* sourceFrame);
+        virtual void clear(Frame* sourceFrame);
         virtual bool contains(const String& key) const;
 
         PassRefPtr<StorageAreaImpl> copy();
         void close();
 
-        // Only called from a background thread.
+        // Could be called from a background thread.
         void importItem(const String& key, const String& value);
+        SecurityOrigin* securityOrigin();
 
     private:
         StorageAreaImpl(StorageType, PassRefPtr<SecurityOrigin>, PassRefPtr<StorageSyncManager>, unsigned quota);

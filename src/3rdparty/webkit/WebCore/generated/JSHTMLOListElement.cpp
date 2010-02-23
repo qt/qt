@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -146,8 +146,7 @@ JSValue jsHTMLOListElementCompact(ExecState* exec, const Identifier&, const Prop
     JSHTMLOListElement* castedThis = static_cast<JSHTMLOListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLOListElement* imp = static_cast<HTMLOListElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->compact());
-    return result;
+    return jsBoolean(imp->compact());
 }
 
 JSValue jsHTMLOListElementStart(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -155,8 +154,7 @@ JSValue jsHTMLOListElementStart(ExecState* exec, const Identifier&, const Proper
     JSHTMLOListElement* castedThis = static_cast<JSHTMLOListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLOListElement* imp = static_cast<HTMLOListElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->start());
-    return result;
+    return jsNumber(exec, imp->start());
 }
 
 JSValue jsHTMLOListElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -164,8 +162,7 @@ JSValue jsHTMLOListElementType(ExecState* exec, const Identifier&, const Propert
     JSHTMLOListElement* castedThis = static_cast<JSHTMLOListElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLOListElement* imp = static_cast<HTMLOListElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->type());
-    return result;
+    return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLOListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,22 +177,19 @@ void JSHTMLOListElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLOListElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLOListElement* castedThisObj = static_cast<JSHTMLOListElement*>(thisObject);
-    HTMLOListElement* imp = static_cast<HTMLOListElement*>(castedThisObj->impl());
+    HTMLOListElement* imp = static_cast<HTMLOListElement*>(static_cast<JSHTMLOListElement*>(thisObject)->impl());
     imp->setCompact(value.toBoolean(exec));
 }
 
 void setJSHTMLOListElementStart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLOListElement* castedThisObj = static_cast<JSHTMLOListElement*>(thisObject);
-    HTMLOListElement* imp = static_cast<HTMLOListElement*>(castedThisObj->impl());
+    HTMLOListElement* imp = static_cast<HTMLOListElement*>(static_cast<JSHTMLOListElement*>(thisObject)->impl());
     imp->setStart(value.toInt32(exec));
 }
 
 void setJSHTMLOListElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLOListElement* castedThisObj = static_cast<JSHTMLOListElement*>(thisObject);
-    HTMLOListElement* imp = static_cast<HTMLOListElement*>(castedThisObj->impl());
+    HTMLOListElement* imp = static_cast<HTMLOListElement*>(static_cast<JSHTMLOListElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 

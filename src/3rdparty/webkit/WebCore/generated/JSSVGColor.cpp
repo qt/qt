@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -170,8 +170,7 @@ JSValue jsSVGColorColorType(ExecState* exec, const Identifier&, const PropertySl
     JSSVGColor* castedThis = static_cast<JSSVGColor*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGColor* imp = static_cast<SVGColor*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->colorType());
-    return result;
+    return jsNumber(exec, imp->colorType());
 }
 
 JSValue jsSVGColorRgbColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -179,8 +178,7 @@ JSValue jsSVGColorRgbColor(ExecState* exec, const Identifier&, const PropertySlo
     JSSVGColor* castedThis = static_cast<JSSVGColor*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGColor* imp = static_cast<SVGColor*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rgbColor()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rgbColor()));
 }
 
 JSValue jsSVGColorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

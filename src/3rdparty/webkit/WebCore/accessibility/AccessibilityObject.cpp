@@ -29,8 +29,8 @@
 #include "config.h"
 #include "AccessibilityObject.h"
 
-#include "AXObjectCache.h"
 #include "AccessibilityRenderObject.h"
+#include "AXObjectCache.h"
 #include "CharacterNames.h"
 #include "FloatRect.h"
 #include "FocusController.h"
@@ -85,9 +85,8 @@ void AccessibilityObject::detach()
 AccessibilityObject* AccessibilityObject::parentObjectUnignored() const
 {
     AccessibilityObject* parent;
-    for (parent = parentObject(); parent && parent->accessibilityIsIgnored(); parent = parent->parentObject()) {
-    }
-    
+    for (parent = parentObject(); parent && parent->accessibilityIsIgnored(); parent = parent->parentObject())
+        ;
     return parent;
 }
 
@@ -276,7 +275,7 @@ VisiblePositionRange AccessibilityObject::rightLineVisiblePositionRange(const Vi
     VisiblePosition startPosition = startOfLine(nextVisiblePos);
 
     // fetch for a valid line start position
-    if (startPosition.isNull()) {
+    if (startPosition.isNull() ) {
         startPosition = visiblePos;
         nextVisiblePos = nextVisiblePos.next();
     } else
@@ -382,8 +381,9 @@ static bool replacedNodeNeedsCharacter(Node* replacedNode)
 {
     // we should always be given a rendered node and a replaced node, but be safe
     // replaced nodes are either attachments (widgets) or images
-    if (!replacedNode || !replacedNode->renderer() || !replacedNode->renderer()->isReplaced() || replacedNode->isTextNode())
+    if (!replacedNode || !replacedNode->renderer() || !replacedNode->renderer()->isReplaced() || replacedNode->isTextNode()) {
         return false;
+    }
 
     // create an AX object, but skip it if it is not supposed to be seen
     AccessibilityObject* object = replacedNode->renderer()->document()->axObjectCache()->getOrCreate(replacedNode->renderer());
@@ -445,7 +445,7 @@ String AccessibilityObject::stringForVisiblePositionRange(const VisiblePositionR
     RefPtr<Range> range = makeRange(visiblePositionRange.start, visiblePositionRange.end);
     for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {
         // non-zero length means textual node, zero length means replaced node (AKA "attachments" in AX)
-        if (it.length()) {
+        if (it.length() != 0) {
             // Add a textual representation for list marker text
             String listMarkerText = listMarkerTextForNodeAndPosition(it.node(), visiblePositionRange.start);
             if (!listMarkerText.isEmpty())
@@ -459,8 +459,9 @@ String AccessibilityObject::stringForVisiblePositionRange(const VisiblePositionR
             ASSERT(node == it.range()->endContainer(exception));
             int offset = it.range()->startOffset(exception);
 
-            if (replacedNodeNeedsCharacter(node->childNode(offset)))
+            if (replacedNodeNeedsCharacter(node->childNode(offset))) {
                 resultVector.append(objectReplacementCharacter);
+            }
         }
     }
 
@@ -477,9 +478,9 @@ int AccessibilityObject::lengthForVisiblePositionRange(const VisiblePositionRang
     RefPtr<Range> range = makeRange(visiblePositionRange.start, visiblePositionRange.end);
     for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {
         // non-zero length means textual node, zero length means replaced node (AKA "attachments" in AX)
-        if (it.length())
+        if (it.length() != 0) {
             length += it.length();
-        else {
+        } else {
             // locate the node and starting offset for this replaced range
             int exception = 0;
             Node* node = it.range()->startContainer(exception);
@@ -753,53 +754,6 @@ AccessibilityObject* AccessibilityObject::anchorElementForNode(Node* node)
     return anchorRenderer->document()->axObjectCache()->getOrCreate(anchorRenderer);
 }
     
-void AccessibilityObject::ariaTreeRows(AccessibilityChildrenVector& result)
-{
-    AccessibilityChildrenVector axChildren = children();
-    unsigned count = axChildren.size();
-    for (unsigned k = 0; k < count; ++k) {
-        AccessibilityObject* obj = axChildren[k].get();
-        
-        // Add tree items as the rows.
-        if (obj->roleValue() == TreeItemRole) 
-            result.append(obj);
-
-        // Now see if this item also has rows hiding inside of it.
-        obj->ariaTreeRows(result);
-    }
-}
-    
-void AccessibilityObject::ariaTreeItemContent(AccessibilityChildrenVector& result)
-{
-    // The ARIA tree item content are the item that are not other tree items or their containing groups.
-    AccessibilityChildrenVector axChildren = children();
-    unsigned count = axChildren.size();
-    for (unsigned k = 0; k < count; ++k) {
-        AccessibilityObject* obj = axChildren[k].get();
-        AccessibilityRole role = obj->roleValue();
-        if (role == TreeItemRole || role == GroupRole)
-            continue;
-        
-        result.append(obj);
-    }
-}
-
-void AccessibilityObject::ariaTreeItemDisclosedRows(AccessibilityChildrenVector& result)
-{
-    AccessibilityChildrenVector axChildren = children();
-    unsigned count = axChildren.size();
-    for (unsigned k = 0; k < count; ++k) {
-        AccessibilityObject* obj = axChildren[k].get();
-        
-        // Add tree items as the rows.
-        if (obj->roleValue() == TreeItemRole)
-            result.append(obj);
-        // If it's not a tree item, then descend into the group to find more tree items.
-        else 
-            obj->ariaTreeRows(result);
-    }    
-}
-    
 const String& AccessibilityObject::actionVerb() const
 {
     // FIXME: Need to add verbs for select elements.
@@ -809,29 +763,23 @@ const String& AccessibilityObject::actionVerb() const
     DEFINE_STATIC_LOCAL(const String, checkedCheckBoxAction, (AXCheckedCheckBoxActionVerb()));
     DEFINE_STATIC_LOCAL(const String, uncheckedCheckBoxAction, (AXUncheckedCheckBoxActionVerb()));
     DEFINE_STATIC_LOCAL(const String, linkAction, (AXLinkActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, menuListAction, (AXMenuListActionVerb()));
-    DEFINE_STATIC_LOCAL(const String, menuListPopupAction, (AXMenuListPopupActionVerb()));
     DEFINE_STATIC_LOCAL(const String, noAction, ());
 
     switch (roleValue()) {
-    case ButtonRole:
-        return buttonAction;
-    case TextFieldRole:
-    case TextAreaRole:
-        return textFieldAction;
-    case RadioButtonRole:
-        return radioButtonAction;
-    case CheckBoxRole:
-        return isChecked() ? checkedCheckBoxAction : uncheckedCheckBoxAction;
-    case LinkRole:
-    case WebCoreLinkRole:
-        return linkAction;
-    case PopUpButtonRole:
-        return menuListAction;
-    case MenuListPopupRole:
-        return menuListPopupAction;
-    default:
-        return noAction;
+        case ButtonRole:
+            return buttonAction;
+        case TextFieldRole:
+        case TextAreaRole:
+            return textFieldAction;
+        case RadioButtonRole:
+            return radioButtonAction;
+        case CheckBoxRole:
+            return isChecked() ? checkedCheckBoxAction : uncheckedCheckBoxAction;
+        case LinkRole:
+        case WebCoreLinkRole:
+            return linkAction;
+        default:
+            return noAction;
     }
 }
  
@@ -846,114 +794,6 @@ AccessibilityOrientation AccessibilityObject::orientation() const
 
     // A tie goes to horizontal.
     return AccessibilityOrientationHorizontal;
-}    
-
-typedef HashMap<String, AccessibilityRole, CaseFoldingHash> ARIARoleMap;
-
-struct RoleEntry {
-    String ariaRole;
-    AccessibilityRole webcoreRole;
-};
-
-static ARIARoleMap* createARIARoleMap()
-{
-    const RoleEntry roles[] = {
-        { "alert", ApplicationAlertRole },
-        { "alertdialog", ApplicationAlertDialogRole },
-        { "application", LandmarkApplicationRole },
-        { "article", DocumentArticleRole },
-        { "banner", LandmarkBannerRole },
-        { "button", ButtonRole },
-        { "checkbox", CheckBoxRole },
-        { "complementary", LandmarkComplementaryRole },
-        { "contentinfo", LandmarkContentInfoRole },
-        { "dialog", ApplicationDialogRole },
-        { "directory", DirectoryRole },
-        { "grid", TableRole },
-        { "gridcell", CellRole },
-        { "columnheader", ColumnHeaderRole },
-        { "combobox", ComboBoxRole },
-        { "definition", DefinitionListDefinitionRole },
-        { "document", DocumentRole },
-        { "rowheader", RowHeaderRole },
-        { "group", GroupRole },
-        { "heading", HeadingRole },
-        { "img", ImageRole },
-        { "link", WebCoreLinkRole },
-        { "list", ListRole },        
-        { "listitem", GroupRole },        
-        { "listbox", ListBoxRole },
-        { "log", ApplicationLogRole },
-        // "option" isn't here because it may map to different roles depending on the parent element's role
-        { "main", LandmarkMainRole },
-        { "marquee", ApplicationMarqueeRole },
-        { "math", DocumentMathRole },
-        { "menu", MenuRole },
-        { "menubar", GroupRole },
-        // "menuitem" isn't here because it may map to different roles depending on the parent element's role
-        { "menuitemcheckbox", MenuItemRole },
-        { "menuitemradio", MenuItemRole },
-        { "note", DocumentNoteRole },
-        { "navigation", LandmarkNavigationRole },
-        { "option", ListBoxOptionRole },
-        { "presentation", IgnoredRole },
-        { "progressbar", ProgressIndicatorRole },
-        { "radio", RadioButtonRole },
-        { "radiogroup", RadioGroupRole },
-        { "region", DocumentRegionRole },
-        { "row", RowRole },
-        { "range", SliderRole },
-        { "scrollbar", ScrollBarRole },
-        { "search", LandmarkSearchRole },
-        { "separator", SplitterRole },
-        { "slider", SliderRole },
-        { "spinbutton", ProgressIndicatorRole },
-        { "status", ApplicationStatusRole },
-        { "tab", TabRole },
-        { "tablist", TabListRole },
-        { "tabpanel", TabPanelRole },
-        { "text", StaticTextRole },
-        { "textbox", TextAreaRole },
-        { "timer", ApplicationTimerRole },
-        { "toolbar", ToolbarRole },
-        { "tooltip", UserInterfaceTooltipRole },
-        { "tree", TreeRole },
-        { "treegrid", TreeGridRole },
-        { "treeitem", TreeItemRole }
-    };
-    ARIARoleMap* roleMap = new ARIARoleMap;
-    
-    const unsigned numRoles = sizeof(roles) / sizeof(roles[0]);
-    for (unsigned i = 0; i < numRoles; ++i)
-        roleMap->set(roles[i].ariaRole, roles[i].webcoreRole);
-    return roleMap;
 }
-
-AccessibilityRole AccessibilityObject::ariaRoleToWebCoreRole(const String& value)
-{
-    ASSERT(!value.isEmpty());
-    static const ARIARoleMap* roleMap = createARIARoleMap();
-    return roleMap->get(value);
-}
-
-bool AccessibilityObject::isInsideARIALiveRegion() const
-{
-    if (supportsARIALiveRegion())
-        return true;
-    
-    for (AccessibilityObject* axParent = parentObject(); axParent; axParent = axParent->parentObject()) {
-        if (axParent->supportsARIALiveRegion())
-            return true;
-    }
-    
-    return false;
-}
-
-bool AccessibilityObject::supportsARIALiveRegion() const
-{
-    const AtomicString& liveRegion = ariaLiveRegionStatus();
-    return equalIgnoringCase(liveRegion, "polite") || equalIgnoringCase(liveRegion, "assertive");
-}
-
     
 } // namespace WebCore

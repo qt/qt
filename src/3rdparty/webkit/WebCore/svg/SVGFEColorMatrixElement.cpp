@@ -2,6 +2,8 @@
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -32,8 +34,9 @@ namespace WebCore {
 
 SVGFEColorMatrixElement::SVGFEColorMatrixElement(const QualifiedName& tagName, Document* doc)
     : SVGFilterPrimitiveStandardAttributes(tagName, doc)
-    , m_type(FECOLORMATRIX_TYPE_UNKNOWN)
-    , m_values(SVGNumberList::create(SVGNames::valuesAttr))
+    , m_in1(this, SVGNames::inAttr)
+    , m_type(this, SVGNames::typeAttr, FECOLORMATRIX_TYPE_UNKNOWN)
+    , m_values(this, SVGNames::valuesAttr, SVGNumberList::create(SVGNames::valuesAttr))
 {
 }
 
@@ -60,25 +63,6 @@ void SVGFEColorMatrixElement::parseMappedAttribute(MappedAttribute* attr)
         valuesBaseValue()->parse(value);
     else
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
-}
-
-void SVGFEColorMatrixElement::synchronizeProperty(const QualifiedName& attrName)
-{
-    SVGFilterPrimitiveStandardAttributes::synchronizeProperty(attrName);
-
-    if (attrName == anyQName()) {
-        synchronizeType();
-        synchronizeIn1();
-        synchronizeValues();
-        return;
-    }
-
-    if (attrName == SVGNames::typeAttr)
-        synchronizeType();
-    else if (attrName == SVGNames::inAttr)
-        synchronizeIn1();
-    else if (attrName == SVGNames::valuesAttr)
-        synchronizeValues();
 }
 
 bool SVGFEColorMatrixElement::build(SVGResourceFilter* filterResource)

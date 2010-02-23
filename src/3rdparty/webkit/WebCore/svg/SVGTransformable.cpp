@@ -26,7 +26,7 @@
 #if ENABLE(SVG)
 #include "SVGTransformable.h"
 
-#include "AffineTransform.h"
+#include "TransformationMatrix.h"
 #include "FloatConversion.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
@@ -43,15 +43,15 @@ SVGTransformable::~SVGTransformable()
 {
 }
 
-AffineTransform SVGTransformable::getCTM(const SVGElement* element) const
+TransformationMatrix SVGTransformable::getCTM(const SVGElement* element) const
 {
-    AffineTransform ctm = SVGLocatable::getCTM(element);
+    TransformationMatrix ctm = SVGLocatable::getCTM(element);
     return animatedLocalTransform() * ctm;
 }
 
-AffineTransform SVGTransformable::getScreenCTM(const SVGElement* element) const
+TransformationMatrix SVGTransformable::getScreenCTM(const SVGElement* element) const
 {
-    AffineTransform ctm = SVGLocatable::getScreenCTM(element);
+    TransformationMatrix ctm = SVGLocatable::getScreenCTM(element);
     return animatedLocalTransform() * ctm;
 }
 
@@ -147,7 +147,7 @@ bool SVGTransformable::parseTransformValue(unsigned type, const UChar*& ptr, con
                   t.setRotate(values[0], values[1], values[2]);
             break;
         case SVGTransform::SVG_TRANSFORM_MATRIX:
-            t.setMatrix(AffineTransform(values[0], values[1], values[2], values[3], values[4], values[5]));
+            t.setMatrix(TransformationMatrix(values[0], values[1], values[2], values[3], values[4], values[5]));
             break;
     }
 
@@ -190,23 +190,18 @@ static inline bool parseAndSkipType(const UChar*& currTransform, const UChar* en
 bool SVGTransformable::parseTransformAttribute(SVGTransformList* list, const AtomicString& transform)
 {
     const UChar* start = transform.characters();
-    return parseTransformAttribute(list, start, start + transform.length());
+    const UChar* end = start + transform.length();
+    return parseTransformAttribute(list, start, end);
 }
 
-bool SVGTransformable::parseTransformAttribute(SVGTransformList* list, const UChar*& currTransform, const UChar* end, TransformParsingMode mode)
+bool SVGTransformable::parseTransformAttribute(SVGTransformList* list, const UChar*& currTransform, const UChar* end)
 {
-    ExceptionCode ec = 0;
-    if (mode == ClearList) {
-        list->clear(ec);
-        ASSERT(!ec);
-    }
-
     bool delimParsed = false;
     while (currTransform < end) {
         delimParsed = false;
         unsigned short type = SVGTransform::SVG_TRANSFORM_UNKNOWN;
         skipOptionalSpaces(currTransform, end);
-
+        
         if (!parseAndSkipType(currTransform, end, type))
             return false;
 
@@ -214,11 +209,12 @@ bool SVGTransformable::parseTransformAttribute(SVGTransformList* list, const UCh
         if (!parseTransformValue(type, currTransform, end, t))
             return false;
 
+        ExceptionCode ec = 0;
         list->appendItem(t, ec);
         skipOptionalSpaces(currTransform, end);
         if (currTransform < end && *currTransform == ',') {
             delimParsed = true;
-            ++currTransform;
+            currTransform++;
         }
         skipOptionalSpaces(currTransform, end);
     }

@@ -28,18 +28,17 @@
 
 #ifndef SubresourceLoader_h
 #define SubresourceLoader_h
-
-#include "FrameLoaderTypes.h"
+ 
 #include "ResourceLoader.h"
  
 namespace WebCore {
 
-    class ResourceRequest;
+    struct ResourceRequest;
     class SubresourceLoaderClient;
     
     class SubresourceLoader : public ResourceLoader {
     public:
-        static PassRefPtr<SubresourceLoader> create(Frame*, SubresourceLoaderClient*, const ResourceRequest&, SecurityCheckPolicy = DoSecurityCheck, bool sendResourceLoadCallbacks = true, bool shouldContentSniff = true);
+        static PassRefPtr<SubresourceLoader> create(Frame*, SubresourceLoaderClient*, const ResourceRequest&, bool skipCanLoadCheck = false, bool sendResourceLoadCallbacks = true, bool shouldContentSniff = true);
 
         void clearClient() { m_client = 0; }
 

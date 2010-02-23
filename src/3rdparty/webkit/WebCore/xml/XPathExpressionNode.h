@@ -39,7 +39,7 @@ namespace WebCore {
 
     namespace XPath {
         
-        struct EvaluationContext : FastAllocBase {
+        struct EvaluationContext {
             RefPtr<Node> node;
             unsigned long size;
             unsigned long position;

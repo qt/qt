@@ -29,6 +29,7 @@
 module xml {
 
     interface [
+        GenerateConstructor,
         NoStaticTables
     ] XMLHttpRequestException {
 

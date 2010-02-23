@@ -26,7 +26,7 @@
 #ifndef RUNTIME_ARRAY_H_
 #define RUNTIME_ARRAY_H_
 
-#include "Bridge.h"
+#include "runtime.h"
 #include <runtime/JSGlobalObject.h>
 
 namespace JSC {
@@ -34,8 +34,7 @@ namespace JSC {
 class RuntimeArray : public JSObject {
 public:
     RuntimeArray(ExecState*, Bindings::Array*);
-
-    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
+    
     virtual bool getOwnPropertySlot(ExecState *, const Identifier&, PropertySlot&);
     virtual bool getOwnPropertySlot(ExecState *, unsigned, PropertySlot&);
     virtual bool getOwnPropertyDescriptor(ExecState *, const Identifier&, PropertyDescriptor&);
@@ -60,7 +59,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
-        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
+        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
     }
 
 private:

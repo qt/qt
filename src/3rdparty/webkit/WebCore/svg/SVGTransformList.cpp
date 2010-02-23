@@ -2,6 +2,8 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -21,11 +23,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGTransformList.h"
-
-#include "AffineTransform.h"
-#include "SVGSVGElement.h"
+#include "TransformationMatrix.h"
 #include "SVGTransform.h"
+#include "SVGSVGElement.h"
+#include "SVGTransformList.h"
 
 using namespace WebCore;
 
@@ -38,7 +39,7 @@ SVGTransformList::~SVGTransformList()
 {
 }
 
-SVGTransform SVGTransformList::createSVGTransformFromMatrix(const AffineTransform& matrix) const
+SVGTransform SVGTransformList::createSVGTransformFromMatrix(const TransformationMatrix& matrix) const
 {
     return SVGSVGElement::createSVGTransformFromMatrix(matrix);
 }
@@ -55,7 +56,7 @@ SVGTransform SVGTransformList::concatenate() const
     if (!length)
         return SVGTransform();
         
-    AffineTransform matrix;
+    TransformationMatrix matrix;
     ExceptionCode ec = 0;
     for (unsigned int i = 0; i < length; i++)
         matrix = getItem(i, ec).matrix() * matrix;
@@ -68,7 +69,7 @@ String SVGTransformList::valueAsString() const
     // TODO: We may want to build a real transform string, instead of concatting to a matrix(...).
     SVGTransform transform = concatenate();
     if (transform.type() == SVGTransform::SVG_TRANSFORM_MATRIX) {
-        AffineTransform matrix = transform.matrix();
+        TransformationMatrix matrix = transform.matrix();
         return String::format("matrix(%f %f %f %f %f %f)", matrix.a(), matrix.b(), matrix.c(), matrix.d(), matrix.e(), matrix.f());
     }
 

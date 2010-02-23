@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -32,10 +33,10 @@ namespace WebCore {
 
 class SVGTransformList;
 
-class JSSVGTransformList : public DOMObjectWithGlobalPointer {
-    typedef DOMObjectWithGlobalPointer Base;
+class JSSVGTransformList : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGTransformList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGTransformList>);
+    JSSVGTransformList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGTransformList>, SVGElement* context);
     virtual ~JSSVGTransformList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -45,10 +46,18 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
+
+    // Custom functions
+    JSC::JSValue clear(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue initialize(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue getItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue insertItemBefore(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue replaceItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue appendItem(JSC::ExecState*, const JSC::ArgList&);
     SVGTransformList* impl() const { return m_impl.get(); }
 
 private:
@@ -70,7 +79,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSSVGTransformListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -91,7 +100,6 @@ JSC::JSValue JSC_HOST_CALL jsSVGTransformListPrototypeFunctionConsolidate(JSC::E
 // Attributes
 
 JSC::JSValue jsSVGTransformListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValue jsSVGTransformListConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

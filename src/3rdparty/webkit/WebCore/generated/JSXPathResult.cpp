@@ -99,7 +99,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -194,8 +194,7 @@ JSValue jsXPathResultResultType(ExecState* exec, const Identifier&, const Proper
     JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->resultType());
-    return result;
+    return jsNumber(exec, imp->resultType());
 }
 
 JSValue jsXPathResultNumberValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -243,8 +242,7 @@ JSValue jsXPathResultInvalidIteratorState(ExecState* exec, const Identifier&, co
     JSXPathResult* castedThis = static_cast<JSXPathResult*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XPathResult* imp = static_cast<XPathResult*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->invalidIteratorState());
-    return result;
+    return jsBoolean(imp->invalidIteratorState());
 }
 
 JSValue jsXPathResultSnapshotLength(ExecState* exec, const Identifier&, const PropertySlot& slot)

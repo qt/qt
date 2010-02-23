@@ -47,7 +47,7 @@ namespace WebCore {
     class Range;
     class SelectionController;
     
-    class DragController : public Noncopyable {
+    class DragController {
     public:
         DragController(Page*, DragClient*);
         ~DragController();

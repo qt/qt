@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -144,8 +144,7 @@ JSValue jsCSSFontFaceRuleStyle(ExecState* exec, const Identifier&, const Propert
     JSCSSFontFaceRule* castedThis = static_cast<JSCSSFontFaceRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSFontFaceRule* imp = static_cast<CSSFontFaceRule*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsCSSFontFaceRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

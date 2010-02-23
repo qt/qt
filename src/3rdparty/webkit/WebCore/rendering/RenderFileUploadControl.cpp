@@ -21,7 +21,6 @@
 #include "config.h"
 #include "RenderFileUploadControl.h"
 
-#include "Chrome.h"
 #include "FileList.h"
 #include "Frame.h"
 #include "FrameView.h"
@@ -64,13 +63,8 @@ private:
 RenderFileUploadControl::RenderFileUploadControl(HTMLInputElement* input)
     : RenderBlock(input)
     , m_button(0)
+    , m_fileChooser(FileChooser::create(this, input->value()))
 {
-    FileList* list = input->files();
-    Vector<String> filenames;
-    unsigned length = list ? list->length() : 0;
-    for (unsigned i = 0; i < length; ++i)
-        filenames.append(list->item(i)->path());
-    m_fileChooser = FileChooser::create(this, filenames);
 }
 
 RenderFileUploadControl::~RenderFileUploadControl()
@@ -109,32 +103,15 @@ bool RenderFileUploadControl::allowsMultipleFiles()
     return !input->getAttribute(multipleAttr).isNull();
 }
 
-String RenderFileUploadControl::acceptTypes()
-{
-    return static_cast<HTMLInputElement*>(node())->accept();
-}
-
-void RenderFileUploadControl::iconForFiles(const Vector<String>& filenames)
-{
-    if (Chrome* chromePointer = chrome())
-        chromePointer->iconForFiles(filenames, m_fileChooser);
-}
-
 void RenderFileUploadControl::click()
-{
-    if (Chrome* chromePointer = chrome())
-        chromePointer->runOpenPanel(node()->document()->frame(), m_fileChooser);
-}
-
-Chrome* RenderFileUploadControl::chrome() const
 {
     Frame* frame = node()->document()->frame();
     if (!frame)
-        return 0;
+        return;
     Page* page = frame->page();
     if (!page)
-        return 0;
-    return page->chrome();
+        return;
+    page->chrome()->runOpenPanel(frame, m_fileChooser);
 }
 
 void RenderFileUploadControl::updateFromElement()
@@ -207,7 +184,7 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, int tx, int ty)
     }
 
     if (paintInfo.phase == PaintPhaseForeground) {
-        const String& displayedFilename = fileTextValue();
+        const String& displayedFilename = m_fileChooser->basenameForWidth(style()->font(), maxFilenameWidth());        
         unsigned length = displayedFilename.length();
         const UChar* string = displayedFilename.characters();
         TextRun textRun(string, length, false, 0, 0, style()->direction() == RTL, style()->unicodeBidi() == Override);
@@ -227,7 +204,7 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, int tx, int ty)
             + buttonRenderer->marginTop() + buttonRenderer->borderTop() + buttonRenderer->paddingTop()
             + buttonRenderer->baselinePosition(true, false);
 
-        paintInfo.context->setFillColor(style()->color(), style()->colorSpace());
+        paintInfo.context->setFillColor(style()->color());
         
         // Draw the filename
         paintInfo.context->drawBidiText(style()->font(), textRun, IntPoint(textX, textY));
@@ -307,7 +284,7 @@ String RenderFileUploadControl::buttonValue()
     return m_button->value();
 }
 
-String RenderFileUploadControl::fileTextValue() const
+String RenderFileUploadControl::fileTextValue()
 {
     return m_fileChooser->basenameForWidth(style()->font(), maxFilenameWidth());
 }

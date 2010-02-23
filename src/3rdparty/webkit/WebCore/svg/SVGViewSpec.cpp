@@ -35,6 +35,8 @@ SVGViewSpec::SVGViewSpec(const SVGSVGElement* contextElement)
     : SVGFitToViewBox()
     , SVGZoomAndPan()
     , m_contextElement(contextElement)
+    , m_viewBox(this, SVGNames::viewBoxAttr)
+    , m_preserveAspectRatio(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create())
     , m_transform(SVGTransformList::create(SVGNames::transformAttr))
 {
 }
@@ -60,7 +62,9 @@ void SVGViewSpec::setViewBoxString(const String& viewBox)
 
 void SVGViewSpec::setPreserveAspectRatioString(const String& preserve)
 {
-    SVGPreserveAspectRatio::parsePreserveAspectRatio(this, preserve);
+    const UChar* c = preserve.characters();
+    const UChar* end = c + preserve.length();
+    preserveAspectRatioBaseValue()->parsePreserveAspectRatio(c, end);
 }
 
 void SVGViewSpec::setViewTargetString(const String& viewTargetString)
@@ -137,9 +141,7 @@ bool SVGViewSpec::parseViewSpec(const String& viewSpec)
             if (currViewSpec >= end || *currViewSpec != '(')
                 return false;
             currViewSpec++;
-            bool result = false; 
-            setPreserveAspectRatioBaseValue(SVGPreserveAspectRatio::parsePreserveAspectRatio(currViewSpec, end, false, result));
-            if (!result)
+            if (!preserveAspectRatioBaseValue()->parsePreserveAspectRatio(currViewSpec, end, false))
                 return false;
             if (currViewSpec >= end || *currViewSpec != ')')
                 return false;
@@ -150,7 +152,7 @@ bool SVGViewSpec::parseViewSpec(const String& viewSpec)
             if (currViewSpec >= end || *currViewSpec != '(')
                 return false;
             currViewSpec++;
-            SVGTransformable::parseTransformAttribute(m_transform.get(), currViewSpec, end, SVGTransformable::DoNotClearList);
+            SVGTransformable::parseTransformAttribute(m_transform.get(), currViewSpec, end);
             if (currViewSpec >= end || *currViewSpec != ')')
                 return false;
             currViewSpec++;

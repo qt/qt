@@ -196,6 +196,13 @@ void TimerBase::stop()
     ASSERT(!inHeap());
 }
 
+bool TimerBase::isActive() const
+{
+    ASSERT(m_thread == currentThread());
+
+    return m_nextFireTime;
+}
+
 double TimerBase::nextFireInterval() const
 {
     ASSERT(isActive());

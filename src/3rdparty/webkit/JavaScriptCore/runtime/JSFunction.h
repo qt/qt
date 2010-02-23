@@ -36,7 +36,7 @@ namespace JSC {
 
     class JSFunction : public InternalFunction {
         friend class JIT;
-        friend class JSGlobalData;
+        friend struct VPtrSet;
 
         typedef InternalFunction Base;
 
@@ -61,7 +61,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype) 
         { 
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags)); 
         }
 
         NativeFunction nativeFunction()
@@ -82,7 +82,6 @@ namespace JSC {
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
         virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
 

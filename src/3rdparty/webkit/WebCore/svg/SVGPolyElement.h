@@ -46,14 +46,17 @@ namespace WebCore {
 
         virtual void parseMappedAttribute(MappedAttribute*); 
         virtual void svgAttributeChanged(const QualifiedName&);
-        virtual void synchronizeProperty(const QualifiedName&);
 
         virtual bool rendererIsNeeded(RenderStyle* style) { return StyledElement::rendererIsNeeded(style); }
         virtual bool supportsMarkers() const { return true; }
 
+        virtual void updateAnimatedSVGAttribute(const String&) const;
+
     private:
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGPolyElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGPolyElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
 
         mutable RefPtr<SVGPointList> m_points;
     };

@@ -3,7 +3,6 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.
- * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -40,9 +39,6 @@ class HTMLOptionElement : public HTMLFormControlElement, public OptionElement {
 public:
     HTMLOptionElement(const QualifiedName&, Document*, HTMLFormElement* = 0);
 
-    static PassRefPtr<HTMLOptionElement> createForJSConstructor(Document*, const String& data, const String& value,
-       bool defaultSelected, bool selected, ExceptionCode&);
-
     virtual HTMLTagStatus endTagRequirement() const { return TagStatusOptional; }
     virtual int tagPriority() const { return 2; }
     virtual bool checkDTD(const Node* newChild);
@@ -52,7 +48,7 @@ public:
     virtual void attach();
     virtual void detach();
     virtual void setRenderStyle(PassRefPtr<RenderStyle>);
-
+    
     virtual const AtomicString& formControlType() const;
 
     virtual String text() const;
@@ -80,12 +76,11 @@ public:
 
     virtual String textIndentedToRespectGroupLabel() const;
 
-    bool ownElementDisabled() const { return HTMLFormControlElement::disabled(); }
     virtual bool disabled() const;
-
+    
     virtual void insertedIntoTree(bool);
     virtual void accessKeyAction(bool);
-
+    
 private:
     virtual RenderStyle* nonRendererRenderStyle() const;
 

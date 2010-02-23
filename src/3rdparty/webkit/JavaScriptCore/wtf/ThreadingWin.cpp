@@ -87,10 +87,10 @@
 #include "Threading.h"
 
 #include "MainThread.h"
-#if !USE(PTHREADS) && OS(WINDOWS)
+#if !USE(PTHREADS) && PLATFORM(WIN_OS)
 #include "ThreadSpecific.h"
 #endif
-#if !OS(WINCE)
+#if !PLATFORM(WINCE)
 #include <process.h>
 #endif
 #if HAVE(ERRNO_H)
@@ -118,7 +118,7 @@ typedef struct tagTHREADNAME_INFO {
 } THREADNAME_INFO;
 #pragma pack(pop)
 
-void initializeCurrentThreadInternal(const char* szThreadName)
+void setThreadNameInternal(const char* szThreadName)
 {
     THREADNAME_INFO info;
     info.dwType = 0x1000;
@@ -161,7 +161,7 @@ void initializeThreading()
         initializeRandomNumberGenerator();
         initializeMainThread();
         mainThreadIdentifier = currentThread();
-        initializeCurrentThreadInternal("Main Thread");
+        setThreadNameInternal("Main Thread");
     }
 }
 
@@ -205,7 +205,7 @@ static unsigned __stdcall wtfThreadEntryPoint(void* param)
 
     void* result = invocation.function(invocation.data);
 
-#if !USE(PTHREADS) && OS(WINDOWS)
+#if !USE(PTHREADS) && PLATFORM(WIN_OS)
     // Do the TLS cleanup.
     ThreadSpecificThreadExit();
 #endif
@@ -218,7 +218,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     unsigned threadIdentifier = 0;
     ThreadIdentifier threadID = 0;
     ThreadFunctionInvocation* invocation = new ThreadFunctionInvocation(entryPoint, data);
-#if OS(WINCE)
+#if PLATFORM(WINCE)
     // This is safe on WINCE, since CRT is in the core and innately multithreaded.
     // On desktop Windows, need to use _beginthreadex (not available on WinCE) if using any CRT functions
     HANDLE threadHandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)wtfThreadEntryPoint, invocation, 0, (LPDWORD)&threadIdentifier);
@@ -226,7 +226,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction entryPoint, void* data, con
     HANDLE threadHandle = reinterpret_cast<HANDLE>(_beginthreadex(0, 0, wtfThreadEntryPoint, invocation, 0, &threadIdentifier));
 #endif
     if (!threadHandle) {
-#if OS(WINCE)
+#if PLATFORM(WINCE)
         LOG_ERROR("Failed to create thread at entry point %p with data %p: %ld", entryPoint, data, ::GetLastError());
 #elif defined(NO_ERRNO)
         LOG_ERROR("Failed to create thread at entry point %p with data %p.", entryPoint, data);

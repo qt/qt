@@ -40,18 +40,15 @@ Icon::~Icon()
 {
 }
 
-// FIXME: Move the code to ChromeClient::iconForFiles().
-PassRefPtr<Icon> Icon::createIconForFiles(const Vector<String>& filenames)
+PassRefPtr<Icon> Icon::createIconForFile(const String& filename)
 {
-    if (filenames.isEmpty())
-        return 0;
+    RefPtr<Icon> i = adoptRef(new Icon);
+    i->m_icon = QIcon(filename);
+    return i.release();
+}
 
-    if (filenames.size() == 1) {
-        RefPtr<Icon> i = adoptRef(new Icon);
-        i->m_icon = QIcon(filenames[0]);
-        return i.release();
-    }
-
+PassRefPtr<Icon> Icon::createIconForFiles(const Vector<String>&)
+{
     //FIXME: Implement this
     return 0;
 }

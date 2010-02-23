@@ -24,7 +24,6 @@
 #include "JSDOMWindowBase.h"
 
 #include "CString.h"
-#include "Chrome.h"
 #include "Console.h"
 #include "DOMWindow.h"
 #include "Frame.h"
@@ -41,14 +40,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-const ClassInfo JSDOMWindowBase::s_info = { "Window", &JSDOMGlobalObject::s_info, 0, 0 };
-
-JSDOMWindowBase::JSDOMWindowBaseData::JSDOMWindowBaseData(PassRefPtr<DOMWindow> window, JSDOMWindowShell* shell)
-    : JSDOMGlobalObjectData(shell->world(), destroyJSDOMWindowBaseData)
-    , impl(window)
-    , shell(shell)
-{
-}
+const ClassInfo JSDOMWindowBase::s_info = { "Window", 0, 0, 0 };
 
 JSDOMWindowBase::JSDOMWindowBase(NonNullPassRefPtr<Structure> structure, PassRefPtr<DOMWindow> window, JSDOMWindowShell* shell)
     : JSDOMGlobalObject(structure, new JSDOMWindowBaseData(window, shell), shell)
@@ -61,10 +53,11 @@ JSDOMWindowBase::JSDOMWindowBase(NonNullPassRefPtr<Structure> structure, PassRef
     addStaticGlobals(staticGlobals, sizeof(staticGlobals) / sizeof(GlobalPropertyInfo));
 }
 
-void JSDOMWindowBase::updateDocument()
+void JSDOMWindowBase::updateDocument(DOMWrapperWorld* world)
 {
     ASSERT(d()->impl->document());
     ExecState* exec = globalExec();
+    EnterDOMWrapperWorld worldEntry(exec, world);
     symbolTablePutWithAttributes(Identifier(exec, "document"), toJS(exec, this, d()->impl->document()), DontDelete | ReadOnly);
 }
 
@@ -76,7 +69,7 @@ ScriptExecutionContext* JSDOMWindowBase::scriptExecutionContext() const
 String JSDOMWindowBase::crossDomainAccessErrorMessage(const JSGlobalObject* other) const
 {
     KURL originURL = asJSDOMWindow(other)->impl()->url();
-    KURL targetURL = d()->shell->window()->impl()->url();
+    KURL targetURL = impl()->frame()->document()->url();
     if (originURL.isNull() || targetURL.isNull())
         return String();
 
@@ -171,7 +164,7 @@ void JSDOMWindowBase::destroyJSDOMWindowBaseData(void* jsDOMWindowBaseData)
     delete static_cast<JSDOMWindowBaseData*>(jsDOMWindowBaseData);
 }
 
-// JSDOMGlobalObject* is ignored, accessing a window in any context will
+// JSDOMGlobalObject* is ignored, accesing a window in any context will
 // use that DOMWindow's prototype chain.
 JSValue toJS(ExecState* exec, JSDOMGlobalObject*, DOMWindow* domWindow)
 {

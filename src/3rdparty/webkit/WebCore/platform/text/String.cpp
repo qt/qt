@@ -37,8 +37,6 @@
 #include <wtf/unicode/UTF8.h>
 
 #if USE(JSC)
-#include <runtime/Identifier.h>
-
 using JSC::Identifier;
 using JSC::UString;
 #endif
@@ -83,9 +81,6 @@ String::String(const char* str, unsigned length)
 
 void String::append(const String& str)
 {
-    if (str.isEmpty())
-       return;
-
     // FIXME: This is extremely inefficient. So much so that we might want to take this
     // out of String's API. We can make it better by optimizing the case where exactly
     // one String is pointing at this StringImpl, but even then it's going to require a
@@ -354,7 +349,7 @@ String String::format(const char *format, ...)
 
     return buffer;
 
-#elif OS(WINCE)
+#elif PLATFORM(WINCE)
     va_list args;
     va_start(args, format);
 
@@ -446,7 +441,7 @@ String String::number(unsigned long n)
 
 String String::number(long long n)
 {
-#if OS(WINDOWS) && !PLATFORM(QT)
+#if PLATFORM(WIN_OS) && !PLATFORM(QT)
     return String::format("%I64i", n);
 #else
     return String::format("%lli", n);
@@ -455,7 +450,7 @@ String String::number(long long n)
 
 String String::number(unsigned long long n)
 {
-#if OS(WINDOWS) && !PLATFORM(QT)
+#if PLATFORM(WIN_OS) && !PLATFORM(QT)
     return String::format("%I64u", n);
 #else
     return String::format("%llu", n);

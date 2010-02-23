@@ -19,8 +19,8 @@
  * Boston, MA 02110-1301, USA.
  *
  */
-#ifndef RenderThemeQt_h
-#define RenderThemeQt_h
+#ifndef RenderThemeQt_H
+#define RenderThemeQt_H
 
 #include "RenderTheme.h"
 
@@ -102,10 +102,7 @@ protected:
     virtual void adjustMenuListButtonStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
 
     virtual bool paintSliderTrack(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
-    virtual void adjustSliderTrackStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
-
     virtual bool paintSliderThumb(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
-    virtual void adjustSliderThumbStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
 
     virtual bool paintSearchField(RenderObject*, const RenderObject::PaintInfo&, const IntRect&);
     virtual void adjustSearchFieldStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
@@ -138,12 +135,10 @@ private:
 private:
     bool supportsFocus(ControlPart) const;
 
-    ControlPart initializeCommonQStyleOptions(QStyleOption&, RenderObject*) const;
+    ControlPart applyTheme(QStyleOption&, RenderObject*) const;
 
     void setButtonPadding(RenderStyle*) const;
     void setPopupPadding(RenderStyle*) const;
-
-    void setPaletteFromPageClientIfExists(QPalette&) const;
 
     QStyle* fallbackStyle() const;
 
@@ -187,4 +182,4 @@ private:
 
 }
 
-#endif // RenderThemeQt_h
+#endif

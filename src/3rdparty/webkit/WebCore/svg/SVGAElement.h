@@ -46,7 +46,6 @@ namespace WebCore {
 
         virtual void parseMappedAttribute(MappedAttribute*);
         virtual void svgAttributeChanged(const QualifiedName&);
-        virtual void synchronizeProperty(const QualifiedName&);
 
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
 
@@ -60,13 +59,15 @@ namespace WebCore {
         virtual bool childShouldCreateRenderer(Node*) const;
 
     private:
-        DECLARE_ANIMATED_PROPERTY(SVGAElement, SVGNames::targetAttr, String, Target, target)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGAElement, SVGNames::aTagString, SVGNames::targetAttrString, String, Target, target)
 
         // SVGURIReference
-        DECLARE_ANIMATED_PROPERTY(SVGAElement, XLinkNames::hrefAttr, String, Href, href)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGAElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
 
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGAElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGAElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

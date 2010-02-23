@@ -24,7 +24,6 @@
 #define SVGLightSource_h
 
 #if ENABLE(SVG) && ENABLE(FILTERS)
-#include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

@@ -31,22 +31,16 @@ namespace WebCore {
 
     class PointLightSource : public LightSource {
     public:
-        static PassRefPtr<PointLightSource> create(const FloatPoint3D& position)
-        {
-            return adoptRef(new PointLightSource(position));
-        }
+        PointLightSource(const FloatPoint3D& position)
+            : LightSource(LS_POINT)
+            , m_position(position)
+        { }
 
         const FloatPoint3D& position() const { return m_position; }
 
         virtual TextStream& externalRepresentation(TextStream&) const;
 
     private:
-        PointLightSource(const FloatPoint3D& position)
-            : LightSource(LS_POINT)
-            , m_position(position)
-        {
-        }
-
         FloatPoint3D m_position;
     };
 

@@ -35,8 +35,7 @@ module threads {
         ExtendsDOMGlobalObject,
         IsWorkerContext,
         GenerateNativeConverter,
-        NoStaticTables,
-        OmitConstructor
+        NoStaticTables
     ] SharedWorkerContext : WorkerContext {
 
         readonly attribute DOMString name;

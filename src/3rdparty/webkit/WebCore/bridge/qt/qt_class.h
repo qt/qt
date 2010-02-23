@@ -20,7 +20,8 @@
 #ifndef BINDINGS_QT_CLASS_H_
 #define BINDINGS_QT_CLASS_H_
 
-#include "Bridge.h"
+#include "runtime.h"
+
 #include "qglobal.h"
 
 QT_BEGIN_NAMESPACE

@@ -43,7 +43,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLMediaElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLMediaElementTableValues[27] =
+static const HashTableValue JSHTMLMediaElementTableValues[25] =
 {
     { "error", DontDelete|ReadOnly, (intptr_t)jsHTMLMediaElementError, (intptr_t)0 },
     { "src", DontDelete, (intptr_t)jsHTMLMediaElementSrc, (intptr_t)setJSHTMLMediaElementSrc },
@@ -68,8 +68,6 @@ static const HashTableValue JSHTMLMediaElementTableValues[27] =
     { "volume", DontDelete, (intptr_t)jsHTMLMediaElementVolume, (intptr_t)setJSHTMLMediaElementVolume },
     { "muted", DontDelete, (intptr_t)jsHTMLMediaElementMuted, (intptr_t)setJSHTMLMediaElementMuted },
     { "webkitPreservesPitch", DontDelete, (intptr_t)jsHTMLMediaElementWebkitPreservesPitch, (intptr_t)setJSHTMLMediaElementWebkitPreservesPitch },
-    { "webkitHasClosedCaptions", DontDelete|ReadOnly, (intptr_t)jsHTMLMediaElementWebkitHasClosedCaptions, (intptr_t)0 },
-    { "webkitClosedCaptionsVisible", DontDelete, (intptr_t)jsHTMLMediaElementWebkitClosedCaptionsVisible, (intptr_t)setJSHTMLMediaElementWebkitClosedCaptionsVisible },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLMediaElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
@@ -78,7 +76,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLMediaElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSHTMLMediaElementTableValues, 0 };
 #else
-    { 69, 63, JSHTMLMediaElementTableValues, 0 };
+    { 68, 63, JSHTMLMediaElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -119,7 +117,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -210,8 +208,7 @@ JSValue jsHTMLMediaElementError(ExecState* exec, const Identifier&, const Proper
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->error()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->error()));
 }
 
 JSValue jsHTMLMediaElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -219,8 +216,7 @@ JSValue jsHTMLMediaElementSrc(ExecState* exec, const Identifier&, const Property
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->src());
-    return result;
+    return jsString(exec, imp->src());
 }
 
 JSValue jsHTMLMediaElementCurrentSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -228,8 +224,7 @@ JSValue jsHTMLMediaElementCurrentSrc(ExecState* exec, const Identifier&, const P
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->currentSrc());
-    return result;
+    return jsString(exec, imp->currentSrc());
 }
 
 JSValue jsHTMLMediaElementNetworkState(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -237,8 +232,7 @@ JSValue jsHTMLMediaElementNetworkState(ExecState* exec, const Identifier&, const
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->networkState());
-    return result;
+    return jsNumber(exec, imp->networkState());
 }
 
 JSValue jsHTMLMediaElementAutobuffer(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -246,8 +240,7 @@ JSValue jsHTMLMediaElementAutobuffer(ExecState* exec, const Identifier&, const P
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->autobuffer());
-    return result;
+    return jsBoolean(imp->autobuffer());
 }
 
 JSValue jsHTMLMediaElementBuffered(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -255,8 +248,7 @@ JSValue jsHTMLMediaElementBuffered(ExecState* exec, const Identifier&, const Pro
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->buffered()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->buffered()));
 }
 
 JSValue jsHTMLMediaElementReadyState(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -264,8 +256,7 @@ JSValue jsHTMLMediaElementReadyState(ExecState* exec, const Identifier&, const P
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->readyState());
-    return result;
+    return jsNumber(exec, imp->readyState());
 }
 
 JSValue jsHTMLMediaElementSeeking(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -273,8 +264,7 @@ JSValue jsHTMLMediaElementSeeking(ExecState* exec, const Identifier&, const Prop
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->seeking());
-    return result;
+    return jsBoolean(imp->seeking());
 }
 
 JSValue jsHTMLMediaElementCurrentTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -282,8 +272,7 @@ JSValue jsHTMLMediaElementCurrentTime(ExecState* exec, const Identifier&, const 
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->currentTime());
-    return result;
+    return jsNumber(exec, imp->currentTime());
 }
 
 JSValue jsHTMLMediaElementStartTime(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -291,8 +280,7 @@ JSValue jsHTMLMediaElementStartTime(ExecState* exec, const Identifier&, const Pr
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->startTime());
-    return result;
+    return jsNumber(exec, imp->startTime());
 }
 
 JSValue jsHTMLMediaElementDuration(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -300,8 +288,7 @@ JSValue jsHTMLMediaElementDuration(ExecState* exec, const Identifier&, const Pro
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->duration());
-    return result;
+    return jsNumber(exec, imp->duration());
 }
 
 JSValue jsHTMLMediaElementPaused(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -309,8 +296,7 @@ JSValue jsHTMLMediaElementPaused(ExecState* exec, const Identifier&, const Prope
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->paused());
-    return result;
+    return jsBoolean(imp->paused());
 }
 
 JSValue jsHTMLMediaElementDefaultPlaybackRate(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -318,8 +304,7 @@ JSValue jsHTMLMediaElementDefaultPlaybackRate(ExecState* exec, const Identifier&
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->defaultPlaybackRate());
-    return result;
+    return jsNumber(exec, imp->defaultPlaybackRate());
 }
 
 JSValue jsHTMLMediaElementPlaybackRate(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -327,8 +312,7 @@ JSValue jsHTMLMediaElementPlaybackRate(ExecState* exec, const Identifier&, const
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->playbackRate());
-    return result;
+    return jsNumber(exec, imp->playbackRate());
 }
 
 JSValue jsHTMLMediaElementPlayed(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -336,8 +320,7 @@ JSValue jsHTMLMediaElementPlayed(ExecState* exec, const Identifier&, const Prope
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->played()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->played()));
 }
 
 JSValue jsHTMLMediaElementSeekable(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -345,8 +328,7 @@ JSValue jsHTMLMediaElementSeekable(ExecState* exec, const Identifier&, const Pro
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->seekable()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->seekable()));
 }
 
 JSValue jsHTMLMediaElementEnded(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -354,8 +336,7 @@ JSValue jsHTMLMediaElementEnded(ExecState* exec, const Identifier&, const Proper
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->ended());
-    return result;
+    return jsBoolean(imp->ended());
 }
 
 JSValue jsHTMLMediaElementAutoplay(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -363,8 +344,7 @@ JSValue jsHTMLMediaElementAutoplay(ExecState* exec, const Identifier&, const Pro
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->autoplay());
-    return result;
+    return jsBoolean(imp->autoplay());
 }
 
 JSValue jsHTMLMediaElementLoop(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -372,8 +352,7 @@ JSValue jsHTMLMediaElementLoop(ExecState* exec, const Identifier&, const Propert
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->loop());
-    return result;
+    return jsBoolean(imp->loop());
 }
 
 JSValue jsHTMLMediaElementControls(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -381,8 +360,7 @@ JSValue jsHTMLMediaElementControls(ExecState* exec, const Identifier&, const Pro
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->controls());
-    return result;
+    return jsBoolean(imp->controls());
 }
 
 JSValue jsHTMLMediaElementVolume(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -390,8 +368,7 @@ JSValue jsHTMLMediaElementVolume(ExecState* exec, const Identifier&, const Prope
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->volume());
-    return result;
+    return jsNumber(exec, imp->volume());
 }
 
 JSValue jsHTMLMediaElementMuted(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -399,8 +376,7 @@ JSValue jsHTMLMediaElementMuted(ExecState* exec, const Identifier&, const Proper
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->muted());
-    return result;
+    return jsBoolean(imp->muted());
 }
 
 JSValue jsHTMLMediaElementWebkitPreservesPitch(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -408,26 +384,7 @@ JSValue jsHTMLMediaElementWebkitPreservesPitch(ExecState* exec, const Identifier
     JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->webkitPreservesPitch());
-    return result;
-}
-
-JSValue jsHTMLMediaElementWebkitHasClosedCaptions(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->webkitHasClosedCaptions());
-    return result;
-}
-
-JSValue jsHTMLMediaElementWebkitClosedCaptionsVisible(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSHTMLMediaElement* castedThis = static_cast<JSHTMLMediaElement*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->webkitClosedCaptionsVisible());
-    return result;
+    return jsBoolean(imp->webkitPreservesPitch());
 }
 
 JSValue jsHTMLMediaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -442,22 +399,19 @@ void JSHTMLMediaElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLMediaElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setSrc(value.toString(exec));
 }
 
 void setJSHTMLMediaElementAutobuffer(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setAutobuffer(value.toBoolean(exec));
 }
 
 void setJSHTMLMediaElementCurrentTime(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setCurrentTime(value.toFloat(exec), ec);
     setDOMException(exec, ec);
@@ -465,43 +419,37 @@ void setJSHTMLMediaElementCurrentTime(ExecState* exec, JSObject* thisObject, JSV
 
 void setJSHTMLMediaElementDefaultPlaybackRate(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setDefaultPlaybackRate(value.toFloat(exec));
 }
 
 void setJSHTMLMediaElementPlaybackRate(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setPlaybackRate(value.toFloat(exec));
 }
 
 void setJSHTMLMediaElementAutoplay(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setAutoplay(value.toBoolean(exec));
 }
 
 void setJSHTMLMediaElementLoop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setLoop(value.toBoolean(exec));
 }
 
 void setJSHTMLMediaElementControls(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setControls(value.toBoolean(exec));
 }
 
 void setJSHTMLMediaElementVolume(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setVolume(value.toFloat(exec), ec);
     setDOMException(exec, ec);
@@ -509,23 +457,14 @@ void setJSHTMLMediaElementVolume(ExecState* exec, JSObject* thisObject, JSValue 
 
 void setJSHTMLMediaElementMuted(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setMuted(value.toBoolean(exec));
 }
 
 void setJSHTMLMediaElementWebkitPreservesPitch(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
+    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(static_cast<JSHTMLMediaElement*>(thisObject)->impl());
     imp->setWebkitPreservesPitch(value.toBoolean(exec));
-}
-
-void setJSHTMLMediaElementWebkitClosedCaptionsVisible(ExecState* exec, JSObject* thisObject, JSValue value)
-{
-    JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(thisObject);
-    HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
-    imp->setWebkitClosedCaptionsVisible(value.toBoolean(exec));
 }
 
 JSValue JSHTMLMediaElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -542,7 +481,7 @@ JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionLoad(ExecState* exec, J
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
 
-    imp->load(processingUserGesture(exec), ec);
+    imp->load(ec);
     setDOMException(exec, ec);
     return jsUndefined();
 }
@@ -569,7 +508,7 @@ JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionPlay(ExecState* exec, J
     JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(asObject(thisValue));
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
 
-    imp->play(processingUserGesture(exec));
+    imp->play();
     return jsUndefined();
 }
 
@@ -581,7 +520,7 @@ JSValue JSC_HOST_CALL jsHTMLMediaElementPrototypeFunctionPause(ExecState* exec, 
     JSHTMLMediaElement* castedThisObj = static_cast<JSHTMLMediaElement*>(asObject(thisValue));
     HTMLMediaElement* imp = static_cast<HTMLMediaElement*>(castedThisObj->impl());
 
-    imp->pause(processingUserGesture(exec));
+    imp->pause();
     return jsUndefined();
 }
 

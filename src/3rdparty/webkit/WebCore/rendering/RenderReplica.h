@@ -46,10 +46,6 @@ public:
     virtual void calcPrefWidths();
     
     virtual void paint(PaintInfo&, int tx, int ty);
-
-private:
-    virtual bool isReplica() const { return true; }
-
 };
 
 } // namespace WebCore

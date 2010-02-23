@@ -29,7 +29,7 @@ namespace WebCore {
         SVGFEDistantLightElement(const QualifiedName&, Document*);
         virtual ~SVGFEDistantLightElement();
 
-        virtual PassRefPtr<LightSource> lightSource() const;
+        virtual LightSource* lightSource() const;
     };
 
 } // namespace WebCore

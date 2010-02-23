@@ -51,6 +51,9 @@ namespace WebCore {
         virtual void absoluteRects(Vector<IntRect>& rects, int tx, int ty);
         virtual void absoluteQuads(Vector<FloatQuad>&);
 
+        // FIXME: This override only exists to match existing LayoutTest results.
+        virtual TransformationMatrix absoluteTransform() const { return TransformationMatrix(); }
+
         virtual FloatRect objectBoundingBox() const;
         virtual FloatRect repaintRectInLocalCoordinates() const;
 

@@ -46,25 +46,12 @@ namespace WebCore {
 
     const int unspecifiedTimeoutInterval = INT_MAX;
 
-    class ResourceRequest;
+    struct ResourceRequest;
     struct CrossThreadResourceRequestData;
 
     // Do not use this type directly.  Use ResourceRequest instead.
-    class ResourceRequestBase : public FastAllocBase {
+    class ResourceRequestBase {
     public:
-        // The type of this ResourceRequest, based on how the resource will be used.
-        enum TargetType {
-            TargetIsMainFrame,
-            TargetIsSubframe,
-            TargetIsSubresource,  // Resource is a generic subresource.  (Generally a specific type should be specified)
-            TargetIsStyleSheet,
-            TargetIsScript,
-            TargetIsFontResource,
-            TargetIsImage,
-            TargetIsObject,
-            TargetIsMedia
-        };
-
         static std::auto_ptr<ResourceRequest> adopt(std::auto_ptr<CrossThreadResourceRequestData>);
 
         // Gets a copy of the data suitable for passing to another thread.
@@ -92,9 +79,7 @@ namespace WebCore {
         
         const HTTPHeaderMap& httpHeaderFields() const;
         String httpHeaderField(const AtomicString& name) const;
-        String httpHeaderField(const char* name) const;
         void setHTTPHeaderField(const AtomicString& name, const String& value);
-        void setHTTPHeaderField(const char* name, const String& value);
         void addHTTPHeaderField(const AtomicString& name, const String& value);
         void addHTTPHeaderFields(const HTTPHeaderMap& headerFields);
         
@@ -130,17 +115,12 @@ namespace WebCore {
         bool reportUploadProgress() const { return m_reportUploadProgress; }
         void setReportUploadProgress(bool reportUploadProgress) { m_reportUploadProgress = reportUploadProgress; }
 
-        // What this request is for.
-        TargetType targetType() const { return m_targetType; }
-        void setTargetType(TargetType type) { m_targetType = type; }
-
     protected:
         // Used when ResourceRequest is initialized from a platform representation of the request
         ResourceRequestBase()
             : m_resourceRequestUpdated(false)
             , m_platformRequestUpdated(true)
             , m_reportUploadProgress(false)
-            , m_targetType(TargetIsSubresource)
         {
         }
 
@@ -153,7 +133,6 @@ namespace WebCore {
             , m_resourceRequestUpdated(true)
             , m_platformRequestUpdated(false)
             , m_reportUploadProgress(false)
-            , m_targetType(TargetIsSubresource)
         {
         }
 
@@ -173,7 +152,6 @@ namespace WebCore {
         mutable bool m_resourceRequestUpdated;
         mutable bool m_platformRequestUpdated;
         bool m_reportUploadProgress;
-        TargetType m_targetType;
 
     private:
         const ResourceRequest& asResourceRequest() const;
@@ -184,7 +162,7 @@ namespace WebCore {
     bool operator==(const ResourceRequestBase&, const ResourceRequestBase&);
     inline bool operator!=(ResourceRequestBase& a, const ResourceRequestBase& b) { return !(a == b); }
 
-    struct CrossThreadResourceRequestData : Noncopyable {
+    struct CrossThreadResourceRequestData {
         KURL m_url;
 
         ResourceRequestCachePolicy m_cachePolicy;

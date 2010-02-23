@@ -26,7 +26,6 @@
 #include "HTMLFormElement.h"
 
 #include "CSSHelper.h"
-#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
 #include "Event.h"
@@ -303,7 +302,7 @@ bool HTMLFormElement::prepareSubmit(Event* event)
     m_insubmit = false;
 
     if (m_doingsubmit)
-        submit(event, true, false, NotSubmittedByJavaScript);
+        submit(event, true);
 
     return m_doingsubmit;
 }
@@ -330,15 +329,7 @@ static void transferMailtoPostFormDataToURL(RefPtr<FormData>& data, KURL& url, c
     url.setQuery(query);
 }
 
-void HTMLFormElement::submit(Frame* javaScriptActiveFrame)
-{
-    if (javaScriptActiveFrame)
-        submit(0, false, !javaScriptActiveFrame->script()->anyPageIsProcessingUserGesture(), SubmittedByJavaScript);
-    else
-        submit(0, false, false, NotSubmittedByJavaScript);
-}
-
-void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool lockHistory, FormSubmissionTrigger formSubmissionTrigger)
+void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool lockHistory)
 {
     FrameView* view = document()->view();
     Frame* frame = document()->frame();
@@ -375,7 +366,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool lockH
         }
     }
 
-    RefPtr<FormState> formState = FormState::create(this, formValues, frame, formSubmissionTrigger);
+    RefPtr<FormState> formState = FormState::create(this, formValues, frame);
 
     if (needButtonActivation && firstSuccessfulSubmitButton)
         firstSuccessfulSubmitButton->setActivatedSubmit(true);
@@ -524,13 +515,11 @@ bool HTMLFormElement::isURLAttribute(Attribute* attr) const
 
 void HTMLFormElement::registerImgElement(HTMLImageElement* e)
 {
-    ASSERT(imgElements.find(e) == notFound);
     imgElements.append(e);
 }
 
 void HTMLFormElement::removeImgElement(HTMLImageElement* e)
 {
-    ASSERT(imgElements.find(e) != notFound);
     removeFromVector(imgElements, e);
 }
 

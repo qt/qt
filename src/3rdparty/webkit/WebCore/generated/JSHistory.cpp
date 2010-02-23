@@ -50,13 +50,11 @@ static JSC_CONST_HASHTABLE HashTable JSHistoryTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSHistoryPrototypeTableValues[6] =
+static const HashTableValue JSHistoryPrototypeTableValues[4] =
 {
     { "back", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionBack, (intptr_t)0 },
     { "forward", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionForward, (intptr_t)0 },
     { "go", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionGo, (intptr_t)1 },
-    { "pushState", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionPushState, (intptr_t)3 },
-    { "replaceState", DontDelete|Function, (intptr_t)jsHistoryPrototypeFunctionReplaceState, (intptr_t)3 },
     { 0, 0, 0, 0 }
 };
 
@@ -64,7 +62,7 @@ static JSC_CONST_HASHTABLE HashTable JSHistoryPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHistoryPrototypeTableValues, 0 };
 #else
-    { 17, 15, JSHistoryPrototypeTableValues, 0 };
+    { 9, 7, JSHistoryPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSHistoryPrototype::s_info = { "HistoryPrototype", 0, &JSHistoryPrototypeTable, 0 };
@@ -121,8 +119,7 @@ JSValue jsHistoryLength(ExecState* exec, const Identifier&, const PropertySlot& 
     JSHistory* castedThis = static_cast<JSHistory*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     History* imp = static_cast<History*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->length());
-    return result;
+    return jsNumber(exec, imp->length());
 }
 
 void JSHistory::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -167,24 +164,6 @@ JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionGo(ExecState* exec, JSObject*, J
 
     imp->go(distance);
     return jsUndefined();
-}
-
-JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionPushState(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.inherits(&JSHistory::s_info))
-        return throwError(exec, TypeError);
-    JSHistory* castedThisObj = static_cast<JSHistory*>(asObject(thisValue));
-    return castedThisObj->pushState(exec, args);
-}
-
-JSValue JSC_HOST_CALL jsHistoryPrototypeFunctionReplaceState(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.inherits(&JSHistory::s_info))
-        return throwError(exec, TypeError);
-    JSHistory* castedThisObj = static_cast<JSHistory*>(asObject(thisValue));
-    return castedThisObj->replaceState(exec, args);
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, History* object)

@@ -38,8 +38,8 @@
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameTree.h"
 #include "FrameView.h"
+#include "FrameTree.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
@@ -72,16 +72,13 @@ FocusController::FocusController(Page* page)
     : m_page(page)
     , m_isActive(false)
     , m_isFocused(false)
-    , m_isChangingFocusedFrame(false)
 {
 }
 
 void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
 {
-    if (m_focusedFrame == frame || m_isChangingFocusedFrame)
+    if (m_focusedFrame == frame)
         return;
-
-    m_isChangingFocusedFrame = true;
 
     RefPtr<Frame> oldFrame = m_focusedFrame;
     RefPtr<Frame> newFrame = frame;
@@ -98,8 +95,6 @@ void FocusController::setFocusedFrame(PassRefPtr<Frame> frame)
         newFrame->selection()->setFocused(true);
         newFrame->document()->dispatchWindowEvent(Event::create(eventNames().focusEvent, false, false));
     }
-
-    m_isChangingFocusedFrame = false;
 }
 
 Frame* FocusController::focusedOrMainFrame()

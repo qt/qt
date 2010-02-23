@@ -107,8 +107,7 @@ JSValue jsScreenHeight(ExecState* exec, const Identifier&, const PropertySlot& s
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->height());
-    return result;
+    return jsNumber(exec, imp->height());
 }
 
 JSValue jsScreenWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -116,8 +115,7 @@ JSValue jsScreenWidth(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->width());
-    return result;
+    return jsNumber(exec, imp->width());
 }
 
 JSValue jsScreenColorDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -125,8 +123,7 @@ JSValue jsScreenColorDepth(ExecState* exec, const Identifier&, const PropertySlo
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->colorDepth());
-    return result;
+    return jsNumber(exec, imp->colorDepth());
 }
 
 JSValue jsScreenPixelDepth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -134,8 +131,7 @@ JSValue jsScreenPixelDepth(ExecState* exec, const Identifier&, const PropertySlo
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->pixelDepth());
-    return result;
+    return jsNumber(exec, imp->pixelDepth());
 }
 
 JSValue jsScreenAvailLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -143,8 +139,7 @@ JSValue jsScreenAvailLeft(ExecState* exec, const Identifier&, const PropertySlot
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->availLeft());
-    return result;
+    return jsNumber(exec, imp->availLeft());
 }
 
 JSValue jsScreenAvailTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -152,8 +147,7 @@ JSValue jsScreenAvailTop(ExecState* exec, const Identifier&, const PropertySlot&
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->availTop());
-    return result;
+    return jsNumber(exec, imp->availTop());
 }
 
 JSValue jsScreenAvailHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -161,8 +155,7 @@ JSValue jsScreenAvailHeight(ExecState* exec, const Identifier&, const PropertySl
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->availHeight());
-    return result;
+    return jsNumber(exec, imp->availHeight());
 }
 
 JSValue jsScreenAvailWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,8 +163,7 @@ JSValue jsScreenAvailWidth(ExecState* exec, const Identifier&, const PropertySlo
     JSScreen* castedThis = static_cast<JSScreen*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Screen* imp = static_cast<Screen*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->availWidth());
-    return result;
+    return jsNumber(exec, imp->availWidth());
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Screen* object)

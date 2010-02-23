@@ -38,13 +38,12 @@ ASSERT_CLASS_FITS_IN_CELL(JSAttr);
 
 /* Hash table */
 
-static const HashTableValue JSAttrTableValues[8] =
+static const HashTableValue JSAttrTableValues[7] =
 {
     { "name", DontDelete|ReadOnly, (intptr_t)jsAttrName, (intptr_t)0 },
     { "specified", DontDelete|ReadOnly, (intptr_t)jsAttrSpecified, (intptr_t)0 },
     { "value", DontDelete, (intptr_t)jsAttrValue, (intptr_t)setJSAttrValue },
     { "ownerElement", DontDelete|ReadOnly, (intptr_t)jsAttrOwnerElement, (intptr_t)0 },
-    { "isId", DontDelete|ReadOnly, (intptr_t)jsAttrIsId, (intptr_t)0 },
     { "style", DontDelete|ReadOnly, (intptr_t)jsAttrStyle, (intptr_t)0 },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsAttrConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
@@ -85,7 +84,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -152,8 +151,7 @@ JSValue jsAttrName(ExecState* exec, const Identifier&, const PropertySlot& slot)
     JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Attr* imp = static_cast<Attr*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->name());
-    return result;
+    return jsStringOrNull(exec, imp->name());
 }
 
 JSValue jsAttrSpecified(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -161,8 +159,7 @@ JSValue jsAttrSpecified(ExecState* exec, const Identifier&, const PropertySlot& 
     JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Attr* imp = static_cast<Attr*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->specified());
-    return result;
+    return jsBoolean(imp->specified());
 }
 
 JSValue jsAttrValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,8 +167,7 @@ JSValue jsAttrValue(ExecState* exec, const Identifier&, const PropertySlot& slot
     JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Attr* imp = static_cast<Attr*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->value());
-    return result;
+    return jsStringOrNull(exec, imp->value());
 }
 
 JSValue jsAttrOwnerElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -179,17 +175,7 @@ JSValue jsAttrOwnerElement(ExecState* exec, const Identifier&, const PropertySlo
     JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Attr* imp = static_cast<Attr*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerElement()));
-    return result;
-}
-
-JSValue jsAttrIsId(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    Attr* imp = static_cast<Attr*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->isId());
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerElement()));
 }
 
 JSValue jsAttrStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -197,8 +183,7 @@ JSValue jsAttrStyle(ExecState* exec, const Identifier&, const PropertySlot& slot
     JSAttr* castedThis = static_cast<JSAttr*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Attr* imp = static_cast<Attr*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsAttrConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

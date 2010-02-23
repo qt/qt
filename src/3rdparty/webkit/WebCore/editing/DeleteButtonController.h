@@ -36,7 +36,7 @@ class HTMLElement;
 class RenderObject;
 class VisibleSelection;
 
-class DeleteButtonController : public Noncopyable {
+class DeleteButtonController {
 public:
     DeleteButtonController(Frame*);
 

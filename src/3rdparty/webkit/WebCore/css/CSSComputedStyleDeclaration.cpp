@@ -33,8 +33,10 @@
 #include "CSSReflectValue.h"
 #include "CSSTimingFunctionValue.h"
 #include "CSSValueList.h"
+#include "CachedImage.h"
 #include "Document.h"
 #include "ExceptionCode.h"
+#include "Pair.h"
 #include "Rect.h"
 #include "RenderBox.h"
 #include "RenderLayer.h"
@@ -171,7 +173,6 @@ static const int computedProperties[] = {
     CSSPropertyWebkitBoxReflect,
     CSSPropertyWebkitBoxShadow,
     CSSPropertyWebkitBoxSizing,
-    CSSPropertyWebkitColorCorrection,
     CSSPropertyWebkitColumnBreakAfter,
     CSSPropertyWebkitColumnBreakBefore,
     CSSPropertyWebkitColumnBreakInside,
@@ -261,7 +262,7 @@ static const int computedProperties[] = {
     CSSPropertyWritingMode,
     CSSPropertyGlyphOrientationHorizontal,
     CSSPropertyGlyphOrientationVertical,
-    CSSPropertyWebkitSvgShadow
+    CSSPropertyWebkitShadow
 #endif
 };
 
@@ -898,9 +899,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
                 return CSSPrimitiveValue::createIdentifier(CSSValueNormal);
             return CSSPrimitiveValue::create(style->letterSpacing(), CSSPrimitiveValue::CSS_PX);
         case CSSPropertyWebkitLineClamp:
-            if (style->lineClamp().isNone())
+            if (style->lineClamp() == -1)
                 return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-            return CSSPrimitiveValue::create(style->lineClamp().value(), style->lineClamp().isPercentage() ? CSSPrimitiveValue::CSS_PERCENTAGE : CSSPrimitiveValue::CSS_NUMBER);
+            return CSSPrimitiveValue::create(style->lineClamp(), CSSPrimitiveValue::CSS_PERCENTAGE);
         case CSSPropertyLineHeight: {
             Length length = style->lineHeight();
             if (length.isNegative())
@@ -910,7 +911,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
                 // for how high to be in pixels does include things like minimum font size and the zoom factor.
                 // On the other hand, since font-size doesn't include the zoom factor, we really can't do
                 // that here either.
-                return CSSPrimitiveValue::create(static_cast<int>(length.percent() * style->fontDescription().specifiedSize()) / 100, CSSPrimitiveValue::CSS_PX);
+                // The line height returned is rounded to the nearest integer.
+                return CSSPrimitiveValue::create(length.calcMinValue(style->fontDescription().specifiedSize(), true), CSSPrimitiveValue::CSS_PX);
             return CSSPrimitiveValue::create(length.value(), CSSPrimitiveValue::CSS_PX);
         }
         case CSSPropertyListStyleImage:
@@ -1346,8 +1348,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
             return getTimingFunctionValue(style->transitions());
         case CSSPropertyPointerEvents:
             return CSSPrimitiveValue::create(style->pointerEvents());
-        case CSSPropertyWebkitColorCorrection:
-            return CSSPrimitiveValue::create(style->colorSpace());
 
         /* Shorthand properties, currently not supported see bug 13658*/
         case CSSPropertyBackground:
@@ -1475,7 +1475,7 @@ unsigned CSSComputedStyleDeclaration::length() const
 String CSSComputedStyleDeclaration::item(unsigned i) const
 {
     if (i >= length())
-        return "";
+        return String();
 
     return getPropertyName(static_cast<CSSPropertyID>(computedProperties[i]));
 }

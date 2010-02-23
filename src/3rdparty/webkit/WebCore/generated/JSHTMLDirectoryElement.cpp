@@ -74,7 +74,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -141,8 +141,7 @@ JSValue jsHTMLDirectoryElementCompact(ExecState* exec, const Identifier&, const 
     JSHTMLDirectoryElement* castedThis = static_cast<JSHTMLDirectoryElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDirectoryElement* imp = static_cast<HTMLDirectoryElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->compact());
-    return result;
+    return jsBoolean(imp->compact());
 }
 
 JSValue jsHTMLDirectoryElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -157,8 +156,7 @@ void JSHTMLDirectoryElement::put(ExecState* exec, const Identifier& propertyName
 
 void setJSHTMLDirectoryElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDirectoryElement* castedThisObj = static_cast<JSHTMLDirectoryElement*>(thisObject);
-    HTMLDirectoryElement* imp = static_cast<HTMLDirectoryElement*>(castedThisObj->impl());
+    HTMLDirectoryElement* imp = static_cast<HTMLDirectoryElement*>(static_cast<JSHTMLDirectoryElement*>(thisObject)->impl());
     imp->setCompact(value.toBoolean(exec));
 }
 

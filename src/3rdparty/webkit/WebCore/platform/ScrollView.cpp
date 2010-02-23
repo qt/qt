@@ -49,7 +49,6 @@ ScrollView::ScrollView()
     , m_updateScrollbarsPass(0)
     , m_drawPanScrollIcon(false)
     , m_useFixedLayout(false)
-    , m_paintsEntireContents(false)
 {
     platformInit();
 }
@@ -167,11 +166,6 @@ bool ScrollView::canBlitOnScroll() const
         return platformCanBlitOnScroll();
 
     return m_canBlitOnScroll;
-}
-
-void ScrollView::setPaintsEntireContents(bool paintsEntireContents)
-{
-    m_paintsEntireContents = paintsEntireContents;
 }
 
 #if !PLATFORM(GTK)
@@ -425,7 +419,9 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     if (m_horizontalScrollbar) {
         int clientWidth = visibleWidth();
         m_horizontalScrollbar->setEnabled(contentsWidth() > clientWidth);
-        int pageStep = max(max<int>(clientWidth * Scrollbar::minFractionToStepWhenPaging(), clientWidth - Scrollbar::maxOverlapBetweenPages()), 1);
+        int pageStep = (clientWidth - cAmountToKeepWhenPaging);
+        if (pageStep < 0)
+            pageStep = clientWidth;
         IntRect oldRect(m_horizontalScrollbar->frameRect());
         IntRect hBarRect = IntRect(0,
                                    height() - m_horizontalScrollbar->height(),
@@ -437,7 +433,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 
         if (m_scrollbarsSuppressed)
             m_horizontalScrollbar->setSuppressInvalidation(true);
-        m_horizontalScrollbar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
+        m_horizontalScrollbar->setSteps(cScrollbarPixelsPerLineStep, pageStep);
         m_horizontalScrollbar->setProportion(clientWidth, contentsWidth());
         m_horizontalScrollbar->setValue(scroll.width());
         if (m_scrollbarsSuppressed)
@@ -447,7 +443,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
     if (m_verticalScrollbar) {
         int clientHeight = visibleHeight();
         m_verticalScrollbar->setEnabled(contentsHeight() > clientHeight);
-        int pageStep = max(max<int>(clientHeight * Scrollbar::minFractionToStepWhenPaging(), clientHeight - Scrollbar::maxOverlapBetweenPages()), 1);
+        int pageStep = (clientHeight - cAmountToKeepWhenPaging);
         if (pageStep < 0)
             pageStep = clientHeight;
         IntRect oldRect(m_verticalScrollbar->frameRect());
@@ -461,7 +457,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
 
         if (m_scrollbarsSuppressed)
             m_verticalScrollbar->setSuppressInvalidation(true);
-        m_verticalScrollbar->setSteps(Scrollbar::pixelsPerLineStep(), pageStep);
+        m_verticalScrollbar->setSteps(cScrollbarPixelsPerLineStep, pageStep);
         m_verticalScrollbar->setProportion(clientHeight, contentsHeight());
         m_verticalScrollbar->setValue(scroll.height());
         if (m_scrollbarsSuppressed)
@@ -663,7 +659,7 @@ void ScrollView::wheelEvent(PlatformWheelEvent& e)
         if (e.granularity() == ScrollByPageWheelEvent) {
             ASSERT(deltaX == 0);
             bool negative = deltaY < 0;
-            deltaY = max(max<int>(visibleHeight() * Scrollbar::minFractionToStepWhenPaging(), visibleHeight() - Scrollbar::maxOverlapBetweenPages()), 1);
+            deltaY = max(0, visibleHeight() - cAmountToKeepWhenPaging);
             if (negative)
                 deltaY = -deltaY;
         }
@@ -703,19 +699,18 @@ void ScrollView::frameRectsChanged()
 
 void ScrollView::repaintContentRectangle(const IntRect& rect, bool now)
 {
-    IntRect paintRect = rect;
-    if (!paintsEntireContents())
-        paintRect.intersect(visibleContentRect());
-    if (paintRect.isEmpty())
+    IntRect visibleContent = visibleContentRect();
+    visibleContent.intersect(rect);
+    if (visibleContent.isEmpty())
         return;
 
     if (platformWidget()) {
-        platformRepaintContentRectangle(paintRect, now);
+        platformRepaintContentRectangle(visibleContent, now);
         return;
     }
 
     if (hostWindow())
-        hostWindow()->repaint(contentsToWindow(paintRect), true, now);
+        hostWindow()->repaint(contentsToWindow(visibleContent), true, now);
 }
 
 IntRect ScrollView::scrollCornerRect() const
@@ -761,7 +756,7 @@ void ScrollView::paintScrollbars(GraphicsContext* context, const IntRect& rect)
 void ScrollView::paintPanScrollIcon(GraphicsContext* context)
 {
     DEFINE_STATIC_LOCAL(Image*, panScrollIcon, (Image::loadPlatformResource("panIcon").releaseRef()));
-    context->drawImage(panScrollIcon, DeviceColorSpace, m_panScrollIconPoint);
+    context->drawImage(panScrollIcon, m_panScrollIconPoint);
 }
 
 void ScrollView::paint(GraphicsContext* context, const IntRect& rect)
@@ -970,7 +965,7 @@ void ScrollView::platformRemoveChild(Widget*)
 
 #if !PLATFORM(MAC)
 
-void ScrollView::platformSetScrollbarsSuppressed(bool)
+void ScrollView::platformSetScrollbarsSuppressed(bool repaintOnUnsuppress)
 {
 }
 
@@ -1030,7 +1025,7 @@ bool ScrollView::platformScroll(ScrollDirection, ScrollGranularity)
     return true;
 }
 
-void ScrollView::platformRepaintContentRectangle(const IntRect&, bool /*now*/)
+void ScrollView::platformRepaintContentRectangle(const IntRect&, bool now)
 {
 }
 

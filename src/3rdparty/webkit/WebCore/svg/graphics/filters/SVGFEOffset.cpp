@@ -74,24 +74,17 @@ void FEOffset::apply(Filter* filter)
     if (!filterContext)
         return;
 
-    setIsAlphaImage(m_in->isAlphaImage());
-
-    FloatRect sourceImageRect = filter->sourceImageRect();
-    sourceImageRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
-
     if (filter->effectBoundingBoxMode()) {
-        m_dx *= sourceImageRect.width();
-        m_dy *= sourceImageRect.height();
+        setDx(dx() * filter->sourceImageRect().width());
+        setDy(dy() * filter->sourceImageRect().height());
     }
-    m_dx *= filter->filterResolution().width();
-    m_dy *= filter->filterResolution().height();
 
-    FloatRect dstRect = FloatRect(m_dx + m_in->scaledSubRegion().x() - scaledSubRegion().x(),
-                                  m_dy + m_in->scaledSubRegion().y() - scaledSubRegion().y(),
-                                  m_in->scaledSubRegion().width(),
-                                  m_in->scaledSubRegion().height());
+    FloatRect dstRect = FloatRect(dx() + m_in->subRegion().x() - subRegion().x(),
+                                  dy() + m_in->subRegion().y() - subRegion().y(),
+                                  m_in->subRegion().width(),
+                                  m_in->subRegion().height());
 
-    filterContext->drawImage(m_in->resultImage()->image(), DeviceColorSpace, dstRect);
+    filterContext->drawImage(m_in->resultImage()->image(), dstRect);
 }
 
 void FEOffset::dump()

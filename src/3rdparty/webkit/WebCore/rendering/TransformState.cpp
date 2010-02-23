@@ -49,12 +49,6 @@ void TransformState::move(int x, int y, TransformAccumulation accumulate)
     m_accumulatingTransform = accumulate == AccumulateTransform;
 }
 
-// FIXME: We transform AffineTransform to TransformationMatrix. This is rather inefficient.
-void TransformState::applyTransform(const AffineTransform& transformFromContainer, TransformAccumulation accumulate)
-{
-    applyTransform(transformFromContainer.toTransformationMatrix(), accumulate);
-}
-
 void TransformState::applyTransform(const TransformationMatrix& transformFromContainer, TransformAccumulation accumulate)
 {
     // If we have an accumulated transform from last time, multiply in this transform
@@ -121,7 +115,7 @@ void TransformState::flattenWithTransform(const TransformationMatrix& t)
     }
 
     // We could throw away m_accumulatedTransform if we wanted to here, but that
-    // would cause thrash when traversing hierarchies with alternating
+    // would cause thrash when traversing hierarachies with alternating
     // preserve-3d and flat elements.
     if (m_accumulatedTransform)
         m_accumulatedTransform->makeIdentity();

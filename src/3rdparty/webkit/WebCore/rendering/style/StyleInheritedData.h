@@ -68,6 +68,7 @@ public:
     // Paged media properties.
     short widows;
     short orphans;
+    unsigned page_break_inside : 2; // EPageBreak
     
 private:
     StyleInheritedData();

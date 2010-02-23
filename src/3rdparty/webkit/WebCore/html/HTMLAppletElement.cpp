@@ -28,7 +28,6 @@
 #include "HTMLNames.h"
 #include "MappedAttribute.h"
 #include "RenderApplet.h"
-#include "SecurityOrigin.h"
 #include "Settings.h"
 
 namespace WebCore {
@@ -63,7 +62,7 @@ void HTMLAppletElement::parseMappedAttribute(MappedAttribute* attr)
             document->addNamedItem(newName);
         }
         m_name = newName;
-    } else if (attr->name() == idAttributeName()) {
+    } else if (attr->name() == idAttr) {
         const AtomicString& newId = attr->value();
         if (inDocument() && document()->isHTMLDocument()) {
             HTMLDocument* document = static_cast<HTMLDocument*>(this->document());
@@ -109,7 +108,9 @@ bool HTMLAppletElement::rendererIsNeeded(RenderStyle* style)
 
 RenderObject* HTMLAppletElement::createRenderer(RenderArena*, RenderStyle* style)
 {
-    if (canEmbedJava()) {
+    Settings* settings = document()->settings();
+
+    if (settings && settings->isJavaEnabled()) {
         HashMap<String, String> args;
 
         args.set("code", getAttribute(codeAttr));
@@ -118,7 +119,7 @@ RenderObject* HTMLAppletElement::createRenderer(RenderArena*, RenderStyle* style
         if (!codeBase.isNull())
             args.set("codeBase", codeBase);
 
-        const AtomicString& name = getAttribute(document()->isHTMLDocument() ? nameAttr : idAttributeName());
+        const AtomicString& name = getAttribute(document()->isHTMLDocument() ? nameAttr : idAttr);
         if (!name.isNull())
             args.set("name", name);
         const AtomicString& archive = getAttribute(archiveAttr);
@@ -141,7 +142,8 @@ RenderObject* HTMLAppletElement::createRenderer(RenderArena*, RenderStyle* style
 
 RenderWidget* HTMLAppletElement::renderWidgetForJSBindings() const
 {
-    if (!canEmbedJava())
+    Settings* settings = document()->settings();
+    if (!settings || !settings->isJavaEnabled())
         return 0;
 
     RenderApplet* applet = toRenderApplet(renderer());
@@ -149,15 +151,6 @@ RenderWidget* HTMLAppletElement::renderWidgetForJSBindings() const
         applet->createWidgetIfNecessary();
 
     return applet;
-}
-
-bool HTMLAppletElement::canEmbedJava() const
-{
-    if (document()->securityOrigin()->isSandboxed(SandboxPlugins))
-        return false;
-
-    Settings* settings = document()->settings();
-    return settings && settings->isJavaEnabled();
 }
 
 void HTMLAppletElement::finishParsingChildren()

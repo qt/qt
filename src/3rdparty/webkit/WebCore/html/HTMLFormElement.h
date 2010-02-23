@@ -26,7 +26,6 @@
 
 #include "CheckedRadioButtons.h"
 #include "FormDataBuilder.h"
-#include "FormState.h"
 #include "HTMLElement.h"
 #include <wtf/OwnPtr.h>
 
@@ -79,7 +78,7 @@ public:
     void removeImgElement(HTMLImageElement*);
 
     bool prepareSubmit(Event*);
-    void submit(Frame* javaScriptActiveFrame = 0);
+    void submit(Event* = 0, bool activateSubmitButton = false, bool lockHistory = false);
     void reset();
 
     // Used to indicate a malformed state to keep from applying the bottom margin of the form.
@@ -131,8 +130,6 @@ protected:
     virtual void didMoveToNewOwnerDocument();
 
 private:
-    void submit(Event*, bool activateSubmitButton, bool lockHistory, FormSubmissionTrigger);
-
     bool isMailtoForm() const;
     TextEncoding dataEncoding() const;
     PassRefPtr<FormData> createFormData(const CString& boundary);

@@ -34,14 +34,15 @@
 
 namespace WebCore {
 
-Media::Media(Frame* frame)
-    : m_frame(frame)
+Media::Media(DOMWindow* window)
+    : m_window(window)
 {
 }
 
 String Media::type() const
 {
-    FrameView* view = m_frame ? m_frame->view() : 0;
+    Frame* frame = m_window->frame();
+    FrameView* view = frame ? frame->view() : 0;
     if (view)
         return view->mediaType();
 
@@ -50,19 +51,15 @@ String Media::type() const
 
 bool Media::matchMedium(const String& query) const
 {
-    if (!m_frame)
-        return false;
-
-    Document* document = m_frame->document();
-    ASSERT(document);
-    Element* documentElement = document->documentElement();
-    ASSERT(documentElement);
+    Document* document = m_window->document();
+    Frame* frame = m_window->frame();
 
     CSSStyleSelector* styleSelector = document->styleSelector();
-    if (!styleSelector)
+    Element* docElement = document->documentElement();
+    if (!styleSelector || !docElement || !frame)
         return false;
 
-    RefPtr<RenderStyle> rootStyle = styleSelector->styleForElement(documentElement, 0 /*defaultParent*/, false /*allowSharing*/, true /*resolveForRootDefault*/);
+    RefPtr<RenderStyle> rootStyle = styleSelector->styleForElement(docElement, 0 /*defaultParent*/, false /*allowSharing*/, true /*resolveForRootDefault*/);
     RefPtr<MediaList> media = MediaList::create();
 
     ExceptionCode ec = 0;
@@ -70,7 +67,7 @@ bool Media::matchMedium(const String& query) const
     if (ec)
         return false;
 
-    MediaQueryEvaluator screenEval(type(), m_frame, rootStyle.get());
+    MediaQueryEvaluator screenEval(type(), frame, rootStyle.get());
     return screenEval.eval(media.get());
 }
 

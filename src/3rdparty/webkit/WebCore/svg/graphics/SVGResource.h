@@ -28,7 +28,6 @@
 
 #if ENABLE(SVG)
 #include "PlatformString.h"
-#include "RenderObject.h"
 #include "StringHash.h"
 
 #include <wtf/HashMap.h>
@@ -45,9 +44,10 @@ namespace WebCore {
     enum SVGResourceType {
         // Painting mode
         ClipperResourceType = 0,
+        MarkerResourceType,
         ImageResourceType,
         FilterResourceType,
-        MarkerResourceType,
+        MaskerResourceType,
         PaintServerResourceType,
         
         // For resource tracking we need to know how many types of resource there are
@@ -77,6 +77,7 @@ namespace WebCore {
         bool isFilter() const { return resourceType() == FilterResourceType; }
         bool isClipper() const { return resourceType() == ClipperResourceType; }
         bool isMarker() const { return resourceType() == MarkerResourceType; }
+        bool isMasker() const { return resourceType() == MaskerResourceType; }
 
         virtual TextStream& externalRepresentation(TextStream&) const;
 
@@ -90,7 +91,7 @@ namespace WebCore {
         HashSet<SVGStyledElement*> m_clients;
     };
 
-    SVGResource* getResourceById(Document*, const AtomicString&, const RenderObject*);
+    SVGResource* getResourceById(Document*, const AtomicString&);
     
     TextStream& operator<<(TextStream&, const SVGResource&);
 

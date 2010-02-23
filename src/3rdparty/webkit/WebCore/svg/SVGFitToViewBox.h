@@ -27,22 +27,27 @@
 
 namespace WebCore {
 
-class AffineTransform;
+    extern char SVGFitToViewBoxIdentifier[];
 
-class SVGFitToViewBox {
-public:
-    SVGFitToViewBox();
-    virtual ~SVGFitToViewBox();
+    class TransformationMatrix;
 
-    bool parseViewBox(Document*, const UChar*& start, const UChar* end, float& x, float& y, float& w, float& h, bool validate = true);
-    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, const SVGPreserveAspectRatio&, float viewWidth, float viewHeight);
+    class SVGFitToViewBox {
+    public:
+        SVGFitToViewBox();
+        virtual ~SVGFitToViewBox();
 
-    bool parseMappedAttribute(Document*, MappedAttribute*);
-    bool isKnownAttribute(const QualifiedName&);
+        bool parseViewBox(Document*, const UChar*& start, const UChar* end, float& x, float& y, float& w, float& h, bool validate = true);
+        static TransformationMatrix viewBoxToViewTransform(const FloatRect& viewBoxRect, SVGPreserveAspectRatio*, float viewWidth, float viewHeight);
 
-    virtual void setViewBoxBaseValue(SVGAnimatedPropertyTraits<FloatRect>::PassType) = 0;
-    virtual void setPreserveAspectRatioBaseValue(SVGAnimatedPropertyTraits<SVGPreserveAspectRatio>::PassType) = 0;
-};
+        bool parseMappedAttribute(Document*, MappedAttribute*);
+        bool isKnownAttribute(const QualifiedName&);
+
+    protected:
+        virtual SVGAnimatedTypeValue<FloatRect>::DecoratedType viewBoxBaseValue() const = 0;
+        virtual void setViewBoxBaseValue(SVGAnimatedTypeValue<FloatRect>::DecoratedType type) = 0;
+
+        virtual SVGAnimatedTypeValue<SVGPreserveAspectRatio>::DecoratedType preserveAspectRatioBaseValue() const = 0;
+    };
 
 } // namespace WebCore
 

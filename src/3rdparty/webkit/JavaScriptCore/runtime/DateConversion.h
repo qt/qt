@@ -42,21 +42,18 @@
 #ifndef DateConversion_h
 #define DateConversion_h
 
-#include "UString.h"
+namespace WTF {
+    struct GregorianDateTime;
+}
 
 namespace JSC {
 
-class ExecState;
-struct GregorianDateTime;
+class UString;
 
-static const unsigned DateConversionBufferSize = 100;
-typedef char DateConversionBuffer[DateConversionBufferSize];
-
-double parseDate(ExecState* exec, const UString&);
-void formatDate(const GregorianDateTime&, DateConversionBuffer&);
-void formatDateUTCVariant(const GregorianDateTime&, DateConversionBuffer&);
-void formatTime(const GregorianDateTime&, DateConversionBuffer&);
-void formatTimeUTC(const GregorianDateTime&, DateConversionBuffer&);
+double parseDate(const UString&);
+UString formatDate(const WTF::GregorianDateTime&);
+UString formatDateUTCVariant(const WTF::GregorianDateTime&);
+UString formatTime(const WTF::GregorianDateTime&, bool inputIsUTC);
 
 } // namespace JSC
 

@@ -39,7 +39,6 @@ StyleRareInheritedData::StyleRareInheritedData()
     , textSizeAdjust(RenderStyle::initialTextSizeAdjust())
     , resize(RenderStyle::initialResize())
     , userSelect(RenderStyle::initialUserSelect())
-    , colorSpace(DeviceColorSpace)
 {
 }
 
@@ -59,7 +58,6 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textSizeAdjust(o.textSizeAdjust)
     , resize(o.resize)
     , userSelect(o.userSelect)
-    , colorSpace(o.colorSpace)
 {
 }
 
@@ -83,8 +81,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && khtmlLineBreak == o.khtmlLineBreak
         && textSizeAdjust == o.textSizeAdjust
         && resize == o.resize
-        && userSelect == o.userSelect
-        && colorSpace == o.colorSpace;
+        && userSelect == o.userSelect;
 }
 
 bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& o) const

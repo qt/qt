@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -149,8 +149,7 @@ JSValue jsImageDataWidth(ExecState* exec, const Identifier&, const PropertySlot&
     JSImageData* castedThis = static_cast<JSImageData*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ImageData* imp = static_cast<ImageData*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->width());
-    return result;
+    return jsNumber(exec, imp->width());
 }
 
 JSValue jsImageDataHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -158,8 +157,7 @@ JSValue jsImageDataHeight(ExecState* exec, const Identifier&, const PropertySlot
     JSImageData* castedThis = static_cast<JSImageData*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ImageData* imp = static_cast<ImageData*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->height());
-    return result;
+    return jsNumber(exec, imp->height());
 }
 
 JSValue jsImageDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

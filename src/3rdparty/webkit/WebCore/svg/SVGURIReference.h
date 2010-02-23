@@ -2,6 +2,8 @@
     Copyright (C) 2004, 2005, 2008, 2009 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -27,6 +29,7 @@
 
 namespace WebCore {
 
+    extern char SVGURIReferenceIdentifier[];
     class MappedAttribute;
 
     class SVGURIReference {
@@ -40,7 +43,7 @@ namespace WebCore {
         static String getTarget(const String& url);
 
     protected:
-        virtual void setHrefBaseValue(SVGAnimatedPropertyTraits<String>::PassType) = 0;
+        virtual void setHrefBaseValue(SVGAnimatedTypeValue<String>::DecoratedType type) = 0;
     };
 
 } // namespace WebCore

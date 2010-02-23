@@ -56,11 +56,6 @@ class NSCursor;
 class wxCursor;
 #endif
 
-#if PLATFORM(WIN)
-typedef struct HICON__ *HICON;
-typedef HICON HCURSOR;
-#endif
-
 namespace WebCore {
 
     class Image;
@@ -70,7 +65,7 @@ namespace WebCore {
     class SharedCursor : public RefCounted<SharedCursor> {
     public:
         static PassRefPtr<SharedCursor> create(HCURSOR nativeCursor) { return adoptRef(new SharedCursor(nativeCursor)); }
-        ~SharedCursor();
+        ~SharedCursor() { DestroyIcon(m_nativeCursor); }
         HCURSOR nativeCursor() const { return m_nativeCursor; }
     private:
         SharedCursor(HCURSOR nativeCursor) : m_nativeCursor(nativeCursor) { }

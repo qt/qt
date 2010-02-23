@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -174,8 +174,7 @@ JSValue jsEventExceptionCode(ExecState* exec, const Identifier&, const PropertyS
     JSEventException* castedThis = static_cast<JSEventException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->code());
-    return result;
+    return jsNumber(exec, imp->code());
 }
 
 JSValue jsEventExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -183,8 +182,7 @@ JSValue jsEventExceptionName(ExecState* exec, const Identifier&, const PropertyS
     JSEventException* castedThis = static_cast<JSEventException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->name());
-    return result;
+    return jsString(exec, imp->name());
 }
 
 JSValue jsEventExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -192,8 +190,7 @@ JSValue jsEventExceptionMessage(ExecState* exec, const Identifier&, const Proper
     JSEventException* castedThis = static_cast<JSEventException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     EventException* imp = static_cast<EventException*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->message());
-    return result;
+    return jsString(exec, imp->message());
 }
 
 JSValue jsEventExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -22,7 +22,6 @@
 #define Length_h
 
 #include <wtf/Assertions.h>
-#include <wtf/FastAllocBase.h>
 #include <wtf/MathExtras.h>
 
 namespace WebCore {
@@ -34,7 +33,7 @@ const int percentScaleFactor = 128;
 
 enum LengthType { Auto, Relative, Percent, Fixed, Static, Intrinsic, MinIntrinsic };
 
-struct Length : FastAllocBase {
+struct Length {
     Length()
         : m_value(0)
     {

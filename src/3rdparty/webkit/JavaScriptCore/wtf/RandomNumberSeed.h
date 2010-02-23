@@ -33,12 +33,12 @@
 #include <sys/time.h>
 #endif
 
-#if OS(UNIX)
+#if PLATFORM(UNIX)
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
-#if OS(WINCE)
+#if PLATFORM(WINCE)
 extern "C" {
 void init_by_array(unsigned long init_key[],int key_length);
 }
@@ -49,9 +49,9 @@ namespace WTF {
 
 inline void initializeRandomNumberGenerator()
 {
-#if OS(DARWIN)
+#if PLATFORM(DARWIN)
     // On Darwin we use arc4random which initialises itself.
-#elif OS(WINCE)
+#elif PLATFORM(WINCE)
     // initialize rand()
     srand(static_cast<unsigned>(time(0)));
 
@@ -64,7 +64,7 @@ inline void initializeRandomNumberGenerator()
     init_by_array(initializationBuffer, 4);
 #elif COMPILER(MSVC) && defined(_CRT_RAND_S)
     // On Windows we use rand_s which initialises itself
-#elif OS(UNIX)
+#elif PLATFORM(UNIX)
     // srandomdev is not guaranteed to exist on linux so we use this poor seed, this should be improved
     timeval time;
     gettimeofday(&time, 0);

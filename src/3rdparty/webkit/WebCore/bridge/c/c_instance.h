@@ -28,9 +28,9 @@
 
 #if ENABLE(NETSCAPE_PLUGIN_API)
 
-#include "Bridge.h"
-#include "runtime_root.h"
+#include "runtime.h"
 #include <wtf/PassRefPtr.h>
+#include "runtime_root.h"
 
 typedef struct NPObject NPObject;
 
@@ -50,7 +50,6 @@ public:
     }
 
     static void setGlobalException(JSC::UString exception);
-    static void moveGlobalExceptionToExecState(ExecState*);
 
     ~CInstance ();
 
@@ -75,6 +74,7 @@ public:
     NPObject *getObject() const { return _object; }
 
 private:
+    static void moveGlobalExceptionToExecState(ExecState* exec);
     CInstance(NPObject*, PassRefPtr<RootObject>);
 
     mutable CClass *_class;

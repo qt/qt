@@ -28,15 +28,13 @@
 #ifndef FloatSize_h
 #define FloatSize_h
 
-#include "IntSize.h"
-#include <wtf/MathExtras.h>
 #include <wtf/Platform.h>
 
 #if PLATFORM(CG)
 typedef struct CGSize CGSize;
 #endif
 
-#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && OS(DARWIN))
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
 #ifdef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 typedef struct CGSize NSSize;
 #else
@@ -82,7 +80,7 @@ public:
 #endif
 
 #if (PLATFORM(MAC) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)) \
-        || (PLATFORM(CHROMIUM) && OS(DARWIN))
+        || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
     explicit FloatSize(const NSSize &); // don't do this implicitly since it's lossy
     operator NSSize() const;
 #endif
@@ -128,11 +126,6 @@ inline bool operator==(const FloatSize& a, const FloatSize& b)
 inline bool operator!=(const FloatSize& a, const FloatSize& b)
 {
     return a.width() != b.width() || a.height() != b.height();
-}
-
-inline IntSize roundedIntSize(const FloatSize& p)
-{
-    return IntSize(static_cast<int>(roundf(p.width())), static_cast<int>(roundf(p.height())));
 }
 
 } // namespace WebCore

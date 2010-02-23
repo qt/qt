@@ -1,6 +1,8 @@
 /*
     Copyright (C) 2007 Nikolas Zimmermann <zimmermann@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -22,7 +24,6 @@
 #if ENABLE(SVG)
 #include "SVGTextPathElement.h"
 
-#include "AffineTransform.h"
 #include "FloatRect.h"
 #include "MappedAttribute.h"
 #include "RenderSVGTextPath.h"
@@ -30,15 +31,17 @@
 #include "SVGPathElement.h"
 #include "SVGRenderStyle.h"
 #include "SVGTransformList.h"
+#include "TransformationMatrix.h"
 
 namespace WebCore {
 
 SVGTextPathElement::SVGTextPathElement(const QualifiedName& tagName, Document* doc)
     : SVGTextContentElement(tagName, doc)
     , SVGURIReference()
-    , m_startOffset(LengthModeOther)
-    , m_method(SVG_TEXTPATH_METHODTYPE_ALIGN)
-    , m_spacing(SVG_TEXTPATH_SPACINGTYPE_EXACT)
+    , m_startOffset(this, SVGNames::startOffsetAttr, LengthModeOther)
+    , m_method(this, SVGNames::methodAttr, SVG_TEXTPATH_METHODTYPE_ALIGN)
+    , m_spacing(this, SVGNames::spacingAttr, SVG_TEXTPATH_SPACINGTYPE_EXACT)
+    , m_href(this, XLinkNames::hrefAttr)
 {
 }
 
@@ -67,28 +70,6 @@ void SVGTextPathElement::parseMappedAttribute(MappedAttribute* attr)
             return;
         SVGTextContentElement::parseMappedAttribute(attr);
     }
-}
-
-void SVGTextPathElement::synchronizeProperty(const QualifiedName& attrName)
-{
-    SVGTextContentElement::synchronizeProperty(attrName);
-
-    if (attrName == anyQName()) {
-        synchronizeStartOffset();
-        synchronizeMethod();
-        synchronizeSpacing();
-        synchronizeHref();
-        return;
-    }
-
-    if (attrName == SVGNames::startOffsetAttr)
-        synchronizeStartOffset();
-    else if (attrName == SVGNames::methodAttr)
-        synchronizeMethod();
-    else if (attrName == SVGNames::spacingAttr)
-        synchronizeSpacing();
-    else if (SVGURIReference::isKnownAttribute(attrName))
-        synchronizeHref();
 }
 
 RenderObject* SVGTextPathElement::createRenderer(RenderArena* arena, RenderStyle*)
@@ -123,3 +104,5 @@ void SVGTextPathElement::insertedIntoDocument()
 }
 
 #endif // ENABLE(SVG)
+
+// vim:ts=4:noet

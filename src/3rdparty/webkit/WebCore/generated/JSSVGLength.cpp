@@ -95,7 +95,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -160,16 +160,16 @@ bool JSSVGLengthPrototype::getOwnPropertyDescriptor(ExecState* exec, const Ident
 
 const ClassInfo JSSVGLength::s_info = { "SVGLength", 0, &JSSVGLengthTable, 0 };
 
-JSSVGLength::JSSVGLength(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> > impl)
-    : DOMObjectWithGlobalPointer(structure, globalObject)
+JSSVGLength::JSSVGLength(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> > impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
 
 JSSVGLength::~JSSVGLength()
 {
+    JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::forgetWrapper(m_impl.get());
     forgetDOMObject(this, impl());
-    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGLength::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -192,8 +192,7 @@ JSValue jsSVGLengthUnitType(ExecState* exec, const Identifier&, const PropertySl
     JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLength imp(*castedThis->impl());
-    JSValue result =  jsNumber(exec, imp.unitType());
-    return result;
+    return jsNumber(exec, imp.unitType());
 }
 
 JSValue jsSVGLengthValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -207,8 +206,7 @@ JSValue jsSVGLengthValueInSpecifiedUnits(ExecState* exec, const Identifier&, con
     JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLength imp(*castedThis->impl());
-    JSValue result =  jsNumber(exec, imp.valueInSpecifiedUnits());
-    return result;
+    return jsNumber(exec, imp.valueInSpecifiedUnits());
 }
 
 JSValue jsSVGLengthValueAsString(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -216,14 +214,13 @@ JSValue jsSVGLengthValueAsString(ExecState* exec, const Identifier&, const Prope
     JSSVGLength* castedThis = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLength imp(*castedThis->impl());
-    JSValue result =  jsString(exec, imp.valueAsString());
-    return result;
+    return jsString(exec, imp.valueAsString());
 }
 
 JSValue jsSVGLengthConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    JSSVGLength* domObject = static_cast<JSSVGLength*>(asObject(slot.slotBase()));
-    return JSSVGLength::getConstructor(exec, domObject->globalObject());
+    UNUSED_PARAM(slot);
+    return JSSVGLength::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
 }
 void JSSVGLength::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -232,29 +229,23 @@ void JSSVGLength::put(ExecState* exec, const Identifier& propertyName, JSValue v
 
 void setJSSVGLengthValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(thisObject);
-    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
-    SVGLength podImp(*imp);
-    podImp.setValue(value.toFloat(exec));
-    imp->commitChange(podImp, castedThisObj);
+    SVGLength imp(*static_cast<JSSVGLength*>(thisObject)->impl());
+    imp.setValue(value.toFloat(exec));
+        static_cast<JSSVGLength*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGLength*>(thisObject)->context());
 }
 
 void setJSSVGLengthValueInSpecifiedUnits(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(thisObject);
-    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
-    SVGLength podImp(*imp);
-    podImp.setValueInSpecifiedUnits(value.toFloat(exec));
-    imp->commitChange(podImp, castedThisObj);
+    SVGLength imp(*static_cast<JSSVGLength*>(thisObject)->impl());
+    imp.setValueInSpecifiedUnits(value.toFloat(exec));
+        static_cast<JSSVGLength*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGLength*>(thisObject)->context());
 }
 
 void setJSSVGLengthValueAsString(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(thisObject);
-    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
-    SVGLength podImp(*imp);
-    podImp.setValueAsString(valueToStringWithNullCheck(exec, value));
-    imp->commitChange(podImp, castedThisObj);
+    SVGLength imp(*static_cast<JSSVGLength*>(thisObject)->impl());
+    imp.setValueAsString(valueToStringWithNullCheck(exec, value));
+        static_cast<JSSVGLength*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGLength*>(thisObject)->context());
 }
 
 JSValue JSSVGLength::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -268,13 +259,13 @@ JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits(ExecSta
     if (!thisValue.inherits(&JSSVGLength::s_info))
         return throwError(exec, TypeError);
     JSSVGLength* castedThisObj = static_cast<JSSVGLength*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<SVGLength> * imp = static_cast<JSSVGPODTypeWrapper<SVGLength> *>(castedThisObj->impl());
-    SVGLength podImp(*imp);
+    JSSVGPODTypeWrapper<SVGLength>* wrapper = castedThisObj->impl();
+    SVGLength imp(*wrapper);
     unsigned short unitType = args.at(0).toInt32(exec);
     float valueInSpecifiedUnits = args.at(1).toFloat(exec);
 
-    podImp.newValueSpecifiedUnits(unitType, valueInSpecifiedUnits);
-    imp->commitChange(podImp, castedThisObj);
+    imp.newValueSpecifiedUnits(unitType, valueInSpecifiedUnits);
+    wrapper->commitChange(imp, castedThisObj->context());
     return jsUndefined();
 }
 

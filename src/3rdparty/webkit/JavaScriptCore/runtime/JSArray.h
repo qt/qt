@@ -32,7 +32,6 @@ namespace JSC {
         unsigned m_numValuesInVector;
         SparseArrayValueMap* m_sparseValueMap;
         void* lazyCreationData; // A JSArray subclass can use this to fill the vector lazily.
-        size_t reportedMapCapacity;
         JSValue m_vector[1];
     };
 
@@ -88,7 +87,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
         
         inline void markChildrenDirect(MarkStack& markStack);
@@ -98,7 +97,7 @@ namespace JSC {
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
         virtual bool deleteProperty(ExecState*, unsigned propertyName);
-        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
+        virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
         virtual void markChildren(MarkStack&);
 
         void* lazyCreationData();

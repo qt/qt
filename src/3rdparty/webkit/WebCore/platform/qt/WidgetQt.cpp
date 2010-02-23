@@ -91,17 +91,13 @@ void Widget::setCursor(const Cursor& cursor)
 
 void Widget::show()
 {
-    setSelfVisible(true);
-
-    if (isParentVisible() && platformWidget())
+    if (platformWidget())
         platformWidget()->show();
 }
 
 void Widget::hide()
 {
-    setSelfVisible(false);
-
-    if (isParentVisible() && platformWidget())
+    if (platformWidget())
         platformWidget()->hide();
 }
 

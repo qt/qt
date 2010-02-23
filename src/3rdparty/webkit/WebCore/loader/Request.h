@@ -23,7 +23,6 @@
 #ifndef Request_h
 #define Request_h
 
-#include "FrameLoaderTypes.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {
@@ -31,9 +30,9 @@ namespace WebCore {
     class CachedResource;
     class DocLoader;
 
-    class Request : public Noncopyable {
+    class Request {
     public:
-        Request(DocLoader*, CachedResource*, bool incremental, SecurityCheckPolicy, bool sendResourceLoadCallbacks);
+        Request(DocLoader*, CachedResource*, bool incremental, bool skipCanLoadCheck, bool sendResourceLoadCallbacks);
         ~Request();
         
         Vector<char>& buffer() { return m_buffer; }
@@ -46,7 +45,7 @@ namespace WebCore {
         bool isMultipart() { return m_multipart; }
         void setIsMultipart(bool b = true) { m_multipart = b; }
 
-        SecurityCheckPolicy shouldDoSecurityCheck() const { return m_shouldDoSecurityCheck; }
+        bool shouldSkipCanLoadCheck() const { return m_shouldSkipCanLoadCheck; }
         bool sendResourceLoadCallbacks() const { return m_sendResourceLoadCallbacks; }
         
     private:
@@ -55,7 +54,7 @@ namespace WebCore {
         DocLoader* m_docLoader;
         bool m_incremental;
         bool m_multipart;
-        SecurityCheckPolicy m_shouldDoSecurityCheck;
+        bool m_shouldSkipCanLoadCheck;
         bool m_sendResourceLoadCallbacks;
     };
 

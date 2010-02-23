@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-struct NodeListsNodeData : Noncopyable {
+struct NodeListsNodeData {
     typedef HashSet<DynamicNodeList*> NodeListSet;
     NodeListSet m_listsWithCaches;
     
@@ -62,7 +62,7 @@ private:
     }
 };
     
-class NodeRareData : public Noncopyable {
+class NodeRareData {
 public:    
     NodeRareData()
         : m_tabIndex(0)

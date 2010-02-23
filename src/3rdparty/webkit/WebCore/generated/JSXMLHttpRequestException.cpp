@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -176,8 +176,7 @@ JSValue jsXMLHttpRequestExceptionCode(ExecState* exec, const Identifier&, const 
     JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->code());
-    return result;
+    return jsNumber(exec, imp->code());
 }
 
 JSValue jsXMLHttpRequestExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -185,8 +184,7 @@ JSValue jsXMLHttpRequestExceptionName(ExecState* exec, const Identifier&, const 
     JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->name());
-    return result;
+    return jsString(exec, imp->name());
 }
 
 JSValue jsXMLHttpRequestExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,8 +192,7 @@ JSValue jsXMLHttpRequestExceptionMessage(ExecState* exec, const Identifier&, con
     JSXMLHttpRequestException* castedThis = static_cast<JSXMLHttpRequestException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequestException* imp = static_cast<XMLHttpRequestException*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->message());
-    return result;
+    return jsString(exec, imp->message());
 }
 
 JSValue jsXMLHttpRequestExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

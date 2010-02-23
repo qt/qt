@@ -29,7 +29,7 @@ namespace WebCore {
         SVGFEPointLightElement(const QualifiedName&, Document*);
         virtual ~SVGFEPointLightElement();
 
-        virtual PassRefPtr<LightSource> lightSource() const;
+        virtual LightSource* lightSource() const;
     };
 
 } // namespace WebCore
