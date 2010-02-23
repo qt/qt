@@ -249,6 +249,10 @@ void tst_QmlListModel::static_types_data()
     QTest::newRow("bool")
         << "ListElement { foo: true }"
         << QVariant(true);
+
+    QTest::newRow("enum")
+        << "ListElement { foo: Text.AlignHCenter }"
+        << QVariant("QTBUG-5974:ListElement: constant script support for property value");
 }
 
 void tst_QmlListModel::static_types()
@@ -262,6 +266,10 @@ void tst_QmlListModel::static_types()
     QmlComponent component(&engine);
     component.setData(qml.toUtf8(),
                       QUrl::fromLocalFile(QString("dummy.qml")));
+
+    if (value.toString().startsWith("QTBUG-"))
+        QEXPECT_FAIL("",value.toString().toLatin1(),Abort);
+
     QVERIFY(!component.isError());
 
     QmlListModel *obj = qobject_cast<QmlListModel*>(component.create());
@@ -301,7 +309,7 @@ void tst_QmlListModel::error_data()
 
     QTest::newRow("bindings not allowed in ListElement")
         << "import Qt 4.6\nRectangle { id: rect; ListModel { ListElement { foo: rect.color } } }"
-        << "ListElement: cannot use script for property value";
+        << "ListElement: cannot use script for property value"; // but note QTBUG-5974
 
     QTest::newRow("random object list properties allowed in ListElement")
         << "import Qt 4.6\nListModel { ListElement { foo: [ ListElement { bar: 123 } ] } }"

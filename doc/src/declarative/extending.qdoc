@@ -375,6 +375,37 @@ object will only be returned if it has previously been created.
 \l {Extending QML - Attached Properties Example} shows the complete code used to
 implement the rsvp attached property.
 
+\section1 Memory Management and QVariant types
+
+It is an elements responsibility to ensure that it does not access or return
+pointers to invalid objects.  QML makes the following guarentees:
+
+\list
+\o An object assigned to an QObject (or QObject-derived) pointer property will be 
+valid at the time of assignment.  
+
+Following assignment, it is the responsibility of the class to subsequently guard 
+this pointer, either through a class specific method or the generic QPointer class.
+
+\o An object assigned to a QVariant will be valid at the time of assignment.  
+
+When assigning an object to a QVariant property, QML will always use a QMetaType::QObjectStar 
+typed QVariant.  It is the responsibility of the class to guard the pointer.  A 
+general rule when writing a class that uses QVariant properties is to check the 
+type of the QVariant when it is set and if the type is not handled by your class, 
+reset it to an invalid variant.
+
+\o An object assigned to a QObject (or QObject-derived) list property will be 
+valid at the time of assignment.  
+
+Following assignment, it is the responsibility of the class to subsequently guard 
+this pointer, either through a class specific method or the generic QPointer class.
+\endlist
+
+Elements should assume that any QML assigned object can be deleted at any time, and
+respond accordingly.  If documented as such an element need not continue to work in 
+this situation, but it must not crash.
+
 \section1 Signal Support
 
 \snippet examples/declarative/extending/signal/example.qml 0

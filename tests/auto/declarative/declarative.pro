@@ -39,10 +39,11 @@ SUBDIRS += \
            qmlinfo \                # Cover
            qmlinstruction \         # Cover
            qmllanguage \            # Cover
-           qmllist \                # Cover
+           qmllistreference \       # Cover
            qmllistmodel \           # Cover
            qmlmetaproperty \        # Cover
            qmlmetatype \            # Cover
+           qmlmoduleplugin \        # Cover
            qmlnumberformatter \     # Cover
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover

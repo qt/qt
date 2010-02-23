@@ -77,6 +77,11 @@ public:
     {
         return QStringList() << QLatin1String("com.nokia.AutoTestQmlPluginType");
     }
+
+    void defineModule(const QString& uri)
+    {
+        Q_ASSERT(uri == "com.nokia.AutoTestQmlPluginType");
+    }
 };
 
 #include "plugin.moc"
