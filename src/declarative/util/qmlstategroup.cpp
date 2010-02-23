@@ -437,4 +437,4 @@ void QmlStateGroup::removeState(QmlState *state)
 
 QT_END_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,StateGroup,QmlStateGroup)
+

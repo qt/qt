@@ -99,6 +99,7 @@
 #include <private/qscriptdeclarativeclass_p.h>
 
 #include <private/qmlgraphicsitemsmodule_p.h>
+#include <private/qmlgraphicsutilmodule_p.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
@@ -113,7 +114,6 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
-QML_DEFINE_TYPE(Qt,4,6,QtObject,QObject)
 /*!
     \qmlclass QtObject QObject
     \brief The QtObject element is the most basic element in QML
@@ -142,6 +142,16 @@ struct StaticQtMetaObject : public QObject
 
 static bool qt_QmlQtModule_registered = false;
 
+void QmlEnginePrivate::defineModule()
+{
+    QML_REGISTER_TYPE(Qt,4,6,Component,QmlComponent);
+    QML_REGISTER_TYPE(Qt,4,6,QtObject,QObject);
+    QML_REGISTER_TYPE(Qt,4,6,WorkerScript,QmlWorkerScript);
+    QML_REGISTER_TYPE(Qt,4,6,WorkerListModel,QmlWorkerListModel);
+
+    QML_REGISTER_NOCREATE_TYPE(QmlBinding);
+}
+
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false), 
   contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
@@ -153,6 +163,8 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
         QmlGraphicsItemModule::defineModule();
+        QmlGraphicsUtilModule::defineModule();
+        QmlEnginePrivate::defineModule();
     }
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
     fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));

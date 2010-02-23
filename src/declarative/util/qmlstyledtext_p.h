@@ -50,6 +50,7 @@ class QPainter;
 class QPointF;
 class QString;
 class QmlStyledTextPrivate;
+class QTextLayout;
 
 class Q_DECLARATIVE_EXPORT QmlStyledText
 {

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,9 +38,3 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "testtypes.h"
-
-void registerTypes()
-{
-    QML_REGISTER_TYPE(Test, 1, 0, MyQmlObject, MyQmlObject);
-}

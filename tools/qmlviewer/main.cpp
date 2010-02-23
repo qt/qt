@@ -46,6 +46,8 @@
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
+#include "qfxtester.h"
+#include "qmlfolderlistmodel.h"
 
 QT_USE_NAMESPACE
 
@@ -149,6 +151,10 @@ int main(int argc, char ** argv)
     app.setApplicationName("viewer");
     app.setOrganizationName("Nokia");
     app.setOrganizationDomain("nokia.com");
+
+    QmlViewer::registerTypes();
+    QmlGraphicsTester::registerTypes();
+    QmlFolderListModel::registerTypes();
 
     bool frameless = false;
     bool resizeview = false;

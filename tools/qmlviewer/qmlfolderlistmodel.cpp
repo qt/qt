@@ -401,7 +401,7 @@ bool QmlFolderListModel::showOnlyReadable() const
     return d->model.filter() & QDir::Readable;
 }
 
-void  QmlFolderListModel::setShowOnlyReadable(bool on)
+void QmlFolderListModel::setShowOnlyReadable(bool on)
 {
     if (!(d->model.filter() & QDir::Readable) == !on)
         return;
@@ -411,8 +411,10 @@ void  QmlFolderListModel::setShowOnlyReadable(bool on)
         d->model.setFilter(d->model.filter() & ~QDir::Readable);
 }
 
-
-QML_DEFINE_TYPE(Qt,4,6,FolderListModel,QmlFolderListModel)
+void QmlFolderListModel::registerTypes()
+{
+    QML_REGISTER_TYPE(Qt,4,6,FolderListModel,QmlFolderListModel);
+}
 
 QT_END_NAMESPACE
 

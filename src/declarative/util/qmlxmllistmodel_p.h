@@ -127,9 +127,42 @@ private:
     Q_DISABLE_COPY(QmlXmlListModel)
 };
 
+class Q_DECLARATIVE_EXPORT QmlXmlListModelRole : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString query READ query WRITE setQuery)
+
+public:
+    QmlXmlListModelRole() {}
+    ~QmlXmlListModelRole() {}
+
+    QString name() const { return m_name; }
+    void setName(const QString &name) { m_name = name; }
+
+    QString query() const { return m_query; }
+    void setQuery(const QString &query)
+    {
+        if (query.startsWith(QLatin1Char('/'))) {
+            qmlInfo(this) << tr("An XmlRole query must not start with '/'");
+            return;
+        }
+        m_query = query;
+    }
+
+    bool isValid() {
+        return !m_name.isEmpty() && !m_query.isEmpty();
+    }
+
+private:
+    QString m_name;
+    QString m_query;
+};
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlXmlListModel)
+QML_DECLARE_TYPE(QmlXmlListModelRole)
 
 QT_END_HEADER
 

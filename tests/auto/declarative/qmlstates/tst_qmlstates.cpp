@@ -56,6 +56,8 @@ private:
     static QByteArray fullDataPath(const QString &path);
 
 private slots:
+    void initTestCase();
+
     void basicChanges();
     void basicExtension();
     void basicBinding();
@@ -344,7 +346,11 @@ Q_SIGNALS:
 };
 
 QML_DECLARE_TYPE(MyRect)
-QML_DEFINE_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
+
+void tst_qmlstates::initTestCase()
+{
+    QML_REGISTER_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
+}
 
 void tst_qmlstates::signalOverride()
 {

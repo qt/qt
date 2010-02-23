@@ -61,7 +61,6 @@ private:
 };
 
 QML_DECLARE_TYPE(MyPluginType);
-QML_DEFINE_TYPE(com.nokia.AutoTestQmlPluginType,1,0,MyPluginType,MyPluginType);
 
 
 class MyPlugin : public QmlModulePlugin
@@ -81,6 +80,7 @@ public:
     void defineModule(const QString& uri)
     {
         Q_ASSERT(uri == "com.nokia.AutoTestQmlPluginType");
+        QML_REGISTER_TYPE(com.nokia.AutoTestQmlPluginType,1,0,MyPluginType,MyPluginType);
     }
 };
 

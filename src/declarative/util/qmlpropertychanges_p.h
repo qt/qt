@@ -43,6 +43,7 @@
 #define QMLPROPERTYCHANGES_H
 
 #include "qmlstateoperations_p.h"
+#include <private/qmlcustomparser_p.h>
 
 QT_BEGIN_HEADER
 
@@ -74,6 +75,16 @@ public:
 
     virtual ActionList actions();
 };
+
+class QmlPropertyChangesParser : public QmlCustomParser
+{
+public:
+    void compileList(QList<QPair<QByteArray, QVariant> > &list, const QByteArray &pre, const QmlCustomParserProperty &prop);
+
+    virtual QByteArray compile(const QList<QmlCustomParserProperty> &);
+    virtual void setCustomData(QObject *, const QByteArray &);
+};
+
 
 QT_END_NAMESPACE
 

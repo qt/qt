@@ -43,8 +43,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_NOCREATE_TYPE(QNumberFormat)
-
 QNumberFormat::QNumberFormat(QObject *parent) : QObject(parent), _number(0), _type(Decimal),
                                  _groupingSize(0)
 {

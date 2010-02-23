@@ -88,40 +88,17 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_SYMBIAN)
-#define QML_DEFINE_INTERFACE(INTERFACE) \
-    static int defineInterface##INTERFACE = qmlRegisterInterface<INTERFACE>(#INTERFACE);
+#define QML_REGISTER_INTERFACE(INTERFACE) \
+    qmlRegisterInterface<INTERFACE>(#INTERFACE)
 
-#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE, EXTENSION) \
-    static int registerExtended##TYPE = qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE);
+#define QML_REGISTER_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE, EXTENSION) \
+    qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE)
 
-#define QML_DEFINE_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE) \
-    static int defineType##TYPE = qmlRegisterType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE);
+#define QML_REGISTER_TYPE(URI,VMAJ,VMIN,TYPE,CLASS) \
+    qmlRegisterType<CLASS>(#URI, VMAJ, VMIN, #TYPE, #CLASS)
 
-#define QML_DEFINE_EXTENDED_NOCREATE_TYPE(TYPE, EXTENSION) \
-    static int registerExtendedNoCreate##TYPE = qmlRegisterExtendedType<TYPE,EXTENSION>(#TYPE);
-
-#define QML_DEFINE_NOCREATE_TYPE(TYPE) \
-    static int registerNoCreate##TYPE = qmlRegisterType<TYPE>(#TYPE);
-
-#else
-
-#define QML_DEFINE_INTERFACE(INTERFACE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<INTERFACE *,0,0>::instance(qmlRegisterInterface<INTERFACE>(#INTERFACE)); 
-
-#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE, EXTENSION) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN)>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE));
-
-#define QML_DEFINE_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN)>::instance(qmlRegisterType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE));
-
-#define QML_DEFINE_EXTENDED_NOCREATE_TYPE(TYPE, EXTENSION) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,0,0>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#TYPE));
-
-#define QML_DEFINE_NOCREATE_TYPE(TYPE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,0,0>::instance(qmlRegisterType<TYPE>(#TYPE));
-
-#endif
+#define QML_REGISTER_NOCREATE_TYPE(CLASS) \
+    qmlRegisterType<CLASS>(#CLASS)
 
 class QmlContext;
 class QmlEngine;

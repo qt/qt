@@ -321,6 +321,8 @@ public:
     static QmlEnginePrivate *get(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p; }
     static QmlEngine *get(QmlEnginePrivate *p) { return p->q_func(); }
     QmlContext *getContext(QScriptContext *);
+
+    static void defineModule();
 };
 
 QT_END_NAMESPACE

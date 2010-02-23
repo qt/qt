@@ -76,7 +76,6 @@ private:
     QGraphicsRectItem m_item;
 };
 QML_DECLARE_TYPE(Timer);
-QML_DEFINE_TYPE(QmlTime, 1, 0, Timer, Timer);
 
 Timer *Timer::m_timer = 0;
 
@@ -156,6 +155,8 @@ void usage(const char *name)
 int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
+
+    QML_REGISTER_TYPE(QmlTime, 1, 0, Timer, Timer);
 
     uint iterations = 1024;
     QString filename;

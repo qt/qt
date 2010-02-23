@@ -92,7 +92,6 @@ private:
 };
 
 QML_DECLARE_TYPE(Tile);
-QML_DEFINE_TYPE(0,0,0,Tile,Tile);
 
 class MyWidget : public QWidget
 {
@@ -322,6 +321,8 @@ int main(int argc, char ** argv)
 
     int width = 370;
     int height = 480;
+
+    QML_REGISTER_TYPE(0,0,0,Tile,Tile);
 
     for (int i = 1; i < argc; ++i) {
         QString arg = argv[i];

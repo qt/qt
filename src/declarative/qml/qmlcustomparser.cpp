@@ -58,11 +58,11 @@ using namespace QmlParser;
     By subclassing QmlCustomParser, you can add a parser for
     building a particular type.
 
-    The subclass must implement compile() and setCustomData(), and define
-    itself in the meta type system with the macro:
+    The subclass must implement compile() and setCustomData(), and register
+    itself in the meta type system by calling the macro:
 
     \code
-    QML_DEFINE_CUSTOM_TYPE(Module, MajorVersion, MinorVersion, Name, TypeClass, ParserClass)
+    QML_REGISTER_CUSTOM_TYPE(Module, MajorVersion, MinorVersion, Name, TypeClass, ParserClass)
     \endcode
 */
 
@@ -88,7 +88,7 @@ using namespace QmlParser;
     by \a data, which is a block of data previously returned by a call
     to compile().
 
-    The \a object will be an instance of the TypeClass specified by QML_DEFINE_CUSTOM_TYPE.
+    The \a object will be an instance of the TypeClass specified by QML_REGISTER_CUSTOM_TYPE.
 */
 
 QmlCustomParserNode 

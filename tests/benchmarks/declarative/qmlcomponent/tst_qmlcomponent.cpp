@@ -58,8 +58,8 @@ public:
     virtual ~tst_qmlcomponent();
 
 public slots:
-    void init();
-    void cleanup();
+    void initTestCase();
+    void cleanupTestCase();
 
 private slots:
     void creation_data();
@@ -77,11 +77,12 @@ tst_qmlcomponent::~tst_qmlcomponent()
 {
 }
 
-void tst_qmlcomponent::init()
+void tst_qmlcomponent::initTestCase()
 {
+    registerTypes();
 }
 
-void tst_qmlcomponent::cleanup()
+void tst_qmlcomponent::cleanupTestCase()
 {
 }
 

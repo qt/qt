@@ -184,15 +184,6 @@ public:
     QmlMetaProperty property(const QByteArray &);
 };
 
-class QmlPropertyChangesParser : public QmlCustomParser
-{
-public:
-    void compileList(QList<QPair<QByteArray, QVariant> > &list, const QByteArray &pre, const QmlCustomParserProperty &prop);
-
-    virtual QByteArray compile(const QList<QmlCustomParserProperty> &);
-    virtual void setCustomData(QObject *, const QByteArray &);
-};
-
 void
 QmlPropertyChangesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
                                      const QByteArray &pre,
@@ -462,7 +453,5 @@ void QmlPropertyChanges::setIsExplicit(bool e)
     Q_D(QmlPropertyChanges);
     d->isExplicit = e;
 }
-
-QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, PropertyChanges, QmlPropertyChanges, QmlPropertyChangesParser)
 
 QT_END_NAMESPACE

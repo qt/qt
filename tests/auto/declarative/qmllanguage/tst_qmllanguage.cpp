@@ -182,6 +182,15 @@ inline QUrl TEST_FILE(const char *filename)
 
 void tst_qmllanguage::initTestCase()
 {
+    registerTypes();
+
+    QML_REGISTER_TYPE(com.nokia.Test, 0, 0, TestTP, TestType)
+    QML_REGISTER_TYPE(com.nokia.Test, 1, 0, Test, TestType)
+    QML_REGISTER_TYPE(com.nokia.Test, 1, 5, Test, TestType)
+    QML_REGISTER_TYPE(com.nokia.Test, 1, 8, Test, TestType2)
+    QML_REGISTER_TYPE(com.nokia.Test, 1, 9, OldTest, TestType)
+    QML_REGISTER_TYPE(com.nokia.Test, 1, 12, Test, TestType2)
+
     // Create locale-specific file
     // For POSIX, this will just be data/I18nType.qml, since POSIX is 7-bit
     // For iso8859-1 locale, this will just be data/I18nType?????.qml where ????? is 5 8-bit characters
@@ -1057,13 +1066,6 @@ void tst_qmllanguage::testType(const QString& qml, const QString& type)
 
 QML_DECLARE_TYPE(TestType)
 QML_DECLARE_TYPE(TestType2)
-
-QML_DEFINE_TYPE(com.nokia.Test, 0, 0, TestTP, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 0, Test, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 5, Test, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 8, Test, TestType2)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 9, OldTest, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 12, Test, TestType2)
 
 // Import tests (QT-558)
 

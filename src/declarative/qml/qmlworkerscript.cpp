@@ -633,8 +633,6 @@ bool QmlWorkerScript::event(QEvent *event)
     }
 }
 
-QML_DEFINE_TYPE(Qt, 4, 6, WorkerScript, QmlWorkerScript);
-
 void QmlWorkerListModelAgent::Data::clearChange() 
 { 
     changes.clear(); 
@@ -1037,8 +1035,6 @@ QVariant QmlWorkerListModel::data(int index, int role) const
 }
 
 QT_END_NAMESPACE
-
-QML_DEFINE_TYPE(Qt,4,6,WorkerListModel,QmlWorkerListModel)
 
 #include "qmlworkerscript.moc"
 

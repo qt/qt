@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,Behavior,QmlBehavior)
+
 
 class QmlBehaviorPrivate : public QObjectPrivate
 {

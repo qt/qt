@@ -153,6 +153,64 @@ private:
     }
 };
 
+class LinearLayoutAttached : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int stretchFactor READ stretchFactor WRITE setStretchFactor NOTIFY stretchChanged)
+    Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment NOTIFY alignmentChanged)
+public:
+    LinearLayoutAttached(QObject *parent);
+
+    int stretchFactor() const { return _stretch; }
+    void setStretchFactor(int f);
+    Qt::Alignment alignment() const { return _alignment; }
+    void setAlignment(Qt::Alignment a);
+
+Q_SIGNALS:
+    void stretchChanged(QGraphicsLayoutItem*,int);
+    void alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment);
+
+private:
+    int _stretch;
+    Qt::Alignment _alignment;
+};
+
+class GridLayoutAttached : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int row READ row WRITE setRow)
+    Q_PROPERTY(int column READ column WRITE setColumn)
+    Q_PROPERTY(int rowSpan READ rowSpan WRITE setRowSpan)
+    Q_PROPERTY(int columnSpan READ columnSpan WRITE setColumnSpan)
+    Q_PROPERTY(Qt::Alignment alignment READ alignment WRITE setAlignment)
+public:
+    GridLayoutAttached(QObject *parent);
+
+    int row() const { return _row; }
+    void setRow(int r);
+
+    int column() const { return _column; }
+    void setColumn(int c);
+
+    int rowSpan() const { return _rowspan; }
+    void setRowSpan(int rs);
+
+    int columnSpan() const { return _colspan; }
+    void setColumnSpan(int cs);
+
+    Qt::Alignment alignment() const { return _alignment; }
+    void setAlignment(Qt::Alignment a);
+
+private:
+    int _row;
+    int _column;
+    int _rowspan;
+    int _colspan;
+    Qt::Alignment _alignment;
+};
+
 QT_END_NAMESPACE
 
 QML_DECLARE_INTERFACE(QGraphicsLayoutItem)

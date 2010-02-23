@@ -154,7 +154,7 @@ QmlStateOperation::QmlStateOperation(QObjectPrivate &dd, QObject *parent)
     \sa {states-transitions}{States and Transitions}
 */
 
-QML_DEFINE_TYPE(Qt,4,6,State,QmlState)
+
 QmlState::QmlState(QObject *parent)
 : QObject(*(new QmlStatePrivate), parent)
 {
@@ -473,7 +473,6 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     d->transitionManager.transition(applyList, trans);
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlStateOperation)
 QmlStateOperation::ActionList QmlStateOperation::actions()
 {
     return ActionList();

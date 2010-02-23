@@ -61,4 +61,6 @@ private:
 
 QML_DECLARE_TYPE(MyWebView);
 
+void registerTypes();
+
 #endif // TESTTYPES_H

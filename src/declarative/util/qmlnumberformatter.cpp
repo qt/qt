@@ -255,6 +255,6 @@ void QmlNumberFormatter::componentComplete()
     d->componentComplete = true;
     d->updateText();
 }
-QML_DEFINE_TYPE(Qt,4,6,NumberFormatter,QmlNumberFormatter);
+
 
 QT_END_NAMESPACE

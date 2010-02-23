@@ -43,10 +43,13 @@
 #include <QmlComponent>
 #include <QDebug>
 #include <QLineEdit>
+#include "lineedit.h"
 
 int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
+
+    QML_REGISTER_EXTENDED_TYPE(People, 1,0, QLineEdit, QLineEdit, LineEditExtension);
 
     QmlEngine engine;
     QmlComponent component(&engine, ":example.qml");

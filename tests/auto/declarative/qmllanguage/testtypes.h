@@ -542,4 +542,6 @@ namespace MyNamespace {
 QML_DECLARE_TYPE(MyNamespace::MyNamespacedType);
 QML_DECLARE_TYPE(MyNamespace::MySecondNamespacedType);
 
+void registerTypes();
+
 #endif // TESTTYPES_H

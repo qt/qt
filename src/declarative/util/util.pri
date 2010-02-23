@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 
 SOURCES += \
+    $$PWD/qmlgraphicsutilmodule.cpp\
     $$PWD/qmlview.cpp \
     $$PWD/qfxperf.cpp \
     $$PWD/qperformancelog.cpp \
@@ -32,6 +33,7 @@ SOURCES += \
     $$PWD/qmlstyledtext.cpp
 
 HEADERS += \
+    $$PWD/qmlgraphicsutilmodule_p.h\
     $$PWD/qmlview.h \
     $$PWD/qfxperf_p_p.h \
     $$PWD/qperformancelog_p_p.h \

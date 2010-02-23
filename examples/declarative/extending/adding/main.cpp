@@ -48,6 +48,8 @@ int main(int argc, char ** argv)
 {
     QCoreApplication app(argc, argv);
 
+    QML_REGISTER_TYPE(People, 1,0, Person, Person);
+
     QmlEngine engine;
     QmlComponent component(&engine, ":example.qml");
     Person *person = qobject_cast<Person *>(component.create());

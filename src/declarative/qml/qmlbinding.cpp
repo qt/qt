@@ -56,8 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_NOCREATE_TYPE(QmlBinding);
-
 QmlBindingData::QmlBindingData()
 : updating(false), enabled(false)
 {

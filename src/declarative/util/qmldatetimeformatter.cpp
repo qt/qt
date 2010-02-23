@@ -367,6 +367,6 @@ void QmlDateTimeFormatter::componentComplete()
     d->updateText();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,DateTimeFormatter,QmlDateTimeFormatter)
+
 
 QT_END_NAMESPACE

@@ -282,6 +282,6 @@ void QmlConnection::setSignal(const QString& sig)
     connectIfValid();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Connection,QmlConnection)
+
 
 QT_END_NAMESPACE

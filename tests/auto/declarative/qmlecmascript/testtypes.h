@@ -588,5 +588,7 @@ private:
     QVariantList m_actuals;
 };
 
+void registerTypes();
+
 #endif // TESTTYPES_H
 

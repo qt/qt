@@ -69,7 +69,7 @@ Q_DECLARE_METATYPE() functionality.
 The Person class implementation is quite basic.  The property accessors simply
 return members of the object instance.
 
-The implementation must also include the QML_DEFINE_TYPE() macro.  This macro
+The implementation must also be registered using the QML_REGISTER_TYPE() macro.  This macro
 registers the Person class with QML as a type in the People library version 1.0,
 and defines the mapping between the C++ and QML class names.
 
@@ -160,13 +160,13 @@ previous example.  However, as we have repurposed the People class as a common
 base for Boy and Girl, we want to prevent it from being instantiated from QML
 directly - an explicit Boy or Girl should be instantiated instead.
 
-\snippet examples/declarative/extending/coercion/person.cpp 0
+\snippet examples/declarative/extending/coercion/main.cpp 0
 
 While we want to disallow instantiating Person from within QML, it still needs
 to be registered with the QML engine, so that it can be used as a property type
 and other types can be coerced to it.  To register a type, without defining a
-named mapping into QML, we use the QML_DEFINE_NOCREATE_TYPE() macro instead of
-the QML_DEFINE_TYPE() macro used previously.
+named mapping into QML, we call the QML_REGISTER_NOCREATE_TYPE() macro instead of
+the QML_REGISTER_TYPE() macro used previously.
 
 \section2 Define Boy and Girl
 

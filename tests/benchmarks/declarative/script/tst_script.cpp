@@ -55,6 +55,8 @@ public:
     tst_script() {}
 
 private slots:
+    void initTestCase();
+
     void property_js();
     void property_getter();
     void property_getter_js();
@@ -87,6 +89,11 @@ private slots:
     void block();
 private:
 };
+
+void tst_script::initTestCase()
+{
+    QML_REGISTER_TYPE(Qt.test, 1, 0, TestObject, TestObject);
+}
 
 inline QUrl TEST_FILE(const QString &filename)
 {
@@ -123,7 +130,6 @@ private:
     int m_x;
 };
 QML_DECLARE_TYPE(TestObject);
-QML_DEFINE_TYPE(Qt.test, 1, 0, TestObject, TestObject);
 
 TestObject::TestObject(QObject *parent)
 : QObject(parent), m_x(0)

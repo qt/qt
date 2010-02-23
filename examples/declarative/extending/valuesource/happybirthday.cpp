@@ -79,4 +79,3 @@ void HappyBirthday::advance()
     m_target.write(m_lyrics.at(m_line));
 }
 
-QML_DEFINE_TYPE(People, 1,0, HappyBirthday, HappyBirthday);

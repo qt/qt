@@ -49,6 +49,13 @@ int main(int argc, char ** argv)
 {
     QCoreApplication app(argc, argv);
 
+    QML_REGISTER_TYPE(People, 1,0, BirthdayParty, BirthdayParty);
+// ![0]
+    QML_REGISTER_NOCREATE_TYPE(Person);
+// ![0]
+    QML_REGISTER_TYPE(People, 1,0, Boy, Boy);
+    QML_REGISTER_TYPE(People, 1,0, Girl, Girl);
+
     QmlEngine engine;
     QmlComponent component(&engine, ":example.qml");
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());

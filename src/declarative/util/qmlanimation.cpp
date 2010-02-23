@@ -139,8 +139,6 @@ static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
     return easingCurve;
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation)
-
 /*!
     \qmlclass Animation QmlAbstractAnimation
     \brief The Animation element is the base of all QML animations.
@@ -609,7 +607,7 @@ void QmlAbstractAnimation::timelineComplete()
     \class QmlPauseAnimation
 */
 
-QML_DEFINE_TYPE(Qt,4,6,PauseAnimation,QmlPauseAnimation)
+
 QmlPauseAnimation::QmlPauseAnimation(QObject *parent)
 : QmlAbstractAnimation(*(new QmlPauseAnimationPrivate), parent)
 {
@@ -721,7 +719,7 @@ void QmlColorAnimation::setTo(const QColor &t)
     QmlPropertyAnimation::setTo(t);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,ColorAnimation,QmlColorAnimation)
+
 
 /*!
     \qmlclass ScriptAction QmlScriptAction
@@ -827,7 +825,7 @@ QAbstractAnimation *QmlScriptAction::qtAnimation()
     return d->rsa;
 }
 
-QML_DEFINE_TYPE(Qt,4,6,ScriptAction,QmlScriptAction)
+
 
 /*!
     \qmlclass PropertyAction QmlPropertyAction
@@ -1075,7 +1073,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,PropertyAction,QmlPropertyAction)
+
 
 /*!
     \qmlclass ParentAction QmlParentAction
@@ -1278,7 +1276,7 @@ void QmlParentAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,ParentAction,QmlParentAction)
+
 
 /*!
     \qmlclass NumberAnimation QmlNumberAnimation
@@ -1341,7 +1339,7 @@ void QmlNumberAnimation::setTo(qreal t)
     QmlPropertyAnimation::setTo(t);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,NumberAnimation,QmlNumberAnimation)
+
 
 /*!
     \qmlclass Vector3dAnimation QmlVector3dAnimation
@@ -1399,7 +1397,7 @@ void QmlVector3dAnimation::setTo(QVector3D t)
     QmlPropertyAnimation::setTo(t);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Vector3dAnimation,QmlVector3dAnimation)
+
 
 /*!
     \qmlclass RotationAnimation QmlRotationAnimation
@@ -1570,7 +1568,7 @@ void QmlRotationAnimation::setDirection(QmlRotationAnimation::RotationDirection 
     emit directionChanged();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,RotationAnimation,QmlRotationAnimation)
+
 
 QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 : QmlAbstractAnimation(*(new QmlAnimationGroupPrivate), parent)
@@ -1667,7 +1665,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,SequentialAnimation,QmlSequentialAnimation)
+
 
 /*!
     \qmlclass ParallelAnimation QmlParallelAnimation
@@ -1723,7 +1721,7 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,ParallelAnimation,QmlParallelAnimation)
+
 
 //convert a variant from string type to another animatable type
 void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
@@ -2429,6 +2427,6 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,PropertyAnimation,QmlPropertyAnimation)
+
 
 QT_END_NAMESPACE

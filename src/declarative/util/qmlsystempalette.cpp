@@ -54,7 +54,7 @@ public:
     QPalette::ColorGroup group;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,SystemPalette,QmlSystemPalette)
+
 
 /*!
     \qmlclass SystemPalette QmlSystemPalette

@@ -72,6 +72,8 @@ public:
     QmlViewer(QWidget *parent=0, Qt::WindowFlags flags=0);
     ~QmlViewer();
 
+    static void registerTypes();
+
     enum ScriptOption {
         Play = 0x00000001,
         Record = 0x00000002,

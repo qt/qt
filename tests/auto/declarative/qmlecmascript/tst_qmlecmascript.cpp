@@ -76,6 +76,7 @@ public:
     tst_qmlecmascript() {}
 
 private slots:
+    void initTestCase();
     void assignBasicTypes();
     void idShortcutInvalidates();
     void boolPropertiesEvaluateAsBool();
@@ -128,6 +129,8 @@ private slots:
 private:
     QmlEngine engine;
 };
+
+void tst_qmlecmascript::initTestCase() { registerTypes(); }
 
 void tst_qmlecmascript::assignBasicTypes()
 {

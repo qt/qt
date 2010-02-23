@@ -60,6 +60,8 @@ public:
     tst_qmlmetatype() {}
 
 private slots:
+    void initTestCase();
+
     void copy();
 
     void qmlParserStatusCast();
@@ -81,7 +83,6 @@ public:
     int foo() { return 0; }
 };
 QML_DECLARE_TYPE(TestType);
-QML_DEFINE_TYPE(Test, 1, 0, TestType, TestType);
 
 class ParserStatusTestType : public QObject, public QmlParserStatus
 {
@@ -89,7 +90,6 @@ class ParserStatusTestType : public QObject, public QmlParserStatus
     Q_CLASSINFO("DefaultProperty", "foo"); // Missing default property
 };
 QML_DECLARE_TYPE(ParserStatusTestType);
-QML_DEFINE_TYPE(Test, 1, 0, ParserStatusTestType, ParserStatusTestType);
 
 class ValueSourceTestType : public QObject, public QmlPropertyValueSource
 {
@@ -99,7 +99,6 @@ public:
     virtual void setTarget(const QmlMetaProperty &) {}
 };
 QML_DECLARE_TYPE(ValueSourceTestType);
-QML_DEFINE_TYPE(Test, 1, 0, ValueSourceTestType, ValueSourceTestType);
 
 class ValueInterceptorTestType : public QObject, public QmlPropertyValueInterceptor
 {
@@ -110,7 +109,6 @@ public:
     virtual void write(const QVariant &) {}
 };
 QML_DECLARE_TYPE(ValueInterceptorTestType);
-QML_DEFINE_TYPE(Test, 1, 0, ValueInterceptorTestType, ValueInterceptorTestType);
 
 
 #define COPY_TEST(cpptype, metatype, value, defaultvalue) \
@@ -129,6 +127,14 @@ QML_DEFINE_TYPE(Test, 1, 0, ValueInterceptorTestType, ValueInterceptorTestType);
     QVERIFY(v == (type ())); \
     QVERIFY(QmlMetaType::copy(QMetaType:: type, &v, &v2)); \
     QVERIFY(v == (value)); \
+}
+
+void tst_qmlmetatype::initTestCase()
+{
+    QML_REGISTER_TYPE(Test, 1, 0, TestType, TestType);
+    QML_REGISTER_TYPE(Test, 1, 0, ParserStatusTestType, ParserStatusTestType);
+    QML_REGISTER_TYPE(Test, 1, 0, ValueSourceTestType, ValueSourceTestType);
+    QML_REGISTER_TYPE(Test, 1, 0, ValueInterceptorTestType, ValueInterceptorTestType);
 }
 
 void tst_qmlmetatype::copy()

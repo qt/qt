@@ -149,4 +149,6 @@ private:
 };
 QML_DECLARE_TYPE(MyOffsetValueInterceptor);
 
+void registerTypes();
+
 #endif // TESTTYPES_H

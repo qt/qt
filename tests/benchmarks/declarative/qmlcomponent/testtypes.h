@@ -78,4 +78,6 @@ private:
 };
 QML_DECLARE_TYPE(MyQmlObject);
 
+void registerTypes();
+
 #endif // TESTTYPES_H

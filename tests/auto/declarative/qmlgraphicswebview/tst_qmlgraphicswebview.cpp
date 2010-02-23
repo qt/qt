@@ -59,6 +59,7 @@ public:
     tst_qmlgraphicswebview() {}
 
 private slots:
+    void initTestCase();
     void basicProperties();
     void settings();
     void historyNav();
@@ -80,6 +81,11 @@ private:
         return tmpd;
     }
 };
+
+void tst_qmlgraphicswebview::initTestCase()
+{
+    registerTypes();
+}
 
 static QString strippedHtml(QString html)
 {

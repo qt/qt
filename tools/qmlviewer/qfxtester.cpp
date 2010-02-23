@@ -52,10 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt.VisualTest, 4,6, VisualTest, QmlGraphicsVisualTest);
-QML_DEFINE_TYPE(Qt.VisualTest, 4,6, Frame, QmlGraphicsVisualTestFrame);
-QML_DEFINE_TYPE(Qt.VisualTest, 4,6, Mouse, QmlGraphicsVisualTestMouse);
-QML_DEFINE_TYPE(Qt.VisualTest, 4,6, Key, QmlGraphicsVisualTestKey);
 
 QmlGraphicsTester::QmlGraphicsTester(const QString &script, QmlViewer::ScriptOptions opts, 
                      QmlView *parent)
@@ -373,6 +369,14 @@ void QmlGraphicsTester::updateCurrentTime(int msec)
 
     if (testscript && testscript->count() <= testscriptidx)
         complete();
+}
+
+void QmlGraphicsTester::registerTypes()
+{
+    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, VisualTest, QmlGraphicsVisualTest);
+    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, Frame, QmlGraphicsVisualTestFrame);
+    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, Mouse, QmlGraphicsVisualTestMouse);
+    QML_REGISTER_TYPE(Qt.VisualTest, 4,6, Key, QmlGraphicsVisualTestKey);
 }
 
 QT_END_NAMESPACE

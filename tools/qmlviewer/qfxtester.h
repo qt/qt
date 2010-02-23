@@ -206,6 +206,8 @@ public:
     QmlGraphicsTester(const QString &script, QmlViewer::ScriptOptions options, QmlView *parent);
     ~QmlGraphicsTester();
 
+    static void registerTypes();
+
     virtual int duration() const;
 
     void run();

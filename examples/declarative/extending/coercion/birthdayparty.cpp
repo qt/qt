@@ -70,4 +70,3 @@ Person *BirthdayParty::guest(int index) const
     return m_guests.at(index);
 }
 
-QML_DEFINE_TYPE(People, 1,0, BirthdayParty, BirthdayParty);

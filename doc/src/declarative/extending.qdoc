@@ -72,7 +72,7 @@ Custom C++ types are made available to QML using these two macros:
 \quotation
 \code
 #define QML_DECLARE_TYPE(T)
-#define QML_DEFINE_TYPE(URI,VMAJ,VMIN,QmlName,T)
+#define QML_REGISTER_TYPE(URI,VMAJ,VMIN,QmlName,T)
 \endcode
 
 Register the C++ type \a T with the QML system, and make it available in QML
@@ -80,9 +80,8 @@ under the name \a QmlName in library URI version VMAJ.VMIN.
 \a T and \a QmlName may be the same.
 
 Generally the QML_DECLARE_TYPE() macro should be included immediately following
-the type declaration (usually in its header file), and the QML_DEFINE_TYPE()
-macro in the implementation file.  QML_DEFINE_TYPE() must not be present in
-a header file.
+the type declaration (usually in its header file), and the QML_REGISTER_TYPE()
+macro called by the implementation.
 
 Type \a T must be a concrete type that inherits QObject and has a default
 constructor.
@@ -153,15 +152,14 @@ from registering a new QML type.  The following macros are used instead:
 \quotation
 \code
     #define QML_DECLARE_INTERFACE(T)
-    #define QML_DEFINE_INTERFACE(T)
+    #define QML_REGISTER_INTERFACE(T)
 \endcode
 
 Register the C++ interface \a T with the QML system.
 
 Generally the QML_DECLARE_INTERFACE() macro should be included immediately
 following the interface declaration (usually in its header file), and the
-QML_DEFINE_INTERFACE() macro in an implementation file.  QML_DEFINE_INTERFACE()
-must not be present in a header file.
+QML_REGISTER_INTERFACE() macro called by the implementation.
 
 Following registration, QML can coerce objects that implement this interface
 for assignment to appropriately typed properties.
@@ -194,7 +192,7 @@ type used in the previous section, but the assignment is valid as both the Boy
 and Girl objects inherit from Person.
 
 To assign to a property, the property's type must have been registered with QML.
-Both the QML_DEFINE_TYPE() and QML_DEFINE_INTERFACE() macros already shown can
+Both the QML_REGISTER_TYPE() and QML_REGISTER_INTERFACE() macros already shown can
 be used to register a type with QML.  Additionally, if a type that acts purely
 as a base class that cannot be instantiated from QML needs to be
 registered these macros can be used:
@@ -202,18 +200,17 @@ registered these macros can be used:
 \quotation
 \code
     #define QML_DECLARE_TYPE(T)
-    #define QML_DEFINE_NOCREATE_TYPE(T)
+    #define QML_REGISTER_NOCREATE_TYPE(T)
 \endcode
 
-Register the C++ type \a T with the QML system. QML_DEFINE_NOCREATE_TYPE()
-differs from QML_DEFINE_TYPE() in that it does not define a mapping between the
+Register the C++ type \a T with the QML system. QML_REGISTER_NOCREATE_TYPE()
+differs from QML_REGISTER_TYPE() in that it does not define a mapping between the
 C++ class and a QML element name, so the type is not instantiable from QML, but
 it is available for type coercion.
 
 Generally the QML_DECLARE_TYPE() macro should be included immediately following
 the type declaration (usually in its header file), and the
-QML_DEFINE_NOCREATE_TYPE() macro in the implementation file.
-QML_DEFINE_NOCREATE_TYPE() must not be present in a header file.
+QML_REGISTER_NOCREATE_TYPE() macro called from the implementation.
 
 Type \a T must inherit QObject, but there are no restrictions on whether it is
 concrete or the signature of its constructor.
@@ -597,11 +594,11 @@ the appropriate property on the extension object is used instead.
 
 When an extended type is installed, one of the
 \code
-    #define QML_DEFINE_EXTENDED_TYPE(URI, VMAJ, VFROM, VTO, QmlName,T, ExtendedT)
-    #define QML_DEFINE_EXTENDED_NOCREATE_TYPE(T, ExtendedT)
+    #define QML_REGISTER_EXTENDED_TYPE(URI, VMAJ, VFROM, VTO, QmlName,T, ExtendedT)
+    #define QML_REGISTER_EXTENDED_NOCREATE_TYPE(T, ExtendedT)
 \endcode
-macros should be used instead of the regular \c QML_DEFINE_TYPE or
-\c QML_DEFINE_NOCREATE_TYPE.  The arguments are identical to the corresponding
+macros should be used instead of the regular \c QML_REGISTER_TYPE or
+\c QML_REGISTER_NOCREATE_TYPE.  The arguments are identical to the corresponding
 non-extension object macro, except for the ExtendedT parameter which is the type
 of the extension object.
 

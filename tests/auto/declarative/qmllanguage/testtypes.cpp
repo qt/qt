@@ -40,15 +40,18 @@
 ****************************************************************************/
 #include "testtypes.h"
 
-QML_DEFINE_INTERFACE(MyInterface);
-QML_DEFINE_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
-QML_DEFINE_TYPE(Test,1,0,MyTypeObject,MyTypeObject);
-QML_DEFINE_TYPE(Test,1,0,MyContainer,MyContainer);
-QML_DEFINE_TYPE(Test,1,0,MyPropertyValueSource,MyPropertyValueSource);
-QML_DEFINE_TYPE(Test,1,0,MyDotPropertyObject,MyDotPropertyObject);
-QML_DEFINE_TYPE(Test,1,0,MyNamespacedType,MyNamespace::MyNamespacedType);
-QML_DEFINE_TYPE(Test,1,0,MySecondNamespacedType,MyNamespace::MySecondNamespacedType);
-QML_DEFINE_NOCREATE_TYPE(MyGroupedObject);
+void registerTypes()
+{
+    QML_REGISTER_INTERFACE(MyInterface);
+    QML_REGISTER_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
+    QML_REGISTER_TYPE(Test,1,0,MyTypeObject,MyTypeObject);
+    QML_REGISTER_TYPE(Test,1,0,MyContainer,MyContainer);
+    QML_REGISTER_TYPE(Test,1,0,MyPropertyValueSource,MyPropertyValueSource);
+    QML_REGISTER_TYPE(Test,1,0,MyDotPropertyObject,MyDotPropertyObject);
+    QML_REGISTER_TYPE(Test,1,0,MyNamespacedType,MyNamespace::MyNamespacedType);
+    QML_REGISTER_TYPE(Test,1,0,MySecondNamespacedType,MyNamespace::MySecondNamespacedType);
+    QML_REGISTER_NOCREATE_TYPE(MyGroupedObject);
+}
 
 QVariant myCustomVariantTypeConverter(const QString &data)
 {

@@ -67,6 +67,7 @@ public:
     tst_qmllistreference() {}
 
 private slots:
+    void initTestCase();
     void qmllistreference();
     void qmllistreference_invalid();
     void isValid();
@@ -101,7 +102,11 @@ public:
     QmlListProperty<TestType> property;
 };
 QML_DECLARE_TYPE(TestType);
-QML_DEFINE_NOCREATE_TYPE(TestType);
+
+void tst_qmllistreference::initTestCase()
+{
+    QML_REGISTER_NOCREATE_TYPE(TestType);
+}
 
 void tst_qmllistreference::qmllistreference()
 {

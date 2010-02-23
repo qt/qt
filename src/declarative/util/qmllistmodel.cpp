@@ -61,18 +61,10 @@ QT_BEGIN_NAMESPACE
 #define DATA_ROLE_ID 1
 #define DATA_ROLE_NAME "data"
 
-struct ListInstruction
+QmlListModelParser::ListInstruction *QmlListModelParser::ListModelData::instructions() const
 {
-    enum { Push, Pop, Value, Set } type;
-    int dataIdx;
-};
-
-struct ListModelData
-{
-    int dataOffset;
-    int instrCount;
-    ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
-};
+    return (QmlListModelParser::ListInstruction *)((char *)this + sizeof(ListModelData));
+}
 
 static void dump(ModelNode *node, int ind);
 
@@ -737,17 +729,6 @@ void QmlListModel::setProperty(int index, const QString& property, const QVarian
     emit itemsChanged(index,1,roles);
 }
 
-class QmlListModelParser : public QmlCustomParser
-{
-public:
-    QByteArray compile(const QList<QmlCustomParserProperty> &);
-    bool compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
-    void setCustomData(QObject *, const QByteArray &);
-
-private:
-    bool definesEmptyList(const QString &);
-};
-
 bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data)
 {
     QList<QVariant> values = prop.assignedValues();
@@ -953,20 +934,12 @@ bool QmlListModelParser::definesEmptyList(const QString &s)
     return false;
 }
 
-QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, ListModel, QmlListModel, QmlListModelParser)
-
 /*!
     \qmlclass ListElement
     \brief The ListElement element defines a data item in a ListModel.
 
     \sa ListModel
 */
-// ### FIXME
-class QmlListElement : public QObject
-{
-Q_OBJECT
-};
-QML_DEFINE_TYPE(Qt,4,6,ListElement,QmlListElement)
 
 static void dump(ModelNode *node, int ind)
 {
@@ -1006,7 +979,5 @@ ModelNode::~ModelNode()
 }
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlListElement)
 
 #include <qmllistmodel.moc>

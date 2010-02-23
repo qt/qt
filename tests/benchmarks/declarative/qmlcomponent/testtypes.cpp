@@ -40,4 +40,7 @@
 ****************************************************************************/
 #include "testtypes.h"
 
-QML_DEFINE_TYPE(Qt.test, 4, 6, MyQmlObject, MyQmlObject);
+void registerTypes()
+{
+    QML_REGISTER_TYPE(Qt.test, 4, 6, MyQmlObject, MyQmlObject);
+}

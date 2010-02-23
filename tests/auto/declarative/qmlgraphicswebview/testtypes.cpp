@@ -46,4 +46,7 @@ void MyWebView::drawContents(QPainter *p, const QRect &r)
     QmlGraphicsWebView::drawContents(p,r);
 }
 
-QML_DEFINE_TYPE(Test,1,0,MyWebView,MyWebView);
+void registerTypes()
+{
+    QML_REGISTER_TYPE(Test,1,0,MyWebView,MyWebView);
+}

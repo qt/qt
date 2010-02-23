@@ -80,22 +80,6 @@ public:
     }
 };
 
-class QmlPackageAttached : public QObject
-{
-Q_OBJECT
-Q_PROPERTY(QString name READ name WRITE setName)
-public:
-    QmlPackageAttached(QObject *parent);
-    virtual ~QmlPackageAttached();
-
-    QString name() const;
-    void setName(const QString &n);
-
-    static QHash<QObject *, QmlPackageAttached *> attached;
-private:
-    QString _name;
-};
-
 QHash<QObject *, QmlPackageAttached *> QmlPackageAttached::attached;
 
 QmlPackageAttached::QmlPackageAttached(QObject *parent)
@@ -178,8 +162,6 @@ QmlPackageAttached *QmlPackage::qmlAttachedProperties(QObject *o)
     return new QmlPackageAttached(o);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Package,QmlPackage)
+
 
 QT_END_NAMESPACE
-
-#include <qmlpackage.moc>

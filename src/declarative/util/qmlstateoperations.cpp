@@ -162,7 +162,7 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
     using a ParentAction.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,ParentChange,QmlParentChange)
+
 QmlParentChange::QmlParentChange(QObject *parent)
     : QmlStateOperation(*(new QmlParentChangePrivate), parent)
 {
@@ -322,7 +322,7 @@ public:
     Alternatively you can use a ScriptAction to specify at which point in the transition
     you want the StateChangeScript to be run.
 */
-QML_DEFINE_TYPE(Qt,4,6,StateChangeScript,QmlStateChangeScript)
+
 QmlStateChangeScript::QmlStateChangeScript(QObject *parent)
 : QmlStateOperation(*(new QmlStateChangeScriptPrivate), parent)
 {
@@ -409,7 +409,7 @@ QString QmlStateChangeScript::typeName() const
     For more information on anchors see \l {anchor-layout}{Anchor Layouts}.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,AnchorChanges,QmlAnchorChanges)
+
 
 class QmlAnchorChangesPrivate : public QObjectPrivate
 {

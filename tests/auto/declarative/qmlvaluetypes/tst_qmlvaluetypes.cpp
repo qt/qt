@@ -53,6 +53,8 @@ public:
     tst_qmlvaluetypes() {}
 
 private slots:
+    void initTestCase();
+
     void point();
     void pointf();
     void size();
@@ -78,6 +80,11 @@ private slots:
 private:
     QmlEngine engine;
 };
+
+void tst_qmlvaluetypes::initTestCase()
+{
+    registerTypes();
+}
 
 inline QUrl TEST_FILE(const QString &filename)
 {

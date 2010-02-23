@@ -70,7 +70,7 @@ public:
     QmlFontLoader::Status status;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,FontLoader,QmlFontLoader)
+
 
 /*!
     \qmlclass FontLoader QmlFontLoader

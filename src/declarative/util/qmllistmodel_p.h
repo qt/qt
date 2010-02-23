@@ -43,6 +43,7 @@
 #define QMLLISTMODEL_H
 
 #include <qml.h>
+#include <private/qmlcustomparser_p.h>
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
@@ -98,9 +99,40 @@ private:
     ModelNode *_root;
 };
 
+// ### FIXME
+class QmlListElement : public QObject
+{
+Q_OBJECT
+};
+
+class QmlListModelParser : public QmlCustomParser
+{
+public:
+    QByteArray compile(const QList<QmlCustomParserProperty> &);
+    void setCustomData(QObject *, const QByteArray &);
+
+private:
+    struct ListInstruction
+    {
+        enum { Push, Pop, Value, Set } type;
+        int dataIdx;
+    };
+    struct ListModelData
+    {
+        int dataOffset;
+        int instrCount;
+        ListInstruction *instructions() const;
+    };
+    bool compileProperty(const QmlCustomParserProperty &prop, QList<ListInstruction> &instr, QByteArray &data);
+
+    bool definesEmptyList(const QString &);
+};
+
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlListModel)
+QML_DECLARE_TYPE(QmlListElement)
 
 QT_END_HEADER
 

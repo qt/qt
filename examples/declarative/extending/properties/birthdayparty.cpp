@@ -72,4 +72,3 @@ Person *BirthdayParty::guest(int index) const
 }
 // ![0]
 
-QML_DEFINE_TYPE(People, 1,0, BirthdayParty, BirthdayParty);

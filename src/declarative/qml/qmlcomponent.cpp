@@ -121,7 +121,6 @@ Item {
     }
     \endqml
 */
-QML_DEFINE_TYPE(Qt,4,6,Component,QmlComponent);
 
 /*!
     \enum QmlComponent::Status

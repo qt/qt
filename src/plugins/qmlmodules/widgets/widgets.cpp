@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+#include <QtDeclarative/qmlmoduleplugin.h>
+#include <QtDeclarative/qml.h>
+
+#include "graphicslayouts_p.h"
 #include "graphicswidgets_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -106,12 +110,35 @@ private:
     }
 };
 
-QML_DEFINE_EXTENDED_TYPE(Qt,4,6,QGraphicsView,QGraphicsView,QGraphicsViewDeclarativeUI)
-QML_DEFINE_EXTENDED_TYPE(Qt,4,6,QGraphicsScene,QGraphicsScene,QGraphicsSceneDeclarativeUI)
-QML_DEFINE_EXTENDED_TYPE(Qt,4,6,QGraphicsWidget,QGraphicsWidget,QGraphicsWidgetDeclarativeUI)
+class QWidgetsQmlModule : public QmlModulePlugin
+{
+    Q_OBJECT
+public:
+    QStringList keys() const
+    {
+        return QStringList() << QLatin1String("Qt.widgets");
+    }
 
-QML_DEFINE_INTERFACE(QGraphicsItem)
+    void defineModule(const QString& uri)
+    {
+        Q_UNUSED(uri)
+        Q_ASSERT(uri == QLatin1String("Qt.widgets"));
+
+        QML_REGISTER_INTERFACE(QGraphicsLayoutItem);
+        QML_REGISTER_INTERFACE(QGraphicsLayout);
+        QML_REGISTER_TYPE(Qt,4,6,QGraphicsLinearLayoutStretchItem,QGraphicsLinearLayoutStretchItemObject);
+        QML_REGISTER_TYPE(Qt,4,6,QGraphicsLinearLayout,QGraphicsLinearLayoutObject);
+        QML_REGISTER_TYPE(Qt,4,6,QGraphicsGridLayout,QGraphicsGridLayoutObject);
+        QML_REGISTER_EXTENDED_TYPE(Qt,4,6,QGraphicsView,QGraphicsView,QGraphicsViewDeclarativeUI);
+        QML_REGISTER_EXTENDED_TYPE(Qt,4,6,QGraphicsScene,QGraphicsScene,QGraphicsSceneDeclarativeUI);
+        QML_REGISTER_EXTENDED_TYPE(Qt,4,6,QGraphicsWidget,QGraphicsWidget,QGraphicsWidgetDeclarativeUI);
+        QML_REGISTER_INTERFACE(QGraphicsItem);
+    }
+};
 
 QT_END_NAMESPACE
 
-#include <graphicswidgets.moc>
+#include "widgets.moc"
+
+Q_EXPORT_PLUGIN2(qtwidgetsqmlmodule, QT_PREPEND_NAMESPACE(QWidgetsQmlModule));
+

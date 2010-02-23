@@ -78,6 +78,22 @@ public:
     static QmlPackageAttached *qmlAttachedProperties(QObject *);
 };
 
+class QmlPackageAttached : public QObject
+{
+Q_OBJECT
+Q_PROPERTY(QString name READ name WRITE setName)
+public:
+    QmlPackageAttached(QObject *parent);
+    virtual ~QmlPackageAttached();
+
+    QString name() const;
+    void setName(const QString &n);
+
+    static QHash<QObject *, QmlPackageAttached *> attached;
+private:
+    QString _name;
+};
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlPackage)

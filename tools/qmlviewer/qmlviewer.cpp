@@ -139,8 +139,6 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(Screen)
 
-QML_DEFINE_TYPE(QmlViewer, 1, 0, Screen, Screen)
-
 QT_BEGIN_NAMESPACE
 
 class SizedMenuBar : public QMenuBar
@@ -1458,6 +1456,11 @@ void QmlViewer::setUseGL(bool useGL)
 void QmlViewer::setUseNativeFileBrowser(bool use)
 {
     useQmlFileBrowser = !use;
+}
+
+void QmlViewer::registerTypes()
+{
+    QML_REGISTER_TYPE(QmlViewer, 1, 0, Screen, Screen);
 }
 
 QT_END_NAMESPACE

@@ -80,12 +80,6 @@
 #endif
 #include "qmlgraphicsanchors_p.h"
 
-#define QML_REGISTER_TYPE(URI,VMAJ,VMIN,TYPE,CLASS) \
-            qmlRegisterType<CLASS>(#URI, VMAJ, VMIN, #TYPE, #CLASS)
-
-#define QML_REGISTER_NOCREATE_TYPE(CLASS) \
-            qmlRegisterType<CLASS>(#CLASS)
-
 void QmlGraphicsItemModule::defineModule()
 {
     QML_REGISTER_TYPE(Qt,4,6,AnimatedImage,QmlGraphicsAnimatedImage);

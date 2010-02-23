@@ -69,6 +69,8 @@ public:
     QmlFolderListModel(QObject *parent = 0);
     ~QmlFolderListModel();
 
+    static void registerTypes();
+
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
     virtual QVariant data(int index, int role) const;
     virtual int count() const;

@@ -57,8 +57,8 @@ public:
     virtual ~tst_binding();
 
 public slots:
-    void init();
-    void cleanup();
+    void initTestCase();
+    void cleanupTestCase();
 
 private slots:
     void objectproperty_data();
@@ -78,11 +78,12 @@ tst_binding::~tst_binding()
 {
 }
 
-void tst_binding::init()
+void tst_binding::initTestCase()
 {
+    registerTypes();
 }
 
-void tst_binding::cleanup()
+void tst_binding::cleanupTestCase()
 {
 }
 

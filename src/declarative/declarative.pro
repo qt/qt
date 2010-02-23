@@ -24,7 +24,6 @@ include(3rdparty/3rdparty.pri)
 include(util/util.pri)
 include(graphicsitems/graphicsitems.pri)
 include(qml/qml.pri)
-include(widgets/widgets.pri)
 include(debugger/debugger.pri)
 
 symbian:TARGET.UID3=0x2001E623

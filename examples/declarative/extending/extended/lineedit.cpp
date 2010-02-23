@@ -103,4 +103,3 @@ void LineEditExtension::setBottomMargin(int m)
 }
 
 QML_DECLARE_TYPE(QLineEdit);
-QML_DEFINE_EXTENDED_TYPE(People, 1,0, QLineEdit, QLineEdit, LineEditExtension);

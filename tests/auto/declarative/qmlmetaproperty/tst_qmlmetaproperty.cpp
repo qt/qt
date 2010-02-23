@@ -54,7 +54,6 @@ public:
 };
 
 QML_DECLARE_TYPE(MyQmlObject);
-QML_DEFINE_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
 
 class MyAttached : public QObject
 {
@@ -88,7 +87,6 @@ private:
 };
 
 QML_DECLARE_TYPE(MyContainer);
-QML_DEFINE_TYPE(Test,1,0,MyContainer,MyContainer);
 QML_DECLARE_TYPEINFO(MyContainer, QML_HAS_ATTACHED_PROPERTIES)
 
 class tst_qmlmetaproperty : public QObject
@@ -98,6 +96,7 @@ public:
     tst_qmlmetaproperty() {}
 
 private slots:
+    void initTestCase();
 
     // Constructors
     void qmlmetaproperty();
@@ -125,6 +124,13 @@ private slots:
 private:
     QmlEngine engine;
 };
+
+void tst_qmlmetaproperty::initTestCase()
+{
+    QML_REGISTER_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
+    QML_REGISTER_TYPE(Test,1,0,PropertyObject,PropertyObject);
+    QML_REGISTER_TYPE(Test,1,0,MyContainer,MyContainer);
+}
 
 void tst_qmlmetaproperty::qmlmetaproperty()
 {
@@ -209,7 +215,6 @@ private:
 };
 
 QML_DECLARE_TYPE(PropertyObject);
-QML_DEFINE_TYPE(Test,1,0,PropertyObject,PropertyObject);
 
 void tst_qmlmetaproperty::qmlmetaproperty_object()
 {
