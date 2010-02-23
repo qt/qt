@@ -75,7 +75,6 @@ int main(int argc, char ** argv)
     QApplication app(argc, argv);
 
     QmlView view;
-    view.setSource(QUrl("qrc:view.qml"));
 
     view.engine()->addImageProvider("colors", new ColorImageProvider);
 
@@ -91,7 +90,7 @@ int main(int argc, char ** argv)
     QmlContext *ctxt = view.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 
-    view.execute();
+    view.setSource(QUrl("qrc:view.qml"));
     view.show();
 
     return app.exec();

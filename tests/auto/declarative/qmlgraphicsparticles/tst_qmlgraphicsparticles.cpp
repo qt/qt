@@ -113,7 +113,6 @@ QmlView *tst_QmlGraphicsParticles::createView(const QString &filename)
     canvas->setFixedSize(240,320);
 
     canvas->setSource(QUrl::fromLocalFile(filename));
-    canvas->execute();
 
     return canvas;
 }

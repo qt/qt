@@ -112,14 +112,12 @@ void tst_QmlGraphicsItem::keys()
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
-
     KeysTestObject *testObject = new KeysTestObject;
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
 
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keys.qml"));
     canvas->show();
     qApp->processEvents();
 
@@ -195,7 +193,6 @@ void tst_QmlGraphicsItem::keyNavigation()
     canvas->setFixedSize(240,320);
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigation.qml"));
-    canvas->execute();
     canvas->show();
     qApp->processEvents();
 

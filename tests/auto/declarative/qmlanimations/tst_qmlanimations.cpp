@@ -261,7 +261,6 @@ void tst_qmlanimations::badTypes()
         QmlView *view = new QmlView;
         view->setSource(QUrl::fromLocalFile(SRCDIR "/data/badtype1.qml"));
 
-        view->execute();
         qApp->processEvents();
 
         delete view;

@@ -75,8 +75,6 @@ void tst_QmlGraphicsPositioners::test_horizontal()
 {
     QmlView *canvas = createView(SRCDIR "/data/horizontal.qml");
 
-    canvas->execute();
-
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
@@ -98,8 +96,6 @@ void tst_QmlGraphicsPositioners::test_horizontal_spacing()
 {
     QmlView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
 
-    canvas->execute();
-
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
@@ -120,8 +116,6 @@ void tst_QmlGraphicsPositioners::test_horizontal_spacing()
 void tst_QmlGraphicsPositioners::test_horizontal_animated()
 {
     QmlView *canvas = createView(SRCDIR "/data/horizontal-animated.qml");
-
-    canvas->execute();
 
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
@@ -163,8 +157,6 @@ void tst_QmlGraphicsPositioners::test_vertical()
 {
     QmlView *canvas = createView(SRCDIR "/data/vertical.qml");
 
-    canvas->execute();
-
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
@@ -186,8 +178,6 @@ void tst_QmlGraphicsPositioners::test_vertical_spacing()
 {
     QmlView *canvas = createView(SRCDIR "/data/vertical-spacing.qml");
 
-    canvas->execute();
-
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
@@ -208,8 +198,6 @@ void tst_QmlGraphicsPositioners::test_vertical_spacing()
 void tst_QmlGraphicsPositioners::test_vertical_animated()
 {
     QmlView *canvas = createView(SRCDIR "/data/vertical-animated.qml");
-
-    canvas->execute();
 
     //Note that they animate in
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
@@ -251,8 +239,6 @@ void tst_QmlGraphicsPositioners::test_grid()
 {
     QmlView *canvas = createView("data/grid.qml");
 
-    canvas->execute();
-
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
     QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
@@ -280,8 +266,6 @@ void tst_QmlGraphicsPositioners::test_grid_spacing()
 {
     QmlView *canvas = createView("data/grid-spacing.qml");
 
-    canvas->execute();
-
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
     QmlGraphicsRectangle *two = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("two");
@@ -308,7 +292,6 @@ void tst_QmlGraphicsPositioners::test_grid_spacing()
 void tst_QmlGraphicsPositioners::test_grid_animated()
 {
     QmlView *canvas = createView(SRCDIR "/data/grid-animated.qml");
-    canvas->execute();
 
     //Note that all animate in
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
@@ -382,8 +365,6 @@ void tst_QmlGraphicsPositioners::test_grid_animated()
 void tst_QmlGraphicsPositioners::test_repeater()
 {
     QmlView *canvas = createView("data/repeater.qml");
-
-    canvas->execute();
 
     QmlGraphicsRectangle *one = canvas->rootObject()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
