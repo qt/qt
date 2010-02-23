@@ -273,13 +273,15 @@ if($stub) {
     system ("makesis -s $pkgoutput $stub_sis_name");
 } else {
     # Create SIS.
-    system ("makesis $pkgoutput $unsigned_sis_name");
+    # The 'and' is because system uses 0 to indicate success.
+    system ("makesis $pkgoutput $unsigned_sis_name") and die ("makesis failed");
     print("\n");
 
     # Sign SIS with certificate info given as an argument.
     my $relcert = File::Spec->abs2rel($certificate);
     my $relkey = File::Spec->abs2rel($key);
-    system ("signsis $unsigned_sis_name $signed_sis_name $relcert $relkey $passphrase");
+    # The 'and' is because system uses 0 to indicate success.
+    system ("signsis $unsigned_sis_name $signed_sis_name $relcert $relkey $passphrase") and die ("signsis failed");
 
     # Check if creating signed SIS Succeeded
     stat($signed_sis_name);
