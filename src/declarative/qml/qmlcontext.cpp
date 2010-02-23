@@ -545,5 +545,30 @@ QUrl QmlContext::baseUrl() const
         return QUrl();
 }
 
+int QmlContextPrivate::context_count(QmlListProperty<QObject> *prop)
+{
+    QmlContext *context = static_cast<QmlContext*>(prop->object);
+    QmlContextPrivate *d = QmlContextPrivate::get(context);
+    int contextProperty = (int)(intptr_t)prop->data;
+
+    if (d->propertyValues.at(contextProperty).userType() != qMetaTypeId<QList<QObject*> >()) {
+        return 0;
+    } else {
+        return ((const QList<QObject> *)d->propertyValues.at(contextProperty).constData())->count();
+    }
+}
+
+QObject *QmlContextPrivate::context_at(QmlListProperty<QObject> *prop, int index)
+{
+    QmlContext *context = static_cast<QmlContext*>(prop->object);
+    QmlContextPrivate *d = QmlContextPrivate::get(context);
+    int contextProperty = (int)(intptr_t)prop->data;
+
+    if (d->propertyValues.at(contextProperty).userType() != qMetaTypeId<QList<QObject*> >()) {
+        return 0;
+    } else {
+        return ((const QList<QObject*> *)d->propertyValues.at(contextProperty).constData())->at(index);
+    }
+}
 
 QT_END_NAMESPACE

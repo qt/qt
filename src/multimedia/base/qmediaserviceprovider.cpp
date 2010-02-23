@@ -594,6 +594,8 @@ QMediaServiceProvider *QMediaServiceProvider::defaultServiceProvider()
 #endif
 }
 
+QT_END_NAMESPACE
+
 /*!
     \class QMediaServiceProviderPlugin
     \preliminary

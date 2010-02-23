@@ -73,7 +73,7 @@ public:
     "on<Signal>" handler that reacts when a signal is received, like this:
 
     \qml
-    MouseRegion {
+    MouseArea {
         onClicked: { foo(x+123,y+456) }
     }
     \endqml
@@ -95,7 +95,7 @@ public:
     like this:
 
     \qml
-    MouseRegion {
+    MouseArea {
         Connection {
             signal: "clicked(x,y)"
             script: { foo(x+123,y+456) }
@@ -107,7 +107,7 @@ public:
     the sender of the signal, and the script is the default attribute:
 
     \qml
-    MouseRegion {
+    MouseArea {
         id: mr
     }
     ...

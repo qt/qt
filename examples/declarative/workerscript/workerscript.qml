@@ -20,7 +20,7 @@ Rectangle {
         anchors.leftMargin: 20
         color: "red"
 
-        MouseRegion { 
+        MouseArea { 
             anchors.fill: parent
             onClicked: myWorker.sendMessage( { rectangle: "red", x: mouse.x, y: mouse.y } );
         }
@@ -32,7 +32,7 @@ Rectangle {
         anchors.rightMargin: 20
         color: "blue"
 
-        MouseRegion { 
+        MouseArea { 
             anchors.fill: parent
             onClicked: myWorker.sendMessage( { rectangle: "blue", x: mouse.x, y: mouse.y } );
         }

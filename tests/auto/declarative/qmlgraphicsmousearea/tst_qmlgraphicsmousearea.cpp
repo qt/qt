@@ -41,10 +41,10 @@
 
 #include <QtTest/QtTest>
 #include <QtTest/QSignalSpy>
-#include <private/qmlgraphicsmouseregion_p.h>
+#include <private/qmlgraphicsmousearea_p.h>
 #include <QtDeclarative/qmlview.h>
 
-class tst_QmlGraphicsMouseRegion: public QObject
+class tst_QmlGraphicsMouseArea: public QObject
 {
     Q_OBJECT
 private slots:
@@ -53,7 +53,7 @@ private:
     QmlView *createView(const QString &filename);
 };
 
-void tst_QmlGraphicsMouseRegion::dragProperties()
+void tst_QmlGraphicsMouseArea::dragProperties()
 {
     QmlView *canvas = createView(SRCDIR "/data/dragproperties.qml");
     canvas->execute();
@@ -61,7 +61,7 @@ void tst_QmlGraphicsMouseRegion::dragProperties()
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
 
-    QmlGraphicsMouseRegion *mouseRegion = canvas->rootObject()->findChild<QmlGraphicsMouseRegion*>("mouseregion");
+    QmlGraphicsMouseArea *mouseRegion = canvas->rootObject()->findChild<QmlGraphicsMouseArea*>("mouseregion");
     QmlGraphicsDrag *drag = mouseRegion->drag();
     QVERIFY(mouseRegion != 0);
     QVERIFY(drag != 0);
@@ -124,7 +124,7 @@ void tst_QmlGraphicsMouseRegion::dragProperties()
     QCOMPARE(ymaxSpy.count(),1);
 }
 
-QmlView *tst_QmlGraphicsMouseRegion::createView(const QString &filename)
+QmlView *tst_QmlGraphicsMouseArea::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
@@ -134,6 +134,6 @@ QmlView *tst_QmlGraphicsMouseRegion::createView(const QString &filename)
     return canvas;
 }
 
-QTEST_MAIN(tst_QmlGraphicsMouseRegion)
+QTEST_MAIN(tst_QmlGraphicsMouseArea)
 
-#include "tst_qmlgraphicsmouseregion.moc"
+#include "tst_qmlgraphicsmousearea.moc"

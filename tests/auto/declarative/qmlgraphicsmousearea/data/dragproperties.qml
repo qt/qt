@@ -14,7 +14,7 @@ Rectangle {
         height: 100
         opacity: (whiteRect.width-blackRect.x+whiteRect.height-blackRect.y-199)/200
         Text { text: blackRect.opacity}
-        MouseRegion {
+        MouseArea {
             objectName: "mouseregion"
             anchors.fill: parent
             drag.target: blackRect

@@ -65,12 +65,7 @@ public:
     int count() const;
     QVariant at(int) const;
 
-    bool append(const QVariant &);
-    bool insert(int, const QVariant &);
-    bool removeAt(int);
-    bool clear();
-
-    enum Type { Invalid, StringList, VariantList, QmlList, QListPtr, Instance, Integer };
+    enum Type { Invalid, StringList, VariantList, ListProperty, Instance, Integer };
     Type type() const { return m_type; }
 
 private:

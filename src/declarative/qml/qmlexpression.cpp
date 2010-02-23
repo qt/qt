@@ -52,8 +52,6 @@
 
 #include <private/qscriptdeclarativeclass_p.h>
 
-Q_DECLARE_METATYPE(QList<QObject *>);
-
 QT_BEGIN_NAMESPACE
 
 bool QmlDelayedError::addError(QmlEnginePrivate *e)

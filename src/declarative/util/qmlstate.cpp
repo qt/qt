@@ -243,16 +243,30 @@ void QmlState::setExtends(const QString &extends)
     extends another state, then the changes are applied against the state being
     extended.
 */
-QmlList<QmlStateOperation *> *QmlState::changes()
+QmlListProperty<QmlStateOperation> QmlState::changes()
 {
     Q_D(QmlState);
-    return &d->operations;
+    return QmlListProperty<QmlStateOperation>(this, &d->operations, QmlStatePrivate::operations_append,
+                                              QmlStatePrivate::operations_count, QmlStatePrivate::operations_at,
+                                              QmlStatePrivate::operations_clear);
+}
+
+int QmlState::operationCount() const
+{
+    Q_D(const QmlState);
+    return d->operations.count();
+}
+
+QmlStateOperation *QmlState::operationAt(int index) const
+{
+    Q_D(const QmlState);
+    return d->operations.at(index);
 }
 
 QmlState &QmlState::operator<<(QmlStateOperation *op)
 {
     Q_D(QmlState);
-    d->operations.append(op);
+    d->operations.append(QmlStatePrivate::OperationGuard(op, &d->operations));
     return *this;
 }
 

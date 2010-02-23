@@ -58,7 +58,7 @@ Item {
                 transformOrigin: "Center"
             }
 
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onClicked: { root.currentIndex = index }
             }

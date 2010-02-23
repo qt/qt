@@ -177,7 +177,7 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
 
     The \c running property can be set to declaratively control whether or not
     an animation is running.  The following example will animate a rectangle
-    whenever the \l MouseRegion is pressed.
+    whenever the \l MouseArea is pressed.
 
     \code
     Rectangle {
@@ -186,7 +186,7 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
             running: myMouse.pressed
             from: 0; to: 100
         }
-        MouseRegion { id: myMouse }
+        MouseArea { id: myMouse }
     }
     \endcode
 
@@ -942,10 +942,10 @@ void QmlPropertyAction::setProperties(const QString &p)
     emit propertiesChanged(p);
 }
 
-QList<QObject *> *QmlPropertyAction::targets()
+QmlListProperty<QObject> QmlPropertyAction::targets()
 {
     Q_D(QmlPropertyAction);
-    return &d->targets;
+    return QmlListProperty<QObject>(this, d->targets);
 }
 
 /*!
@@ -953,10 +953,10 @@ QList<QObject *> *QmlPropertyAction::targets()
     This property holds the objects not to be affected by this animation.
     \sa targets
 */
-QList<QObject *> *QmlPropertyAction::exclude()
+QmlListProperty<QObject> QmlPropertyAction::exclude()
 {
     Q_D(QmlPropertyAction);
-    return &d->exclude;
+    return QmlListProperty<QObject>(this, d->exclude);
 }
 
 /*!
@@ -1585,14 +1585,36 @@ QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 {
 }
 
+void QmlAnimationGroupPrivate::append_animation(QmlListProperty<QmlAbstractAnimation> *list, QmlAbstractAnimation *a)
+{
+    QmlAnimationGroup *q = qobject_cast<QmlAnimationGroup *>(list->object);
+    if (q) {
+        q->d_func()->animations.append(a);
+        a->setGroup(q);
+    }
+}
+
+void QmlAnimationGroupPrivate::clear_animation(QmlListProperty<QmlAbstractAnimation> *list)
+{
+    QmlAnimationGroup *q = qobject_cast<QmlAnimationGroup *>(list->object);
+    if (q) {
+        for (int i = 0; i < q->d_func()->animations.count(); ++i)
+            q->d_func()->animations.at(i)->setGroup(0);
+        q->d_func()->animations.clear();
+    }
+}
+
 QmlAnimationGroup::~QmlAnimationGroup()
 {
 }
 
-QmlList<QmlAbstractAnimation *> *QmlAnimationGroup::animations()
+QmlListProperty<QmlAbstractAnimation> QmlAnimationGroup::animations()
 {
     Q_D(QmlAnimationGroup);
-    return &d->animations;
+    QmlListProperty<QmlAbstractAnimation> list(this, d->animations);
+    list.append = &QmlAnimationGroupPrivate::append_animation;
+    list.clear = &QmlAnimationGroupPrivate::clear_animation;
+    return list;
 }
 
 /*!
@@ -1805,7 +1827,7 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 
     Fade out \c theObject when clicked:
     \qml
-    MouseRegion {
+    MouseArea {
         anchors.fill: theObject
         onClicked: PropertyAnimation { target: theObject; property: "opacity"; to: 0 }
     }
@@ -2225,7 +2247,7 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
            color: Qt.rgba(0,0,1)
            //need to explicitly specify target and property
            NumberAnimation { id: theAnim; target: theRect; property: "x" to: 500 }
-           MouseRegion {
+           MouseArea {
                anchors.fill: parent
                onClicked: theAnim.start()
            }
@@ -2237,10 +2259,10 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
 
     \sa exclude
 */
-QList<QObject *> *QmlPropertyAnimation::targets()
+QmlListProperty<QObject> QmlPropertyAnimation::targets()
 {
     Q_D(QmlPropertyAnimation);
-    return &d->targets;
+    return QmlListProperty<QObject>(this, d->targets);
 }
 
 /*!
@@ -2248,10 +2270,10 @@ QList<QObject *> *QmlPropertyAnimation::targets()
     This property holds the items not to be affected by this animation.
     \sa targets
 */
-QList<QObject *> *QmlPropertyAnimation::exclude()
+QmlListProperty<QObject> QmlPropertyAnimation::exclude()
 {
     Q_D(QmlPropertyAnimation);
-    return &d->exclude;
+    return QmlListProperty<QObject>(this, d->exclude);
 }
 
 QAbstractAnimation *QmlPropertyAnimation::qtAnimation()

@@ -77,9 +77,19 @@ void BirthdayParty::setCelebrant(Person *c)
     emit celebrantChanged();
 }
 
-QmlList<Person *> *BirthdayParty::guests() 
+QmlListProperty<Person> BirthdayParty::guests() 
 {
-    return &m_guests;
+    return QmlListProperty<Person>(this, m_guests);
+}
+
+int BirthdayParty::guestCount() const
+{
+    return m_guests.count();
+}
+
+Person *BirthdayParty::guest(int index) const
+{
+    return m_guests.at(index);
 }
 
 void BirthdayParty::startParty()

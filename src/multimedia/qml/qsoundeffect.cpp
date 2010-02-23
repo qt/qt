@@ -52,6 +52,7 @@
 #include "qsoundeffect_qsound_p.h"
 #endif
 
+QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass SoundEffect QSoundEffect
@@ -250,3 +251,4 @@ void QSoundEffect::repeat()
     }
 }
 
+QT_END_NAMESPACE

@@ -43,6 +43,7 @@
 #include <QPixmap>
 #include <QImage>
 #include <QPainter>
+#include <QPainterPath>
 #include <QGLWidget>
 #include <QTextLayout>
 #include <QVBoxLayout>
@@ -218,6 +219,28 @@ void paint_QPixmapCachedRoundedRect(QPainter &p)
     }
 }
 
+void paint_pathCacheRoundedRect(QPainter &p)
+{
+    static bool first = true;
+    static QPainterPath path[lines];
+    if (first) {
+        for (int j = 0; j < lines; ++j) {
+            path[j].addRoundedRect(QRectF(0,0,(j+1)*50, spacing-1), 8, 8);
+        }
+        first = false;
+    }
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(Qt::black);
+    p.setBrush(Qt::red);
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < lines; ++j) {
+            p.translate(0,j*spacing);
+            p.drawPath(path[j]);
+            p.translate(0,-j*spacing);
+        }
+    }
+}
+
 void paint_QPixmap63x63_opaque(QPainter &p)
 {
     static bool first = true;
@@ -290,6 +313,7 @@ struct {
     { "CachedText", &paint_QPixmapCachedText },
     { "RoundedRect", &paint_RoundedRect },
     { "CachedRoundedRect", &paint_QPixmapCachedRoundedRect },
+    { "PathCacheRoundedRect", &paint_pathCacheRoundedRect },
     { "QPixmap63x63_opaque", &paint_QPixmap63x63_opaque },
     { "QPixmap64x64_opaque", &paint_QPixmap64x64_opaque },
     { "QPixmap63x63", &paint_QPixmap63x63 },

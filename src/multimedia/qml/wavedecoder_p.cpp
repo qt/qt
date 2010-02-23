@@ -44,6 +44,8 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qendian.h>
 
+QT_BEGIN_NAMESPACE
+
 WaveDecoder::WaveDecoder(QIODevice *s, QObject *parent):
     QIODevice(parent),
     haveFormat(false),
@@ -134,3 +136,5 @@ void WaveDecoder::handleData()
         emit formatKnown();
     }
 }
+
+QT_END_NAMESPACE

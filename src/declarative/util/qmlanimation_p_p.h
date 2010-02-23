@@ -304,37 +304,13 @@ class QmlAnimationGroupPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlAnimationGroup)
 public:
     QmlAnimationGroupPrivate()
-    : QmlAbstractAnimationPrivate(), animations(this), ag(0) {}
+    : QmlAbstractAnimationPrivate(), ag(0) {}
 
-    struct AnimationList : public QmlConcreteList<QmlAbstractAnimation *>
-    {
-        AnimationList(QmlAnimationGroupPrivate *p)
-        : anim(p) {}
-        virtual void append(QmlAbstractAnimation *a) {
-            QmlConcreteList<QmlAbstractAnimation *>::append(a);
-            a->setGroup(anim->q_func());
-        }
-        virtual void clear()
-        {
-            for (int i = 0; i < count(); ++i)
-                at(i)->setGroup(0);
-            QmlConcreteList<QmlAbstractAnimation *>::clear();
-        }
-        virtual void removeAt(int i)
-        {
-            at(i)->setGroup(0);
-            QmlConcreteList<QmlAbstractAnimation *>::removeAt(i);
-        }
-        virtual void insert(int i, QmlAbstractAnimation *a)
-        {
-            QmlConcreteList<QmlAbstractAnimation *>::insert(i, a);
-            a->setGroup(anim->q_func());
-        }
-
-        QmlAnimationGroupPrivate *anim;
-    };
-
-    AnimationList animations;
+    static void append_animation(QmlListProperty<QmlAbstractAnimation> *list, QmlAbstractAnimation *role);
+    static void clear_animation(QmlListProperty<QmlAbstractAnimation> *list);
+    static void removeAt_animation(QmlListProperty<QmlAbstractAnimation> *list, int i);
+    static void insert_animation(QmlListProperty<QmlAbstractAnimation> *list, int i, QmlAbstractAnimation *role);
+    QList<QmlAbstractAnimation *> animations;
     QAnimationGroup *ag;
 };
 

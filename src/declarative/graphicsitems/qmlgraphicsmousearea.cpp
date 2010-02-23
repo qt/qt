@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsmouseregion_p.h"
-#include "qmlgraphicsmouseregion_p_p.h"
+#include "qmlgraphicsmousearea_p.h"
+#include "qmlgraphicsmousearea_p_p.h"
 
 #include "qmlgraphicsevents_p_p.h"
 
@@ -136,7 +136,7 @@ void QmlGraphicsDrag::setYmax(qreal m)
     emit maximumYChanged();
 }
 
-QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
+QmlGraphicsMouseAreaPrivate::~QmlGraphicsMouseAreaPrivate()
 {
     delete drag;
 }
@@ -145,16 +145,16 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 /*!
     \qmlclass MouseRegion QmlGraphicsMouseRegion
     \since 4.7
-    \brief The MouseRegion item enables simple mouse handling.
+    \brief The MouseArea item enables simple mouse handling.
     \inherits Item
 
-    A MouseRegion is typically used in conjunction with a visible item,
-    where the MouseRegion effectively 'proxies' mouse handling for that
-    item. For example, we can put a MouseRegion in a Rectangle that changes
+    A MouseArea is typically used in conjunction with a visible item,
+    where the MouseArea effectively 'proxies' mouse handling for that
+    item. For example, we can put a MouseArea in a Rectangle that changes
     the Rectangle color to red when clicked:
     \snippet doc/src/snippets/declarative/mouseregion.qml 0
 
-    Many MouseRegion signals pass a \l {MouseEvent}{mouse} parameter that contains
+    Many MouseArea signals pass a \l {MouseEvent}{mouse} parameter that contains
     additional information about the mouse event, such as the position, button,
     and any key modifiers.
 
@@ -164,13 +164,13 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 
     For basic key handling, see the \l {Keys}{Keys attached property}.
 
-    MouseRegion is an invisible item: it is never painted.
+    MouseArea is an invisible item: it is never painted.
 
     \sa MouseEvent
 */
 
 /*!
-    \qmlsignal MouseRegion::onEntered()
+    \qmlsignal MouseArea::onEntered()
 
     This handler is called when the mouse enters the mouse region.
 
@@ -182,7 +182,7 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 */
 
 /*!
-    \qmlsignal MouseRegion::onExited()
+    \qmlsignal MouseArea::onExited()
 
     This handler is called when the mouse exists the mouse region.
 
@@ -194,7 +194,7 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 */
 
 /*!
-    \qmlsignal MouseRegion::onPositionChanged(MouseEvent mouse)
+    \qmlsignal MouseArea::onPositionChanged(MouseEvent mouse)
 
     This handler is called when the mouse position changes.
 
@@ -209,10 +209,10 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 */
 
 /*!
-    \qmlsignal MouseRegion::onClicked(mouse)
+    \qmlsignal MouseArea::onClicked(mouse)
 
     This handler is called when there is a click. A click is defined as a press followed by a release,
-    both inside the MouseRegion (pressing, moving outside the MouseRegion, and then moving back inside and
+    both inside the MouseArea (pressing, moving outside the MouseArea, and then moving back inside and
     releasing is also considered a click).
 
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
@@ -222,21 +222,21 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 */
 
 /*!
-    \qmlsignal MouseRegion::onPressed(mouse)
+    \qmlsignal MouseArea::onPressed(mouse)
 
     This handler is called when there is a press.
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
     position and which button was pressed.
 
-    The \e accepted property of the MouseEvent parameter determines whether this MouseRegion
+    The \e accepted property of the MouseEvent parameter determines whether this MouseArea
     will handle the press and all future mouse events until release.  The default is to accept
-    the event and not allow other MouseRegions beneath this one to handle the event.  If \e accepted
-    is set to false, no further events will be sent to this MouseRegion until the button is next
+    the event and not allow other MouseArea beneath this one to handle the event.  If \e accepted
+    is set to false, no further events will be sent to this MouseArea until the button is next
     pressed.
 */
 
 /*!
-    \qmlsignal MouseRegion::onReleased(mouse)
+    \qmlsignal MouseArea::onReleased(mouse)
 
     This handler is called when there is a release.
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
@@ -246,7 +246,7 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 */
 
 /*!
-    \qmlsignal MouseRegion::onPressAndHold(mouse)
+    \qmlsignal MouseArea::onPressAndHold(mouse)
 
     This handler is called when there is a long press (currently 800ms).
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
@@ -256,7 +256,7 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 */
 
 /*!
-    \qmlsignal MouseRegion::onDoubleClicked(mouse)
+    \qmlsignal MouseArea::onDoubleClicked(mouse)
 
     This handler is called when there is a double-click (a press followed by a release followed by a press).
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
@@ -267,30 +267,30 @@ QmlGraphicsMouseRegionPrivate::~QmlGraphicsMouseRegionPrivate()
 
 /*!
     \internal
-    \class QmlGraphicsMouseRegion
-    \brief The QmlGraphicsMouseRegion class provides a simple mouse handling abstraction for use within Qml.
+    \class QmlGraphicsMouseArea
+    \brief The QmlGraphicsMouseArea class provides a simple mouse handling abstraction for use within Qml.
 
     \ingroup group_coreitems
 
-    All QmlGraphicsItem derived classes can do mouse handling but the QmlGraphicsMouseRegion class exposes mouse
+    All QmlGraphicsItem derived classes can do mouse handling but the QmlGraphicsMouseArea class exposes mouse
     handling data as properties and tracks flicking and dragging of the mouse.
 
-    A QmlGraphicsMouseRegion object can be instantiated in Qml using the tag \l MouseRegion.
+    A QmlGraphicsMouseArea object can be instantiated in Qml using the tag \l MouseArea.
  */
-QmlGraphicsMouseRegion::QmlGraphicsMouseRegion(QmlGraphicsItem *parent)
-  : QmlGraphicsItem(*(new QmlGraphicsMouseRegionPrivate), parent)
+QmlGraphicsMouseArea::QmlGraphicsMouseArea(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsMouseAreaPrivate), parent)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     d->init();
 }
 
-QmlGraphicsMouseRegion::~QmlGraphicsMouseRegion()
+QmlGraphicsMouseArea::~QmlGraphicsMouseArea()
 {
 }
 
 /*!
-    \qmlproperty real MouseRegion::mouseX
-    \qmlproperty real MouseRegion::mouseY
+    \qmlproperty real MouseArea::mouseX
+    \qmlproperty real MouseArea::mouseY
     These properties hold the coordinates of the mouse.
 
     If the hoverEnabled property is false then these properties will only be valid
@@ -299,44 +299,44 @@ QmlGraphicsMouseRegion::~QmlGraphicsMouseRegion()
 
     If hoverEnabled is true then these properties will be valid:
     \list
-        \i when no button is pressed, but the mouse is within the MouseRegion (containsMouse is true).
+        \i when no button is pressed, but the mouse is within the MouseArea (containsMouse is true).
         \i if a button is pressed and held, even if it has since moved out of the region.
     \endlist
 
-    The coordinates are relative to the MouseRegion.
+    The coordinates are relative to the MouseArea.
 */
-qreal QmlGraphicsMouseRegion::mouseX() const
+qreal QmlGraphicsMouseArea::mouseX() const
 {
-    Q_D(const QmlGraphicsMouseRegion);
+    Q_D(const QmlGraphicsMouseArea);
     return d->lastPos.x();
 }
 
-qreal QmlGraphicsMouseRegion::mouseY() const
+qreal QmlGraphicsMouseArea::mouseY() const
 {
-    Q_D(const QmlGraphicsMouseRegion);
+    Q_D(const QmlGraphicsMouseArea);
     return d->lastPos.y();
 }
 
 /*!
-    \qmlproperty bool MouseRegion::enabled
+    \qmlproperty bool MouseArea::enabled
     This property holds whether the item accepts mouse events.
 */
-bool QmlGraphicsMouseRegion::isEnabled() const
+bool QmlGraphicsMouseArea::isEnabled() const
 {
-    Q_D(const QmlGraphicsMouseRegion);
+    Q_D(const QmlGraphicsMouseArea);
     return d->absorb;
 }
 
-void QmlGraphicsMouseRegion::setEnabled(bool a)
+void QmlGraphicsMouseArea::setEnabled(bool a)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (a != d->absorb) {
         d->absorb = a;
         emit enabledChanged();
     }
 }
 /*!
-    \qmlproperty MouseButtons MouseRegion::pressedButtons
+    \qmlproperty MouseButtons MouseArea::pressedButtons
     This property holds the mouse buttons currently pressed.
 
     It contains a bitwise combination of:
@@ -352,7 +352,7 @@ void QmlGraphicsMouseRegion::setEnabled(bool a)
         text: mr.pressedButtons & Qt.RightButton ? "right" : ""
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        MouseRegion {
+        MouseArea {
             id: mr
             acceptedButtons: Qt.LeftButton | Qt.RightButton
             anchors.fill: parent
@@ -362,15 +362,15 @@ void QmlGraphicsMouseRegion::setEnabled(bool a)
 
     \sa acceptedButtons
 */
-Qt::MouseButtons QmlGraphicsMouseRegion::pressedButtons() const
+Qt::MouseButtons QmlGraphicsMouseArea::pressedButtons() const
 {
-    Q_D(const QmlGraphicsMouseRegion);
+    Q_D(const QmlGraphicsMouseArea);
     return d->lastButtons;
 }
 
-void QmlGraphicsMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseArea::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     d->moved = false;
     if (!d->absorb)
         QmlGraphicsItem::mousePressEvent(event);
@@ -393,9 +393,9 @@ void QmlGraphicsMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void QmlGraphicsMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseArea::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (!d->absorb) {
         QmlGraphicsItem::mouseMoveEvent(event);
         return;
@@ -463,9 +463,9 @@ void QmlGraphicsMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 }
 
 
-void QmlGraphicsMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseArea::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (!d->absorb) {
         QmlGraphicsItem::mouseReleaseEvent(event);
     } else {
@@ -478,9 +478,9 @@ void QmlGraphicsMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void QmlGraphicsMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseArea::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (!d->absorb) {
         QmlGraphicsItem::mouseDoubleClickEvent(event);
     } else {
@@ -494,18 +494,18 @@ void QmlGraphicsMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *eve
     }
 }
 
-void QmlGraphicsMouseRegion::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+void QmlGraphicsMouseArea::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (!d->absorb)
         QmlGraphicsItem::hoverEnterEvent(event);
     else
         setHovered(true);
 }
 
-void QmlGraphicsMouseRegion::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+void QmlGraphicsMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (!d->absorb) {
         QmlGraphicsItem::hoverEnterEvent(event);
     } else {
@@ -515,20 +515,20 @@ void QmlGraphicsMouseRegion::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     }
 }
 
-void QmlGraphicsMouseRegion::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+void QmlGraphicsMouseArea::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (!d->absorb)
         QmlGraphicsItem::hoverLeaveEvent(event);
     else
         setHovered(false);
 }
 
-bool QmlGraphicsMouseRegion::sceneEvent(QEvent *event)
+bool QmlGraphicsMouseArea::sceneEvent(QEvent *event)
 {
     bool rv = QmlGraphicsItem::sceneEvent(event);
     if (event->type() == QEvent::UngrabMouse) {
-        Q_D(QmlGraphicsMouseRegion);
+        Q_D(QmlGraphicsMouseArea);
         if (d->pressed) {
             // if our mouse grab has been removed (probably by Flickable), fix our
             // state
@@ -541,9 +541,9 @@ bool QmlGraphicsMouseRegion::sceneEvent(QEvent *event)
     return rv;
 }
 
-void QmlGraphicsMouseRegion::timerEvent(QTimerEvent *event)
+void QmlGraphicsMouseArea::timerEvent(QTimerEvent *event)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (event->timerId() == d->pressAndHoldTimer.timerId()) {
         d->pressAndHoldTimer.stop();
         if (d->pressed && d->dragged == false && d->hovered == true) {
@@ -555,7 +555,7 @@ void QmlGraphicsMouseRegion::timerEvent(QTimerEvent *event)
 }
 
 /*!
-    \qmlproperty bool MouseRegion::hoverEnabled
+    \qmlproperty bool MouseArea::hoverEnabled
     This property holds whether hover events are handled.
 
     By default, mouse events are only handled in response to a button event, or when a button is
@@ -566,31 +566,31 @@ void QmlGraphicsMouseRegion::timerEvent(QTimerEvent *event)
 */
 
 /*!
-    \qmlproperty bool MouseRegion::containsMouse
+    \qmlproperty bool MouseArea::containsMouse
     This property holds whether the mouse is currently inside the mouse region.
 
     \warning This property is not updated if the region moves under the mouse: \e containsMouse will not change.
     In addition, if hoverEnabled is false, containsMouse will only be valid when the mouse is pressed.
 */
-bool QmlGraphicsMouseRegion::hovered() const
+bool QmlGraphicsMouseArea::hovered() const
 {
-    Q_D(const QmlGraphicsMouseRegion);
+    Q_D(const QmlGraphicsMouseArea);
     return d->hovered;
 }
 
 /*!
-    \qmlproperty bool MouseRegion::pressed
+    \qmlproperty bool MouseArea::pressed
     This property holds whether the mouse region is currently pressed.
 */
-bool QmlGraphicsMouseRegion::pressed() const
+bool QmlGraphicsMouseArea::pressed() const
 {
-    Q_D(const QmlGraphicsMouseRegion);
+    Q_D(const QmlGraphicsMouseArea);
     return d->pressed;
 }
 
-void QmlGraphicsMouseRegion::setHovered(bool h)
+void QmlGraphicsMouseArea::setHovered(bool h)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (d->hovered != h) {
         d->hovered = h;
         emit hoveredChanged();
@@ -599,7 +599,7 @@ void QmlGraphicsMouseRegion::setHovered(bool h)
 }
 
 /*!
-    \qmlproperty Qt::MouseButtons MouseRegion::acceptedButtons
+    \qmlproperty Qt::MouseButtons MouseArea::acceptedButtons
     This property holds the mouse buttons that the mouse region reacts to.
 
     The available buttons are:
@@ -613,17 +613,17 @@ void QmlGraphicsMouseRegion::setHovered(bool h)
     "|" (or) operator:
 
     \code
-    MouseRegion { acceptedButtons: Qt.LeftButton | Qt.RightButton }
+    MouseArea { acceptedButtons: Qt.LeftButton | Qt.RightButton }
     \endcode
 
     The default is to accept the Left button.
 */
-Qt::MouseButtons QmlGraphicsMouseRegion::acceptedButtons() const
+Qt::MouseButtons QmlGraphicsMouseArea::acceptedButtons() const
 {
     return acceptedMouseButtons();
 }
 
-void QmlGraphicsMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
+void QmlGraphicsMouseArea::setAcceptedButtons(Qt::MouseButtons buttons)
 {
     if (buttons != acceptedMouseButtons()) {
         setAcceptedMouseButtons(buttons);
@@ -631,9 +631,9 @@ void QmlGraphicsMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
     }
 }
 
-bool QmlGraphicsMouseRegion::setPressed(bool p)
+bool QmlGraphicsMouseArea::setPressed(bool p)
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     bool isclick = d->pressed == true && p == false && d->dragged == false && d->hovered == true;
 
     if (d->pressed != p) {
@@ -654,21 +654,21 @@ bool QmlGraphicsMouseRegion::setPressed(bool p)
     return false;
 }
 
-QmlGraphicsDrag *QmlGraphicsMouseRegion::drag()
+QmlGraphicsDrag *QmlGraphicsMouseArea::drag()
 {
-    Q_D(QmlGraphicsMouseRegion);
+    Q_D(QmlGraphicsMouseArea);
     if (!d->drag)
         d->drag = new QmlGraphicsDrag;
     return d->drag;
 }
 
 /*!
-    \qmlproperty Item MouseRegion::drag.target
-    \qmlproperty Axis MouseRegion::drag.axis
-    \qmlproperty real MouseRegion::drag.minimumX
-    \qmlproperty real MouseRegion::drag.maximumX
-    \qmlproperty real MouseRegion::drag.minimumY
-    \qmlproperty real MouseRegion::drag.maximumY
+    \qmlproperty Item MouseArea::drag.target
+    \qmlproperty Axis MouseArea::drag.axis
+    \qmlproperty real MouseArea::drag.minimumX
+    \qmlproperty real MouseArea::drag.maximumX
+    \qmlproperty real MouseArea::drag.minimumY
+    \qmlproperty real MouseArea::drag.maximumY
 
     drag provides a convenient way to make an item draggable.
 

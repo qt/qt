@@ -897,7 +897,6 @@ void QmlGraphicsKeyNavigationAttached::keyReleased(QKeyEvent *event)
     parameter provides information about the event.
 */
 
-
 const QmlGraphicsKeysAttached::SigMap QmlGraphicsKeysAttached::sigMap[] = {
     { Qt::Key_Left, "leftPressed" },
     { Qt::Key_Right, "rightPressed" },
@@ -1427,154 +1426,95 @@ QmlGraphicsAnchors *QmlGraphicsItem::anchors()
     return d->anchors();
 }
 
-void QmlGraphicsItemPrivate::data_removeAt(int)
+void QmlGraphicsItemPrivate::data_append(QmlListProperty<QObject> *prop, QObject *o)
 {
-    // ###
-}
-
-int QmlGraphicsItemPrivate::data_count() const
-{
-    // ###
-    return 0;
-}
-
-void QmlGraphicsItemPrivate::data_append(QObject *o)
-{
-    Q_Q(QmlGraphicsItem);
     QmlGraphicsItem *i = qobject_cast<QmlGraphicsItem *>(o);
+    if (i) 
+        i->setParentItem(static_cast<QmlGraphicsItem *>(prop->object));
+    else
+        o->setParent(static_cast<QmlGraphicsItem *>(prop->object));
+}
+
+QObject *QmlGraphicsItemPrivate::resources_at(QmlListProperty<QObject> *prop, int index)
+{
+    QObjectList children = prop->object->children();
+    if (index < children.count())
+        return children.at(index);
+    else
+        return 0;
+}
+
+void QmlGraphicsItemPrivate::resources_append(QmlListProperty<QObject> *prop, QObject *o)
+{
+    o->setParent(prop->object);
+}
+
+int QmlGraphicsItemPrivate::resources_count(QmlListProperty<QObject> *prop)
+{
+    return prop->object->children().count();
+}
+
+QmlGraphicsItem *QmlGraphicsItemPrivate::children_at(QmlListProperty<QmlGraphicsItem> *prop, int index)
+{
+    QList<QGraphicsItem *> children = static_cast<QmlGraphicsItem*>(prop->object)->childItems();
+
+    if (index < children.count())
+        return qobject_cast<QmlGraphicsItem *>(children.at(index));
+    else
+        return 0;
+}
+
+void QmlGraphicsItemPrivate::children_append(QmlListProperty<QmlGraphicsItem> *prop, QmlGraphicsItem *i)
+{
     if (i)
-        q->fxChildren()->append(i);
-    else
-        resources_append(o);
+        i->setParentItem(static_cast<QmlGraphicsItem*>(prop->object));
 }
 
-void QmlGraphicsItemPrivate::data_insert(int, QObject *)
+int QmlGraphicsItemPrivate::children_count(QmlListProperty<QmlGraphicsItem> *prop)
 {
-    // ###
+    return static_cast<QmlGraphicsItem*>(prop->object)->childItems().count();
 }
 
-QObject *QmlGraphicsItemPrivate::data_at(int) const
+int QmlGraphicsItemPrivate::transform_count(QmlListProperty<QGraphicsTransform> *list)
 {
-    // ###
-    return 0;
-}
-
-void QmlGraphicsItemPrivate::data_clear()
-{
-    // ###
-}
-
-void QmlGraphicsItemPrivate::resources_removeAt(int)
-{
-    // ###
-}
-
-int QmlGraphicsItemPrivate::resources_count() const
-{
-    Q_Q(const QmlGraphicsItem);
-    return q->children().count();
-}
-
-void QmlGraphicsItemPrivate::resources_append(QObject *o)
-{
-    Q_Q(QmlGraphicsItem);
-    o->setParent(q);
-}
-
-void QmlGraphicsItemPrivate::resources_insert(int, QObject *)
-{
-    // ###
-}
-
-QObject *QmlGraphicsItemPrivate::resources_at(int idx) const
-{
-    Q_Q(const QmlGraphicsItem);
-    QObjectList children = q->children();
-    if (idx < children.count())
-        return children.at(idx);
-    else
+    QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
+    if (object) {
+        QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+        return d->transformData ? d->transformData->graphicsTransforms.size() : 0;
+    } else {
         return 0;
+    }
 }
 
-void QmlGraphicsItemPrivate::resources_clear()
+void QmlGraphicsItemPrivate::transform_append(QmlListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
-    // ###
+    QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
+    if (object)
+        QGraphicsItemPrivate::get(object)->appendGraphicsTransform(item);
 }
 
-void QmlGraphicsItemPrivate::children_removeAt(int)
+QGraphicsTransform *QmlGraphicsItemPrivate::transform_at(QmlListProperty<QGraphicsTransform> *list, int idx)
 {
-    // ###
-}
-
-int QmlGraphicsItemPrivate::children_count() const
-{
-    Q_Q(const QmlGraphicsItem);
-    return q->childItems().count();
-}
-
-void QmlGraphicsItemPrivate::children_append(QmlGraphicsItem *i)
-{
-    Q_Q(QmlGraphicsItem);
-    i->setParentItem(q);
-}
-
-void QmlGraphicsItemPrivate::children_insert(int, QmlGraphicsItem *)
-{
-    // ###
-}
-
-QmlGraphicsItem *QmlGraphicsItemPrivate::children_at(int idx) const
-{
-    Q_Q(const QmlGraphicsItem);
-    QList<QGraphicsItem *> children = q->childItems();
-    if (idx < children.count())
-        return qobject_cast<QmlGraphicsItem *>(children.at(idx));
-    else
+    QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
+    if (object) {
+        QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+        if (!d->transformData)
+            return 0;
+        return d->transformData->graphicsTransforms.at(idx);
+    } else {
         return 0;
+    }
 }
 
-void QmlGraphicsItemPrivate::children_clear()
+void QmlGraphicsItemPrivate::transform_clear(QmlListProperty<QGraphicsTransform> *list)
 {
-    // ###
-}
-
-
-void QmlGraphicsItemPrivate::transform_removeAt(int i)
-{
-    if (!transformData)
-        return;
-    transformData->graphicsTransforms.removeAt(i);
-    dirtySceneTransform = 1;
-}
-
-int QmlGraphicsItemPrivate::transform_count() const
-{
-    return transformData ? transformData->graphicsTransforms.size() : 0;
-}
-
-void QmlGraphicsItemPrivate::transform_append(QGraphicsTransform *item)
-{
-    appendGraphicsTransform(item);
-}
-
-void QmlGraphicsItemPrivate::transform_insert(int, QGraphicsTransform *)
-{
-    // ###
-}
-
-QGraphicsTransform *QmlGraphicsItemPrivate::transform_at(int idx) const
-{
-    if (!transformData)
-        return 0;
-    return transformData->graphicsTransforms.at(idx);
-}
-
-void QmlGraphicsItemPrivate::transform_clear()
-{
-    if (!transformData)
-        return;
-    Q_Q(QmlGraphicsItem);
-    q->setTransformations(QList<QGraphicsTransform *>());
+    QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
+    if (object) {
+        QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+        if (!d->transformData)
+            return;
+        object->setTransformations(QList<QGraphicsTransform *>());
+    }
 }
 
 /*!
@@ -1617,10 +1557,9 @@ void QmlGraphicsItemPrivate::transform_clear()
 */
 
 /*! \internal */
-QmlList<QObject *> *QmlGraphicsItem::data()
+QmlListProperty<QObject> QmlGraphicsItem::data() 
 {
-    Q_D(QmlGraphicsItem);
-    return &d->data;
+    return QmlListProperty<QObject>(this, 0, QmlGraphicsItemPrivate::data_append);
 }
 
 /*!
@@ -2222,17 +2161,19 @@ void QmlGraphicsItem::focusChanged(bool flag)
 }
 
 /*! \internal */
-QmlList<QmlGraphicsItem *> *QmlGraphicsItem::fxChildren()
+QmlListProperty<QmlGraphicsItem> QmlGraphicsItem::fxChildren()
 {
-    Q_D(QmlGraphicsItem);
-    return &(d->children);
+    return QmlListProperty<QmlGraphicsItem>(this, 0, QmlGraphicsItemPrivate::children_append,
+                                                     QmlGraphicsItemPrivate::children_count, 
+                                                     QmlGraphicsItemPrivate::children_at); 
 }
 
 /*! \internal */
-QmlList<QObject *> *QmlGraphicsItem::resources()
+QmlListProperty<QObject> QmlGraphicsItem::resources()
 {
-    Q_D(QmlGraphicsItem);
-    return &(d->resources);
+    return QmlListProperty<QObject>(this, 0, QmlGraphicsItemPrivate::resources_append, 
+                                             QmlGraphicsItemPrivate::resources_count, 
+                                             QmlGraphicsItemPrivate::resources_at); 
 }
 
 /*!
@@ -2257,7 +2198,7 @@ QmlList<QObject *> *QmlGraphicsItem::resources()
   \internal
 */
 /*! \internal */
-QmlList<QmlState *>* QmlGraphicsItem::states()
+QmlListProperty<QmlState> QmlGraphicsItem::states()
 {
     Q_D(QmlGraphicsItem);
     return d->states()->statesProperty();
@@ -2286,7 +2227,7 @@ QmlList<QmlState *>* QmlGraphicsItem::states()
 */
 
 /*! \internal */
-QmlList<QmlTransition *>* QmlGraphicsItem::transitions()
+QmlListProperty<QmlTransition> QmlGraphicsItem::transitions()
 {
     Q_D(QmlGraphicsItem);
     return d->states()->transitionsProperty();
@@ -2394,10 +2335,11 @@ void QmlGraphicsItem::setState(const QString &state)
 */
 
 /*! \internal */
-QmlList<QGraphicsTransform *>* QmlGraphicsItem::transform()
+QmlListProperty<QGraphicsTransform> QmlGraphicsItem::transform()
 {
     Q_D(QmlGraphicsItem);
-    return &(d->transform);
+    return QmlListProperty<QGraphicsTransform>(this, 0, d->transform_append, d->transform_count,
+                                               d->transform_at, d->transform_clear);
 }
 
 /*!

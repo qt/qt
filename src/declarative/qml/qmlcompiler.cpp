@@ -1495,8 +1495,7 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
 
         COMPILE_CHECK(buildGroupedProperty(prop, obj, ctxt));
 
-    } else if (QmlEnginePrivate::get(engine)->isQmlList(prop->type) ||
-               QmlMetaType::isList(prop->type)) {
+    } else if (QmlEnginePrivate::get(engine)->isList(prop->type)) {
 
         COMPILE_CHECK(buildListProperty(prop, obj, ctxt));
 
@@ -1552,8 +1551,7 @@ QmlCompiler::buildPropertyInNamespace(QmlEnginePrivate::ImportedNamespace *ns,
 void QmlCompiler::genValueProperty(QmlParser::Property *prop,
                                    QmlParser::Object *obj)
 {
-    if (QmlEnginePrivate::get(engine)->isQmlList(prop->type) || 
-        QmlMetaType::isList(prop->type)) {
+    if (QmlEnginePrivate::get(engine)->isList(prop->type)) {
         genListProperty(prop, obj);
     } else {
         genPropertyAssignment(prop, obj);
@@ -1563,22 +1561,10 @@ void QmlCompiler::genValueProperty(QmlParser::Property *prop,
 void QmlCompiler::genListProperty(QmlParser::Property *prop,
                                   QmlParser::Object *obj)
 {
-    QmlInstruction::Type fetchType;
-    QmlInstruction::Type storeType;
-    int listType;
-
-    if (QmlEnginePrivate::get(engine)->isQmlList(prop->type)) {
-        fetchType = QmlInstruction::FetchQmlList;
-        storeType = QmlInstruction::StoreObjectQmlList;
-        listType = QmlEnginePrivate::get(engine)->qmlListType(prop->type);
-    } else {
-        fetchType = QmlInstruction::FetchQList;
-        storeType = QmlInstruction::StoreObjectQList;
-        listType = QmlMetaType::listType(prop->type);
-    }
+    int listType = QmlEnginePrivate::get(engine)->listType(prop->type);
 
     QmlInstruction fetch;
-    fetch.type = fetchType;
+    fetch.type = QmlInstruction::FetchQList;
     fetch.line = prop->location.start.line;
     fetch.fetchQmlList.property = prop->index;
     bool listTypeIsInterface = QmlMetaType::isInterface(listType);
@@ -1598,7 +1584,7 @@ void QmlCompiler::genListProperty(QmlParser::Property *prop,
                 output->bytecode << assign;
             } else {
                 QmlInstruction store;
-                store.type = storeType;
+                store.type = QmlInstruction::StoreObjectQList;
                 store.line = prop->location.start.line;
                 output->bytecode << store;
             }
@@ -1895,67 +1881,40 @@ bool QmlCompiler::buildListProperty(QmlParser::Property *prop,
                                     QmlParser::Object *obj,
                                     const BindingContext &ctxt)
 {
-    Q_ASSERT(QmlMetaType::isList(prop->type) ||
-             QmlEnginePrivate::get(engine)->isQmlList(prop->type));
+    Q_ASSERT(QmlEnginePrivate::get(engine)->isList(prop->type));
 
     int t = prop->type;
 
     obj->addValueProperty(prop);
 
-    if (QmlEnginePrivate::get(engine)->isQmlList(t)) {
-        int listType = QmlEnginePrivate::get(engine)->qmlListType(t);
-        bool listTypeIsInterface = QmlMetaType::isInterface(listType);
+    int listType = QmlEnginePrivate::get(engine)->listType(t);
+    bool listTypeIsInterface = QmlMetaType::isInterface(listType);
 
-        for (int ii = 0; ii < prop->values.count(); ++ii) {
-            Value *v = prop->values.at(ii);
-            if (v->object) {
-                v->type = Value::CreatedObject;
-                COMPILE_CHECK(buildObject(v->object, ctxt));
+    bool assignedBinding = false;
+    for (int ii = 0; ii < prop->values.count(); ++ii) {
+        Value *v = prop->values.at(ii);
+        if (v->object) {
+            v->type = Value::CreatedObject;
+            COMPILE_CHECK(buildObject(v->object, ctxt));
 
-                // We check object coercian here.  We check interface assignment
-                // at runtime.
-                if (!listTypeIsInterface) {
-                    if (!canCoerce(listType, v->object)) {
-                        COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Cannot assign object to list"));
-                    }
+            // We check object coercian here.  We check interface assignment
+            // at runtime.
+            if (!listTypeIsInterface) {
+                if (!canCoerce(listType, v->object)) {
+                    COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Cannot assign object to list"));
                 }
-
-            } else {
-                COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Cannot assign primitives to lists"));
             }
+
+        } else if (v->value.isScript()) {
+            if (assignedBinding)
+                COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Can only assign one binding to lists"));
+
+            assignedBinding = true;
+            COMPILE_CHECK(buildBinding(v, prop, ctxt));
+            v->type = Value::PropertyBinding;
+        } else {
+            COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Cannot assign primitives to lists"));
         }
-
-    } else {
-        int listType = QmlMetaType::listType(t);
-        bool listTypeIsInterface = QmlMetaType::isInterface(listType);
-
-        bool assignedBinding = false;
-        for (int ii = 0; ii < prop->values.count(); ++ii) {
-            Value *v = prop->values.at(ii);
-            if (v->object) {
-                v->type = Value::CreatedObject;
-                COMPILE_CHECK(buildObject(v->object, ctxt));
-
-                // We check object coercian here.  We check interface assignment
-                // at runtime.
-                if (!listTypeIsInterface) {
-                    if (!canCoerce(listType, v->object)) {
-                        COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Cannot assign object to list"));
-                    }
-                }
-
-            } else if (v->value.isScript()) {
-                if (assignedBinding)
-                    COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Can only assign one binding to lists"));
-
-                assignedBinding = true;
-                COMPILE_CHECK(buildBinding(v, prop, ctxt));
-                v->type = Value::PropertyBinding;
-            } else {
-                COMPILE_EXCEPTION(v, QCoreApplication::translate("QmlCompiler","Cannot assign primitives to lists"));
-            }
-        }
-
     }
 
     return true;
@@ -2335,10 +2294,10 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
                     propertyType = QMetaType::QObjectStar;
                 } else {
                     readonly = true;
-                    type = "QmlList<";
+                    type = "QmlListProperty<";
                     type.append(customTypeName);
-                    type.append("*>*");
-                    propertyType = qMetaTypeId<QmlList<QObject*>* >();
+                    type.append(">");
+                    propertyType = qMetaTypeId<QmlListProperty<QObject> >();
                 }
             }
             break;

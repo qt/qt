@@ -19,7 +19,7 @@ Rectangle {
     Item { id: topGuideline2; y: 50 }
     Item { id: bottomGuideline2; y: 175 }
 
-    MouseRegion {
+    MouseArea {
         id: wholeArea
         anchors.fill: parent
         onClicked: {
@@ -55,7 +55,7 @@ Rectangle {
         NumberAnimation { properties: "x,y,width,height" }
     }
 
-    MouseRegion {
+    MouseArea {
         width: 50; height: 50
         anchors.right: parent.right
         anchors.bottom: parent.bottom
