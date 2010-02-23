@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,49 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlextensionplugin.h>
-#include <QtDeclarative/qml.h>
-#include <QtMultimedia/qml.h>
+#include "qmlextensionplugin.h"
 
 QT_BEGIN_NAMESPACE
 
-class QMultimediaQmlModule : public QmlExtensionPlugin
+/*!
+    \since 4.7
+    \class QmlExtensionPlugin
+    \brief The QmlExtensionPlugin class provides an abstract base for custom QML extension plugins.
+
+    \ingroup plugins
+
+    QmlExtensionPlugin is a plugin interface that makes it
+    possible to offer extensions that can be loaded dynamically into
+    applications using the QmlEngine class.
+
+    Writing a QML extension plugin is achieved by subclassing this
+    base class, reimplementing the pure virtual initialize()
+    function, and exporting the class using the Q_EXPORT_PLUGIN2()
+    macro. See \l {How to Create Qt Plugins} for details.
+
+    \sa QmlEngine::importExtension()
+*/
+
+/*!
+    \fn void QmlExtensionPlugin::initialize(QmlEngine *engine)
+
+    Initializes the extension specified in the given \a engine.
+*/
+
+/*!
+    Constructs a QML extension plugin with the given \a parent.
+
+    Note that this constructor is invoked automatically by the
+    Q_EXPORT_PLUGIN2() macro, so there is no need for calling it
+    explicitly.
+*/
+QmlExtensionPlugin::QmlExtensionPlugin(QObject *parent)
+    : QObject(parent)
 {
-    Q_OBJECT
-public:
-    virtual void initialize(QmlEngine *engine, const char *uri)
-    {
-        QtMultimedia::qRegisterQmlElements(engine, uri);
-    }
-};
+}
+
+QmlExtensionPlugin::~QmlExtensionPlugin()
+{
+}
 
 QT_END_NAMESPACE
-
-#include "multimedia.moc"
-
-Q_EXPORT_PLUGIN2(qmultimediaqmlmodule, QT_PREPEND_NAMESPACE(QMultimediaQmlModule));
-

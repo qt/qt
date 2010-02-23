@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,28 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlextensionplugin.h>
-#include <QtDeclarative/qml.h>
-#include <QtMultimedia/qml.h>
+#ifndef QMLEXTENSIONINTERFACE_H
+#define QMLEXTENSIONINTERFACE_H
+
+#include <QtCore/qobject.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QMultimediaQmlModule : public QmlExtensionPlugin
+QT_MODULE(Declarative)
+
+class QmlEngine;
+
+struct Q_DECLARATIVE_EXPORT QmlExtensionInterface
 {
-    Q_OBJECT
-public:
-    virtual void initialize(QmlEngine *engine, const char *uri)
-    {
-        QtMultimedia::qRegisterQmlElements(engine, uri);
-    }
+    virtual void initialize(QmlEngine *engine, const char *uri) = 0;
 };
+
+Q_DECLARE_INTERFACE(QmlExtensionInterface, "com.trolltech.Qt.QmlExtensionInterface/1.0")
 
 QT_END_NAMESPACE
 
-#include "multimedia.moc"
+QT_END_HEADER
 
-Q_EXPORT_PLUGIN2(qmultimediaqmlmodule, QT_PREPEND_NAMESPACE(QMultimediaQmlModule));
-
+#endif // QMLEXTENSIONINTERFACE_H

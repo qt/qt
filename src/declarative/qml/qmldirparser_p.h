@@ -39,76 +39,87 @@
 **
 ****************************************************************************/
 
-#ifndef QMLVIEW_H
-#define QMLVIEW_H
+#ifndef QMLDIRPARSER_P_H
+#define QMLDIRPARSER_P_H
 
-#include <QtCore/qdatetime.h>
-#include <QtGui/qgraphicssceneevent.h>
-#include <QtGui/qgraphicsview.h>
-#include <QtGui/qwidget.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include <QtCore/QUrl>
+#include <QtCore/QHash>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QGraphicsObject;
-class QmlEngine;
-class QmlContext;
 class QmlError;
 
-class QmlViewPrivate;
-class Q_DECLARATIVE_EXPORT QmlView : public QGraphicsView
+class QmlDirParser
 {
-    Q_OBJECT
-    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_DISABLE_COPY(QmlDirParser)
 
 public:
-    explicit QmlView(QWidget *parent = 0);
-    QmlView(const QUrl &source, QWidget *parent = 0);
-    virtual ~QmlView();
+    QmlDirParser();
+    ~QmlDirParser();
 
-    QUrl source() const;
-    void setSource(const QUrl&);
+    QUrl url() const;
+    void setUrl(const QUrl &url);
 
-    QmlEngine* engine();
-    QmlContext* rootContext();
+    QString source() const;
+    void setSource(const QString &source);
 
-    QGraphicsObject *rootObject() const;
+    bool isParsed() const;
+    bool parse();
 
-    enum ResizeMode { SizeViewToRootObject, SizeRootObjectToView };
-    ResizeMode resizeMode() const;
-    void setResizeMode(ResizeMode);
-
-    enum Status { Null, Ready, Loading, Error };
-    Status status() const;
-
+    bool hasError() const;
     QList<QmlError> errors() const;
 
-    QSize sizeHint() const;
+    struct Plugin
+    {
+        Plugin() {}
 
-Q_SIGNALS:
-    void sceneResized(QSize size); // ???
-    void statusChanged(QmlView::Status);
+        Plugin(const QString &name, const QString &path)
+            : name(name), path(path) {}
 
-private Q_SLOTS:
-    void continueExecute();
-    void sizeChanged();
+        QString name;
+        QString path;
+    };
 
-protected:
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void paintEvent(QPaintEvent *event);
-    virtual void timerEvent(QTimerEvent*);
-    virtual void setRootObject(QObject *obj);
+    struct Component
+    {
+        Component()
+            : majorVersion(0), minorVersion(0) {}
 
-    friend class QmlViewPrivate;
-    QmlViewPrivate *d;
+        Component(const QString &typeName, const QString &fileName, int majorVersion, int minorVersion)
+            : typeName(typeName), fileName(fileName), majorVersion(majorVersion), minorVersion(minorVersion) {}
+
+        QString typeName;
+        QString fileName;
+        int majorVersion;
+        int minorVersion;
+    };
+
+    QList<Component> components() const;
+    QList<Plugin> plugins() const;
+
+private:
+    void reportError(int line, int column, const QString &message);
+
+private:
+    QList<QmlError> _errors;
+    QUrl _url;
+    QString _source;
+    QList<Component> _components;
+    QList<Plugin> _plugins;
+    unsigned _isParsed: 1;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLVIEW_H
+#endif // QMLDIRPARSER_P_H
