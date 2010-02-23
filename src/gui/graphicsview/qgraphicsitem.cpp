@@ -641,9 +641,16 @@
     are children of a modal panel are not blocked.
 
     The values are:
-    \value NonModal   The panel is not modal and does not block input to other panels.
-    \value PanelModal The panel is modal to a single item hierarchy and blocks input to its parent pane, all grandparent panels, and all siblings of its parent and grandparent panels.
-    \value SceneModal The window is modal to the entire scene and blocks input to all panels.
+    
+    \value NonModal The panel is not modal and does not block input to
+    other panels. This is the default value for panels.
+    
+    \value PanelModal The panel is modal to a single item hierarchy
+    and blocks input to its parent pane, all grandparent panels, and
+    all siblings of its parent and grandparent panels.
+
+    \value SceneModal The window is modal to the entire scene and
+    blocks input to all panels.
 
     \sa QGraphicsItem::setPanelModality(), QGraphicsItem::panelModality(), QGraphicsItem::ItemIsPanel
 */
