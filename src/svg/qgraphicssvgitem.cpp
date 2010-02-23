@@ -267,6 +267,7 @@ int QGraphicsSvgItem::type() const
 
 /*!
   \property QGraphicsSvgItem::maximumCacheSize
+  \since 4.6
 
   This property holds the maximum size of the device coordinate cache
   for this item.
@@ -312,7 +313,8 @@ QSize QGraphicsSvgItem::maximumCacheSize() const
 
 /*!
   \property QGraphicsSvgItem::elementId
-
+  \since 4.6
+  
   This property holds the element's XML ID.
  */
 
