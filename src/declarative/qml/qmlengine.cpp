@@ -158,6 +158,21 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     }
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
     fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
+
+    // env import paths
+    QByteArray envImportPath = qgetenv("QML_IMPORT_PATH");
+    if (!envImportPath.isEmpty()) {
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+        QLatin1Char pathSep(';');
+#else
+        QLatin1Char pathSep(':');
+#endif
+        foreach (const QString &path, QString::fromLatin1(envImportPath).split(pathSep, QString::SkipEmptyParts)) {
+            QString canonicalPath = QDir(path).canonicalPath();
+            if (!canonicalPath.isEmpty() && !environmentImportPath.contains(canonicalPath))
+                environmentImportPath.append(canonicalPath);
+        }
+    }
 }
 
 QUrl QmlScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
@@ -1334,9 +1349,16 @@ public:
             url.replace(QLatin1Char('.'), QLatin1Char('/'));
             bool found = false;
             QString content;
-            QString dir;
-            QStringList paths = importPath;
-            paths.prepend(QFileInfo(base.toLocalFile()).path());
+            QString dir;            
+
+            // user import paths
+            QStringList paths;
+
+            // base..
+            paths += QFileInfo(base.toLocalFile()).path();
+            paths += importPath;
+            paths += QmlEnginePrivate::get(engine)->environmentImportPath;
+
             foreach (const QString &p, paths) {
                 dir = p+QLatin1Char('/')+url;
                 QFileInfo fi(dir+QLatin1String("/qmldir"));
@@ -1575,7 +1597,7 @@ bool QmlEngine::importExtension(const QString &fileName, const QString &uri)
     QPluginLoader loader(fileName);
 
     if (QmlExtensionInterface *iface = qobject_cast<QmlExtensionInterface *>(loader.instance())) {
-        iface->initialize(this, uri);
+        iface->initialize(this, uri.toUtf8().constData());
         return true;
     }
 

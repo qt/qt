@@ -264,6 +264,9 @@ public:
         QmlImportsPrivate *d;
     };
 
+
+    QStringList environmentImportPath;
+
     QString resolvePlugin(const QDir &dir, const QString &baseName,
                           const QStringList &suffixes,
                           const QString &prefix = QString());

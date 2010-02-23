@@ -54,7 +54,7 @@ class QmlEngine;
 
 struct Q_DECLARATIVE_EXPORT QmlExtensionInterface
 {
-    virtual void initialize(QmlEngine *engine, const QString &uri) = 0;
+    virtual void initialize(QmlEngine *engine, const char *uri) = 0;
 };
 
 Q_DECLARE_INTERFACE(QmlExtensionInterface, "com.trolltech.Qt.QmlExtensionInterface/1.0")
