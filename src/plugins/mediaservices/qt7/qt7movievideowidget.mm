@@ -184,7 +184,7 @@ QT7MovieVideoWidget::QT7MovieVideoWidget(QObject *parent)
     m_hue(0),
     m_saturation(0)
 {
-    qDebug() << "QT7MovieVideoWidget";
+//    qDebug() << "QT7MovieVideoWidget";
 
     QGLFormat format = QGLFormat::defaultFormat();
     format.setSwapInterval(1); // Vertical sync (avoid tearing)
@@ -249,7 +249,7 @@ void QT7MovieVideoWidget::setupVideoOutput()
 {
     AutoReleasePool pool;
 
-    qDebug() << "QT7MovieVideoWidget::setupVideoOutput" << m_movie;
+//    qDebug() << "QT7MovieVideoWidget::setupVideoOutput" << m_movie;
 
     if (m_movie == 0) {
         m_displayLink->stop();
