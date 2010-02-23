@@ -1036,6 +1036,11 @@ void tst_QGL::glFBORendering()
     // Don't complicate things by using NPOT:
     QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
 
+    if (fbo->attachment() != QGLFramebufferObject::CombinedDepthStencil) {
+        delete fbo;
+        QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
+    }
+
     QPainter fboPainter;
     bool painterBegun = fboPainter.begin(fbo);
     QVERIFY(painterBegun);
@@ -1097,6 +1102,16 @@ void tst_QGL::multipleFBOInterleavedRendering()
     QGLFramebufferObject *fbo1 = new QGLFramebufferObject(256, 128, fboFormat);
     QGLFramebufferObject *fbo2 = new QGLFramebufferObject(256, 128, fboFormat);
     QGLFramebufferObject *fbo3 = new QGLFramebufferObject(256, 128, fboFormat);
+
+    if ( (fbo1->attachment() != QGLFramebufferObject::CombinedDepthStencil) ||
+         (fbo2->attachment() != QGLFramebufferObject::CombinedDepthStencil) ||
+         (fbo3->attachment() != QGLFramebufferObject::CombinedDepthStencil)    )
+    {
+        delete fbo1;
+        delete fbo2;
+        delete fbo3;
+        QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
+    }
 
     QPainter fbo1Painter;
     QPainter fbo2Painter;
@@ -1203,7 +1218,7 @@ protected:
         QPainter widgetPainter;
         widgetPainterBeginOk = widgetPainter.begin(this);
         QGLFramebufferObjectFormat fboFormat;
-        fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
         QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
 
         QPainter fboPainter;
