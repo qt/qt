@@ -1,8 +1,6 @@
 /*
     Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -38,12 +36,12 @@ namespace WebCore {
 
         GradientSpreadMethod spreadMethod() const { return m_spreadMethod; }
         bool boundingBoxMode() const { return m_boundingBoxMode; }
-        TransformationMatrix gradientTransform() const { return m_gradientTransform; }
+        AffineTransform gradientTransform() const { return m_gradientTransform; }
         const Vector<SVGGradientStop>& stops() const { return m_stops; }
 
         void setSpreadMethod(GradientSpreadMethod value) { m_spreadMethod = value; m_spreadMethodSet = true; }
         void setBoundingBoxMode(bool value) { m_boundingBoxMode = value; m_boundingBoxModeSet = true; }
-        void setGradientTransform(const TransformationMatrix& value) { m_gradientTransform = value; m_gradientTransformSet = true; }
+        void setGradientTransform(const AffineTransform& value) { m_gradientTransform = value; m_gradientTransformSet = true; }
         void setStops(const Vector<SVGGradientStop>& value) { m_stops = value; m_stopsSet = true; } 
 
         bool hasSpreadMethod() const { return m_spreadMethodSet; }
@@ -55,7 +53,7 @@ namespace WebCore {
         // Properties
         GradientSpreadMethod m_spreadMethod;
         bool m_boundingBoxMode;
-        TransformationMatrix m_gradientTransform;
+        AffineTransform m_gradientTransform;
         Vector<SVGGradientStop> m_stops;
 
         // Property states

@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -163,7 +163,8 @@ JSValue jsCSSStyleSheetOwnerRule(ExecState* exec, const Identifier&, const Prope
     JSCSSStyleSheet* castedThis = static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerRule()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerRule()));
+    return result;
 }
 
 JSValue jsCSSStyleSheetCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -171,7 +172,8 @@ JSValue jsCSSStyleSheetCssRules(ExecState* exec, const Identifier&, const Proper
     JSCSSStyleSheet* castedThis = static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
+    return result;
 }
 
 JSValue jsCSSStyleSheetRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -179,7 +181,8 @@ JSValue jsCSSStyleSheetRules(ExecState* exec, const Identifier&, const PropertyS
     JSCSSStyleSheet* castedThis = static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rules()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rules()));
+    return result;
 }
 
 JSValue jsCSSStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

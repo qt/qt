@@ -28,7 +28,7 @@
 
 #include <wtf/Platform.h>
 
-#if ENABLE(ASSEMBLER) && PLATFORM(ARM_THUMB2)
+#if ENABLE(ASSEMBLER) && CPU(ARM_THUMB2)
 
 #include "AssemblerBuffer.h"
 #include <wtf/Assertions.h>
@@ -201,10 +201,10 @@ class ARMThumbImmediate {
 
     ALWAYS_INLINE static void countLeadingZerosPartial(uint32_t& value, int32_t& zeros, const int N)
     {
-        if (value & ~((1<<N)-1)) /* check for any of the top N bits (of 2N bits) are set */ \
-            value >>= N;         /* if any were set, lose the bottom N */ \
-        else                     /* if none of the top N bits are set, */ \
-            zeros += N;          /* then we have identified N leading zeros */
+        if (value & ~((1 << N) - 1)) /* check for any of the top N bits (of 2N bits) are set */
+            value >>= N;             /* if any were set, lose the bottom N */
+        else                         /* if none of the top N bits are set, */
+            zeros += N;              /* then we have identified N leading zeros */
     }
 
     static int32_t countLeadingZeros(uint32_t value)
@@ -236,6 +236,11 @@ class ARMThumbImmediate {
     ARMThumbImmediate(ThumbImmediateType type, uint16_t value)
         : m_type(TypeUInt16)
     {
+        // Make sure this constructor is only reached with type TypeUInt16;
+        // this extra parameter makes the code a little clearer by making it
+        // explicit at call sites which type is being constructed
+        ASSERT_UNUSED(type, type == TypeUInt16);
+
         m_value.asInt = value;
     }
 
@@ -1827,6 +1832,6 @@ private:
 
 } // namespace JSC
 
-#endif // ENABLE(ASSEMBLER) && PLATFORM(ARM_THUMB2)
+#endif // ENABLE(ASSEMBLER) && CPU(ARM_THUMB2)
 
 #endif // ARMAssembler_h

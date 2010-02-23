@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -24,7 +22,7 @@
 #define SVGTransform_h
 
 #if ENABLE(SVG)
-#include "TransformationMatrix.h"
+#include "AffineTransform.h"
 #include "FloatPoint.h"
 #include "SVGNames.h"
 
@@ -46,18 +44,17 @@ namespace WebCore {
  
         SVGTransform();
         SVGTransform(SVGTransformType);
-        explicit SVGTransform(const TransformationMatrix&);
+        explicit SVGTransform(const AffineTransform&);
         virtual ~SVGTransform();
                
         SVGTransformType type() const;
 
-        TransformationMatrix matrix() const;
+        AffineTransform matrix() const;
     
         float angle() const;
         FloatPoint rotationCenter() const;
 
-//        void setMatrix(const TransformationMatrix&);
-        void setMatrix(TransformationMatrix);
+        void setMatrix(AffineTransform);
 
         void setTranslate(float tx, float ty);
         void setScale(float sx, float sy);
@@ -71,14 +68,11 @@ namespace WebCore {
         
         bool isValid();
 
-        // Throughout SVG 1.1 'SVGTransform' is only used for the 'transform' attribute
-        const QualifiedName& associatedAttributeName() const { return SVGNames::transformAttr; }
-
     private:
         SVGTransformType m_type;
         float m_angle;
         FloatPoint m_center;
-        TransformationMatrix m_matrix;
+        AffineTransform m_matrix;
     };
 
     inline bool operator==(const SVGTransform& a, const SVGTransform& b)
@@ -95,5 +89,3 @@ namespace WebCore {
 
 #endif // ENABLE(SVG)
 #endif
-
-// vim:ts=4:noet

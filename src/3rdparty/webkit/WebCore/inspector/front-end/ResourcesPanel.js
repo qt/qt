@@ -39,6 +39,7 @@ WebInspector.ResourcesPanel = function()
     this.viewsContainerElement.id = "resource-views";
     this.element.appendChild(this.viewsContainerElement);
 
+    this.createFilterPanel();
     this.createInterface();
 
     this._createStatusbarButtons();
@@ -140,16 +141,19 @@ WebInspector.ResourcesPanel.prototype = {
     _createStatusbarButtons: function()
     {
         this.largerResourcesButton = new WebInspector.StatusBarButton(WebInspector.UIString("Use small resource rows."), "resources-larger-resources-status-bar-item");
-        this.largerResourcesButton.toggled = Preferences.resourcesLargeRows;
-        this.largerResourcesButton.addEventListener("click", this._toggleLargerResources.bind(this), false);
-        if (!Preferences.resourcesLargeRows) {
-            Preferences.resourcesLargeRows = !Preferences.resourcesLargeRows;
-            this._toggleLargerResources(); // this will toggle the preference back to the original
-        }
 
+        WebInspector.settings.addEventListener("loaded", this._settingsLoaded, this);
+        this.largerResourcesButton.addEventListener("click", this._toggleLargerResources.bind(this), false);
         this.sortingSelectElement = document.createElement("select");
         this.sortingSelectElement.className = "status-bar-item";
         this.sortingSelectElement.addEventListener("change", this._changeSortingFunction.bind(this), false);
+    },
+
+    _settingsLoaded: function()
+    {
+        this.largerResourcesButton.toggled = WebInspector.settings.resourcesLargeRows;
+        if (!WebInspector.settings.resourcesLargeRows)
+            this._setLargerResources(WebInspector.settings.resourcesLargeRows);
     },
 
     get mainResourceLoadTime()
@@ -188,10 +192,11 @@ WebInspector.ResourcesPanel.prototype = {
         WebInspector.AbstractTimelinePanel.prototype.show.call(this);
 
         var visibleView = this.visibleView;
-        if (visibleView) {
-            visibleView.headersVisible = true;
-            visibleView.show(this.viewsContainerElement);
-        }
+        if (this.visibleResource) {
+            this.visibleView.headersVisible = true;
+            this.visibleView.show(this.viewsContainerElement);
+        } else if (visibleView)
+            visibleView.show();
 
         // Hide any views that are visible that are not this panel's current visible view.
         // This can happen when a ResourceView is visible in the Scripts panel then switched
@@ -204,15 +209,6 @@ WebInspector.ResourcesPanel.prototype = {
                 continue;
             view.visible = false;
         }
-    },
-
-    resize: function()
-    {
-        WebInspector.AbstractTimelinePanel.prototype.resize.call(this);
-
-        var visibleView = this.visibleView;
-        if (visibleView && "resize" in visibleView)
-            visibleView.resize();
     },
 
     get searchableViews()
@@ -283,7 +279,7 @@ WebInspector.ResourcesPanel.prototype = {
     {
         if (this.visibleResource)
             return this.visibleResource._resourcesView;
-        return null;
+        return InspectorBackend.resourceTrackingEnabled() ? null : this.panelEnablerView;
     },
 
     get sortingFunction()
@@ -348,7 +344,7 @@ WebInspector.ResourcesPanel.prototype = {
 
         this.summaryBar.reset();
 
-        if (InspectorController.resourceTrackingEnabled()) {
+        if (InspectorBackend.resourceTrackingEnabled()) {
             this.enableToggleButton.title = WebInspector.UIString("Resource tracking enabled. Click to disable.");
             this.enableToggleButton.toggled = true;
             this.largerResourcesButton.visible = true;
@@ -433,7 +429,7 @@ WebInspector.ResourcesPanel.prototype = {
             return;
 
         var newView = this._createResourceView(resource);
-        if (newView.prototype === resource._resourcesView.prototype)
+        if (newView.__proto__ === resource._resourcesView.__proto__)
             return;
 
         resource.warnings = 0;
@@ -443,6 +439,7 @@ WebInspector.ResourcesPanel.prototype = {
             resource._itemsTreeElement.updateErrorsAndWarnings();
 
         var oldView = resource._resourcesView;
+        var oldViewParentNode = oldView.visible ? oldView.element.parentNode : null;
 
         resource._resourcesView.detach();
         delete resource._resourcesView;
@@ -451,8 +448,20 @@ WebInspector.ResourcesPanel.prototype = {
 
         newView.headersVisible = oldView.headersVisible;
 
-        if (oldView.visible && oldView.element.parentNode)
-            newView.show(oldView.element.parentNode);
+        if (oldViewParentNode)
+            newView.show(oldViewParentNode);
+
+        WebInspector.panels.scripts.viewRecreated(oldView, newView);
+    },
+
+    canShowSourceLineForURL: function(url)
+    {
+        return !!WebInspector.resourceForURL(url);
+    },
+
+    showSourceLineForURL: function(url, line)
+    {
+        this.showResource(WebInspector.resourceForURL(url), line);
     },
 
     showResource: function(resource, line)
@@ -564,8 +573,8 @@ WebInspector.ResourcesPanel.prototype = {
             loadDividerPadding.style.left = percent + "%";
             loadDividerPadding.title = WebInspector.UIString("Load event fired");
             loadDividerPadding.appendChild(loadDivider);
-            
-            this.eventDividersElement.appendChild(loadDividerPadding);
+
+            this.addEventDivider(loadDividerPadding);
         }
         
         if (this.mainResourceDOMContentTime !== -1) {
@@ -579,8 +588,8 @@ WebInspector.ResourcesPanel.prototype = {
             domContentDividerPadding.style.left = percent + "%";
             domContentDividerPadding.title = WebInspector.UIString("DOMContent event fired");
             domContentDividerPadding.appendChild(domContentDivider);
-            
-            this.eventDividersElement.appendChild(domContentDividerPadding);
+
+            this.addEventDivider(domContentDividerPadding);
         }
     },
 
@@ -613,19 +622,21 @@ WebInspector.ResourcesPanel.prototype = {
         if (!this.itemsTreeElement._childrenListNode)
             return;
 
-        this.itemsTreeElement.smallChildren = !this.itemsTreeElement.smallChildren;
-        Preferences.resourcesLargeRows = !Preferences.resourcesLargeRows;
-        InspectorController.setSetting("resources-large-rows", Preferences.resourcesLargeRows);
+        WebInspector.settings.resourcesLargeRows = !WebInspector.settings.resourcesLargeRows;
+        this._setLargerResources(this.itemsTreeElement.smallChildren);
+    },
 
-        if (this.itemsTreeElement.smallChildren) {
+    _setLargerResources: function(enabled)
+    {
+        this.largerResourcesButton.toggled = enabled;
+        this.itemsTreeElement.smallChildren = !enabled;
+        if (!enabled) {
             this.itemsGraphsElement.addStyleClass("small");
             this.largerResourcesButton.title = WebInspector.UIString("Use large resource rows.");
-            this.largerResourcesButton.toggled = false;
             this.adjustScrollPosition();
         } else {
             this.itemsGraphsElement.removeStyleClass("small");
             this.largerResourcesButton.title = WebInspector.UIString("Use small resource rows.");
-            this.largerResourcesButton.toggled = true;
         }
     },
 
@@ -668,37 +679,51 @@ WebInspector.ResourcesPanel.prototype = {
 
     updateMainViewWidth: function(width)
     {
-        WebInspector.AbstractTimelinePanel.prototype.updateMainViewWidth.call(this, width);
         this.viewsContainerElement.style.left = width + "px";
+
+        WebInspector.AbstractTimelinePanel.prototype.updateMainViewWidth.call(this, width);
+        this.resize();
     },
 
     _enableResourceTracking: function()
     {
-        if (InspectorController.resourceTrackingEnabled())
+        if (InspectorBackend.resourceTrackingEnabled())
             return;
         this._toggleResourceTracking(this.panelEnablerView.alwaysEnabled);
     },
 
     _toggleResourceTracking: function(optionalAlways)
     {
-        if (InspectorController.resourceTrackingEnabled()) {
+        if (InspectorBackend.resourceTrackingEnabled()) {
             this.largerResourcesButton.visible = false;
             this.sortingSelectElement.visible = false;
-            InspectorController.disableResourceTracking(true);
+            InspectorBackend.disableResourceTracking(true);
         } else {
             this.largerResourcesButton.visible = true;
             this.sortingSelectElement.visible = true;
-            InspectorController.enableResourceTracking(!!optionalAlways);
+            InspectorBackend.enableResourceTracking(!!optionalAlways);
         }
     },
 
     get _resources()
     {
-        return this._items;
+        return this.items;
+    },
+
+    searchIteratesOverViews: function()
+    {
+        return true;
     }
 }
 
 WebInspector.ResourcesPanel.prototype.__proto__ = WebInspector.AbstractTimelinePanel.prototype;
+
+WebInspector.getResourceContent = function(identifier, callback)
+{
+    InspectorBackend.getResourceContent(WebInspector.Callback.wrap(callback), identifier);
+}
+
+WebInspector.didGetResourceContent = WebInspector.Callback.processCallback;
 
 WebInspector.ResourceTimeCalculator = function(startAtZero)
 {
@@ -958,6 +983,7 @@ WebInspector.ResourceSidebarTreeElement.prototype = {
         // FIXME: should actually add handler to parent, to be resolved via
         // https://bugs.webkit.org/show_bug.cgi?id=30227
         this._listItemNode.addEventListener("dragstart", this.ondragstart.bind(this), false);
+        this.updateErrorsAndWarnings();
     },
 
     onselect: function()
@@ -965,9 +991,9 @@ WebInspector.ResourceSidebarTreeElement.prototype = {
         WebInspector.panels.resources.showResource(this.resource);
     },
     
-    ondblclick: function(treeElement, event)
+    ondblclick: function(event)
     {
-        InjectedScriptAccess.openInInspectedWindow(this.resource.url, function() {});
+        InjectedScriptAccess.getDefault().openInInspectedWindow(this.resource.url, function() {});
     },
 
     ondragstart: function(event) {
@@ -1041,6 +1067,8 @@ WebInspector.ResourceSidebarTreeElement.prototype = {
 
             this.createIconElement();
         }
+
+        this.tooltip = this.resource.url;
     },
 
     resetBubble: function()
@@ -1168,14 +1196,19 @@ WebInspector.ResourceGraph.prototype = {
         this._labelRightElement.removeStyleClass("hidden");
 
         const labelPadding = 10;
-        const rightBarWidth = (this._barRightElement.offsetWidth - labelPadding);
-        const leftBarWidth = ((this._barLeftElement.offsetWidth - this._barRightElement.offsetWidth) - labelPadding);
+        const barRightElementOffsetWidth = this._barRightElement.offsetWidth;
+        const barLeftElementOffsetWidth = this._barLeftElement.offsetWidth;
+        const rightBarWidth = (barRightElementOffsetWidth - labelPadding);
+        const leftBarWidth = ((barLeftElementOffsetWidth - barRightElementOffsetWidth) - labelPadding);
+        const labelLeftElementOffsetWidth = this._labelLeftElement.offsetWidth;
+        const labelRightElementOffsetWidth = this._labelRightElement.offsetWidth;
 
-        var labelBefore = (this._labelLeftElement.offsetWidth > leftBarWidth);
-        var labelAfter = (this._labelRightElement.offsetWidth > rightBarWidth);
+        const labelBefore = (labelLeftElementOffsetWidth > leftBarWidth);
+        const labelAfter = (labelRightElementOffsetWidth > rightBarWidth);
+        const graphElementOffsetWidth = this._graphElement.offsetWidth;
 
         if (labelBefore) {
-            if ((this._graphElement.offsetWidth * (this._percentages.start / 100)) < (this._labelLeftElement.offsetWidth + 10))
+            if ((graphElementOffsetWidth * (this._percentages.start / 100)) < (labelLeftElementOffsetWidth + 10))
                 this._labelLeftElement.addStyleClass("hidden");
             this._labelLeftElement.style.setProperty("right", (100 - this._percentages.start) + "%");
             this._labelLeftElement.addStyleClass("before");
@@ -1185,7 +1218,7 @@ WebInspector.ResourceGraph.prototype = {
         }
 
         if (labelAfter) {
-            if ((this._graphElement.offsetWidth * ((100 - this._percentages.end) / 100)) < (this._labelRightElement.offsetWidth + 10))
+            if ((graphElementOffsetWidth * ((100 - this._percentages.end) / 100)) < (labelRightElementOffsetWidth + 10))
                 this._labelRightElement.addStyleClass("hidden");
             this._labelRightElement.style.setProperty("left", this._percentages.end + "%");
             this._labelRightElement.addStyleClass("after");

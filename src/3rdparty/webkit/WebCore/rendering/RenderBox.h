@@ -74,7 +74,7 @@ public:
 
     // Bounds of the outline box in absolute coords. Respects transforms
     virtual IntRect outlineBoundsForRepaint(RenderBoxModelObject* /*repaintContainer*/) const;
-    virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
+    virtual void addFocusRingRects(Vector<IntRect>&, int tx, int ty);
 
     // Use this with caution! No type checking is done!
     RenderBox* previousSiblingBox() const;
@@ -173,7 +173,7 @@ public:
     int overrideHeight() const;
     virtual void setOverrideSize(int);
 
-    virtual IntSize offsetFromContainer(RenderObject*) const;
+    virtual IntSize offsetFromContainer(RenderObject*, const IntPoint&) const;
     
     int calcBorderBoxWidth(int width) const;
     int calcBorderBoxHeight(int height) const;
@@ -297,7 +297,7 @@ public:
     virtual bool avoidsFloats() const;
 
 #if ENABLE(SVG)
-    virtual TransformationMatrix localTransform() const;
+    virtual AffineTransform localTransform() const;
 #endif
 
 protected:
@@ -305,8 +305,8 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     virtual void updateBoxModelInfoFromStyle();
 
-    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int width, int height, CompositeOperator = CompositeSourceOver);
-    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int width, int height, CompositeOperator = CompositeSourceOver);
+    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int width, int height, CompositeOperator op, RenderObject* backgroundObject);
+    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer*, int tx, int ty, int width, int height, CompositeOperator = CompositeSourceOver, RenderObject* backgroundObject = 0);
 
     void paintMaskImages(const PaintInfo&, int tx, int ty, int width, int height);
 

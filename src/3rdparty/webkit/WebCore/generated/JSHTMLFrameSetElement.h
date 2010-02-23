@@ -40,7 +40,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -60,7 +60,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLFrameSetElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -83,6 +83,8 @@ JSC::JSValue jsHTMLFrameSetElementOnoffline(JSC::ExecState*, const JSC::Identifi
 void setJSHTMLFrameSetElementOnoffline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLFrameSetElementOnonline(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLFrameSetElementOnonline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLFrameSetElementOnpopstate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLFrameSetElementOnpopstate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLFrameSetElementOnresize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLFrameSetElementOnresize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLFrameSetElementOnstorage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

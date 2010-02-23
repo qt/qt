@@ -33,6 +33,10 @@ WebInspector.DOMNode = function(doc, payload) {
     this.ownerDocument = doc;
 
     this.id = payload.id;
+    // injectedScriptId is a node is for DOM nodes which should be converted
+    // to corresponding InjectedScript by the inspector backend. We indicate
+    // this by making injectedScriptId negative.
+    this.injectedScriptId = -payload.id;
     this.nodeType = payload.nodeType;
     this.nodeName = payload.nodeName;
     this.localName = payload.localName;
@@ -60,12 +64,20 @@ WebInspector.DOMNode = function(doc, payload) {
     this.style = null;
     this._matchedCSSRules = [];
 
-    if (this.nodeType == Node.ELEMENT_NODE) {
-        if (this.nodeName == "HTML")
+    if (this.nodeType === Node.ELEMENT_NODE) {
+        // HTML and BODY from internal iframes should not overwrite top-level ones.
+        if (!this.ownerDocument.documentElement && this.nodeName === "HTML")
             this.ownerDocument.documentElement = this;
-        if (this.nodeName == "BODY")
+        if (!this.ownerDocument.body && this.nodeName === "BODY")
             this.ownerDocument.body = this;
-    }
+        if (payload.documentURL)
+            this.documentURL = payload.documentURL;
+    } else if (this.nodeType === Node.DOCUMENT_TYPE_NODE) {
+        this.publicId = payload.publicId;
+        this.systemId = payload.systemId;
+        this.internalSubset = payload.internalSubset;
+    } else if (this.nodeType === Node.DOCUMENT_NODE)
+        this.documentURL = payload.documentURL;
 }
 
 WebInspector.DOMNode.prototype = {
@@ -132,6 +144,8 @@ WebInspector.DOMNode.prototype = {
 
     _setAttributesPayload: function(attrs)
     {
+        this.attributes = [];
+        this._attributesMap = {};
         for (var i = 0; i < attrs.length; i += 2)
             this._addAttribute(attrs[i], attrs[i + 1]);
     },
@@ -139,10 +153,13 @@ WebInspector.DOMNode.prototype = {
     _insertChild: function(prev, payload)
     {
         var node = new WebInspector.DOMNode(this.ownerDocument, payload);
-        if (!prev)
-            // First node
-            this.children = [ node ];
-        else
+        if (!prev) {
+            if (!this.children) {
+                // First node
+                this.children = [ node ];
+            } else
+                this.children.unshift(node);
+        } else
             this.children.splice(this.children.indexOf(prev) + 1, 0, node);
         this._renumber();
         return node;
@@ -178,6 +195,7 @@ WebInspector.DOMNode.prototype = {
         this.lastChild = this.children[this._childNodeCount - 1];
         for (var i = 0; i < this._childNodeCount; ++i) {
             var child = this.children[i];
+            child.index = i;
             child.nextSibling = i + 1 < this._childNodeCount ? this.children[i + 1] : null;
             child.prevSibling = i - 1 >= 0 ? this.children[i - 1] : null;
             child.parentNode = this;
@@ -326,25 +344,25 @@ WebInspector.DOMAgent.prototype = {
             callback(parent.children);
         }
         var callId = WebInspector.Callback.wrap(mycallback);
-        InspectorController.getChildNodes(callId, parent.id);
+        InspectorBackend.getChildNodes(callId, parent.id);
     },
 
     setAttributeAsync: function(node, name, value, callback)
     {
         var mycallback = this._didApplyDomChange.bind(this, node, callback);
-        InspectorController.setAttribute(WebInspector.Callback.wrap(mycallback), node.id, name, value);
+        InspectorBackend.setAttribute(WebInspector.Callback.wrap(mycallback), node.id, name, value);
     },
 
     removeAttributeAsync: function(node, name, callback)
     {
         var mycallback = this._didApplyDomChange.bind(this, node, callback);
-        InspectorController.removeAttribute(WebInspector.Callback.wrap(mycallback), node.id, name);
+        InspectorBackend.removeAttribute(WebInspector.Callback.wrap(mycallback), node.id, name);
     },
 
     setTextNodeValueAsync: function(node, text, callback)
     {
         var mycallback = this._didApplyDomChange.bind(this, node, callback);
-        InspectorController.setTextNodeValue(WebInspector.Callback.wrap(mycallback), node.id, text);
+        InspectorBackend.setTextNodeValue(WebInspector.Callback.wrap(mycallback), node.id, text);
     },
 
     _didApplyDomChange: function(node, callback, success)
@@ -354,15 +372,16 @@ WebInspector.DOMAgent.prototype = {
         callback();
         // TODO(pfeldman): Fix this hack.
         var elem = WebInspector.panels.elements.treeOutline.findTreeElement(node);
-        if (elem) {
-            elem._updateTitle();
-        }
+        if (elem)
+            elem.updateTitle();
     },
 
     _attributesUpdated: function(nodeId, attrsArray)
     {
         var node = this._idToDOMNode[nodeId];
         node._setAttributesPayload(attrsArray);
+        var event = {target: node};
+        this.document._fireDomEvent("DOMAttrModified", event);
     },
 
     nodeForId: function(nodeId) {
@@ -372,13 +391,13 @@ WebInspector.DOMAgent.prototype = {
     _setDocument: function(payload)
     {
         this._idToDOMNode = {};
-        if (payload) {
+        if (payload && "id" in payload) {
             this.document = new WebInspector.DOMDocument(this, this._window, payload);
             this._idToDOMNode[payload.id] = this.document;
             this._bindNodes(this.document.children);
         } else
             this.document = null;
-        WebInspector.panels.elements.reset();
+        WebInspector.panels.elements.setDocument(this.document);
     },
 
     _setDetachedRoot: function(payload)
@@ -437,7 +456,7 @@ WebInspector.DOMAgent.prototype = {
 
 WebInspector.Cookies = {}
 
-WebInspector.Cookies.getCookiesAsync = function(callback, cookieDomain)
+WebInspector.Cookies.getCookiesAsync = function(callback)
 {
     function mycallback(cookies, cookiesString) {
         if (cookiesString)
@@ -446,7 +465,7 @@ WebInspector.Cookies.getCookiesAsync = function(callback, cookieDomain)
             callback(cookies, true);
     }
     var callId = WebInspector.Callback.wrap(mycallback);
-    InspectorController.getCookies(callId, cookieDomain);
+    InspectorBackend.getCookies(callId);
 }
 
 WebInspector.Cookies.buildCookiesFromString = function(rawCookieString)
@@ -468,6 +487,28 @@ WebInspector.Cookies.buildCookiesFromString = function(rawCookieString)
     return cookies;
 }
 
+WebInspector.Cookies.cookieMatchesResourceURL = function(cookie, resourceURL)
+{
+    var match = resourceURL.match(WebInspector.URLRegExp);
+    if (!match)
+        return false;
+    // See WebInspector.URLRegExp for definitions of the group index constants.
+    if (!this.cookieDomainMatchesResourceDomain(cookie.domain, match[2]))
+        return false;
+    var resourcePort = match[3] ? match[3] : undefined;
+    var resourcePath = match[4] ? match[4] : '/';
+    return (resourcePath.indexOf(cookie.path) === 0
+        && (!cookie.port || resourcePort == cookie.port)
+        && (!cookie.secure || match[1].toLowerCase() === 'https'));
+}
+
+WebInspector.Cookies.cookieDomainMatchesResourceDomain = function(cookieDomain, resourceDomain)
+{
+    if (cookieDomain.charAt(0) !== '.')
+        return resourceDomain === cookieDomain;
+    return !!resourceDomain.match(new RegExp("^([^\\.]+\\.)?" + cookieDomain.substring(1).escapeForRegExp() + "$"), "i");
+}
+
 WebInspector.EventListeners = {}
 
 WebInspector.EventListeners.getEventListenersForNodeAsync = function(node, callback)
@@ -476,12 +517,13 @@ WebInspector.EventListeners.getEventListenersForNodeAsync = function(node, callb
         return;
 
     var callId = WebInspector.Callback.wrap(callback);
-    InspectorController.getEventListenersForNode(callId, node.id);
+    InspectorBackend.getEventListenersForNode(callId, node.id);
 }
 
 WebInspector.CSSStyleDeclaration = function(payload)
 {
     this.id = payload.id;
+    this.injectedScriptId = payload.injectedScriptId;
     this.width = payload.width;
     this.height = payload.height;
     this.__disabledProperties = payload.__disabledProperties;
@@ -524,6 +566,7 @@ WebInspector.CSSStyleDeclaration.parseRule = function(payload)
 {
     var rule = {};
     rule.id = payload.id;
+    rule.injectedScriptId = payload.injectedScriptId;
     rule.selectorText = payload.selectorText;
     rule.style = new WebInspector.CSSStyleDeclaration(payload.style);
     rule.style.parentRule = rule;

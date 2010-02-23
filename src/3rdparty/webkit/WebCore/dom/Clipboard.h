@@ -69,13 +69,14 @@ namespace WebCore {
 #endif
         virtual void writeURL(const KURL&, const String&, Frame*) = 0;
         virtual void writeRange(Range*, Frame*) = 0;
+        virtual void writePlainText(const String&) = 0;
 
         virtual bool hasData() = 0;
         
         void setAccessPolicy(ClipboardAccessPolicy);
 
-        bool sourceOperation(DragOperation&) const;
-        bool destinationOperation(DragOperation&) const;
+        DragOperation sourceOperation() const;
+        DragOperation destinationOperation() const;
         void setSourceOperation(DragOperation);
         void setDestinationOperation(DragOperation);
         

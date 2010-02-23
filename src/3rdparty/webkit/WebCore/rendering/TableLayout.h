@@ -1,6 +1,4 @@
 /*
- * This file is part of the HTML rendering engine for KDE.
- *
  * Copyright (C) 2002 Lars Knoll (knoll@kde.org)
  *           (C) 2002 Dirk Mueller (mueller@kde.org)
  *
@@ -23,11 +21,13 @@
 #ifndef TableLayout_h
 #define TableLayout_h
 
+#include <wtf/Noncopyable.h>
+
 namespace WebCore {
 
 class RenderTable;
 
-class TableLayout {
+class TableLayout : public Noncopyable {
 public:
     TableLayout(RenderTable* table)
         : m_table(table)

@@ -50,7 +50,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), Base::AnonymousSlotCount); 
     }
 
 protected:
@@ -61,6 +61,7 @@ private:
 
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual bool getOwnPropertySlot(ExecState*, unsigned, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
     
     virtual void put(ExecState*, const Identifier&, JSValue, PutPropertySlot&);
 
@@ -69,7 +70,7 @@ private:
 
     virtual bool hasInstance(ExecState* exec, JSValue value, JSValue proto);
 
-    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
+    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
 
     virtual double toNumber(ExecState*) const;
     virtual UString toString(ExecState*) const;

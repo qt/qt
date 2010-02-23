@@ -31,6 +31,7 @@
 #include "CString.h"
 #include "EventNames.h"
 #include "HTMLElement.h"
+#include "SecurityOrigin.h"
 #include "SQLiteStatement.h"
 #include "StorageAreaImpl.h"
 #include "StorageSyncManager.h"
@@ -42,17 +43,18 @@ namespace WebCore {
 // Instead, queue up a batch of items to sync and actually do the sync at the following interval.
 static const double StorageSyncInterval = 1.0;
 
-PassRefPtr<StorageAreaSync> StorageAreaSync::create(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea)
+PassRefPtr<StorageAreaSync> StorageAreaSync::create(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea, String databaseIdentifier)
 {
-    return adoptRef(new StorageAreaSync(storageSyncManager, storageArea));
+    return adoptRef(new StorageAreaSync(storageSyncManager, storageArea, databaseIdentifier));
 }
 
-StorageAreaSync::StorageAreaSync(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea)
+StorageAreaSync::StorageAreaSync(PassRefPtr<StorageSyncManager> storageSyncManager, PassRefPtr<StorageAreaImpl> storageArea, String databaseIdentifier)
     : m_syncTimer(this, &StorageAreaSync::syncTimerFired)
     , m_itemsCleared(false)
     , m_finalSyncScheduled(false)
     , m_storageArea(storageArea)
     , m_syncManager(storageSyncManager)
+    , m_databaseIdentifier(databaseIdentifier.crossThreadString())
     , m_clearItemsWhileSyncing(false)
     , m_syncScheduled(false)
     , m_importComplete(false)
@@ -71,6 +73,7 @@ StorageAreaSync::~StorageAreaSync()
 {
     ASSERT(isMainThread());
     ASSERT(!m_syncTimer.isActive());
+    ASSERT(m_finalSyncScheduled);
 }
 
 void StorageAreaSync::scheduleFinalSync()
@@ -78,6 +81,7 @@ void StorageAreaSync::scheduleFinalSync()
     ASSERT(isMainThread());
     // FIXME: We do this to avoid races, but it'd be better to make things safe without blocking.
     blockUntilImportComplete();
+    m_storageArea = 0;  // This is done in blockUntilImportComplete() but this is here as a form of documentation that we must be absolutely sure the ref count cycle is broken.
 
     if (m_syncTimer.isActive())
         m_syncTimer.stop();
@@ -165,7 +169,7 @@ void StorageAreaSync::performImport()
     ASSERT(!isMainThread());
     ASSERT(!m_database.isOpen());
 
-    String databaseFilename = m_syncManager->fullDatabaseFilename(m_storageArea->securityOrigin());
+    String databaseFilename = m_syncManager->fullDatabaseFilename(m_databaseIdentifier);
 
     if (databaseFilename.isEmpty()) {
         LOG_ERROR("Filename for local storage database is empty - cannot open for persistent storage");
@@ -206,27 +210,18 @@ void StorageAreaSync::performImport()
         return;
     }
 
-    MutexLocker locker(m_importLock);
-
     HashMap<String, String>::iterator it = itemMap.begin();
     HashMap<String, String>::iterator end = itemMap.end();
 
     for (; it != end; ++it)
         m_storageArea->importItem(it->first, it->second);
 
-    // Break the (ref count) cycle.
-    m_storageArea = 0;
-    m_importComplete = true;
-    m_importCondition.signal();
+    markImported();
 }
 
 void StorageAreaSync::markImported()
 {
-    ASSERT(!isMainThread());
-
     MutexLocker locker(m_importLock);
-    // Break the (ref count) cycle.
-    m_storageArea = 0;
     m_importComplete = true;
     m_importCondition.signal();
 }
@@ -238,19 +233,18 @@ void StorageAreaSync::markImported()
 // item currently in the map. Get/remove can work whether or not it's in the map, but we'll need a list
 // of items the import should not overwrite. Clear can also work, but it'll need to kill the import
 // job first.
-void StorageAreaSync::blockUntilImportComplete() const
+void StorageAreaSync::blockUntilImportComplete()
 {
     ASSERT(isMainThread());
 
-    // Fast path to avoid locking.
-    if (m_importComplete)
+    // Fast path.  We set m_storageArea to 0 only after m_importComplete being true.
+    if (!m_storageArea)
         return;
 
     MutexLocker locker(m_importLock);
     while (!m_importComplete)
         m_importCondition.wait(m_importLock);
-    ASSERT(m_importComplete);
-    ASSERT(!m_storageArea);
+    m_storageArea = 0;
 }
 
 void StorageAreaSync::sync(bool clearItems, const HashMap<String, String>& items)

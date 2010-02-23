@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -192,7 +192,8 @@ JSValue jsStorageLength(ExecState* exec, const Identifier&, const PropertySlot& 
     JSStorage* castedThis = static_cast<JSStorage*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Storage* imp = static_cast<Storage*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsStorageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

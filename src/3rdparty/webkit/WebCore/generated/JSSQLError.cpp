@@ -106,7 +106,8 @@ JSValue jsSQLErrorCode(ExecState* exec, const Identifier&, const PropertySlot& s
     JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SQLError* imp = static_cast<SQLError*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
 JSValue jsSQLErrorMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -114,7 +115,8 @@ JSValue jsSQLErrorMessage(ExecState* exec, const Identifier&, const PropertySlot
     JSSQLError* castedThis = static_cast<JSSQLError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SQLError* imp = static_cast<SQLError*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLError* object)

@@ -37,13 +37,14 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGStyleElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGStyleElementTableValues[6] =
+static const HashTableValue JSSVGStyleElementTableValues[7] =
 {
     { "type", DontDelete, (intptr_t)jsSVGStyleElementType, (intptr_t)setJSSVGStyleElementType },
     { "media", DontDelete, (intptr_t)jsSVGStyleElementMedia, (intptr_t)setJSSVGStyleElementMedia },
     { "title", DontDelete, (intptr_t)jsSVGStyleElementTitle, (intptr_t)setJSSVGStyleElementTitle },
     { "xmllang", DontDelete, (intptr_t)jsSVGStyleElementXmllang, (intptr_t)setJSSVGStyleElementXmllang },
     { "xmlspace", DontDelete, (intptr_t)jsSVGStyleElementXmlspace, (intptr_t)setJSSVGStyleElementXmlspace },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGStyleElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -53,6 +54,53 @@ static JSC_CONST_HASHTABLE HashTable JSSVGStyleElementTable =
 #else
     { 17, 15, JSSVGStyleElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGStyleElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGStyleElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGStyleElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGStyleElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGStyleElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGStyleElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGStyleElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGStyleElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGStyleElementConstructor::s_info = { "SVGStyleElementConstructor", 0, &JSSVGStyleElementConstructorTable, 0 };
+
+bool JSSVGStyleElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGStyleElementConstructor, DOMObject>(exec, &JSSVGStyleElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGStyleElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGStyleElementConstructor, DOMObject>(exec, &JSSVGStyleElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -102,7 +150,8 @@ JSValue jsSVGStyleElementType(ExecState* exec, const Identifier&, const Property
     JSSVGStyleElement* castedThis = static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
 JSValue jsSVGStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -110,7 +159,8 @@ JSValue jsSVGStyleElementMedia(ExecState* exec, const Identifier&, const Propert
     JSSVGStyleElement* castedThis = static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->media());
+    JSValue result = jsString(exec, imp->media());
+    return result;
 }
 
 JSValue jsSVGStyleElementTitle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -118,7 +168,8 @@ JSValue jsSVGStyleElementTitle(ExecState* exec, const Identifier&, const Propert
     JSSVGStyleElement* castedThis = static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->title());
+    JSValue result = jsString(exec, imp->title());
+    return result;
 }
 
 JSValue jsSVGStyleElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -126,7 +177,8 @@ JSValue jsSVGStyleElementXmllang(ExecState* exec, const Identifier&, const Prope
     JSSVGStyleElement* castedThis = static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->xmllang());
+    JSValue result = jsString(exec, imp->xmllang());
+    return result;
 }
 
 JSValue jsSVGStyleElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -134,9 +186,15 @@ JSValue jsSVGStyleElementXmlspace(ExecState* exec, const Identifier&, const Prop
     JSSVGStyleElement* castedThis = static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlspace());
+    JSValue result = jsString(exec, imp->xmlspace());
+    return result;
 }
 
+JSValue jsSVGStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSSVGStyleElement* domObject = static_cast<JSSVGStyleElement*>(asObject(slot.slotBase()));
+    return JSSVGStyleElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGStyleElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGStyleElement, Base>(exec, propertyName, value, &JSSVGStyleElementTable, this, slot);
@@ -144,7 +202,8 @@ void JSSVGStyleElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSSVGStyleElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
+    JSSVGStyleElement* castedThisObj = static_cast<JSSVGStyleElement*>(thisObject);
+    SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setType(value.toString(exec), ec);
     setDOMException(exec, ec);
@@ -152,7 +211,8 @@ void setJSSVGStyleElementType(ExecState* exec, JSObject* thisObject, JSValue val
 
 void setJSSVGStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
+    JSSVGStyleElement* castedThisObj = static_cast<JSSVGStyleElement*>(thisObject);
+    SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setMedia(value.toString(exec), ec);
     setDOMException(exec, ec);
@@ -160,7 +220,8 @@ void setJSSVGStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValue va
 
 void setJSSVGStyleElementTitle(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
+    JSSVGStyleElement* castedThisObj = static_cast<JSSVGStyleElement*>(thisObject);
+    SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setTitle(value.toString(exec), ec);
     setDOMException(exec, ec);
@@ -168,14 +229,21 @@ void setJSSVGStyleElementTitle(ExecState* exec, JSObject* thisObject, JSValue va
 
 void setJSSVGStyleElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
+    JSSVGStyleElement* castedThisObj = static_cast<JSSVGStyleElement*>(thisObject);
+    SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThisObj->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGStyleElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGStyleElement* imp = static_cast<SVGStyleElement*>(static_cast<JSSVGStyleElement*>(thisObject)->impl());
+    JSSVGStyleElement* castedThisObj = static_cast<JSSVGStyleElement*>(thisObject);
+    SVGStyleElement* imp = static_cast<SVGStyleElement*>(castedThisObj->impl());
     imp->setXmlspace(value.toString(exec));
+}
+
+JSValue JSSVGStyleElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGStyleElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

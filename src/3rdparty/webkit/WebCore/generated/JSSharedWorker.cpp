@@ -98,7 +98,8 @@ JSValue jsSharedWorkerPort(ExecState* exec, const Identifier&, const PropertySlo
     JSSharedWorker* castedThis = static_cast<JSSharedWorker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SharedWorker* imp = static_cast<SharedWorker*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->port()));
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SharedWorker* object)

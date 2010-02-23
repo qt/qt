@@ -27,9 +27,10 @@
 #define SVGResourceClipper_h
 
 #if ENABLE(SVG)
-
-#include "SVGResource.h"
+#include "FloatRect.h"
 #include "Path.h"
+#include "RenderObject.h"
+#include "SVGResource.h"
 
 namespace WebCore {
 
@@ -65,7 +66,9 @@ namespace WebCore {
     public:
         static PassRefPtr<SVGResourceClipper> create() { return adoptRef(new SVGResourceClipper); }
         virtual ~SVGResourceClipper();
-      
+
+        virtual void invalidate();
+
         void resetClipData();
         void addClipData(const Path&, WindRule, bool bboxUnits);
 
@@ -76,15 +79,17 @@ namespace WebCore {
 
         // To be implemented by the specific rendering devices
         void applyClip(GraphicsContext*, const FloatRect& boundingBox) const;
+        FloatRect clipperBoundingBox(const FloatRect& oob);
     private:
         SVGResourceClipper();
         ClipDataList m_clipData;
+        FloatRect m_clipperBoundingBox;
     };
 
     TextStream& operator<<(TextStream&, WindRule);
     TextStream& operator<<(TextStream&, const ClipData&);
 
-    SVGResourceClipper* getClipperById(Document*, const AtomicString&);
+    SVGResourceClipper* getClipperById(Document*, const AtomicString&, const RenderObject*);
 
 } // namespace WebCore
 

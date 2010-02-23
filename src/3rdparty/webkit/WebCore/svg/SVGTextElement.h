@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2008 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -41,21 +39,23 @@ namespace WebCore {
         virtual SVGElement* farthestViewportElement() const;
 
         virtual FloatRect getBBox() const;
-        virtual TransformationMatrix getCTM() const;
-        virtual TransformationMatrix getScreenCTM() const;
-        virtual TransformationMatrix animatedLocalTransform() const;
-        virtual TransformationMatrix* supplementalTransform();
+        virtual AffineTransform getCTM() const;
+        virtual AffineTransform getScreenCTM() const;
+        virtual AffineTransform animatedLocalTransform() const;
+        virtual AffineTransform* supplementalTransform();
 
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
         virtual bool childShouldCreateRenderer(Node*) const;
                 
         virtual void svgAttributeChanged(const QualifiedName&);
+        virtual void synchronizeProperty(const QualifiedName&);
+        virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
 
     private:
-        ANIMATED_PROPERTY_DECLARATIONS(SVGTextElement, SVGNames::textTagString, SVGNames::transformAttrString, SVGTransformList, Transform, transform)
+        DECLARE_ANIMATED_PROPERTY(SVGTextElement, SVGNames::transformAttr, SVGTransformList*, Transform, transform)
        
        // Used by <animateMotion>
-       OwnPtr<TransformationMatrix> m_supplementalTransform;
+       OwnPtr<AffineTransform> m_supplementalTransform;
     };
 
 } // namespace WebCore

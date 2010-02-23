@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -143,7 +143,8 @@ JSValue jsHTMLHtmlElementVersion(ExecState* exec, const Identifier&, const Prope
     JSHTMLHtmlElement* castedThis = static_cast<JSHTMLHtmlElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLHtmlElement* imp = static_cast<HTMLHtmlElement*>(castedThis->impl());
-    return jsString(exec, imp->version());
+    JSValue result = jsString(exec, imp->version());
+    return result;
 }
 
 JSValue jsHTMLHtmlElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -158,7 +159,8 @@ void JSHTMLHtmlElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLHtmlElementVersion(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLHtmlElement* imp = static_cast<HTMLHtmlElement*>(static_cast<JSHTMLHtmlElement*>(thisObject)->impl());
+    JSHTMLHtmlElement* castedThisObj = static_cast<JSHTMLHtmlElement*>(thisObject);
+    HTMLHtmlElement* imp = static_cast<HTMLHtmlElement*>(castedThisObj->impl());
     imp->setVersion(valueToStringWithNullCheck(exec, value));
 }
 

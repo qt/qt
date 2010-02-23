@@ -75,7 +75,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -142,7 +142,8 @@ JSValue jsCSSCharsetRuleEncoding(ExecState* exec, const Identifier&, const Prope
     JSCSSCharsetRule* castedThis = static_cast<JSCSSCharsetRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSCharsetRule* imp = static_cast<CSSCharsetRule*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->encoding());
+    JSValue result = jsStringOrNull(exec, imp->encoding());
+    return result;
 }
 
 JSValue jsCSSCharsetRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -157,7 +158,8 @@ void JSCSSCharsetRule::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSCSSCharsetRuleEncoding(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CSSCharsetRule* imp = static_cast<CSSCharsetRule*>(static_cast<JSCSSCharsetRule*>(thisObject)->impl());
+    JSCSSCharsetRule* castedThisObj = static_cast<JSCSSCharsetRule*>(thisObject);
+    CSSCharsetRule* imp = static_cast<CSSCharsetRule*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setEncoding(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

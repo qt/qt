@@ -82,7 +82,7 @@ WebInspector.Database.prototype = {
             callback(names.sort());
         }
         var callId = WebInspector.Callback.wrap(sortingCallback);
-        InspectorController.getDatabaseTableNames(callId, this._id);
+        InspectorBackend.getDatabaseTableNames(callId, this._id);
     },
     
     executeSql: function(query, onSuccess, onError)
@@ -95,7 +95,8 @@ WebInspector.Database.prototype = {
             }
             onSuccess(result);
         }
-        InjectedScriptAccess.executeSql(this._id, query, callback);
+        // FIXME: execute the query in the frame the DB comes from.
+        InjectedScriptAccess.getDefault().executeSql(this._id, query, callback);
     }
 }
 

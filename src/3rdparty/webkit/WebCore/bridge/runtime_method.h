@@ -26,7 +26,7 @@
 #ifndef RUNTIME_FUNCTION_H_
 #define RUNTIME_FUNCTION_H_
 
-#include "runtime.h"
+#include "Bridge.h"
 #include <runtime/InternalFunction.h>
 #include <runtime/JSGlobalObject.h>
 #include <wtf/OwnPtr.h>
@@ -47,7 +47,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
-        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
 private:

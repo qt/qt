@@ -619,7 +619,7 @@ void QKeyMapperPrivate::clearMappings()
     /* MAKELCID()'s first argument is a WORD, and GetKeyboardLayout()
      * returns a DWORD. */
 
-    LCID newLCID = MAKELCID((DWORD)GetKeyboardLayout(0), SORT_DEFAULT);
+    LCID newLCID = MAKELCID((quintptr)GetKeyboardLayout(0), SORT_DEFAULT);
 //    keyboardInputLocale = qt_localeFromLCID(newLCID);
 
     bool bidi = false;

@@ -20,7 +20,8 @@
 module window {
 
     interface [
-        CustomMarkFunction
+        CustomMarkFunction,
+        OmitConstructor
     ] Navigator {
         readonly attribute DOMString appCodeName;
         readonly attribute DOMString appName;
@@ -40,12 +41,17 @@ module window {
         readonly attribute boolean onLine;
 
 #if defined(ENABLE_GEOLOCATION) && ENABLE_GEOLOCATION
-        readonly attribute Geolocation geolocation;
+        readonly attribute [EnabledAtRuntime] Geolocation geolocation;
 #endif
 
 #if defined(ENABLE_DOM_STORAGE) && ENABLE_DOM_STORAGE
         void getStorageUpdates();
 #endif
+
+        void registerProtocolHandler(in DOMString scheme, in DOMString url, in DOMString title)
+            raises(DomException);
+        void registerContentHandler(in DOMString mimeType, in DOMString url, in DOMString title)
+            raises(DomException);
     };
 
 }

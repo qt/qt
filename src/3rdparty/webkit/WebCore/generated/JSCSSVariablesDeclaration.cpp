@@ -83,7 +83,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -164,7 +164,7 @@ bool JSCSSVariablesDeclaration::getOwnPropertySlot(ExecState* exec, const Identi
     }
     bool ok;
     unsigned index = propertyName.toUInt32(&ok, false);
-    if (ok && index < static_cast<CSSVariablesDeclaration*>(impl())->length()) {
+    if (ok) {
         slot.setCustomIndex(this, index, indexGetter);
         return true;
     }
@@ -205,7 +205,8 @@ JSValue jsCSSVariablesDeclarationCssText(ExecState* exec, const Identifier&, con
     JSCSSVariablesDeclaration* castedThis = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(castedThis->impl());
-    return jsString(exec, imp->cssText());
+    JSValue result = jsString(exec, imp->cssText());
+    return result;
 }
 
 JSValue jsCSSVariablesDeclarationLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -213,7 +214,8 @@ JSValue jsCSSVariablesDeclarationLength(ExecState* exec, const Identifier&, cons
     JSCSSVariablesDeclaration* castedThis = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsCSSVariablesDeclarationParentRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -221,7 +223,8 @@ JSValue jsCSSVariablesDeclarationParentRule(ExecState* exec, const Identifier&, 
     JSCSSVariablesDeclaration* castedThis = static_cast<JSCSSVariablesDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
+    return result;
 }
 
 JSValue jsCSSVariablesDeclarationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -236,15 +239,16 @@ void JSCSSVariablesDeclaration::put(ExecState* exec, const Identifier& propertyN
 
 void setJSCSSVariablesDeclarationCssText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(static_cast<JSCSSVariablesDeclaration*>(thisObject)->impl());
+    JSCSSVariablesDeclaration* castedThisObj = static_cast<JSCSSVariablesDeclaration*>(thisObject);
+    CSSVariablesDeclaration* imp = static_cast<CSSVariablesDeclaration*>(castedThisObj->impl());
     imp->setCssText(value.toString(exec));
 }
 
-void JSCSSVariablesDeclaration::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCSSVariablesDeclaration::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<CSSVariablesDeclaration*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSCSSVariablesDeclaration::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -85,7 +85,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -215,7 +215,8 @@ JSValue jsPluginName(ExecState* exec, const Identifier&, const PropertySlot& slo
     JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
 JSValue jsPluginFilename(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -223,7 +224,8 @@ JSValue jsPluginFilename(ExecState* exec, const Identifier&, const PropertySlot&
     JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsString(exec, imp->filename());
+    JSValue result = jsString(exec, imp->filename());
+    return result;
 }
 
 JSValue jsPluginDescription(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -231,7 +233,8 @@ JSValue jsPluginDescription(ExecState* exec, const Identifier&, const PropertySl
     JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsString(exec, imp->description());
+    JSValue result = jsString(exec, imp->description());
+    return result;
 }
 
 JSValue jsPluginLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -239,7 +242,8 @@ JSValue jsPluginLength(ExecState* exec, const Identifier&, const PropertySlot& s
     JSPlugin* castedThis = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Plugin* imp = static_cast<Plugin*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsPluginConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -247,11 +251,11 @@ JSValue jsPluginConstructor(ExecState* exec, const Identifier&, const PropertySl
     JSPlugin* domObject = static_cast<JSPlugin*>(asObject(slot.slotBase()));
     return JSPlugin::getConstructor(exec, domObject->globalObject());
 }
-void JSPlugin::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSPlugin::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<Plugin*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSPlugin::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

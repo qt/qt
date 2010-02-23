@@ -116,7 +116,8 @@ JSValue jsTimeRangesLength(ExecState* exec, const Identifier&, const PropertySlo
     JSTimeRanges* castedThis = static_cast<JSTimeRanges*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     TimeRanges* imp = static_cast<TimeRanges*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsTimeRangesPrototypeFunctionStart(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

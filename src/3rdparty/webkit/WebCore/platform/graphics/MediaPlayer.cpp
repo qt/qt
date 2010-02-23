@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,7 +39,7 @@
 
 #if PLATFORM(MAC)
 #include "MediaPlayerPrivateQTKit.h"
-#elif PLATFORM(WINCE) && !PLATFORM(QT)
+#elif OS(WINCE) && !PLATFORM(QT)
 #include "MediaPlayerPrivateWince.h"
 #elif PLATFORM(WIN)
 #include "MediaPlayerPrivateQuickTimeWin.h"
@@ -67,6 +67,9 @@ public:
     virtual void pause() { }    
 
     virtual PlatformMedia platformMedia() const { return NoPlatformMedia; }
+#if USE(ACCELERATED_COMPOSITING)
+    virtual PlatformLayer* platformLayer() const { return 0; }
+#endif
 
     virtual IntSize naturalSize() const { return IntSize(0, 0); }
 
@@ -81,13 +84,17 @@ public:
     virtual void seek(float) { }
     virtual bool seeking() const { return false; }
 
-    virtual void setEndTime(float) { }
-
     virtual void setRate(float) { }
     virtual void setPreservesPitch(bool) { }
     virtual bool paused() const { return false; }
 
     virtual void setVolume(float) { }
+
+    virtual bool supportsMuting() const { return false; }
+    virtual void setMuted(bool) { }
+
+    virtual bool hasClosedCaptions() const { return false; }
+    virtual void setClosedCaptionsVisible(bool) { };
 
     virtual MediaPlayer::NetworkState networkState() const { return MediaPlayer::Empty; }
     virtual MediaPlayer::ReadyState readyState() const { return MediaPlayer::HaveNothing; }
@@ -95,9 +102,6 @@ public:
     virtual float maxTimeSeekable() const { return 0; }
     virtual PassRefPtr<TimeRanges> buffered() const { return TimeRanges::create(); }
 
-    virtual int dataRate() const { return 0; }
-
-    virtual bool totalBytesKnown() const { return false; }
     virtual unsigned totalBytes() const { return 0; }
     virtual unsigned bytesLoaded() const { return 0; }
 
@@ -124,7 +128,7 @@ static MediaPlayerPrivateInterface* createNullMediaPlayer(MediaPlayer* player)
 
 // engine support
 
-struct MediaPlayerFactory {
+struct MediaPlayerFactory : Noncopyable {
     MediaPlayerFactory(CreateMediaEnginePlayer constructor, MediaEngineSupportedTypes getSupportedTypes, MediaEngineSupportsType supportsTypeAndCodecs) 
         : constructor(constructor)
         , getSupportedTypes(getSupportedTypes)
@@ -195,6 +199,7 @@ MediaPlayer::MediaPlayer(MediaPlayerClient* client)
     , m_visible(false)
     , m_rate(1.0f)
     , m_volume(1.0f)
+    , m_muted(false)
     , m_preservesPitch(true)
     , m_autobuffer(false)
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
@@ -247,7 +252,8 @@ void MediaPlayer::load(const String& url, const ContentType& contentType)
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
         m_private->setMediaPlayerProxy(m_playerProxy);
 #endif
-
+        m_private->setAutobuffer(autobuffer());
+        m_private->setPreservesPitch(preservesPitch());
     }
 
     if (m_private)
@@ -256,6 +262,11 @@ void MediaPlayer::load(const String& url, const ContentType& contentType)
         m_private.set(createNullMediaPlayer(this));
 }    
 
+bool MediaPlayer::hasAvailableVideoFrame() const
+{
+    return m_private->hasAvailableVideoFrame();
+}
+    
 bool MediaPlayer::canLoadPoster() const
 {
     return m_private->canLoadPoster();
@@ -354,6 +365,13 @@ PlatformMedia MediaPlayer::platformMedia() const
     return m_private->platformMedia();
 }
 
+#if USE(ACCELERATED_COMPOSITING)
+PlatformLayer* MediaPlayer::platformLayer() const
+{
+    return m_private->platformLayer();
+}
+#endif
+
 MediaPlayer::NetworkState MediaPlayer::networkState()
 {
     return m_private->networkState();
@@ -373,6 +391,32 @@ void MediaPlayer::setVolume(float volume)
 {
     m_volume = volume;
     m_private->setVolume(volume);   
+}
+
+bool MediaPlayer::muted() const
+{
+    return m_muted;
+}
+
+bool MediaPlayer::supportsMuting() const
+{
+    return m_private->supportsMuting();
+}
+
+void MediaPlayer::setMuted(bool muted)
+{
+    m_muted = muted;
+    m_private->setMuted(muted);
+}
+
+bool MediaPlayer::hasClosedCaptions() const
+{
+    return m_private->hasClosedCaptions();
+}
+
+void MediaPlayer::setClosedCaptionsVisible(bool closedCaptionsVisible)
+{
+    m_private->setClosedCaptionsVisible(closedCaptionsVisible);
 }
 
 float MediaPlayer::rate() const
@@ -397,16 +441,6 @@ void MediaPlayer::setPreservesPitch(bool preservesPitch)
     m_private->setPreservesPitch(preservesPitch);
 }
 
-int MediaPlayer::dataRate() const
-{
-    return m_private->dataRate();
-}
-
-void MediaPlayer::setEndTime(float time)
-{
-    m_private->setEndTime(time);
-}
-
 PassRefPtr<TimeRanges> MediaPlayer::buffered()
 {
     return m_private->buffered();
@@ -420,16 +454,6 @@ float MediaPlayer::maxTimeSeekable()
 unsigned MediaPlayer::bytesLoaded()
 {
     return m_private->bytesLoaded();
-}
-
-bool MediaPlayer::totalBytesKnown()
-{
-    return m_private->totalBytesKnown();
-}
-
-unsigned MediaPlayer::totalBytes()
-{
-    return m_private->totalBytes();
 }
 
 void MediaPlayer::setSize(const IntSize& size)
@@ -548,10 +572,18 @@ void MediaPlayer::readyStateChanged()
         m_mediaPlayerClient->mediaPlayerReadyStateChanged(this);
 }
 
-void MediaPlayer::volumeChanged()
+void MediaPlayer::volumeChanged(float newVolume)
 {
+    m_volume = newVolume;
     if (m_mediaPlayerClient)
         m_mediaPlayerClient->mediaPlayerVolumeChanged(this);
+}
+
+void MediaPlayer::muteChanged(bool newMuted)
+{
+    m_muted = newMuted;
+    if (m_mediaPlayerClient)
+        m_mediaPlayerClient->mediaPlayerMuteChanged(this);
 }
 
 void MediaPlayer::timeChanged()

@@ -39,7 +39,7 @@
 #include <wtf/StringExtras.h>
 #include <wtf/Threading.h>
 
-#if USE(ICU_UNICODE) || USE(GLIB_ICU_UNICODE_HYBRID)
+#if USE(ICU_UNICODE)
 #include "TextCodecICU.h"
 #endif
 #if PLATFORM(MAC)
@@ -48,7 +48,10 @@
 #if PLATFORM(QT)
 #include "qt/TextCodecQt.h"
 #endif
-#if PLATFORM(WINCE) && !PLATFORM(QT)
+#if USE(GLIB_UNICODE)
+#include "gtk/TextCodecGtk.h"
+#endif
+#if OS(WINCE) && !PLATFORM(QT)
 #include "TextCodecWince.h"
 #endif
 
@@ -217,12 +220,17 @@ static void buildBaseTextCodecMaps()
     TextCodecUserDefined::registerEncodingNames(addToTextEncodingNameMap);
     TextCodecUserDefined::registerCodecs(addToTextCodecMap);
 
-#if USE(ICU_UNICODE) || USE(GLIB_ICU_UNICODE_HYBRID)
+#if USE(ICU_UNICODE)
     TextCodecICU::registerBaseEncodingNames(addToTextEncodingNameMap);
     TextCodecICU::registerBaseCodecs(addToTextCodecMap);
 #endif
 
-#if PLATFORM(WINCE) && !PLATFORM(QT)
+#if USE(GLIB_UNICODE)
+    TextCodecGtk::registerBaseEncodingNames(addToTextEncodingNameMap);
+    TextCodecGtk::registerBaseCodecs(addToTextCodecMap);
+#endif
+
+#if OS(WINCE) && !PLATFORM(QT)
     TextCodecWince::registerBaseEncodingNames(addToTextEncodingNameMap);
     TextCodecWince::registerBaseCodecs(addToTextCodecMap);
 #endif
@@ -230,7 +238,7 @@ static void buildBaseTextCodecMaps()
 
 static void extendTextCodecMaps()
 {
-#if USE(ICU_UNICODE) || USE(GLIB_ICU_UNICODE_HYBRID)
+#if USE(ICU_UNICODE)
     TextCodecICU::registerExtendedEncodingNames(addToTextEncodingNameMap);
     TextCodecICU::registerExtendedCodecs(addToTextCodecMap);
 #endif
@@ -245,7 +253,12 @@ static void extendTextCodecMaps()
     TextCodecMac::registerCodecs(addToTextCodecMap);
 #endif
 
-#if PLATFORM(WINCE) && !PLATFORM(QT)
+#if USE(GLIB_UNICODE)
+    TextCodecGtk::registerExtendedEncodingNames(addToTextEncodingNameMap);
+    TextCodecGtk::registerExtendedCodecs(addToTextCodecMap);
+#endif
+
+#if OS(WINCE) && !PLATFORM(QT)
     TextCodecWince::registerExtendedEncodingNames(addToTextEncodingNameMap);
     TextCodecWince::registerExtendedCodecs(addToTextCodecMap);
 #endif

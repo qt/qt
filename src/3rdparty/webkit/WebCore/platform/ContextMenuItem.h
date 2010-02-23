@@ -143,6 +143,7 @@ namespace WebCore {
         ContextMenuItemTagCapitalize,
         ContextMenuItemTagChangeBack,
 #endif
+        ContextMenuItemBaseCustomTag = 5000,
         ContextMenuItemBaseApplicationTag = 10000
     };
 
@@ -208,11 +209,24 @@ namespace WebCore {
     };
 #elif PLATFORM(HAIKU)
     typedef BMenuItem* PlatformMenuItemDescription;
+#elif PLATFORM(CHROMIUM)
+    struct PlatformMenuItemDescription {
+        PlatformMenuItemDescription()
+            : type(ActionType)
+            , action(ContextMenuItemTagNoAction)
+            , checked(false)
+            , enabled(true) { }
+        ContextMenuItemType type;
+        ContextMenuAction action;
+        String title;
+        bool checked;
+        bool enabled;
+    };
 #else
     typedef void* PlatformMenuItemDescription;
 #endif
 
-    class ContextMenuItem {
+    class ContextMenuItem : public FastAllocBase {
     public:
         ContextMenuItem(PlatformMenuItemDescription);
         ContextMenuItem(ContextMenu* subMenu = 0);
@@ -237,7 +251,8 @@ namespace WebCore {
         void setSubMenu(ContextMenu*);
 
         void setChecked(bool = true);
-        
+        bool checked() const;
+
         void setEnabled(bool = true);
         bool enabled() const;
 

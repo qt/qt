@@ -31,12 +31,14 @@
 #endif
 
 #import "BlockExceptions.h"
+#import "Chrome.h"
 #import "Cursor.h"
 #import "Document.h"
 #import "Font.h"
 #import "FoundationExtras.h"
 #import "Frame.h"
 #import "GraphicsContext.h"
+#import "NotImplemented.h"
 #import "Page.h"
 #import "PlatformMouseEvent.h"
 #import "ScrollView.h"
@@ -78,7 +80,7 @@ static void safeRemoveFromSuperview(NSView *view)
     [window _setNeedsToResetDragMargins:resetDragMargins];
 }
 
-Widget::Widget(NSView* view)
+Widget::Widget(NSView *view)
     : m_data(new WidgetPrivate)
 {
     init(view);
@@ -157,6 +159,9 @@ void Widget::setFrameRect(const IntRect& rect)
 
     BEGIN_BLOCK_OBJC_EXCEPTIONS;
     NSView *v = getOuterView();
+    if (!v)
+        return;
+
     NSRect f = rect;
     if (!NSEqualRects(f, [v frame])) {
         [v setFrame:f];
@@ -192,7 +197,7 @@ void Widget::paint(GraphicsContext* p, const IntRect& r)
         END_BLOCK_OBJC_EXCEPTIONS;
     } else {
         // This is the case of drawing into a bitmap context other than a window backing store. It gets hit beneath
-        // -cacheDisplayInRect:toBitmapImageRep:.
+        // -cacheDisplayInRect:toBitmapImageRep:, and when painting into compositing layers.
 
         // Transparent subframes are in fact implemented with scroll views that return YES from -drawsBackground (whenever the WebView
         // itself is in drawsBackground mode). In the normal drawing code path, the scroll views are never asked to draw the background,
@@ -341,5 +346,5 @@ void Widget::retainPlatformWidget()
     HardRetain(m_widget);
 }
 
-}
+} // namespace WebCore
 

@@ -1649,7 +1649,7 @@ inline void qt_memconvert(qrgb666 *dest, const quint32 *src, int count)
         return;
     }
 
-    const int align = (long(dest) & 3);
+    const int align = (quintptr(dest) & 3);
     switch (align) {
     case 1: *dest++ = qrgb666(*src++); --count;
     case 2: *dest++ = qrgb666(*src++); --count;

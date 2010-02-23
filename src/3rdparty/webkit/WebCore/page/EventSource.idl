@@ -33,6 +33,7 @@ module window {
 
     interface [
         Conditional=EVENTSOURCE,
+        CustomConstructor,
         EventTarget,
         NoStaticTables
     ] EventSource {

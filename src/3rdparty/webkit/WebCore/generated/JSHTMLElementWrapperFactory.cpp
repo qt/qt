@@ -533,7 +533,7 @@ static JSNode* createHTMLVideoElementWrapper(ExecState* exec, JSDOMGlobalObject*
 #endif
 
 JSNode* createJSHTMLWrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLElement> element)
-{   
+{
     typedef HashMap<WebCore::AtomicStringImpl*, CreateHTMLElementWrapperFunction> FunctionMap;
     DEFINE_STATIC_LOCAL(FunctionMap, map, ());
     if (map.isEmpty()) {

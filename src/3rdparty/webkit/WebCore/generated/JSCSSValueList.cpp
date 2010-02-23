@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -192,7 +192,8 @@ JSValue jsCSSValueListLength(ExecState* exec, const Identifier&, const PropertyS
     JSCSSValueList* castedThis = static_cast<JSCSSValueList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSValueList* imp = static_cast<CSSValueList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsCSSValueListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -200,11 +201,11 @@ JSValue jsCSSValueListConstructor(ExecState* exec, const Identifier&, const Prop
     JSCSSValueList* domObject = static_cast<JSCSSValueList*>(asObject(slot.slotBase()));
     return JSCSSValueList::getConstructor(exec, domObject->globalObject());
 }
-void JSCSSValueList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCSSValueList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<CSSValueList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSCSSValueList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

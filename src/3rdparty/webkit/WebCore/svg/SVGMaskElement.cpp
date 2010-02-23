@@ -2,8 +2,8 @@
     Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
                   2005 Alexander Kellett <lypanov@kde.org>
-
-    This file is part of the KDE project
+                  2009 Dirk Schulze <krit@webkit.org>
+    Copyright (C) Research In Motion Limited 2009-2010. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,17 +27,12 @@
 #include "SVGMaskElement.h"
 
 #include "CSSStyleSelector.h"
-#include "GraphicsContext.h"
-#include "ImageBuffer.h"
 #include "MappedAttribute.h"
-#include "RenderSVGContainer.h"
+#include "RenderSVGResourceMasker.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
 #include "SVGRenderSupport.h"
 #include "SVGUnitTypes.h"
-#include <math.h>
-#include <wtf/MathExtras.h>
-#include <wtf/OwnPtr.h>
 
 using namespace std;
 
@@ -49,14 +44,12 @@ SVGMaskElement::SVGMaskElement(const QualifiedName& tagName, Document* doc)
     , SVGTests()
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
-    , m_maskUnits(this, SVGNames::maskUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-    , m_maskContentUnits(this, SVGNames::maskContentUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
-    , m_x(this, SVGNames::xAttr, LengthModeWidth, "-10%")
-    , m_y(this, SVGNames::yAttr, LengthModeHeight, "-10%")
-    , m_width(this, SVGNames::widthAttr, LengthModeWidth, "120%")
-    , m_height(this, SVGNames::heightAttr, LengthModeHeight, "120%")
-    , m_href(this, XLinkNames::hrefAttr)
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
+    , m_maskUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+    , m_maskContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
+    , m_x(LengthModeWidth, "-10%")
+    , m_y(LengthModeHeight, "-10%")
+    , m_width(LengthModeWidth, "120%")
+    , m_height(LengthModeHeight, "120%")
 {
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
     // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
@@ -103,9 +96,6 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     SVGStyledElement::svgAttributeChanged(attrName);
 
-    if (!m_masker)
-        return;
-
     if (attrName == SVGNames::maskUnitsAttr || attrName == SVGNames::maskContentUnitsAttr ||
         attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
         attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr ||
@@ -114,102 +104,63 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
         SVGLangSpace::isKnownAttribute(attrName) ||
         SVGExternalResourcesRequired::isKnownAttribute(attrName) ||
         SVGStyledElement::isKnownAttribute(attrName))
-        m_masker->invalidate();
+        invalidateCanvasResources();
+}
+
+void SVGMaskElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeMaskUnits();
+        synchronizeMaskContentUnits();
+        synchronizeX();
+        synchronizeY();
+        synchronizeExternalResourcesRequired();
+        synchronizeHref();
+        return;
+    }
+
+    if (attrName == SVGNames::maskUnitsAttr)
+        synchronizeMaskUnits();
+    else if (attrName == SVGNames::maskContentUnitsAttr)
+        synchronizeMaskContentUnits();
+    else if (attrName == SVGNames::xAttr)
+        synchronizeX();
+    else if (attrName == SVGNames::yAttr)
+        synchronizeY();
+    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
+    else if (SVGURIReference::isKnownAttribute(attrName))
+        synchronizeHref();
 }
 
 void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGStyledElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-
-    if (!m_masker)
-        return;
-
-    m_masker->invalidate();
+    invalidateCanvasResources();
 }
 
-PassOwnPtr<ImageBuffer> SVGMaskElement::drawMaskerContent(const FloatRect& targetRect, FloatRect& maskDestRect) const
-{    
-    // Determine specified mask size
+FloatRect SVGMaskElement::maskBoundingBox(const FloatRect& objectBoundingBox) const
+{
+    FloatRect maskBBox;
     if (maskUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-        maskDestRect = FloatRect(x().valueAsPercentage() * targetRect.width(),
-                                 y().valueAsPercentage() * targetRect.height(),
-                                 width().valueAsPercentage() * targetRect.width(),
-                                 height().valueAsPercentage() * targetRect.height());
+        maskBBox = FloatRect(x().valueAsPercentage() * objectBoundingBox.width() + objectBoundingBox.x(),
+                             y().valueAsPercentage() * objectBoundingBox.height() + objectBoundingBox.y(),
+                             width().valueAsPercentage() * objectBoundingBox.width(),
+                             height().valueAsPercentage() * objectBoundingBox.height());
     else
-        maskDestRect = FloatRect(x().value(this),
-                                 y().value(this),
-                                 width().value(this),
-                                 height().value(this));
+        maskBBox = FloatRect(x().value(this),
+                             y().value(this),
+                             width().value(this),
+                             height().value(this));
 
-    IntSize imageSize(lroundf(maskDestRect.width()), lroundf(maskDestRect.height()));
-    clampImageBufferSizeToViewport(document()->view(), imageSize);
-
-    if (imageSize.width() < static_cast<int>(maskDestRect.width()))
-        maskDestRect.setWidth(imageSize.width());
-
-    if (imageSize.height() < static_cast<int>(maskDestRect.height()))
-        maskDestRect.setHeight(imageSize.height());
-
-    // FIXME: This changes color space to linearRGB, the default color space
-    // for masking operations in SVG. We need a switch for the other color-space
-    // attribute values sRGB, inherit and auto.
-    OwnPtr<ImageBuffer> maskImage = ImageBuffer::create(imageSize, LinearRGB);
-    if (!maskImage)
-        return 0;
-
-    FloatPoint maskContextLocation = maskDestRect.location();
-    if (maskUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-        maskDestRect.move(targetRect.x(), targetRect.y());
-
-    if (maskContentUnits() != SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-        maskContextLocation.move(targetRect.x(), targetRect.y());
-
-    GraphicsContext* maskImageContext = maskImage->context();
-    ASSERT(maskImageContext);
-
-    maskImageContext->save();
-    maskImageContext->translate(-maskContextLocation.x(), -maskContextLocation.y());
-
-    if (maskContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
-        maskImageContext->save();
-        maskImageContext->scale(FloatSize(targetRect.width(), targetRect.height()));
-    }
-
-    // Render subtree into ImageBuffer
-    for (Node* n = firstChild(); n; n = n->nextSibling()) {
-        SVGElement* elem = 0;
-        if (n->isSVGElement())
-            elem = static_cast<SVGElement*>(n);
-        if (!elem || !elem->isStyled())
-            continue;
-
-        SVGStyledElement* e = static_cast<SVGStyledElement*>(elem);
-        RenderObject* item = e->renderer();
-        if (!item)
-            continue;
-
-        renderSubtreeToImage(maskImage.get(), item);
-    }
-
-    if (maskContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-        maskImageContext->restore();
-
-    maskImageContext->restore();
-    return maskImage.release();
+    return maskBBox;
 }
- 
+
 RenderObject* SVGMaskElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
-    RenderSVGContainer* maskContainer = new (arena) RenderSVGContainer(this);
-    maskContainer->setDrawsContents(false);
-    return maskContainer;
-}
-
-SVGResource* SVGMaskElement::canvasResource()
-{
-    if (!m_masker)
-        m_masker = SVGResourceMasker::create(this);
-    return m_masker.get();
+    return new (arena) RenderSVGResourceMasker(this);
 }
 
 }

@@ -137,6 +137,7 @@ private slots:
     void task255652_removeRowsRecursive();
     void taskQTBUG_6205_doubleProxySelectionSetSourceModel();
     void taskQTBUG_7537_appearsAndSort();
+    void taskQTBUG_7716_unnecessaryDynamicSorting();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -918,14 +919,15 @@ void tst_QSortFilterProxyModel::removeRows()
     QStandardItemModel model;
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
-    if (sortOrder != -1)
-        proxy.sort(0, static_cast<Qt::SortOrder>(sortOrder));
-    if (!filter.isEmpty())
-        proxy.setFilterRegExp(QRegExp(filter));
 
     // prepare model
     foreach (QString s, initial)
         model.appendRow(new QStandardItem(s));
+
+    if (sortOrder != -1)
+        proxy.sort(0, static_cast<Qt::SortOrder>(sortOrder));
+    if (!filter.isEmpty())
+        proxy.setFilterRegExp(QRegExp(filter));
 
     // remove the rows
     QCOMPARE(proxy.removeRows(position, count, QModelIndex()), success);
@@ -2419,6 +2421,7 @@ void tst_QSortFilterProxyModel::sortColumnTracking2()
 {
     QStandardItemModel model;
     QSortFilterProxyModel proxyModel;
+    proxyModel.setDynamicSortFilter(true);
     proxyModel.setSourceModel(&model);
 
     proxyModel.sort(0);
@@ -2919,6 +2922,33 @@ void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
     QCOMPARE(spyChanged1.count(), 1);
     QCOMPARE(spyAbout2.count(), 1);
     QCOMPARE(spyChanged2.count(), 1);
+}
+
+void tst_QSortFilterProxyModel::taskQTBUG_7716_unnecessaryDynamicSorting()
+{
+    QStringListModel model;
+    const QStringList initial = QString("bravo charlie delta echo").split(" ");
+    model.setStringList(initial);
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(false);
+    proxy.setSourceModel(&model);
+    proxy.sort(Qt::AscendingOrder);
+
+    //append two rows
+    int maxrows = proxy.rowCount(QModelIndex());
+    model.insertRows(maxrows, 2);
+    model.setData(model.index(maxrows, 0), QString("alpha"));
+    model.setData(model.index(maxrows + 1, 0), QString("fondue"));
+
+    //append new items to the initial string list and compare with model
+    QStringList expected = initial;
+    expected << QString("alpha") << QString("fondue");
+
+    //if bug 7716 is present, new rows were prepended, when they should have been appended
+    for (int row = 0; row < proxy.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy.index(row, 0, QModelIndex());
+        QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

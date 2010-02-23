@@ -99,12 +99,11 @@ public:
 
     virtual void setOverrideSize(int);
 
+    bool hasVisibleOverflow() const { return m_overflow; }
+
 protected:
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle);
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
-
-    virtual void mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool useTransforms, bool fixed, TransformState&) const;
-    virtual void mapAbsoluteToLocalPoint(bool fixed, bool useTransforms, TransformState&) const;
 
 private:
     virtual const char* renderName() const { return isAnonymous() ? "RenderTableCell (anonymous)" : "RenderTableCell"; }
@@ -120,6 +119,7 @@ private:
     virtual void paintBoxDecorations(PaintInfo&, int tx, int ty);
     virtual void paintMask(PaintInfo&, int tx, int ty);
 
+    virtual IntSize offsetFromContainer(RenderObject*, const IntPoint&) const;
     virtual IntRect clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer);
     virtual void computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect&, bool fixed = false);
 

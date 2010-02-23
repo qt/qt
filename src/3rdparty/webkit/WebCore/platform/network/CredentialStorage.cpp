@@ -31,7 +31,8 @@
 #include "KURL.h"
 #include "ProtectionSpaceHash.h"
 #include "StringHash.h"
-
+#include <wtf/HashMap.h>
+#include <wtf/HashSet.h>
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
@@ -85,16 +86,18 @@ static String protectionSpaceMapKeyFromURL(const KURL& url)
 
 void CredentialStorage::set(const Credential& credential, const ProtectionSpace& protectionSpace, const KURL& url)
 {
-    ASSERT(url.protocolInHTTPFamily());
-    ASSERT(url.isValid());
+    ASSERT(protectionSpace.isProxy() || url.protocolInHTTPFamily());
+    ASSERT(protectionSpace.isProxy() || url.isValid());
 
     protectionSpaceToCredentialMap().set(protectionSpace, credential);
-    originsWithCredentials().add(originStringFromURL(url));
+    if (!protectionSpace.isProxy()) {
+        originsWithCredentials().add(originStringFromURL(url));
 
-    ProtectionSpaceAuthenticationScheme scheme = protectionSpace.authenticationScheme();
-    if (scheme == ProtectionSpaceAuthenticationSchemeHTTPBasic || scheme == ProtectionSpaceAuthenticationSchemeDefault) {
-        // The map can contain both a path and its subpath - while redundant, this makes lookups faster.
-        pathToDefaultProtectionSpaceMap().set(protectionSpaceMapKeyFromURL(url), protectionSpace);
+        ProtectionSpaceAuthenticationScheme scheme = protectionSpace.authenticationScheme();
+        if (scheme == ProtectionSpaceAuthenticationSchemeHTTPBasic || scheme == ProtectionSpaceAuthenticationSchemeDefault) {
+            // The map can contain both a path and its subpath - while redundant, this makes lookups faster.
+            pathToDefaultProtectionSpaceMap().set(protectionSpaceMapKeyFromURL(url), protectionSpace);
+        }
     }
 }
 

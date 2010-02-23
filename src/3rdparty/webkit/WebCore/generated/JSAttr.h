@@ -41,7 +41,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -68,7 +68,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSAttrPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -82,6 +82,7 @@ JSC::JSValue jsAttrSpecified(JSC::ExecState*, const JSC::Identifier&, const JSC:
 JSC::JSValue jsAttrValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSAttrValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsAttrOwnerElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsAttrIsId(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsAttrStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsAttrConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 

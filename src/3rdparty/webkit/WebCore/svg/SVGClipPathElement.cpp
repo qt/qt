@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007, 2008 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -28,6 +26,7 @@
 #include "CSSStyleSelector.h"
 #include "Document.h"
 #include "MappedAttribute.h"
+#include "RenderSVGHiddenContainer.h"
 #include "SVGNames.h"
 #include "SVGTransformList.h"
 #include "SVGUnitTypes.h"
@@ -39,8 +38,7 @@ SVGClipPathElement::SVGClipPathElement(const QualifiedName& tagName, Document* d
     , SVGTests()
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
-    , m_clipPathUnits(this, SVGNames::clipPathUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
+    , m_clipPathUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
 }
 
@@ -81,6 +79,22 @@ void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
         m_clipper->invalidate();
 }
 
+void SVGClipPathElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledTransformableElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeClipPathUnits();
+        synchronizeExternalResourcesRequired();
+        return;
+    }
+
+    if (attrName == SVGNames::clipPathUnitsAttr)
+        synchronizeClipPathUnits();
+    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
+}
+
 void SVGClipPathElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGStyledTransformableElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
@@ -91,7 +105,12 @@ void SVGClipPathElement::childrenChanged(bool changedByParser, Node* beforeChang
     m_clipper->invalidate();
 }
 
-SVGResource* SVGClipPathElement::canvasResource()
+RenderObject* SVGClipPathElement::createRenderer(RenderArena* arena, RenderStyle*)
+{
+    return new (arena) RenderSVGHiddenContainer(this);
+}
+
+SVGResource* SVGClipPathElement::canvasResource(const RenderObject*)
 {
     if (!m_clipper)
         m_clipper = SVGResourceClipper::create();
@@ -100,17 +119,17 @@ SVGResource* SVGClipPathElement::canvasResource()
 
     bool bbox = clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
 
-    RefPtr<RenderStyle> clipPathStyle = styleForRenderer(); // FIXME: Manual style resolution is a hack
-    for (Node* n = firstChild(); n; n = n->nextSibling()) {
-        if (n->isSVGElement() && static_cast<SVGElement*>(n)->isStyledTransformable()) {
-            SVGStyledTransformableElement* styled = static_cast<SVGStyledTransformableElement*>(n);
-            RefPtr<RenderStyle> pathStyle = document()->styleSelector()->styleForElement(styled, clipPathStyle.get());
-            if (pathStyle->display() != NONE) {
-                Path pathData = styled->toClipPath();
-                if (!pathData.isEmpty())
-                    m_clipper->addClipData(pathData, pathStyle->svgStyle()->clipRule(), bbox);
-            }
-        }
+    for (Node* node = firstChild(); node; node = node->nextSibling()) {
+        if (!node->isSVGElement() || !static_cast<SVGElement*>(node)->isStyledTransformable())
+            continue;
+        SVGStyledTransformableElement* styled = static_cast<SVGStyledTransformableElement*>(node);
+        RenderStyle* style = styled->renderer() ? styled->renderer()->style() : 0;
+        if (!style || style->display() == NONE)
+            continue;
+        Path pathData = styled->toClipPath();
+        if (pathData.isEmpty())
+            continue;
+        m_clipper->addClipData(pathData, style->svgStyle()->clipRule(), bbox);
     }
     if (m_clipper->clipData().isEmpty()) {
         Path pathData;

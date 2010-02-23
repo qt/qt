@@ -76,7 +76,7 @@ namespace JSC {
             return globalData->heap.allocateNumber(size);
         }
 
-        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(NumberType, OverridesGetOwnPropertySlot | NeedsThisConversion)); }
+        static PassRefPtr<Structure> createStructure(JSValue proto) { return Structure::create(proto, TypeInfo(NumberType, OverridesGetOwnPropertySlot | NeedsThisConversion), AnonymousSlotCount); }
 
     private:
         JSNumberCell(JSGlobalData* globalData, double value)
@@ -107,6 +107,11 @@ namespace JSC {
     {
         ASSERT(isNumberCell(v));
         return static_cast<JSNumberCell*>(v.asCell());
+    }
+
+    ALWAYS_INLINE JSValue::JSValue(EncodeAsDoubleTag, ExecState* exec, double d)
+    {
+        *this = jsNumberCell(exec, d);
     }
 
     inline JSValue::JSValue(ExecState* exec, double d)
@@ -193,6 +198,11 @@ namespace JSC {
 #endif // USE(JSVALUE32)
 
 #if USE(JSVALUE64)
+    ALWAYS_INLINE JSValue::JSValue(EncodeAsDoubleTag, ExecState*, double d)
+    {
+        *this = JSImmediate::fromNumberOutsideIntegerRange(d);
+    }
+
     inline JSValue::JSValue(ExecState*, double d)
     {
         JSValue v = JSImmediate::from(d);

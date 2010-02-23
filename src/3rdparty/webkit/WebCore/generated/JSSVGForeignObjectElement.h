@@ -43,9 +43,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
@@ -61,7 +62,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGForeignObjectElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -95,6 +96,7 @@ JSC::JSValue jsSVGForeignObjectElementStyle(JSC::ExecState*, const JSC::Identifi
 JSC::JSValue jsSVGForeignObjectElementTransform(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsSVGForeignObjectElementNearestViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsSVGForeignObjectElementFarthestViewportElement(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGForeignObjectElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

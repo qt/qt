@@ -3,7 +3,7 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2006 Allan Sandfeld Jensen (kde@carewolf.com) 
  *           (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
- * Copyright (C) 2004, 2005, 2006, 2007, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -43,7 +43,7 @@ public:
     void setCachedImage(CachedImage*);
     CachedImage* cachedImage() const { return m_cachedImage.get(); }
 
-    HTMLMapElement* imageMap();
+    HTMLMapElement* imageMap() const;
 
     void resetAnimation();
 
@@ -56,6 +56,15 @@ protected:
     virtual bool errorOccurred() const { return m_cachedImage && m_cachedImage->errorOccurred(); }
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0);
+
+    virtual void paintIntoRect(GraphicsContext*, const IntRect&);
+    void paintFocusRings(PaintInfo&, const RenderStyle*);
+    virtual void paint(PaintInfo&, int tx, int ty);
+
+    bool isWidthSpecified() const;
+    bool isHeightSpecified() const;
+
+    virtual void intrinsicSizeChanged() { imageChanged(imagePtr()); }
 
 private:
     virtual const char* renderName() const { return "RenderImage"; }
@@ -82,13 +91,8 @@ private:
     virtual IntSize imageSize(float multiplier) const { return m_cachedImage ? m_cachedImage->imageSize(multiplier) : IntSize(); }
     virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
 
-    virtual void intrinsicSizeChanged() { imageChanged(imagePtr()); }
-
     int calcAspectRatioWidth() const;
     int calcAspectRatioHeight() const;
-
-    bool isWidthSpecified() const;
-    bool isHeightSpecified() const;
 
 protected:
     // The image we are rendering.

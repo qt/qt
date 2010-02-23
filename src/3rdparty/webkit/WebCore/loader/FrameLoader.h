@@ -50,6 +50,7 @@ class AuthenticationChallenge;
 class CachedFrameBase;
 class CachedPage;
 class CachedResource;
+class DOMWrapperWorld;
 class Document;
 class DocumentLoader;
 class Event;
@@ -72,6 +73,7 @@ class ScriptSourceCode;
 class ScriptString;
 class ScriptValue;
 class SecurityOrigin;
+class SerializedScriptValue;
 class SharedBuffer;
 class SubstituteData;
 class TextResourceDecoder;
@@ -246,8 +248,14 @@ public:
 
     PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const HashMap<String, String>& args);
 
-    void dispatchWindowObjectAvailable();
+    void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*);
+    void dispatchDidClearWindowObjectsInAllWorlds();
     void dispatchDocumentElementAvailable();
+
+    void ownerElementSandboxFlagsChanged() { updateSandboxFlags(); }
+
+    bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
+    SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
 
     // Mixed content related functions.
     static bool isMixedContent(SecurityOrigin* context, const KURL&);
@@ -343,6 +351,9 @@ private:
     bool loadPlugin(RenderPart*, const KURL&, const String& mimeType,
     const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
     
+    void navigateWithinDocument(HistoryItem*);
+    void navigateToDifferentDocument(HistoryItem*, FrameLoadType);
+    
     bool loadProvisionalItemFromCachedPage();
     void cachePageForHistoryItem(HistoryItem*);
     void pageHidden();
@@ -417,7 +428,7 @@ private:
 
     Frame* loadSubframe(HTMLFrameOwnerElement*, const KURL&, const String& name, const String& referrer);
 
-    void scrollToAnchor(const KURL&);
+    void loadInSameDocument(const KURL&, SerializedScriptValue* stateObject, bool isNewNavigation);
 
     void provisionalLoadStarted();
 
@@ -432,6 +443,10 @@ private:
     KURL originalRequestURL() const;
 
     bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
+
+    void updateSandboxFlags();
+    // FIXME: isDocumentSandboxed should eventually replace isSandboxed.
+    bool isDocumentSandboxed(SandboxFlags) const;
 
     Frame* m_frame;
     FrameLoaderClient* m_client;
@@ -470,6 +485,8 @@ private:
     bool m_isComplete;
     bool m_isLoadingMainResource;
 
+    RefPtr<SerializedScriptValue> m_pendingStateObject;
+
     KURL m_URL;
     KURL m_workingURL;
 
@@ -504,6 +521,8 @@ private:
     bool m_loadingFromCachedPage;
     bool m_suppressOpenerInNewFrame;
     
+    SandboxFlags m_sandboxFlags;
+
 #ifndef NDEBUG
     bool m_didDispatchDidCommitLoad;
 #endif

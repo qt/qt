@@ -103,7 +103,7 @@ PassRefPtr<DocumentFragment> Pasteboard::documentFragment(Frame* frame, PassRefP
     if (mimeData->hasHtml()) {
         QString html = mimeData->html();
         if (!html.isEmpty()) {
-            RefPtr<DocumentFragment> fragment = createFragmentFromMarkup(frame->document(), html, "");
+            RefPtr<DocumentFragment> fragment = createFragmentFromMarkup(frame->document(), html, "", FragmentScriptingNotAllowed);
             if (fragment)
                 return fragment.release();
         }
@@ -151,7 +151,8 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String&)
 
 #ifndef QT_NO_CLIPBOARD
     CachedImage* cachedImage = toRenderImage(node->renderer())->cachedImage();
-    ASSERT(cachedImage);
+    if (!cachedImage || cachedImage->errorOccurred())
+        return;
 
     Image* image = cachedImage->image();
     ASSERT(image);

@@ -26,25 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Resource = function(requestHeaders, url, domain, path, lastPathComponent, identifier, mainResource, cached, requestMethod, requestFormData)
+WebInspector.Resource = function(identifier, url)
 {
     this.identifier = identifier;
-
-    this.startTime = -1;
-    this.endTime = -1;
-    this.mainResource = mainResource;
-    this.requestHeaders = requestHeaders;
-    this.url = url;
-    this.domain = domain;
-    this.path = path;
-    this.lastPathComponent = lastPathComponent;
-    this.cached = cached;
-    this.requestMethod = requestMethod || "";
-    this.requestFormData = requestFormData || "";
-
-    this.category = WebInspector.resourceCategories.other;
+    this._url = url;
+    this._startTime = -1;
+    this._endTime = -1;
+    this._requestMethod = "";
+    this._requestFormData = "";
+    this._category = WebInspector.resourceCategories.other;
 }
-
 
 WebInspector.Resource.StatusText = {
     100: "Continue",
@@ -111,7 +102,8 @@ WebInspector.Resource.Type = {
     Font:       3,
     Script:     4,
     XHR:        5,
-    Other:      6,
+    Media:      6,
+    Other:      7,
 
     isTextType: function(type)
     {
@@ -159,6 +151,18 @@ WebInspector.Resource.prototype = {
         WebInspector.resourceURLChanged(this, oldURL);
 
         this.dispatchEventToListeners("url changed");
+    },
+
+    get documentURL()
+    {
+        return this._documentURL;
+    },
+
+    set documentURL(x)
+    {
+        if (this._documentURL === x)
+            return;
+        this._documentURL = x;
     },
 
     get domain()
@@ -309,7 +313,6 @@ WebInspector.Resource.prototype = {
         this._finished = x;
 
         if (x) {
-            this._checkTips();
             this._checkWarnings();
             this.dispatchEventToListeners("finished");
         }
@@ -525,58 +528,6 @@ WebInspector.Resource.prototype = {
         this._warnings = x;
     },
 
-    get tips()
-    {
-        if (!("_tips" in this))
-            this._tips = {};
-        return this._tips;
-    },
-
-    _addTip: function(tip)
-    {
-        if (tip.id in this.tips)
-            return;
-
-        this.tips[tip.id] = tip;
-
-        // FIXME: Re-enable this code once we have a scope bar in the Console.
-        // Otherwise, we flood the Console with too many tips.
-        /*
-        var msg = new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.Other,
-            WebInspector.ConsoleMessage.MessageType.Log, WebInspector.ConsoleMessage.MessageLevel.Tip, 
-            -1, this.url, null, 1, tip.message);
-        WebInspector.console.addMessage(msg);
-        */
-    },
-
-    _checkTips: function()
-    {
-        for (var tip in WebInspector.Tips)
-            this._checkTip(WebInspector.Tips[tip]);
-    },
-
-    _checkTip: function(tip)
-    {
-        var addTip = false;
-        switch (tip.id) {
-            case WebInspector.Tips.ResourceNotCompressed.id:
-                addTip = this._shouldCompress();
-                break;
-        }
-
-        if (addTip)
-            this._addTip(tip);
-    },
-
-    _shouldCompress: function()
-    {
-        return WebInspector.Resource.Type.isTextType(this.type)
-            && this.domain
-            && !("Content-Encoding" in this.responseHeaders)
-            && this.contentLength !== undefined
-            && this.contentLength >= 512;
-    },
-
     _mimeTypeIsConsistentWithType: function()
     {
         if (typeof this.type === "undefined"
@@ -587,7 +538,7 @@ WebInspector.Resource.prototype = {
         if (this.mimeType in WebInspector.MIMETypes)
             return this.type in WebInspector.MIMETypes[this.mimeType];
 
-        return true;
+        return false;
     },
 
     _checkWarnings: function()
@@ -619,64 +570,40 @@ WebInspector.Resource.prototype.__proto__ = WebInspector.Object.prototype;
 
 WebInspector.Resource.CompareByStartTime = function(a, b)
 {
-    if (a.startTime < b.startTime)
-        return -1;
-    if (a.startTime > b.startTime)
-        return 1;
-    return 0;
+    return a.startTime - b.startTime;
 }
 
 WebInspector.Resource.CompareByResponseReceivedTime = function(a, b)
 {
-    if (a.responseReceivedTime === -1 && b.responseReceivedTime !== -1)
-        return 1;
-    if (a.responseReceivedTime !== -1 && b.responseReceivedTime === -1)
-        return -1;
-    if (a.responseReceivedTime < b.responseReceivedTime)
-        return -1;
-    if (a.responseReceivedTime > b.responseReceivedTime)
-        return 1;
-    return 0;
+    var aVal = a.responseReceivedTime;
+    var bVal = b.responseReceivedTime;
+    if (aVal === -1 ^ bVal === -1)
+        return bVal - aVal;
+    return aVal - bVal;
 }
 
 WebInspector.Resource.CompareByEndTime = function(a, b)
 {
-    if (a.endTime === -1 && b.endTime !== -1)
-        return 1;
-    if (a.endTime !== -1 && b.endTime === -1)
-        return -1;
-    if (a.endTime < b.endTime)
-        return -1;
-    if (a.endTime > b.endTime)
-        return 1;
-    return 0;
+    var aVal = a.endTime;
+    var bVal = b.endTime;
+    if (aVal === -1 ^ bVal === -1)
+        return bVal - aVal;
+    return aVal - bVal;
 }
 
 WebInspector.Resource.CompareByDuration = function(a, b)
 {
-    if (a.duration < b.duration)
-        return -1;
-    if (a.duration > b.duration)
-        return 1;
-    return 0;
+    return a.duration - b.duration;
 }
 
 WebInspector.Resource.CompareByLatency = function(a, b)
 {
-    if (a.latency < b.latency)
-        return -1;
-    if (a.latency > b.latency)
-        return 1;
-    return 0;
+    return a.latency - b.latency;
 }
 
 WebInspector.Resource.CompareBySize = function(a, b)
 {
-    if (a.contentLength < b.contentLength)
-        return -1;
-    if (a.contentLength > b.contentLength)
-        return 1;
-    return 0;
+    return a.contentLength - b.contentLength;
 }
 
 WebInspector.Resource.StatusTextForCode = function(code)

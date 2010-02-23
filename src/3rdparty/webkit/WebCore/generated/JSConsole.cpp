@@ -49,7 +49,7 @@ static JSC_CONST_HASHTABLE HashTable JSConsoleTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSConsolePrototypeTableValues[17] =
+static const HashTableValue JSConsolePrototypeTableValues[18] =
 {
     { "debug", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionDebug, (intptr_t)0 },
     { "error", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionError, (intptr_t)0 },
@@ -61,6 +61,7 @@ static const HashTableValue JSConsolePrototypeTableValues[17] =
     { "trace", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionTrace, (intptr_t)0 },
     { "assert", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionAssert, (intptr_t)1 },
     { "count", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionCount, (intptr_t)0 },
+    { "markTimeline", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionMarkTimeline, (intptr_t)0 },
     { "profile", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionProfile, (intptr_t)1 },
     { "profileEnd", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionProfileEnd, (intptr_t)1 },
     { "time", DontDelete|Function, (intptr_t)jsConsolePrototypeFunctionTime, (intptr_t)1 },
@@ -74,7 +75,7 @@ static JSC_CONST_HASHTABLE HashTable JSConsolePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSConsolePrototypeTableValues, 0 };
 #else
-    { 35, 31, JSConsolePrototypeTableValues, 0 };
+    { 65, 63, JSConsolePrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSConsolePrototype::s_info = { "ConsolePrototype", 0, &JSConsolePrototypeTable, 0 };
@@ -256,6 +257,19 @@ JSValue JSC_HOST_CALL jsConsolePrototypeFunctionCount(ExecState* exec, JSObject*
     ScriptCallStack callStack(exec, args, 0);
 
     imp->count(&callStack);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsConsolePrototypeFunctionMarkTimeline(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSConsole::s_info))
+        return throwError(exec, TypeError);
+    JSConsole* castedThisObj = static_cast<JSConsole*>(asObject(thisValue));
+    Console* imp = static_cast<Console*>(castedThisObj->impl());
+    ScriptCallStack callStack(exec, args, 0);
+
+    imp->markTimeline(&callStack);
     return jsUndefined();
 }
 

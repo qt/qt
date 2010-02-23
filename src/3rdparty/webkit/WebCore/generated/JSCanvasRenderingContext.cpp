@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -149,7 +149,8 @@ JSValue jsCanvasRenderingContextCanvas(ExecState* exec, const Identifier&, const
     JSCanvasRenderingContext* castedThis = static_cast<JSCanvasRenderingContext*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CanvasRenderingContext* imp = static_cast<CanvasRenderingContext*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->canvas()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->canvas()));
+    return result;
 }
 
 JSValue jsCanvasRenderingContextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

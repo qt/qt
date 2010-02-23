@@ -386,7 +386,7 @@
 #include "zlib.h"
 #endif
 
-#ifdef AIX
+#ifdef _AIX
 #define jmpbuf __jmpbuf
 #endif
 

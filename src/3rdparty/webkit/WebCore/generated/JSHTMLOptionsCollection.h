@@ -42,9 +42,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom attributes
     JSC::JSValue length(JSC::ExecState*) const;
@@ -74,7 +75,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSHTMLOptionsCollectionPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -91,6 +92,7 @@ JSC::JSValue jsHTMLOptionsCollectionSelectedIndex(JSC::ExecState*, const JSC::Id
 void setJSHTMLOptionsCollectionSelectedIndex(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsHTMLOptionsCollectionLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSHTMLOptionsCollectionLength(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLOptionsCollectionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

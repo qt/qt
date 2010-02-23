@@ -28,7 +28,9 @@
 #include "ScriptExecutionContext.h"
 
 #include "ActiveDOMObject.h"
-#include "Document.h"
+#include "Database.h"
+#include "DatabaseTask.h"
+#include "DatabaseThread.h"
 #include "MessagePort.h"
 #include "SecurityOrigin.h"
 #include "WorkerContext.h"
@@ -44,9 +46,9 @@ namespace WebCore {
 
 class ProcessMessagesSoonTask : public ScriptExecutionContext::Task {
 public:
-    static PassRefPtr<ProcessMessagesSoonTask> create()
+    static PassOwnPtr<ProcessMessagesSoonTask> create()
     {
-        return adoptRef(new ProcessMessagesSoonTask);
+        return new ProcessMessagesSoonTask;
     }
 
     virtual void performTask(ScriptExecutionContext* context)
@@ -56,6 +58,9 @@ public:
 };
 
 ScriptExecutionContext::ScriptExecutionContext()
+#if ENABLE(DATABASE)
+    : m_hasOpenDatabases(false)
+#endif
 {
 }
 
@@ -72,7 +77,68 @@ ScriptExecutionContext::~ScriptExecutionContext()
         ASSERT((*iter)->scriptExecutionContext() == this);
         (*iter)->contextDestroyed();
     }
+#if ENABLE(DATABASE)
+    if (m_databaseThread) {
+        ASSERT(m_databaseThread->terminationRequested());
+        m_databaseThread = 0;
+    }
+#endif
 }
+
+#if ENABLE(DATABASE)
+
+DatabaseThread* ScriptExecutionContext::databaseThread()
+{
+    if (!m_databaseThread && !m_hasOpenDatabases) {
+        // Create the database thread on first request - but not if at least one database was already opened,
+        // because in that case we already had a database thread and terminated it and should not create another.
+        m_databaseThread = DatabaseThread::create();
+        if (!m_databaseThread->start())
+            m_databaseThread = 0;
+    }
+
+    return m_databaseThread.get();
+}
+
+void ScriptExecutionContext::addOpenDatabase(Database* database)
+{
+    ASSERT(isContextThread());
+    if (!m_openDatabaseSet)
+        m_openDatabaseSet.set(new DatabaseSet());
+
+    ASSERT(!m_openDatabaseSet->contains(database));
+    m_openDatabaseSet->add(database);
+}
+
+void ScriptExecutionContext::removeOpenDatabase(Database* database)
+{
+    ASSERT(isContextThread());
+    ASSERT(m_openDatabaseSet && m_openDatabaseSet->contains(database));
+    if (!m_openDatabaseSet)
+        return;
+    m_openDatabaseSet->remove(database);
+}
+
+void ScriptExecutionContext::stopDatabases(DatabaseTaskSynchronizer* cleanupSync)
+{
+    ASSERT(isContextThread());
+    if (m_openDatabaseSet) {
+        DatabaseSet::iterator i = m_openDatabaseSet->begin();
+        DatabaseSet::iterator end = m_openDatabaseSet->end();
+        for (; i != end; ++i) {
+            (*i)->stop();
+            if (m_databaseThread)
+                m_databaseThread->unscheduleDatabaseTasks(*i);
+        }
+    }
+    
+    if (m_databaseThread)
+        m_databaseThread->requestTermination(cleanupSync);
+    else if (cleanupSync)
+        cleanupSync->taskCompleted();
+}
+
+#endif
 
 void ScriptExecutionContext::processMessagePortMessagesSoon()
 {

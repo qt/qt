@@ -1,6 +1,4 @@
 /*
- * This file is part of the CSS implementation for KDE.
- *
  * Copyright (C) 1999-2003 Lars Knoll (knoll@kde.org)
  *               1999 Waldo Bastian (bastian@kde.org)
  * Copyright (C) 2004, 2006 Apple Computer, Inc.
@@ -28,7 +26,7 @@
 
 namespace WebCore {
 
-    struct CSSNamespace {
+    struct CSSNamespace : Noncopyable {
         AtomicString m_prefix;
         AtomicString m_uri;
         CSSNamespace* m_parent;

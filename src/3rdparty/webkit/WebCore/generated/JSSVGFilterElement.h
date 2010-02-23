@@ -43,9 +43,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
@@ -61,7 +62,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGFilterElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -90,6 +91,7 @@ void setJSSVGFilterElementXmlspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue
 JSC::JSValue jsSVGFilterElementExternalResourcesRequired(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsSVGFilterElementClassName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsSVGFilterElementStyle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGFilterElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,32 +45,30 @@ using namespace HTMLNames;
 
 static const double cTimeUpdateRepeatDelay = 0.2;
 static const double cOpacityAnimationRepeatDelay = 0.05;
-// FIXME get this from style
-static const double cOpacityAnimationDurationFadeIn = 0.1;
-static const double cOpacityAnimationDurationFadeOut = 0.3;
 
 RenderMedia::RenderMedia(HTMLMediaElement* video)
-    : RenderReplaced(video)
+    : RenderImage(video)
     , m_timeUpdateTimer(this, &RenderMedia::timeUpdateTimerFired)
     , m_opacityAnimationTimer(this, &RenderMedia::opacityAnimationTimerFired)
     , m_mouseOver(false)
     , m_opacityAnimationStartTime(0)
-    , m_opacityAnimationDuration(cOpacityAnimationDurationFadeIn)
+    , m_opacityAnimationDuration(0)
     , m_opacityAnimationFrom(0)
     , m_opacityAnimationTo(1.0f)
 {
 }
 
 RenderMedia::RenderMedia(HTMLMediaElement* video, const IntSize& intrinsicSize)
-    : RenderReplaced(video, intrinsicSize)
+    : RenderImage(video)
     , m_timeUpdateTimer(this, &RenderMedia::timeUpdateTimerFired)
     , m_opacityAnimationTimer(this, &RenderMedia::opacityAnimationTimerFired)
     , m_mouseOver(false)
     , m_opacityAnimationStartTime(0)
-    , m_opacityAnimationDuration(cOpacityAnimationDurationFadeIn)
+    , m_opacityAnimationDuration(0)
     , m_opacityAnimationFrom(0)
     , m_opacityAnimationTo(1.0f)
 {
+    setIntrinsicSize(intrinsicSize);
 }
 
 RenderMedia::~RenderMedia()
@@ -89,7 +87,7 @@ void RenderMedia::destroy()
         m_controlsShadowRoot->detach();
         m_controlsShadowRoot = 0;
     }
-    RenderReplaced::destroy();
+    RenderImage::destroy();
 }
 
 HTMLMediaElement* RenderMedia::mediaElement() const
@@ -104,7 +102,7 @@ MediaPlayer* RenderMedia::player() const
 
 void RenderMedia::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    RenderReplaced::styleDidChange(diff, oldStyle);
+    RenderImage::styleDidChange(diff, oldStyle);
 
     if (m_controlsShadowRoot) {
         if (m_panel)
@@ -121,6 +119,8 @@ void RenderMedia::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
             m_rewindButton->updateStyle();
         if (m_returnToRealtimeButton)
             m_returnToRealtimeButton->updateStyle();
+        if (m_toggleClosedCaptionsButton)
+            m_toggleClosedCaptionsButton->updateStyle();
         if (m_statusDisplay)
             m_statusDisplay->updateStyle();
         if (m_timelineContainer)
@@ -144,7 +144,7 @@ void RenderMedia::layout()
 {
     IntSize oldSize = contentBoxRect().size();
 
-    RenderReplaced::layout();
+    RenderImage::layout();
 
     RenderBox* controlsRenderer = m_controlsShadowRoot ? m_controlsShadowRoot->renderBox() : 0;
     if (!controlsRenderer)
@@ -221,6 +221,13 @@ void RenderMedia::createReturnToRealtimeButton()
     ASSERT(!m_returnToRealtimeButton);
     m_returnToRealtimeButton = new MediaControlReturnToRealtimeButtonElement(document(), mediaElement());
     m_returnToRealtimeButton->attachToParent(m_panel.get());
+}
+
+void RenderMedia::createToggleClosedCaptionsButton()
+{
+    ASSERT(!m_toggleClosedCaptionsButton);
+    m_toggleClosedCaptionsButton = new MediaControlToggleClosedCaptionsButtonElement(document(), mediaElement());
+    m_toggleClosedCaptionsButton->attachToParent(m_panel.get());
 }
 
 void RenderMedia::createStatusDisplay()
@@ -310,6 +317,7 @@ void RenderMedia::updateControls()
             m_volumeSliderContainer = 0;
             m_volumeSlider = 0;
             m_controlsShadowRoot = 0;
+            m_toggleClosedCaptionsButton = 0;
         }
         m_opacityAnimationTo = 1.0f;
         m_opacityAnimationTimer.stop();
@@ -333,6 +341,7 @@ void RenderMedia::updateControls()
             }
             createSeekBackButton();
             createSeekForwardButton();
+            createToggleClosedCaptionsButton();
             createFullscreenButton();
             createMuteButton();
             createVolumeSliderContainer();
@@ -379,6 +388,8 @@ void RenderMedia::updateControls()
         m_rewindButton->update();
     if (m_returnToRealtimeButton)
         m_returnToRealtimeButton->update();
+    if (m_toggleClosedCaptionsButton)
+        m_toggleClosedCaptionsButton->update();
     if (m_statusDisplay)
         m_statusDisplay->update();
     if (m_fullscreenButton)
@@ -401,10 +412,15 @@ void RenderMedia::updateTimeDisplay()
 {
     if (!m_currentTimeDisplay || !m_currentTimeDisplay->renderer() || m_currentTimeDisplay->renderer()->style()->display() == NONE || style()->visibility() != VISIBLE)
         return;
+
     float now = mediaElement()->currentTime();
     float duration = mediaElement()->duration();
 
+    // Allow the theme to format the time
+    ExceptionCode ec;
+    m_currentTimeDisplay->setInnerText(theme()->formatMediaControlsCurrentTime(now, duration), ec);
     m_currentTimeDisplay->setCurrentValue(now);
+    m_timeRemainingDisplay->setInnerText(theme()->formatMediaControlsRemainingTime(now, duration), ec);
     m_timeRemainingDisplay->setCurrentValue(now - duration);
 }
 
@@ -439,9 +455,9 @@ void RenderMedia::updateControlVisibility()
     }
 
     if (animateFrom < animateTo)
-        m_opacityAnimationDuration = cOpacityAnimationDurationFadeIn;
+        m_opacityAnimationDuration = m_panel->renderer()->theme()->mediaControlsFadeInDuration();
     else
-        m_opacityAnimationDuration = cOpacityAnimationDurationFadeOut;
+        m_opacityAnimationDuration = m_panel->renderer()->theme()->mediaControlsFadeOutDuration();
 
     m_opacityAnimationFrom = animateFrom;
     m_opacityAnimationTo = animateTo;
@@ -535,6 +551,9 @@ void RenderMedia::forwardEvent(Event* event)
         if (m_returnToRealtimeButton && m_returnToRealtimeButton->hitTest(point))
             m_returnToRealtimeButton->defaultEventHandler(event);
 
+       if (m_toggleClosedCaptionsButton && m_toggleClosedCaptionsButton->hitTest(point))
+            m_toggleClosedCaptionsButton->defaultEventHandler(event);
+
         if (m_timeline && m_timeline->hitTest(point))
             m_timeline->defaultEventHandler(event);
 
@@ -557,7 +576,7 @@ void RenderMedia::forwardEvent(Event* event)
 
 int RenderMedia::lowestPosition(bool includeOverflowInterior, bool includeSelf) const
 {
-    int bottom = RenderReplaced::lowestPosition(includeOverflowInterior, includeSelf);
+    int bottom = RenderImage::lowestPosition(includeOverflowInterior, includeSelf);
     if (!m_controlsShadowRoot || !m_controlsShadowRoot->renderer())
         return bottom;
     
@@ -566,7 +585,7 @@ int RenderMedia::lowestPosition(bool includeOverflowInterior, bool includeSelf) 
 
 int RenderMedia::rightmostPosition(bool includeOverflowInterior, bool includeSelf) const
 {
-    int right = RenderReplaced::rightmostPosition(includeOverflowInterior, includeSelf);
+    int right = RenderImage::rightmostPosition(includeOverflowInterior, includeSelf);
     if (!m_controlsShadowRoot || !m_controlsShadowRoot->renderer())
         return right;
     
@@ -575,7 +594,7 @@ int RenderMedia::rightmostPosition(bool includeOverflowInterior, bool includeSel
 
 int RenderMedia::leftmostPosition(bool includeOverflowInterior, bool includeSelf) const
 {
-    int left = RenderReplaced::leftmostPosition(includeOverflowInterior, includeSelf);
+    int left = RenderImage::leftmostPosition(includeOverflowInterior, includeSelf);
     if (!m_controlsShadowRoot || !m_controlsShadowRoot->renderer())
         return left;
     

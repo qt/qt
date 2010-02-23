@@ -217,6 +217,22 @@ int RenderThemeChromiumSkia::minimumMenuListSize(RenderStyle* style) const
     return 0;
 }
 
+// These are the default dimensions of radio buttons and checkboxes.
+static const int widgetStandardWidth = 13;
+static const int widgetStandardHeight = 13;
+
+// Return a rectangle that has the same center point as |original|, but with a
+// size capped at |width| by |height|.
+IntRect center(const IntRect& original, int width, int height)
+{
+    width = std::min(original.width(), width);
+    height = std::min(original.height(), height);
+    int x = original.x() + (original.width() - width) / 2;
+    int y = original.y() + (original.height() - height) / 2;
+
+    return IntRect(x, y, width, height);
+}
+
 bool RenderThemeChromiumSkia::paintCheckbox(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& rect)
 {
     static Image* const checkedImage = Image::loadPlatformResource("linuxCheckboxOn").releaseRef();
@@ -231,7 +247,7 @@ bool RenderThemeChromiumSkia::paintCheckbox(RenderObject* o, const RenderObject:
     else
         image = this->isChecked(o) ? disabledCheckedImage : disabledUncheckedImage;
 
-    i.context->drawImage(image, rect);
+    i.context->drawImage(image, o->style()->colorSpace(), center(rect, widgetStandardHeight, widgetStandardWidth));
     return false;
 }
 
@@ -246,7 +262,7 @@ void RenderThemeChromiumSkia::setCheckboxSize(RenderStyle* style) const
     // querying the theme gives you a larger size that accounts for the higher
     // DPI.  Until our entire engine honors a DPI setting other than 96, we
     // can't rely on the theme's metrics.
-    const IntSize size(13, 13);
+    const IntSize size(widgetStandardHeight, widgetStandardWidth);
     setSizeIfAuto(style, size);
 }
 
@@ -263,7 +279,7 @@ bool RenderThemeChromiumSkia::paintRadio(RenderObject* o, const RenderObject::Pa
     else
         image = this->isChecked(o) ? disabledCheckedImage : disabledUncheckedImage;
 
-    i.context->drawImage(image, rect);
+    i.context->drawImage(image, o->style()->colorSpace(), center(rect, widgetStandardHeight, widgetStandardWidth));
     return false;
 }
 
@@ -348,6 +364,15 @@ bool RenderThemeChromiumSkia::paintButton(RenderObject* o, const RenderObject::P
     return false;
 }
 
+void RenderThemeChromiumSkia::adjustButtonStyle(CSSStyleSelector*, RenderStyle* style, Element*) const
+{
+    if (style->appearance() == PushButtonPart) {
+        // Ignore line-height.
+        style->setLineHeight(RenderStyle::initialLineHeight());
+    }
+}
+
+
 bool RenderThemeChromiumSkia::paintTextField(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& rect)
 {
     return true;
@@ -356,6 +381,12 @@ bool RenderThemeChromiumSkia::paintTextField(RenderObject* o, const RenderObject
 bool RenderThemeChromiumSkia::paintTextArea(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
 {
     return paintTextField(o, i, r);
+}
+
+void RenderThemeChromiumSkia::adjustSearchFieldStyle(CSSStyleSelector*, RenderStyle* style, Element*) const
+{
+     // Ignore line-height.
+     style->setLineHeight(RenderStyle::initialLineHeight());
 }
 
 bool RenderThemeChromiumSkia::paintSearchField(RenderObject* o, const RenderObject::PaintInfo& i, const IntRect& r)
@@ -393,7 +424,7 @@ bool RenderThemeChromiumSkia::paintSearchFieldCancelButton(RenderObject* o, cons
 
     static Image* cancelImage = Image::loadPlatformResource("searchCancel").releaseRef();
     static Image* cancelPressedImage = Image::loadPlatformResource("searchCancelPressed").releaseRef();
-    i.context->drawImage(isPressed(o) ? cancelPressedImage : cancelImage, bounds);
+    i.context->drawImage(isPressed(o) ? cancelPressedImage : cancelImage, o->style()->colorSpace(), bounds);
     return false;
 }
 
@@ -433,7 +464,7 @@ bool RenderThemeChromiumSkia::paintSearchFieldResultsDecoration(RenderObject* o,
     bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
 
     static Image* magnifierImage = Image::loadPlatformResource("searchMagnifier").releaseRef();
-    i.context->drawImage(magnifierImage, bounds);
+    i.context->drawImage(magnifierImage, o->style()->colorSpace(), bounds);
     return false;
 }
 
@@ -469,7 +500,7 @@ bool RenderThemeChromiumSkia::paintSearchFieldResultsButton(RenderObject* o, con
     bounds.setY(parentBox.y() + (parentBox.height() - bounds.height() + 1) / 2);
 
     static Image* magnifierImage = Image::loadPlatformResource("searchMagnifierResults").releaseRef();
-    i.context->drawImage(magnifierImage, bounds);
+    i.context->drawImage(magnifierImage, o->style()->colorSpace(), bounds);
     return false;
 }
 

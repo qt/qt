@@ -841,7 +841,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
             return symbianTimeFormat();
         case DateTimeFormatLong:
         case DateTimeFormatShort:
-            return symbianDateFormat( (type == DateTimeFormatShort) ) + QLatin1Char(' ') + symbianTimeFormat();
+            return QString(symbianDateFormat( (type == DateTimeFormatShort) ) + QLatin1Char(' ') + symbianTimeFormat());
         case DateToStringShort:
         case DateToStringLong:
              return symbianDateToString(in.toDate(), (type == DateToStringShort) );
@@ -851,8 +851,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         case DateTimeToStringShort:
         case DateTimeToStringLong: {
                 const QDateTime dt = in.toDateTime();
-                return symbianDateToString(dt.date(), (type == DateTimeToStringShort) )
-                       + QLatin1Char(' ') + symbianTimeToString(dt.time());
+                return QString(symbianDateToString(dt.date(), (type == DateTimeToStringShort) )
+                       + QLatin1Char(' ') + symbianTimeToString(dt.time()));
             }
         case MeasurementSystem:
             return static_cast<int>(symbianMeasurementSystem());

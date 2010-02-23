@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -25,6 +23,7 @@
 #if ENABLE(SVG)
 #include "SVGPatternElement.h"
 
+#include "AffineTransform.h"
 #include "Document.h"
 #include "FloatConversion.h"
 #include "GraphicsContext.h"
@@ -41,7 +40,6 @@
 #include "SVGTransformList.h"
 #include "SVGTransformable.h"
 #include "SVGUnitTypes.h"
-#include "TransformationMatrix.h"
 #include <math.h>
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
@@ -57,17 +55,13 @@ SVGPatternElement::SVGPatternElement(const QualifiedName& tagName, Document* doc
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
     , SVGFitToViewBox()
-    , m_x(this, SVGNames::xAttr, LengthModeWidth)
-    , m_y(this, SVGNames::yAttr, LengthModeHeight)
-    , m_width(this, SVGNames::widthAttr, LengthModeWidth)
-    , m_height(this, SVGNames::heightAttr, LengthModeHeight)
-    , m_patternUnits(this, SVGNames::patternUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
-    , m_patternContentUnits(this, SVGNames::patternContentUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
-    , m_patternTransform(this, SVGNames::patternTransformAttr, SVGTransformList::create(SVGNames::patternTransformAttr))
-    , m_href(this, XLinkNames::hrefAttr)
-    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
-    , m_viewBox(this, SVGNames::viewBoxAttr)
-    , m_preserveAspectRatio(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create())
+    , m_x(LengthModeWidth)
+    , m_y(LengthModeHeight)
+    , m_width(LengthModeWidth)
+    , m_height(LengthModeHeight)
+    , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+    , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
+    , m_patternTransform(SVGTransformList::create(SVGNames::patternTransformAttr))
 {
 }
 
@@ -140,6 +134,48 @@ void SVGPatternElement::svgAttributeChanged(const QualifiedName& attrName)
         m_resource->invalidate();
 }
 
+void SVGPatternElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGStyledElement::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizePatternUnits();
+        synchronizePatternContentUnits();
+        synchronizePatternTransform();
+        synchronizeX();
+        synchronizeY();
+        synchronizeWidth();
+        synchronizeHeight();
+        synchronizeExternalResourcesRequired();
+        synchronizeViewBox();
+        synchronizePreserveAspectRatio();
+        synchronizeHref();
+        return;
+    }
+
+    if (attrName == SVGNames::patternUnitsAttr)
+        synchronizePatternUnits();
+    else if (attrName == SVGNames::patternContentUnitsAttr)
+        synchronizePatternContentUnits();
+    else if (attrName == SVGNames::patternTransformAttr)
+        synchronizePatternTransform();
+    else if (attrName == SVGNames::xAttr)
+        synchronizeX();
+    else if (attrName == SVGNames::yAttr)
+        synchronizeY();
+    else if (attrName == SVGNames::widthAttr)
+        synchronizeWidth();
+    else if (attrName == SVGNames::heightAttr)
+        synchronizeHeight();
+    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
+        synchronizeExternalResourcesRequired();
+    else if (SVGFitToViewBox::isKnownAttribute(attrName)) {
+        synchronizeViewBox();
+        synchronizePreserveAspectRatio();
+    } else if (SVGURIReference::isKnownAttribute(attrName))
+        synchronizeHref();
+}
+
 void SVGPatternElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGStyledElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
@@ -173,13 +209,6 @@ void SVGPatternElement::buildPattern(const FloatRect& targetRect) const
                                       attributes.width().value(this),
                                       attributes.height().value(this));
 
-    // Clip pattern boundaries to target boundaries
-    if (patternBoundaries.width() > targetRect.width())
-        patternBoundaries.setWidth(targetRect.width());
-
-    if (patternBoundaries.height() > targetRect.height())
-        patternBoundaries.setHeight(targetRect.height());
-
     IntSize patternSize(patternBoundaries.width(), patternBoundaries.height());
     clampImageBufferSizeToViewport(document()->view(), patternSize);
 
@@ -199,7 +228,7 @@ void SVGPatternElement::buildPattern(const FloatRect& targetRect) const
         }
     }
 
-    TransformationMatrix viewBoxCTM = viewBoxToViewTransform(viewBox(), preserveAspectRatio(), patternBoundaries.width(), patternBoundaries.height()); 
+    AffineTransform viewBoxCTM = viewBoxToViewTransform(viewBox(), preserveAspectRatio(), patternBoundaries.width(), patternBoundaries.height()); 
     FloatRect patternBoundariesIncludingOverflow = patternBoundaries;
 
     // Apply objectBoundingBoxMode fixup for patternContentUnits, if viewBox is not set.
@@ -265,7 +294,7 @@ RenderObject* SVGPatternElement::createRenderer(RenderArena* arena, RenderStyle*
     return patternContainer;
 }
 
-SVGResource* SVGPatternElement::canvasResource()
+SVGResource* SVGPatternElement::canvasResource(const RenderObject*)
 {
     if (!m_resource)
         m_resource = SVGPaintServerPattern::create(this);

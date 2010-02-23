@@ -107,7 +107,8 @@ JSValue jsSQLResultSetRows(ExecState* exec, const Identifier&, const PropertySlo
     JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
+    return result;
 }
 
 JSValue jsSQLResultSetInsertId(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -125,7 +126,8 @@ JSValue jsSQLResultSetRowsAffected(ExecState* exec, const Identifier&, const Pro
     JSSQLResultSet* castedThis = static_cast<JSSQLResultSet*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SQLResultSet* imp = static_cast<SQLResultSet*>(castedThis->impl());
-    return jsNumber(exec, imp->rowsAffected());
+    JSValue result = jsNumber(exec, imp->rowsAffected());
+    return result;
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SQLResultSet* object)

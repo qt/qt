@@ -8,16 +8,8 @@ unix:contains(QT_CONFIG, alsa) {
     LIBS += -lasound
 }
 
-LIBS += -lXv
-
-CONFIG += link_pkgconfig
-
-PKGCONFIG += \
-    gstreamer-0.10 \
-    gstreamer-base-0.10 \
-    gstreamer-interfaces-0.10 \
-    gstreamer-audio-0.10 \
-    gstreamer-video-0.10
+QMAKE_CXXFLAGS += $$QT_CFLAGS_GSTREAMER
+LIBS += -lXv $$QT_LIBS_GSTREAMER -lgstinterfaces-0.10 -lgstvideo-0.10 -lgstbase-0.10 -lgstaudio-0.10
 
 # Input
 HEADERS += \

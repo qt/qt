@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Apple Inc.  All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,7 @@
 #include "HTMLNames.h"
 #include "HTMLVideoElement.h"
 #include "MediaPlayer.h"
+#include "RenderView.h"
 
 #if USE(ACCELERATED_COMPOSITING)
 #include "RenderLayer.h"
@@ -49,18 +50,25 @@ using namespace HTMLNames;
 static const int cDefaultWidth = 300;
 static const int cDefaultHeight = 150;
 
-RenderVideo::RenderVideo(HTMLMediaElement* video)
+RenderVideo::RenderVideo(HTMLVideoElement* video)
     : RenderMedia(video)
 {
     if (video->player())
         setIntrinsicSize(video->player()->naturalSize());
     else {
-        // Video in standalone media documents should not use the default 300x150
-        // size since they also have audio thrown at them. By setting the intrinsic
-        // size to 300x1 the video will resize itself in these cases, and audio will
-        // have the correct height (it needs to be > 0 for controls to render properly).
-        if (video->ownerDocument() && video->ownerDocument()->isMediaDocument())
+        // When the natural size of the video is unavailable, we use the provided
+        // width and height attributes of the video element as the intrinsic size until
+        // better values become available. If these attributes are not set, we fall back
+        // to a default video size (300x150).
+        if (video->hasAttribute(widthAttr) && video->hasAttribute(heightAttr))
+            setIntrinsicSize(IntSize(video->width(), video->height()));
+        else if (video->ownerDocument() && video->ownerDocument()->isMediaDocument()) {
+            // Video in standalone media documents should not use the default 300x150
+            // size since they also have audio thrown at them. By setting the intrinsic
+            // size to 300x1 the video will resize itself in these cases, and audio will
+            // have the correct height (it needs to be > 0 for controls to render properly).
             setIntrinsicSize(IntSize(cDefaultWidth, 1));
+        }
         else
             setIntrinsicSize(IntSize(cDefaultWidth, cDefaultHeight));
     }
@@ -73,7 +81,15 @@ RenderVideo::~RenderVideo()
         p->setFrameView(0);
     }
 }
-    
+
+void RenderVideo::intrinsicSizeChanged()
+{
+    if (videoElement()->shouldDisplayPosterImage())
+        RenderMedia::intrinsicSizeChanged();
+    videoSizeChanged(); 
+}
+
+
 void RenderVideo::videoSizeChanged()
 {
     if (!player())
@@ -86,41 +102,72 @@ void RenderVideo::videoSizeChanged()
     }
 }
 
-IntRect RenderVideo::videoBox() const 
+void RenderVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 {
-    IntRect contentRect = contentBoxRect();
-    
-    if (intrinsicSize().isEmpty() || contentRect.isEmpty())
+    RenderMedia::imageChanged(newImage, rect);
+
+    // Cache the image intrinsic size so we can continue to use it to draw the image correctly
+    // even after we know the video intrisic size but aren't able to draw video frames yet
+    // (we don't want to scale the poster to the video size).
+    if (videoElement()->shouldDisplayPosterImage())
+        m_cachedImageSize = intrinsicSize();
+}
+
+IntRect RenderVideo::videoBox() const
+{
+    if (m_cachedImageSize.isEmpty() && videoElement()->shouldDisplayPosterImage())
         return IntRect();
 
-    IntRect resultRect = contentRect;
-    int ratio = contentRect.width() * intrinsicSize().height() - contentRect.height() * intrinsicSize().width();
+    IntSize elementSize;
+    if (videoElement()->shouldDisplayPosterImage())
+        elementSize = m_cachedImageSize;
+    else
+        elementSize = intrinsicSize();
+
+    IntRect contentRect = contentBoxRect();
+    if (elementSize.isEmpty() || contentRect.isEmpty())
+        return IntRect();
+
+    IntRect renderBox = contentRect;
+    int ratio = renderBox.width() * elementSize.height() - renderBox.height() * elementSize.width();
     if (ratio > 0) {
-        int newWidth = contentRect.height() * intrinsicSize().width() / intrinsicSize().height();
+        int newWidth = renderBox.height() * elementSize.width() / elementSize.height();
         // Just fill the whole area if the difference is one pixel or less (in both sides)
-        if (resultRect.width() - newWidth > 2)
-            resultRect.setWidth(newWidth);
-        resultRect.move((contentRect.width() - resultRect.width()) / 2, 0);
+        if (renderBox.width() - newWidth > 2)
+            renderBox.setWidth(newWidth);
+        renderBox.move((contentRect.width() - renderBox.width()) / 2, 0);
     } else if (ratio < 0) {
-        int newHeight = contentRect.width() * intrinsicSize().height() / intrinsicSize().width();
-        if (resultRect.height() - newHeight > 2)
-            resultRect.setHeight(newHeight);
-        resultRect.move(0, (contentRect.height() - resultRect.height()) / 2);
+        int newHeight = renderBox.width() * elementSize.height() / elementSize.width();
+        if (renderBox.height() - newHeight > 2)
+            renderBox.setHeight(newHeight);
+        renderBox.move(0, (contentRect.height() - renderBox.height()) / 2);
     }
-    return resultRect;
+
+    return renderBox;
 }
     
 void RenderVideo::paintReplaced(PaintInfo& paintInfo, int tx, int ty)
 {
     MediaPlayer* mediaPlayer = player();
-    if (!mediaPlayer)
+    bool displayingPoster = videoElement()->shouldDisplayPosterImage();
+
+    if (displayingPoster && document()->printing() && !view()->printImages())
         return;
-    updatePlayer();
+
+    if (!displayingPoster) {
+        if (!mediaPlayer)
+            return;
+        updatePlayer();
+    }
+
     IntRect rect = videoBox();
     if (rect.isEmpty())
         return;
     rect.move(tx, ty);
-    mediaPlayer->paint(paintInfo.context, rect);
+    if (displayingPoster)
+        paintIntoRect(paintInfo.context, rect);
+    else
+        mediaPlayer->paint(paintInfo.context, rect);
 }
 
 void RenderVideo::layout()
@@ -129,6 +176,12 @@ void RenderVideo::layout()
     updatePlayer();
 }
     
+HTMLVideoElement* RenderVideo::videoElement() const
+{
+    ASSERT(node()->hasTagName(videoTag));
+    return static_cast<HTMLVideoElement*>(node()); 
+}
+
 void RenderVideo::updateFromElement()
 {
     RenderMedia::updateFromElement();
@@ -140,7 +193,7 @@ void RenderVideo::updatePlayer()
     MediaPlayer* mediaPlayer = player();
     if (!mediaPlayer)
         return;
-    if (!mediaElement()->inActiveDocument()) {
+    if (!videoElement()->inActiveDocument()) {
         mediaPlayer->setVisible(false);
         return;
     }
@@ -153,40 +206,6 @@ void RenderVideo::updatePlayer()
     mediaPlayer->setFrameView(document()->view());
     mediaPlayer->setSize(IntSize(videoBounds.width(), videoBounds.height()));
     mediaPlayer->setVisible(true);
-}
-
-bool RenderVideo::isWidthSpecified() const
-{
-    switch (style()->width().type()) {
-        case Fixed:
-        case Percent:
-            return true;
-        case Auto:
-        case Relative: // FIXME: Shouldn't this case return true? It doesn't for images.
-        case Static:
-        case Intrinsic:
-        case MinIntrinsic:
-            return false;
-    }
-    ASSERT(false);
-    return false;
-}
-
-bool RenderVideo::isHeightSpecified() const
-{
-    switch (style()->height().type()) {
-        case Fixed:
-        case Percent:
-            return true;
-        case Auto:
-        case Relative: // FIXME: Shouldn't this case return true? It doesn't for images.
-        case Static:
-        case Intrinsic:
-        case MinIntrinsic:
-            return false;
-    }
-    ASSERT(false);
-    return false;
 }
 
 int RenderVideo::calcReplacedWidth(bool includeMaxWidth) const
@@ -235,24 +254,9 @@ int RenderVideo::calcAspectRatioHeight() const
     return RenderBox::calcReplacedWidth() * intrinsicHeight / intrinsicWidth;
 }
 
-void RenderVideo::calcPrefWidths()
+int RenderVideo::minimumReplacedHeight() const 
 {
-    ASSERT(prefWidthsDirty());
-
-    int paddingAndBorders = paddingLeft() + paddingRight() + borderLeft() + borderRight();
-    m_maxPrefWidth = calcReplacedWidth(false) + paddingAndBorders;
-
-    if (style()->maxWidth().isFixed() && style()->maxWidth().value() != undefinedLength)
-        m_maxPrefWidth = min(m_maxPrefWidth, style()->maxWidth().value() + (style()->boxSizing() == CONTENT_BOX ? paddingAndBorders : 0));
-
-    if (style()->width().isPercent() || style()->height().isPercent() || 
-        style()->maxWidth().isPercent() || style()->maxHeight().isPercent() ||
-        style()->minWidth().isPercent() || style()->minHeight().isPercent())
-        m_minPrefWidth = 0;
-    else
-        m_minPrefWidth = m_maxPrefWidth;
-
-    setPrefWidthsDirty(false);
+    return 0; 
 }
 
 #if USE(ACCELERATED_COMPOSITING)
@@ -270,14 +274,6 @@ void RenderVideo::acceleratedRenderingStateChanged()
     MediaPlayer* p = player();
     if (p)
         p->acceleratedRenderingStateChanged();
-}
-
-GraphicsLayer* RenderVideo::videoGraphicsLayer() const
-{
-    if (hasLayer() && layer()->isComposited())
-        return layer()->backing()->graphicsLayer();
-
-    return 0;
 }
 #endif  // USE(ACCELERATED_COMPOSITING)
 

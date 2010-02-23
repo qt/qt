@@ -91,7 +91,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -180,7 +180,8 @@ JSValue jsDataGridColumnId(ExecState* exec, const Identifier&, const PropertySlo
     JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
-    return jsString(exec, imp->id());
+    JSValue result = jsString(exec, imp->id());
+    return result;
 }
 
 JSValue jsDataGridColumnLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -188,7 +189,8 @@ JSValue jsDataGridColumnLabel(ExecState* exec, const Identifier&, const Property
     JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
-    return jsString(exec, imp->label());
+    JSValue result = jsString(exec, imp->label());
+    return result;
 }
 
 JSValue jsDataGridColumnType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -196,7 +198,8 @@ JSValue jsDataGridColumnType(ExecState* exec, const Identifier&, const PropertyS
     JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
 JSValue jsDataGridColumnSortable(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -204,7 +207,8 @@ JSValue jsDataGridColumnSortable(ExecState* exec, const Identifier&, const Prope
     JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
-    return jsNumber(exec, imp->sortable());
+    JSValue result = jsNumber(exec, imp->sortable());
+    return result;
 }
 
 JSValue jsDataGridColumnSortDirection(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -212,7 +216,8 @@ JSValue jsDataGridColumnSortDirection(ExecState* exec, const Identifier&, const 
     JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
-    return jsNumber(exec, imp->sortDirection());
+    JSValue result = jsNumber(exec, imp->sortDirection());
+    return result;
 }
 
 JSValue jsDataGridColumnPrimary(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -220,7 +225,8 @@ JSValue jsDataGridColumnPrimary(ExecState* exec, const Identifier&, const Proper
     JSDataGridColumn* castedThis = static_cast<JSDataGridColumn*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DataGridColumn* imp = static_cast<DataGridColumn*>(castedThis->impl());
-    return jsBoolean(imp->primary());
+    JSValue result = jsBoolean(imp->primary());
+    return result;
 }
 
 JSValue jsDataGridColumnConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -235,37 +241,43 @@ void JSDataGridColumn::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSDataGridColumnId(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(thisObject)->impl());
+    JSDataGridColumn* castedThisObj = static_cast<JSDataGridColumn*>(thisObject);
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThisObj->impl());
     imp->setId(value.toString(exec));
 }
 
 void setJSDataGridColumnLabel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(thisObject)->impl());
+    JSDataGridColumn* castedThisObj = static_cast<JSDataGridColumn*>(thisObject);
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThisObj->impl());
     imp->setLabel(value.toString(exec));
 }
 
 void setJSDataGridColumnType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(thisObject)->impl());
+    JSDataGridColumn* castedThisObj = static_cast<JSDataGridColumn*>(thisObject);
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThisObj->impl());
     imp->setType(value.toString(exec));
 }
 
 void setJSDataGridColumnSortable(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(thisObject)->impl());
+    JSDataGridColumn* castedThisObj = static_cast<JSDataGridColumn*>(thisObject);
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThisObj->impl());
     imp->setSortable(value.toInt32(exec));
 }
 
 void setJSDataGridColumnSortDirection(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(thisObject)->impl());
+    JSDataGridColumn* castedThisObj = static_cast<JSDataGridColumn*>(thisObject);
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThisObj->impl());
     imp->setSortDirection(value.toInt32(exec));
 }
 
 void setJSDataGridColumnPrimary(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    DataGridColumn* imp = static_cast<DataGridColumn*>(static_cast<JSDataGridColumn*>(thisObject)->impl());
+    JSDataGridColumn* castedThisObj = static_cast<JSDataGridColumn*>(thisObject);
+    DataGridColumn* imp = static_cast<DataGridColumn*>(castedThisObj->impl());
     imp->setPrimary(value.toBoolean(exec));
 }
 

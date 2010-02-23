@@ -2,6 +2,7 @@
  * This file is part of the WebKit project.
  *
  * Copyright (C) 2009 Michelangelo De Simone <micdesim@gmail.com>
+ * Copyright (C) 2010 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -26,29 +27,50 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "KURL.h"
+#include "LocalizedStrings.h"
 #include "RegularExpression.h"
 #include <wtf/StdLibExtras.h>
-
-#define EMAIL_LOCALPART "[a-z0-9!#$%&'*+/=?^_`{|}~.-]+"
-#define EMAIL_DOMAINPART "[a-z0-9-]+(\\.[a-z0-9-]+)+"
-#define EMAIL_PATTERN EMAIL_LOCALPART "@" EMAIL_DOMAINPART
 
 namespace WebCore {
 
 using namespace HTMLNames;
 
-ValidityState::ValidityState(HTMLFormControlElement* parent)
-    : m_control(parent)
+static const char emailPattern[] =
+    "[a-z0-9!#$%&'*+/=?^_`{|}~.-]+" // local part
+    "@"
+    "[a-z0-9-]+(\\.[a-z0-9-]+)+"; // domain part
+
+String ValidityState::validationMessage() const
 {
-    ASSERT(parent);
+    if (!m_control->willValidate())
+        return String();
+
+    if (customError())
+        return m_customErrorMessage;
+    if (valueMissing())
+        return validationMessageValueMissingText();
+    if (typeMismatch())
+        return validationMessageTypeMismatchText();
+    if (patternMismatch())
+        return validationMessagePatternMismatchText();
+    if (tooLong())
+        return validationMessageTooLongText();
+    if (rangeUnderflow())
+        return validationMessageRangeUnderflowText();
+    if (rangeOverflow())
+        return validationMessageRangeOverflowText();
+    if (stepMismatch())
+        return validationMessageStepMismatchText();
+
+    return String();
 }
 
-bool ValidityState::typeMismatch()
+bool ValidityState::typeMismatch() const
 {
-    if (!control()->hasTagName(inputTag))
+    if (!m_control->hasTagName(inputTag))
         return false;
 
-    HTMLInputElement* input = static_cast<HTMLInputElement*>(control());
+    HTMLInputElement* input = static_cast<HTMLInputElement*>(m_control);
     String value = input->value();
 
     if (value.isEmpty())
@@ -58,46 +80,73 @@ bool ValidityState::typeMismatch()
     case HTMLInputElement::COLOR:
         return !isValidColorString(value);
     case HTMLInputElement::NUMBER:
-        return !HTMLInputElement::formStringToDouble(value, 0);
+        return !HTMLInputElement::parseToDoubleForNumberType(value, 0);
     case HTMLInputElement::URL:
         return !KURL(KURL(), value).isValid();
-    case HTMLInputElement::EMAIL:
-    {
+    case HTMLInputElement::EMAIL: {
         if (!input->multiple())
             return !isValidEmailAddress(value);
-            
-        Vector<String> email_list;
-        value.split(',', email_list);
-        for (unsigned i = 0; i < email_list.size(); ++i)
-            if (!isValidEmailAddress(email_list[i]))
+        Vector<String> addresses;
+        value.split(',', addresses);
+        for (unsigned i = 0; i < addresses.size(); ++i) {
+            if (!isValidEmailAddress(addresses[i]))
                 return true;
-
+        }
         return false;
     }
-    default:
+    case HTMLInputElement::DATE:
+    case HTMLInputElement::DATETIME:
+    case HTMLInputElement::DATETIMELOCAL:
+    case HTMLInputElement::MONTH:
+    case HTMLInputElement::TIME:
+    case HTMLInputElement::WEEK:
+        return !HTMLInputElement::parseToDateComponents(input->inputType(), value, 0);
+    case HTMLInputElement::BUTTON:
+    case HTMLInputElement::CHECKBOX:
+    case HTMLInputElement::FILE:
+    case HTMLInputElement::HIDDEN:
+    case HTMLInputElement::IMAGE:
+    case HTMLInputElement::ISINDEX:
+    case HTMLInputElement::PASSWORD:
+    case HTMLInputElement::RADIO:
+    case HTMLInputElement::RANGE:
+    case HTMLInputElement::RESET:
+    case HTMLInputElement::SEARCH:
+    case HTMLInputElement::SUBMIT:
+    case HTMLInputElement::TELEPHONE: // FIXME: Is there validation for <input type=telephone>?
+    case HTMLInputElement::TEXT:
         return false;
     }
+
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
-bool ValidityState::rangeUnderflow()
+bool ValidityState::rangeUnderflow() const
 {
-    if (!control()->hasTagName(inputTag))
+    if (!m_control->hasTagName(inputTag))
         return false;
-    return static_cast<HTMLInputElement*>(control())->rangeUnderflow();
+    return static_cast<HTMLInputElement*>(m_control)->rangeUnderflow();
 }
 
-bool ValidityState::rangeOverflow()
+bool ValidityState::rangeOverflow() const
 {
-    if (!control()->hasTagName(inputTag))
+    if (!m_control->hasTagName(inputTag))
         return false;
-    return static_cast<HTMLInputElement*>(control())->rangeOverflow();
+    return static_cast<HTMLInputElement*>(m_control)->rangeOverflow();
 }
 
-bool ValidityState::valid()
+bool ValidityState::stepMismatch() const
 {
-    bool someError = typeMismatch() || stepMismatch() || rangeUnderflow() || rangeOverflow() ||
-                       tooLong() || patternMismatch() || valueMissing() || customError();
+    if (!m_control->hasTagName(inputTag))
+        return false;
+    return static_cast<HTMLInputElement*>(m_control)->stepMismatch();
+}
 
+bool ValidityState::valid() const
+{
+    bool someError = typeMismatch() || stepMismatch() || rangeUnderflow() || rangeOverflow()
+        || tooLong() || patternMismatch() || valueMissing() || customError();
     return !someError;
 }
 
@@ -114,19 +163,18 @@ bool ValidityState::isValidColorString(const String& value)
     return color.isValid() && !color.hasAlpha();
 }
 
-bool ValidityState::isValidEmailAddress(const String& email)
+bool ValidityState::isValidEmailAddress(const String& address)
 {
-    if (email.isEmpty())
+    int addressLength = address.length();
+    if (!addressLength)
         return false;
 
-    DEFINE_STATIC_LOCAL(AtomicString, emailPattern, (EMAIL_PATTERN));
-    DEFINE_STATIC_LOCAL(RegularExpression, regExp, (emailPattern, TextCaseInsensitive));
+    DEFINE_STATIC_LOCAL(const RegularExpression, regExp, (emailPattern, TextCaseInsensitive));
 
-    int matchLength = 0;
-    int emailLength = email.length();
-    int matchOffset = regExp.match(email, 0, &matchLength);
+    int matchLength;
+    int matchOffset = regExp.match(address, 0, &matchLength);
 
-    return matchOffset == 0 && matchLength == emailLength;
+    return matchOffset == 0 && matchLength == addressLength;
 }
 
 } // namespace

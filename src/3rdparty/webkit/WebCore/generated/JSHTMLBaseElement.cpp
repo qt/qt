@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -145,7 +145,8 @@ JSValue jsHTMLBaseElementHref(ExecState* exec, const Identifier&, const Property
     JSHTMLBaseElement* castedThis = static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(castedThis->impl());
-    return jsString(exec, imp->getAttribute(HTMLNames::hrefAttr));
+    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::hrefAttr));
+    return result;
 }
 
 JSValue jsHTMLBaseElementTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -153,7 +154,8 @@ JSValue jsHTMLBaseElementTarget(ExecState* exec, const Identifier&, const Proper
     JSHTMLBaseElement* castedThis = static_cast<JSHTMLBaseElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(castedThis->impl());
-    return jsString(exec, imp->getAttribute(HTMLNames::targetAttr));
+    JSValue result = jsString(exec, imp->getAttribute(HTMLNames::targetAttr));
+    return result;
 }
 
 JSValue jsHTMLBaseElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -168,13 +170,15 @@ void JSHTMLBaseElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLBaseElementHref(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(static_cast<JSHTMLBaseElement*>(thisObject)->impl());
+    JSHTMLBaseElement* castedThisObj = static_cast<JSHTMLBaseElement*>(thisObject);
+    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(castedThisObj->impl());
     imp->setAttribute(HTMLNames::hrefAttr, valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLBaseElementTarget(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(static_cast<JSHTMLBaseElement*>(thisObject)->impl());
+    JSHTMLBaseElement* castedThisObj = static_cast<JSHTMLBaseElement*>(thisObject);
+    HTMLBaseElement* imp = static_cast<HTMLBaseElement*>(castedThisObj->impl());
     imp->setAttribute(HTMLNames::targetAttr, valueToStringWithNullCheck(exec, value));
 }
 

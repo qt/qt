@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -149,7 +149,8 @@ JSValue jsHTMLTableColElementAlign(ExecState* exec, const Identifier&, const Pro
     JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
-    return jsString(exec, imp->align());
+    JSValue result = jsString(exec, imp->align());
+    return result;
 }
 
 JSValue jsHTMLTableColElementCh(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -157,7 +158,8 @@ JSValue jsHTMLTableColElementCh(ExecState* exec, const Identifier&, const Proper
     JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
-    return jsString(exec, imp->ch());
+    JSValue result = jsString(exec, imp->ch());
+    return result;
 }
 
 JSValue jsHTMLTableColElementChOff(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -165,7 +167,8 @@ JSValue jsHTMLTableColElementChOff(ExecState* exec, const Identifier&, const Pro
     JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
-    return jsString(exec, imp->chOff());
+    JSValue result = jsString(exec, imp->chOff());
+    return result;
 }
 
 JSValue jsHTMLTableColElementSpan(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -173,7 +176,8 @@ JSValue jsHTMLTableColElementSpan(ExecState* exec, const Identifier&, const Prop
     JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
-    return jsNumber(exec, imp->span());
+    JSValue result = jsNumber(exec, imp->span());
+    return result;
 }
 
 JSValue jsHTMLTableColElementVAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,7 +185,8 @@ JSValue jsHTMLTableColElementVAlign(ExecState* exec, const Identifier&, const Pr
     JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
-    return jsString(exec, imp->vAlign());
+    JSValue result = jsString(exec, imp->vAlign());
+    return result;
 }
 
 JSValue jsHTMLTableColElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -189,7 +194,8 @@ JSValue jsHTMLTableColElementWidth(ExecState* exec, const Identifier&, const Pro
     JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
-    return jsString(exec, imp->width());
+    JSValue result = jsString(exec, imp->width());
+    return result;
 }
 
 JSValue jsHTMLTableColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -204,37 +210,43 @@ void JSHTMLTableColElement::put(ExecState* exec, const Identifier& propertyName,
 
 void setJSHTMLTableColElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
+    JSHTMLTableColElement* castedThisObj = static_cast<JSHTMLTableColElement*>(thisObject);
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThisObj->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableColElementCh(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
+    JSHTMLTableColElement* castedThisObj = static_cast<JSHTMLTableColElement*>(thisObject);
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThisObj->impl());
     imp->setCh(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableColElementChOff(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
+    JSHTMLTableColElement* castedThisObj = static_cast<JSHTMLTableColElement*>(thisObject);
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThisObj->impl());
     imp->setChOff(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableColElementSpan(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
+    JSHTMLTableColElement* castedThisObj = static_cast<JSHTMLTableColElement*>(thisObject);
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThisObj->impl());
     imp->setSpan(value.toInt32(exec));
 }
 
 void setJSHTMLTableColElementVAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
+    JSHTMLTableColElement* castedThisObj = static_cast<JSHTMLTableColElement*>(thisObject);
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThisObj->impl());
     imp->setVAlign(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableColElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(thisObject)->impl());
+    JSHTMLTableColElement* castedThisObj = static_cast<JSHTMLTableColElement*>(thisObject);
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThisObj->impl());
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 

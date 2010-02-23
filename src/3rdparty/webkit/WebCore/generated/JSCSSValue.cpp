@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -168,7 +168,8 @@ JSValue jsCSSValueCssText(ExecState* exec, const Identifier&, const PropertySlot
     JSCSSValue* castedThis = static_cast<JSCSSValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSValue* imp = static_cast<CSSValue*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->cssText());
+    JSValue result = jsStringOrNull(exec, imp->cssText());
+    return result;
 }
 
 JSValue jsCSSValueCssValueType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -176,7 +177,8 @@ JSValue jsCSSValueCssValueType(ExecState* exec, const Identifier&, const Propert
     JSCSSValue* castedThis = static_cast<JSCSSValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSValue* imp = static_cast<CSSValue*>(castedThis->impl());
-    return jsNumber(exec, imp->cssValueType());
+    JSValue result = jsNumber(exec, imp->cssValueType());
+    return result;
 }
 
 JSValue jsCSSValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -191,7 +193,8 @@ void JSCSSValue::put(ExecState* exec, const Identifier& propertyName, JSValue va
 
 void setJSCSSValueCssText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    CSSValue* imp = static_cast<CSSValue*>(static_cast<JSCSSValue*>(thisObject)->impl());
+    JSCSSValue* castedThisObj = static_cast<JSCSSValue*>(thisObject);
+    CSSValue* imp = static_cast<CSSValue*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setCssText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

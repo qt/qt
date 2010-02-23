@@ -40,7 +40,7 @@
 namespace WebCore {
 
     class FormState;
-    struct ResourceRequest;
+    class ResourceRequest;
 
     class MainResourceLoader : public ResourceLoader {
     public:
@@ -92,6 +92,10 @@ namespace WebCore {
         static void callContinueAfterContentPolicy(void*, PolicyAction);
         void continueAfterContentPolicy(PolicyAction);
         void continueAfterContentPolicy(PolicyAction, const ResourceResponse&);
+        
+#if PLATFORM(QT)
+        void substituteMIMETypeFromPluginDatabase(const ResourceResponse&);
+#endif
 
         ResourceRequest m_initialRequest;
         SubstituteData m_substituteData;

@@ -38,6 +38,12 @@ class GraphicsLayer;
 class RenderVideo;
 #endif
 
+enum CompositingUpdateType {
+    CompositingUpdateAfterLayoutOrStyleChange,
+    CompositingUpdateOnPaitingOrHitTest,
+    CompositingUpdateOnScroll
+};
+
 // RenderLayerCompositor manages the hierarchy of
 // composited RenderLayers. It determines which RenderLayers
 // become compositing, and creates and maintains a hierarchy of
@@ -47,7 +53,6 @@ class RenderVideo;
 
 class RenderLayerCompositor {
 public:
-
     RenderLayerCompositor(RenderView*);
     ~RenderLayerCompositor();
     
@@ -61,8 +66,11 @@ public:
     // Returns true if the accelerated compositing is enabled
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
     
-    // Copy the acceleratedCompositingEnabledFlag from Settings
-    void cacheAcceleratedCompositingEnabledFlag();
+    bool showDebugBorders() const { return m_showDebugBorders; }
+    bool showRepaintCounter() const { return m_showRepaintCounter; }
+    
+    // Copy the accelerated compositing related flags from Settings
+    void cacheAcceleratedCompositingFlags();
 
     // Called when the layer hierarchy needs to be updated (compositing layers have been
     // created, destroyed or re-parented).
@@ -77,7 +85,7 @@ public:
     void scheduleSync();
     
     // Rebuild the tree of compositing layers
-    void updateCompositingLayers(RenderLayer* updateRoot = 0);
+    void updateCompositingLayers(CompositingUpdateType = CompositingUpdateAfterLayoutOrStyleChange, RenderLayer* updateRoot = 0);
 
     // Update the compositing state of the given layer. Returns true if that state changed.
     enum CompositingChangeRepaint { CompositingChangeRepaintNow, CompositingChangeWillRepaintLater };
@@ -147,8 +155,13 @@ private:
 
     // Returns true if any layer's compositing changed
     void computeCompositingRequirements(RenderLayer*, OverlapMap*, struct CompositingState&, bool& layersChanged);
-    void rebuildCompositingLayerTree(RenderLayer* layer, struct CompositingState&, bool updateHierarchy);
+    
+    // Recurses down the tree, parenting descendant compositing layers and collecting an array of child layers for the current compositing layer.
+    void rebuildCompositingLayerTree(RenderLayer* layer, const struct CompositingState&, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer);
 
+    // Recurses down the tree, updating layer geometry only.
+    void updateLayerTreeGeometry(RenderLayer*);
+    
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);
     void removeCompositedChildren(RenderLayer*);
@@ -165,12 +178,15 @@ private:
     bool requiresCompositingForTransform(RenderObject*) const;
     bool requiresCompositingForVideo(RenderObject*) const;
     bool requiresCompositingForCanvas(RenderObject*) const;
+    bool requiresCompositingForPlugin(RenderObject*) const;
     bool requiresCompositingWhenDescendantsAreCompositing(RenderObject*) const;
 
 private:
     RenderView* m_renderView;
     OwnPtr<GraphicsLayer> m_rootPlatformLayer;
     bool m_hasAcceleratedCompositing;
+    bool m_showDebugBorders;
+    bool m_showRepaintCounter;
     bool m_compositingConsultsOverlap;
     bool m_compositing;
     bool m_rootLayerAttached;

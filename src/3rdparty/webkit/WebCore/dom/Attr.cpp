@@ -27,8 +27,11 @@
 #include "Element.h"
 #include "ExceptionCode.h"
 #include "Text.h"
+#include "XMLNSNames.h"
 
 namespace WebCore {
+
+using namespace HTMLNames;
 
 inline Attr::Attr(Element* element, Document* document, PassRefPtr<Attribute> attribute)
     : ContainerNode(document)
@@ -100,7 +103,13 @@ void Attr::setPrefix(const AtomicString& prefix, ExceptionCode& ec)
     if (ec)
         return;
 
-    m_attribute->setPrefix(prefix);
+    if ((prefix == xmlnsAtom && namespaceURI() != XMLNSNames::xmlnsNamespaceURI)
+        || static_cast<Attr*>(this)->qualifiedName() == xmlnsAtom) {
+        ec = NAMESPACE_ERR;
+        return;
+    }
+
+    m_attribute->setPrefix(prefix.isEmpty() ? AtomicString() : prefix);
 }
 
 String Attr::nodeValue() const
@@ -162,6 +171,11 @@ void Attr::childrenChanged(bool changedByParser, Node* beforeChange, Node* after
     m_attribute->setValue(val.impl());
     if (m_element)
         m_element->attributeChanged(m_attribute.get());
+}
+
+bool Attr::isId() const
+{
+    return qualifiedName().matches(m_element ? m_element->idAttributeName() : idAttr);
 }
 
 }

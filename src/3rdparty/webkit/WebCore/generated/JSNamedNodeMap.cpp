@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -223,7 +223,8 @@ JSValue jsNamedNodeMapLength(ExecState* exec, const Identifier&, const PropertyS
     JSNamedNodeMap* castedThis = static_cast<JSNamedNodeMap*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     NamedNodeMap* imp = static_cast<NamedNodeMap*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsNamedNodeMapConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -231,11 +232,11 @@ JSValue jsNamedNodeMapConstructor(ExecState* exec, const Identifier&, const Prop
     JSNamedNodeMap* domObject = static_cast<JSNamedNodeMap*>(asObject(slot.slotBase()));
     return JSNamedNodeMap::getConstructor(exec, domObject->globalObject());
 }
-void JSNamedNodeMap::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSNamedNodeMap::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<NamedNodeMap*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSNamedNodeMap::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

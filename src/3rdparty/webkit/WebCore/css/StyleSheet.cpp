@@ -1,6 +1,4 @@
 /**
- * This file is part of the DOM implementation for KDE.
- *
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2004, 2006 Apple Computer, Inc.
  *
@@ -26,27 +24,29 @@
 
 namespace WebCore {
 
-StyleSheet::StyleSheet(StyleSheet* parentSheet, const String& href)
+StyleSheet::StyleSheet(StyleSheet* parentSheet, const String& originalURL, const KURL& finalURL)
     : StyleList(parentSheet)
     , m_parentNode(0)
-    , m_strHref(href)
+    , m_originalURL(originalURL)
+    , m_finalURL(finalURL)
     , m_disabled(false)
 {
 }
 
-
-StyleSheet::StyleSheet(Node* parentNode, const String& href)
+StyleSheet::StyleSheet(Node* parentNode, const String& originalURL, const KURL& finalURL)
     : StyleList(0)
     , m_parentNode(parentNode)
-    , m_strHref(href)
+    , m_originalURL(originalURL)
+    , m_finalURL(finalURL)
     , m_disabled(false)
 {
 }
 
-StyleSheet::StyleSheet(StyleBase* owner, const String& href)
+StyleSheet::StyleSheet(StyleBase* owner, const String& originalURL, const KURL& finalURL)
     : StyleList(owner)
     , m_parentNode(0)
-    , m_strHref(href)
+    , m_originalURL(originalURL)
+    , m_finalURL(finalURL)
     , m_disabled(false)
 {
 }

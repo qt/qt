@@ -102,7 +102,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -208,7 +208,8 @@ JSValue jsDOMCoreExceptionCode(ExecState* exec, const Identifier&, const Propert
     JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
-    return jsNumber(exec, imp->code());
+    JSValue result = jsNumber(exec, imp->code());
+    return result;
 }
 
 JSValue jsDOMCoreExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -216,7 +217,8 @@ JSValue jsDOMCoreExceptionName(ExecState* exec, const Identifier&, const Propert
     JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
 JSValue jsDOMCoreExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -224,7 +226,8 @@ JSValue jsDOMCoreExceptionMessage(ExecState* exec, const Identifier&, const Prop
     JSDOMCoreException* castedThis = static_cast<JSDOMCoreException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     DOMCoreException* imp = static_cast<DOMCoreException*>(castedThis->impl());
-    return jsString(exec, imp->message());
+    JSValue result = jsString(exec, imp->message());
+    return result;
 }
 
 JSValue jsDOMCoreExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

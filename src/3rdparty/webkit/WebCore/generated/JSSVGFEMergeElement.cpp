@@ -43,7 +43,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGFEMergeElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGFEMergeElementTableValues[8] =
+static const HashTableValue JSSVGFEMergeElementTableValues[9] =
 {
     { "x", DontDelete|ReadOnly, (intptr_t)jsSVGFEMergeElementX, (intptr_t)0 },
     { "y", DontDelete|ReadOnly, (intptr_t)jsSVGFEMergeElementY, (intptr_t)0 },
@@ -52,6 +52,7 @@ static const HashTableValue JSSVGFEMergeElementTableValues[8] =
     { "result", DontDelete|ReadOnly, (intptr_t)jsSVGFEMergeElementResult, (intptr_t)0 },
     { "className", DontDelete|ReadOnly, (intptr_t)jsSVGFEMergeElementClassName, (intptr_t)0 },
     { "style", DontDelete|ReadOnly, (intptr_t)jsSVGFEMergeElementStyle, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGFEMergeElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -59,8 +60,55 @@ static JSC_CONST_HASHTABLE HashTable JSSVGFEMergeElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEMergeElementTableValues, 0 };
 #else
-    { 17, 15, JSSVGFEMergeElementTableValues, 0 };
+    { 18, 15, JSSVGFEMergeElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGFEMergeElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGFEMergeElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGFEMergeElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGFEMergeElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGFEMergeElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGFEMergeElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGFEMergeElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGFEMergeElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGFEMergeElementConstructor::s_info = { "SVGFEMergeElementConstructor", 0, &JSSVGFEMergeElementConstructorTable, 0 };
+
+bool JSSVGFEMergeElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGFEMergeElementConstructor, DOMObject>(exec, &JSSVGFEMergeElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFEMergeElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEMergeElementConstructor, DOMObject>(exec, &JSSVGFEMergeElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -122,7 +170,8 @@ JSValue jsSVGFEMergeElementX(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEMergeElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -131,7 +180,8 @@ JSValue jsSVGFEMergeElementY(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEMergeElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -140,7 +190,8 @@ JSValue jsSVGFEMergeElementWidth(ExecState* exec, const Identifier&, const Prope
     UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEMergeElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -149,7 +200,8 @@ JSValue jsSVGFEMergeElementHeight(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEMergeElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -158,7 +210,8 @@ JSValue jsSVGFEMergeElementResult(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEMergeElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -167,7 +220,8 @@ JSValue jsSVGFEMergeElementClassName(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEMergeElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -175,7 +229,18 @@ JSValue jsSVGFEMergeElementStyle(ExecState* exec, const Identifier&, const Prope
     JSSVGFEMergeElement* castedThis = static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
+}
+
+JSValue jsSVGFEMergeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSSVGFEMergeElement* domObject = static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()));
+    return JSSVGFEMergeElement::getConstructor(exec, domObject->globalObject());
+}
+JSValue JSSVGFEMergeElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGFEMergeElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGFEMergeElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

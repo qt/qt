@@ -29,7 +29,7 @@
 #include "config.h"
 #include "JavaScriptDebugServer.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
+#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
 
 #include "DOMWindow.h"
 #include "EventLoop.h"
@@ -75,7 +75,7 @@ JavaScriptDebugServer& JavaScriptDebugServer::shared()
 
 JavaScriptDebugServer::JavaScriptDebugServer()
     : m_callingListeners(false)
-    , m_pauseOnExceptions(false)
+    , m_pauseOnExceptionsState(DontPauseOnExceptions)
     , m_pauseOnNextStatement(false)
     , m_paused(false)
     , m_doneProcessingDebuggerEvents(true)
@@ -249,9 +249,9 @@ void JavaScriptDebugServer::clearBreakpoints()
     m_breakpoints.clear();
 }
 
-void JavaScriptDebugServer::setPauseOnExceptions(bool pause)
+void JavaScriptDebugServer::setPauseOnExceptionsState(PauseOnExceptionsState pause)
 {
-    m_pauseOnExceptions = pause;
+    m_pauseOnExceptionsState = pause;
 }
 
 void JavaScriptDebugServer::pauseProgram()
@@ -423,7 +423,7 @@ void JavaScriptDebugServer::setJavaScriptPaused(Frame* frame, bool paused)
 {
     ASSERT_ARG(frame, frame);
 
-    if (!frame->script()->isEnabled())
+    if (!frame->script()->canExecuteScripts())
         return;
 
     frame->script()->setPaused(paused);
@@ -540,7 +540,7 @@ void JavaScriptDebugServer::returnEvent(const DebuggerCallFrame& debuggerCallFra
     m_currentCallFrame = m_currentCallFrame->caller();
 }
 
-void JavaScriptDebugServer::exception(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber)
+void JavaScriptDebugServer::exception(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber, bool hasHandler)
 {
     if (m_paused)
         return;
@@ -549,7 +549,7 @@ void JavaScriptDebugServer::exception(const DebuggerCallFrame& debuggerCallFrame
     if (!m_currentCallFrame)
         return;
 
-    if (m_pauseOnExceptions)
+    if (m_pauseOnExceptionsState == PauseOnAllExceptions || (m_pauseOnExceptionsState == PauseOnUncaughtExceptions && !hasHandler))
         m_pauseOnNextStatement = true;
 
     m_currentCallFrame->update(debuggerCallFrame, sourceID, lineNumber);

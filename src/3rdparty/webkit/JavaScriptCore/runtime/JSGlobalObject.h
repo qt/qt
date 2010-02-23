@@ -267,7 +267,7 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
         }
 
     protected:
@@ -413,10 +413,20 @@ namespace JSC {
     {
         return new (exec) JSObject(exec->lexicalGlobalObject()->emptyObjectStructure());
     }
+    
+    inline JSObject* constructEmptyObject(ExecState* exec, JSGlobalObject* globalObject)
+    {
+        return new (exec) JSObject(globalObject->emptyObjectStructure());
+    }
 
     inline JSArray* constructEmptyArray(ExecState* exec)
     {
         return new (exec) JSArray(exec->lexicalGlobalObject()->arrayStructure());
+    }
+    
+    inline JSArray* constructEmptyArray(ExecState* exec, JSGlobalObject* globalObject)
+    {
+        return new (exec) JSArray(globalObject->arrayStructure());
     }
 
     inline JSArray* constructEmptyArray(ExecState* exec, unsigned initialLength)
@@ -442,7 +452,13 @@ namespace JSC {
             : m_dynamicGlobalObjectSlot(callFrame->globalData().dynamicGlobalObject)
             , m_savedDynamicGlobalObject(m_dynamicGlobalObjectSlot)
         {
-            m_dynamicGlobalObjectSlot = dynamicGlobalObject;
+            if (!m_dynamicGlobalObjectSlot) {
+                m_dynamicGlobalObjectSlot = dynamicGlobalObject;
+
+                // Reset the date cache between JS invocations to force the VM
+                // to observe time zone changes.
+                callFrame->globalData().resetDateCache();
+            }
         }
 
         ~DynamicGlobalObjectScope()

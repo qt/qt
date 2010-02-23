@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -164,7 +164,8 @@ JSValue jsStorageEventKey(ExecState* exec, const Identifier&, const PropertySlot
     JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsString(exec, imp->key());
+    JSValue result = jsStringOrNull(exec, imp->key());
+    return result;
 }
 
 JSValue jsStorageEventOldValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +173,8 @@ JSValue jsStorageEventOldValue(ExecState* exec, const Identifier&, const Propert
     JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->oldValue());
+    JSValue result = jsStringOrNull(exec, imp->oldValue());
+    return result;
 }
 
 JSValue jsStorageEventNewValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,7 +182,8 @@ JSValue jsStorageEventNewValue(ExecState* exec, const Identifier&, const Propert
     JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->newValue());
+    JSValue result = jsStringOrNull(exec, imp->newValue());
+    return result;
 }
 
 JSValue jsStorageEventUri(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -188,7 +191,8 @@ JSValue jsStorageEventUri(ExecState* exec, const Identifier&, const PropertySlot
     JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return jsString(exec, imp->uri());
+    JSValue result = jsString(exec, imp->uri());
+    return result;
 }
 
 JSValue jsStorageEventStorageArea(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -196,7 +200,8 @@ JSValue jsStorageEventStorageArea(ExecState* exec, const Identifier&, const Prop
     JSStorageEvent* castedThis = static_cast<JSStorageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     StorageEvent* imp = static_cast<StorageEvent*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->storageArea()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->storageArea()));
+    return result;
 }
 
 JSValue jsStorageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

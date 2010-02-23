@@ -23,6 +23,7 @@
 
 #include "WebKitCSSTransformValue.h"
 #include <runtime/JSNumberCell.h>
+#include <runtime/PropertyNameArray.h>
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -96,7 +97,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -181,12 +182,47 @@ JSObject* JSWebKitCSSTransformValue::createPrototype(ExecState* exec, JSGlobalOb
 
 bool JSWebKitCSSTransformValue::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
+    const HashEntry* entry = JSWebKitCSSTransformValueTable.entry(exec, propertyName);
+    if (entry) {
+        slot.setCustom(this, entry->propertyGetter());
+        return true;
+    }
+    bool ok;
+    unsigned index = propertyName.toUInt32(&ok, false);
+    if (ok && index < static_cast<WebKitCSSTransformValue*>(impl())->length()) {
+        slot.setCustomIndex(this, index, indexGetter);
+        return true;
+    }
     return getStaticValueSlot<JSWebKitCSSTransformValue, Base>(exec, &JSWebKitCSSTransformValueTable, this, propertyName, slot);
 }
 
 bool JSWebKitCSSTransformValue::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
 {
+    const HashEntry* entry = JSWebKitCSSTransformValueTable.entry(exec, propertyName);
+    if (entry) {
+        PropertySlot slot;
+        slot.setCustom(this, entry->propertyGetter());
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), entry->attributes());
+        return true;
+    }
+    bool ok;
+    unsigned index = propertyName.toUInt32(&ok, false);
+    if (ok && index < static_cast<WebKitCSSTransformValue*>(impl())->length()) {
+        PropertySlot slot;
+        slot.setCustomIndex(this, index, indexGetter);
+        descriptor.setDescriptor(slot.getValue(exec, propertyName), DontDelete | ReadOnly);
+        return true;
+    }
     return getStaticValueDescriptor<JSWebKitCSSTransformValue, Base>(exec, &JSWebKitCSSTransformValueTable, this, propertyName, descriptor);
+}
+
+bool JSWebKitCSSTransformValue::getOwnPropertySlot(ExecState* exec, unsigned propertyName, PropertySlot& slot)
+{
+    if (propertyName < static_cast<WebKitCSSTransformValue*>(impl())->length()) {
+        slot.setCustomIndex(this, propertyName, indexGetter);
+        return true;
+    }
+    return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
 JSValue jsWebKitCSSTransformValueOperationType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -194,7 +230,8 @@ JSValue jsWebKitCSSTransformValueOperationType(ExecState* exec, const Identifier
     JSWebKitCSSTransformValue* castedThis = static_cast<JSWebKitCSSTransformValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitCSSTransformValue* imp = static_cast<WebKitCSSTransformValue*>(castedThis->impl());
-    return jsNumber(exec, imp->operationType());
+    JSValue result = jsNumber(exec, imp->operationType());
+    return result;
 }
 
 JSValue jsWebKitCSSTransformValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -202,6 +239,13 @@ JSValue jsWebKitCSSTransformValueConstructor(ExecState* exec, const Identifier&,
     JSWebKitCSSTransformValue* domObject = static_cast<JSWebKitCSSTransformValue*>(asObject(slot.slotBase()));
     return JSWebKitCSSTransformValue::getConstructor(exec, domObject->globalObject());
 }
+void JSWebKitCSSTransformValue::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+{
+    for (unsigned i = 0; i < static_cast<WebKitCSSTransformValue*>(impl())->length(); ++i)
+        propertyNames.add(Identifier::from(exec, i));
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
+}
+
 JSValue JSWebKitCSSTransformValue::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
     return getDOMConstructor<JSWebKitCSSTransformValueConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
@@ -314,5 +358,11 @@ JSValue jsWebKitCSSTransformValueCSS_MATRIX3D(ExecState* exec, const Identifier&
     return jsNumber(exec, static_cast<int>(21));
 }
 
+
+JSValue JSWebKitCSSTransformValue::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSWebKitCSSTransformValue* thisObj = static_cast<JSWebKitCSSTransformValue*>(asObject(slot.slotBase()));
+    return toJS(exec, thisObj->globalObject(), static_cast<WebKitCSSTransformValue*>(thisObj->impl())->item(slot.index()));
+}
 
 }
