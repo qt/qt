@@ -62,3 +62,8 @@ mac {
     LIBS += -framework CoreServices
 }
 
+# Make dummy "sis" target to keep recursive "make sis" working.
+sis_target.target = sis
+sis_target.commands =
+sis_target.depends = first
+QMAKE_EXTRA_TARGETS += sis_target

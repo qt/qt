@@ -6,7 +6,7 @@ win32:SRC_SUBDIRS += src_winmain
 wince*:{
   SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_testlib
 } else:symbian {
-  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib src_s60installs
+  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib
   !symbian-abld:!symbian-sbsv2 {
     include(tools/tools.pro)
   }
@@ -32,6 +32,9 @@ contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
 contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 contains(QT_CONFIG, declarative): SRC_SUBDIRS += src_declarative
 SRC_SUBDIRS += src_plugins
+# s60installs need to be at the end, because projects.pro does an ordered build,
+# and s60installs depends on all the others.
+symbian:SRC_SUBDIRS += src_s60installs
 
 src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
 src_s60main.target = sub-s60main
@@ -106,6 +109,7 @@ src_declarative.target = sub-declarative
    src_tools_activeqt.depends = src_tools_idc src_gui
    src_declarative.depends = src_xml src_gui src_script src_network src_svg
    src_plugins.depends = src_gui src_sql src_svg
+   src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    contains(QT_CONFIG, webkit)  {
       src_webkit.depends = src_gui src_sql src_network src_xml 
       contains(QT_CONFIG, phonon):src_webkit.depends += src_phonon
