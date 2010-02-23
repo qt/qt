@@ -4,7 +4,7 @@ win32:!wince: SUBDIRS += directshow
 
 mac: SUBDIRS += qt7
 
-unix:!mac:!symbian {
+unix:!mac:!symbian:contains(QT_CONFIG, xvideo): {
     TMP_GST_LIBS = \
         gstreamer-0.10 >= 0.10.19 \
         gstreamer-base-0.10 >= 0.10.19 \
