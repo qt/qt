@@ -3,22 +3,25 @@ DESTDIR = com/nokia/TimeExample
 TARGET  = qtimeexampleqmlplugin
 CONFIG += qt plugin
 QT += declarative
+VERSION = 1.0.0
 
 SOURCES += plugin.cpp
 
-target.path += $$[QT_INSTALL_PLUGINS]/qmlmodules
+qmlsources.files += \
+    com/nokia/TimeExample/qmldir \
+    com/nokia/TimeExample/center.png \
+    com/nokia/TimeExample/clock.png \
+    com/nokia/TimeExample/Clock.qml \
+    com/nokia/TimeExample/hour.png \
+    com/nokia/TimeExample/minute.png
 
-sources.files += \
-    $$PWD/com/nokia/TimeExample/qmldir \
-    $$PWD/com/nokia/TimeExample/center.png \
-    $$PWD/com/nokia/TimeExample/clock.png \
-    $$PWD/com/nokia/TimeExample/Clock.qml \
-    $$PWD/com/nokia/TimeExample/hour.png \
-    $$PWD/com/nokia/TimeExample/minute.png
+qmlsources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
 
-sources.path += $$[QT_INSTALL_DATA]/qml/com/nokia/TimeExample
+sources.files += plugins.pro plugin.cpp plugins.qml
+sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins
 
-INSTALLS += target sources
+target.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
 
-VERSION=1.0.0
+INSTALLS += qmlsources sources target
 
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
