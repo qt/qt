@@ -378,7 +378,9 @@ QmlMetaProperty &QmlMetaProperty::operator=(const QmlMetaProperty &other)
     d->object = other.d->object;
 
     d->isDefaultProperty = other.d->isDefaultProperty;
+    d->isNameCached = other.d->isNameCached;
     d->core = other.d->core;
+    d->nameCache = other.d->nameCache;
 
     d->valueType = other.d->valueType;
 

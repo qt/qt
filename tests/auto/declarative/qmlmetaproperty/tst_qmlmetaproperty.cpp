@@ -121,6 +121,7 @@ private slots:
     // Bugs
     void crashOnValueProperty();
 
+    void copy();
 private:
     QmlEngine engine;
 };
@@ -1129,6 +1130,48 @@ void tst_qmlmetaproperty::crashOnValueProperty()
     QCOMPARE(p.read(), QVariant(10));
     p.write(QVariant(20));
     QCOMPARE(p.read(), QVariant(20));
+}
+
+void tst_qmlmetaproperty::copy()
+{
+    PropertyObject object;
+
+    QmlMetaProperty *property = new QmlMetaProperty(&object, QLatin1String("defaultProperty"));
+    QCOMPARE(property->name(), QString("defaultProperty"));
+    QCOMPARE(property->read(), QVariant(10));
+    QCOMPARE(property->type(), QmlMetaProperty::Property);
+    QCOMPARE(property->propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(property->propertyType(), (int)QVariant::Int);
+
+    QmlMetaProperty p1(*property);
+    QCOMPARE(p1.name(), QString("defaultProperty"));
+    QCOMPARE(p1.read(), QVariant(10));
+    QCOMPARE(p1.type(), QmlMetaProperty::Property);
+    QCOMPARE(p1.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p1.propertyType(), (int)QVariant::Int);
+
+    QmlMetaProperty p2(&object, QLatin1String("url"));
+    QCOMPARE(p2.name(), QString("url"));
+    p2 = *property;
+    QCOMPARE(p2.name(), QString("defaultProperty"));
+    QCOMPARE(p2.read(), QVariant(10));
+    QCOMPARE(p2.type(), QmlMetaProperty::Property);
+    QCOMPARE(p2.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p2.propertyType(), (int)QVariant::Int);
+
+    delete property; property = 0;
+
+    QCOMPARE(p1.name(), QString("defaultProperty"));
+    QCOMPARE(p1.read(), QVariant(10));
+    QCOMPARE(p1.type(), QmlMetaProperty::Property);
+    QCOMPARE(p1.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p1.propertyType(), (int)QVariant::Int);
+
+    QCOMPARE(p2.name(), QString("defaultProperty"));
+    QCOMPARE(p2.read(), QVariant(10));
+    QCOMPARE(p2.type(), QmlMetaProperty::Property);
+    QCOMPARE(p2.propertyCategory(), QmlMetaProperty::Normal);
+    QCOMPARE(p2.propertyType(), (int)QVariant::Int);
 }
 
 QTEST_MAIN(tst_qmlmetaproperty)
