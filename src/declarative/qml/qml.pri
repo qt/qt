@@ -7,7 +7,6 @@ SOURCES += \
     $$PWD/qmlexpression.cpp \
     $$PWD/qmlbinding.cpp \
     $$PWD/qmlmetaproperty.cpp \
-    $$PWD/qmlmoduleplugin.cpp \
     $$PWD/qmlcomponent.cpp \
     $$PWD/qmlcontext.cpp \
     $$PWD/qmlcustomparser.cpp \
@@ -65,7 +64,6 @@ HEADERS += \
     $$PWD/qmlbinding_p.h \
     $$PWD/qmlbinding_p_p.h \
     $$PWD/qmlmetaproperty.h \
-    $$PWD/qmlmoduleplugin.h \
     $$PWD/qmlcomponent.h \
     $$PWD/qmlcomponent_p.h \
     $$PWD/qmlcustomparser_p.h \

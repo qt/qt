@@ -47,11 +47,13 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+class QmlEngine;
+
 QT_MODULE(Multimedia)
 
 namespace QtMultimedia
 {
-extern void Q_MULTIMEDIA_EXPORT qRegisterQmlElements();
+extern void Q_MULTIMEDIA_EXPORT qRegisterQmlElements(QmlEngine *engine, const char *uri);
 }
 
 QT_END_NAMESPACE
