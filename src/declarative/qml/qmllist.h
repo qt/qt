@@ -133,9 +133,10 @@ private:
     friend class QmlListReferencePrivate;
     QmlListReferencePrivate* d;
 };
-Q_DECLARE_METATYPE(QmlListReference);
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QmlListReference);
 
 QT_END_HEADER
 
