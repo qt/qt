@@ -379,7 +379,7 @@ namespace Phonon
             FILTER_INFO info;
             filter->QueryFilterInfo(&info);
 #ifdef GRAPH_DEBUG
-            qDebug() << "removeFilter" << QString::fromUtf16(info.achName);
+            qDebug() << "removeFilter" << QString((const QChar *)info.achName);
 #endif
             if (info.pGraph) {
                 info.pGraph->Release();
@@ -875,7 +875,7 @@ namespace Phonon
             {
                 FILTER_INFO info;
                 filter->QueryFilterInfo(&info);
-                qDebug() << Q_FUNC_INFO << QString::fromUtf16(info.achName);
+                qDebug() << Q_FUNC_INFO << QString((const QChar *)info.achName);
                 if (info.pGraph) {
                     info.pGraph->Release();
                 }
@@ -921,7 +921,7 @@ namespace Phonon
             {
                 FILTER_INFO info;
                 filter->QueryFilterInfo(&info);
-                qDebug() << "found a decoder filter" << QString::fromUtf16(info.achName);
+                qDebug() << "found a decoder filter" << QString((const QChar *)info.achName);
                 if (info.pGraph) {
                     info.pGraph->Release();
                 }
@@ -937,7 +937,7 @@ namespace Phonon
             {
                 FILTER_INFO info;
                 filter->QueryFilterInfo(&info);
-                qDebug() << Q_FUNC_INFO << QString::fromUtf16(info.achName);
+                qDebug() << Q_FUNC_INFO << QString((const QChar *)info.achName);
                 if (info.pGraph) {
                     info.pGraph->Release();
                 }
@@ -956,7 +956,7 @@ namespace Phonon
             {
                 FILTER_INFO info;
                 filter->QueryFilterInfo(&info);
-                qDebug() << Q_FUNC_INFO << QString::fromUtf16(info.achName);
+                qDebug() << Q_FUNC_INFO << QString((const QChar *)info.achName);
                 if (info.pGraph) {
                     info.pGraph->Release();
                 }
@@ -990,7 +990,7 @@ namespace Phonon
             {
                 FILTER_INFO info;
                 filter->QueryFilterInfo(&info);
-                qDebug() << "found a demuxer filter" << QString::fromUtf16(info.achName);
+                qDebug() << "found a demuxer filter" << QString((const QChar *)info.achName);
                 if (info.pGraph) {
                     info.pGraph->Release();
                 }

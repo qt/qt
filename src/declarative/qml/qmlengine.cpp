@@ -65,6 +65,8 @@
 #include "qmlcomponent_p.h"
 #include "qmlscriptclass_p.h"
 #include "qmlnetworkaccessmanagerfactory.h"
+#include "qmlimageprovider.h"
+#include "qmllist_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -85,6 +87,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qmutex.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
@@ -95,6 +98,8 @@
 #include <private/qobject_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
 
+#include <private/qmlgraphicsitemsmodule_p.h>
+
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
 #include <qlibrary.h>
@@ -103,7 +108,6 @@
 #endif
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
-Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
@@ -136,6 +140,8 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
+static bool qt_QmlQtModule_registered = false;
+
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : captureProperties(false), rootContext(0), currentExpression(0), isDebugging(false), 
   contextClass(0), sharedContext(0), sharedScope(0), objectClass(0), valueTypeClass(0), 
@@ -144,6 +150,10 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   networkAccessManager(0), networkAccessManagerFactory(0),
   typeManager(e), uniqueId(1)
 {
+    if (!qt_QmlQtModule_registered) {
+        qt_QmlQtModule_registered = true;
+        QmlGraphicsItemModule::defineModule();
+    }
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
     fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
 }
@@ -428,6 +438,7 @@ QmlContext *QmlEngine::rootContext()
 void QmlEngine::setNetworkAccessManagerFactory(QmlNetworkAccessManagerFactory *factory)
 {
     Q_D(QmlEngine);
+    QMutexLocker locker(&d->mutex);
     d->networkAccessManagerFactory = factory;
 }
 
@@ -442,17 +453,24 @@ QmlNetworkAccessManagerFactory *QmlEngine::networkAccessManagerFactory() const
     return d->networkAccessManagerFactory;
 }
 
+QNetworkAccessManager *QmlEnginePrivate::createNetworkAccessManager(QObject *parent) const
+{
+    QMutexLocker locker(&mutex);
+    QNetworkAccessManager *nam;
+    if (networkAccessManagerFactory) {
+        nam = networkAccessManagerFactory->create(parent);
+    } else {
+        nam = new QNetworkAccessManager(parent);
+    }
+
+    return nam;
+}
+
 QNetworkAccessManager *QmlEnginePrivate::getNetworkAccessManager() const
 {
     Q_Q(const QmlEngine);
-
-    if (!networkAccessManager) {
-        if (networkAccessManagerFactory) {
-            networkAccessManager = networkAccessManagerFactory->create(const_cast<QmlEngine*>(q));
-        } else {
-            networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(q));
-        }
-    }
+    if (!networkAccessManager)
+        networkAccessManager = createNetworkAccessManager(const_cast<QmlEngine*>(q));
     return networkAccessManager;
 }
 
@@ -471,6 +489,69 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
     return d->getNetworkAccessManager();
+}
+
+/*!
+    Sets the \a provider to use for images requested via the \e image: url
+    scheme, with host \a providerId.
+
+    QmlImageProvider allows images to be provided to QML asynchronously.
+    The image request will be run in a low priority thread.  This allows
+    potentially costly image loading to be done in the background, without
+    affecting the performance of the UI.
+
+    Note that images loaded from a QmlImageProvider are cached by
+    QPixmapCache, similar to any image loaded by QML.
+
+    The QmlEngine assumes ownership of the provider.
+
+    This example creates a provider with id \e colors:
+
+    \snippet examples/declarative/imageprovider/main.cpp 0
+
+    \snippet examples/declarative/imageprovider/view.qml 0
+
+    \sa removeImageProvider()
+*/
+void QmlEngine::addImageProvider(const QString &providerId, QmlImageProvider *provider)
+{
+    Q_D(QmlEngine);
+    QMutexLocker locker(&d->mutex);
+    d->imageProviders.insert(providerId, provider);
+}
+
+/*!
+    Returns the QmlImageProvider set for \a providerId.
+*/
+QmlImageProvider *QmlEngine::imageProvider(const QString &providerId) const
+{
+    Q_D(const QmlEngine);
+    QMutexLocker locker(&d->mutex);
+    return d->imageProviders.value(providerId);
+}
+
+/*!
+    Removes the QmlImageProvider for \a providerId.
+
+    Returns the provider if it was found; otherwise returns 0.
+
+    \sa addImageProvider()
+*/
+void QmlEngine::removeImageProvider(const QString &providerId)
+{
+    Q_D(QmlEngine);
+    QMutexLocker locker(&d->mutex);
+    delete d->imageProviders.take(providerId);
+}
+
+QImage QmlEnginePrivate::getImageFromProvider(const QUrl &url)
+{
+    QMutexLocker locker(&mutex);
+    QImage image;
+    QmlImageProvider *provider = imageProviders.value(url.host());
+    if (provider)
+        image = provider->request(url.path().mid(1));
+    return image;
 }
 
 /*!
@@ -1089,6 +1170,15 @@ QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 
 QScriptValue QmlEnginePrivate::scriptValueFromVariant(const QVariant &val)
 {
+    if (val.userType() == qMetaTypeId<QmlListReference>()) {
+        QmlListReferencePrivate *p = QmlListReferencePrivate::get((QmlListReference*)val.constData());
+        if (p->object) {
+            return listClass->newList(p->property, p->propertyType);
+        } else {
+            return scriptEngine.nullValue();
+        }
+    }
+
     bool objOk;
     QObject *obj = QmlMetaType::toQObject(val, &objOk);
     if (objOk) {
@@ -1586,7 +1676,7 @@ void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
     QByteArray name = data->root->className();
 
     QByteArray ptr = name + '*';
-    QByteArray lst = "QmlList<" + ptr + ">*";
+    QByteArray lst = "QmlListProperty<" + name + ">";
 
     int ptr_type = QMetaType::registerType(ptr.constData(), voidptr_destructor,
                                            voidptr_constructor);
@@ -1598,9 +1688,18 @@ void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
     data->addref();
 }
 
-bool QmlEnginePrivate::isQmlList(int t) const
+bool QmlEnginePrivate::isList(int t) const
 {
-    return m_qmlLists.contains(t) || QmlMetaType::isQmlList(t);
+    return m_qmlLists.contains(t) || QmlMetaType::isList(t);
+}
+
+int QmlEnginePrivate::listType(int t) const
+{
+    QHash<int, int>::ConstIterator iter = m_qmlLists.find(t);
+    if (iter != m_qmlLists.end())
+        return *iter;
+    else
+        return QmlMetaType::listType(t);
 }
 
 bool QmlEnginePrivate::isQObject(int t)
@@ -1619,21 +1718,12 @@ QObject *QmlEnginePrivate::toQObject(const QVariant &v, bool *ok) const
     }
 }
 
-int QmlEnginePrivate::qmlListType(int t) const
-{
-    QHash<int, int>::ConstIterator iter = m_qmlLists.find(t);
-    if (iter != m_qmlLists.end())
-        return *iter;
-    else
-        return QmlMetaType::qmlListType(t);
-}
-
 QmlMetaType::TypeCategory QmlEnginePrivate::typeCategory(int t) const
 {
     if (m_compositeTypes.contains(t))
         return QmlMetaType::Object;
     else if (m_qmlLists.contains(t))
-        return QmlMetaType::QmlList;
+        return QmlMetaType::List;
     else
         return QmlMetaType::typeCategory(t);
 }

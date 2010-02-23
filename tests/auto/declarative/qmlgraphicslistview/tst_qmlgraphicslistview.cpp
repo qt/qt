@@ -90,9 +90,9 @@ private:
     template <class T> void clear();
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QmlGraphicsItem *parent, const QString &id, int index=-1);
+    T *findItem(QGraphicsObject *parent, const QString &id, int index=-1);
     template<typename T>
-    QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
+    QList<T*> findItems(QGraphicsObject *parent, const QString &objectName);
     void dumpTree(QmlGraphicsItem *parent, int depth = 0);
 };
 
@@ -316,13 +316,13 @@ void tst_QmlGraphicsListView::items()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
     QVERIFY(listview->highlightItem() != 0);
@@ -343,20 +343,20 @@ void tst_QmlGraphicsListView::items()
 
     // switch to other delegate
     testObject->setAnimate(true);
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
     QVERIFY(listview->currentItem());
 
     // set invalid highlight
     testObject->setInvalidHighlight(true);
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
     QVERIFY(listview->currentItem());
     QVERIFY(listview->highlightItem() == 0);
 
     // back to normal highlight
     testObject->setInvalidHighlight(false);
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
     QVERIFY(listview->currentItem());
     QVERIFY(listview->highlightItem() != 0);
@@ -396,7 +396,7 @@ void tst_QmlGraphicsListView::changed()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsFlickable *listview = findItem<QmlGraphicsFlickable>(canvas->root(), "list");
+    QmlGraphicsFlickable *listview = findItem<QmlGraphicsFlickable>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -432,7 +432,7 @@ void tst_QmlGraphicsListView::inserted()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -501,6 +501,8 @@ void tst_QmlGraphicsListView::inserted()
         QCOMPARE(item->y(), i*20.0 - 20.0);
     }
 
+//    QCOMPARE(listview->viewportHeight(), model.count() * 20.0);
+
     delete canvas;
 }
 
@@ -523,7 +525,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -665,7 +667,7 @@ void tst_QmlGraphicsListView::clear()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -702,7 +704,7 @@ void tst_QmlGraphicsListView::moved()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -795,7 +797,7 @@ void tst_QmlGraphicsListView::enforceRange()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QCOMPARE(listview->preferredHighlightBegin(), 100.0);
@@ -843,7 +845,7 @@ void tst_QmlGraphicsListView::spacing()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -898,7 +900,7 @@ void tst_QmlGraphicsListView::sections()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -971,15 +973,12 @@ void tst_QmlGraphicsListView::currentIndex()
     ctxt->setContextProperty("testWrap", QVariant(false));
 
     QString filename(SRCDIR "/data/listview-initCurrent.qml");
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -1061,13 +1060,13 @@ void tst_QmlGraphicsListView::itemList()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "view");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "view");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
-    QmlGraphicsVisualItemModel *model = canvas->root()->findChild<QmlGraphicsVisualItemModel*>("itemModel");
+    QmlGraphicsVisualItemModel *model = canvas->rootObject()->findChild<QmlGraphicsVisualItemModel*>("itemModel");
     QVERIFY(model != 0);
 
     QVERIFY(model->count() == 3);
@@ -1112,7 +1111,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -1164,7 +1163,7 @@ void tst_QmlGraphicsListView::positionViewAtIndex()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
@@ -1301,10 +1300,7 @@ QmlView *tst_QmlGraphicsListView::createView(const QString &filename)
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
@@ -1314,10 +1310,10 @@ QmlView *tst_QmlGraphicsListView::createView(const QString &filename)
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QmlGraphicsListView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
+T *tst_QmlGraphicsListView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    //qDebug() << parent->childItems().count() << "children";
     for (int i = 0; i < parent->childItems().count(); ++i) {
         QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)
@@ -1342,11 +1338,11 @@ T *tst_QmlGraphicsListView::findItem(QmlGraphicsItem *parent, const QString &obj
 }
 
 template<typename T>
-QList<T*> tst_QmlGraphicsListView::findItems(QmlGraphicsItem *parent, const QString &objectName)
+QList<T*> tst_QmlGraphicsListView::findItems(QGraphicsObject *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
-    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    //qDebug() << parent->childItems().count() << "children";
     for (int i = 0; i < parent->childItems().count(); ++i) {
         QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->childItems().at(i));
         if(!item)

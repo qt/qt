@@ -55,18 +55,18 @@
                  Transition {
                      from: "Show"; to: "Details"
                      ParentAction { }
-                     NumberAnimation { matchProperties: "x,y"; duration: 500; easing: "easeInOutQuad" }
+                     NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
                  },
                  Transition {
                      from: "Details"; to: "Show"
                      SequentialAnimation {
                          ParentAction { }
-                         NumberAnimation { matchProperties: "x,y"; duration: 500; easing: "easeInOutQuad" }
-                         PropertyAction { matchTargets: wrapper; matchProperties: "z" }
+                         NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
+                         PropertyAction { targets: wrapper; properties: "z" }
                      }
                  }
              ]
          }
-         MouseRegion { anchors.fill: wrapper; onClicked: { photoClicked() } }
+         MouseArea { anchors.fill: wrapper; onClicked: { photoClicked() } }
      }
  }

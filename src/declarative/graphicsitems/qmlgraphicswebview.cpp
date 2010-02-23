@@ -64,12 +64,8 @@
 #include <qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,WebView,QmlGraphicsWebView)
-QML_DEFINE_NOCREATE_TYPE(QAction)
 
 static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
-
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsWebSettings)
 
 class QmlGraphicsWebViewPrivate : public QmlGraphicsPaintedItemPrivate
 {
@@ -81,7 +77,6 @@ public:
             progress(1.0), status(QmlGraphicsWebView::Null), pending(PendingNone),
             newWindowComponent(0), newWindowParent(0),
             pressTime(400),
-            windowObjects(this),
             rendering(true)
     {
     }
@@ -105,19 +100,14 @@ public:
     QPoint pressPoint;
     int pressTime; // milliseconds before it's a "hold"
 
+
+    static void windowObjects_append(QmlListProperty<QObject> *prop, QObject *o) {
+        static_cast<QmlGraphicsWebViewPrivate *>(prop->data)->windowObjects.append(o);
+        static_cast<QmlGraphicsWebViewPrivate *>(prop->data)->updateWindowObjects();
+    }
+
     void updateWindowObjects();
-    class WindowObjectList : public QmlConcreteList<QObject *>
-    {
-    public:
-        WindowObjectList(QmlGraphicsWebViewPrivate *p)
-            : priv(p) {}
-        virtual void append(QObject *v) {
-            QmlConcreteList<QObject *>::append(v);
-            priv->updateWindowObjects();
-        }
-    private:
-        QmlGraphicsWebViewPrivate *priv;
-    } windowObjects;
+    QObjectList windowObjects;
 
     bool rendering;
 };
@@ -455,35 +445,11 @@ void QmlGraphicsWebView::paintPage(const QRect& r)
 
     If Javascript is not enabled for this page, then this property does nothing.
 */
-QmlList<QObject *> *QmlGraphicsWebView::javaScriptWindowObjects()
+QmlListProperty<QObject> QmlGraphicsWebView::javaScriptWindowObjects()
 {
     Q_D(QmlGraphicsWebView);
-    return &d->windowObjects;
+    return QmlListProperty<QObject>(this, d, &QmlGraphicsWebViewPrivate::windowObjects_append);
 }
-
-class QmlGraphicsWebViewAttached : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QString windowObjectName READ windowObjectName WRITE setWindowObjectName)
-public:
-    QmlGraphicsWebViewAttached(QObject *parent)
-        : QObject(parent)
-    {
-    }
-
-    QString windowObjectName() const
-    {
-        return m_windowObjectName;
-    }
-
-    void setWindowObjectName(const QString &n)
-    {
-        m_windowObjectName = n;
-    }
-
-private:
-    QString m_windowObjectName;
-};
 
 QmlGraphicsWebViewAttached *QmlGraphicsWebView::qmlAttachedProperties(QObject *o)
 {
@@ -1111,7 +1077,8 @@ QmlGraphicsWebView *QmlGraphicsWebView::createWindow(QWebPage::WebWindowType typ
                         if (!webview) {
                             delete item;
                         } else {
-                            item->setParent(d->newWindowParent);
+                            nobj->setParent(d->newWindowParent);
+                            static_cast<QGraphicsObject*>(item)->setParentItem(d->newWindowParent);
                         }
                     }
                 } else {

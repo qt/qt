@@ -55,6 +55,7 @@
 #include <QtDeclarative/qmlinfo.h>
 #include "qmlnetworkaccessmanagerfactory.h"
 
+
 QT_BEGIN_NAMESPACE
 
 class WorkerDataEvent : public QEvent
@@ -238,7 +239,12 @@ private:
     QAtomicInt m_ref;
     QmlWorkerListModel *m_model;
 };
+
+QT_END_NAMESPACE
+
 Q_DECLARE_METATYPE(QmlWorkerListModelAgent::VariantRef);
+
+QT_BEGIN_NAMESPACE
 
 QmlWorkerScriptEnginePrivate::QmlWorkerScriptEnginePrivate(QmlEngine *engine)
 : workerEngine(0), qmlengine(engine), m_nextId(0)
@@ -1030,8 +1036,10 @@ QVariant QmlWorkerListModel::data(int index, int role) const
         return m_values.at(index).value(role);
 }
 
+QT_END_NAMESPACE
+
 QML_DEFINE_TYPE(Qt,4,6,WorkerListModel,QmlWorkerListModel)
 
 #include "qmlworkerscript.moc"
 
-QT_END_NAMESPACE
+

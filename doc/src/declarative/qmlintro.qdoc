@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -326,11 +326,11 @@ Item {
 \section2 Signal Handlers
 
 Signal handlers allow actions to be taken in reponse to an event.  For instance,
-the \l MouseRegion element has signal handlers to handle mouse press, release
+the \l MouseArea element has signal handlers to handle mouse press, release
 and click:
 
 \code
-MouseRegion {
+MouseArea {
     onPressed: console.log("mouse button pressed")
 }
 \endcode
@@ -338,10 +338,10 @@ MouseRegion {
 All signal handlers begin with \e "on".
 
 Some signal handlers include an optional parameter, for example
-the MouseRegion onPressed signal handler has a \e mouse parameter:
+the MouseArea onPressed signal handler has a \e mouse parameter:
 
 \code
-MouseRegion {
+MouseArea {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onPressed: if (mouse.button == Qt.RightButton) console.log("Right mouse button pressed")
 }

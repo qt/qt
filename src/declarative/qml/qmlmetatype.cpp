@@ -100,7 +100,6 @@ struct QmlMetaTypeData
 
     QBitArray objects;
     QBitArray interfaces;
-    QBitArray qmllists;
     QBitArray lists;
 };
 Q_GLOBAL_STATIC(QmlMetaTypeData, metaTypeData)
@@ -124,8 +123,8 @@ public:
     QByteArray m_name;
     int m_version_maj;
     int m_version_min;
-    int m_typeId; int m_listId; int m_qmlListId;
-    QmlPrivate::Func m_opFunc;
+    int m_typeId; int m_listId; 
+    QObject *(*m_newFunc)();
     const QMetaObject *m_baseMetaObject;
     QmlAttachedPropertiesFunc m_attachedPropertiesFunc;
     const QMetaObject *m_attachedPropertiesType;
@@ -141,32 +140,30 @@ public:
 };
 
 QmlTypePrivate::QmlTypePrivate()
-: m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_qmlListId(0),
-  m_opFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
+: m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), 
+  m_newFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
   m_parserStatusCast(-1), m_propertyValueSourceCast(-1), m_propertyValueInterceptorCast(-1),
   m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), m_isSetup(false)
 {
 }
 
 
-QmlType::QmlType(int type, int listType, int qmlListType,
-                 QmlPrivate::Func opFunc, const char *iid, int index)
+QmlType::QmlType(int type, int listType, const char *iid, int index)
 : d(new QmlTypePrivate)
 {
     d->m_isInterface = true;
     d->m_iid = iid;
     d->m_typeId = type;
     d->m_listId = listType;
-    d->m_qmlListId = qmlListType;
-    d->m_opFunc = opFunc;
+    d->m_newFunc = 0;
     d->m_index = index;
     d->m_isSetup = true;
     d->m_version_maj = 0;
     d->m_version_min = 0;
 }
 
-QmlType::QmlType(int type, int listType, int qmlListType,
-                 QmlPrivate::Func opFunc, const char *qmlName,
+QmlType::QmlType(int type, int listType, 
+                 QObject *(*newFunc)(), const char *qmlName,
                  int version_maj, int version_min,
                  const QMetaObject *metaObject,
                  QmlAttachedPropertiesFunc attachedPropertiesFunc,
@@ -182,8 +179,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_version_min = version_min;
     d->m_typeId = type;
     d->m_listId = listType;
-    d->m_qmlListId = qmlListType;
-    d->m_opFunc = opFunc;
+    d->m_newFunc = newFunc;
     d->m_baseMetaObject = metaObject;
     d->m_attachedPropertiesFunc = attachedPropertiesFunc;
     d->m_attachedPropertiesType = attachedType;
@@ -283,10 +279,7 @@ QObject *QmlType::create() const
 {
     d->init();
 
-    QVariant v;
-    QObject *rv = 0;
-    d->m_opFunc(QmlPrivate::Create, 0, v, v, (void **)&rv);
-
+    QObject *rv = d->m_newFunc();
     if (rv && !d->m_metaObjects.isEmpty())
         (void *)new QmlProxyMetaObject(rv, &d->m_metaObjects);
 
@@ -311,39 +304,6 @@ int QmlType::typeId() const
 int QmlType::qListTypeId() const
 {
     return d->m_listId;
-}
-
-int QmlType::qmlListTypeId() const
-{
-    return d->m_qmlListId;
-}
-
-void QmlType::listClear(const QVariant &list)
-{
-    Q_ASSERT(list.userType() == qListTypeId());
-    QVariant arg;
-    d->m_opFunc(QmlPrivate::Clear, 0, list, arg, 0);
-}
-
-void QmlType::listAppend(const QVariant &list, const QVariant &item)
-{
-    Q_ASSERT(list.userType() == qListTypeId());
-    d->m_opFunc(QmlPrivate::Append, 0, list, item, 0);
-}
-
-QVariant QmlType::listAt(const QVariant &list, int idx)
-{
-    Q_ASSERT(list.userType() == qListTypeId());
-    QVariant rv;
-    void *ptr = (void *)&rv;
-    d->m_opFunc(QmlPrivate::Value, idx, list, QVariant(), &ptr);
-    return rv;
-}
-
-int QmlType::listCount(const QVariant &list)
-{
-    Q_ASSERT(list.userType() == qListTypeId());
-    return d->m_opFunc(QmlPrivate::Length, 0, list, QVariant(), 0);
 }
 
 const QMetaObject *QmlType::metaObject() const
@@ -387,15 +347,6 @@ int QmlType::propertyValueInterceptorCast() const
     return d->m_propertyValueInterceptorCast;
 }
 
-QVariant QmlType::fromObject(QObject *obj) const
-{
-    QVariant rv;
-    QVariant *v_ptr = &rv;
-    QVariant vobj = QVariant::fromValue(obj);
-    d->m_opFunc(QmlPrivate::FromObject, 0, QVariant(), vobj, (void **)&v_ptr);
-    return rv;
-}
-
 const char *QmlType::interfaceIId() const
 {
     return d->m_iid;
@@ -407,7 +358,6 @@ int QmlType::index() const
 }
 
 int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
-                                    QmlPrivate::Func listFunction,
                                     const char *iid)
 {
     QWriteLocker lock(metaTypeDataLock());
@@ -415,31 +365,26 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
 
     int index = data->types.count();
 
-    QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
-                                listFunction, iid, index);
+    QmlType *type = new QmlType(id.typeId, id.listId, iid, index);
 
     data->types.append(type);
     data->idToType.insert(type->typeId(), type);
     data->idToType.insert(type->qListTypeId(), type);
-    data->idToType.insert(type->qmlListTypeId(), type);
     // XXX No insertMulti, so no multi-version interfaces?
     if (!type->qmlTypeName().isEmpty())
         data->nameToType.insert(type->qmlTypeName(), type);
 
-    if (data->interfaces.size() < id.typeId)
+    if (data->interfaces.size() <= id.typeId)
         data->interfaces.resize(id.typeId + 16);
-    if (data->qmllists.size() < id.qmlListId)
-        data->qmllists.resize(id.qmlListId + 16);
-    if (data->lists.size() < id.listId)
+    if (data->lists.size() <= id.listId)
         data->lists.resize(id.listId + 16);
     data->interfaces.setBit(id.typeId, true);
-    data->qmllists.setBit(id.qmlListId, true);
     data->lists.setBit(id.listId, true);
 
     return index;
 }
 
-int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func,
+int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QObject *(*func)(),
         const char *uri, int version_maj, int version_min, const char *cname,
         const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
         int pStatus, int object, int valueSource, int valueInterceptor, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
@@ -464,14 +409,13 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
         name += '/';
     name += cname;
 
-    QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
+    QmlType *type = new QmlType(id.typeId, id.listId, 
                                 func, name, version_maj, version_min, mo, attach, attachMo, pStatus,
                                 valueSource, valueInterceptor, extFunc, extmo, index, parser);
 
     data->types.append(type);
     data->idToType.insert(type->typeId(), type);
     data->idToType.insert(type->qListTypeId(), type);
-    data->idToType.insert(type->qmlListTypeId(), type);
 
     if (!type->qmlTypeName().isEmpty())
         data->nameToType.insertMulti(type->qmlTypeName(), type);
@@ -480,12 +424,9 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
 
     if (data->objects.size() <= id.typeId)
         data->objects.resize(id.typeId + 16);
-    if (data->qmllists.size() <= id.qmlListId)
-        data->qmllists.resize(id.qmlListId + 16);
     if (data->lists.size() <= id.listId)
         data->lists.resize(id.listId + 16);
     data->objects.setBit(id.typeId, true);
-    data->qmllists.setBit(id.qmlListId, true);
     data->lists.setBit(id.listId, true);
 
     return index;
@@ -525,51 +466,6 @@ int QmlMetaType::listType(int id)
         return type->typeId();
     else
         return 0;
-}
-
-/*
-    Returns the item type for a qml list of type \a id.
- */
-int QmlMetaType::qmlListType(int id)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(id);
-    if (type && type->qmlListTypeId() == id)
-        return type->typeId();
-    else
-        return 0;
-}
-
-bool QmlMetaType::clear(const QVariant &list)
-{
-    int userType = list.userType();
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(userType);
-    lock.unlock();
-    if (type && type->qListTypeId() == userType) {
-        type->listClear(list);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool QmlMetaType::append(const QVariant &list, const QVariant &item)
-{
-    int userType = list.userType();
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(userType);
-    lock.unlock();
-    if (type && type->qListTypeId() == userType &&
-       item.userType() == type->typeId()) {
-        type->listAppend(list, item);
-        return true;
-    } else {
-        return false;
-    }
 }
 
 int QmlMetaType::attachedPropertiesFuncId(const QMetaObject *mo)
@@ -656,8 +552,6 @@ QmlMetaType::TypeCategory QmlMetaType::typeCategory(int userType)
     QmlMetaTypeData *data = metaTypeData();
     if (userType < data->objects.size() && data->objects.testBit(userType))
         return Object;
-    else if (userType < data->qmllists.size() && data->qmllists.testBit(userType))
-        return QmlList;
     else if (userType < data->lists.size() && data->lists.testBit(userType))
         return List;
     else
@@ -683,56 +577,11 @@ const char *QmlMetaType::interfaceIId(int userType)
         return 0;
 }
 
-bool QmlMetaType::isQmlList(int userType)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    return userType >= 0 && userType < data->qmllists.size() && data->qmllists.testBit(userType);
-}
-
 bool QmlMetaType::isList(int userType)
 {
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     return userType >= 0 && userType < data->lists.size() && data->lists.testBit(userType);
-}
-
-bool QmlMetaType::isList(const QVariant &v)
-{
-    return (v.type() == QVariant::UserType && isList(v.userType()));
-}
-
-int QmlMetaType::listCount(const QVariant &v)
-{
-    int userType = v.userType();
-
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(userType);
-    lock.unlock();
-
-    if (type && type->qListTypeId() == userType)
-        return type->listCount(v);
-    else
-        return 0;
-}
-
-QVariant QmlMetaType::listAt(const QVariant &v, int idx)
-{
-    if (idx < 0)
-        return QVariant();
-
-    int userType = v.userType();
-
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->idToType.value(userType);
-    lock.unlock();
-
-    if (type && type->qListTypeId() == userType)
-        return type->listAt(v, idx);
-    else
-        return QVariant();
 }
 
 /*!
@@ -840,6 +689,8 @@ QList<QmlType*> QmlMetaType::qmlTypes()
     return data->nameToType.values();
 }
 
+QT_END_NAMESPACE
+
 #include <QtGui/qfont.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qbrush.h>
@@ -867,6 +718,7 @@ QList<QmlType*> QmlMetaType::qmlTypes()
 
 Q_DECLARE_METATYPE(QScriptValue);
 
+QT_BEGIN_NAMESPACE
 /*!
     Copies \a copy into \a data, assuming they both are of type \a type.  If
     \a copy is zero, a default type is copied.  Returns true if the copy was

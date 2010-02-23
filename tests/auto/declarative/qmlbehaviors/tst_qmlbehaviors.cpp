@@ -46,11 +46,11 @@
 #include <private/qmlbehavior_p.h>
 #include <private/qmlanimation_p.h>
 
-class tst_behaviors : public QObject
+class tst_qmlbehaviors : public QObject
 {
     Q_OBJECT
 public:
-    tst_behaviors() {}
+    tst_qmlbehaviors() {}
 
 private slots:
     void simpleBehavior();
@@ -63,12 +63,14 @@ private slots:
     //void transitionOverrides();
     void group();
     void emptyBehavior();
+    void explicitSelection();
     void nonSelectingBehavior();
     void reassignedAnimation();
     void disabled();
+    void dontStart();
 };
 
-void tst_behaviors::simpleBehavior()
+void tst_qmlbehaviors::simpleBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/simple.qml"));
@@ -77,12 +79,12 @@ void tst_behaviors::simpleBehavior()
     QVERIFY(qobject_cast<QmlBehavior*>(rect->findChild<QmlBehavior*>("MyBehavior"))->animation());
 
     rect->setState("moved");
-    QTest::qWait(100);
+    QTest::qWait(200);
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::scriptTriggered()
+void tst_qmlbehaviors::scriptTriggered()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/scripttrigger.qml"));
@@ -90,12 +92,12 @@ void tst_behaviors::scriptTriggered()
     QVERIFY(rect);
 
     rect->setColor(QColor("red"));
-    QTest::qWait(100);
+    QTest::qWait(200);
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::cppTriggered()
+void tst_qmlbehaviors::cppTriggered()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/cpptrigger.qml"));
@@ -106,12 +108,12 @@ void tst_behaviors::cppTriggered()
     QVERIFY(innerRect);
 
     innerRect->setProperty("x", 200);
-    QTest::qWait(100);
+    QTest::qWait(200);
     qreal x = innerRect->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::loop()
+void tst_qmlbehaviors::loop()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/loop.qml"));
@@ -122,7 +124,7 @@ void tst_behaviors::loop()
     rect->setState("moved");
 }
 
-void tst_behaviors::colorBehavior()
+void tst_qmlbehaviors::colorBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/color.qml"));
@@ -130,12 +132,12 @@ void tst_behaviors::colorBehavior()
     QVERIFY(rect);
 
     rect->setState("red");
-    QTest::qWait(100);
+    QTest::qWait(200);
     QColor color = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->color();
     QVERIFY(color != QColor("red") && color != QColor("green"));  //i.e. the behavior has been triggered
 }
 
-void tst_behaviors::parentBehavior()
+void tst_qmlbehaviors::parentBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/parent.qml"));
@@ -143,16 +145,16 @@ void tst_behaviors::parentBehavior()
     QVERIFY(rect);
 
     rect->setState("reparented");
-    QTest::qWait(100);
+    QTest::qWait(200);
     QmlGraphicsItem *newParent = rect->findChild<QmlGraphicsItem*>("NewParent");
     QmlGraphicsItem *parent = rect->findChild<QmlGraphicsRectangle*>("MyRect")->parentItem();
     QVERIFY(parent != newParent);
-    QTest::qWait(300);
+    QTest::qWait(600);
     parent = rect->findChild<QmlGraphicsRectangle*>("MyRect")->parentItem();
     QVERIFY(parent == newParent);
 }
 
-void tst_behaviors::replaceBinding()
+void tst_qmlbehaviors::replaceBinding()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/binding.qml"));
@@ -160,33 +162,33 @@ void tst_behaviors::replaceBinding()
     QVERIFY(rect);
 
     rect->setState("moved");
-    QTest::qWait(100);
+    QTest::qWait(200);
     QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
     QVERIFY(innerRect);
     qreal x = innerRect->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("basex", 10);
     QCOMPARE(innerRect->x(), (qreal)200);
     rect->setProperty("movedx", 210);
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)210);
 
     rect->setState("");
-    QTest::qWait(100);
+    QTest::qWait(200);
     x = innerRect->x();
     QVERIFY(x > 10 && x < 210);  //i.e. the behavior has been triggered
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("movedx", 200);
     QCOMPARE(innerRect->x(), (qreal)10);
     rect->setProperty("basex", 20);
-    QTest::qWait(300);
+    QTest::qWait(600);
     QCOMPARE(innerRect->x(), (qreal)20);
 }
 
-void tst_behaviors::group()
+void tst_qmlbehaviors::group()
 {
     {
         QmlEngine engine;
@@ -195,7 +197,7 @@ void tst_behaviors::group()
         QVERIFY(rect);
 
         rect->setState("moved");
-        QTest::qWait(100);
+        QTest::qWait(200);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
@@ -207,13 +209,13 @@ void tst_behaviors::group()
         QVERIFY(rect);
 
         rect->setState("moved");
-        QTest::qWait(100);
+        QTest::qWait(200);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
 }
 
-void tst_behaviors::emptyBehavior()
+void tst_qmlbehaviors::emptyBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/empty.qml"));
@@ -225,19 +227,23 @@ void tst_behaviors::emptyBehavior()
     QCOMPARE(x, qreal(200));    //should change immediately
 }
 
-void tst_behaviors::nonSelectingBehavior()
+void tst_qmlbehaviors::explicitSelection()
 {
     {
         QmlEngine engine;
-        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting.qml"));
+        QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/explicit.qml"));
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         rect->setState("moved");
+        QTest::qWait(200);
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
-        QCOMPARE(x, qreal(200));    //should change immediately
+        QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
+}
 
+void tst_qmlbehaviors::nonSelectingBehavior()
+{
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/nonSelecting2.qml"));
@@ -250,7 +256,7 @@ void tst_behaviors::nonSelectingBehavior()
     }
 }
 
-void tst_behaviors::reassignedAnimation()
+void tst_qmlbehaviors::reassignedAnimation()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml"));
@@ -262,7 +268,7 @@ void tst_behaviors::reassignedAnimation()
                      rect->findChild<QmlBehavior*>("MyBehavior"))->animation())->duration(), 200);
 }
 
-void tst_behaviors::disabled()
+void tst_qmlbehaviors::disabled()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/disabled.qml"));
@@ -273,9 +279,23 @@ void tst_behaviors::disabled()
     rect->setState("moved");
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
     QCOMPARE(x, qreal(200));    //should change immediately
-
 }
 
-QTEST_MAIN(tst_behaviors)
+void tst_qmlbehaviors::dontStart()
+{
+    QmlEngine engine;
+
+    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/dontStart.qml"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QmlAbstractAnimation: setRunning() cannot be used on non-root animation nodes");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QmlAbstractAnimation *myAnim = rect->findChild<QmlAbstractAnimation*>("MyAnim");
+    QVERIFY(myAnim && myAnim->qtAnimation());
+    QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
+}
+
+QTEST_MAIN(tst_qmlbehaviors)
 
 #include "tst_qmlbehaviors.moc"

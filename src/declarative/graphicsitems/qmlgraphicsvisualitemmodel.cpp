@@ -62,47 +62,7 @@
 
 #include <private/qobject_p.h>
 
-QML_DECLARE_TYPE(QListModelInterface)
-
 QT_BEGIN_NAMESPACE
-
-class QmlGraphicsVisualItemModelAttached : public QObject
-{
-    Q_OBJECT
-
-public:
-    QmlGraphicsVisualItemModelAttached(QObject *parent)
-        : QObject(parent), m_index(0) {}
-    ~QmlGraphicsVisualItemModelAttached() {
-        attachedProperties.remove(parent());
-    }
-
-    Q_PROPERTY(int index READ index NOTIFY indexChanged)
-    int index() const { return m_index; }
-    void setIndex(int idx) {
-        if (m_index != idx) {
-            m_index = idx;
-            emit indexChanged();
-        }
-    }
-
-    static QmlGraphicsVisualItemModelAttached *properties(QObject *obj) {
-        QmlGraphicsVisualItemModelAttached *rv = attachedProperties.value(obj);
-        if (!rv) {
-            rv = new QmlGraphicsVisualItemModelAttached(obj);
-            attachedProperties.insert(obj, rv);
-        }
-        return rv;
-    }
-
-Q_SIGNALS:
-    void indexChanged();
-
-public:
-    int m_index;
-
-    static QHash<QObject*, QmlGraphicsVisualItemModelAttached*> attachedProperties;
-};
 
 QHash<QObject*, QmlGraphicsVisualItemModelAttached*> QmlGraphicsVisualItemModelAttached::attachedProperties;
 
@@ -111,16 +71,14 @@ class QmlGraphicsVisualItemModelPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlGraphicsVisualItemModel)
 public:
-    QmlGraphicsVisualItemModelPrivate() : QObjectPrivate(), children(this) {}
+    QmlGraphicsVisualItemModelPrivate() : QObjectPrivate() {}
 
-    struct ItemList : public QmlConcreteList<QmlGraphicsItem *>
-    {
-        ItemList(QmlGraphicsVisualItemModelPrivate *m) : QmlConcreteList<QmlGraphicsItem *>(), model(m) {}
-
-        void append(QmlGraphicsItem *item);
-
-        QmlGraphicsVisualItemModelPrivate *model;
-    };
+    static void children_append(QmlListProperty<QmlGraphicsItem> *prop, QmlGraphicsItem *item) {
+        item->QObject::setParent(prop->object);
+        static_cast<QmlGraphicsVisualItemModelPrivate *>(prop->data)->children.append(item);
+        static_cast<QmlGraphicsVisualItemModelPrivate *>(prop->data)->itemAppended();
+        static_cast<QmlGraphicsVisualItemModelPrivate *>(prop->data)->emitChildrenChanged();
+    }
 
     void itemAppended() {
         Q_Q(QmlGraphicsVisualItemModel);
@@ -134,7 +92,8 @@ public:
         Q_Q(QmlGraphicsVisualItemModel);
         emit q->childrenChanged();
     }
-    ItemList children;
+
+    QList<QmlGraphicsItem *> children;
 };
 
 
@@ -172,10 +131,10 @@ QmlGraphicsVisualItemModel::QmlGraphicsVisualItemModel()
 {
 }
 
-QmlList<QmlGraphicsItem *> *QmlGraphicsVisualItemModel::children()
+QmlListProperty<QmlGraphicsItem> QmlGraphicsVisualItemModel::children()
 {
     Q_D(QmlGraphicsVisualItemModel);
-    return &(d->children);
+    return QmlListProperty<QmlGraphicsItem>(this, d, QmlGraphicsVisualItemModelPrivate::children_append);
 }
 
 /*!
@@ -238,15 +197,6 @@ int QmlGraphicsVisualItemModel::indexOf(QmlGraphicsItem *item, QObject *) const
 {
     Q_D(const QmlGraphicsVisualItemModel);
     return d->children.indexOf(item);
-}
-
-void QmlGraphicsVisualItemModelPrivate::ItemList::append(QmlGraphicsItem *item)
-{
-    QmlConcreteList<QmlGraphicsItem*>::append(item);
-    item->QObject::setParent(model->q_ptr);
-    model->itemAppended();
-
-    model->emitChildrenChanged();
 }
 
 QmlGraphicsVisualItemModelAttached *QmlGraphicsVisualItemModel::qmlAttachedProperties(QObject *obj)
@@ -462,8 +412,7 @@ int QmlGraphicsVisualDataModelDataMetaObject::createProperty(const char *name, c
     QmlGraphicsVisualDataModelPrivate *model = QmlGraphicsVisualDataModelPrivate::get(data->m_model);
 
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
-        if (model->m_listAccessor->type() == QmlListAccessor::QmlList
-            || model->m_listAccessor->type() == QmlListAccessor::QListPtr) {
+        if (model->m_listAccessor->type() == QmlListAccessor::ListProperty) {
             model->ensureRoles();
             QObject *object = model->m_listAccessor->at(data->m_index).value<QObject*>();
             if (object && object->property(name).isValid())
@@ -725,7 +674,7 @@ void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
     }
     d->m_listAccessor = new QmlListAccessor;
     d->m_listAccessor->setList(model, d->m_context?d->m_context->engine():qmlEngine(this));
-    if (d->m_listAccessor->type() != QmlListAccessor::QmlList && d->m_listAccessor->type() != QmlListAccessor::QListPtr)
+    if (d->m_listAccessor->type() != QmlListAccessor::ListProperty)
         d->m_metaDataCacheable = true;
     if (d->m_delegate && d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
@@ -1146,10 +1095,8 @@ void QmlGraphicsVisualDataModel::_q_destroyingPackage(QmlPackage *package)
     emit destroyingItem(qobject_cast<QmlGraphicsItem*>(package->part(d->m_part)));
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlGraphicsVisualModel);
-QML_DEFINE_TYPE(Qt,4,6,VisualItemModel,QmlGraphicsVisualItemModel)
-QML_DEFINE_TYPE(Qt,4,6,VisualDataModel,QmlGraphicsVisualDataModel)
-
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QListModelInterface)
 
 #include <qmlgraphicsvisualitemmodel.moc>

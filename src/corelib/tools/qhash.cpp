@@ -64,13 +64,11 @@ QT_BEGIN_NAMESPACE
 static uint hash(const uchar *p, int n)
 {
     uint h = 0;
-    uint g;
 
     while (n--) {
         h = (h << 4) + *p++;
-        g = h & 0xf0000000;
-        h ^= g >> 23;
-        h &= ~g;
+        h ^= (h & 0xf0000000) >> 23;
+        h &= 0x0fffffff;
     }
     return h;
 }
@@ -78,13 +76,11 @@ static uint hash(const uchar *p, int n)
 static uint hash(const QChar *p, int n)
 {
     uint h = 0;
-    uint g;
 
     while (n--) {
         h = (h << 4) + (*p++).unicode();
-        g = h & 0xf0000000;
-        h ^= g >> 23;
-        h &= ~g;
+        h ^= (h & 0xf0000000) >> 23;
+        h &= 0x0fffffff;
     }
     return h;
 }

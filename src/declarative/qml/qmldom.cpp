@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmldom.h"
 #include "qmldom_p.h"
+#include "qmldom_p_p.h"
 
 #include "qmlcompositetypedata_p.h"
 #include "qmlcompiler_p.h"
@@ -1346,7 +1346,6 @@ QmlDomValue::Type QmlDomValue::type() const
 {
     if (d->property)
         if (QmlMetaType::isList(d->property->type) ||
-           QmlMetaType::isQmlList(d->property->type) ||
            (d->property && d->property->values.count() > 1))
             return List;
 

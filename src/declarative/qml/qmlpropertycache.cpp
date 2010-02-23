@@ -45,9 +45,9 @@
 #include "qmlbinding.h"
 #include "qdebug.h"
 
-QT_BEGIN_NAMESPACE
-
 Q_DECLARE_METATYPE(QScriptValue);
+
+QT_BEGIN_NAMESPACE
 
 void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
 {
@@ -77,8 +77,6 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p, QmlEngine *engine)
             flags |= Data::IsQObjectDerived;
         else if (cat == QmlMetaType::List)
             flags |= Data::IsQList;
-        else if (cat == QmlMetaType::QmlList)
-            flags |= Data::IsQmlList;
     }
 }
 

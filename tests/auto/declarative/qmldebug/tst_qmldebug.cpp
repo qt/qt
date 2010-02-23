@@ -288,10 +288,11 @@ void tst_QmlDebug::watch_property()
 
     QmlDebugPropertyWatch *watch;
     
-    QmlEngineDebug unconnected(0);
-    watch = unconnected.addWatch(prop, this);
+    QmlEngineDebug *unconnected = new QmlEngineDebug(0);
+    watch = unconnected->addWatch(prop, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
+    delete unconnected;
 
     watch = m_dbg->addWatch(QmlDebugPropertyReference(), this);
     QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
@@ -346,10 +347,11 @@ void tst_QmlDebug::watch_object()
 
     QmlDebugWatch *watch;
 
-    QmlEngineDebug unconnected(0);
-    watch = unconnected.addWatch(obj, this);
+    QmlEngineDebug *unconnected = new QmlEngineDebug(0);
+    watch = unconnected->addWatch(obj, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
+    delete unconnected;
     
     watch = m_dbg->addWatch(QmlDebugObjectReference(), this);
     QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
@@ -409,10 +411,11 @@ void tst_QmlDebug::watch_expression()
 
     QmlDebugObjectExpressionWatch *watch;
 
-    QmlEngineDebug unconnected(0);
-    watch = unconnected.addWatch(obj, expr, this);
+    QmlEngineDebug *unconnected = new QmlEngineDebug(0);
+    watch = unconnected->addWatch(obj, expr, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
+    delete unconnected;
     
     watch = m_dbg->addWatch(QmlDebugObjectReference(), expr, this);
     QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
@@ -487,10 +490,11 @@ void tst_QmlDebug::queryAvailableEngines()
 {
     QmlDebugEnginesQuery *q_engines;
 
-    QmlEngineDebug unconnected(0);
-    q_engines = unconnected.queryAvailableEngines(0);
+    QmlEngineDebug *unconnected = new QmlEngineDebug(0);
+    q_engines = unconnected->queryAvailableEngines(0);
     QCOMPARE(q_engines->state(), QmlDebugQuery::Error);
     delete q_engines;
+    delete unconnected;
 
     q_engines = m_dbg->queryAvailableEngines(this);
     delete q_engines;
@@ -519,10 +523,11 @@ void tst_QmlDebug::queryRootContexts()
 
     QmlDebugRootContextQuery *q_context;
     
-    QmlEngineDebug unconnected(0);
-    q_context = unconnected.queryRootContexts(engineId, this);
+    QmlEngineDebug *unconnected = new QmlEngineDebug(0);
+    q_context = unconnected->queryRootContexts(engineId, this);
     QCOMPARE(q_context->state(), QmlDebugQuery::Error);
     delete q_context;
+    delete unconnected;
 
     q_context = m_dbg->queryRootContexts(engineId, this);
     delete q_context;
@@ -563,10 +568,11 @@ void tst_QmlDebug::queryObject()
 
     QmlDebugObjectQuery *q_obj = 0;
 
-    QmlEngineDebug unconnected(0);
-    q_obj = recursive ? unconnected.queryObjectRecursive(rootObject, this) : unconnected.queryObject(rootObject, this);
+    QmlEngineDebug *unconnected = new QmlEngineDebug(0);
+    q_obj = recursive ? unconnected->queryObjectRecursive(rootObject, this) : unconnected->queryObject(rootObject, this);
     QCOMPARE(q_obj->state(), QmlDebugQuery::Error);
     delete q_obj;
+    delete unconnected;
 
     q_obj = recursive ? m_dbg->queryObjectRecursive(rootObject, this) : m_dbg->queryObject(rootObject, this);
     delete q_obj;
@@ -637,10 +643,11 @@ void tst_QmlDebug::queryExpressionResult()
 
     QmlDebugExpressionQuery *q_expr;
 
-    QmlEngineDebug unconnected(0);
-    q_expr = unconnected.queryExpressionResult(objectId, expr, this);
+    QmlEngineDebug *unconnected = new QmlEngineDebug(0);
+    q_expr = unconnected->queryExpressionResult(objectId, expr, this);
     QCOMPARE(q_expr->state(), QmlDebugQuery::Error);
     delete q_expr;
+    delete unconnected;
     
     q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
     delete q_expr;
@@ -801,9 +808,10 @@ class tst_QmlDebug_Factory : public QmlTestFactory
 public:
     QObject *createTest(QmlDebugTestData *data)
     {
-        QmlContext *c = new QmlContext(data->engine->rootContext());
+        tst_QmlDebug *test = new tst_QmlDebug(data);
+        QmlContext *c = new QmlContext(data->engine->rootContext(), test);
         c->setObjectName("tst_QmlDebug_childContext");
-        return new tst_QmlDebug(data);
+        return test;
     }
 };
 
@@ -817,7 +825,7 @@ int main(int argc, char *argv[])
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
                 "Text { color: blueRect.color; }"
-                "MouseRegion {"
+                "MouseArea {"
                     "onEntered: { console.log('hello') }"
                 "}"
             "}";

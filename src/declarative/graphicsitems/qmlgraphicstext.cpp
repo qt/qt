@@ -55,7 +55,6 @@
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,Text,QmlGraphicsText)
 
 /*!
     \qmlclass Text QmlGraphicsText
@@ -555,6 +554,7 @@ void QmlGraphicsTextPrivate::updateSize()
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
             dy -= (int)doc->size().height();
+            cachedLayoutSize = doc->size().toSize();
         }
         int yoff = 0;
 
@@ -770,7 +770,7 @@ void QmlGraphicsText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidg
 {
     Q_D(QmlGraphicsText);
 
-    if (d->cache || d->richText || d->style != Normal) {
+    if (d->cache || d->style != Normal) {
         d->checkImgCache();
         if (d->imgCache.isNull())
             return;
@@ -847,7 +847,15 @@ void QmlGraphicsText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidg
             p->save();
             p->setClipRect(boundingRect(), Qt::IntersectClip);
         }
-        d->drawWrappedText(p, QPointF(0,y), false);
+        if (d->richText) {
+            QAbstractTextDocumentLayout::PaintContext context;
+            context.palette.setColor(QPalette::Text, d->color);
+            p->translate(0, y);
+            d->doc->documentLayout()->draw(p, context);
+            p->translate(0, -y);
+        } else {
+            d->drawWrappedText(p, QPointF(0,y), false);
+        }
         if (needClip)
             p->restore();
     }

@@ -17,7 +17,7 @@ Item {
         opacity: 0.4
         scale: 0.5
     }
-    MouseRegion {
+    MouseArea {
         anchors.fill: container
         onClicked: { container.clicked() }
     }
@@ -37,7 +37,7 @@ Item {
     transitions: [
         Transition {
             NumberAnimation {
-                matchProperties: "opacity,scale,x,y"
+                properties: "opacity,scale,x,y"
                 easing: "easeOutBounce"
             }
         }

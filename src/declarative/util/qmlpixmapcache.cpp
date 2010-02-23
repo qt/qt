@@ -41,11 +41,13 @@
 
 #include "qmlpixmapcache_p.h"
 #include "qmlnetworkaccessmanagerfactory.h"
+#include "qmlimageprovider.h"
 
 #include "qfxperf_p_p.h"
 
 #include <qmlengine.h>
 #include <private/qmlglobal_p.h>
+#include <private/qmlengine_p.h>
 
 #include <QCoreApplication>
 #include <QImageReader>
@@ -82,7 +84,7 @@ class QmlImageReaderEvent : public QEvent
 public:
     enum ReadError { NoError, Loading, Decoding };
 
-    QmlImageReaderEvent(QmlImageReaderEvent::ReadError err, const QString &errStr, QImage &img)
+    QmlImageReaderEvent(QmlImageReaderEvent::ReadError err, const QString &errStr, const QImage &img)
         : QEvent(QEvent::User), error(err), errorString(errStr), image(img) {}
 
     ReadError error;
@@ -143,13 +145,8 @@ private slots:
 
 private:
     QNetworkAccessManager *networkAccessManager() {
-        if (!accessManager) {
-            if (engine && engine->networkAccessManagerFactory()) {
-                accessManager = engine->networkAccessManagerFactory()->create(this);
-            } else {
-                accessManager = new QNetworkAccessManager(this);
-            }
-        }
+        if (!accessManager)
+            accessManager = QmlEnginePrivate::get(engine)->createNetworkAccessManager(this);
         return accessManager;
     }
 
@@ -182,11 +179,19 @@ bool QmlImageRequestHandler::event(QEvent *event)
             if (reader->cancelled.count()) {
                 for (int i = 0; i < reader->cancelled.count(); ++i) {
                     QmlPixmapReply *job = reader->cancelled.at(i);
+                    // cancel any jobs already started
                     QNetworkReply *reply = replies.key(job, 0);
                     if (reply && reply->isRunning()) {
                         replies.remove(reply);
                         reply->close();
-                        job->release(true);
+                    }
+                    // remove from pending job list
+                    for (int j = 0; j < reader->jobs.count(); ++j) {
+                        if (reader->jobs.at(j) == job) {
+                            reader->jobs.removeAt(j);
+                            job->release(true);
+                            break;
+                        }
                     }
                 }
                 reader->cancelled.clear();
@@ -197,21 +202,30 @@ bool QmlImageRequestHandler::event(QEvent *event)
                 break;
             }
 
-            QmlPixmapReply *runningJob = reader->jobs.takeFirst();
-            runningJob->addRef();
-            runningJob->setLoading();
+            QmlPixmapReply *runningJob = reader->jobs.takeLast();
             QUrl url = runningJob->url();
             reader->mutex.unlock();
 
             // fetch
-            QNetworkRequest req(url);
-            req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-            QNetworkReply *reply = networkAccessManager()->get(req);
+            if (url.scheme() == QLatin1String("image")) {
+                QImage image = QmlEnginePrivate::get(engine)->getImageFromProvider(url);
+                QmlImageReaderEvent::ReadError errorCode = QmlImageReaderEvent::NoError;
+                QString errorStr;
+                if (image.isNull()) {
+                    errorCode = QmlImageReaderEvent::Loading;
+                    errorStr = QLatin1String("Failed to get image from provider: ") + url.toString();
+                }
+                QCoreApplication::postEvent(runningJob, new QmlImageReaderEvent(errorCode, errorStr, image));
+            } else {
+                QNetworkRequest req(url);
+                req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+                QNetworkReply *reply = networkAccessManager()->get(req);
 
-            QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
-            QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
+                QMetaObject::connect(reply, replyDownloadProgress, runningJob, downloadProgress);
+                QMetaObject::connect(reply, replyFinished, this, thisNetworkRequestDone);
 
-            replies.insert(reply, runningJob);
+                replies.insert(reply, runningJob);
+            }
         }
         return true;
     }
@@ -259,12 +273,12 @@ QmlImageReader::QmlImageReader(QmlEngine *eng)
 
 QmlImageReader::~QmlImageReader()
 {
-    quit();
-    wait();
     readerMutex.lock();
     readers.remove(engine);
     readerMutex.unlock();
-    delete handler;
+
+    quit();
+    wait();
 }
 
 QmlImageReader *QmlImageReader::instance(QmlEngine *engine)
@@ -284,6 +298,8 @@ QmlPixmapReply *QmlImageReader::getImage(const QUrl &url)
 {
     mutex.lock();
     QmlPixmapReply *reply = new QmlPixmapReply(this, url);
+    reply->addRef();
+    reply->setLoading();
     jobs.append(reply);
     if (jobs.count() == 1 && handler)
         QCoreApplication::postEvent(handler, new QEvent(QEvent::User));
@@ -295,21 +311,10 @@ void QmlImageReader::cancel(QmlPixmapReply *reply)
 {
     mutex.lock();
     if (reply->isLoading()) {
-        // Already requested.  Add to cancel list to be cancelled in reader thread.
+        // Add to cancel list to be cancelled in reader thread.
         cancelled.append(reply);
         if (cancelled.count() == 1 && handler)
             QCoreApplication::postEvent(handler, new QEvent(QEvent::User));
-    } else {
-        // Not yet processed - just remove from waiting list
-        QList<QmlPixmapReply*>::iterator it = jobs.begin();
-        while (it != jobs.end()) {
-            QmlPixmapReply *job = *it;
-            if (job == reply) {
-                jobs.erase(it);
-                break;
-            }
-            ++it;
-        }
     }
     mutex.unlock();
 }
@@ -327,6 +332,9 @@ void QmlImageReader::run()
     handler = new QmlImageRequestHandler(this, engine);
 
     exec();
+
+    delete handler;
+    handler = 0;
 }
 
 //===========================================================================
@@ -471,8 +479,6 @@ bool QmlPixmapReply::release(bool defer)
     --d->refCount;
     if (d->refCount == 0) {
         qmlActivePixmapReplies()->remove(d->url);
-        if (d->status == Loading && !d->loading)
-            d->reader->cancel(this);
         if (defer)
             deleteLater();
         else
@@ -600,6 +606,6 @@ int QmlPixmapCache::pendingRequests()
     return qmlActivePixmapReplies()->count();
 }
 
-#include <qmlpixmapcache.moc>
-
 QT_END_NAMESPACE
+
+#include <qmlpixmapcache.moc>

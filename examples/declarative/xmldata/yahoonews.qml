@@ -22,7 +22,7 @@ Rectangle {
             id: delegate
             height: wrapper.height + 10
 
-            MouseRegion {
+            MouseArea {
                 anchors.fill: wrapper
                 onPressed: delegate.ListView.view.currentIndex = index;
                 onClicked: if (wrapper.state == 'Details') wrapper.state = ''; else wrapper.state = 'Details';
@@ -61,8 +61,8 @@ Rectangle {
                 transitions: Transition {
                     from: "*"; to: "Details"; reversible: true
                     SequentialAnimation {
-                        NumberAnimation { duration: 200; matchProperties: "height"; easing: "easeOutQuad" }
-                        NumberAnimation { duration: 200; matchProperties: "opacity" }
+                        NumberAnimation { duration: 200; properties: "height"; easing: "easeOutQuad" }
+                        NumberAnimation { duration: 200; properties: "opacity" }
                     }
                 }
             }

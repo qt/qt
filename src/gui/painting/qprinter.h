@@ -199,6 +199,10 @@ public:
 
     int actualNumCopies() const;
 
+    void setCopyCount(int);
+    int copyCount() const;
+    bool supportsMultipleCopies() const;
+
     void setPaperSource(PaperSource);
     PaperSource paperSource() const;
 

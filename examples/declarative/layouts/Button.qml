@@ -7,7 +7,7 @@ Rectangle { border.color: "black"; color: "steelblue"; radius: 5; width: pix.wid
 
     Image { id: pix; x: 5; y:5; source: parent.icon}
     Text { id: textelement; text: page.text; color: "white"; x:pix.width+pix.x+3; anchors.verticalCenter: pix.verticalCenter;}
-    MouseRegion{ id:mr; anchors.fill: parent; onClicked: {parent.focus = true; page.clicked()}}
+    MouseArea{ id:mr; anchors.fill: parent; onClicked: {parent.focus = true; page.clicked()}}
 
     states:
         State{ name:"pressed"; when:mr.pressed
@@ -17,6 +17,6 @@ Rectangle { border.color: "black"; color: "steelblue"; radius: 5; width: pix.wid
 
     transitions:
         Transition{
-            NumberAnimation { matchProperties:"x,left"; easing:"easeInOutQuad"; duration:200 }
+            NumberAnimation { properties:"x,left"; easing:"easeInOutQuad"; duration:200 }
         }
 }

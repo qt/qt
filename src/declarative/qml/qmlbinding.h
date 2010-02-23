@@ -75,6 +75,9 @@ public:
     void addToObject(QObject *);
     void removeFromObject();
 
+protected:
+    void clear();
+
 private:
     friend class QmlDeclarativeData;
     friend class QmlMetaProperty;

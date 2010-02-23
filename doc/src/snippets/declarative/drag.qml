@@ -6,7 +6,7 @@ Rectangle {
     Image {
         id: pic; source: "qtlogo-64.png"; anchors.verticalCenter: parent.verticalCenter
         opacity: (600.0-pic.x) / 600;
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             drag.target: pic
             drag.axis: "XAxis"

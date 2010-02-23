@@ -21,7 +21,7 @@ Item {
         anchors.right: parent.right
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: teksti
         onClicked: { webView.evaluateJavaScript ("do_it()") }
     }

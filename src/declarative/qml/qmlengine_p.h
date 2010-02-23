@@ -75,6 +75,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstack.h>
+#include <QtCore/qmutex.h>
 #include <QtScript/qscriptengine.h>
 
 #include <private/qobject_p.h>
@@ -211,9 +212,15 @@ public:
 
     bool inBeginCreate;
 
+    QNetworkAccessManager *createNetworkAccessManager(QObject *parent) const;
     QNetworkAccessManager *getNetworkAccessManager() const;
     mutable QNetworkAccessManager *networkAccessManager;
     mutable QmlNetworkAccessManagerFactory *networkAccessManagerFactory;
+
+    QHash<QString,QmlImageProvider*> imageProviders;
+    QImage getImageFromProvider(const QUrl &url);
+
+    mutable QMutex mutex;
 
     QmlCompositeTypeManager typeManager;
     QStringList fileImportPath;
@@ -267,11 +274,12 @@ public:
 
 
     void registerCompositeType(QmlCompiledData *);
-    bool isQmlList(int) const;
+
     bool isQObject(int);
     QObject *toQObject(const QVariant &, bool *ok = 0) const;
-    int qmlListType(int) const;
     QmlMetaType::TypeCategory typeCategory(int) const;
+    bool isList(int) const;
+    int listType(int) const;
     const QMetaObject *rawMetaObjectForType(int) const;
     const QMetaObject *metaObjectForType(int) const;
     QHash<int, int> m_qmlLists;
@@ -309,11 +317,11 @@ public:
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
+    static QmlEnginePrivate *get(QmlContext *c) { return (c && c->engine()) ? QmlEnginePrivate::get(c->engine()) : 0; }
     static QmlEnginePrivate *get(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p; }
     static QmlEngine *get(QmlEnginePrivate *p) { return p->q_func(); }
     QmlContext *getContext(QScriptContext *);
 };
-
 
 QT_END_NAMESPACE
 

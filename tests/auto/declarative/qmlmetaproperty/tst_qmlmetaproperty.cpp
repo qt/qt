@@ -73,13 +73,11 @@ private:
 class MyContainer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<MyQmlObject*>* children READ children)
-    Q_PROPERTY(QmlList<MyQmlObject*>* qmlChildren READ qmlChildren)
+    Q_PROPERTY(QmlListProperty<MyQmlObject> children READ children)
 public:
     MyContainer() {}
 
-    QList<MyQmlObject*> *children() { return &m_children; }
-    QmlConcreteList<MyQmlObject *> *qmlChildren() { return &m_qmlChildren; }
+    QmlListProperty<MyQmlObject> children() { return QmlListProperty<MyQmlObject>(this, m_children); }
 
     static MyAttached *qmlAttachedProperties(QObject *o) {
         return new MyAttached(o);
@@ -87,7 +85,6 @@ public:
 
 private:
     QList<MyQmlObject*> m_children;
-    QmlConcreteList<MyQmlObject *> m_qmlChildren;
 };
 
 QML_DECLARE_TYPE(MyContainer);
@@ -118,9 +115,11 @@ private slots:
     // Functionality
     void writeObjectToList();
     void writeListToList();
-    void writeObjectToQmlList();
 
     //writeToReadOnly();
+
+    // Bugs
+    void crashOnValueProperty();
 
 private:
     QmlEngine engine;
@@ -207,6 +206,9 @@ private:
     QRect m_rect;
     QUrl m_url;
 };
+
+QML_DECLARE_TYPE(PropertyObject);
+QML_DEFINE_TYPE(Test,1,0,PropertyObject,PropertyObject);
 
 void tst_qmlmetaproperty::qmlmetaproperty_object()
 {
@@ -1072,13 +1074,14 @@ void tst_qmlmetaproperty::writeObjectToList()
     containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
     MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
     QVERIFY(container != 0);
-    QVERIFY(container->children()->size() == 1);
+    QmlListReference list(container, "children");
+    QVERIFY(list.count() == 1);
 
     MyQmlObject *object = new MyQmlObject;
     QmlMetaProperty prop(container, "children");
     prop.write(qVariantFromValue(object));
-    QCOMPARE(container->children()->size(), 2);
-    QCOMPARE(container->children()->at(1), object);
+    QCOMPARE(list.count(), 1);
+    QCOMPARE(list.at(0), object);
 }
 
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -1088,13 +1091,14 @@ void tst_qmlmetaproperty::writeListToList()
     containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
     MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
     QVERIFY(container != 0);
-    QVERIFY(container->children()->size() == 1);
+    QmlListReference list(container, "children");
+    QVERIFY(list.count() == 1);
 
     QList<QObject*> objList;
     objList << new MyQmlObject() << new MyQmlObject() << new MyQmlObject() << new MyQmlObject();
     QmlMetaProperty prop(container, "children");
     prop.write(qVariantFromValue(objList));
-    QCOMPARE(container->children()->size(), 4);
+    QCOMPARE(list.count(), 4);
 
     //XXX need to try this with read/write prop (for read-only it correctly doesn't write)
     /*QList<MyQmlObject*> typedObjList;
@@ -1103,19 +1107,28 @@ void tst_qmlmetaproperty::writeListToList()
     QCOMPARE(container->children()->size(), 1);*/
 }
 
-void tst_qmlmetaproperty::writeObjectToQmlList()
+void tst_qmlmetaproperty::crashOnValueProperty()
 {
-    QmlComponent containerComponent(&engine);
-    containerComponent.setData("import Test 1.0\nMyContainer { qmlChildren: MyQmlObject {} }", QUrl());
-    MyContainer *container = qobject_cast<MyContainer*>(containerComponent.create());
-    QVERIFY(container != 0);
-    QVERIFY(container->qmlChildren()->size() == 1);
+    QmlEngine *engine = new QmlEngine;
+    QmlComponent component(engine);
 
-    MyQmlObject *object = new MyQmlObject;
-    QmlMetaProperty prop(container, "qmlChildren");
-    prop.write(qVariantFromValue(object));
-    QCOMPARE(container->qmlChildren()->size(), 2);
-    QCOMPARE(container->qmlChildren()->at(1), object);
+    component.setData("import Test 1.0\nPropertyObject { wrectProperty.x: 10 }", QUrl());
+    PropertyObject *obj = qobject_cast<PropertyObject*>(component.create());
+    QVERIFY(obj != 0);
+
+    QmlMetaProperty p = QmlMetaProperty::createProperty(obj, "wrectProperty.x", qmlContext(obj));
+    QCOMPARE(p.name(), QString("wrectProperty.x"));
+
+    QCOMPARE(p.read(), QVariant(10));
+
+    //don't crash once the engine is deleted
+    delete engine;
+    engine = 0;
+
+    QCOMPARE(p.propertyTypeName(), "int");
+    QCOMPARE(p.read(), QVariant(10));
+    p.write(QVariant(20));
+    QCOMPARE(p.read(), QVariant(20));
 }
 
 QTEST_MAIN(tst_qmlmetaproperty)

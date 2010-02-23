@@ -23,7 +23,7 @@ FocusScope {
         text: "Type something..."; color: "gray"; font.italic: true
     }
 
-    MouseRegion { anchors.fill: parent; onClicked: focusScope.focus = true }
+    MouseArea { anchors.fill: parent; onClicked: focusScope.focus = true }
 
     TextInput {
         id: textInput
@@ -38,7 +38,7 @@ FocusScope {
         anchors.verticalCenter: parent.verticalCenter
         source: "images/edit-clear-locationbar-rtl.png"; opacity: 0
 
-        MouseRegion { anchors.fill: parent; onClicked: { textInput.text = ''; focusScope.focus = true } }
+        MouseArea { anchors.fill: parent; onClicked: { textInput.text = ''; focusScope.focus = true } }
     }
 
     states: State {
@@ -50,11 +50,11 @@ FocusScope {
     transitions: [
         Transition {
             from: ""; to: "hasText"
-            NumberAnimation { exclude: typeSomething; matchProperties: "opacity" }
+            NumberAnimation { exclude: typeSomething; properties: "opacity" }
         },
         Transition {
             from: "hasText"; to: ""
-            NumberAnimation { matchProperties: "opacity" }
+            NumberAnimation { properties: "opacity" }
         }
     ]
 }

@@ -55,6 +55,7 @@ wince*:SUBDIRS += demos_sqlbrowser
 }
 contains(QT_CONFIG, phonon):!static:SUBDIRS += demos_mediaplayer
 contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):!symbian:SUBDIRS += demos_browser
+contains(QT_CONFIG, multimedia):SUBDIRS += demos_multimedia
 
 # install
 sources.files = README *.pro
@@ -85,6 +86,7 @@ demos_sqlbrowser.subdir = sqlbrowser
 demos_undo.subdir = undo
 demos_qtdemo.subdir = qtdemo
 demos_mediaplayer.subdir = qmediaplayer
+demos_multimedia.subdir = multimedia
 
 demos_browser.subdir = browser
 

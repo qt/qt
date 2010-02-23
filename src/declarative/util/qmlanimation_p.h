@@ -94,7 +94,8 @@ public:
     QmlAnimationGroup *group() const;
     void setGroup(QmlAnimationGroup *);
 
-    virtual void setTarget(const QmlMetaProperty &);
+    void setDefaultTarget(const QmlMetaProperty &);
+    void setDisableUserControl();
 
     void classBegin();
     void componentComplete();
@@ -123,11 +124,13 @@ public:
     virtual void transition(QmlStateActions &actions,
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
-    virtual void prepare(QmlMetaProperty &);
     virtual QAbstractAnimation *qtAnimation() = 0;
 
 private Q_SLOTS:
     void timelineComplete();
+
+private:
+    virtual void setTarget(const QmlMetaProperty &);
 };
 
 class QmlPauseAnimationPrivate;
@@ -186,9 +189,9 @@ class QmlPropertyAction : public QmlAbstractAnimation
 
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
-    Q_PROPERTY(QString matchProperties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* matchTargets READ targets)
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
+    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QmlListProperty<QObject> targets READ targets)
+    Q_PROPERTY(QmlListProperty<QObject> exclude READ exclude)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
 public:
@@ -204,8 +207,8 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *targets();
-    QList<QObject *> *exclude();
+    QmlListProperty<QObject> targets();
+    QmlListProperty<QObject> exclude();
 
     QVariant value() const;
     void setValue(const QVariant &);
@@ -220,7 +223,6 @@ protected:
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
 };
 
 class QmlGraphicsItem;
@@ -231,8 +233,7 @@ class QmlParentAction : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlParentAction)
 
     Q_PROPERTY(QmlGraphicsItem *target READ object WRITE setObject)
-    Q_PROPERTY(QmlGraphicsItem *matchTarget READ matchTarget WRITE setMatchTarget)
-    Q_PROPERTY(QmlGraphicsItem *parent READ parent WRITE setParent)
+    Q_PROPERTY(QmlGraphicsItem *parent READ parent WRITE setParent) //### newParent
 
 public:
     QmlParentAction(QObject *parent=0);
@@ -240,9 +241,6 @@ public:
 
     QmlGraphicsItem *object() const;
     void setObject(QmlGraphicsItem *);
-
-    QmlGraphicsItem *matchTarget() const;
-    void setMatchTarget(QmlGraphicsItem *);
 
     QmlGraphicsItem *parent() const;
     void setParent(QmlGraphicsItem *);
@@ -266,9 +264,9 @@ class Q_AUTOTEST_EXPORT QmlPropertyAnimation : public QmlAbstractAnimation
     Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
-    Q_PROPERTY(QString matchProperties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* matchTargets READ targets)
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
+    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QmlListProperty<QObject> targets READ targets)
+    Q_PROPERTY(QmlListProperty<QObject> exclude READ exclude)
 
 public:
     QmlPropertyAnimation(QObject *parent=0);
@@ -295,15 +293,15 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *targets();
-    QList<QObject *> *exclude();
+    QmlListProperty<QObject> targets();
+    QmlListProperty<QObject> exclude();
 
 protected:
+    QmlPropertyAnimation(QmlPropertyAnimationPrivate &dd, QObject *parent);
     virtual void transition(QmlStateActions &actions,
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
 
 Q_SIGNALS:
     void durationChanged(int);
@@ -370,6 +368,35 @@ public:
     void setTo(QVector3D);
 };
 
+class QmlRotationAnimationPrivate;
+class Q_AUTOTEST_EXPORT QmlRotationAnimation : public QmlPropertyAnimation
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlRotationAnimation)
+    Q_ENUMS(RotationDirection)
+
+    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(RotationDirection direction READ direction WRITE setDirection NOTIFY directionChanged)
+
+public:
+    QmlRotationAnimation(QObject *parent=0);
+    virtual ~QmlRotationAnimation();
+
+    qreal from() const;
+    void setFrom(qreal);
+
+    qreal to() const;
+    void setTo(qreal);
+
+    enum RotationDirection { Numerical, Shortest, Clockwise, Counterclockwise };
+    RotationDirection direction() const;
+    void setDirection(RotationDirection direction);
+
+Q_SIGNALS:
+    void directionChanged();
+};
+
 class QmlAnimationGroupPrivate;
 class QmlAnimationGroup : public QmlAbstractAnimation
 {
@@ -377,13 +404,13 @@ class QmlAnimationGroup : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlAnimationGroup)
 
     Q_CLASSINFO("DefaultProperty", "animations")
-    Q_PROPERTY(QmlList<QmlAbstractAnimation *> *animations READ animations)
+    Q_PROPERTY(QmlListProperty<QmlAbstractAnimation> animations READ animations)
 
 public:
     QmlAnimationGroup(QObject *parent);
     virtual ~QmlAnimationGroup();
 
-    QmlList<QmlAbstractAnimation *>* animations();
+    QmlListProperty<QmlAbstractAnimation> animations();
     friend class QmlAbstractAnimation;
 };
 
@@ -401,7 +428,6 @@ protected:
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
 };
 
 class QmlParallelAnimation : public QmlAnimationGroup
@@ -418,7 +444,6 @@ protected:
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
 };
 
 QT_END_NAMESPACE
@@ -434,6 +459,7 @@ QML_DECLARE_TYPE(QmlNumberAnimation)
 QML_DECLARE_TYPE(QmlSequentialAnimation)
 QML_DECLARE_TYPE(QmlParallelAnimation)
 QML_DECLARE_TYPE(QmlVector3dAnimation)
+QML_DECLARE_TYPE(QmlRotationAnimation)
 
 QT_END_HEADER
 

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -58,7 +58,7 @@ Here is the QML code:
 \snippet examples/declarative/tutorials/helloworld/tutorial3.qml 2
 
 First, we create a new \e down state for our text element.
-This state will be activated when the \l MouseRegion is pressed, and deactivated when it is released.
+This state will be activated when the \l MouseArea is pressed, and deactivated when it is released.
 
 The \e down state includes a set of property changes from our implicit \e {default state}
 (the items as they were initially defined in the QML).

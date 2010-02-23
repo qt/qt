@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -85,6 +85,15 @@ QGraphicsObject *object =
     qobject_cast<QGraphicsObject *>(component.create());
 scene->addItem(object);
 \endcode
+
+The following QGraphicsView options are recommended for optimal performance
+of QML UIs:
+
+\list
+\o QGraphicsView::setOptimizationFlags(QGraphicsView::DontSavePainterState);
+\o QGraphicsView::setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+\o QGraphicsScene::setItemIndexMethod(QGraphicsScene::NoIndex);
+\endlist
 
 \section1 Using existing QGraphicsWidgets in QML
 Another way of integrating with a QGraphicsView based UI is to expose your

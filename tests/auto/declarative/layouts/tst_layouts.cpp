@@ -69,10 +69,10 @@ void tst_QmlGraphicsLayouts::test_qml()
 
     canvas->execute();
     qApp->processEvents();
-    QmlGraphicsLayoutItem *left = static_cast<QmlGraphicsLayoutItem*>(canvas->root()->findChild<QmlGraphicsItem*>("left"));
+    QmlGraphicsLayoutItem *left = static_cast<QmlGraphicsLayoutItem*>(canvas->rootObject()->findChild<QmlGraphicsItem*>("left"));
     QVERIFY(left != 0);
 
-    QmlGraphicsLayoutItem *right = static_cast<QmlGraphicsLayoutItem*>(canvas->root()->findChild<QmlGraphicsItem*>("right"));
+    QmlGraphicsLayoutItem *right = static_cast<QmlGraphicsLayoutItem*>(canvas->rootObject()->findChild<QmlGraphicsItem*>("right"));
     QVERIFY(right != 0);
 
     qreal l = QApplication::style()->pixelMetric(QStyle::PM_LayoutLeftMargin);
@@ -81,9 +81,13 @@ void tst_QmlGraphicsLayouts::test_qml()
     qreal b = QApplication::style()->pixelMetric(QStyle::PM_LayoutBottomMargin);
     QVERIFY2(l == r && r == t && t == b, "Test assumes equal margins.");
     qreal gvMargin = l;
+
+    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(canvas->rootObject());
+    QVERIFY(rootItem != 0);
+
     //Preferred Size
-    canvas->root()->setWidth(300 + 2*gvMargin);
-    canvas->root()->setHeight(300 + 2*gvMargin);
+    rootItem->setWidth(300 + 2*gvMargin);
+    rootItem->setHeight(300 + 2*gvMargin);
 
     QCOMPARE(left->x(), gvMargin);
     QCOMPARE(left->y(), gvMargin);
@@ -96,8 +100,8 @@ void tst_QmlGraphicsLayouts::test_qml()
     QCOMPARE(right->height(), 300.0);
 
     //Minimum Size
-    canvas->root()->setWidth(10+2*gvMargin);
-    canvas->root()->setHeight(10+2*gvMargin);
+    rootItem->setWidth(10+2*gvMargin);
+    rootItem->setHeight(10+2*gvMargin);
 
     QCOMPARE(left->x(), gvMargin);
     QCOMPARE(left->width(), 100.0);
@@ -111,8 +115,8 @@ void tst_QmlGraphicsLayouts::test_qml()
     /*Note that if set to maximum size (or above) GraphicsLinearLayout behavior
       is to shrink them down to preferred size. So the exact maximum size can't
       be used*/
-    canvas->root()->setWidth(670 + 2*gvMargin);
-    canvas->root()->setHeight(300 + 2*gvMargin);
+    rootItem->setWidth(670 + 2*gvMargin);
+    rootItem->setHeight(300 + 2*gvMargin);
 
     QCOMPARE(left->x(), gvMargin);
     QCOMPARE(left->width(), 270.0);
@@ -133,11 +137,7 @@ void tst_QmlGraphicsLayouts::test_cpp()
 QmlView *tst_QmlGraphicsLayouts::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
-
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }

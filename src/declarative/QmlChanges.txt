@@ -1,7 +1,38 @@
+=============================================================================
+The changes below are pre Qt 4.7.0 alpha
 
+Renamed MouseRegion -> MouseArea
 
-Listview: sectionExpression has been replaced by section.property, section.criteria
+QmlView
+-------
+The API of QmlView has been narrowed and its role as a convenience class
+reinforced.
+- remove addItem()
+- remove clearItems() - use 'delete root()'
+- remove reset()
+- resizeContent -> enum ResizeMode { SizeViewToRootObject, SizeRootObjectToView }
+- remove setQml(), qml()
+- rename setUrl(), ur() to setSource(), source()
+- root() -> rootObject(),  returns QGraphicsObject rather than QmlGraphicsItem
+- remove quit() signal -> use quit() signal of engine()
+- initialSize() signal removed
+- Added status() to determine status of the internal QmlComponent
 
+sectionExpression has been replaced by section.property, section.criteria
+
+ListModel
+---------
+- types are strictly checked (previously, everything was a string)
+ - foo: "bar"  continues to work as before
+ - foo: bar  is now invalid, use  foo: "bar"
+ - foo: true  is now a bool (not string "true")
+ - foo: false  is now a bool (not string "false" == true!)
+
+PropertyAnimation
+------------------
+matchProperties and matchTargets have been renamed back to properties and targets.
+The semantics are explained in the PropertyAnimation::properties documentation
+and the animation overview documentation.
 
 =============================================================================
 The changes below are pre-4.6.0 release.

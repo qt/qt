@@ -101,7 +101,7 @@ Rectangle {
                 id: skull
             }
 
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onPressed: {
                     if (!head || !heartbeat.running) {

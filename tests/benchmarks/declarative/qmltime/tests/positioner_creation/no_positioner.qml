@@ -30,7 +30,7 @@ Item {
                         Text { }
                     }
                 }
-                MouseRegion { }
+                MouseArea { }
             }
         }
     }

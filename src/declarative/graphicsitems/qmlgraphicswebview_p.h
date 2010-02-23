@@ -114,7 +114,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
 
     Q_PROPERTY(QmlGraphicsWebSettings* settings READ settingsObject CONSTANT)
 
-    Q_PROPERTY(QmlList<QObject *>* javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
+    Q_PROPERTY(QmlListProperty<QObject> javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
     Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
     Q_PROPERTY(QmlGraphicsItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
@@ -174,7 +174,7 @@ public:
     bool renderingEnabled() const;
     void setRenderingEnabled(bool);
 
-    QmlList<QObject *> *javaScriptWindowObjects();
+    QmlListProperty<QObject> javaScriptWindowObjects();
 
     static QmlGraphicsWebViewAttached *qmlAttachedProperties(QObject *);
 
@@ -246,11 +246,35 @@ private:
     friend class QmlGraphicsWebPage;
 };
 
+class QmlGraphicsWebViewAttached : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString windowObjectName READ windowObjectName WRITE setWindowObjectName)
+public:
+    QmlGraphicsWebViewAttached(QObject *parent)
+        : QObject(parent)
+    {
+    }
+
+    QString windowObjectName() const
+    {
+        return m_windowObjectName;
+    }
+
+    void setWindowObjectName(const QString &n)
+    {
+        m_windowObjectName = n;
+    }
+
+private:
+    QString m_windowObjectName;
+};
+
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsWebView)
 QML_DECLARE_TYPEINFO(QmlGraphicsWebView, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(QAction)
 
 QT_END_HEADER
 

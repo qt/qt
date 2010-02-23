@@ -77,9 +77,9 @@ private:
     QSharedDataPointer<QmlScriptStringPrivate> d;
 };
 
-Q_DECLARE_METATYPE(QmlScriptString);
-
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QmlScriptString);
 
 QT_END_HEADER
 

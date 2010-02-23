@@ -52,15 +52,12 @@
 #include "qmlengine_p.h"
 #include "qmldeclarativedata_p.h"
 #include "qmlstringconverters_p.h"
-
-#include <qfxperf_p_p.h>
+#include "qmllist_p.h"
 
 #include <QStringList>
 #include <QtCore/qdebug.h>
 
 #include <math.h>
-
-Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
@@ -213,7 +210,6 @@ QmlMetaProperty::QmlMetaProperty(const QmlMetaProperty &other)
   \value InvalidProperty The property is invalid.
   \value Bindable The property is a QmlBinding.
   \value List The property is a QList pointer
-  \value QmlList The property is a QmlList pointer
   \value Object The property is a QObject derived type pointer
   \value Normal The property is none of the above.
  */
@@ -257,8 +253,6 @@ QmlMetaPropertyPrivate::propertyCategory() const
             return QmlMetaProperty::Bindable;
         else if (core.flags & QmlPropertyCache::Data::IsQObjectDerived)
             return QmlMetaProperty::Object;
-        else if (core.flags & QmlPropertyCache::Data::IsQmlList)
-            return QmlMetaProperty::QmlList;
         else if (core.flags & QmlPropertyCache::Data::IsQList)
             return QmlMetaProperty::List;
         else 
@@ -276,7 +270,7 @@ const char *QmlMetaProperty::propertyTypeName() const
 {
     if (type() & ValueTypeProperty) {
 
-        QmlEnginePrivate *ep = d->context?QmlEnginePrivate::get(d->context->engine()):0;
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(d->context);
         QmlValueType *valueType = 0;
         if (ep) valueType = ep->valueTypes[d->core.propType];
         else valueType = QmlValueTypeFactory::valueType(d->core.propType);
@@ -401,7 +395,7 @@ bool QmlMetaProperty::isWritable() const
 
     if (!d->object)
         return false;
-    if (category == List || category == QmlList)
+    if (category == List)
         return true;
     else if (type() & SignalProperty)
         return false;
@@ -689,7 +683,7 @@ QVariant QmlMetaPropertyPrivate::readValueProperty()
 
     } else if(type & QmlMetaProperty::ValueTypeProperty) {
 
-        QmlEnginePrivate *ep = context?QmlEnginePrivate::get(context->engine()):0;
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(context);
         QmlValueType *valueType = 0;
         if (ep) valueType = ep->valueTypes[core.propType];
         else valueType = QmlValueTypeFactory::valueType(core.propType);
@@ -702,6 +696,13 @@ QVariant QmlMetaPropertyPrivate::readValueProperty()
 
         if (!ep) delete valueType;
         return rv;
+
+    } else if(core.flags & QmlPropertyCache::Data::IsQList) {
+
+        QmlListProperty<QObject> prop;
+        void *args[] = { &prop, 0 };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
+        return QVariant::fromValue(QmlListReferencePrivate::init(prop, core.propType, context?context->engine():0));
 
     } else {
 
@@ -754,14 +755,15 @@ bool QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
                                                 QmlMetaProperty::WriteFlags flags)
 {
     // Remove any existing bindings on this property
-    if (!(flags & QmlMetaProperty::DontRemoveBinding))
-        delete q->setBinding(0);
+    if (!(flags & QmlMetaProperty::DontRemoveBinding)) {
+        QmlAbstractBinding *binding = q->setBinding(0);
+        if (binding) binding->destroy();
+    }
 
     bool rv = false;
     uint type = q->type();
     if (type & QmlMetaProperty::ValueTypeProperty) {
-        QmlEnginePrivate *ep = 
-            context?static_cast<QmlEnginePrivate *>(QObjectPrivate::get(context->engine())):0;
+        QmlEnginePrivate *ep = QmlEnginePrivate::get(context);
 
         QmlValueType *writeBack = 0;
         if (ep) {
@@ -812,9 +814,7 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
     int t = property.propType;
     int vt = value.userType();
 
-    QmlEnginePrivate *enginePriv = 0;
-    if (context && context->engine())
-        enginePriv = QmlEnginePrivate::get(context->engine());
+    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(context);
 
     if (t == QVariant::Url) {
 
@@ -879,55 +879,40 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
 
     } else if (property.flags & QmlPropertyCache::Data::IsQList) {
 
-        int listType = QmlMetaType::listType(t);
-        QMetaProperty prop = object->metaObject()->property(property.coreIndex);
+        const QMetaObject *listType = 0;
+        if (enginePriv) {
+            listType = enginePriv->rawMetaObjectForType(enginePriv->listType(property.propType));
+        } else {
+            QmlType *type = QmlMetaType::qmlType(QmlMetaType::listType(property.propType));
+            if (!type) return false;
+            listType = type->baseMetaObject();
+        }
+        if (!listType) return false;
+
+        QmlListProperty<void> prop;
+        void *args[] = { &prop, 0 };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty, coreIdx, args);
+
+        if (!prop.clear) return false;
+
+        prop.clear(&prop);
 
         if (value.userType() == qMetaTypeId<QList<QObject *> >()) {
-            const QList<QObject *> &list =
-                qvariant_cast<QList<QObject *> >(value);
-            QVariant listVar = prop.read(object);
-            QmlMetaType::clear(listVar);
+            const QList<QObject *> &list = qvariant_cast<QList<QObject *> >(value);
+
             for (int ii = 0; ii < list.count(); ++ii) {
-                QVariant v = QmlMetaType::qmlType(listType)->fromObject(list.at(ii)); 
-                QmlMetaType::append(listVar, v);
+                QObject *o = list.at(ii);
+                if (!canConvert(o->metaObject(), listType))
+                    o = 0;
+                prop.append(&prop, (void *)o);
             }
-
-        } else if (vt == listType ||
-                  value.userType() == listType) {
-            QVariant listVar = prop.read(object);
-            QmlMetaType::append(listVar, value);
+        } else {
+            QObject *o = enginePriv?enginePriv->toQObject(value):QmlMetaType::toQObject(value);
+            if (!canConvert(o->metaObject(), listType))
+                o = 0;
+            prop.append(&prop, (void *)o);
         }
 
-    } else if (property.flags & QmlPropertyCache::Data::IsQmlList) {
-
-        // XXX - optimize!
-        QMetaProperty prop = object->metaObject()->property(property.coreIndex);
-        QVariant list = prop.read(object);
-        QmlPrivate::ListInterface *li =
-            *(QmlPrivate::ListInterface **)list.constData();
-
-        int type = li->type();
-
-        if (QObject *obj = QmlMetaType::toQObject(value)) {
-            const QMetaObject *mo = rawMetaObjectForType(enginePriv, type);
-
-            const QMetaObject *objMo = obj->metaObject();
-            bool found = false;
-            while(!found && objMo) {
-                if (equal(objMo, mo))
-                    found = true;
-                else
-                    objMo = objMo->superClass();
-            }
-
-            if (!found) 
-                return false;
-
-            // NOTE: This assumes a cast to QObject does not alter
-            // the object pointer
-            void *d = (void *)&obj;
-            li->append(d);
-        }
     } else {
         Q_ASSERT(vt != t);
 

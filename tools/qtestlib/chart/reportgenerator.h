@@ -42,6 +42,9 @@
 #define REPORTGENERATOR_H
 
 #include "database.h"
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
 
 class ReportGenerator
 {
@@ -58,6 +61,8 @@ private:
 };
 
 void printTestCaseResults(const QString &testCaseName);
+
+QT_END_NAMESPACE
 
 #endif
 

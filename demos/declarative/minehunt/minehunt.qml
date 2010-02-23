@@ -31,7 +31,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         source: "pics/flag.png"
-                        opacity: modelData.hasFlag
+                        opacity: model.hasFlag
                         opacity: Behavior {
                             NumberAnimation {
                                 property: "opacity"
@@ -47,16 +47,16 @@ Item {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
-                        text: modelData.hint
+                        text: model.hint
                         color: "white"
                         font.bold: true
-                        opacity: !modelData.hasMine && modelData.hint > 0
+                        opacity: !model.hasMine && model.hint > 0
                     }
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         source: "pics/bomb.png"
-                        opacity: modelData.hasMine
+                        opacity: model.hasMine
                     }
                     Explosion {
                         id: expl
@@ -65,7 +65,7 @@ Item {
                 states: [
                     State {
                         name: "back"
-                        when: modelData.flipped
+                        when: model.flipped
                         PropertyChanges { target: flipable; angle: 180 }
                     }
                 ]
@@ -81,7 +81,7 @@ Item {
                                     else
                                         ret = 0;
                                     if (ret > 0) {
-                                        if (modelData.hasMine && modelData.flipped) {
+                                        if (model.hasMine && model.flipped) {
                                             ret*3;
                                         } else {
                                             ret;
@@ -93,15 +93,15 @@ Item {
                             }
                             NumberAnimation {
                                 easing: "easeInOutQuad"
-                                matchProperties: "angle"
+                                properties: "angle"
                             }
                             ScriptAction{
-                                script: if(modelData.hasMine && modelData.flipped){expl.explode = true;}
+                                script: if(model.hasMine && model.flipped){expl.explode = true;}
                             }
                         }
                     }
                 ]
-                MouseRegion {
+                MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onPressed: {
@@ -188,7 +188,7 @@ Item {
         anchors.right: field.right
         anchors.rightMargin: 20
         source: isPlaying ? 'pics/face-smile.png' : hasWon ? 'pics/face-smile-big.png': 'pics/face-sad.png'
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onPressed: { reset() }
         }

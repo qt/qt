@@ -216,8 +216,6 @@ public:
 
 private:
     void updateClipPath(const QPainterPath & path, Qt::ClipOperation op);
-
-    friend int qt_printerRealNumCopies(QPaintEngine *);
 };
 
 class QPdfBaseEnginePrivate : public QAlphaPaintEnginePrivate

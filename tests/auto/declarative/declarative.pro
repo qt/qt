@@ -29,18 +29,17 @@ SUBDIRS += \
            qmlgraphicsitem \        # Cover
            qmlgraphicslistview \    # Cover
            qmlgraphicsloader \      # Cover
+           qmlgraphicsmousearea \   # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicspathview \    # Cover
            qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover
            qmlgraphicstextedit \    # Cover
            qmlgraphicstextinput \   # Cover
-           qmlgraphicswebview \     # Cover
            qmlinfo \                # Cover
            qmlinstruction \         # Cover
            qmllanguage \            # Cover
            qmllist \                # Cover
-           qmllistaccessor \        # Cover
            qmllistmodel \           # Cover
            qmlmetaproperty \        # Cover
            qmlmetatype \            # Cover
@@ -57,8 +56,13 @@ SUBDIRS += \
            qmlgraphicsrepeater \    # Cover
            qmlvaluetypes \          # Cover
            qmlxmlhttprequest \      # Cover
+           qmlimageprovider \       # Cover
            sql                      # Cover
 
+contains(QT_CONFIG, webkit) {
+    SUBDIRS += \
+           qmlgraphicswebview       # Cover
+}
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

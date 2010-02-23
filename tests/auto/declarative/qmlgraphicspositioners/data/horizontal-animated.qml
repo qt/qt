@@ -6,12 +6,12 @@ Item {
     Row {
         add: Transition {
             NumberAnimation {
-                matchProperties: "x";
+                properties: "x";
             }
         }
         move: Transition {
             NumberAnimation {
-                matchProperties: "x";
+                properties: "x";
             }
         }
         Rectangle {

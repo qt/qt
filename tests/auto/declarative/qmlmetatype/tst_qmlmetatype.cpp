@@ -67,10 +67,6 @@ private slots:
     void qmlPropertyValueInterceptorCast();
 
     void isList();
-    void isQmlList();
-
-    void listCount();
-    void listAt();
 
     void defaultObject();
 };
@@ -157,9 +153,12 @@ void tst_qmlmetatype::copy()
     QT_COPY_TEST(QStringList, QStringList() << "QML" << "Rocks");
     QT_COPY_TEST(QByteArray, QByteArray("0x1102DDD"));
     QT_COPY_TEST(QBitArray, QBitArray(102, true));
-    QT_COPY_TEST(QDate, QDate::currentDate());
-    QT_COPY_TEST(QTime, QTime::currentTime());
-    QT_COPY_TEST(QDateTime, QDateTime::currentDateTime());
+    QDate cd = QDate::currentDate();
+    QT_COPY_TEST(QDate, cd);
+    QTime ct = QTime::currentTime();
+    QT_COPY_TEST(QTime, ct);
+    QDateTime cdt = QDateTime::currentDateTime();
+    QT_COPY_TEST(QDateTime, cdt);
     QT_COPY_TEST(QUrl, QUrl("http://www.nokia.com"));
     QT_COPY_TEST(QLocale, QLocale(QLocale::English, QLocale::Australia));
     QT_COPY_TEST(QRect, QRect(-10, 10, 102, 99));
@@ -343,85 +342,12 @@ void tst_qmlmetatype::qmlPropertyValueInterceptorCast()
 
 void tst_qmlmetatype::isList()
 {
-    QCOMPARE(QmlMetaType::isList(QVariant()), false);
     QCOMPARE(QmlMetaType::isList(QVariant::Invalid), false);
     QCOMPARE(QmlMetaType::isList(QVariant::Int), false);
-    QCOMPARE(QmlMetaType::isList(QVariant(10)), false);
 
-    QList<TestType *> list;
-    QmlConcreteList<TestType *> qmllist;
+    QmlListProperty<TestType> list;
 
-    QCOMPARE(QmlMetaType::isList(qMetaTypeId<QList<TestType *>*>()), true);
-    QCOMPARE(QmlMetaType::isList(QVariant::fromValue(&list)), true);
-    QCOMPARE(QmlMetaType::isList(qMetaTypeId<QmlList<TestType *>*>()), false);
-    QCOMPARE(QmlMetaType::isList(QVariant::fromValue((QmlList<TestType *>*)&qmllist)), false);
-}
-
-void tst_qmlmetatype::isQmlList()
-{
-    QCOMPARE(QmlMetaType::isQmlList(QVariant::Invalid), false);
-    QCOMPARE(QmlMetaType::isQmlList(QVariant::Int), false);
-
-    QCOMPARE(QmlMetaType::isQmlList(qMetaTypeId<QList<TestType *>*>()), false);
-    QCOMPARE(QmlMetaType::isQmlList(qMetaTypeId<QmlList<TestType *>*>()), true);
-}
-
-void tst_qmlmetatype::listCount()
-{
-    QCOMPARE(QmlMetaType::listCount(QVariant()), 0);
-    QCOMPARE(QmlMetaType::listCount(QVariant(10)), 0);
-
-    QList<TestType *> list; 
-    QVariant listVar = QVariant::fromValue(&list);
-    QmlConcreteList<TestType *> qmllist;
-    QVariant qmllistVar = QVariant::fromValue((QmlList<TestType *>*)&qmllist);
-
-    QCOMPARE(QmlMetaType::listCount(listVar), 0);
-    QCOMPARE(QmlMetaType::listCount(qmllistVar), 0);
-
-    list.append(0); list.append(0); list.append(0);
-    qmllist.append(0); qmllist.append(0); qmllist.append(0);
-
-    QCOMPARE(QmlMetaType::listCount(listVar), 3);
-    QCOMPARE(QmlMetaType::listCount(qmllistVar), 0);
-}
-
-void tst_qmlmetatype::listAt()
-{
-    QCOMPARE(QmlMetaType::listAt(QVariant(), 0), QVariant());
-    QCOMPARE(QmlMetaType::listAt(QVariant(10), 0), QVariant());
-    QCOMPARE(QmlMetaType::listAt(QVariant(), 10), QVariant());
-    QCOMPARE(QmlMetaType::listAt(QVariant(10), 10), QVariant());
-    QCOMPARE(QmlMetaType::listAt(QVariant(), -10), QVariant());
-    QCOMPARE(QmlMetaType::listAt(QVariant(10), -10), QVariant());
-
-    QList<TestType *> list; 
-    QVariant listVar = QVariant::fromValue(&list);
-    QmlConcreteList<TestType *> qmllist;
-    QVariant qmllistVar = QVariant::fromValue((QmlList<TestType *>*)&qmllist);
-
-    QCOMPARE(QmlMetaType::listAt(listVar, 0), QVariant());
-    QCOMPARE(QmlMetaType::listAt(listVar, 2), QVariant());
-    QCOMPARE(QmlMetaType::listAt(listVar, -1), QVariant());
-
-    QCOMPARE(QmlMetaType::listAt(qmllistVar, 0), QVariant());
-    QCOMPARE(QmlMetaType::listAt(qmllistVar, 2), QVariant());
-    QCOMPARE(QmlMetaType::listAt(qmllistVar, -1), QVariant());
-
-    TestType ttype;
-    QVariant ttypeVar = QVariant::fromValue(&ttype);
-    QVariant nullttypeVar = QVariant::fromValue((TestType *)0);
-
-    list.append(0); list.append(&ttype); list.append(0);
-    qmllist.append(0); qmllist.append(&ttype); qmllist.append(0);
-
-    QCOMPARE(QmlMetaType::listAt(listVar, 0), nullttypeVar);
-    QCOMPARE(QmlMetaType::listAt(listVar, 1), ttypeVar);
-    QCOMPARE(QmlMetaType::listAt(listVar, -1), QVariant());
-
-    QCOMPARE(QmlMetaType::listAt(qmllistVar, 0), QVariant());
-    QCOMPARE(QmlMetaType::listAt(qmllistVar, 2), QVariant());
-    QCOMPARE(QmlMetaType::listAt(qmllistVar, -1), QVariant());
+    QCOMPARE(QmlMetaType::isList(qMetaTypeId<QmlListProperty<TestType> >()), true);
 }
 
 void tst_qmlmetatype::defaultObject()

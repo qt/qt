@@ -19,10 +19,10 @@ Rectangle {
         }
     }
     transitions: Transition {
-        NumberAnimation { matchTargets: theRect; matchProperties: "x" }
+        NumberAnimation { targets: theRect; properties: "x" }
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: parent.state = "moved"
     }

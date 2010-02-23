@@ -110,8 +110,6 @@ public:
     qreal velocityX;
     qreal velocityY;
     QTime pressTime;
-    QmlTimeLineEvent fixupXEvent;
-    QmlTimeLineEvent fixupYEvent;
     qreal deceleration;
     qreal maxVelocity;
     QTime velocityTime;
@@ -124,6 +122,9 @@ public:
     QBasicTimer delayedPressTimer;
     int pressDelay;
     int fixupDuration;
+
+    static void fixupY_callback(void *);
+    static void fixupX_callback(void *);
 
     void updateVelocity();
     struct Velocity : public QmlTimeLineValue
@@ -148,17 +149,41 @@ public:
     void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
 
     // flickableData property
-    void data_removeAt(int);
-    int data_count() const;
-    void data_append(QObject *);
-    void data_insert(int, QObject *);
-    QObject *data_at(int) const;
-    void data_clear();
+    static void data_append(QmlListProperty<QObject> *, QObject *);
+};
 
-    friend class QmlGraphicsFlickableVisibleArea;
-    QML_DECLARE_LIST_PROXY(QmlGraphicsFlickablePrivate, QObject *, data)
+class QmlGraphicsFlickableVisibleArea : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal xPosition READ xPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal yPosition READ yPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal widthRatio READ widthRatio NOTIFY pageChanged)
+    Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY pageChanged)
+
+public:
+    QmlGraphicsFlickableVisibleArea(QmlGraphicsFlickable *parent=0);
+
+    qreal xPosition() const;
+    qreal widthRatio() const;
+    qreal yPosition() const;
+    qreal heightRatio() const;
+
+    void updateVisible();
+
+signals:
+    void pageChanged();
+
+private:
+    QmlGraphicsFlickable *flickable;
+    qreal m_xPosition;
+    qreal m_widthRatio;
+    qreal m_yPosition;
+    qreal m_heightRatio;
 };
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsFlickableVisibleArea)
 
 #endif

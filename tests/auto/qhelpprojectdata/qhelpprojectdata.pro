@@ -1,10 +1,9 @@
-TEMPLATE = subdirs
-CONFIG  += ordered
+load(qttest_p4)
 
-contains(QT_BUILD_PARTS, tools): {
-	SUBDIRS += ../../../tools/assistant/lib/fulltextsearch \
-        	   ../../../tools/assistant/lib
-}
+SOURCES += tst_qhelpprojectdata.cpp
+CONFIG  += help
 
-SUBDIRS += tst_qhelpprojectdata.pro
+DEFINES += SRCDIR=\\\"$$PWD\\\"
+DEFINES += QT_USE_USING_NAMESPACE
+!contains(QT_BUILD_PARTS, tools): DEFINES += QT_NO_BUILD_TOOLS
 

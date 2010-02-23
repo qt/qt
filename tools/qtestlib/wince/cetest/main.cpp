@@ -45,6 +45,9 @@
 #   include "activesyncconnection.h"
 #endif
 
+const int SLEEP_AFTER_RESET = 60000; // sleep for 1 minute
+const int SLEEP_RECONNECT   = 2000;  // sleep for 2 seconds before trying another reconnect
+
 #include "deployment.h"
 #include <option.h>
 #include <project.h>
@@ -123,6 +126,8 @@ void usage()
         " -debug            : Test debug version[default]\n"
         " -release          : Test release version\n"
         " -libpath <path>   : Remote path to deploy Qt libraries to\n"
+        " -reset            : Reset device before starting a test\n"
+        " -awake            : Device does not go sleep mode\n"
         " -qt-delete        : Delete the Qt libraries after execution\n"
         " -project-delete   : Delete the project file(s) after execution\n"
         " -delete           : Delete everything deployed after execution\n"
@@ -152,6 +157,8 @@ int main(int argc, char **argv)
     int timeout = -1;
     bool cleanupQt = false;
     bool cleanupProject = false;
+    bool deviceReset = false;
+    bool keepAwake = false;
 
     for (int i=1; i<arguments.size(); ++i) {
         if (arguments.at(i).toLower() == QLatin1String("-help")
@@ -196,6 +203,10 @@ int main(int argc, char **argv)
         } else if (arguments.at(i).toLower() == QLatin1String("-delete")) {
             cleanupQt = true;
             cleanupProject = true;
+        } else if (arguments.at(i).toLower() == QLatin1String("-reset")) {
+            deviceReset = true;
+        } else if (arguments.at(i).toLower() == QLatin1String("-awake")) {
+            keepAwake = true;
         } else if (arguments.at(i).toLower() == QLatin1String("-conf")) {
             if (++i == arguments.size()) {
                 cout << "Error: No qt.conf file specified!" << endl;
@@ -352,6 +363,43 @@ int main(int argc, char **argv)
     if (!deployment.deviceDeploy(qtDeploymentList) || !deployment.deviceDeploy(projectDeploymentList)) {
         cout << "Error: Could not copy file(s) to device" << endl;
         return -1;
+    }
+    // device power mode
+    if (keepAwake)
+    {
+        int retVal = 0;
+        if (!connection.setDeviceAwake(true, &retVal)) {
+            cout << "Error: Could not set unattended mode on device" << endl;
+            return -1;
+        }
+    }
+
+    // reset device
+    if (deviceReset)
+    {
+        if (!connection.resetDevice()) {
+        //if (!connection.toggleDevicePower( &retVal)) {
+            cout << "Error: Could not reset the device" << endl;
+            return -1;
+        }
+        cout << " Entering sleep after reset for " << SLEEP_AFTER_RESET / 1000 << " seconds ... " << endl;
+        Sleep(SLEEP_AFTER_RESET);
+        cout << " ... woke up. " << endl;
+        connection.disconnect();
+        // reconnect after reset
+        int retryCount = 21;
+        while (--retryCount)
+        {
+            if (!connection.connect()) 
+                Sleep(SLEEP_RECONNECT);
+            else
+                break;
+        }
+        if (!connection.isConnected())
+        {
+            cout << "Error: Could not connect to device!" << endl;
+            return -1;
+        }
     }
 
     // launch

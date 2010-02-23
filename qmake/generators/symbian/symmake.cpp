@@ -49,11 +49,8 @@
 #include <stdlib.h>
 #include <qdebug.h>
 
-#ifdef Q_OS_WIN
-#define SCRIPT_EXT ".bat"
-#else
-#define SCRIPT_EXT ".sh"
-#endif
+// Included from tools/shared
+#include <symbian/epocroot.h>
 
 #define RESOURCE_DIRECTORY_MMP "/resource/apps"
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
@@ -1038,7 +1035,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         removeSpecialCharacters(bldinfDefine);
 
         t << "#ifndef " << bldinfDefine << endl;
-        t << "\t#include \"" << QDir::toNativeSeparators(bldinfFilename) << "\"" << endl;
+        t << "\t#include \"" << bldinfFilename << "\"" << endl;
         t << "#endif // " << bldinfDefine << endl;
     }
 

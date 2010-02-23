@@ -1,13 +1,21 @@
-TEMPLATE = subdirs
+load(qttest_p4)
+SOURCES += tst_xmlpatternsxqts.cpp ../qxmlquery/TestFundament.cpp tst_suitetest.cpp
+
+include(../xmlpatterns.pri)
+
 contains(QT_CONFIG,xmlpatterns) {
-  SUBDIRS += lib
-  test.depends = lib
+    HEADERS += tst_suitetest.h
+    LIBS += -l$$XMLPATTERNS_SDK
 }
-SUBDIRS += test
 
-# Needed on the win32-g++ setup and on the test machine arsia.
-INCLUDEPATH += $$QT_BUILD_TREE/include/QtXmlPatterns/private \
-               ../../../include/QtXmlPatterns/private
+# syncqt doesn't copy headers in tools/ so let's manually ensure
+# it works with shadow builds and source builds.
+INCLUDEPATH += $$(QTDIR)/include/QtXmlPatterns/private      \
+               $$(QTSRCDIR)/include/QtXmlPatterns/private   \
+               $$(QTSRCDIR)/tools/xmlpatterns               \
+               $$(QTDIR)/tools/xmlpatterns                  \
+               ../xmlpatternssdk/
 
-requires(contains(QT_CONFIG,private_tests))
-
+CONFIG += testlib
+QT += xml
+TARGET = tst_xmlpatternsxqts

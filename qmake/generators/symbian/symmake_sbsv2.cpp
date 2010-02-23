@@ -48,6 +48,9 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
 SymbianSbsv2MakefileGenerator::SymbianSbsv2MakefileGenerator() : SymbianMakefileGenerator() { }
 SymbianSbsv2MakefileGenerator::~SymbianSbsv2MakefileGenerator() { }
 

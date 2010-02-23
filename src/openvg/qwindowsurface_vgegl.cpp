@@ -225,10 +225,6 @@ static QEglContext *createContext(QPaintDevice *device)
     // Create the context object and open the display.
     context = new QEglContext();
     context->setApi(QEgl::OpenVG);
-    if (!context->openDisplay(device)) {
-        delete context;
-        return 0;
-    }
 
     // Set the swap interval for the display.
     QByteArray interval = qgetenv("QT_VG_SWAP_INTERVAL");

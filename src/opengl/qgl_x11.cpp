@@ -1656,8 +1656,11 @@ static bool qt_resolveTextureFromPixmap(QPaintDevice *paintDevice)
         Display *display = xinfo ? xinfo->display() : X11->display;
         int screen = xinfo ? xinfo->screen() : X11->defaultScreen;
 
-        QGLExtensionMatcher extensions(glXQueryExtensionsString(display, screen));
-        if (extensions.match("GLX_EXT_texture_from_pixmap")) {
+        QGLExtensionMatcher serverExtensions(glXQueryExtensionsString(display, screen));
+        QGLExtensionMatcher clientExtensions(glXGetClientString(display, GLX_EXTENSIONS));
+        if (serverExtensions.match("GLX_EXT_texture_from_pixmap")
+            && clientExtensions.match("GLX_EXT_texture_from_pixmap"))
+        {
             glXBindTexImageEXT = (qt_glXBindTexImageEXT) qglx_getProcAddress("glXBindTexImageEXT");
             glXReleaseTexImageEXT = (qt_glXReleaseTexImageEXT) qglx_getProcAddress("glXReleaseTexImageEXT");
         }

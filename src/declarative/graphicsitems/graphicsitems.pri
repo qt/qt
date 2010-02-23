@@ -1,9 +1,11 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/qmlgraphicsitemsmodule_p.h \
     $$PWD/qmlgraphicsanchors_p.h \
     $$PWD/qmlgraphicsanchors_p_p.h \
     $$PWD/qmlgraphicsevents_p_p.h \
+    $$PWD/qmlgraphicseffects_p.h \
     $$PWD/qmlgraphicsflickable_p.h \
     $$PWD/qmlgraphicsflickable_p_p.h \
     $$PWD/qmlgraphicsflipable_p.h \
@@ -26,8 +28,8 @@ HEADERS += \
     $$PWD/qmlgraphicspositioners_p_p.h \
     $$PWD/qmlgraphicsloader_p.h \
     $$PWD/qmlgraphicsloader_p_p.h \
-    $$PWD/qmlgraphicsmouseregion_p.h \
-    $$PWD/qmlgraphicsmouseregion_p_p.h \
+    $$PWD/qmlgraphicsmousearea_p.h \
+    $$PWD/qmlgraphicsmousearea_p_p.h \
     $$PWD/qmlgraphicspath_p.h \
     $$PWD/qmlgraphicspath_p_p.h \
     $$PWD/qmlgraphicspathview_p.h \
@@ -52,6 +54,7 @@ HEADERS += \
     $$PWD/qmlgraphicseffects.cpp
 
 SOURCES += \
+    $$PWD/qmlgraphicsitemsmodule.cpp \
     $$PWD/qmlgraphicsanchors.cpp \
     $$PWD/qmlgraphicsevents.cpp \
     $$PWD/qmlgraphicsflickable.cpp \
@@ -67,7 +70,7 @@ SOURCES += \
     $$PWD/qmlgraphicsfocusscope.cpp \
     $$PWD/qmlgraphicspositioners.cpp \
     $$PWD/qmlgraphicsloader.cpp \
-    $$PWD/qmlgraphicsmouseregion.cpp \
+    $$PWD/qmlgraphicsmousearea.cpp \
     $$PWD/qmlgraphicspath.cpp \
     $$PWD/qmlgraphicspathview.cpp \
     $$PWD/qmlgraphicsrectangle.cpp \

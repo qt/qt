@@ -71,9 +71,9 @@ private slots:
 private:
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QmlGraphicsItem *parent, const QString &objectName, int index=-1);
+    T *findItem(QGraphicsObject *parent, const QString &objectName, int index=-1);
     template<typename T>
-    QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
+    QList<T*> findItems(QGraphicsObject *parent, const QString &objectName);
 };
 
 class TestObject : public QObject
@@ -204,7 +204,7 @@ void tst_QmlGraphicsPathView::items()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->root(), "view");
+    QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->rootObject(), "view");
     QVERIFY(pathview != 0);
 
     QCOMPARE(pathview->childItems().count(), model.count()); // assumes all are visible
@@ -268,31 +268,31 @@ void tst_QmlGraphicsPathView::path()
     QCOMPARE(obj->startY(), 100.);
     QVERIFY(obj->path() != QPainterPath());
 
-    QList<QmlGraphicsPathElement*> *list = obj->pathElements();
-    QCOMPARE(list->count(), 5);
+    QmlListReference list(obj, "pathElements");
+    QCOMPARE(list.count(), 5);
 
-    QmlGraphicsPathAttribute* attr = qobject_cast<QmlGraphicsPathAttribute*>(list->at(0));
+    QmlGraphicsPathAttribute* attr = qobject_cast<QmlGraphicsPathAttribute*>(list.at(0));
     QVERIFY(attr != 0);
     QCOMPARE(attr->name(), QString("scale"));
     QCOMPARE(attr->value(), 1.0);
 
-    QmlGraphicsPathQuad* quad = qobject_cast<QmlGraphicsPathQuad*>(list->at(1));
+    QmlGraphicsPathQuad* quad = qobject_cast<QmlGraphicsPathQuad*>(list.at(1));
     QVERIFY(quad != 0);
     QCOMPARE(quad->x(), 120.);
     QCOMPARE(quad->y(), 25.);
     QCOMPARE(quad->controlX(), 260.);
     QCOMPARE(quad->controlY(), 75.);
 
-    QmlGraphicsPathPercent* perc = qobject_cast<QmlGraphicsPathPercent*>(list->at(2));
+    QmlGraphicsPathPercent* perc = qobject_cast<QmlGraphicsPathPercent*>(list.at(2));
     QVERIFY(perc != 0);
     QCOMPARE(perc->value(), 0.3);
 
-    QmlGraphicsPathLine* line = qobject_cast<QmlGraphicsPathLine*>(list->at(3));
+    QmlGraphicsPathLine* line = qobject_cast<QmlGraphicsPathLine*>(list.at(3));
     QVERIFY(line != 0);
     QCOMPARE(line->x(), 120.);
     QCOMPARE(line->y(), 100.);
 
-    QmlGraphicsPathCubic* cubic = qobject_cast<QmlGraphicsPathCubic*>(list->at(4));
+    QmlGraphicsPathCubic* cubic = qobject_cast<QmlGraphicsPathCubic*>(list.at(4));
     QVERIFY(cubic != 0);
     QCOMPARE(cubic->x(), 180.);
     QCOMPARE(cubic->y(), 0.);
@@ -326,10 +326,10 @@ void tst_QmlGraphicsPathView::dataModel()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsPathView *pathview = qobject_cast<QmlGraphicsPathView*>(canvas->root());
+    QmlGraphicsPathView *pathview = qobject_cast<QmlGraphicsPathView*>(canvas->rootObject());
     QVERIFY(pathview != 0);
 
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
     QmlGraphicsItem *item = findItem<QmlGraphicsItem>(pathview, "wrapper", 0);
@@ -352,7 +352,7 @@ void tst_QmlGraphicsPathView::dataModel()
     QCOMPARE(text->text(), model.name(2));
 
     testObject->setPathItemCount(5);
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
     itemCount = findItems<QmlGraphicsItem>(pathview, "wrapper").count();
@@ -398,7 +398,7 @@ void tst_QmlGraphicsPathView::pathMoved()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->root(), "view");
+    QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->rootObject(), "view");
     QVERIFY(pathview != 0);
 
     QmlGraphicsRectangle *firstItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 0);
@@ -430,10 +430,7 @@ QmlView *tst_QmlGraphicsPathView::createView(const QString &filename)
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
@@ -443,7 +440,7 @@ QmlView *tst_QmlGraphicsPathView::createView(const QString &filename)
    item must also evaluate the {index} expression equal to index
  */
 template<typename T>
-T *tst_QmlGraphicsPathView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
+T *tst_QmlGraphicsPathView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->childItems().count() << "children";
@@ -471,7 +468,7 @@ T *tst_QmlGraphicsPathView::findItem(QmlGraphicsItem *parent, const QString &obj
 }
 
 template<typename T>
-QList<T*> tst_QmlGraphicsPathView::findItems(QmlGraphicsItem *parent, const QString &objectName)
+QList<T*> tst_QmlGraphicsPathView::findItems(QGraphicsObject *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;

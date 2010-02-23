@@ -45,7 +45,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/private/qguard_p.h>
+#include <QtDeclarative/private/qmlguard_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qnumeric.h>
 #include <private/qmlengine_p.h>
@@ -365,7 +365,6 @@ void tst_qmlecmascript::basicExpressions()
     QCOMPARE(expr.value(), result);
 }
 
-Q_DECLARE_METATYPE(QList<QObject *>);
 void tst_qmlecmascript::arrayExpressions()
 {
     QObject obj1;
@@ -835,9 +834,9 @@ void tst_qmlecmascript::dynamicCreation()
 void tst_qmlecmascript::dynamicDestruction()
 {
     QmlComponent component(&engine, TEST_FILE("dynamicDeletion.qml"));
-    QGuard<MyQmlObject> object = qobject_cast<MyQmlObject*>(component.create());
+    QmlGuard<MyQmlObject> object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
-    QGuard<QObject> createdQmlObject = 0;
+    QmlGuard<QObject> createdQmlObject = 0;
 
     QMetaObject::invokeMethod(object, "create");
     createdQmlObject = object->objectProperty();
@@ -846,10 +845,9 @@ void tst_qmlecmascript::dynamicDestruction()
 
     QMetaObject::invokeMethod(object, "killOther");
     QVERIFY(createdQmlObject);
-    QTest::qWait(0);
     QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
     QVERIFY(createdQmlObject);
-    for (int ii = 0; createdQmlObject && ii < 10; ++ii) {
+    for (int ii = 0; createdQmlObject && ii < 50; ++ii) { // After 5 seconds we should give up
         if (createdQmlObject) {
             QTest::qWait(100);
             QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
@@ -986,12 +984,8 @@ void tst_qmlecmascript::listProperties()
 
     QCOMPARE(object->property("test1").toInt(), 21);
     QCOMPARE(object->property("test2").toInt(), 2);
-    QCOMPARE(object->property("test3").toInt(), 50);
-    QCOMPARE(object->property("test4").toInt(), 3);
-    QCOMPARE(object->property("test5").toBool(), true);
-    QCOMPARE(object->property("test6").toBool(), true);
-    QCOMPARE(object->property("test7").toBool(), true);
-    QCOMPARE(object->property("test8").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
 }
 
 void tst_qmlecmascript::exceptionClearsOnReeval()
@@ -1613,7 +1607,9 @@ void tst_qmlecmascript::listToVariant()
     QObject *object = component.create(&context);
     QVERIFY(object != 0);
 
-    QCOMPARE(object->property("test"), QVariant::fromValue(container.children()));
+    QVariant v = object->property("test");
+    QCOMPARE(v.userType(), qMetaTypeId<QmlListReference>());
+    QVERIFY(qvariant_cast<QmlListReference>(v).object() == &container);
 
     delete object;
 }

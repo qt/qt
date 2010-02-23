@@ -109,7 +109,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsVisualItemModel : public QmlGraphicsVisual
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlGraphicsVisualItemModel)
 
-    Q_PROPERTY(QmlList<QmlGraphicsItem *>* children READ children NOTIFY childrenChanged DESIGNABLE false)
+    Q_PROPERTY(QmlListProperty<QmlGraphicsItem> children READ children NOTIFY childrenChanged DESIGNABLE false)
     Q_CLASSINFO("DefaultProperty", "children")
 
 public:
@@ -126,7 +126,7 @@ public:
 
     virtual int indexOf(QmlGraphicsItem *item, QObject *objectContext) const;
 
-    QmlList<QmlGraphicsItem *> *children();
+    QmlListProperty<QmlGraphicsItem> children();
 
     static QmlGraphicsVisualItemModelAttached *qmlAttachedProperties(QObject *obj);
 
@@ -194,6 +194,45 @@ private Q_SLOTS:
 private:
     Q_DISABLE_COPY(QmlGraphicsVisualDataModel)
 };
+
+class QmlGraphicsVisualItemModelAttached : public QObject
+{
+    Q_OBJECT
+
+public:
+    QmlGraphicsVisualItemModelAttached(QObject *parent)
+        : QObject(parent), m_index(0) {}
+    ~QmlGraphicsVisualItemModelAttached() {
+        attachedProperties.remove(parent());
+    }
+
+    Q_PROPERTY(int index READ index NOTIFY indexChanged)
+    int index() const { return m_index; }
+    void setIndex(int idx) {
+        if (m_index != idx) {
+            m_index = idx;
+            emit indexChanged();
+        }
+    }
+
+    static QmlGraphicsVisualItemModelAttached *properties(QObject *obj) {
+        QmlGraphicsVisualItemModelAttached *rv = attachedProperties.value(obj);
+        if (!rv) {
+            rv = new QmlGraphicsVisualItemModelAttached(obj);
+            attachedProperties.insert(obj, rv);
+        }
+        return rv;
+    }
+
+Q_SIGNALS:
+    void indexChanged();
+
+public:
+    int m_index;
+
+    static QHash<QObject*, QmlGraphicsVisualItemModelAttached*> attachedProperties;
+};
+
 
 QT_END_NAMESPACE
 

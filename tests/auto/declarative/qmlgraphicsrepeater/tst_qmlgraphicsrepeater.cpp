@@ -38,12 +38,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QtTest/QtTest>
+#include <QtTest/QSignalSpy>
 #include <private/qlistmodelinterface_p.h>
-#include <qmlview.h>
+#include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlview.h>
+#include <QtDeclarative/qmlcontext.h>
 #include <private/qmlgraphicsrepeater_p.h>
 #include <private/qmlgraphicstext_p.h>
-#include <qmlcontext.h>
+
+inline QUrl TEST_FILE(const QString &filename)
+{
+    return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
+}
 
 class tst_QmlGraphicsRepeater : public QObject
 {
@@ -57,11 +65,12 @@ private slots:
     void stringList();
     void dataModel();
     void itemModel();
+    void properties();
 
 private:
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QmlGraphicsItem *parent, const QString &id);
+    T *findItem(QGraphicsObject *parent, const QString &id);
 };
 
 class TestObject : public QObject
@@ -165,11 +174,11 @@ void tst_QmlGraphicsRepeater::numberModel()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->parentItem()->childItems().count(), 5+1);
 
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
     delete canvas;
@@ -179,19 +188,19 @@ void tst_QmlGraphicsRepeater::objectList()
 {
     QmlView *canvas = createView(SRCDIR "/data/objlist.qml");
 
-    QObjectList* data = new QObjectList;
+    QObjectList data;
     for(int i=0; i<100; i++){
-        *data << new QObject();
-        data->back()->setProperty("idx", i);
+        data << new QObject();
+        data.back()->setProperty("idx", i);
     }
 
     QmlContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("testData", QVariant::fromValue<QObjectList*>(data));
+    ctxt->setContextProperty("testData", QVariant::fromValue(data));
 
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->property("errors").toInt(), 0);//If this fails either they are out of order or can't find the object's data
     QCOMPARE(repeater->property("instantiated").toInt(), 100);
@@ -218,10 +227,10 @@ void tst_QmlGraphicsRepeater::stringList()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
 
-    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->rootObject(), "container");
     QVERIFY(container != 0);
 
     QCOMPARE(container->childItems().count(), data.count() + 3);
@@ -271,10 +280,10 @@ void tst_QmlGraphicsRepeater::dataModel()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
 
-    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->rootObject(), "container");
     QVERIFY(container != 0);
 
     QCOMPARE(container->childItems().count(), 4);
@@ -296,16 +305,16 @@ void tst_QmlGraphicsRepeater::itemModel()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
 
-    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->rootObject(), "container");
     QVERIFY(container != 0);
 
     QCOMPARE(container->childItems().count(), 1);
 
     testObject->setUseModel(true);
-    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
     QCOMPARE(container->childItems().count(), 4);
@@ -317,22 +326,46 @@ void tst_QmlGraphicsRepeater::itemModel()
     delete canvas;
 }
 
+void tst_QmlGraphicsRepeater::properties()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, TEST_FILE("/properties.qml"));
+
+    QmlGraphicsItem *rootObject = qobject_cast<QmlGraphicsItem*>(component.create());
+    QVERIFY(rootObject);
+
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(rootObject, "repeater");
+    QVERIFY(repeater);
+
+    QSignalSpy modelSpy(repeater, SIGNAL(modelChanged()));
+    repeater->setModel(3);
+    QCOMPARE(modelSpy.count(),1);
+    repeater->setModel(3);
+    QCOMPARE(modelSpy.count(),1);
+
+    QSignalSpy delegateSpy(repeater, SIGNAL(delegateChanged()));
+
+    QmlComponent rectComponent(&engine);
+    rectComponent.setData("import Qt 4.6; Rectangle {}", QUrl::fromLocalFile(""));
+
+    repeater->setDelegate(&rectComponent);
+    QCOMPARE(delegateSpy.count(),1);
+    repeater->setDelegate(&rectComponent);
+    QCOMPARE(delegateSpy.count(),1);
+}
 
 QmlView *tst_QmlGraphicsRepeater::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
 
-    QFile file(filename);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, filename);
+    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
 
 template<typename T>
-T *tst_QmlGraphicsRepeater::findItem(QmlGraphicsItem *parent, const QString &objectName)
+T *tst_QmlGraphicsRepeater::findItem(QGraphicsObject *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     if (mo.cast(parent) && (objectName.isEmpty() || parent->objectName() == objectName))

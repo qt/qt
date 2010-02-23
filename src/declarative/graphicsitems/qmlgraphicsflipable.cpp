@@ -49,8 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,Flipable,QmlGraphicsFlipable)
-
 class QmlGraphicsFlipablePrivate : public QmlGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QmlGraphicsFlipable)
@@ -96,10 +94,10 @@ public:
         }
 
         transitions: Transition {
-            NumberAnimation { matchProperties: "angle"; duration: 2000 }
+            NumberAnimation { properties: "angle"; duration: 2000 }
         }
 
-        MouseRegion {
+        MouseArea {
             // change between default and 'back' states
             onClicked: flipable.state = (flipable.state == 'back' ? '' : 'back')
             anchors.fill: parent
@@ -151,7 +149,7 @@ void QmlGraphicsFlipable::setFront(QmlGraphicsItem *front)
         return;
     }
     d->front = front;
-    fxChildren()->append(d->front);
+    d->front->setParentItem(this);
     if (Back == d->current)
         d->front->setOpacity(0.);
 }
@@ -170,7 +168,7 @@ void QmlGraphicsFlipable::setBack(QmlGraphicsItem *back)
         return;
     }
     d->back = back;
-    fxChildren()->append(d->back);
+    d->back->setParentItem(this);
     if (Front == d->current)
         d->back->setOpacity(0.);
 }

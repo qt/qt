@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -55,8 +55,9 @@ This gives you a basic game window, with room for the game canvas. A new game
 button and room to display the score. The one thing you may not recognize here
 is the \l SystemPalette item. This item provides access to the Qt system palette
 and is used to make the button look more like a system button (for exact native
-feel you would use a \l QPushButton). Since we want a fully QML button, and QML does
-not include a button, we had to write our own. Below is the code which we wrote to do this:
+feel you would use a \l QPushButton). Since we want a fully functional button, 
+we use the QML elements Text and MouseArea inside a Rectangle to assemble a 
+button. Below is the code which we wrote to do this:
 
 \snippet declarative/tutorials/samegame/samegame1/Button.qml 0
 

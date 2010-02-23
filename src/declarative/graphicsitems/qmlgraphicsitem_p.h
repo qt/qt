@@ -137,40 +137,23 @@ public:
     QString _id;
 
     // data property
-    void data_removeAt(int);
-    int data_count() const;
-    void data_append(QObject *);
-    void data_insert(int, QObject *);
-    QObject *data_at(int) const;
-    void data_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QObject *, data)
+    static void data_append(QmlListProperty<QObject> *, QObject *);
 
     // resources property
-    void resources_removeAt(int);
-    int resources_count() const;
-    void resources_append(QObject *);
-    void resources_insert(int, QObject *);
-    QObject *resources_at(int) const;
-    void resources_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QObject *, resources)
+    static QObject *resources_at(QmlListProperty<QObject> *, int);
+    static void resources_append(QmlListProperty<QObject> *, QObject *);
+    static int resources_count(QmlListProperty<QObject> *);
 
     // children property
-    void children_removeAt(int);
-    int children_count() const;
-    void children_append(QmlGraphicsItem *);
-    void children_insert(int, QmlGraphicsItem *);
-    QmlGraphicsItem *children_at(int) const;
-    void children_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QmlGraphicsItem *, children)
+    static QmlGraphicsItem *children_at(QmlListProperty<QmlGraphicsItem> *, int);
+    static void children_append(QmlListProperty<QmlGraphicsItem> *, QmlGraphicsItem *);
+    static int children_count(QmlListProperty<QmlGraphicsItem> *);
 
     // transform property
-    void transform_removeAt(int);
-    int transform_count() const;
-    void transform_append(QGraphicsTransform *);
-    void transform_insert(int, QGraphicsTransform *);
-    QGraphicsTransform *transform_at(int) const;
-    void transform_clear();
-    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QGraphicsTransform *, transform)
+    static int transform_count(QmlListProperty<QGraphicsTransform> *list);
+    static void transform_append(QmlListProperty<QGraphicsTransform> *list, QGraphicsTransform *);
+    static QGraphicsTransform *transform_at(QmlListProperty<QGraphicsTransform> *list, int);
+    static void transform_clear(QmlListProperty<QGraphicsTransform> *list);
 
     QmlGraphicsAnchors *anchors() {
         if (!_anchors) {
@@ -280,8 +263,209 @@ public:
     static int restart(QTime &);
 };
 
+/*
+    Key filters can be installed on a QmlGraphicsItem, but not removed.  Currently they
+    are only used by attached objects (which are only destroyed on Item
+    destruction), so this isn't a problem.  If in future this becomes any form
+    of public API, they will have to support removal too.
+*/
+class QmlGraphicsItemKeyFilter
+{
+public:
+    QmlGraphicsItemKeyFilter(QmlGraphicsItem * = 0);
+    virtual ~QmlGraphicsItemKeyFilter();
+
+    virtual void keyPressed(QKeyEvent *event);
+    virtual void keyReleased(QKeyEvent *event);
+    virtual void inputMethodEvent(QInputMethodEvent *event);
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+    virtual void componentComplete();
+
+private:
+    QmlGraphicsItemKeyFilter *m_next;
+};
+
+class QmlGraphicsKeyNavigationAttachedPrivate : public QObjectPrivate
+{
+public:
+    QmlGraphicsKeyNavigationAttachedPrivate()
+        : QObjectPrivate(), left(0), right(0), up(0), down(0) {}
+
+    QmlGraphicsItem *left;
+    QmlGraphicsItem *right;
+    QmlGraphicsItem *up;
+    QmlGraphicsItem *down;
+};
+
+class QmlGraphicsKeyNavigationAttached : public QObject, public QmlGraphicsItemKeyFilter
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlGraphicsKeyNavigationAttached)
+
+    Q_PROPERTY(QmlGraphicsItem *left READ left WRITE setLeft NOTIFY changed)
+    Q_PROPERTY(QmlGraphicsItem *right READ right WRITE setRight NOTIFY changed)
+    Q_PROPERTY(QmlGraphicsItem *up READ up WRITE setUp NOTIFY changed)
+    Q_PROPERTY(QmlGraphicsItem *down READ down WRITE setDown NOTIFY changed)
+public:
+    QmlGraphicsKeyNavigationAttached(QObject * = 0);
+
+    QmlGraphicsItem *left() const;
+    void setLeft(QmlGraphicsItem *);
+    QmlGraphicsItem *right() const;
+    void setRight(QmlGraphicsItem *);
+    QmlGraphicsItem *up() const;
+    void setUp(QmlGraphicsItem *);
+    QmlGraphicsItem *down() const;
+    void setDown(QmlGraphicsItem *);
+
+    static QmlGraphicsKeyNavigationAttached *qmlAttachedProperties(QObject *);
+
+Q_SIGNALS:
+    void changed();
+
+private:
+    virtual void keyPressed(QKeyEvent *event);
+    virtual void keyReleased(QKeyEvent *event);
+};
+
+class QmlGraphicsKeysAttachedPrivate : public QObjectPrivate
+{
+public:
+    QmlGraphicsKeysAttachedPrivate()
+        : QObjectPrivate(), inPress(false), inRelease(false)
+        , inIM(false), enabled(true), imeItem(0), item(0)
+    {}
+
+    bool isConnected(const char *signalName);
+
+    QGraphicsItem *finalFocusProxy(QGraphicsItem *item) const
+    {
+        QGraphicsItem *fp;
+        while ((fp = item->focusProxy()))
+            item = fp;
+        return item;
+    }
+
+    //loop detection
+    bool inPress:1;
+    bool inRelease:1;
+    bool inIM:1;
+
+    bool enabled : 1;
+
+    QGraphicsItem *imeItem;
+    QList<QmlGraphicsItem *> targets;
+    QmlGraphicsItem *item;
+};
+
+class QmlGraphicsKeysAttached : public QObject, public QmlGraphicsItemKeyFilter
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlGraphicsKeysAttached)
+
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(QmlListProperty<QmlGraphicsItem> forwardTo READ forwardTo)
+
+public:
+    QmlGraphicsKeysAttached(QObject *parent=0);
+    ~QmlGraphicsKeysAttached();
+
+    bool enabled() const { Q_D(const QmlGraphicsKeysAttached); return d->enabled; }
+    void setEnabled(bool enabled) {
+        Q_D(QmlGraphicsKeysAttached);
+        if (enabled != d->enabled) {
+            d->enabled = enabled;
+            emit enabledChanged();
+        }
+    }
+
+    QmlListProperty<QmlGraphicsItem> forwardTo() {
+        Q_D(QmlGraphicsKeysAttached);
+        return QmlListProperty<QmlGraphicsItem>(this, d->targets);
+    }
+
+    virtual void componentComplete();
+
+    static QmlGraphicsKeysAttached *qmlAttachedProperties(QObject *);
+
+Q_SIGNALS:
+    void enabledChanged();
+    void pressed(QmlGraphicsKeyEvent *event);
+    void released(QmlGraphicsKeyEvent *event);
+    void digit0Pressed(QmlGraphicsKeyEvent *event);
+    void digit1Pressed(QmlGraphicsKeyEvent *event);
+    void digit2Pressed(QmlGraphicsKeyEvent *event);
+    void digit3Pressed(QmlGraphicsKeyEvent *event);
+    void digit4Pressed(QmlGraphicsKeyEvent *event);
+    void digit5Pressed(QmlGraphicsKeyEvent *event);
+    void digit6Pressed(QmlGraphicsKeyEvent *event);
+    void digit7Pressed(QmlGraphicsKeyEvent *event);
+    void digit8Pressed(QmlGraphicsKeyEvent *event);
+    void digit9Pressed(QmlGraphicsKeyEvent *event);
+
+    void leftPressed(QmlGraphicsKeyEvent *event);
+    void rightPressed(QmlGraphicsKeyEvent *event);
+    void upPressed(QmlGraphicsKeyEvent *event);
+    void downPressed(QmlGraphicsKeyEvent *event);
+
+    void asteriskPressed(QmlGraphicsKeyEvent *event);
+    void numberSignPressed(QmlGraphicsKeyEvent *event);
+    void escapePressed(QmlGraphicsKeyEvent *event);
+    void returnPressed(QmlGraphicsKeyEvent *event);
+    void enterPressed(QmlGraphicsKeyEvent *event);
+    void deletePressed(QmlGraphicsKeyEvent *event);
+    void spacePressed(QmlGraphicsKeyEvent *event);
+    void backPressed(QmlGraphicsKeyEvent *event);
+    void cancelPressed(QmlGraphicsKeyEvent *event);
+    void selectPressed(QmlGraphicsKeyEvent *event);
+    void yesPressed(QmlGraphicsKeyEvent *event);
+    void noPressed(QmlGraphicsKeyEvent *event);
+    void context1Pressed(QmlGraphicsKeyEvent *event);
+    void context2Pressed(QmlGraphicsKeyEvent *event);
+    void context3Pressed(QmlGraphicsKeyEvent *event);
+    void context4Pressed(QmlGraphicsKeyEvent *event);
+    void callPressed(QmlGraphicsKeyEvent *event);
+    void hangupPressed(QmlGraphicsKeyEvent *event);
+    void flipPressed(QmlGraphicsKeyEvent *event);
+    void menuPressed(QmlGraphicsKeyEvent *event);
+    void volumeUpPressed(QmlGraphicsKeyEvent *event);
+    void volumeDownPressed(QmlGraphicsKeyEvent *event);
+
+private:
+    virtual void keyPressed(QKeyEvent *event);
+    virtual void keyReleased(QKeyEvent *event);
+    virtual void inputMethodEvent(QInputMethodEvent *);
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
+    const QByteArray keyToSignal(int key) {
+        QByteArray keySignal;
+        if (key >= Qt::Key_0 && key <= Qt::Key_9) {
+            keySignal = "digit0Pressed";
+            keySignal[5] = '0' + (key - Qt::Key_0);
+        } else {
+            int i = 0;
+            while (sigMap[i].key && sigMap[i].key != key)
+                ++i;
+            keySignal = sigMap[i].sig;
+        }
+        return keySignal;
+    }
+
+    struct SigMap {
+        int key;
+        const char *sig;
+    };
+
+    static const SigMap sigMap[];
+};
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QmlGraphicsItemPrivate::ChangeTypes);
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsKeysAttached)
+QML_DECLARE_TYPEINFO(QmlGraphicsKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QmlGraphicsKeyNavigationAttached)
+QML_DECLARE_TYPEINFO(QmlGraphicsKeyNavigationAttached, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif // QMLGRAPHICSITEM_P_H

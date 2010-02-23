@@ -4,7 +4,7 @@ GenericItem {
     id: itemButton
     property string file
     Script { source: "itemCreation.js" }
-    MouseRegion { 
+    MouseArea { 
         anchors.fill: parent; 
         onPressed: startDrag(mouse);
         onPositionChanged: moveDrag(mouse);

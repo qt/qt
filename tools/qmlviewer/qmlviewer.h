@@ -116,7 +116,7 @@ public slots:
     void showProxySettings ();
     void proxySettingsChanged ();
     void setScaleView();
-    void executeErrors();
+    void statusChanged();
     void setSlowMode(bool);
     void launch(const QString &);
 
@@ -132,7 +132,6 @@ private slots:
     void chooseRecordingOptions();
     void pickRecordingFile();
     void setScaleSkin();
-    void adjustSizeSlot();
     void setPortrait();
     void setLandscape();
     void toggleOrientation();

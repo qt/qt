@@ -108,8 +108,6 @@ void QmlGraphicsLoaderPrivate::initResize()
     _q_updateSize();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Loader,QmlGraphicsLoader)
-
 /*!
     \qmlclass Loader QmlGraphicsLoader
     \inherits Item
@@ -126,7 +124,7 @@ QML_DEFINE_TYPE(Qt,4,6,Loader,QmlGraphicsLoader)
     \code
     Loader { id: pageLoader }
     Rectangle {
-        MouseRegion { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
+        MouseArea { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
     }
     \endcode
 
@@ -400,6 +398,7 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
     }
 
     d->resizeMode = mode;
+    emit resizeModeChanged();
     d->initResize();
 }
 

@@ -54,6 +54,7 @@
 //
 
 #include <QtGui/private/qpaintengineex_p.h>
+#include <QtGui/private/qtextureglyphcache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -139,6 +140,9 @@ public:
     void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QFlags<QDrawPixmaps::DrawingHint> hints);
 
     void drawTextItem(const QPointF &p, const QTextItem &textItem);
+    void drawStaticTextItem(QStaticTextItem *staticTextItem);
+    bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
+                          QFontEngine *fontEngine, const QPointF &p);
 
     void setState(QPainterState *s);
     QVGPainterState *state() { return static_cast<QVGPainterState *>(QPaintEngineEx::state()); }

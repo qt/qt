@@ -48,6 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class BookmarkManagerWidget;
 class BookmarkModel;
 class BookmarkFilterModel;
 class QKeyEvent;
@@ -90,17 +91,15 @@ private slots:
 
     void addBookmark();
     void removeBookmark();
-//    void manageBookmarks();
+    void manageBookmarks();
     void refeshBookmarkMenu();
     void renameBookmark(const QModelIndex &index);
-
-    void importBookmarks();
-    void exportBookmarks();
 
     void setSourceFromAction(QAction *action);
     void setSourceFromIndex(const QModelIndex &index, bool newTab = false);
 
     void focusInEvent();
+    void managerWidgetAboutToClose();
     void textChanged(const QString &text);
     void customContextMenuRequested(const QPoint &point);
 
@@ -118,6 +117,7 @@ private:
 
     BookmarkWidget *bookmarkWidget;
     BookmarkTreeView *bookmarkTreeView;
+    BookmarkManagerWidget *bookmarkManagerWidget;
 };
 
 class BookmarkManager::BookmarkWidget : public QWidget

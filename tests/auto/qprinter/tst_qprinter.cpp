@@ -106,7 +106,7 @@ private slots:
     void testCustomPageSizes();
     void printDialogCompleter();
 
-    void testActualNumCopies();
+    void testCopyCount();
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
 
@@ -455,7 +455,7 @@ void tst_QPrinter::testNonExistentPrinter()
     printer.pageSize();
     printer.orientation();
     printer.fullPage();
-    printer.setNumCopies(1);
+    printer.setCopyCount(1);
     printer.printerName();
 
     // nor metrics
@@ -966,11 +966,11 @@ void tst_QPrinter::printDialogCompleter()
 #endif
 }
 
-void tst_QPrinter::testActualNumCopies()
+void tst_QPrinter::testCopyCount()
 {
     QPrinter p;
-    p.setNumCopies(15);
-    QCOMPARE(p.actualNumCopies(), 15);
+    p.setCopyCount(15);
+    QCOMPARE(p.copyCount(), 15);
 }
 
 static void printPage(QPainter *painter)

@@ -288,7 +288,6 @@ void QmlGraphicsBasePositioner::finishApplyTransitions()
     d->moveActions.clear();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Column,QmlGraphicsColumn)
 /*!
   \qmlclass Column QmlGraphicsColumn
   \brief The Column item lines up its children vertically.
@@ -362,7 +361,7 @@ Column {
 Column {
     move: Transition {
         NumberAnimation {
-            matchProperties: "y"
+            properties: "y"
             ease: "easeOutBounce"
         }
     }
@@ -418,7 +417,6 @@ void QmlGraphicsColumn::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Row,QmlGraphicsRow)
 /*!
   \qmlclass Row QmlGraphicsRow
   \brief The Row item lines up its children horizontally.
@@ -472,7 +470,7 @@ Row {
     id: positioner
     move: Transition {
         NumberAnimation {
-            matchProperties: "x"
+            properties: "x"
             ease: "easeOutBounce"
         }
     }
@@ -523,7 +521,6 @@ void QmlGraphicsRow::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,Grid,QmlGraphicsGrid)
 
 /*!
   \qmlclass Grid QmlGraphicsGrid
@@ -595,7 +592,7 @@ Grid {
 Grid {
     move: Transition {
         NumberAnimation {
-            matchProperties: "x,y"
+            properties: "x,y"
             ease: "easeOutBounce"
         }
     }
@@ -711,7 +708,6 @@ void QmlGraphicsGrid::doPositioning()
 }
 
 
-QML_DEFINE_TYPE(Qt,4,6,Flow,QmlGraphicsFlow)
 /*!
   \qmlclass Flow QmlGraphicsFlow
   \brief The Flow item lines up its children side by side, wrapping as necessary.
@@ -741,7 +737,7 @@ Flow {
     id: positioner
     move: Transition {
         NumberAnimation {
-            matchProperties: "x,y"
+            properties: "x,y"
             ease: "easeOutBounce"
         }
     }

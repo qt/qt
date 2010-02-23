@@ -9,7 +9,7 @@ Rectangle {
     width: 75; height: 50
     radius: 5
     border.width: 10; border.color: "white";
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         hoverEnabled: true
         onEntered: { focusRect.x = myRect.x; focusRect.y = myRect.y; focusRect.text = myRect.text }

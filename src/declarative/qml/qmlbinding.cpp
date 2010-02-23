@@ -54,8 +54,6 @@
 #include <QVariant>
 #include <QtCore/qdebug.h>
 
-Q_DECLARE_METATYPE(QList<QObject *>);
-
 QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);
@@ -289,6 +287,12 @@ void QmlAbstractBinding::removeFromObject()
         if (data) data->clearBindingBit(propertyIndex());
         m_object = 0;
     }
+}
+
+void QmlAbstractBinding::clear()
+{
+    if (m_mePtr)
+        *m_mePtr = 0;
 }
 
 QString QmlAbstractBinding::expression() const

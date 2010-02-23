@@ -55,16 +55,12 @@
 
 QT_BEGIN_HEADER
 
-QT_MODULE(Declarative)
-
 #define QML_DECLARE_TYPE(TYPE) \
     Q_DECLARE_METATYPE(TYPE *) \
-    Q_DECLARE_METATYPE(QList<TYPE *> *) \
-    Q_DECLARE_METATYPE(QmlList<TYPE *> *)
+    Q_DECLARE_METATYPE(QmlListProperty<TYPE>) 
 
 #define QML_DECLARE_TYPE_HASMETATYPE(TYPE) \
-    Q_DECLARE_METATYPE(QList<TYPE *> *) \
-    Q_DECLARE_METATYPE(QmlList<TYPE *> *)
+    Q_DECLARE_METATYPE(QmlListProperty<TYPE>) 
 
 #define QML_DECLARE_INTERFACE(INTERFACE) \
     QML_DECLARE_TYPE(INTERFACE)
@@ -77,6 +73,7 @@ enum { /* TYPEINFO flags */
 };
 
 #define QML_DECLARE_TYPEINFO(TYPE, FLAGS) \
+QT_BEGIN_NAMESPACE \
 template <> \
 class QmlTypeInfo<TYPE > \
 { \
@@ -84,9 +81,12 @@ public: \
     enum { \
         hasAttachedProperties = (((FLAGS) & QML_HAS_ATTACHED_PROPERTIES) == QML_HAS_ATTACHED_PROPERTIES) \
     }; \
-};
+}; \
+QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
 
 #if defined(Q_OS_SYMBIAN)
 #define QML_DEFINE_INTERFACE(INTERFACE) \

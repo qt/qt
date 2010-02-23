@@ -172,8 +172,10 @@ static int _q_ScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScript
     return qScriptRegisterMetaType<T*>(engine, _q_ScriptValueFromQObject<T>, _q_ScriptValueToQObject<T>, prototype);
 }
 
+QT_BEGIN_NAMESPACE
 Q_SCRIPT_DECLARE_QMETAOBJECT(QScriptLocalSocket, QObject*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(QScriptLocalServer, QObject*);
+QT_END_NAMESPACE
 
 static void interactive(QScriptEngine &eng)
 {

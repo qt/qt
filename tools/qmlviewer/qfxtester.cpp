@@ -147,7 +147,7 @@ void QmlGraphicsTester::imagefailure()
 void QmlGraphicsTester::complete()
 {
     if ((options & QmlViewer::TestErrorProperty) && !hasFailed) {
-        QString e = m_view->root()->property("error").toString();
+        QString e = m_view->rootObject()->property("error").toString();
         if (!e.isEmpty()) {
             qWarning() << "Test failed:" << e;
             hasFailed = true;

@@ -176,7 +176,7 @@ Rectangle {
                             to: "to"
                             reversible: true
                             NumberAnimation {
-                                matchProperties: "x"
+                                properties: "x"
                                 easing: type
                                 duration: 1000
                             }
@@ -186,7 +186,7 @@ Rectangle {
             }
         }
     }
-    MouseRegion {
+    MouseArea {
         id: mouse
         anchors.fill: layout
     }
