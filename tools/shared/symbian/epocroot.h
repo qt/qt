@@ -39,37 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef INITPROJECTDEPLOYSYMBIAN_H
-#define INITPROJECTDEPLOYSYMBIAN_H
+#ifndef SYMBIAN_EPOCROOT_H
+#define SYMBIAN_EPOCROOT_H
 
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qdatetime.h>
-#include <option.h>
-#include <qdir.h>
-#include <qfile.h>
-#include <stdlib.h>
+#include <QtCore/qstring.h>
 
-#define PLUGIN_STUB_DIR "qmakepluginstubs"
+/**
+ * Determine the epoc root for the currently active SDK.
+ *
+ * The algorithm used is as follows:
+ * 1. If environment variable EPOCROOT is set and points to an existent
+ *    directory, this is returned.
+ * 2. The location of devices.xml is specified by a registry key.  If this
+ *    file exists, it is parsed.
+ * 3. If the EPOCDEVICE environment variable is set and a corresponding
+ *    entry is found in devices.xml, and its epocroot value points to an
+ *    existent directory, it is returned.
+ * 4. If a device element marked as default is found in devices.xml and its
+ *    epocroot value points to an existent directory, this is returned.
+ * 5. An empty string is returned.
+ *
+ * Any return value other than the empty string therefore is guaranteed to
+ * point to an existent directory.
+ */
+QString epocRoot();
 
-struct CopyItem
-{
-    CopyItem(const QString& f, const QString& t) : from(f) , to(t) { }
-    QString from;
-    QString to;
-};
-typedef QList<CopyItem> DeploymentList;
-
-extern QString generate_uid(const QString& target);
-extern QString generate_test_uid(const QString& target);
-
-extern void initProjectDeploySymbian(QMakeProject* project,
-                              DeploymentList &deploymentList,
-                              const QString &testPath,
-                              bool deployBinaries,
-                              const QString &platform,
-                              const QString &build,
-                              QStringList& generatedDirs,
-                              QStringList& generatedFiles);
-
-#endif // INITPROJECTDEPLOYSYMBIAN_H
+#endif // EPOCROOT_H
