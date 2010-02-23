@@ -861,7 +861,7 @@ QDebug operator<<(QDebug debug, const QEasingCurve &item)
 QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
 {
     stream << easing.d_ptr->type;
-    stream << intptr_t(easing.d_ptr->func);
+    stream << quint64(intptr_t(easing.d_ptr->func));
 
     bool hasConfig = easing.d_ptr->config;
     stream << hasConfig;
@@ -891,9 +891,9 @@ QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
     type = static_cast<QEasingCurve::Type>(int_type);
     easing.setType(type);
 
-    intptr_t ptr_func;
+    quint64 ptr_func;
     stream >> ptr_func;
-    easing.d_ptr->func = QEasingCurve::EasingFunction(ptr_func);
+    easing.d_ptr->func = QEasingCurve::EasingFunction(intptr_t(ptr_func));
 
     bool hasConfig;
     stream >> hasConfig;
