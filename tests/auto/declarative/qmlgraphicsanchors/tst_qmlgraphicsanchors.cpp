@@ -104,7 +104,6 @@ void tst_qmlgraphicsanchors::basicAnchors()
     QmlView *view = new QmlView;
     view->setSource(QUrl::fromLocalFile(SRCDIR "/data/anchors.qml"));
 
-    view->execute();
     qApp->processEvents();
 
     //sibling horizontal
@@ -171,28 +170,28 @@ void tst_qmlgraphicsanchors::basicAnchors()
 void tst_qmlgraphicsanchors::loops()
 {
     {
+        QUrl source(QUrl::fromLocalFile(SRCDIR "/data/loop1.qml"));
+
+        QString expect = "QML Text (" + source.toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+
         QmlView *view = new QmlView;
-
-        view->setSource(QUrl::fromLocalFile(SRCDIR "/data/loop1.qml"));
-
-        QString expect = "QML Text (" + view->source().toString() + ":6:5" + ") Possible anchor loop detected on horizontal anchor.";
-        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-        view->execute();
+        view->setSource(source);
         qApp->processEvents();
 
         delete view;
     }
 
     {
-        QmlView *view = new QmlView;
+        QUrl source(QUrl::fromLocalFile(SRCDIR "/data/loop2.qml"));
 
-        view->setSource(QUrl::fromLocalFile(SRCDIR "/data/loop2.qml"));
-
-        QString expect = "QML Image (" + view->source().toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = "QML Image (" + source.toString() + ":8:3" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
-        view->execute();
+
+        QmlView *view = new QmlView;
+        view->setSource(source);
         qApp->processEvents();
 
         delete view;
@@ -370,14 +369,13 @@ void tst_qmlgraphicsanchors::nullItem_data()
 
 void tst_qmlgraphicsanchors::crash1()
 {
-    QmlView *view = new QmlView;
+    QUrl source(QUrl::fromLocalFile(SRCDIR "/data/crash1.qml"));
 
-    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/crash1.qml"));
-
-    QString expect = "QML Text (" + view->source().toString() + ":4:5" + ") Possible anchor loop detected on fill.";
+    QString expect = "QML Text (" + source.toString() + ":4:5" + ") Possible anchor loop detected on fill.";
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
     QTest::ignoreMessage(QtWarningMsg, expect.toLatin1()); // XXX ideally, should be one message
-    view->execute();
+
+    QmlView *view = new QmlView(source);
     qApp->processEvents();
 
     delete view;
@@ -385,11 +383,8 @@ void tst_qmlgraphicsanchors::crash1()
 
 void tst_qmlgraphicsanchors::fill()
 {
-    QmlView *view = new QmlView;
+    QmlView *view = new QmlView(QUrl::fromLocalFile(SRCDIR "/data/fill.qml"));
 
-    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/fill.qml"));
-
-    view->execute();
     qApp->processEvents();
     QmlGraphicsRectangle* rect = findItem<QmlGraphicsRectangle>(view->rootObject(), QLatin1String("filler"));
     QCOMPARE(rect->x(), 0.0 + 10.0);
@@ -411,11 +406,8 @@ void tst_qmlgraphicsanchors::fill()
 
 void tst_qmlgraphicsanchors::centerIn()
 {
-    QmlView *view = new QmlView;
+    QmlView *view = new QmlView(QUrl::fromLocalFile(SRCDIR "/data/centerin.qml"));
 
-    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/centerin.qml"));
-
-    view->execute();
     qApp->processEvents();
     QmlGraphicsRectangle* rect = findItem<QmlGraphicsRectangle>(view->rootObject(), QLatin1String("centered"));
     QCOMPARE(rect->x(), 75.0 + 10);
@@ -431,11 +423,8 @@ void tst_qmlgraphicsanchors::centerIn()
 
 void tst_qmlgraphicsanchors::margins()
 {
-    QmlView *view = new QmlView;
+    QmlView *view = new QmlView(QUrl::fromLocalFile(SRCDIR "/data/margins.qml"));
 
-    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/margins.qml"));
-
-    view->execute();
     qApp->processEvents();
     QmlGraphicsRectangle* rect = findItem<QmlGraphicsRectangle>(view->rootObject(), QLatin1String("filler"));
     QCOMPARE(rect->x(), 5.0);

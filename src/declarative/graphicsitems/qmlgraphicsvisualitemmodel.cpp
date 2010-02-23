@@ -801,11 +801,10 @@ void QmlGraphicsVisualDataModel::setDelegate(QmlComponent *delegate)
         QApplication app(argc, argv);
 
         QmlView view;
-        view.setSource(QUrl("qrc:view.qml"));
 
         MyModel model(view.rootContext());
 
-        view.execute();
+        view.setSource(QUrl("qrc:view.qml"));
         view.show();
 
         return app.exec();

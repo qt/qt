@@ -7,5 +7,10 @@ CONFIG += release
 
 SOURCES += tst_qmlgraphicsimage.cpp
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
-
+symbian* {
+    data.sources = image.png
+    data.path = .
+    DEPLOYMENT += data
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}

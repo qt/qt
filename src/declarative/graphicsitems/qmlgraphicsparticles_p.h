@@ -77,27 +77,32 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsParticleMotionGravity : public QmlGraphics
 {
     Q_OBJECT
 
-    Q_PROPERTY(int xattractor READ xAttractor WRITE setXAttractor)
-    Q_PROPERTY(int yattractor READ yAttractor WRITE setYAttractor)
-    Q_PROPERTY(int acceleration READ acceleration WRITE setAcceleration)
+    Q_PROPERTY(qreal xattractor READ xAttractor WRITE setXAttractor NOTIFY xattractorChanged)
+    Q_PROPERTY(qreal yattractor READ yAttractor WRITE setYAttractor NOTIFY yattractorChanged)
+    Q_PROPERTY(qreal acceleration READ acceleration WRITE setAcceleration NOTIFY accelerationChanged)
 public:
     QmlGraphicsParticleMotionGravity(QObject *parent=0)
-        : QmlGraphicsParticleMotion(parent), _xAttr(0), _yAttr(0), _accel(0.00005) {}
+        : QmlGraphicsParticleMotion(parent), _xAttr(0.0), _yAttr(0.0), _accel(0.00005) {}
 
-    int xAttractor() const { return _xAttr; }
-    void setXAttractor(int x) { _xAttr = x; }
+    qreal xAttractor() const { return _xAttr; }
+    void setXAttractor(qreal x);
 
-    int yAttractor() const { return _yAttr; }
-    void setYAttractor(int y) { _yAttr = y; }
+    qreal yAttractor() const { return _yAttr; }
+    void setYAttractor(qreal y);
 
-    int acceleration() const { return int(_accel * 1000000); }
-    void setAcceleration(int accel) { _accel = qreal(accel)/1000000.0; }
+    qreal acceleration() const { return _accel * 1000000; }
+    void setAcceleration(qreal accel);
 
     virtual void advance(QmlGraphicsParticle &, int interval);
 
+Q_SIGNALS:
+    void xattractorChanged();
+    void yattractorChanged();
+    void accelerationChanged();
+
 private:
-    int _xAttr;
-    int _yAttr;
+    qreal _xAttr;
+    qreal _yAttr;
     qreal _accel;
 };
 
@@ -121,18 +126,23 @@ public:
         qreal y_var;
     };
 
-    Q_PROPERTY(int xvariance READ xVariance WRITE setXVariance)
-    int xVariance() const { return int(_xvariance * 1000); }
-    void setXVariance(int var) { _xvariance = var / 1000.0; }
+    Q_PROPERTY(qreal xvariance READ xVariance WRITE setXVariance NOTIFY xvarianceChanged)
+    qreal xVariance() const { return _xvariance * 1000.0; }
+    void setXVariance(qreal var);
 
-    Q_PROPERTY(int yvariance READ yVariance WRITE setYVariance)
-    int yVariance() const { return int(_yvariance * 1000); }
-    void setYVariance(int var) { _yvariance = var / 1000.0; }
+    Q_PROPERTY(qreal yvariance READ yVariance WRITE setYVariance NOTIFY yvarianceChanged)
+    qreal yVariance() const { return _yvariance * 1000.0; }
+    void setYVariance(qreal var);
 
-    Q_PROPERTY(int pace READ pace WRITE setPace)
-    int pace() const { return int(_pace * 1000); }
-    void setPace(int pace) { _pace = pace / 1000.0; }
+    Q_PROPERTY(qreal pace READ pace WRITE setPace NOTIFY paceChanged)
+    qreal pace() const { return _pace * 1000.0; }
+    void setPace(qreal pace);
 
+Q_SIGNALS:
+    void xvarianceChanged();
+    void yvarianceChanged();
+    void paceChanged();
+    
 private:
     QmlGraphicsParticles *particles;
     qreal _xvariance;
@@ -157,7 +167,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsParticles : public QmlGraphicsItem
     Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation NOTIFY angleDeviationChanged)
     Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity NOTIFY velocityChanged)
     Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation NOTIFY velocityDeviationChanged)
-    Q_PROPERTY(QmlGraphicsParticleMotion *motion READ motion WRITE setMotion)
+    Q_PROPERTY(QmlGraphicsParticleMotion *motion READ motion WRITE setMotion NOTIFY motionChanged)
     Q_CLASSINFO("DefaultProperty", "motion")
 
 public:
@@ -225,6 +235,7 @@ Q_SIGNALS:
     void velocityChanged();
     void velocityDeviationChanged();
     void emittingChanged();
+    void motionChanged();
 
 private Q_SLOTS:
     void imageLoaded();

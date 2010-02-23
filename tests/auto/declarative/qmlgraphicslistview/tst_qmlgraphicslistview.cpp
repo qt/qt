@@ -88,7 +88,7 @@ private:
     template <class T> void removed(bool animated);
     template <class T> void moved();
     template <class T> void clear();
-    QmlView *createView(const QString &filename);
+    QmlView *createView();
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &id, int index=-1);
     template<typename T>
@@ -300,7 +300,7 @@ tst_QmlGraphicsListView::tst_QmlGraphicsListView()
 template <class T>
 void tst_QmlGraphicsListView::items()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     T model;
     model.addItem("Fred", "12345");
@@ -313,7 +313,7 @@ void tst_QmlGraphicsListView::items()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -380,7 +380,7 @@ void tst_QmlGraphicsListView::items()
 template <class T>
 void tst_QmlGraphicsListView::changed()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     T model;
     model.addItem("Fred", "12345");
@@ -393,7 +393,7 @@ void tst_QmlGraphicsListView::changed()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsFlickable *listview = findItem<QmlGraphicsFlickable>(canvas->rootObject(), "list");
@@ -416,7 +416,7 @@ void tst_QmlGraphicsListView::changed()
 template <class T>
 void tst_QmlGraphicsListView::inserted()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     T model;
     model.addItem("Fred", "12345");
@@ -429,7 +429,7 @@ void tst_QmlGraphicsListView::inserted()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -509,7 +509,7 @@ void tst_QmlGraphicsListView::inserted()
 template <class T>
 void tst_QmlGraphicsListView::removed(bool animated)
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     T model;
     for (int i = 0; i < 30; i++)
@@ -522,7 +522,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
     testObject->setAnimate(animated);
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -652,7 +652,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
 template <class T>
 void tst_QmlGraphicsListView::clear()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     T model;
     for (int i = 0; i < 30; i++)
@@ -664,7 +664,7 @@ void tst_QmlGraphicsListView::clear()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -689,7 +689,7 @@ void tst_QmlGraphicsListView::clear()
 template <class T>
 void tst_QmlGraphicsListView::moved()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     T model;
     for (int i = 0; i < 30; i++)
@@ -701,7 +701,7 @@ void tst_QmlGraphicsListView::moved()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -785,7 +785,7 @@ void tst_QmlGraphicsListView::moved()
 
 void tst_QmlGraphicsListView::enforceRange()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview-enforcerange.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -794,7 +794,7 @@ void tst_QmlGraphicsListView::enforceRange()
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview-enforcerange.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -830,7 +830,7 @@ void tst_QmlGraphicsListView::enforceRange()
 
 void tst_QmlGraphicsListView::spacing()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -842,7 +842,7 @@ void tst_QmlGraphicsListView::spacing()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -888,7 +888,7 @@ void tst_QmlGraphicsListView::spacing()
 
 void tst_QmlGraphicsListView::sections()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview-sections.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -897,7 +897,7 @@ void tst_QmlGraphicsListView::sections()
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview-sections.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -975,7 +975,6 @@ void tst_QmlGraphicsListView::currentIndex()
     QString filename(SRCDIR "/data/listview-initCurrent.qml");
     canvas->setSource(QUrl::fromLocalFile(filename));
 
-    canvas->execute();
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -1055,9 +1054,9 @@ void tst_QmlGraphicsListView::currentIndex()
 
 void tst_QmlGraphicsListView::itemList()
 {
-    QmlView *canvas = createView(SRCDIR "/data/itemlist.qml");
+    QmlView *canvas = createView();
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/itemlist.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "view");
@@ -1096,7 +1095,7 @@ void tst_QmlGraphicsListView::itemList()
 
 void tst_QmlGraphicsListView::cacheBuffer()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -1108,7 +1107,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -1148,7 +1147,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
 
 void tst_QmlGraphicsListView::positionViewAtIndex()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView();
 
     TestModel model;
     for (int i = 0; i < 40; i++)
@@ -1160,7 +1159,7 @@ void tst_QmlGraphicsListView::positionViewAtIndex()
     TestObject *testObject = new TestObject;
     ctxt->setContextProperty("testObject", testObject);
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listview.qml"));
     qApp->processEvents();
 
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->rootObject(), "list");
@@ -1295,12 +1294,10 @@ void tst_QmlGraphicsListView::qAbstractItemModel_clear()
     clear<TestModel2>();
 }
 
-QmlView *tst_QmlGraphicsListView::createView(const QString &filename)
+QmlView *tst_QmlGraphicsListView::createView()
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
-
-    canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }

@@ -74,6 +74,7 @@ private slots:
     void bindingVariantCopy();
     void scriptVariantCopy();
     void cppClasses();
+    void enums();
 
 private:
     QmlEngine engine;
@@ -583,6 +584,26 @@ void tst_qmlvaluetypes::cppClasses()
     CPP_TEST(QmlFontValueType, QFont("Helvetica"));
 
 }
+
+void tst_qmlvaluetypes::enums()
+{
+    {
+    QmlComponent component(&engine, TEST_FILE("enums.1.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->font().capitalization() == QFont::MixedCase);
+    delete object;
+    }
+
+    {
+    QmlComponent component(&engine, TEST_FILE("enums.2.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->font().capitalization() == QFont::MixedCase);
+    delete object;
+    }
+}
+
 QTEST_MAIN(tst_qmlvaluetypes)
 
 #include "tst_qmlvaluetypes.moc"

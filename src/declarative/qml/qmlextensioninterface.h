@@ -39,14 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QMLMODULEPLUGIN_H
-#define QMLMODULEPLUGIN_H
+#ifndef QMLEXTENSIONINTERFACE_H
+#define QMLEXTENSIONINTERFACE_H
 
-#include <QtCore/qplugin.h>
-#include <QtCore/qfactoryinterface.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qset.h>
-#include <QtCore/qbytearray.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -54,33 +50,18 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-struct Q_DECLARATIVE_EXPORT QmlModuleFactoryInterface : public QFactoryInterface
+class QmlEngine;
+
+struct Q_DECLARATIVE_EXPORT QmlExtensionInterface
 {
-    virtual void defineModuleOnce(const QString& uri) = 0;
+    virtual ~QmlExtensionInterface() {}
+    virtual void initialize(QmlEngine *engine, const char *uri) = 0;
 };
 
-#define QmlModuleFactoryInterface_iid "com.nokia.Qt.QmlModuleFactoryInterface"
-
-Q_DECLARE_INTERFACE(QmlModuleFactoryInterface, QmlModuleFactoryInterface_iid)
-
-
-class Q_DECLARATIVE_EXPORT QmlModulePlugin : public QObject, public QmlModuleFactoryInterface
-{
-    Q_OBJECT
-    Q_INTERFACES(QmlModuleFactoryInterface:QFactoryInterface)
-public:
-    explicit QmlModulePlugin(QObject *parent = 0);
-    ~QmlModulePlugin();
-
-    virtual void defineModule(const QString& uri) = 0;
-
-private:
-    void defineModuleOnce(const QString& uri);
-    QSet<QString> defined;
-};
+Q_DECLARE_INTERFACE(QmlExtensionInterface, "com.trolltech.Qt.QmlExtensionInterface/1.0")
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLMODULEPLUGIN_H
+#endif // QMLEXTENSIONINTERFACE_H

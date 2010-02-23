@@ -11,7 +11,7 @@ Rectangle {
 
             font.letterSpacing: SequentialAnimation {
                 repeat: true;
-                NumberAnimation { from: 100; to: 300; easing: "easeInQuad"; duration: 3000 }
+                NumberAnimation { from: 100; to: 300; easing.type: "InQuad"; duration: 3000 }
                 ScriptAction { script: {
                     container.y = (screen.height / 4) + (Math.random() * screen.height / 2)
                     container.x = (screen.width / 4) + (Math.random() * screen.width / 2)

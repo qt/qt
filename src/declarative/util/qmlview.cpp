@@ -132,6 +132,8 @@ public:
     QmlViewPrivate(QmlView *view)
         : q(view), root(0), component(0), resizeMode(QmlView::SizeViewToRootObject) {}
 
+    void execute();
+
     QmlView *q;
 
     QGuard<QGraphicsObject> root;
@@ -151,6 +153,20 @@ public:
 
     QGraphicsScene scene;
 };
+
+void QmlViewPrivate::execute()
+{
+    delete root;
+    delete component;
+    component = new QmlComponent(&engine, source, q);
+
+    if (!component->isLoading()) {
+        q->continueExecute();
+    } else {
+        QObject::connect(component, SIGNAL(statusChanged(QmlComponent::Status)), q, SLOT(continueExecute()));
+    }
+}
+
 
 /*!
     \class QmlView
@@ -188,9 +204,6 @@ public:
 
     QUrl url(fileName);
     view->setSource(url);
-    ...
-    view->execute();
-    ...
     view->show();
     \endcode
 
@@ -218,6 +231,19 @@ QmlView::QmlView(QWidget *parent)
 {
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     d->init();
+}
+
+/*!
+  \fn QmlView::QmlView(const QUrl &source, QWidget *parent)
+
+  Constructs a QmlView with the given QML \a source and \a parent.
+*/
+QmlView::QmlView(const QUrl &source, QWidget *parent)
+: QGraphicsView(parent), d(new QmlViewPrivate(this))
+{
+    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    d->init();
+    setSource(source);
 }
 
 void QmlViewPrivate::init()
@@ -254,15 +280,14 @@ QmlView::~QmlView()
 }
 
 /*!
-    Sets the source to the \a url.
-
-    Call \l execute() to load the QML and instantiate the component.
-
-    \sa execute()
+    Sets the source to the \a url, loads the QML component and instantiates it.
  */
 void QmlView::setSource(const QUrl& url)
 {
-    d->source = url;
+    if (url != d->source) {
+        d->source = url;
+        d->execute();
+    }
 }
 
 /*!
@@ -296,23 +321,6 @@ QmlContext* QmlView::rootContext()
     return d->engine.rootContext();
 }
 
-/*!
-    Loads and instantiates the QML component set by the \l setSource() method.
-
-    \sa setSource()
-*/
-void QmlView::execute()
-{
-    delete d->root;
-    delete d->component;
-    d->component = new QmlComponent(&d->engine, d->source, this);
-
-    if (!d->component->isLoading()) {
-        continueExecute();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(continueExecute()));
-    }
-}
 
 /*!
   \enum QmlView::Status
@@ -417,52 +425,58 @@ void QmlView::continueExecute()
         return;
     }
 
-    if (obj) {
-        if (QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(obj)) {
-
-            d->scene.addItem(item);
-
-            QPerformanceLog::displayData();
-            QPerformanceLog::clear();
-            d->root = item;
-            d->qmlRoot = item;
-            connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
-            connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
-            if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
-                d->initialSize.setWidth(d->qmlRoot->width());
-            if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)
-                d->initialSize.setHeight(d->qmlRoot->height());
-            resize(d->initialSize);
-
-            if (d->resizeMode == SizeRootObjectToView) {
-                d->qmlRoot->setWidth(width());
-                d->qmlRoot->setHeight(height());
-            } else {
-                QSize sz(d->qmlRoot->width(),d->qmlRoot->height());
-                emit sceneResized(sz);
-                resize(sz);
-            }
-            updateGeometry();
-        } else if (QGraphicsObject *item = qobject_cast<QGraphicsObject *>(obj)) {
-            d->scene.addItem(item);
-            qWarning() << "QmlView::resizeMode is not honored for components of type QGraphicsObject";
-        } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
-            window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
-            window()->setAttribute(Qt::WA_NoSystemBackground, false);
-            if (!layout()) {
-                setLayout(new QVBoxLayout);
-                layout()->setContentsMargins(0, 0, 0, 0);
-            } else if (layout()->count()) {
-                // Hide the QGraphicsView in GV mode.
-                QLayoutItem *item = layout()->itemAt(0);
-                if (item->widget())
-                    item->widget()->hide();
-            }
-            layout()->addWidget(wid);
-            emit sceneResized(wid->size());
-        }
-    }
+    setRootObject(obj);
     emit statusChanged(status());
+}
+
+
+/*!
+  \internal
+*/
+void QmlView::setRootObject(QObject *obj)
+{
+    if (QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(obj)) {
+        d->scene.addItem(item);
+
+        QPerformanceLog::displayData();
+        QPerformanceLog::clear();
+        d->root = item;
+        d->qmlRoot = item;
+        connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
+        connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
+        if (d->initialSize.height() <= 0 && d->qmlRoot->width() > 0)
+            d->initialSize.setWidth(d->qmlRoot->width());
+        if (d->initialSize.height() <= 0 && d->qmlRoot->height() > 0)
+            d->initialSize.setHeight(d->qmlRoot->height());
+        resize(d->initialSize);
+
+        if (d->resizeMode == SizeRootObjectToView) {
+            d->qmlRoot->setWidth(width());
+            d->qmlRoot->setHeight(height());
+        } else {
+            QSize sz(d->qmlRoot->width(),d->qmlRoot->height());
+            emit sceneResized(sz);
+            resize(sz);
+        }
+        updateGeometry();
+    } else if (QGraphicsObject *item = qobject_cast<QGraphicsObject *>(obj)) {
+        d->scene.addItem(item);
+        qWarning() << "QmlView::resizeMode is not honored for components of type QGraphicsObject";
+    } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
+        window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
+        window()->setAttribute(Qt::WA_NoSystemBackground, false);
+        if (!layout()) {
+            setLayout(new QVBoxLayout);
+            layout()->setContentsMargins(0, 0, 0, 0);
+        } else if (layout()->count()) {
+            // Hide the QGraphicsView in GV mode.
+            QLayoutItem *item = layout()->itemAt(0);
+            if (item->widget())
+                item->widget()->hide();
+        }
+        layout()->addWidget(wid);
+        emit sceneResized(wid->size());
+    }
 }
 
 /*!

@@ -56,7 +56,6 @@ private:
 void tst_QmlGraphicsMouseArea::dragProperties()
 {
     QmlView *canvas = createView(SRCDIR "/data/dragproperties.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);

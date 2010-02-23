@@ -349,7 +349,6 @@ void tst_qmlgraphicstextinput::maxLength()
 {
     //QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QmlView *canvas = createView(SRCDIR "/data/maxLength.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
@@ -378,7 +377,6 @@ void tst_qmlgraphicstextinput::masks()
     //Not a comprehensive test of the possible masks, that's done elsewhere (QLineEdit)
     //QString componentStr = "import Qt 4.6\nTextInput {  inputMask: 'HHHHhhhh'; }";
     QmlView *canvas = createView(SRCDIR "/data/masks.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
@@ -403,7 +401,6 @@ void tst_qmlgraphicstextinput::validators()
     // here to ensure that their exposure to QML is working.
 
     QmlView *canvas = createView(SRCDIR "/data/validators.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
 
@@ -493,7 +490,6 @@ void tst_qmlgraphicstextinput::validators()
 void tst_qmlgraphicstextinput::inputMethodHints()
 {
     QmlView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
 
@@ -513,7 +509,6 @@ the extent of the text, then they should ignore the keys.
 void tst_qmlgraphicstextinput::navigation()
 {
     QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
 
@@ -546,7 +541,6 @@ void tst_qmlgraphicstextinput::navigation()
 void tst_qmlgraphicstextinput::cursorDelegate()
 {
     QmlView* view = createView(SRCDIR "/data/cursorTest.qml");
-    view->execute();
     view->show();
     view->setFocus();
     QmlGraphicsTextInput *textInputObject = view->rootObject()->findChild<QmlGraphicsTextInput*>("textInputObject");
@@ -574,7 +568,6 @@ void tst_qmlgraphicstextinput::cursorDelegate()
 void tst_qmlgraphicstextinput::readOnly()
 {
     QmlView *canvas = createView(SRCDIR "/data/readOnly.qml");
-    canvas->execute();
     canvas->show();
     canvas->setFocus();
 

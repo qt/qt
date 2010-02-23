@@ -483,6 +483,8 @@ void QmlGraphicsWebView::setRenderingEnabled(bool enabled)
     if (d->rendering == enabled)
         return;
     d->rendering = enabled;
+    emit renderingEnabledChanged();
+
     setCacheFrozen(!enabled);
     if (enabled)
         clearCache();
@@ -596,7 +598,10 @@ int QmlGraphicsWebView::pressGrabTime() const
 void QmlGraphicsWebView::setPressGrabTime(int ms)
 {
     Q_D(QmlGraphicsWebView);
+    if (d->pressTime == ms) 
+        return;
     d->pressTime = ms;
+    emit pressGrabTimeChanged();
 }
 
 void QmlGraphicsWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -1024,6 +1029,7 @@ void QmlGraphicsWebView::setHtml(const QString &html, const QUrl &baseUrl)
         d->pending_url = baseUrl;
         d->pending_string = html;
     }
+    emit htmlChanged();
 }
 
 void QmlGraphicsWebView::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
@@ -1116,8 +1122,10 @@ QmlComponent *QmlGraphicsWebView::newWindowComponent() const
 void QmlGraphicsWebView::setNewWindowComponent(QmlComponent *newWindow)
 {
     Q_D(QmlGraphicsWebView);
-    delete d->newWindowComponent;
+    if (newWindow == d->newWindowComponent)
+        return;
     d->newWindowComponent = newWindow;
+    emit newWindowComponentChanged();
 }
 
 
@@ -1137,8 +1145,16 @@ QmlGraphicsItem *QmlGraphicsWebView::newWindowParent() const
 void QmlGraphicsWebView::setNewWindowParent(QmlGraphicsItem *parent)
 {
     Q_D(QmlGraphicsWebView);
-    delete d->newWindowParent;
+    if (parent == d->newWindowParent)
+        return;
+    if (d->newWindowParent && parent) {
+        QList<QGraphicsItem *> children = d->newWindowParent->childItems();
+        for (int i = 0; i < children.count(); ++i) {
+            children.at(i)->setParentItem(parent);
+        }
+    }
     d->newWindowParent = parent;
+    emit newWindowParentChanged();    
 }
 
 /*!

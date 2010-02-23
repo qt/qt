@@ -62,8 +62,8 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsBasePositioner : public QmlGraphicsItem
     Q_OBJECT
 
     Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
-    Q_PROPERTY(QmlTransition *move READ move WRITE setMove)
-    Q_PROPERTY(QmlTransition *add READ add WRITE setAdd)
+    Q_PROPERTY(QmlTransition *move READ move WRITE setMove NOTIFY moveChanged)
+    Q_PROPERTY(QmlTransition *add READ add WRITE setAdd NOTIFY addChanged)
 public:
     enum PositionerType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
     QmlGraphicsBasePositioner(PositionerType, QmlGraphicsItem *parent);
@@ -86,6 +86,8 @@ protected:
 
 Q_SIGNALS:
     void spacingChanged();
+    void moveChanged();
+    void addChanged();
 
 protected Q_SLOTS:
     virtual void doPositioning()=0;
@@ -134,16 +136,21 @@ private:
 class Q_DECLARATIVE_EXPORT QmlGraphicsGrid : public QmlGraphicsBasePositioner
 {
     Q_OBJECT
-    Q_PROPERTY(int rows READ rows WRITE setRows)
-    Q_PROPERTY(int columns READ columns WRITE setcolumns)
+    Q_PROPERTY(int rows READ rows WRITE setRows NOTIFY rowChanged)
+    Q_PROPERTY(int columns READ columns WRITE setColumns NOTIFY columnsChanged)
 public:
     QmlGraphicsGrid(QmlGraphicsItem *parent=0);
 
     int rows() const {return _rows;}
-    void setRows(const int rows){_rows = rows;}
+    void setRows(const int rows);
 
     int columns() const {return _columns;}
-    void setcolumns(const int columns){_columns = columns;}
+    void setColumns(const int columns);
+
+Q_SIGNALS:
+    void rowsChanged();
+    void columnsChanged();
+
 protected Q_SLOTS:
     virtual void doPositioning();
 
