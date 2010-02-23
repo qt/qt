@@ -44,6 +44,7 @@ SUBDIRS += \
            qmllistmodel \           # Cover
            qmlmetaproperty \        # Cover
            qmlmetatype \            # Cover
+           qmlmoduleplugin \        # Cover
            qmlnumberformatter \     # Cover
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover
