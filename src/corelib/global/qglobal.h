@@ -813,7 +813,7 @@ namespace QT_NAMESPACE {}
 #      define Q_WS_MAC32
 #    endif
 #  elif defined(Q_OS_SYMBIAN)
-#    if (defined(__SERIES60_31__) || defined(__S60_32__) || defined(__S60_50__)) && !defined(QT_NO_S60)
+#    if !defined(QT_NO_S60)
 #      define Q_WS_S60
 #    endif
 #  elif !defined(Q_WS_QWS)
