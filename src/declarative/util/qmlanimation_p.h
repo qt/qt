@@ -51,6 +51,7 @@
 #include <qmlscriptstring.h>
 
 #include <QtCore/qvariant.h>
+#include <QtCore/qeasingcurve.h>
 #include <QtCore/QAbstractAnimation>
 #include <QtGui/qcolor.h>
 
@@ -261,7 +262,7 @@ class Q_AUTOTEST_EXPORT QmlPropertyAnimation : public QmlAbstractAnimation
     Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged)
     Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
-    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
+    Q_PROPERTY(QEasingCurve easing READ easing WRITE setEasing NOTIFY easingChanged)
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
@@ -281,8 +282,8 @@ public:
     QVariant to() const;
     void setTo(const QVariant &);
 
-    QString easing() const;
-    void setEasing(const QString &);
+    QEasingCurve easing() const;
+    void setEasing(const QEasingCurve &);
 
     QObject *target() const;
     void setTarget(QObject *);
@@ -307,7 +308,7 @@ Q_SIGNALS:
     void durationChanged(int);
     void fromChanged(QVariant);
     void toChanged(QVariant);
-    void easingChanged(const QString &);
+    void easingChanged(const QEasingCurve &);
     void propertiesChanged(const QString &);
     void targetChanged(QObject *, const QString &);
 };
