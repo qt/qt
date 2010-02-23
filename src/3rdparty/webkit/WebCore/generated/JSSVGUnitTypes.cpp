@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -134,8 +134,8 @@ bool JSSVGUnitTypesPrototype::getOwnPropertyDescriptor(ExecState* exec, const Id
 
 const ClassInfo JSSVGUnitTypes::s_info = { "SVGUnitTypes", 0, &JSSVGUnitTypesTable, 0 };
 
-JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUnitTypes> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -143,6 +143,7 @@ JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 JSSVGUnitTypes::~JSSVGUnitTypes()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -162,8 +163,8 @@ bool JSSVGUnitTypes::getOwnPropertyDescriptor(ExecState* exec, const Identifier&
 
 JSValue jsSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    UNUSED_PARAM(slot);
-    return JSSVGUnitTypes::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
+    JSSVGUnitTypes* domObject = static_cast<JSSVGUnitTypes*>(asObject(slot.slotBase()));
+    return JSSVGUnitTypes::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGUnitTypes::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {

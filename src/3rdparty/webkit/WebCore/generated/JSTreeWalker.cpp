@@ -84,7 +84,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -174,7 +174,8 @@ JSValue jsTreeWalkerRoot(ExecState* exec, const Identifier&, const PropertySlot&
     JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->root()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->root()));
+    return result;
 }
 
 JSValue jsTreeWalkerWhatToShow(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -182,7 +183,8 @@ JSValue jsTreeWalkerWhatToShow(ExecState* exec, const Identifier&, const Propert
     JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
-    return jsNumber(exec, imp->whatToShow());
+    JSValue result = jsNumber(exec, imp->whatToShow());
+    return result;
 }
 
 JSValue jsTreeWalkerFilter(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -190,7 +192,8 @@ JSValue jsTreeWalkerFilter(ExecState* exec, const Identifier&, const PropertySlo
     JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->filter()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->filter()));
+    return result;
 }
 
 JSValue jsTreeWalkerExpandEntityReferences(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -198,7 +201,8 @@ JSValue jsTreeWalkerExpandEntityReferences(ExecState* exec, const Identifier&, c
     JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
-    return jsBoolean(imp->expandEntityReferences());
+    JSValue result = jsBoolean(imp->expandEntityReferences());
+    return result;
 }
 
 JSValue jsTreeWalkerCurrentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -206,7 +210,8 @@ JSValue jsTreeWalkerCurrentNode(ExecState* exec, const Identifier&, const Proper
     JSTreeWalker* castedThis = static_cast<JSTreeWalker*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->currentNode()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->currentNode()));
+    return result;
 }
 
 JSValue jsTreeWalkerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -221,7 +226,8 @@ void JSTreeWalker::put(ExecState* exec, const Identifier& propertyName, JSValue 
 
 void setJSTreeWalkerCurrentNode(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(thisObject)->impl());
+    JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(thisObject);
+    TreeWalker* imp = static_cast<TreeWalker*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setCurrentNode(toNode(value), ec);
     setDOMException(exec, ec);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +37,11 @@
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/Noncopyable.h>
+#include <wtf/PassOwnPtr.h>
+
+#if USE(ACCELERATED_COMPOSITING)
+#include "GraphicsLayer.h"
+#endif
 
 #ifdef __OBJC__
 @class QTMovie;
@@ -66,10 +71,6 @@ class MediaPlayerPrivateInterface;
 class String;
 class TimeRanges;
 
-#if USE(ACCELERATED_COMPOSITING)
-class GraphicsLayer;
-#endif
-
 class MediaPlayerClient {
 public:
     virtual ~MediaPlayerClient() { }
@@ -80,8 +81,11 @@ public:
     // the ready state has changed
     virtual void mediaPlayerReadyStateChanged(MediaPlayer*) { }
 
-    // the volume or muted state has changed
+    // the volume state has changed
     virtual void mediaPlayerVolumeChanged(MediaPlayer*) { }
+
+    // the mute state has changed
+    virtual void mediaPlayerMuteChanged(MediaPlayer*) { }
 
     // time has jumped, eg. not as a result of normal playback
     virtual void mediaPlayerTimeChanged(MediaPlayer*) { }
@@ -108,14 +112,19 @@ public:
     // whether the rendering system can accelerate the display of this MediaPlayer.
     virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*) { return false; }
 
-    // return the GraphicsLayer that will host the presentation for this MediaPlayer.
-    virtual GraphicsLayer* mediaPlayerGraphicsLayer(MediaPlayer*) { return 0; }
+    // called when the media player's rendering mode changed, which indicates a change in the
+    // availability of the platformLayer().
+    virtual void mediaPlayerRenderingModeChanged(MediaPlayer*) { }
 #endif
 };
 
 class MediaPlayer : public Noncopyable {
 public:
-    MediaPlayer(MediaPlayerClient*);
+
+    static PassOwnPtr<MediaPlayer> create(MediaPlayerClient* client)
+    {
+        return new MediaPlayer(client);
+    }
     virtual ~MediaPlayer();
 
     // media engine support
@@ -127,6 +136,9 @@ public:
     bool supportsFullscreen() const;
     bool supportsSave() const;
     PlatformMedia platformMedia() const;
+#if USE(ACCELERATED_COMPOSITING)
+    PlatformLayer* platformLayer() const;
+#endif
 
     IntSize naturalSize();
     bool hasVideo() const;
@@ -158,8 +170,6 @@ public:
 
     float startTime() const;
     
-    void setEndTime(float time);
-    
     float rate() const;
     void setRate(float);
 
@@ -170,13 +180,16 @@ public:
     float maxTimeSeekable();
 
     unsigned bytesLoaded();
-    bool totalBytesKnown();
-    unsigned totalBytes();
     
     float volume() const;
     void setVolume(float);
-    
-    int dataRate() const;
+
+    bool supportsMuting() const;
+    bool muted() const;
+    void setMuted(bool);
+
+    bool hasClosedCaptions() const;
+    void setClosedCaptionsVisible(bool closedCaptionsVisible);
 
     bool autobuffer() const;    
     void setAutobuffer(bool);
@@ -195,7 +208,8 @@ public:
 
     void networkStateChanged();
     void readyStateChanged();
-    void volumeChanged();
+    void volumeChanged(float);
+    void muteChanged(bool);
     void timeChanged();
     void sizeChanged();
     void rateChanged();
@@ -204,6 +218,8 @@ public:
     void repaint();
 
     MediaPlayerClient* mediaPlayerClient() const { return m_mediaPlayerClient; }
+
+    bool hasAvailableVideoFrame() const;
 
     bool canLoadPoster() const;
     void setPoster(const String&);
@@ -223,6 +239,8 @@ public:
     bool hasSingleSecurityOrigin() const;
 
 private:
+    MediaPlayer(MediaPlayerClient*);
+
     static void initializeMediaEngines();
 
     MediaPlayerClient* m_mediaPlayerClient;
@@ -233,6 +251,7 @@ private:
     bool m_visible;
     float m_rate;
     float m_volume;
+    bool m_muted;
     bool m_preservesPitch;
     bool m_autobuffer;
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)

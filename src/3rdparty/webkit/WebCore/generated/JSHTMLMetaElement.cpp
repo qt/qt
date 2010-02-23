@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -146,7 +146,8 @@ JSValue jsHTMLMetaElementContent(ExecState* exec, const Identifier&, const Prope
     JSHTMLMetaElement* castedThis = static_cast<JSHTMLMetaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThis->impl());
-    return jsString(exec, imp->content());
+    JSValue result = jsString(exec, imp->content());
+    return result;
 }
 
 JSValue jsHTMLMetaElementHttpEquiv(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,7 +155,8 @@ JSValue jsHTMLMetaElementHttpEquiv(ExecState* exec, const Identifier&, const Pro
     JSHTMLMetaElement* castedThis = static_cast<JSHTMLMetaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThis->impl());
-    return jsString(exec, imp->httpEquiv());
+    JSValue result = jsString(exec, imp->httpEquiv());
+    return result;
 }
 
 JSValue jsHTMLMetaElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,7 +164,8 @@ JSValue jsHTMLMetaElementName(ExecState* exec, const Identifier&, const Property
     JSHTMLMetaElement* castedThis = static_cast<JSHTMLMetaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
 JSValue jsHTMLMetaElementScheme(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,7 +173,8 @@ JSValue jsHTMLMetaElementScheme(ExecState* exec, const Identifier&, const Proper
     JSHTMLMetaElement* castedThis = static_cast<JSHTMLMetaElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThis->impl());
-    return jsString(exec, imp->scheme());
+    JSValue result = jsString(exec, imp->scheme());
+    return result;
 }
 
 JSValue jsHTMLMetaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -185,25 +189,29 @@ void JSHTMLMetaElement::put(ExecState* exec, const Identifier& propertyName, JSV
 
 void setJSHTMLMetaElementContent(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(static_cast<JSHTMLMetaElement*>(thisObject)->impl());
+    JSHTMLMetaElement* castedThisObj = static_cast<JSHTMLMetaElement*>(thisObject);
+    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThisObj->impl());
     imp->setContent(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLMetaElementHttpEquiv(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(static_cast<JSHTMLMetaElement*>(thisObject)->impl());
+    JSHTMLMetaElement* castedThisObj = static_cast<JSHTMLMetaElement*>(thisObject);
+    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThisObj->impl());
     imp->setHttpEquiv(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLMetaElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(static_cast<JSHTMLMetaElement*>(thisObject)->impl());
+    JSHTMLMetaElement* castedThisObj = static_cast<JSHTMLMetaElement*>(thisObject);
+    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThisObj->impl());
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLMetaElementScheme(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(static_cast<JSHTMLMetaElement*>(thisObject)->impl());
+    JSHTMLMetaElement* castedThisObj = static_cast<JSHTMLMetaElement*>(thisObject);
+    HTMLMetaElement* imp = static_cast<HTMLMetaElement*>(castedThisObj->impl());
     imp->setScheme(valueToStringWithNullCheck(exec, value));
 }
 

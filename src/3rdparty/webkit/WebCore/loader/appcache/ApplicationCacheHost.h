@@ -33,6 +33,7 @@
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 
+#include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -45,7 +46,7 @@ namespace WebCore {
     class KURL;
     class ResourceLoader;
     class ResourceError;
-    struct ResourceRequest;
+    class ResourceRequest;
     class ResourceResponse;
     class SubstituteData;
 #if PLATFORM(CHROMIUM)
@@ -57,7 +58,7 @@ namespace WebCore {
     class ApplicationCacheStorage;
 #endif
 
-    class ApplicationCacheHost {
+    class ApplicationCacheHost : public Noncopyable {
     public:
         // The Status numeric values are specified in the HTML5 spec.
         enum Status {
@@ -110,12 +111,16 @@ namespace WebCore {
         void setDOMApplicationCache(DOMApplicationCache* domApplicationCache);
         void notifyDOMApplicationCache(EventID id);
 
+        void stopDeferringEvents(); // Also raises the events that have been queued up.
+
     private:
         bool isApplicationCacheEnabled();
         DocumentLoader* documentLoader() { return m_documentLoader; }
 
         DOMApplicationCache* m_domApplicationCache;
         DocumentLoader* m_documentLoader;
+        bool m_defersEvents; // Events are deferred until after document onload.
+        Vector<EventID> m_deferredEvents;
 
 #if PLATFORM(CHROMIUM)
         friend class ApplicationCacheHostInternal;

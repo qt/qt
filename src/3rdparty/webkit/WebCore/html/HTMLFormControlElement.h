@@ -43,7 +43,7 @@ public:
     virtual int tagPriority() const { return 1; }
 
     HTMLFormElement* form() const { return m_form; }
-    virtual ValidityState* validity();
+    ValidityState* validity();
 
     bool formNoValidate() const;
     void setFormNoValidate(bool);
@@ -63,7 +63,7 @@ public:
 
     virtual void dispatchFormControlChangeEvent();
 
-    bool disabled() const;
+    bool disabled() const { return m_disabled; }
     void setDisabled(bool);
 
     virtual bool supportsFocus() const;
@@ -107,20 +107,24 @@ public:
     virtual short tabIndex() const;
 
     virtual bool willValidate() const;
+    String validationMessage();
     bool checkValidity();
-    void updateValidity();
+    // This must be called when a validation constraint or control value is changed.
+    void setNeedsValidityCheck();
     void setCustomValidity(const String&);
     virtual bool valueMissing() const { return false; }
     virtual bool patternMismatch() const { return false; }
     virtual bool tooLong() const { return false; }
 
-    void formDestroyed() { m_form = 0; }
+    void formDestroyed();
 
     virtual void dispatchFocusEvent();
     virtual void dispatchBlurEvent();
 
 protected:
     void removeFromForm();
+    // This must be called any time the result of willValidate() has changed.
+    void setNeedsWillValidateCheck();
 
 private:
     virtual HTMLFormElement* virtualForm() const;
@@ -128,7 +132,8 @@ private:
     virtual bool isValidFormControlElement();
 
     HTMLFormElement* m_form;
-    RefPtr<ValidityState> m_validityState;
+    OwnPtr<ValidityState> m_validityState;
+    bool m_hasName : 1;
     bool m_disabled : 1;
     bool m_readOnly : 1;
     bool m_required : 1;

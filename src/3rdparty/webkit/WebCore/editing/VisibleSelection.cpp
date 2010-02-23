@@ -237,7 +237,7 @@ void VisibleSelection::appendTrailingWhitespace()
 
     for (; charIt.length(); charIt.advance(1)) {
         UChar c = charIt.characters()[0];
-        if (!isSpaceOrNewline(c) && c != noBreakSpace || c == '\n')
+        if ((!isSpaceOrNewline(c) && c != noBreakSpace) || c == '\n')
             break;
         m_end = charIt.range()->endPosition();
     }
@@ -301,7 +301,7 @@ void VisibleSelection::setStartAndEndFromBaseAndExtentRespectingGranularity()
             VisiblePosition wordEnd(endOfWord(originalEnd, side));
             VisiblePosition end(wordEnd);
             
-            if (isEndOfParagraph(originalEnd)) {
+            if (isEndOfParagraph(originalEnd) && !isEmptyTableCell(m_start.node())) {
                 // Select the paragraph break (the space from the end of a paragraph to the start of 
                 // the next one) to match TextEdit.
                 end = wordEnd.next();

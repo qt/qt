@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,13 +33,11 @@
 namespace WebCore {
     
 class HTMLMediaElement;
-#if USE(ACCELERATED_COMPOSITING)
-class GraphicsLayer;
-#endif
+class HTMLVideoElement;
 
 class RenderVideo : public RenderMedia {
 public:
-    RenderVideo(HTMLMediaElement*);
+    RenderVideo(HTMLVideoElement*);
     virtual ~RenderVideo();
 
     void videoSizeChanged();
@@ -48,13 +46,14 @@ public:
 #if USE(ACCELERATED_COMPOSITING)
     bool supportsAcceleratedRendering() const;
     void acceleratedRenderingStateChanged();
-    GraphicsLayer* videoGraphicsLayer() const;
 #endif
 
 private:
     virtual void updateFromElement();
+    inline HTMLVideoElement* videoElement() const;
 
-    virtual void intrinsicSizeChanged() { videoSizeChanged(); }
+    virtual void intrinsicSizeChanged();
+    virtual void imageChanged(WrappedImagePtr, const IntRect*);
 
     virtual const char* renderName() const { return "RenderVideo"; }
 
@@ -67,16 +66,14 @@ private:
 
     virtual int calcReplacedWidth(bool includeMaxWidth = true) const;
     virtual int calcReplacedHeight() const;
-
-    virtual void calcPrefWidths();
+    virtual int minimumReplacedHeight() const;
     
     int calcAspectRatioWidth() const;
     int calcAspectRatioHeight() const;
 
-    bool isWidthSpecified() const;
-    bool isHeightSpecified() const;
-    
     void updatePlayer();
+
+    IntSize m_cachedImageSize;
 };
 
 inline RenderVideo* toRenderVideo(RenderObject* object)

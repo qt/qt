@@ -155,6 +155,7 @@ void QmlGraphicsParticleMotion::destroy(QmlGraphicsParticle &particle)
 
 /*!
     \qmlclass ParticleMotionLinear
+    \since 4.7
     \brief The ParticleMotionLinear object moves particles linearly.
 
     \sa Particles
@@ -175,6 +176,7 @@ void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interv
 
 /*!
     \qmlclass ParticleMotionGravity
+    \since 4.7
     \brief The ParticleMotionGravity object moves particles towards a point.
 
     \sa Particles
@@ -230,6 +232,7 @@ void QmlGraphicsParticleMotionGravity::advance(QmlGraphicsParticle &p, int inter
 
 /*!
     \qmlclass ParticleMotionWander
+    \since 4.7
     \brief The ParticleMotionWander object moves particles in a somewhat random fashion.
 
     The particles will continue roughly in the original direction, however will randomly
@@ -555,19 +558,25 @@ void QmlGraphicsParticlesPrivate::updateOpacity(QmlGraphicsParticle &p, int age)
 
 /*!
     \qmlclass Particles
+    \since 4.7
     \brief The Particles object generates and moves particles.
     \inherits Item
 
-    This element provides preliminary support for particles in QML, and may be heavily changed or removed in later versions.
+    This element provides preliminary support for particles in QML,
+    and may be heavily changed or removed in later versions.
 
-    The particles created by this object cannot be dealt with directly, they can only be controlled through the parameters of the Particles object. The particles are all the same pixmap, specified by the user.
+    The particles created by this object cannot be dealt with
+    directly, they can only be controlled through the parameters of
+    the Particles object. The particles are all the same pixmap,
+    specified by the user.
 
-    The particles are painted relative to the parent of the Particles object.  Moving the
-    Particles object will not move the particles already emitted.
+    The particles are painted relative to the parent of the Particles
+    object.  Moving the Particles object will not move the particles
+    already emitted.
 
-    The below example creates two differently behaving particle sources.
-    The top one has particles falling from the top like snow,
-    the lower one has particles expelled up like a fountain.
+    The below example creates two differently behaving particle
+    sources.  The top one has particles falling from the top like
+    snow, the lower one has particles expelled up like a fountain.
 
     \qml
 Rectangle {

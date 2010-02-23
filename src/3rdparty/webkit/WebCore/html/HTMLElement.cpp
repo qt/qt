@@ -82,19 +82,48 @@ HTMLTagStatus HTMLElement::endTagRequirement() const
     return TagStatusRequired;
 }
 
+struct Empty1IntHashTraits : HashTraits<int> {
+    static const bool emptyValueIsZero = false;
+    static int emptyValue() { return 1; }
+};
+typedef HashMap<AtomicStringImpl*, int, DefaultHash<AtomicStringImpl*>::Hash, HashTraits<AtomicStringImpl*>, Empty1IntHashTraits> TagPriorityMap;
+
+static const TagPriorityMap* createTagPriorityMap()
+{
+    TagPriorityMap* map = new TagPriorityMap;
+
+    map->add(wbrTag.localName().impl(), 0);
+
+    map->add(addressTag.localName().impl(), 3);
+    map->add(ddTag.localName().impl(), 3);
+    map->add(dtTag.localName().impl(), 3);
+    map->add(noscriptTag.localName().impl(), 3);
+    map->add(rpTag.localName().impl(), 3);
+    map->add(rtTag.localName().impl(), 3);
+
+    // 5 is same as <div>'s priority.
+    map->add(articleTag.localName().impl(), 5);
+    map->add(asideTag.localName().impl(), 5);
+    map->add(centerTag.localName().impl(), 5);
+    map->add(footerTag.localName().impl(), 5);
+    map->add(headerTag.localName().impl(), 5);
+    map->add(nobrTag.localName().impl(), 5);
+    map->add(rubyTag.localName().impl(), 5);
+    map->add(navTag.localName().impl(), 5);
+    map->add(sectionTag.localName().impl(), 5);
+
+    map->add(noembedTag.localName().impl(), 10);
+    map->add(noframesTag.localName().impl(), 10);
+
+    // TagPriorityMap returns 1 for unregistered tags. It's same as <span>.
+    // This way custom tag name elements will behave like inline spans.
+    return map;
+}
+
 int HTMLElement::tagPriority() const
 {
-    if (hasLocalName(wbrTag))
-        return 0;
-    if (hasLocalName(addressTag) || hasLocalName(ddTag) || hasLocalName(dtTag) || hasLocalName(noscriptTag) || hasLocalName(rpTag) || hasLocalName(rtTag))
-        return 3;
-    if (hasLocalName(centerTag) || hasLocalName(nobrTag) || hasLocalName(rubyTag) || hasLocalName(navTag))
-        return 5;
-    if (hasLocalName(noembedTag) || hasLocalName(noframesTag))
-        return 10;
-
-    // Same values as <span>.  This way custom tag name elements will behave like inline spans.
-    return 1;
+    static const TagPriorityMap* tagPriorityMap = createTagPriorityMap();
+    return tagPriorityMap->get(localName().impl());
 }
 
 bool HTMLElement::mapToEntry(const QualifiedName& attrName, MappedAttributeEntry& result) const
@@ -114,7 +143,7 @@ bool HTMLElement::mapToEntry(const QualifiedName& attrName, MappedAttributeEntry
     
 void HTMLElement::parseMappedAttribute(MappedAttribute *attr)
 {
-    if (attr->name() == idAttr || attr->name() == classAttr || attr->name() == styleAttr)
+    if (attr->name() == idAttributeName() || attr->name() == classAttr || attr->name() == styleAttr)
         return StyledElement::parseMappedAttribute(attr);
 
     String indexstring;
@@ -222,6 +251,14 @@ void HTMLElement::parseMappedAttribute(MappedAttribute *attr)
         setAttributeEventListener(eventNames().inputEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == oninvalidAttr) {
         setAttributeEventListener(eventNames().invalidEvent, createAttributeEventListener(this, attr));
+    } else if (attr->name() == ontouchstartAttr) {
+        setAttributeEventListener(eventNames().touchstartEvent, createAttributeEventListener(this, attr));
+    } else if (attr->name() == ontouchmoveAttr) {
+        setAttributeEventListener(eventNames().touchmoveEvent, createAttributeEventListener(this, attr));
+    } else if (attr->name() == ontouchendAttr) {
+        setAttributeEventListener(eventNames().touchendEvent, createAttributeEventListener(this, attr));
+    } else if (attr->name() == ontouchcancelAttr) {
+        setAttributeEventListener(eventNames().touchcancelEvent, createAttributeEventListener(this, attr));
     }
 }
 
@@ -235,7 +272,7 @@ String HTMLElement::outerHTML() const
     return createMarkup(this);
 }
 
-PassRefPtr<DocumentFragment> HTMLElement::createContextualFragment(const String &html)
+PassRefPtr<DocumentFragment> HTMLElement::createContextualFragment(const String &html, FragmentScriptingPermission scriptingPermission)
 {
     // the following is in accordance with the definition as used by IE
     if (endTagRequirement() == TagStatusForbidden)
@@ -248,9 +285,9 @@ PassRefPtr<DocumentFragment> HTMLElement::createContextualFragment(const String 
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     
     if (document()->isHTMLDocument())
-         parseHTMLDocumentFragment(html, fragment.get());
+         parseHTMLDocumentFragment(html, fragment.get(), scriptingPermission);
     else {
-        if (!parseXMLDocumentFragment(html, fragment.get(), this))
+        if (!parseXMLDocumentFragment(html, fragment.get(), this, scriptingPermission))
             // FIXME: We should propagate a syntax error exception out here.
             return 0;
     }
@@ -340,6 +377,13 @@ static void replaceChildrenWithText(HTMLElement* element, const String& text, Ex
 
 void HTMLElement::setInnerHTML(const String& html, ExceptionCode& ec)
 {
+    if (hasLocalName(scriptTag) || hasLocalName(styleTag)) {
+        // Script and CSS source shouldn't be parsed as HTML.
+        removeChildren();
+        appendChild(document()->createTextNode(html), ec);
+        return;
+    }
+
     RefPtr<DocumentFragment> fragment = createContextualFragment(html);
     if (!fragment) {
         ec = NO_MODIFICATION_ALLOWED_ERR;
@@ -858,6 +902,8 @@ static HashSet<AtomicStringImpl*>* blockTagList()
     DEFINE_STATIC_LOCAL(HashSet<AtomicStringImpl*>, tagList, ());
     if (tagList.isEmpty()) {
         tagList.add(addressTag.localName().impl());
+        tagList.add(articleTag.localName().impl());
+        tagList.add(asideTag.localName().impl());
         tagList.add(blockquoteTag.localName().impl());
         tagList.add(centerTag.localName().impl());
         tagList.add(ddTag.localName().impl());
@@ -866,6 +912,7 @@ static HashSet<AtomicStringImpl*>* blockTagList()
         tagList.add(dlTag.localName().impl());
         tagList.add(dtTag.localName().impl());
         tagList.add(fieldsetTag.localName().impl());
+        tagList.add(footerTag.localName().impl());
         tagList.add(formTag.localName().impl());
         tagList.add(h1Tag.localName().impl());
         tagList.add(h2Tag.localName().impl());
@@ -873,6 +920,7 @@ static HashSet<AtomicStringImpl*>* blockTagList()
         tagList.add(h4Tag.localName().impl());
         tagList.add(h5Tag.localName().impl());
         tagList.add(h6Tag.localName().impl());
+        tagList.add(headerTag.localName().impl());
         tagList.add(hrTag.localName().impl());
         tagList.add(isindexTag.localName().impl());
         tagList.add(layerTag.localName().impl());
@@ -889,6 +937,7 @@ static HashSet<AtomicStringImpl*>* blockTagList()
         tagList.add(pTag.localName().impl());
         tagList.add(plaintextTag.localName().impl());
         tagList.add(preTag.localName().impl());
+        tagList.add(sectionTag.localName().impl());
         tagList.add(tableTag.localName().impl());
         tagList.add(ulTag.localName().impl());
         tagList.add(xmpTag.localName().impl());

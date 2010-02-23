@@ -65,6 +65,7 @@
 
 #include "qsoundeffect_qsound_p.h"
 
+QT_BEGIN_NAMESPACE
 
 QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     QObject(parent),
@@ -221,3 +222,4 @@ void QSoundEffectPrivate::unloadSample()
     m_sound = 0;
 }
 
+QT_END_NAMESPACE

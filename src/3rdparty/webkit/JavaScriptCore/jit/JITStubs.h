@@ -74,8 +74,16 @@ namespace JSC {
         JSString* jsString() { return static_cast<JSString*>(asPointer); }
         ReturnAddressPtr returnAddress() { return ReturnAddressPtr(asPointer); }
     };
+    
+    struct TrampolineStructure {
+        MacroAssemblerCodePtr ctiStringLengthTrampoline;
+        MacroAssemblerCodePtr ctiVirtualCallLink;
+        MacroAssemblerCodePtr ctiVirtualCall;
+        MacroAssemblerCodePtr ctiNativeCallThunk;
+        MacroAssemblerCodePtr ctiSoftModulo;
+    };
 
-#if PLATFORM(X86_64)
+#if CPU(X86_64)
     struct JITStackFrame {
         void* reserved; // Unused
         JITStubArg args[6];
@@ -99,7 +107,7 @@ namespace JSC {
         // When JIT code makes a call, it pushes its return address just below the rest of the stack.
         ReturnAddressPtr* returnAddressSlot() { return reinterpret_cast<ReturnAddressPtr*>(this) - 1; }
     };
-#elif PLATFORM(X86)
+#elif CPU(X86)
 #if COMPILER(MSVC)
 #pragma pack(push)
 #pragma pack(4)
@@ -130,7 +138,7 @@ namespace JSC {
 #if COMPILER(MSVC)
 #pragma pack(pop)
 #endif // COMPILER(MSVC)
-#elif PLATFORM(ARM_THUMB2)
+#elif CPU(ARM_THUMB2)
     struct JITStackFrame {
         void* reserved; // Unused
         JITStubArg args[6];
@@ -158,7 +166,7 @@ namespace JSC {
         
         ReturnAddressPtr* returnAddressSlot() { return &thunkReturnAddress; }
     };
-#elif PLATFORM(ARM_TRADITIONAL)
+#elif CPU(ARM_TRADITIONAL)
     struct JITStackFrame {
         JITStubArg padding; // Unused
         JITStubArg args[7];
@@ -187,6 +195,8 @@ namespace JSC {
 #error "JITStackFrame not defined for this platform."
 #endif
 
+#define JITSTACKFRAME_ARGS_INDEX (OBJECT_OFFSETOF(JITStackFrame, args) / sizeof(void*))
+
 #if USE(JIT_STUB_ARGUMENT_VA_LIST)
     #define STUB_ARGS_DECLARATION void* args, ...
     #define STUB_ARGS (reinterpret_cast<void**>(vl_args) - 1)
@@ -200,16 +210,16 @@ namespace JSC {
     #define STUB_ARGS_DECLARATION void** args
     #define STUB_ARGS (args)
 
-    #if PLATFORM(X86) && COMPILER(MSVC)
+    #if CPU(X86) && COMPILER(MSVC)
     #define JIT_STUB __fastcall
-    #elif PLATFORM(X86) && COMPILER(GCC)
+    #elif CPU(X86) && COMPILER(GCC)
     #define JIT_STUB  __attribute__ ((fastcall))
     #else
     #define JIT_STUB
     #endif
 #endif
 
-#if PLATFORM(X86_64)
+#if CPU(X86_64)
     struct VoidPtrPair {
         void* first;
         void* second;
@@ -237,18 +247,16 @@ namespace JSC {
         static void tryCacheGetByID(CallFrame*, CodeBlock*, ReturnAddressPtr returnAddress, JSValue baseValue, const Identifier& propertyName, const PropertySlot&, StructureStubInfo* stubInfo);
         static void tryCachePutByID(CallFrame*, CodeBlock*, ReturnAddressPtr returnAddress, JSValue baseValue, const PutPropertySlot&, StructureStubInfo* stubInfo);
 
-        MacroAssemblerCodePtr ctiStringLengthTrampoline() { return m_ctiStringLengthTrampoline; }
-        MacroAssemblerCodePtr ctiVirtualCallLink() { return m_ctiVirtualCallLink; }
-        MacroAssemblerCodePtr ctiVirtualCall() { return m_ctiVirtualCall; }
-        MacroAssemblerCodePtr ctiNativeCallThunk() { return m_ctiNativeCallThunk; }
+        MacroAssemblerCodePtr ctiStringLengthTrampoline() { return m_trampolineStructure.ctiStringLengthTrampoline; }
+        MacroAssemblerCodePtr ctiVirtualCallLink() { return m_trampolineStructure.ctiVirtualCallLink; }
+        MacroAssemblerCodePtr ctiVirtualCall() { return m_trampolineStructure.ctiVirtualCall; }
+        MacroAssemblerCodePtr ctiNativeCallThunk() { return m_trampolineStructure.ctiNativeCallThunk; }
+        MacroAssemblerCodePtr ctiSoftModulo() { return m_trampolineStructure.ctiSoftModulo; }
 
     private:
         RefPtr<ExecutablePool> m_executablePool;
 
-        MacroAssemblerCodePtr m_ctiStringLengthTrampoline;
-        MacroAssemblerCodePtr m_ctiVirtualCallLink;
-        MacroAssemblerCodePtr m_ctiVirtualCall;
-        MacroAssemblerCodePtr m_ctiNativeCallThunk;
+        TrampolineStructure m_trampolineStructure;
     };
 
 extern "C" {
@@ -333,9 +341,7 @@ extern "C" {
     int JIT_STUB cti_op_jlesseq(STUB_ARGS_DECLARATION);
     int JIT_STUB cti_op_jtrue(STUB_ARGS_DECLARATION);
     int JIT_STUB cti_op_load_varargs(STUB_ARGS_DECLARATION);
-    int JIT_STUB cti_op_loop_if_less(STUB_ARGS_DECLARATION);
     int JIT_STUB cti_op_loop_if_lesseq(STUB_ARGS_DECLARATION);
-    int JIT_STUB cti_op_loop_if_true(STUB_ARGS_DECLARATION);
     int JIT_STUB cti_timeout_check(STUB_ARGS_DECLARATION);
     int JIT_STUB cti_has_property(STUB_ARGS_DECLARATION);
     void JIT_STUB cti_op_create_arguments(STUB_ARGS_DECLARATION);

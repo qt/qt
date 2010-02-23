@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -154,7 +154,8 @@ JSValue jsMimeTypeType(ExecState* exec, const Identifier&, const PropertySlot& s
     JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
 JSValue jsMimeTypeSuffixes(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -162,7 +163,8 @@ JSValue jsMimeTypeSuffixes(ExecState* exec, const Identifier&, const PropertySlo
     JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(castedThis->impl());
-    return jsString(exec, imp->suffixes());
+    JSValue result = jsString(exec, imp->suffixes());
+    return result;
 }
 
 JSValue jsMimeTypeDescription(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -170,7 +172,8 @@ JSValue jsMimeTypeDescription(ExecState* exec, const Identifier&, const Property
     JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(castedThis->impl());
-    return jsString(exec, imp->description());
+    JSValue result = jsString(exec, imp->description());
+    return result;
 }
 
 JSValue jsMimeTypeEnabledPlugin(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -178,7 +181,8 @@ JSValue jsMimeTypeEnabledPlugin(ExecState* exec, const Identifier&, const Proper
     JSMimeType* castedThis = static_cast<JSMimeType*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MimeType* imp = static_cast<MimeType*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->enabledPlugin()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->enabledPlugin()));
+    return result;
 }
 
 JSValue jsMimeTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

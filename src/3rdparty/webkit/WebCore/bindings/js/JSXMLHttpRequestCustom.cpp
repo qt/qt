@@ -29,18 +29,18 @@
 #include "config.h"
 #include "JSXMLHttpRequest.h"
 
+#include "Blob.h"
 #include "DOMWindow.h"
 #include "Document.h"
 #include "Event.h"
-#include "File.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "HTMLDocument.h"
+#include "JSBlob.h"
 #include "JSDOMWindowCustom.h"
 #include "JSDocument.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
-#include "JSFile.h"
 #include "XMLHttpRequest.h"
 #include <runtime/Error.h>
 #include <interpreter/Interpreter.h>
@@ -56,7 +56,7 @@ void JSXMLHttpRequest::markChildren(MarkStack& markStack)
     if (XMLHttpRequestUpload* upload = m_impl->optionalUpload())
         markDOMObjectWrapper(markStack, *Heap::heap(this)->globalData(), upload);
 
-    m_impl->markEventListeners(markStack);
+    m_impl->markJSEventListeners(markStack);
 }
 
 // Custom functions
@@ -109,8 +109,8 @@ JSValue JSXMLHttpRequest::send(ExecState* exec, const ArgList& args)
             impl()->send(ec);
         else if (val.inherits(&JSDocument::s_info))
             impl()->send(toDocument(val), ec);
-        else if (val.inherits(&JSFile::s_info))
-            impl()->send(toFile(val), ec);
+        else if (val.inherits(&JSBlob::s_info))
+            impl()->send(toBlob(val), ec);
         else
             impl()->send(val.toString(exec), ec);
     }
@@ -153,7 +153,7 @@ JSValue JSXMLHttpRequest::addEventListener(ExecState* exec, const ArgList& args)
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)), args.at(2).toBoolean(exec));
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -163,7 +163,7 @@ JSValue JSXMLHttpRequest::removeEventListener(ExecState* exec, const ArgList& ar
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 

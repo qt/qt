@@ -35,8 +35,8 @@
 #include "ScriptEventListener.h"
 #include "MIMETypeRegistry.h"
 #include "MappedAttribute.h"
+#include "RenderEmbeddedObject.h"
 #include "RenderImage.h"
-#include "RenderPartObject.h"
 #include "RenderWidget.h"
 #include "ScriptController.h"
 #include "Text.h"
@@ -61,12 +61,10 @@ PassRefPtr<HTMLObjectElement> HTMLObjectElement::create(const QualifiedName& tag
 
 RenderWidget* HTMLObjectElement::renderWidgetForJSBindings() const
 {
-    RenderWidget* renderWidget = (renderer() && renderer()->isWidget()) ? toRenderWidget(renderer()) : 0;
-    if (renderWidget && !renderWidget->widget()) {
-        document()->updateLayoutIgnorePendingStylesheets();
-        renderWidget = (renderer() && renderer()->isWidget()) ? toRenderWidget(renderer()) : 0;
-    }
-    return renderWidget;
+    document()->updateLayoutIgnorePendingStylesheets();
+    if (!renderer() || !renderer()->isWidget())
+        return 0;
+    return toRenderWidget(renderer());
 }
 
 void HTMLObjectElement::parseMappedAttribute(MappedAttribute *attr)
@@ -107,7 +105,7 @@ void HTMLObjectElement::parseMappedAttribute(MappedAttribute *attr)
             document->addNamedItem(newName);
         }
         m_name = newName;
-    } else if (attr->name() == idAttr) {
+    } else if (attr->name() == idAttributeName()) {
         const AtomicString& newId = attr->value();
         if (isDocNamedItem() && inDocument() && document()->isHTMLDocument()) {
             HTMLDocument* document = static_cast<HTMLDocument*>(this->document());
@@ -140,7 +138,7 @@ RenderObject *HTMLObjectElement::createRenderer(RenderArena* arena, RenderStyle*
         return RenderObject::createObject(this, style);
     if (isImageType())
         return new (arena) RenderImage(this);
-    return new (arena) RenderPartObject(this);
+    return new (arena) RenderEmbeddedObject(this);
 }
 
 void HTMLObjectElement::attach()
@@ -169,7 +167,7 @@ void HTMLObjectElement::updateWidget()
 {
     document()->updateStyleIfNeeded();
     if (m_needWidgetUpdate && renderer() && !m_useFallbackContent && !isImageType())
-        toRenderPartObject(renderer())->updateWidget(true);
+        toRenderEmbeddedObject(renderer())->updateWidget(true);
 }
 
 void HTMLObjectElement::finishParsingChildren()

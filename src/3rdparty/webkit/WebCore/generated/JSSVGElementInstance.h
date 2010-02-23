@@ -23,7 +23,6 @@
 
 #if ENABLE(SVG)
 
-#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -47,13 +46,14 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
 
     virtual void pushEventHandlerScope(JSC::ExecState*, JSC::ScopeChain&) const;
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
@@ -79,7 +79,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGElementInstancePrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -181,6 +181,7 @@ JSC::JSValue jsSVGElementInstanceOnsubmit(JSC::ExecState*, const JSC::Identifier
 void setJSSVGElementInstanceOnsubmit(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsSVGElementInstanceOnunload(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSSVGElementInstanceOnunload(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGElementInstanceConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

@@ -23,6 +23,7 @@
 
 #include "JSFunction.h"
 #include "JSString.h"
+#include "JSStringBuilder.h"
 #include "ObjectPrototype.h"
 #include "PrototypeFunction.h"
 #include "UString.h"
@@ -48,21 +49,19 @@ ErrorPrototype::ErrorPrototype(ExecState* exec, NonNullPassRefPtr<Structure> str
 JSValue JSC_HOST_CALL errorProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
     JSObject* thisObj = thisValue.toThisObject(exec);
+    JSValue name = thisObj->get(exec, exec->propertyNames().name);
+    JSValue message = thisObj->get(exec, exec->propertyNames().message);
 
-    UString s = "Error";
+    // Mozilla-compatible format.
 
-    JSValue v = thisObj->get(exec, exec->propertyNames().name);
-    if (!v.isUndefined())
-        s = v.toString(exec);
-
-    v = thisObj->get(exec, exec->propertyNames().message);
-    if (!v.isUndefined()) {
-        // Mozilla-compatible format.
-        s += ": ";
-        s += v.toString(exec);
+    if (!name.isUndefined()) {
+        if (!message.isUndefined())
+            return jsMakeNontrivialString(exec, name.toString(exec), ": ", message.toString(exec));
+        return jsNontrivialString(exec, name.toString(exec));
     }
-
-    return jsNontrivialString(exec, s);
+    if (!message.isUndefined())
+        return jsMakeNontrivialString(exec, "Error: ", message.toString(exec));
+    return jsNontrivialString(exec, "Error");
 }
 
 } // namespace JSC

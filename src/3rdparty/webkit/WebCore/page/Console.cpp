@@ -30,6 +30,7 @@
 #include "Console.h"
 
 #include "CString.h"
+#include "Chrome.h"
 #include "ChromeClient.h"
 #include "ConsoleMessage.h"
 #include "Frame.h"
@@ -40,11 +41,9 @@
 #include "PageGroup.h"
 #include "PlatformString.h"
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-#include <profiler/Profiler.h>
-#endif
-
 #include "ScriptCallStack.h"
+#include "ScriptProfile.h"
+#include "ScriptProfiler.h"
 #include <stdio.h>
 #include <wtf/UnusedParam.h>
 
@@ -191,7 +190,7 @@ void Console::addMessage(MessageType type, MessageLevel level, ScriptCallStack* 
 
     for (unsigned i = 0; i < lastCaller.argumentCount(); ++i) {
         String argAsString;
-        if (lastCaller.argumentAt(i).getString(argAsString))
+        if (lastCaller.argumentAt(i).getString(callStack->state(), argAsString))
             printf(" %s", argAsString.utf8().data());
     }
     printf("\n");
@@ -270,6 +269,23 @@ void Console::count(ScriptCallStack* callStack)
 #endif
 }
 
+void Console::markTimeline(ScriptCallStack* callStack)
+{
+#if ENABLE(INSPECTOR)
+    Page* page = this->page();
+    if (!page)
+        return;
+
+    const ScriptCallFrame& lastCaller = callStack->at(0);
+    String message;
+    getFirstArgumentAsString(callStack->state(), lastCaller, message);
+
+    page->inspectorController()->markTimeline(message);
+#else
+    UNUSED_PARAM(callStack);
+#endif
+}
+
 #if ENABLE(WML)
 String Console::lastWMLErrorMessage() const
 {
@@ -298,7 +314,7 @@ String Console::lastWMLErrorMessage() const
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
 
-void Console::profile(const JSC::UString& title, ScriptCallStack* callStack)
+void Console::profile(const String& title, ScriptCallStack* callStack)
 {
     Page* page = this->page();
     if (!page)
@@ -311,15 +327,15 @@ void Console::profile(const JSC::UString& title, ScriptCallStack* callStack)
         return;
 #endif
 
-    JSC::UString resolvedTitle = title;
-    if (title.isNull())   // no title so give it the next user initiated profile title.
+    String resolvedTitle = title;
+    if (title.isNull()) // no title so give it the next user initiated profile title.
 #if ENABLE(INSPECTOR)
         resolvedTitle = controller->getCurrentUserInitiatedProfileName(true);
 #else
         resolvedTitle = "";
 #endif
 
-    JSC::Profiler::profiler()->startProfiling(callStack->state(), resolvedTitle);
+    ScriptProfiler::start(callStack->state(), resolvedTitle);
 
 #if ENABLE(INSPECTOR)
     const ScriptCallFrame& lastCaller = callStack->at(0);
@@ -327,13 +343,10 @@ void Console::profile(const JSC::UString& title, ScriptCallStack* callStack)
 #endif
 }
 
-void Console::profileEnd(const JSC::UString& title, ScriptCallStack* callStack)
+void Console::profileEnd(const String& title, ScriptCallStack* callStack)
 {
     Page* page = this->page();
     if (!page)
-        return;
-
-    if (!this->page())
         return;
 
 #if ENABLE(INSPECTOR)
@@ -342,7 +355,7 @@ void Console::profileEnd(const JSC::UString& title, ScriptCallStack* callStack)
         return;
 #endif
 
-    RefPtr<JSC::Profile> profile = JSC::Profiler::profiler()->stopProfiling(callStack->state(), title);
+    RefPtr<ScriptProfile> profile = ScriptProfiler::stop(callStack->state(), title);
     if (!profile)
         return;
 

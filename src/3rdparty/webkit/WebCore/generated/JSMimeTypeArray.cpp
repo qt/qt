@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -210,7 +210,8 @@ JSValue jsMimeTypeArrayLength(ExecState* exec, const Identifier&, const Property
     JSMimeTypeArray* castedThis = static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MimeTypeArray* imp = static_cast<MimeTypeArray*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -218,11 +219,11 @@ JSValue jsMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const Pro
     JSMimeTypeArray* domObject = static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()));
     return JSMimeTypeArray::getConstructor(exec, domObject->globalObject());
 }
-void JSMimeTypeArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSMimeTypeArray::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<MimeTypeArray*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSMimeTypeArray::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

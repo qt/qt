@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -35,12 +33,13 @@ namespace WebCore {
         virtual ~SVGFEOffsetElement();
 
         virtual void parseMappedAttribute(MappedAttribute*);
+        virtual void synchronizeProperty(const QualifiedName&);
         virtual bool build(SVGResourceFilter*);
 
     private:
-        ANIMATED_PROPERTY_DECLARATIONS(SVGFEOffsetElement, SVGNames::feOffsetTagString, SVGNames::inAttrString, String, In1, in1)
-        ANIMATED_PROPERTY_DECLARATIONS(SVGFEOffsetElement, SVGNames::feOffsetTagString, SVGNames::dxAttrString, float, Dx, dx)
-        ANIMATED_PROPERTY_DECLARATIONS(SVGFEOffsetElement, SVGNames::feOffsetTagString, SVGNames::dyAttrString, float, Dy, dy)
+        DECLARE_ANIMATED_PROPERTY(SVGFEOffsetElement, SVGNames::inAttr, String, In1, in1)
+        DECLARE_ANIMATED_PROPERTY(SVGFEOffsetElement, SVGNames::dxAttr, float, Dx, dx)
+        DECLARE_ANIMATED_PROPERTY(SVGFEOffsetElement, SVGNames::dyAttr, float, Dy, dy)
     };
 
 } // namespace WebCore

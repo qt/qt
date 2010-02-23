@@ -97,7 +97,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -180,7 +180,8 @@ JSValue jsSVGGradientElementGradientUnits(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->gradientUnitsAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGGradientElementGradientTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -189,7 +190,8 @@ JSValue jsSVGGradientElementGradientTransform(ExecState* exec, const Identifier&
     UNUSED_PARAM(exec);
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->gradientTransformAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGGradientElementSpreadMethod(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -198,7 +200,8 @@ JSValue jsSVGGradientElementSpreadMethod(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->spreadMethodAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGGradientElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -207,7 +210,8 @@ JSValue jsSVGGradientElementHref(ExecState* exec, const Identifier&, const Prope
     UNUSED_PARAM(exec);
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGGradientElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -216,7 +220,8 @@ JSValue jsSVGGradientElementExternalResourcesRequired(ExecState* exec, const Ide
     UNUSED_PARAM(exec);
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGGradientElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -225,7 +230,8 @@ JSValue jsSVGGradientElementClassName(ExecState* exec, const Identifier&, const 
     UNUSED_PARAM(exec);
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGGradientElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -233,7 +239,8 @@ JSValue jsSVGGradientElementStyle(ExecState* exec, const Identifier&, const Prop
     JSSVGGradientElement* castedThis = static_cast<JSSVGGradientElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGGradientElement* imp = static_cast<SVGGradientElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
 JSValue jsSVGGradientElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -110,7 +110,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -220,7 +220,8 @@ JSValue jsCSSPrimitiveValuePrimitiveType(ExecState* exec, const Identifier&, con
     JSCSSPrimitiveValue* castedThis = static_cast<JSCSSPrimitiveValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSPrimitiveValue* imp = static_cast<CSSPrimitiveValue*>(castedThis->impl());
-    return jsNumber(exec, imp->primitiveType());
+    JSValue result = jsNumber(exec, imp->primitiveType());
+    return result;
 }
 
 JSValue jsCSSPrimitiveValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

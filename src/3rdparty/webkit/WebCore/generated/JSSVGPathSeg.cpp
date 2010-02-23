@@ -101,7 +101,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -173,8 +173,8 @@ bool JSSVGPathSegPrototype::getOwnPropertyDescriptor(ExecState* exec, const Iden
 
 const ClassInfo JSSVGPathSeg::s_info = { "SVGPathSeg", 0, &JSSVGPathSegTable, 0 };
 
-JSSVGPathSeg::JSSVGPathSeg(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSeg> impl, SVGElement* context)
-    : DOMObjectWithSVGContext(structure, globalObject, context)
+JSSVGPathSeg::JSSVGPathSeg(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSeg> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -182,6 +182,7 @@ JSSVGPathSeg::JSSVGPathSeg(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 JSSVGPathSeg::~JSSVGPathSeg()
 {
     forgetDOMObject(this, impl());
+    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGPathSeg::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -204,7 +205,8 @@ JSValue jsSVGPathSegPathSegType(ExecState* exec, const Identifier&, const Proper
     JSSVGPathSeg* castedThis = static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPathSeg* imp = static_cast<SVGPathSeg*>(castedThis->impl());
-    return jsNumber(exec, imp->pathSegType());
+    JSValue result = jsNumber(exec, imp->pathSegType());
+    return result;
 }
 
 JSValue jsSVGPathSegPathSegTypeAsLetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -212,13 +214,14 @@ JSValue jsSVGPathSegPathSegTypeAsLetter(ExecState* exec, const Identifier&, cons
     JSSVGPathSeg* castedThis = static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPathSeg* imp = static_cast<SVGPathSeg*>(castedThis->impl());
-    return jsString(exec, imp->pathSegTypeAsLetter());
+    JSValue result = jsString(exec, imp->pathSegTypeAsLetter());
+    return result;
 }
 
 JSValue jsSVGPathSegConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    UNUSED_PARAM(slot);
-    return JSSVGPathSeg::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
+    JSSVGPathSeg* domObject = static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()));
+    return JSSVGPathSeg::getConstructor(exec, domObject->globalObject());
 }
 JSValue JSSVGPathSeg::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {

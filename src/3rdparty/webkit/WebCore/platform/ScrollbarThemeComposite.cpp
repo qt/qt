@@ -26,6 +26,7 @@
 #include "config.h"
 #include "ScrollbarThemeComposite.h"
 
+#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Frame.h"
 #include "FrameView.h"
@@ -297,7 +298,7 @@ void ScrollbarThemeComposite::paintScrollCorner(ScrollView* view, GraphicsContex
     Page* page = frameView->frame() ? frameView->frame()->page() : 0;
     if (page && page->settings()->shouldPaintCustomScrollbars()) {
         if (!page->chrome()->client()->paintCustomScrollCorner(context, cornerRect))
-            context->fillRect(cornerRect, Color::white);
+            context->fillRect(cornerRect, Color::white, DeviceColorSpace);
     }
 }
 

@@ -23,7 +23,6 @@
 
 #if ENABLE(SVG)
 
-#include "DOMObjectWithSVGContext.h"
 #include "FloatRect.h"
 #include "JSDOMBinding.h"
 #include "JSSVGPODTypeWrapper.h"
@@ -33,10 +32,10 @@
 
 namespace WebCore {
 
-class JSSVGRect : public DOMObjectWithSVGContext {
-    typedef DOMObjectWithSVGContext Base;
+class JSSVGRect : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSVGRect(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<FloatRect> >, SVGElement* context);
+    JSSVGRect(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<FloatRect> >);
     virtual ~JSSVGRect();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,9 +46,10 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     JSSVGPODTypeWrapper<FloatRect> * impl() const { return m_impl.get(); }
 
 private:
@@ -58,7 +58,7 @@ protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<FloatRect>*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<FloatRect>*, SVGElement*);
 FloatRect toSVGRect(JSC::JSValue);
 
 class JSSVGRectPrototype : public JSC::JSObject {
@@ -69,7 +69,7 @@ public:
     static const JSC::ClassInfo s_info;
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSSVGRectPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -86,6 +86,7 @@ JSC::JSValue jsSVGRectWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::
 void setJSSVGRectWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsSVGRectHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSSVGRectHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGRectConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

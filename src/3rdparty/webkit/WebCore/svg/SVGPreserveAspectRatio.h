@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -24,21 +22,17 @@
 #define SVGPreserveAspectRatio_h
 
 #if ENABLE(SVG)
+#include "FloatRect.h"
 #include "PlatformString.h"
 #include "SVGNames.h"
-
-#include <wtf/RefCounted.h>
 
 namespace WebCore {
 
     class String;
-    class TransformationMatrix;
-    class SVGStyledElement;
+    class AffineTransform;
 
-    class SVGPreserveAspectRatio : public RefCounted<SVGPreserveAspectRatio> { 
+    class SVGPreserveAspectRatio {
     public:
-        static PassRefPtr<SVGPreserveAspectRatio> create() { return adoptRef(new SVGPreserveAspectRatio); }
-
         enum SVGPreserveAspectRatioType {
             SVG_PRESERVEASPECTRATIO_UNKNOWN     = 0,
             SVG_PRESERVEASPECTRATIO_NONE        = 1,
@@ -59,6 +53,7 @@ namespace WebCore {
             SVG_MEETORSLICE_SLICE      = 2
         };
 
+        SVGPreserveAspectRatio();
         virtual ~SVGPreserveAspectRatio();
 
         void setAlign(unsigned short);
@@ -66,21 +61,30 @@ namespace WebCore {
 
         void setMeetOrSlice(unsigned short);
         unsigned short meetOrSlice() const;
+
+        void transformRect(FloatRect& destRect, FloatRect& srcRect);
         
-        TransformationMatrix getCTM(double logicX, double logicY,
+        AffineTransform getCTM(double logicX, double logicY,
                                double logicWidth, double logicHeight,
                                double physX, double physY,
-                               double physWidth, double physHeight);
+                               double physWidth, double physHeight) const;
 
-        // Helper
-        bool parsePreserveAspectRatio(const UChar*& currParam, const UChar* end, bool validate = true);
+        template<class Consumer>
+        static bool parsePreserveAspectRatio(Consumer* consumer, const String& value, bool validate = true)
+        {
+            bool result = false;
+            const UChar* begin = value.characters();
+            const UChar* end = begin + value.length();
+            consumer->setPreserveAspectRatioBaseValue(parsePreserveAspectRatio(begin, end, validate, result));
+            return result;
+        }
+
+        // It's recommended to use the method above, only SVGViewSpec needs this parsing method
+        static SVGPreserveAspectRatio parsePreserveAspectRatio(const UChar*& currParam, const UChar* end, bool validate, bool& result);
+
         String valueAsString() const;
 
-        const QualifiedName& associatedAttributeName() const { return SVGNames::preserveAspectRatioAttr; }
-
     private:
-        SVGPreserveAspectRatio();
-        
         unsigned short m_align;
         unsigned short m_meetOrSlice;
     };
@@ -89,4 +93,3 @@ namespace WebCore {
 
 #endif // ENABLE(SVG)
 #endif // SVGPreserveAspectRatio_h
-

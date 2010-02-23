@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -153,7 +153,8 @@ JSValue jsClientRectTop(ExecState* exec, const Identifier&, const PropertySlot& 
     JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
-    return jsNumber(exec, imp->top());
+    JSValue result = jsNumber(exec, imp->top());
+    return result;
 }
 
 JSValue jsClientRectRight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -161,7 +162,8 @@ JSValue jsClientRectRight(ExecState* exec, const Identifier&, const PropertySlot
     JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
-    return jsNumber(exec, imp->right());
+    JSValue result = jsNumber(exec, imp->right());
+    return result;
 }
 
 JSValue jsClientRectBottom(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,7 +171,8 @@ JSValue jsClientRectBottom(ExecState* exec, const Identifier&, const PropertySlo
     JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
-    return jsNumber(exec, imp->bottom());
+    JSValue result = jsNumber(exec, imp->bottom());
+    return result;
 }
 
 JSValue jsClientRectLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -177,7 +180,8 @@ JSValue jsClientRectLeft(ExecState* exec, const Identifier&, const PropertySlot&
     JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
-    return jsNumber(exec, imp->left());
+    JSValue result = jsNumber(exec, imp->left());
+    return result;
 }
 
 JSValue jsClientRectWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -185,7 +189,8 @@ JSValue jsClientRectWidth(ExecState* exec, const Identifier&, const PropertySlot
     JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
-    return jsNumber(exec, imp->width());
+    JSValue result = jsNumber(exec, imp->width());
+    return result;
 }
 
 JSValue jsClientRectHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -193,7 +198,8 @@ JSValue jsClientRectHeight(ExecState* exec, const Identifier&, const PropertySlo
     JSClientRect* castedThis = static_cast<JSClientRect*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ClientRect* imp = static_cast<ClientRect*>(castedThis->impl());
-    return jsNumber(exec, imp->height());
+    JSValue result = jsNumber(exec, imp->height());
+    return result;
 }
 
 JSValue jsClientRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

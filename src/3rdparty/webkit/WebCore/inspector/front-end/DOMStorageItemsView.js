@@ -65,22 +65,12 @@ WebInspector.DOMStorageItemsView.prototype = {
         this.domStorage.getEntries(callback);
     },
 
-    _showDOMStorageEntries: function(entries) 
+    _showDOMStorageEntries: function(entries)
     {
-        if (entries.length > 0) {
-            this._dataGrid = this._dataGridForDOMStorageEntries(entries);
-            this.element.appendChild(this._dataGrid.element);
-            this._dataGrid.updateWidths();
-            this.deleteButton.visible = true;
-        } else {
-            var emptyMsgElement = document.createElement("div");
-            emptyMsgElement.className = "storage-table-empty";
-            if (this.domStorage)
-                emptyMsgElement.textContent = WebInspector.UIString("This storage is empty.");
-            this.element.appendChild(emptyMsgElement);
-            this._dataGrid = null;
-            this.deleteButton.visible = false;
-        }
+        this._dataGrid = this._dataGridForDOMStorageEntries(entries);
+        this.element.appendChild(this._dataGrid.element);
+        this._dataGrid.autoSizeColumns(10);
+        this.deleteButton.visible = true;
     },
 
     resize: function()
@@ -95,9 +85,7 @@ WebInspector.DOMStorageItemsView.prototype = {
         columns[0] = {};
         columns[1] = {};
         columns[0].title = WebInspector.UIString("Key");
-        columns[0].width = columns[0].title.length;
         columns[1].title = WebInspector.UIString("Value");
-        columns[1].width = columns[1].title.length;
 
         var nodes = [];
 
@@ -108,32 +96,15 @@ WebInspector.DOMStorageItemsView.prototype = {
 
             var key = entries[i][0];
             data[0] = key;
-            if (key.length > columns[0].width)
-                columns[0].width = key.length;
-
             var value = entries[i][1];
             data[1] = value;
-            if (value.length > columns[1].width)
-                columns[1].width = value.length;
             var node = new WebInspector.DataGridNode(data, false);
             node.selectable = true;
             nodes.push(node);
             keys.push(key);
         }
 
-        var totalColumnWidths = columns[0].width + columns[1].width;
-        var width = Math.round((columns[0].width * 100) / totalColumnWidths);
-        const minimumPrecent = 10;
-        if (width < minimumPrecent)
-            width = minimumPrecent;
-        if (width > 100 - minimumPrecent)
-            width = 100 - minimumPrecent;
-        columns[0].width = width;
-        columns[1].width = 100 - width;
-        columns[0].width += "%";
-        columns[1].width += "%";
-
-        var dataGrid = new WebInspector.DOMStorageDataGrid(columns, this.domStorage, keys);
+        var dataGrid = new WebInspector.DataGrid(columns, this._editingCallback.bind(this), this._deleteCallback.bind(this));
         var length = nodes.length;
         for (var i = 0; i < length; ++i)
             dataGrid.appendChild(nodes[i]);
@@ -145,15 +116,40 @@ WebInspector.DOMStorageItemsView.prototype = {
 
     _deleteButtonClicked: function(event)
     {
-        if (this._dataGrid) {
-            this._dataGrid.deleteSelectedRow();
-            
-            this.show();
-        }
+        if (!this._dataGrid || !this._dataGrid.selectedNode)
+            return;
+
+        this._deleteCallback(this._dataGrid.selectedNode);
     },
 
     _refreshButtonClicked: function(event)
     {
+        this.update();
+    },
+    
+    _editingCallback: function(editingNode, columnIdentifier, oldText, newText)
+    {
+        var domStorage = this.domStorage;
+        if (columnIdentifier === 0) {
+            if (oldText)
+                domStorage.removeItem(oldText);
+
+            domStorage.setItem(newText, editingNode.data[1]);
+        } else {
+            domStorage.setItem(editingNode.data[0], newText);
+        }
+        
+        this.update();
+    },
+    
+    _deleteCallback: function(node)
+    {
+        if (!node || node.isCreationNode)
+            return;
+
+        if (this.domStorage)
+            this.domStorage.removeItem(node.data[0]);
+            
         this.update();
     }
 }

@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -199,7 +199,8 @@ JSValue jsFileListLength(ExecState* exec, const Identifier&, const PropertySlot&
     JSFileList* castedThis = static_cast<JSFileList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     FileList* imp = static_cast<FileList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsFileListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -207,11 +208,11 @@ JSValue jsFileListConstructor(ExecState* exec, const Identifier&, const Property
     JSFileList* domObject = static_cast<JSFileList*>(asObject(slot.slotBase()));
     return JSFileList::getConstructor(exec, domObject->globalObject());
 }
-void JSFileList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSFileList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<FileList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSFileList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

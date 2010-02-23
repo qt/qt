@@ -20,8 +20,6 @@
 #include "config.h"
 #include "AccessibilityObject.h"
 
-QT_BEGIN_NAMESPACE
-
 #if HAVE(ACCESSIBILITY)
 
 namespace WebCore {
@@ -33,11 +31,12 @@ bool AccessibilityObject::accessibilityIgnoreAttachment() const
 
 AccessibilityObjectPlatformInclusion AccessibilityObject::accessibilityPlatformIncludesObject() const
 {
+    if (isMenuListPopup() || isMenuListOption())
+        return IgnoreObject;
+
     return DefaultBehavior;
 }
 
 } // namespace WebCore
 
 #endif // HAVE(ACCESSIBILITY)
-
-QT_END_NAMESPACE

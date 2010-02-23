@@ -65,18 +65,17 @@ inline RegExp::RegExp(JSGlobalData* globalData, const UString& pattern)
 
 inline RegExp::RegExp(JSGlobalData* globalData, const UString& pattern, const UString& flags)
     : m_pattern(pattern)
-    , m_flags(flags)
     , m_flagBits(0)
     , m_constructionError(0)
     , m_numSubpatterns(0)
 {
     // NOTE: The global flag is handled on a case-by-case basis by functions like
     // String::match and RegExpObject::match.
-    if (flags.find('g') != -1)
+    if (flags.find('g') != UString::NotFound)
         m_flagBits |= Global;
-    if (flags.find('i') != -1)
+    if (flags.find('i') != UString::NotFound)
         m_flagBits |= IgnoreCase;
-    if (flags.find('m') != -1)
+    if (flags.find('m') != UString::NotFound)
         m_flagBits |= Multiline;
 
     compile(globalData);
@@ -118,7 +117,7 @@ int RegExp::match(const UString& s, int startOffset, Vector<int, 32>* ovector)
     if (ovector)
         ovector->clear();
 
-    if (startOffset > s.size() || s.isNull())
+    if (static_cast<unsigned>(startOffset) > s.size() || s.isNull())
         return -1;
 
 #if ENABLE(YARR_JIT)
@@ -189,7 +188,7 @@ int RegExp::match(const UString& s, int startOffset, Vector<int, 32>* ovector)
     if (ovector)
         ovector->clear();
 
-    if (startOffset > s.size() || s.isNull())
+    if (static_cast<unsigned>(startOffset) > s.size() || s.isNull())
         return -1;
 
 #if ENABLE(WREC)

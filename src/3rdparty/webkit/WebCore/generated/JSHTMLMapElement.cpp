@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -146,7 +146,8 @@ JSValue jsHTMLMapElementAreas(ExecState* exec, const Identifier&, const Property
     JSHTMLMapElement* castedThis = static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMapElement* imp = static_cast<HTMLMapElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->areas()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->areas()));
+    return result;
 }
 
 JSValue jsHTMLMapElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,7 +155,8 @@ JSValue jsHTMLMapElementName(ExecState* exec, const Identifier&, const PropertyS
     JSHTMLMapElement* castedThis = static_cast<JSHTMLMapElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLMapElement* imp = static_cast<HTMLMapElement*>(castedThis->impl());
-    return jsString(exec, imp->name());
+    JSValue result = jsString(exec, imp->name());
+    return result;
 }
 
 JSValue jsHTMLMapElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,7 +171,8 @@ void JSHTMLMapElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSHTMLMapElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLMapElement* imp = static_cast<HTMLMapElement*>(static_cast<JSHTMLMapElement*>(thisObject)->impl());
+    JSHTMLMapElement* castedThisObj = static_cast<JSHTMLMapElement*>(thisObject);
+    HTMLMapElement* imp = static_cast<HTMLMapElement*>(castedThisObj->impl());
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 

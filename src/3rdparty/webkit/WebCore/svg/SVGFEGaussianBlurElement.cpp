@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -37,9 +35,6 @@ char SVGStdDeviationYAttrIdentifier[] = "SVGStdDeviationYAttr";
 
 SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(const QualifiedName& tagName, Document* doc)
     : SVGFilterPrimitiveStandardAttributes(tagName, doc)
-    , m_in1(this, SVGNames::inAttr)
-    , m_stdDeviationX(this, SVGNames::stdDeviationAttr)
-    , m_stdDeviationY(this, SVGNames::stdDeviationAttr)
 {
 }
 
@@ -65,6 +60,24 @@ void SVGFEGaussianBlurElement::parseMappedAttribute(MappedAttribute* attr)
         setIn1BaseValue(value);
     else
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
+}
+
+void SVGFEGaussianBlurElement::synchronizeProperty(const QualifiedName& attrName)
+{
+    SVGFilterPrimitiveStandardAttributes::synchronizeProperty(attrName);
+
+    if (attrName == anyQName()) {
+        synchronizeStdDeviationX();
+        synchronizeStdDeviationY();
+        synchronizeIn1();
+        return;
+    }
+
+    if (attrName == SVGNames::stdDeviationAttr) {
+        synchronizeStdDeviationX();
+        synchronizeStdDeviationY();
+    } else if (attrName == SVGNames::inAttr)
+        synchronizeIn1();
 }
 
 bool SVGFEGaussianBlurElement::build(SVGResourceFilter* filterResource)

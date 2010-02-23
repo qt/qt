@@ -44,6 +44,7 @@ void (*wkDrawMediaSliderTrack)(int themeStyle, CGContextRef context, CGRect rect
 BOOL (*wkHitTestMediaUIPart)(int part, int themeStyle, CGRect bounds, CGPoint point);
 void (*wkDrawMediaUIPart)(int part, int themeStyle, CGContextRef context, CGRect rect, unsigned state);
 void (*wkMeasureMediaUIPart)(int part, int themeStyle, CGRect *bounds, CGSize *naturalSize);
+BOOL (*wkMediaControllerThemeAvailable)(int themeStyle);
 NSString* (*wkGetPreferredExtensionForMIMEType)(NSString*);
 NSArray* (*wkGetExtensionsForMIMEType)(NSString*);
 NSString* (*wkGetMIMETypeForExtension)(NSString*);
@@ -58,11 +59,14 @@ float (*wkQTMovieMaxTimeLoaded)(QTMovie*);
 NSString *(*wkQTMovieMaxTimeLoadedChangeNotification)(void);
 float (*wkQTMovieMaxTimeSeekable)(QTMovie*);
 int (*wkQTMovieGetType)(QTMovie* movie);
+BOOL (*wkQTMovieHasClosedCaptions)(QTMovie* movie);
+void (*wkQTMovieSetShowClosedCaptions)(QTMovie* movie, BOOL showClosedCaptions);
 void (*wkQTMovieViewSetDrawSynchronously)(QTMovieView*, BOOL);
 void (*wkSetCGFontRenderingMode)(CGContextRef, NSFont*);
 void (*wkSetDragImage)(NSImage*, NSPoint offset);
 void (*wkSetPatternBaseCTM)(CGContextRef, CGAffineTransform);
 void (*wkSetPatternPhaseInUserSpace)(CGContextRef, CGPoint point);
+CGAffineTransform (*wkGetUserToBaseCTM)(CGContextRef);
 void (*wkSetUpFontCache)();
 void (*wkSignalCFReadStreamEnd)(CFReadStreamRef stream);
 void (*wkSignalCFReadStreamHasBytes)(CFReadStreamRef stream);
@@ -80,6 +84,9 @@ void (*wkSetNSURLConnectionDefersCallbacks)(NSURLConnection *, BOOL);
 void (*wkSetNSURLRequestShouldContentSniff)(NSMutableURLRequest *, BOOL);
 id (*wkCreateNSURLConnectionDelegateProxy)(void);
 unsigned (*wkInitializeMaximumHTTPConnectionCountPerHost)(unsigned preferredConnectionCount);
+void (*wkSetCONNECTProxyForStream)(CFReadStreamRef, CFStringRef proxyHost, CFNumberRef proxyPort);
+void (*wkSetCONNECTProxyAuthorizationForStream)(CFReadStreamRef, CFStringRef proxyAuthorizationString);
+CFHTTPMessageRef (*wkCopyCONNECTProxyResponse)(CFReadStreamRef, CFURLRef responseURL);
 BOOL (*wkIsLatchingWheelEvent)(NSEvent *);
 
 #ifndef BUILDING_ON_TIGER
@@ -99,4 +106,10 @@ OSStatus (*wkInitializeGlyphVector)(int count, void* glyphs);
 void (*wkReleaseStyleGroup)(void* group);
 ATSUFontID (*wkGetNSFontATSUFontId)(NSFont*);
 BOOL (*wkSupportsMultipartXMixedReplace)(NSMutableURLRequest *);
+#endif
+
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_SNOW_LEOPARD)
+NSMutableArray *(*wkNoteOpenPanelFiles)(NSArray *);
+#else
+void* wkNoteOpenPanelFiles;
 #endif

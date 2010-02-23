@@ -26,8 +26,6 @@
 
 #include "Event.h"
 #include "EventListener.h"
-#include "Frame.h"
-#include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "KURL.h"
@@ -121,14 +119,14 @@ JSWebSocket::JSWebSocket(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSWebSocket::~JSWebSocket()
 {
-    impl()->invalidateEventListeners();
+    impl()->invalidateJSEventListeners(this);
     forgetDOMObject(this, impl());
 }
 
 void JSWebSocket::markChildren(MarkStack& markStack)
 {
     Base::markChildren(markStack);
-    impl()->markEventListeners(markStack);
+    impl()->markJSEventListeners(markStack);
 }
 
 JSObject* JSWebSocket::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -151,7 +149,8 @@ JSValue jsWebSocketURL(ExecState* exec, const Identifier&, const PropertySlot& s
     JSWebSocket* castedThis = static_cast<JSWebSocket*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
-    return jsString(exec, imp->url());
+    JSValue result = jsString(exec, imp->url());
+    return result;
 }
 
 JSValue jsWebSocketReadyState(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -159,7 +158,8 @@ JSValue jsWebSocketReadyState(ExecState* exec, const Identifier&, const Property
     JSWebSocket* castedThis = static_cast<JSWebSocket*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
-    return jsNumber(exec, imp->readyState());
+    JSValue result = jsNumber(exec, imp->readyState());
+    return result;
 }
 
 JSValue jsWebSocketBufferedAmount(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -167,7 +167,8 @@ JSValue jsWebSocketBufferedAmount(ExecState* exec, const Identifier&, const Prop
     JSWebSocket* castedThis = static_cast<JSWebSocket*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
-    return jsNumber(exec, imp->bufferedAmount());
+    JSValue result = jsNumber(exec, imp->bufferedAmount());
+    return result;
 }
 
 JSValue jsWebSocketOnopen(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -176,8 +177,10 @@ JSValue jsWebSocketOnopen(ExecState* exec, const Identifier&, const PropertySlot
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
     if (EventListener* listener = imp->onopen()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -188,8 +191,10 @@ JSValue jsWebSocketOnmessage(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -200,8 +205,10 @@ JSValue jsWebSocketOnclose(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(castedThis->impl());
     if (EventListener* listener = imp->onclose()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -215,30 +222,21 @@ void setJSWebSocketOnopen(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(static_cast<JSWebSocket*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnopen(globalObject->createJSAttributeEventListener(value));
+    imp->setOnopen(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSWebSocketOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(static_cast<JSWebSocket*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
+    imp->setOnmessage(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSWebSocketOnclose(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(static_cast<JSWebSocket*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnclose(globalObject->createJSAttributeEventListener(value));
+    imp->setOnclose(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionSend(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

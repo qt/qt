@@ -34,6 +34,7 @@
 #include <wtf/HashSet.h>
 #include <wtf/MessageQueue.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Threading.h>
@@ -42,6 +43,7 @@ namespace WebCore {
 
 class Database;
 class DatabaseTask;
+class DatabaseTaskSynchronizer;
 class Document;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
@@ -52,11 +54,11 @@ public:
     ~DatabaseThread();
 
     bool start();
-    void requestTermination();
+    void requestTermination(DatabaseTaskSynchronizer* cleanupSync);
     bool terminationRequested() const;
 
-    void scheduleTask(PassRefPtr<DatabaseTask>);
-    void scheduleImmediateTask(PassRefPtr<DatabaseTask>); // This just adds the task to the front of the queue - the caller needs to be extremely careful not to create deadlocks when waiting for completion.
+    void scheduleTask(PassOwnPtr<DatabaseTask>);
+    void scheduleImmediateTask(PassOwnPtr<DatabaseTask>); // This just adds the task to the front of the queue - the caller needs to be extremely careful not to create deadlocks when waiting for completion.
     void unscheduleDatabaseTasks(Database*);
 
     void recordDatabaseOpen(Database*);
@@ -76,7 +78,7 @@ private:
     ThreadIdentifier m_threadID;
     RefPtr<DatabaseThread> m_selfRef;
 
-    MessageQueue<RefPtr<DatabaseTask> > m_queue;
+    MessageQueue<DatabaseTask> m_queue;
 
     // This set keeps track of the open databases that have been used on this thread.
     typedef HashSet<RefPtr<Database> > DatabaseSet;
@@ -84,6 +86,7 @@ private:
 
     OwnPtr<SQLTransactionClient> m_transactionClient;
     OwnPtr<SQLTransactionCoordinator> m_transactionCoordinator;
+    DatabaseTaskSynchronizer* m_cleanupSync;
 };
 
 } // namespace WebCore

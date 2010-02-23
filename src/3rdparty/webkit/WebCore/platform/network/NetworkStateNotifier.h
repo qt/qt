@@ -26,6 +26,8 @@
 #ifndef NetworkStateNotifier_h
 #define NetworkStateNotifier_h
 
+#include <wtf/Noncopyable.h>
+
 #if PLATFORM(MAC)
 
 #include <wtf/RetainPtr.h>
@@ -50,7 +52,7 @@ namespace WebCore {
 class NetworkStateNotifierPrivate;
 #endif
 
-class NetworkStateNotifier {
+class NetworkStateNotifier : public Noncopyable {
 public:
     NetworkStateNotifier();
     void setNetworkStateChangedFunction(void (*)());
@@ -86,6 +88,10 @@ private:
 
 #elif PLATFORM(CHROMIUM)
     NetworkStateNotifierPrivate p;
+
+#elif PLATFORM(ANDROID)
+public:
+    void networkStateChange(bool online);
 
 #elif PLATFORM(QT) && ENABLE(QT_BEARER)
     friend class NetworkStateNotifierPrivate;

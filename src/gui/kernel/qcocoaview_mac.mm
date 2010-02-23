@@ -83,6 +83,7 @@ extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); // qapplication.cpp
 extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
+extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 
 struct dndenum_mapper
 {
@@ -693,7 +694,6 @@ extern "C" {
     qt_button_down = 0;
 }
 
-extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
     if (!qt_button_down)

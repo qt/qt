@@ -77,7 +77,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -144,7 +144,8 @@ JSValue jsHTMLOptGroupElementDisabled(ExecState* exec, const Identifier&, const 
     JSHTMLOptGroupElement* castedThis = static_cast<JSHTMLOptGroupElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(castedThis->impl());
-    return jsBoolean(imp->disabled());
+    JSValue result = jsBoolean(imp->disabled());
+    return result;
 }
 
 JSValue jsHTMLOptGroupElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -152,7 +153,8 @@ JSValue jsHTMLOptGroupElementLabel(ExecState* exec, const Identifier&, const Pro
     JSHTMLOptGroupElement* castedThis = static_cast<JSHTMLOptGroupElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(castedThis->impl());
-    return jsString(exec, imp->label());
+    JSValue result = jsString(exec, imp->label());
+    return result;
 }
 
 JSValue jsHTMLOptGroupElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -167,13 +169,15 @@ void JSHTMLOptGroupElement::put(ExecState* exec, const Identifier& propertyName,
 
 void setJSHTMLOptGroupElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(static_cast<JSHTMLOptGroupElement*>(thisObject)->impl());
+    JSHTMLOptGroupElement* castedThisObj = static_cast<JSHTMLOptGroupElement*>(thisObject);
+    HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(castedThisObj->impl());
     imp->setDisabled(value.toBoolean(exec));
 }
 
 void setJSHTMLOptGroupElementLabel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(static_cast<JSHTMLOptGroupElement*>(thisObject)->impl());
+    JSHTMLOptGroupElement* castedThisObj = static_cast<JSHTMLOptGroupElement*>(thisObject);
+    HTMLOptGroupElement* imp = static_cast<HTMLOptGroupElement*>(castedThisObj->impl());
     imp->setLabel(valueToStringWithNullCheck(exec, value));
 }
 

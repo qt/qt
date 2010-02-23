@@ -53,7 +53,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGLineElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGLineElementTableValues[16] =
+static const HashTableValue JSSVGLineElementTableValues[17] =
 {
     { "x1", DontDelete|ReadOnly, (intptr_t)jsSVGLineElementX1, (intptr_t)0 },
     { "y1", DontDelete|ReadOnly, (intptr_t)jsSVGLineElementY1, (intptr_t)0 },
@@ -70,6 +70,7 @@ static const HashTableValue JSSVGLineElementTableValues[16] =
     { "transform", DontDelete|ReadOnly, (intptr_t)jsSVGLineElementTransform, (intptr_t)0 },
     { "nearestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGLineElementNearestViewportElement, (intptr_t)0 },
     { "farthestViewportElement", DontDelete|ReadOnly, (intptr_t)jsSVGLineElementFarthestViewportElement, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGLineElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -77,8 +78,55 @@ static JSC_CONST_HASHTABLE HashTable JSSVGLineElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSSVGLineElementTableValues, 0 };
 #else
-    { 35, 31, JSSVGLineElementTableValues, 0 };
+    { 36, 31, JSSVGLineElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGLineElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGLineElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGLineElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGLineElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGLineElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGLineElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGLineElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGLineElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGLineElementConstructor::s_info = { "SVGLineElementConstructor", 0, &JSSVGLineElementConstructorTable, 0 };
+
+bool JSSVGLineElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGLineElementConstructor, DOMObject>(exec, &JSSVGLineElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGLineElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGLineElementConstructor, DOMObject>(exec, &JSSVGLineElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -145,7 +193,8 @@ JSValue jsSVGLineElementX1(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->x1Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementY1(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,7 +203,8 @@ JSValue jsSVGLineElementY1(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->y1Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementX2(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -163,7 +213,8 @@ JSValue jsSVGLineElementX2(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->x2Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementY2(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +223,8 @@ JSValue jsSVGLineElementY2(ExecState* exec, const Identifier&, const PropertySlo
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->y2Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,7 +232,8 @@ JSValue jsSVGLineElementRequiredFeatures(ExecState* exec, const Identifier&, con
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -188,7 +241,8 @@ JSValue jsSVGLineElementRequiredExtensions(ExecState* exec, const Identifier&, c
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -196,7 +250,8 @@ JSValue jsSVGLineElementSystemLanguage(ExecState* exec, const Identifier&, const
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -204,7 +259,8 @@ JSValue jsSVGLineElementXmllang(ExecState* exec, const Identifier&, const Proper
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return jsString(exec, imp->xmllang());
+    JSValue result = jsString(exec, imp->xmllang());
+    return result;
 }
 
 JSValue jsSVGLineElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -212,7 +268,8 @@ JSValue jsSVGLineElementXmlspace(ExecState* exec, const Identifier&, const Prope
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlspace());
+    JSValue result = jsString(exec, imp->xmlspace());
+    return result;
 }
 
 JSValue jsSVGLineElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -221,7 +278,8 @@ JSValue jsSVGLineElementExternalResourcesRequired(ExecState* exec, const Identif
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -230,7 +288,8 @@ JSValue jsSVGLineElementClassName(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -238,7 +297,8 @@ JSValue jsSVGLineElementStyle(ExecState* exec, const Identifier&, const Property
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
 JSValue jsSVGLineElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -247,7 +307,8 @@ JSValue jsSVGLineElementTransform(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGLineElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -255,7 +316,8 @@ JSValue jsSVGLineElementNearestViewportElement(ExecState* exec, const Identifier
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nearestViewportElement()));
+    return result;
 }
 
 JSValue jsSVGLineElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -263,9 +325,15 @@ JSValue jsSVGLineElementFarthestViewportElement(ExecState* exec, const Identifie
     JSSVGLineElement* castedThis = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->farthestViewportElement()));
+    return result;
 }
 
+JSValue jsSVGLineElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSSVGLineElement* domObject = static_cast<JSSVGLineElement*>(asObject(slot.slotBase()));
+    return JSSVGLineElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGLineElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGLineElement, Base>(exec, propertyName, value, &JSSVGLineElementTable, this, slot);
@@ -273,14 +341,21 @@ void JSSVGLineElement::put(ExecState* exec, const Identifier& propertyName, JSVa
 
 void setJSSVGLineElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGLineElement* imp = static_cast<SVGLineElement*>(static_cast<JSSVGLineElement*>(thisObject)->impl());
+    JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(thisObject);
+    SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGLineElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGLineElement* imp = static_cast<SVGLineElement*>(static_cast<JSSVGLineElement*>(thisObject)->impl());
+    JSSVGLineElement* castedThisObj = static_cast<JSSVGLineElement*>(thisObject);
+    SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
     imp->setXmlspace(value.toString(exec));
+}
+
+JSValue JSSVGLineElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGLineElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -320,7 +395,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetBBox(ExecState* exec, 
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -333,7 +408,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetCTM(ExecState* exec, J
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -346,7 +421,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetScreenCTM(ExecState* e
     SVGLineElement* imp = static_cast<SVGLineElement*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getScreenCTM()).get(), 0 /* no context on purpose */);
     return result;
 }
 
@@ -361,7 +436,7 @@ JSValue JSC_HOST_CALL jsSVGLineElementPrototypeFunctionGetTransformToElement(Exe
     SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<AffineTransform>::create(imp->getTransformToElement(element, ec)).get(), 0 /* no context on purpose */);
     setDOMException(exec, ec);
     return result;
 }

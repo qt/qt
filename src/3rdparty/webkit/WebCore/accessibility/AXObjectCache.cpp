@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,14 +30,18 @@
 #include "AXObjectCache.h"
 
 #include "AccessibilityARIAGrid.h"
-#include "AccessibilityARIAGridRow.h"
 #include "AccessibilityARIAGridCell.h"
+#include "AccessibilityARIAGridRow.h"
+#include "AccessibilityImageMapLink.h"
 #include "AccessibilityList.h"
 #include "AccessibilityListBox.h"
 #include "AccessibilityListBoxOption.h"
-#include "AccessibilityImageMapLink.h"
 #include "AccessibilityMediaControls.h"
+#include "AccessibilityMenuList.h"
+#include "AccessibilityMenuListPopup.h"
+#include "AccessibilityMenuListOption.h"
 #include "AccessibilityRenderObject.h"
+#include "AccessibilityScrollbar.h"
 #include "AccessibilitySlider.h"
 #include "AccessibilityTable.h"
 #include "AccessibilityTableCell.h"
@@ -46,6 +50,8 @@
 #include "AccessibilityTableRow.h"
 #include "FocusController.h"
 #include "Frame.h"
+#include "HTMLAreaElement.h"
+#include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #if ENABLE(VIDEO)
 #include "MediaControlElements.h"
@@ -80,6 +86,35 @@ AXObjectCache::~AXObjectCache()
     }
 }
 
+AccessibilityObject* AXObjectCache::focusedImageMapUIElement(HTMLAreaElement* areaElement)
+{
+    // Find the corresponding accessibility object for the HTMLAreaElement. This should be
+    // in the list of children for its corresponding image.
+    if (!areaElement)
+        return 0;
+    
+    HTMLImageElement* imageElement = areaElement->imageElement();
+    if (!imageElement)
+        return 0;
+    
+    AccessibilityObject* axRenderImage = areaElement->document()->axObjectCache()->getOrCreate(imageElement->renderer());
+    if (!axRenderImage)
+        return 0;
+    
+    AccessibilityObject::AccessibilityChildrenVector imageChildren = axRenderImage->children();
+    unsigned count = imageChildren.size();
+    for (unsigned k = 0; k < count; ++k) {
+        AccessibilityObject* child = imageChildren[k].get();
+        if (!child->isImageMapLink())
+            continue;
+        
+        if (static_cast<AccessibilityImageMapLink*>(child)->areaElement() == areaElement)
+            return child;
+    }    
+    
+    return 0;
+}
+    
 AccessibilityObject* AXObjectCache::focusedUIElementForPage(const Page* page)
 {
     // get the focused node in the page
@@ -88,6 +123,9 @@ AccessibilityObject* AXObjectCache::focusedUIElementForPage(const Page* page)
     if (!focusedNode)
         focusedNode = focusedDocument;
 
+    if (focusedNode->hasTagName(areaTag))
+        return focusedImageMapUIElement(static_cast<HTMLAreaElement*>(focusedNode));
+    
     RenderObject* focusedNodeRenderer = focusedNode->renderer();
     if (!focusedNodeRenderer)
         return 0;
@@ -141,11 +179,16 @@ AccessibilityObject* AXObjectCache::getOrCreate(RenderObject* renderer)
         RefPtr<AccessibilityObject> newObj = 0;
         if (renderer->isListBox())
             newObj = AccessibilityListBox::create(renderer);
-        else if (node && (nodeIsAriaType(node, "list") || node->hasTagName(ulTag) || node->hasTagName(olTag) || node->hasTagName(dlTag)))
+        else if (renderer->isMenuList())
+            newObj = AccessibilityMenuList::create(renderer);
+
+        // If the node is aria role="list" or the aria role is empty and its a ul/ol/dl type (it shouldn't be a list if aria says otherwise). 
+        else if (node && ((nodeIsAriaType(node, "list") || nodeIsAriaType(node, "directory"))
+                          || (nodeIsAriaType(node, nullAtom) && (node->hasTagName(ulTag) || node->hasTagName(olTag) || node->hasTagName(dlTag)))))
             newObj = AccessibilityList::create(renderer);
         
         // aria tables
-        else if (nodeIsAriaType(node, "grid"))
+        else if (nodeIsAriaType(node, "grid") || nodeIsAriaType(node, "treegrid"))
             newObj = AccessibilityARIAGrid::create(renderer);
         else if (nodeIsAriaType(node, "row"))
             newObj = AccessibilityARIAGridRow::create(renderer);
@@ -191,23 +234,32 @@ AccessibilityObject* AXObjectCache::getOrCreate(AccessibilityRole role)
     
     // will be filled in...
     switch (role) {
-        case ListBoxOptionRole:
-            obj = AccessibilityListBoxOption::create();
-            break;
-        case ImageMapLinkRole:
-            obj = AccessibilityImageMapLink::create();
-            break;
-        case ColumnRole:
-            obj = AccessibilityTableColumn::create();
-            break;            
-        case TableHeaderContainerRole:
-            obj = AccessibilityTableHeaderContainer::create();
-            break;   
-        case SliderThumbRole:
-            obj = AccessibilitySliderThumb::create();
-            break;
-        default:
-            obj = 0;
+    case ListBoxOptionRole:
+        obj = AccessibilityListBoxOption::create();
+        break;
+    case ImageMapLinkRole:
+        obj = AccessibilityImageMapLink::create();
+        break;
+    case ColumnRole:
+        obj = AccessibilityTableColumn::create();
+        break;            
+    case TableHeaderContainerRole:
+        obj = AccessibilityTableHeaderContainer::create();
+        break;   
+    case SliderThumbRole:
+        obj = AccessibilitySliderThumb::create();
+        break;
+    case MenuListPopupRole:
+        obj = AccessibilityMenuListPopup::create();
+        break;
+    case MenuListOptionRole:
+        obj = AccessibilityMenuListOption::create();
+        break;
+    case ScrollBarRole:
+        obj = AccessibilityScrollbar::create();
+        break;
+    default:
+        obj = 0;
     }
     
     if (obj)
@@ -235,9 +287,8 @@ void AXObjectCache::remove(AXID axID)
     removeAXID(obj);
     
     // finally remove the object
-    if (!m_objects.take(axID)) {
+    if (!m_objects.take(axID))
         return;
-    }
     
     ASSERT(m_objects.size() >= m_idsInUse.size());    
 }
@@ -261,7 +312,7 @@ AXID AXObjectCache::platformGenerateAXID() const
     AXID objID = lastUsedID;
     do {
         ++objID;
-    } while (objID == 0 || HashTraits<AXID>::isDeletedValue(objID) || m_idsInUse.contains(objID));
+    } while (!objID || HashTraits<AXID>::isDeletedValue(objID) || m_idsInUse.contains(objID));
 
     lastUsedID = objID;
 
@@ -286,19 +337,28 @@ AXID AXObjectCache::getAXID(AccessibilityObject* obj)
     return objID;
 }
 
-void AXObjectCache::removeAXID(AccessibilityObject* obj)
+void AXObjectCache::removeAXID(AccessibilityObject* object)
 {
-    if (!obj)
+    if (!object)
         return;
     
-    AXID objID = obj->axObjectID();
-    if (objID == 0)
+    AXID objID = object->axObjectID();
+    if (!objID)
         return;
     ASSERT(!HashTraits<AXID>::isDeletedValue(objID));
     ASSERT(m_idsInUse.contains(objID));
-    obj->setAXObjectID(0);
+    object->setAXObjectID(0);
     m_idsInUse.remove(objID);
 }
+
+#if HAVE(ACCESSIBILITY)
+void AXObjectCache::contentChanged(RenderObject* renderer)
+{
+    AccessibilityObject* object = getOrCreate(renderer);
+    if (object)
+        object->contentChanged(); 
+}
+#endif
 
 void AXObjectCache::childrenChanged(RenderObject* renderer)
 {
@@ -339,7 +399,7 @@ void AXObjectCache::notificationPostTimerFired(Timer<AXObjectCache>*)
 }
     
 #if HAVE(ACCESSIBILITY)
-void AXObjectCache::postNotification(RenderObject* renderer, AXNotification notification, bool postToElement)
+void AXObjectCache::postNotification(RenderObject* renderer, AXNotification notification, bool postToElement, PostType postType)
 {
     // Notifications for text input objects are sent to that object.
     // All others are sent to the top WebArea.
@@ -348,28 +408,35 @@ void AXObjectCache::postNotification(RenderObject* renderer, AXNotification noti
     
     // Get an accessibility object that already exists. One should not be created here
     // because a render update may be in progress and creating an AX object can re-trigger a layout
-    RefPtr<AccessibilityObject> obj = get(renderer);
-    while (!obj && renderer) {
+    RefPtr<AccessibilityObject> object = get(renderer);
+    while (!object && renderer) {
         renderer = renderer->parent();
-        obj = get(renderer); 
+        object = get(renderer); 
     }
     
     if (!renderer)
         return;
+    
+    postNotification(object.get(), renderer->document(), notification, postToElement, postType);
+}
 
-    if (obj && !postToElement)
-        obj = obj->observableObject();
-    
-    Document* document = renderer->document();
-    if (!obj && document)
-        obj = get(document->renderer());
-    
-    if (!obj)
+void AXObjectCache::postNotification(AccessibilityObject* object, Document* document, AXNotification notification, bool postToElement, PostType postType)
+{
+    if (object && !postToElement)
+        object = object->observableObject();
+
+    if (!object && document)
+        object = get(document->renderer());
+
+    if (!object)
         return;
 
-    m_notificationsToPost.append(make_pair(obj, notification));
-    if (!m_notificationPostTimer.isActive())
-        m_notificationPostTimer.startOneShot(0);
+    if (postType == PostAsynchronously) {
+        m_notificationsToPost.append(make_pair(object, notification));
+        if (!m_notificationPostTimer.isActive())
+            m_notificationPostTimer.startOneShot(0);
+    } else
+        postPlatformNotification(object, notification);
 }
 
 void AXObjectCache::selectedChildrenChanged(RenderObject* renderer)

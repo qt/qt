@@ -25,6 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "config.h"
 #include "ChromeClientQt.h"
 
@@ -38,8 +39,14 @@
 #include "NotImplemented.h"
 #include "WindowFeatures.h"
 #include "DatabaseTracker.h"
-#include "SecurityOrigin.h"
+#include "QtFallbackWebPopup.h"
 #include "QWebPageClient.h"
+#include "SecurityOrigin.h"
+
+#include <qdebug.h>
+#include <qeventloop.h>
+#include <qtextdocument.h>
+#include <qtooltip.h>
 
 #include "qwebpage.h"
 #include "qwebpage_p.h"
@@ -48,22 +55,23 @@
 #include "qwebsecurityorigin_p.h"
 #include "qwebview.h"
 
-#include <qtooltip.h>
-#include <qtextdocument.h>
+#if USE(ACCELERATED_COMPOSITING)
+#include "GraphicsLayerQt.h"
+#endif
 
-namespace WebCore
-{
-
+namespace WebCore {
 
 ChromeClientQt::ChromeClientQt(QWebPage* webPage)
     : m_webPage(webPage)
+    , m_eventLoop(0)
 {
     toolBarsVisible = statusBarVisible = menuBarVisible = true;
 }
 
 ChromeClientQt::~ChromeClientQt()
 {
-
+    if (m_eventLoop)
+        m_eventLoop->exit();
 }
 
 void ChromeClientQt::setWindowRect(const FloatRect& rect)
@@ -141,6 +149,11 @@ void ChromeClientQt::takeFocus(FocusDirection)
 }
 
 
+void ChromeClientQt::focusedNodeChanged(WebCore::Node*)
+{
+}
+
+
 Page* ChromeClientQt::createWindow(Frame*, const FrameLoadRequest& request, const WindowFeatures& features)
 {
     QWebPage *newPage = m_webPage->createWindow(features.dialog ? QWebPage::WebModalDialog : QWebPage::WebBrowserWindow);
@@ -163,14 +176,16 @@ void ChromeClientQt::show()
 
 bool ChromeClientQt::canRunModal()
 {
-    notImplemented();
-    return false;
+    return true;
 }
 
 
 void ChromeClientQt::runModal()
 {
-    notImplemented();
+    m_eventLoop = new QEventLoop();
+    QEventLoop* eventLoop = m_eventLoop;
+    m_eventLoop->exec();
+    delete eventLoop;
 }
 
 
@@ -448,6 +463,12 @@ void ChromeClientQt::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> prpFileC
     }
 }
 
+void ChromeClientQt::iconForFiles(const Vector<String>&, PassRefPtr<FileChooser>)
+{
+    // FIXME: Move the code of Icon::createIconForFiles() here.
+    notImplemented();
+}
+
 bool ChromeClientQt::setCursor(PlatformCursorHandle)
 {
     notImplemented();
@@ -458,6 +479,33 @@ void ChromeClientQt::requestGeolocationPermissionForFrame(Frame*, Geolocation*)
 {
     // See the comment in WebCore/page/ChromeClient.h
     notImplemented();
+}
+
+#if USE(ACCELERATED_COMPOSITING)
+void ChromeClientQt::attachRootGraphicsLayer(Frame* frame, GraphicsLayer* graphicsLayer)
+{    
+    if (platformPageClient())
+        platformPageClient()->setRootGraphicsLayer(graphicsLayer ? graphicsLayer->nativeLayer() : 0);
+}
+
+void ChromeClientQt::setNeedsOneShotDrawingSynchronization()
+{
+    // we want the layers to synchronize next time we update the screen anyway
+    if (platformPageClient())
+        platformPageClient()->markForSync(false);
+}
+
+void ChromeClientQt::scheduleCompositingLayerSync()
+{
+    // we want the layers to synchronize ASAP
+    if (platformPageClient())
+        platformPageClient()->markForSync(true);
+}
+#endif
+
+QtAbstractWebPopup* ChromeClientQt::createSelectPopup()
+{
+    return new QtFallbackWebPopup;
 }
 
 }

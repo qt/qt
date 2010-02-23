@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -148,7 +148,8 @@ JSValue jsHTMLStyleElementDisabled(ExecState* exec, const Identifier&, const Pro
     JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return jsBoolean(imp->disabled());
+    JSValue result = jsBoolean(imp->disabled());
+    return result;
 }
 
 JSValue jsHTMLStyleElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,7 +157,8 @@ JSValue jsHTMLStyleElementMedia(ExecState* exec, const Identifier&, const Proper
     JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->media());
+    JSValue result = jsString(exec, imp->media());
+    return result;
 }
 
 JSValue jsHTMLStyleElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -164,7 +166,8 @@ JSValue jsHTMLStyleElementType(ExecState* exec, const Identifier&, const Propert
     JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
 JSValue jsHTMLStyleElementSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +175,8 @@ JSValue jsHTMLStyleElementSheet(ExecState* exec, const Identifier&, const Proper
     JSHTMLStyleElement* castedThis = static_cast<JSHTMLStyleElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->sheet()));
+    return result;
 }
 
 JSValue jsHTMLStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -187,19 +191,22 @@ void JSHTMLStyleElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLStyleElementDisabled(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
+    JSHTMLStyleElement* castedThisObj = static_cast<JSHTMLStyleElement*>(thisObject);
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThisObj->impl());
     imp->setDisabled(value.toBoolean(exec));
 }
 
 void setJSHTMLStyleElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
+    JSHTMLStyleElement* castedThisObj = static_cast<JSHTMLStyleElement*>(thisObject);
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThisObj->impl());
     imp->setMedia(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLStyleElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(static_cast<JSHTMLStyleElement*>(thisObject)->impl());
+    JSHTMLStyleElement* castedThisObj = static_cast<JSHTMLStyleElement*>(thisObject);
+    HTMLStyleElement* imp = static_cast<HTMLStyleElement*>(castedThisObj->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 

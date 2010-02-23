@@ -41,8 +41,15 @@ public:
 
     Node* ownerNode() const { return m_parentNode; }
     StyleSheet *parentStyleSheet() const;
-    const String& href() const { return m_strHref; }
-    void setHref(const String& href) { m_strHref = href; }
+
+    // Note that href is the URL that started the redirect chain that led to
+    // this style sheet. This property probably isn't useful for much except
+    // the JavaScript binding (which needs to use this value for security).
+    const String& href() const { return m_originalURL; }
+
+    void setFinalURL(const KURL& finalURL) { m_finalURL = finalURL; }
+    const KURL& finalURL() const { return m_finalURL; }
+
     const String& title() const { return m_strTitle; }
     void setTitle(const String& s) { m_strTitle = s; }
     MediaList* media() const { return m_media.get(); }
@@ -58,15 +65,16 @@ public:
     virtual bool parseString(const String&, bool strict = true) = 0;
 
 protected:
-    StyleSheet(Node* ownerNode, const String& href);
-    StyleSheet(StyleSheet* parentSheet, const String& href);
-    StyleSheet(StyleBase* owner, const String& href);
+    StyleSheet(Node* ownerNode, const String& href, const KURL& finalURL);
+    StyleSheet(StyleSheet* parentSheet, const String& href, const KURL& finalURL);
+    StyleSheet(StyleBase* owner, const String& href, const KURL& finalURL);
 
 private:
     virtual bool isStyleSheet() const { return true; }
 
     Node* m_parentNode;
-    String m_strHref;
+    String m_originalURL;
+    KURL m_finalURL;
     String m_strTitle;
     RefPtr<MediaList> m_media;
     bool m_disabled;

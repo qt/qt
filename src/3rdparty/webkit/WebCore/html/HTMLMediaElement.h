@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,7 +46,6 @@ class TimeRanges;
 
 class HTMLMediaElement : public HTMLElement, public MediaPlayerClient {
 public:
-    HTMLMediaElement(const QualifiedName&, Document*);
     virtual ~HTMLMediaElement();
 
     bool checkDTD(const Node* newChild);
@@ -63,7 +62,7 @@ public:
     
     MediaPlayer* player() const { return m_player.get(); }
     
-    virtual bool isVideo() const { return false; }
+    virtual bool isVideo() const = 0;
     virtual bool hasVideo() const { return false; }
     virtual bool hasAudio() const;
 
@@ -75,6 +74,9 @@ public:
     virtual bool supportsSave() const;
     
     PlatformMedia platformMedia() const;
+#if USE(ACCELERATED_COMPOSITING)
+    PlatformLayer* platformLayer() const;
+#endif
 
     void scheduleLoad();
     
@@ -102,7 +104,7 @@ public:
     void setAutobuffer(bool);
 
     PassRefPtr<TimeRanges> buffered() const;
-    void load(ExceptionCode&);
+    void load(bool isUserGesture, ExceptionCode&);
     String canPlayType(const String& mimeType) const;
 
 // ready state
@@ -129,9 +131,14 @@ public:
     void setAutoplay(bool b);
     bool loop() const;    
     void setLoop(bool b);
-    void play();
-    void pause();
-    
+    void play(bool isUserGesture);
+    void pause(bool isUserGesture);
+
+// captions
+    bool webkitHasClosedCaptions() const;
+    bool webkitClosedCaptionsVisible() const;
+    void setWebkitClosedCaptionsVisible(bool);
+
 // controls
     bool controls() const;
     void setControls(bool);
@@ -162,22 +169,35 @@ public:
     void enterFullscreen();
     void exitFullscreen();
 
+    bool hasClosedCaptions() const;
+    bool closedCaptionsVisible() const;
+    void setClosedCaptionsVisible(bool);
+
+    bool processingUserGesture() const;
+
 protected:
+    HTMLMediaElement(const QualifiedName&, Document*);
+
     float getTimeOffsetAttribute(const QualifiedName&, float valueOnError) const;
     void setTimeOffsetAttribute(const QualifiedName&, float value);
     
     virtual void documentWillBecomeInactive();
     virtual void documentDidBecomeActive();
     virtual void mediaVolumeDidChange();
+    virtual void updatePosterImage() { }
     
     void setReadyState(MediaPlayer::ReadyState);
     void setNetworkState(MediaPlayer::NetworkState);
-    
+
+    virtual void willMoveToNewOwnerDocument();
+    virtual void didMoveToNewOwnerDocument();
+
 private: // MediaPlayerClient
     virtual void mediaPlayerNetworkStateChanged(MediaPlayer*);
     virtual void mediaPlayerReadyStateChanged(MediaPlayer*);
     virtual void mediaPlayerTimeChanged(MediaPlayer*);
     virtual void mediaPlayerVolumeChanged(MediaPlayer*);
+    virtual void mediaPlayerMuteChanged(MediaPlayer*);
     virtual void mediaPlayerDurationChanged(MediaPlayer*);
     virtual void mediaPlayerRateChanged(MediaPlayer*);
     virtual void mediaPlayerSawUnsupportedTracks(MediaPlayer*);
@@ -185,7 +205,7 @@ private: // MediaPlayerClient
     virtual void mediaPlayerSizeChanged(MediaPlayer*);
 #if USE(ACCELERATED_COMPOSITING)
     virtual bool mediaPlayerRenderingCanBeAccelerated(MediaPlayer*);
-    virtual GraphicsLayer* mediaPlayerGraphicsLayer(MediaPlayer*);
+    virtual void mediaPlayerRenderingModeChanged(MediaPlayer*);
 #endif
 
 private:
@@ -203,9 +223,7 @@ private:
     void addPlayedRange(float start, float end);
     
     void scheduleTimeupdateEvent(bool periodicEvent);
-    void scheduleProgressEvent(const AtomicString& eventName);
     void scheduleEvent(const AtomicString& eventName);
-    void enqueueEvent(RefPtr<Event> event);
     
     // loading
     void selectMediaResource();
@@ -217,6 +235,7 @@ private:
     void noneSupported();
     void mediaEngineError(PassRefPtr<MediaError> err);
     void cancelPendingEventsAndCallbacks();
+    void waitForSourceChange();
 
     enum InvalidSourceAction { DoNothing, Complain };
     bool isSafeToLoadURL(const KURL&, InvalidSourceAction);
@@ -229,7 +248,6 @@ private:
 
     void prepareForLoad();
     
-    bool processingUserGesture() const;
     bool processingMediaPlayerCallback() const { return m_processingMediaPlayerCallback > 0; }
     void beginProcessingMediaPlayerCallback() { ++m_processingMediaPlayerCallback; }
     void endProcessingMediaPlayerCallback() { ASSERT(m_processingMediaPlayerCallback); --m_processingMediaPlayerCallback; }
@@ -319,6 +337,7 @@ protected:
     bool m_sendProgressEvents : 1;
 
     bool m_isFullscreen : 1;
+    bool m_closedCaptionsVisible : 1;
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     bool m_needWidgetUpdate : 1;

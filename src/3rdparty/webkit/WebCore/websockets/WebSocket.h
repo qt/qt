@@ -46,7 +46,7 @@
 namespace WebCore {
 
     class String;
-    class WebSocketChannel;
+    class ThreadableWebSocketChannel;
 
     class WebSocket : public RefCounted<WebSocket>, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
     public:
@@ -82,22 +82,16 @@ namespace WebCore {
         virtual WebSocket* toWebSocket() { return this; }
 
         virtual ScriptExecutionContext* scriptExecutionContext() const;
-
-        // ActiveDOMObject
-        //  virtual bool hasPendingActivity() const;
-        // virtual void contextDestroyed();
-        // virtual bool canSuspend() const;
-        // virtual void suspend();
-        // virtual void resume();
-        // virtual void stop();
+        virtual void contextDestroyed();
+        virtual void stop();
 
         using RefCounted<WebSocket>::ref;
         using RefCounted<WebSocket>::deref;
 
         // WebSocketChannelClient
         virtual void didConnect();
-        virtual void didReceiveMessage(const String& msg);
-        virtual void didClose();
+        virtual void didReceiveMessage(const String& message);
+        virtual void didClose(unsigned long unhandledBufferedAmount);
 
     private:
         WebSocket(ScriptExecutionContext*);
@@ -111,16 +105,17 @@ namespace WebCore {
         void dispatchMessageEvent(Event*);
         void dispatchCloseEvent(Event*);
 
-        RefPtr<WebSocketChannel> m_channel;
+        RefPtr<ThreadableWebSocketChannel> m_channel;
 
         State m_state;
         KURL m_url;
         String m_protocol;
         EventTargetData m_eventTargetData;
+        unsigned long m_bufferedAmountAfterClose;
     };
 
-}  // namespace WebCore
+} // namespace WebCore
 
-#endif  // ENABLE(WEB_SOCKETS)
+#endif // ENABLE(WEB_SOCKETS)
 
-#endif  // WebSocket_h
+#endif // WebSocket_h

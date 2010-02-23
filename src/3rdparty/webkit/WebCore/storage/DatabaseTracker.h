@@ -31,40 +31,68 @@
 
 #if ENABLE(DATABASE)
 
-#include "DatabaseDetails.h"
 #include "PlatformString.h"
-#include "SQLiteDatabase.h"
 #include "StringHash.h"
+#include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
+
+#if !PLATFORM(CHROMIUM)
+#include "DatabaseDetails.h"
+#include "SQLiteDatabase.h"
 #include <wtf/OwnPtr.h>
+#endif // !PLATFORM(CHROMIUM)
 
 namespace WebCore {
 
 class Database;
-class DatabaseTrackerClient;
-class Document;
-class OriginQuotaManager;
+class ScriptExecutionContext;
 class SecurityOrigin;
 
 struct SecurityOriginHash;
-struct SecurityOriginTraits;
 
-class DatabaseTracker {
+#if !PLATFORM(CHROMIUM)
+class DatabaseTrackerClient;
+class OriginQuotaManager;
+
+struct SecurityOriginTraits;
+#endif // !PLATFORM(CHROMIUM)
+
+class DatabaseTracker : public Noncopyable {
+public:
+    static DatabaseTracker& tracker();
+    // FIXME: Due to workers having multiple threads in a single process sharing
+    // a DatabaseTracker, this singleton will have to be synchronized or moved
+    // to TLS.
+
+    bool canEstablishDatabase(ScriptExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize);
+    void setDatabaseDetails(SecurityOrigin*, const String& name, const String& displayName, unsigned long estimatedSize);
+    String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
+
+    void addOpenDatabase(Database*);
+    void removeOpenDatabase(Database*);
+    void getOpenDatabases(SecurityOrigin* origin, const String& name, HashSet<RefPtr<Database> >* databases);
+
+    unsigned long long getMaxSizeForDatabase(const Database*);
+
+private:
+    DatabaseTracker();
+
+    typedef HashSet<Database*> DatabaseSet;
+    typedef HashMap<String, DatabaseSet*> DatabaseNameMap;
+    typedef HashMap<RefPtr<SecurityOrigin>, DatabaseNameMap*, SecurityOriginHash> DatabaseOriginMap;
+
+    Mutex m_openDatabaseMapGuard;
+    mutable OwnPtr<DatabaseOriginMap> m_openDatabaseMap;
+
+#if !PLATFORM(CHROMIUM)
 public:
     void setDatabaseDirectoryPath(const String&);
     const String& databaseDirectoryPath() const;
-
-    bool canEstablishDatabase(Document*, const String& name, const String& displayName, unsigned long estimatedSize);
-    void setDatabaseDetails(SecurityOrigin*, const String& name, const String& displayName, unsigned long estimatedSize);
-    String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
 
     void origins(Vector<RefPtr<SecurityOrigin> >& result);
     bool databaseNamesForOrigin(SecurityOrigin*, Vector<String>& result);
 
     DatabaseDetails detailsForNameAndOrigin(const String&, SecurityOrigin*);
-
-    void addOpenDatabase(Database*);
-    void removeOpenDatabase(Database*);
 
     unsigned long long usageForDatabase(const String&, SecurityOrigin*);
     unsigned long long usageForOrigin(SecurityOrigin*);
@@ -82,15 +110,10 @@ public:
 
     OriginQuotaManager& originQuotaManager();
 
-    static DatabaseTracker& tracker();
 
     bool hasEntryForOrigin(SecurityOrigin*);
 
-    unsigned long long getMaxSizeForDatabase(const Database*);
-
 private:
-    DatabaseTracker();
-
     String trackerDatabasePath() const;
     void openTrackerDatabase(bool createIfDoesNotExist);
 
@@ -109,13 +132,6 @@ private:
     Mutex m_quotaMapGuard;
     mutable OwnPtr<QuotaMap> m_quotaMap;
 
-    typedef HashSet<Database*> DatabaseSet;
-    typedef HashMap<String, DatabaseSet*> DatabaseNameMap;
-    typedef HashMap<RefPtr<SecurityOrigin>, DatabaseNameMap*, SecurityOriginHash> DatabaseOriginMap;
-
-    Mutex m_openDatabaseMapGuard;
-    mutable OwnPtr<DatabaseOriginMap> m_openDatabaseMap;
-
     OwnPtr<OriginQuotaManager> m_quotaManager;
 
     String m_databaseDirectoryPath;
@@ -130,6 +146,7 @@ private:
 
     static void scheduleForNotification();
     static void notifyDatabasesChanged(void*);
+#endif // !PLATFORM(CHROMIUM)
 };
 
 } // namespace WebCore

@@ -48,17 +48,20 @@ namespace WebCore {
 
     class ScriptFunctionCall {
     public:
-        ScriptFunctionCall(ScriptState* exec, const ScriptObject& thisObject, const String& name);
+        ScriptFunctionCall(const ScriptObject& thisObject, const String& name);
         virtual ~ScriptFunctionCall() {};
 
         void appendArgument(const ScriptObject&);
         void appendArgument(const ScriptString&);
         void appendArgument(const ScriptValue&);
         void appendArgument(const String&);
+        void appendArgument(const char*);
         void appendArgument(const JSC::UString&);
         void appendArgument(JSC::JSValue);
+        void appendArgument(long);
         void appendArgument(long long);
         void appendArgument(unsigned int);
+        void appendArgument(unsigned long);
         void appendArgument(int);
         void appendArgument(bool);
         ScriptValue call(bool& hadException, bool reportExceptions = true);
@@ -70,6 +73,12 @@ namespace WebCore {
         ScriptObject m_thisObject;
         String m_name;
         JSC::MarkedArgumentBuffer m_arguments;
+
+    private:
+        // MarkedArgumentBuffer must be stack allocated, so prevent heap
+        // alloc of ScriptFunctionCall as well.
+        void* operator new(size_t) { ASSERT_NOT_REACHED(); return reinterpret_cast<void*>(0xbadbeef); }
+        void* operator new[](size_t) { ASSERT_NOT_REACHED(); return reinterpret_cast<void*>(0xbadbeef); }
     };
 
 } // namespace WebCore

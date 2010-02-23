@@ -32,18 +32,22 @@
 #include "config.h"
 #include "RedirectScheduler.h"
 
+#include "BackForwardList.h"
 #include "DocumentLoader.h"
 #include "Event.h"
 #include "FormState.h"
 #include "Frame.h"
 #include "FrameLoadRequest.h"
 #include "FrameLoader.h"
+#include "HistoryItem.h"
 #include "HTMLFormElement.h"
+#include "HTMLFrameOwnerElement.h"
+#include "Page.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {
 
-struct ScheduledRedirection {
+struct ScheduledRedirection : Noncopyable {
     enum Type { redirection, locationChange, historyNavigation, formSubmission };
 
     const Type type;
@@ -171,7 +175,7 @@ bool RedirectScheduler::mustLockBackForwardList(Frame* targetFrame)
     
     for (Frame* ancestor = targetFrame->tree()->parent(); ancestor; ancestor = ancestor->tree()->parent()) {
         Document* document = ancestor->document();
-        if (!ancestor->loader()->isComplete() || document && document->processingLoadEvent())
+        if (!ancestor->loader()->isComplete() || (document && document->processingLoadEvent()))
             return true;
     }
     return false;
@@ -217,7 +221,13 @@ void RedirectScheduler::scheduleFormSubmission(const FrameLoadRequest& frameRequ
     // This may happen when a frame changes the location of another frame.
     bool duringLoad = !m_frame->loader()->committedFirstRealDocumentLoad();
 
-    schedule(new ScheduledRedirection(frameRequest, lockHistory, mustLockBackForwardList(m_frame), event, formState, duringLoad));
+    // If this is a child frame and the form submission was triggered by a script, lock the back/forward list
+    // to match IE and Opera.
+    // See https://bugs.webkit.org/show_bug.cgi?id=32383 for the original motivation for this.
+
+    bool lockBackForwardList = mustLockBackForwardList(m_frame) || (formState->formSubmissionTrigger() == SubmittedByJavaScript && m_frame->tree()->parent());
+
+    schedule(new ScheduledRedirection(frameRequest, lockHistory, lockBackForwardList, event, formState, duringLoad));
 }
 
 void RedirectScheduler::scheduleRefresh(bool wasUserGesture)
@@ -257,11 +267,23 @@ void RedirectScheduler::scheduleHistoryNavigation(int steps)
 
     // Invalid history navigations (such as history.forward() during a new load) have the side effect of cancelling any scheduled
     // redirects. We also avoid the possibility of cancelling the current load by avoiding the scheduled redirection altogether.
-    if (!m_frame->page()->canGoBackOrForward(steps)) { 
-        cancel(); 
-        return; 
-    } 
-
+    HistoryItem* specifiedEntry = m_frame->page()->backForwardList()->itemAtIndex(steps);
+    if (!specifiedEntry) {
+        cancel();
+        return;
+    }
+    
+#if !ENABLE(HISTORY_ALWAYS_ASYNC)
+    // If the specified entry and the current entry have the same document, this is either a state object traversal or a fragment 
+    // traversal (or both) and should be performed synchronously.
+    HistoryItem* currentEntry = m_frame->loader()->history()->currentItem();
+    if (currentEntry != specifiedEntry && currentEntry->documentSequenceNumber() == specifiedEntry->documentSequenceNumber()) {
+        m_frame->loader()->history()->goToItem(specifiedEntry, FrameLoadTypeIndexedBackForward);
+        return;
+    }
+#endif
+    
+    // In all other cases, schedule the history traversal to occur asynchronously.
     schedule(new ScheduledRedirection(steps));
 }
 

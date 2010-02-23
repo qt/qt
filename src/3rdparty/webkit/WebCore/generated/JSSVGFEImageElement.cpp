@@ -31,6 +31,7 @@
 #include "JSCSSValue.h"
 #include "JSSVGAnimatedBoolean.h"
 #include "JSSVGAnimatedLength.h"
+#include "JSSVGAnimatedPreserveAspectRatio.h"
 #include "JSSVGAnimatedString.h"
 #include "KURL.h"
 #include "SVGFEImageElement.h"
@@ -46,8 +47,9 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGFEImageElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGFEImageElementTableValues[12] =
+static const HashTableValue JSSVGFEImageElementTableValues[14] =
 {
+    { "preserveAspectRatio", DontDelete|ReadOnly, (intptr_t)jsSVGFEImageElementPreserveAspectRatio, (intptr_t)0 },
     { "href", DontDelete|ReadOnly, (intptr_t)jsSVGFEImageElementHref, (intptr_t)0 },
     { "xmllang", DontDelete, (intptr_t)jsSVGFEImageElementXmllang, (intptr_t)setJSSVGFEImageElementXmllang },
     { "xmlspace", DontDelete, (intptr_t)jsSVGFEImageElementXmlspace, (intptr_t)setJSSVGFEImageElementXmlspace },
@@ -59,6 +61,7 @@ static const HashTableValue JSSVGFEImageElementTableValues[12] =
     { "result", DontDelete|ReadOnly, (intptr_t)jsSVGFEImageElementResult, (intptr_t)0 },
     { "className", DontDelete|ReadOnly, (intptr_t)jsSVGFEImageElementClassName, (intptr_t)0 },
     { "style", DontDelete|ReadOnly, (intptr_t)jsSVGFEImageElementStyle, (intptr_t)0 },
+    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGFEImageElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -68,6 +71,53 @@ static JSC_CONST_HASHTABLE HashTable JSSVGFEImageElementTable =
 #else
     { 33, 31, JSSVGFEImageElementTableValues, 0 };
 #endif
+
+/* Hash table for constructor */
+
+static const HashTableValue JSSVGFEImageElementConstructorTableValues[1] =
+{
+    { 0, 0, 0, 0 }
+};
+
+static JSC_CONST_HASHTABLE HashTable JSSVGFEImageElementConstructorTable =
+#if ENABLE(PERFECT_HASH_SIZE)
+    { 0, JSSVGFEImageElementConstructorTableValues, 0 };
+#else
+    { 1, 0, JSSVGFEImageElementConstructorTableValues, 0 };
+#endif
+
+class JSSVGFEImageElementConstructor : public DOMConstructorObject {
+public:
+    JSSVGFEImageElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGFEImageElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
+    {
+        putDirect(exec->propertyNames().prototype, JSSVGFEImageElementPrototype::self(exec, globalObject), None);
+    }
+    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
+    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
+    virtual const ClassInfo* classInfo() const { return &s_info; }
+    static const ClassInfo s_info;
+
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
+    { 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+    }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
+};
+
+const ClassInfo JSSVGFEImageElementConstructor::s_info = { "SVGFEImageElementConstructor", 0, &JSSVGFEImageElementConstructorTable, 0 };
+
+bool JSSVGFEImageElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
+{
+    return getStaticValueSlot<JSSVGFEImageElementConstructor, DOMObject>(exec, &JSSVGFEImageElementConstructorTable, this, propertyName, slot);
+}
+
+bool JSSVGFEImageElementConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
+{
+    return getStaticValueDescriptor<JSSVGFEImageElementConstructor, DOMObject>(exec, &JSSVGFEImageElementConstructorTable, this, propertyName, descriptor);
+}
 
 /* Hash table for prototype */
 
@@ -123,13 +173,24 @@ bool JSSVGFEImageElement::getOwnPropertyDescriptor(ExecState* exec, const Identi
     return getStaticValueDescriptor<JSSVGFEImageElement, Base>(exec, &JSSVGFEImageElementTable, this, propertyName, descriptor);
 }
 
+JSValue jsSVGFEImageElementPreserveAspectRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSSVGFEImageElement* castedThis = static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
+    RefPtr<SVGAnimatedPreserveAspectRatio> obj = imp->preserveAspectRatioAnimated();
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
+}
+
 JSValue jsSVGFEImageElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGFEImageElement* castedThis = static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -137,7 +198,8 @@ JSValue jsSVGFEImageElementXmllang(ExecState* exec, const Identifier&, const Pro
     JSSVGFEImageElement* castedThis = static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
-    return jsString(exec, imp->xmllang());
+    JSValue result = jsString(exec, imp->xmllang());
+    return result;
 }
 
 JSValue jsSVGFEImageElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -145,7 +207,8 @@ JSValue jsSVGFEImageElementXmlspace(ExecState* exec, const Identifier&, const Pr
     JSSVGFEImageElement* castedThis = static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
-    return jsString(exec, imp->xmlspace());
+    JSValue result = jsString(exec, imp->xmlspace());
+    return result;
 }
 
 JSValue jsSVGFEImageElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -154,7 +217,8 @@ JSValue jsSVGFEImageElementExternalResourcesRequired(ExecState* exec, const Iden
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -163,7 +227,8 @@ JSValue jsSVGFEImageElementX(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +237,8 @@ JSValue jsSVGFEImageElementY(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,7 +247,8 @@ JSValue jsSVGFEImageElementWidth(ExecState* exec, const Identifier&, const Prope
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -190,7 +257,8 @@ JSValue jsSVGFEImageElementHeight(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -199,7 +267,8 @@ JSValue jsSVGFEImageElementResult(ExecState* exec, const Identifier&, const Prop
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -208,7 +277,8 @@ JSValue jsSVGFEImageElementClassName(ExecState* exec, const Identifier&, const P
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
+    return result;
 }
 
 JSValue jsSVGFEImageElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -216,9 +286,15 @@ JSValue jsSVGFEImageElementStyle(ExecState* exec, const Identifier&, const Prope
     JSSVGFEImageElement* castedThis = static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
+    return result;
 }
 
+JSValue jsSVGFEImageElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSSVGFEImageElement* domObject = static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()));
+    return JSSVGFEImageElement::getConstructor(exec, domObject->globalObject());
+}
 void JSSVGFEImageElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGFEImageElement, Base>(exec, propertyName, value, &JSSVGFEImageElementTable, this, slot);
@@ -226,14 +302,21 @@ void JSSVGFEImageElement::put(ExecState* exec, const Identifier& propertyName, J
 
 void setJSSVGFEImageElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(thisObject)->impl());
+    JSSVGFEImageElement* castedThisObj = static_cast<JSSVGFEImageElement*>(thisObject);
+    SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThisObj->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGFEImageElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(thisObject)->impl());
+    JSSVGFEImageElement* castedThisObj = static_cast<JSSVGFEImageElement*>(thisObject);
+    SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThisObj->impl());
     imp->setXmlspace(value.toString(exec));
+}
+
+JSValue JSSVGFEImageElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
+{
+    return getDOMConstructor<JSSVGFEImageElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGFEImageElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -26,9 +26,7 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/qicon.h>
 #include <QtScript/qscriptengine.h>
-#if QT_VERSION >= 0x040400
 #include <QtNetwork/qnetworkaccessmanager.h>
-#endif
 #include "qwebkitglobal.h"
 
 QT_BEGIN_NAMESPACE
@@ -123,13 +121,9 @@ public:
     QWebPage *page() const;
 
     void load(const QUrl &url);
-#if QT_VERSION < 0x040400
-    void load(const QWebNetworkRequest &request);
-#else
     void load(const QNetworkRequest &request,
               QNetworkAccessManager::Operation operation = QNetworkAccessManager::GetOperation,
               const QByteArray &body = QByteArray());
-#endif
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
 
@@ -162,8 +156,11 @@ public:
     QRect scrollBarGeometry(Qt::Orientation orientation) const;
 
     void scroll(int, int);
+    bool scrollRecursively(int, int);
     QPoint scrollPosition() const;
     void setScrollPosition(const QPoint &pos);
+
+    void scrollToAnchor(const QString& anchor);
 
     enum RenderLayer {
         ContentsLayer = 0x10,
@@ -221,6 +218,8 @@ Q_SIGNALS:
 
     void loadStarted();
     void loadFinished(bool ok);
+
+    void pageChanged();
 
 private:
     friend class QWebPage;

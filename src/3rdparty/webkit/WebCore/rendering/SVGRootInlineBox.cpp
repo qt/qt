@@ -363,6 +363,13 @@ struct SVGRootInlineBoxPaintWalker {
         ASSERT(!m_chunkStarted);
     }
 
+    bool mayHaveSelection(SVGInlineTextBox* box) const
+    {
+        int selectionStart = 0, selectionEnd = 0;
+        box->selectionStartEnd(selectionStart, selectionEnd);
+        return selectionStart < selectionEnd;
+    }
+
     void teardownFillPaintServer()
     {
         if (!m_fillPaintServer)
@@ -429,7 +436,13 @@ struct SVGRootInlineBoxPaintWalker {
         m_paintInfo.rect = m_savedInfo.rect;
     }
 
-    bool chunkSetupFillCallback(InlineBox* box)
+    bool setupBackground(SVGInlineTextBox* /*box*/)
+    {
+        m_textPaintInfo.subphase = SVGTextPaintSubphaseBackground;
+        return true;
+    }
+
+    bool setupFill(SVGInlineTextBox* box)
     {
         InlineFlowBox* flowBox = box->parent();
 
@@ -440,6 +453,7 @@ struct SVGRootInlineBoxPaintWalker {
         ASSERT(!m_strokePaintServer);
         teardownFillPaintServer();
 
+        m_textPaintInfo.subphase = SVGTextPaintSubphaseGlyphFill;
         m_fillPaintServer = SVGPaintServer::fillPaintServer(object->style(), object);
         if (m_fillPaintServer) {
             m_fillPaintServer->setup(m_paintInfo.context, object, ApplyToFillTargetType, true);
@@ -450,7 +464,35 @@ struct SVGRootInlineBoxPaintWalker {
         return false;
     }
 
-    bool chunkSetupStrokeCallback(InlineBox* box)
+    bool setupFillSelection(SVGInlineTextBox* box)
+    {
+        InlineFlowBox* flowBox = box->parent();
+
+        // Setup fill paint server
+        RenderObject* object = flowBox->renderer();
+        ASSERT(object);
+        RenderStyle* style = object->getCachedPseudoStyle(SELECTION);
+        if (!style)
+            style = object->style();
+
+        ASSERT(!m_strokePaintServer);
+        teardownFillPaintServer();
+
+        if (!mayHaveSelection(box))
+            return false;
+
+        m_textPaintInfo.subphase = SVGTextPaintSubphaseGlyphFillSelection;
+        m_fillPaintServer = SVGPaintServer::fillPaintServer(style, object);
+        if (m_fillPaintServer) {
+            m_fillPaintServer->setup(m_paintInfo.context, object, style, ApplyToFillTargetType, true);
+            m_fillPaintServerObject = object;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool setupStroke(SVGInlineTextBox* box)
     {
         InlineFlowBox* flowBox = box->parent();
 
@@ -462,6 +504,7 @@ struct SVGRootInlineBoxPaintWalker {
         teardownFillPaintServer();
         teardownStrokePaintServer();
 
+        m_textPaintInfo.subphase = SVGTextPaintSubphaseGlyphStroke;
         m_strokePaintServer = SVGPaintServer::strokePaintServer(object->style(), object);
 
         if (m_strokePaintServer) {
@@ -473,8 +516,87 @@ struct SVGRootInlineBoxPaintWalker {
         return false;
     }
 
-    void chunkPortionCallback(SVGInlineTextBox* textBox, int startOffset, const TransformationMatrix& chunkCtm,
+    bool setupStrokeSelection(SVGInlineTextBox* box)
+    {
+        InlineFlowBox* flowBox = box->parent();
+
+        // Setup stroke paint server
+        RenderObject* object = flowBox->renderer();
+        ASSERT(object);
+        RenderStyle* style = object->getCachedPseudoStyle(SELECTION);
+        if (!style)
+            style = object->style();
+
+        // If we're both stroked & filled, teardown fill paint server before stroking.
+        teardownFillPaintServer();
+        teardownStrokePaintServer();
+
+        if (!mayHaveSelection(box))
+            return false;
+
+        m_textPaintInfo.subphase = SVGTextPaintSubphaseGlyphStrokeSelection;
+        m_strokePaintServer = SVGPaintServer::strokePaintServer(style, object);
+        if (m_strokePaintServer) {
+            m_strokePaintServer->setup(m_paintInfo.context, object, style, ApplyToStrokeTargetType, true);
+            m_strokePaintServerObject = object;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool setupForeground(SVGInlineTextBox* /*box*/)
+    {
+        teardownFillPaintServer();
+        teardownStrokePaintServer();
+
+        m_textPaintInfo.subphase = SVGTextPaintSubphaseForeground;
+
+        return true;
+    }
+
+    SVGPaintServer* activePaintServer() const
+    {
+        switch (m_textPaintInfo.subphase) {
+        case SVGTextPaintSubphaseGlyphFill:
+        case SVGTextPaintSubphaseGlyphFillSelection:
+            ASSERT(m_fillPaintServer);
+            return m_fillPaintServer;
+        case SVGTextPaintSubphaseGlyphStroke:
+        case SVGTextPaintSubphaseGlyphStrokeSelection:
+            ASSERT(m_strokePaintServer);
+            return m_strokePaintServer;
+        case SVGTextPaintSubphaseBackground:
+        case SVGTextPaintSubphaseForeground:
+        default:
+            return 0;
+        }
+    }
+
+    void chunkPortionCallback(SVGInlineTextBox* textBox, int startOffset, const AffineTransform& chunkCtm,
                               const Vector<SVGChar>::iterator& start, const Vector<SVGChar>::iterator& end)
+    {
+        if (setupBackground(textBox))
+            paintChunk(textBox, startOffset, chunkCtm, start, end);
+
+        if (setupFill(textBox))
+            paintChunk(textBox, startOffset, chunkCtm, start, end);
+        
+        if (setupFillSelection(textBox))
+            paintChunk(textBox, startOffset, chunkCtm, start, end);
+
+        if (setupStroke(textBox))
+            paintChunk(textBox, startOffset, chunkCtm, start, end);
+
+        if (setupStrokeSelection(textBox))
+            paintChunk(textBox, startOffset, chunkCtm, start, end);
+
+        if (setupForeground(textBox))
+            paintChunk(textBox, startOffset, chunkCtm, start, end);
+    }
+
+    void paintChunk(SVGInlineTextBox* textBox, int startOffset, const AffineTransform& chunkCtm,
+                    const Vector<SVGChar>::iterator& start, const Vector<SVGChar>::iterator& end)
     {
         RenderText* text = textBox->textRenderer();
         ASSERT(text);
@@ -523,12 +645,8 @@ struct SVGRootInlineBoxPaintWalker {
                 textBox->paintDecoration(OVERLINE, m_paintInfo.context, decorationOrigin.x(), decorationOrigin.y(), textWidth, *it, info);
 
             // Paint text
-            SVGPaintServer* activePaintServer = m_fillPaintServer;
-            if (!activePaintServer)
-                activePaintServer = m_strokePaintServer;
-
-            ASSERT(activePaintServer);
-            textBox->paintCharacters(m_paintInfo, m_tx, m_ty, *it, stringStart, stringLength, activePaintServer);
+            m_textPaintInfo.activePaintServer = activePaintServer();
+            textBox->paintCharacters(m_paintInfo, m_tx, m_ty, *it, stringStart, stringLength, m_textPaintInfo);
 
             // Paint decorations, that have to be drawn afterwards
             if (textDecorations & LINE_THROUGH && textWidth != 0.0f)
@@ -561,6 +679,8 @@ private:
 
     int m_tx;
     int m_ty;
+
+    SVGTextPaintInfo m_textPaintInfo;
 };
 
 void SVGRootInlineBox::paint(RenderObject::PaintInfo& paintInfo, int tx, int ty)
@@ -575,18 +695,16 @@ void SVGRootInlineBox::paint(RenderObject::PaintInfo& paintInfo, int tx, int ty)
     FloatRect boundingBox(tx + x(), ty + y(), width(), height());
 
     // Initialize text rendering
-    SVGRenderBase::prepareToRenderSVGContent(renderer(), paintInfo, boundingBox, filter);
- 
-    // Render text, chunk-by-chunk
-    SVGRootInlineBoxPaintWalker walkerCallback(this, filter, paintInfo, tx, ty);
-    SVGTextChunkWalker<SVGRootInlineBoxPaintWalker> walker(&walkerCallback,
-                                                           &SVGRootInlineBoxPaintWalker::chunkPortionCallback,
-                                                           &SVGRootInlineBoxPaintWalker::chunkStartCallback,
-                                                           &SVGRootInlineBoxPaintWalker::chunkEndCallback,
-                                                           &SVGRootInlineBoxPaintWalker::chunkSetupFillCallback,
-                                                           &SVGRootInlineBoxPaintWalker::chunkSetupStrokeCallback);
+    if (SVGRenderBase::prepareToRenderSVGContent(renderer(), paintInfo, boundingBox, filter)) {
+        // Render text, chunk-by-chunk
+        SVGRootInlineBoxPaintWalker walkerCallback(this, filter, paintInfo, tx, ty);
+        SVGTextChunkWalker<SVGRootInlineBoxPaintWalker> walker(&walkerCallback,
+                                                               &SVGRootInlineBoxPaintWalker::chunkPortionCallback,
+                                                               &SVGRootInlineBoxPaintWalker::chunkStartCallback,
+                                                               &SVGRootInlineBoxPaintWalker::chunkEndCallback);
 
-    walkTextChunks(&walker);
+        walkTextChunks(&walker);
+    }
 
     // Finalize text rendering 
     SVGRenderBase::finishRenderSVGContent(renderer(), paintInfo, filter, savedInfo.context);
@@ -831,9 +949,8 @@ static void applyTextLengthCorrectionToTextChunk(SVGTextChunk& chunk)
         SVGChar& firstChar = *(chunk.start);
 
         // Assure we apply the chunk scaling in the right origin
-        TransformationMatrix newChunkCtm;
-        newChunkCtm.translate(firstChar.x, firstChar.y);
-        newChunkCtm = chunk.ctm * newChunkCtm;
+        AffineTransform newChunkCtm(chunk.ctm);
+        newChunkCtm.translateRight(firstChar.x, firstChar.y);
         newChunkCtm.translate(-firstChar.x, -firstChar.y);
 
         chunk.ctm = newChunkCtm;
@@ -944,7 +1061,6 @@ void SVGRootInlineBox::buildLayoutInformation(InlineFlowBox* start, SVGCharacter
                 Vector<SVGTextChunk>::iterator it = tempChunks.begin();
                 Vector<SVGTextChunk>::iterator end = tempChunks.end();
 
-                TransformationMatrix ctm;
                 float computedLength = 0.0f;
  
                 for (; it != end; ++it) {
@@ -1388,7 +1504,7 @@ void SVGRootInlineBox::buildTextChunks(Vector<SVGChar>& svgChars, InlineFlowBox*
             } else
                 ASSERT(!info.chunk.boxes.isEmpty());
 
-            // Walk string to find out new chunk positions, if existant
+            // Walk string to find out new chunk positions, if existent
             for (unsigned i = 0; i < length; ++i) {
                 ASSERT(info.it != svgChars.end());
 
@@ -1677,15 +1793,7 @@ void SVGRootInlineBox::walkTextChunks(SVGTextChunkWalkerBase* walker, const SVGI
             ASSERT(itCharEnd <= curChunk.end);
 
             // Process this chunk portion
-            if (textBox)
-                (*walker)(rangeTextBox, range.startOffset, curChunk.ctm, itCharBegin, itCharEnd);
-            else {
-                if (walker->setupFill(range.box))
-                    (*walker)(rangeTextBox, range.startOffset, curChunk.ctm, itCharBegin, itCharEnd);
-
-                if (walker->setupStroke(range.box))
-                    (*walker)(rangeTextBox, range.startOffset, curChunk.ctm, itCharBegin, itCharEnd);
-            }
+            (*walker)(rangeTextBox, range.startOffset, curChunk.ctm, itCharBegin, itCharEnd);
 
             chunkOffset += length;
 

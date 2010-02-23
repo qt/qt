@@ -368,6 +368,9 @@ static bool isKeypadEvent(NSEvent* event)
             return false;
     }
 
+    if ([event modifierFlags] & NSNumericPadKeyMask)
+        return true;
+
     switch ([event keyCode]) {
         case 71: // Clear
         case 81: // =
@@ -806,6 +809,19 @@ static inline String unmodifiedTextFromEvent(NSEvent* event)
     if ([event type] == NSFlagsChanged)
         return "";
     return [event charactersIgnoringModifiers];
+}
+
+PlatformKeyboardEvent::PlatformKeyboardEvent()
+    : m_type(KeyDown)
+    , m_autoRepeat(false)
+    , m_windowsVirtualKeyCode(0)
+    , m_nativeVirtualKeyCode(0)
+    , m_isKeypad(false)
+    , m_shiftKey(false)
+    , m_ctrlKey(false)
+    , m_altKey(false)
+    , m_metaKey(false)
+{
 }
 
 PlatformKeyboardEvent::PlatformKeyboardEvent(NSEvent *event)

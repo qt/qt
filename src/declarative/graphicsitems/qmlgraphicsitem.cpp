@@ -73,6 +73,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transform QGraphicsTransform
+    \since 4.7
     \brief The Transform elements provide a way of building advanced transformations on Items.
 
     The Transform elements let you create and control advanced transformations that can be configured
@@ -86,6 +87,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Scale QGraphicsScale
+    \since 4.7
     \brief The Scale object provides a way to scale an Item.
 
     The Scale object gives more control over scaling than using Item's scale property. Specifically,
@@ -124,6 +126,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Rotation QGraphicsRotation
+    \since 4.7
     \brief The Rotation object provides a way to rotate an Item.
 
     The Rotation object gives more control over rotation than using Item's rotation property.
@@ -363,6 +366,7 @@ void QmlGraphicsItemKeyFilter::componentComplete()
 
 /*!
     \qmlclass KeyNavigation
+    \since 4.7
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
     It is common in key-based UIs to use arrow keys to navigate
@@ -568,6 +572,7 @@ void QmlGraphicsKeyNavigationAttached::keyReleased(QKeyEvent *event)
 
 /*!
     \qmlclass Keys
+    \since 4.7
     \brief The Keys attached property provides key handling to Items.
 
     All visual primitives support key handling via the \e Keys
@@ -1078,6 +1083,7 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
 
 /*!
     \class QmlGraphicsItem
+    \since 4.7
     \brief The QmlGraphicsItem class provides the most basic of all visual items in QML.
 
     All visual items in Qt Declarative inherit from QmlGraphicsItem.  Although QmlGraphicsItem
@@ -1091,6 +1097,7 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
 
 /*!
     \qmlclass Item QmlGraphicsItem
+    \since 4.7
     \brief The Item is the most basic of all visual items in QML.
 
     All visual items in Qt Declarative inherit from Item.  Although Item

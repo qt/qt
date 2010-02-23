@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -209,7 +209,8 @@ JSValue jsStyleSheetListLength(ExecState* exec, const Identifier&, const Propert
     JSStyleSheetList* castedThis = static_cast<JSStyleSheetList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     StyleSheetList* imp = static_cast<StyleSheetList*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsStyleSheetListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -217,11 +218,11 @@ JSValue jsStyleSheetListConstructor(ExecState* exec, const Identifier&, const Pr
     JSStyleSheetList* domObject = static_cast<JSStyleSheetList*>(asObject(slot.slotBase()));
     return JSStyleSheetList::getConstructor(exec, domObject->globalObject());
 }
-void JSStyleSheetList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSStyleSheetList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<StyleSheetList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSStyleSheetList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

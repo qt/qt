@@ -87,7 +87,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -179,7 +179,8 @@ JSValue jsWorkerLocationHref(ExecState* exec, const Identifier&, const PropertyS
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->href());
+    JSValue result = jsString(exec, imp->href());
+    return result;
 }
 
 JSValue jsWorkerLocationProtocol(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -187,7 +188,8 @@ JSValue jsWorkerLocationProtocol(ExecState* exec, const Identifier&, const Prope
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->protocol());
+    JSValue result = jsString(exec, imp->protocol());
+    return result;
 }
 
 JSValue jsWorkerLocationHost(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -195,7 +197,8 @@ JSValue jsWorkerLocationHost(ExecState* exec, const Identifier&, const PropertyS
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->host());
+    JSValue result = jsString(exec, imp->host());
+    return result;
 }
 
 JSValue jsWorkerLocationHostname(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,7 +206,8 @@ JSValue jsWorkerLocationHostname(ExecState* exec, const Identifier&, const Prope
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->hostname());
+    JSValue result = jsString(exec, imp->hostname());
+    return result;
 }
 
 JSValue jsWorkerLocationPort(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -211,7 +215,8 @@ JSValue jsWorkerLocationPort(ExecState* exec, const Identifier&, const PropertyS
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->port());
+    JSValue result = jsString(exec, imp->port());
+    return result;
 }
 
 JSValue jsWorkerLocationPathname(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -219,7 +224,8 @@ JSValue jsWorkerLocationPathname(ExecState* exec, const Identifier&, const Prope
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->pathname());
+    JSValue result = jsString(exec, imp->pathname());
+    return result;
 }
 
 JSValue jsWorkerLocationSearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -227,7 +233,8 @@ JSValue jsWorkerLocationSearch(ExecState* exec, const Identifier&, const Propert
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->search());
+    JSValue result = jsString(exec, imp->search());
+    return result;
 }
 
 JSValue jsWorkerLocationHash(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -235,7 +242,8 @@ JSValue jsWorkerLocationHash(ExecState* exec, const Identifier&, const PropertyS
     JSWorkerLocation* castedThis = static_cast<JSWorkerLocation*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WorkerLocation* imp = static_cast<WorkerLocation*>(castedThis->impl());
-    return jsString(exec, imp->hash());
+    JSValue result = jsString(exec, imp->hash());
+    return result;
 }
 
 JSValue jsWorkerLocationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

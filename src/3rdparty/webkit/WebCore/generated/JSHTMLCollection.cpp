@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -218,7 +218,8 @@ JSValue jsHTMLCollectionLength(ExecState* exec, const Identifier&, const Propert
     JSHTMLCollection* castedThis = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLCollection* imp = static_cast<HTMLCollection*>(castedThis->impl());
-    return jsNumber(exec, imp->length());
+    JSValue result = jsNumber(exec, imp->length());
+    return result;
 }
 
 JSValue jsHTMLCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -226,11 +227,11 @@ JSValue jsHTMLCollectionConstructor(ExecState* exec, const Identifier&, const Pr
     JSHTMLCollection* domObject = static_cast<JSHTMLCollection*>(asObject(slot.slotBase()));
     return JSHTMLCollection::getConstructor(exec, domObject->globalObject());
 }
-void JSHTMLCollection::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSHTMLCollection::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
 {
     for (unsigned i = 0; i < static_cast<HTMLCollection*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames);
+     Base::getOwnPropertyNames(exec, propertyNames, mode);
 }
 
 JSValue JSHTMLCollection::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

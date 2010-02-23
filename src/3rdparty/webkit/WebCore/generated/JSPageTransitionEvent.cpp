@@ -75,7 +75,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -153,7 +153,8 @@ JSValue jsPageTransitionEventPersisted(ExecState* exec, const Identifier&, const
     JSPageTransitionEvent* castedThis = static_cast<JSPageTransitionEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     PageTransitionEvent* imp = static_cast<PageTransitionEvent*>(castedThis->impl());
-    return jsBoolean(imp->persisted());
+    JSValue result = jsBoolean(imp->persisted());
+    return result;
 }
 
 JSValue jsPageTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

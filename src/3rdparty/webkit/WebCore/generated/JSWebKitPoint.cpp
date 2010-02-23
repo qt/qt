@@ -101,7 +101,8 @@ JSValue jsWebKitPointX(ExecState* exec, const Identifier&, const PropertySlot& s
     JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitPoint* imp = static_cast<WebKitPoint*>(castedThis->impl());
-    return jsNumber(exec, imp->x());
+    JSValue result = jsNumber(exec, imp->x());
+    return result;
 }
 
 JSValue jsWebKitPointY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -109,7 +110,8 @@ JSValue jsWebKitPointY(ExecState* exec, const Identifier&, const PropertySlot& s
     JSWebKitPoint* castedThis = static_cast<JSWebKitPoint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     WebKitPoint* imp = static_cast<WebKitPoint*>(castedThis->impl());
-    return jsNumber(exec, imp->y());
+    JSValue result = jsNumber(exec, imp->y());
+    return result;
 }
 
 void JSWebKitPoint::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
@@ -119,13 +121,15 @@ void JSWebKitPoint::put(ExecState* exec, const Identifier& propertyName, JSValue
 
 void setJSWebKitPointX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitPoint* imp = static_cast<WebKitPoint*>(static_cast<JSWebKitPoint*>(thisObject)->impl());
+    JSWebKitPoint* castedThisObj = static_cast<JSWebKitPoint*>(thisObject);
+    WebKitPoint* imp = static_cast<WebKitPoint*>(castedThisObj->impl());
     imp->setX(value.toFloat(exec));
 }
 
 void setJSWebKitPointY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    WebKitPoint* imp = static_cast<WebKitPoint*>(static_cast<JSWebKitPoint*>(thisObject)->impl());
+    JSWebKitPoint* castedThisObj = static_cast<JSWebKitPoint*>(thisObject);
+    WebKitPoint* imp = static_cast<WebKitPoint*>(castedThisObj->impl());
     imp->setY(value.toFloat(exec));
 }
 

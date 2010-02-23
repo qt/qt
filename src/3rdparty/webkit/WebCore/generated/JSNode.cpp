@@ -124,7 +124,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -220,7 +220,7 @@ JSNode::JSNode(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* global
 
 JSNode::~JSNode()
 {
-    impl()->invalidateEventListeners();
+    impl()->invalidateJSEventListeners(this);
     forgetDOMNode(this, impl(), impl()->document());
 }
 
@@ -234,7 +234,8 @@ JSValue jsNodeNodeName(ExecState* exec, const Identifier&, const PropertySlot& s
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->nodeName());
+    JSValue result = jsStringOrNull(exec, imp->nodeName());
+    return result;
 }
 
 JSValue jsNodeNodeValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -242,7 +243,8 @@ JSValue jsNodeNodeValue(ExecState* exec, const Identifier&, const PropertySlot& 
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->nodeValue());
+    JSValue result = jsStringOrNull(exec, imp->nodeValue());
+    return result;
 }
 
 JSValue jsNodeNodeType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -250,7 +252,8 @@ JSValue jsNodeNodeType(ExecState* exec, const Identifier&, const PropertySlot& s
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsNumber(exec, imp->nodeType());
+    JSValue result = jsNumber(exec, imp->nodeType());
+    return result;
 }
 
 JSValue jsNodeParentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -258,7 +261,8 @@ JSValue jsNodeParentNode(ExecState* exec, const Identifier&, const PropertySlot&
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentNode()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentNode()));
+    return result;
 }
 
 JSValue jsNodeChildNodes(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -266,7 +270,8 @@ JSValue jsNodeChildNodes(ExecState* exec, const Identifier&, const PropertySlot&
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->childNodes()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->childNodes()));
+    return result;
 }
 
 JSValue jsNodeFirstChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -274,7 +279,8 @@ JSValue jsNodeFirstChild(ExecState* exec, const Identifier&, const PropertySlot&
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->firstChild()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->firstChild()));
+    return result;
 }
 
 JSValue jsNodeLastChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -282,7 +288,8 @@ JSValue jsNodeLastChild(ExecState* exec, const Identifier&, const PropertySlot& 
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->lastChild()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->lastChild()));
+    return result;
 }
 
 JSValue jsNodePreviousSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -290,7 +297,8 @@ JSValue jsNodePreviousSibling(ExecState* exec, const Identifier&, const Property
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->previousSibling()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->previousSibling()));
+    return result;
 }
 
 JSValue jsNodeNextSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -298,7 +306,8 @@ JSValue jsNodeNextSibling(ExecState* exec, const Identifier&, const PropertySlot
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nextSibling()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->nextSibling()));
+    return result;
 }
 
 JSValue jsNodeAttributes(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -306,7 +315,8 @@ JSValue jsNodeAttributes(ExecState* exec, const Identifier&, const PropertySlot&
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->attributes()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->attributes()));
+    return result;
 }
 
 JSValue jsNodeOwnerDocument(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -314,7 +324,8 @@ JSValue jsNodeOwnerDocument(ExecState* exec, const Identifier&, const PropertySl
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerDocument()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->ownerDocument()));
+    return result;
 }
 
 JSValue jsNodeNamespaceURI(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -322,7 +333,8 @@ JSValue jsNodeNamespaceURI(ExecState* exec, const Identifier&, const PropertySlo
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->namespaceURI());
+    JSValue result = jsStringOrNull(exec, imp->namespaceURI());
+    return result;
 }
 
 JSValue jsNodePrefix(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -330,7 +342,8 @@ JSValue jsNodePrefix(ExecState* exec, const Identifier&, const PropertySlot& slo
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->prefix());
+    JSValue result = jsStringOrNull(exec, imp->prefix());
+    return result;
 }
 
 JSValue jsNodeLocalName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -338,7 +351,8 @@ JSValue jsNodeLocalName(ExecState* exec, const Identifier&, const PropertySlot& 
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->localName());
+    JSValue result = jsStringOrNull(exec, imp->localName());
+    return result;
 }
 
 JSValue jsNodeBaseURI(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -346,7 +360,8 @@ JSValue jsNodeBaseURI(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->baseURI());
+    JSValue result = jsStringOrNull(exec, imp->baseURI());
+    return result;
 }
 
 JSValue jsNodeTextContent(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -354,7 +369,8 @@ JSValue jsNodeTextContent(ExecState* exec, const Identifier&, const PropertySlot
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return jsStringOrNull(exec, imp->textContent());
+    JSValue result = jsStringOrNull(exec, imp->textContent());
+    return result;
 }
 
 JSValue jsNodeParentElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -362,7 +378,8 @@ JSValue jsNodeParentElement(ExecState* exec, const Identifier&, const PropertySl
     JSNode* castedThis = static_cast<JSNode*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Node* imp = static_cast<Node*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentElement()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentElement()));
+    return result;
 }
 
 JSValue jsNodeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -377,7 +394,8 @@ void JSNode::put(ExecState* exec, const Identifier& propertyName, JSValue value,
 
 void setJSNodeNodeValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(thisObject)->impl());
+    JSNode* castedThisObj = static_cast<JSNode*>(thisObject);
+    Node* imp = static_cast<Node*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setNodeValue(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
@@ -385,7 +403,8 @@ void setJSNodeNodeValue(ExecState* exec, JSObject* thisObject, JSValue value)
 
 void setJSNodePrefix(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(thisObject)->impl());
+    JSNode* castedThisObj = static_cast<JSNode*>(thisObject);
+    Node* imp = static_cast<Node*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setPrefix(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
@@ -393,7 +412,8 @@ void setJSNodePrefix(ExecState* exec, JSObject* thisObject, JSValue value)
 
 void setJSNodeTextContent(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    Node* imp = static_cast<Node*>(static_cast<JSNode*>(thisObject)->impl());
+    JSNode* castedThisObj = static_cast<JSNode*>(thisObject);
+    Node* imp = static_cast<Node*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setTextContent(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);

@@ -47,7 +47,7 @@ namespace WebCore {
         JSDOMWindowBase(NonNullPassRefPtr<JSC::Structure>, PassRefPtr<DOMWindow>, JSDOMWindowShell*);
 
     public:
-        void updateDocument(DOMWrapperWorld*);
+        void updateDocument();
 
         DOMWindow* impl() const { return d()->impl.get(); }
         virtual ScriptExecutionContext* scriptExecutionContext() const;
@@ -77,12 +77,7 @@ namespace WebCore {
 
     private:
         struct JSDOMWindowBaseData : public JSDOMGlobalObjectData {
-            JSDOMWindowBaseData(PassRefPtr<DOMWindow> window, JSDOMWindowShell* shell)
-                : JSDOMGlobalObjectData(destroyJSDOMWindowBaseData)
-                , impl(window)
-                , shell(shell)
-            {
-            }
+            JSDOMWindowBaseData(PassRefPtr<DOMWindow> window, JSDOMWindowShell* shell);
 
             RefPtr<DOMWindow> impl;
             JSDOMWindowShell* shell;
@@ -97,7 +92,7 @@ namespace WebCore {
     };
 
     // Returns a JSDOMWindow or jsNull()
-    // JSDOMGlobalObject* is ignored, accesing a window in any context will
+    // JSDOMGlobalObject* is ignored, accessing a window in any context will
     // use that DOMWindow's prototype chain.
     JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, DOMWindow*);
     JSC::JSValue toJS(JSC::ExecState*, DOMWindow*);

@@ -124,7 +124,8 @@ JSValue jsJavaScriptCallFrameCaller(ExecState* exec, const Identifier&, const Pr
     JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->caller()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->caller()));
+    return result;
 }
 
 JSValue jsJavaScriptCallFrameSourceID(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -132,7 +133,8 @@ JSValue jsJavaScriptCallFrameSourceID(ExecState* exec, const Identifier&, const 
     JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
-    return jsNumber(exec, imp->sourceID());
+    JSValue result = jsNumber(exec, imp->sourceID());
+    return result;
 }
 
 JSValue jsJavaScriptCallFrameLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -140,7 +142,8 @@ JSValue jsJavaScriptCallFrameLine(ExecState* exec, const Identifier&, const Prop
     JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
-    return jsNumber(exec, imp->line());
+    JSValue result = jsNumber(exec, imp->line());
+    return result;
 }
 
 JSValue jsJavaScriptCallFrameScopeChain(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -160,7 +163,8 @@ JSValue jsJavaScriptCallFrameFunctionName(ExecState* exec, const Identifier&, co
     JSJavaScriptCallFrame* castedThis = static_cast<JSJavaScriptCallFrame*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     JavaScriptCallFrame* imp = static_cast<JavaScriptCallFrame*>(castedThis->impl());
-    return jsString(exec, imp->functionName());
+    JSValue result = jsString(exec, imp->functionName());
+    return result;
 }
 
 JSValue jsJavaScriptCallFrameType(ExecState* exec, const Identifier&, const PropertySlot& slot)

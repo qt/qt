@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -148,7 +148,8 @@ JSValue jsHTMLSourceElementSrc(ExecState* exec, const Identifier&, const Propert
     JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
-    return jsString(exec, imp->src());
+    JSValue result = jsString(exec, imp->src());
+    return result;
 }
 
 JSValue jsHTMLSourceElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,7 +157,8 @@ JSValue jsHTMLSourceElementType(ExecState* exec, const Identifier&, const Proper
     JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
-    return jsString(exec, imp->type());
+    JSValue result = jsString(exec, imp->type());
+    return result;
 }
 
 JSValue jsHTMLSourceElementMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -164,7 +166,8 @@ JSValue jsHTMLSourceElementMedia(ExecState* exec, const Identifier&, const Prope
     JSHTMLSourceElement* castedThis = static_cast<JSHTMLSourceElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThis->impl());
-    return jsString(exec, imp->media());
+    JSValue result = jsString(exec, imp->media());
+    return result;
 }
 
 JSValue jsHTMLSourceElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -179,19 +182,22 @@ void JSHTMLSourceElement::put(ExecState* exec, const Identifier& propertyName, J
 
 void setJSHTMLSourceElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
+    JSHTMLSourceElement* castedThisObj = static_cast<JSHTMLSourceElement*>(thisObject);
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThisObj->impl());
     imp->setSrc(value.toString(exec));
 }
 
 void setJSHTMLSourceElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
+    JSHTMLSourceElement* castedThisObj = static_cast<JSHTMLSourceElement*>(thisObject);
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThisObj->impl());
     imp->setType(value.toString(exec));
 }
 
 void setJSHTMLSourceElementMedia(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(static_cast<JSHTMLSourceElement*>(thisObject)->impl());
+    JSHTMLSourceElement* castedThisObj = static_cast<JSHTMLSourceElement*>(thisObject);
+    HTMLSourceElement* imp = static_cast<HTMLSourceElement*>(castedThisObj->impl());
     imp->setMedia(value.toString(exec));
 }
 

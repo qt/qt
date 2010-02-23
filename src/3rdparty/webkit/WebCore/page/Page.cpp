@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All Rights Reserved.
  * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
@@ -21,6 +21,7 @@
 #include "config.h"
 #include "Page.h"
 
+#include "BackForwardList.h"
 #include "Base64.h"
 #include "CSSStyleSelector.h"
 #include "Chrome.h"
@@ -45,6 +46,7 @@
 #include "InspectorController.h"
 #include "InspectorTimelineAgent.h"
 #include "Logging.h"
+#include "MediaCanStartListener.h"
 #include "Navigator.h"
 #include "NetworkStateNotifier.h"
 #include "PageGroup.h"
@@ -68,12 +70,16 @@
 #include "StorageNamespace.h"
 #endif
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
+#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
 #include "JavaScriptDebugServer.h"
 #endif
 
 #if ENABLE(WML)
 #include "WMLPageState.h"
+#endif
+
+#if ENABLE(CLIENT_BASED_GEOLOCATION)
+#include "GeolocationController.h"
 #endif
 
 namespace WebCore {
@@ -100,7 +106,7 @@ static void networkStateChanged()
         frames[i]->document()->dispatchWindowEvent(Event::create(eventName, false, false));
 }
 
-Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, EditorClient* editorClient, DragClient* dragClient, InspectorClient* inspectorClient, PluginHalterClient* pluginHalterClient)
+Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, EditorClient* editorClient, DragClient* dragClient, InspectorClient* inspectorClient, PluginHalterClient* pluginHalterClient, GeolocationControllerClient* geolocationControllerClient)
     : m_chrome(new Chrome(this, chromeClient))
     , m_dragCaretController(new SelectionController(0, true))
 #if ENABLE(DRAG_SUPPORT)
@@ -112,6 +118,9 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
 #endif
 #if ENABLE(INSPECTOR)
     , m_inspectorController(new InspectorController(this, inspectorClient))
+#endif
+#if ENABLE(CLIENT_BASED_GEOLOCATION)
+    , m_geolocationController(new GeolocationController(this, geolocationControllerClient))
 #endif
     , m_settings(new Settings(this))
     , m_progress(new ProgressTracker)
@@ -136,7 +145,7 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
     , m_debugger(0)
     , m_customHTMLTokenizerTimeDelay(-1)
     , m_customHTMLTokenizerChunkSize(-1)
-    , m_canStartPlugins(true)
+    , m_canStartMedia(true)
 {
 #if !ENABLE(CONTEXT_MENUS)
     UNUSED_PARAM(contextMenuClient);
@@ -147,6 +156,10 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
 #if !ENABLE(INSPECTOR)
     UNUSED_PARAM(inspectorClient);
 #endif
+#if !ENABLE(CLIENT_BASED_GEOLOCATION)
+    UNUSED_PARAM(geolocationControllerClient);
+#endif
+
     if (!allPages) {
         allPages = new HashSet<Page*>;
         
@@ -161,7 +174,7 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
         m_pluginHalter->setPluginAllowedRunTime(m_settings->pluginAllowedRunTime());
     }
 
-#if ENABLE(JAVASCRIPT_DEBUGGER)
+#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
     JavaScriptDebugServer::shared().pageCreated(this);
 #endif
 
@@ -277,26 +290,30 @@ void Page::goBackOrForward(int distance)
 
 void Page::goToItem(HistoryItem* item, FrameLoadType type)
 {
-    // Abort any current load if we're going to a history item
-
-    // Define what to do with any open database connections. By default we stop them and terminate the database thread.
-    DatabasePolicy databasePolicy = DatabasePolicyStop;
+    // Abort any current load unless we're navigating the current document to a new state object
+    HistoryItem* currentItem = m_mainFrame->loader()->history()->currentItem();
+    if (!item->stateObject() || !currentItem || item->documentSequenceNumber() != currentItem->documentSequenceNumber()) {
+        // Define what to do with any open database connections. By default we stop them and terminate the database thread.
+        DatabasePolicy databasePolicy = DatabasePolicyStop;
 
 #if ENABLE(DATABASE)
-    // If we're navigating the history via a fragment on the same document, then we do not want to stop databases.
-    const KURL& currentURL = m_mainFrame->loader()->url();
-    const KURL& newURL = item->url();
-
-    if (newURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(currentURL, newURL))
-        databasePolicy = DatabasePolicyContinue;
+        // If we're navigating the history via a fragment on the same document, then we do not want to stop databases.
+        const KURL& currentURL = m_mainFrame->loader()->url();
+        const KURL& newURL = item->url();
+    
+        if (newURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(currentURL, newURL))
+            databasePolicy = DatabasePolicyContinue;
 #endif
-    m_mainFrame->loader()->stopAllLoaders(databasePolicy);
+
+        m_mainFrame->loader()->stopAllLoaders(databasePolicy);
+    }
+        
     m_mainFrame->loader()->history()->goToItem(item, type);
 }
 
 int Page::getHistoryLength()
 {
-    return m_backForwardList->backListCount() + 1;
+    return m_backForwardList->backListCount() + 1 + m_backForwardList->forwardListCount();
 }
 
 void Page::setGlobalHistoryItem(HistoryItem* item)
@@ -379,17 +396,37 @@ PluginData* Page::pluginData() const
     return m_pluginData.get();
 }
 
-void Page::addUnstartedPlugin(PluginView* view)
+void Page::addMediaCanStartListener(MediaCanStartListener* listener)
 {
-    ASSERT(!m_canStartPlugins);
-    m_unstartedPlugins.add(view);
+    ASSERT(!m_canStartMedia);
+    ASSERT(!m_mediaCanStartListeners.contains(listener));
+    m_mediaCanStartListeners.add(listener);
 }
 
-void Page::removeUnstartedPlugin(PluginView* view)
+void Page::removeMediaCanStartListener(MediaCanStartListener* listener)
 {
-    ASSERT(!m_canStartPlugins);
-    ASSERT(m_unstartedPlugins.contains(view));
-    m_unstartedPlugins.remove(view);
+    ASSERT(!m_canStartMedia);
+    ASSERT(m_mediaCanStartListeners.contains(listener));
+    m_mediaCanStartListeners.remove(listener);
+}
+
+void Page::setCanStartMedia(bool canStartMedia)
+{
+    if (m_canStartMedia == canStartMedia)
+        return;
+
+    m_canStartMedia = canStartMedia;
+
+    if (!m_canStartMedia || m_mediaCanStartListeners.isEmpty())
+        return;
+
+    Vector<MediaCanStartListener*> listeners;
+    copyToVector(m_mediaCanStartListeners, listeners);
+    m_mediaCanStartListeners.clear();
+
+    size_t size = listeners.size();
+    for (size_t i = 0; i < size; ++i)
+        listeners[i]->mediaCanStart();
 }
 
 static Frame* incrementFrame(Frame* curr, bool forward, bool wrapFlag)
@@ -463,6 +500,9 @@ const VisibleSelection& Page::selection() const
 
 void Page::setDefersLoading(bool defers)
 {
+    if (!m_settings->loadDeferringEnabled())
+        return;
+
     if (defers == m_defersLoading)
         return;
 
@@ -542,7 +582,7 @@ void Page::userStyleSheetLocationChanged()
 
         Vector<char> styleSheetAsUTF8;
         if (base64Decode(encodedData, styleSheetAsUTF8))
-            m_userStyleSheet = String::fromUTF8(styleSheetAsUTF8.data());
+            m_userStyleSheet = String::fromUTF8(styleSheetAsUTF8.data(), styleSheetAsUTF8.size());
     }
     
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
@@ -667,7 +707,7 @@ void Page::setDebugger(JSC::Debugger* debugger)
 StorageNamespace* Page::sessionStorage(bool optionalCreate)
 {
     if (!m_sessionStorage && optionalCreate)
-        m_sessionStorage = StorageNamespace::sessionStorageNamespace();
+        m_sessionStorage = StorageNamespace::sessionStorageNamespace(this);
 
     return m_sessionStorage.get();
 }
@@ -753,4 +793,16 @@ void Page::didStopPlugin(HaltablePlugin* obj)
         m_pluginHalter->didStopPlugin(obj);
 }
 
+#if !ASSERT_DISABLED
+void Page::checkFrameCountConsistency() const
+{
+    ASSERT(m_frameCount >= 0);
+
+    int frameCount = 0;
+    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
+        ++frameCount;
+
+    ASSERT(m_frameCount + 1 == frameCount);
+}
+#endif
 } // namespace WebCore

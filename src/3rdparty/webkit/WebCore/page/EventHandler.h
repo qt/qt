@@ -52,6 +52,7 @@ class KeyboardEvent;
 class MouseEventWithHitTestResults;
 class Node;
 class PlatformKeyboardEvent;
+class PlatformTouchEvent;
 class PlatformWheelEvent;
 class RenderLayer;
 class RenderObject;
@@ -60,6 +61,7 @@ class Scrollbar;
 class String;
 class SVGElementInstance;
 class TextEvent;
+class TouchEvent;
 class Widget;
     
 #if ENABLE(DRAG_SUPPORT)
@@ -85,6 +87,7 @@ public:
     Node* mousePressNode() const;
     void setMousePressNode(PassRefPtr<Node>);
 
+    void startPanScrolling(RenderObject*);
     bool panScrollInProgress() { return m_panScrollInProgress; }
     void setPanScrollInProgress(bool inProgress) { m_panScrollInProgress = inProgress; }
 
@@ -159,7 +162,6 @@ public:
 #if ENABLE(DRAG_SUPPORT)
     bool eventMayStartDrag(const PlatformMouseEvent&) const;
     
-    void dragSourceMovedTo(const PlatformMouseEvent&);
     void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
 #endif
 
@@ -192,9 +194,19 @@ public:
     static NSEvent *currentNSEvent();
 #endif
 
+#if ENABLE(TOUCH_EVENTS)
+    bool handleTouchEvent(const PlatformTouchEvent&);
+#endif
+
 private:
 #if ENABLE(DRAG_SUPPORT)
-    struct EventHandlerDragState {
+    enum DragAndDropHandleType {
+        UpdateDragAndDrop,
+        CancelDragAndDrop,
+        PerformDragAndDrop
+    };
+
+    struct EventHandlerDragState : Noncopyable {
         RefPtr<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
         bool m_dragSrcIsLink;
         bool m_dragSrcIsImage;
@@ -206,6 +218,8 @@ private:
     };
     static EventHandlerDragState& dragState();
     static const double TextDragDelay;
+
+    bool canHandleDragAndDropForTarget(DragAndDropHandleType, Node* target, const PlatformMouseEvent&, Clipboard*, bool* accepted = 0);
     
     PassRefPtr<Clipboard> createDraggingClipboard() const;
 #endif // ENABLE(DRAG_SUPPORT)
@@ -311,7 +325,7 @@ private:
 
     bool capturesDragging() const { return m_capturesDragging; }
 
-#if PLATFORM(MAC) && defined(__OBJC__)
+#if PLATFORM(MAC) && defined(__OBJC__) && !ENABLE(EXPERIMENTAL_SINGLE_VIEW_MODE)
     NSView *mouseDownViewIfStillGood();
 
     PlatformMouseEvent currentPlatformMouseEvent() const;
@@ -368,6 +382,7 @@ private:
 
 #if ENABLE(DRAG_SUPPORT)
     RefPtr<Node> m_dragTarget;
+    bool m_shouldOnlyFireDragOverEvent;
 #endif
     
     RefPtr<HTMLFrameSetElement> m_frameSetBeingResized;
@@ -386,9 +401,16 @@ private:
     RefPtr<Node> m_previousWheelScrolledNode;
 
 #if PLATFORM(MAC)
+#if !ENABLE(EXPERIMENTAL_SINGLE_VIEW_MODE)
     NSView *m_mouseDownView;
     bool m_sendingEventToSubview;
+#endif
     int m_activationEventNumber;
+#endif
+#if ENABLE(TOUCH_EVENTS)
+    RefPtr<Node> m_touchEventTarget;
+    IntPoint m_firstTouchScreenPos;
+    IntPoint m_firstTouchPagePos;
 #endif
 };
 

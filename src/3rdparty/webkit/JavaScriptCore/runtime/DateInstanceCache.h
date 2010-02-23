@@ -40,9 +40,9 @@ namespace JSC {
         static PassRefPtr<DateInstanceData> create() { return adoptRef(new DateInstanceData); }
 
         double m_gregorianDateTimeCachedForMS;
-        WTF::GregorianDateTime m_cachedGregorianDateTime;
+        GregorianDateTime m_cachedGregorianDateTime;
         double m_gregorianDateTimeUTCCachedForMS;
-        WTF::GregorianDateTime m_cachedGregorianDateTimeUTC;
+        GregorianDateTime m_cachedGregorianDateTimeUTC;
 
     private:
         DateInstanceData()
@@ -55,6 +55,11 @@ namespace JSC {
     class DateInstanceCache {
     public:
         DateInstanceCache()
+        {
+            reset();
+        }
+        
+        void reset()
         {
             for (size_t i = 0; i < cacheSize; ++i)
                 m_cache[i].key = NaN;
@@ -72,7 +77,7 @@ namespace JSC {
         }
 
     private:
-        static const size_t cacheSize = 64;
+        static const size_t cacheSize = 16;
 
         struct CacheEntry {
             double key;

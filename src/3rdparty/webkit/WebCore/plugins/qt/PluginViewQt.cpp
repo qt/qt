@@ -28,6 +28,7 @@
 #include "config.h"
 #include "PluginView.h"
 
+#include "Bridge.h"
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "Element.h"
@@ -41,6 +42,7 @@
 #include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
+#include "HostWindow.h"
 #include "Image.h"
 #include "JSDOMBinding.h"
 #include "KeyboardEvent.h"
@@ -53,27 +55,27 @@
 #include "PluginDebug.h"
 #include "PluginPackage.h"
 #include "PluginMainThreadScheduler.h"
+#include "QWebPageClient.h"
 #include "RenderLayer.h"
 #include "ScriptController.h"
 #include "Settings.h"
 #include "npruntime_impl.h"
-#include "runtime.h"
 #include "runtime_root.h"
-#include "QWebPageClient.h"
+
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QWidget>
 #include <QX11Info>
-#include <runtime/JSLock.h>
-#include <runtime/JSValue.h>
 #include <X11/X.h>
 #ifndef QT_NO_XRENDER
 #define Bool int
 #define Status int
 #include <X11/extensions/Xrender.h>
 #endif
+#include <runtime/JSLock.h>
+#include <runtime/JSValue.h>
 
 using JSC::ExecState;
 using JSC::Interpreter;
@@ -142,26 +144,14 @@ void PluginView::setFocus()
 
 void PluginView::show()
 {
-    setSelfVisible(true);
-
-    if (isParentVisible() && platformPluginWidget())
-        platformPluginWidget()->setVisible(true);
-
-    // do not call parent impl. here as it will set the platformWidget
-    // (same as platformPluginWidget in the Qt port) to visible, even
-    // when parent isn't visible.
+    Q_ASSERT(platformPluginWidget() == platformWidget());
+    Widget::show();
 }
 
 void PluginView::hide()
 {
-    setSelfVisible(false);
-
-    if (isParentVisible() && platformPluginWidget())
-        platformPluginWidget()->setVisible(false);
-
-    // do not call parent impl. here as it will set the platformWidget
-    // (same as platformPluginWidget in the Qt port) to invisible, even
-    // when parent isn't visible.
+    Q_ASSERT(platformPluginWidget() == platformWidget());
+    Widget::hide();
 }
 
 void PluginView::paint(GraphicsContext* context, const IntRect& rect)
@@ -544,18 +534,16 @@ NPError PluginView::handlePostReadFile(Vector<char>& buffer, uint32 len, const c
     if (filename.startsWith("file:///"))
         filename = filename.substring(8);
 
-    if (!fileExists(filename))
+    long long size;
+    if (!getFileSize(filename, size))
         return NPERR_FILE_NOT_FOUND;
 
-    // FIXME - read the file data into buffer
     FILE* fileHandle = fopen((filename.utf8()).data(), "r");
-
     if (!fileHandle)
         return NPERR_FILE_NOT_FOUND;
 
-    //buffer.resize();
-
-    int bytesRead = fread(buffer.data(), 1, 0, fileHandle);
+    buffer.resize(size);
+    int bytesRead = fread(buffer.data(), 1, size, fileHandle);
 
     fclose(fileHandle);
 

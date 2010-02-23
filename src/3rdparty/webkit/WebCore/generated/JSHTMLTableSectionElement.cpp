@@ -85,7 +85,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
     }
     
 protected:
@@ -164,7 +164,8 @@ JSValue jsHTMLTableSectionElementAlign(ExecState* exec, const Identifier&, const
     JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
-    return jsString(exec, imp->align());
+    JSValue result = jsString(exec, imp->align());
+    return result;
 }
 
 JSValue jsHTMLTableSectionElementCh(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,7 +173,8 @@ JSValue jsHTMLTableSectionElementCh(ExecState* exec, const Identifier&, const Pr
     JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
-    return jsString(exec, imp->ch());
+    JSValue result = jsString(exec, imp->ch());
+    return result;
 }
 
 JSValue jsHTMLTableSectionElementChOff(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -180,7 +182,8 @@ JSValue jsHTMLTableSectionElementChOff(ExecState* exec, const Identifier&, const
     JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
-    return jsString(exec, imp->chOff());
+    JSValue result = jsString(exec, imp->chOff());
+    return result;
 }
 
 JSValue jsHTMLTableSectionElementVAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -188,7 +191,8 @@ JSValue jsHTMLTableSectionElementVAlign(ExecState* exec, const Identifier&, cons
     JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
-    return jsString(exec, imp->vAlign());
+    JSValue result = jsString(exec, imp->vAlign());
+    return result;
 }
 
 JSValue jsHTMLTableSectionElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -196,7 +200,8 @@ JSValue jsHTMLTableSectionElementRows(ExecState* exec, const Identifier&, const 
     JSHTMLTableSectionElement* castedThis = static_cast<JSHTMLTableSectionElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->rows()));
+    return result;
 }
 
 JSValue jsHTMLTableSectionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -211,25 +216,29 @@ void JSHTMLTableSectionElement::put(ExecState* exec, const Identifier& propertyN
 
 void setJSHTMLTableSectionElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(thisObject)->impl());
+    JSHTMLTableSectionElement* castedThisObj = static_cast<JSHTMLTableSectionElement*>(thisObject);
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThisObj->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableSectionElementCh(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(thisObject)->impl());
+    JSHTMLTableSectionElement* castedThisObj = static_cast<JSHTMLTableSectionElement*>(thisObject);
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThisObj->impl());
     imp->setCh(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableSectionElementChOff(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(thisObject)->impl());
+    JSHTMLTableSectionElement* castedThisObj = static_cast<JSHTMLTableSectionElement*>(thisObject);
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThisObj->impl());
     imp->setChOff(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLTableSectionElementVAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(static_cast<JSHTMLTableSectionElement*>(thisObject)->impl());
+    JSHTMLTableSectionElement* castedThisObj = static_cast<JSHTMLTableSectionElement*>(thisObject);
+    HTMLTableSectionElement* imp = static_cast<HTMLTableSectionElement*>(castedThisObj->impl());
     imp->setVAlign(valueToStringWithNullCheck(exec, value));
 }
 

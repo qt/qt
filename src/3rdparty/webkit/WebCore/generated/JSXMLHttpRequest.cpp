@@ -24,8 +24,6 @@
 #include "Document.h"
 #include "Event.h"
 #include "EventListener.h"
-#include "Frame.h"
-#include "JSDOMGlobalObject.h"
 #include "JSDocument.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
@@ -136,7 +134,7 @@ JSXMLHttpRequest::JSXMLHttpRequest(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSXMLHttpRequest::~JSXMLHttpRequest()
 {
-    impl()->invalidateEventListeners();
+    impl()->invalidateJSEventListeners(this);
     forgetDOMObject(this, impl());
 }
 
@@ -161,8 +159,10 @@ JSValue jsXMLHttpRequestOnabort(ExecState* exec, const Identifier&, const Proper
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onabort()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -173,8 +173,10 @@ JSValue jsXMLHttpRequestOnerror(ExecState* exec, const Identifier&, const Proper
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -185,8 +187,10 @@ JSValue jsXMLHttpRequestOnload(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onload()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -197,8 +201,10 @@ JSValue jsXMLHttpRequestOnloadstart(ExecState* exec, const Identifier&, const Pr
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onloadstart()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -209,8 +215,10 @@ JSValue jsXMLHttpRequestOnprogress(ExecState* exec, const Identifier&, const Pro
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onprogress()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -221,8 +229,10 @@ JSValue jsXMLHttpRequestOnreadystatechange(ExecState* exec, const Identifier&, c
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
     if (EventListener* listener = imp->onreadystatechange()) {
-        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
-            return jsFunction;
+        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
+            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
+                return jsFunction;
+        }
     }
     return jsNull();
 }
@@ -232,7 +242,8 @@ JSValue jsXMLHttpRequestReadyState(ExecState* exec, const Identifier&, const Pro
     JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
-    return jsNumber(exec, imp->readyState());
+    JSValue result = jsNumber(exec, imp->readyState());
+    return result;
 }
 
 JSValue jsXMLHttpRequestWithCredentials(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -240,7 +251,8 @@ JSValue jsXMLHttpRequestWithCredentials(ExecState* exec, const Identifier&, cons
     JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
-    return jsBoolean(imp->withCredentials());
+    JSValue result = jsBoolean(imp->withCredentials());
+    return result;
 }
 
 JSValue jsXMLHttpRequestUpload(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -248,7 +260,8 @@ JSValue jsXMLHttpRequestUpload(ExecState* exec, const Identifier&, const Propert
     JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->upload()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->upload()));
+    return result;
 }
 
 JSValue jsXMLHttpRequestResponseText(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -262,7 +275,8 @@ JSValue jsXMLHttpRequestResponseXML(ExecState* exec, const Identifier&, const Pr
     JSXMLHttpRequest* castedThis = static_cast<JSXMLHttpRequest*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThis->impl());
-    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->responseXML()));
+    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->responseXML()));
+    return result;
 }
 
 JSValue jsXMLHttpRequestStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -294,65 +308,48 @@ void setJSXMLHttpRequestOnabort(ExecState* exec, JSObject* thisObject, JSValue v
 {
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnabort(globalObject->createJSAttributeEventListener(value));
+    imp->setOnabort(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSXMLHttpRequestOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
+    imp->setOnerror(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSXMLHttpRequestOnload(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnload(globalObject->createJSAttributeEventListener(value));
+    imp->setOnload(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSXMLHttpRequestOnloadstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnloadstart(globalObject->createJSAttributeEventListener(value));
+    imp->setOnloadstart(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSXMLHttpRequestOnprogress(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnprogress(globalObject->createJSAttributeEventListener(value));
+    imp->setOnprogress(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSXMLHttpRequestOnreadystatechange(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
-    if (!globalObject)
-        return;
-    imp->setOnreadystatechange(globalObject->createJSAttributeEventListener(value));
+    imp->setOnreadystatechange(createJSAttributeEventListener(exec, value, thisObject));
 }
 
 void setJSXMLHttpRequestWithCredentials(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(static_cast<JSXMLHttpRequest*>(thisObject)->impl());
+    JSXMLHttpRequest* castedThisObj = static_cast<JSXMLHttpRequest*>(thisObject);
+    XMLHttpRequest* imp = static_cast<XMLHttpRequest*>(castedThisObj->impl());
     ExceptionCode ec = 0;
     imp->setWithCredentials(value.toBoolean(exec), ec);
     setDOMException(exec, ec);

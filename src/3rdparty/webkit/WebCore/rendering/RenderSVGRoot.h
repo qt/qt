@@ -31,9 +31,9 @@
 namespace WebCore {
 
 class SVGStyledElement;
-class TransformationMatrix;
+class AffineTransform;
 
-class RenderSVGRoot : public RenderBox, SVGRenderBase {
+class RenderSVGRoot : public RenderBox, protected SVGRenderBase {
 public:
     RenderSVGRoot(SVGStyledElement*);
 
@@ -50,21 +50,24 @@ private:
     virtual int lineHeight(bool b, bool isRootLineBox = false) const;
     virtual int baselinePosition(bool b, bool isRootLineBox = false) const;
     virtual void calcPrefWidths();
-
+    virtual int calcReplacedWidth(bool includeMaxWidth = true) const;
+    virtual int calcReplacedHeight() const;
     virtual void layout();
     virtual void paint(PaintInfo&, int parentX, int parentY);
 
-    virtual TransformationMatrix localToParentTransform() const;
+    virtual void destroy();
+
+    virtual const AffineTransform& localToParentTransform() const;
 
     bool fillContains(const FloatPoint&) const;
     bool strokeContains(const FloatPoint&) const;
 
     virtual FloatRect objectBoundingBox() const;
+    virtual FloatRect strokeBoundingBox() const { return computeContainerBoundingBox(this, true); }
     virtual FloatRect repaintRectInLocalCoordinates() const;
 
-    // FIXME: Both of these overrides should be removed.
-    virtual TransformationMatrix localTransform() const;
-    virtual TransformationMatrix absoluteTransform() const;
+    // FIXME: This override should be removed.
+    virtual AffineTransform localTransform() const;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
 
@@ -73,17 +76,17 @@ private:
     virtual void mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool useTransforms, bool fixed, TransformState&) const;
 
     void calcViewport();
-    const FloatSize& viewportSize() const;
 
     bool selfWillPaint() const;
 
     IntSize parentOriginToBorderBox() const;
     IntSize borderOriginToContentBox() const;
-    TransformationMatrix localToRepaintContainerTransform(const IntPoint& parentOriginInContainer) const;
-    TransformationMatrix localToBorderBoxTransform() const;
+    AffineTransform localToRepaintContainerTransform(const IntPoint& parentOriginInContainer) const;
+    AffineTransform localToBorderBoxTransform() const;
 
     RenderObjectChildList m_children;
     FloatSize m_viewportSize;
+    mutable AffineTransform m_localToParentTransform;
 };
 
 inline RenderSVGRoot* toRenderSVGRoot(RenderObject* object)

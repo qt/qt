@@ -42,6 +42,9 @@ public:
 
     void showSubstituteImage(PassRefPtr<Image>);
 
+    static void suspendWidgetHierarchyUpdates();
+    static void resumeWidgetHierarchyUpdates();
+
 protected:
     RenderWidget(Node*);
 
@@ -61,7 +64,7 @@ private:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
     virtual void setOverlapTestResult(bool);
 
-    void setWidgetGeometry(const IntRect&);
+    bool setWidgetGeometry(const IntRect&);
 
     friend class RenderWidgetProtector;
     RenderArena* ref() { ++m_refCount; return renderArena(); }

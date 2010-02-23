@@ -31,6 +31,9 @@
 #include "config.h"
 #include "SQLTransactionClient.h"
 
+#if ENABLE(DATABASE)
+
+#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Database.h"
 #include "DatabaseThread.h"
@@ -44,7 +47,7 @@ namespace WebCore {
 
 void SQLTransactionClient::didCommitTransaction(SQLTransaction* transaction)
 {
-    ASSERT(currentThread() == transaction->database()->document()->databaseThread()->getThreadID());
+    ASSERT(currentThread() == transaction->database()->scriptExecutionContext()->databaseThread()->getThreadID());
     Database* database = transaction->database();
     DatabaseTracker::tracker().scheduleNotifyDatabaseChanged(
         database->securityOrigin(), database->stringIdentifier());
@@ -52,7 +55,7 @@ void SQLTransactionClient::didCommitTransaction(SQLTransaction* transaction)
 
 void SQLTransactionClient::didExecuteStatement(SQLTransaction* transaction)
 {
-    ASSERT(currentThread() == transaction->database()->document()->databaseThread()->getThreadID());
+    ASSERT(currentThread() == transaction->database()->scriptExecutionContext()->databaseThread()->getThreadID());
     OriginQuotaManager& manager(DatabaseTracker::tracker().originQuotaManager());
     Locker<OriginQuotaManager> locker(manager);
     manager.markDatabase(transaction->database());
@@ -60,15 +63,15 @@ void SQLTransactionClient::didExecuteStatement(SQLTransaction* transaction)
 
 bool SQLTransactionClient::didExceedQuota(SQLTransaction* transaction)
 {
-    ASSERT(isMainThread());
+    ASSERT(transaction->database()->scriptExecutionContext()->isContextThread());
     Database* database = transaction->database();
-    Page* page = database->document()->page();
-    ASSERT(page);
 
     unsigned long long currentQuota = DatabaseTracker::tracker().quotaForOrigin(database->securityOrigin());
-    page->chrome()->client()->exceededDatabaseQuota(database->document()->frame(), database->stringIdentifier());
+    database->scriptExecutionContext()->databaseExceededQuota(database->stringIdentifier());
     unsigned long long newQuota = DatabaseTracker::tracker().quotaForOrigin(database->securityOrigin());
     return (newQuota > currentQuota);
 }
 
 }
+
+#endif // ENABLE(DATABASE)

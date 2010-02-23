@@ -30,6 +30,7 @@
 #include "AXObjectCache.h"
 #include "ApplyStyleCommand.h"
 #include "CharacterNames.h"
+#include "CompositionEvent.h"
 #include "CreateLinkCommand.h"
 #include "CSSComputedStyleDeclaration.h"
 #include "CSSMutableStyleDeclaration.h"
@@ -831,7 +832,7 @@ TriState Editor::selectionHasStyle(CSSStyleDeclaration* style) const
                 TriState nodeState = triStateOfStyleInComputedStyle(style, nodeStyle.get(), !node->isTextNode());
                 if (node == m_frame->selection()->start().node())
                     state = nodeState;
-                else if (state != nodeState) {
+                else if (state != nodeState && node->isTextNode()) {
                     state = MixedTriState;
                     break;
                 }
@@ -1013,7 +1014,10 @@ void Editor::cut()
     }
     RefPtr<Range> selection = selectedRange();
     if (shouldDeleteRange(selection.get())) {
-        Pasteboard::generalPasteboard()->writeSelection(selection.get(), canSmartCopyOrDelete(), m_frame);
+        if (isNodeInTextFormControl(m_frame->selection()->start().node()))
+            Pasteboard::generalPasteboard()->writePlainText(m_frame->selectedText());
+        else
+            Pasteboard::generalPasteboard()->writeSelection(selection.get(), canSmartCopyOrDelete(), m_frame);
         didWriteSelectionToPasteboard();
         deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
     }
@@ -1027,13 +1031,17 @@ void Editor::copy()
         systemBeep();
         return;
     }
-    
-    Document* document = m_frame->document();
-    if (HTMLImageElement* imageElement = imageElementFromImageDocument(document))
-        Pasteboard::generalPasteboard()->writeImage(imageElement, document->url(), document->title());
-    else
-        Pasteboard::generalPasteboard()->writeSelection(selectedRange().get(), canSmartCopyOrDelete(), m_frame);
-    
+
+    if (isNodeInTextFormControl(m_frame->selection()->start().node()))
+        Pasteboard::generalPasteboard()->writePlainText(m_frame->selectedText());
+    else {
+        Document* document = m_frame->document();
+        if (HTMLImageElement* imageElement = imageElementFromImageDocument(document))
+            Pasteboard::generalPasteboard()->writeImage(imageElement, document->url(), document->title());
+        else
+            Pasteboard::generalPasteboard()->writeSelection(selectedRange().get(), canSmartCopyOrDelete(), m_frame);
+    }
+
     didWriteSelectionToPasteboard();
 }
 
@@ -1059,6 +1067,8 @@ void Editor::paste()
 
 void Editor::pasteAsPlainText()
 {
+    if (tryDHTMLPaste())
+        return;
     if (!canPaste())
         return;
     pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
@@ -1353,6 +1363,16 @@ void Editor::confirmComposition(const String& text, bool preserveSelection)
         return;
     }
     
+    // Dispatch a compositionend event to the focused node.
+    // We should send this event before sending a TextEvent as written in Section 6.2.2 and 6.2.3 of
+    // the DOM Event specification.
+    Node* target = m_frame->document()->focusedNode();
+    if (target) {
+        RefPtr<CompositionEvent> event = CompositionEvent::create(eventNames().compositionendEvent, m_frame->domWindow(), text);
+        ExceptionCode ec = 0;
+        target->dispatchEvent(event, ec);
+    }
+
     // If text is empty, then delete the old composition here.  If text is non-empty, InsertTextCommand::input
     // will delete the old composition with an optimized replace operation.
     if (text.isEmpty())
@@ -1363,8 +1383,11 @@ void Editor::confirmComposition(const String& text, bool preserveSelection)
 
     insertText(text, 0);
 
-    if (preserveSelection)
+    if (preserveSelection) {
         m_frame->selection()->setSelection(oldSelection, false, false);
+        // An open typing command that disagrees about current selection would cause issues with typing later on.
+        TypingCommand::closeTyping(m_lastEditCommand.get());
+    }
 
     setIgnoreCompositionSelectionChange(false);
 }
@@ -1379,7 +1402,38 @@ void Editor::setComposition(const String& text, const Vector<CompositionUnderlin
         setIgnoreCompositionSelectionChange(false);
         return;
     }
-    
+
+    Node* target = m_frame->document()->focusedNode();
+    if (target) {
+        // Dispatch an appropriate composition event to the focused node.
+        // We check the composition status and choose an appropriate composition event since this
+        // function is used for three purposes:
+        // 1. Starting a new composition.
+        //    Send a compositionstart event when this function creates a new composition node, i.e.
+        //    m_compositionNode == 0 && !text.isEmpty().
+        // 2. Updating the existing composition node.
+        //    Send a compositionupdate event when this function updates the existing composition
+        //    node, i.e. m_compositionNode != 0 && !text.isEmpty().
+        // 3. Canceling the ongoing composition.
+        //    Send a compositionend event when function deletes the existing composition node, i.e.
+        //    m_compositionNode != 0 && test.isEmpty().
+        RefPtr<CompositionEvent> event;
+        if (!m_compositionNode) {
+            // We should send a compositionstart event only when the given text is not empty because this
+            // function doesn't create a composition node when the text is empty.
+            if (!text.isEmpty())
+                event = CompositionEvent::create(eventNames().compositionstartEvent, m_frame->domWindow(), text);
+        } else {
+            if (!text.isEmpty())
+                event = CompositionEvent::create(eventNames().compositionupdateEvent, m_frame->domWindow(), text);
+            else
+              event = CompositionEvent::create(eventNames().compositionendEvent, m_frame->domWindow(), text);
+        }
+        ExceptionCode ec = 0;
+        if (event.get())
+            target->dispatchEvent(event, ec);
+    }
+
     // If text is empty, then delete the old composition here.  If text is non-empty, InsertTextCommand::input
     // will delete the old composition with an optimized replace operation.
     if (text.isEmpty())
@@ -1438,7 +1492,7 @@ void Editor::learnSpelling()
     if (!client())
         return;
         
-    // FIXME: We don't call this on the Mac, and it should remove misppelling markers around the 
+    // FIXME: We don't call this on the Mac, and it should remove misspelling markers around the 
     // learned word, see <rdar://problem/5396072>.
 
     String text = frame()->selectedText();
@@ -1754,8 +1808,9 @@ static String findFirstMisspellingOrBadGrammarInRange(EditorClient* client, Rang
         }
         if (lastIteration || totalLengthProcessed + currentLength >= totalRangeLength)
             break;
-        setStart(paragraphRange.get(), startOfNextParagraph(paragraphRange->endPosition()));
-        setEnd(paragraphRange.get(), endOfParagraph(paragraphRange->startPosition()));
+        VisiblePosition newParagraphStart = startOfNextParagraph(paragraphRange->endPosition());
+        setStart(paragraphRange.get(), newParagraphStart);
+        setEnd(paragraphRange.get(), endOfParagraph(newParagraphStart));
         firstIteration = false;
         totalLengthProcessed += currentLength;
     }
@@ -2693,6 +2748,9 @@ bool Editor::insideVisibleArea(const IntPoint& point) const
         return true;
     
     RenderPart* renderer = frame->ownerRenderer();
+    if (!renderer)
+        return false;
+
     RenderBlock* container = renderer->containingBlock();
     if (!(container->style()->overflowX() == OHIDDEN || container->style()->overflowY() == OHIDDEN))
         return true;
@@ -2719,6 +2777,9 @@ bool Editor::insideVisibleArea(Range* range) const
         return true;
     
     RenderPart* renderer = frame->ownerRenderer();
+    if (!renderer)
+        return false;
+
     RenderBlock* container = renderer->containingBlock();
     if (!(container->style()->overflowX() == OHIDDEN || container->style()->overflowY() == OHIDDEN))
         return true;

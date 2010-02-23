@@ -43,7 +43,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -86,7 +86,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
     }
     JSElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -225,6 +225,14 @@ JSC::JSValue jsElementOnsearch(JSC::ExecState*, const JSC::Identifier&, const JS
 void setJSElementOnsearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsElementOnselectstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSElementOnselectstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsElementOntouchstart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSElementOntouchstart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsElementOntouchmove(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSElementOntouchmove(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsElementOntouchend(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSElementOntouchend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsElementOntouchcancel(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSElementOntouchcancel(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
