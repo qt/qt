@@ -7813,10 +7813,7 @@ static void qt_blend_color_argb_armv6(int count, const QSpan *spans, void *userD
 
 void qInitDrawhelperAsm()
 {
-    static uint features = 0xffffffff;
-    if (features != 0xffffffff)
-        return;
-    features = qDetectCPUFeatures();
+    const uint features = qDetectCPUFeatures();
 
     qt_memfill32 = qt_memfill_template<quint32, quint32>;
     qt_memfill16 = qt_memfill_quint16; //qt_memfill_template<quint16, quint16>;
