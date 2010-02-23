@@ -51,16 +51,16 @@ Rectangle {
     // transitions define how the properties change.
     transitions: [
         // When transitioning to 'Position1' move x,y over a duration of 1 second,
-        // with easeOutBounce easing function.
+        // with OutBounce easing function.
         Transition {
             from: "*"; to: "Position1"
-            NumberAnimation { properties: "x,y"; easing: "easeOutBounce"; duration: 1000 }
+            NumberAnimation { properties: "x,y"; easing.type: "OutBounce"; duration: 1000 }
         },
         // When transitioning to 'Position2' move x,y over a duration of 2 seconds,
-        // with easeInOutQuad easing function.
+        // with InOutQuad easing function.
         Transition {
             from: "*"; to: "Position2"
-            NumberAnimation { properties: "x,y"; easing: "easeInOutQuad"; duration: 2000 }
+            NumberAnimation { properties: "x,y"; easing.type: "InOutQuad"; duration: 2000 }
         },
         // For any other state changes move x,y linearly over duration of 200ms.
         Transition {

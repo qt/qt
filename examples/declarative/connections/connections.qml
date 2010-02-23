@@ -14,7 +14,7 @@ Rectangle {
 
     Image {
         id: image; source: "content/bg1.jpg"; anchors.centerIn: parent; transformOrigin: Item.Center
-        rotation: Behavior { NumberAnimation { easing: "easeOutCubic"; duration: 300 } }
+        rotation: Behavior { NumberAnimation { easing.type: "OutCubic"; duration: 300 } }
     }
 
     Button {

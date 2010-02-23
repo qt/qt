@@ -36,7 +36,7 @@ Rectangle {
         }
 
         transitions: Transition {
-            NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 3000 }
+            NumberAnimation { easing.type: "InOutQuad"; properties: "angle"; duration: 3000 }
         }
     }
 
@@ -64,7 +64,7 @@ Rectangle {
         }
 
         transitions: Transition {
-            NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 3000 }
+            NumberAnimation { easing.type: "InOutQuad"; properties: "angle"; duration: 3000 }
         }
     }
 
