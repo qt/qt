@@ -3083,7 +3083,7 @@ void QVGPaintEngine::drawPixmapFragments(const QPainter::Fragment *drawingData, 
 
     for (int i = 0; i < dataCount; ++i) {
         QTransform transform(d->imageTransform);
-        transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
+        transform.translate(drawingData[i].x, drawingData[i].y);
         transform.rotate(drawingData[i].rotation);
 
         VGImage child;
