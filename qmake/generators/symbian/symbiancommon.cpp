@@ -42,6 +42,9 @@
 #include "symbiancommon.h"
 #include <qdebug.h>
 
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
 #define RESOURCE_DIRECTORY_RESOURCE "\\\\resource\\\\apps\\\\"
 
 #define RSS_RULES "RSS_RULES"
