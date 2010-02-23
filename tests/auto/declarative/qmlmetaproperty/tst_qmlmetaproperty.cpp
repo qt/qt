@@ -129,7 +129,7 @@ void tst_qmlmetaproperty::qmlmetaproperty()
 {
     QmlMetaProperty prop;
 
-    QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+    QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
     QVERIFY(binding != 0);
     QGuard<QmlExpression> expression(new QmlExpression());
     QVERIFY(expression != 0);
@@ -218,7 +218,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object()
     {
         QmlMetaProperty prop(&object);
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -264,7 +264,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object()
     {
         QmlMetaProperty prop(&dobject);
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -319,7 +319,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
     {
         QmlMetaProperty prop(&object, QString("defaultProperty"));
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -365,7 +365,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
     {
         QmlMetaProperty prop(&dobject, QString("defaultProperty"));
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -414,7 +414,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
     {
         QmlMetaProperty prop(&dobject, QString("onClicked"));
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -468,7 +468,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_context()
     {
         QmlMetaProperty prop(&object, engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -514,7 +514,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_context()
     {
         QmlMetaProperty prop(&dobject, engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -569,7 +569,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
     {
         QmlMetaProperty prop(&object, QString("defaultProperty"), engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
         QVERIFY(expression != 0);
@@ -615,7 +615,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
     {
         QmlMetaProperty prop(&dobject, QString("defaultProperty"), engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
@@ -664,7 +664,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
     {
         QmlMetaProperty prop(&dobject, QString("onClicked"), engine.rootContext());
 
-        QGuard<QmlBinding> binding(new QmlBinding(QString(), 0, 0));
+        QGuard<QmlBinding> binding(new QmlBinding(QLatin1String("null"), 0, engine.rootContext()));
         binding->setTarget(prop);
         QVERIFY(binding != 0);
         QGuard<QmlExpression> expression(new QmlExpression());
