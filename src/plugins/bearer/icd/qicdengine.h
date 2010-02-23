@@ -80,8 +80,6 @@ class QIcdEngine : public QBearerEngine
 {
     Q_OBJECT
 
-    friend class QNetworkSessionPrivateImpl;
-
 public:
     QIcdEngine(QObject *parent = 0);
     ~QIcdEngine();
@@ -98,15 +96,25 @@ public:
 
     void deleteConfiguration(const QString &iap_id);
 
-private:
+    inline QNetworkConfigurationPrivatePointer configuration(const QString &id)
+    {
+        QMutexLocker locker(&mutex);
+
+        return accessPointConfigurations.value(id);
+    }
+
     inline void addSessionConfiguration(QNetworkConfigurationPrivatePointer ptr)
     {
+        QMutexLocker locker(&mutex);
+
         accessPointConfigurations.insert(ptr->id, ptr);
         emit configurationAdded(ptr);
     }
 
     inline void changedSessionConfiguration(QNetworkConfigurationPrivatePointer ptr)
     {
+        QMutexLocker locker(&mutex);
+
         emit configurationChanged(ptr);
     }
 

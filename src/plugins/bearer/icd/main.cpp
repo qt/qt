@@ -41,7 +41,7 @@
 
 #include "qicdengine.h"
 
-#include <QtNetwork/private/qbearerengine_p.h>
+#include <QtNetwork/private/qbearerplugin_p.h>
 
 #include <QtCore/qdebug.h>
 

@@ -560,7 +560,7 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
 
 
 			// Add the new active configuration to manager or update the old config
-            if (!(engine->accessPointConfigurations.contains(privateConfiguration(activeConfig)->id)))
+            if (!engine->hasIdentifier(privateConfiguration(activeConfig)->id))
                 engine->addSessionConfiguration(privateConfiguration(activeConfig));
             else
                 engine->changedSessionConfiguration(privateConfiguration(activeConfig));
@@ -924,11 +924,10 @@ void QNetworkSessionPrivateImpl::do_open()
 	 */
 
     if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
-        if (!engine->accessPointConfigurations.contains(result)) {
+        if (!engine->hasIdentifier(result)) {
             engine->addSessionConfiguration(privateConfiguration(config));
-	    } else {
-            QNetworkConfigurationPrivatePointer priv =
-                engine->accessPointConfigurations.value(result);
+        } else {
+            QNetworkConfigurationPrivatePointer priv = engine->configuration(result);
             QNetworkConfiguration reference;
             setPrivateConfiguration(reference, priv);
             copyConfig(config, reference, false);
