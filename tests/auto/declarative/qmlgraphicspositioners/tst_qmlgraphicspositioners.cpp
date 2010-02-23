@@ -42,6 +42,8 @@
 #include <private/qlistmodelinterface_p.h>
 #include <qmlview.h>
 #include <private/qmlgraphicsrectangle_p.h>
+#include <private/qmlgraphicspositioners_p.h>
+#include <private/qmltransition_p.h>
 #include <qmlexpression.h>
 #include "../../../shared/util.h"
 
@@ -61,7 +63,7 @@ private slots:
     void test_grid();
     void test_grid_spacing();
     void test_grid_animated();
-
+    void test_propertychanges();
     void test_repeater();
 private:
     QmlView *createView(const QString &filename);
@@ -360,6 +362,61 @@ void tst_QmlGraphicsPositioners::test_grid_animated()
     QTRY_COMPARE(five->x(), 50.0);
     QTRY_COMPARE(five->y(), 50.0);
 
+}
+void tst_QmlGraphicsPositioners::test_propertychanges()
+{
+    QmlView *canvas = createView("data/propertychanges.qml");
+
+    QmlGraphicsGrid *grid = qobject_cast<QmlGraphicsGrid*>(canvas->rootObject());
+    QmlTransition *rowTransition = canvas->rootObject()->findChild<QmlTransition*>("rowTransition");
+    QmlTransition *columnTransition = canvas->rootObject()->findChild<QmlTransition*>("columnTransition");
+
+    QSignalSpy addSpy(grid, SIGNAL(addChanged()));
+    QSignalSpy moveSpy(grid, SIGNAL(moveChanged()));
+    QSignalSpy columnsSpy(grid, SIGNAL(columnsChanged()));
+    QSignalSpy rowsSpy(grid, SIGNAL(rowsChanged()));
+
+    QVERIFY(grid);
+    QVERIFY(rowTransition);
+    QVERIFY(columnTransition);
+    QCOMPARE(grid->add(), columnTransition);
+    QCOMPARE(grid->move(), columnTransition);
+    QCOMPARE(grid->columns(), 4);
+    QCOMPARE(grid->rows(), -1);
+
+    grid->setAdd(rowTransition);
+    grid->setMove(rowTransition);
+    QCOMPARE(grid->add(), rowTransition);
+    QCOMPARE(grid->move(), rowTransition);
+    QCOMPARE(addSpy.count(),1);
+    QCOMPARE(moveSpy.count(),1);
+
+    grid->setAdd(rowTransition);
+    grid->setMove(rowTransition);
+    QCOMPARE(addSpy.count(),1);
+    QCOMPARE(moveSpy.count(),1);
+
+    grid->setAdd(0);
+    grid->setMove(0);
+    QCOMPARE(addSpy.count(),2);
+    QCOMPARE(moveSpy.count(),2);
+
+    grid->setColumns(-1);
+    grid->setRows(3);
+    QCOMPARE(grid->columns(), -1);
+    QCOMPARE(grid->rows(), 3);
+    QCOMPARE(columnsSpy.count(),1);
+    QCOMPARE(rowsSpy.count(),1);
+
+    grid->setColumns(-1);
+    grid->setRows(3);
+    QCOMPARE(columnsSpy.count(),1);
+    QCOMPARE(rowsSpy.count(),1);
+
+    grid->setColumns(2);
+    grid->setRows(2);
+    QCOMPARE(columnsSpy.count(),2);
+    QCOMPARE(rowsSpy.count(),2);
 }
 
 void tst_QmlGraphicsPositioners::test_repeater()

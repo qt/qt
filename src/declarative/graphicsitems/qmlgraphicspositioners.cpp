@@ -138,7 +138,10 @@ QmlTransition *QmlGraphicsBasePositioner::move() const
 void QmlGraphicsBasePositioner::setMove(QmlTransition *mt)
 {
     Q_D(QmlGraphicsBasePositioner);
+    if (mt == d->moveTransition)
+        return;
     d->moveTransition = mt;
+    emit moveChanged();
 }
 
 QmlTransition *QmlGraphicsBasePositioner::add() const
@@ -150,7 +153,11 @@ QmlTransition *QmlGraphicsBasePositioner::add() const
 void QmlGraphicsBasePositioner::setAdd(QmlTransition *add)
 {
     Q_D(QmlGraphicsBasePositioner);
+    if (add == d->addTransition)
+        return;
+
     d->addTransition = add;
+    emit addChanged();
 }
 
 void QmlGraphicsBasePositioner::componentComplete()
@@ -362,7 +369,7 @@ Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
-            ease: "easeOutBounce"
+            easing: "easeOutBounce"
         }
     }
 }
@@ -646,6 +653,24 @@ QmlGraphicsGrid::QmlGraphicsGrid(QmlGraphicsItem *parent) :
     many rows. Note that if you do not have enough items to fill this
     many rows some rows will be of zero width.
 */
+
+void QmlGraphicsGrid::setColumns(const int columns)
+{
+    if (columns == _columns)
+        return;
+    _columns = columns;
+    prePositioning();
+    emit columnsChanged();
+}
+
+void QmlGraphicsGrid::setRows(const int rows)
+{
+    if (rows == _rows)
+        return;
+    _rows = rows;
+    prePositioning();
+    emit rowsChanged();
+}
 
 void QmlGraphicsGrid::doPositioning()
 {
