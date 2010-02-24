@@ -71,6 +71,7 @@ static struct AgeMap {
     { 0, QChar::Unicode_Unassigned }
 };
 
+
 static const char *grapheme_break_string =
     "    enum GraphemeBreak {\n"
     "        GraphemeBreakOther,\n"
@@ -98,7 +99,7 @@ enum GraphemeBreak {
     GraphemeBreakLVT
 };
 
-QHash<QByteArray, GraphemeBreak> grapheme_break_map;
+static QHash<QByteArray, GraphemeBreak> grapheme_break_map;
 
 static void initGraphemeBreak()
 {
@@ -125,7 +126,8 @@ static void initGraphemeBreak()
     }
 }
 
-const char *word_break_string =
+
+static const char *word_break_string =
     "    enum WordBreak {\n"
     "        WordBreakOther,\n"
     "        WordBreakFormat,\n"
@@ -148,8 +150,7 @@ enum WordBreak {
     WordBreakExtendNumLet
 };
 
-
-QHash<QByteArray, WordBreak> word_break_map;
+static QHash<QByteArray, WordBreak> word_break_map;
 
 static void initWordBreak()
 {
@@ -204,8 +205,7 @@ enum SentenceBreak {
     SentenceBreakClose
 };
 
-
-QHash<QByteArray, SentenceBreak> sentence_break_map;
+static QHash<QByteArray, SentenceBreak> sentence_break_map;
 
 static void initSentenceBreak()
 {
@@ -234,7 +234,7 @@ static void initSentenceBreak()
 }
 
 
-const char *lineBreakClass =
+static const char *lineBreakClass =
     "    // see http://www.unicode.org/reports/tr14/tr14-19.html\n"
     "    // we don't use the XX, AI and CB properties and map them to AL instead.\n"
     "    // as we don't support any EBDIC based OS'es, NL is ignored and mapped to AL as well.\n"
@@ -249,7 +249,7 @@ const char *lineBreakClass =
     "    };\n\n";
 
 // Keep this one in sync with the code in createPropertyInfo
-const char *property_string =
+static const char *property_string =
     "    struct Properties {\n"
     "        ushort category         : 8; /* 5 needed */\n"
     "        ushort line_break_class : 8; /* 6 needed */\n"
@@ -274,7 +274,7 @@ const char *property_string =
     "    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);\n"
     "    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);\n";
 
-const char *methods =
+static const char *methods =
     "    Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);\n"
     "    inline int lineBreakClass(const QChar &ch)\n"
     "    { return lineBreakClass(ch.unicode()); }\n"
@@ -333,8 +333,9 @@ struct PropertyFlags {
     SentenceBreak sentenceBreak;
 };
 
-QList<int> specialCaseMap;
-int specialCaseMaxLen = 0;
+
+static QList<int> specialCaseMap;
+static int specialCaseMaxLen = 0;
 
 static int appendToSpecialCaseMap(const QList<int> &map)
 {
@@ -442,7 +443,8 @@ enum UniDataFields {
     UD_TitleCase
 };
 
-QHash<QByteArray, QChar::Category> categoryMap;
+
+static QHash<QByteArray, QChar::Category> categoryMap;
 
 static void initCategoryMap()
 {
@@ -489,13 +491,14 @@ static void initCategoryMap()
         { QChar::NoCategory, 0 }
     };
     Cat *c = categories;
-    while (c->cat != QChar::NoCategory) {
+    while (c->name) {
         categoryMap.insert(c->name, c->cat);
         ++c;
     }
 }
 
-QHash<QByteArray, QChar::Direction> directionMap;
+
+static QHash<QByteArray, QChar::Direction> directionMap;
 
 static void initDirectionMap()
 {
@@ -532,7 +535,7 @@ static void initDirectionMap()
 }
 
 
-QHash<QByteArray, QChar::Decomposition> decompositionMap;
+static QHash<QByteArray, QChar::Decomposition> decompositionMap;
 
 static void initDecompositionMap()
 {
@@ -567,14 +570,14 @@ static void initDecompositionMap()
 }
 
 
-QHash<int, UnicodeData> unicodeData;
-QList<PropertyFlags> uniqueProperties;
+static QHash<int, UnicodeData> unicodeData;
+static QList<PropertyFlags> uniqueProperties;
 
 
-QHash<int, int> decompositionLength;
-int highestComposedCharacter = 0;
-int numLigatures = 0;
-int highestLigature = 0;
+static QHash<int, int> decompositionLength;
+static int highestComposedCharacter = 0;
+static int numLigatures = 0;
+static int highestLigature = 0;
 
 struct Ligature {
     ushort u1;
@@ -585,13 +588,13 @@ struct Ligature {
 bool operator < (const Ligature &l1, const Ligature &l2)
 { return l1.u1 < l2.u1; }
 
-QHash<ushort, QList<Ligature> > ligatureHashes;
+static QHash<ushort, QList<Ligature> > ligatureHashes;
 
-QHash<int, int> combiningClassUsage;
+static QHash<int, int> combiningClassUsage;
 
-int maxLowerCaseDiff = 0;
-int maxUpperCaseDiff = 0;
-int maxTitleCaseDiff = 0;
+static int maxLowerCaseDiff = 0;
+static int maxUpperCaseDiff = 0;
+static int maxTitleCaseDiff = 0;
 
 static void readUnicodeData()
 {
@@ -873,22 +876,22 @@ static void readCompositionExclusion()
         unicodeData.insert(codepoint, d);
     }
 
-    for (int i = 0; i <= LAST_CODEPOINT; ++i) {
-        UnicodeData data = unicodeData.value(i, UnicodeData(i));
-        if (!data.excludedComposition
-            && data.decompositionType == QChar::Canonical
-            && data.decomposition.size() > 1) {
-            Q_ASSERT(data.decomposition.size() == 2);
+    for (int codepoint = 0; codepoint <= LAST_CODEPOINT; ++codepoint) {
+        UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+        if (!d.excludedComposition
+            && d.decompositionType == QChar::Canonical
+            && d.decomposition.size() > 1) {
+            Q_ASSERT(d.decomposition.size() == 2);
 
-            uint part1 = data.decomposition.at(0);
-            uint part2 = data.decomposition.at(1);
+            uint part1 = d.decomposition.at(0);
+            uint part2 = d.decomposition.at(1);
             UnicodeData first = unicodeData.value(part1, UnicodeData(part1));
             if (first.p.combiningClass != 0)
                 continue;
 
             ++numLigatures;
             highestLigature = qMax(highestLigature, (int)part1);
-            Ligature l = {(ushort)part1, (ushort)part2, i};
+            Ligature l = {(ushort)part1, (ushort)part2, codepoint};
             ligatureHashes[part2].append(l);
         }
     }
@@ -978,7 +981,7 @@ static void computeUniqueProperties()
         d.propertyIndex = index;
         unicodeData.insert(uc, d);
     }
-    qDebug("    %d unicode properties found", uniqueProperties.size());
+    qDebug("    %d unique unicode properties found", uniqueProperties.size());
 }
 
 
@@ -1120,8 +1123,6 @@ static void readSpecialCasing()
         for (int i = 0; i < title.size(); ++i) {
             bool ok;
             titleMap.append(title.at(i).toInt(&ok, 16));
-            if (!ok)
-                qDebug() << line << title.at(i);
             Q_ASSERT(ok);
         }
 
@@ -1157,7 +1158,7 @@ static void readSpecialCasing()
     }
 }
 
-int maxCaseFoldDiff = 0;
+static int maxCaseFoldDiff = 0;
 
 static void readCaseFolding()
 {
@@ -1214,7 +1215,7 @@ static void readCaseFolding()
             if (foldMap.at(0) != codepoint + ud.p.lowerCaseDiff)
                 qDebug() << hex << codepoint;
         } else {
-            Q_ASSERT(false); // we currently don't support full case foldings
+            qFatal("we currently don't support full case foldings");
 //             qDebug() << "special" << hex << foldMap;
             ud.p.caseFoldSpecial = true;
             ud.p.caseFoldDiff = appendToSpecialCaseMap(foldMap);
@@ -1842,7 +1843,8 @@ struct PropertyBlock {
     PropertyBlock() { index = -1; }
     int index;
     QList<int> properties;
-    bool operator ==(const PropertyBlock &other) { return properties == other.properties; }
+    bool operator==(const PropertyBlock &other)
+    { return properties == other.properties; }
 };
 
 static QByteArray createPropertyInfo()
@@ -2448,7 +2450,7 @@ int main(int, char **)
     initGraphemeBreak();
     initWordBreak();
     initSentenceBreak();
-    
+
     readUnicodeData();
     readBidiMirroring();
     readArabicShaping();
