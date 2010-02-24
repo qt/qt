@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlmodules.html
+\page qdeclarativemodules.html
 \title Modules
 
 A \bold module is a collection of QML types.
@@ -63,7 +63,7 @@ This makes available all types in Qt that were available in Qt 4.6, regardless o
 actual version of Qt executing the QML. So even if Qt 4.7 adds a type that would conflict
 with a type you defined while using 4.6, that type is not imported, so there is no conflict.
 
-Types defined by plugins are made using QmlExtensionPlugin.  Installed plugins and QML files
+Types defined by plugins are made using QDeclarativeExtensionPlugin.  Installed plugins and QML files
 can both contribute types to the same module.
 
 
@@ -82,7 +82,7 @@ QML, a URI import is used:
 import com.nokia.Example 1.0
 \endcode
 
-Files imported in this way are found on the paths added by QmlEngine::addImportPath(),
+Files imported in this way are found on the paths added by QDeclarativeEngine::addImportPath(),
 which by default only inludes \c $QTDIR/qml, so the above would make available those types
 defined in \c $QTDIR/qml/com/nokia/Example which are specified as being in version 1.0.
 Installed plugins and QML files can both contribute types to the same module.

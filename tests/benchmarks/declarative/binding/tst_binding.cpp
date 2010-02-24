@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include <QmlEngine>
-#include <QmlComponent>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
 #include <QFile>
 #include <QDebug>
 #include "testtypes.h"
@@ -67,7 +67,7 @@ private slots:
     void basicproperty();
 
 private:
-    QmlEngine engine;
+    QDeclarativeEngine engine;
 };
 
 tst_binding::tst_binding()
@@ -88,7 +88,7 @@ void tst_binding::cleanupTestCase()
 }
 
 #define COMPONENT(filename, binding) \
-    QmlComponent c(&engine); \
+    QDeclarativeComponent c(&engine); \
     { \
         QFile f(filename); \
         QVERIFY(f.open(QIODevice::ReadOnly)); \

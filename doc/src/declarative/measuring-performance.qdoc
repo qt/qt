@@ -71,14 +71,14 @@ Q_DEFINE_PERFORMANCE_METRIC(TextSize, "Text Size Calculation");
 You could then use this category in the code:
 
 \code
-void QmlGraphicsText::updateSize()
+void QDeclarativeText::updateSize()
 {
-    QmlPerfTimer<QmlPerf::TextSize> perf;
+    QDeclarativePerfTimer<QDeclarativePerf::TextSize> perf;
     ...
 }
 \endcode
 
-Because there is no cost for a QmlPerfTimer when Q_ENABLE_PERFORMANCE_LOG is not defined, this line can persist in the code and be used to help detect performance bottlenecks and regressions. See the QPerformanceLog documentation for more information on this performance framework.
+Because there is no cost for a QDeclarativePerfTimer when Q_ENABLE_PERFORMANCE_LOG is not defined, this line can persist in the code and be used to help detect performance bottlenecks and regressions. See the QPerformanceLog documentation for more information on this performance framework.
 
 \section1 FPS Measurements
 

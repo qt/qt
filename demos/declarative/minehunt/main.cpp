@@ -38,11 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qmlengine.h"
-#include "qmlcontext.h"
-#include "qml.h"
-#include <qmlgraphicsitem.h>
-#include <qmlview.h>
+#include "qdeclarativeengine.h"
+#include "qdeclarativecontext.h"
+#include "qdeclarative.h"
+#include <qdeclarativeitem.h>
+#include <qdeclarativeview.h>
 
 #include <QWidget>
 #include <QApplication>
@@ -133,7 +133,7 @@ private:
     int getHint(int row, int col);
     void setPlaying(bool b){if(b==playing) return; playing=b; emit isPlayingChanged();}
 
-    QmlView *canvas;
+    QDeclarativeView *canvas;
 
     QList<Tile *> _tiles;
     int numCols;
@@ -162,11 +162,11 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     vbox->setMargin(0);
     setLayout(vbox);
 
-    canvas = new QmlView(this);
+    canvas = new QDeclarativeView(this);
     canvas->setFixedSize(width, height);
     vbox->addWidget(canvas);
 
-    QmlContext *ctxt = canvas->rootContext();
+    QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);
     ctxt->setContextProperty("tiles", QVariant::fromValue<QList<Tile*>*>(&_tiles));//QTBUG-5675
 

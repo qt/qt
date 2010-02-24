@@ -103,7 +103,7 @@ class Atom
         ParaRight, 
 #ifdef QDOC_QML
         Qml,
-        QmlText,
+        QDeclarativeText,
 #endif
         QuotationLeft, 
         QuotationRight,

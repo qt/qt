@@ -2067,7 +2067,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     } else if (part == "DECLARATIVE") {
-        available = QFile::exists(sourcePath + "/src/declarative/qml/qmlcomponent.h");
+        available = QFile::exists(sourcePath + "/src/declarative/qml/qdeclarativecomponent.h");
     } else if (part == "AUDIO_BACKEND") {
         available = true;
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {

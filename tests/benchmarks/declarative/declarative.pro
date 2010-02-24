@@ -3,8 +3,8 @@ SUBDIRS += \
            binding \
            creation \
            pointers \
-           qmlcomponent \
-           qmlgraphicsimage \
-           qmlmetaproperty \
+           qdeclarativecomponent \
+           qdeclarativeimage \
+           qdeclarativemetaproperty \
            script \
-#           qmltime
+#           qdeclarativetime

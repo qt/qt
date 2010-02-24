@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 #include <QCoreApplication>
-#include <QmlEngine>
-#include <QmlComponent>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
 #include <QDebug>
 #include "birthdayparty.h"
 #include "person.h"
@@ -55,8 +55,8 @@ int main(int argc, char ** argv)
     QML_REGISTER_TYPE(People, 1,0, Boy, Boy);
     QML_REGISTER_TYPE(People, 1,0, Girl, Girl);
 
-    QmlEngine engine;
-    QmlComponent component(&engine, ":example.qml");
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, ":example.qml");
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
 
     if (party && party->celebrant()) {

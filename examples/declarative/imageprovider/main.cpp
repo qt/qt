@@ -41,22 +41,22 @@
 
 #include <QApplication>
 
-#include <qmlengine.h>
-#include <qmlcontext.h>
-#include <qml.h>
-#include <qmlgraphicsitem.h>
-#include <qmlimageprovider.h>
-#include <qmlview.h>
+#include <qdeclarativeengine.h>
+#include <qdeclarativecontext.h>
+#include <qdeclarative.h>
+#include <qdeclarativeitem.h>
+#include <qdeclarativeimageprovider.h>
+#include <qdeclarativeview.h>
 #include <QImage>
 #include <QPainter>
 
 /*
-   This example illustrates using a QmlImageProvider to serve
+   This example illustrates using a QDeclarativeImageProvider to serve
    images asynchronously.
 */
 
 //![0]
-class ColorImageProvider : public QmlImageProvider
+class ColorImageProvider : public QDeclarativeImageProvider
 {
 public:
     // This is run in a low priority thread.
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    QmlView view;
+    QDeclarativeView view;
 
     view.engine()->addImageProvider("colors", new ColorImageProvider);
 
@@ -87,7 +87,7 @@ int main(int argc, char ** argv)
     dataList.append("image://colors/purple");
     dataList.append("image://colors/yellow");
 
-    QmlContext *ctxt = view.rootContext();
+    QDeclarativeContext *ctxt = view.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 
     view.setSource(QUrl("qrc:view.qml"));

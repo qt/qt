@@ -1,74 +1,74 @@
 INCLUDEPATH += $$PWD
 
 SOURCES += \
-    $$PWD/qmlgraphicsutilmodule.cpp\
-    $$PWD/qmlview.cpp \
+    $$PWD/qdeclarativeutilmodule.cpp\
+    $$PWD/qdeclarativeview.cpp \
     $$PWD/qfxperf.cpp \
     $$PWD/qperformancelog.cpp \
-    $$PWD/qmlconnection.cpp \
-    $$PWD/qmlpackage.cpp \
-    $$PWD/qmlanimation.cpp \
-    $$PWD/qmlsystempalette.cpp \
-    $$PWD/qmlspringfollow.cpp \
-    $$PWD/qmleasefollow.cpp \
-    $$PWD/qmlstate.cpp\
-    $$PWD/qmltransitionmanager.cpp \
-    $$PWD/qmlstateoperations.cpp \
-    $$PWD/qmlpropertychanges.cpp \
-    $$PWD/qmlstategroup.cpp \
-    $$PWD/qmltransition.cpp \
-    $$PWD/qmllistmodel.cpp\
-    $$PWD/qmllistaccessor.cpp \
-    $$PWD/qmlopenmetaobject.cpp \
-    $$PWD/qmltimeline.cpp \
-    $$PWD/qmltimer.cpp \
-    $$PWD/qmlbind.cpp \
-    $$PWD/qmlpropertymap.cpp \
-    $$PWD/qmlpixmapcache.cpp \
+    $$PWD/qdeclarativeconnection.cpp \
+    $$PWD/qdeclarativepackage.cpp \
+    $$PWD/qdeclarativeanimation.cpp \
+    $$PWD/qdeclarativesystempalette.cpp \
+    $$PWD/qdeclarativespringfollow.cpp \
+    $$PWD/qdeclarativeeasefollow.cpp \
+    $$PWD/qdeclarativestate.cpp\
+    $$PWD/qdeclarativetransitionmanager.cpp \
+    $$PWD/qdeclarativestateoperations.cpp \
+    $$PWD/qdeclarativepropertychanges.cpp \
+    $$PWD/qdeclarativestategroup.cpp \
+    $$PWD/qdeclarativetransition.cpp \
+    $$PWD/qdeclarativelistmodel.cpp\
+    $$PWD/qdeclarativelistaccessor.cpp \
+    $$PWD/qdeclarativeopenmetaobject.cpp \
+    $$PWD/qdeclarativetimeline.cpp \
+    $$PWD/qdeclarativetimer.cpp \
+    $$PWD/qdeclarativebind.cpp \
+    $$PWD/qdeclarativepropertymap.cpp \
+    $$PWD/qdeclarativepixmapcache.cpp \
     $$PWD/qnumberformat.cpp \
-    $$PWD/qmlnumberformatter.cpp \
-    $$PWD/qmldatetimeformatter.cpp \
-    $$PWD/qmlbehavior.cpp \
-    $$PWD/qmlfontloader.cpp \
-    $$PWD/qmlstyledtext.cpp
+    $$PWD/qdeclarativenumberformatter.cpp \
+    $$PWD/qdeclarativedatetimeformatter.cpp \
+    $$PWD/qdeclarativebehavior.cpp \
+    $$PWD/qdeclarativefontloader.cpp \
+    $$PWD/qdeclarativestyledtext.cpp
 
 HEADERS += \
-    $$PWD/qmlgraphicsutilmodule_p.h\
-    $$PWD/qmlview.h \
+    $$PWD/qdeclarativeutilmodule_p.h\
+    $$PWD/qdeclarativeview.h \
     $$PWD/qfxperf_p_p.h \
     $$PWD/qperformancelog_p_p.h \
-    $$PWD/qmlconnection_p.h \
-    $$PWD/qmlpackage_p.h \
-    $$PWD/qmlanimation_p.h \
-    $$PWD/qmlanimation_p_p.h \
-    $$PWD/qmlsystempalette_p.h \
-    $$PWD/qmlspringfollow_p.h \
-    $$PWD/qmleasefollow_p.h \
-    $$PWD/qmlstate_p.h\
-    $$PWD/qmlstateoperations_p.h \
-    $$PWD/qmlpropertychanges_p.h \
-    $$PWD/qmlstate_p_p.h\
-    $$PWD/qmltransitionmanager_p_p.h \
-    $$PWD/qmlstategroup_p.h \
-    $$PWD/qmltransition_p.h \
-    $$PWD/qmllistmodel_p.h\
-    $$PWD/qmllistaccessor_p.h \
-    $$PWD/qmlopenmetaobject_p.h \
-    $$PWD/qmlnullablevalue_p_p.h \
-    $$PWD/qmltimeline_p_p.h \
-    $$PWD/qmltimer_p.h \
-    $$PWD/qmlbind_p.h \
-    $$PWD/qmlpropertymap.h \
-    $$PWD/qmlpixmapcache_p.h \
+    $$PWD/qdeclarativeconnection_p.h \
+    $$PWD/qdeclarativepackage_p.h \
+    $$PWD/qdeclarativeanimation_p.h \
+    $$PWD/qdeclarativeanimation_p_p.h \
+    $$PWD/qdeclarativesystempalette_p.h \
+    $$PWD/qdeclarativespringfollow_p.h \
+    $$PWD/qdeclarativeeasefollow_p.h \
+    $$PWD/qdeclarativestate_p.h\
+    $$PWD/qdeclarativestateoperations_p.h \
+    $$PWD/qdeclarativepropertychanges_p.h \
+    $$PWD/qdeclarativestate_p_p.h\
+    $$PWD/qdeclarativetransitionmanager_p_p.h \
+    $$PWD/qdeclarativestategroup_p.h \
+    $$PWD/qdeclarativetransition_p.h \
+    $$PWD/qdeclarativelistmodel_p.h\
+    $$PWD/qdeclarativelistaccessor_p.h \
+    $$PWD/qdeclarativeopenmetaobject_p.h \
+    $$PWD/qdeclarativenullablevalue_p_p.h \
+    $$PWD/qdeclarativetimeline_p_p.h \
+    $$PWD/qdeclarativetimer_p.h \
+    $$PWD/qdeclarativebind_p.h \
+    $$PWD/qdeclarativepropertymap.h \
+    $$PWD/qdeclarativepixmapcache_p.h \
     $$PWD/qnumberformat_p.h \
-    $$PWD/qmlnumberformatter_p.h \
-    $$PWD/qmldatetimeformatter_p.h \
-    $$PWD/qmlbehavior_p.h \
-    $$PWD/qmlfontloader_p.h \
-    $$PWD/qmlstyledtext_p.h
+    $$PWD/qdeclarativenumberformatter_p.h \
+    $$PWD/qdeclarativedatetimeformatter_p.h \
+    $$PWD/qdeclarativebehavior_p.h \
+    $$PWD/qdeclarativefontloader_p.h \
+    $$PWD/qdeclarativestyledtext_p.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns
-    SOURCES += $$PWD/qmlxmllistmodel.cpp
-    HEADERS += $$PWD/qmlxmllistmodel_p.h
+    SOURCES += $$PWD/qdeclarativexmllistmodel.cpp
+    HEADERS += $$PWD/qdeclarativexmllistmodel_p.h
 }

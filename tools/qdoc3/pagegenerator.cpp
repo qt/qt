@@ -84,7 +84,7 @@ QString PageGenerator::fileBase(const Node *node) const
     else if (!node->isInnerNode())
 	node = node->parent();
 #ifdef QDOC_QML
-    if (node->subType() == Node::QmlPropertyGroup) {
+    if (node->subType() == Node::QDeclarativePropertyGroup) {
         node = node->parent();
     }
 #endif        
@@ -104,8 +104,8 @@ QString PageGenerator::fileBase(const Node *node) const
           we prepend "qml-" to the file name of QML element doc
           files.
          */
-        if ((p->subType() == Node::QmlClass) ||
-            (p->subType() == Node::QmlBasicType)) {
+        if ((p->subType() == Node::QDeclarativeClass) ||
+            (p->subType() == Node::QDeclarativeBasicType)) {
             base.prepend("qml-");
         }
 #endif        
@@ -207,7 +207,7 @@ void PageGenerator::generateInnerNode(const InnerNode *node,
         if (fakeNode->subType() == Node::ExternalPage)
             return;
 #ifdef QDOC_QML            
-        if (fakeNode->subType() == Node::QmlPropertyGroup)
+        if (fakeNode->subType() == Node::QDeclarativePropertyGroup)
             return;
 #endif            
         if (fakeNode->subType() == Node::Page) {

@@ -301,7 +301,7 @@ bool Generator::generateQmlText(const Text& text,
 
     startText(relative, marker);
     while (atom) {
-        if (atom->type() != Atom::QmlText)
+        if (atom->type() != Atom::QDeclarativeText)
             atom = atom->next();
         else {
             atom = atom->next();
@@ -520,7 +520,7 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 #ifdef QDOC_QML
 /*!
  */
-void Generator::generateQmlInherits(const QmlClassNode* , CodeMarker* )
+void Generator::generateQmlInherits(const QDeclarativeClassNode* , CodeMarker* )
 {
     // stub.
 }

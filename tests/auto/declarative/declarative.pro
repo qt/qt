@@ -4,66 +4,66 @@ SUBDIRS += \
            layouts \                # Cover
            parserstress \           # Cover
            qmetaobjectbuilder \     # Cover
-           qmlanimations \          # Cover
-           qmlbehaviors \           # Cover
-           qmlbinding \             # Cover
-           qmlconnection \          # Cover
-           qmlcontext \             # Cover
-           qmldatetimeformatter \   # Cover
-           qmldebug \               # Cover
-           qmldebugclient \         # Cover
-           qmldebugservice \        # Cover
-           qmldom \                 # Cover
-           qmleasefollow \          # Cover
-           qmlecmascript \          # Cover
-           qmlengine     \          # Cover
-           qmlerror \               # Cover
-           qmlfontloader \          # Cover
-           qmlgraphicsanchors \     # Cover
-           qmlgraphicsanimatedimage \ # Cover
-           qmlgraphicsimage \       # Cover
-           qmlgraphicsborderimage \ # Cover
-           qmlgraphicsflickable   \ # Cover
-           qmlgraphicsflipable    \ # Cover
-           qmlgraphicsgridview \    # Cover
-           qmlgraphicsitem \        # Cover
-           qmlgraphicslistview \    # Cover
-           qmlgraphicsloader \      # Cover
-           qmlgraphicsmousearea \   # Cover
-           qmlgraphicsparticles \   # Cover
-           qmlgraphicspathview \    # Cover
-           qmlgraphicspositioners \ # Cover
-           qmlgraphicstext \        # Cover
-           qmlgraphicstextedit \    # Cover
-           qmlgraphicstextinput \   # Cover
-           qmlinfo \                # Cover
-           qmlinstruction \         # Cover
-           qmllanguage \            # Cover
-           qmllistreference \       # Cover
-           qmllistmodel \           # Cover
-           qmlmetaproperty \        # Cover
-           qmlmetatype \            # Cover
-           qmlmoduleplugin \        # Cover
-           qmlnumberformatter \     # Cover
-           qmlpixmapcache \         # Cover
-           qmlpropertymap \         # Cover
-           qmlqt \                  # Cover
-           qmlspringfollow \        # Cover
-           qmlstates \              # Cover
-           qmlsystempalette \       # Cover
-           qmltimer \               # Cover
-           qmlxmllistmodel \        # Cover
+           qdeclarativeanimations \          # Cover
+           qdeclarativebehaviors \           # Cover
+           qdeclarativebinding \             # Cover
+           qdeclarativeconnection \          # Cover
+           qdeclarativecontext \             # Cover
+           qdeclarativedatetimeformatter \   # Cover
+           qdeclarativedebug \               # Cover
+           qdeclarativedebugclient \         # Cover
+           qdeclarativedebugservice \        # Cover
+           qdeclarativedom \                 # Cover
+           qdeclarativeeasefollow \          # Cover
+           qdeclarativeecmascript \          # Cover
+           qdeclarativeengine     \          # Cover
+           qdeclarativeerror \               # Cover
+           qdeclarativefontloader \          # Cover
+           qdeclarativeanchors \     # Cover
+           qdeclarativeanimatedimage \ # Cover
+           qdeclarativeimage \       # Cover
+           qdeclarativeborderimage \ # Cover
+           qdeclarativeflickable   \ # Cover
+           qdeclarativeflipable    \ # Cover
+           qdeclarativegridview \    # Cover
+           qdeclarativeitem \        # Cover
+           qdeclarativelistview \    # Cover
+           qdeclarativeloader \      # Cover
+           qdeclarativemousearea \   # Cover
+           qdeclarativeparticles \   # Cover
+           qdeclarativepathview \    # Cover
+           qdeclarativepositioners \ # Cover
+           qdeclarativetext \        # Cover
+           qdeclarativetextedit \    # Cover
+           qdeclarativetextinput \   # Cover
+           qdeclarativeinfo \                # Cover
+           qdeclarativeinstruction \         # Cover
+           qdeclarativelanguage \            # Cover
+           qdeclarativelistreference \       # Cover
+           qdeclarativelistmodel \           # Cover
+           qdeclarativemetaproperty \        # Cover
+           qdeclarativemetatype \            # Cover
+           qdeclarativemoduleplugin \        # Cover
+           qdeclarativenumberformatter \     # Cover
+           qdeclarativepixmapcache \         # Cover
+           qdeclarativepropertymap \         # Cover
+           qdeclarativeqt \                  # Cover
+           qdeclarativespringfollow \        # Cover
+           qdeclarativestates \              # Cover
+           qdeclarativesystempalette \       # Cover
+           qdeclarativetimer \               # Cover
+           qdeclarativexmllistmodel \        # Cover
            qpacketprotocol \        # Cover
-           qmlgraphicsrepeater \    # Cover
-           qmlvaluetypes \          # Cover
-           qmlxmlhttprequest \      # Cover
-           qmlimageprovider \       # Cover
-           qmlstyledtext \          # Cover
+           qdeclarativerepeater \    # Cover
+           qdeclarativevaluetypes \          # Cover
+           qdeclarativexmlhttprequest \      # Cover
+           qdeclarativeimageprovider \       # Cover
+           qdeclarativestyledtext \          # Cover
            sql                      # Cover
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \
-           qmlgraphicswebview       # Cover
+           qdeclarativewebview       # Cover
 }
 
 # Tests which should run in Pulse

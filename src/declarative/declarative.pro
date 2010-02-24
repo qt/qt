@@ -9,7 +9,7 @@ solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtXml
 
-exists("qml_enable_gcov") {
+exists("qdeclarative_enable_gcov") {
     QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage -fno-elide-constructors
     LIBS += -lgcov
 }

@@ -42,14 +42,14 @@
 #include <QEventLoop>
 #include <QTimer>
 
-#include <private/qmldebugclient_p.h>
-#include <private/qmldebugservice_p.h>
+#include <private/qdeclarativedebugclient_p.h>
+#include <private/qdeclarativedebugservice_p.h>
 
 #include "debugutil_p.h"
 
 #include <iostream>
 
-bool QmlDebugTest::waitForSignal(QObject *receiver, const char *member, int timeout) {
+bool QDeclarativeDebugTest::waitForSignal(QObject *receiver, const char *member, int timeout) {
     QEventLoop loop;
     QTimer timer;
     QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
@@ -60,17 +60,17 @@ bool QmlDebugTest::waitForSignal(QObject *receiver, const char *member, int time
 }
 
 
-QmlDebugTestData::QmlDebugTestData(QEventLoop *el)
+QDeclarativeDebugTestData::QDeclarativeDebugTestData(QEventLoop *el)
     : exitCode(-1), loop(el)
 {
 }
 
-QmlDebugTestData::~QmlDebugTestData()
+QDeclarativeDebugTestData::~QDeclarativeDebugTestData()
 {
     qDeleteAll(items);
 }
 
-void QmlDebugTestData::testsFinished(int code)
+void QDeclarativeDebugTestData::testsFinished(int code)
 {
     exitCode = code;
     loop->quit();
@@ -78,32 +78,32 @@ void QmlDebugTestData::testsFinished(int code)
 
 
 
-QmlDebugTestService::QmlDebugTestService(const QString &s, QObject *parent)
-    : QmlDebugService(s, parent), enabled(false)
+QDeclarativeDebugTestService::QDeclarativeDebugTestService(const QString &s, QObject *parent)
+    : QDeclarativeDebugService(s, parent), enabled(false)
 {
 }
 
-void QmlDebugTestService::messageReceived(const QByteArray &ba)
+void QDeclarativeDebugTestService::messageReceived(const QByteArray &ba)
 {
     sendMessage(ba);
 }
 
-void QmlDebugTestService::enabledChanged(bool e)
+void QDeclarativeDebugTestService::enabledChanged(bool e)
 {
     enabled = e;
     emit enabledStateChanged();
 }
 
 
-QmlDebugTestClient::QmlDebugTestClient(const QString &s, QmlDebugConnection *c)
-    : QmlDebugClient(s, c)
+QDeclarativeDebugTestClient::QDeclarativeDebugTestClient(const QString &s, QDeclarativeDebugConnection *c)
+    : QDeclarativeDebugClient(s, c)
 {
 }
 
-QByteArray QmlDebugTestClient::waitForResponse()
+QByteArray QDeclarativeDebugTestClient::waitForResponse()
 {
     lastMsg.clear();
-    QmlDebugTest::waitForSignal(this, SIGNAL(serverMessage(QByteArray)));
+    QDeclarativeDebugTest::waitForSignal(this, SIGNAL(serverMessage(QByteArray)));
     if (lastMsg.isEmpty()) {
         qWarning() << "tst_QmlDebugClient: no response from server!";
         return QByteArray();
@@ -111,14 +111,14 @@ QByteArray QmlDebugTestClient::waitForResponse()
     return lastMsg;
 }
 
-void QmlDebugTestClient::messageReceived(const QByteArray &ba)
+void QDeclarativeDebugTestClient::messageReceived(const QByteArray &ba)
 {
     lastMsg = ba;
     emit serverMessage(ba);
 }
 
 
-tst_QmlDebug_Thread::tst_QmlDebug_Thread(QmlDebugTestData *data, QmlTestFactory *factory)
+tst_QmlDebug_Thread::tst_QmlDebug_Thread(QDeclarativeDebugTestData *data, QDeclarativeTestFactory *factory)
     : m_data(data), m_factory(factory)
 {
 }
@@ -127,7 +127,7 @@ void tst_QmlDebug_Thread::run()
 {
     bool ok = false;
 
-    QmlDebugConnection conn;
+    QDeclarativeDebugConnection conn;
     conn.connectToHost("127.0.0.1", 3768);
     ok = conn.waitForConnected();
     Q_ASSERT(ok);
@@ -146,25 +146,25 @@ void tst_QmlDebug_Thread::run()
     emit testsFinished(code);
 }
 
-int QmlDebugTest::runTests(QmlTestFactory *factory, const QList<QByteArray> &qml)
+int QDeclarativeDebugTest::runTests(QDeclarativeTestFactory *factory, const QList<QByteArray> &qml)
 {
     qputenv("QML_DEBUG_SERVER_PORT", "3768");
 
     QEventLoop loop;
-    QmlDebugTestData data(&loop);
+    QDeclarativeDebugTestData data(&loop);
 
     tst_QmlDebug_Thread thread(&data, factory);
     QObject::connect(&thread, SIGNAL(testsFinished(int)), &data, SLOT(testsFinished(int)));
     
-    QmlDebugService::notifyOnServerStart(&thread, "start");
+    QDeclarativeDebugService::notifyOnServerStart(&thread, "start");
 
-    QmlEngine engine;  // blocks until client connects
+    QDeclarativeEngine engine;  // blocks until client connects
 
     foreach (const QByteArray &code, qml) {
-        QmlComponent c(&engine);
+        QDeclarativeComponent c(&engine);
         c.setData(code, QUrl::fromLocalFile(""));
         Q_ASSERT(c.isReady());  // fails if bad syntax
-        data.items << qobject_cast<QmlGraphicsItem*>(c.create());
+        data.items << qobject_cast<QDeclarativeItem*>(c.create());
     }
 
     // start the test

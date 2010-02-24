@@ -101,7 +101,7 @@ class Generator
                                  const Node *relative,
                                  CodeMarker *marker,
                                  const QString& qmlName);
-    virtual void generateQmlInherits(const QmlClassNode* cn, 
+    virtual void generateQmlInherits(const QDeclarativeClassNode* cn, 
                                      CodeMarker* marker);
 #endif
     virtual void generateBody(const Node *node, CodeMarker *marker);

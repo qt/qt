@@ -56,7 +56,7 @@ private slots:
 
     void namingConvention();
 private:
-    QString qmlviewer;
+    QString qmlruntime;
     QStringList excludedDirs;
 
     void namingConvention(const QDir &);
@@ -68,11 +68,11 @@ tst_examples::tst_examples()
     QString binaries = QLibraryInfo::location(QLibraryInfo::BinariesPath);
 
 #if defined(Q_WS_MAC)
-    qmlviewer = QDir(binaries).absoluteFilePath("qmlviewer.app/Contents/MacOS/qmlviewer");
+    qmlruntime = QDir(binaries).absoluteFilePath("qml.app/Contents/MacOS/qml");
 #elif defined(Q_WS_WIN)
-    qmlviewer = QDir(binaries).absoluteFilePath("qmlviewer.exe");
+    qmlruntime = QDir(binaries).absoluteFilePath("qml.exe");
 #else
-    qmlviewer = QDir(binaries).absoluteFilePath("qmlviewer");
+    qmlruntime = QDir(binaries).absoluteFilePath("qml");
 #endif
 
 
@@ -190,7 +190,8 @@ void tst_examples::examples()
               << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
               << file;
     QProcess p;
-    p.start(qmlviewer, arguments);
+qDebug() << qmlruntime << arguments;
+    p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);

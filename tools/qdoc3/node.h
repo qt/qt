@@ -74,9 +74,9 @@ class Node
         Variable, 
 #ifdef QDOC_QML
         Target,
-        QmlProperty,
-        QmlSignal,
-        QmlMethod,
+        QDeclarativeProperty,
+        QDeclarativeSignal,
+        QDeclarativeMethod,
         LastType
 #else
         Target,
@@ -95,9 +95,9 @@ class Node
         Page,
 #ifdef QDOC_QML
         ExternalPage,
-        QmlClass,
-        QmlPropertyGroup,
-        QmlBasicType
+        QDeclarativeClass,
+        QDeclarativePropertyGroup,
+        QDeclarativeBasicType
 #else
         ExternalPage
 #endif
@@ -373,13 +373,13 @@ class FakeNode : public InnerNode
 };
 
 #ifdef QDOC_QML
-class QmlClassNode : public FakeNode
+class QDeclarativeClassNode : public FakeNode
 {
  public:
-    QmlClassNode(InnerNode *parent, 
+    QDeclarativeClassNode(InnerNode *parent, 
                  const QString& name, 
                  const ClassNode* cn);
-    virtual ~QmlClassNode() { }
+    virtual ~QDeclarativeClassNode() { }
 
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;
@@ -394,21 +394,21 @@ class QmlClassNode : public FakeNode
     const ClassNode*    cnode;
 };
 
-class QmlBasicTypeNode : public FakeNode
+class QDeclarativeBasicTypeNode : public FakeNode
 {
  public:
-    QmlBasicTypeNode(InnerNode *parent, 
+    QDeclarativeBasicTypeNode(InnerNode *parent, 
                      const QString& name);
-    virtual ~QmlBasicTypeNode() { }
+    virtual ~QDeclarativeBasicTypeNode() { }
 };
 
-class QmlPropGroupNode : public FakeNode
+class QDeclarativePropGroupNode : public FakeNode
 {
  public:
-    QmlPropGroupNode(QmlClassNode* parent, 
+    QDeclarativePropGroupNode(QDeclarativeClassNode* parent, 
                      const QString& name,
                      bool attached);
-    virtual ~QmlPropGroupNode() { }
+    virtual ~QDeclarativePropGroupNode() { }
 
     const QString& element() const { return parent()->name(); }
     void setDefault() { isdefault = true; }
@@ -420,14 +420,14 @@ class QmlPropGroupNode : public FakeNode
     bool    att;
 };
 
-class QmlPropertyNode : public LeafNode
+class QDeclarativePropertyNode : public LeafNode
 {
  public:
-    QmlPropertyNode(QmlPropGroupNode* parent, 
+    QDeclarativePropertyNode(QDeclarativePropGroupNode* parent, 
                     const QString& name,
                     const QString& type,
                     bool attached);
-    virtual ~QmlPropertyNode() { }
+    virtual ~QDeclarativePropertyNode() { }
 
     void setDataType(const QString& dataType) { dt = dataType; }
     void setStored(bool stored) { sto = toTrool(stored); }
@@ -441,7 +441,7 @@ class QmlPropertyNode : public LeafNode
     bool isWritable() const { return fromTrool(wri,true); }
     bool isAttached() const { return att; }
 
-    const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
+    const QString& element() const { return static_cast<QDeclarativePropGroupNode*>(parent())->element(); }
 
  private:
     enum Trool { Trool_True, Trool_False, Trool_Default };

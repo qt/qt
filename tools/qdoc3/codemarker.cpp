@@ -290,13 +290,13 @@ QString CodeMarker::taggedQmlNode(const Node* node)
 {
     QString tag;
     switch (node->type()) {
-    case Node::QmlProperty:
+    case Node::QDeclarativeProperty:
         tag = QLatin1String("@property");
         break;
-    case Node::QmlSignal:
+    case Node::QDeclarativeSignal:
         tag = QLatin1String("@signal");
         break;
-    case Node::QmlMethod:
+    case Node::QDeclarativeMethod:
         tag = QLatin1String("@method");
         break;
     default:
@@ -369,7 +369,7 @@ void CodeMarker::insert(FastSection &fastSection,
     bool inheritedMember = false;
     if (!node->relates()) {
         if (node->parent() != (const InnerNode*)fastSection.innerNode) {
-            if (node->type() != Node::QmlProperty)
+            if (node->type() != Node::QDeclarativeProperty)
                 inheritedMember = true;
         }
     }
@@ -612,9 +612,9 @@ QString CodeMarker::macName(const Node *node, const QString &name)
 #ifdef QDOC_QML
 /*!
   Get the list of documentation sections for the children of
-  the specified QmlClassNode.
+  the specified QDeclarativeClassNode.
  */
-QList<Section> CodeMarker::qmlSections(const QmlClassNode* , SynopsisStyle )
+QList<Section> CodeMarker::qmlSections(const QDeclarativeClassNode* , SynopsisStyle )
 {
     return QList<Section>();
 }

@@ -72,12 +72,12 @@ Custom C++ types are made available to QML using these two macros:
 \quotation
 \code
 #define QML_DECLARE_TYPE(T)
-#define QML_REGISTER_TYPE(URI,VMAJ,VMIN,QmlName,T)
+#define QML_REGISTER_TYPE(URI,VMAJ,VMIN,QDeclarativeName,T)
 \endcode
 
 Register the C++ type \a T with the QML system, and make it available in QML
-under the name \a QmlName in library URI version VMAJ.VMIN.
-\a T and \a QmlName may be the same.
+under the name \a QDeclarativeName in library URI version VMAJ.VMIN.
+\a T and \a QDeclarativeName may be the same.
 
 Generally the QML_DECLARE_TYPE() macro should be included immediately following
 the type declaration (usually in its header file), and the QML_REGISTER_TYPE()
@@ -88,7 +88,7 @@ constructor.
 \endquotation
 
 Types can be registered by libraries (such as Qt does), application code,
-or by plugins (see QmlExtensionPlugin).
+or by plugins (see QDeclarativeExtensionPlugin).
 
 Once registered, all of the \l {Qt's Property System}{properties} of a supported
 type are available for use within QML.  QML has intrinsic support for properties
@@ -167,7 +167,7 @@ for assignment to appropriately typed properties.
 
 The guests property is a list of \c Person objects.  Properties that are lists
 of objects or Qt interfaces are also declared with the Q_PROPERTY() macro, just
-like other properties.  List properties must have the type \c {QmlListProperty<T>}.
+like other properties.  List properties must have the type \c {QDeclarativeListProperty<T>}.
 As with object properties, the type \a T must be registered with QML.
 
 The guest property declaration looks like this:
@@ -461,8 +461,8 @@ itself, the QML engine sets up an association between the value source and
 the property.
 
 Property value sources are special types that derive from the
-QmlPropertyValueSource base class.  This base class contains a single method,
-QmlPropertyValueSource::setTarget(), that the QML engine invokes when
+QDeclarativePropertyValueSource base class.  This base class contains a single method,
+QDeclarativePropertyValueSource::setTarget(), that the QML engine invokes when
 associating the property value source with a property.  The relevant part of
 the HappyBirthday type declaration looks like this:
 
@@ -582,7 +582,7 @@ the appropriate property on the extension object is used instead.
 
 When an extended type is installed, one of the
 \code
-    #define QML_REGISTER_EXTENDED_TYPE(URI, VMAJ, VFROM, VTO, QmlName,T, ExtendedT)
+    #define QML_REGISTER_EXTENDED_TYPE(URI, VMAJ, VFROM, VTO, QDeclarativeName,T, ExtendedT)
     #define QML_REGISTER_EXTENDED_NOCREATE_TYPE(T, ExtendedT)
 \endcode
 macros should be used instead of the regular \c QML_REGISTER_TYPE or
@@ -597,18 +597,18 @@ status of the QML engine. For example, it might be beneficial to delay
 initializing some costly data structures until after all the properties have been
 set.
 
-The QML engine defines an interface class called QmlParserStatus, which contains a
+The QML engine defines an interface class called QDeclarativeParserStatus, which contains a
 number of virtual methods that are invoked at various stages during component
 instantiation.  To receive these notifications, an element implementation inherits
-QmlParserStatus and notifies the Qt meta system using the Q_INTERFACES() macro.
+QDeclarativeParserStatus and notifies the Qt meta system using the Q_INTERFACES() macro.
 
 For example,
 
 \code
-class Example : public QObject, public QmlParserStatus
+class Example : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
-    Q_INTERFACES(QmlParserStatus)
+    Q_INTERFACES(QDeclarativeParserStatus)
 public:
     virtual void componentComplete()
     {

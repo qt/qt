@@ -1,0 +1,917 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+#include <qtest.h>
+#include <QtDeclarative/qdeclarativeengine.h>
+#include <QtDeclarative/qdeclarativecomponent.h>
+#include <private/qdeclarativeanchors_p_p.h>
+#include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativepropertychanges_p.h>
+#include <private/qdeclarativestategroup_p.h>
+
+class tst_qmlstates : public QObject
+{
+    Q_OBJECT
+public:
+    tst_qmlstates() {}
+
+private:
+    static QByteArray fullDataPath(const QString &path);
+
+private slots:
+    void initTestCase();
+
+    void basicChanges();
+    void basicExtension();
+    void basicBinding();
+    void signalOverride();
+    void signalOverrideCrash();
+    void parentChange();
+    void parentChangeErrors();
+    void anchorChanges();
+    void anchorChanges2();
+    void anchorChanges3();
+    void anchorChanges4();
+    void anchorChanges5();
+    void script();
+    void restoreEntryValues();
+    void explicitChanges();
+    void propertyErrors();
+    void incorrectRestoreBug();
+    void autoStateAtStartupRestoreBug();
+    void deletingChange();
+    void deletingState();
+    void tempState();
+    void illegalTempState();
+    void nonExistantProperty();
+};
+
+QByteArray tst_qmlstates::fullDataPath(const QString &path)
+{
+    return QUrl::fromLocalFile(SRCDIR + path).toString().toUtf8();    
+}
+
+void tst_qmlstates::basicChanges()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicChanges.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicChanges2.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("green");
+        QCOMPARE(rect->color(),QColor("green"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("green");
+        QCOMPARE(rect->color(),QColor("green"));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicChanges3.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+        QCOMPARE(rect->border()->width(),1);
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(rect->border()->width(),1);
+
+        rect->setState("bordered");
+        QCOMPARE(rect->color(),QColor("red"));
+        QCOMPARE(rect->border()->width(),2);
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+        QCOMPARE(rect->border()->width(),1);
+        //### we should be checking that this is an implicit rather than explicit 1 (which currently fails)
+
+        rect->setState("bordered");
+        QCOMPARE(rect->color(),QColor("red"));
+        QCOMPARE(rect->border()->width(),2);
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(rect->border()->width(),1);
+
+    }
+}
+
+void tst_qmlstates::basicExtension()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicExtension.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+        QCOMPARE(rect->border()->width(),1);
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(rect->border()->width(),1);
+
+        rect->setState("bordered");
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(rect->border()->width(),2);
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(rect->border()->width(),1);
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+        QCOMPARE(rect->border()->width(),1);
+
+        rect->setState("bordered");
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(rect->border()->width(),2);
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+        QCOMPARE(rect->border()->width(),1);
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/fakeExtension.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("green");
+        QCOMPARE(rect->color(),QColor("green"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("green");
+        QCOMPARE(rect->color(),QColor("green"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("green");
+        QCOMPARE(rect->color(),QColor("green"));
+    }
+}
+
+void tst_qmlstates::basicBinding()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicBinding.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        rect->setProperty("sourceColor", QColor("green"));
+        QCOMPARE(rect->color(),QColor("green"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+        rect->setProperty("sourceColor", QColor("yellow"));
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("yellow"));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicBinding2.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        rect->setProperty("sourceColor", QColor("green"));
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("green"));
+        rect->setProperty("sourceColor", QColor("yellow"));
+        QCOMPARE(rect->color(),QColor("yellow"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("yellow"));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicBinding3.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+        rect->setProperty("sourceColor", QColor("green"));
+        QCOMPARE(rect->color(),QColor("green"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        rect->setProperty("sourceColor", QColor("red"));
+        QCOMPARE(rect->color(),QColor("blue"));
+        rect->setProperty("sourceColor2", QColor("yellow"));
+        QCOMPARE(rect->color(),QColor("yellow"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+        rect->setProperty("sourceColor2", QColor("green"));
+        QCOMPARE(rect->color(),QColor("red"));
+        rect->setProperty("sourceColor", QColor("yellow"));
+        QCOMPARE(rect->color(),QColor("yellow"));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicBinding4.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+        rect->setProperty("sourceColor", QColor("yellow"));
+        QCOMPARE(rect->color(),QColor("yellow"));
+
+        rect->setState("green");
+        QCOMPARE(rect->color(),QColor("green"));
+        rect->setProperty("sourceColor", QColor("purple"));
+        QCOMPARE(rect->color(),QColor("green"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("purple"));
+
+        rect->setState("green");
+        QCOMPARE(rect->color(),QColor("green"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("red"));
+    }
+}
+
+class MyRect : public QDeclarativeRectangle
+{
+   Q_OBJECT
+public:
+    MyRect() {}
+    void doSomething() { emit didSomething(); }
+Q_SIGNALS:
+    void didSomething();
+};
+
+QML_DECLARE_TYPE(MyRect)
+
+void tst_qmlstates::initTestCase()
+{
+    QML_REGISTER_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
+}
+
+void tst_qmlstates::signalOverride()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/signalOverride.qml");
+        MyRect *rect = qobject_cast<MyRect*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("green");
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("green"));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/signalOverride2.qml");
+        MyRect *rect = qobject_cast<MyRect*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("white"));
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("extendedRect"));
+
+        innerRect->setState("green");
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(innerRect->color(),QColor("green"));
+        QCOMPARE(innerRect->property("extendedColor").value<QColor>(),QColor("green"));
+    }
+}
+
+void tst_qmlstates::signalOverrideCrash()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/signalOverrideCrash.qml");
+    MyRect *rect = qobject_cast<MyRect*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    rect->setState("overridden");
+    rect->doSomething();
+}
+
+void tst_qmlstates::parentChange()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        QDeclarativeListReference list(rect, "states");
+        QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+        QVERIFY(state != 0);
+
+        qmlExecuteDeferred(state);
+        QDeclarativeParentChange *pChange = qobject_cast<QDeclarativeParentChange*>(state->operationAt(0));
+        QVERIFY(pChange != 0);
+        QDeclarativeItem *nParent = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("NewParent"));
+        QVERIFY(nParent != 0);
+
+        QCOMPARE(pChange->parent(), nParent);
+
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(-133));
+        QCOMPARE(innerRect->y(), qreal(-300));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange2.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(15));
+        QCOMPARE(innerRect->scale(), qreal(.5));
+        QEXPECT_FAIL("", "QTBUG-2919", Continue);
+        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(12.4148145657));
+        QEXPECT_FAIL("", "QTBUG-2919", Continue);
+        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(10.6470476128));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange3.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(-37));
+        QCOMPARE(innerRect->scale(), qreal(.25));
+        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(-217.305));
+        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(-164.413));
+
+        rect->setState("");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(5));
+        QEXPECT_FAIL("", "QTBUG-2919", Continue);
+        QCOMPARE(innerRect->y(), qreal(0));
+    }
+}
+
+void tst_qmlstates::parentChangeErrors()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange4.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        QTest::ignoreMessage(QtWarningMsg, QByteArray("QML ParentChange (" + fullDataPath("/data/parentChange4.qml") + ":25:9) Unable to preserve appearance under non-uniform scale").constData());
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(5));
+        QCOMPARE(innerRect->y(), qreal(5));
+    }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange5.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        QTest::ignoreMessage(QtWarningMsg, QByteArray("QML ParentChange (" + fullDataPath("/data/parentChange5.qml") + ":25:9) Unable to preserve appearance under complex transform").constData());
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(5));
+        QCOMPARE(innerRect->y(), qreal(5));
+    }
+}
+
+void tst_qmlstates::anchorChanges()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    QDeclarativeListReference list(rect, "states");
+    QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QDeclarativeAnchorChanges *aChanges = qobject_cast<QDeclarativeAnchorChanges*>(state->operationAt(0));
+    QVERIFY(aChanges != 0);
+
+    rect->setState("right");
+    QCOMPARE(innerRect->x(), qreal(150));
+    QCOMPARE(aChanges->reset(), QString("left"));
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->right().item, rect->right().item);
+    QCOMPARE(aChanges->right().anchorLine, rect->right().anchorLine);
+
+    rect->setState("");
+    QCOMPARE(innerRect->x(), qreal(5));
+
+    delete rect;
+}
+
+void tst_qmlstates::anchorChanges2()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges2.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    rect->setState("right");
+    QEXPECT_FAIL("", "QTBUG-5338", Continue);
+    QCOMPARE(innerRect->x(), qreal(150));
+
+    rect->setState("");
+    QCOMPARE(innerRect->x(), qreal(5));
+
+    delete rect;
+}
+
+void tst_qmlstates::anchorChanges3()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges3.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    QDeclarativeItem *leftGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("LeftGuideline"));
+    QVERIFY(leftGuideline != 0);
+
+    QDeclarativeItem *bottomGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("BottomGuideline"));
+    QVERIFY(bottomGuideline != 0);
+
+    QDeclarativeListReference list(rect, "states");
+    QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QDeclarativeAnchorChanges *aChanges = qobject_cast<QDeclarativeAnchorChanges*>(state->operationAt(0));
+    QVERIFY(aChanges != 0);
+
+    rect->setState("reanchored");
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->left().item, leftGuideline->left().item);
+    QCOMPARE(aChanges->left().anchorLine, leftGuideline->left().anchorLine);
+    QCOMPARE(aChanges->right().item, rect->right().item);
+    QCOMPARE(aChanges->right().anchorLine, rect->right().anchorLine);
+    QCOMPARE(aChanges->top().item, rect->top().item);
+    QCOMPARE(aChanges->top().anchorLine, rect->top().anchorLine);
+    QCOMPARE(aChanges->bottom().item, bottomGuideline->bottom().item);
+    QCOMPARE(aChanges->bottom().anchorLine, bottomGuideline->bottom().anchorLine);
+
+    QCOMPARE(innerRect->x(), qreal(10));
+    QCOMPARE(innerRect->y(), qreal(0));
+    QCOMPARE(innerRect->width(), qreal(190));
+    QCOMPARE(innerRect->height(), qreal(150));
+
+    rect->setState("");
+    QCOMPARE(innerRect->x(), qreal(0));
+    QCOMPARE(innerRect->y(), qreal(10));
+    QCOMPARE(innerRect->width(), qreal(150));
+    QCOMPARE(innerRect->height(), qreal(190));
+
+    delete rect;
+}
+
+void tst_qmlstates::anchorChanges4()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges4.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    QDeclarativeItem *leftGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("LeftGuideline"));
+    QVERIFY(leftGuideline != 0);
+
+    QDeclarativeItem *bottomGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("BottomGuideline"));
+    QVERIFY(bottomGuideline != 0);
+
+    QDeclarativeListReference list(rect, "states");
+    QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QDeclarativeAnchorChanges *aChanges = qobject_cast<QDeclarativeAnchorChanges*>(state->operationAt(0));
+    QVERIFY(aChanges != 0);
+
+    rect->setState("reanchored");
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
+    QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
+    QCOMPARE(aChanges->verticalCenter().item, leftGuideline->verticalCenter().item);
+    QCOMPARE(aChanges->verticalCenter().anchorLine, leftGuideline->verticalCenter().anchorLine);
+
+    delete rect;
+}
+
+void tst_qmlstates::anchorChanges5()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorChanges5.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    QDeclarativeItem *leftGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("LeftGuideline"));
+    QVERIFY(leftGuideline != 0);
+
+    QDeclarativeItem *bottomGuideline = qobject_cast<QDeclarativeItem*>(rect->findChild<QDeclarativeItem*>("BottomGuideline"));
+    QVERIFY(bottomGuideline != 0);
+
+    QDeclarativeListReference list(rect, "states");
+    QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QDeclarativeAnchorChanges *aChanges = qobject_cast<QDeclarativeAnchorChanges*>(state->operationAt(0));
+    QVERIFY(aChanges != 0);
+
+    rect->setState("reanchored");
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
+    QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
+    QCOMPARE(aChanges->baseline().item, leftGuideline->baseline().item);
+    QCOMPARE(aChanges->baseline().anchorLine, leftGuideline->baseline().anchorLine);
+
+    delete rect;
+}
+
+void tst_qmlstates::script()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/script.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("blue")); // a script isn't reverted
+    }
+}
+
+void tst_qmlstates::restoreEntryValues()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/restoreEntryValues.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("blue"));
+}
+
+void tst_qmlstates::explicitChanges()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/explicit.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeListReference list(rect, "states");
+    QDeclarativeState *state = qobject_cast<QDeclarativeState*>(list.at(0));
+    QVERIFY(state != 0);
+
+    qmlExecuteDeferred(state);
+    QDeclarativePropertyChanges *changes = qobject_cast<QDeclarativePropertyChanges*>(rect->findChild<QDeclarativePropertyChanges*>("changes"));
+    QVERIFY(changes != 0);
+    QVERIFY(changes->isExplicit());
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setProperty("sourceColor", QColor("green"));
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+    rect->setProperty("sourceColor", QColor("yellow"));
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("yellow"));
+}
+
+void tst_qmlstates::propertyErrors()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/propertyErrors.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to non-existent property \"colr\"").constData());
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/propertyErrors.qml") + ":8:9) Cannot assign to read-only property \"wantsFocus\"").constData());
+    rect->setState("blue");
+}
+
+void tst_qmlstates::incorrectRestoreBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/basicChanges.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+
+    // make sure if we change the base state value, we then restore to it correctly
+    rect->setColor(QColor("green"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("green"));
+}
+
+void tst_qmlstates::autoStateAtStartupRestoreBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent component(&engine, SRCDIR "/data/autoStateAtStartupRestoreBug.qml");
+    QObject *obj = component.create();
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->property("test").toInt(), 3);
+
+    obj->setProperty("input", 2);
+
+    QCOMPARE(obj->property("test").toInt(), 9);
+
+    delete obj;
+}
+
+void tst_qmlstates::deletingChange()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/deleting.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+    QCOMPARE(rect->radius(),qreal(5));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+    QCOMPARE(rect->radius(),qreal(0));
+
+    QDeclarativePropertyChanges *pc = rect->findChild<QDeclarativePropertyChanges*>("pc1");
+    QVERIFY(pc != 0);
+    delete pc;
+
+    QDeclarativeState *state = rect->findChild<QDeclarativeState*>();
+    QVERIFY(state != 0);
+    qmlExecuteDeferred(state);
+    QCOMPARE(state->operationCount(), 1);
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("red"));
+    QCOMPARE(rect->radius(),qreal(5));
+
+    delete rect;
+}
+
+void tst_qmlstates::deletingState()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/deletingState.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeStateGroup *sg = rect->findChild<QDeclarativeStateGroup*>();
+    QVERIFY(sg != 0);
+    QVERIFY(sg->findState("blue") != 0);
+
+    sg->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    sg->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+
+    QDeclarativeState *state = rect->findChild<QDeclarativeState*>();
+    QVERIFY(state != 0);
+    delete state;
+
+    QVERIFY(sg->findState("blue") == 0);
+
+    //### should we warn that state doesn't exist
+    sg->setState("blue");
+    QCOMPARE(rect->color(),QColor("red"));
+
+    delete rect;
+}
+
+void tst_qmlstates::tempState()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/legalTempState.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QTest::ignoreMessage(QtDebugMsg, "entering placed");
+    QTest::ignoreMessage(QtDebugMsg, "entering idle");
+    rect->setState("placed");
+    QCOMPARE(rect->state(), QLatin1String("idle"));
+}
+
+void tst_qmlstates::illegalTempState()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/illegalTempState.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "Can't apply a state change as part of a state definition. ");
+    rect->setState("placed");
+    QCOMPARE(rect->state(), QLatin1String("placed"));
+}
+
+void tst_qmlstates::nonExistantProperty()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/nonExistantProp.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/nonExistantProp.qml") + ":9:9) Cannot assign to non-existent property \"colr\"").constData());
+    rect->setState("blue");
+    QCOMPARE(rect->state(), QLatin1String("blue"));
+}
+
+QTEST_MAIN(tst_qmlstates)
+
+#include "tst_qdeclarativestates.moc"
