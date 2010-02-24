@@ -51,7 +51,7 @@
 #include <qdeclarativeexpression.h>
 #include <qdeclarativestringconverters_p.h>
 #include <qdeclarativeglobal_p.h>
-#include <qdeclarativemetatype.h>
+#include <qdeclarativemetatype_p.h>
 
 #include <qvariant.h>
 #include <qcolor.h>

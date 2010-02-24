@@ -39,20 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEMETATYPE_H
-#define QDECLARATIVEMETATYPE_H
+#ifndef QDECLARATIVEMETATYPE_P_H
+#define QDECLARATIVEMETATYPE_P_H
 
-#include "qdeclarativeprivate.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qdeclarative.h"
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qbitarray.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
 
 class QDeclarativeType;
 class QDeclarativeCustomParser;
@@ -138,7 +145,5 @@ private:
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QDECLARATIVEMETATYPE_H
+#endif // QDECLARATIVEMETATYPE_P_H
 

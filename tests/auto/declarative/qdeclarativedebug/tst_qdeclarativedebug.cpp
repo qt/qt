@@ -49,7 +49,6 @@
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeexpression.h>
-#include <QtDeclarative/qdeclarativemetatype.h>
 #include <QtDeclarative/qdeclarativemetaproperty.h>
 
 #include <private/qdeclarativebinding_p.h>
@@ -58,6 +57,7 @@
 #include <private/qdeclarativedebugclient_p.h>
 #include <private/qdeclarativedebugservice_p.h>
 #include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativemetatype_p.h>
 
 #include "../shared/debugutil_p.h"
 

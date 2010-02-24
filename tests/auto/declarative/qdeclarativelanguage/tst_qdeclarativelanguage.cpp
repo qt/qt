@@ -41,12 +41,14 @@
 #include <qtest.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
-#include <QtDeclarative/qdeclarativemetatype.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdir.h>
+
 #include <private/qdeclarativemetaproperty_p.h>
+#include <private/qdeclarativemetatype_p.h>
+
 #include "testtypes.h"
 
 #include "../../../shared/util.h"

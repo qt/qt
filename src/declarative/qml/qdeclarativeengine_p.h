@@ -67,7 +67,7 @@
 #include "qdeclarativeobjectscriptclass_p.h"
 #include "qdeclarativecontextscriptclass_p.h"
 #include "qdeclarativevaluetypescriptclass_p.h"
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 
 #include <QtScript/QScriptClass>
 #include <QtScript/QScriptValue>

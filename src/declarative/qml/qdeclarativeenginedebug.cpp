@@ -43,7 +43,7 @@
 
 #include "qdeclarativeboundsignal_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 #include "qdeclarativemetaproperty.h"
 #include "qdeclarativebinding_p.h"
 #include "qdeclarativecontext_p.h"

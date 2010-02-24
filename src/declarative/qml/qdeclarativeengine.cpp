@@ -68,6 +68,7 @@
 #include "qdeclarativedirparser_p.h"
 #include "qdeclarativeextensioninterface.h"
 #include "qdeclarativelist_p.h"
+#include "qdeclarativetypenamecache_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -1503,9 +1504,6 @@ QDeclarativeEnginePrivate::Imports::~Imports()
         delete d;
 }
 
-#include "qdeclarativemetatype.h"
-#include "qdeclarativetypenamecache_p.h"
-
 static QDeclarativeTypeNameCache *cacheForNamespace(QDeclarativeEngine *engine, const QDeclarativeEnginePrivate::ImportedNamespace &set, QDeclarativeTypeNameCache *cache)
 {
     if (!cache)
@@ -1667,6 +1665,7 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
                                         const QStringList &suffixes,
                                         const QString &prefix)
 {
+    qWarning() << baseName;
     foreach (const QString &suffix, suffixes) {
         QString pluginFileName = prefix;
 

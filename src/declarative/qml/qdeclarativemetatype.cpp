@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 
 #include "qdeclarativeproxymetaobject_p.h"
 #include "qdeclarativecustomparser_p.h"
