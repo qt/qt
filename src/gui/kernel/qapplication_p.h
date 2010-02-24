@@ -530,6 +530,7 @@ public:
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 #if defined(Q_WS_WIN)
+    static bool HasTouchSupport;
     static PtrRegisterTouchWindow RegisterTouchWindow;
     static PtrGetTouchInputInfo GetTouchInputInfo;
     static PtrCloseTouchInputHandle CloseTouchInputHandle;
