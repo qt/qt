@@ -471,6 +471,12 @@
 
     \tableofcontents
 
+    \section1 Declarative UI development with Qt Quick
+
+    \section1 Network Bearer Management
+
+    \section1 Multimedia - playback and playlist management
+
     \section1 New Classes, Functions, Macros, etc.
 
     Links to new classes, functions, macros, and other items
