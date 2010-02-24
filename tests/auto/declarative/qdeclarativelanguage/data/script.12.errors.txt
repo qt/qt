@@ -1,1 +1,1 @@
-4:5:QmlJS declaration outside Script element
+4:5:JavaScript declaration outside Script element

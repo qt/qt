@@ -52,6 +52,7 @@
 #include <QFont>
 #include <qdeclarative.h>
 #include <QDeclarativePropertyValueSource>
+#include <QDeclarativeMetaProperty>
 
 class MyTypeObject : public QObject
 {

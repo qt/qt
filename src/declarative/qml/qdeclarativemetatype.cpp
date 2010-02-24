@@ -131,7 +131,7 @@ public:
     int m_parserStatusCast;
     int m_propertyValueSourceCast;
     int m_propertyValueInterceptorCast;
-    QDeclarativePrivate::CreateFunc m_extFunc;
+    QObject *(*m_extFunc)(QObject *);
     const QMetaObject *m_extMetaObject;
     int m_index;
     QDeclarativeCustomParser *m_customParser;
@@ -148,13 +148,13 @@ QDeclarativeTypePrivate::QDeclarativeTypePrivate()
 }
 
 
-QDeclarativeType::QDeclarativeType(int type, int listType, const char *iid, int index)
+QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::RegisterInterface &interface)
 : d(new QDeclarativeTypePrivate)
 {
     d->m_isInterface = true;
-    d->m_iid = iid;
-    d->m_typeId = type;
-    d->m_listId = listType;
+    d->m_iid = interface.iid;
+    d->m_typeId = interface.typeId;
+    d->m_listId = interface.listId;
     d->m_newFunc = 0;
     d->m_index = index;
     d->m_isSetup = true;
@@ -162,36 +162,31 @@ QDeclarativeType::QDeclarativeType(int type, int listType, const char *iid, int 
     d->m_version_min = 0;
 }
 
-QDeclarativeType::QDeclarativeType(int type, int listType, 
-                 QObject *(*newFunc)(), const char *qmlName,
-                 int version_maj, int version_min,
-                 const QMetaObject *metaObject,
-                 QDeclarativeAttachedPropertiesFunc attachedPropertiesFunc,
-                 const QMetaObject *attachedType,
-                 int parserStatusCast, int propertyValueSourceCast, int propertyValueInterceptorCast,
-                 QDeclarativePrivate::CreateFunc extFunc,
-                 const QMetaObject *extMetaObject, int index,
-                 QDeclarativeCustomParser *customParser)
+QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::RegisterType &type)
 : d(new QDeclarativeTypePrivate)
 {
-    d->m_name = qmlName;
-    d->m_version_maj = version_maj;
-    d->m_version_min = version_min;
-    d->m_typeId = type;
-    d->m_listId = listType;
-    d->m_newFunc = newFunc;
-    d->m_baseMetaObject = metaObject;
-    d->m_attachedPropertiesFunc = attachedPropertiesFunc;
-    d->m_attachedPropertiesType = attachedType;
-    d->m_parserStatusCast = parserStatusCast;
-    d->m_propertyValueSourceCast = propertyValueSourceCast;
-    d->m_propertyValueInterceptorCast = propertyValueInterceptorCast;
-    d->m_extFunc = extFunc;
-    d->m_index = index;
-    d->m_customParser = customParser;
+    QByteArray name = type.uri;
+    if (type.uri) name += '/';
+    name += type.elementName;
 
-    if (extMetaObject)
-        d->m_extMetaObject = extMetaObject;
+    d->m_name = name;
+    d->m_version_maj = type.versionMajor;
+    d->m_version_min = type.versionMinor;
+    d->m_typeId = type.typeId;
+    d->m_listId = type.listId;
+    d->m_newFunc = type.create;
+    d->m_baseMetaObject = type.metaObject;
+    d->m_attachedPropertiesFunc = type.attachedPropertiesFunction;
+    d->m_attachedPropertiesType = type.attachedPropertiesMetaObject;
+    d->m_parserStatusCast = type.parserStatusCast;
+    d->m_propertyValueSourceCast = type.valueSourceCast;
+    d->m_propertyValueInterceptorCast = type.valueInterceptorCast;
+    d->m_extFunc = type.extensionObjectCreate;
+    d->m_index = index;
+    d->m_customParser = type.customParser;
+
+    if (type.extensionMetaObject)
+        d->m_extMetaObject = type.extensionMetaObject;
 }
 
 QDeclarativeType::~QDeclarativeType()
@@ -357,15 +352,19 @@ int QDeclarativeType::index() const
     return d->m_index;
 }
 
-int QDeclarativeMetaType::registerInterface(const QDeclarativePrivate::MetaTypeIds &id,
-                                    const char *iid)
+int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterInterface &interface)
 {
+    if (interface.version > 0) {
+        qWarning("Cannot mix incompatible QML versions.");
+        return -1;
+    }
+
     QWriteLocker lock(metaTypeDataLock());
     QDeclarativeMetaTypeData *data = metaTypeData();
 
     int index = data->types.count();
 
-    QDeclarativeType *type = new QDeclarativeType(id.typeId, id.listId, iid, index);
+    QDeclarativeType *type = new QDeclarativeType(index, interface);
 
     data->types.append(type);
     data->idToType.insert(type->typeId(), type);
@@ -374,27 +373,22 @@ int QDeclarativeMetaType::registerInterface(const QDeclarativePrivate::MetaTypeI
     if (!type->qmlTypeName().isEmpty())
         data->nameToType.insert(type->qmlTypeName(), type);
 
-    if (data->interfaces.size() <= id.typeId)
-        data->interfaces.resize(id.typeId + 16);
-    if (data->lists.size() <= id.listId)
-        data->lists.resize(id.listId + 16);
-    data->interfaces.setBit(id.typeId, true);
-    data->lists.setBit(id.listId, true);
+    if (data->interfaces.size() <= interface.typeId)
+        data->interfaces.resize(interface.typeId + 16);
+    if (data->lists.size() <= interface.listId)
+        data->lists.resize(interface.listId + 16);
+    data->interfaces.setBit(interface.typeId, true);
+    data->lists.setBit(interface.listId, true);
 
     return index;
 }
 
-int QDeclarativeMetaType::registerType(const QDeclarativePrivate::MetaTypeIds &id, QObject *(*func)(),
-        const char *uri, int version_maj, int version_min, const char *cname,
-        const QMetaObject *mo, QDeclarativeAttachedPropertiesFunc attach, const QMetaObject *attachMo,
-        int pStatus, int object, int valueSource, int valueInterceptor, QDeclarativePrivate::CreateFunc extFunc, const QMetaObject *extmo, QDeclarativeCustomParser *parser)
+int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &type)
 {
-    Q_UNUSED(object);
-
-    if (cname) {
-        for (int ii = 0; cname[ii]; ++ii) {
-            if (!isalnum(cname[ii])) {
-                qWarning("QDeclarativeMetaType: Invalid QML name %s", cname);
+    if (type.elementName) {
+        for (int ii = 0; type.elementName[ii]; ++ii) {
+            if (!isalnum(type.elementName[ii])) {
+                qWarning("QDeclarativeMetaType: Invalid QML element name %s", type.elementName);
                 return -1;
             }
         }
@@ -404,30 +398,23 @@ int QDeclarativeMetaType::registerType(const QDeclarativePrivate::MetaTypeIds &i
     QDeclarativeMetaTypeData *data = metaTypeData();
     int index = data->types.count();
 
-    QByteArray name = uri;
-    if (uri)
-        name += '/';
-    name += cname;
+    QDeclarativeType *dtype = new QDeclarativeType(index, type);
 
-    QDeclarativeType *type = new QDeclarativeType(id.typeId, id.listId, 
-                                func, name, version_maj, version_min, mo, attach, attachMo, pStatus,
-                                valueSource, valueInterceptor, extFunc, extmo, index, parser);
+    data->types.append(dtype);
+    data->idToType.insert(dtype->typeId(), dtype);
+    data->idToType.insert(dtype->qListTypeId(), dtype);
 
-    data->types.append(type);
-    data->idToType.insert(type->typeId(), type);
-    data->idToType.insert(type->qListTypeId(), type);
+    if (!dtype->qmlTypeName().isEmpty())
+        data->nameToType.insertMulti(dtype->qmlTypeName(), dtype);
 
-    if (!type->qmlTypeName().isEmpty())
-        data->nameToType.insertMulti(type->qmlTypeName(), type);
+    data->metaObjectToType.insert(dtype->baseMetaObject(), dtype);
 
-    data->metaObjectToType.insert(type->baseMetaObject(), type);
-
-    if (data->objects.size() <= id.typeId)
-        data->objects.resize(id.typeId + 16);
-    if (data->lists.size() <= id.listId)
-        data->lists.resize(id.listId + 16);
-    data->objects.setBit(id.typeId, true);
-    data->lists.setBit(id.listId, true);
+    if (data->objects.size() <= type.typeId)
+        data->objects.resize(type.typeId + 16);
+    if (data->lists.size() <= type.listId)
+        data->lists.resize(type.listId + 16);
+    data->objects.setBit(type.typeId, true);
+    data->lists.setBit(type.listId, true);
 
     return index;
 }

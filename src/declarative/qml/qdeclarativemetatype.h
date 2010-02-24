@@ -43,10 +43,6 @@
 #define QDECLARATIVEMETATYPE_H
 
 #include "qdeclarativeprivate.h"
-#include "qdeclarativeparserstatus.h"
-#include "qdeclarativepropertyvaluesource.h"
-#include "qdeclarativepropertyvalueinterceptor.h"
-#include "qdeclarativelist.h"
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
@@ -63,9 +59,6 @@ class QDeclarativeCustomParser;
 class Q_DECLARATIVE_EXPORT QDeclarativeMetaType
 {
 public:
-    static int registerType(const QDeclarativePrivate::MetaTypeIds &, QObject *(*)(), const char *, int vmaj, int vmin, const char *qmlName, const QMetaObject *, QDeclarativeAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, int valueSource, int valueInterceptor, QDeclarativePrivate::CreateFunc extFunc, const QMetaObject *extmo, QDeclarativeCustomParser *);
-    static int registerInterface(const QDeclarativePrivate::MetaTypeIds &, const char *);
-
     static bool copy(int type, void *data, const void *copy = 0);
 
     static QList<QByteArray> qmlTypeNames();
@@ -132,146 +125,16 @@ public:
 
     int index() const;
 private:
-    friend class QDeclarativeMetaType;
     friend class QDeclarativeTypePrivate;
-    friend struct QDeclarativeMetaTypeData;
-    QDeclarativeType(int, int, const char *, int);
-    QDeclarativeType(int, int, QObject *(*)(), const char *, int, int, const QMetaObject *, QDeclarativeAttachedPropertiesFunc, const QMetaObject *, int, int, int, QDeclarativePrivate::CreateFunc, const QMetaObject *, int, QDeclarativeCustomParser *);
+    friend class QDeclarativeMetaTypeData;
+    friend int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterInterface &);
+    friend int QDeclarativePrivate::registerType(const QDeclarativePrivate::RegisterType &);
+    QDeclarativeType(int, const QDeclarativePrivate::RegisterInterface &);
+    QDeclarativeType(int, const QDeclarativePrivate::RegisterType &);
     ~QDeclarativeType();
 
     QDeclarativeTypePrivate *d;
 };
-
-template<typename T>
-int qmlRegisterType(const char *typeName)
-{
-    QByteArray name(typeName);
-    QDeclarativePrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
-        qRegisterMetaType<QDeclarativeListProperty<T> >(QByteArray("QDeclarativeListProperty<" + name + ">").constData()),
-    };
-
-    return QDeclarativeMetaType::registerType(ids, 0, 0, 0, 0, 0,
-            &T::staticMetaObject,
-            QDeclarativePrivate::attachedPropertiesFunc<T>(),
-            QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(), 
-            QDeclarativePrivate::StaticCastSelector<T,QObject>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
-            0, 0, 0);
-}
-
-template<typename T>
-int qmlRegisterType(const char *uri, int version_maj, int version_min, const char *qmlName, const char *typeName)
-{
-    QByteArray name(typeName);
-    QDeclarativePrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
-        qRegisterMetaType<QDeclarativeListProperty<T> >(QByteArray("QDeclarativeListProperty<" + name + ">").constData()),
-    };
-
-    return QDeclarativeMetaType::registerType(ids, QDeclarativePrivate::create<T>, 
-            uri, version_maj, version_min, qmlName, 
-            &T::staticMetaObject,
-            QDeclarativePrivate::attachedPropertiesFunc<T>(),
-            QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(), 
-            QDeclarativePrivate::StaticCastSelector<T,QObject>::cast(), 
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
-            0, 0, 0);
-}
-
-template<typename T, typename E>
-int qmlRegisterExtendedType(const char *typeName)
-{
-    QByteArray name(typeName);
-    QDeclarativePrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
-        qRegisterMetaType<QDeclarativeListProperty<T> >(QByteArray("QDeclarativeListProperty<" + name + ">").constData()),
-    };
-
-    QDeclarativeAttachedPropertiesFunc attached = 
-        QDeclarativePrivate::attachedPropertiesFunc<E>();
-    const QMetaObject * attachedMo = 
-        QDeclarativePrivate::attachedPropertiesMetaObject<E>();
-    if (!attached) {
-        attached = QDeclarativePrivate::attachedPropertiesFunc<T>();
-        attachedMo = QDeclarativePrivate::attachedPropertiesMetaObject<T>();
-    }
-
-    return QDeclarativeMetaType::registerType(ids, 0, 0, 0, 0, 0,
-            &T::staticMetaObject, attached, attachedMo,
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(), 
-            QDeclarativePrivate::StaticCastSelector<T,QObject>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
-            &QDeclarativePrivate::CreateParent<E>::create, &E::staticMetaObject, 0);
-}
-
-template<typename T, typename E>
-int qmlRegisterExtendedType(const char *uri, int version_maj, int version_min, const char *qmlName, const char *typeName)
-{
-    QByteArray name(typeName);
-    QDeclarativePrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
-        qRegisterMetaType<QDeclarativeListProperty<T> >(QByteArray("QDeclarativeListProperty<" + name + ">").constData()),
-    };
-
-    QDeclarativeAttachedPropertiesFunc attached = 
-        QDeclarativePrivate::attachedPropertiesFunc<E>();
-    const QMetaObject * attachedMo = 
-        QDeclarativePrivate::attachedPropertiesMetaObject<E>(); 
-    if (!attached) {
-        attached = QDeclarativePrivate::attachedPropertiesFunc<T>();
-        attachedMo = QDeclarativePrivate::attachedPropertiesMetaObject<T>();
-    }
-
-    return QDeclarativeMetaType::registerType(ids, QDeclarativePrivate::create<T>, 
-            uri, version_maj, version_min, qmlName, 
-            &T::staticMetaObject,
-            attached, attachedMo,
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(), 
-            QDeclarativePrivate::StaticCastSelector<T,QObject>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
-            &QDeclarativePrivate::CreateParent<E>::create, 
-            &E::staticMetaObject, 0);
-}
-
-template<typename T>
-int qmlRegisterInterface(const char *typeName)
-{
-    QByteArray name(typeName);
-    QDeclarativePrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
-        qRegisterMetaType<QDeclarativeListProperty<T> >(QByteArray("QDeclarativeListProperty<" + name + ">").constData()),
-    };
-
-    return QDeclarativeMetaType::registerInterface(ids, qobject_interface_iid<T *>());
-}
-
-template<typename T>
-int qmlRegisterCustomType(const char *uri, int version_maj, int version_min, const char *qmlName, const char *typeName, QDeclarativeCustomParser *parser)
-{
-    QByteArray name(typeName);
-    QDeclarativePrivate::MetaTypeIds ids = {
-        qRegisterMetaType<T *>(QByteArray(name + '*').constData()),
-        qRegisterMetaType<QDeclarativeListProperty<T> >(QByteArray("QDeclarativeListProperty<" + name + ">").constData()),
-    };
-
-    return QDeclarativeMetaType::registerType(ids, QDeclarativePrivate::create<T>, 
-            uri, version_maj, version_min, qmlName, 
-            &T::staticMetaObject,
-            QDeclarativePrivate::attachedPropertiesFunc<T>(),
-            QDeclarativePrivate::attachedPropertiesMetaObject<T>(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativeParserStatus>::cast(), 
-            QDeclarativePrivate::StaticCastSelector<T,QObject>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueSource>::cast(),
-            QDeclarativePrivate::StaticCastSelector<T,QDeclarativePropertyValueInterceptor>::cast(),
-            0, 0, parser);
-}
 
 QT_END_NAMESPACE
 

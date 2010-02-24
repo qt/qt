@@ -45,6 +45,7 @@
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>
+#include <qdeclarativemetaproperty.h>
 
 #include <QtCore/qfile.h>
 #include <QtCore/qdebug.h>
