@@ -1680,7 +1680,7 @@ bool QDirectFBScreen::initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *d
 
 uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl)
 {
-    void *mem;
+    void *mem = 0;
     const DFBResult result = surface->Lock(surface, flags, &mem, bpl);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBScreen::lockSurface()", result);
