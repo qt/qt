@@ -514,7 +514,7 @@ void tst_qdeclarativelanguage::idProperty()
 
 // Tests automatic connection to notify signals if "onBlahChanged" syntax is used
 // even if the notify signal for "blah" is not called "blahChanged"
-void tst_qmllanguage::autoNotifyConnection()
+void tst_qdeclarativelanguage::autoNotifyConnection()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("autoNotifyConnection.qml"));
     VERIFY_ERRORS(0);
