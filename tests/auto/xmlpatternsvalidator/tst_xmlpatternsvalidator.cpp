@@ -196,6 +196,21 @@ void tst_XmlPatternsValidator::xsdSupport_data() const
         << 1
         << (QStringList() << QLatin1String("files/instance.xml"))
         << QString();
+
+    QTest::newRow("A schema with an indirectly included type")
+        << 0
+        << (QStringList() << QLatin1String("files/indirect-include-a.xsd"))
+        << QString();
+
+    QTest::newRow("A schema with an indirectly imported type")
+        << 0
+        << (QStringList() << QLatin1String("files/indirect-import-a.xsd"))
+        << QString();
+
+    QTest::newRow("A schema with an indirectly redefined type")
+        << 0
+        << (QStringList() << QLatin1String("files/indirect-redefine-a.xsd"))
+        << QString();
 }
 
 QTEST_MAIN(tst_XmlPatternsValidator)
