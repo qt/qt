@@ -368,7 +368,7 @@ static int appendToSpecialCaseMap(const QList<int> &map)
 
 struct UnicodeData {
     UnicodeData(int codepoint = 0) {
-        p.category = QChar::NoCategory;
+        p.category = QChar::Other_NotAssigned; // Cn
         p.combiningClass = 0;
 
         p.direction = QChar::DirL;
