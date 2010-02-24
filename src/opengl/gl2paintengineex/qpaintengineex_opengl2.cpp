@@ -1309,7 +1309,6 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
                                             ? QFontEngineGlyphCache::Type(textItem->fontEngine->glyphFormat)
                                             : d->glyphCacheType;
 
-    // ### What about huge fonts? These are not passed through cache in drawTextItem().
     d->drawCachedGlyphs(glyphType, textItem, true);
 }
 
