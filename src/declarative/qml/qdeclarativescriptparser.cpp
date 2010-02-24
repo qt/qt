@@ -771,7 +771,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 
         } else {
             QDeclarativeError error;
-            error.setDescription(QCoreApplication::translate("QDeclarativeParser","QDeclarativeJS declaration outside Script element"));
+            error.setDescription(QCoreApplication::translate("QDeclarativeParser","JavaScript declaration outside Script element"));
             error.setLine(node->firstSourceLocation().startLine);
             error.setColumn(node->firstSourceLocation().startColumn);
             _parser->_errors << error;
