@@ -49,9 +49,9 @@ QT_BEGIN_NAMESPACE
 
 #define BLD_INF_FILENAME "bld.inf"
 #define MAKEFILE_DEPENDENCY_SEPARATOR " \\\n\t"
-
 #define QT_EXTRA_INCLUDE_DIR "tmp"
 #define MAKE_CACHE_NAME ".make.cache"
+#define SYMBIAN_TEST_CONFIG "symbian_test"
 
 class SymbianMakefileGenerator : public MakefileGenerator
 {
