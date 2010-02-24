@@ -76,7 +76,8 @@ public:
         TranslationsPath,
         SettingsPath,
         DemosPath,
-        ExamplesPath
+        ExamplesPath,
+        ImportsPath
     };
     static QString location(LibraryLocation); // ### Qt 5: consider renaming it to path()
 
