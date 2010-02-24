@@ -504,8 +504,8 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
     \a future. For example, if the future is already stopped, the
     finished signal will be emitted.
 
-    To avoid race condition, it is important to call this function after doing
-    the connections.
+    To avoid a race condition, it is important to call this function
+    \i after doing the connections.
 */
 
 /*! \fn QFuture<T> QFutureWatcher::future() const
