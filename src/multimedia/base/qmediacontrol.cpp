@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QMediaControl
     \ingroup multimedia-serv
+    \since 4.7
 
     \preliminary
     \brief The QMediaControl class provides a base interface for media service controls.

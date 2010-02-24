@@ -76,6 +76,7 @@ private:
     \class QMediaContent
     \preliminary
     \brief The QMediaContent class provides access to the resources relating to a media content.
+    \since 4.7
 
     \ingroup multimedia
 
