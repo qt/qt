@@ -44,7 +44,7 @@
 #include <private/qdeclarativemousearea_p.h>
 #include <QtDeclarative/qdeclarativeview.h>
 
-class tst_QmlGraphicsMouseArea: public QObject
+class tst_QDeclarativeMouseArea: public QObject
 {
     Q_OBJECT
 private slots:
@@ -53,7 +53,7 @@ private:
     QDeclarativeView *createView(const QString &filename);
 };
 
-void tst_QmlGraphicsMouseArea::dragProperties()
+void tst_QDeclarativeMouseArea::dragProperties()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/dragproperties.qml");
     canvas->show();
@@ -123,7 +123,7 @@ void tst_QmlGraphicsMouseArea::dragProperties()
     QCOMPARE(ymaxSpy.count(),1);
 }
 
-QDeclarativeView *tst_QmlGraphicsMouseArea::createView(const QString &filename)
+QDeclarativeView *tst_QDeclarativeMouseArea::createView(const QString &filename)
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -133,6 +133,6 @@ QDeclarativeView *tst_QmlGraphicsMouseArea::createView(const QString &filename)
     return canvas;
 }
 
-QTEST_MAIN(tst_QmlGraphicsMouseArea)
+QTEST_MAIN(tst_QDeclarativeMouseArea)
 
 #include "tst_qdeclarativemousearea.moc"

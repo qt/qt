@@ -56,11 +56,11 @@
     } while (false)
 
 
-class tst_qmlimageprovider : public QObject
+class tst_qdeclarativeimageprovider : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlimageprovider()
+    tst_qdeclarativeimageprovider()
     {
     }
 
@@ -83,7 +83,7 @@ public:
     }
 };
 
-void tst_qmlimageprovider::imageSource_data()
+void tst_qdeclarativeimageprovider::imageSource_data()
 {
     QTest::addColumn<QString>("source");
     QTest::addColumn<QString>("error");
@@ -95,7 +95,7 @@ void tst_qmlimageprovider::imageSource_data()
         << "\"Failed to get image from provider: image://bogus/exists.png\" ";
 }
     
-void tst_qmlimageprovider::imageSource()
+void tst_qdeclarativeimageprovider::imageSource()
 {
     QFETCH(QString, source);
     QFETCH(QString, error);
@@ -129,7 +129,7 @@ void tst_qmlimageprovider::imageSource()
     delete obj;
 }
 
-void tst_qmlimageprovider::removeProvider()
+void tst_qdeclarativeimageprovider::removeProvider()
 {
     engine.addImageProvider("test2", new TestProvider);
     QVERIFY(engine.imageProvider("test2") != 0);
@@ -161,6 +161,6 @@ void tst_qmlimageprovider::removeProvider()
 }
 
 
-QTEST_MAIN(tst_qmlimageprovider)
+QTEST_MAIN(tst_qdeclarativeimageprovider)
 
 #include "tst_qdeclarativeimageprovider.moc"

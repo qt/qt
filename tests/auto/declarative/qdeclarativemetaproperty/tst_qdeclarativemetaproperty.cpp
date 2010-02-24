@@ -89,11 +89,11 @@ private:
 QML_DECLARE_TYPE(MyContainer);
 QML_DECLARE_TYPEINFO(MyContainer, QML_HAS_ATTACHED_PROPERTIES)
 
-class tst_qmlmetaproperty : public QObject
+class tst_qdeclarativemetaproperty : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlmetaproperty() {}
+    tst_qdeclarativemetaproperty() {}
 
 private slots:
     void initTestCase();
@@ -125,7 +125,7 @@ private:
     QDeclarativeEngine engine;
 };
 
-void tst_qmlmetaproperty::qmlmetaproperty()
+void tst_qdeclarativemetaproperty::qmlmetaproperty()
 {
     QDeclarativeMetaProperty prop;
 
@@ -209,7 +209,7 @@ private:
 
 QML_DECLARE_TYPE(PropertyObject);
 
-void tst_qmlmetaproperty::qmlmetaproperty_object()
+void tst_qdeclarativemetaproperty::qmlmetaproperty_object()
 {
     QObject object; // Has no default property
     PropertyObject dobject; // Has default property
@@ -310,7 +310,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object()
     }
 }
 
-void tst_qmlmetaproperty::qmlmetaproperty_object_string()
+void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
 {
     QObject object; 
     PropertyObject dobject; 
@@ -459,7 +459,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string()
     }
 }
 
-void tst_qmlmetaproperty::qmlmetaproperty_object_context()
+void tst_qdeclarativemetaproperty::qmlmetaproperty_object_context()
 {
     QObject object; // Has no default property
     PropertyObject dobject; // Has default property
@@ -560,7 +560,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_context()
     }
 }
 
-void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
+void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
 {
     QObject object; 
     PropertyObject dobject; 
@@ -709,7 +709,7 @@ void tst_qmlmetaproperty::qmlmetaproperty_object_string_context()
     }
 }
 
-void tst_qmlmetaproperty::name()
+void tst_qdeclarativemetaproperty::name()
 {
     { 
         QDeclarativeMetaProperty p;
@@ -770,7 +770,7 @@ void tst_qmlmetaproperty::name()
     }
 }
 
-void tst_qmlmetaproperty::read()
+void tst_qdeclarativemetaproperty::read()
 {
     // Invalid 
     {
@@ -872,7 +872,7 @@ void tst_qmlmetaproperty::read()
     }
 }
 
-void tst_qmlmetaproperty::write()
+void tst_qdeclarativemetaproperty::write()
 {
     // Invalid
     {
@@ -994,7 +994,7 @@ void tst_qmlmetaproperty::write()
     }
 }
 
-void tst_qmlmetaproperty::reset()
+void tst_qdeclarativemetaproperty::reset()
 {
     // Invalid
     {
@@ -1067,7 +1067,7 @@ void tst_qmlmetaproperty::reset()
     }
 }
 
-void tst_qmlmetaproperty::writeObjectToList()
+void tst_qdeclarativemetaproperty::writeObjectToList()
 {
     QDeclarativeComponent containerComponent(&engine);
     containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
@@ -1084,7 +1084,7 @@ void tst_qmlmetaproperty::writeObjectToList()
 }
 
 Q_DECLARE_METATYPE(QList<QObject *>);
-void tst_qmlmetaproperty::writeListToList()
+void tst_qdeclarativemetaproperty::writeListToList()
 {
     QDeclarativeComponent containerComponent(&engine);
     containerComponent.setData("import Test 1.0\nMyContainer { children: MyQmlObject {} }", QUrl());
@@ -1106,7 +1106,7 @@ void tst_qmlmetaproperty::writeListToList()
     QCOMPARE(container->children()->size(), 1);*/
 }
 
-void tst_qmlmetaproperty::crashOnValueProperty()
+void tst_qdeclarativemetaproperty::crashOnValueProperty()
 {
     QDeclarativeEngine *engine = new QDeclarativeEngine;
     QDeclarativeComponent component(engine);
@@ -1130,7 +1130,7 @@ void tst_qmlmetaproperty::crashOnValueProperty()
     QCOMPARE(p.read(), QVariant(20));
 }
 
-void tst_qmlmetaproperty::copy()
+void tst_qdeclarativemetaproperty::copy()
 {
     PropertyObject object;
 
@@ -1172,7 +1172,7 @@ void tst_qmlmetaproperty::copy()
     QCOMPARE(p2.propertyType(), (int)QVariant::Int);
 }
 
-void tst_qmlmetaproperty::initTestCase()
+void tst_qdeclarativemetaproperty::initTestCase()
 {
     QML_REGISTER_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
     QML_REGISTER_TYPE(Test,1,0,PropertyObject,PropertyObject);
@@ -1180,6 +1180,6 @@ void tst_qmlmetaproperty::initTestCase()
 }
 
 
-QTEST_MAIN(tst_qmlmetaproperty)
+QTEST_MAIN(tst_qdeclarativemetaproperty)
 
 #include "tst_qdeclarativemetaproperty.moc"

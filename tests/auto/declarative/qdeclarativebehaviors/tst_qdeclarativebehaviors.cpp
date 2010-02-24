@@ -46,11 +46,11 @@
 #include <private/qdeclarativebehavior_p.h>
 #include <private/qdeclarativeanimation_p.h>
 
-class tst_qmlbehaviors : public QObject
+class tst_qdeclarativebehaviors : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlbehaviors() {}
+    tst_qdeclarativebehaviors() {}
 
 private slots:
     void simpleBehavior();
@@ -70,7 +70,7 @@ private slots:
     void dontStart();
 };
 
-void tst_qmlbehaviors::simpleBehavior()
+void tst_qdeclarativebehaviors::simpleBehavior()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/simple.qml"));
@@ -84,7 +84,7 @@ void tst_qmlbehaviors::simpleBehavior()
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_qmlbehaviors::scriptTriggered()
+void tst_qdeclarativebehaviors::scriptTriggered()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/scripttrigger.qml"));
@@ -97,7 +97,7 @@ void tst_qmlbehaviors::scriptTriggered()
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_qmlbehaviors::cppTriggered()
+void tst_qdeclarativebehaviors::cppTriggered()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/cpptrigger.qml"));
@@ -113,7 +113,7 @@ void tst_qmlbehaviors::cppTriggered()
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
-void tst_qmlbehaviors::loop()
+void tst_qdeclarativebehaviors::loop()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/loop.qml"));
@@ -124,7 +124,7 @@ void tst_qmlbehaviors::loop()
     rect->setState("moved");
 }
 
-void tst_qmlbehaviors::colorBehavior()
+void tst_qdeclarativebehaviors::colorBehavior()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/color.qml"));
@@ -137,7 +137,7 @@ void tst_qmlbehaviors::colorBehavior()
     QVERIFY(color != QColor("red") && color != QColor("green"));  //i.e. the behavior has been triggered
 }
 
-void tst_qmlbehaviors::parentBehavior()
+void tst_qdeclarativebehaviors::parentBehavior()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/parent.qml"));
@@ -154,7 +154,7 @@ void tst_qmlbehaviors::parentBehavior()
     QVERIFY(parent == newParent);
 }
 
-void tst_qmlbehaviors::replaceBinding()
+void tst_qdeclarativebehaviors::replaceBinding()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/binding.qml"));
@@ -188,7 +188,7 @@ void tst_qmlbehaviors::replaceBinding()
     QCOMPARE(innerRect->x(), (qreal)20);
 }
 
-void tst_qmlbehaviors::group()
+void tst_qdeclarativebehaviors::group()
 {
     {
         QDeclarativeEngine engine;
@@ -215,7 +215,7 @@ void tst_qmlbehaviors::group()
     }
 }
 
-void tst_qmlbehaviors::emptyBehavior()
+void tst_qdeclarativebehaviors::emptyBehavior()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/empty.qml"));
@@ -227,7 +227,7 @@ void tst_qmlbehaviors::emptyBehavior()
     QCOMPARE(x, qreal(200));    //should change immediately
 }
 
-void tst_qmlbehaviors::explicitSelection()
+void tst_qdeclarativebehaviors::explicitSelection()
 {
     {
         QDeclarativeEngine engine;
@@ -242,7 +242,7 @@ void tst_qmlbehaviors::explicitSelection()
     }
 }
 
-void tst_qmlbehaviors::nonSelectingBehavior()
+void tst_qdeclarativebehaviors::nonSelectingBehavior()
 {
     {
         QDeclarativeEngine engine;
@@ -256,7 +256,7 @@ void tst_qmlbehaviors::nonSelectingBehavior()
     }
 }
 
-void tst_qmlbehaviors::reassignedAnimation()
+void tst_qdeclarativebehaviors::reassignedAnimation()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/reassignedAnimation.qml"));
@@ -268,7 +268,7 @@ void tst_qmlbehaviors::reassignedAnimation()
                      rect->findChild<QDeclarativeBehavior*>("MyBehavior"))->animation())->duration(), 200);
 }
 
-void tst_qmlbehaviors::disabled()
+void tst_qdeclarativebehaviors::disabled()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/disabled.qml"));
@@ -281,7 +281,7 @@ void tst_qmlbehaviors::disabled()
     QCOMPARE(x, qreal(200));    //should change immediately
 }
 
-void tst_qmlbehaviors::dontStart()
+void tst_qdeclarativebehaviors::dontStart()
 {
     QDeclarativeEngine engine;
 
@@ -296,6 +296,6 @@ void tst_qmlbehaviors::dontStart()
     QVERIFY(myAnim->qtAnimation()->state() == QAbstractAnimation::Stopped);
 }
 
-QTEST_MAIN(tst_qmlbehaviors)
+QTEST_MAIN(tst_qdeclarativebehaviors)
 
 #include "tst_qdeclarativebehaviors.moc"

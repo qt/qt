@@ -53,11 +53,11 @@
 #include <QQuaternion>
 #include <qdeclarative.h>
 
-class tst_qmlmetatype : public QObject
+class tst_qdeclarativemetatype : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlmetatype() {}
+    tst_qdeclarativemetatype() {}
 
 private slots:
     void initTestCase();
@@ -129,7 +129,7 @@ QML_DECLARE_TYPE(ValueInterceptorTestType);
     QVERIFY(v == (value)); \
 }
 
-void tst_qmlmetatype::initTestCase()
+void tst_qdeclarativemetatype::initTestCase()
 {
     QML_REGISTER_TYPE(Test, 1, 0, TestType, TestType);
     QML_REGISTER_TYPE(Test, 1, 0, ParserStatusTestType, ParserStatusTestType);
@@ -137,7 +137,7 @@ void tst_qmlmetatype::initTestCase()
     QML_REGISTER_TYPE(Test, 1, 0, ValueInterceptorTestType, ValueInterceptorTestType);
 }
 
-void tst_qmlmetatype::copy()
+void tst_qdeclarativemetatype::copy()
 {
     QVERIFY(QDeclarativeMetaType::copy(QMetaType::Void, 0, 0));
 
@@ -286,7 +286,7 @@ void tst_qmlmetatype::copy()
     }
 }
 
-void tst_qmlmetatype::qmlParserStatusCast()
+void tst_qdeclarativemetatype::qmlParserStatusCast()
 {
     QVERIFY(QDeclarativeMetaType::qmlType(QVariant::Int) == 0);
     QVERIFY(QDeclarativeMetaType::qmlType(qMetaTypeId<TestType *>()) != 0);
@@ -306,7 +306,7 @@ void tst_qmlmetatype::qmlParserStatusCast()
     QCOMPARE(status, &t);
 }
 
-void tst_qmlmetatype::qmlPropertyValueSourceCast()
+void tst_qdeclarativemetatype::qmlPropertyValueSourceCast()
 {
     QVERIFY(QDeclarativeMetaType::qmlType(QVariant::Int) == 0);
     QVERIFY(QDeclarativeMetaType::qmlType(qMetaTypeId<TestType *>()) != 0);
@@ -326,7 +326,7 @@ void tst_qmlmetatype::qmlPropertyValueSourceCast()
     QCOMPARE(source, &t);
 }
 
-void tst_qmlmetatype::qmlPropertyValueInterceptorCast()
+void tst_qdeclarativemetatype::qmlPropertyValueInterceptorCast()
 {
     QVERIFY(QDeclarativeMetaType::qmlType(QVariant::Int) == 0);
     QVERIFY(QDeclarativeMetaType::qmlType(qMetaTypeId<TestType *>()) != 0);
@@ -346,7 +346,7 @@ void tst_qmlmetatype::qmlPropertyValueInterceptorCast()
     QCOMPARE(interceptor, &t);
 }
 
-void tst_qmlmetatype::isList()
+void tst_qdeclarativemetatype::isList()
 {
     QCOMPARE(QDeclarativeMetaType::isList(QVariant::Invalid), false);
     QCOMPARE(QDeclarativeMetaType::isList(QVariant::Int), false);
@@ -356,7 +356,7 @@ void tst_qmlmetatype::isList()
     QCOMPARE(QDeclarativeMetaType::isList(qMetaTypeId<QDeclarativeListProperty<TestType> >()), true);
 }
 
-void tst_qmlmetatype::defaultObject()
+void tst_qdeclarativemetatype::defaultObject()
 {
     QVERIFY(QDeclarativeMetaType::defaultProperty(&QObject::staticMetaObject).name() == 0);
     QVERIFY(QDeclarativeMetaType::defaultProperty(&ParserStatusTestType::staticMetaObject).name() == 0);
@@ -372,6 +372,6 @@ void tst_qmlmetatype::defaultObject()
     QCOMPARE(QString(QDeclarativeMetaType::defaultProperty(&t).name()), QString("foo"));
 }
 
-QTEST_MAIN(tst_qmlmetatype)
+QTEST_MAIN(tst_qdeclarativemetatype)
 
 #include "tst_qdeclarativemetatype.moc"

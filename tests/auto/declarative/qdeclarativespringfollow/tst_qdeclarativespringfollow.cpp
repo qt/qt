@@ -45,11 +45,11 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include "../../../shared/util.h"
 
-class tst_qmlspringfollow : public QObject
+class tst_qdeclarativespringfollow : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlspringfollow();
+    tst_qdeclarativespringfollow();
 
 private slots:
     void defaultValues();
@@ -60,11 +60,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlspringfollow::tst_qmlspringfollow()
+tst_qdeclarativespringfollow::tst_qdeclarativespringfollow()
 {
 }
 
-void tst_qmlspringfollow::defaultValues()
+void tst_qdeclarativespringfollow::defaultValues()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow1.qml"));
@@ -86,7 +86,7 @@ void tst_qmlspringfollow::defaultValues()
     delete obj;
 }
 
-void tst_qmlspringfollow::values()
+void tst_qdeclarativespringfollow::values()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow2.qml"));
@@ -109,7 +109,7 @@ void tst_qmlspringfollow::values()
     delete obj;
 }
 
-void tst_qmlspringfollow::disabled()
+void tst_qdeclarativespringfollow::disabled()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/springfollow3.qml"));
@@ -132,6 +132,6 @@ void tst_qmlspringfollow::disabled()
     delete obj;
 }
 
-QTEST_MAIN(tst_qmlspringfollow)
+QTEST_MAIN(tst_qdeclarativespringfollow)
 
 #include "tst_qdeclarativespringfollow.moc"

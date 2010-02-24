@@ -131,11 +131,11 @@ private:
     QByteArray lastMsg;
 };
 
-class tst_QmlDebug_Thread : public QThread
+class tst_QDeclarativeDebug_Thread : public QThread
 {
     Q_OBJECT
 public:
-    tst_QmlDebug_Thread(QDeclarativeDebugTestData *data, QDeclarativeTestFactory *factory);
+    tst_QDeclarativeDebug_Thread(QDeclarativeDebugTestData *data, QDeclarativeTestFactory *factory);
 
     void run();
 

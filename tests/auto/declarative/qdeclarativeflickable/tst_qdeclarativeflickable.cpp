@@ -46,11 +46,11 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include <math.h>
 
-class tst_qmlgraphicsflickable : public QObject
+class tst_qdeclarativeflickable : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicsflickable();
+    tst_qdeclarativeflickable();
 
 private slots:
     void create();
@@ -66,11 +66,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlgraphicsflickable::tst_qmlgraphicsflickable()
+tst_qdeclarativeflickable::tst_qdeclarativeflickable()
 {
 }
 
-void tst_qmlgraphicsflickable::create()
+void tst_qdeclarativeflickable::create()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable01.qml"));
@@ -96,7 +96,7 @@ void tst_qmlgraphicsflickable::create()
     delete obj;
 }
 
-void tst_qmlgraphicsflickable::horizontalViewportSize()
+void tst_qdeclarativeflickable::horizontalViewportSize()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable02.qml"));
@@ -113,7 +113,7 @@ void tst_qmlgraphicsflickable::horizontalViewportSize()
     delete obj;
 }
 
-void tst_qmlgraphicsflickable::verticalViewportSize()
+void tst_qdeclarativeflickable::verticalViewportSize()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable03.qml"));
@@ -130,7 +130,7 @@ void tst_qmlgraphicsflickable::verticalViewportSize()
     delete obj;
 }
 
-void tst_qmlgraphicsflickable::properties()
+void tst_qdeclarativeflickable::properties()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/flickable04.qml"));
@@ -145,7 +145,7 @@ void tst_qmlgraphicsflickable::properties()
     delete obj;
 }
 
-void tst_qmlgraphicsflickable::overShoot()
+void tst_qdeclarativeflickable::overShoot()
 {
     QDeclarativeComponent component(&engine);
     component.setData("import Qt 4.6; Flickable { overShoot: false; }", QUrl::fromLocalFile(""));
@@ -168,7 +168,7 @@ void tst_qmlgraphicsflickable::overShoot()
     QCOMPARE(spy.count(),2);
 }
 
-void tst_qmlgraphicsflickable::maximumFlickVelocity()
+void tst_qdeclarativeflickable::maximumFlickVelocity()
 {
     QDeclarativeComponent component(&engine);
     component.setData("import Qt 4.6; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
@@ -185,7 +185,7 @@ void tst_qmlgraphicsflickable::maximumFlickVelocity()
     QCOMPARE(spy.count(),1);
 }
 
-void tst_qmlgraphicsflickable::flickDeceleration()
+void tst_qdeclarativeflickable::flickDeceleration()
 {
     QDeclarativeComponent component(&engine);
     component.setData("import Qt 4.6; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
@@ -202,7 +202,7 @@ void tst_qmlgraphicsflickable::flickDeceleration()
     QCOMPARE(spy.count(),1);
 }
 
-void tst_qmlgraphicsflickable::pressDelay()
+void tst_qdeclarativeflickable::pressDelay()
 {
     QDeclarativeComponent component(&engine);
     component.setData("import Qt 4.6; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
@@ -219,6 +219,6 @@ void tst_qmlgraphicsflickable::pressDelay()
     QCOMPARE(spy.count(),1);
 }
 
-QTEST_MAIN(tst_qmlgraphicsflickable)
+QTEST_MAIN(tst_qdeclarativeflickable)
 
 #include "tst_qdeclarativeflickable.moc"

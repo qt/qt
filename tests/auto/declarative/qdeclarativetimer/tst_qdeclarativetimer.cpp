@@ -44,11 +44,11 @@
 #include <private/qdeclarativetimer_p.h>
 #include <QDebug>
 
-class tst_qmltimer : public QObject
+class tst_qdeclarativetimer : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmltimer();
+    tst_qdeclarativetimer();
 
 private slots:
     void notRepeating();
@@ -84,11 +84,11 @@ public slots:
 #define TIMEOUT_TIMEOUT 200
 #endif
 
-tst_qmltimer::tst_qmltimer()
+tst_qdeclarativetimer::tst_qdeclarativetimer()
 {
 }
 
-void tst_qmltimer::notRepeating()
+void tst_qdeclarativetimer::notRepeating()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -109,7 +109,7 @@ void tst_qmltimer::notRepeating()
     QVERIFY(timer->isRunning() == false);
 }
 
-void tst_qmltimer::notRepeatingStart()
+void tst_qdeclarativetimer::notRepeatingStart()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -134,7 +134,7 @@ void tst_qmltimer::notRepeatingStart()
     delete timer;
 }
 
-void tst_qmltimer::repeat()
+void tst_qdeclarativetimer::repeat()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -164,7 +164,7 @@ void tst_qmltimer::repeat()
     delete timer;
 }
 
-void tst_qmltimer::triggeredOnStart()
+void tst_qdeclarativetimer::triggeredOnStart()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -187,7 +187,7 @@ void tst_qmltimer::triggeredOnStart()
     delete timer;
 }
 
-void tst_qmltimer::triggeredOnStartRepeat()
+void tst_qdeclarativetimer::triggeredOnStartRepeat()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -210,7 +210,7 @@ void tst_qmltimer::triggeredOnStartRepeat()
     delete timer;
 }
 
-void tst_qmltimer::noTriggerIfNotRunning()
+void tst_qdeclarativetimer::noTriggerIfNotRunning()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -229,7 +229,7 @@ void tst_qmltimer::noTriggerIfNotRunning()
     delete item;
 }
 
-void tst_qmltimer::changeDuration()
+void tst_qdeclarativetimer::changeDuration()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -253,7 +253,7 @@ void tst_qmltimer::changeDuration()
     delete timer;
 }
 
-void tst_qmltimer::restart()
+void tst_qdeclarativetimer::restart()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -280,6 +280,6 @@ void tst_qmltimer::restart()
     delete timer;
 }
 
-QTEST_MAIN(tst_qmltimer)
+QTEST_MAIN(tst_qdeclarativetimer)
 
 #include "tst_qdeclarativetimer.moc"

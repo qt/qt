@@ -46,11 +46,11 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 
-class tst_qmldom : public QObject
+class tst_qdeclarativedom : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmldom() {}
+    tst_qdeclarativedom() {}
 
 private slots:
     void loadSimple();
@@ -79,7 +79,7 @@ private:
 };
 
 
-void tst_qmldom::loadSimple()
+void tst_qdeclarativedom::loadSimple()
 {
     QByteArray qml = "import Qt 4.6\n"
                       "Item {}";
@@ -98,7 +98,7 @@ void tst_qmldom::loadSimple()
 }
 
 // Test regular properties
-void tst_qmldom::loadProperties()
+void tst_qdeclarativedom::loadProperties()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Item { id : item; x : 300; visible : true }";
@@ -131,7 +131,7 @@ void tst_qmldom::loadProperties()
 }
 
 // Test grouped properties
-void tst_qmldom::loadGroupedProperties()
+void tst_qdeclarativedom::loadGroupedProperties()
 {
     {
         QByteArray qml = "import Qt 4.6\n"
@@ -226,7 +226,7 @@ void tst_qmldom::loadGroupedProperties()
 
 }
 
-void tst_qmldom::loadChildObject()
+void tst_qdeclarativedom::loadChildObject()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Item { Item {} }";
@@ -250,7 +250,7 @@ void tst_qmldom::loadChildObject()
     QVERIFY(childItem.objectType() == "Qt/Item");
 }
 
-void tst_qmldom::loadComposite()
+void tst_qdeclarativedom::loadComposite()
 {
     QFile file(SRCDIR  "/data/top.qml");
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
@@ -271,7 +271,7 @@ void tst_qmldom::loadComposite()
     QVERIFY(heightProperty.value().isLiteral());
 }
 
-void tst_qmldom::testValueSource()
+void tst_qdeclarativedom::testValueSource()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Rectangle { height: SpringFollow { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
@@ -303,7 +303,7 @@ void tst_qmldom::testValueSource()
     QVERIFY(sourceValue.toBinding().binding() == "Math.min(Math.max(-130, value*2.2 - 130), 133)");
 }
 
-void tst_qmldom::testValueInterceptor()
+void tst_qdeclarativedom::testValueInterceptor()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Rectangle { height: Behavior { NumberAnimation { duration: 100 } } }";
@@ -330,7 +330,7 @@ void tst_qmldom::testValueInterceptor()
 }
 
 // Test QDeclarativeDomDocument::imports()
-void tst_qmldom::loadImports()
+void tst_qdeclarativedom::loadImports()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "import importlib.sublib 4.7\n"
@@ -378,7 +378,7 @@ void tst_qmldom::loadImports()
 }
 
 // Test loading a file with errors
-void tst_qmldom::loadErrors()
+void tst_qdeclarativedom::loadErrors()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Item {\n"
@@ -398,7 +398,7 @@ void tst_qmldom::loadErrors()
 }
 
 // Test loading a file with syntax errors
-void tst_qmldom::loadSyntaxErrors()
+void tst_qdeclarativedom::loadSyntaxErrors()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "asdf";
@@ -416,7 +416,7 @@ void tst_qmldom::loadSyntaxErrors()
 }
 
 // Test attempting to load a file with remote references 
-void tst_qmldom::loadRemoteErrors()
+void tst_qdeclarativedom::loadRemoteErrors()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Item {\n"
@@ -437,7 +437,7 @@ void tst_qmldom::loadRemoteErrors()
 }
 
 // Test dynamic property declarations
-void tst_qmldom::loadDynamicProperty()
+void tst_qdeclarativedom::loadDynamicProperty()
 {
     {
         QByteArray qml = "import Qt 4.6\n"
@@ -530,7 +530,7 @@ void tst_qmldom::loadDynamicProperty()
 }
 
 // Test inline components
-void tst_qmldom::loadComponent()
+void tst_qdeclarativedom::loadComponent()
 {
     // Explicit component
     {
@@ -620,7 +620,7 @@ void tst_qmldom::loadComponent()
 }
 
 // Test QDeclarativeDomObject::dynamicProperty() method
-void tst_qmldom::object_dynamicProperty()
+void tst_qdeclarativedom::object_dynamicProperty()
 {
     // Invalid object
     {
@@ -674,7 +674,7 @@ void tst_qmldom::object_dynamicProperty()
 }
 
 // Test QDeclarativeObject::property() method
-void tst_qmldom::object_property()
+void tst_qdeclarativedom::object_property()
 {
     // Invalid object
     {
@@ -776,7 +776,7 @@ void tst_qmldom::object_property()
 }
 
 // Tests the QDeclarativeDomObject::url() method
-void tst_qmldom::object_url()
+void tst_qdeclarativedom::object_url()
 {
     // Invalid object
     {
@@ -815,7 +815,7 @@ void tst_qmldom::object_url()
 }
 
 // Test copy constructors and operators
-void tst_qmldom::copy()
+void tst_qdeclarativedom::copy()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "MyItem {\n"
@@ -1190,7 +1190,7 @@ void tst_qmldom::copy()
 }
 
 // Tests the position/length of various elements
-void tst_qmldom::position()
+void tst_qdeclarativedom::position()
 {
     QByteArray qml = "import Qt 4.6\n"
          /*14*/      "Item {\n"
@@ -1308,6 +1308,6 @@ void tst_qmldom::position()
     qWarning("QDeclarativeListValue position test required");
 }
 
-QTEST_MAIN(tst_qmldom)
+QTEST_MAIN(tst_qdeclarativedom)
 
 #include "tst_qdeclarativedom.moc"

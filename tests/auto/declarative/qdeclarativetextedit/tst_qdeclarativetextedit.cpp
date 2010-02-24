@@ -54,12 +54,12 @@
 #include <QStyle>
 #include <QInputContext>
 
-class tst_qmlgraphicstextedit : public QObject
+class tst_qdeclarativetextedit : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicstextedit();
+    tst_qdeclarativetextedit();
 
 private slots:
     void text();
@@ -102,7 +102,7 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlgraphicstextedit::tst_qmlgraphicstextedit()
+tst_qdeclarativetextedit::tst_qdeclarativetextedit()
 {
     standard << "the quick brown fox jumped over the lazy dog"
              << "the quick brown fox\n jumped over the lazy dog";
@@ -145,7 +145,7 @@ tst_qmlgraphicstextedit::tst_qmlgraphicstextedit()
                  // 
 }
 
-void tst_qmlgraphicstextedit::text()
+void tst_qdeclarativetextedit::text()
 {
     {
         QDeclarativeComponent texteditComponent(&engine);
@@ -184,7 +184,7 @@ void tst_qmlgraphicstextedit::text()
     }
 }
 
-void tst_qmlgraphicstextedit::width()
+void tst_qdeclarativetextedit::width()
 {
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
@@ -230,7 +230,7 @@ void tst_qmlgraphicstextedit::width()
     }
 }
 
-void tst_qmlgraphicstextedit::wrap()
+void tst_qdeclarativetextedit::wrap()
 {
     // for specified width and wrap set true
     {
@@ -266,7 +266,7 @@ void tst_qmlgraphicstextedit::wrap()
 
 }
 
-void tst_qmlgraphicstextedit::textFormat()
+void tst_qdeclarativetextedit::textFormat()
 {
     {
         QDeclarativeComponent textComponent(&engine);
@@ -287,7 +287,7 @@ void tst_qmlgraphicstextedit::textFormat()
 }
 
 //the alignment tests may be trivial o.oa
-void tst_qmlgraphicstextedit::hAlign()
+void tst_qdeclarativetextedit::hAlign()
 {
     //test one align each, and then test if two align fails.
 
@@ -321,7 +321,7 @@ void tst_qmlgraphicstextedit::hAlign()
 
 }
 
-void tst_qmlgraphicstextedit::vAlign()
+void tst_qdeclarativetextedit::vAlign()
 {
     //test one align each, and then test if two align fails.
 
@@ -355,7 +355,7 @@ void tst_qmlgraphicstextedit::vAlign()
 
 }
 
-void tst_qmlgraphicstextedit::font()
+void tst_qdeclarativetextedit::font()
 {
     //test size, then bold, then italic, then family
     { 
@@ -415,7 +415,7 @@ void tst_qmlgraphicstextedit::font()
     }
 }
 
-void tst_qmlgraphicstextedit::color()
+void tst_qdeclarativetextedit::color()
 {
     //test normal
     for (int i = 0; i < colorStrings.size(); i++)
@@ -466,7 +466,7 @@ void tst_qmlgraphicstextedit::color()
     }
 }
 
-void tst_qmlgraphicstextedit::textMargin()
+void tst_qdeclarativetextedit::textMargin()
 {
     for(qreal i=0; i<=10; i+=0.3){
         QString componentStr = "import Qt 4.6\nTextEdit {  textMargin: " + QString::number(i) + "; text: \"Hello World\" }";
@@ -478,7 +478,7 @@ void tst_qmlgraphicstextedit::textMargin()
     }
 }
 
-void tst_qmlgraphicstextedit::persistentSelection()
+void tst_qdeclarativetextedit::persistentSelection()
 {
     {
         QString componentStr = "import Qt 4.6\nTextEdit {  persistentSelection: true; text: \"Hello World\" }";
@@ -499,7 +499,7 @@ void tst_qmlgraphicstextedit::persistentSelection()
     }
 }
 
-void tst_qmlgraphicstextedit::focusOnPress()
+void tst_qdeclarativetextedit::focusOnPress()
 {
     {
         QString componentStr = "import Qt 4.6\nTextEdit {  focusOnPress: true; text: \"Hello World\" }";
@@ -520,7 +520,7 @@ void tst_qmlgraphicstextedit::focusOnPress()
     }
 }
 
-void tst_qmlgraphicstextedit::selection()
+void tst_qdeclarativetextedit::selection()
 {
     QString testStr = standard[0];//TODO: What should happen for multiline/rich text?
     QString componentStr = "import Qt 4.6\nTextEdit {  text: \""+ testStr +"\"; }";
@@ -601,7 +601,7 @@ void tst_qmlgraphicstextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
-void tst_qmlgraphicstextedit::inputMethodHints()
+void tst_qdeclarativetextedit::inputMethodHints()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
     canvas->show();
@@ -615,7 +615,7 @@ void tst_qmlgraphicstextedit::inputMethodHints()
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhUppercaseOnly);
 }
 
-void tst_qmlgraphicstextedit::cursorDelegate()
+void tst_qdeclarativetextedit::cursorDelegate()
 {
     QDeclarativeView* view = createView(SRCDIR "/data/cursorTest.qml");
     view->show();
@@ -641,7 +641,7 @@ void tst_qmlgraphicstextedit::cursorDelegate()
     QVERIFY(!textEditObject->findChild<QDeclarativeItem*>("cursorInstance"));
 }
 
-void tst_qmlgraphicstextedit::delegateLoading()
+void tst_qdeclarativetextedit::delegateLoading()
 {
     TestHTTPServer server(42332);
     server.serveDirectory(SRCDIR "/data/httpfail", TestHTTPServer::Disconnect);
@@ -680,7 +680,7 @@ void tst_qmlgraphicstextedit::delegateLoading()
 TextEdit element should only handle left/right keys until the cursor reaches
 the extent of the text, then they should ignore the keys.
 */
-void tst_qmlgraphicstextedit::navigation()
+void tst_qdeclarativetextedit::navigation()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->show();
@@ -702,7 +702,7 @@ void tst_qmlgraphicstextedit::navigation()
     QVERIFY(input->hasFocus() == true);
 }
 
-void tst_qmlgraphicstextedit::readOnly()
+void tst_qdeclarativetextedit::readOnly()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/readOnly.qml");
     canvas->show();
@@ -724,7 +724,7 @@ void tst_qmlgraphicstextedit::readOnly()
     QCOMPARE(edit->text(), initial);
 }
 
-void tst_qmlgraphicstextedit::simulateKey(QDeclarativeView *view, int key)
+void tst_qdeclarativetextedit::simulateKey(QDeclarativeView *view, int key)
 {
     QKeyEvent press(QKeyEvent::KeyPress, key, 0);
     QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
@@ -733,7 +733,7 @@ void tst_qmlgraphicstextedit::simulateKey(QDeclarativeView *view, int key)
     QApplication::sendEvent(view, &release);
 }
 
-QDeclarativeView *tst_qmlgraphicstextedit::createView(const QString &filename)
+QDeclarativeView *tst_qdeclarativetextedit::createView(const QString &filename)
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
 
@@ -763,7 +763,7 @@ public:
     bool softwareInputPanelEventReceived;
 };
 
-void tst_qmlgraphicstextedit::sendRequestSoftwareInputPanelEvent()
+void tst_qdeclarativetextedit::sendRequestSoftwareInputPanelEvent()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
@@ -786,6 +786,6 @@ void tst_qmlgraphicstextedit::sendRequestSoftwareInputPanelEvent()
     QApplication::processEvents();
     QCOMPARE(ic.softwareInputPanelEventReceived, true);
 }
-QTEST_MAIN(tst_qmlgraphicstextedit)
+QTEST_MAIN(tst_qdeclarativetextedit)
 
 #include "tst_qdeclarativetextedit.moc"

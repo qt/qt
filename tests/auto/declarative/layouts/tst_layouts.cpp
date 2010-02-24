@@ -45,11 +45,11 @@
 #include <qdeclarativeexpression.h>
 #include <QStyle>
 
-class tst_QmlGraphicsLayouts : public QObject
+class tst_QDeclarativeLayouts : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsLayouts();
+    tst_QDeclarativeLayouts();
 
 private slots:
     void test_qml();//GraphicsLayout set up in Qml
@@ -59,11 +59,11 @@ private:
     QDeclarativeView *createView(const QString &filename);
 };
 
-tst_QmlGraphicsLayouts::tst_QmlGraphicsLayouts()
+tst_QDeclarativeLayouts::tst_QDeclarativeLayouts()
 {
 }
 
-void tst_QmlGraphicsLayouts::test_qml()
+void tst_QDeclarativeLayouts::test_qml()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/layouts.qml");
 
@@ -128,12 +128,12 @@ void tst_QmlGraphicsLayouts::test_qml()
     delete canvas;
 }
 
-void tst_QmlGraphicsLayouts::test_cpp()
+void tst_QDeclarativeLayouts::test_cpp()
 {
     //TODO: Waiting on QT-2407 to write this test
 }
 
-QDeclarativeView *tst_QmlGraphicsLayouts::createView(const QString &filename)
+QDeclarativeView *tst_QDeclarativeLayouts::createView(const QString &filename)
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setSource(QUrl::fromLocalFile(filename));
@@ -142,6 +142,6 @@ QDeclarativeView *tst_QmlGraphicsLayouts::createView(const QString &filename)
 }
 
 
-QTEST_MAIN(tst_QmlGraphicsLayouts)
+QTEST_MAIN(tst_QDeclarativeLayouts)
 
 #include "tst_layouts.moc"

@@ -45,12 +45,12 @@
 #include <private/qdeclarativerectangle_p.h>
 #include "../../../shared/util.h"
 
-class tst_qmlbinding : public QObject
+class tst_qdeclarativebinding : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlbinding();
+    tst_qdeclarativebinding();
 
 private slots:
     void binding();
@@ -60,11 +60,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlbinding::tst_qmlbinding()
+tst_qdeclarativebinding::tst_qdeclarativebinding()
 {
 }
 
-void tst_qmlbinding::binding()
+void tst_qdeclarativebinding::binding()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-binding.qml"));
@@ -86,7 +86,7 @@ void tst_qmlbinding::binding()
     delete rect;
 }
 
-void tst_qmlbinding::whenAfterValue()
+void tst_qdeclarativebinding::whenAfterValue()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-binding2.qml"));
@@ -102,6 +102,6 @@ void tst_qmlbinding::whenAfterValue()
     delete rect;
 }
 
-QTEST_MAIN(tst_qmlbinding)
+QTEST_MAIN(tst_qdeclarativebinding)
 
 #include "tst_qdeclarativebinding.moc"

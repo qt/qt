@@ -46,11 +46,11 @@
 #include <QDeclarativeComponent>
 #include <QDeclarativeExpression>
 
-class tst_qmlcontext : public QObject
+class tst_qdeclarativecontext : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlcontext() {}
+    tst_qdeclarativecontext() {}
 
 private slots:
     void baseUrl();
@@ -65,7 +65,7 @@ private:
     QDeclarativeEngine engine;
 };
 
-void tst_qmlcontext::baseUrl()
+void tst_qdeclarativecontext::baseUrl()
 {
     QDeclarativeContext ctxt(&engine);
 
@@ -76,7 +76,7 @@ void tst_qmlcontext::baseUrl()
     QCOMPARE(ctxt.baseUrl(), QUrl("http://www.nokia.com/"));
 }
 
-void tst_qmlcontext::resolvedUrl()
+void tst_qdeclarativecontext::resolvedUrl()
 {
     // Relative to the component
     {
@@ -123,7 +123,7 @@ void tst_qmlcontext::resolvedUrl()
     }
 }
 
-void tst_qmlcontext::engineMethod()
+void tst_qdeclarativecontext::engineMethod()
 {
     QDeclarativeEngine *engine = new QDeclarativeEngine;
 
@@ -145,7 +145,7 @@ void tst_qmlcontext::engineMethod()
     QCOMPARE(ctxt4.engine(), engine);
 }
 
-void tst_qmlcontext::parentContext()
+void tst_qdeclarativecontext::parentContext()
 {
     QDeclarativeEngine *engine = new QDeclarativeEngine;
 
@@ -253,7 +253,7 @@ private:
     delete obj; \
 } 
 
-void tst_qmlcontext::setContextProperty()
+void tst_qdeclarativecontext::setContextProperty()
 {
     QDeclarativeContext ctxt(&engine);
     QDeclarativeContext ctxt2(&ctxt);
@@ -366,7 +366,7 @@ void tst_qmlcontext::setContextProperty()
     }
 }
 
-void tst_qmlcontext::addDefaultObject()
+void tst_qdeclarativecontext::addDefaultObject()
 {
     QDeclarativeContext ctxt(&engine);
 
@@ -412,7 +412,7 @@ void tst_qmlcontext::addDefaultObject()
     }
 }
 
-void tst_qmlcontext::destruction()
+void tst_qdeclarativecontext::destruction()
 {
     QDeclarativeContext *ctxt = new QDeclarativeContext(&engine);
 
@@ -429,6 +429,6 @@ void tst_qmlcontext::destruction()
     QCOMPARE(ctxt, expr.context());
 }
 
-QTEST_MAIN(tst_qmlcontext)
+QTEST_MAIN(tst_qdeclarativecontext)
 
 #include "tst_qdeclarativecontext.moc"

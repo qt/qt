@@ -58,11 +58,11 @@
     } while (false)
 
 
-class tst_qmlgraphicsanimatedimage : public QObject
+class tst_qdeclarativeanimatedimage : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicsanimatedimage() {}
+    tst_qdeclarativeanimatedimage() {}
 
 private slots:
     void play();
@@ -75,7 +75,7 @@ private slots:
     void invalidSource();
 };
 
-void tst_qmlgraphicsanimatedimage::play()
+void tst_qdeclarativeanimatedimage::play()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickman.qml"));
@@ -86,7 +86,7 @@ void tst_qmlgraphicsanimatedimage::play()
     delete anim;
 }
 
-void tst_qmlgraphicsanimatedimage::pause()
+void tst_qdeclarativeanimatedimage::pause()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanpause.qml"));
@@ -98,7 +98,7 @@ void tst_qmlgraphicsanimatedimage::pause()
     delete anim;
 }
 
-void tst_qmlgraphicsanimatedimage::stopped()
+void tst_qdeclarativeanimatedimage::stopped()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanstopped.qml"));
@@ -110,7 +110,7 @@ void tst_qmlgraphicsanimatedimage::stopped()
     delete anim;
 }
 
-void tst_qmlgraphicsanimatedimage::setFrame()
+void tst_qdeclarativeanimatedimage::setFrame()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/stickmanpause.qml"));
@@ -122,7 +122,7 @@ void tst_qmlgraphicsanimatedimage::setFrame()
     delete anim;
 }
 
-void tst_qmlgraphicsanimatedimage::frameCount()
+void tst_qdeclarativeanimatedimage::frameCount()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/colors.qml"));
@@ -134,7 +134,7 @@ void tst_qmlgraphicsanimatedimage::frameCount()
     delete anim;
 }
 
-void tst_qmlgraphicsanimatedimage::remote()
+void tst_qdeclarativeanimatedimage::remote()
 {
     QFETCH(QString, fileName);
     QFETCH(bool, paused);
@@ -159,7 +159,7 @@ void tst_qmlgraphicsanimatedimage::remote()
     delete anim;
 }
 
-void tst_qmlgraphicsanimatedimage::remote_data()
+void tst_qdeclarativeanimatedimage::remote_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<bool>("paused");
@@ -168,7 +168,7 @@ void tst_qmlgraphicsanimatedimage::remote_data()
     QTest::newRow("paused") << "stickmanpause.qml" << true;
 }
 
-void tst_qmlgraphicsanimatedimage::invalidSource()
+void tst_qdeclarativeanimatedimage::invalidSource()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
@@ -186,6 +186,6 @@ void tst_qmlgraphicsanimatedimage::invalidSource()
     QCOMPARE(anim->frameCount(), 0);
 }
 
-QTEST_MAIN(tst_qmlgraphicsanimatedimage)
+QTEST_MAIN(tst_qdeclarativeanimatedimage)
 
 #include "tst_qdeclarativeanimatedimage.moc"

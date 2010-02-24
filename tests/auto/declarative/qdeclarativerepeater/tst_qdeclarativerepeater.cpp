@@ -53,11 +53,11 @@ inline QUrl TEST_FILE(const QString &filename)
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
 }
 
-class tst_QmlGraphicsRepeater : public QObject
+class tst_QDeclarativeRepeater : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsRepeater();
+    tst_QDeclarativeRepeater();
 
 private slots:
     void numberModel();
@@ -158,11 +158,11 @@ private:
 };
 
 
-tst_QmlGraphicsRepeater::tst_QmlGraphicsRepeater()
+tst_QDeclarativeRepeater::tst_QDeclarativeRepeater()
 {
 }
 
-void tst_QmlGraphicsRepeater::numberModel()
+void tst_QDeclarativeRepeater::numberModel()
 {
     QDeclarativeView *canvas = createView();
 
@@ -184,7 +184,7 @@ void tst_QmlGraphicsRepeater::numberModel()
     delete canvas;
 }
 
-void tst_QmlGraphicsRepeater::objectList()
+void tst_QDeclarativeRepeater::objectList()
 {
     QDeclarativeView *canvas = createView();
 
@@ -211,7 +211,7 @@ The Repeater element creates children at its own position in its parent's
 stacking order.  In this test we insert a repeater between two other Text
 elements to test this.
 */
-void tst_QmlGraphicsRepeater::stringList()
+void tst_QDeclarativeRepeater::stringList()
 {
     QDeclarativeView *canvas = createView();
 
@@ -263,7 +263,7 @@ void tst_QmlGraphicsRepeater::stringList()
     delete canvas;
 }
 
-void tst_QmlGraphicsRepeater::dataModel()
+void tst_QDeclarativeRepeater::dataModel()
 {
     QDeclarativeView *canvas = createView();
     QDeclarativeContext *ctxt = canvas->rootContext();
@@ -295,7 +295,7 @@ void tst_QmlGraphicsRepeater::dataModel()
     QCOMPARE(container->childItems().count(), 4);
 }
 
-void tst_QmlGraphicsRepeater::itemModel()
+void tst_QDeclarativeRepeater::itemModel()
 {
     QDeclarativeView *canvas = createView();
     QDeclarativeContext *ctxt = canvas->rootContext();
@@ -326,7 +326,7 @@ void tst_QmlGraphicsRepeater::itemModel()
     delete canvas;
 }
 
-void tst_QmlGraphicsRepeater::properties()
+void tst_QDeclarativeRepeater::properties()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, TEST_FILE("/properties.qml"));
@@ -354,7 +354,7 @@ void tst_QmlGraphicsRepeater::properties()
     QCOMPARE(delegateSpy.count(),1);
 }
 
-QDeclarativeView *tst_QmlGraphicsRepeater::createView()
+QDeclarativeView *tst_QDeclarativeRepeater::createView()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -363,7 +363,7 @@ QDeclarativeView *tst_QmlGraphicsRepeater::createView()
 }
 
 template<typename T>
-T *tst_QmlGraphicsRepeater::findItem(QGraphicsObject *parent, const QString &objectName)
+T *tst_QDeclarativeRepeater::findItem(QGraphicsObject *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     if (mo.cast(parent) && (objectName.isEmpty() || parent->objectName() == objectName))
@@ -380,6 +380,6 @@ T *tst_QmlGraphicsRepeater::findItem(QGraphicsObject *parent, const QString &obj
     return 0;
 }
 
-QTEST_MAIN(tst_QmlGraphicsRepeater)
+QTEST_MAIN(tst_QDeclarativeRepeater)
 
 #include "tst_qdeclarativerepeater.moc"

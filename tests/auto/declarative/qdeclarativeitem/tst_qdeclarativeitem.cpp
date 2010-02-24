@@ -46,12 +46,12 @@
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeitem.h>
 
-class tst_QmlGraphicsItem : public QObject
+class tst_QDeclarativeItem : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsItem();
+    tst_QDeclarativeItem();
 
 private slots:
     void keys();
@@ -103,11 +103,11 @@ private:
 };
 
 
-tst_QmlGraphicsItem::tst_QmlGraphicsItem()
+tst_QDeclarativeItem::tst_QDeclarativeItem()
 {
 }
 
-void tst_QmlGraphicsItem::keys()
+void tst_QDeclarativeItem::keys()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -187,7 +187,7 @@ void tst_QmlGraphicsItem::keys()
     delete testObject;
 }
 
-void tst_QmlGraphicsItem::keyNavigation()
+void tst_QDeclarativeItem::keyNavigation()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -242,7 +242,7 @@ void tst_QmlGraphicsItem::keyNavigation()
     QVERIFY(item->hasFocus());
 }
 
-void tst_QmlGraphicsItem::smooth()
+void tst_QDeclarativeItem::smooth()
 {
     QDeclarativeComponent component(&engine);
     component.setData("import Qt 4.6; Item { smooth: false; }", QUrl::fromLocalFile(""));
@@ -265,7 +265,7 @@ void tst_QmlGraphicsItem::smooth()
     QCOMPARE(spy.count(),2);
 }
 
-void tst_QmlGraphicsItem::clip()
+void tst_QDeclarativeItem::clip()
 {
     QDeclarativeComponent component(&engine);
     component.setData("import Qt 4.6\nItem { clip: false\n }", QUrl::fromLocalFile(""));
@@ -289,7 +289,7 @@ void tst_QmlGraphicsItem::clip()
 }
 
 template<typename T>
-T *tst_QmlGraphicsItem::findItem(QGraphicsObject *parent, const QString &objectName)
+T *tst_QDeclarativeItem::findItem(QGraphicsObject *parent, const QString &objectName)
 {
     if (!parent)
         return 0;
@@ -313,6 +313,6 @@ T *tst_QmlGraphicsItem::findItem(QGraphicsObject *parent, const QString &objectN
 
 
 
-QTEST_MAIN(tst_QmlGraphicsItem)
+QTEST_MAIN(tst_QDeclarativeItem)
 
 #include "tst_qdeclarativeitem.moc"

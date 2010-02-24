@@ -44,11 +44,11 @@
 #include <private/qdeclarativedatetimeformatter_p.h>
 #include <QDebug>
 
-class tst_qmldatetimeformatter : public QObject
+class tst_qdeclarativedatetimeformatter : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmldatetimeformatter() {}
+    tst_qdeclarativedatetimeformatter() {}
 
 private slots:
     void date();
@@ -56,7 +56,7 @@ private slots:
     void dateTime();
 };
 
-void tst_qmldatetimeformatter::date()
+void tst_qdeclarativedatetimeformatter::date()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent formatterComponent(&engine);
@@ -86,7 +86,7 @@ void tst_qmldatetimeformatter::date()
     delete formatter;
 }
 
-void tst_qmldatetimeformatter::time()
+void tst_qdeclarativedatetimeformatter::time()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent formatterComponent(&engine);
@@ -119,7 +119,7 @@ void tst_qmldatetimeformatter::time()
     delete formatter;
 }
 
-void tst_qmldatetimeformatter::dateTime()
+void tst_qdeclarativedatetimeformatter::dateTime()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent formatterComponent(&engine);
@@ -145,6 +145,6 @@ void tst_qmldatetimeformatter::dateTime()
     delete formatter;
 }
 
-QTEST_MAIN(tst_qmldatetimeformatter)
+QTEST_MAIN(tst_qdeclarativedatetimeformatter)
 
 #include "tst_qdeclarativedatetimeformatter.moc"
