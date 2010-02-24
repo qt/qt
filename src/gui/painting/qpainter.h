@@ -111,8 +111,9 @@ public:
         qreal scaleY;
         qreal rotation;
         qreal opacity;
-        static Fragment create(const QPointF &pos, const QRectF &sourceRect, qreal scaleX = 1,
-                               qreal scaleY = 1, qreal rotation = 0, qreal opacity = 1);
+        static Fragment Q_GUI_EXPORT create(const QPointF &pos, const QRectF &sourceRect,
+                                            qreal scaleX = 1, qreal scaleY = 1,
+                                            qreal rotation = 0, qreal opacity = 1);
     };
 
     enum FragmentHint {
