@@ -76,12 +76,7 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     d->surface = 0;
     int screen = 0;
 
-    d->display = eglGetDisplay(EGLNativeDisplayType(X11->display));
-
-    if (!eglInitialize(d->display, NULL, NULL)) {
-        qWarning("QGLTemporaryContext: Unable to initialize EGL display.");
-        return;
-    }
+    d->display = QEgl::display();
 
     EGLConfig config;
     int numConfigs = 0;
