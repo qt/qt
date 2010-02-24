@@ -119,3 +119,4 @@ DEFINES += COMMERCIAL_VERSION
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/corelib/arch/generic \
                $$QT_SOURCE_TREE/include/QtCore \
+               $$QT_SOURCE_TREE/tools/shared
