@@ -1004,9 +1004,10 @@ static void readDerivedNormalizationProps()
 
             uint part1 = d.decomposition.at(0);
             uint part2 = d.decomposition.at(1);
-            UnicodeData first = unicodeData.value(part1, UnicodeData(part1));
-            if (first.p.combiningClass != 0)
-                continue;
+
+            // all non-starters are listed in DerivedNormalizationProps.txt
+            // and already excluded from composition
+            Q_ASSERT(unicodeData.value(part1, UnicodeData(part1)).p.combiningClass == 0);
 
             ++numLigatures;
             highestLigature = qMax(highestLigature, (int)part1);
