@@ -705,6 +705,7 @@ static void readUnicodeData()
         QList<QByteArray> properties = line.split(';');
         bool ok;
         int codepoint = properties[UD_Value].toInt(&ok, 16);
+        Q_ASSERT(ok);
         int lastCodepoint = codepoint;
 
         QByteArray name = properties[UD_Name];
@@ -714,6 +715,7 @@ static void readUnicodeData()
             f.readLine(nextLine.data(), 1024);
             QList<QByteArray> properties = nextLine.split(';');
             lastCodepoint = properties[UD_Value].toInt(&ok, 16);
+            Q_ASSERT(ok);
         }
 
         UnicodeData data(codepoint);
@@ -778,8 +780,10 @@ static void readUnicodeData()
             } else {
                 data.decompositionType = QChar::Canonical;
             }
-            for (int i = 0; i < d.size(); ++i)
+            for (int i = 0; i < d.size(); ++i) {
                 data.decomposition.append(d[i].toInt(&ok, 16));
+                Q_ASSERT(ok);
+            }
             if (!decompositionLength.contains(data.decomposition.size()))
                 decompositionLength[data.decomposition.size()] = 1;
             else
@@ -821,7 +825,9 @@ static void readBidiMirroring()
 
         bool ok;
         int codepoint = pair[0].toInt(&ok, 16);
+        Q_ASSERT(ok);
         int mirror = pair[1].toInt(&ok, 16);
+        Q_ASSERT(ok);
 
         UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
         d.mirroredChar = mirror;
@@ -858,6 +864,8 @@ static void readArabicShaping()
 
         bool ok;
         int codepoint = shaping[0].toInt(&ok, 16);
+        Q_ASSERT(ok);
+
         QChar::Joining j = QChar::OtherJoining;
         QByteArray shape = shaping[2].trimmed();
         if (shape == "R")
@@ -904,9 +912,12 @@ static void readDerivedAge()
 
         bool ok;
         int from = cl[0].toInt(&ok, 16);
+        Q_ASSERT(ok);
         int to = from;
-        if (cl.size() == 2)
+        if (cl.size() == 2) {
             to = cl[1].toInt(&ok, 16);
+            Q_ASSERT(ok);
+        }
 
         QChar::UnicodeVersion age = age_map.value(l[1].trimmed(), QChar::Unicode_Unassigned);
         //qDebug() << hex << from << ".." << to << ba << age;
@@ -948,6 +959,7 @@ static void readCompositionExclusion()
 
         bool ok;
         int codepoint = line.toInt(&ok, 16);
+        Q_ASSERT(ok);
 
         UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
         d.excludedComposition = true;
@@ -1094,9 +1106,12 @@ static void readLineBreak()
 
         bool ok;
         int from = cl[0].toInt(&ok, 16);
+        Q_ASSERT(ok);
         int to = from;
-        if (cl.size() == 2)
+        if (cl.size() == 2) {
             to = cl[1].toInt(&ok, 16);
+            Q_ASSERT(ok);
+        }
 
         LineBreakClass lb = line_break_map.value(l[1].trimmed(), LineBreak_Unassigned);
         if (lb == LineBreak_Unassigned)
