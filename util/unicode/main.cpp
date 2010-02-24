@@ -1259,7 +1259,7 @@ static void readCaseFolding()
         UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
         if (foldMap.size() == 1) {
             ud.p.caseFoldDiff = foldMap.at(0) - codepoint;
-            maxCaseFoldDiff = qMax(maxCaseFoldDiff, ud.p.caseFoldDiff);
+            maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(ud.p.caseFoldDiff));
             if (codepoint > 0xffff) {
                 // if the condition below doesn't hold anymore we need to modify our case folding code
                 //qDebug() << codepoint << QChar::highSurrogate(codepoint) << QChar::highSurrogate(foldMap.at(0));
