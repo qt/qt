@@ -119,21 +119,6 @@ bool QGLFormat::hasOpenGLOverlays()
         return false;
 }
 
-void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
-{
-    // Find the QGLScreen for this paint device.
-    QGLScreen *glScreen = glScreenForDevice(device);
-    if (!glScreen) {
-        qWarning("QGLContext::chooseContext(): The screen is not a QGLScreen");
-        return;
-    }
-    int devType = device->devType();
-    if (devType == QInternal::Image)
-        props.setPixelFormat(static_cast<QImage *>(device)->format());
-    else
-        props.setPixelFormat(glScreen->pixelFormat());
-}
-
 static EGLSurface qt_egl_create_surface
     (QEglContext *context, QPaintDevice *device,
      const QEglProperties *properties = 0)
@@ -201,8 +186,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Construct the configuration we need for this surface.
     QEglProperties configProps;
-    qt_egl_add_platform_config(configProps, device());
     qt_egl_set_format(configProps, devType, d->glFormat);
+    configProps.setPaintDeviceFormat(device());
     configProps.setRenderableType(QEgl::OpenGL);
 
     // Search for a matching configuration, reducing the complexity

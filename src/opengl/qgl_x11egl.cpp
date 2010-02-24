@@ -154,12 +154,6 @@ bool QGLFormat::hasOpenGLOverlays()
     return false;
 }
 
-void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device)
-{
-    if (device->devType() == QInternal::Image)
-        props.setPixelFormat(static_cast<QImage *>(device)->format());
-}
-
 // Chooses the EGL config and creates the EGL context
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
@@ -178,7 +172,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         // Construct the configuration we need for this surface.
         QEglProperties configProps;
         qt_egl_set_format(configProps, devType, d->glFormat);
-        qt_egl_add_platform_config(configProps, device());
+        configProps.setPaintDeviceFormat(device());
         configProps.setRenderableType(QEgl::OpenGL);
 
 #if We_have_an_EGL_library_which_bothers_to_check_EGL_BUFFER_SIZE

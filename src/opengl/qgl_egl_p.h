@@ -62,7 +62,6 @@ class QGLFormat;
 
 void qt_egl_set_format(QEglProperties& props, int deviceType, const QGLFormat& f);
 void qt_egl_update_format(const QEglContext& context, QGLFormat& format);
-void qt_egl_add_platform_config(QEglProperties& props, QPaintDevice *device);
 
 QT_END_NAMESPACE
 
