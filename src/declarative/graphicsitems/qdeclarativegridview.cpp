@@ -321,7 +321,7 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
         listItem->item->setParent(q->viewport());
         unrequestedItems.remove(listItem->item);
     }
-    requestedIndex = 0;
+    requestedIndex = -1;
     return listItem;
 }
 
@@ -888,6 +888,8 @@ int QDeclarativeGridView::currentIndex() const
 void QDeclarativeGridView::setCurrentIndex(int index)
 {
     Q_D(QDeclarativeGridView);
+    if (d->requestedIndex >= 0) // currently creating item
+        return;
     if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         cancelFlick();
