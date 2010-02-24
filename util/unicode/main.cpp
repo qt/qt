@@ -45,9 +45,11 @@
 #include <qbytearray.h>
 #include <qstring.h>
 #include <qchar.h>
-#include <private/qunicodetables_p.h>
 #include <qvector.h>
 #include <qdebug.h>
+#if 0
+#include <private/qunicodetables_p.h>
+#endif
 
 #define DATA_VERSION_S "5.0"
 #define DATA_VERSION_STR "QChar::Unicode_5_0"
