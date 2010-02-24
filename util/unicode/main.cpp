@@ -38,9 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <qlist.h>
 #include <qhash.h>
 #include <qfile.h>
+#include <qbytearray.h>
 #include <qstring.h>
 #include <qchar.h>
 #include <private/qunicodetables_p.h>
@@ -275,7 +277,7 @@ const char *methods =
     "    }\n"
     "\n"
     "    Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);\n"
-    "    Q_CORE_EXPORT_INLINE int QT_FASTCALL script(const QChar &ch) {\n"
+    "    inline int script(const QChar &ch) {\n"
     "        return script(ch.unicode());\n"
     "    }\n\n";
 
@@ -1644,6 +1646,7 @@ QByteArray createScriptEnumDeclaration()
         "Lao",
         "Malayalam",
         "Myanmar",
+        "Nko",
         "Ogham",
         "Oriya",
         "Runic",
@@ -1683,9 +1686,12 @@ QByteArray createScriptEnumDeclaration()
             scriptHash[i] = i;
         }
 
-        declaration += ",\n        ";
-        declaration += scriptName;
+        if (scriptName != "Inherited") {
+            declaration += ",\n        ";
+            declaration += scriptName;
+        }
     }
+    declaration += ",\n        Inherited";
     declaration += ",\n        ScriptCount = Inherited";
 
     // output the ones that are an alias for 'Common'
