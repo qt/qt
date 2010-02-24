@@ -3480,12 +3480,54 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
     QByteArray ba;
     if (length) {
         ba.resize(length);
-        const ushort *i = reinterpret_cast<const ushort *>(data);
-        const ushort *e = i + length;
-        uchar *s = (uchar*) ba.data();
-        while (i != e) {
-            *s++ = (*i>0xff) ? '?' : (uchar) *i;
-            ++i;
+        const ushort *src = reinterpret_cast<const ushort *>(data);
+        uchar *dst = (uchar*) ba.data();
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (length >= 16) {
+            const int chunkCount = length >> 4; // divided by 16
+            const __m128i questionMark = _mm_set1_epi16('?');
+            const __m128i thresholdMask = _mm_set1_epi16(0xff);
+            for (int i = 0; i < chunkCount; ++i) {
+                __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // each 16 bit is equal to 0xFF if the source is outside latin 1 (>0xff)
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(chunk1, thresholdMask);
+
+                    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
+                    // the 16 bits that were correct contains zeros
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+
+                    // correctBytes contains the bytes that were in limit
+                    // the 16 bits that were off limits contains zeros
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk1);
+
+                    // merge offLimitQuestionMark and correctBytes to have the result
+                    chunk1 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // exactly the same operations as for the previous chunk of data
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(chunk2, thresholdMask);
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk2);
+                    chunk2 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                // pack the two vector to 16 x 8bits elements
+                const __m128i result = _mm_packs_epi16(chunk1, chunk2);
+
+                _mm_storeu_si128((__m128i*)dst, result); // store
+                dst += 16;
+            }
+            length = length % 16;
+        }
+#endif
+        while (length--) {
+            *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+            ++src;
         }
     }
     return ba;
