@@ -30,7 +30,8 @@ SOURCES += \
     $$PWD/qdeclarativedatetimeformatter.cpp \
     $$PWD/qdeclarativebehavior.cpp \
     $$PWD/qdeclarativefontloader.cpp \
-    $$PWD/qdeclarativestyledtext.cpp
+    $$PWD/qdeclarativestyledtext.cpp \
+    $$PWD/qdeclarativegraphicswidget.cpp
 
 HEADERS += \
     $$PWD/qdeclarativeutilmodule_p.h\
@@ -65,7 +66,8 @@ HEADERS += \
     $$PWD/qdeclarativedatetimeformatter_p.h \
     $$PWD/qdeclarativebehavior_p.h \
     $$PWD/qdeclarativefontloader_p.h \
-    $$PWD/qdeclarativestyledtext_p.h
+    $$PWD/qdeclarativestyledtext_p.h \
+    $$PWD/qdeclarativegraphicswidget.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns

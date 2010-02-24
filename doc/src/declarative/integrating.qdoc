@@ -86,6 +86,9 @@ QGraphicsObject *object =
 scene->addItem(object);
 \endcode
 
+There is a convenience QGraphicsWidget subclass, QDeclarativeGraphicsWidget, which takes care of the engine
+and component instantiation for you.
+
 The following QGraphicsView options are recommended for optimal performance
 of QML UIs:
 
@@ -93,6 +96,13 @@ of QML UIs:
 \o QGraphicsView::setOptimizationFlags(QGraphicsView::DontSavePainterState);
 \o QGraphicsView::setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 \o QGraphicsScene::setItemIndexMethod(QGraphicsScene::NoIndex);
+\endlist
+
+And the following QGraphicsView options are required for QML key handling to work:
+
+\list
+\o QGraphicsView::viewport()->setFocusPolicy(Qt::NoFocus);
+\o QGraphicsScene::setStickyFocus(true);
 \endlist
 
 \section1 Using existing QGraphicsWidgets in QML
