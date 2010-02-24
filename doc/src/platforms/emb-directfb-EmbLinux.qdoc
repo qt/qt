@@ -267,7 +267,8 @@ perform well.
     \o QT_NO_DIRECTFB_IMAGEPROVIDER
     \o By default Qt will use DirectFB to load QPixmaps from disk/memory. If
 your DirectFB implementation does not support this it might make sense to
-define this.
+define this. If you see strange rendering issues with pixmaps that have an
+alpha channel defining this could solve the problem.
 
  \row
     \o QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
@@ -327,4 +328,9 @@ QT_DIRECTFB_DISABLE_RASTERFALLBACKS is defined, DirectFB will only return
 instead of falling back to QRasterPaintEngine. Please note that these
 defines should only be used when optimizing the application. 
 
+\section2 Top level transparency
+\note DirectFB supports partially or fully transparent top level windows,
+either through QWidget::setWindowOpacity or through setting a non-opaque
+background brush. Note that for the latter it is not supported to change an
+opaque window to be transparent at runtime.
 */
