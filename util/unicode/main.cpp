@@ -258,6 +258,74 @@ static const char *lineBreakClass =
     "        LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK\n"
     "    };\n\n";
 
+enum LineBreakClass {
+    LineBreak_OP, LineBreak_CL, LineBreak_QU, LineBreak_GL, LineBreak_NS,
+    LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR, LineBreak_PO,
+    LineBreak_NU, LineBreak_AL, LineBreak_ID, LineBreak_IN, LineBreak_HY,
+    LineBreak_BA, LineBreak_BB, LineBreak_B2, LineBreak_ZW, LineBreak_CM,
+    LineBreak_WJ, LineBreak_H2, LineBreak_H3, LineBreak_JL, LineBreak_JV,
+    LineBreak_JT, LineBreak_SA, LineBreak_SG,
+    LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
+
+    , LineBreak_Unassigned
+};
+
+static QHash<QByteArray, LineBreakClass> line_break_map;
+
+static void initLineBreak()
+{
+    // ### Classes XX and AI are left out and mapped to AL for now;
+    // ### Class NL is ignored and mapped to AL as well.
+    struct LineBreakList {
+        LineBreakClass brk;
+        const char *name;
+    } breaks[] = {
+        { LineBreak_BK, "BK" },
+        { LineBreak_CR, "CR" },
+        { LineBreak_LF, "LF" },
+        { LineBreak_CM, "CM" },
+        { LineBreak_AL, "NL" },
+        { LineBreak_SG, "SG" },
+        { LineBreak_WJ, "WJ" },
+        { LineBreak_ZW, "ZW" },
+        { LineBreak_GL, "GL" },
+        { LineBreak_SP, "SP" },
+        { LineBreak_B2, "B2" },
+        { LineBreak_BA, "BA" },
+        { LineBreak_BB, "BB" },
+        { LineBreak_HY, "HY" },
+        { LineBreak_AL, "CB" }, // ###
+        { LineBreak_CL, "CL" },
+        { LineBreak_EX, "EX" },
+        { LineBreak_IN, "IN" },
+        { LineBreak_NS, "NS" },
+        { LineBreak_OP, "OP" },
+        { LineBreak_QU, "QU" },
+        { LineBreak_IS, "IS" },
+        { LineBreak_NU, "NU" },
+        { LineBreak_PO, "PO" },
+        { LineBreak_PR, "PR" },
+        { LineBreak_SY, "SY" },
+        { LineBreak_AL, "AI" },
+        { LineBreak_AL, "AL" },
+        { LineBreak_H2, "H2" },
+        { LineBreak_H3, "H3" },
+        { LineBreak_ID, "ID" },
+        { LineBreak_JL, "JL" },
+        { LineBreak_JV, "JV" },
+        { LineBreak_JT, "JT" },
+        { LineBreak_SA, "SA" },
+        { LineBreak_AL, "XX" },
+        { LineBreak_Unassigned, 0 }
+    };
+    LineBreakList *d = breaks;
+    while (d->name) {
+        line_break_map.insert(d->name, d->brk);
+        ++d;
+    }
+}
+
+
 // Keep this one in sync with the code in createPropertyInfo
 static const char *property_string =
     "    struct Properties {\n"
@@ -402,7 +470,7 @@ struct UnicodeData {
         p.age = QChar::Unicode_Unassigned;
         p.mirrorDiff = 0;
         p.digitValue = -1;
-        p.line_break_class = QUnicodeTables::LineBreak_AL;
+        p.line_break_class = LineBreak_AL; // XX -> AL
         p.lowerCaseDiff = 0;
         p.upperCaseDiff = 0;
         p.titleCaseDiff = 0;
@@ -1022,49 +1090,9 @@ static void readLineBreak()
         if (cl.size() == 2)
             to = cl[1].toInt(&ok, 16);
 
-        // ### Classes XX and AI are left out and mapped to AL for now
-        QUnicodeTables::LineBreakClass lb = QUnicodeTables::LineBreak_AL;
-        QByteArray ba = l[1];
-
-        if (ba == "AI") lb = QUnicodeTables::LineBreak_AL;
-        else if (ba == "XX") lb = QUnicodeTables::LineBreak_AL;
-        else if (ba == "NL") lb = QUnicodeTables::LineBreak_AL;
-        else if (ba == "OP") lb = QUnicodeTables::LineBreak_OP;
-        else if (ba == "CL") lb = QUnicodeTables::LineBreak_CL;
-        else if (ba == "QU") lb = QUnicodeTables::LineBreak_QU;
-        else if (ba == "GL") lb = QUnicodeTables::LineBreak_GL;
-        else if (ba == "NS") lb = QUnicodeTables::LineBreak_NS;
-        else if (ba == "EX") lb = QUnicodeTables::LineBreak_EX;
-        else if (ba == "SY") lb = QUnicodeTables::LineBreak_SY;
-        else if (ba == "IS") lb = QUnicodeTables::LineBreak_IS;
-        else if (ba == "PR") lb = QUnicodeTables::LineBreak_PR;
-        else if (ba == "PO") lb = QUnicodeTables::LineBreak_PO;
-        else if (ba == "NU") lb = QUnicodeTables::LineBreak_NU;
-        else if (ba == "AL") lb = QUnicodeTables::LineBreak_AL;
-        else if (ba == "ID") lb = QUnicodeTables::LineBreak_ID;
-        else if (ba == "IN") lb = QUnicodeTables::LineBreak_IN;
-        else if (ba == "HY") lb = QUnicodeTables::LineBreak_HY;
-        else if (ba == "BA") lb = QUnicodeTables::LineBreak_BA;
-        else if (ba == "BB") lb = QUnicodeTables::LineBreak_BB;
-        else if (ba == "B2") lb = QUnicodeTables::LineBreak_B2;
-        else if (ba == "ZW") lb = QUnicodeTables::LineBreak_ZW;
-        else if (ba == "CM") lb = QUnicodeTables::LineBreak_CM;
-        else if (ba == "SA") lb = QUnicodeTables::LineBreak_SA;
-        else if (ba == "BK") lb = QUnicodeTables::LineBreak_BK;
-        else if (ba == "CR") lb = QUnicodeTables::LineBreak_CR;
-        else if (ba == "LF") lb = QUnicodeTables::LineBreak_LF;
-        else if (ba == "SG") lb = QUnicodeTables::LineBreak_SG;
-        else if (ba == "CB") lb = QUnicodeTables::LineBreak_AL;
-        else if (ba == "SP") lb = QUnicodeTables::LineBreak_SP;
-        else if (ba == "WJ") lb = QUnicodeTables::LineBreak_WJ;
-        else if (ba == "H2") lb = QUnicodeTables::LineBreak_H2;
-        else if (ba == "H3") lb = QUnicodeTables::LineBreak_H3;
-        else if (ba == "JL") lb = QUnicodeTables::LineBreak_JL;
-        else if (ba == "JV") lb = QUnicodeTables::LineBreak_JV;
-        else if (ba == "JT") lb = QUnicodeTables::LineBreak_JT;
-        else {
-            qDebug() << "unhandled line break class:" << ba;
-        }
+        LineBreakClass lb = line_break_map.value(l[1].trimmed(), LineBreak_Unassigned);
+        if (lb == LineBreak_Unassigned)
+            qFatal("unassigned line break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
@@ -2453,13 +2481,13 @@ int main(int, char **)
     initGraphemeBreak();
     initWordBreak();
     initSentenceBreak();
+    initLineBreak();
 
     readUnicodeData();
     readBidiMirroring();
     readArabicShaping();
     readDerivedAge();
     readCompositionExclusion();
-    readLineBreak();
     readSpecialCasing();
     readCaseFolding();
     // readBlocks();
@@ -2467,6 +2495,7 @@ int main(int, char **)
     readGraphemeBreak();
     readWordBreak();
     readSentenceBreak();
+    readLineBreak();
 
     computeUniqueProperties();
     QByteArray properties = createPropertyInfo();
