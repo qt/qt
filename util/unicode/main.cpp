@@ -946,11 +946,11 @@ static void readDerivedAge()
 }
 
 
-static void readCompositionExclusion()
+static void readDerivedNormalizationProps()
 {
-    QFile f("data/CompositionExclusions.txt");
+    QFile f("data/DerivedNormalizationProps.txt");
     if (!f.exists())
-        qFatal("Couldn't find CompositionExclusions.txt");
+        qFatal("Couldn't find DerivedNormalizationProps.txt");
 
     f.open(QFile::ReadOnly);
 
@@ -963,20 +963,36 @@ static void readCompositionExclusion()
         int comment = line.indexOf('#');
         if (comment >= 0)
             line = line.left(comment);
-        line.replace(" ", "");
 
-        if (line.isEmpty())
+        if (line.trimmed().isEmpty())
             continue;
 
-        Q_ASSERT(!line.contains(".."));
+        QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() == 2);
+
+        QByteArray propName = l[1].trimmed();
+        if (propName != "Full_Composition_Exclusion")
+            // ###
+            continue;
+
+        QByteArray codes = l[0].trimmed();
+        codes.replace("..", ".");
+        QList<QByteArray> cl = codes.split('.');
 
         bool ok;
-        int codepoint = line.toInt(&ok, 16);
+        int from = cl[0].toInt(&ok, 16);
         Q_ASSERT(ok);
+        int to = from;
+        if (cl.size() == 2) {
+            to = cl[1].toInt(&ok, 16);
+            Q_ASSERT(ok);
+        }
 
-        UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
-        d.excludedComposition = true;
-        unicodeData.insert(codepoint, d);
+        for (int codepoint = from; codepoint <= to; ++codepoint) {
+            UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
+            d.excludedComposition = true;
+            unicodeData.insert(codepoint, d);
+        }
     }
 
     for (int codepoint = 0; codepoint <= LAST_CODEPOINT; ++codepoint) {
@@ -999,6 +1015,7 @@ static void readCompositionExclusion()
         }
     }
 }
+
 
 struct NormalizationCorrection {
     uint codepoint;
@@ -2529,7 +2546,7 @@ int main(int, char **)
     readBidiMirroring();
     readArabicShaping();
     readDerivedAge();
-    readCompositionExclusion();
+    readDerivedNormalizationProps();
     readSpecialCasing();
     readCaseFolding();
     // readBlocks();
