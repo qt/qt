@@ -168,18 +168,26 @@ void QDeclarativeBorderImage::setSource(const QUrl &url)
 
     d->url = url;
     d->sciurl = QUrl();
+    emit sourceChanged(d->url);
+
+    if (isComponentComplete())
+        load();
+}
+
+void QDeclarativeBorderImage::load()
+{
+    Q_D(QDeclarativeBorderImage);
     if (d->progress != 0.0) {
         d->progress = 0.0;
         emit progressChanged(d->progress);
     }
 
-    if (url.isEmpty()) {
+    if (d->url.isEmpty()) {
         d->pix = QPixmap();
         d->status = Null;
         setImplicitWidth(0);
         setImplicitHeight(0);
         emit statusChanged(d->status);
-        emit sourceChanged(d->url);
         update();
     } else {
         d->status = Loading;
@@ -195,11 +203,21 @@ void QDeclarativeBorderImage::setSource(const QUrl &url)
             {
                 QNetworkRequest req(d->url);
                 d->sciReply = qmlEngine(this)->networkAccessManager()->get(req);
-                QObject::connect(d->sciReply, SIGNAL(finished()),
-                                 this, SLOT(sciRequestFinished()));
+
+                static int sciReplyFinished = -1;
+                static int thisSciRequestFinished = -1;
+                if (sciReplyFinished == -1) {
+                    sciReplyFinished =
+                        QNetworkReply::staticMetaObject.indexOfSignal("finished()");
+                    thisSciRequestFinished =
+                        QDeclarativeBorderImage::staticMetaObject.indexOfSlot("sciRequestFinished()");
+                }
+
+                QMetaObject::connect(d->sciReply, sciReplyFinished, this,
+                                     thisSciRequestFinished, Qt::DirectConnection);
             }
         } else {
-            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix);
+            QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->url, &d->pix, d->async);
             if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
                 QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->url);
                 d->pendingPixmapCache = true;
@@ -217,7 +235,6 @@ void QDeclarativeBorderImage::setSource(const QUrl &url)
                     d->status = Ready;
                 d->progress = 1.0;
                 emit statusChanged(d->status);
-                emit sourceChanged(d->url);
                 emit progressChanged(d->progress);
                 update();
             }
@@ -319,13 +336,30 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
         d->verticalTileMode = sci.verticalTileRule();
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix);
+        QDeclarativePixmapReply::Status status = QDeclarativePixmapCache::get(d->sciurl, &d->pix, d->async);
         if (status != QDeclarativePixmapReply::Ready && status != QDeclarativePixmapReply::Error) {
             QDeclarativePixmapReply *reply = QDeclarativePixmapCache::request(qmlEngine(this), d->sciurl);
             d->sciPendingPixmapCache = true;
-            connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-            connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
-                    this, SLOT(requestProgress(qint64,qint64)));
+
+            static int replyDownloadProgress = -1;
+            static int replyFinished = -1;
+            static int thisRequestProgress = -1;
+            static int thisRequestFinished = -1;
+            if (replyDownloadProgress == -1) {
+                replyDownloadProgress =
+                    QDeclarativePixmapReply::staticMetaObject.indexOfSignal("downloadProgress(qint64,qint64)");
+                replyFinished =
+                    QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");
+                thisRequestProgress =
+                    QDeclarativeBorderImage::staticMetaObject.indexOfSlot("requestProgress(qint64,qint64)");
+                thisRequestFinished =
+                    QDeclarativeBorderImage::staticMetaObject.indexOfSlot("requestFinished()");
+            }
+
+            QMetaObject::connect(reply, replyFinished, this,
+                                 thisRequestFinished, Qt::DirectConnection);
+            QMetaObject::connect(reply, replyDownloadProgress, this,
+                                 thisRequestProgress, Qt::DirectConnection);
         } else {
             //### should be unified with requestFinished
             setImplicitWidth(d->pix.width());
@@ -337,7 +371,6 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
                 d->status = Ready;
             d->progress = 1.0;
             emit statusChanged(d->status);
-            emit sourceChanged(d->url);
             emit progressChanged(1.0);
             update();
         }
@@ -350,10 +383,10 @@ void QDeclarativeBorderImage::requestFinished()
 
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QDeclarativePixmapCache::get(d->sciurl, &d->pix);
+        QDeclarativePixmapCache::get(d->sciurl, &d->pix, d->async);
     } else {
         d->pendingPixmapCache = false;
-        if (QDeclarativePixmapCache::get(d->url, &d->pix) != QDeclarativePixmapReply::Ready)
+        if (QDeclarativePixmapCache::get(d->url, &d->pix, d->async) != QDeclarativePixmapReply::Ready)
             d->status = Error;
     }
     setImplicitWidth(d->pix.width());
@@ -363,7 +396,6 @@ void QDeclarativeBorderImage::requestFinished()
         d->status = Ready;
     d->progress = 1.0;
     emit statusChanged(d->status);
-    emit sourceChanged(d->url);
     emit progressChanged(1.0);
     update();
 }

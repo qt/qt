@@ -92,7 +92,7 @@ private:
 class Q_DECLARATIVE_EXPORT QDeclarativePixmapCache
 {
 public:
-    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap);
+    static QDeclarativePixmapReply::Status get(const QUrl& url, QPixmap *pixmap, bool async=false);
     static QDeclarativePixmapReply *request(QDeclarativeEngine *, const QUrl& url);
     static void cancel(const QUrl& url, QObject *obj);
     static int pendingRequests();

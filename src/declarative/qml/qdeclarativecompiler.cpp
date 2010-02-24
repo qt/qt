@@ -1326,6 +1326,16 @@ int QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const QByteArr
         if (methodName == name)
             return ii;
     }
+
+    // If no signal is found, but the signal is of the form "onBlahChanged",
+    // return the notify signal for the property "Blah"
+    if (name.endsWith("Changed")) {
+        QByteArray propName = name.mid(0, name.length() - 7);
+        int propIdx = mo->indexOfProperty(propName.constData());
+        if (propIdx >= 0)
+            return mo->property(propIdx).notifySignalIndex();
+    }
+
     return -1;
 }
 
