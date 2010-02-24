@@ -109,6 +109,8 @@ enum GraphemeBreak {
     GraphemeBreakT,
     GraphemeBreakLV,
     GraphemeBreakLVT
+
+    , GraphemeBreak_Unassigned
 };
 
 static QHash<QByteArray, GraphemeBreak> grapheme_break_map;
@@ -129,7 +131,7 @@ static void initGraphemeBreak()
         { GraphemeBreakT, "T" },
         { GraphemeBreakLV, "LV" },
         { GraphemeBreakLVT, "LVT" },
-        { GraphemeBreakOther, 0 }
+        { GraphemeBreak_Unassigned, 0 }
     };
     GraphemeBreakList *d = breaks;
     while (d->name) {
@@ -160,6 +162,8 @@ enum WordBreak {
     WordBreakMidNum,
     WordBreakNumeric,
     WordBreakExtendNumLet
+
+    , WordBreak_Unassigned
 };
 
 static QHash<QByteArray, WordBreak> word_break_map;
@@ -178,7 +182,7 @@ static void initWordBreak()
         { WordBreakMidNum, "MidNum" },
         { WordBreakNumeric, "Numeric" },
         { WordBreakExtendNumLet, "ExtendNumLet" },
-        { WordBreakFormat, 0 }
+        { WordBreak_Unassigned, 0 }
     };
     WordBreakList *d = breaks;
     while (d->name) {
@@ -215,6 +219,8 @@ enum SentenceBreak {
     SentenceBreakATerm,
     SentenceBreakSTerm,
     SentenceBreakClose
+
+    , SentenceBreak_Unassigned
 };
 
 static QHash<QByteArray, SentenceBreak> sentence_break_map;
@@ -236,7 +242,7 @@ static void initSentenceBreak()
         { SentenceBreakATerm, "ATerm" },
         { SentenceBreakSTerm, "STerm" },
         { SentenceBreakClose, "Close" },
-        { SentenceBreakOther, 0 }
+        { SentenceBreak_Unassigned, 0 }
     };
     SentenceBreakList *d = breaks;
     while (d->name) {
@@ -1293,7 +1299,9 @@ static void readGraphemeBreak()
             Q_ASSERT(ok);
         }
 
-        GraphemeBreak brk = grapheme_break_map.value(l[1].trimmed(), GraphemeBreakOther);
+        GraphemeBreak brk = grapheme_break_map.value(l[1].trimmed(), GraphemeBreak_Unassigned);
+        if (brk == GraphemeBreak_Unassigned)
+            qFatal("unassigned grapheme break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
@@ -1340,8 +1348,9 @@ static void readWordBreak()
             Q_ASSERT(ok);
         }
 
-        WordBreak brk = word_break_map.value(l[1].trimmed(), WordBreakOther);
-        Q_ASSERT(brk != WordBreakOther);
+        WordBreak brk = word_break_map.value(l[1].trimmed(), WordBreak_Unassigned);
+        if (brk == WordBreak_Unassigned)
+            qFatal("unassigned word break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
@@ -1388,8 +1397,9 @@ static void readSentenceBreak()
             Q_ASSERT(ok);
         }
 
-        SentenceBreak brk = sentence_break_map.value(l[1].trimmed(), SentenceBreakOther);
-        Q_ASSERT(brk != SentenceBreakOther);
+        SentenceBreak brk = sentence_break_map.value(l[1].trimmed(), SentenceBreak_Unassigned);
+        if (brk == SentenceBreak_Unassigned)
+            qFatal("unassigned sentence break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
