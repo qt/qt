@@ -63,7 +63,7 @@ This makes available all types in Qt that were available in Qt 4.6, regardless o
 actual version of Qt executing the QML. So even if Qt 4.7 adds a type that would conflict
 with a type you defined while using 4.6, that type is not imported, so there is no conflict.
 
-Types defined by plugins are made using QmlModulePlugin.  Installed plugins and QML files
+Types defined by plugins are made using QmlExtensionPlugin.  Installed plugins and QML files
 can both contribute types to the same module.
 
 
