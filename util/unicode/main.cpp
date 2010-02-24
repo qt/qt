@@ -969,7 +969,7 @@ static void readDerivedNormalizationProps()
             continue;
 
         QList<QByteArray> l = line.split(';');
-        Q_ASSERT(l.size() == 2);
+        Q_ASSERT(l.size() >= 2);
 
         QByteArray propName = l[1].trimmed();
         if (propName != "Full_Composition_Exclusion")
