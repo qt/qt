@@ -3650,20 +3650,26 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         d->data = d->array;
         d->array[size] = '\0';
         ushort *dst = d->data;
+        /* SIMD:
+         * Unpacking with SSE has been shown to improve performance on recent CPUs
+         * The same method gives no improvement with NEON.
+         */
 #if defined(QT_ALWAYS_HAVE_SSE2)
         if (size >= 16) {
             int chunkCount = size >> 4; // divided by 16
             const __m128i nullMask = _mm_set1_epi32(0);
             for (int i = 0; i < chunkCount; ++i) {
-                const __m128i chunk = _mm_loadu_si128((__m128i*)str);
+                const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
                 str += 16;
 
+                // unpack the first 8 bytes, padding with zeros
                 const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
-                _mm_storeu_si128((__m128i*)dst, firstHalf);
+                _mm_storeu_si128((__m128i*)dst, firstHalf); // store
                 dst += 8;
 
+                // unpack the last 8 bytes, padding with zeros
                 const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
-                _mm_storeu_si128((__m128i*)dst, secondHalf);
+                _mm_storeu_si128((__m128i*)dst, secondHalf); // store
                 dst += 8;
             }
             size = size % 16;
