@@ -181,7 +181,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     releasePlatforms.removeAll("winscw"); // No release for emulator
 
     QString testClause;
-    if (project->isActiveConfig("symbian_test"))
+    if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
         testClause = QLatin1String(" test");
     else
         testClause = QLatin1String("");

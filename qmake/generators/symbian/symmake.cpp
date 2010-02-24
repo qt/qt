@@ -63,6 +63,7 @@
 #define BLD_INF_TAG_MMPFILES "prj_mmpfiles"
 #define BLD_INF_TAG_TESTMMPFILES "prj_testmmpfiles"
 #define BLD_INF_TAG_EXTENSIONS "prj_extensions"
+#define BLD_INF_TAG_TESTEXTENSIONS "prj_testextensions"
 
 #define RSS_RULES "RSS_RULES"
 #define RSS_RULES_BASE "RSS_RULES."
@@ -1360,7 +1361,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     // Add project mmps and old style extension makefiles
 
     QString mmpTag;
-    if (project->isActiveConfig("symbian_test"))
+    if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
         mmpTag = QLatin1String(BLD_INF_TAG_TESTMMPFILES);
     else
         mmpTag = QLatin1String(BLD_INF_TAG_MMPFILES);
@@ -1383,16 +1384,22 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         t << item << endl;
     userBldInfRules.remove(mmpTag);
 
-    t << endl << BLD_INF_TAG_EXTENSIONS << endl << endl;
+    QString extensionTag;
+    if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
+        extensionTag = QLatin1String(BLD_INF_TAG_TESTEXTENSIONS);
+    else
+        extensionTag = QLatin1String(BLD_INF_TAG_EXTENSIONS);
+
+    t << endl << extensionTag << endl << endl;
 
     // Generate extension rules
 
     writeBldInfExtensionRulesPart(t, iconFile);
 
-    userItems = userBldInfRules.value(BLD_INF_TAG_EXTENSIONS);
+    userItems = userBldInfRules.value(extensionTag);
     foreach(QString item, userItems)
         t << item << endl;
-    userBldInfRules.remove(BLD_INF_TAG_EXTENSIONS);
+    userBldInfRules.remove(extensionTag);
 
     // Add rest of the user defined content
 
