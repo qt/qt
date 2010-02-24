@@ -870,7 +870,7 @@ void tst_qmlecmascript::dynamicDestruction()
 */
 void tst_qmlecmascript::objectToString()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("qmlToString.qml"));
+    QDeclarativeComponent component(&engine, TEST_FILE("declarativeToString.qml"));
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QMetaObject::invokeMethod(object, "testToString");
