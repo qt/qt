@@ -248,6 +248,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "PHONON_BACKEND" ]  = "yes";
     dictionary[ "MULTIMEDIA" ]      = "yes";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
+    dictionary[ "MEDIASERVICE"]     = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
@@ -907,6 +908,10 @@ void Configure::parseCmdLine()
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if( configCmdLine.at(i) == "-no-audio-backend" ) {
             dictionary[ "AUDIO_BACKEND" ] = "no";
+        } else if( configCmdLine.at(i) == "-mediaservice") {
+            dictionary[ "MEDIASERVICE" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-mediaservice") {
+            dictionary[ "MEDIASERVICE" ] = "no";
         } else if( configCmdLine.at(i) == "-no-phonon" ) {
             dictionary[ "PHONON" ] = "no";
         } else if( configCmdLine.at(i) == "-phonon" ) {
@@ -1763,6 +1768,8 @@ bool Configure::displayHelp()
         desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
+        desc("MEDIASERVICE", "no","-no-mediaservice",   "Do not compile in the platform-specific QtMultimedia media service.");
+        desc("MEDIASERVICE", "yes","-mediaservice",     "Compile in the platform-specific QtMultimedia media service.");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
         desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
@@ -2044,7 +2051,7 @@ bool Configure::checkAvailability(const QString &part)
                && dictionary.value("QMAKESPEC") != "win32-msvc.net" // Leave for now, since we can't be sure if they are using 2002 or 2003 with this spec
                && dictionary.value("QMAKESPEC") != "win32-msvc2002"
                && dictionary.value("EXCEPTIONS") == "yes";
-    } else if (part == "PHONON") {
+    } else if (part == "PHONON" || part == "MEDIASERVICE") {
         available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
             && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
             && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
@@ -2204,6 +2211,8 @@ void Configure::autoDetection()
         dictionary["DECLARATIVE"] = checkAvailability("DECLARATIVE") ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
+    if (dictionary["MEDIASERVICE"] == "auto")
+        dictionary["MEDIASERVICE"] = checkAvailability("MEDIASERVICE") ? "yes" : "no";
 
     // Qt/WinCE remote test application
     if (dictionary["CETEST"] == "auto")
@@ -2594,6 +2603,8 @@ void Configure::generateOutputVars()
         qtConfig += "multimedia";
         if (dictionary["AUDIO_BACKEND"] == "yes")
             qtConfig += "audio-backend";
+        if (dictionary["MEDIASERVICE"] == "yes")
+            qtConfig += "mediaservice";
     }
 
     if (dictionary["WEBKIT"] == "yes")

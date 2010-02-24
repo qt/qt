@@ -79,7 +79,7 @@ QT7PlayerService::QT7PlayerService(QObject *parent):
 #if defined(QT_MAC_USE_COCOA)
     m_videoWidnowControl = new QT7MovieViewOutput(this);
     m_videoOutputControl->enableOutput(QVideoOutputControl::WindowOutput);
-    qDebug() << "Using cocoa";
+//    qDebug() << "Using cocoa";
 #endif
 
 #ifdef QUICKTIME_C_API_AVAILABLE
@@ -88,11 +88,11 @@ QT7PlayerService::QT7PlayerService(QObject *parent):
 
     m_videoWidgetControl = new QT7MovieVideoWidget(this);
     m_videoOutputControl->enableOutput(QVideoOutputControl::WidgetOutput);
-    qDebug() << "QuickTime C API is available";
+//    qDebug() << "QuickTime C API is available";
 #else
     m_videoRendererControl = new QT7MovieViewRenderer(this);
     m_videoOutputControl->enableOutput(QVideoOutputControl::RendererOutput);
-    qDebug() << "QuickTime C API is not available";
+//    qDebug() << "QuickTime C API is not available";
 #endif
 
 
@@ -129,7 +129,7 @@ QMediaControl *QT7PlayerService::control(const char *name) const
 
 void QT7PlayerService::updateVideoOutput()
 {
-    qDebug() << "QT7PlayerService::updateVideoOutput" << m_videoOutputControl->output();
+//    qDebug() << "QT7PlayerService::updateVideoOutput" << m_videoOutputControl->output();
 
     switch (m_videoOutputControl->output()) {
     case QVideoOutputControl::WindowOutput:
