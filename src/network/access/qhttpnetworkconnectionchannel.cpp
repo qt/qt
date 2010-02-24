@@ -459,6 +459,8 @@ void QHttpNetworkConnectionChannel::handleUnexpectedEOF()
     } else {
         reconnectAttempts--;
         reply->d_func()->clear();
+        reply->d_func()->connection = connection;
+        reply->d_func()->connectionChannel = this;
         closeAndResendCurrentRequest();
     }
 }
