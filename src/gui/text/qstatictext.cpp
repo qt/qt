@@ -350,7 +350,6 @@ QStaticTextPrivate::QStaticTextPrivate()
         : items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
           useBackendOptimizations(false), textFormat(Qt::AutoText)
 {
-    ref = 1;    
 }
 
 QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
@@ -358,7 +357,6 @@ QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
       items(0), itemCount(0), glyphPool(0), positionPool(0), needsClipRect(false),
       useBackendOptimizations(other.useBackendOptimizations), textFormat(other.textFormat)
 {
-    ref = 1;
 }
 
 QStaticTextPrivate::~QStaticTextPrivate()
