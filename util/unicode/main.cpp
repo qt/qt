@@ -49,11 +49,16 @@
 #include <qvector.h>
 #include <qdebug.h>
 
+#define DATA_VERSION_S "5.0"
+#define DATA_VERSION_STR "QChar::Unicode_5_0"
+
+#define LAST_CODEPOINT 0x10ffff
+
 
 static struct AgeMap {
     const char *age;
     const QChar::UnicodeVersion version;
-} ageMap [] = {
+} ageMap[] = {
     { "1.1", QChar::Unicode_1_1 },
     { "2.0", QChar::Unicode_2_0 },
     { "2.1", QChar::Unicode_2_1_2 },
@@ -65,11 +70,10 @@ static struct AgeMap {
     { "5.0", QChar::Unicode_5_0 },
     { 0, QChar::Unicode_Unassigned }
 };
-#define CURRENT_UNICODE_VERSION "QChar::Unicode_5_0"
 
 static const char *grapheme_break_string =
     "    enum GraphemeBreak {\n"
-    "        GraphemeBreakOther, \n"
+    "        GraphemeBreakOther,\n"
     "        GraphemeBreakCR,\n"
     "        GraphemeBreakLF,\n"
     "        GraphemeBreakControl,\n"
@@ -161,7 +165,7 @@ static void initWordBreak()
         { WordBreakMidNum, "MidNum" },
         { WordBreakNumeric, "Numeric" },
         { WordBreakExtendNumLet, "ExtendNumLet" },
-        { WordBreakFormat,  0 }
+        { WordBreakFormat, 0 }
     };
     WordBreakList *d = breaks;
     while (d->name) {
@@ -220,7 +224,7 @@ static void initSentenceBreak()
         { SentenceBreakATerm, "ATerm" },
         { SentenceBreakSTerm, "STerm" },
         { SentenceBreakClose, "Close" },
-        { SentenceBreakOther,  0 }
+        { SentenceBreakOther, 0 }
     };
     SentenceBreakList *d = breaks;
     while (d->name) {
@@ -229,32 +233,6 @@ static void initSentenceBreak()
     }
 }
 
-
-// Keep this one in sync with the code in createPropertyInfo
-const char *property_string =
-    "    struct Properties {\n"
-    "        ushort category : 8;\n"
-    "        ushort line_break_class : 8;\n"
-    "        ushort direction : 8;\n"
-    "        ushort combiningClass :8;\n"
-    "        ushort joining : 2;\n"
-    "        signed short digitValue : 6; /* 5 needed */\n"
-    "        ushort unicodeVersion : 4;\n"
-    "        ushort lowerCaseSpecial : 1;\n"
-    "        ushort upperCaseSpecial : 1;\n"
-    "        ushort titleCaseSpecial : 1;\n"
-    "        ushort caseFoldSpecial : 1; /* currently unused */\n"
-    "        signed short mirrorDiff : 16;\n"
-    "        signed short lowerCaseDiff : 16;\n"
-    "        signed short upperCaseDiff : 16;\n"
-    "        signed short titleCaseDiff : 16;\n"
-    "        signed short caseFoldDiff : 16;\n"
-    "        ushort graphemeBreak : 8;\n"
-    "        ushort wordBreak : 8;\n"
-    "        ushort sentenceBreak : 8;\n"
-    "    };\n"
-    "    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);\n"
-    "    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);\n";
 
 const char *lineBreakClass =
     "    // see http://www.unicode.org/reports/tr14/tr14-19.html\n"
@@ -270,16 +248,40 @@ const char *lineBreakClass =
     "        LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK\n"
     "    };\n\n";
 
+// Keep this one in sync with the code in createPropertyInfo
+const char *property_string =
+    "    struct Properties {\n"
+    "        ushort category         : 8; /* 5 needed */\n"
+    "        ushort line_break_class : 8; /* 6 needed */\n"
+    "        ushort direction        : 8; /* 5 needed */\n"
+    "        ushort combiningClass   : 8;\n"
+    "        ushort joining          : 2;\n"
+    "        signed short digitValue : 6; /* 5 needed */\n"
+    "        ushort unicodeVersion   : 4;\n"
+    "        ushort lowerCaseSpecial : 1;\n"
+    "        ushort upperCaseSpecial : 1;\n"
+    "        ushort titleCaseSpecial : 1;\n"
+    "        ushort caseFoldSpecial  : 1; /* currently unused */\n"
+    "        signed short mirrorDiff    : 16;\n"
+    "        signed short lowerCaseDiff : 16;\n"
+    "        signed short upperCaseDiff : 16;\n"
+    "        signed short titleCaseDiff : 16;\n"
+    "        signed short caseFoldDiff  : 16;\n"
+    "        ushort graphemeBreak    : 8; /* 4 needed */\n"
+    "        ushort wordBreak        : 8; /* 4 needed */\n"
+    "        ushort sentenceBreak    : 8; /* 4 needed */\n"
+    "    };\n"
+    "    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);\n"
+    "    Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);\n";
+
 const char *methods =
     "    Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);\n"
-    "    inline int lineBreakClass(const QChar &ch) {\n"
-    "        return QUnicodeTables::lineBreakClass(ch.unicode());\n"
-    "    }\n"
+    "    inline int lineBreakClass(const QChar &ch)\n"
+    "    { return lineBreakClass(ch.unicode()); }\n"
     "\n"
     "    Q_CORE_EXPORT int QT_FASTCALL script(uint ucs4);\n"
-    "    inline int script(const QChar &ch) {\n"
-    "        return script(ch.unicode());\n"
-    "    }\n\n";
+    "    inline int script(const QChar &ch)\n"
+    "    { return script(ch.unicode()); }\n\n";
 
 
 struct PropertyFlags {
@@ -314,7 +316,7 @@ struct PropertyFlags {
     // from DerivedAge.txt
     QChar::UnicodeVersion age : 4;
     int digitValue;
-    uint line_break_class : 5;
+    uint line_break_class : 6;
 
     int mirrorDiff : 16;
 
@@ -447,7 +449,7 @@ static void initCategoryMap()
     struct Cat {
         QChar::Category cat;
         const char *name;
-    } categories [] = {
+    } categories[] = {
         { QChar::Mark_NonSpacing,          "Mn" },
         { QChar::Mark_SpacingCombining,    "Mc" },
         { QChar::Mark_Enclosing,           "Me" },
@@ -555,7 +557,7 @@ static void initDecompositionMap()
         { QChar::Square, "<square>" },
         { QChar::Compat, "<compat>" },
         { QChar::Fraction, "<fraction>" },
-        { QChar::NoDecomposition,  0 }
+        { QChar::NoDecomposition, 0 }
     };
     Dec *d = decompositions;
     while (d->name) {
@@ -574,11 +576,14 @@ int highestComposedCharacter = 0;
 int numLigatures = 0;
 int highestLigature = 0;
 
-struct Ligature {ushort u1; ushort u2; ushort ligature;};
+struct Ligature {
+    ushort u1;
+    ushort u2;
+    ushort ligature;
+};
 // we need them sorted after the first component for fast lookup
-bool operator < (const Ligature &l1, const Ligature &l2) {
-    return l1.u1 < l2.u1;
-}
+bool operator < (const Ligature &l1, const Ligature &l2)
+{ return l1.u1 < l2.u1; }
 
 QHash<ushort, QList<Ligature> > ligatureHashes;
 
@@ -646,7 +651,7 @@ static void readUnicodeData()
         }
         if (!properties[UD_LowerCase].isEmpty()) {
             int lowerCase = properties[UD_LowerCase].toInt(&ok, 16);
-            Q_ASSERT (ok);
+            Q_ASSERT(ok);
             data.p.lowerCaseDiff = lowerCase - codepoint;
             maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(data.p.lowerCaseDiff));
             if (codepoint > 0xffff) {
@@ -660,7 +665,7 @@ static void readUnicodeData()
             properties[UD_TitleCase] = properties[UD_UpperCase];
         if (!properties[UD_TitleCase].isEmpty()) {
             int titleCase = properties[UD_TitleCase].toInt(&ok, 16);
-            Q_ASSERT (ok);
+            Q_ASSERT(ok);
             data.p.titleCaseDiff = titleCase - codepoint;
             maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(data.p.titleCaseDiff));
             if (codepoint > 0xffff) {
@@ -731,10 +736,8 @@ static void readBidiMirroring()
 
         UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
         d.mirroredChar = mirror;
-        if (qAbs(codepoint-d.mirroredChar) > maxMirroredDiff)
-            maxMirroredDiff = qAbs(codepoint - d.mirroredChar);
-
         d.p.mirrorDiff = d.mirroredChar - codepoint;
+        maxMirroredDiff = qMax(maxMirroredDiff, qAbs(d.p.mirrorDiff));
         unicodeData.insert(codepoint, d);
     }
 }
@@ -870,7 +873,7 @@ static void readCompositionExclusion()
         unicodeData.insert(codepoint, d);
     }
 
-    for (int i = 0; i < 0x110000; ++i) {
+    for (int i = 0; i <= LAST_CODEPOINT; ++i) {
         UnicodeData data = unicodeData.value(i, UnicodeData(i));
         if (!data.excludedComposition
             && data.decompositionType == QChar::Canonical
@@ -935,10 +938,12 @@ static QByteArray createNormalizationCorrections()
         QList<QByteArray> fields = line.split(';');
         Q_ASSERT(fields.size() == 4);
 
-        NormalizationCorrection c;
+        NormalizationCorrection c = { 0, 0, 0 };
         bool ok;
         c.codepoint = fields.at(0).toInt(&ok, 16);
+        Q_ASSERT(ok);
         c.mapped = fields.at(1).toInt(&ok, 16);
+        Q_ASSERT(ok);
         if (fields.at(3) == "3.2.0")
             c.version = QChar::Unicode_3_2;
         else if (fields.at(3) == "4.0.0")
@@ -955,7 +960,6 @@ static QByteArray createNormalizationCorrections()
 
            "enum { NumNormalizationCorrections = " + QByteArray::number(numCorrections) + " };\n\n";
 
-
     return out;
 }
 
@@ -963,7 +967,7 @@ static QByteArray createNormalizationCorrections()
 static void computeUniqueProperties()
 {
     qDebug("computeUniqueProperties:");
-    for (int uc = 0; uc < 0x110000; ++uc) {
+    for (int uc = 0; uc <= LAST_CODEPOINT; ++uc) {
         UnicodeData d = unicodeData.value(uc, UnicodeData(uc));
 
         int index = uniqueProperties.indexOf(d.p);
@@ -1068,7 +1072,7 @@ static void readLineBreak()
 
 static void readSpecialCasing()
 {
-//     qDebug() << "Reading SpecialCasing.txt";
+    qDebug() << "Reading SpecialCasing.txt";
     QFile f("data/SpecialCasing.txt");
     if (!f.exists())
         qFatal("Couldn't find SpecialCasing.txt");
@@ -1180,7 +1184,7 @@ static void readCaseFolding()
         QList<QByteArray> l = line.split(';');
 
         bool ok;
-        uint codepoint = l[0].trimmed().toInt(&ok, 16);
+        int codepoint = l[0].trimmed().toInt(&ok, 16);
         Q_ASSERT(ok);
 
 
@@ -1664,7 +1668,7 @@ QByteArray createScriptEnumDeclaration()
     // generate script enum
     QByteArray declaration;
 
-    declaration += "    // See http://www.unicode.org/reports/tr24/tr24-5.html\n\n";
+    declaration += "    // See http://www.unicode.org/reports/tr24/tr24-5.html\n";
     declaration += "    enum Script {\n        Common";
 
     int uniqueScripts = 1; // Common
@@ -1674,12 +1678,14 @@ QByteArray createScriptEnumDeclaration()
         QByteArray scriptName = scriptNames.at(i);
         // does the script require special processing?
         bool special = false;
-        for (int s = 0; !special && s < specialScriptsCount; ++s) {
-            if (scriptName == specialScripts[s])
+        for (int s = 0; s < specialScriptsCount; ++s) {
+            if (scriptName == specialScripts[s]) {
                 special = true;
+                break;
+            }
         }
         if (!special) {
-            scriptHash[i] =  0; // alias for 'Common'
+            scriptHash[i] = 0; // alias for 'Common'
             continue;
         } else {
             ++uniqueScripts;
@@ -1698,10 +1704,9 @@ QByteArray createScriptEnumDeclaration()
     for (int i = 1; i < scriptNames.size(); ++i) {
         if (scriptHash.value(i) != 0)
             continue;
-        QByteArray scriptName = scriptNames.at(i);
-        scriptName += " = Common";
         declaration += ",\n        ";
-        declaration += scriptName;
+        declaration += scriptNames.at(i);
+        declaration += " = Common";
     }
 
     declaration += "\n    };\n";
@@ -1844,7 +1849,7 @@ static QByteArray createPropertyInfo()
 {
     qDebug("createPropertyInfo:");
 
-    const int BMP_BLOCKSIZE=32;
+    const int BMP_BLOCKSIZE = 32;
     const int BMP_SHIFT = 5;
     const int BMP_END = 0x11000;
     const int SMP_END = 0x110000;
@@ -1896,14 +1901,14 @@ static QByteArray createPropertyInfo()
     int bmp_block_data = bmp_blocks*BMP_BLOCKSIZE*2;
     int bmp_trie = BMP_END/BMP_BLOCKSIZE*2;
     int bmp_mem = bmp_block_data + bmp_trie;
-    qDebug("    %d unique blocks in BMP.",blocks.size());
+    qDebug("    %d unique blocks in BMP.", blocks.size());
     qDebug("        block data uses: %d bytes", bmp_block_data);
     qDebug("        trie data uses : %d bytes", bmp_trie);
 
-    int smp_block_data = (blocks.size()- bmp_blocks)*SMP_BLOCKSIZE*2;
+    int smp_block_data = (blocks.size() - bmp_blocks)*SMP_BLOCKSIZE*2;
     int smp_trie = (SMP_END-BMP_END)/SMP_BLOCKSIZE*2;
     int smp_mem = smp_block_data + smp_trie;
-    qDebug("    %d unique blocks in SMP.",blocks.size()-bmp_blocks);
+    qDebug("    %d unique blocks in SMP.", blocks.size()-bmp_blocks);
     qDebug("        block data uses: %d bytes", smp_block_data);
     qDebug("        trie data uses : %d bytes", smp_trie);
 
@@ -1914,7 +1919,7 @@ static QByteArray createPropertyInfo()
     out += "static const unsigned short uc_property_trie[] = {\n";
 
     // first write the map
-    out += "    // 0x" + QByteArray::number(BMP_END, 16);
+    out += "    // 0 - 0x" + QByteArray::number(BMP_END, 16);
     for (int i = 0; i < BMP_END/BMP_BLOCKSIZE; ++i) {
         if (!(i % 8)) {
             if (out.endsWith(' '))
@@ -1983,7 +1988,7 @@ static QByteArray createPropertyInfo()
            "] + (ucs2 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")])\n\n"
 
 
-           "static const QUnicodeTables::Properties uc_properties [] = {\n";
+           "static const QUnicodeTables::Properties uc_properties[] = {\n";
 
     // keep in sync with the property declaration
     for (int i = 0; i < uniqueProperties.size(); ++i) {
@@ -2042,7 +2047,7 @@ static QByteArray createPropertyInfo()
         out += QByteArray::number( p.wordBreak );
         out += ", ";
         out += QByteArray::number( p.sentenceBreak );
-        out += "},\n";
+        out += " },\n";
     }
     out += "};\n\n";
 
@@ -2070,9 +2075,9 @@ static QByteArray createPropertyInfo()
            "    return uc_properties + index;\n"
            "}\n\n";
 
-    out += "#define CURRENT_VERSION "CURRENT_UNICODE_VERSION"\n\n";
+    out += "#define CURRENT_VERSION "DATA_VERSION_STR"\n\n";
 
-    out += "static const ushort specialCaseMap [] = {";
+    out += "static const ushort specialCaseMap[] = {";
     for (int i = 0; i < specialCaseMap.size(); ++i) {
         if (!(i % 16))
             out += "\n   ";
@@ -2083,7 +2088,7 @@ static QByteArray createPropertyInfo()
     out += "\n};\n";
     out += "#define SPECIAL_CASE_MAX_LEN " + QByteArray::number(specialCaseMaxLen) + "\n\n";
 
-    qDebug() << "Special case map uses " << specialCaseMap.size()*2 << "bytes";
+    qDebug("Special case map uses : %d bytes", specialCaseMap.size()*2);
 
     return out;
 }
@@ -2094,14 +2099,14 @@ struct DecompositionBlock {
     int index;
     QList<int> decompositionPositions;
     bool operator ==(const DecompositionBlock &other)
-        { return decompositionPositions == other.decompositionPositions; }
+    { return decompositionPositions == other.decompositionPositions; }
 };
 
 static QByteArray createCompositionInfo()
 {
     qDebug("createCompositionInfo:");
 
-    const int BMP_BLOCKSIZE=16;
+    const int BMP_BLOCKSIZE = 16;
     const int BMP_SHIFT = 4;
     const int BMP_END = 0x3400; // start of Han
     const int SMP_END = 0x30000;
@@ -2202,15 +2207,15 @@ static QByteArray createCompositionInfo()
     int bmp_block_data = bmp_blocks*BMP_BLOCKSIZE*2;
     int bmp_trie = BMP_END/BMP_BLOCKSIZE*2;
     int bmp_mem = bmp_block_data + bmp_trie;
-    qDebug("    %d unique blocks in BMP.",blocks.size());
+    qDebug("    %d unique blocks in BMP.", blocks.size());
     qDebug("        block data uses: %d bytes", bmp_block_data);
     qDebug("        trie data uses : %d bytes", bmp_trie);
     qDebug("        memory usage: %d bytes", bmp_mem);
 
-    int smp_block_data = (blocks.size()- bmp_blocks)*SMP_BLOCKSIZE*2;
+    int smp_block_data = (blocks.size() - bmp_blocks)*SMP_BLOCKSIZE*2;
     int smp_trie = (SMP_END-BMP_END)/SMP_BLOCKSIZE*2;
     int smp_mem = smp_block_data + smp_trie;
-    qDebug("    %d unique blocks in SMP.",blocks.size()-bmp_blocks);
+    qDebug("    %d unique blocks in SMP.", blocks.size()-bmp_blocks);
     qDebug("        block data uses: %d bytes", smp_block_data);
     qDebug("        trie data uses : %d bytes", smp_trie);
 
@@ -2353,7 +2358,7 @@ static QByteArray createLigatureInfo()
     int bmp_block_data = bmp_blocks*BMP_BLOCKSIZE*2;
     int bmp_trie = BMP_END/BMP_BLOCKSIZE*2;
     int bmp_mem = bmp_block_data + bmp_trie;
-    qDebug("    %d unique blocks in BMP.",blocks.size());
+    qDebug("    %d unique blocks in BMP.", blocks.size());
     qDebug("        block data uses: %d bytes", bmp_block_data);
     qDebug("        trie data uses : %d bytes", bmp_trie);
     qDebug("        ligature data uses : %d bytes", ligatures.size()*2);
@@ -2405,7 +2410,7 @@ static QByteArray createLigatureInfo()
            "uc_ligature_trie[uc_ligature_trie[u2>>" + QByteArray::number(BMP_SHIFT) +
            "] + (u2 & 0x" + QByteArray::number(BMP_BLOCKSIZE-1, 16)+ ")] : 0xffff);\n\n"
 
-           "static const unsigned short uc_ligature_map [] = {\n";
+           "static const unsigned short uc_ligature_map[] = {\n";
 
     for (int i = 0; i < ligatures.size(); ++i) {
         if (!(i % 8)) {
@@ -2468,9 +2473,6 @@ int main(int, char **)
     QByteArray scriptEnumDeclaration = createScriptEnumDeclaration();
     QByteArray scriptTableDeclaration = createScriptTableDeclaration();
 
-    QFile f("../../src/corelib/tools/qunicodetables.cpp");
-    f.open(QFile::WriteOnly|QFile::Truncate);
-
     QByteArray header =
         "/****************************************************************************\n"
         "**\n"
@@ -2511,9 +2513,10 @@ int main(int, char **)
         "**\n"
         "** $QT_END_LICENSE$\n"
         "**\n"
-        "****************************************************************************/\n\n"
+        "****************************************************************************/\n\n";
 
-        "/* This file is autogenerated from the Unicode 5.0 database. Do not edit */\n\n";
+    QByteArray note =
+        "/* This file is autogenerated from the Unicode "DATA_VERSION_S" database. Do not edit */\n\n";
 
     QByteArray warning =
         "//\n"
@@ -2527,41 +2530,45 @@ int main(int, char **)
         "// We mean it.\n"
         "//\n\n";
 
+    QFile f("../../src/corelib/tools/qunicodetables.cpp");
+    f.open(QFile::WriteOnly|QFile::Truncate);
     f.write(header);
+    f.write(note);
     f.write("QT_BEGIN_NAMESPACE\n\n");
     f.write(properties);
     f.write(compositions);
     f.write(ligatures);
     f.write(normalizationCorrections);
     f.write(scriptTableDeclaration);
-    f.write("\nQT_END_NAMESPACE\n");
+    f.write("QT_END_NAMESPACE\n");
     f.close();
 
     f.setFileName("../../src/corelib/tools/qunicodetables_p.h");
     f.open(QFile::WriteOnly | QFile::Truncate);
     f.write(header);
+    f.write(note);
     f.write(warning);
     f.write("#ifndef QUNICODETABLES_P_H\n"
             "#define QUNICODETABLES_P_H\n\n"
             "#include <QtCore/qchar.h>\n\n"
             "QT_BEGIN_NAMESPACE\n\n");
-    f.write("namespace QUnicodeTables {\n");
+    f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
     f.write("\n");
     f.write(scriptEnumDeclaration);
     f.write("\n");
     f.write(lineBreakClass);
     f.write("\n");
-    f.write(methods);
-    f.write("\n");
     f.write(grapheme_break_string);
     f.write("\n");
     f.write(word_break_string);
     f.write("\n");
     f.write(sentence_break_string);
-    f.write("\n}\n\n"
+    f.write("\n");
+    f.write(methods);
+    f.write("} // namespace QUnicodeTables\n\n"
             "QT_END_NAMESPACE\n\n"
-            "#endif\n");
+            "#endif // QUNICODETABLES_P_H\n");
     f.close();
 
     qDebug() << "maxMirroredDiff  = " << hex << maxMirroredDiff;
@@ -2584,7 +2591,7 @@ int main(int, char **)
         sum += decompositionLength.value(i, 0);
     }
     qDebug("    len decomposition map %d, average length %f, num composed chars %d",
-           totalcompositions, (float)totalcompositions/(float)sum,  sum);
+           totalcompositions, (float)totalcompositions/(float)sum, sum);
     qDebug("highest composed character %x", highestComposedCharacter);
     qDebug("num ligatures = %d highest=%x, maxLength=%d", numLigatures, highestLigature, longestLigature);
 
@@ -2605,4 +2612,3 @@ int main(int, char **)
 
 #endif
 }
-
