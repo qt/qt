@@ -351,7 +351,7 @@ static int appendToSpecialCaseMap(const QList<int> &map)
     specialCaseMaxLen = qMax(specialCaseMaxLen, utf16map.size());
     utf16map << 0;
 
-    for (int i = 0; i < specialCaseMap.size() - utf16map.size() - 1; ++i) {
+    for (int i = 0; i < specialCaseMap.size() - utf16map.size() + 1; ++i) {
         int j;
         for (j = 0; j < utf16map.size(); ++j) {
             if (specialCaseMap.at(i+j) != utf16map.at(j))
