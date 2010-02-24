@@ -62,6 +62,7 @@
 #include <net/if_arp.h>
 #endif
 
+QT_BEGIN_NAMESPACE
 
 static QString qGetInterfaceType(const QString &interface)
 {
