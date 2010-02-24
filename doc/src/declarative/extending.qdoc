@@ -88,7 +88,7 @@ constructor.
 \endquotation
 
 Types can be registered by libraries (such as Qt does), application code,
-or by plugins (see QmlModulePlugin).
+or by plugins (see QmlExtensionPlugin).
 
 Once registered, all of the \l {Qt's Property System}{properties} of a supported
 type are available for use within QML.  QML has intrinsic support for properties
