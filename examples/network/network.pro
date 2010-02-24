@@ -11,7 +11,9 @@ SUBDIRS       = blockingfortuneclient \
                 loopback \
                 threadedfortuneserver \
                 googlesuggest \
-                torrent
+                torrent \
+                bearercloud \
+                bearermonitor
 
 # no QProcess
 !vxworks:!qnx:SUBDIRS += network-chat
