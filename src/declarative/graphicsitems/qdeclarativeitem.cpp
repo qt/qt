@@ -1321,7 +1321,7 @@ QDeclarativeItem::~QDeclarativeItem()
     Image {
         source: "myimage.png"
         transformOrigin: Item.BottomRight
-        rotate: 45
+        rotation: 45
     }
     \endqml
 
