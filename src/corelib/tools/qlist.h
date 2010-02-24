@@ -525,7 +525,8 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
             PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
             Node *n = reinterpret_cast<Node *>(p.append());
             QT_TRY {
-                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+                void *ptr = &cpy;
+                node_construct(n, *reinterpret_cast<T *>(ptr));
             } QT_CATCH(...) {
                 --d->end;
                 QT_RETHROW;
@@ -559,7 +560,8 @@ inline void QList<T>::prepend(const T &t)
             PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
             Node *n = reinterpret_cast<Node *>(p.prepend());
             QT_TRY {
-                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+                void *ptr = &cpy;
+                node_construct(n, *reinterpret_cast<T *>(ptr));
             } QT_CATCH(...) {
                 ++d->begin;
                 QT_RETHROW;
@@ -593,7 +595,8 @@ inline void QList<T>::insert(int i, const T &t)
             PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
             Node *n = reinterpret_cast<Node *>(p.insert(i));
             QT_TRY {
-                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+                void *ptr = &cpy;
+                node_construct(n, *reinterpret_cast<T *>(ptr));
             } QT_CATCH(...) {
                 p.remove(i);
                 QT_RETHROW;
