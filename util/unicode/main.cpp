@@ -2131,15 +2131,14 @@ static QByteArray createCompositionInfo()
             if (!d.decomposition.isEmpty()) {
                 int utf16Chars = 0;
                 for (int j = 0; j < d.decomposition.size(); ++j)
-                    utf16Chars += d.decomposition.at(j) > 0x10000 ? 2 : 1;
+                    utf16Chars += d.decomposition.at(j) >= 0x10000 ? 2 : 1;
                 decompositions.append(d.decompositionType + (utf16Chars<<8));
                 for (int j = 0; j < d.decomposition.size(); ++j) {
                     int code = d.decomposition.at(j);
-                    if (code > 0x10000) {
+                    if (code >= 0x10000) {
                         // save as surrogate pair
-                        code -= 0x10000;
-                        ushort high = code/0x400 + 0xd800;
-                        ushort low = code%0x400 + 0xdc00;
+                        ushort high = QChar::highSurrogate(code);
+                        ushort low = QChar::lowSurrogate(code);
                         decompositions.append(high);
                         decompositions.append(low);
                     } else {
@@ -2173,15 +2172,14 @@ static QByteArray createCompositionInfo()
             if (!d.decomposition.isEmpty()) {
                 int utf16Chars = 0;
                 for (int j = 0; j < d.decomposition.size(); ++j)
-                    utf16Chars += d.decomposition.at(j) > 0x10000 ? 2 : 1;
+                    utf16Chars += d.decomposition.at(j) >= 0x10000 ? 2 : 1;
                 decompositions.append(d.decompositionType + (utf16Chars<<8));
                 for (int j = 0; j < d.decomposition.size(); ++j) {
                     int code = d.decomposition.at(j);
-                    if (code > 0x10000) {
+                    if (code >= 0x10000) {
                         // save as surrogate pair
-                        code -= 0x10000;
-                        ushort high = code/0x400 + 0xd800;
-                        ushort low = code%0x400 + 0xdc00;
+                        ushort high = QChar::highSurrogate(code);
+                        ushort low = QChar::lowSurrogate(code);
                         decompositions.append(high);
                         decompositions.append(low);
                     } else {
