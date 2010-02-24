@@ -44,6 +44,9 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
+#ifndef Q_OS_WIN
+#include <stdint.h>
+#endif
 
 QT_BEGIN_HEADER
 
