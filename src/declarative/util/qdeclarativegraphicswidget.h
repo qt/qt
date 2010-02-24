@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEFONTLOADER_H
-#define QDECLARATIVEFONTLOADER_H
+#ifndef QDECLARATIVEGRAPHICSWIDGET_H
+#define QDECLARATIVEGRAPHICSWIDGET_H
 
-#include <qdeclarative.h>
-
-#include <QtCore/qobject.h>
+#include <QtCore/qdatetime.h>
 #include <QtCore/qurl.h>
+#include <QtGui/qgraphicssceneevent.h>
+#include <QtGui/qgraphicswidget.h>
+#include <QtGui/qwidget.h>
 
 QT_BEGIN_HEADER
 
@@ -53,44 +54,60 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QDeclarativeFontLoaderPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeFontLoader : public QObject
+class QGraphicsObject;
+class QDeclarativeEngine;
+class QDeclarativeContext;
+class QDeclarativeError;
+
+class QDeclarativeGraphicsWidgetPrivate;
+
+class Q_DECLARATIVE_EXPORT QDeclarativeGraphicsWidget : public QGraphicsWidget
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeFontLoader)
-    Q_ENUMS(Status)
-
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource)
 
 public:
-    enum Status { Null = 0, Ready, Loading, Error };
-
-    QDeclarativeFontLoader(QObject *parent = 0);
-    ~QDeclarativeFontLoader();
+    explicit QDeclarativeGraphicsWidget(QGraphicsItem *parent = 0);
+    virtual ~QDeclarativeGraphicsWidget();
 
     QUrl source() const;
-    void setSource(const QUrl &url);
+    void setSource(const QUrl&);
 
-    QString name() const;
-    void setName(const QString &name);
+    QDeclarativeEngine* engine();
+    QDeclarativeContext* rootContext();
 
+    QGraphicsObject *rootObject() const;
+
+    enum ResizeMode { SizeViewToRootObject, SizeRootObjectToView };
+    ResizeMode resizeMode() const;
+    void setResizeMode(ResizeMode);
+    QSizeF sizeHint() const;
+
+    enum Status { Null, Ready, Loading, Error };
     Status status() const;
 
-private Q_SLOTS:
-    void replyFinished();
+    QList<QDeclarativeError> errors() const;
 
 Q_SIGNALS:
-    void nameChanged();
-    void statusChanged();
+    void sceneResized(QSizeF size);
+    void statusChanged(QDeclarativeGraphicsWidget::Status);
+
+private Q_SLOTS:
+    void continueExecute();
+    void sizeChanged();
+
+protected:
+    virtual void resizeEvent(QGraphicsSceneResizeEvent *);
+    void timerEvent(QTimerEvent*);
+
+private:
+    QDeclarativeGraphicsWidgetPrivate* d;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeFontLoader)
-
 QT_END_HEADER
 
-#endif // QDECLARATIVEFONTLOADER_H
-
+#endif // QDECLARATIVEGRAPHICSWIDGET_H

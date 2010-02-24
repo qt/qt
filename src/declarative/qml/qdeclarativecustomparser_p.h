@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 #include "qdeclarativeerror.h"
 #include "qdeclarativeparser_p.h"
 

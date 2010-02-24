@@ -105,8 +105,10 @@ void QDeclarativeUtilModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,Timer,QDeclarativeTimer);
     QML_REGISTER_TYPE(Qt,4,6,Transition,QDeclarativeTransition);
     QML_REGISTER_TYPE(Qt,4,6,Vector3dAnimation,QDeclarativeVector3dAnimation);
+#ifndef QT_NO_XMLPATTERNS
     QML_REGISTER_TYPE(Qt,4,6,XmlListModel,QDeclarativeXmlListModel);
     QML_REGISTER_TYPE(Qt,4,6,XmlRole,QDeclarativeXmlListModelRole);
+#endif
 
     QML_REGISTER_NOCREATE_TYPE(QDeclarativeAnchors);
     QML_REGISTER_NOCREATE_TYPE(QDeclarativeAbstractAnimation);

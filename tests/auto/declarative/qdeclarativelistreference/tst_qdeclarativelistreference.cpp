@@ -47,6 +47,7 @@
 #include <QDeclarativeComponent>
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/qdeclarativeprivate.h>
+#include <QtDeclarative/qdeclarativemetaproperty.h>
 #include <QDebug>
 
 inline QUrl TEST_FILE(const QString &filename)

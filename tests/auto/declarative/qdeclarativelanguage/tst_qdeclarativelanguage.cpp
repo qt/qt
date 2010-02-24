@@ -45,7 +45,10 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdir.h>
+
 #include <private/qdeclarativemetaproperty_p.h>
+#include <private/qdeclarativemetatype_p.h>
+
 #include "testtypes.h"
 
 #include "../../../shared/util.h"

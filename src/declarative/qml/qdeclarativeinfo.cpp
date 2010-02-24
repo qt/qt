@@ -43,7 +43,7 @@
 
 #include "qdeclarativedeclarativedata_p.h"
 #include "qdeclarativecontext.h"
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 
 #include <QCoreApplication>
 

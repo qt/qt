@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include <QDeclarativeMetaType>
 #include <QLocale>
 #include <QPixmap>
 #include <QBitmap>
@@ -52,6 +51,8 @@
 #include <QVector4D>
 #include <QQuaternion>
 #include <qdeclarative.h>
+
+#include <private/qdeclarativemetatype_p.h>
 
 class tst_qdeclarativemetatype : public QObject
 {

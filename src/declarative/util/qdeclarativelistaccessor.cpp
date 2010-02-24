@@ -41,9 +41,9 @@
 
 #include "qdeclarativelistaccessor_p.h"
 
-#include <qdeclarativemetatype.h>
+#include <qdeclarativemetatype_p.h>
 
-#include <QStringList>
+#include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
 
 // ### Remove me

@@ -42,7 +42,9 @@
 #ifndef QDECLARATIVELIST_H
 #define QDECLARATIVELIST_H
 
-#include "qdeclarativeprivate.h"
+#include <QtCore/qglobal.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 
@@ -50,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QObject;
+class QMetaObject;
 template<typename T>
 struct QDeclarativeListProperty {
     typedef void (*AppendFunction)(QDeclarativeListProperty<T> *, T*);

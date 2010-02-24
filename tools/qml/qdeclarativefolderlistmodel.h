@@ -43,6 +43,8 @@
 #define QDECLARATIVEFOLDERLISTMODEL_H
 
 #include <qdeclarative.h>
+#include <QStringList>
+#include <QUrl>
 #include "../../src/declarative/3rdparty/qlistmodelinterface_p.h"
 
 QT_BEGIN_NAMESPACE

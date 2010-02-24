@@ -45,6 +45,8 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <QImage>
+#include <QUrl>
 #include <qmlruntime.h>
 
 QT_BEGIN_NAMESPACE

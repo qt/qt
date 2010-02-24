@@ -45,6 +45,7 @@
 #include <qdeclarativeengine.h>
 
 #include <QDebug>
+#include <QStringList>
 #include <QApplication>
 #include <QThread>
 #include <QMutex>

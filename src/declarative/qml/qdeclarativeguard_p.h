@@ -54,6 +54,7 @@
 //
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
