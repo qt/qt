@@ -1,4 +1,4 @@
-QMAKE_LIBDIR_QT += $${EPOCROOT}epoc32/release/armv5/lib
+QMAKE_LIBDIR += $${EPOCROOT}epoc32/release/armv5/lib
 
 INCLUDEPATH = $${EPOCROOT}epoc32/include/variant \
     $${EPOCROOT}epoc32/include/stdapis \

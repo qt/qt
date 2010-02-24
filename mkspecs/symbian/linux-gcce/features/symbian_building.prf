@@ -26,25 +26,22 @@ contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb") {
     DEFINES += __MARM_THUMB__
 }
 
-for(libraries, LIBS) {
-    libraries = $$replace(libraries, "\.dll$", ".dso")
-    isFullName = $$find(libraries, \.)
-    isEmpty(isFullName) {
-        newLIBS += "$${libraries}.dso"
-    } else {
-        newLIBS += "$${libraries}"
-    }
+for(library, LIBS) {
+    library = $$replace(library, "\.dll$", ".dso")
+    library = $$replace(library, "^-l", "")
+    isFullName = $$find(library, \.)
+    isEmpty(isFullName):library="$${library}.dso"
+    newLIBS += "${EPOCROOT}epoc32/release/armv5/lib/$${library}"
 }
 LIBS = $$newLIBS
 newLIBS =
-for(libraries, QMAKE_LIBS) {
-    libraries = $$replace(libraries, "\.dll$", ".dso")
-    isFullName = $$find(libraries, \.)
-    isEmpty(isFullName) {
-        newLIBS += "$${libraries}.dso"
-    } else {
-        newLIBS += "$${libraries}"
-    }
+QMAKE_LIBS           += dfpaeabi drtaeabi scppnwdl
+for(library, QMAKE_LIBS) {
+    library = $$replace(library, "\.dll$", ".dso")
+    library = $$replace(library, "^-l", "")
+    isFullName = $$find(library, \.)
+    isEmpty(isFullName):library="$${library}.dso"
+    newLIBS += "${EPOCROOT}epoc32/release/armv5/lib/$${library}"
 }
 QMAKE_LIBS = $$newLIBS
 
@@ -105,9 +102,20 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.dso
     QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
 
-    QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
+    QMAKE_LIBS += ${EPOCROOT}/epoc32/release/armv5/udeb/edllstub.lib \
+                  ${EPOCROOT}/epoc32/release/armv5/udeb/edll.lib \
+                -lsupc++ \
+                -lgcc
 
-    QMAKE_LFLAGS += --symver_soname --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll
+    QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
+    -Ttext 0x80000 -Tdata 0x400000 \
+    --target1-abs \
+    --no-undefined \
+    --strip-debug \
+    --nostdlib \
+     -L/home/zander/work/build-symbian/arm-2009q3/lib/gcc/arm-none-symbianelf/4.4.1/ \
+     -L/home/zander/work/build-symbian/arm-2009q3/arm-none-symbianelf/lib/
+
 }
 
 contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
@@ -123,7 +131,13 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
 
     QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
 
-    QMAKE_LFLAGS += --symver_soname --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe
+    QMAKE_LFLAGS += --symver_soname --soname=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
+    --target1-abs \
+    --no-undefined \
+    --shared \
+    -lsupc++ \
+    -lgcc \
+    --nostdlib
 }
 
 # Symbian resource files

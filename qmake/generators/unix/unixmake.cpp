@@ -455,7 +455,7 @@ UnixMakefileGenerator::findLibraries()
                     if(!libdirs.contains(f))
                         libdirs.append(f);
                 } else if(opt.startsWith("-l")) {
-                    if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
+                    if (!project->isEmpty("QMAKE_RVCT_LINKSTYLE")) {
                         (*it) = opt.mid(2);
                     } else if (project->isActiveConfig("rvct_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
@@ -509,7 +509,7 @@ UnixMakefileGenerator::findLibraries()
                                     + project->values("QMAKE_PREFIX_SHLIB").first()
                                     + stub + "." + (*extit));
                             if(exists(pathToLib)) {
-                                if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB"))
+                                if (!project->isEmpty("QMAKE_RVCT_LINKSTYLE"))
                                     (*it) = pathToLib;
                                 else
                                     (*it) = "-l" + stub;
