@@ -732,6 +732,8 @@ static void readUnicodeData()
         if (!properties[UD_UpperCase].isEmpty()) {
             int upperCase = properties[UD_UpperCase].toInt(&ok, 16);
             Q_ASSERT(ok);
+            if (qAbs(upperCase - codepoint) >= (1<<14))
+                qWarning() << "upperCaseDiff exceeded (" << hex << codepoint << "->" << upperCase << ")";
             data.p.upperCaseDiff = upperCase - codepoint;
             maxUpperCaseDiff = qMax(maxUpperCaseDiff, qAbs(data.p.upperCaseDiff));
             if (codepoint > 0xffff) {
@@ -743,6 +745,8 @@ static void readUnicodeData()
         if (!properties[UD_LowerCase].isEmpty()) {
             int lowerCase = properties[UD_LowerCase].toInt(&ok, 16);
             Q_ASSERT(ok);
+            if (qAbs(lowerCase - codepoint) >= (1<<14))
+                qWarning() << "lowerCaseDiff exceeded (" << hex << codepoint << "->" << lowerCase << ")";
             data.p.lowerCaseDiff = lowerCase - codepoint;
             maxLowerCaseDiff = qMax(maxLowerCaseDiff, qAbs(data.p.lowerCaseDiff));
             if (codepoint > 0xffff) {
@@ -757,6 +761,8 @@ static void readUnicodeData()
         if (!properties[UD_TitleCase].isEmpty()) {
             int titleCase = properties[UD_TitleCase].toInt(&ok, 16);
             Q_ASSERT(ok);
+            if (qAbs(titleCase - codepoint) >= (1<<14))
+                qWarning() << "titleCaseDiff exceeded (" << hex << codepoint << "->" << titleCase << ")";
             data.p.titleCaseDiff = titleCase - codepoint;
             maxTitleCaseDiff = qMax(maxTitleCaseDiff, qAbs(data.p.titleCaseDiff));
             if (codepoint > 0xffff) {
@@ -1258,6 +1264,8 @@ static void readCaseFolding()
 
         UnicodeData ud = unicodeData.value(codepoint, UnicodeData(codepoint));
         if (foldMap.size() == 1) {
+            if (qAbs(foldMap.at(0) - codepoint) >= (1<<14))
+                qWarning() << "caseFoldDiff exceeded (" << hex << codepoint << "->" << foldMap.at(0) << ")";
             ud.p.caseFoldDiff = foldMap.at(0) - codepoint;
             maxCaseFoldDiff = qMax(maxCaseFoldDiff, qAbs(ud.p.caseFoldDiff));
             if (codepoint > 0xffff) {
