@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,54 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef QMEDIACONTENT_H
-#define QMEDIACONTENT_H
+#include <QtMultimedia/multimediaqml.h>
+#include <QtMultimedia/private/qsoundeffect_p.h>
+#include <QtMultimedia/private/qmlaudio_p.h>
+#include <QtMultimedia/private/qmlgraphicsvideo_p.h>
 
-#include <QtCore/qmetatype.h>
-#include <QtCore/qshareddata.h>
-
-#include <QtMultimedia/qmediaresource.h>
-#include <QtNetwork/qnetworkrequest.h>
-
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Multimedia)
-
-class QMediaContentPrivate;
-class Q_MULTIMEDIA_EXPORT QMediaContent
+namespace QtMultimedia
 {
-public:
-    QMediaContent();
-    QMediaContent(const QUrl &contentUrl);
-    QMediaContent(const QNetworkRequest &contentRequest);
-    QMediaContent(const QMediaResource &contentResource);
-    QMediaContent(const QMediaResourceList &resources);
-    QMediaContent(const QMediaContent &other);
-    ~QMediaContent();
 
-    QMediaContent& operator=(const QMediaContent &other);
+/*!
+    Register the Multimedia QML elements.
+    \internal
+*/
 
-    bool operator==(const QMediaContent &other) const;
-    bool operator!=(const QMediaContent &other) const;
+void qRegisterQmlElements()
+{
+    qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
+    qmlRegisterType<QmlAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
+    qmlRegisterType<QmlGraphicsVideo>("Qt.multimedia", 4, 7, "Video", "Video");
+}
 
-    bool isNull() const;
-
-    QUrl canonicalUrl() const;
-    QMediaResource canonicalResource() const;
-
-    QMediaResourceList resources() const;
-
-private:
-    QSharedDataPointer<QMediaContentPrivate> d;
-};
+}
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QMediaContent)
-
-QT_END_HEADER
-
-#endif  // QMEDIACONTENT_H

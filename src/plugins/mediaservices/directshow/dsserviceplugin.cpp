@@ -94,7 +94,7 @@ QMediaService* DSServicePlugin::create(QString const& key)
         return new DirectShowPlayerService;
 #endif
 
-    qDebug() << "unsupported key:" << key;
+    qWarning() << "DirectShow service plugin: unsupported service -" << key;
     return 0;
 }
 
