@@ -67,15 +67,6 @@
 #include "QtGui/qscreen_qws.h"
 #endif
 
-// Disable MMX and SSE on Mac/PPC builds, or if the compiler
-// does not support -Xarch argument passing
-#if defined(QT_NO_MAC_XARCH) || (defined(Q_OS_DARWIN) && (defined(__ppc__) || defined(__ppc64__)))
-#undef QT_HAVE_SSE2
-#undef QT_HAVE_SSE
-#undef QT_HAVE_3DNOW
-#undef QT_HAVE_MMX
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_MSVC) && _MSCVER <= 1300 && !defined(Q_CC_INTEL)

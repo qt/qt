@@ -33,6 +33,7 @@ HEADERS +=  \
         tools/qsharedpointer.h \
         tools/qsharedpointer_impl.h \
         tools/qset.h \
+        tools/qsimd_p.h \
         tools/qsize.h \
         tools/qstack.h \
         tools/qstring.h \
@@ -68,6 +69,7 @@ SOURCES += \
         tools/qregexp.cpp \
         tools/qshareddata.cpp \
         tools/qsharedpointer.cpp \
+        tools/qsimd.cpp \
         tools/qsize.cpp \
         tools/qstring.cpp \
         tools/qstringbuilder.cpp \
