@@ -123,6 +123,7 @@ static qreal adjustedPosition(QmlGraphicsItem *item, QmlGraphicsAnchorLine::Anch
 /*!
     \internal
     \class QmlGraphicsAnchors
+    \since 4.7
     \ingroup group_layouts
     \brief The QmlGraphicsAnchors class provides a way to lay out items relative to other items.
 

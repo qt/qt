@@ -191,6 +191,7 @@ private slots:
     void increaseReadBufferSize();
     void taskQtBug5799ConnectionErrorWaitForConnected();
     void taskQtBug5799ConnectionErrorEventLoop();
+    void taskQtBug7054TimeoutErrorResetting();
 
     void invalidProxy_data();
     void invalidProxy();
@@ -2234,6 +2235,30 @@ void tst_QTcpSocket::taskQtBug5799ConnectionErrorEventLoop()
     QVERIFY2(socket.state() == QAbstractSocket::UnconnectedState, "Socket connected unexpectedly!");
     QVERIFY2(socket.error() == QAbstractSocket::ConnectionRefusedError,
              QString("Could not reach server: %1").arg(socket.errorString()).toLocal8Bit());
+}
+
+void tst_QTcpSocket::taskQtBug7054TimeoutErrorResetting()
+{
+    QTcpSocket *socket = newSocket();
+
+    socket->connectToHost(QtNetworkSettings::serverName(), 443);
+    QVERIFY(socket->waitForConnected(5*1000));
+    QVERIFY(socket->error() == QAbstractSocket::UnknownSocketError);
+
+    // We connected to the HTTPS port. Wait two seconds to receive data. We will receive
+    // nothing because we would need to start the SSL handshake
+    QVERIFY(!socket->waitForReadyRead(2*1000));
+    QVERIFY(socket->error() == QAbstractSocket::SocketTimeoutError);
+
+    // Now write some crap to make the server disconnect us. 4 lines are enough.
+    socket->write("a\r\nb\r\nc\r\nd\r\n");
+    socket->waitForBytesWritten(2*1000);
+
+    // we try to waitForReadyRead another time, but this time instead of a timeout we
+    // should get a better error since the server disconnected us
+    QVERIFY(!socket->waitForReadyRead(2*1000));
+    // It must NOT be the SocketTimeoutError that had been set before
+    QVERIFY(socket->error() == QAbstractSocket::RemoteHostClosedError);
 }
 
 void tst_QTcpSocket::invalidProxy_data()

@@ -52,6 +52,7 @@
 #endif
 
 #include <new>
+#include <limits.h>
 #include <string.h>
 
 QT_BEGIN_HEADER
@@ -73,6 +74,7 @@ struct Q_CORE_EXPORT QListData {
     enum { DataHeaderSize = sizeof(Data) - sizeof(void *) };
 
     Data *detach(int alloc);
+    Data *detach_grow(int *i, int n);
     Data *detach(); // remove in 5.0
     Data *detach2(); // remove in 5.0
     Data *detach3(); // remove in 5.0
@@ -80,6 +82,7 @@ struct Q_CORE_EXPORT QListData {
     static Data shared_null;
     Data *d;
     void **erase(void **xi);
+    void **append(int n);
     void **append();
     void **append(const QListData &l);
     void **append2(const QListData &l); // remove in 5.0
@@ -94,6 +97,25 @@ struct Q_CORE_EXPORT QListData {
     inline void **begin() const { return d->array + d->begin; }
     inline void **end() const { return d->array + d->end; }
 };
+
+//////////////////////////////////////////////////////////////////////////////////
+//
+// QtPodForSize and QtPodForType are internal and may change or go away any time.
+// We mean it.
+//
+//////////////////////////////////////////////////////////////////////////////////
+template <int N> struct QtPodForSize {
+    // This base type is rather obviously broken and cannot be made
+    // working due to alignment constraints.
+    // This doesn't matter as far as QList is concerned, as we are
+    // using this type only for QTypeInfo<T>::isLarge == false.
+    typedef struct { } Type;
+};
+template <> struct QtPodForSize<1> { typedef quint8  Type; };
+template <> struct QtPodForSize<2> { typedef quint16 Type; };
+template <> struct QtPodForSize<4> { typedef quint32 Type; };
+template <> struct QtPodForSize<8> { typedef quint64 Type; };
+template <class T> struct QtPodForType : QtPodForSize<sizeof(T)> { };
 
 template <typename T>
 class QList
@@ -333,6 +355,7 @@ public:
 #endif
 
 private:
+    Node *detach_helper_grow(int i, int n);
     void detach_helper(int alloc);
     void detach_helper();
     void free(QListData::Data *d);
@@ -480,9 +503,8 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::reserve(int alloc)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
 {
-    detach();
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        Node *n = reinterpret_cast<Node *>(p.append());
+    if (d->ref != 1) {
+        Node *n = detach_helper_grow(INT_MAX, 1);
         QT_TRY {
             node_construct(n, t);
         } QT_CATCH(...) {
@@ -490,13 +512,24 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
             QT_RETHROW;
         }
     } else {
-        const T cpy(t);
-        Node *n = reinterpret_cast<Node *>(p.append());
-        QT_TRY {
-            node_construct(n, cpy);
-        } QT_CATCH(...) {
-            --d->end;
-            QT_RETHROW;
+        if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+            Node *n = reinterpret_cast<Node *>(p.append());
+            QT_TRY {
+                node_construct(n, t);
+            } QT_CATCH(...) {
+                --d->end;
+                QT_RETHROW;
+            }
+        } else {
+            typedef typename QtPodForType<T>::Type PodNode;
+            PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
+            Node *n = reinterpret_cast<Node *>(p.append());
+            QT_TRY {
+                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+            } QT_CATCH(...) {
+                --d->end;
+                QT_RETHROW;
+            }
         }
     }
 }
@@ -504,9 +537,8 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
 template <typename T>
 inline void QList<T>::prepend(const T &t)
 {
-    detach();
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        Node *n = reinterpret_cast<Node *>(p.prepend());
+    if (d->ref != 1) {
+        Node *n = detach_helper_grow(0, 1);
         QT_TRY {
             node_construct(n, t);
         } QT_CATCH(...) {
@@ -514,13 +546,24 @@ inline void QList<T>::prepend(const T &t)
             QT_RETHROW;
         }
     } else {
-        const T cpy(t);
-        Node *n = reinterpret_cast<Node *>(p.prepend());
-        QT_TRY {
-            node_construct(n, cpy);
-        } QT_CATCH(...) {
-            ++d->begin;
-            QT_RETHROW;
+        if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+            Node *n = reinterpret_cast<Node *>(p.prepend());
+            QT_TRY {
+                node_construct(n, t);
+            } QT_CATCH(...) {
+                ++d->begin;
+                QT_RETHROW;
+            }
+        } else {
+            typedef typename QtPodForType<T>::Type PodNode;
+            PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
+            Node *n = reinterpret_cast<Node *>(p.prepend());
+            QT_TRY {
+                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+            } QT_CATCH(...) {
+                ++d->begin;
+                QT_RETHROW;
+            }
         }
     }
 }
@@ -528,9 +571,8 @@ inline void QList<T>::prepend(const T &t)
 template <typename T>
 inline void QList<T>::insert(int i, const T &t)
 {
-    detach();
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        Node *n = reinterpret_cast<Node *>(p.insert(i));
+    if (d->ref != 1) {
+        Node *n = detach_helper_grow(i, 1);
         QT_TRY {
             node_construct(n, t);
         } QT_CATCH(...) {
@@ -538,13 +580,24 @@ inline void QList<T>::insert(int i, const T &t)
             QT_RETHROW;
         }
     } else {
-        const T cpy(t);
-        Node *n = reinterpret_cast<Node *>(p.insert(i));
-        QT_TRY {
-            node_construct(n, cpy);
-        } QT_CATCH(...) {
-            p.remove(i);
-            QT_RETHROW;
+        if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+            Node *n = reinterpret_cast<Node *>(p.insert(i));
+            QT_TRY {
+                node_construct(n, t);
+            } QT_CATCH(...) {
+                p.remove(i);
+                QT_RETHROW;
+            }
+        } else {
+            typedef typename QtPodForType<T>::Type PodNode;
+            PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
+            Node *n = reinterpret_cast<Node *>(p.insert(i));
+            QT_TRY {
+                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+            } QT_CATCH(...) {
+                p.remove(i);
+                QT_RETHROW;
+            }
         }
     }
 }
@@ -554,12 +607,7 @@ inline void QList<T>::replace(int i, const T &t)
 {
     Q_ASSERT_X(i >= 0 && i < p.size(), "QList<T>::replace", "index out of range");
     detach();
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        reinterpret_cast<Node *>(p.at(i))->t() = t;
-    } else {
-        const T cpy(t);
-        reinterpret_cast<Node *>(p.at(i))->t() = cpy;
-    }
+    reinterpret_cast<Node *>(p.at(i))->t() = t;
 }
 
 template <typename T>
@@ -619,6 +667,36 @@ template<typename T>
 Q_OUTOFLINE_TEMPLATE T QList<T>::value(int i, const T& defaultValue) const
 {
     return ((i < 0 || i >= p.size()) ? defaultValue : reinterpret_cast<Node *>(p.at(i))->t());
+}
+
+template <typename T>
+Q_OUTOFLINE_TEMPLATE typename QList<T>::Node *QList<T>::detach_helper_grow(int i, int c)
+{
+    Node *n = reinterpret_cast<Node *>(p.begin());
+    QListData::Data *x = p.detach_grow(&i, c);
+    QT_TRY {
+        node_copy(reinterpret_cast<Node *>(p.begin()),
+                  reinterpret_cast<Node *>(p.begin() + i), n);
+    } QT_CATCH(...) {
+        qFree(d);
+        d = x;
+        QT_RETHROW;
+    }
+    QT_TRY {
+        node_copy(reinterpret_cast<Node *>(p.begin() + i + c),
+                  reinterpret_cast<Node *>(p.end()), n + i);
+    } QT_CATCH(...) {
+        node_destruct(reinterpret_cast<Node *>(p.begin()),
+                      reinterpret_cast<Node *>(p.begin() + i));
+        qFree(d);
+        d = x;
+        QT_RETHROW;
+    }
+
+    if (!x->ref.deref())
+        free(x);
+
+    return reinterpret_cast<Node *>(p.begin() + i);
 }
 
 template <typename T>
@@ -730,8 +808,9 @@ Q_OUTOFLINE_TEMPLATE typename QList<T>::iterator QList<T>::erase(typename QList<
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
-    detach();
-    Node *n = reinterpret_cast<Node *>(p.append2(l.p));
+    Node *n = (d->ref != 1)
+              ? detach_helper_grow(INT_MAX, l.size())
+              : reinterpret_cast<Node *>(p.append2(l.p));
     QT_TRY{
         node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
     } QT_CATCH(...) {
