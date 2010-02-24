@@ -170,7 +170,6 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         QDeclarativeEnginePrivate::defineModule();
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
-    fileImportPath.append(QLibraryInfo::location(QLibraryInfo::DataPath)+QDir::separator()+QLatin1String("qml"));
 
     // env import paths
     QByteArray envImportPath = qgetenv("QML_IMPORT_PATH");
@@ -1384,6 +1383,9 @@ public:
             paths += QFileInfo(base.toLocalFile()).path();
             paths += importPath;
             paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
+            QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
+            if (!builtinPath.isEmpty())
+                paths += builtinPath;
 
             foreach (const QString &p, paths) {
                 dir = p+QLatin1Char('/')+url;
@@ -1592,14 +1594,17 @@ QUrl QDeclarativeEnginePrivate::Imports::baseUrl() const
   Adds \a path as a directory where installed QML components are
   defined in a URL-based directory structure.
 
-  For example, if you add \c /opt/MyApp/lib/qml and then load QML
+  For example, if you add \c /opt/MyApp/lib/imports and then load QML
   that imports \c com.mycompany.Feature, then QDeclarativeEngine will look
-  in \c /opt/MyApp/lib/qml/com/mycompany/Feature/ for the components
-  provided by that module (and in the case of versioned imports,
-  for the \c qmldir file definiting the type version mapping.
+  in \c /opt/MyApp/lib/imports/com/mycompany/Feature/ for the components
+  provided by that module. A \c qmldir file is required for definiting the
+  type version mapping and possibly declarative extensions plugins.
 
-  By default, only the "qml" subdirectory of QLibraryInfo::location(QLibraryInfo::DataPath)
-  is included on the import path.
+  The engine searches in the base directory of the qml file, then
+  the paths added via addImportPath(), then the paths specified in the
+  \c QML_IMPORT_PATH environment variable, then the builtin \c ImportsPath from
+  QLibraryInfo.
+
 */
 void QDeclarativeEngine::addImportPath(const QString& path)
 {
