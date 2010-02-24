@@ -300,6 +300,21 @@ void QDeclarativeImage::geometryChanged(const QRectF &newGeometry, const QRectF 
     The URL may be absolute, or relative to the URL of the component.
 */
 
+/*!
+    \qmlproperty bool Image::asynchronous
+
+    Specifies that images on the local filesystem should be loaded
+    asynchronously in a separate thread.  The default value is
+    false, causing the user interface thread to block while the
+    image is loaded.  Setting \a asynchronous to true is useful where
+    maintaining a responsive user interface is more desireable
+    than having images immediately visible.
+
+    Note that this property is only valid for images read from the
+    local filesystem.  Images loaded via a network resource (e.g. HTTP)
+    are always loaded asynchonously.
+*/
+
 void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeImage);

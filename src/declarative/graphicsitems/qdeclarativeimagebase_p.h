@@ -57,6 +57,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeImageBase : public QDeclarativeItem
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
 
 public:
     ~QDeclarativeImageBase();
@@ -67,13 +68,19 @@ public:
     QUrl source() const;
     virtual void setSource(const QUrl &url);
 
+    bool asynchronous() const;
+    void setAsynchronous(bool);
+
 Q_SIGNALS:
     void sourceChanged(const QUrl &);
     void statusChanged(Status);
     void progressChanged(qreal progress);
     void pixmapChanged();
+    void asynchronousChanged();
 
 protected:
+    virtual void load();
+    virtual void componentComplete();
     QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent);
 
 private Q_SLOTS:
