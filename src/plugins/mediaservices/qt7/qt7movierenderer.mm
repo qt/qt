@@ -169,7 +169,7 @@ QT7MovieRenderer::QT7MovieRenderer(QObject *parent)
 #endif
     m_surface(0)
 {
-    qDebug() << "QT7MovieRenderer";
+//    qDebug() << "QT7MovieRenderer";
 
     m_displayLink = new QCvDisplayLink(this);
     connect(m_displayLink, SIGNAL(tick(CVTimeStamp)), SLOT(updateVideoFrame(CVTimeStamp)));
@@ -262,7 +262,7 @@ void QT7MovieRenderer::setupVideoOutput()
 {
     AutoReleasePool pool;
 
-    qDebug() << "QT7MovieRenderer::setupVideoOutput" << m_movie;
+//    qDebug() << "QT7MovieRenderer::setupVideoOutput" << m_movie;
 
     if (m_movie == 0 || m_surface == 0) {
         m_displayLink->stop();
@@ -286,9 +286,9 @@ void QT7MovieRenderer::setupVideoOutput()
             if (m_surface->isActive())
                 m_surface->stop();
 
-            qDebug() << "Starting the surface with format" << format;
+//            qDebug() << "Starting the surface with format" << format;
             if (!m_surface->start(format)) {
-                qDebug() << "failed to start video surface" << m_surface->error();
+//                qDebug() << "failed to start video surface" << m_surface->error();
                 glSupported = false;
             } else {
                 m_usingGLContext = true;
@@ -301,14 +301,15 @@ void QT7MovieRenderer::setupVideoOutput()
             QVideoSurfaceFormat format(m_nativeSize, QVideoFrame::Format_RGB32);
 
             if (m_surface->isActive() && m_surface->surfaceFormat() != format) {
-                qDebug() << "Surface format was changed, stop the surface.";
+//                qDebug() << "Surface format was changed, stop the surface.";
                 m_surface->stop();
             }
 
             if (!m_surface->isActive()) {
-                qDebug() << "Starting the surface with format" << format;
-                if (!m_surface->start(format))
-                    qDebug() << "failed to start video surface" << m_surface->error();
+//                qDebug() << "Starting the surface with format" << format;
+                m_surface->start(format);
+//                if (!m_surface->start(format))
+//                    qDebug() << "failed to start video surface" << m_surface->error();
             }
         }
     }
@@ -328,14 +329,14 @@ void QT7MovieRenderer::setupVideoOutput()
     if (!m_nativeSize.isEmpty()) {
         if (!m_visualContext) {
             if (m_usingGLContext) {
-                qDebug() << "Building OpenGL visual context" << m_nativeSize;
+//                qDebug() << "Building OpenGL visual context" << m_nativeSize;
                 m_currentGLContext = QGLContext::currentContext();
                 if (!createGLVisualContext()) {
                     qWarning() << "QT7MovieRenderer: failed to create visual context";
                     return;
                 }
             } else {
-                qDebug() << "Building Pixel Buffer visual context" << m_nativeSize;
+//                qDebug() << "Building Pixel Buffer visual context" << m_nativeSize;
                 if (!createPixelBufferVisualContext()) {
                     qWarning() << "QT7MovieRenderer: failed to create visual context";
                     return;
@@ -358,7 +359,7 @@ void QT7MovieRenderer::setEnabled(bool)
 
 void QT7MovieRenderer::setMovie(void *movie)
 {
-    qDebug() << "QT7MovieRenderer::setMovie" << movie;
+//    qDebug() << "QT7MovieRenderer::setMovie" << movie;
 
 #ifdef QUICKTIME_C_API_AVAILABLE
     QMutexLocker locker(&m_mutex);
@@ -393,7 +394,7 @@ QAbstractVideoSurface *QT7MovieRenderer::surface() const
 
 void QT7MovieRenderer::setSurface(QAbstractVideoSurface *surface)
 {
-    qDebug() << "Set video surface" << surface;
+//    qDebug() << "Set video surface" << surface;
 
     if (surface == m_surface)
         return;

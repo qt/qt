@@ -77,6 +77,8 @@ private slots:
     void positionChanged(qint64 progress);
     void metaDataChanged();
 
+    void previousClicked();
+
     void seek(int seconds);
     void jump(const QModelIndex &index);
     void playlistPositionChanged(int);
