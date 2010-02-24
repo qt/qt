@@ -2604,7 +2604,6 @@ void QDeclarativeItem::setWidth(qreal w)
 
     prepareGeometryChange();
     d->width = w;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
@@ -2641,7 +2640,6 @@ void QDeclarativeItem::setImplicitWidth(qreal w)
 
     prepareGeometryChange();
     d->width = w;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
@@ -2676,7 +2674,6 @@ void QDeclarativeItem::setHeight(qreal h)
 
     prepareGeometryChange();
     d->height = h;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
@@ -2713,7 +2710,6 @@ void QDeclarativeItem::setImplicitHeight(qreal h)
 
     prepareGeometryChange();
     d->height = h;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
