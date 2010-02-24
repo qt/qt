@@ -47,11 +47,11 @@
 // These don't let normal people run tests!
 //#include "../network-settings.h"
 
-class tst_qmlpixmapcache : public QObject
+class tst_qdeclarativepixmapcache : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlpixmapcache() :
+    tst_qdeclarativepixmapcache() :
         thisfile(QUrl::fromLocalFile(__FILE__))
     {
     }
@@ -97,7 +97,7 @@ static const bool localfile_optimized = true;
 static const bool localfile_optimized = false;
 #endif
 
-void tst_qmlpixmapcache::single_data()
+void tst_qdeclarativepixmapcache::single_data()
 {
     // Note, since QDeclarativePixmapCache is shared, tests affect each other!
     // so use different files fore all test functions.
@@ -114,7 +114,7 @@ void tst_qmlpixmapcache::single_data()
     QTest::newRow("remote") << QUrl("http://qt.nokia.com/thereisnologo.png") << false << false << true;
 }
 
-void tst_qmlpixmapcache::single()
+void tst_qdeclarativepixmapcache::single()
 {
     QFETCH(QUrl, target);
     QFETCH(bool, incache);
@@ -163,7 +163,7 @@ void tst_qmlpixmapcache::single()
     QCOMPARE(QDeclarativePixmapCache::pendingRequests(), 0);
 }
 
-void tst_qmlpixmapcache::parallel_data()
+void tst_qdeclarativepixmapcache::parallel_data()
 {
     // Note, since QDeclarativePixmapCache is shared, tests affect each other!
     // so use different files fore all test functions.
@@ -215,7 +215,7 @@ void tst_qmlpixmapcache::parallel_data()
             ;
 }
 
-void tst_qmlpixmapcache::parallel()
+void tst_qdeclarativepixmapcache::parallel()
 {
     QFETCH(QUrl, target1);
     QFETCH(QUrl, target2);
@@ -277,6 +277,6 @@ void tst_qmlpixmapcache::parallel()
     QCOMPARE(QDeclarativePixmapCache::pendingRequests(), 0);
 }
 
-QTEST_MAIN(tst_qmlpixmapcache)
+QTEST_MAIN(tst_qdeclarativepixmapcache)
 
 #include "tst_qdeclarativepixmapcache.moc"

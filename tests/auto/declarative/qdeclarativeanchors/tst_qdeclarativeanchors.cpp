@@ -51,11 +51,11 @@ Q_DECLARE_METATYPE(QDeclarativeAnchors::UsedAnchor)
 Q_DECLARE_METATYPE(QDeclarativeAnchorLine::AnchorLine)
 
 
-class tst_qmlgraphicsanchors : public QObject
+class tst_qdeclarativeanchors : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicsanchors() {}
+    tst_qdeclarativeanchors() {}
 
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &id);
@@ -80,7 +80,7 @@ private slots:
    Find an item with the specified id.
 */
 template<typename T>
-T *tst_qmlgraphicsanchors::findItem(QGraphicsObject *parent, const QString &objectName)
+T *tst_qdeclarativeanchors::findItem(QGraphicsObject *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     QList<QGraphicsItem *> children = parent->childItems();
@@ -99,7 +99,7 @@ T *tst_qmlgraphicsanchors::findItem(QGraphicsObject *parent, const QString &obje
     return 0;
 }
 
-void tst_qmlgraphicsanchors::basicAnchors()
+void tst_qdeclarativeanchors::basicAnchors()
 {
     QDeclarativeView *view = new QDeclarativeView;
     view->setSource(QUrl::fromLocalFile(SRCDIR "/data/anchors.qml"));
@@ -167,7 +167,7 @@ void tst_qmlgraphicsanchors::basicAnchors()
 }
 
 // mostly testing that we don't crash
-void tst_qmlgraphicsanchors::loops()
+void tst_qdeclarativeanchors::loops()
 {
     {
         QUrl source(QUrl::fromLocalFile(SRCDIR "/data/loop1.qml"));
@@ -198,7 +198,7 @@ void tst_qmlgraphicsanchors::loops()
     }
 }
 
-void tst_qmlgraphicsanchors::illegalSets()
+void tst_qdeclarativeanchors::illegalSets()
 {
     QFETCH(QString, qml);
     QFETCH(QString, warning);
@@ -215,7 +215,7 @@ void tst_qmlgraphicsanchors::illegalSets()
     delete o;
 }
 
-void tst_qmlgraphicsanchors::illegalSets_data()
+void tst_qdeclarativeanchors::illegalSets_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("warning");
@@ -273,7 +273,7 @@ void tst_qmlgraphicsanchors::illegalSets_data()
         << "QML Rectangle (file::2:45) Cannot anchor to an item that isn't a parent or sibling.";
 }
 
-void tst_qmlgraphicsanchors::reset()
+void tst_qdeclarativeanchors::reset()
 {
     QFETCH(QString, side);
     QFETCH(QDeclarativeAnchorLine::AnchorLine, anchorLine);
@@ -300,7 +300,7 @@ void tst_qmlgraphicsanchors::reset()
     delete baseItem;
 }
 
-void tst_qmlgraphicsanchors::reset_data()
+void tst_qdeclarativeanchors::reset_data()
 {
     QTest::addColumn<QString>("side");
     QTest::addColumn<QDeclarativeAnchorLine::AnchorLine>("anchorLine");
@@ -316,7 +316,7 @@ void tst_qmlgraphicsanchors::reset_data()
     QTest::newRow("baseline") << "baseline" << QDeclarativeAnchorLine::Baseline << QDeclarativeAnchors::HasBaselineAnchor;
 }
 
-void tst_qmlgraphicsanchors::resetConvenience()
+void tst_qdeclarativeanchors::resetConvenience()
 {
     QDeclarativeItem *baseItem = new QDeclarativeItem;
     QDeclarativeItem *item = new QDeclarativeItem;
@@ -337,7 +337,7 @@ void tst_qmlgraphicsanchors::resetConvenience()
     delete baseItem;
 }
 
-void tst_qmlgraphicsanchors::nullItem()
+void tst_qdeclarativeanchors::nullItem()
 {
     QFETCH(QString, side);
 
@@ -353,7 +353,7 @@ void tst_qmlgraphicsanchors::nullItem()
     delete item;
 }
 
-void tst_qmlgraphicsanchors::nullItem_data()
+void tst_qdeclarativeanchors::nullItem_data()
 {
     QTest::addColumn<QString>("side");
 
@@ -367,7 +367,7 @@ void tst_qmlgraphicsanchors::nullItem_data()
     QTest::newRow("baseline") << "baseline";
 }
 
-void tst_qmlgraphicsanchors::crash1()
+void tst_qdeclarativeanchors::crash1()
 {
     QUrl source(QUrl::fromLocalFile(SRCDIR "/data/crash1.qml"));
 
@@ -381,7 +381,7 @@ void tst_qmlgraphicsanchors::crash1()
     delete view;
 }
 
-void tst_qmlgraphicsanchors::fill()
+void tst_qdeclarativeanchors::fill()
 {
     QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/fill.qml"));
 
@@ -404,7 +404,7 @@ void tst_qmlgraphicsanchors::fill()
     delete view;
 }
 
-void tst_qmlgraphicsanchors::centerIn()
+void tst_qdeclarativeanchors::centerIn()
 {
     QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/centerin.qml"));
 
@@ -421,7 +421,7 @@ void tst_qmlgraphicsanchors::centerIn()
     delete view;
 }
 
-void tst_qmlgraphicsanchors::margins()
+void tst_qdeclarativeanchors::margins()
 {
     QDeclarativeView *view = new QDeclarativeView(QUrl::fromLocalFile(SRCDIR "/data/margins.qml"));
 
@@ -443,6 +443,6 @@ void tst_qmlgraphicsanchors::margins()
     delete view;
 }
 
-QTEST_MAIN(tst_qmlgraphicsanchors)
+QTEST_MAIN(tst_qdeclarativeanchors)
 
 #include "tst_qdeclarativeanchors.moc"

@@ -47,11 +47,11 @@
 #include <qdeclarativecontext.h>
 #include <qdeclarativeexpression.h>
 
-class tst_QmlGraphicsListView : public QObject
+class tst_QDeclarativeListView : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsListView();
+    tst_QDeclarativeListView();
 
 private slots:
     // Test both QListModelInterface and QAbstractItemModel model types
@@ -293,12 +293,12 @@ private:
     QList<QPair<QString,QString> > list;
 };
 
-tst_QmlGraphicsListView::tst_QmlGraphicsListView()
+tst_QDeclarativeListView::tst_QDeclarativeListView()
 {
 }
 
 template <class T>
-void tst_QmlGraphicsListView::items()
+void tst_QDeclarativeListView::items()
 {
     QDeclarativeView *canvas = createView();
 
@@ -378,7 +378,7 @@ void tst_QmlGraphicsListView::items()
 }
 
 template <class T>
-void tst_QmlGraphicsListView::changed()
+void tst_QDeclarativeListView::changed()
 {
     QDeclarativeView *canvas = createView();
 
@@ -414,7 +414,7 @@ void tst_QmlGraphicsListView::changed()
 }
 
 template <class T>
-void tst_QmlGraphicsListView::inserted()
+void tst_QDeclarativeListView::inserted()
 {
     QDeclarativeView *canvas = createView();
 
@@ -507,7 +507,7 @@ void tst_QmlGraphicsListView::inserted()
 }
 
 template <class T>
-void tst_QmlGraphicsListView::removed(bool animated)
+void tst_QDeclarativeListView::removed(bool animated)
 {
     QDeclarativeView *canvas = createView();
 
@@ -650,7 +650,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
 }
 
 template <class T>
-void tst_QmlGraphicsListView::clear()
+void tst_QDeclarativeListView::clear()
 {
     QDeclarativeView *canvas = createView();
 
@@ -687,7 +687,7 @@ void tst_QmlGraphicsListView::clear()
 
 
 template <class T>
-void tst_QmlGraphicsListView::moved()
+void tst_QDeclarativeListView::moved()
 {
     QDeclarativeView *canvas = createView();
 
@@ -783,7 +783,7 @@ void tst_QmlGraphicsListView::moved()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::enforceRange()
+void tst_QDeclarativeListView::enforceRange()
 {
     QDeclarativeView *canvas = createView();
 
@@ -828,7 +828,7 @@ void tst_QmlGraphicsListView::enforceRange()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::spacing()
+void tst_QDeclarativeListView::spacing()
 {
     QDeclarativeView *canvas = createView();
 
@@ -886,7 +886,7 @@ void tst_QmlGraphicsListView::spacing()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::sections()
+void tst_QDeclarativeListView::sections()
 {
     QDeclarativeView *canvas = createView();
 
@@ -959,7 +959,7 @@ void tst_QmlGraphicsListView::sections()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::currentIndex()
+void tst_QDeclarativeListView::currentIndex()
 {
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -1052,7 +1052,7 @@ void tst_QmlGraphicsListView::currentIndex()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::itemList()
+void tst_QDeclarativeListView::itemList()
 {
     QDeclarativeView *canvas = createView();
 
@@ -1093,7 +1093,7 @@ void tst_QmlGraphicsListView::itemList()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::cacheBuffer()
+void tst_QDeclarativeListView::cacheBuffer()
 {
     QDeclarativeView *canvas = createView();
 
@@ -1145,7 +1145,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::positionViewAtIndex()
+void tst_QDeclarativeListView::positionViewAtIndex()
 {
     QDeclarativeView *canvas = createView();
 
@@ -1232,69 +1232,69 @@ void tst_QmlGraphicsListView::positionViewAtIndex()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::qListModelInterface_items()
+void tst_QDeclarativeListView::qListModelInterface_items()
 {
     items<TestModel>();
 }
 
-void tst_QmlGraphicsListView::qAbstractItemModel_items()
+void tst_QDeclarativeListView::qAbstractItemModel_items()
 {
     items<TestModel2>();
 }
 
-void tst_QmlGraphicsListView::qListModelInterface_changed()
+void tst_QDeclarativeListView::qListModelInterface_changed()
 {
     changed<TestModel>();
 }
 
-void tst_QmlGraphicsListView::qAbstractItemModel_changed()
+void tst_QDeclarativeListView::qAbstractItemModel_changed()
 {
     changed<TestModel2>();
 }
 
-void tst_QmlGraphicsListView::qListModelInterface_inserted()
+void tst_QDeclarativeListView::qListModelInterface_inserted()
 {
     inserted<TestModel>();
 }
 
-void tst_QmlGraphicsListView::qAbstractItemModel_inserted()
+void tst_QDeclarativeListView::qAbstractItemModel_inserted()
 {
     inserted<TestModel2>();
 }
 
-void tst_QmlGraphicsListView::qListModelInterface_removed()
+void tst_QDeclarativeListView::qListModelInterface_removed()
 {
     removed<TestModel>(false);
     removed<TestModel>(true);
 }
 
-void tst_QmlGraphicsListView::qAbstractItemModel_removed()
+void tst_QDeclarativeListView::qAbstractItemModel_removed()
 {
     removed<TestModel2>(false);
     removed<TestModel2>(true);
 }
 
-void tst_QmlGraphicsListView::qListModelInterface_moved()
+void tst_QDeclarativeListView::qListModelInterface_moved()
 {
     moved<TestModel>();
 }
 
-void tst_QmlGraphicsListView::qAbstractItemModel_moved()
+void tst_QDeclarativeListView::qAbstractItemModel_moved()
 {
     moved<TestModel2>();
 }
 
-void tst_QmlGraphicsListView::qListModelInterface_clear()
+void tst_QDeclarativeListView::qListModelInterface_clear()
 {
     clear<TestModel>();
 }
 
-void tst_QmlGraphicsListView::qAbstractItemModel_clear()
+void tst_QDeclarativeListView::qAbstractItemModel_clear()
 {
     clear<TestModel2>();
 }
 
-QDeclarativeView *tst_QmlGraphicsListView::createView()
+QDeclarativeView *tst_QDeclarativeListView::createView()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -1307,7 +1307,7 @@ QDeclarativeView *tst_QmlGraphicsListView::createView()
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QmlGraphicsListView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
+T *tst_QDeclarativeListView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->childItems().count() << "children";
@@ -1334,7 +1334,7 @@ T *tst_QmlGraphicsListView::findItem(QGraphicsObject *parent, const QString &obj
 }
 
 template<typename T>
-QList<T*> tst_QmlGraphicsListView::findItems(QGraphicsObject *parent, const QString &objectName)
+QList<T*> tst_QDeclarativeListView::findItems(QGraphicsObject *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
@@ -1352,7 +1352,7 @@ QList<T*> tst_QmlGraphicsListView::findItems(QGraphicsObject *parent, const QStr
     return items;
 }
 
-void tst_QmlGraphicsListView::dumpTree(QDeclarativeItem *parent, int depth)
+void tst_QDeclarativeListView::dumpTree(QDeclarativeItem *parent, int depth)
 {
     static QString padding("                       ");
     for (int i = 0; i < parent->childItems().count(); ++i) {
@@ -1365,6 +1365,6 @@ void tst_QmlGraphicsListView::dumpTree(QDeclarativeItem *parent, int depth)
 }
 
 
-QTEST_MAIN(tst_QmlGraphicsListView)
+QTEST_MAIN(tst_QDeclarativeListView)
 
 #include "tst_qdeclarativelistview.moc"

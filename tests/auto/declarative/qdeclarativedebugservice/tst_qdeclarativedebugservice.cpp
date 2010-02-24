@@ -54,12 +54,12 @@
 
 #include "../shared/debugutil_p.h"
 
-class tst_QmlDebugService : public QObject
+class tst_QDeclarativeDebugService : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QmlDebugService(QDeclarativeDebugTestData *data)
+    tst_QDeclarativeDebugService(QDeclarativeDebugTestData *data)
     {
         m_conn = data->conn;
     }
@@ -76,33 +76,33 @@ private slots:
     void objectToString();
 };
 
-void tst_QmlDebugService::name()
+void tst_QDeclarativeDebugService::name()
 {
-    QString name = "tst_QmlDebugService::name()";
+    QString name = "tst_QDeclarativeDebugService::name()";
 
     QDeclarativeDebugService service(name);
     QCOMPARE(service.name(), name);
 }
 
-void tst_QmlDebugService::isEnabled()
+void tst_QDeclarativeDebugService::isEnabled()
 {
-    QDeclarativeDebugTestService service("tst_QmlDebugService::isEnabled()", m_conn);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::isEnabled()", m_conn);
     QCOMPARE(service.isEnabled(), false);
 
-    QDeclarativeDebugTestClient client("tst_QmlDebugService::isEnabled()", m_conn);
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::isEnabled()", m_conn);
     client.setEnabled(true);
     QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
     QCOMPARE(service.isEnabled(), true);
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QmlDebugService::isEnabled()\" ");
-    QDeclarativeDebugService duplicate("tst_QmlDebugService::isEnabled()", m_conn);
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::isEnabled()\" ");
+    QDeclarativeDebugService duplicate("tst_QDeclarativeDebugService::isEnabled()", m_conn);
     QCOMPARE(duplicate.isEnabled(), false);
 }
 
-void tst_QmlDebugService::enabledChanged()
+void tst_QDeclarativeDebugService::enabledChanged()
 {
-    QDeclarativeDebugTestService service("tst_QmlDebugService::enabledChanged()");
-    QDeclarativeDebugTestClient client("tst_QmlDebugService::enabledChanged()", m_conn);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::enabledChanged()");
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::enabledChanged()", m_conn);
 
     QCOMPARE(service.enabled, false);
 
@@ -111,10 +111,10 @@ void tst_QmlDebugService::enabledChanged()
     QCOMPARE(service.enabled, true);
 }
 
-void tst_QmlDebugService::sendMessage()
+void tst_QDeclarativeDebugService::sendMessage()
 {
-    QDeclarativeDebugTestService service("tst_QmlDebugService::sendMessage()");
-    QDeclarativeDebugTestClient client("tst_QmlDebugService::sendMessage()", m_conn);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::sendMessage()");
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::sendMessage()", m_conn);
 
     QByteArray msg = "hello!";
 
@@ -123,7 +123,7 @@ void tst_QmlDebugService::sendMessage()
     QCOMPARE(resp, msg);
 }
 
-void tst_QmlDebugService::idForObject()
+void tst_QDeclarativeDebugService::idForObject()
 {
     QCOMPARE(QDeclarativeDebugService::idForObject(0), -1);
 
@@ -145,7 +145,7 @@ void tst_QmlDebugService::idForObject()
     delete objB;
 }
 
-void tst_QmlDebugService::objectForId()
+void tst_QDeclarativeDebugService::objectForId()
 {
     QCOMPARE(QDeclarativeDebugService::objectForId(-1), static_cast<QObject*>(0));
     QCOMPARE(QDeclarativeDebugService::objectForId(1), static_cast<QObject*>(0));
@@ -158,7 +158,7 @@ void tst_QmlDebugService::objectForId()
     QCOMPARE(QDeclarativeDebugService::objectForId(id), static_cast<QObject*>(0));
 }
 
-void tst_QmlDebugService::objectToString()
+void tst_QDeclarativeDebugService::objectToString()
 {
     QCOMPARE(QDeclarativeDebugService::objectToString(0), QString("NULL"));
 
@@ -171,10 +171,10 @@ void tst_QmlDebugService::objectToString()
 }
 
 
-class tst_QmlDebugService_Factory : public QDeclarativeTestFactory
+class tst_QDeclarativeDebugService_Factory : public QDeclarativeTestFactory
 {
 public:
-    QObject *createTest(QDeclarativeDebugTestData *data) { return new tst_QmlDebugService(data); }
+    QObject *createTest(QDeclarativeDebugTestData *data) { return new tst_QDeclarativeDebugService(data); }
 };
 
 // This does not use QTEST_MAIN because the test has to be created and run
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    tst_QmlDebugService_Factory factory;
+    tst_QDeclarativeDebugService_Factory factory;
     return QDeclarativeDebugTest::runTests(&factory);
 }
 

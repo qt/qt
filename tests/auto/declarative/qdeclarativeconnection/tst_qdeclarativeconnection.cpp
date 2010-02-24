@@ -46,12 +46,12 @@
 #include "../../../shared/util.h"
 #include <QtDeclarative/qdeclarativescriptstring.h>
 
-class tst_qmlconnection : public QObject
+class tst_qdeclarativeconnection : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlconnection();
+    tst_qdeclarativeconnection();
 
 private slots:
     void defaultValues();
@@ -63,11 +63,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlconnection::tst_qmlconnection()
+tst_qdeclarativeconnection::tst_qdeclarativeconnection()
 {
 }
 
-void tst_qmlconnection::defaultValues()
+void tst_qdeclarativeconnection::defaultValues()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection3.qml"));
@@ -81,7 +81,7 @@ void tst_qmlconnection::defaultValues()
     delete item;
 }
 
-void tst_qmlconnection::properties()
+void tst_qdeclarativeconnection::properties()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection2.qml"));
@@ -97,7 +97,7 @@ void tst_qmlconnection::properties()
     delete item;
 }
 
-void tst_qmlconnection::connection()
+void tst_qdeclarativeconnection::connection()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection.qml"));
@@ -114,7 +114,7 @@ void tst_qmlconnection::connection()
     delete item;
 }
 
-void tst_qmlconnection::trimming()
+void tst_qdeclarativeconnection::trimming()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/trimming.qml"));
@@ -134,6 +134,6 @@ void tst_qmlconnection::trimming()
     delete item;
 }
 
-QTEST_MAIN(tst_qmlconnection)
+QTEST_MAIN(tst_qdeclarativeconnection)
 
 #include "tst_qdeclarativeconnection.moc"

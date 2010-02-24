@@ -54,12 +54,12 @@
 
 #include "../shared/debugutil_p.h"
 
-class tst_QmlDebugClient : public QObject
+class tst_QDeclarativeDebugClient : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QmlDebugClient(QDeclarativeDebugTestData *data)
+    tst_QDeclarativeDebugClient(QDeclarativeDebugTestData *data)
     {
         m_conn = data->conn;
     }
@@ -74,24 +74,24 @@ private slots:
     void sendMessage();
 };
 
-void tst_QmlDebugClient::name()
+void tst_QDeclarativeDebugClient::name()
 {
-    QString name = "tst_QmlDebugClient::name()";
+    QString name = "tst_QDeclarativeDebugClient::name()";
 
     QDeclarativeDebugClient client(name, m_conn);
     QCOMPARE(client.name(), name);
 }
 
-void tst_QmlDebugClient::isEnabled()
+void tst_QDeclarativeDebugClient::isEnabled()
 {
-    QDeclarativeDebugClient client("tst_QmlDebugClient::isEnabled()", m_conn);
+    QDeclarativeDebugClient client("tst_QDeclarativeDebugClient::isEnabled()", m_conn);
     QCOMPARE(client.isEnabled(), false);
 }
 
-void tst_QmlDebugClient::setEnabled()
+void tst_QDeclarativeDebugClient::setEnabled()
 {
-    QDeclarativeDebugTestService service("tst_QmlDebugClient::setEnabled()");
-    QDeclarativeDebugTestClient client("tst_QmlDebugClient::setEnabled()", m_conn);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugClient::setEnabled()");
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugClient::setEnabled()", m_conn);
 
     QCOMPARE(service.isEnabled(), false);
 
@@ -106,28 +106,28 @@ void tst_QmlDebugClient::setEnabled()
     QCOMPARE(service.isEnabled(), false);
 }
 
-void tst_QmlDebugClient::isConnected()
+void tst_QDeclarativeDebugClient::isConnected()
 {
-    QDeclarativeDebugClient client1("tst_QmlDebugClient::isConnected() A", m_conn);
+    QDeclarativeDebugClient client1("tst_QDeclarativeDebugClient::isConnected() A", m_conn);
     QCOMPARE(client1.isConnected(), true);
 
     QDeclarativeDebugConnection conn;
-    QDeclarativeDebugClient client2("tst_QmlDebugClient::isConnected() B", &conn);
+    QDeclarativeDebugClient client2("tst_QDeclarativeDebugClient::isConnected() B", &conn);
     QCOMPARE(client2.isConnected(), false);
 
-    QDeclarativeDebugClient client3("tst_QmlDebugClient::isConnected() C", 0);
+    QDeclarativeDebugClient client3("tst_QDeclarativeDebugClient::isConnected() C", 0);
     QCOMPARE(client3.isConnected(), false);
 
     // duplicate plugin name
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugClient: Conflicting plugin name \"tst_QmlDebugClient::isConnected() A\" ");
-    QDeclarativeDebugClient client4("tst_QmlDebugClient::isConnected() A", m_conn);
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugClient: Conflicting plugin name \"tst_QDeclarativeDebugClient::isConnected() A\" ");
+    QDeclarativeDebugClient client4("tst_QDeclarativeDebugClient::isConnected() A", m_conn);
     QCOMPARE(client4.isConnected(), false);
 }
 
-void tst_QmlDebugClient::sendMessage()
+void tst_QDeclarativeDebugClient::sendMessage()
 {
-    QDeclarativeDebugTestService service("tst_QmlDebugClient::sendMessage()");
-    QDeclarativeDebugTestClient client("tst_QmlDebugClient::sendMessage()", m_conn);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugClient::sendMessage()");
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugClient::sendMessage()", m_conn);
 
     QByteArray msg = "hello!";
 
@@ -137,10 +137,10 @@ void tst_QmlDebugClient::sendMessage()
 }
 
 
-class tst_QmlDebugClient_Factory : public QDeclarativeTestFactory
+class tst_QDeclarativeDebugClient_Factory : public QDeclarativeTestFactory
 {
 public:
-    QObject *createTest(QDeclarativeDebugTestData *data) { return new tst_QmlDebugClient(data); }
+    QObject *createTest(QDeclarativeDebugTestData *data) { return new tst_QDeclarativeDebugClient(data); }
 };
 
 
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    tst_QmlDebugClient_Factory factory;
+    tst_QDeclarativeDebugClient_Factory factory;
     return QDeclarativeDebugTest::runTests(&factory);
 }
 

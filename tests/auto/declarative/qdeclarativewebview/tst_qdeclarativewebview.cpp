@@ -53,11 +53,11 @@
 #include <QtGui/qpainter.h>
 #include "testtypes.h"
 
-class tst_qmlgraphicswebview : public QObject
+class tst_qdeclarativewebview : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicswebview() {}
+    tst_qdeclarativewebview() {}
 
 private slots:
     void initTestCase();
@@ -81,13 +81,13 @@ private:
     QDeclarativeEngine engine;
     QString tmpDir() const
     {
-        static QString tmpd = QDir::tempPath()+"/tst_qmlgraphicswebview-"
+        static QString tmpd = QDir::tempPath()+"/tst_qdeclarativewebview-"
             + QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss"));
         return tmpd;
     }
 };
 
-void tst_qmlgraphicswebview::initTestCase()
+void tst_qdeclarativewebview::initTestCase()
 {
     registerTypes();
 }
@@ -118,12 +118,12 @@ static void removeRecursive(const QString& dirname)
     QDir().rmdir(dirname);
 }
 
-void tst_qmlgraphicswebview::cleanupTestCase()
+void tst_qdeclarativewebview::cleanupTestCase()
 {
     removeRecursive(tmpDir());
 }
 
-void tst_qmlgraphicswebview::checkNoErrors(const QDeclarativeComponent& component)
+void tst_qdeclarativewebview::checkNoErrors(const QDeclarativeComponent& component)
 {
     // Wait until the component is ready
     QTRY_VERIFY(component.isReady());
@@ -142,7 +142,7 @@ void tst_qmlgraphicswebview::checkNoErrors(const QDeclarativeComponent& componen
     QVERIFY(!component.isError());
 }
 
-void tst_qmlgraphicswebview::basicProperties()
+void tst_qdeclarativewebview::basicProperties()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
     checkNoErrors(component);
@@ -177,7 +177,7 @@ void tst_qmlgraphicswebview::basicProperties()
     QTRY_COMPARE(wv->progress(), 1.0);
 }
 
-void tst_qmlgraphicswebview::settings()
+void tst_qdeclarativewebview::settings()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
     checkNoErrors(component);
@@ -242,7 +242,7 @@ void tst_qmlgraphicswebview::settings()
     }
 }
 
-void tst_qmlgraphicswebview::historyNav()
+void tst_qdeclarativewebview::historyNav()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
     checkNoErrors(component);
@@ -307,7 +307,7 @@ void tst_qmlgraphicswebview::historyNav()
     QVERIFY(!wv->stopAction()->isEnabled());
 }
 
-void tst_qmlgraphicswebview::multipleWindows()
+void tst_qdeclarativewebview::multipleWindows()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/newwindows.qml"));
     checkNoErrors(component);
@@ -320,7 +320,7 @@ void tst_qmlgraphicswebview::multipleWindows()
     QTRY_COMPARE(popup->x(), 150.0);
 }
 
-void tst_qmlgraphicswebview::loadError()
+void tst_qdeclarativewebview::loadError()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/loadError.qml"));
     checkNoErrors(component);
@@ -339,7 +339,7 @@ void tst_qmlgraphicswebview::loadError()
     }
 }
 
-void tst_qmlgraphicswebview::setHtml()
+void tst_qdeclarativewebview::setHtml()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/sethtml.qml"));
     checkNoErrors(component);
@@ -352,7 +352,7 @@ void tst_qmlgraphicswebview::setHtml()
     QCOMPARE(spy.count(),1);
 }
 
-void tst_qmlgraphicswebview::elementAreaAt()
+void tst_qdeclarativewebview::elementAreaAt()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/elements.qml"));
     checkNoErrors(component);
@@ -367,7 +367,7 @@ void tst_qmlgraphicswebview::elementAreaAt()
     QCOMPARE(wv->elementAreaAt(130,30,400,400),QRect(0,0,310,100)); // Whole view
 }
 
-void tst_qmlgraphicswebview::javaScript()
+void tst_qdeclarativewebview::javaScript()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/javaScript.qml"));
     checkNoErrors(component);
@@ -379,7 +379,7 @@ void tst_qmlgraphicswebview::javaScript()
     QCOMPARE(wv->evaluateJavaScript("window.myjsname.qmlprop").toString(), QString("qmlvalue"));
 }
 
-void tst_qmlgraphicswebview::pixelCache()
+void tst_qdeclarativewebview::pixelCache()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/pixelCache.qml"));
     checkNoErrors(component);
@@ -406,7 +406,7 @@ void tst_qmlgraphicswebview::pixelCache()
     QCOMPARE(wv->pixelsPainted(), expected*3); // repainted
 }
 
-void tst_qmlgraphicswebview::newWindowParent()
+void tst_qdeclarativewebview::newWindowParent()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
@@ -434,7 +434,7 @@ void tst_qmlgraphicswebview::newWindowParent()
     QCOMPARE(newWindowParentSpy.count(),2);
 }
 
-void tst_qmlgraphicswebview::newWindowComponent()
+void tst_qdeclarativewebview::newWindowComponent()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
@@ -459,7 +459,7 @@ void tst_qmlgraphicswebview::newWindowComponent()
     QCOMPARE(newWindowComponentSpy.count(),2);
 }
 
-void tst_qmlgraphicswebview::renderingEnabled()
+void tst_qdeclarativewebview::renderingEnabled()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
@@ -483,7 +483,7 @@ void tst_qmlgraphicswebview::renderingEnabled()
     QCOMPARE(renderingEnabledSpy.count(),2);
 }
 
-void tst_qmlgraphicswebview::pressGrabTime()
+void tst_qdeclarativewebview::pressGrabTime()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
     checkNoErrors(component);
@@ -506,6 +506,6 @@ void tst_qmlgraphicswebview::pressGrabTime()
     QCOMPARE(pressGrabTimeSpy.count(),2);
 }
 
-QTEST_MAIN(tst_qmlgraphicswebview)
+QTEST_MAIN(tst_qdeclarativewebview)
 
 #include "tst_qdeclarativewebview.moc"

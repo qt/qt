@@ -45,11 +45,11 @@
 #include <private/qnumberformat_p.h>
 #include <private/qdeclarativenumberformatter_p.h>
 
-class tst_qmlnumberformatter : public QObject
+class tst_qdeclarativenumberformatter : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlnumberformatter();
+    tst_qdeclarativenumberformatter();
 
     void init() {}
     void initTestCase() {}
@@ -67,7 +67,7 @@ private:
     QStringList texts;
 };
 
-tst_qmlnumberformatter::tst_qmlnumberformatter()
+tst_qdeclarativenumberformatter::tst_qdeclarativenumberformatter()
 {
     strings << "100.0"
             << "12345"
@@ -177,7 +177,7 @@ tst_qmlnumberformatter::tst_qmlnumberformatter()
              << "texts.size()" << texts.size();
 }
 
-void tst_qmlnumberformatter::text_data()
+void tst_qdeclarativenumberformatter::text_data()
 {
     QTest::addColumn<QString>("string");
     QTest::addColumn<QString>("format");
@@ -194,7 +194,7 @@ void tst_qmlnumberformatter::text_data()
 
 }
 
-void tst_qmlnumberformatter::text()
+void tst_qdeclarativenumberformatter::text()
 {
     QFETCH(QString, string);
     QFETCH(QString, format);
@@ -217,6 +217,6 @@ void tst_qmlnumberformatter::text()
     delete formatter;
 }
 
-QTEST_MAIN(tst_qmlnumberformatter)
+QTEST_MAIN(tst_qdeclarativenumberformatter)
 
 #include "tst_qdeclarativenumberformatter.moc"

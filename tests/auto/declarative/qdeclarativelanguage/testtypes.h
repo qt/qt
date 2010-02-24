@@ -151,7 +151,7 @@ signals:
     void oddlyNamedNotifySignal();
 
 private:
-    friend class tst_qmllanguage;
+    friend class tst_qdeclarativelanguage;
     int m_value;
     MyInterface *m_interface;
     MyQmlObject *m_qmlobject;

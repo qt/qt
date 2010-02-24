@@ -142,7 +142,7 @@ public slots:
     void setString(const QString &s) { m_string = s; }
 
 private:
-    friend class tst_qmlecmascript;
+    friend class tst_qdeclarativeecmascript;
     bool m_methodCalled;
     bool m_methodIntCalled;
 

@@ -45,11 +45,11 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include "../../../shared/util.h"
 
-class tst_qmleasefollow : public QObject
+class tst_qdeclarativeeasefollow : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmleasefollow();
+    tst_qdeclarativeeasefollow();
 
 private slots:
     void defaultValues();
@@ -60,11 +60,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmleasefollow::tst_qmleasefollow()
+tst_qdeclarativeeasefollow::tst_qdeclarativeeasefollow()
 {
 }
 
-void tst_qmleasefollow::defaultValues()
+void tst_qdeclarativeeasefollow::defaultValues()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow1.qml"));
@@ -82,7 +82,7 @@ void tst_qmleasefollow::defaultValues()
     delete obj;
 }
 
-void tst_qmleasefollow::values()
+void tst_qdeclarativeeasefollow::values()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow2.qml"));
@@ -100,7 +100,7 @@ void tst_qmleasefollow::values()
     delete obj;
 }
 
-void tst_qmleasefollow::disabled()
+void tst_qdeclarativeeasefollow::disabled()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/easefollow3.qml"));
@@ -117,6 +117,6 @@ void tst_qmleasefollow::disabled()
     delete obj;
 }
 
-QTEST_MAIN(tst_qmleasefollow)
+QTEST_MAIN(tst_qdeclarativeeasefollow)
 
 #include "tst_qdeclarativeeasefollow.moc"

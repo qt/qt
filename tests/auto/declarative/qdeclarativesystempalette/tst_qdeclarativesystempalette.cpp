@@ -47,12 +47,12 @@
 #include <qpalette.h>
 #include "../../../shared/util.h"
 
-class tst_qmlsystempalette : public QObject
+class tst_qdeclarativesystempalette : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlsystempalette();
+    tst_qdeclarativesystempalette();
 
 private slots:
     void activePalette();
@@ -64,11 +64,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlsystempalette::tst_qmlsystempalette()
+tst_qdeclarativesystempalette::tst_qdeclarativesystempalette()
 {
 }
 
-void tst_qmlsystempalette::activePalette()
+void tst_qdeclarativesystempalette::activePalette()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { }";
     QDeclarativeComponent component(&engine);
@@ -97,7 +97,7 @@ void tst_qmlsystempalette::activePalette()
     delete object;
 }
 
-void tst_qmlsystempalette::inactivePalette()
+void tst_qdeclarativesystempalette::inactivePalette()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { colorGroup: SystemPalette.Inactive }";
     QDeclarativeComponent component(&engine);
@@ -127,7 +127,7 @@ void tst_qmlsystempalette::inactivePalette()
     delete object;
 }
 
-void tst_qmlsystempalette::disabledPalette()
+void tst_qdeclarativesystempalette::disabledPalette()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { colorGroup: SystemPalette.Disabled }";
     QDeclarativeComponent component(&engine);
@@ -157,7 +157,7 @@ void tst_qmlsystempalette::disabledPalette()
     delete object;
 }
 
-void tst_qmlsystempalette::paletteChanged()
+void tst_qdeclarativesystempalette::paletteChanged()
 {
     QString componentStr = "import Qt 4.6\nSystemPalette { }";
     QDeclarativeComponent component(&engine);
@@ -182,6 +182,6 @@ void tst_qmlsystempalette::paletteChanged()
     delete object;
 }
 
-QTEST_MAIN(tst_qmlsystempalette)
+QTEST_MAIN(tst_qdeclarativesystempalette)
 
 #include "tst_qdeclarativesystempalette.moc"

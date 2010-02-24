@@ -297,7 +297,6 @@ void QDeclarativeTester::updateCurrentTime(int msec)
     m_keyEvents.clear();
 
     // Advance test script
-    static int imgCount = 0;
     while (testscript && testscript->count() > testscriptidx) {
 
         QObject *event = testscript->event(testscriptidx);

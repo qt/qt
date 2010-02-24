@@ -47,11 +47,11 @@
 #include <qdeclarativeexpression.h>
 #include "../../../shared/util.h"
 
-class tst_QmlGraphicsPositioners : public QObject
+class tst_QDeclarativePositioners : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsPositioners();
+    tst_QDeclarativePositioners();
 
 private slots:
     void test_horizontal();
@@ -69,11 +69,11 @@ private:
     QDeclarativeView *createView(const QString &filename);
 };
 
-tst_QmlGraphicsPositioners::tst_QmlGraphicsPositioners()
+tst_QDeclarativePositioners::tst_QDeclarativePositioners()
 {
 }
 
-void tst_QmlGraphicsPositioners::test_horizontal()
+void tst_QDeclarativePositioners::test_horizontal()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal.qml");
 
@@ -94,7 +94,7 @@ void tst_QmlGraphicsPositioners::test_horizontal()
     QCOMPARE(three->y(), 0.0);
 }
 
-void tst_QmlGraphicsPositioners::test_horizontal_spacing()
+void tst_QDeclarativePositioners::test_horizontal_spacing()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
 
@@ -115,7 +115,7 @@ void tst_QmlGraphicsPositioners::test_horizontal_spacing()
     QCOMPARE(three->y(), 0.0);
 }
 
-void tst_QmlGraphicsPositioners::test_horizontal_animated()
+void tst_QDeclarativePositioners::test_horizontal_animated()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/horizontal-animated.qml");
 
@@ -155,7 +155,7 @@ void tst_QmlGraphicsPositioners::test_horizontal_animated()
     QTRY_COMPARE(three->x(), 100.0);
 }
 
-void tst_QmlGraphicsPositioners::test_vertical()
+void tst_QDeclarativePositioners::test_vertical()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/vertical.qml");
 
@@ -176,7 +176,7 @@ void tst_QmlGraphicsPositioners::test_vertical()
     QCOMPARE(three->y(), 60.0);
 }
 
-void tst_QmlGraphicsPositioners::test_vertical_spacing()
+void tst_QDeclarativePositioners::test_vertical_spacing()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/vertical-spacing.qml");
 
@@ -197,7 +197,7 @@ void tst_QmlGraphicsPositioners::test_vertical_spacing()
     QCOMPARE(three->y(), 80.0);
 }
 
-void tst_QmlGraphicsPositioners::test_vertical_animated()
+void tst_QDeclarativePositioners::test_vertical_animated()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/vertical-animated.qml");
 
@@ -237,7 +237,7 @@ void tst_QmlGraphicsPositioners::test_vertical_animated()
 
 }
 
-void tst_QmlGraphicsPositioners::test_grid()
+void tst_QDeclarativePositioners::test_grid()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/grid.qml");
 
@@ -264,7 +264,7 @@ void tst_QmlGraphicsPositioners::test_grid()
     QCOMPARE(five->y(), 50.0);
 }
 
-void tst_QmlGraphicsPositioners::test_grid_spacing()
+void tst_QDeclarativePositioners::test_grid_spacing()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/grid-spacing.qml");
 
@@ -291,7 +291,7 @@ void tst_QmlGraphicsPositioners::test_grid_spacing()
     QCOMPARE(five->y(), 54.0);
 }
 
-void tst_QmlGraphicsPositioners::test_grid_animated()
+void tst_QDeclarativePositioners::test_grid_animated()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/grid-animated.qml");
 
@@ -363,7 +363,7 @@ void tst_QmlGraphicsPositioners::test_grid_animated()
     QTRY_COMPARE(five->y(), 50.0);
 
 }
-void tst_QmlGraphicsPositioners::test_propertychanges()
+void tst_QDeclarativePositioners::test_propertychanges()
 {
     QDeclarativeView *canvas = createView("data/propertychanges.qml");
 
@@ -419,7 +419,7 @@ void tst_QmlGraphicsPositioners::test_propertychanges()
     QCOMPARE(rowsSpy.count(),2);
 }
 
-void tst_QmlGraphicsPositioners::test_repeater()
+void tst_QDeclarativePositioners::test_repeater()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/repeater.qml");
 
@@ -440,7 +440,7 @@ void tst_QmlGraphicsPositioners::test_repeater()
     QCOMPARE(three->y(), 0.0);
 }
 
-QDeclarativeView *tst_QmlGraphicsPositioners::createView(const QString &filename)
+QDeclarativeView *tst_QDeclarativePositioners::createView(const QString &filename)
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
 
@@ -450,6 +450,6 @@ QDeclarativeView *tst_QmlGraphicsPositioners::createView(const QString &filename
 }
 
 
-QTEST_MAIN(tst_QmlGraphicsPositioners)
+QTEST_MAIN(tst_QDeclarativePositioners)
 
 #include "tst_qdeclarativepositioners.moc"

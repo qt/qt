@@ -44,11 +44,11 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QDebug>
 
-class tst_qmlmoduleplugin : public QObject
+class tst_qdeclarativemoduleplugin : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlmoduleplugin() {
+    tst_qdeclarativemoduleplugin() {
         QCoreApplication::addLibraryPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("plugin"));
 qDebug() << QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("plugin");
     }
@@ -100,7 +100,7 @@ inline QUrl TEST_FILE(const QString &filename)
 }
 
 
-void tst_qmlmoduleplugin::importsPlugin()
+void tst_qdeclarativemoduleplugin::importsPlugin()
 {
     QDeclarativeEngine engine;
     QTest::ignoreMessage(QtWarningMsg, "plugin created");
@@ -112,6 +112,6 @@ void tst_qmlmoduleplugin::importsPlugin()
     QCOMPARE(object->property("value").toInt(),123);
 }
 
-QTEST_MAIN(tst_qmlmoduleplugin)
+QTEST_MAIN(tst_qdeclarativemoduleplugin)
 
 #include "tst_qdeclarativemoduleplugin.moc"

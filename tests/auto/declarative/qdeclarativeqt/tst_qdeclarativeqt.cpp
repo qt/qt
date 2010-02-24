@@ -49,11 +49,11 @@
 #include <QCryptographicHash>
 #include <QDeclarativeItem>
 
-class tst_qmlqt : public QObject
+class tst_qdeclarativeqt : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlqt() {}
+    tst_qdeclarativeqt() {}
 
 private slots:
     void enums();
@@ -83,7 +83,7 @@ inline QUrl TEST_FILE(const QString &filename)
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
 }
 
-void tst_qmlqt::enums()
+void tst_qdeclarativeqt::enums()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("enums.qml"));
     QObject *object = component.create();
@@ -97,7 +97,7 @@ void tst_qmlqt::enums()
     delete object;
 }
 
-void tst_qmlqt::rgba()
+void tst_qdeclarativeqt::rgba()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("rgba.qml"));
 
@@ -124,7 +124,7 @@ void tst_qmlqt::rgba()
     delete object;
 }
 
-void tst_qmlqt::hsla()
+void tst_qdeclarativeqt::hsla()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("hsla.qml"));
 
@@ -150,7 +150,7 @@ void tst_qmlqt::hsla()
     delete object;
 }
 
-void tst_qmlqt::rect()
+void tst_qdeclarativeqt::rect()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("rect.qml"));
     QObject *object = component.create();
@@ -165,7 +165,7 @@ void tst_qmlqt::rect()
     delete object;
 }
 
-void tst_qmlqt::point()
+void tst_qdeclarativeqt::point()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("point.qml"));
     QObject *object = component.create();
@@ -179,7 +179,7 @@ void tst_qmlqt::point()
     delete object;
 }
 
-void tst_qmlqt::size()
+void tst_qdeclarativeqt::size()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("size.qml"));
     QObject *object = component.create();
@@ -194,7 +194,7 @@ void tst_qmlqt::size()
     delete object;
 }
 
-void tst_qmlqt::vector()
+void tst_qdeclarativeqt::vector()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("vector.qml"));
     QObject *object = component.create();
@@ -208,7 +208,7 @@ void tst_qmlqt::vector()
     delete object;
 }
 
-void tst_qmlqt::lighter()
+void tst_qdeclarativeqt::lighter()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("lighter.qml"));
     QObject *object = component.create();
@@ -224,7 +224,7 @@ void tst_qmlqt::lighter()
     delete object;
 }
 
-void tst_qmlqt::darker()
+void tst_qdeclarativeqt::darker()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("darker.qml"));
     QObject *object = component.create();
@@ -240,7 +240,7 @@ void tst_qmlqt::darker()
     delete object;
 }
 
-void tst_qmlqt::tint()
+void tst_qdeclarativeqt::tint()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("tint.qml"));
 
@@ -262,7 +262,7 @@ void tst_qmlqt::tint()
     delete object;
 }
 
-void tst_qmlqt::closestAngle()
+void tst_qdeclarativeqt::closestAngle()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("closestangle.qml"));
     QObject *object = component.create();
@@ -279,19 +279,19 @@ void tst_qmlqt::closestAngle()
     delete object;
 }
 
-void tst_qmlqt::playSound()
+void tst_qdeclarativeqt::playSound()
 {
     QEXPECT_FAIL("", "How do we test this?", Abort);
     QVERIFY(false);
 }
 
-void tst_qmlqt::openUrlExternally()
+void tst_qdeclarativeqt::openUrlExternally()
 {
     QEXPECT_FAIL("", "How do we test this?", Abort);
     QVERIFY(false);
 }
 
-void tst_qmlqt::md5()
+void tst_qdeclarativeqt::md5()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("md5.qml"));
     QObject *object = component.create();
@@ -303,7 +303,7 @@ void tst_qmlqt::md5()
     delete object;
 }
 
-void tst_qmlqt::createComponent()
+void tst_qdeclarativeqt::createComponent()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("createComponent.qml"));
     QObject *object = component.create();
@@ -319,7 +319,7 @@ void tst_qmlqt::createComponent()
     delete object;
 }
 
-void tst_qmlqt::createQmlObject()
+void tst_qdeclarativeqt::createQmlObject()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("createQmlObject.qml"));
 
@@ -354,7 +354,7 @@ void tst_qmlqt::createQmlObject()
     delete object;
 }
 
-void tst_qmlqt::consoleLog()
+void tst_qdeclarativeqt::consoleLog()
 {
     QTest::ignoreMessage(QtDebugMsg, "completed ok");
     QTest::ignoreMessage(QtDebugMsg, "completed ok");
@@ -364,6 +364,6 @@ void tst_qmlqt::consoleLog()
     delete object;
 }
 
-QTEST_MAIN(tst_qmlqt)
+QTEST_MAIN(tst_qdeclarativeqt)
 
 #include "tst_qdeclarativeqt.moc"

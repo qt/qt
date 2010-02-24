@@ -43,11 +43,11 @@
 #include <QtGui/QTextLayout>
 #include <private/qdeclarativestyledtext_p.h>
 
-class tst_qmlstyledtext : public QObject
+class tst_qdeclarativestyledtext : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlstyledtext()
+    tst_qdeclarativestyledtext()
     {
     }
 
@@ -58,7 +58,7 @@ private slots:
 
 // For malformed input all we test is that we get the expected text out.
 // 
-void tst_qmlstyledtext::textOutput_data()
+void tst_qdeclarativestyledtext::textOutput_data()
 {
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("output");
@@ -79,7 +79,7 @@ void tst_qmlstyledtext::textOutput_data()
     QTest::newRow("empty") << "" << "";
 }
 
-void tst_qmlstyledtext::textOutput()
+void tst_qdeclarativestyledtext::textOutput()
 {
     QFETCH(QString, input);
     QFETCH(QString, output);
@@ -91,6 +91,6 @@ void tst_qmlstyledtext::textOutput()
 }
 
 
-QTEST_MAIN(tst_qmlstyledtext)
+QTEST_MAIN(tst_qdeclarativestyledtext)
 
 #include "tst_qdeclarativestyledtext.moc"

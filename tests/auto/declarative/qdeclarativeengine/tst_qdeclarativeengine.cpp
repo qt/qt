@@ -50,11 +50,11 @@
 #include <QDeclarativeComponent>
 #include <QDeclarativeNetworkAccessManagerFactory>
 
-class tst_qmlengine : public QObject
+class tst_qdeclarativeengine : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlengine() {}
+    tst_qdeclarativeengine() {}
 
 private slots:
     void rootContext();
@@ -65,7 +65,7 @@ private slots:
     void clearComponentCache();
 };
 
-void tst_qmlengine::rootContext()
+void tst_qdeclarativeengine::rootContext()
 {
     QDeclarativeEngine engine;
 
@@ -88,7 +88,7 @@ public:
     QNetworkAccessManager *manager;
 };
 
-void tst_qmlengine::networkAccessManager()
+void tst_qdeclarativeengine::networkAccessManager()
 {
     QDeclarativeEngine *engine = new QDeclarativeEngine;
 
@@ -105,7 +105,7 @@ void tst_qmlengine::networkAccessManager()
     delete engine;
 }
 
-void tst_qmlengine::baseUrl()
+void tst_qdeclarativeengine::baseUrl()
 {
     QDeclarativeEngine engine;
 
@@ -129,7 +129,7 @@ void tst_qmlengine::baseUrl()
     QCOMPARE(engine.rootContext()->resolvedUrl(QUrl("main.qml")), cwd.resolved(QUrl("main.qml")));
 }
 
-void tst_qmlengine::contextForObject()
+void tst_qdeclarativeengine::contextForObject()
 {
     QDeclarativeEngine *engine = new QDeclarativeEngine;
 
@@ -162,11 +162,11 @@ void tst_qmlengine::contextForObject()
     QVERIFY(QDeclarativeEngine::contextForObject(&object) == 0);
 }
 
-void tst_qmlengine::offlineStoragePath()
+void tst_qdeclarativeengine::offlineStoragePath()
 {
     // Without these set, QDesktopServices::storageLocation returns
     // strings with extra "//" at the end. We set them to ignore this problem.
-    qApp->setApplicationName("tst_qmlengine");
+    qApp->setApplicationName("tst_qdeclarativeengine");
     qApp->setOrganizationName("Nokia");
     qApp->setOrganizationDomain("nokia.com");
 
@@ -184,7 +184,7 @@ void tst_qmlengine::offlineStoragePath()
     QCOMPARE(engine.offlineStoragePath(), QDir::homePath());
 }
 
-void tst_qmlengine::clearComponentCache()
+void tst_qdeclarativeengine::clearComponentCache()
 {
     QDeclarativeEngine engine;
 
@@ -235,6 +235,6 @@ void tst_qmlengine::clearComponentCache()
     }
 }
 
-QTEST_MAIN(tst_qmlengine)
+QTEST_MAIN(tst_qdeclarativeengine)
 
 #include "tst_qdeclarativeengine.moc"

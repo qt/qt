@@ -60,11 +60,11 @@ inline QUrl TEST_FILE(const char *filename)
     return TEST_FILE(QLatin1String(filename));
 }
 
-class tst_qmllistreference : public QObject
+class tst_qdeclarativelistreference : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmllistreference() {}
+    tst_qdeclarativelistreference() {}
 
 private slots:
     void initTestCase();
@@ -103,12 +103,12 @@ public:
 };
 QML_DECLARE_TYPE(TestType);
 
-void tst_qmllistreference::initTestCase()
+void tst_qdeclarativelistreference::initTestCase()
 {
     QML_REGISTER_NOCREATE_TYPE(TestType);
 }
 
-void tst_qmllistreference::qmllistreference()
+void tst_qdeclarativelistreference::qmllistreference()
 {
     TestType tt;
 
@@ -120,7 +120,7 @@ void tst_qmllistreference::qmllistreference()
     QCOMPARE(r.count(), 1);
 }
 
-void tst_qmllistreference::qmllistreference_invalid()
+void tst_qdeclarativelistreference::qmllistreference_invalid()
 {
     TestType tt;
 
@@ -170,7 +170,7 @@ void tst_qmllistreference::qmllistreference_invalid()
     }
 }
 
-void tst_qmllistreference::isValid()
+void tst_qdeclarativelistreference::isValid()
 {
     TestType *tt = new TestType;
 
@@ -192,7 +192,7 @@ void tst_qmllistreference::isValid()
     }
 }
 
-void tst_qmllistreference::object()
+void tst_qdeclarativelistreference::object()
 {
     TestType *tt = new TestType;
 
@@ -214,7 +214,7 @@ void tst_qmllistreference::object()
     }
 }
 
-void tst_qmllistreference::listElementType()
+void tst_qdeclarativelistreference::listElementType()
 {
     TestType *tt = new TestType;
 
@@ -236,7 +236,7 @@ void tst_qmllistreference::listElementType()
     }
 }
 
-void tst_qmllistreference::canAppend()
+void tst_qdeclarativelistreference::canAppend()
 {
     TestType *tt = new TestType;
 
@@ -265,7 +265,7 @@ void tst_qmllistreference::canAppend()
     }
 }
 
-void tst_qmllistreference::canAt()
+void tst_qdeclarativelistreference::canAt()
 {
     TestType *tt = new TestType;
 
@@ -294,7 +294,7 @@ void tst_qmllistreference::canAt()
     }
 }
 
-void tst_qmllistreference::canClear()
+void tst_qdeclarativelistreference::canClear()
 {
     TestType *tt = new TestType;
 
@@ -323,7 +323,7 @@ void tst_qmllistreference::canClear()
     }
 }
 
-void tst_qmllistreference::canCount()
+void tst_qdeclarativelistreference::canCount()
 {
     TestType *tt = new TestType;
 
@@ -352,7 +352,7 @@ void tst_qmllistreference::canCount()
     }
 }
 
-void tst_qmllistreference::append()
+void tst_qdeclarativelistreference::append()
 {
     TestType *tt = new TestType;
     QObject object;
@@ -391,7 +391,7 @@ void tst_qmllistreference::append()
     }
 }
 
-void tst_qmllistreference::at()
+void tst_qdeclarativelistreference::at()
 {
     TestType *tt = new TestType;
     tt->data.append(tt);
@@ -426,7 +426,7 @@ void tst_qmllistreference::at()
     }
 }
 
-void tst_qmllistreference::clear()
+void tst_qdeclarativelistreference::clear()
 {
     TestType *tt = new TestType;
     tt->data.append(tt);
@@ -459,7 +459,7 @@ void tst_qmllistreference::clear()
     }
 }
 
-void tst_qmllistreference::count()
+void tst_qdeclarativelistreference::count()
 {
     TestType *tt = new TestType;
     tt->data.append(tt);
@@ -494,7 +494,7 @@ void tst_qmllistreference::count()
     }
 }
 
-void tst_qmllistreference::copy()
+void tst_qdeclarativelistreference::copy()
 {
     TestType tt;
     tt.data.append(&tt);
@@ -522,7 +522,7 @@ void tst_qmllistreference::copy()
     QVERIFY(r3.count() == 2);
 }
 
-void tst_qmllistreference::qmlmetaproperty()
+void tst_qdeclarativelistreference::qmlmetaproperty()
 {
     TestType tt;
     tt.data.append(&tt);
@@ -537,7 +537,7 @@ void tst_qmllistreference::qmlmetaproperty()
     QVERIFY(ref.listElementType() == &TestType::staticMetaObject);
 }
 
-void tst_qmllistreference::engineTypes()
+void tst_qdeclarativelistreference::engineTypes()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, TEST_FILE("engineTypes.qml"));
@@ -560,7 +560,7 @@ void tst_qmllistreference::engineTypes()
     delete o;
 }
 
-void tst_qmllistreference::variantToList()
+void tst_qdeclarativelistreference::variantToList()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, TEST_FILE("variantToList.qml"));
@@ -574,6 +574,6 @@ void tst_qmllistreference::variantToList()
     delete o;
 }
 
-QTEST_MAIN(tst_qmllistreference)
+QTEST_MAIN(tst_qdeclarativelistreference)
 
 #include "tst_qdeclarativelistreference.moc"
