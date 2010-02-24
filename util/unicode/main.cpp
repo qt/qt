@@ -55,6 +55,7 @@
 #define DATA_VERSION_STR "QChar::Unicode_5_0"
 
 #define LAST_CODEPOINT 0x10ffff
+#define LAST_CODEPOINT_STR "0x10ffff"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -2167,8 +2168,6 @@ static QByteArray createPropertyInfo()
            "    return uc_properties + index;\n"
            "}\n\n";
 
-    out += "#define CURRENT_VERSION "DATA_VERSION_STR"\n\n";
-
     out += "static const ushort specialCaseMap[] = {\n   ";
     for (int i = 0; i < specialCaseMap.size(); ++i) {
         out += QByteArray(" 0x") + QByteArray::number(specialCaseMap.at(i), 16);
@@ -2644,6 +2643,8 @@ int main(int, char **)
             "#define QUNICODETABLES_P_H\n\n"
             "#include <QtCore/qchar.h>\n\n"
             "QT_BEGIN_NAMESPACE\n\n");
+    f.write("#define UNICODE_DATA_VERSION "DATA_VERSION_STR"\n\n");
+    f.write("#define UNICODE_LAST_CODEPOINT "LAST_CODEPOINT_STR"\n\n");
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
     f.write("\n");
