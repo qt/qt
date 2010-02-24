@@ -27,16 +27,14 @@
 
 #include "CallFrame.h"
 #include "GlobalEvalFunction.h"
-#include "Interpreter.h"
 #include "JSGlobalObject.h"
-#include "JSString.h"
-#include "JSStringBuilder.h"
-#include "Lexer.h"
 #include "LiteralParser.h"
-#include "Nodes.h"
+#include "JSString.h"
+#include "Interpreter.h"
 #include "Parser.h"
-#include "StringExtras.h"
 #include "dtoa.h"
+#include "Lexer.h"
+#include "Nodes.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,24 +55,24 @@ static JSValue encode(ExecState* exec, const ArgList& args, const char* doNotEsc
     if (!cstr.c_str())
         return throwError(exec, URIError, "String contained an illegal UTF-16 sequence.");
 
-    JSStringBuilder builder;
+    UString result = "";
     const char* p = cstr.c_str();
     for (size_t k = 0; k < cstr.size(); k++, p++) {
         char c = *p;
         if (c && strchr(doNotEscape, c))
-            builder.append(c);
+            result.append(c);
         else {
             char tmp[4];
-            snprintf(tmp, 4, "%%%02X", static_cast<unsigned char>(c));
-            builder.append(tmp);
+            sprintf(tmp, "%%%02X", static_cast<unsigned char>(c));
+            result += tmp;
         }
     }
-    return builder.build(exec);
+    return jsString(exec, result);
 }
 
 static JSValue decode(ExecState* exec, const ArgList& args, const char* doNotUnescape, bool strict)
 {
-    JSStringBuilder builder;
+    UString result = "";
     UString str = args.at(0).toString(exec);
     int k = 0;
     int len = str.size();
@@ -108,7 +106,7 @@ static JSValue decode(ExecState* exec, const ArgList& args, const char* doNotUne
                             charLen = 0;
                         else if (character >= 0x10000) {
                             // Convert to surrogate pair.
-                            builder.append(static_cast<UChar>(0xD800 | ((character - 0x10000) >> 10)));
+                            result.append(static_cast<UChar>(0xD800 | ((character - 0x10000) >> 10)));
                             u = static_cast<UChar>(0xDC00 | ((character - 0x10000) & 0x3FF));
                         } else
                             u = static_cast<UChar>(character);
@@ -133,9 +131,9 @@ static JSValue decode(ExecState* exec, const ArgList& args, const char* doNotUne
             }
         }
         k++;
-        builder.append(c);
+        result.append(c);
     }
-    return builder.build(exec);
+    return jsString(exec, result);
 }
 
 bool isStrWhiteSpace(UChar c)
@@ -378,30 +376,32 @@ JSValue JSC_HOST_CALL globalFuncEscape(ExecState* exec, JSObject*, JSValue, cons
         "0123456789"
         "*+-./@_";
 
-    JSStringBuilder builder;
+    UString result = "";
+    UString s;
     UString str = args.at(0).toString(exec);
     const UChar* c = str.data();
-    for (unsigned k = 0; k < str.size(); k++, c++) {
+    for (int k = 0; k < str.size(); k++, c++) {
         int u = c[0];
         if (u > 255) {
             char tmp[7];
             sprintf(tmp, "%%u%04X", u);
-            builder.append(tmp);
+            s = UString(tmp);
         } else if (u != 0 && strchr(do_not_escape, static_cast<char>(u)))
-            builder.append(c, 1);
+            s = UString(c, 1);
         else {
             char tmp[4];
             sprintf(tmp, "%%%02X", u);
-            builder.append(tmp);
+            s = UString(tmp);
         }
+        result += s;
     }
 
-    return builder.build(exec);
+    return jsString(exec, result);
 }
 
 JSValue JSC_HOST_CALL globalFuncUnescape(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    StringBuilder builder;
+    UString result = "";
     UString str = args.at(0).toString(exec);
     int k = 0;
     int len = str.size();
@@ -420,10 +420,10 @@ JSValue JSC_HOST_CALL globalFuncUnescape(ExecState* exec, JSObject*, JSValue, co
             k += 2;
         }
         k++;
-        builder.append(*c);
+        result.append(*c);
     }
 
-    return jsString(exec, builder.build());
+    return jsString(exec, result);
 }
 
 #ifndef NDEBUG

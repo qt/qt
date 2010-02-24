@@ -80,7 +80,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 HTMLDocument::HTMLDocument(Frame* frame)
-    : Document(frame, false, true)
+    : Document(frame, false)
 {
     clearXMLVersion();
     setParseMode(Compat);
@@ -398,11 +398,8 @@ void HTMLDocument::determineParseMode()
         }
     }
     
-    if (inCompatMode() != wasInCompatMode) {
-        clearPageUserSheet();
-        clearPageGroupUserSheets();
+    if (inCompatMode() != wasInCompatMode)
         updateStyleSelector();
-    }
 }
 
 void HTMLDocument::clear()

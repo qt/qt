@@ -80,7 +80,6 @@ public:
 
     Database* database() { return m_database.get(); }
     bool isReadOnly() { return m_readOnly; }
-    void notifyDatabaseThreadIsShuttingDown();
 
 private:
     SQLTransaction(Database*, PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>,

@@ -86,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -164,8 +164,7 @@ JSValue jsUIEventView(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->view()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->view()));
 }
 
 JSValue jsUIEventDetail(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -173,8 +172,7 @@ JSValue jsUIEventDetail(ExecState* exec, const Identifier&, const PropertySlot& 
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->detail());
-    return result;
+    return jsNumber(exec, imp->detail());
 }
 
 JSValue jsUIEventKeyCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -182,8 +180,7 @@ JSValue jsUIEventKeyCode(ExecState* exec, const Identifier&, const PropertySlot&
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->keyCode());
-    return result;
+    return jsNumber(exec, imp->keyCode());
 }
 
 JSValue jsUIEventCharCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -191,8 +188,7 @@ JSValue jsUIEventCharCode(ExecState* exec, const Identifier&, const PropertySlot
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->charCode());
-    return result;
+    return jsNumber(exec, imp->charCode());
 }
 
 JSValue jsUIEventLayerX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -200,8 +196,7 @@ JSValue jsUIEventLayerX(ExecState* exec, const Identifier&, const PropertySlot& 
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->layerX());
-    return result;
+    return jsNumber(exec, imp->layerX());
 }
 
 JSValue jsUIEventLayerY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -209,8 +204,7 @@ JSValue jsUIEventLayerY(ExecState* exec, const Identifier&, const PropertySlot& 
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->layerY());
-    return result;
+    return jsNumber(exec, imp->layerY());
 }
 
 JSValue jsUIEventPageX(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -218,8 +212,7 @@ JSValue jsUIEventPageX(ExecState* exec, const Identifier&, const PropertySlot& s
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->pageX());
-    return result;
+    return jsNumber(exec, imp->pageX());
 }
 
 JSValue jsUIEventPageY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -227,8 +220,7 @@ JSValue jsUIEventPageY(ExecState* exec, const Identifier&, const PropertySlot& s
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->pageY());
-    return result;
+    return jsNumber(exec, imp->pageY());
 }
 
 JSValue jsUIEventWhich(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -236,8 +228,7 @@ JSValue jsUIEventWhich(ExecState* exec, const Identifier&, const PropertySlot& s
     JSUIEvent* castedThis = static_cast<JSUIEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     UIEvent* imp = static_cast<UIEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->which());
-    return result;
+    return jsNumber(exec, imp->which());
 }
 
 JSValue jsUIEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

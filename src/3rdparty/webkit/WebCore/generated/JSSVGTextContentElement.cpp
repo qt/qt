@@ -108,7 +108,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -200,8 +200,7 @@ JSValue jsSVGTextContentElementTextLength(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->textLengthAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextContentElementLengthAdjust(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -210,8 +209,7 @@ JSValue jsSVGTextContentElementLengthAdjust(ExecState* exec, const Identifier&, 
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
     RefPtr<SVGAnimatedEnumeration> obj = imp->lengthAdjustAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextContentElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -219,8 +217,7 @@ JSValue jsSVGTextContentElementRequiredFeatures(ExecState* exec, const Identifie
     JSSVGTextContentElement* castedThis = static_cast<JSSVGTextContentElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
 JSValue jsSVGTextContentElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -228,8 +225,7 @@ JSValue jsSVGTextContentElementRequiredExtensions(ExecState* exec, const Identif
     JSSVGTextContentElement* castedThis = static_cast<JSSVGTextContentElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
 JSValue jsSVGTextContentElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -237,8 +233,7 @@ JSValue jsSVGTextContentElementSystemLanguage(ExecState* exec, const Identifier&
     JSSVGTextContentElement* castedThis = static_cast<JSSVGTextContentElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->systemLanguage()), imp);
 }
 
 JSValue jsSVGTextContentElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -246,8 +241,7 @@ JSValue jsSVGTextContentElementXmllang(ExecState* exec, const Identifier&, const
     JSSVGTextContentElement* castedThis = static_cast<JSSVGTextContentElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->xmllang());
-    return result;
+    return jsString(exec, imp->xmllang());
 }
 
 JSValue jsSVGTextContentElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -255,8 +249,7 @@ JSValue jsSVGTextContentElementXmlspace(ExecState* exec, const Identifier&, cons
     JSSVGTextContentElement* castedThis = static_cast<JSSVGTextContentElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->xmlspace());
-    return result;
+    return jsString(exec, imp->xmlspace());
 }
 
 JSValue jsSVGTextContentElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -265,8 +258,7 @@ JSValue jsSVGTextContentElementExternalResourcesRequired(ExecState* exec, const 
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextContentElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -275,8 +267,7 @@ JSValue jsSVGTextContentElementClassName(ExecState* exec, const Identifier&, con
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    JSValue result =  toJS(exec, castedThis->globalObject(), obj.get(), imp);
-    return result;
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGTextContentElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -284,8 +275,7 @@ JSValue jsSVGTextContentElementStyle(ExecState* exec, const Identifier&, const P
     JSSVGTextContentElement* castedThis = static_cast<JSSVGTextContentElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsSVGTextContentElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -300,15 +290,13 @@ void JSSVGTextContentElement::put(ExecState* exec, const Identifier& propertyNam
 
 void setJSSVGTextContentElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(thisObject);
-    SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
+    SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(static_cast<JSSVGTextContentElement*>(thisObject)->impl());
     imp->setXmllang(value.toString(exec));
 }
 
 void setJSSVGTextContentElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGTextContentElement* castedThisObj = static_cast<JSSVGTextContentElement*>(thisObject);
-    SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(castedThisObj->impl());
+    SVGTextContentElement* imp = static_cast<SVGTextContentElement*>(static_cast<JSSVGTextContentElement*>(thisObject)->impl());
     imp->setXmlspace(value.toString(exec));
 }
 
@@ -383,7 +371,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetStartPositionOf
     }
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->getStartPositionOfChar(offset, ec)).get(), 0 /* no context on purpose */);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->getStartPositionOfChar(offset, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }
@@ -403,7 +391,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetEndPositionOfCh
     }
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->getEndPositionOfChar(offset, ec)).get(), 0 /* no context on purpose */);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->getEndPositionOfChar(offset, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }
@@ -423,7 +411,7 @@ JSValue JSC_HOST_CALL jsSVGTextContentElementPrototypeFunctionGetExtentOfChar(Ex
     }
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getExtentOfChar(offset, ec)).get(), 0 /* no context on purpose */);
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getExtentOfChar(offset, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }

@@ -22,7 +22,6 @@
 #define SVGGradientElement_h
 
 #if ENABLE(SVG)
-#include "RenderObject.h"
 #include "SVGPaintServerGradient.h"
 #include "SVGExternalResourcesRequired.h"
 #include "SVGStyledElement.h"
@@ -30,6 +29,8 @@
 #include "SVGURIReference.h"
 
 namespace WebCore {
+
+    extern char SVGGradientElementIdentifier[];
 
     class SVGGradientElement : public SVGStyledElement,
                                public SVGURIReference,
@@ -40,12 +41,11 @@ namespace WebCore {
 
         virtual void parseMappedAttribute(MappedAttribute*);
         virtual void svgAttributeChanged(const QualifiedName&);
-        virtual void synchronizeProperty(const QualifiedName&);
 
         virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
 
-        virtual SVGResource* canvasResource(const RenderObject*);
+        virtual SVGResource* canvasResource();
 
     protected:
         friend class SVGPaintServerGradient;
@@ -59,15 +59,17 @@ namespace WebCore {
         mutable RefPtr<SVGPaintServerGradient> m_resource;
  
     protected:
-        DECLARE_ANIMATED_PROPERTY(SVGGradientElement, SVGNames::spreadMethodAttr, int, SpreadMethod, spreadMethod)
-        DECLARE_ANIMATED_PROPERTY(SVGGradientElement, SVGNames::gradientUnitsAttr, int, GradientUnits, gradientUnits)
-        DECLARE_ANIMATED_PROPERTY(SVGGradientElement, SVGNames::gradientTransformAttr, SVGTransformList*, GradientTransform, gradientTransform)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGGradientElement, SVGGradientElementIdentifier, SVGNames::spreadMethodAttrString, int, SpreadMethod, spreadMethod)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGGradientElement, SVGGradientElementIdentifier, SVGNames::gradientUnitsAttrString, int, GradientUnits, gradientUnits)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGGradientElement, SVGGradientElementIdentifier, SVGNames::gradientTransformAttrString, SVGTransformList, GradientTransform, gradientTransform)
 
         // SVGURIReference
-        DECLARE_ANIMATED_PROPERTY(SVGGradientElement, XLinkNames::hrefAttr, String, Href, href)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGGradientElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
 
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGGradientElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGGradientElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

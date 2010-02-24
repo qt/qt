@@ -38,7 +38,6 @@
 #include "NumericStrings.h"
 #include "SmallStrings.h"
 #include "TimeoutChecker.h"
-#include "WeakRandom.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
@@ -62,26 +61,7 @@ namespace JSC {
 
     struct HashTable;
     struct Instruction;    
-
-    struct DSTOffsetCache {
-        DSTOffsetCache()
-        {
-            reset();
-        }
-        
-        void reset()
-        {
-            offset = 0.0;
-            start = 0.0;
-            end = -1.0;
-            increment = 0.0;
-        }
-
-        double offset;
-        double start;
-        double end;
-        double increment;
-    };
+    struct VPtrSet;
 
     class JSGlobalData : public RefCounted<JSGlobalData> {
     public:
@@ -92,9 +72,8 @@ namespace JSC {
         static bool sharedInstanceExists();
         static JSGlobalData& sharedInstance();
 
-        static PassRefPtr<JSGlobalData> create();
+        static PassRefPtr<JSGlobalData> create(bool isShared = false);
         static PassRefPtr<JSGlobalData> createLeaked();
-        static PassRefPtr<JSGlobalData> createNonDefault();
         ~JSGlobalData();
 
 #if ENABLE(JSC_MULTIPLE_THREADS)
@@ -123,17 +102,15 @@ namespace JSC {
         RefPtr<Structure> propertyNameIteratorStructure;
         RefPtr<Structure> getterSetterStructure;
         RefPtr<Structure> apiWrapperStructure;
-        RefPtr<Structure> dummyMarkableCellStructure;
 
 #if USE(JSVALUE32)
         RefPtr<Structure> numberStructure;
 #endif
 
-        static void storeVPtrs();
-        static JS_EXPORTDATA void* jsArrayVPtr;
-        static JS_EXPORTDATA void* jsByteArrayVPtr;
-        static JS_EXPORTDATA void* jsStringVPtr;
-        static JS_EXPORTDATA void* jsFunctionVPtr;
+        void* jsArrayVPtr;
+        void* jsByteArrayVPtr;
+        void* jsStringVPtr;
+        void* jsFunctionVPtr;
 
         IdentifierTable* identifierTable;
         CommonIdentifiers* propertyNames;
@@ -176,29 +153,19 @@ namespace JSC {
 
         MarkStack markStack;
 
-        double cachedUTCOffset;
-        DSTOffsetCache dstOffsetCache;
-        
-        UString cachedDateString;
-        double cachedDateStringValue;
-        
-        WeakRandom weakRandom;
-
 #ifndef NDEBUG
         bool mainThreadOnly;
 #endif
-
-        void resetDateCache();
 
         void startSampling();
         void stopSampling();
         void dumpSampleData(ExecState* exec);
     private:
-        JSGlobalData(bool isShared);
+        JSGlobalData(bool isShared, const VPtrSet&);
         static JSGlobalData*& sharedInstanceInternal();
         void createNativeThunk();
     };
-    
+
 } // namespace JSC
 
 #endif // JSGlobalData_h

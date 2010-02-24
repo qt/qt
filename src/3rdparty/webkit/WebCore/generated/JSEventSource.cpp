@@ -27,6 +27,8 @@
 #include "Event.h"
 #include "EventListener.h"
 #include "EventSource.h"
+#include "Frame.h"
+#include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "KURL.h"
@@ -117,14 +119,14 @@ JSEventSource::JSEventSource(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSEventSource::~JSEventSource()
 {
-    impl()->invalidateJSEventListeners(this);
+    impl()->invalidateEventListeners();
     forgetDOMObject(this, impl());
 }
 
 void JSEventSource::markChildren(MarkStack& markStack)
 {
     Base::markChildren(markStack);
-    impl()->markJSEventListeners(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 JSObject* JSEventSource::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -147,8 +149,7 @@ JSValue jsEventSourceURL(ExecState* exec, const Identifier&, const PropertySlot&
     JSEventSource* castedThis = static_cast<JSEventSource*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->url());
-    return result;
+    return jsString(exec, imp->url());
 }
 
 JSValue jsEventSourceReadyState(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,8 +157,7 @@ JSValue jsEventSourceReadyState(ExecState* exec, const Identifier&, const Proper
     JSEventSource* castedThis = static_cast<JSEventSource*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->readyState());
-    return result;
+    return jsNumber(exec, imp->readyState());
 }
 
 JSValue jsEventSourceOnopen(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -166,10 +166,8 @@ JSValue jsEventSourceOnopen(ExecState* exec, const Identifier&, const PropertySl
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
     if (EventListener* listener = imp->onopen()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
-                return jsFunction;
-        }
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
+            return jsFunction;
     }
     return jsNull();
 }
@@ -180,10 +178,8 @@ JSValue jsEventSourceOnmessage(ExecState* exec, const Identifier&, const Propert
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
-                return jsFunction;
-        }
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
+            return jsFunction;
     }
     return jsNull();
 }
@@ -194,10 +190,8 @@ JSValue jsEventSourceOnerror(ExecState* exec, const Identifier&, const PropertyS
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
-                return jsFunction;
-        }
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
+            return jsFunction;
     }
     return jsNull();
 }
@@ -211,21 +205,30 @@ void setJSEventSourceOnopen(ExecState* exec, JSObject* thisObject, JSValue value
 {
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(static_cast<JSEventSource*>(thisObject)->impl());
-    imp->setOnopen(createJSAttributeEventListener(exec, value, thisObject));
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
+    if (!globalObject)
+        return;
+    imp->setOnopen(globalObject->createJSAttributeEventListener(value));
 }
 
 void setJSEventSourceOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(static_cast<JSEventSource*>(thisObject)->impl());
-    imp->setOnmessage(createJSAttributeEventListener(exec, value, thisObject));
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
+    if (!globalObject)
+        return;
+    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
 }
 
 void setJSEventSourceOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     EventSource* imp = static_cast<EventSource*>(static_cast<JSEventSource*>(thisObject)->impl());
-    imp->setOnerror(createJSAttributeEventListener(exec, value, thisObject));
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
+    if (!globalObject)
+        return;
+    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
 }
 
 JSValue JSC_HOST_CALL jsEventSourcePrototypeFunctionClose(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -109,12 +109,13 @@ WebInspector.CallStackSidebarPane.prototype = {
         this.dispatchEventToListeners("call frame selected");
     },
 
-    handleShortcut: function(event)
+    handleKeyEvent: function(event)
     {
         var shortcut = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
         var handler = this._shortcuts[shortcut];
         if (handler) {
             handler(event);
+            event.preventDefault();
             event.handled = true;
         }
     },

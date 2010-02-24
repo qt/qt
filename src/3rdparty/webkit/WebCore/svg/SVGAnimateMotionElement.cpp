@@ -149,7 +149,7 @@ void SVGAnimateMotionElement::resetToBaseValue(const String&)
     if (!hasValidTarget())
         return;
     SVGElement* target = targetElement();
-    AffineTransform* transform = target->supplementalTransform();
+    TransformationMatrix* transform = target->supplementalTransform();
     if (!transform)
         return;
     transform->makeIdentity();
@@ -176,7 +176,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned,
     SVGElement* target = targetElement();
     if (!target)
         return;
-    AffineTransform* transform = target->supplementalTransform();
+    TransformationMatrix* transform = target->supplementalTransform();
     if (!transform)
         return;
     
@@ -215,13 +215,13 @@ void SVGAnimateMotionElement::applyResultsToTarget()
         targetElement->renderer()->setNeedsLayout(true);
     
     // ...except in case where we have additional instances in <use> trees.
-    const HashSet<SVGElementInstance*>& instances = targetElement->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
+    HashSet<SVGElementInstance*> instances = targetElement->instancesForElement();
+    HashSet<SVGElementInstance*>::iterator end = instances.end();
+    for (HashSet<SVGElementInstance*>::iterator it = instances.begin(); it != end; ++it) {
         SVGElement* shadowTreeElement = (*it)->shadowTreeElement();
         ASSERT(shadowTreeElement);
-        AffineTransform* transform = shadowTreeElement->supplementalTransform();
-        AffineTransform* t = targetElement->supplementalTransform();
+        TransformationMatrix* transform = shadowTreeElement->supplementalTransform();
+        TransformationMatrix* t = targetElement->supplementalTransform();
         transform->setMatrix(t->a(), t->b(), t->c(), t->d(), t->e(), t->f());
         if (shadowTreeElement->renderer())
             shadowTreeElement->renderer()->setNeedsLayout(true);

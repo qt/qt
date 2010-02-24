@@ -41,7 +41,6 @@ namespace WebCore {
 
         virtual void parseMappedAttribute(MappedAttribute*);
         virtual void svgAttributeChanged(const QualifiedName&);
-        virtual void synchronizeProperty(const QualifiedName&);
 
         virtual Path toPathData() const;
 
@@ -49,12 +48,14 @@ namespace WebCore {
         virtual bool hasRelativeValues() const;
 
     private:
-        DECLARE_ANIMATED_PROPERTY(SVGCircleElement, SVGNames::cxAttr, SVGLength, Cx, cx)
-        DECLARE_ANIMATED_PROPERTY(SVGCircleElement, SVGNames::cyAttr, SVGLength, Cy, cy)
-        DECLARE_ANIMATED_PROPERTY(SVGCircleElement, SVGNames::rAttr, SVGLength, R, r)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGNames::circleTagString, SVGNames::cxAttrString, SVGLength, Cx, cx)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGNames::circleTagString, SVGNames::cyAttrString, SVGLength, Cy, cy)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGNames::circleTagString, SVGNames::rAttrString, SVGLength, R, r)
 
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGCircleElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

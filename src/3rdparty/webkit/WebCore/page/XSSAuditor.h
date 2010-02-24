@@ -36,37 +36,34 @@ namespace WebCore {
     class ScriptSourceCode;
 
     // The XSSAuditor class is used to prevent type 1 cross-site scripting
-    // vulnerabilities (also known as reflected vulnerabilities).
+    // vulnerabilites (also known as reflected vulnerabilities).
     //
     // More specifically, the XSSAuditor class decides whether the execution of
     // a script is to be allowed or denied based on the content of any
     // user-submitted data, including:
     //
-    // * the URL.
+    // * the query string of the URL.
     // * the HTTP-POST data.
     //
     // If the source code of a script resembles any user-submitted data then it
     // is denied execution.
     //
-    // When you instantiate the XSSAuditor you must specify the Frame of the
-    // page that you wish to audit.
+    // When you instantiate the XSSAuditor you must specify the {@link Frame}
+    // of the page that you wish to audit.
     //
     // Bindings
     //
-    // An XSSAuditor is instantiated within the constructor of a
+    // An XSSAuditor is instantiated within the contructor of a
     // ScriptController object and passed the Frame the script originated. The
     // ScriptController calls back to the XSSAuditor to determine whether a
     // JavaScript script is safe to execute before executing it. The following
     // methods call into XSSAuditor:
     //
-    // * ScriptController::evaluateInWorld - used to evaluate JavaScript scripts.
-    // * ScriptController::executeIfJavaScriptURL - used to evaluate JavaScript URLs.
-    // * ScriptEventListener::createAttributeEventListener - used to create JavaScript event handlers.
-    // * HTMLBaseElement::process - used to set the document base URL.
-    // * HTMLTokenizer::parseTag - used to load external JavaScript scripts.
-    // * FrameLoader::requestObject - used to load <object>/<embed> elements.
+    // * ScriptController::evaluate - used to evaluate JavaScript scripts.
+    // * ScriptController::createInlineEventListener - used to create JavaScript event handlers.
+    // * HTMLTokenizer::scriptHandler - used to load external JavaScript scripts.
     //
-    class XSSAuditor : public Noncopyable {
+    class XSSAuditor {
     public:
         XSSAuditor(Frame*);
         ~XSSAuditor();
@@ -120,31 +117,15 @@ namespace WebCore {
             String m_cachedCanonicalizedURL;
         };
 
-        struct FindTask {
-            FindTask()
-                : decodeEntities(true)
-                , allowRequestIfNoIllegalURICharacters(false)
-                , decodeURLEscapeSequencesTwice(false)
-            {
-            }
-
-            String context;
-            String string;
-            bool decodeEntities;
-            bool allowRequestIfNoIllegalURICharacters;
-            bool decodeURLEscapeSequencesTwice;
-        };
-
         static String canonicalize(const String&);
         static String decodeURL(const String& url, const TextEncoding& encoding, bool decodeEntities, 
                                 bool decodeURLEscapeSequencesTwice = false);
         static String decodeHTMLEntities(const String&, bool leaveUndecodableEntitiesUntouched = true);
 
-        bool isSameOriginResource(const String& url) const;
-        bool findInRequest(const FindTask&) const;
-        bool findInRequest(Frame*, const FindTask&) const;
-
-        bool shouldFullPageBlockForXSSProtectionHeader() const;
+        bool findInRequest(const String&, bool decodeEntities = true, bool allowRequestIfNoIllegalURICharacters = false, 
+                           bool decodeURLEscapeSequencesTwice = false) const;
+        bool findInRequest(Frame*, const String&, bool decodeEntities = true, bool allowRequestIfNoIllegalURICharacters = false, 
+                           bool decodeURLEscapeSequencesTwice = false) const;
 
         // The frame to audit.
         Frame* m_frame;

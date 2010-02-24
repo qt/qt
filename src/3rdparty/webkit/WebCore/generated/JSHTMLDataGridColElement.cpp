@@ -84,7 +84,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -151,8 +151,7 @@ JSValue jsHTMLDataGridColElementLabel(ExecState* exec, const Identifier&, const 
     JSHTMLDataGridColElement* castedThis = static_cast<JSHTMLDataGridColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->label());
-    return result;
+    return jsString(exec, imp->label());
 }
 
 JSValue jsHTMLDataGridColElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -160,8 +159,7 @@ JSValue jsHTMLDataGridColElementType(ExecState* exec, const Identifier&, const P
     JSHTMLDataGridColElement* castedThis = static_cast<JSHTMLDataGridColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->type());
-    return result;
+    return jsString(exec, imp->type());
 }
 
 JSValue jsHTMLDataGridColElementSortable(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,8 +167,7 @@ JSValue jsHTMLDataGridColElementSortable(ExecState* exec, const Identifier&, con
     JSHTMLDataGridColElement* castedThis = static_cast<JSHTMLDataGridColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->sortable());
-    return result;
+    return jsNumber(exec, imp->sortable());
 }
 
 JSValue jsHTMLDataGridColElementSortDirection(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -178,8 +175,7 @@ JSValue jsHTMLDataGridColElementSortDirection(ExecState* exec, const Identifier&
     JSHTMLDataGridColElement* castedThis = static_cast<JSHTMLDataGridColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->sortDirection());
-    return result;
+    return jsNumber(exec, imp->sortDirection());
 }
 
 JSValue jsHTMLDataGridColElementPrimary(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -187,8 +183,7 @@ JSValue jsHTMLDataGridColElementPrimary(ExecState* exec, const Identifier&, cons
     JSHTMLDataGridColElement* castedThis = static_cast<JSHTMLDataGridColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->primary());
-    return result;
+    return jsBoolean(imp->primary());
 }
 
 JSValue jsHTMLDataGridColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -203,36 +198,31 @@ void JSHTMLDataGridColElement::put(ExecState* exec, const Identifier& propertyNa
 
 void setJSHTMLDataGridColElementLabel(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDataGridColElement* castedThisObj = static_cast<JSHTMLDataGridColElement*>(thisObject);
-    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThisObj->impl());
+    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(thisObject)->impl());
     imp->setLabel(value.toString(exec));
 }
 
 void setJSHTMLDataGridColElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDataGridColElement* castedThisObj = static_cast<JSHTMLDataGridColElement*>(thisObject);
-    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThisObj->impl());
+    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(thisObject)->impl());
     imp->setType(value.toString(exec));
 }
 
 void setJSHTMLDataGridColElementSortable(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDataGridColElement* castedThisObj = static_cast<JSHTMLDataGridColElement*>(thisObject);
-    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThisObj->impl());
+    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(thisObject)->impl());
     imp->setSortable(value.toInt32(exec));
 }
 
 void setJSHTMLDataGridColElementSortDirection(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDataGridColElement* castedThisObj = static_cast<JSHTMLDataGridColElement*>(thisObject);
-    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThisObj->impl());
+    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(thisObject)->impl());
     imp->setSortDirection(value.toInt32(exec));
 }
 
 void setJSHTMLDataGridColElementPrimary(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLDataGridColElement* castedThisObj = static_cast<JSHTMLDataGridColElement*>(thisObject);
-    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(castedThisObj->impl());
+    HTMLDataGridColElement* imp = static_cast<HTMLDataGridColElement*>(static_cast<JSHTMLDataGridColElement*>(thisObject)->impl());
     imp->setPrimary(value.toBoolean(exec));
 }
 

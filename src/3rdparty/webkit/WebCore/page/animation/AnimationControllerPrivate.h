@@ -49,7 +49,7 @@ class Node;
 class RenderObject;
 class RenderStyle;
 
-class AnimationControllerPrivate : public Noncopyable {
+class AnimationControllerPrivate {
 public:
     AnimationControllerPrivate(Frame*);
     ~AnimationControllerPrivate();

@@ -93,7 +93,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -159,8 +159,8 @@ bool JSSVGPreserveAspectRatioPrototype::getOwnPropertyDescriptor(ExecState* exec
 
 const ClassInfo JSSVGPreserveAspectRatio::s_info = { "SVGPreserveAspectRatio", 0, &JSSVGPreserveAspectRatioTable, 0 };
 
-JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<SVGPreserveAspectRatio> > impl)
-    : DOMObjectWithGlobalPointer(structure, globalObject)
+JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPreserveAspectRatio> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -168,7 +168,6 @@ JSSVGPreserveAspectRatio::JSSVGPreserveAspectRatio(NonNullPassRefPtr<Structure> 
 JSSVGPreserveAspectRatio::~JSSVGPreserveAspectRatio()
 {
     forgetDOMObject(this, impl());
-    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGPreserveAspectRatio::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -190,24 +189,22 @@ JSValue jsSVGPreserveAspectRatioAlign(ExecState* exec, const Identifier&, const 
 {
     JSSVGPreserveAspectRatio* castedThis = static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPreserveAspectRatio imp(*castedThis->impl());
-    JSValue result =  jsNumber(exec, imp.align());
-    return result;
+    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(castedThis->impl());
+    return jsNumber(exec, imp->align());
 }
 
 JSValue jsSVGPreserveAspectRatioMeetOrSlice(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGPreserveAspectRatio* castedThis = static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPreserveAspectRatio imp(*castedThis->impl());
-    JSValue result =  jsNumber(exec, imp.meetOrSlice());
-    return result;
+    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(castedThis->impl());
+    return jsNumber(exec, imp->meetOrSlice());
 }
 
 JSValue jsSVGPreserveAspectRatioConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    JSSVGPreserveAspectRatio* domObject = static_cast<JSSVGPreserveAspectRatio*>(asObject(slot.slotBase()));
-    return JSSVGPreserveAspectRatio::getConstructor(exec, domObject->globalObject());
+    UNUSED_PARAM(slot);
+    return JSSVGPreserveAspectRatio::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
 }
 void JSSVGPreserveAspectRatio::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -216,20 +213,18 @@ void JSSVGPreserveAspectRatio::put(ExecState* exec, const Identifier& propertyNa
 
 void setJSSVGPreserveAspectRatioAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPreserveAspectRatio* castedThisObj = static_cast<JSSVGPreserveAspectRatio*>(thisObject);
-    JSSVGPODTypeWrapper<SVGPreserveAspectRatio> * imp = static_cast<JSSVGPODTypeWrapper<SVGPreserveAspectRatio> *>(castedThisObj->impl());
-    SVGPreserveAspectRatio podImp(*imp);
-    podImp.setAlign(value.toInt32(exec));
-    imp->commitChange(podImp, castedThisObj);
+    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(static_cast<JSSVGPreserveAspectRatio*>(thisObject)->impl());
+    imp->setAlign(value.toInt32(exec));
+    if (static_cast<JSSVGPreserveAspectRatio*>(thisObject)->context())
+        static_cast<JSSVGPreserveAspectRatio*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPreserveAspectRatio*>(thisObject)->impl()->associatedAttributeName());
 }
 
 void setJSSVGPreserveAspectRatioMeetOrSlice(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPreserveAspectRatio* castedThisObj = static_cast<JSSVGPreserveAspectRatio*>(thisObject);
-    JSSVGPODTypeWrapper<SVGPreserveAspectRatio> * imp = static_cast<JSSVGPODTypeWrapper<SVGPreserveAspectRatio> *>(castedThisObj->impl());
-    SVGPreserveAspectRatio podImp(*imp);
-    podImp.setMeetOrSlice(value.toInt32(exec));
-    imp->commitChange(podImp, castedThisObj);
+    SVGPreserveAspectRatio* imp = static_cast<SVGPreserveAspectRatio*>(static_cast<JSSVGPreserveAspectRatio*>(thisObject)->impl());
+    imp->setMeetOrSlice(value.toInt32(exec));
+    if (static_cast<JSSVGPreserveAspectRatio*>(thisObject)->context())
+        static_cast<JSSVGPreserveAspectRatio*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPreserveAspectRatio*>(thisObject)->impl()->associatedAttributeName());
 }
 
 JSValue JSSVGPreserveAspectRatio::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -309,13 +304,13 @@ JSValue jsSVGPreserveAspectRatioSVG_MEETORSLICE_SLICE(ExecState* exec, const Ide
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, JSSVGPODTypeWrapper<SVGPreserveAspectRatio>* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGPreserveAspectRatio* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGPreserveAspectRatio, JSSVGPODTypeWrapper<SVGPreserveAspectRatio> >(exec, globalObject, object, context);
+    return getDOMObjectWrapper<JSSVGPreserveAspectRatio>(exec, globalObject, object, context);
 }
-SVGPreserveAspectRatio toSVGPreserveAspectRatio(JSC::JSValue value)
+SVGPreserveAspectRatio* toSVGPreserveAspectRatio(JSC::JSValue value)
 {
-    return value.inherits(&JSSVGPreserveAspectRatio::s_info) ? (SVGPreserveAspectRatio) *static_cast<JSSVGPreserveAspectRatio*>(asObject(value))->impl() : SVGPreserveAspectRatio();
+    return value.inherits(&JSSVGPreserveAspectRatio::s_info) ? static_cast<JSSVGPreserveAspectRatio*>(asObject(value))->impl() : 0;
 }
 
 }

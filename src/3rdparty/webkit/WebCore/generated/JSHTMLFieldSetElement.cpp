@@ -25,10 +25,8 @@
 #include "HTMLFormElement.h"
 #include "JSHTMLFormElement.h"
 #include "JSValidityState.h"
-#include "KURL.h"
 #include "ValidityState.h"
 #include <runtime/Error.h>
-#include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
 
 using namespace JSC;
@@ -39,12 +37,11 @@ ASSERT_CLASS_FITS_IN_CELL(JSHTMLFieldSetElement);
 
 /* Hash table */
 
-static const HashTableValue JSHTMLFieldSetElementTableValues[6] =
+static const HashTableValue JSHTMLFieldSetElementTableValues[5] =
 {
     { "form", DontDelete|ReadOnly, (intptr_t)jsHTMLFieldSetElementForm, (intptr_t)0 },
     { "validity", DontDelete|ReadOnly, (intptr_t)jsHTMLFieldSetElementValidity, (intptr_t)0 },
     { "willValidate", DontDelete|ReadOnly, (intptr_t)jsHTMLFieldSetElementWillValidate, (intptr_t)0 },
-    { "validationMessage", DontDelete|ReadOnly, (intptr_t)jsHTMLFieldSetElementValidationMessage, (intptr_t)0 },
     { "constructor", DontEnum|ReadOnly, (intptr_t)jsHTMLFieldSetElementConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
@@ -53,7 +50,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLFieldSetElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLFieldSetElementTableValues, 0 };
 #else
-    { 16, 15, JSHTMLFieldSetElementTableValues, 0 };
+    { 8, 7, JSHTMLFieldSetElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -84,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -163,8 +160,7 @@ JSValue jsHTMLFieldSetElementForm(ExecState* exec, const Identifier&, const Prop
     JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLFieldSetElementValidity(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,8 +168,7 @@ JSValue jsHTMLFieldSetElementValidity(ExecState* exec, const Identifier&, const 
     JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->validity()));
 }
 
 JSValue jsHTMLFieldSetElementWillValidate(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,17 +176,7 @@ JSValue jsHTMLFieldSetElementWillValidate(ExecState* exec, const Identifier&, co
     JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->willValidate());
-    return result;
-}
-
-JSValue jsHTMLFieldSetElementValidationMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSHTMLFieldSetElement* castedThis = static_cast<JSHTMLFieldSetElement*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    HTMLFieldSetElement* imp = static_cast<HTMLFieldSetElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->validationMessage());
-    return result;
+    return jsBoolean(imp->willValidate());
 }
 
 JSValue jsHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

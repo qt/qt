@@ -38,6 +38,7 @@
 #include "NodeList.h"
 #include "PropertyNameArray.h"
 #include "RenderImage.h"
+#include "ScriptFunctionCall.h"
 #include "StaticNodeList.h"
 #include "qt_runtime.h"
 #include "qwebframe.h"

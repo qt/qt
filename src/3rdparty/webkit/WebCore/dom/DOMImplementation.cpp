@@ -305,8 +305,7 @@ PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& tit
 {
     RefPtr<HTMLDocument> d = HTMLDocument::create(0);
     d->open();
-    d->write("<!doctype html><html><body></body></html>");
-    d->setTitle(title);
+    d->write("<!doctype html><html><head><title>" + title + "</title></head><body></body></html>");
     return d.release();
 }
 

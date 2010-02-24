@@ -52,9 +52,9 @@ CachedCSSStyleSheet::~CachedCSSStyleSheet()
 void CachedCSSStyleSheet::didAddClient(CachedResourceClient *c)
 {
     if (!m_loading)
-        c->setCSSStyleSheet(m_url, m_response.url(), m_decoder->encoding().name(), this);
+        c->setCSSStyleSheet(m_url, m_decoder->encoding().name(), this);
 }
-
+    
 void CachedCSSStyleSheet::allClientsRemoved()
 {
     if (isSafeToMakePurgeable())
@@ -71,11 +71,11 @@ String CachedCSSStyleSheet::encoding() const
     return m_decoder->encoding().name();
 }
     
-const String CachedCSSStyleSheet::sheetText(bool enforceMIMEType, bool* hasValidMIMEType) const 
+const String CachedCSSStyleSheet::sheetText(bool enforceMIMEType) const 
 { 
     ASSERT(!isPurgeable());
 
-    if (!m_data || m_data->isEmpty() || !canUseSheet(enforceMIMEType, hasValidMIMEType))
+    if (!m_data || m_data->isEmpty() || !canUseSheet(enforceMIMEType))
         return String();
     
     if (!m_decodedSheetText.isNull())
@@ -112,7 +112,7 @@ void CachedCSSStyleSheet::checkNotify()
 
     CachedResourceClientWalker w(m_clients);
     while (CachedResourceClient *c = w.next())
-        c->setCSSStyleSheet(m_url, m_response.url(), m_decoder->encoding().name(), this);
+        c->setCSSStyleSheet(m_response.url().string(), m_decoder->encoding().name(), this);
 }
 
 void CachedCSSStyleSheet::error()
@@ -122,12 +122,12 @@ void CachedCSSStyleSheet::error()
     checkNotify();
 }
 
-bool CachedCSSStyleSheet::canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const
+bool CachedCSSStyleSheet::canUseSheet(bool enforceMIMEType) const
 {
     if (errorOccurred())
         return false;
         
-    if (!enforceMIMEType && !hasValidMIMEType)
+    if (!enforceMIMEType)
         return true;
 
     // This check exactly matches Firefox.  Note that we grab the Content-Type
@@ -138,12 +138,7 @@ bool CachedCSSStyleSheet::canUseSheet(bool enforceMIMEType, bool* hasValidMIMETy
     // This code defaults to allowing the stylesheet for non-HTTP protocols so
     // folks can use standards mode for local HTML documents.
     String mimeType = extractMIMETypeFromMediaType(response().httpHeaderField("Content-Type"));
-    bool typeOK = mimeType.isEmpty() || equalIgnoringCase(mimeType, "text/css") || equalIgnoringCase(mimeType, "application/x-unknown-content-type");
-    if (hasValidMIMEType)
-        *hasValidMIMEType = typeOK;
-    if (!enforceMIMEType)
-        return true;
-    return typeOK;
+    return mimeType.isEmpty() || equalIgnoringCase(mimeType, "text/css") || equalIgnoringCase(mimeType, "application/x-unknown-content-type");
 }
  
 }

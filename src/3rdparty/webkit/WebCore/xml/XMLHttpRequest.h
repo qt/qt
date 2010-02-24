@@ -33,9 +33,9 @@
 
 namespace WebCore {
 
-class Blob;
 class Document;
-class ResourceRequest;
+class File;
+struct ResourceRequest;
 class TextResourceDecoder;
 class ThreadableLoader;
 
@@ -72,7 +72,7 @@ public:
     void send(ExceptionCode&);
     void send(Document*, ExceptionCode&);
     void send(const String&, ExceptionCode&);
-    void send(Blob*, ExceptionCode&);
+    void send(File*, ExceptionCode&);
     void abort();
     void setRequestHeader(const AtomicString& name, const String& value, ExceptionCode&);
     void overrideMimeType(const String& override);

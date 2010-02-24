@@ -35,7 +35,7 @@
 #include "ScriptState.h"
 #include <wtf/PassOwnPtr.h>
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
 namespace JSC {
     class JSValue;
     class SourceCode;
@@ -50,32 +50,30 @@ namespace WebCore {
     class InspectorController;
     class InspectorResource;
     class Node;
+    class ScriptFunctionCall;
     class ScriptString;
-    class SerializedScriptValue;
     class Storage;
 
-    class InspectorFrontend : public Noncopyable {
+    class InspectorFrontend {
     public:
-        InspectorFrontend(InspectorController* inspectorController, ScriptObject webInspector);
+        InspectorFrontend(InspectorController* inspectorController, ScriptState*, ScriptObject webInspector);
         ~InspectorFrontend();
 
         ScriptArray newScriptArray();
         ScriptObject newScriptObject();
 
         void didCommitLoad();
-
-        void populateFrontendSettings(const String& settings);
-
-        void updateConsoleMessageExpiredCount(unsigned count);
-        void addConsoleMessage(const ScriptObject& messageObj, const Vector<ScriptString>& frames, ScriptState*, const Vector<ScriptValue> arguments, const String& message);
-        void updateConsoleMessageRepeatCount(unsigned count);
+        void addConsoleMessage(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
+        void updateConsoleMessageRepeatCount(const int count);
         void clearConsoleMessages();
 
-        bool updateResource(unsigned long identifier, const ScriptObject& resourceObj);
-        void removeResource(unsigned long identifier);
-        void didGetResourceContent(int callId, const String& content);
+        bool addResource(long long identifier, const ScriptObject& resourceObj);
+        bool updateResource(long long identifier, const ScriptObject& resourceObj);
+        void removeResource(long long identifier);
 
-        void updateFocusedNode(long nodeId);
+        void addCookieDomain(String);
+
+        void updateFocusedNode(long long nodeId);
         void setAttachedWindow(bool attached);
         void showPanel(int panel);
         void populateInterface();
@@ -84,22 +82,20 @@ namespace WebCore {
         void resourceTrackingWasEnabled();
         void resourceTrackingWasDisabled();
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
         void attachDebuggerWhenShown();
         void debuggerWasEnabled();
         void debuggerWasDisabled();
-        void parsedScriptSource(const JSC::SourceCode&);
-        void failedToParseScriptSource(const JSC::SourceCode&, int errorLine, const JSC::UString& errorMessage);
-        void pausedScript(SerializedScriptValue* callFrames);
-        void resumedScript();
-#endif
-#if ENABLE(JAVASCRIPT_DEBUGGER)
         void profilerWasEnabled();
         void profilerWasDisabled();
+        void parsedScriptSource(const JSC::SourceCode&);
+        void failedToParseScriptSource(const JSC::SourceCode&, int errorLine, const JSC::UString& errorMessage);
         void addProfileHeader(const ScriptValue& profile);
         void setRecordingProfile(bool isProfiling);
         void didGetProfileHeaders(int callId, const ScriptArray& headers);
         void didGetProfile(int callId, const ScriptValue& profile);
+        void pausedScript(const ScriptValue& callFrames);
+        void resumedScript();
 #endif
 
 #if ENABLE(DATABASE)
@@ -134,19 +130,18 @@ namespace WebCore {
         void addRecordToTimeline(const ScriptObject&);
 
         void didGetCookies(int callId, const ScriptArray& cookies, const String& cookiesString);
-        void didDispatchOnInjectedScript(int callId, SerializedScriptValue* result, bool isException);
+        void didDispatchOnInjectedScript(int callId, const String& result, bool isException);
 
         void addNodesToSearchResult(const String& nodeIds);
 
-        void contextMenuItemSelected(int itemId);
-        void contextMenuCleared();
-
-        ScriptState* scriptState() const { return m_webInspector.scriptState(); }
+        ScriptState* scriptState() const { return m_scriptState; }
 
         void evaluateForTestInFrontend(int callId, const String& script);
     private:
+        PassOwnPtr<ScriptFunctionCall> newFunctionCall(const String& functionName);
         void callSimpleFunction(const String& functionName);
         InspectorController* m_inspectorController;
+        ScriptState* m_scriptState;
         ScriptObject m_webInspector;
     };
 

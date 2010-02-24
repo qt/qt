@@ -121,8 +121,7 @@ public:
     void checkConsistency() const;
 
     virtual void calcPrefWidths(int leadWidth);
-    bool isAllCollapsibleWhitespace();
-    
+
 protected:
     virtual void styleWillChange(StyleDifference, const RenderStyle*) { }
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);

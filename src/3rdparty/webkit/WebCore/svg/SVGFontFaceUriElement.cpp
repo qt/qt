@@ -91,11 +91,9 @@ void SVGFontFaceUriElement::loadFont()
     if (!href.isNull()) {        
         DocLoader* docLoader = document()->docLoader();
         m_cachedFont = docLoader->requestFont(href);
-        if (m_cachedFont) {
-            m_cachedFont->setSVGFont(true);
-            m_cachedFont->addClient(this);
-            m_cachedFont->beginLoadIfNeeded(docLoader);
-        }
+        m_cachedFont->setSVGFont(true);
+        m_cachedFont->addClient(this);
+        m_cachedFont->beginLoadIfNeeded(docLoader);
     } else
         m_cachedFont = 0;
 }

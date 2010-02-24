@@ -34,11 +34,11 @@ class RenderTextControl : public RenderBlock {
 public:
     virtual ~RenderTextControl();
 
-    bool wasChangedSinceLastChangeEvent() const { return m_wasChangedSinceLastChangeEvent; }
-    void setChangedSinceLastChangeEvent(bool wasChangedSinceLastChangeEvent) { m_wasChangedSinceLastChangeEvent = wasChangedSinceLastChangeEvent; }
+    bool isEdited() const { return m_edited; }
+    void setEdited(bool isEdited) { m_edited = isEdited; }
 
-    bool lastChangeWasUserEdit() const { return m_lastChangeWasUserEdit; }
-    void setLastChangeWasUserEdit(bool lastChangeWasUserEdit);
+    bool isUserEdited() const { return m_userEdited; }
+    void setUserEdited(bool isUserEdited);
 
     int selectionStart();
     int selectionEnd();
@@ -74,10 +74,6 @@ protected:
     int textBlockWidth() const;
     int textBlockHeight() const;
 
-    float scaleEmToUnits(int x) const;
-
-    static bool hasValidAvgCharWidth(AtomicString family);
-    virtual float getAvgCharWidth(AtomicString family);
     virtual int preferredContentWidth(float charWidth) const = 0;
     virtual void adjustControlHeightBasedOnLineHeight(int lineHeight) = 0;
     virtual void cacheSelection(int start, int end) = 0;
@@ -103,14 +99,14 @@ private:
     virtual bool avoidsFloats() const { return true; }
     void setInnerTextStyle(PassRefPtr<RenderStyle>);
     
-    virtual void addFocusRingRects(Vector<IntRect>&, int tx, int ty);
+    virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
 
     virtual bool canBeProgramaticallyScrolled(bool) const { return true; }
 
     String finishText(Vector<UChar>&) const;
 
-    bool m_wasChangedSinceLastChangeEvent;
-    bool m_lastChangeWasUserEdit;
+    bool m_edited;
+    bool m_userEdited;
     RefPtr<TextControlInnerTextElement> m_innerText;
 };
 

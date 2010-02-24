@@ -29,8 +29,6 @@
 #ifndef IconDatabaseClient_h
 #define IconDatabaseClient_h
 
-#include <wtf/Noncopyable.h>
-
 // All of these client methods will be called from a non-main thread
 // Take appropriate measures
  
@@ -38,7 +36,7 @@ namespace WebCore {
 
 class String;
 
-class IconDatabaseClient : public Noncopyable {
+class IconDatabaseClient {
 public:
     virtual ~IconDatabaseClient() { }
     virtual bool performImport() { return true; }

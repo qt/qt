@@ -186,13 +186,8 @@ protected:
     virtual void onAnimationStart(double /*elapsedTime*/) { }
     virtual void onAnimationIteration(double /*elapsedTime*/) { }
     virtual void onAnimationEnd(double /*elapsedTime*/) { }
-    
-    // timeOffset is an offset from the current time when the animation should start. Negative values are OK.
-    // Return value indicates whether to expect an asynchronous notifyAnimationStarted() callback.
-    virtual bool startAnimation(double /*timeOffset*/) { return false; }
-    // timeOffset is the time at which the animation is being paused.
-    virtual void pauseAnimation(double /*timeOffset*/) { }
-    virtual void endAnimation() { }
+    virtual bool startAnimation(double /*beginTime*/) { return false; }
+    virtual void endAnimation(bool /*reset*/) { }
 
     void goIntoEndingOrLoopingState();
 

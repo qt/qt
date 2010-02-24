@@ -31,7 +31,6 @@
 #include "KURL.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
-#include <runtime/JSString.h>
 #include <runtime/PropertyNameArray.h>
 #include <wtf/GetPtr.h>
 
@@ -87,7 +86,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -172,7 +171,7 @@ bool JSCSSStyleDeclaration::getOwnPropertySlot(ExecState* exec, const Identifier
     }
     bool ok;
     unsigned index = propertyName.toUInt32(&ok, false);
-    if (ok) {
+    if (ok && index < static_cast<CSSStyleDeclaration*>(impl())->length()) {
         slot.setCustomIndex(this, index, indexGetter);
         return true;
     }
@@ -223,8 +222,7 @@ JSValue jsCSSStyleDeclarationCssText(ExecState* exec, const Identifier&, const P
     JSCSSStyleDeclaration* castedThis = static_cast<JSCSSStyleDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleDeclaration* imp = static_cast<CSSStyleDeclaration*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->cssText());
-    return result;
+    return jsStringOrNull(exec, imp->cssText());
 }
 
 JSValue jsCSSStyleDeclarationLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -232,8 +230,7 @@ JSValue jsCSSStyleDeclarationLength(ExecState* exec, const Identifier&, const Pr
     JSCSSStyleDeclaration* castedThis = static_cast<JSCSSStyleDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleDeclaration* imp = static_cast<CSSStyleDeclaration*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->length());
-    return result;
+    return jsNumber(exec, imp->length());
 }
 
 JSValue jsCSSStyleDeclarationParentRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -241,8 +238,7 @@ JSValue jsCSSStyleDeclarationParentRule(ExecState* exec, const Identifier&, cons
     JSCSSStyleDeclaration* castedThis = static_cast<JSCSSStyleDeclaration*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSStyleDeclaration* imp = static_cast<CSSStyleDeclaration*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
 }
 
 JSValue jsCSSStyleDeclarationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -259,18 +255,17 @@ void JSCSSStyleDeclaration::put(ExecState* exec, const Identifier& propertyName,
 
 void setJSCSSStyleDeclarationCssText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSCSSStyleDeclaration* castedThisObj = static_cast<JSCSSStyleDeclaration*>(thisObject);
-    CSSStyleDeclaration* imp = static_cast<CSSStyleDeclaration*>(castedThisObj->impl());
+    CSSStyleDeclaration* imp = static_cast<CSSStyleDeclaration*>(static_cast<JSCSSStyleDeclaration*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setCssText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
 }
 
-void JSCSSStyleDeclaration::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void JSCSSStyleDeclaration::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<CSSStyleDeclaration*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames, mode);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSCSSStyleDeclaration::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
@@ -363,7 +358,7 @@ JSValue JSC_HOST_CALL jsCSSStyleDeclarationPrototypeFunctionItem(ExecState* exec
     unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValue result = jsString(exec, imp->item(index));
+    JSC::JSValue result = jsStringOrNull(exec, imp->item(index));
     return result;
 }
 

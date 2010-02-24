@@ -28,7 +28,6 @@
 
 #include <wtf/Assertions.h>
 #include <wtf/FastAllocBase.h>
-#include <wtf/StringExtras.h>
 #include <string.h>
 
 namespace WebCore {
@@ -55,7 +54,7 @@ private:
     IdentifierRep(const char* name)
         : m_isString(true)
     {
-        m_value.m_string = fastStrDup(name);
+        m_value.m_string = strdup(name);
     }
     
     ~IdentifierRep()

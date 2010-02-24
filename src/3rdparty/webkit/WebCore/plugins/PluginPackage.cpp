@@ -113,7 +113,7 @@ PluginPackage::PluginPackage(const String& path, const time_t& lastModified)
     m_parentDirectory = m_path.left(m_path.length() - m_fileName.length() - 1);
 }
 
-#if !OS(SYMBIAN)
+#if !PLATFORM(SYMBIAN)
 void PluginPackage::unload()
 {
     if (!m_isLoaded)
@@ -126,7 +126,7 @@ void PluginPackage::unload()
 
     unloadWithoutShutdown();
 }
-#endif // !OS(SYMBIAN)
+#endif //!PLATFORM(SYMBIAN)
 
 void PluginPackage::unloadWithoutShutdown()
 {
@@ -198,7 +198,7 @@ void PluginPackage::determineQuirks(const String& mimeType)
 }
 #endif
 
-#if !OS(WINDOWS)
+#if !PLATFORM(WIN_OS)
 void PluginPackage::determineModuleVersionFromDescription()
 {
     // It's a bit lame to detect the plugin version by parsing it
@@ -253,7 +253,7 @@ void PluginPackage::initializeBrowserFuncs()
 {
     memset(&m_browserFuncs, 0, sizeof(m_browserFuncs));
     m_browserFuncs.size = sizeof(m_browserFuncs);
-    m_browserFuncs.version = NPVersion();
+    m_browserFuncs.version = NP_VERSION_MINOR;
 
     m_browserFuncs.geturl = NPN_GetURL;
     m_browserFuncs.posturl = NPN_PostURL;
@@ -326,7 +326,7 @@ int PluginPackage::compareFileVersion(const PlatformModuleVersion& compareVersio
     // return -1, 0, or 1 if plug-in version is less than, equal to, or greater than
     // the passed version
 
-#if OS(WINDOWS)
+#if PLATFORM(WIN_OS)
     if (m_moduleVersion.mostSig != compareVersion.mostSig)
         return m_moduleVersion.mostSig > compareVersion.mostSig ? 1 : -1;
     if (m_moduleVersion.leastSig != compareVersion.leastSig)

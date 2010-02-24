@@ -36,6 +36,7 @@
 
 #include "ActiveDOMObject.h"
 #include "AtomicStringHash.h"
+#include "EventListener.h"
 #include "EventNames.h"
 #include "EventTarget.h"
 #include "KURL.h"
@@ -114,7 +115,6 @@ namespace WebCore {
         RefPtr<ThreadableLoader> m_loader;
         Timer<EventSource> m_reconnectTimer;
         Vector<UChar> m_receiveBuf;
-        bool m_discardTrailingNewline;
         bool m_failSilently;
         bool m_requestInFlight;
 

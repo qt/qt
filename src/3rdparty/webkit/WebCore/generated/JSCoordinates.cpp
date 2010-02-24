@@ -106,8 +106,7 @@ JSValue jsCoordinatesLatitude(ExecState* exec, const Identifier&, const Property
     JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Coordinates* imp = static_cast<Coordinates*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->latitude());
-    return result;
+    return jsNumber(exec, imp->latitude());
 }
 
 JSValue jsCoordinatesLongitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -115,8 +114,7 @@ JSValue jsCoordinatesLongitude(ExecState* exec, const Identifier&, const Propert
     JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Coordinates* imp = static_cast<Coordinates*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->longitude());
-    return result;
+    return jsNumber(exec, imp->longitude());
 }
 
 JSValue jsCoordinatesAltitude(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -130,8 +128,7 @@ JSValue jsCoordinatesAccuracy(ExecState* exec, const Identifier&, const Property
     JSCoordinates* castedThis = static_cast<JSCoordinates*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Coordinates* imp = static_cast<Coordinates*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->accuracy());
-    return result;
+    return jsNumber(exec, imp->accuracy());
 }
 
 JSValue jsCoordinatesAltitudeAccuracy(ExecState* exec, const Identifier&, const PropertySlot& slot)

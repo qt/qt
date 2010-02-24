@@ -27,9 +27,14 @@
 
 #include "EventTarget.h"
 #include "KURLHash.h"
-#include "ScriptWrappable.h"
+#include "PlatformString.h"
+#include "RegisteredEventListener.h"
 #include "TreeShared.h"
+#include "FloatPoint.h"
+#include <wtf/Assertions.h>
 #include <wtf/ListHashSet.h>
+#include <wtf/OwnPtr.h>
+#include <wtf/PassRefPtr.h>
 
 namespace WebCore {
 
@@ -41,7 +46,6 @@ class DynamicNodeList;
 class Element;
 class Event;
 class EventListener;
-class FloatPoint;
 class Frame;
 class IntRect;
 class KeyboardEvent;
@@ -77,7 +81,7 @@ const unsigned short DOCUMENT_POSITION_CONTAINED_BY = 0x10;
 const unsigned short DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
 // this class implements nodes, which can have a parent but no children:
-class Node : public EventTarget, public TreeShared<Node>, public ScriptWrappable {
+class Node : public EventTarget, public TreeShared<Node> {
     friend class Document;
 public:
     enum NodeType {
@@ -202,9 +206,6 @@ public:
     // The node's parent for the purpose of event capture and bubbling.
     virtual ContainerNode* eventParentNode();
 
-    // Returns the enclosing event parent node (or self) that, when clicked, would trigger a navigation.
-    Node* enclosingLinkEventParentOrSelf();
-
     // Node ancestors when concerned about event flow
     void eventAncestors(Vector<RefPtr<ContainerNode> > &ancestors);
 
@@ -251,7 +252,7 @@ public:
     virtual ContainerNode* addChild(PassRefPtr<Node>);
 
     // Called by the parser when this element's close tag is reached,
-    // signaling that all child tags have been parsed and added.
+    // signalling that all child tags have been parsed and added.
     // This is needed for <applet> and <object> elements, which can't lay themselves out
     // until they know all of their nested <param>s. [Radar 3603191, 4040848].
     // Also used for script elements and some SVG elements for similar purposes,
@@ -287,6 +288,9 @@ public:
     void setInActiveChain(bool b = true) { m_inActiveChain = b; }
     void setNeedsStyleRecalc(StyleChangeType changeType = FullStyleChange);
     void setIsLink(bool b = true) { m_isLink = b; }
+
+    bool inSubtreeMark() const { return m_inSubtreeMark; }
+    void setInSubtreeMark(bool b = true) { m_inSubtreeMark = b; }
 
     void lazyAttach();
     virtual bool canLazyAttach();
@@ -571,10 +575,7 @@ protected:
     void setTabIndexExplicitly(short);
     
     bool hasRareData() const { return m_hasRareData; }
-#if ENABLE(SVG)
-    bool hasRareSVGData() const { return m_hasRareSVGData; }
-#endif
-
+    
     NodeRareData* rareData() const;
     NodeRareData* ensureRareData();
 
@@ -622,6 +623,7 @@ private:
     bool m_hovered : 1;
     bool m_inActiveChain : 1;
     bool m_inDetach : 1;
+    bool m_inSubtreeMark : 1;
     bool m_hasRareData : 1;
     const bool m_isElement : 1;
     const bool m_isContainer : 1;
@@ -638,10 +640,9 @@ protected:
 #if ENABLE(SVG)
     mutable bool m_areSVGAttributesValid : 1; // Element
     mutable bool m_synchronizingSVGAttributes : 1; // SVGElement
-    bool m_hasRareSVGData : 1; // SVGElement
 #endif
 
-    // 10 bits remaining
+    // 11 bits remaining
 };
 
 // Used in Node::addSubresourceAttributeURLs() and in addSubresourceStyleURLs()

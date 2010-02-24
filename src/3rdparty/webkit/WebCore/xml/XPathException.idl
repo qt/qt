@@ -29,6 +29,7 @@
 module xpath {
 
     interface [
+        GenerateConstructor,
         Conditional=XPATH
     ] XPathException {
 

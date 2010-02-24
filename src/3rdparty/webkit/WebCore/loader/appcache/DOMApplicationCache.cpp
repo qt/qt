@@ -42,6 +42,7 @@ namespace WebCore {
 DOMApplicationCache::DOMApplicationCache(Frame* frame)
     : m_frame(frame)
 {
+    ASSERT(!m_frame || applicationCacheHost());
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (cacheHost)
         cacheHost->setDOMApplicationCache(this);
@@ -86,9 +87,8 @@ void DOMApplicationCache::swapCache(ExceptionCode& ec)
 
 ScriptExecutionContext* DOMApplicationCache::scriptExecutionContext() const
 {
-    if (m_frame)
-        return m_frame->document();
-    return 0;
+    ASSERT(m_frame);
+    return m_frame->document();
 }
 
 const AtomicString& DOMApplicationCache::toEventType(ApplicationCacheHost::EventID id)

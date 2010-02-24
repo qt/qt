@@ -132,8 +132,6 @@ void RegExpMatchesArray::fillArrayInstance(ExecState* exec)
         int start = d->lastOvector()[2 * i];
         if (start >= 0)
             JSArray::put(exec, i, jsSubstring(exec, d->lastInput, start, d->lastOvector()[2 * i + 1] - start));
-        else
-            JSArray::put(exec, i, jsUndefined());
     }
 
     PutPropertySlot slot;
@@ -302,7 +300,7 @@ JSObject* constructRegExp(ExecState* exec, const ArgList& args)
 
     RefPtr<RegExp> regExp = RegExp::create(&exec->globalData(), pattern, flags);
     if (!regExp->isValid())
-        return throwError(exec, SyntaxError, makeString("Invalid regular expression: ", regExp->errorMessage()));
+        return throwError(exec, SyntaxError, UString("Invalid regular expression: ").append(regExp->errorMessage()));
     return new (exec) RegExpObject(exec->lexicalGlobalObject()->regExpStructure(), regExp.release());
 }
 

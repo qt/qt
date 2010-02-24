@@ -61,7 +61,7 @@
 
 #include "Platform.h"
 
-#if OS(WINCE)
+#if PLATFORM(WINCE)
 #include <windows.h>
 #endif
 
@@ -69,12 +69,10 @@
 #include <wtf/Locker.h>
 #include <wtf/Noncopyable.h>
 
-#if OS(WINDOWS) && !OS(WINCE)
+#if PLATFORM(WIN_OS) && !PLATFORM(WINCE)
 #include <windows.h>
-#elif OS(DARWIN)
+#elif PLATFORM(DARWIN)
 #include <libkern/OSAtomic.h>
-#elif OS(ANDROID)
-#include <cutils/atomic.h>
 #elif COMPILER(GCC)
 #if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 2))
 #include <ext/atomicity.h>
@@ -86,7 +84,7 @@
 #if USE(PTHREADS)
 #include <pthread.h>
 #elif PLATFORM(GTK)
-#include <wtf/gtk/GOwnPtr.h>
+#include <wtf/GOwnPtr.h>
 typedef struct _GMutex GMutex;
 typedef struct _GCond GCond;
 #endif
@@ -121,7 +119,7 @@ ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char* threadN
 
 // Called in the thread during initialization.
 // Helpful for platforms where the thread name must be set from within the thread.
-void initializeCurrentThreadInternal(const char* threadName);
+void setThreadNameInternal(const char* threadName);
 
 ThreadIdentifier currentThread();
 bool isMainThread();
@@ -144,7 +142,7 @@ typedef GOwnPtr<GCond> PlatformCondition;
 typedef QT_PREPEND_NAMESPACE(QMutex)* PlatformMutex;
 typedef void* PlatformReadWriteLock; // FIXME: Implement.
 typedef QT_PREPEND_NAMESPACE(QWaitCondition)* PlatformCondition;
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN_OS)
 struct PlatformMutex {
     CRITICAL_SECTION m_internalMutex;
     size_t m_recursionCount;
@@ -217,10 +215,10 @@ private:
     PlatformCondition m_condition;
 };
 
-#if OS(WINDOWS)
+#if PLATFORM(WIN_OS)
 #define WTF_USE_LOCKFREE_THREADSAFESHARED 1
 
-#if COMPILER(MINGW) || COMPILER(MSVC7) || OS(WINCE)
+#if COMPILER(MINGW) || COMPILER(MSVC7) || PLATFORM(WINCE)
 inline int atomicIncrement(int* addend) { return InterlockedIncrement(reinterpret_cast<long*>(addend)); }
 inline int atomicDecrement(int* addend) { return InterlockedDecrement(reinterpret_cast<long*>(addend)); }
 #else
@@ -228,18 +226,13 @@ inline int atomicIncrement(int volatile* addend) { return InterlockedIncrement(r
 inline int atomicDecrement(int volatile* addend) { return InterlockedDecrement(reinterpret_cast<long volatile*>(addend)); }
 #endif
 
-#elif OS(DARWIN)
+#elif PLATFORM(DARWIN)
 #define WTF_USE_LOCKFREE_THREADSAFESHARED 1
 
 inline int atomicIncrement(int volatile* addend) { return OSAtomicIncrement32Barrier(const_cast<int*>(addend)); }
 inline int atomicDecrement(int volatile* addend) { return OSAtomicDecrement32Barrier(const_cast<int*>(addend)); }
 
-#elif OS(ANDROID)
-
-inline int atomicIncrement(int volatile* addend) { return android_atomic_inc(addend); }
-inline int atomicDecrement(int volatile* addend) { return android_atomic_dec(addend); }
-
-#elif COMPILER(GCC) && !CPU(SPARC64) // sizeof(_Atomic_word) != sizeof(int) on sparc64 gcc
+#elif COMPILER(GCC) && !PLATFORM(SPARC64) // sizeof(_Atomic_word) != sizeof(int) on sparc64 gcc
 #define WTF_USE_LOCKFREE_THREADSAFESHARED 1
 
 inline int atomicIncrement(int volatile* addend) { return __gnu_cxx::__exchange_and_add(addend, 1) + 1; }

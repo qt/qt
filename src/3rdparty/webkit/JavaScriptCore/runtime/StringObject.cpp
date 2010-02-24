@@ -79,21 +79,15 @@ bool StringObject::deleteProperty(ExecState* exec, const Identifier& propertyNam
 {
     if (propertyName == exec->propertyNames().length)
         return false;
-    bool isStrictUInt32;
-    unsigned i = propertyName.toStrictUInt32(&isStrictUInt32);
-    if (isStrictUInt32 && internalValue()->canGetIndex(i))
-        return false;
     return JSObject::deleteProperty(exec, propertyName);
 }
 
-void StringObject::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void StringObject::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
-    int size = internalValue()->length();
+    int size = internalValue()->value().size();
     for (int i = 0; i < size; ++i)
         propertyNames.add(Identifier(exec, UString::from(i)));
-    if (mode == IncludeDontEnumProperties)
-        propertyNames.add(exec->propertyNames().length);
-    return JSObject::getOwnPropertyNames(exec, propertyNames, mode);
+    return JSObject::getOwnPropertyNames(exec, propertyNames);
 }
 
 } // namespace JSC

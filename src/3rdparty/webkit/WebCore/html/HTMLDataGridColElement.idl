@@ -26,6 +26,7 @@
 module html {
 
     interface [
+        GenerateConstructor,
         Conditional=DATAGRID
     ] HTMLDataGridColElement : HTMLElement {
         attribute DOMString label; // The text to display in the column.

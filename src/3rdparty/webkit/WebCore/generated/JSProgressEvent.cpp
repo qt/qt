@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -156,8 +156,7 @@ JSValue jsProgressEventLengthComputable(ExecState* exec, const Identifier&, cons
     JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->lengthComputable());
-    return result;
+    return jsBoolean(imp->lengthComputable());
 }
 
 JSValue jsProgressEventLoaded(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -165,8 +164,7 @@ JSValue jsProgressEventLoaded(ExecState* exec, const Identifier&, const Property
     JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->loaded());
-    return result;
+    return jsNumber(exec, imp->loaded());
 }
 
 JSValue jsProgressEventTotal(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -174,8 +172,7 @@ JSValue jsProgressEventTotal(ExecState* exec, const Identifier&, const PropertyS
     JSProgressEvent* castedThis = static_cast<JSProgressEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     ProgressEvent* imp = static_cast<ProgressEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->total());
-    return result;
+    return jsNumber(exec, imp->total());
 }
 
 JSValue jsProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

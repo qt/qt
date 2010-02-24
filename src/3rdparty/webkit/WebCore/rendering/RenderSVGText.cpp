@@ -6,7 +6,6 @@
  *               2006 Oliver Hunt <ojh16@student.canterbury.ac.nz>
  *               2007 Nikolas Zimmermann <zimmermann@kde.org>
  *               2008 Rob Buis <buis@kde.org>
- *               2009 Dirk Schulze <krit@webkit.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -70,6 +69,10 @@ void RenderSVGText::mapLocalToContainer(RenderBoxModelObject* repaintContainer, 
 void RenderSVGText::layout()
 {
     ASSERT(needsLayout());
+
+    // FIXME: This is a hack to avoid the RenderBlock::layout() partial repainting code which is not (yet) SVG aware
+    setNeedsLayout(true);
+
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
 
     // Best guess for a relative starting point
@@ -106,12 +109,6 @@ bool RenderSVGText::nodeAtFloatPoint(const HitTestRequest& request, HitTestResul
     }
 
     return false;
-}
-
-void RenderSVGText::destroy()
-{
-    deregisterFromResources(this);
-    RenderSVGBlock::destroy();
 }
 
 bool RenderSVGText::nodeAtPoint(const HitTestRequest&, HitTestResult&, int, int, int, int, HitTestAction)
@@ -187,13 +184,13 @@ FloatRect RenderSVGText::objectBoundingBox() const
     return boundingBox;
 }
 
-FloatRect RenderSVGText::strokeBoundingBox() const
+FloatRect RenderSVGText::repaintRectInLocalCoordinates() const
 {
     FloatRect repaintRect = objectBoundingBox();
 
     // SVG needs to include the strokeWidth(), not the textStrokeWidth().
     if (style()->svgStyle()->hasStroke()) {
-        float strokeWidth = SVGRenderStyle::cssPrimitiveToLength(this, style()->svgStyle()->strokeWidth(), 1.0f);
+        float strokeWidth = SVGRenderStyle::cssPrimitiveToLength(this, style()->svgStyle()->strokeWidth(), 0.0f);
 
 #if ENABLE(SVG_FONTS)
         const Font& font = style()->font();
@@ -208,28 +205,7 @@ FloatRect RenderSVGText::strokeBoundingBox() const
         repaintRect.inflate(strokeWidth);
     }
 
-    return repaintRect;
-}
-
-FloatRect RenderSVGText::repaintRectInLocalCoordinates() const
-{
-    FloatRect repaintRect = strokeBoundingBox();
-
-    // FIXME: We need to be careful here. We assume that there is no filter,
-    // clipper or masker if the rects are empty.
-    FloatRect rect = filterBoundingBoxForRenderer(this);
-    if (!rect.isEmpty())
-        repaintRect = rect;
-
-    rect = clipperBoundingBoxForRenderer(this);
-    if (!rect.isEmpty())
-        repaintRect.intersect(rect);
-
-    rect = maskerBoundingBoxForRenderer(this);
-    if (!rect.isEmpty())
-        repaintRect.intersect(rect);
-
-    style()->svgStyle()->inflateForShadow(repaintRect);
+    repaintRect.unite(filterBoundingBoxForRenderer(this));
 
     return repaintRect;
 }

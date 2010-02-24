@@ -34,15 +34,16 @@
 
 namespace WebCore {
 
-class UserScript : public Noncopyable {
+class UserScript {
 public:
     UserScript(const String& source, const KURL& url,
                PassOwnPtr<Vector<String> > whitelist, PassOwnPtr<Vector<String> > blacklist,
-               UserScriptInjectionTime injectionTime)
+               unsigned worldID, UserScriptInjectionTime injectionTime)
         : m_source(source)
         , m_url(url)
         , m_whitelist(whitelist)
         , m_blacklist(blacklist)
+        , m_worldID(worldID)
         , m_injectionTime(injectionTime)
     {
     }
@@ -51,6 +52,7 @@ public:
     const KURL& url() const { return m_url; }
     const Vector<String>* whitelist() const { return m_whitelist.get(); }
     const Vector<String>* blacklist() const { return m_blacklist.get(); }
+    unsigned worldID() const { return m_worldID; }
     UserScriptInjectionTime injectionTime() const { return m_injectionTime; }
     
 private:
@@ -58,6 +60,7 @@ private:
     KURL m_url;
     OwnPtr<Vector<String> > m_whitelist;
     OwnPtr<Vector<String> > m_blacklist;
+    unsigned m_worldID;
     UserScriptInjectionTime m_injectionTime;
 };
 

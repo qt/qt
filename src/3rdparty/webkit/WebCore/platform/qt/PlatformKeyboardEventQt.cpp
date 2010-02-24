@@ -52,8 +52,10 @@ static String keyIdentifierForQtKeyCode(int keyCode)
         case Qt::Key_Return:
         case Qt::Key_Enter:
             return "Enter";
+#if QT_VERSION >= 0x040200
         case Qt::Key_Execute:
             return "Execute";
+#endif
         case Qt::Key_F1:
             return "F1";
         case Qt::Key_F2:
@@ -171,22 +173,6 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad = false
             return VK_DECIMAL;  // (6E) Decimal key
         case Qt::Key_Slash:
             return VK_DIVIDE;   // (6F) Divide key
-        case Qt::Key_PageUp:
-            return VK_PRIOR; // (21) PAGE UP key
-        case Qt::Key_PageDown:
-            return VK_NEXT; // (22) PAGE DOWN key
-        case Qt::Key_End:
-            return VK_END; // (23) END key
-        case Qt::Key_Home:
-            return VK_HOME; // (24) HOME key
-        case Qt::Key_Left:
-            return VK_LEFT; // (25) LEFT ARROW key
-        case Qt::Key_Up:
-            return VK_UP; // (26) UP ARROW key
-        case Qt::Key_Right:
-            return VK_RIGHT; // (27) RIGHT ARROW key
-        case Qt::Key_Down:
-            return VK_DOWN; // (28) DOWN ARROW key
         default:
             return 0;
         }
@@ -304,8 +290,10 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad = false
             return VK_SELECT; // (29) SELECT key
         case Qt::Key_Print:
             return VK_PRINT; // (2A) PRINT key
+#if QT_VERSION >= 0x040200
         case Qt::Key_Execute:
             return VK_EXECUTE;// (2B) EXECUTE key
+#endif
             //dunno on this
             //case Qt::Key_PrintScreen:
             //      return VK_SNAPSHOT; // (2C) PRINT SCREEN key

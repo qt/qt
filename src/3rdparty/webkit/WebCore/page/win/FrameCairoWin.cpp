@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#include "Frame.h"
 #include "FrameWin.h"
 
 #include "EditorClient.h"

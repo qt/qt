@@ -40,11 +40,12 @@ namespace WebCore {
         virtual bool isValid() const;
 
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
-        virtual void synchronizeProperty(const QualifiedName&);
 
     private:
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGDefsElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGDefsElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

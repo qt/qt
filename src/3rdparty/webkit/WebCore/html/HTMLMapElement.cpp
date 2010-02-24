@@ -25,12 +25,10 @@
 #include "Document.h"
 #include "HTMLAreaElement.h"
 #include "HTMLCollection.h"
-#include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
 #include "IntSize.h"
 #include "MappedAttribute.h"
-#include "RenderObject.h"
 
 using namespace std;
 
@@ -77,30 +75,12 @@ bool HTMLMapElement::mapMouseEvent(int x, int y, const IntSize& size, HitTestRes
     return defaultArea;
 }
 
-HTMLImageElement* HTMLMapElement::imageElement() const
-{
-    RefPtr<HTMLCollection> coll = renderer()->document()->images();
-    for (Node* curr = coll->firstItem(); curr; curr = coll->nextItem()) {
-        if (!curr->hasTagName(imgTag))
-            continue;
-        
-        // The HTMLImageElement's useMap() value includes the '#' symbol at the beginning,
-        // which has to be stripped off.
-        HTMLImageElement* imageElement = static_cast<HTMLImageElement*>(curr);
-        String useMapName = imageElement->getAttribute(usemapAttr).string().substring(1);
-        if (equalIgnoringCase(useMapName, m_name))
-            return imageElement;
-    }
-    
-    return 0;    
-}
-    
 void HTMLMapElement::parseMappedAttribute(MappedAttribute* attr)
 {
     const QualifiedName& attrName = attr->name();
-    if (attrName == idAttributeName() || attrName == nameAttr) {
+    if (attrName == idAttr || attrName == nameAttr) {
         Document* doc = document();
-        if (attrName == idAttributeName()) {
+        if (attrName == idAttr) {
             // Call base class so that hasID bit gets set.
             HTMLElement::parseMappedAttribute(attr);
             if (doc->isHTMLDocument())

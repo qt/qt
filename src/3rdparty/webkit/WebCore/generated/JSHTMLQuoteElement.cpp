@@ -76,7 +76,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -143,8 +143,7 @@ JSValue jsHTMLQuoteElementCite(ExecState* exec, const Identifier&, const Propert
     JSHTMLQuoteElement* castedThis = static_cast<JSHTMLQuoteElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->cite());
-    return result;
+    return jsString(exec, imp->cite());
 }
 
 JSValue jsHTMLQuoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -159,8 +158,7 @@ void JSHTMLQuoteElement::put(ExecState* exec, const Identifier& propertyName, JS
 
 void setJSHTMLQuoteElementCite(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLQuoteElement* castedThisObj = static_cast<JSHTMLQuoteElement*>(thisObject);
-    HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(castedThisObj->impl());
+    HTMLQuoteElement* imp = static_cast<HTMLQuoteElement*>(static_cast<JSHTMLQuoteElement*>(thisObject)->impl());
     imp->setCite(valueToStringWithNullCheck(exec, value));
 }
 

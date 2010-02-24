@@ -783,6 +783,8 @@ OPT_HELP=
 CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
 CFG_ALSA=auto
+CFG_NETWORKMANAGER=auto
+CFG_COREWLAN=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -5444,6 +5446,14 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
         # Always enable Phonon (unless it was explicitly disabled)
         CFG_PHONON=yes
     fi
+
+    if [ "$CFG_COREWLAN" = "auto" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_COREWLAN=yes
+        else
+            CFG_COREWLAN=no
+        fi
+    fi
 fi
 
 # QWS
@@ -5895,6 +5905,14 @@ if [ "$CFG_ALSA" = "auto" ]; then
         CFG_ALSA=yes
     else
         CFG_ALSA=no
+    fi
+fi
+
+if [ "$CFG_NETWORKMANAGER" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/networkmanager "NetworkManager" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_NETWORKMANAGER=yes
+    else
+        CFG_NETWORKMANAGER=no
     fi
 fi
 
@@ -6382,6 +6400,14 @@ fi
 
 if [ "$CFG_ALSA" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG alsa"
+fi
+
+if [ "$CFG_NETWORKMANAGER" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG networkmanager"
+fi
+
+if [ "$CFG_COREWLAN" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG corewlan"
 fi
 
 #
@@ -7088,6 +7114,8 @@ fi
 [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
 [ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
+[ "$CFG_NETWORKMANAGER" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NETWORKMANAGER"
+[ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
@@ -7423,163 +7451,163 @@ fi
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
     if echo '\c' | grep '\c' >/dev/null; then
-        echo -n "qmake vars .......... "
+        echo -n "qmake vars ............. "
     else
-        echo "qmake vars .......... \c"
+        echo "qmake vars ............. \c"
     fi
     cat "$QMAKE_VARS_FILE" | tr '\n' ' '
-    echo "qmake switches ...... $QMAKE_SWITCHES"
+    echo "qmake switches ......... $QMAKE_SWITCHES"
 fi
 
-[ "$CFG_INCREMENTAL" = "yes" ] && [ '!' -z "$INCREMENTAL" ] && echo "Incremental ......... $INCREMENTAL"
-echo "Build ............... $CFG_BUILD_PARTS"
-echo "Configuration ....... $QMAKE_CONFIG $QT_CONFIG"
+[ "$CFG_INCREMENTAL" = "yes" ] && [ '!' -z "$INCREMENTAL" ] && echo "Incremental ............ $INCREMENTAL"
+echo "Build .................. $CFG_BUILD_PARTS"
+echo "Configuration .......... $QMAKE_CONFIG $QT_CONFIG"
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-   echo "Debug ............... yes (combined)"
+   echo "Debug .................. yes (combined)"
    if [ "$CFG_DEBUG" = "yes" ]; then
-       echo "Default Link ........ debug"
+       echo "Default Link ........... debug"
    else
-       echo "Default Link ........ release"
+       echo "Default Link ........... release"
    fi
 else
-   echo "Debug ............... $CFG_DEBUG"
+   echo "Debug .................. $CFG_DEBUG"
 fi
-echo "Qt 3 compatibility .. $CFG_QT3SUPPORT"
-[ "$CFG_DBUS" = "no" ]     && echo "QtDBus module ....... no"
-[ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module ....... yes (run-time)"
-[ "$CFG_DBUS" = "linked" ] && echo "QtDBus module ....... yes (linked)"
-echo "QtConcurrent code.... $CFG_CONCURRENT"
-echo "QtScript module ..... $CFG_SCRIPT"
-echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
-echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
-echo "Phonon module ....... $CFG_PHONON"
-echo "Multimedia module ... $CFG_MULTIMEDIA"
-echo "SVG module .......... $CFG_SVG"
-echo "WebKit module ....... $CFG_WEBKIT"
+echo "Qt 3 compatibility ..... $CFG_QT3SUPPORT"
+[ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
+[ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
+[ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
+echo "QtConcurrent code ...... $CFG_CONCURRENT"
+echo "QtScript module ........ $CFG_SCRIPT"
+echo "QtScriptTools module ... $CFG_SCRIPTTOOLS"
+echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
+echo "Phonon module .......... $CFG_PHONON"
+echo "Multimedia module ...... $CFG_MULTIMEDIA"
+echo "SVG module ............. $CFG_SVG"
+echo "WebKit module .......... $CFG_WEBKIT"
 if [ "$CFG_WEBKIT" = "yes" ]; then 
     if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
-        echo "JavaScriptCore JIT .. To be decided by JavaScriptCore"
+        echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
     else
-        echo "JavaScriptCore JIT .. $CFG_JAVASCRIPTCORE_JIT"
+        echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
     fi
 fi
-echo "Declarative module .. $CFG_DECLARATIVE"
-echo "STL support ......... $CFG_STL"
-echo "PCH support ......... $CFG_PRECOMPILE"
-echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
+echo "Declarative module ..... $CFG_DECLARATIVE"
+echo "STL support ............ $CFG_STL"
+echo "PCH support ............ $CFG_PRECOMPILE"
+echo "MMX/3DNOW/SSE/SSE2 ..... ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
 if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
-    echo "iWMMXt support ...... ${CFG_IWMMXT}"
-    echo "NEON support ........ ${CFG_NEON}"
+    echo "iWMMXt support ......... ${CFG_IWMMXT}"
+    echo "NEON support ........... ${CFG_NEON}"
 fi
-[ "${PLATFORM_QWS}" != "yes" ] && echo "Graphics System ..... $CFG_GRAPHICS_SYSTEM"
-echo "IPv6 support ........ $CFG_IPV6"
-echo "IPv6 ifname support . $CFG_IPV6IFNAME"
-echo "getaddrinfo support . $CFG_GETADDRINFO"
-echo "getifaddrs support .. $CFG_GETIFADDRS"
-echo "Accessibility ....... $CFG_ACCESSIBILITY"
-echo "NIS support ......... $CFG_NIS"
-echo "CUPS support ........ $CFG_CUPS"
-echo "Iconv support ....... $CFG_ICONV"
-echo "Glib support ........ $CFG_GLIB"
-echo "GStreamer support ... $CFG_GSTREAMER"
-echo "Large File support .. $CFG_LARGEFILE"
-echo "GIF support ......... $CFG_GIF"
+[ "${PLATFORM_QWS}" != "yes" ] && echo "Graphics System ........ $CFG_GRAPHICS_SYSTEM"
+echo "IPv6 support ........... $CFG_IPV6"
+echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
+echo "getaddrinfo support .... $CFG_GETADDRINFO"
+echo "getifaddrs support ..... $CFG_GETIFADDRS"
+echo "Accessibility .......... $CFG_ACCESSIBILITY"
+echo "NIS support ............ $CFG_NIS"
+echo "CUPS support ........... $CFG_CUPS"
+echo "Iconv support .......... $CFG_ICONV"
+echo "Glib support ........... $CFG_GLIB"
+echo "GStreamer support ...... $CFG_GSTREAMER"
+echo "Large File support ..... $CFG_LARGEFILE"
+echo "GIF support ............ $CFG_GIF"
 if [ "$CFG_TIFF" = "no" ]; then
-    echo "TIFF support ........ $CFG_TIFF"
+    echo "TIFF support ........... $CFG_TIFF"
 else
-    echo "TIFF support ........ $CFG_TIFF ($CFG_LIBTIFF)"
+    echo "TIFF support ........... $CFG_TIFF ($CFG_LIBTIFF)"
 fi
 if [ "$CFG_JPEG" = "no" ]; then
-    echo "JPEG support ........ $CFG_JPEG"
+    echo "JPEG support ........... $CFG_JPEG"
 else
-    echo "JPEG support ........ $CFG_JPEG ($CFG_LIBJPEG)"
+    echo "JPEG support ........... $CFG_JPEG ($CFG_LIBJPEG)"
 fi
 if [ "$CFG_PNG" = "no" ]; then
-    echo "PNG support ......... $CFG_PNG"
+    echo "PNG support ............ $CFG_PNG"
 else
-    echo "PNG support ......... $CFG_PNG ($CFG_LIBPNG)"
+    echo "PNG support ............ $CFG_PNG ($CFG_LIBPNG)"
 fi
 if [ "$CFG_MNG" = "no" ]; then
-    echo "MNG support ......... $CFG_MNG"
+    echo "MNG support ............ $CFG_MNG"
 else
-    echo "MNG support ......... $CFG_MNG ($CFG_LIBMNG)"
+    echo "MNG support ............ $CFG_MNG ($CFG_LIBMNG)"
 fi
-echo "zlib support ........ $CFG_ZLIB"
-echo "Session management .. $CFG_SM"
+echo "zlib support ........... $CFG_ZLIB"
+echo "Session management ..... $CFG_SM"
 if [ "$PLATFORM_QWS" = "yes" ]; then
-    echo "Embedded support .... $CFG_EMBEDDED"
+    echo "Embedded support ....... $CFG_EMBEDDED"
     if [ "$CFG_QWS_FREETYPE" = "auto" ]; then
-	echo "Freetype2 support ... $CFG_QWS_FREETYPE ($CFG_LIBFREETYPE)"
+	echo "Freetype2 support ...... $CFG_QWS_FREETYPE ($CFG_LIBFREETYPE)"
     else
-	echo "Freetype2 support ... $CFG_QWS_FREETYPE"
+	echo "Freetype2 support ...... $CFG_QWS_FREETYPE"
     fi
     # Normalize the decoration output first
     CFG_GFX_ON=`echo ${CFG_GFX_ON}`
     CFG_GFX_PLUGIN=`echo ${CFG_GFX_PLUGIN}`
-    echo "Graphics (qt) ....... ${CFG_GFX_ON}"
-    echo "Graphics (plugin) ... ${CFG_GFX_PLUGIN}"
+    echo "Graphics (qt) .......... ${CFG_GFX_ON}"
+    echo "Graphics (plugin) ...... ${CFG_GFX_PLUGIN}"
     CFG_DECORATION_ON=`echo ${CFG_DECORATION_ON}`
     CFG_DECORATION_PLUGIN=`echo ${CFG_DECORATION_PLUGIN}`
-    echo "Decorations (qt) .... $CFG_DECORATION_ON"
-    echo "Decorations (plugin)  $CFG_DECORATION_PLUGIN"
+    echo "Decorations (qt) ....... $CFG_DECORATION_ON"
+    echo "Decorations (plugin) ... $CFG_DECORATION_PLUGIN"
     CFG_KBD_ON=`echo ${CFG_KBD_ON}`
     CFG_KBD_PLUGIN=`echo ${CFG_KBD_PLUGIN}`
-    echo "Keyboard driver (qt). ${CFG_KBD_ON}"
-    echo "Keyboard driver (plugin) ${CFG_KBD_PLUGIN}"
+    echo "Keyboard driver (qt) ... ${CFG_KBD_ON}"
+    echo "Keyboard driver (plugin) .. ${CFG_KBD_PLUGIN}"
     CFG_MOUSE_ON=`echo ${CFG_MOUSE_ON}`
     CFG_MOUSE_PLUGIN=`echo ${CFG_MOUSE_PLUGIN}`
-    echo "Mouse driver (qt) ... $CFG_MOUSE_ON"
-    echo "Mouse driver (plugin) $CFG_MOUSE_PLUGIN"
+    echo "Mouse driver (qt) ...... $CFG_MOUSE_ON"
+    echo "Mouse driver (plugin) .. $CFG_MOUSE_PLUGIN"
 fi
 if [ "$CFG_OPENGL" = "desktop" ]; then
-    echo "OpenGL support ...... yes (Desktop OpenGL)"
+    echo "OpenGL support ......... yes (Desktop OpenGL)"
 elif [ "$CFG_OPENGL" = "es1" ]; then
-    echo "OpenGL support ...... yes (OpenGL ES 1.x Common profile)"
+    echo "OpenGL support ......... yes (OpenGL ES 1.x Common profile)"
 elif [ "$CFG_OPENGL" = "es2" ]; then
-    echo "OpenGL support ...... yes (OpenGL ES 2.x)"
+    echo "OpenGL support ......... yes (OpenGL ES 2.x)"
 else
-    echo "OpenGL support ...... no"
+    echo "OpenGL support ......... no"
 fi
 if [ "$CFG_EGL" != "no" ]; then
     if [ "$CFG_EGL_GLES_INCLUDES" != "no" ]; then
-        echo "EGL support ......... yes <GLES/egl.h>"
+        echo "EGL support ............ yes <GLES/egl.h>"
     else
-        echo "EGL support ......... yes <EGL/egl.h>"
+        echo "EGL support ............ yes <EGL/egl.h>"
     fi
 fi
 if [ "$CFG_OPENVG" ]; then
     if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
-        echo "OpenVG support ...... ShivaVG"
+        echo "OpenVG support ......... ShivaVG"
     else
-        echo "OpenVG support ...... $CFG_OPENVG"
+        echo "OpenVG support ......... $CFG_OPENVG"
     fi
 fi
 if [ "$PLATFORM_X11" = "yes" ]; then
-    echo "NAS sound support ... $CFG_NAS"
-    echo "XShape support ...... $CFG_XSHAPE"
-    echo "XVideo support ...... $CFG_XVIDEO"
-    echo "XSync support ....... $CFG_XSYNC"
-    echo "Xinerama support .... $CFG_XINERAMA"
-    echo "Xcursor support ..... $CFG_XCURSOR"
-    echo "Xfixes support ...... $CFG_XFIXES"
-    echo "Xrandr support ...... $CFG_XRANDR"
-    echo "Xrender support ..... $CFG_XRENDER"
-    echo "Xi support .......... $CFG_XINPUT"
-    echo "MIT-SHM support ..... $CFG_MITSHM"
-    echo "FontConfig support .. $CFG_FONTCONFIG"
-    echo "XKB Support ......... $CFG_XKB"
-    echo "immodule support .... $CFG_IM"
-    echo "GTK theme support ... $CFG_QGTKSTYLE"
+    echo "NAS sound support ...... $CFG_NAS"
+    echo "XShape support ......... $CFG_XSHAPE"
+    echo "XVideo support ......... $CFG_XVIDEO"
+    echo "XSync support .......... $CFG_XSYNC"
+    echo "Xinerama support ....... $CFG_XINERAMA"
+    echo "Xcursor support ........ $CFG_XCURSOR"
+    echo "Xfixes support ......... $CFG_XFIXES"
+    echo "Xrandr support ......... $CFG_XRANDR"
+    echo "Xrender support ........ $CFG_XRENDER"
+    echo "Xi support ............. $CFG_XINPUT"
+    echo "MIT-SHM support ........ $CFG_MITSHM"
+    echo "FontConfig support ..... $CFG_FONTCONFIG"
+    echo "XKB Support ............ $CFG_XKB"
+    echo "immodule support ....... $CFG_IM"
+    echo "GTK theme support ...... $CFG_QGTKSTYLE"
 fi
-[ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support ....... $CFG_SQL_mysql"
-[ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support .. $CFG_SQL_psql"
-[ "$CFG_SQL_odbc" != "no" ] && echo "ODBC support ........ $CFG_SQL_odbc"
-[ "$CFG_SQL_oci" != "no" ] && echo "OCI support ......... $CFG_SQL_oci"
-[ "$CFG_SQL_tds" != "no" ] && echo "TDS support ......... $CFG_SQL_tds"
-[ "$CFG_SQL_db2" != "no" ] && echo "DB2 support ......... $CFG_SQL_db2"
-[ "$CFG_SQL_ibase" != "no" ] && echo "InterBase support ... $CFG_SQL_ibase"
-[ "$CFG_SQL_sqlite2" != "no" ] && echo "SQLite 2 support .... $CFG_SQL_sqlite2"
-[ "$CFG_SQL_sqlite" != "no" ] && echo "SQLite support ...... $CFG_SQL_sqlite ($CFG_SQLITE)"
+[ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support .......... $CFG_SQL_mysql"
+[ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support ..... $CFG_SQL_psql"
+[ "$CFG_SQL_odbc" != "no" ] && echo "ODBC support ........... $CFG_SQL_odbc"
+[ "$CFG_SQL_oci" != "no" ] && echo "OCI support ............ $CFG_SQL_oci"
+[ "$CFG_SQL_tds" != "no" ] && echo "TDS support ............ $CFG_SQL_tds"
+[ "$CFG_SQL_db2" != "no" ] && echo "DB2 support ............ $CFG_SQL_db2"
+[ "$CFG_SQL_ibase" != "no" ] && echo "InterBase support ...... $CFG_SQL_ibase"
+[ "$CFG_SQL_sqlite2" != "no" ] && echo "SQLite 2 support ....... $CFG_SQL_sqlite2"
+[ "$CFG_SQL_sqlite" != "no" ] && echo "SQLite support ......... $CFG_SQL_sqlite ($CFG_SQLITE)"
 
 OPENSSL_LINKAGE=""
 if [ "$CFG_OPENSSL" = "yes" ]; then
@@ -7587,11 +7615,15 @@ if [ "$CFG_OPENSSL" = "yes" ]; then
 elif [ "$CFG_OPENSSL" = "linked" ]; then
     OPENSSL_LINKAGE="(linked)"
 fi
-echo "OpenSSL support ..... $CFG_OPENSSL $OPENSSL_LINKAGE"
-echo "Alsa support ........ $CFG_ALSA"
+echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
+echo "Alsa support ........... $CFG_ALSA"
+echo "NetworkManager support . $CFG_NETWORKMANAGER"
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    echo "CoreWlan support ....... $CFG_COREWLAN"
+fi
 echo
 
-[ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........ $CFG_PTMALLOC"
+[ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"
 
 # complain about not being able to use dynamic plugins if we are using a static build
 if [ "$CFG_SHARED" = "no" ]; then

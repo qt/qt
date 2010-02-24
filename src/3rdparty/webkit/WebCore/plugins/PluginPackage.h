@@ -36,7 +36,7 @@
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
 
-#if OS(SYMBIAN)
+#if PLATFORM(SYMBIAN)
 class QPluginLoader;
 class NPInterface;
 #endif
@@ -55,7 +55,6 @@ namespace WebCore {
         const String& path() const { return m_path; }
         const String& fileName() const { return m_fileName; }
         const String& parentDirectory() const { return m_parentDirectory; }
-        uint16 NPVersion() const;
         time_t lastModified() const { return m_lastModified; }
 
         const MIMEToDescriptionsMap& mimeToDescriptions() const { return m_mimeToDescriptions; }
@@ -76,17 +75,17 @@ namespace WebCore {
         int compare(const PluginPackage&) const;
         PluginQuirkSet quirks() const { return m_quirks; }
         const PlatformModuleVersion& version() const { return m_moduleVersion; }
-#if OS(SYMBIAN)
+#if PLATFORM(SYMBIAN)
         NPInterface* npInterface() const { return m_npInterface; }
-#endif // OS(SYMBIAN)
+#endif // PLATFORM(SYMBIAN)
 
     private:
         PluginPackage(const String& path, const time_t& lastModified);
 
-#if OS(SYMBIAN)
+#if PLATFORM(SYMBIAN)
         NPInterface* m_npInterface;
         QPluginLoader* m_pluginLoader;
-#endif // OS(SYMBIAN)
+#endif // PLATFORM(SYMBIAN)
         bool fetchInfo();
         bool isPluginBlacklisted();
         void determineQuirks(const String& mimeType);

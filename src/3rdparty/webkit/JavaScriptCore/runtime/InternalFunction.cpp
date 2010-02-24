@@ -43,29 +43,29 @@ InternalFunction::InternalFunction(JSGlobalData* globalData, NonNullPassRefPtr<S
     putDirect(globalData->propertyNames->name, jsString(globalData, name.ustring()), DontDelete | ReadOnly | DontEnum);
 }
 
-const UString& InternalFunction::name(ExecState* exec)
+const UString& InternalFunction::name(JSGlobalData* globalData)
 {
-    return asString(getDirect(exec->globalData().propertyNames->name))->value(exec);
+    return asString(getDirect(globalData->propertyNames->name))->value();
 }
 
-const UString InternalFunction::displayName(ExecState* exec)
+const UString InternalFunction::displayName(JSGlobalData* globalData)
 {
-    JSValue displayName = getDirect(exec->globalData().propertyNames->displayName);
+    JSValue displayName = getDirect(globalData->propertyNames->displayName);
     
-    if (displayName && isJSString(&exec->globalData(), displayName))
-        return asString(displayName)->value(exec);
+    if (displayName && isJSString(globalData, displayName))
+        return asString(displayName)->value();
     
     return UString::null();
 }
 
-const UString InternalFunction::calculatedDisplayName(ExecState* exec)
+const UString InternalFunction::calculatedDisplayName(JSGlobalData* globalData)
 {
-    const UString explicitName = displayName(exec);
+    const UString explicitName = displayName(globalData);
     
     if (!explicitName.isEmpty())
         return explicitName;
     
-    return name(exec);
+    return name(globalData);
 }
 
 } // namespace JSC

@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-class RenderMarquee;
-
 class HTMLMarqueeElement : public HTMLElement, private ActiveDOMObject {
 public:
     HTMLMarqueeElement(const QualifiedName&, Document*);
@@ -52,8 +50,6 @@ private:
     virtual bool canSuspend() const;
     virtual void suspend();
     virtual void resume();
-
-    RenderMarquee* renderMarquee() const;
 
     int m_minimumDelay;
 };

@@ -103,8 +103,7 @@ JSValue jsGeopositionCoords(ExecState* exec, const Identifier&, const PropertySl
     JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Geoposition* imp = static_cast<Geoposition*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->coords()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->coords()));
 }
 
 JSValue jsGeopositionTimestamp(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -112,8 +111,7 @@ JSValue jsGeopositionTimestamp(ExecState* exec, const Identifier&, const Propert
     JSGeoposition* castedThis = static_cast<JSGeoposition*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Geoposition* imp = static_cast<Geoposition*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->timestamp());
-    return result;
+    return jsNumber(exec, imp->timestamp());
 }
 
 JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Geoposition* object)

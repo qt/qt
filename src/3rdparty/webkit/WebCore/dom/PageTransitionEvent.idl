@@ -25,7 +25,9 @@
 
 module events {
 
-    interface PageTransitionEvent : Event {
+    interface [
+        GenerateConstructor
+    ] PageTransitionEvent : Event {
 
         readonly attribute boolean persisted;
 

@@ -29,11 +29,10 @@
 #include <cstddef>
 #include <algorithm>
 #include <wtf/Assertions.h>
-#include <wtf/Noncopyable.h>
 
 namespace WebCore {
 
-class DeprecatedListNode : public Noncopyable
+class DeprecatedListNode
 {
 public:
     DeprecatedListNode(void *d) : data(d), next(0), prev(0) { }

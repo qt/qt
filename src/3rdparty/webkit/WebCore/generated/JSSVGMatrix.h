@@ -23,19 +23,20 @@
 
 #if ENABLE(SVG)
 
-#include "AffineTransform.h"
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "JSSVGPODTypeWrapper.h"
 #include "SVGElement.h"
+#include "TransformationMatrix.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
 namespace WebCore {
 
-class JSSVGMatrix : public DOMObjectWithGlobalPointer {
-    typedef DOMObjectWithGlobalPointer Base;
+class JSSVGMatrix : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGMatrix(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<AffineTransform> >);
+    JSSVGMatrix(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<TransformationMatrix> >, SVGElement* context);
     virtual ~JSSVGMatrix();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,25 +47,23 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
-    JSC::JSValue multiply(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue inverse(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue rotateFromVector(JSC::ExecState*, const JSC::ArgList&);
-    JSSVGPODTypeWrapper<AffineTransform> * impl() const { return m_impl.get(); }
+    JSSVGPODTypeWrapper<TransformationMatrix> * impl() const { return m_impl.get(); }
 
 private:
-    RefPtr<JSSVGPODTypeWrapper<AffineTransform> > m_impl;
+    RefPtr<JSSVGPODTypeWrapper<TransformationMatrix> > m_impl;
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<AffineTransform>*, SVGElement*);
-AffineTransform toSVGMatrix(JSC::JSValue);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<TransformationMatrix>*, SVGElement* context);
+TransformationMatrix toSVGMatrix(JSC::JSValue);
 
 class JSSVGMatrixPrototype : public JSC::JSObject {
     typedef JSC::JSObject Base;
@@ -76,7 +75,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSSVGMatrixPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:
@@ -110,7 +109,6 @@ JSC::JSValue jsSVGMatrixE(JSC::ExecState*, const JSC::Identifier&, const JSC::Pr
 void setJSSVGMatrixE(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsSVGMatrixF(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSSVGMatrixF(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
-JSC::JSValue jsSVGMatrixConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

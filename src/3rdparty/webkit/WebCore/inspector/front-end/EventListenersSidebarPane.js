@@ -38,15 +38,18 @@ WebInspector.EventListenersSidebarPane = function()
 
     var option = document.createElement("option");
     option.value = "all";
+    if (Preferences.eventListenersFilter === "all")
+        option.selected = true;
     option.label = WebInspector.UIString("All Nodes");
     this.settingsSelectElement.appendChild(option);
 
     option = document.createElement("option");
     option.value = "selected";
+    if (Preferences.eventListenersFilter === "selected")
+        option.selected = true;
     option.label = WebInspector.UIString("Selected Node Only");
     this.settingsSelectElement.appendChild(option);
 
-    WebInspector.settings.addEventListener("loaded", this._settingsLoaded, this);
     this.settingsSelectElement.addEventListener("click", function(event) { event.stopPropagation() }, false);
     this.settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
 
@@ -54,15 +57,6 @@ WebInspector.EventListenersSidebarPane = function()
 }
 
 WebInspector.EventListenersSidebarPane.prototype = {
-    _settingsLoaded: function()
-    {
-        var filter = WebInspector.settings.eventListenersFilter;
-        if (filter === "all")
-            this.settingsSelectElement[0].selected = true;
-        if (filter === "selected")
-            this.settingsSelectElement[1].selected = true;
-    },
-
     update: function(node)
     {
         var body = this.bodyElement;
@@ -112,7 +106,9 @@ WebInspector.EventListenersSidebarPane.prototype = {
     _changeSetting: function(event)
     {
         var selectedOption = this.settingsSelectElement[this.settingsSelectElement.selectedIndex];
-        WebInspector.settings.eventListenersFilter = selectedOption.value;
+        Preferences.eventListenersFilter = selectedOption.value;
+
+        InspectorController.setSetting("event-listeners-filter", Preferences.eventListenersFilter);
 
         for (var i = 0; i < this.sections.length; ++i)
             this.sections[i].update();
@@ -142,7 +138,7 @@ WebInspector.EventListenersSection.prototype = {
     {
         // A Filtered Array simplifies when to create connectors
         var filteredEventListeners = this.eventListeners;
-        if (WebInspector.settings.eventListenersFilter === "selected") {
+        if (Preferences.eventListenersFilter === "selected") {
             filteredEventListeners = [];
             for (var i = 0; i < this.eventListeners.length; ++i) {
                 var eventListener = this.eventListeners[i];
@@ -191,7 +187,7 @@ WebInspector.EventListenerBar.prototype = {
             // Just build properties in place - no need to reach out for injected script.
             var value = this.eventListener[propertyName];
             if (value instanceof WebInspector.DOMNode)
-                value = new WebInspector.ObjectProxy(value.injectedScriptId, value.id, [], appropriateSelectorForNode(value), true);
+                value = new WebInspector.ObjectProxy(value.id, [], 0, appropriateSelectorForNode(value), true);
             else
                 value = WebInspector.ObjectProxy.wrapPrimitiveValue(value);
             properties.push(new WebInspector.ObjectPropertyProxy(propertyName, value));

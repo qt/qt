@@ -36,67 +36,19 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegMovetoRel);
 
 /* Hash table */
 
-static const HashTableValue JSSVGPathSegMovetoRelTableValues[4] =
+static const HashTableValue JSSVGPathSegMovetoRelTableValues[3] =
 {
     { "x", DontDelete, (intptr_t)jsSVGPathSegMovetoRelX, (intptr_t)setJSSVGPathSegMovetoRelX },
     { "y", DontDelete, (intptr_t)jsSVGPathSegMovetoRelY, (intptr_t)setJSSVGPathSegMovetoRelY },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGPathSegMovetoRelConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGPathSegMovetoRelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 15, JSSVGPathSegMovetoRelTableValues, 0 };
+    { 1, JSSVGPathSegMovetoRelTableValues, 0 };
 #else
-    { 9, 7, JSSVGPathSegMovetoRelTableValues, 0 };
+    { 4, 3, JSSVGPathSegMovetoRelTableValues, 0 };
 #endif
-
-/* Hash table for constructor */
-
-static const HashTableValue JSSVGPathSegMovetoRelConstructorTableValues[1] =
-{
-    { 0, 0, 0, 0 }
-};
-
-static JSC_CONST_HASHTABLE HashTable JSSVGPathSegMovetoRelConstructorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGPathSegMovetoRelConstructorTableValues, 0 };
-#else
-    { 1, 0, JSSVGPathSegMovetoRelConstructorTableValues, 0 };
-#endif
-
-class JSSVGPathSegMovetoRelConstructor : public DOMConstructorObject {
-public:
-    JSSVGPathSegMovetoRelConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-        : DOMConstructorObject(JSSVGPathSegMovetoRelConstructor::createStructure(globalObject->objectPrototype()), globalObject)
-    {
-        putDirect(exec->propertyNames().prototype, JSSVGPathSegMovetoRelPrototype::self(exec, globalObject), None);
-    }
-    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
-    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
-    virtual const ClassInfo* classInfo() const { return &s_info; }
-    static const ClassInfo s_info;
-
-    static PassRefPtr<Structure> createStructure(JSValue proto) 
-    { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
-    }
-    
-protected:
-    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
-};
-
-const ClassInfo JSSVGPathSegMovetoRelConstructor::s_info = { "SVGPathSegMovetoRelConstructor", 0, &JSSVGPathSegMovetoRelConstructorTable, 0 };
-
-bool JSSVGPathSegMovetoRelConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticValueSlot<JSSVGPathSegMovetoRelConstructor, DOMObject>(exec, &JSSVGPathSegMovetoRelConstructorTable, this, propertyName, slot);
-}
-
-bool JSSVGPathSegMovetoRelConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
-{
-    return getStaticValueDescriptor<JSSVGPathSegMovetoRelConstructor, DOMObject>(exec, &JSSVGPathSegMovetoRelConstructorTable, this, propertyName, descriptor);
-}
 
 /* Hash table for prototype */
 
@@ -121,8 +73,8 @@ JSObject* JSSVGPathSegMovetoRelPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegMovetoRel::s_info = { "SVGPathSegMovetoRel", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoRelTable, 0 };
 
-JSSVGPathSegMovetoRel::JSSVGPathSegMovetoRel(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegMovetoRel> impl)
-    : JSSVGPathSeg(structure, globalObject, impl)
+JSSVGPathSegMovetoRel::JSSVGPathSegMovetoRel(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegMovetoRel> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -146,8 +98,7 @@ JSValue jsSVGPathSegMovetoRelX(ExecState* exec, const Identifier&, const Propert
     JSSVGPathSegMovetoRel* castedThis = static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->x());
-    return result;
+    return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegMovetoRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -155,15 +106,9 @@ JSValue jsSVGPathSegMovetoRelY(ExecState* exec, const Identifier&, const Propert
     JSSVGPathSegMovetoRel* castedThis = static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->y());
-    return result;
+    return jsNumber(exec, imp->y());
 }
 
-JSValue jsSVGPathSegMovetoRelConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSSVGPathSegMovetoRel* domObject = static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()));
-    return JSSVGPathSegMovetoRel::getConstructor(exec, domObject->globalObject());
-}
 void JSSVGPathSegMovetoRel::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegMovetoRel, Base>(exec, propertyName, value, &JSSVGPathSegMovetoRelTable, this, slot);
@@ -171,23 +116,18 @@ void JSSVGPathSegMovetoRel::put(ExecState* exec, const Identifier& propertyName,
 
 void setJSSVGPathSegMovetoRelX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPathSegMovetoRel* castedThisObj = static_cast<JSSVGPathSegMovetoRel*>(thisObject);
-    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(castedThisObj->impl());
+    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl());
     imp->setX(value.toFloat(exec));
-    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
+    if (static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context())
+        static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl()->associatedAttributeName());
 }
 
 void setJSSVGPathSegMovetoRelY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPathSegMovetoRel* castedThisObj = static_cast<JSSVGPathSegMovetoRel*>(thisObject);
-    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(castedThisObj->impl());
+    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl());
     imp->setY(value.toFloat(exec));
-    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
-}
-
-JSValue JSSVGPathSegMovetoRel::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
-{
-    return getDOMConstructor<JSSVGPathSegMovetoRelConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+    if (static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context())
+        static_cast<JSSVGPathSegMovetoRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegMovetoRel*>(thisObject)->impl()->associatedAttributeName());
 }
 
 

@@ -23,19 +23,20 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
-#include "JSSVGPODTypeWrapper.h"
 #include "SVGElement.h"
-#include "SVGPreserveAspectRatio.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
 
 namespace WebCore {
 
-class JSSVGPreserveAspectRatio : public DOMObjectWithGlobalPointer {
-    typedef DOMObjectWithGlobalPointer Base;
+class SVGPreserveAspectRatio;
+
+class JSSVGPreserveAspectRatio : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGPreserveAspectRatio(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<JSSVGPODTypeWrapper<SVGPreserveAspectRatio> >);
+    JSSVGPreserveAspectRatio(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGPreserveAspectRatio>, SVGElement* context);
     virtual ~JSSVGPreserveAspectRatio();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -46,20 +47,20 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
-    JSSVGPODTypeWrapper<SVGPreserveAspectRatio> * impl() const { return m_impl.get(); }
+    SVGPreserveAspectRatio* impl() const { return m_impl.get(); }
 
 private:
-    RefPtr<JSSVGPODTypeWrapper<SVGPreserveAspectRatio> > m_impl;
+    RefPtr<SVGPreserveAspectRatio> m_impl;
 protected:
     static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, JSSVGPODTypeWrapper<SVGPreserveAspectRatio>*, SVGElement*);
-SVGPreserveAspectRatio toSVGPreserveAspectRatio(JSC::JSValue);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGPreserveAspectRatio*, SVGElement* context);
+SVGPreserveAspectRatio* toSVGPreserveAspectRatio(JSC::JSValue);
 
 class JSSVGPreserveAspectRatioPrototype : public JSC::JSObject {
     typedef JSC::JSObject Base;
@@ -71,7 +72,7 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags), AnonymousSlotCount);
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSSVGPreserveAspectRatioPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 protected:

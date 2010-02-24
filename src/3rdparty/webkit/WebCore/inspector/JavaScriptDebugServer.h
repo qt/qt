@@ -29,7 +29,7 @@
 #ifndef JavaScriptDebugServer_h
 #define JavaScriptDebugServer_h
 
-#if ENABLE(JAVASCRIPT_DEBUGGER) && USE(JSC)
+#if ENABLE(JAVASCRIPT_DEBUGGER)
 
 #include "Timer.h"
 #include <debugger/Debugger.h>
@@ -52,7 +52,7 @@ namespace WebCore {
     class JavaScriptCallFrame;
     class JavaScriptDebugListener;
 
-    class JavaScriptDebugServer : JSC::Debugger, public Noncopyable {
+    class JavaScriptDebugServer : JSC::Debugger {
     public:
         static JavaScriptDebugServer& shared();
 
@@ -68,13 +68,8 @@ namespace WebCore {
         bool hasBreakpoint(intptr_t sourceID, unsigned lineNumber) const;
         void clearBreakpoints();
 
-        enum PauseOnExceptionsState {
-            DontPauseOnExceptions,
-            PauseOnAllExceptions,
-            PauseOnUncaughtExceptions
-        };
-        PauseOnExceptionsState pauseOnExceptionsState() const { return m_pauseOnExceptionsState; }
-        void setPauseOnExceptionsState(PauseOnExceptionsState);
+        bool pauseOnExceptions() const { return m_pauseOnExceptions; }
+        void setPauseOnExceptions(bool);
 
         void pauseProgram();
         void continueProgram();
@@ -125,7 +120,7 @@ namespace WebCore {
         virtual void callEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineNumber);
         virtual void atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int firstLine);
         virtual void returnEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineNumber);
-        virtual void exception(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineNumber, bool hasHandler);
+        virtual void exception(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineNumber);
         virtual void willExecuteProgram(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno);
         virtual void didExecuteProgram(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno);
         virtual void didReachBreakpoint(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno);
@@ -141,7 +136,7 @@ namespace WebCore {
         PageListenersMap m_pageListenersMap;
         ListenerSet m_listeners;
         bool m_callingListeners;
-        PauseOnExceptionsState m_pauseOnExceptionsState;
+        bool m_pauseOnExceptions;
         bool m_pauseOnNextStatement;
         bool m_paused;
         bool m_doneProcessingDebuggerEvents;

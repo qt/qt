@@ -1,9 +1,11 @@
 /*
-    Copyright (C) 2004, 2005 Nikolas Zimmermann <zimmermann@kde.org>
+    Copyright (C) 2004, 2005 Nikolas Zimmermann <wildfox@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
     Copyright (C) 2007 Eric Seidel <eric@webkit.org>
     Copyright (C) 2008 Apple Inc. All rights reserved.
     Copyright (C) 2009 Cameron McCormack <cam@mcc.id.au>
+
+    This file is part of the KDE project
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -51,6 +53,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document*
     : SVGSMILElement(tagName, doc)
     , SVGTests()
     , SVGExternalResourcesRequired() 
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
     , m_animationValid(false)
 {
 }
@@ -58,7 +61,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document*
 SVGAnimationElement::~SVGAnimationElement()
 {
 }
-
+    
 static void parseKeyTimes(const String& parse, Vector<float>& result, bool verifyOrder)
 {
     result.clear();
@@ -138,14 +141,6 @@ void SVGAnimationElement::attributeChanged(Attribute* attr, bool preserveDecls)
     // Assumptions may not hold after an attribute change.
     m_animationValid = false;
     SVGSMILElement::attributeChanged(attr, preserveDecls);
-}
-
-void SVGAnimationElement::synchronizeProperty(const QualifiedName& attrName)
-{
-    SVGSMILElement::synchronizeProperty(attrName);
-
-    if (attrName == anyQName() || SVGExternalResourcesRequired::isKnownAttribute(attrName))
-        synchronizeExternalResourcesRequired();
 }
 
 float SVGAnimationElement::getStartTime() const
@@ -316,9 +311,9 @@ void SVGAnimationElement::setTargetAttributeAnimatedValue(const String& value)
         static_cast<SVGStyledElement*>(target)->setInstanceUpdatesBlocked(false);
     
     // If the target element is used in an <use> instance tree, update that as well.
-    const HashSet<SVGElementInstance*>& instances = target->instancesForElement();
-    const HashSet<SVGElementInstance*>::const_iterator end = instances.end();
-    for (HashSet<SVGElementInstance*>::const_iterator it = instances.begin(); it != end; ++it) {
+    HashSet<SVGElementInstance*> instances = target->instancesForElement();
+    HashSet<SVGElementInstance*>::iterator end = instances.end();
+    for (HashSet<SVGElementInstance*>::iterator it = instances.begin(); it != end; ++it) {
         SVGElement* shadowTreeElement = (*it)->shadowTreeElement();
         ASSERT(shadowTreeElement);
         if (isCSS)
@@ -494,7 +489,7 @@ void SVGAnimationElement::startedActiveInterval()
         m_animationValid = m_values.size() > 1
             && (calcMode == CalcModePaced || !hasAttribute(SVGNames::keyTimesAttr) || hasAttribute(SVGNames::keyPointsAttr) || (m_values.size() == m_keyTimes.size()))
             && (calcMode == CalcModeDiscrete || !m_keyTimes.size() || m_keyTimes.last() == 1.0)
-            && (calcMode != CalcModeSpline || ((m_keySplines.size() && (m_keySplines.size() == m_values.size() - 1)) || m_keySplines.size() == m_keyPoints.size() - 1))
+            && (calcMode != CalcModeSpline || (m_keySplines.size() && (m_keySplines.size() == m_values.size() - 1) || m_keySplines.size() == m_keyPoints.size() - 1))
             && (!hasAttribute(SVGNames::keyPointsAttr) || (m_keyTimes.size() > 1 && m_keyTimes.size() == m_keyPoints.size()));
         if (calcMode == CalcModePaced && m_animationValid)
             calculateKeyTimesForCalcModePaced();

@@ -177,7 +177,7 @@ void ScriptElementData::evaluateScript(const ScriptSourceCode& sourceCode)
         return;
 
     if (Frame* frame = m_element->document()->frame()) {
-        if (!frame->script()->canExecuteScripts())
+        if (!frame->script()->isEnabled())
             return;
 
         m_evaluated = true;
@@ -229,14 +229,12 @@ bool ScriptElementData::shouldExecuteAsJavaScript() const
          We want to accept all the values that either of these browsers accept, but not other values.
      */
     String type = m_scriptElement->typeAttributeValue();
-    if (!type.isEmpty()) {
-        if (!MIMETypeRegistry::isSupportedJavaScriptMIMEType(type.stripWhiteSpace().lower()))
-            return false;
-    } else {
-        String language = m_scriptElement->languageAttributeValue();
-        if (!language.isEmpty() && !isSupportedJavaScriptLanguage(language))
-            return false;
-    }    
+    if (!type.isEmpty())
+        return MIMETypeRegistry::isSupportedJavaScriptMIMEType(type.stripWhiteSpace().lower());
+
+    String language = m_scriptElement->languageAttributeValue();
+    if (!language.isEmpty())
+        return isSupportedJavaScriptLanguage(language);
 
     // No type or language is specified, so we assume the script to be JavaScript.
     // We don't yet support setting event listeners via the 'for' attribute for scripts.

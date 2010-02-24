@@ -24,14 +24,6 @@
 #include "AtomicStringImpl.h"
 #include "PlatformString.h"
 
-// Define 'NO_IMPLICIT_ATOMICSTRING' before including this header,
-// to disallow (expensive) implicit String-->AtomicString conversions.
-#ifdef NO_IMPLICIT_ATOMICSTRING
-#define ATOMICSTRING_CONVERSION explicit
-#else
-#define ATOMICSTRING_CONVERSION
-#endif
-
 namespace WebCore {
 
 struct AtomicStringHash;
@@ -48,9 +40,9 @@ public:
     AtomicString(const JSC::UString& s) : m_string(add(s)) { }
     AtomicString(const JSC::Identifier& s) : m_string(add(s)) { }
 #endif
-    ATOMICSTRING_CONVERSION AtomicString(StringImpl* imp) : m_string(add(imp)) { }
+    AtomicString(StringImpl* imp) : m_string(add(imp)) { }
     AtomicString(AtomicStringImpl* imp) : m_string(imp) { }
-    ATOMICSTRING_CONVERSION AtomicString(const String& s) : m_string(add(s.impl())) { }
+    AtomicString(const String& s) : m_string(add(s.impl())) { }
 
     // Hash table deleted values, which are only constructed and never copied or destroyed.
     AtomicString(WTF::HashTableDeletedValueType) : m_string(WTF::HashTableDeletedValue) { }
@@ -104,7 +96,7 @@ public:
 
     static void remove(StringImpl*);
     
-#if PLATFORM(CF)
+#if PLATFORM(CF) || (PLATFORM(QT) && PLATFORM(DARWIN))
     AtomicString(CFStringRef s) :  m_string(add(String(s).impl())) { }
     CFStringRef createCFString() const { return m_string.createCFString(); }
 #endif    
@@ -156,8 +148,6 @@ inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return e
     extern const AtomicString textAtom;
     extern const AtomicString commentAtom;
     extern const AtomicString starAtom;
-    extern const AtomicString xmlAtom;
-    extern const AtomicString xmlnsAtom;
 #endif
 
 } // namespace WebCore

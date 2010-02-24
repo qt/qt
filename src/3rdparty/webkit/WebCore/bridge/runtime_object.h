@@ -26,7 +26,7 @@
 #ifndef KJS_RUNTIME_OBJECT_H
 #define KJS_RUNTIME_OBJECT_H
 
-#include "Bridge.h"
+#include "runtime.h"
 #include <runtime/JSGlobalObject.h>
 
 namespace JSC {
@@ -44,7 +44,8 @@ public:
     virtual CallType getCallData(CallData&);
     virtual ConstructType getConstructData(ConstructData&);
 
-    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&, EnumerationMode mode = ExcludeDontEnumProperties);
+    virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+    virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
 
     void invalidate();
 
@@ -61,7 +62,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
-        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount);
+        return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
     }
 
 protected:

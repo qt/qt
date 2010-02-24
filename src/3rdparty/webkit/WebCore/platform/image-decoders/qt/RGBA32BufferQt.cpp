@@ -34,25 +34,20 @@
 namespace WebCore {
 
 RGBA32Buffer::RGBA32Buffer()
-    : m_hasAlpha(false) 
+    : m_status(FrameEmpty)
+    , m_hasAlpha(false)
     , m_size()
-    , m_status(FrameEmpty)
     , m_duration(0)
     , m_disposalMethod(DisposeNotSpecified)
 {
 }
 
-RGBA32Buffer& RGBA32Buffer::operator=(const RGBA32Buffer& other)
+// The image must not have format 8888 pre multiplied...
+void RGBA32Buffer::setDecodedImage(const QImage& image)
 {
-    if (this == &other)
-        return *this;
-
-    copyBitmapData(other);
-    setRect(other.rect());
-    setStatus(other.status());
-    setDuration(other.duration());
-    setDisposalMethod(other.disposalMethod());
-    return *this;
+    m_image = image;
+    m_size = image.size();
+    m_hasAlpha = image.hasAlphaChannel();
 }
 
 void RGBA32Buffer::clear()
@@ -88,8 +83,11 @@ bool RGBA32Buffer::setSize(int newWidth, int newHeight)
 
     m_size = IntSize(newWidth, newHeight);
     m_image = QImage(newWidth, newHeight, QImage::Format_ARGB32_Premultiplied);
-    if (m_image.isNull())
+    if (m_image.isNull()) {
+        // Allocation failure, maybe the bitmap was too big.
+        setStatus(FrameComplete);
         return false;
+    }
 
     // Zero the image.
     zeroFill();
@@ -120,12 +118,17 @@ void RGBA32Buffer::setStatus(FrameStatus status)
     m_status = status;
 }
 
-// The image must not have format 8888 pre multiplied...
-void RGBA32Buffer::setDecodedImage(const QImage& image)
+RGBA32Buffer& RGBA32Buffer::operator=(const RGBA32Buffer& other)
 {
-    m_image = image;
-    m_size = image.size();
-    m_hasAlpha = image.hasAlphaChannel();
+    if (this == &other)
+        return *this;
+
+    copyBitmapData(other);
+    setRect(other.rect());
+    setStatus(other.status());
+    setDuration(other.duration());
+    setDisposalMethod(other.disposalMethod());
+    return *this;
 }
 
 int RGBA32Buffer::width() const

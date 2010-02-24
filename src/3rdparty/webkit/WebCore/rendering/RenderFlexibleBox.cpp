@@ -410,13 +410,8 @@ void RenderFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                         child->layer()->setStaticX(xPos);
                     else child->layer()->setStaticX(width() - xPos);
                 }
-                if (child->style()->hasStaticY()) {
-                    RenderLayer* childLayer = child->layer();
-                    if (childLayer->staticY() != yPos) {
-                        child->layer()->setStaticY(yPos);
-                        child->setChildNeedsLayout(true, false);
-                    }
-                }
+                if (child->style()->hasStaticY())
+                    child->layer()->setStaticY(yPos);
                 child = iterator.next();
                 continue;
             }
@@ -645,7 +640,7 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
 
     // We confine the line clamp ugliness to vertical flexible boxes (thus keeping it out of
     // mainstream block layout); this is not really part of the XUL box model.
-    bool haveLineClamp = !style()->lineClamp().isNone();
+    bool haveLineClamp = style()->lineClamp() >= 0 && style()->lineClamp() <= 100;
     if (haveLineClamp) {
         int maxLineCount = 0;
         child = iterator.first();
@@ -670,8 +665,7 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
         
         // Get the # of lines and then alter all block flow children with auto height to use the
         // specified height. We always try to leave room for at least one line.
-        LineClampValue lineClamp = style()->lineClamp();
-        int numVisibleLines = lineClamp.isPercentage() ? max(1, (maxLineCount + 1) * lineClamp.value() / 100) : lineClamp.value();
+        int numVisibleLines = max(1, static_cast<int>((maxLineCount + 1) * style()->lineClamp() / 100.0));
         if (numVisibleLines < maxLineCount) {
             for (child = iterator.first(); child; child = iterator.next()) {
                 if (child->isPositioned() || !child->style()->height().isAuto() || !child->isBlockFlow())
@@ -702,25 +696,28 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                 if (!lastLine)
                     continue;
                 
+                // See if the last item is an anchor
+                InlineBox* anchorBox = lastLine->lastChild();
+                if (!anchorBox)
+                    continue;
+                if (!anchorBox->renderer()->node())
+                    continue;
+                if (!anchorBox->renderer()->node()->isLink())
+                    continue;
+                
                 RootInlineBox* lastVisibleLine = blockChild->lineAtIndex(numVisibleLines-1);
                 if (!lastVisibleLine)
                     continue;
 
                 const UChar ellipsisAndSpace[2] = { horizontalEllipsis, ' ' };
                 DEFINE_STATIC_LOCAL(AtomicString, ellipsisAndSpaceStr, (ellipsisAndSpace, 2));
-                DEFINE_STATIC_LOCAL(AtomicString, ellipsisStr, (&horizontalEllipsis, 1));
-                const Font& font = style(numVisibleLines == 1)->font();
 
-                // Get ellipsis width, and if the last child is an anchor, it will go after the ellipsis, so add in a space and the anchor width too 
-                int totalWidth;
-                InlineBox* anchorBox = lastLine->lastChild();
-                if (anchorBox && anchorBox->renderer()->node() && anchorBox->renderer()->node()->isLink())
-                    totalWidth = anchorBox->width() + font.width(TextRun(ellipsisAndSpace, 2));
-                else {
-                    anchorBox = 0;
-                    totalWidth = font.width(TextRun(&horizontalEllipsis, 1));
-                }
-                                
+                const Font& font = style(numVisibleLines == 1)->font();
+                int ellipsisAndSpaceWidth = font.width(TextRun(ellipsisAndSpace, 2));
+
+                // Get ellipsis width + " " + anchor width
+                int totalWidth = ellipsisAndSpaceWidth + anchorBox->width();
+                
                 // See if this width can be accommodated on the last visible line
                 RenderBlock* destBlock = toRenderBlock(lastVisibleLine->renderer());
                 RenderBlock* srcBlock = toRenderBlock(lastLine->renderer());
@@ -742,7 +739,7 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                     continue;
 
                 // Let the truncation code kick in.
-                lastVisibleLine->placeEllipsis(anchorBox ? ellipsisAndSpaceStr : ellipsisStr, ltr, blockLeftEdge, blockRightEdge, totalWidth, anchorBox);
+                lastVisibleLine->placeEllipsis(ellipsisAndSpaceStr, ltr, blockLeftEdge, blockRightEdge, totalWidth, anchorBox);
                 destBlock->setHasMarkupTruncation(true);
             }
         }
@@ -772,13 +769,8 @@ void RenderFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                     else
                         child->layer()->setStaticX(borderRight()+paddingRight());
                 }
-                if (child->style()->hasStaticY()) {
-                    RenderLayer* childLayer = child->layer();
-                    if (childLayer->staticY() != height()) {
-                        child->layer()->setStaticY(height());
-                        child->setChildNeedsLayout(true, false);
-                    }
-                }
+                if (child->style()->hasStaticY())
+                    child->layer()->setStaticY(height());
                 child = iterator.next();
                 continue;
             } 

@@ -70,8 +70,8 @@ static Color disabledTextColor(const Color& textColor, const Color& backgroundCo
 RenderTextControl::RenderTextControl(Node* node, bool placeholderVisible)
     : RenderBlock(node)
     , m_placeholderVisible(placeholderVisible)
-    , m_wasChangedSinceLastChangeEvent(false)
-    , m_lastChangeWasUserEdit(false)
+    , m_edited(false)
+    , m_userEdited(false)
 {
 }
 
@@ -195,17 +195,17 @@ void RenderTextControl::setInnerTextValue(const String& innerTextValue)
             ASSERT(!ec);
         }
 
-        // We set m_lastChangeWasUserEdit to false since this change was not explicitly made by the user (say, via typing on the keyboard), see <rdar://problem/5359921>.
-        m_lastChangeWasUserEdit = false;
+        m_edited = false;
+        m_userEdited = false;
     }
 
     static_cast<Element*>(node())->setFormControlValueMatchesRenderer(true);
 }
 
-void RenderTextControl::setLastChangeWasUserEdit(bool lastChangeWasUserEdit)
+void RenderTextControl::setUserEdited(bool isUserEdited)
 {
-    m_lastChangeWasUserEdit = lastChangeWasUserEdit;
-    document()->setIgnoreAutofocus(lastChangeWasUserEdit);
+    m_userEdited = isUserEdited;
+    document()->setIgnoreAutofocus(isUserEdited);
 }
 
 int RenderTextControl::selectionStart()
@@ -312,8 +312,8 @@ int RenderTextControl::indexForVisiblePosition(const VisiblePosition& pos)
 
 void RenderTextControl::subtreeHasChanged()
 {
-    m_wasChangedSinceLastChangeEvent = true;
-    m_lastChangeWasUserEdit = true;
+    m_edited = true;
+    m_userEdited = true;
 }
 
 String RenderTextControl::finishText(Vector<UChar>& result) const
@@ -459,78 +459,6 @@ IntRect RenderTextControl::controlClipRect(int tx, int ty) const
     return clipRect;
 }
 
-static const char* fontFamiliesWithInvalidCharWidth[] = {
-    "American Typewriter",
-    "Arial Hebrew",
-    "Chalkboard",
-    "Cochin",
-    "Corsiva Hebrew",
-    "Courier",
-    "Euphemia UCAS",
-    "Geneva",
-    "Gill Sans",
-    "Hei",
-    "Helvetica",
-    "Hoefler Text",
-    "InaiMathi",
-    "Kai",
-    "Lucida Grande",
-    "Marker Felt",
-    "Monaco",
-    "Mshtakan",
-    "New Peninim MT",
-    "Osaka",
-    "Raanana",
-    "STHeiti",
-    "Symbol",
-    "Times",
-    "Apple Braille",
-    "Apple LiGothic",
-    "Apple LiSung",
-    "Apple Symbols",
-    "AppleGothic",
-    "AppleMyungjo",
-    "#GungSeo",
-    "#HeadLineA",
-    "#PCMyungjo",
-    "#PilGi",
-};
-
-// For font families where any of the fonts don't have a valid entry in the OS/2 table
-// for avgCharWidth, fallback to the legacy webkit behavior of getting the avgCharWidth
-// from the width of a '0'. This only seems to apply to a fixed number of Mac fonts,
-// but, in order to get similar rendering across platforms, we do this check for
-// all platforms.
-bool RenderTextControl::hasValidAvgCharWidth(AtomicString family)
-{
-    static HashSet<AtomicString>* fontFamiliesWithInvalidCharWidthMap = 0;
-    
-    if (!fontFamiliesWithInvalidCharWidthMap) {
-        fontFamiliesWithInvalidCharWidthMap = new HashSet<AtomicString>;
-        
-        for (unsigned i = 0; i < sizeof(fontFamiliesWithInvalidCharWidth) / sizeof(fontFamiliesWithInvalidCharWidth[0]); i++)
-            fontFamiliesWithInvalidCharWidthMap->add(AtomicString(fontFamiliesWithInvalidCharWidth[i]));
-    }
-
-    return !fontFamiliesWithInvalidCharWidthMap->contains(family);
-}
-
-float RenderTextControl::getAvgCharWidth(AtomicString family)
-{
-    if (hasValidAvgCharWidth(family))
-        return roundf(style()->font().primaryFont()->avgCharWidth());
-
-    const UChar ch = '0'; 
-    return style()->font().floatWidth(TextRun(&ch, 1, false, 0, 0, false, false, false));
-}
-
-float RenderTextControl::scaleEmToUnits(int x) const
-{
-    // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the "head" font table.
-    float unitsPerEm = 2048.0f;
-    return roundf(style()->font().size() * x / unitsPerEm);
-}
-
 void RenderTextControl::calcPrefWidths()
 {
     ASSERT(prefWidthsDirty());
@@ -542,8 +470,8 @@ void RenderTextControl::calcPrefWidths()
         m_minPrefWidth = m_maxPrefWidth = calcContentBoxWidth(style()->width().value());
     else {
         // Use average character width. Matches IE.
-        AtomicString family = style()->font().family().family();
-        m_maxPrefWidth = preferredContentWidth(getAvgCharWidth(family)) + m_innerText->renderBox()->paddingLeft() + m_innerText->renderBox()->paddingRight();
+        float charWidth = style()->font().primaryFont()->avgCharWidth();
+        m_maxPrefWidth = preferredContentWidth(charWidth) + m_innerText->renderBox()->paddingLeft() + m_innerText->renderBox()->paddingRight();
     }
 
     if (style()->minWidth().isFixed() && style()->minWidth().value() > 0) {
@@ -577,10 +505,9 @@ void RenderTextControl::selectionChanged(bool userTriggered)
     }
 }
 
-void RenderTextControl::addFocusRingRects(Vector<IntRect>& rects, int tx, int ty)
+void RenderTextControl::addFocusRingRects(GraphicsContext* graphicsContext, int tx, int ty)
 {
-    if (width() && height())
-        rects.append(IntRect(tx, ty, width(), height()));
+    graphicsContext->addFocusRingRect(IntRect(tx, ty, width(), height()));
 }
 
 HTMLElement* RenderTextControl::innerTextElement() const

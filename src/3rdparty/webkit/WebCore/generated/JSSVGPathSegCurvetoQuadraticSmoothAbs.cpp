@@ -36,67 +36,19 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegCurvetoQuadraticSmoothAbs);
 
 /* Hash table */
 
-static const HashTableValue JSSVGPathSegCurvetoQuadraticSmoothAbsTableValues[4] =
+static const HashTableValue JSSVGPathSegCurvetoQuadraticSmoothAbsTableValues[3] =
 {
     { "x", DontDelete, (intptr_t)jsSVGPathSegCurvetoQuadraticSmoothAbsX, (intptr_t)setJSSVGPathSegCurvetoQuadraticSmoothAbsX },
     { "y", DontDelete, (intptr_t)jsSVGPathSegCurvetoQuadraticSmoothAbsY, (intptr_t)setJSSVGPathSegCurvetoQuadraticSmoothAbsY },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGPathSegCurvetoQuadraticSmoothAbsConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGPathSegCurvetoQuadraticSmoothAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 15, JSSVGPathSegCurvetoQuadraticSmoothAbsTableValues, 0 };
+    { 1, JSSVGPathSegCurvetoQuadraticSmoothAbsTableValues, 0 };
 #else
-    { 9, 7, JSSVGPathSegCurvetoQuadraticSmoothAbsTableValues, 0 };
+    { 4, 3, JSSVGPathSegCurvetoQuadraticSmoothAbsTableValues, 0 };
 #endif
-
-/* Hash table for constructor */
-
-static const HashTableValue JSSVGPathSegCurvetoQuadraticSmoothAbsConstructorTableValues[1] =
-{
-    { 0, 0, 0, 0 }
-};
-
-static JSC_CONST_HASHTABLE HashTable JSSVGPathSegCurvetoQuadraticSmoothAbsConstructorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGPathSegCurvetoQuadraticSmoothAbsConstructorTableValues, 0 };
-#else
-    { 1, 0, JSSVGPathSegCurvetoQuadraticSmoothAbsConstructorTableValues, 0 };
-#endif
-
-class JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor : public DOMConstructorObject {
-public:
-    JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-        : DOMConstructorObject(JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor::createStructure(globalObject->objectPrototype()), globalObject)
-    {
-        putDirect(exec->propertyNames().prototype, JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::self(exec, globalObject), None);
-    }
-    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
-    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
-    virtual const ClassInfo* classInfo() const { return &s_info; }
-    static const ClassInfo s_info;
-
-    static PassRefPtr<Structure> createStructure(JSValue proto) 
-    { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
-    }
-    
-protected:
-    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
-};
-
-const ClassInfo JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor::s_info = { "SVGPathSegCurvetoQuadraticSmoothAbsConstructor", 0, &JSSVGPathSegCurvetoQuadraticSmoothAbsConstructorTable, 0 };
-
-bool JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticValueSlot<JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor, DOMObject>(exec, &JSSVGPathSegCurvetoQuadraticSmoothAbsConstructorTable, this, propertyName, slot);
-}
-
-bool JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
-{
-    return getStaticValueDescriptor<JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor, DOMObject>(exec, &JSSVGPathSegCurvetoQuadraticSmoothAbsConstructorTable, this, propertyName, descriptor);
-}
 
 /* Hash table for prototype */
 
@@ -121,8 +73,8 @@ JSObject* JSSVGPathSegCurvetoQuadraticSmoothAbsPrototype::self(ExecState* exec, 
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticSmoothAbs::s_info = { "SVGPathSegCurvetoQuadraticSmoothAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoQuadraticSmoothAbsTable, 0 };
 
-JSSVGPathSegCurvetoQuadraticSmoothAbs::JSSVGPathSegCurvetoQuadraticSmoothAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoQuadraticSmoothAbs> impl)
-    : JSSVGPathSeg(structure, globalObject, impl)
+JSSVGPathSegCurvetoQuadraticSmoothAbs::JSSVGPathSegCurvetoQuadraticSmoothAbs(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegCurvetoQuadraticSmoothAbs> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -146,8 +98,7 @@ JSValue jsSVGPathSegCurvetoQuadraticSmoothAbsX(ExecState* exec, const Identifier
     JSSVGPathSegCurvetoQuadraticSmoothAbs* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->x());
-    return result;
+    return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegCurvetoQuadraticSmoothAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -155,15 +106,9 @@ JSValue jsSVGPathSegCurvetoQuadraticSmoothAbsY(ExecState* exec, const Identifier
     JSSVGPathSegCurvetoQuadraticSmoothAbs* castedThis = static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->y());
-    return result;
+    return jsNumber(exec, imp->y());
 }
 
-JSValue jsSVGPathSegCurvetoQuadraticSmoothAbsConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSSVGPathSegCurvetoQuadraticSmoothAbs* domObject = static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(asObject(slot.slotBase()));
-    return JSSVGPathSegCurvetoQuadraticSmoothAbs::getConstructor(exec, domObject->globalObject());
-}
 void JSSVGPathSegCurvetoQuadraticSmoothAbs::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegCurvetoQuadraticSmoothAbs, Base>(exec, propertyName, value, &JSSVGPathSegCurvetoQuadraticSmoothAbsTable, this, slot);
@@ -171,23 +116,18 @@ void JSSVGPathSegCurvetoQuadraticSmoothAbs::put(ExecState* exec, const Identifie
 
 void setJSSVGPathSegCurvetoQuadraticSmoothAbsX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPathSegCurvetoQuadraticSmoothAbs* castedThisObj = static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject);
-    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(castedThisObj->impl());
+    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->impl());
     imp->setX(value.toFloat(exec));
-    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
+    if (static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->context())
+        static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->impl()->associatedAttributeName());
 }
 
 void setJSSVGPathSegCurvetoQuadraticSmoothAbsY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPathSegCurvetoQuadraticSmoothAbs* castedThisObj = static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject);
-    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(castedThisObj->impl());
+    SVGPathSegCurvetoQuadraticSmoothAbs* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothAbs*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->impl());
     imp->setY(value.toFloat(exec));
-    JSSVGContextCache::propagateSVGDOMChange(castedThisObj, imp->associatedAttributeName());
-}
-
-JSValue JSSVGPathSegCurvetoQuadraticSmoothAbs::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
-{
-    return getDOMConstructor<JSSVGPathSegCurvetoQuadraticSmoothAbsConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+    if (static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->context())
+        static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegCurvetoQuadraticSmoothAbs*>(thisObject)->impl()->associatedAttributeName());
 }
 
 

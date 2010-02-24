@@ -269,5 +269,4 @@ sub readHeaderValues()
     
     eval $content;
     die "$@" if $@;
-    unlink $tempFile;
 }

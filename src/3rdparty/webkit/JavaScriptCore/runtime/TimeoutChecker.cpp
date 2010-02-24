@@ -33,16 +33,12 @@
 #include "CallFrame.h"
 #include "JSGlobalObject.h"
 
-#if OS(DARWIN)
+#if PLATFORM(DARWIN)
 #include <mach/mach.h>
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN_OS)
 #include <windows.h>
 #else
 #include "CurrentTime.h"
-#endif
-
-#if PLATFORM(BREWMP)
-#include <AEEStdLib.h>
 #endif
 
 using namespace std;
@@ -58,7 +54,7 @@ static const int intervalBetweenChecks = 1000;
 // Returns the time the current thread has spent executing, in milliseconds.
 static inline unsigned getCPUTime()
 {
-#if OS(DARWIN)
+#if PLATFORM(DARWIN)
     mach_msg_type_number_t infoCount = THREAD_BASIC_INFO_COUNT;
     thread_basic_info_data_t info;
 
@@ -71,7 +67,7 @@ static inline unsigned getCPUTime()
     time += info.system_time.seconds * 1000 + info.system_time.microseconds / 1000;
     
     return time;
-#elif OS(WINDOWS)
+#elif PLATFORM(WIN_OS)
     union {
         FILETIME fileTime;
         unsigned long long fileTimeAsLong;
@@ -84,11 +80,6 @@ static inline unsigned getCPUTime()
     GetThreadTimes(GetCurrentThread(), &creationTime, &exitTime, &kernelTime.fileTime, &userTime.fileTime);
     
     return userTime.fileTimeAsLong / 10000 + kernelTime.fileTimeAsLong / 10000;
-#elif PLATFORM(BREWMP)
-    // This function returns a continuously and linearly increasing millisecond
-    // timer from the time the device was powered on.
-    // There is only one thread in BREW, so this is enough.
-    return GETUPTIMEMS();
 #else
     // FIXME: We should return the time the current thread has spent executing.
     return currentTime() * 1000;

@@ -92,17 +92,10 @@ static inline Color blendFunc(const AnimationBase* anim, const Color& from, cons
     if (progress == 1 && !to.isValid())
         return Color();
 
-    // Contrary to the name, RGBA32 actually stores ARGB, so we can initialize Color directly from premultipliedARGBFromColor().
-    // Also, premultipliedARGBFromColor() bails on zero alpha, so special-case that.
-    Color premultFrom = from.alpha() ? premultipliedARGBFromColor(from) : 0;
-    Color premultTo = to.alpha() ? premultipliedARGBFromColor(to) : 0;
-
-    Color premultBlended(blendFunc(anim, premultFrom.red(), premultTo.red(), progress),
-                 blendFunc(anim, premultFrom.green(), premultTo.green(), progress),
-                 blendFunc(anim, premultFrom.blue(), premultTo.blue(), progress),
-                 blendFunc(anim, premultFrom.alpha(), premultTo.alpha(), progress));
-
-    return Color(colorFromPremultipliedARGB(premultBlended.rgb()));
+    return Color(blendFunc(anim, from.red(), to.red(), progress),
+                 blendFunc(anim, from.green(), to.green(), progress),
+                 blendFunc(anim, from.blue(), to.blue(), progress),
+                 blendFunc(anim, from.alpha(), to.alpha(), progress));
 }
 
 static inline Length blendFunc(const AnimationBase*, const Length& from, const Length& to, double progress)
@@ -197,7 +190,7 @@ class PropertyWrapperBase;
 static void addShorthandProperties();
 static PropertyWrapperBase* wrapperForProperty(int propertyID);
 
-class PropertyWrapperBase : public Noncopyable {
+class PropertyWrapperBase {
 public:
     PropertyWrapperBase(int prop)
         : m_prop(prop)
@@ -414,7 +407,7 @@ public:
 };
 
 template <typename T>
-class FillLayerPropertyWrapperGetter : public FillLayerPropertyWrapperBase, public Noncopyable {
+class FillLayerPropertyWrapperGetter : public FillLayerPropertyWrapperBase {
 public:
     FillLayerPropertyWrapperGetter(T (FillLayer::*getter)() const)
         : m_getter(getter)
@@ -870,7 +863,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
         m_pauseTime = -1;
         m_requestedStartTime = 0;
         m_nextIterationDuration = -1;
-        endAnimation();
+        endAnimation(false);
         return;
     }
 
@@ -882,7 +875,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
         m_pauseTime = -1;
         m_requestedStartTime = 0;
         m_nextIterationDuration = -1;
-        endAnimation();
+        endAnimation(false);
 
         if (!paused())
             updateStateMachine(AnimationStateInputStartAnimation, -1);
@@ -893,7 +886,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
         if (m_animState == AnimationStateStartWaitStyleAvailable)
             m_compAnim->animationController()->removeFromStyleAvailableWaitList(this);
         m_animState = AnimationStateDone;
-        endAnimation();
+        endAnimation(true);
         return;
     }
 
@@ -901,7 +894,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
         if (m_animState == AnimationStateStartWaitResponse) {
             // If we are in AnimationStateStartWaitResponse, the animation will get canceled before 
             // we get a response, so move to the next state.
-            endAnimation();
+            endAnimation(false);
             updateStateMachine(AnimationStateInputStartTimeSet, beginAnimationUpdateTime());
         }
         return;
@@ -910,7 +903,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
     if (input == AnimationStateInputResumeOverride) {
         if (m_animState == AnimationStateLooping || m_animState == AnimationStateEnding) {
             // Start the animation
-            startAnimation(beginAnimationUpdateTime() - m_startTime);
+            startAnimation(m_startTime);
         }
         return;
     }
@@ -963,12 +956,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
                 updateStateMachine(AnimationStateInputStartTimeSet, beginAnimationUpdateTime());
             }
             else {
-                double timeOffset = 0;
-                // If the value for 'animation-delay' is negative then the animation appears to have started in the past.
-                if (m_animation->delay() < 0)
-                    timeOffset = -m_animation->delay();
-                bool started = startAnimation(timeOffset);
-
+                bool started = startAnimation(0);
                 m_compAnim->animationController()->addToStartTimeResponseWaitList(this, started);
                 m_fallbackAnimating = !started;
             }
@@ -979,12 +967,8 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
             if (input == AnimationStateInputStartTimeSet) {
                 ASSERT(param >= 0);
                 // We have a start time, set it, unless the startTime is already set
-                if (m_startTime <= 0) {
+                if (m_startTime <= 0)
                     m_startTime = param;
-                    // If the value for 'animation-delay' is negative then the animation appears to have started in the past.
-                    if (m_animation->delay() < 0)
-                        m_startTime += m_animation->delay();
-                }
 
                 // Decide whether to go into looping or ending state
                 goIntoEndingOrLoopingState();
@@ -996,7 +980,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
                 // We are pausing while waiting for a start response. Cancel the animation and wait. When 
                 // we unpause, we will act as though the start timer just fired
                 m_pauseTime = -1;
-                pauseAnimation(beginAnimationUpdateTime() - m_startTime);
+                endAnimation(false);
                 m_animState = AnimationStatePausedWaitResponse;
             }
             break;
@@ -1013,7 +997,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
             } else {
                 // We are pausing while running. Cancel the animation and wait
                 m_pauseTime = beginAnimationUpdateTime();
-                pauseAnimation(beginAnimationUpdateTime() - m_startTime);
+                endAnimation(false);
                 m_animState = AnimationStatePausedRun;
             }
             break;
@@ -1036,7 +1020,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
             } else {
                 // We are pausing while running. Cancel the animation and wait
                 m_pauseTime = beginAnimationUpdateTime();
-                pauseAnimation(beginAnimationUpdateTime() - m_startTime);
+                endAnimation(false);
                 m_animState = AnimationStatePausedRun;
             }
             // |this| may be deleted here
@@ -1088,7 +1072,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
                 updateStateMachine(AnimationStateInputStartTimeSet, beginAnimationUpdateTime());
                 m_fallbackAnimating = true;
             } else {
-                bool started = startAnimation(beginAnimationUpdateTime() - m_startTime);
+                bool started = startAnimation(m_startTime);
                 m_compAnim->animationController()->addToStartTimeResponseWaitList(this, started);
                 m_fallbackAnimating = !started;
             }

@@ -38,13 +38,7 @@
 
 namespace WebCore {
 
-ScriptState* mainWorldScriptState(Frame* frame)
-{
-    JSDOMWindowShell* shell = frame->script()->windowShell(mainThreadNormalWorld());
-    return shell->window()->globalExec();
-}
-
-ScriptState* scriptStateFromNode(DOMWrapperWorld* world, Node* node)
+ScriptState* scriptStateFromNode(Node* node)
 {
     if (!node)
         return 0;
@@ -54,14 +48,14 @@ ScriptState* scriptStateFromNode(DOMWrapperWorld* world, Node* node)
     Frame* frame = document->frame();
     if (!frame)
         return 0;
-    if (!frame->script()->canExecuteScripts())
+    if (!frame->script()->isEnabled())
         return 0;
-    return frame->script()->globalObject(world)->globalExec();
+    return frame->script()->globalObject(mainThreadCurrentWorld())->globalExec();
 }
 
-ScriptState* scriptStateFromPage(DOMWrapperWorld* world, Page* page)
+ScriptState* scriptStateFromPage(Page* page)
 {
-    return page->mainFrame()->script()->globalObject(world)->globalExec();
+    return page->mainFrame()->script()->globalObject(mainThreadCurrentWorld())->globalExec();
 }
 
 }

@@ -40,9 +40,6 @@ function TreeOutline(listNode)
     this.expanded = true;
     this.selected = false;
     this.treeOutline = this;
-
-    this._childrenListNode.tabIndex = 0;
-    this._childrenListNode.addEventListener("keydown", this._treeKeyDown.bind(this), true);
 }
 
 TreeOutline._knownTreeElementNextIdentifier = 1;
@@ -144,15 +141,7 @@ TreeOutline._removeChildAtIndex = function(childIndex)
     var child = this.children[childIndex];
     this.children.splice(childIndex, 1);
 
-    var parent = child.parent;
-    if (child.deselect()) {
-        if (child.previousSibling)
-            child.previousSibling.select();
-        else if (child.nextSibling)
-            child.nextSibling.select();
-        else
-            parent.select();
-    }
+    child.deselect();
 
     if (child.previousSibling)
         child.previousSibling.nextSibling = child.nextSibling;
@@ -338,13 +327,10 @@ TreeOutline.prototype.treeElementFromPoint = function(x, y)
     return null;
 }
 
-TreeOutline.prototype._treeKeyDown = function(event)
+TreeOutline.prototype.handleKeyEvent = function(event)
 {
-    if (event.target !== this._childrenListNode)
-        return;
-
     if (!this.selectedTreeElement || event.shiftKey || event.metaKey || event.ctrlKey)
-        return;
+        return false;
 
     var handled = false;
     var nextSelectedElement;
@@ -400,6 +386,8 @@ TreeOutline.prototype._treeKeyDown = function(event)
         event.preventDefault();
         event.stopPropagation();
     }
+
+    return handled;
 }
 
 TreeOutline.prototype.expand = function()
@@ -636,7 +624,7 @@ TreeElement.treeElementDoubleClicked = function(event)
         return;
 
     if (element.treeElement.ondblclick)
-        element.treeElement.ondblclick.call(element.treeElement, event);
+        element.treeElement.ondblclick(element.treeElement, event);
     else if (element.treeElement.hasChildren && !element.treeElement.expanded)
         element.treeElement.expand();
 }
@@ -776,7 +764,6 @@ TreeElement.prototype.select = function(supressOnSelect)
         this.treeOutline.selectedTreeElement.deselect();
 
     this.selected = true;
-    this.treeOutline._childrenListNode.focus();
     this.treeOutline.selectedTreeElement = this;
     if (this._listItemNode)
         this._listItemNode.addStyleClass("selected");
@@ -788,7 +775,7 @@ TreeElement.prototype.select = function(supressOnSelect)
 TreeElement.prototype.deselect = function(supressOnDeselect)
 {
     if (!this.treeOutline || this.treeOutline.selectedTreeElement !== this || !this.selected)
-        return false;
+        return;
 
     this.selected = false;
     this.treeOutline.selectedTreeElement = null;
@@ -797,7 +784,6 @@ TreeElement.prototype.deselect = function(supressOnDeselect)
 
     if (this.ondeselect && !supressOnDeselect)
         this.ondeselect(this);
-    return true;
 }
 
 TreeElement.prototype.traverseNextTreeElement = function(skipHidden, stayWithin, dontPopulate, info)

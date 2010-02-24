@@ -105,18 +105,18 @@ namespace WebCore {
 
         static float createSVGNumber();
         static SVGLength createSVGLength();
-        static SVGAngle createSVGAngle();
+        static PassRefPtr<SVGAngle> createSVGAngle();
         static FloatPoint createSVGPoint();
-        static AffineTransform createSVGMatrix();
+        static TransformationMatrix createSVGMatrix();
         static FloatRect createSVGRect();
         static SVGTransform createSVGTransform();
-        static SVGTransform createSVGTransformFromMatrix(const AffineTransform&);
+        static SVGTransform createSVGTransformFromMatrix(const TransformationMatrix&);
 
         virtual void parseMappedAttribute(MappedAttribute*);
 
         // 'virtual SVGLocatable' functions
-        virtual AffineTransform getCTM() const;
-        virtual AffineTransform getScreenCTM() const;
+        virtual TransformationMatrix getCTM() const;
+        virtual TransformationMatrix getScreenCTM() const;
 
         virtual bool rendererIsNeeded(RenderStyle* style) { return StyledElement::rendererIsNeeded(style); }
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
@@ -125,27 +125,33 @@ namespace WebCore {
         virtual void removedFromDocument();
 
         virtual void svgAttributeChanged(const QualifiedName&);
-        virtual void synchronizeProperty(const QualifiedName&);
 
-        AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
+        TransformationMatrix viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
         void inheritViewAttributes(SVGViewElement*);
 
-        bool isOutermostSVG() const;
+    protected:
+        friend class RenderSVGRoot;
+        friend class RenderSVGViewportContainer;
+
         virtual bool hasRelativeValues() const;
+        
+        bool isOutermostSVG() const;
 
     private:
-        DECLARE_ANIMATED_PROPERTY(SVGSVGElement, SVGNames::xAttr, SVGLength, X, x)
-        DECLARE_ANIMATED_PROPERTY(SVGSVGElement, SVGNames::yAttr, SVGLength, Y, y)
-        DECLARE_ANIMATED_PROPERTY(SVGSVGElement, SVGNames::widthAttr, SVGLength, Width, width)
-        DECLARE_ANIMATED_PROPERTY(SVGSVGElement, SVGNames::heightAttr, SVGLength, Height, height)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGNames::svgTagString, SVGNames::xAttrString, SVGLength, X, x)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGNames::svgTagString, SVGNames::yAttrString, SVGLength, Y, y)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGNames::svgTagString, SVGNames::widthAttrString, SVGLength, Width, width)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGNames::svgTagString, SVGNames::heightAttrString, SVGLength, Height, height)
 
         // SVGExternalResourcesRequired
-        DECLARE_ANIMATED_PROPERTY(SVGSVGElement, SVGNames::externalResourcesRequiredAttr, bool, ExternalResourcesRequired, externalResourcesRequired)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
 
         // SVGFitToViewBox
-        DECLARE_ANIMATED_PROPERTY(SVGSVGElement, SVGNames::viewBoxAttr, FloatRect, ViewBox, viewBox)
-        DECLARE_ANIMATED_PROPERTY(SVGSVGElement, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGFitToViewBoxIdentifier, SVGNames::viewBoxAttrString, FloatRect, ViewBox, viewBox)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGFitToViewBoxIdentifier, SVGNames::preserveAspectRatioAttrString, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
  
         virtual void documentWillBecomeInactive();
         virtual void documentDidBecomeActive();
@@ -153,7 +159,6 @@ namespace WebCore {
         bool m_useCurrentView;
         RefPtr<SMILTimeContainer> m_timeContainer;
         FloatPoint m_translation;
-        float m_scale;
         mutable OwnPtr<SVGViewSpec> m_viewSpec;
         IntSize m_containerSize;
         bool m_hasSetContainerSize;

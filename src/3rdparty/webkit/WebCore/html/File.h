@@ -26,30 +26,30 @@
 #ifndef File_h
 #define File_h
 
-#include "Blob.h"
+#include "PlatformString.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-class File : public Blob {
-public:
-    static PassRefPtr<File> create(const String& path)
-    {
-        return adoptRef(new File(path));
-    }
+    class File : public RefCounted<File> {
+    public:
+        static PassRefPtr<File> create(const String& path)
+        {
+            return adoptRef(new File(path));
+        }
 
-    const String& name() const { return m_name; }
+        const String& fileName() const { return m_fileName; }
+        unsigned long long fileSize();
 
-    // FIXME: obsolete attributes. To be removed.
-    const String& fileName() const { return m_name; }
-    unsigned long long fileSize() const { return size(); }
+        const String& path() const { return m_path; }
 
-private:
-    File(const String& path);
+    private:
+        File(const String& path);
 
-    String m_name;
-};
+        String m_path;
+        String m_fileName;
+    };
 
 } // namespace WebCore
 

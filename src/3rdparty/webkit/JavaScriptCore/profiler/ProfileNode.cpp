@@ -33,17 +33,15 @@
 #include <stdio.h>
 #include <wtf/DateMath.h>
 
-#if OS(WINDOWS)
+#if PLATFORM(WIN_OS)
 #include <windows.h>
 #endif
-
-using namespace WTF;
 
 namespace JSC {
 
 static double getCount()
 {
-#if OS(WINDOWS)
+#if PLATFORM(WIN_OS)
     static LARGE_INTEGER frequency = {0};
     if (!frequency.QuadPart)
         QueryPerformanceFrequency(&frequency);
@@ -51,7 +49,7 @@ static double getCount()
     QueryPerformanceCounter(&counter);
     return static_cast<double>(counter.QuadPart) / frequency.QuadPart;
 #else
-    return currentTimeMS();
+    return WTF::getCurrentUTCTimeWithMicroseconds();
 #endif
 }
 

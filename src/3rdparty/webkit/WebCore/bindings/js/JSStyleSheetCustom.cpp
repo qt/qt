@@ -40,7 +40,7 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, StyleSheet* style
     if (!styleSheet)
         return jsNull();
 
-    DOMObject* wrapper = getCachedDOMObjectWrapper(exec, styleSheet);
+    DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), styleSheet);
     if (wrapper)
         return wrapper;
 
@@ -68,8 +68,10 @@ void JSStyleSheet::markChildren(MarkStack& markStack)
     // is kept around, then we want the node to stay around too. One possibility would
     // be to make ref/deref on the style sheet ref/deref the node instead, but there's
     // a lot of disentangling of the CSS DOM objects that would need to happen first.
-    if (Node* ownerNode = sheet->ownerNode())
-        markDOMNodeWrapper(markStack, ownerNode->document(), ownerNode);
+    if (Node* ownerNode = sheet->ownerNode()) {
+        if (JSNode* ownerNodeWrapper = getCachedDOMNodeWrapper(ownerNode->document(), ownerNode))
+            markStack.append(ownerNodeWrapper);
+    }
 }
 
 } // namespace WebCore

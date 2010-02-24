@@ -49,8 +49,6 @@ class RenderSVGModelObject : public RenderObject, protected SVGRenderBase {
 public:
     RenderSVGModelObject(SVGStyledElement*);
 
-    virtual const SVGRenderBase* toSVGRenderBase() const { return this; }
-
     virtual bool requiresLayer() const { return false; }
 
     virtual IntRect clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer);
@@ -59,8 +57,6 @@ public:
 
     virtual void absoluteRects(Vector<IntRect>& rects, int tx, int ty);
     virtual void absoluteQuads(Vector<FloatQuad>&);
-
-    virtual void destroy();
 
     virtual void mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool useTransforms, bool fixed, TransformState&) const;
 

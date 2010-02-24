@@ -54,7 +54,7 @@ void InitializeLoggingChannelsIfNecessary()
     initializeWithUserDefault(LogPopupBlocking);
     initializeWithUserDefault(LogEvents);
     initializeWithUserDefault(LogEditing);
-    initializeWithUserDefault(LogLiveConnect);
+    initializeWithUserDefault(LogTextConversion);
     initializeWithUserDefault(LogIconDatabase);
     initializeWithUserDefault(LogSQLDatabase);
     initializeWithUserDefault(LogSpellingAndGrammar);

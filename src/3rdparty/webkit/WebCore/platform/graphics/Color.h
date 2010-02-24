@@ -26,7 +26,6 @@
 #ifndef Color_h
 #define Color_h
 
-#include <wtf/FastAllocBase.h>
 #include <wtf/Platform.h>
 
 #if PLATFORM(CG)
@@ -69,7 +68,7 @@ RGBA32 makeRGBAFromCMYKA(float c, float m, float y, float k, float a);
 
 int differenceSquared(const Color&, const Color&);
 
-class Color : public FastAllocBase {
+class Color {
 public:
     Color() : m_color(0), m_valid(false) { }
     Color(RGBA32 col) : m_color(col), m_valid(true) { }

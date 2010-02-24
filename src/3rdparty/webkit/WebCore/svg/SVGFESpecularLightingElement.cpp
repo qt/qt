@@ -36,9 +36,12 @@ namespace WebCore {
 
 SVGFESpecularLightingElement::SVGFESpecularLightingElement(const QualifiedName& tagName, Document* doc)
     : SVGFilterPrimitiveStandardAttributes(tagName, doc)
-    , m_specularConstant(1.0f)
-    , m_specularExponent(1.0f)
-    , m_surfaceScale(1.0f)
+    , m_in1(this, SVGNames::inAttr)
+    , m_specularConstant(this, SVGNames::specularConstantAttr, 1.0f)
+    , m_specularExponent(this, SVGNames::specularExponentAttr, 1.0f)
+    , m_surfaceScale(this, SVGNames::surfaceScaleAttr, 1.0f)
+    , m_kernelUnitLengthX(this, SVGNames::kernelUnitLengthAttr)
+    , m_kernelUnitLengthY(this, SVGNames::kernelUnitLengthAttr)
 {
 }
 
@@ -67,46 +70,20 @@ void SVGFESpecularLightingElement::parseMappedAttribute(MappedAttribute* attr)
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
 }
 
-void SVGFESpecularLightingElement::synchronizeProperty(const QualifiedName& attrName)
+LightSource* SVGFESpecularLightingElement::findLights() const
 {
-    SVGFilterPrimitiveStandardAttributes::synchronizeProperty(attrName);
-
-    if (attrName == anyQName()) {
-        synchronizeIn1();
-        synchronizeSurfaceScale();
-        synchronizeSpecularConstant();
-        synchronizeSpecularExponent();
-        synchronizeKernelUnitLengthX();
-        synchronizeKernelUnitLengthY();
-        return;
-    }
-
-    if (attrName == SVGNames::inAttr)
-        synchronizeIn1();
-    else if (attrName == SVGNames::surfaceScaleAttr)
-        synchronizeSurfaceScale();
-    else if (attrName == SVGNames::specularConstantAttr)
-        synchronizeSpecularConstant();
-    else if (attrName == SVGNames::specularExponentAttr)
-        synchronizeSpecularExponent();
-    else if (attrName == SVGNames::kernelUnitLengthAttr) {
-        synchronizeKernelUnitLengthX();
-        synchronizeKernelUnitLengthY();
-    }
-}
-
-PassRefPtr<LightSource> SVGFESpecularLightingElement::findLights() const
-{
+    LightSource* light = 0;
     for (Node* n = firstChild(); n; n = n->nextSibling()) {
         if (n->hasTagName(SVGNames::feDistantLightTag) ||
             n->hasTagName(SVGNames::fePointLightTag) ||
             n->hasTagName(SVGNames::feSpotLightTag)) {
             SVGFELightElement* lightNode = static_cast<SVGFELightElement*>(n); 
-            return lightNode->lightSource();
+            light = lightNode->lightSource();
+            break;
         }
     }
 
-    return 0;
+    return light;
 }
 
 bool SVGFESpecularLightingElement::build(SVGResourceFilter* filterResource)

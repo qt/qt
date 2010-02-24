@@ -111,10 +111,10 @@ void FEBlend::apply(Filter* filter)
     if (!getEffectContext())
         return;
 
-    IntRect effectADrawingRect = calculateDrawingIntRect(m_in->scaledSubRegion());
+    IntRect effectADrawingRect = calculateDrawingIntRect(m_in->subRegion());
     RefPtr<CanvasPixelArray> srcPixelArrayA(m_in->resultImage()->getPremultipliedImageData(effectADrawingRect)->data());
 
-    IntRect effectBDrawingRect = calculateDrawingIntRect(m_in2->scaledSubRegion());
+    IntRect effectBDrawingRect = calculateDrawingIntRect(m_in2->subRegion());
     RefPtr<CanvasPixelArray> srcPixelArrayB(m_in2->resultImage()->getPremultipliedImageData(effectBDrawingRect)->data());
 
     IntRect imageRect(IntPoint(), resultImage()->size());

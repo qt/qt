@@ -78,7 +78,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -151,8 +151,7 @@ JSValue jsRGBColorRed(ExecState* exec, const Identifier&, const PropertySlot& sl
     JSRGBColor* castedThis = static_cast<JSRGBColor*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     RGBColor* imp = static_cast<RGBColor*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->red()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->red()));
 }
 
 JSValue jsRGBColorGreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -160,8 +159,7 @@ JSValue jsRGBColorGreen(ExecState* exec, const Identifier&, const PropertySlot& 
     JSRGBColor* castedThis = static_cast<JSRGBColor*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     RGBColor* imp = static_cast<RGBColor*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->green()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->green()));
 }
 
 JSValue jsRGBColorBlue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,8 +167,7 @@ JSValue jsRGBColorBlue(ExecState* exec, const Identifier&, const PropertySlot& s
     JSRGBColor* castedThis = static_cast<JSRGBColor*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     RGBColor* imp = static_cast<RGBColor*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->blue()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->blue()));
 }
 
 JSValue jsRGBColorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

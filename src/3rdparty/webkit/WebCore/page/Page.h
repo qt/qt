@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
@@ -21,17 +21,20 @@
 #ifndef Page_h
 #define Page_h
 
+#include "BackForwardList.h"
+#include "Chrome.h"
+#include "ContextMenuController.h"
 #include "FrameLoaderTypes.h"
+#include "LinkHash.h"
 #include "PlatformString.h"
-#include <wtf/Forward.h>
 #include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
+#include <wtf/OwnPtr.h>
 
 #if PLATFORM(MAC)
 #include "SchedulePair.h"
 #endif
 
-#if PLATFORM(WIN) || (PLATFORM(WX) && OS(WINDOWS)) || (PLATFORM(QT) && defined(Q_WS_WIN))
+#if PLATFORM(WIN) || (PLATFORM(WX) && PLATFORM(WIN_OS)) || (PLATFORM(QT) && defined(Q_WS_WIN))
 typedef struct HINSTANCE__* HINSTANCE;
 #endif
 
@@ -41,7 +44,6 @@ namespace JSC {
 
 namespace WebCore {
 
-    class BackForwardList;
     class Chrome;
     class ChromeClient;
     class ContextMenuClient;
@@ -52,36 +54,30 @@ namespace WebCore {
     class EditorClient;
     class FocusController;
     class Frame;
-    class GeolocationController;
-    class GeolocationControllerClient;
     class HaltablePlugin;
-    class HistoryItem;
     class InspectorClient;
     class InspectorController;
     class InspectorTimelineAgent;
-    class MediaCanStartListener;
     class Node;
     class PageGroup;
     class PluginData;
     class PluginHalter;
     class PluginHalterClient;
+    class PluginView;
     class ProgressTracker;
     class RenderTheme;
     class VisibleSelection;
     class SelectionController;
     class Settings;
-
 #if ENABLE(DOM_STORAGE)
     class StorageNamespace;
-#endif
-#if ENABLE(NOTIFICATIONS)
-    class NotificationPresenter;
 #endif
 #if ENABLE(WML)
     class WMLPageState;
 #endif
-
-    typedef uint64_t LinkHash;
+#if ENABLE(NOTIFICATIONS)
+    class NotificationPresenter;
+#endif
 
     enum FindDirection { FindDirectionForward, FindDirectionBackward };
 
@@ -89,7 +85,7 @@ namespace WebCore {
     public:
         static void setNeedsReapplyStyles();
 
-        Page(ChromeClient*, ContextMenuClient*, EditorClient*, DragClient*, InspectorClient*, PluginHalterClient*, GeolocationControllerClient*);
+        Page(ChromeClient*, ContextMenuClient*, EditorClient*, DragClient*, InspectorClient*, PluginHalterClient*);
         ~Page();
 
         RenderTheme* theme() const { return m_theme.get(); };
@@ -97,10 +93,10 @@ namespace WebCore {
         static void refreshPlugins(bool reload);
         PluginData* pluginData() const;
 
-        void setCanStartMedia(bool);
-        bool canStartMedia() const { return m_canStartMedia; }
-        void addMediaCanStartListener(MediaCanStartListener*);
-        void removeMediaCanStartListener(MediaCanStartListener*);
+        void setCanStartPlugins(bool);
+        bool canStartPlugins() const { return m_canStartPlugins; }
+        void addUnstartedPlugin(PluginView*);
+        void removeUnstartedPlugin(PluginView*);
 
         EditorClient* editorClient() const { return m_editorClient; }
 
@@ -133,8 +129,8 @@ namespace WebCore {
         PageGroup* groupPtr() { return m_group; } // can return 0
 
         void incrementFrameCount() { ++m_frameCount; }
-        void decrementFrameCount() { ASSERT(m_frameCount); --m_frameCount; }
-        int frameCount() const { checkFrameCountConsistency(); return m_frameCount; }
+        void decrementFrameCount() { --m_frameCount; }
+        int frameCount() const { return m_frameCount; }
 
         Chrome* chrome() const { return m_chrome.get(); }
         SelectionController* dragCaretController() const { return m_dragCaretController.get(); }
@@ -147,9 +143,6 @@ namespace WebCore {
 #endif
 #if ENABLE(INSPECTOR)
         InspectorController* inspectorController() const { return m_inspectorController.get(); }
-#endif
-#if ENABLE(CLIENT_BASED_GEOLOCATION)
-        GeolocationController* geolocationController() const { return m_geolocationController.get(); }
 #endif
         Settings* settings() const { return m_settings.get(); }
         ProgressTracker* progress() const { return m_progress.get(); }
@@ -205,7 +198,7 @@ namespace WebCore {
         void setDebugger(JSC::Debugger*);
         JSC::Debugger* debugger() const { return m_debugger; }
 
-#if PLATFORM(WIN) || (PLATFORM(WX) && OS(WINDOWS)) || (PLATFORM(QT) && defined(Q_WS_WIN))
+#if PLATFORM(WIN) || (PLATFORM(WX) && PLATFORM(WIN_OS)) || (PLATFORM(QT) && defined(Q_WS_WIN))
         // The global DLL or application instance used for all windows.
         static void setInstanceHandle(HINSTANCE instanceHandle) { s_instanceHandle = instanceHandle; }
         static HINSTANCE instanceHandle() { return s_instanceHandle; }
@@ -245,12 +238,6 @@ namespace WebCore {
     private:
         void initGroup();
 
-#if ASSERT_DISABLED
-        void checkFrameCountConsistency() const { }
-#else
-        void checkFrameCountConsistency() const;
-#endif
-
         OwnPtr<Chrome> m_chrome;
         OwnPtr<SelectionController> m_dragCaretController;
 #if ENABLE(DRAG_SUPPORT)
@@ -262,9 +249,6 @@ namespace WebCore {
 #endif
 #if ENABLE(INSPECTOR)
         OwnPtr<InspectorController> m_inspectorController;
-#endif
-#if ENABLE(CLIENT_BASED_GEOLOCATION)
-        OwnPtr<GeolocationController> m_geolocationController;
 #endif
         OwnPtr<Settings> m_settings;
         OwnPtr<ProgressTracker> m_progress;
@@ -311,8 +295,8 @@ namespace WebCore {
         double m_customHTMLTokenizerTimeDelay;
         int m_customHTMLTokenizerChunkSize;
 
-        bool m_canStartMedia;
-        HashSet<MediaCanStartListener*> m_mediaCanStartListeners;
+        bool m_canStartPlugins;
+        HashSet<PluginView*> m_unstartedPlugins;
 
         OwnPtr<PluginHalter> m_pluginHalter;
 

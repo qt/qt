@@ -38,67 +38,19 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGPoint);
 
 /* Hash table */
 
-static const HashTableValue JSSVGPointTableValues[4] =
+static const HashTableValue JSSVGPointTableValues[3] =
 {
     { "x", DontDelete, (intptr_t)jsSVGPointX, (intptr_t)setJSSVGPointX },
     { "y", DontDelete, (intptr_t)jsSVGPointY, (intptr_t)setJSSVGPointY },
-    { "constructor", DontEnum|ReadOnly, (intptr_t)jsSVGPointConstructor, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static JSC_CONST_HASHTABLE HashTable JSSVGPointTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 15, JSSVGPointTableValues, 0 };
+    { 1, JSSVGPointTableValues, 0 };
 #else
-    { 9, 7, JSSVGPointTableValues, 0 };
+    { 4, 3, JSSVGPointTableValues, 0 };
 #endif
-
-/* Hash table for constructor */
-
-static const HashTableValue JSSVGPointConstructorTableValues[1] =
-{
-    { 0, 0, 0, 0 }
-};
-
-static JSC_CONST_HASHTABLE HashTable JSSVGPointConstructorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 0, JSSVGPointConstructorTableValues, 0 };
-#else
-    { 1, 0, JSSVGPointConstructorTableValues, 0 };
-#endif
-
-class JSSVGPointConstructor : public DOMConstructorObject {
-public:
-    JSSVGPointConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-        : DOMConstructorObject(JSSVGPointConstructor::createStructure(globalObject->objectPrototype()), globalObject)
-    {
-        putDirect(exec->propertyNames().prototype, JSSVGPointPrototype::self(exec, globalObject), None);
-    }
-    virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
-    virtual bool getOwnPropertyDescriptor(ExecState*, const Identifier&, PropertyDescriptor&);
-    virtual const ClassInfo* classInfo() const { return &s_info; }
-    static const ClassInfo s_info;
-
-    static PassRefPtr<Structure> createStructure(JSValue proto) 
-    { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
-    }
-    
-protected:
-    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
-};
-
-const ClassInfo JSSVGPointConstructor::s_info = { "SVGPointConstructor", 0, &JSSVGPointConstructorTable, 0 };
-
-bool JSSVGPointConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
-{
-    return getStaticValueSlot<JSSVGPointConstructor, DOMObject>(exec, &JSSVGPointConstructorTable, this, propertyName, slot);
-}
-
-bool JSSVGPointConstructor::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
-{
-    return getStaticValueDescriptor<JSSVGPointConstructor, DOMObject>(exec, &JSSVGPointConstructorTable, this, propertyName, descriptor);
-}
 
 /* Hash table for prototype */
 
@@ -134,8 +86,8 @@ bool JSSVGPointPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 const ClassInfo JSSVGPoint::s_info = { "SVGPoint", 0, &JSSVGPointTable, 0 };
 
-JSSVGPoint::JSSVGPoint(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<FloatPoint> > impl)
-    : DOMObjectWithGlobalPointer(structure, globalObject)
+JSSVGPoint::JSSVGPoint(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JSSVGPODTypeWrapper<FloatPoint> > impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -143,7 +95,6 @@ JSSVGPoint::JSSVGPoint(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 JSSVGPoint::~JSSVGPoint()
 {
     forgetDOMObject(this, impl());
-    JSSVGContextCache::forgetWrapper(this);
 }
 
 JSObject* JSSVGPoint::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -166,8 +117,7 @@ JSValue jsSVGPointX(ExecState* exec, const Identifier&, const PropertySlot& slot
     JSSVGPoint* castedThis = static_cast<JSSVGPoint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     FloatPoint imp(*castedThis->impl());
-    JSValue result =  jsNumber(exec, imp.x());
-    return result;
+    return jsNumber(exec, imp.x());
 }
 
 JSValue jsSVGPointY(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -175,15 +125,9 @@ JSValue jsSVGPointY(ExecState* exec, const Identifier&, const PropertySlot& slot
     JSSVGPoint* castedThis = static_cast<JSSVGPoint*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     FloatPoint imp(*castedThis->impl());
-    JSValue result =  jsNumber(exec, imp.y());
-    return result;
+    return jsNumber(exec, imp.y());
 }
 
-JSValue jsSVGPointConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSSVGPoint* domObject = static_cast<JSSVGPoint*>(asObject(slot.slotBase()));
-    return JSSVGPoint::getConstructor(exec, domObject->globalObject());
-}
 void JSSVGPoint::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPoint, Base>(exec, propertyName, value, &JSSVGPointTable, this, slot);
@@ -191,25 +135,16 @@ void JSSVGPoint::put(ExecState* exec, const Identifier& propertyName, JSValue va
 
 void setJSSVGPointX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPoint* castedThisObj = static_cast<JSSVGPoint*>(thisObject);
-    JSSVGPODTypeWrapper<FloatPoint> * imp = static_cast<JSSVGPODTypeWrapper<FloatPoint> *>(castedThisObj->impl());
-    FloatPoint podImp(*imp);
-    podImp.setX(value.toFloat(exec));
-    imp->commitChange(podImp, castedThisObj);
+    FloatPoint imp(*static_cast<JSSVGPoint*>(thisObject)->impl());
+    imp.setX(value.toFloat(exec));
+        static_cast<JSSVGPoint*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGPoint*>(thisObject)->context());
 }
 
 void setJSSVGPointY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSSVGPoint* castedThisObj = static_cast<JSSVGPoint*>(thisObject);
-    JSSVGPODTypeWrapper<FloatPoint> * imp = static_cast<JSSVGPODTypeWrapper<FloatPoint> *>(castedThisObj->impl());
-    FloatPoint podImp(*imp);
-    podImp.setY(value.toFloat(exec));
-    imp->commitChange(podImp, castedThisObj);
-}
-
-JSValue JSSVGPoint::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
-{
-    return getDOMConstructor<JSSVGPointConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
+    FloatPoint imp(*static_cast<JSSVGPoint*>(thisObject)->impl());
+    imp.setY(value.toFloat(exec));
+        static_cast<JSSVGPoint*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGPoint*>(thisObject)->context());
 }
 
 JSValue JSC_HOST_CALL jsSVGPointPrototypeFunctionMatrixTransform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -218,13 +153,13 @@ JSValue JSC_HOST_CALL jsSVGPointPrototypeFunctionMatrixTransform(ExecState* exec
     if (!thisValue.inherits(&JSSVGPoint::s_info))
         return throwError(exec, TypeError);
     JSSVGPoint* castedThisObj = static_cast<JSSVGPoint*>(asObject(thisValue));
-    JSSVGPODTypeWrapper<FloatPoint> * imp = static_cast<JSSVGPODTypeWrapper<FloatPoint> *>(castedThisObj->impl());
-    FloatPoint podImp(*imp);
-    AffineTransform matrix = toSVGMatrix(args.at(0));
+    JSSVGPODTypeWrapper<FloatPoint>* wrapper = castedThisObj->impl();
+    FloatPoint imp(*wrapper);
+    TransformationMatrix matrix = toSVGMatrix(args.at(0));
 
 
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), JSSVGStaticPODTypeWrapper<FloatPoint>::create(podImp.matrixTransform(matrix)).get(), 0 /* no context on purpose */);
-    imp->commitChange(podImp, castedThisObj);
+    JSC::JSValue result = toJS(exec, deprecatedGlobalObjectForPrototype(exec), JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp.matrixTransform(matrix)).get(), castedThisObj->context());
+    wrapper->commitChange(imp, castedThisObj->context());
     return result;
 }
 

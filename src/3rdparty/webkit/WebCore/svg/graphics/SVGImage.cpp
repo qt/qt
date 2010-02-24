@@ -30,7 +30,6 @@
 
 #include "CachedPage.h"
 #include "DocumentLoader.h"
-#include "FileChooser.h"
 #include "FloatRect.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -55,7 +54,7 @@
 
 namespace WebCore {
 
-class SVGImageChromeClient : public EmptyChromeClient, public Noncopyable {
+class SVGImageChromeClient : public EmptyChromeClient {
 public:
     SVGImageChromeClient(SVGImage* image)
         : m_image(image)
@@ -174,7 +173,7 @@ bool SVGImage::hasRelativeHeight() const
     return rootElement->height().unitType() == LengthTypePercentage;
 }
 
-void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, ColorSpace, CompositeOperator compositeOp)
+void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp)
 {
     if (!m_page)
         return;
@@ -193,7 +192,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
     if (view->needsLayout())
         view->layout();
-    view->paint(context, IntRect(0, 0, view->width(), view->height()));
+    view->paint(context, enclosingIntRect(srcRect));
 
     if (compositeOp != CompositeSourceOver)
         context->endTransparencyLayer();
@@ -215,7 +214,7 @@ NativeImagePtr SVGImage::nativeImageForCurrentFrame()
         m_frameCache = ImageBuffer::create(size());
         if (!m_frameCache) // failed to allocate image
             return 0;
-        draw(m_frameCache->context(), rect(), rect(), DeviceColorSpace, CompositeSourceOver);
+        renderSubtreeToImage(m_frameCache.get(), m_page->mainFrame()->contentRenderer());
     }
     return m_frameCache->image()->nativeImageForCurrentFrame();
 }
@@ -246,7 +245,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // FIXME: If this SVG ends up loading itself, we might leak the world.
         // The comment said that the Cache code does not know about CachedImages
         // holding Frames and won't know to break the cycle. But 
-        m_page.set(new Page(m_chromeClient.get(), dummyContextMenuClient, dummyEditorClient, dummyDragClient, dummyInspectorClient, 0, 0));
+        m_page.set(new Page(m_chromeClient.get(), dummyContextMenuClient, dummyEditorClient, dummyDragClient, dummyInspectorClient, 0));
         m_page->settings()->setJavaScriptEnabled(false);
         m_page->settings()->setPluginsEnabled(false);
 

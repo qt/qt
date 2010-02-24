@@ -25,10 +25,10 @@
 #define RenderPath_h
 
 #if ENABLE(SVG)
-#include "AffineTransform.h"
+
 #include "FloatRect.h"
 #include "RenderSVGModelObject.h"
-#include "SVGMarkerLayoutInfo.h"
+#include "TransformationMatrix.h"
 
 namespace WebCore {
 
@@ -40,7 +40,7 @@ class RenderPath : public RenderSVGModelObject {
 public:
     RenderPath(SVGStyledTransformableElement*);
 
-    const Path& path() const { return m_path; }
+    const Path& path() const;
 
 private:
     // Hit-detection seperated for the fill and the stroke
@@ -48,11 +48,9 @@ private:
     bool strokeContains(const FloatPoint&, bool requiresStroke = true) const;
 
     virtual FloatRect objectBoundingBox() const;
-    virtual FloatRect strokeBoundingBox() const;
-    virtual FloatRect markerBoundingBox() const;
     virtual FloatRect repaintRectInLocalCoordinates() const;
 
-    virtual const AffineTransform& localToParentTransform() const;
+    virtual TransformationMatrix localToParentTransform() const;
 
     void setPath(const Path&);
 
@@ -61,22 +59,20 @@ private:
 
     virtual void layout();
     virtual void paint(PaintInfo&, int parentX, int parentY);
-    virtual void addFocusRingRects(Vector<IntRect>&, int tx, int ty);
+    virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
 
-    void calculateMarkerBoundsIfNeeded() const;
+    FloatRect drawMarkersIfNeeded(GraphicsContext*, const FloatRect&, const Path&) const;
 
 private:
-    virtual AffineTransform localTransform() const;
+    virtual TransformationMatrix localTransform() const;
 
     mutable Path m_path;
     mutable FloatRect m_cachedLocalFillBBox;
-    mutable FloatRect m_cachedLocalStrokeBBox;
     mutable FloatRect m_cachedLocalRepaintRect;
-    mutable FloatRect m_cachedLocalMarkerBBox;
-    mutable SVGMarkerLayoutInfo m_markerLayoutInfo;
-    AffineTransform m_localTransform;
+    FloatRect m_markerBounds;
+    TransformationMatrix m_localTransform;
 };
 
 inline RenderPath* toRenderPath(RenderObject* object)
@@ -98,3 +94,5 @@ void toRenderPath(const RenderPath*);
 
 #endif // ENABLE(SVG)
 #endif
+
+// vim:ts=4:noet

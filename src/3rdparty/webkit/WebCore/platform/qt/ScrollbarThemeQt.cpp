@@ -147,7 +147,7 @@ bool ScrollbarThemeQt::paint(Scrollbar* scrollbar, GraphicsContext* graphicsCont
     p.painter->save();
     QStyleOptionSlider* opt = styleOptionSlider(scrollbar, p.widget);
 
-    p.painter->setClipRect(opt->rect.intersected(damageRect), Qt::IntersectClip);
+    p.painter->setClipRect(opt->rect.intersected(damageRect));
 
 #ifdef Q_WS_MAC
     p.drawComplexControl(QStyle::CC_ScrollBar, *opt);
@@ -234,7 +234,7 @@ void ScrollbarThemeQt::paintScrollCorner(ScrollView* scrollView, GraphicsContext
     }
 
 #if QT_VERSION < 0x040500
-    context->fillRect(rect, QApplication::palette().color(QPalette::Normal, QPalette::Window), DeviceColorSpace);
+    context->fillRect(rect, QApplication::palette().color(QPalette::Normal, QPalette::Window));
 #else
     StylePainter p(this, context);
     if (!p.isValid())

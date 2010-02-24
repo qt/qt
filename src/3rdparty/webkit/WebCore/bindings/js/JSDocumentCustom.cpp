@@ -26,7 +26,7 @@
 #include "HTMLDocument.h"
 #include "JSCanvasRenderingContext2D.h"
 #if ENABLE(3D_CANVAS)
-#include "JSWebGLRenderingContext.h"
+#include "JSCanvasRenderingContext3D.h"
 #endif
 #include "JSDOMWindowCustom.h"
 #include "JSHTMLDocument.h"
@@ -65,11 +65,11 @@ JSValue JSDocument::location(ExecState* exec) const
         return jsNull();
 
     Location* location = frame->domWindow()->location();
-    if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec, location))
+    if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), location))
         return wrapper;
 
     JSLocation* jsLocation = new (exec) JSLocation(getDOMStructure<JSLocation>(exec, globalObject()), globalObject(), location);
-    cacheDOMObjectWrapper(exec, location, jsLocation);
+    cacheDOMObjectWrapper(exec->globalData(), location, jsLocation);
     return jsLocation;
 }
 
@@ -87,7 +87,7 @@ void JSDocument::setLocation(ExecState* exec, JSValue value)
     if (activeFrame)
         str = activeFrame->document()->completeURL(str).string();
 
-    bool userGesture = activeFrame->script()->processingUserGesture(currentWorld(exec));
+    bool userGesture = activeFrame->script()->processingUserGesture();
     frame->redirectScheduler()->scheduleLocationChange(str, activeFrame->loader()->outgoingReferrer(), !activeFrame->script()->anyPageIsProcessingUserGesture(), false, userGesture);
 }
 
@@ -96,18 +96,18 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, Document* documen
     if (!document)
         return jsNull();
 
-    DOMObject* wrapper = getCachedDOMNodeWrapper(exec, document, document);
+    DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), document);
     if (wrapper)
         return wrapper;
 
     if (document->isHTMLDocument())
-        wrapper = CREATE_DOM_NODE_WRAPPER(exec, globalObject, HTMLDocument, document);
+        wrapper = CREATE_DOM_OBJECT_WRAPPER(exec, globalObject, HTMLDocument, document);
 #if ENABLE(SVG)
     else if (document->isSVGDocument())
-        wrapper = CREATE_DOM_NODE_WRAPPER(exec, globalObject, SVGDocument, document);
+        wrapper = CREATE_DOM_OBJECT_WRAPPER(exec, globalObject, SVGDocument, document);
 #endif
     else
-        wrapper = CREATE_DOM_NODE_WRAPPER(exec, globalObject, Document, document);
+        wrapper = CREATE_DOM_OBJECT_WRAPPER(exec, globalObject, Document, document);
 
     // Make sure the document is kept around by the window object, and works right with the
     // back/forward cache.

@@ -4,6 +4,8 @@
     Copyright (C) 2006 Apple Computer, Inc.
     Copyright (C) 2009 Cameron McCormack <cam@mcc.id.au>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -46,40 +48,40 @@ SVGStyleElement::SVGStyleElement(const QualifiedName& tagName, Document* doc, bo
 const AtomicString& SVGStyleElement::type() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, defaultValue, ("text/css"));
-    const AtomicString& n = getAttribute(SVGNames::typeAttr);
+    const AtomicString& n = getAttribute(typeAttr);
     return n.isNull() ? defaultValue : n;
 }
 
 void SVGStyleElement::setType(const AtomicString& type, ExceptionCode& ec)
 {
-    setAttribute(SVGNames::typeAttr, type, ec);
+    setAttribute(typeAttr, type, ec);
 }
 
 const AtomicString& SVGStyleElement::media() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, defaultValue, ("all"));
-    const AtomicString& n = getAttribute(SVGNames::mediaAttr);
+    const AtomicString& n = getAttribute(mediaAttr);
     return n.isNull() ? defaultValue : n;
 }
 
 void SVGStyleElement::setMedia(const AtomicString& media, ExceptionCode& ec)
 {
-    setAttribute(SVGNames::mediaAttr, media, ec);
+    setAttribute(mediaAttr, media, ec);
 }
 
 String SVGStyleElement::title() const
 {
-    return getAttribute(SVGNames::titleAttr);
+    return getAttribute(titleAttr);
 }
 
 void SVGStyleElement::setTitle(const AtomicString& title, ExceptionCode& ec)
 {
-    setAttribute(SVGNames::titleAttr, title, ec);
+    setAttribute(titleAttr, title, ec);
 }
 
 void SVGStyleElement::parseMappedAttribute(MappedAttribute* attr)
 {
-    if (attr->name() == SVGNames::titleAttr && m_sheet)
+    if (attr->name() == titleAttr && m_sheet)
         m_sheet->setTitle(attr->value());
     else {
         if (SVGLangSpace::parseMappedAttribute(attr))

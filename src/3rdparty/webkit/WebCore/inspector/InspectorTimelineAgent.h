@@ -31,8 +31,6 @@
 #ifndef InspectorTimelineAgent_h
 #define InspectorTimelineAgent_h
 
-#if ENABLE(INSPECTOR)
-
 #include "Document.h"
 #include "ScriptExecutionContext.h"
 #include "ScriptObject.h"
@@ -42,13 +40,10 @@
 namespace WebCore {
     class Event;
     class InspectorFrontend;
-    class IntRect;
-    class ResourceRequest;
-    class ResourceResponse;
 
     // Must be kept in sync with TimelineAgent.js
     enum TimelineRecordType {
-        EventDispatchTimelineRecordType = 0,
+        DOMDispatchTimelineRecordType = 0,
         LayoutTimelineRecordType = 1,
         RecalculateStylesTimelineRecordType = 2,
         PaintTimelineRecordType = 3,
@@ -58,14 +53,10 @@ namespace WebCore {
         TimerFireTimelineRecordType = 7,
         XHRReadyStateChangeRecordType = 8,
         XHRLoadRecordType = 9,
-        EvaluateScriptTimelineRecordType = 10,
-        MarkTimelineRecordType = 11,
-        ResourceSendRequestTimelineRecordType = 12,
-        ResourceReceiveResponseTimelineRecordType = 13,
-        ResourceFinishTimelineRecordType = 14,
+        EvaluateScriptTagTimelineRecordType = 10,
     };
 
-    class InspectorTimelineAgent : public Noncopyable {
+    class InspectorTimelineAgent {
     public:
         InspectorTimelineAgent(InspectorFrontend* frontend);
         ~InspectorTimelineAgent();
@@ -74,8 +65,8 @@ namespace WebCore {
         void resetFrontendProxyObject(InspectorFrontend*);
 
         // Methods called from WebCore.
-        void willDispatchEvent(const Event&);
-        void didDispatchEvent();
+        void willDispatchDOMEvent(const Event&);
+        void didDispatchDOMEvent();
 
         void willLayout();
         void didLayout();
@@ -83,11 +74,11 @@ namespace WebCore {
         void willRecalculateStyle();
         void didRecalculateStyle();
 
-        void willPaint(const IntRect&);
+        void willPaint();
         void didPaint();
 
-        void willWriteHTML(unsigned int length, unsigned int startLine);
-        void didWriteHTML(unsigned int endLine);
+        void willWriteHTML();
+        void didWriteHTML();
         
         void didInstallTimer(int timerId, int timeout, bool singleShot);
         void didRemoveTimer(int timerId);
@@ -99,21 +90,14 @@ namespace WebCore {
         void willLoadXHR(const String&);
         void didLoadXHR();
 
-        void willEvaluateScript(const String&, int);
-        void didEvaluateScript();
-
-        void didMarkTimeline(const String&);
-
-        void willSendResourceRequest(unsigned long, bool isMainResource, const ResourceRequest&);
-        void didReceiveResourceResponse(unsigned long, const ResourceResponse&);
-        void didFinishLoadingResource(unsigned long, bool didFail);
+        void willEvaluateScriptTag(const String&, int);
+        void didEvaluateScriptTag();
 
         static InspectorTimelineAgent* retrieve(ScriptExecutionContext*);
     private:
         struct TimelineRecordEntry {
-            TimelineRecordEntry(ScriptObject record, ScriptObject data, ScriptArray children, TimelineRecordType type) : record(record), data(data), children(children), type(type) { }
+            TimelineRecordEntry(ScriptObject record, ScriptArray children, TimelineRecordType type) : record(record), children(children), type(type) { }
             ScriptObject record;
-            ScriptObject data;
             ScriptArray children;
             TimelineRecordType type;
         };
@@ -123,7 +107,7 @@ namespace WebCore {
         static double currentTimeInMilliseconds();
 
         void didCompleteCurrentRecord(TimelineRecordType);
-
+        
         void addRecordToTimeline(ScriptObject, TimelineRecordType);
 
         InspectorFrontend* m_frontend;
@@ -133,12 +117,11 @@ namespace WebCore {
 
 inline InspectorTimelineAgent* InspectorTimelineAgent::retrieve(ScriptExecutionContext* context)
 {
-    if (context && context->isDocument())
+    if (context->isDocument())
         return static_cast<Document*>(context)->inspectorTimelineAgent();
     return 0;
 }
 
 } // namespace WebCore
 
-#endif // !ENABLE(INSPECTOR)
 #endif // !defined(InspectorTimelineAgent_h)

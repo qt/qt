@@ -54,7 +54,6 @@ private:
     void insertNodeAfterAndUpdateNodesInserted(PassRefPtr<Node> insertChild, Node* refChild);
     void insertNodeAtAndUpdateNodesInserted(PassRefPtr<Node>, const Position&);
     void insertNodeBeforeAndUpdateNodesInserted(PassRefPtr<Node> insertChild, Node* refChild);
-    Node* insertAsListItems(PassRefPtr<Node>, Node* insertionNode, const Position&);
 
     void updateNodesInserted(Node*);
     bool shouldRemoveEndBR(Node*, const VisiblePosition&);
@@ -69,7 +68,6 @@ private:
     
     void negateStyleRulesThatAffectAppearance();
     void handleStyleSpans();
-    void copyStyleToChildren(Node* parentNode, const CSSMutableStyleDeclaration* parentStyle);
     void handlePasteAsQuotationNode();
     
     virtual void removeNodePreservingChildren(Node*);

@@ -28,7 +28,6 @@
 #include "CharacterNames.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "Chrome.h"
 #include "ChromeClient.h"
 #include "Comment.h"
 #include "Console.h"
@@ -65,8 +64,6 @@ using namespace HTMLNames;
 
 static const unsigned cMaxRedundantTagDepth = 20;
 static const unsigned cResidualStyleMaxDepth = 200;
-static const unsigned cResidualStyleIterationLimit = 5;
-
 
 static const int minBlockLevelTagPriority = 3;
 
@@ -140,12 +137,11 @@ HTMLParser::HTMLParser(HTMLDocument* doc, bool reportErrors)
     , m_reportErrors(reportErrors)
     , m_handlingResidualStyleAcrossBlocks(false)
     , m_inStrayTableContent(0)
-    , m_scriptingPermission(FragmentScriptingAllowed)
     , m_parserQuirks(m_document->page() ? m_document->page()->chrome()->client()->createHTMLParserQuirks() : 0)
 {
 }
 
-HTMLParser::HTMLParser(DocumentFragment* frag, FragmentScriptingPermission scriptingPermission)
+HTMLParser::HTMLParser(DocumentFragment* frag)
     : m_document(frag->document())
     , m_current(frag)
     , m_didRefCurrent(true)
@@ -159,7 +155,6 @@ HTMLParser::HTMLParser(DocumentFragment* frag, FragmentScriptingPermission scrip
     , m_reportErrors(false)
     , m_handlingResidualStyleAcrossBlocks(false)
     , m_inStrayTableContent(0)
-    , m_scriptingPermission(scriptingPermission)
     , m_parserQuirks(m_document->page() ? m_document->page()->chrome()->client()->createHTMLParserQuirks() : 0)
 {
     if (frag)
@@ -208,25 +203,6 @@ void HTMLParser::setCurrent(Node* newCurrent)
     m_didRefCurrent = didRefNewCurrent;
 }
 
-inline static int tagPriorityOfNode(Node* n)
-{
-    return n->isHTMLElement() ? static_cast<HTMLElement*>(n)->tagPriority() : 0;
-}
-
-inline void HTMLParser::limitBlockDepth(int tagPriority)
-{
-    if (tagPriority >= minBlockLevelTagPriority) {
-        while (m_blocksInStack >= cMaxBlockDepth)
-            popBlock(m_blockStack->tagName);
-    }
-}
-
-inline bool HTMLParser::insertNodeAfterLimitBlockDepth(Node* n, bool flat)
-{
-    limitBlockDepth(tagPriorityOfNode(n));
-    return insertNode(n, flat);
-}
-
 PassRefPtr<Node> HTMLParser::parseToken(Token* t)
 {
     if (!m_skipModeTag.isNull()) {
@@ -265,7 +241,7 @@ PassRefPtr<Node> HTMLParser::parseToken(Token* t)
         while (charsLeft) {
             // split large blocks of text to nodes of manageable size
             n = Text::createWithLengthLimit(m_document, text, charsLeft);
-            if (!insertNodeAfterLimitBlockDepth(n.get(), t->selfClosingTag))
+            if (!insertNode(n.get(), t->selfClosingTag))
                 return 0;
         }
         return n;
@@ -279,8 +255,7 @@ PassRefPtr<Node> HTMLParser::parseToken(Token* t)
     // set attributes
     if (n->isHTMLElement()) {
         HTMLElement* e = static_cast<HTMLElement*>(n.get());
-        if (m_scriptingPermission == FragmentScriptingAllowed || t->tagName != scriptTag)
-            e->setAttributeMap(t->attrs.get(), m_scriptingPermission);
+        e->setAttributeMap(t->attrs.get());
 
         // take care of optional close tags
         if (e->endTagRequirement() == TagStatusOptional)
@@ -296,7 +271,7 @@ PassRefPtr<Node> HTMLParser::parseToken(Token* t)
         }
     }
 
-    if (!insertNodeAfterLimitBlockDepth(n.get(), t->selfClosingTag)) {
+    if (!insertNode(n.get(), t->selfClosingTag)) {
         // we couldn't insert the node
 
         if (n->isElementNode()) {
@@ -354,16 +329,20 @@ bool HTMLParser::insertNode(Node* n, bool flat)
     RefPtr<Node> protectNode(n);
 
     const AtomicString& localName = n->localName();
+    int tagPriority = n->isHTMLElement() ? static_cast<HTMLElement*>(n)->tagPriority() : 0;
     
     // <table> is never allowed inside stray table content.  Always pop out of the stray table content
     // and close up the first table, and then start the second table as a sibling.
     if (m_inStrayTableContent && localName == tableTag)
         popBlock(tableTag);
 
+    if (tagPriority >= minBlockLevelTagPriority) {
+        while (m_blocksInStack >= cMaxBlockDepth)
+            popBlock(m_blockStack->tagName);
+    }
+
     if (m_parserQuirks && !m_parserQuirks->shouldInsertNode(m_current, n))
         return false;
-
-    int tagPriority = tagPriorityOfNode(n);
 
     // let's be stupid and just try to insert it.
     // this should work if the document is well-formed
@@ -658,7 +637,7 @@ bool HTMLParser::handleError(Node* n, bool flat, const AtomicString& localName, 
             reportError(MisplacedContentRetryError, &localName, &currentTagName);
             popBlock(objectTag);
             handled = true;
-        } else if (h->hasLocalName(pTag) || isHeadingTag(currentTagName)) {
+        } else if (h->hasLocalName(pTag) || isHeaderTag(currentTagName)) {
             if (!isInline(n)) {
                 popBlock(currentTagName);
                 handled = true;
@@ -913,8 +892,6 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
     if (gFunctionMap.isEmpty()) {
         gFunctionMap.set(aTag.localName().impl(), &HTMLParser::nestedCreateErrorCheck);
         gFunctionMap.set(addressTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
-        gFunctionMap.set(articleTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
-        gFunctionMap.set(asideTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(bTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(bigTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(blockquoteTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
@@ -929,7 +906,6 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(dtTag.localName().impl(), &HTMLParser::dtCreateErrorCheck);
         gFunctionMap.set(formTag.localName().impl(), &HTMLParser::formCreateErrorCheck);
         gFunctionMap.set(fieldsetTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
-        gFunctionMap.set(footerTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(framesetTag.localName().impl(), &HTMLParser::framesetCreateErrorCheck);
         gFunctionMap.set(h1Tag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(h2Tag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
@@ -938,7 +914,6 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(h5Tag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(h6Tag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(headTag.localName().impl(), &HTMLParser::headCreateErrorCheck);
-        gFunctionMap.set(headerTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(hrTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(iTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(isindexTag.localName().impl(), &HTMLParser::isindexCreateErrorCheck);
@@ -950,7 +925,9 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(nobrTag.localName().impl(), &HTMLParser::nestedCreateErrorCheck);
         gFunctionMap.set(noembedTag.localName().impl(), &HTMLParser::noembedCreateErrorCheck);
         gFunctionMap.set(noframesTag.localName().impl(), &HTMLParser::noframesCreateErrorCheck);
+#if !ENABLE(XHTMLMP)
         gFunctionMap.set(noscriptTag.localName().impl(), &HTMLParser::noscriptCreateErrorCheck);
+#endif
         gFunctionMap.set(olTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(pTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(plaintextTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
@@ -958,7 +935,6 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(rpTag.localName().impl(), &HTMLParser::rpCreateErrorCheck);
         gFunctionMap.set(rtTag.localName().impl(), &HTMLParser::rtCreateErrorCheck);
         gFunctionMap.set(sTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
-        gFunctionMap.set(sectionTag.localName().impl(), &HTMLParser::pCloserCreateErrorCheck);
         gFunctionMap.set(selectTag.localName().impl(), &HTMLParser::selectCreateErrorCheck);
         gFunctionMap.set(smallTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(strikeTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
@@ -1026,19 +1002,19 @@ void HTMLParser::processCloseTag(Token* t)
     }
 }
 
-bool HTMLParser::isHeadingTag(const AtomicString& tagName)
+bool HTMLParser::isHeaderTag(const AtomicString& tagName)
 {
-    DEFINE_STATIC_LOCAL(HashSet<AtomicStringImpl*>, headingTags, ());
-    if (headingTags.isEmpty()) {
-        headingTags.add(h1Tag.localName().impl());
-        headingTags.add(h2Tag.localName().impl());
-        headingTags.add(h3Tag.localName().impl());
-        headingTags.add(h4Tag.localName().impl());
-        headingTags.add(h5Tag.localName().impl());
-        headingTags.add(h6Tag.localName().impl());
+    DEFINE_STATIC_LOCAL(HashSet<AtomicStringImpl*>, headerTags, ());
+    if (headerTags.isEmpty()) {
+        headerTags.add(h1Tag.localName().impl());
+        headerTags.add(h2Tag.localName().impl());
+        headerTags.add(h3Tag.localName().impl());
+        headerTags.add(h4Tag.localName().impl());
+        headerTags.add(h5Tag.localName().impl());
+        headerTags.add(h6Tag.localName().impl());
     }
     
-    return headingTags.contains(tagName.impl());
+    return headerTags.contains(tagName.impl());
 }
 
 bool HTMLParser::isInline(Node* node) const
@@ -1130,10 +1106,8 @@ void HTMLParser::handleResidualStyleCloseTagAcrossBlocks(HTMLStackElem* elem)
     bool finished = false;
     bool strayTableContent = elem->strayTableContent;
 
-    unsigned iterationCount = 0;
-
     m_handlingResidualStyleAcrossBlocks = true;
-    while (!finished && (iterationCount++ < cResidualStyleIterationLimit)) {
+    while (!finished) {
         // Find the outermost element that crosses over to a higher level. If there exists another higher-level
         // element, we will do another pass, until we have corrected the innermost one.
         ExceptionCode ec = 0;
@@ -1301,8 +1275,7 @@ void HTMLParser::handleResidualStyleCloseTagAcrossBlocks(HTMLStackElem* elem)
             prevMaxElem->next = elem;
             ASSERT(newNodePtr);
             prevMaxElem->node = newNodePtr;
-            newNodePtr->ref();
-            prevMaxElem->didRefNode = true;
+            prevMaxElem->didRefNode = false;
         } else
             delete elem;
     }

@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -147,8 +147,7 @@ JSValue jsHTMLLegendElementForm(ExecState* exec, const Identifier&, const Proper
     JSHTMLLegendElement* castedThis = static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLLegendElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -156,8 +155,7 @@ JSValue jsHTMLLegendElementAccessKey(ExecState* exec, const Identifier&, const P
     JSHTMLLegendElement* castedThis = static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->accessKey());
-    return result;
+    return jsString(exec, imp->accessKey());
 }
 
 JSValue jsHTMLLegendElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -165,8 +163,7 @@ JSValue jsHTMLLegendElementAlign(ExecState* exec, const Identifier&, const Prope
     JSHTMLLegendElement* castedThis = static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->align());
-    return result;
+    return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLLegendElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,15 +178,13 @@ void JSHTMLLegendElement::put(ExecState* exec, const Identifier& propertyName, J
 
 void setJSHTMLLegendElementAccessKey(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLLegendElement* castedThisObj = static_cast<JSHTMLLegendElement*>(thisObject);
-    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThisObj->impl());
+    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(static_cast<JSHTMLLegendElement*>(thisObject)->impl());
     imp->setAccessKey(valueToStringWithNullCheck(exec, value));
 }
 
 void setJSHTMLLegendElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSHTMLLegendElement* castedThisObj = static_cast<JSHTMLLegendElement*>(thisObject);
-    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThisObj->impl());
+    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(static_cast<JSHTMLLegendElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 

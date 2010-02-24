@@ -159,12 +159,12 @@ void MediaDocument::defaultEventHandler(Event* event)
         HTMLVideoElement* video = static_cast<HTMLVideoElement*>(targetNode);
         if (event->type() == eventNames().clickEvent) {
             if (!video->canPlay()) {
-                video->pause(event->fromUserGesture());
+                video->pause();
                 event->setDefaultHandled();
             }
         } else if (event->type() == eventNames().dblclickEvent) {
             if (video->canPlay()) {
-                video->play(event->fromUserGesture());
+                video->play();
                 event->setDefaultHandled();
             }
         }
@@ -186,9 +186,9 @@ void MediaDocument::defaultEventHandler(Event* event)
             if (keyboardEvent->keyIdentifier() == "U+0020") { // space
                 if (video->paused()) {
                     if (video->canPlay())
-                        video->play(event->fromUserGesture());
+                        video->play();
                 } else
-                    video->pause(event->fromUserGesture());
+                    video->pause();
                 event->setDefaultHandled();
             }
         }

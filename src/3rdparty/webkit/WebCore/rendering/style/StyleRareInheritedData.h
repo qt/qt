@@ -65,7 +65,6 @@ public:
     bool textSizeAdjust : 1; // An Apple extension.
     unsigned resize : 2; // EResize
     unsigned userSelect : 1;  // EUserSelect
-    unsigned colorSpace : 1; // ColorSpace
     
 private:
     StyleRareInheritedData();

@@ -27,6 +27,8 @@
 #include "AbstractWorker.h"
 #include "Event.h"
 #include "EventListener.h"
+#include "Frame.h"
+#include "JSDOMGlobalObject.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
 #include "RegisteredEventListener.h"
@@ -83,7 +85,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -146,14 +148,14 @@ JSAbstractWorker::JSAbstractWorker(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSAbstractWorker::~JSAbstractWorker()
 {
-    impl()->invalidateJSEventListeners(this);
+    impl()->invalidateEventListeners();
     forgetDOMObject(this, impl());
 }
 
 void JSAbstractWorker::markChildren(MarkStack& markStack)
 {
     Base::markChildren(markStack);
-    impl()->markJSEventListeners(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 JSObject* JSAbstractWorker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -177,10 +179,8 @@ JSValue jsAbstractWorkerOnerror(ExecState* exec, const Identifier&, const Proper
     UNUSED_PARAM(exec);
     AbstractWorker* imp = static_cast<AbstractWorker*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp->scriptExecutionContext()))
-                return jsFunction;
-        }
+        if (JSObject* jsFunction = listener->jsFunction(imp->scriptExecutionContext()))
+            return jsFunction;
     }
     return jsNull();
 }
@@ -199,7 +199,10 @@ void setJSAbstractWorkerOnerror(ExecState* exec, JSObject* thisObject, JSValue v
 {
     UNUSED_PARAM(exec);
     AbstractWorker* imp = static_cast<AbstractWorker*>(static_cast<JSAbstractWorker*>(thisObject)->impl());
-    imp->setOnerror(createJSAttributeEventListener(exec, value, thisObject));
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
+    if (!globalObject)
+        return;
+    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
 }
 
 JSValue JSAbstractWorker::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

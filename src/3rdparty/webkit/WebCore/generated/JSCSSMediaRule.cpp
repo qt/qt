@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -160,8 +160,7 @@ JSValue jsCSSMediaRuleMedia(ExecState* exec, const Identifier&, const PropertySl
     JSCSSMediaRule* castedThis = static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
 }
 
 JSValue jsCSSMediaRuleCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -169,8 +168,7 @@ JSValue jsCSSMediaRuleCssRules(ExecState* exec, const Identifier&, const Propert
     JSCSSMediaRule* castedThis = static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
 }
 
 JSValue jsCSSMediaRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

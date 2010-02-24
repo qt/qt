@@ -47,7 +47,7 @@ PassRefPtr<StorageEvent> StorageEvent::create(const AtomicString& type, const St
 }
 
 StorageEvent::StorageEvent(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& uri, Storage* storageArea)
-    : Event(type, false, false)
+    : Event(type, false, true)
     , m_key(key)
     , m_oldValue(oldValue)
     , m_newValue(newValue)

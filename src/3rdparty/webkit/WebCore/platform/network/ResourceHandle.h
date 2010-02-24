@@ -27,7 +27,6 @@
 #define ResourceHandle_h
 
 #include "AuthenticationChallenge.h"
-#include "AuthenticationClient.h"
 #include "HTTPHeaderMap.h"
 #include "ThreadableLoader.h"
 #include <wtf/OwnPtr.h>
@@ -85,18 +84,14 @@ class KURL;
 class ResourceError;
 class ResourceHandleClient;
 class ResourceHandleInternal;
-class ResourceRequest;
+struct ResourceRequest;
 class ResourceResponse;
 class SchedulePair;
 class SharedBuffer;
 
 template <typename T> class Timer;
 
-class ResourceHandle : public RefCounted<ResourceHandle>
-#if PLATFORM(MAC) || USE(CFNETWORK) || USE(CURL)
-    , public AuthenticationClient
-#endif
-    {
+class ResourceHandle : public RefCounted<ResourceHandle> {
 private:
     ResourceHandle(const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff, bool mightDownloadFromHandle);
 
@@ -115,7 +110,7 @@ public:
     static bool didSendBodyDataDelegateExists();
 #endif
 
-    virtual ~ResourceHandle();
+    ~ResourceHandle();
 
 #if PLATFORM(MAC) || USE(CFNETWORK)
     void willSendRequest(ResourceRequest&, const ResourceResponse& redirectResponse);
@@ -123,9 +118,9 @@ public:
 #endif
 #if PLATFORM(MAC) || USE(CFNETWORK) || USE(CURL)
     void didReceiveAuthenticationChallenge(const AuthenticationChallenge&);
-    virtual void receivedCredential(const AuthenticationChallenge&, const Credential&);
-    virtual void receivedRequestToContinueWithoutCredential(const AuthenticationChallenge&);
-    virtual void receivedCancellation(const AuthenticationChallenge&);
+    void receivedCredential(const AuthenticationChallenge&, const Credential&);
+    void receivedRequestToContinueWithoutCredential(const AuthenticationChallenge&);
+    void receivedCancellation(const AuthenticationChallenge&);
 #endif
 
 #if PLATFORM(MAC)
@@ -138,6 +133,7 @@ public:
     void schedule(SchedulePair*);
     void unschedule(SchedulePair*);
 #elif USE(CFNETWORK)
+    static CFRunLoopRef loaderRunLoop();
     CFURLConnectionRef connection() const;
     CFURLConnectionRef releaseConnectionForDownload();
     static void setHostAllowsAnyHTTPSCertificate(const String&);
@@ -170,7 +166,7 @@ public:
     friend LRESULT __stdcall ResourceHandleWndProc(HWND, unsigned message, WPARAM, LPARAM);
 #endif
 
-#if PLATFORM(QT) || USE(CURL) || USE(SOUP) || PLATFORM(ANDROID)
+#if PLATFORM(QT) || USE(CURL) || USE(SOUP)
     ResourceHandleInternal* getInternal() { return d.get(); }
 #endif
 
@@ -194,16 +190,10 @@ public:
 
     void fireFailure(Timer<ResourceHandle>*);
 
-    using RefCounted<ResourceHandle>::ref;
-    using RefCounted<ResourceHandle>::deref;
-
 private:
     void scheduleFailure(FailureType);
 
     bool start(Frame*);
-
-    virtual void refAuthenticationClient() { ref(); }
-    virtual void derefAuthenticationClient() { deref(); }
 
     friend class ResourceHandleInternal;
     OwnPtr<ResourceHandleInternal> d;

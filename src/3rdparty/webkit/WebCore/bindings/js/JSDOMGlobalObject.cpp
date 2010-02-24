@@ -40,8 +40,6 @@ using namespace JSC;
 
 namespace WebCore {
 
-const ClassInfo JSDOMGlobalObject::s_info = { "DOMGlobalObject", 0, 0, 0 };
-
 JSDOMGlobalObject::JSDOMGlobalObject(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject::JSDOMGlobalObjectData* data, JSObject* thisValue)
     : JSGlobalObject(structure, data, thisValue)
 {
@@ -58,9 +56,14 @@ void JSDOMGlobalObject::markChildren(MarkStack& markStack)
     JSDOMConstructorMap::iterator end2 = constructors().end();
     for (JSDOMConstructorMap::iterator it2 = constructors().begin(); it2 != end2; ++it2)
         markStack.append(it2->second);
+}
 
-    if (d()->m_injectedScript)
-        markStack.append(d()->m_injectedScript);
+PassRefPtr<JSEventListener> JSDOMGlobalObject::createJSAttributeEventListener(JSValue val)
+{
+    if (!val.isObject())
+        return 0;
+
+    return JSEventListener::create(asObject(val), true, currentWorld(globalExec())).get();
 }
 
 void JSDOMGlobalObject::setCurrentEvent(Event* evt)
@@ -71,16 +74,6 @@ void JSDOMGlobalObject::setCurrentEvent(Event* evt)
 Event* JSDOMGlobalObject::currentEvent() const
 {
     return d()->evt;
-}
-
-void JSDOMGlobalObject::setInjectedScript(JSObject* injectedScript)
-{
-    d()->m_injectedScript = injectedScript;
-}
-
-JSObject* JSDOMGlobalObject::injectedScript() const
-{
-    return d()->m_injectedScript;
 }
 
 void JSDOMGlobalObject::destroyJSDOMGlobalObjectData(void* jsDOMGlobalObjectData)

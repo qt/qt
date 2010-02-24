@@ -34,7 +34,7 @@ const unsigned short cNoTruncation = USHRT_MAX;
 const unsigned short cFullTruncation = USHRT_MAX - 1;
 
 // Helper functions shared by InlineTextBox / SVGRootInlineBox
-void updateGraphicsContext(GraphicsContext*, const Color& fillColor, const Color& strokeColor, float strokeThickness, ColorSpace);
+void updateGraphicsContext(GraphicsContext* context, const Color& fillColor, const Color& strokeColor, float strokeThickness);
 Color correctedTextColor(Color textColor, Color backgroundColor);
 
 class InlineTextBox : public InlineRunBox {
@@ -61,8 +61,6 @@ public:
 
     void setFallbackFonts(const HashSet<const SimpleFontData*>&);
     void takeFallbackFonts(Vector<const SimpleFontData*>&);
-
-    unsigned short truncation() { return m_truncation; }
 
 private:
     virtual int selectionTop();
@@ -133,9 +131,9 @@ protected:
 private:
     void paintDecoration(GraphicsContext*, int tx, int ty, int decoration, ShadowData*);
     void paintSelection(GraphicsContext*, int tx, int ty, RenderStyle*, const Font&);
-    void paintSpellingOrGrammarMarker(GraphicsContext*, int tx, int ty, const DocumentMarker&, RenderStyle*, const Font&, bool grammar);
-    void paintTextMatchMarker(GraphicsContext*, int tx, int ty, const DocumentMarker&, RenderStyle*, const Font&);
-    void computeRectForReplacementMarker(int tx, int ty, const DocumentMarker&, RenderStyle*, const Font&);
+    void paintSpellingOrGrammarMarker(GraphicsContext*, int tx, int ty, DocumentMarker, RenderStyle*, const Font&, bool grammar);
+    void paintTextMatchMarker(GraphicsContext*, int tx, int ty, DocumentMarker, RenderStyle*, const Font&);
+    void computeRectForReplacementMarker(int tx, int ty, DocumentMarker, RenderStyle*, const Font&);
 };
 
 inline RenderText* InlineTextBox::textRenderer() const

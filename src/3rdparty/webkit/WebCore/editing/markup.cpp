@@ -55,7 +55,6 @@
 #include "Range.h"
 #include "VisibleSelection.h"
 #include "TextIterator.h"
-#include "XMLNSNames.h"
 #include "htmlediting.h"
 #include "visible_units.h"
 #include <wtf/StdLibExtras.h>
@@ -315,15 +314,15 @@ static bool shouldAddNamespaceElem(const Element* elem)
 
 static bool shouldAddNamespaceAttr(const Attribute* attr, HashMap<AtomicStringImpl*, AtomicStringImpl*>& namespaces)
 {
-    namespaces.checkConsistency();
-
     // Don't add namespace attributes twice
-    if (attr->name() == XMLNSNames::xmlnsAttr) {
+    DEFINE_STATIC_LOCAL(const AtomicString, xmlnsURI, ("http://www.w3.org/2000/xmlns/"));
+    DEFINE_STATIC_LOCAL(const QualifiedName, xmlnsAttr, (nullAtom, "xmlns", xmlnsURI));
+    if (attr->name() == xmlnsAttr) {
         namespaces.set(emptyAtom.impl(), attr->value().impl());
         return false;
     }
     
-    QualifiedName xmlnsPrefixAttr(xmlnsAtom, attr->localName(), XMLNSNames::xmlnsNamespaceURI);
+    QualifiedName xmlnsPrefixAttr("xmlns", attr->localName(), xmlnsURI);
     if (attr->name() == xmlnsPrefixAttr) {
         namespaces.set(attr->localName().impl(), attr->value().impl());
         return false;
@@ -334,7 +333,6 @@ static bool shouldAddNamespaceAttr(const Attribute* attr, HashMap<AtomicStringIm
 
 static void appendNamespace(Vector<UChar>& result, const AtomicString& prefix, const AtomicString& ns, HashMap<AtomicStringImpl*, AtomicStringImpl*>& namespaces)
 {
-    namespaces.checkConsistency();
     if (ns.isEmpty())
         return;
         
@@ -343,8 +341,9 @@ static void appendNamespace(Vector<UChar>& result, const AtomicString& prefix, c
     AtomicStringImpl* foundNS = namespaces.get(pre);
     if (foundNS != ns.impl()) {
         namespaces.set(pre, ns.impl());
+        DEFINE_STATIC_LOCAL(const String, xmlns, ("xmlns"));
         result.append(' ');
-        append(result, xmlnsAtom.string());
+        append(result, xmlns);
         if (!prefix.isEmpty()) {
             result.append(':');
             append(result, prefix);
@@ -395,9 +394,6 @@ enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
 static void appendStartMarkup(Vector<UChar>& result, const Node* node, const Range* range, EAnnotateForInterchange annotate, bool convertBlocksToInlines = false, HashMap<AtomicStringImpl*, AtomicStringImpl*>* namespaces = 0, RangeFullySelectsNode rangeFullySelectsNode = DoesFullySelectNode)
 {
-    if (namespaces)
-        namespaces->checkConsistency();
-
     bool documentIsHTML = node->document()->isHTMLDocument();
     switch (node->nodeType()) {
         case Node::TEXT_NODE: {
@@ -1056,13 +1052,13 @@ String createMarkup(const Range* range, Vector<Node*>* nodes, EAnnotateForInterc
     return joinMarkups(preMarkups, markups);
 }
 
-PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document* document, const String& markup, const String& baseURL, FragmentScriptingPermission scriptingPermission)
+PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document* document, const String& markup, const String& baseURL)
 {
     ASSERT(document->documentElement()->isHTMLElement());
     // FIXME: What if the document element is not an HTML element?
     HTMLElement *element = static_cast<HTMLElement*>(document->documentElement());
 
-    RefPtr<DocumentFragment> fragment = element->createContextualFragment(markup, scriptingPermission);
+    RefPtr<DocumentFragment> fragment = element->createContextualFragment(markup);
 
     if (fragment && !baseURL.isEmpty() && baseURL != blankURL() && baseURL != document->baseURL())
         completeURLs(fragment.get(), baseURL);
@@ -1131,17 +1127,6 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
         
         first = false;
     }
-}
-
-bool isPlainTextMarkup(Node *node)
-{
-    if (!node->isElementNode() || !node->hasTagName(divTag) || static_cast<Element*>(node)->attributes()->length())
-        return false;
-    
-    if (node->childNodeCount() == 1 && (node->firstChild()->isTextNode() || (node->firstChild()->firstChild())))
-        return true;
-    
-    return (node->childNodeCount() == 2 && isTabSpanTextNode(node->firstChild()->firstChild()) && node->firstChild()->nextSibling()->isTextNode());
 }
 
 PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text)

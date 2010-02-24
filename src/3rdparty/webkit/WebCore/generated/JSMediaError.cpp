@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -169,8 +169,7 @@ JSValue jsMediaErrorCode(ExecState* exec, const Identifier&, const PropertySlot&
     JSMediaError* castedThis = static_cast<JSMediaError*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MediaError* imp = static_cast<MediaError*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->code());
-    return result;
+    return jsNumber(exec, imp->code());
 }
 
 JSValue jsMediaErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

@@ -38,7 +38,6 @@ enum ControlState {
     DefaultState = 1 << 6,
     WindowInactiveState = 1 << 7,
     IndeterminateState = 1 << 8,
-    SpinUpState = 1 << 9, // Sub-state for HoverState and PressedState.
     AllStates = 0xffffffff
 };
 
@@ -47,12 +46,12 @@ typedef unsigned ControlStates;
 // Must follow CSSValueKeywords.in order
 enum ControlPart {
     NoControlPart, CheckboxPart, RadioPart, PushButtonPart, SquareButtonPart, ButtonPart,
-    ButtonBevelPart, DefaultButtonPart, InnerSpinButtonPart, ListButtonPart, ListboxPart, ListItemPart,
+    ButtonBevelPart, DefaultButtonPart, ListButtonPart, ListboxPart, ListItemPart,
     MediaFullscreenButtonPart, MediaMuteButtonPart, MediaPlayButtonPart, MediaSeekBackButtonPart, 
-    MediaSeekForwardButtonPart, MediaRewindButtonPart, MediaReturnToRealtimeButtonPart, MediaToggleClosedCaptionsButtonPart,
+    MediaSeekForwardButtonPart, MediaRewindButtonPart, MediaReturnToRealtimeButtonPart,
     MediaSliderPart, MediaSliderThumbPart, MediaVolumeSliderContainerPart, MediaVolumeSliderPart, MediaVolumeSliderThumbPart,
     MediaControlsBackgroundPart, MediaCurrentTimePart, MediaTimeRemainingPart,
-    MenulistPart, MenulistButtonPart, MenulistTextPart, MenulistTextFieldPart, OuterSpinButtonPart,
+    MenulistPart, MenulistButtonPart, MenulistTextPart, MenulistTextFieldPart,
     SliderHorizontalPart, SliderVerticalPart, SliderThumbHorizontalPart,
     SliderThumbVerticalPart, CaretPart, SearchFieldPart, SearchFieldDecorationPart,
     SearchFieldResultsDecorationPart, SearchFieldResultsButtonPart,

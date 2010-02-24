@@ -50,7 +50,6 @@
     macro(get) \
     macro(getPrototypeOf) \
     macro(getOwnPropertyDescriptor) \
-    macro(getOwnPropertyNames) \
     macro(hasOwnProperty) \
     macro(ignoreCase) \
     macro(index) \
@@ -90,6 +89,7 @@ namespace JSC {
         friend class JSGlobalData;
 
     public:
+        const Identifier nullIdentifier;
         const Identifier emptyIdentifier;
         const Identifier underscoreProto;
         const Identifier thisIdentifier;

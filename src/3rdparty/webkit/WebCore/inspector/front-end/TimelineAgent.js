@@ -34,21 +34,17 @@ WebInspector.TimelineAgent = function() {
 
 // Must be kept in sync with TimelineItem.h
 WebInspector.TimelineAgent.RecordType = {
-    EventDispatch : 0,
-    Layout : 1,
-    RecalculateStyles : 2,
-    Paint : 3,
-    ParseHTML : 4,
-    TimerInstall : 5,
-    TimerRemove : 6,
-    TimerFire : 7,
+    DOMDispatch         : 0,
+    Layout              : 1,
+    RecalculateStyles   : 2,
+    Paint               : 3,
+    ParseHTML           : 4,
+    TimerInstall        : 5,
+    TimerRemove         : 6,
+    TimerFire           : 7,
     XHRReadyStateChange : 8,
-    XHRLoad : 9,
-    EvaluateScript : 10,
-    MarkTimeline : 11,
-    ResourceSendRequest : 12,
-    ResourceReceiveResponse : 13,
-    ResourceFinish : 14
+    XHRLoad             : 9,
+    EvaluateScriptTag   : 10
 };
 
 WebInspector.addRecordToTimeline = function(record) {

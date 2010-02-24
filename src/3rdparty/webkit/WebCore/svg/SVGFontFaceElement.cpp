@@ -62,6 +62,13 @@ SVGFontFaceElement::~SVGFontFaceElement()
     removeFromMappedElementSheet();
 }
 
+static void mapAttributeToCSSProperty(HashMap<AtomicStringImpl*, int>* propertyNameToIdMap, const QualifiedName& attrName)
+{
+    int propertyId = cssPropertyID(attrName.localName());
+    ASSERT(propertyId > 0);
+    propertyNameToIdMap->set(attrName.localName().impl(), propertyId);
+}
+
 static int cssPropertyIdForSVGAttributeName(const QualifiedName& attrName)
 {
     if (!attrName.namespaceURI().isNull())
@@ -275,7 +282,7 @@ void SVGFontFaceElement::rebuildFontFace()
             srcElement = static_cast<SVGFontFaceSrcElement*>(child);
     }
 
-    bool describesParentFont = parentNode()->hasTagName(SVGNames::fontTag);
+    bool describesParentFont = parentNode()->hasTagName(fontTag);
     RefPtr<CSSValueList> list;
 
     if (describesParentFont) {

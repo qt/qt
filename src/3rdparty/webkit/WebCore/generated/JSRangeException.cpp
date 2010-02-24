@@ -82,7 +82,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -168,8 +168,7 @@ JSValue jsRangeExceptionCode(ExecState* exec, const Identifier&, const PropertyS
     JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->code());
-    return result;
+    return jsNumber(exec, imp->code());
 }
 
 JSValue jsRangeExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -177,8 +176,7 @@ JSValue jsRangeExceptionName(ExecState* exec, const Identifier&, const PropertyS
     JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->name());
-    return result;
+    return jsString(exec, imp->name());
 }
 
 JSValue jsRangeExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -186,8 +184,7 @@ JSValue jsRangeExceptionMessage(ExecState* exec, const Identifier&, const Proper
     JSRangeException* castedThis = static_cast<JSRangeException*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     RangeException* imp = static_cast<RangeException*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->message());
-    return result;
+    return jsString(exec, imp->message());
 }
 
 JSValue jsRangeExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

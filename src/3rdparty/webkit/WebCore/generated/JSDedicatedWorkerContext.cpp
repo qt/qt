@@ -114,10 +114,8 @@ JSValue jsDedicatedWorkerContextOnmessage(ExecState* exec, const Identifier&, co
     UNUSED_PARAM(exec);
     DedicatedWorkerContext* imp = static_cast<DedicatedWorkerContext*>(castedThis->impl());
     if (EventListener* listener = imp->onmessage()) {
-        if (const JSEventListener* jsListener = JSEventListener::cast(listener)) {
-            if (JSObject* jsFunction = jsListener->jsFunction(imp))
-                return jsFunction;
-        }
+        if (JSObject* jsFunction = listener->jsFunction(imp))
+            return jsFunction;
     }
     return jsNull();
 }
@@ -131,7 +129,8 @@ void setJSDedicatedWorkerContextOnmessage(ExecState* exec, JSObject* thisObject,
 {
     UNUSED_PARAM(exec);
     DedicatedWorkerContext* imp = static_cast<DedicatedWorkerContext*>(static_cast<JSDedicatedWorkerContext*>(thisObject)->impl());
-    imp->setOnmessage(createJSAttributeEventListener(exec, value, thisObject));
+    JSDOMGlobalObject* globalObject = static_cast<JSDedicatedWorkerContext*>(thisObject);
+    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
 }
 
 JSValue JSC_HOST_CALL jsDedicatedWorkerContextPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

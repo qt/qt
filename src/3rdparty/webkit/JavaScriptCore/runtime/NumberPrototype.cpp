@@ -25,11 +25,9 @@
 #include "Error.h"
 #include "JSFunction.h"
 #include "JSString.h"
-#include "JSStringBuilder.h"
-#include "Operations.h"
 #include "PrototypeFunction.h"
-#include "StringBuilder.h"
 #include "dtoa.h"
+#include "Operations.h"
 #include <wtf/Assertions.h>
 #include <wtf/MathExtras.h>
 #include <wtf/Vector.h>
@@ -75,12 +73,11 @@ static UString integerPartNoExp(double d)
     bool resultIsInfOrNan = (decimalPoint == 9999);
     size_t length = strlen(result);
 
-    StringBuilder builder;
-    builder.append(sign ? "-" : "");
+    UString str = sign ? "-" : "";
     if (resultIsInfOrNan)
-        builder.append((const char*)result);
+        str += result;
     else if (decimalPoint <= 0)
-        builder.append("0");
+        str += "0";
     else {
         Vector<char, 1024> buf(decimalPoint + 1);
 
@@ -92,10 +89,10 @@ static UString integerPartNoExp(double d)
             strncpy(buf.data(), result, decimalPoint);
         buf[decimalPoint] = '\0';
 
-        builder.append((const char*)(buf.data()));
+        str.append(buf.data());
     }
 
-    return builder.build();
+    return str;
 }
 
 static UString charSequence(char c, int count)
@@ -239,16 +236,13 @@ JSValue JSC_HOST_CALL numberProtoFuncToFixed(ExecState* exec, JSObject*, JSValue
 
     UString s;
     if (x < 0) {
-        s = "-";
+        s.append('-');
         x = -x;
-    } else {
-        s = "";
-        if (x == -0.0)
-            x = 0;
-    }
+    } else if (x == -0.0)
+        x = 0;
 
     if (x >= pow(10.0, 21.0))
-        return jsString(exec, makeString(s, UString::from(x)));
+        return jsString(exec, s + UString::from(x));
 
     const double tenToTheF = pow(10.0, f);
     double n = floor(x * tenToTheF);
@@ -259,19 +253,17 @@ JSValue JSC_HOST_CALL numberProtoFuncToFixed(ExecState* exec, JSObject*, JSValue
 
     int k = m.size();
     if (k <= f) {
-        StringBuilder z;
+        UString z;
         for (int i = 0; i < f + 1 - k; i++)
             z.append('0');
-        z.append(m);
-        m = z.build();
+        m = z + m;
         k = f + 1;
-        ASSERT(k == static_cast<int>(m.size()));
+        ASSERT(k == m.size());
     }
     int kMinusf = k - f;
-
-    if (kMinusf < static_cast<int>(m.size()))
-        return jsString(exec, makeString(s, m.substr(0, kMinusf), ".", m.substr(kMinusf)));
-    return jsString(exec, makeString(s, m.substr(0, kMinusf)));
+    if (kMinusf < m.size())
+        return jsString(exec, s + m.substr(0, kMinusf) + "." + m.substr(kMinusf));
+    return jsString(exec, s + m.substr(0, kMinusf));
 }
 
 static void fractionalPartToString(char* buf, int& i, const char* result, int resultLength, int fractionalDigits)
@@ -399,8 +391,7 @@ JSValue JSC_HOST_CALL numberProtoFuncToPrecision(ExecState* exec, JSObject*, JSV
     if (x < 0) {
         s = "-";
         x = -x;
-    } else
-        s = "";
+    }
 
     if (!(doublePrecision >= 1 && doublePrecision <= 21)) // true for NaN
         return throwError(exec, RangeError, "toPrecision() argument must be between 1 and 21");
@@ -431,10 +422,10 @@ JSValue JSC_HOST_CALL numberProtoFuncToPrecision(ExecState* exec, JSObject*, JSV
         m = integerPartNoExp(n);
         if (e < -6 || e >= precision) {
             if (m.size() > 1)
-                m = makeString(m.substr(0, 1), ".", m.substr(1));
+                m = m.substr(0, 1) + "." + m.substr(1);
             if (e >= 0)
-                return jsMakeNontrivialString(exec, s, m, "e+", UString::from(e));
-            return jsMakeNontrivialString(exec, s, m, "e-", UString::from(-e));
+                return jsNontrivialString(exec, s + m + "e+" + UString::from(e));
+            return jsNontrivialString(exec, s + m + "e-" + UString::from(-e));
         }
     } else {
         m = charSequence('0', precision);
@@ -442,13 +433,13 @@ JSValue JSC_HOST_CALL numberProtoFuncToPrecision(ExecState* exec, JSObject*, JSV
     }
 
     if (e == precision - 1)
-        return jsString(exec, makeString(s, m));
+        return jsString(exec, s + m);
     if (e >= 0) {
-        if (e + 1 < static_cast<int>(m.size()))
-            return jsString(exec, makeString(s, m.substr(0, e + 1), ".", m.substr(e + 1)));
-        return jsString(exec, makeString(s, m));
+        if (e + 1 < m.size())
+            return jsString(exec, s + m.substr(0, e + 1) + "." + m.substr(e + 1));
+        return jsString(exec, s + m);
     }
-    return jsMakeNontrivialString(exec, s, "0.", charSequence('0', -(e + 1)), m);
+    return jsNontrivialString(exec, s + "0." + charSequence('0', -(e + 1)) + m);
 }
 
 } // namespace JSC

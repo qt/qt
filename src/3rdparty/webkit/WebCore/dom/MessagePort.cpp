@@ -41,7 +41,6 @@ namespace WebCore {
 MessagePort::MessagePort(ScriptExecutionContext& scriptExecutionContext)
     : m_entangledChannel(0)
     , m_started(false)
-    , m_closed(false)
     , m_scriptExecutionContext(&scriptExecutionContext)
 {
     m_scriptExecutionContext->createdMessagePort(this);
@@ -132,7 +131,6 @@ void MessagePort::start()
 
 void MessagePort::close()
 {
-    m_closed = true;
     if (!m_entangledChannel)
         return;
     m_entangledChannel->close();
@@ -202,7 +200,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     // Walk the incoming array - if there are any duplicate ports, or null ports or cloned ports, throw an error (per section 8.3.3 of the HTML5 spec).
     for (unsigned int i = 0; i < ports->size(); ++i) {
         MessagePort* port = (*ports)[i].get();
-        if (!port || port->isCloned() || portSet.contains(port)) {
+        if (!port || !port->isEntangled() || portSet.contains(port)) {
             ec = INVALID_STATE_ERR;
             return 0;
         }

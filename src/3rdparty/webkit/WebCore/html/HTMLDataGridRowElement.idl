@@ -26,6 +26,7 @@
 module html {
 
     interface [
+        GenerateConstructor,
         Conditional=DATAGRID
     ] HTMLDataGridRowElement : HTMLElement {
         attribute boolean selected; // Whether or not the row is currently selected.

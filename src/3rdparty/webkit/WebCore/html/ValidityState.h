@@ -2,7 +2,6 @@
  * This file is part of the WebKit project.
  *
  * Copyright (C) 2009 Michelangelo De Simone <micdesim@gmail.com>
- * Copyright (C) 2010 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -25,43 +24,40 @@
 #define ValidityState_h
 
 #include "HTMLFormControlElement.h"
-#include <wtf/PassOwnPtr.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-class ValidityState : public Noncopyable {
-public:
-    static PassOwnPtr<ValidityState> create(HTMLFormControlElement* control)
-    {
-        return new ValidityState(control);
-    }
+    class ValidityState : public RefCounted<ValidityState> {
+    public:
+        static PassRefPtr<ValidityState> create(HTMLFormControlElement* owner)
+        {
+            return adoptRef(new ValidityState(owner));
+        }
 
-    void ref() { m_control->ref(); }
-    void deref() { m_control->deref(); }
+        HTMLFormControlElement* control() const { return m_control; }
 
-    String validationMessage() const;
+        void setCustomErrorMessage(const String& message) { m_customErrorMessage = message; }
 
-    void setCustomErrorMessage(const String& message) { m_customErrorMessage = message; }
+        bool valueMissing() { return control()->valueMissing(); }
+        bool typeMismatch();
+        bool patternMismatch() { return control()->patternMismatch(); }
+        bool tooLong() { return control()->tooLong(); }
+        bool rangeUnderflow();
+        bool rangeOverflow();
+        bool stepMismatch() { return false; }
+        bool customError() { return !m_customErrorMessage.isEmpty(); }
+        bool valid();
 
-    bool valueMissing() const { return m_control->valueMissing(); }
-    bool typeMismatch() const;
-    bool patternMismatch() const { return m_control->patternMismatch(); }
-    bool tooLong() const { return m_control->tooLong(); }
-    bool rangeUnderflow() const;
-    bool rangeOverflow() const;
-    bool stepMismatch() const;
-    bool customError() const { return !m_customErrorMessage.isEmpty(); }
-    bool valid() const;
+    private:
+        ValidityState(HTMLFormControlElement*);
+        HTMLFormControlElement* m_control;
+        String m_customErrorMessage;
 
-private:
-    ValidityState(HTMLFormControlElement* control) : m_control(control) { }
-
-    static bool isValidColorString(const String&);
-    static bool isValidEmailAddress(const String&);
-
-    HTMLFormControlElement* m_control;
-    String m_customErrorMessage;
-};
+        static bool isValidColorString(const String&);
+        bool isValidEmailAddress(const String&);
+    };
 
 } // namespace WebCore
 

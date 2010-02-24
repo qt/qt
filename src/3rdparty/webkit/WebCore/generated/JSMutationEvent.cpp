@@ -87,7 +87,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -168,8 +168,7 @@ JSValue jsMutationEventRelatedNode(ExecState* exec, const Identifier&, const Pro
     JSMutationEvent* castedThis = static_cast<JSMutationEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MutationEvent* imp = static_cast<MutationEvent*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->relatedNode()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->relatedNode()));
 }
 
 JSValue jsMutationEventPrevValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -177,8 +176,7 @@ JSValue jsMutationEventPrevValue(ExecState* exec, const Identifier&, const Prope
     JSMutationEvent* castedThis = static_cast<JSMutationEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MutationEvent* imp = static_cast<MutationEvent*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->prevValue());
-    return result;
+    return jsString(exec, imp->prevValue());
 }
 
 JSValue jsMutationEventNewValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -186,8 +184,7 @@ JSValue jsMutationEventNewValue(ExecState* exec, const Identifier&, const Proper
     JSMutationEvent* castedThis = static_cast<JSMutationEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MutationEvent* imp = static_cast<MutationEvent*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->newValue());
-    return result;
+    return jsString(exec, imp->newValue());
 }
 
 JSValue jsMutationEventAttrName(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -195,8 +192,7 @@ JSValue jsMutationEventAttrName(ExecState* exec, const Identifier&, const Proper
     JSMutationEvent* castedThis = static_cast<JSMutationEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MutationEvent* imp = static_cast<MutationEvent*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->attrName());
-    return result;
+    return jsString(exec, imp->attrName());
 }
 
 JSValue jsMutationEventAttrChange(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -204,8 +200,7 @@ JSValue jsMutationEventAttrChange(ExecState* exec, const Identifier&, const Prop
     JSMutationEvent* castedThis = static_cast<JSMutationEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MutationEvent* imp = static_cast<MutationEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->attrChange());
-    return result;
+    return jsNumber(exec, imp->attrChange());
 }
 
 JSValue jsMutationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

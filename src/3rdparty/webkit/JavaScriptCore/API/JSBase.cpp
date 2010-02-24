@@ -28,7 +28,6 @@
 #include "JSBasePrivate.h"
 
 #include "APICast.h"
-#include "APIShims.h"
 #include "Completion.h"
 #include "OpaqueJSString.h"
 #include "SourceCode.h"
@@ -44,7 +43,8 @@ using namespace JSC;
 JSValueRef JSEvaluateScript(JSContextRef ctx, JSStringRef script, JSObjectRef thisObject, JSStringRef sourceURL, int startingLineNumber, JSValueRef* exception)
 {
     ExecState* exec = toJS(ctx);
-    APIEntryShim entryShim(exec);
+    exec->globalData().heap.registerThread();
+    JSLock lock(exec);
 
     JSObject* jsThisObject = toJS(thisObject);
 
@@ -69,7 +69,8 @@ JSValueRef JSEvaluateScript(JSContextRef ctx, JSStringRef script, JSObjectRef th
 bool JSCheckScriptSyntax(JSContextRef ctx, JSStringRef script, JSStringRef sourceURL, int startingLineNumber, JSValueRef* exception)
 {
     ExecState* exec = toJS(ctx);
-    APIEntryShim entryShim(exec);
+    exec->globalData().heap.registerThread();
+    JSLock lock(exec);
 
     SourceCode source = makeSource(script->ustring(), sourceURL->ustring(), startingLineNumber);
     Completion completion = checkSyntax(exec->dynamicGlobalObject()->globalExec(), source);
@@ -93,11 +94,12 @@ void JSGarbageCollect(JSContextRef ctx)
         return;
 
     ExecState* exec = toJS(ctx);
-    APIEntryShim entryShim(exec, false);
-
     JSGlobalData& globalData = exec->globalData();
+
+    JSLock lock(globalData.isSharedInstance ? LockForReal : SilenceAssertionsOnly);
+
     if (!globalData.heap.isBusy())
-        globalData.heap.collectAllGarbage();
+        globalData.heap.collect();
 
     // FIXME: Perhaps we should trigger a second mark and sweep
     // once the garbage collector is done if this is called when
@@ -107,6 +109,8 @@ void JSGarbageCollect(JSContextRef ctx)
 void JSReportExtraMemoryCost(JSContextRef ctx, size_t size)
 {
     ExecState* exec = toJS(ctx);
-    APIEntryShim entryShim(exec);
+    exec->globalData().heap.registerThread();
+    JSLock lock(exec);
+
     exec->globalData().heap.reportExtraMemoryCost(size);
 }

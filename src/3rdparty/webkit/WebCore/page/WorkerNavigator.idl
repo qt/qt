@@ -30,8 +30,7 @@ module threads {
 
     interface [
         Conditional=WORKERS,
-        NoStaticTables,
-        OmitConstructor
+        NoStaticTables
     ] WorkerNavigator {
         readonly attribute DOMString appName;
         readonly attribute DOMString appVersion;

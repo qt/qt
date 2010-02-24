@@ -81,7 +81,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -168,8 +168,7 @@ JSValue jsClipboardDropEffect(ExecState* exec, const Identifier&, const Property
     JSClipboard* castedThis = static_cast<JSClipboard*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Clipboard* imp = static_cast<Clipboard*>(castedThis->impl());
-    JSValue result = jsStringOrUndefined(exec, imp->dropEffect());
-    return result;
+    return jsStringOrUndefined(exec, imp->dropEffect());
 }
 
 JSValue jsClipboardEffectAllowed(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -177,8 +176,7 @@ JSValue jsClipboardEffectAllowed(ExecState* exec, const Identifier&, const Prope
     JSClipboard* castedThis = static_cast<JSClipboard*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Clipboard* imp = static_cast<Clipboard*>(castedThis->impl());
-    JSValue result = jsStringOrUndefined(exec, imp->effectAllowed());
-    return result;
+    return jsStringOrUndefined(exec, imp->effectAllowed());
 }
 
 JSValue jsClipboardTypes(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -192,8 +190,7 @@ JSValue jsClipboardFiles(ExecState* exec, const Identifier&, const PropertySlot&
     JSClipboard* castedThis = static_cast<JSClipboard*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     Clipboard* imp = static_cast<Clipboard*>(castedThis->impl());
-    JSValue result = toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->files()));
-    return result;
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->files()));
 }
 
 JSValue jsClipboardConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -208,15 +205,13 @@ void JSClipboard::put(ExecState* exec, const Identifier& propertyName, JSValue v
 
 void setJSClipboardDropEffect(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSClipboard* castedThisObj = static_cast<JSClipboard*>(thisObject);
-    Clipboard* imp = static_cast<Clipboard*>(castedThisObj->impl());
+    Clipboard* imp = static_cast<Clipboard*>(static_cast<JSClipboard*>(thisObject)->impl());
     imp->setDropEffect(value.toString(exec));
 }
 
 void setJSClipboardEffectAllowed(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSClipboard* castedThisObj = static_cast<JSClipboard*>(thisObject);
-    Clipboard* imp = static_cast<Clipboard*>(castedThisObj->impl());
+    Clipboard* imp = static_cast<Clipboard*>(static_cast<JSClipboard*>(thisObject)->impl());
     imp->setEffectAllowed(value.toString(exec));
 }
 

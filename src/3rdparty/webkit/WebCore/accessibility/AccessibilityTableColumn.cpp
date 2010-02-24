@@ -29,12 +29,12 @@
 #include "config.h"
 #include "AccessibilityTableColumn.h"
 
-#include "AXObjectCache.h"
 #include "AccessibilityTableCell.h"
+#include "AXObjectCache.h"
 #include "HTMLNames.h"
 #include "RenderTable.h"
-#include "RenderTableCell.h"
 #include "RenderTableSection.h"
+#include "RenderTableCell.h"
 
 using namespace std;
 

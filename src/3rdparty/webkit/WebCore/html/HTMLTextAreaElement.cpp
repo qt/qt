@@ -27,7 +27,6 @@
 #include "HTMLTextAreaElement.h"
 
 #include "BeforeTextInsertedEvent.h"
-#include "Chrome.h"
 #include "ChromeClient.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"
@@ -92,12 +91,12 @@ bool HTMLTextAreaElement::saveFormControlState(String& result) const
 
 void HTMLTextAreaElement::restoreFormControlState(const String& state)
 {
-    setValue(state);
+    setDefaultValue(state);
 }
 
 void HTMLTextAreaElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
-    setNonDirtyValue(defaultValue());
+    setValue(defaultValue());
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 }
     
@@ -150,9 +149,7 @@ void HTMLTextAreaElement::parseMappedAttribute(MappedAttribute* attr)
     } else if (attr->name() == alignAttr) {
         // Don't map 'align' attribute.  This matches what Firefox, Opera and IE do.
         // See http://bugs.webkit.org/show_bug.cgi?id=7075
-    } else if (attr->name() == maxlengthAttr)
-        setNeedsValidityCheck();
-    else
+    } else
         HTMLTextFormControlElement::parseMappedAttribute(attr);
 }
 
@@ -176,7 +173,8 @@ bool HTMLTextAreaElement::appendFormData(FormDataList& encoding, bool)
 
 void HTMLTextAreaElement::reset()
 {
-    setNonDirtyValue(defaultValue());
+    setValue(defaultValue());
+    m_isDirty = false;
 }
 
 bool HTMLTextAreaElement::isKeyboardFocusable(KeyboardEvent*) const
@@ -273,12 +271,6 @@ String HTMLTextAreaElement::value() const
 
 void HTMLTextAreaElement::setValue(const String& value)
 {
-    setNonDirtyValue(value);
-    m_isDirty = true;
-}
-
-void HTMLTextAreaElement::setNonDirtyValue(const String& value)
-{
     // Code elsewhere normalizes line endings added by the user via the keyboard or pasting.
     // We normalize line endings coming from JavaScript here.
     String normalizedValue = value.isNull() ? "" : value;
@@ -291,7 +283,6 @@ void HTMLTextAreaElement::setNonDirtyValue(const String& value)
         return;
 
     m_value = normalizedValue;
-    m_isDirty = false;
     setFormControlValueMatchesRenderer(true);
     updatePlaceholderVisibility(false);
     if (inDocument())
@@ -305,8 +296,9 @@ void HTMLTextAreaElement::setNonDirtyValue(const String& value)
         setSelectionRange(endOfString, endOfString);
     }
 
-    setNeedsValidityCheck();
+    setNeedsStyleRecalc();
     notifyFormStateChanged(this);
+    updateValidity();
 }
 
 String HTMLTextAreaElement::defaultValue() const
@@ -353,7 +345,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
 
     insertBefore(document()->createTextNode(value), firstChild(), ec);
 
-    setNonDirtyValue(value);
+    setValue(value);
 }
 
 int HTMLTextAreaElement::maxLength() const
@@ -380,7 +372,7 @@ bool HTMLTextAreaElement::tooLong() const
     int max = maxLength();
     if (max < 0)
         return false;
-    return value().numGraphemeClusters() > static_cast<unsigned>(max);
+    return value().length() > static_cast<unsigned>(max);
 }
 
 void HTMLTextAreaElement::accessKeyAction(bool)

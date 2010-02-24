@@ -106,7 +106,6 @@ public:
     // (un)locks the database like a mutex
     void lock();
     void unlock();
-    bool isAutoCommitOn() const;
 
 private:
     static int authorizerFunction(void*, int, const char*, const char*, const char*, const char*);

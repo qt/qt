@@ -29,25 +29,15 @@
 
 #include "ScriptValue.h"
 
-typedef const struct OpaqueJSContext* JSContextRef;
-typedef const struct OpaqueJSValue* JSValueRef;
-
 namespace WebCore {
-    class File;
-    class FileList;
-    class ImageData;
-    class SerializedArray;
-    class SerializedFileList;
-    class SerializedImageData;
     class SerializedObject;
+    class SerializedArray;
 
     class SharedSerializedData : public RefCounted<SharedSerializedData> {
     public:
         virtual ~SharedSerializedData() { }
         SerializedArray* asArray();
         SerializedObject* asObject();
-        SerializedFileList* asFileList();
-        SerializedImageData* asImageData();
     };
 
     class SerializedScriptValue;
@@ -61,15 +51,12 @@ namespace WebCore {
             ImmediateType,
             ObjectType,
             ArrayType,
-            StringType,
-            FileType,
-            FileListType,
-            ImageDataType
+            StringType
         };
 
         SerializedType type() const { return m_type; }
         static SerializedScriptValueData serialize(JSC::ExecState*, JSC::JSValue);
-        JSC::JSValue deserialize(JSC::ExecState*, JSC::JSGlobalObject*, bool mustCopy) const;
+        JSC::JSValue deserialize(JSC::ExecState*, bool mustCopy) const;
 
         ~SerializedScriptValueData()
         {
@@ -87,10 +74,6 @@ namespace WebCore {
             , m_string(string.crossThreadString()) // FIXME: Should be able to just share the Rep
         {
         }
-        
-        explicit SerializedScriptValueData(const File*);
-        explicit SerializedScriptValueData(const FileList*);
-        explicit SerializedScriptValueData(const ImageData*);
 
         explicit SerializedScriptValueData(JSC::JSValue value)
             : m_type(ImmediateType)
@@ -122,7 +105,7 @@ namespace WebCore {
 
         String asString() const
         {
-            ASSERT(m_type == StringType || m_type == FileType);
+            ASSERT(m_type == StringType);
             return m_string;
         }
 
@@ -138,20 +121,6 @@ namespace WebCore {
             ASSERT(m_type == ArrayType);
             ASSERT(m_sharedData);
             return m_sharedData->asArray();
-        }
-
-        SerializedFileList* asFileList() const
-        {
-            ASSERT(m_type == FileListType);
-            ASSERT(m_sharedData);
-            return m_sharedData->asFileList();
-        }
-        
-        SerializedImageData* asImageData() const
-        {
-            ASSERT(m_type == ImageDataType);
-            ASSERT(m_sharedData);
-            return m_sharedData->asImageData();
         }
 
         operator bool() const { return m_type != EmptyType; }
@@ -181,8 +150,6 @@ namespace WebCore {
             return adoptRef(new SerializedScriptValue(SerializedScriptValueData::serialize(exec, value)));
         }
 
-        static PassRefPtr<SerializedScriptValue> create(JSContextRef, JSValueRef value, JSValueRef* exception);
-
         static PassRefPtr<SerializedScriptValue> create(String string)
         {
             return adoptRef(new SerializedScriptValue(SerializedScriptValueData(string)));
@@ -208,15 +175,14 @@ namespace WebCore {
             return m_value.asString();
         }
 
-        JSC::JSValue deserialize(JSC::ExecState* exec, JSC::JSGlobalObject* globalObject)
+        JSC::JSValue deserialize(JSC::ExecState* exec)
         {
             if (!m_value)
                 return JSC::jsNull();
-            return m_value.deserialize(exec, globalObject, m_mustCopy);
+            return m_value.deserialize(exec, m_mustCopy);
         }
 
-        JSValueRef deserialize(JSContextRef, JSValueRef* exception);
-        ~SerializedScriptValue();
+        ~SerializedScriptValue() {}
 
     private:
         SerializedScriptValue(SerializedScriptValueData value)

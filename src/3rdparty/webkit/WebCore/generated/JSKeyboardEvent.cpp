@@ -85,7 +85,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -163,8 +163,7 @@ JSValue jsKeyboardEventKeyIdentifier(ExecState* exec, const Identifier&, const P
     JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
-    JSValue result = jsString(exec, imp->keyIdentifier());
-    return result;
+    return jsString(exec, imp->keyIdentifier());
 }
 
 JSValue jsKeyboardEventKeyLocation(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -172,8 +171,7 @@ JSValue jsKeyboardEventKeyLocation(ExecState* exec, const Identifier&, const Pro
     JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->keyLocation());
-    return result;
+    return jsNumber(exec, imp->keyLocation());
 }
 
 JSValue jsKeyboardEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -181,8 +179,7 @@ JSValue jsKeyboardEventCtrlKey(ExecState* exec, const Identifier&, const Propert
     JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->ctrlKey());
-    return result;
+    return jsBoolean(imp->ctrlKey());
 }
 
 JSValue jsKeyboardEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -190,8 +187,7 @@ JSValue jsKeyboardEventShiftKey(ExecState* exec, const Identifier&, const Proper
     JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->shiftKey());
-    return result;
+    return jsBoolean(imp->shiftKey());
 }
 
 JSValue jsKeyboardEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -199,8 +195,7 @@ JSValue jsKeyboardEventAltKey(ExecState* exec, const Identifier&, const Property
     JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->altKey());
-    return result;
+    return jsBoolean(imp->altKey());
 }
 
 JSValue jsKeyboardEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -208,8 +203,7 @@ JSValue jsKeyboardEventMetaKey(ExecState* exec, const Identifier&, const Propert
     JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->metaKey());
-    return result;
+    return jsBoolean(imp->metaKey());
 }
 
 JSValue jsKeyboardEventAltGraphKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -217,8 +211,7 @@ JSValue jsKeyboardEventAltGraphKey(ExecState* exec, const Identifier&, const Pro
     JSKeyboardEvent* castedThis = static_cast<JSKeyboardEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     KeyboardEvent* imp = static_cast<KeyboardEvent*>(castedThis->impl());
-    JSValue result = jsBoolean(imp->altGraphKey());
-    return result;
+    return jsBoolean(imp->altGraphKey());
 }
 
 JSValue jsKeyboardEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)

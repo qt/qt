@@ -79,7 +79,7 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags), AnonymousSlotCount); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
     
 protected:
@@ -159,7 +159,7 @@ bool JSMediaList::getOwnPropertySlot(ExecState* exec, const Identifier& property
     }
     bool ok;
     unsigned index = propertyName.toUInt32(&ok, false);
-    if (ok) {
+    if (ok && index < static_cast<MediaList*>(impl())->length()) {
         slot.setCustomIndex(this, index, indexGetter);
         return true;
     }
@@ -200,8 +200,7 @@ JSValue jsMediaListMediaText(ExecState* exec, const Identifier&, const PropertyS
     JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MediaList* imp = static_cast<MediaList*>(castedThis->impl());
-    JSValue result = jsStringOrNull(exec, imp->mediaText());
-    return result;
+    return jsStringOrNull(exec, imp->mediaText());
 }
 
 JSValue jsMediaListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -209,8 +208,7 @@ JSValue jsMediaListLength(ExecState* exec, const Identifier&, const PropertySlot
     JSMediaList* castedThis = static_cast<JSMediaList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MediaList* imp = static_cast<MediaList*>(castedThis->impl());
-    JSValue result = jsNumber(exec, imp->length());
-    return result;
+    return jsNumber(exec, imp->length());
 }
 
 JSValue jsMediaListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -225,18 +223,17 @@ void JSMediaList::put(ExecState* exec, const Identifier& propertyName, JSValue v
 
 void setJSMediaListMediaText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    JSMediaList* castedThisObj = static_cast<JSMediaList*>(thisObject);
-    MediaList* imp = static_cast<MediaList*>(castedThisObj->impl());
+    MediaList* imp = static_cast<MediaList*>(static_cast<JSMediaList*>(thisObject)->impl());
     ExceptionCode ec = 0;
     imp->setMediaText(valueToStringWithNullCheck(exec, value), ec);
     setDOMException(exec, ec);
 }
 
-void JSMediaList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, EnumerationMode mode)
+void JSMediaList::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
     for (unsigned i = 0; i < static_cast<MediaList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getOwnPropertyNames(exec, propertyNames, mode);
+     Base::getOwnPropertyNames(exec, propertyNames);
 }
 
 JSValue JSMediaList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -29,7 +29,6 @@
 #if ENABLE(SVG)
 
 #include "DashArray.h"
-#include "RenderObject.h"
 #include "SVGResource.h"
 
 #if PLATFORM(CG)
@@ -71,9 +70,7 @@ namespace WebCore {
         virtual void teardown(GraphicsContext*&, const RenderObject*, SVGPaintTargetType, bool isPaintingText = false) const;
         virtual void renderPath(GraphicsContext*&, const RenderObject*, SVGPaintTargetType) const;
 
-        virtual bool setup(GraphicsContext*&, const RenderObject*, const RenderStyle*, SVGPaintTargetType, bool isPaintingText = false) const = 0;
-
-        bool setup(GraphicsContext*&, const RenderObject*, SVGPaintTargetType, bool isPaintingText = false) const;
+        virtual bool setup(GraphicsContext*&, const RenderObject*, SVGPaintTargetType, bool isPaintingText = false) const = 0;
 
         static SVGPaintServer* strokePaintServer(const RenderStyle*, const RenderObject*);
         static SVGPaintServer* fillPaintServer(const RenderStyle*, const RenderObject*);
@@ -85,9 +82,9 @@ namespace WebCore {
 
     TextStream& operator<<(TextStream&, const SVGPaintServer&);
 
-    SVGPaintServer* getPaintServerById(Document*, const AtomicString&, const RenderObject*);
+    SVGPaintServer* getPaintServerById(Document*, const AtomicString&);
 
-    void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle*, const RenderObject*);
+    void applyStrokeStyleToContext(GraphicsContext*, RenderStyle*, const RenderObject*);
     DashArray dashArrayFromRenderingStyle(const RenderStyle* style, RenderStyle* rootStyle);
 } // namespace WebCore
 

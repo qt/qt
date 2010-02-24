@@ -240,10 +240,10 @@ struct SVGTextRunWalker {
 
     void walk(const TextRun& run, bool isVerticalText, const String& language, int from, int to)
     {
-        ASSERT(0 <= from && from <= to && to - from <= run.length());
+        // Should hold true for SVG text, otherwhise sth. is wrong
+        ASSERT(to - from == run.length());
 
-        const String text = Font::normalizeSpaces(String(run.data(from), run.length()));
-        Vector<SVGGlyphIdentifier::ArabicForm> chars(charactersWithArabicForm(text, run.rtl()));
+        Vector<SVGGlyphIdentifier::ArabicForm> chars(charactersWithArabicForm(String(run.data(from), run.length()), run.rtl()));
 
         SVGGlyphIdentifier identifier;
         bool foundGlyph = false;
@@ -270,8 +270,7 @@ struct SVGTextRunWalker {
             // extended to the n-th next character (where n is 'characterLookupRange'), to check for any possible ligature.
             characterLookupRange = endOfScanRange - i;
 
-            String lookupString = Font::normalizeSpaces(String(run.data(i), characterLookupRange));
-
+            String lookupString(run.data(i), characterLookupRange);
             Vector<SVGGlyphIdentifier> glyphs;
             if (haveAltGlyph)
                 glyphs.append(altGlyphIdentifier);

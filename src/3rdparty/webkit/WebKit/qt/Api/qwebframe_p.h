@@ -25,7 +25,6 @@
 #include "qwebpage_p.h"
 
 #include "EventHandler.h"
-#include "GraphicsContext.h"
 #include "KURL.h"
 #include "PlatformString.h"
 #include "qwebelement.h"
@@ -73,7 +72,6 @@ public:
         , marginHeight(-1)
         {}
     void init(QWebFrame* qframe, QWebFrameData* frameData);
-    void setPage(QWebPage*);
 
     inline QWebFrame *parentFrame() { return qobject_cast<QWebFrame*>(q->parent()); }
 
@@ -83,8 +81,7 @@ public:
     static WebCore::Frame* core(QWebFrame*);
     static QWebFrame* kit(WebCore::Frame*);
 
-    void renderRelativeCoords(WebCore::GraphicsContext*, QWebFrame::RenderLayer, const QRegion& clip);
-    void renderContentsLayerAbsoluteCoords(WebCore::GraphicsContext*, const QRegion& clip);
+    void renderPrivate(QPainter*, QWebFrame::RenderLayer, const QRegion& clip);
 
     bool scrollOverflow(int dx, int dy);
 

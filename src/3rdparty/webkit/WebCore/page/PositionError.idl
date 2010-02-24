@@ -25,10 +25,13 @@
 
 module core {
 
-    interface PositionError {
+    interface [
+        GenerateConstructor
+    ] PositionError {
         readonly attribute unsigned short code;
         readonly attribute DOMString message;
 
+        const unsigned short UNKNOWN_ERROR = 0;
         const unsigned short PERMISSION_DENIED = 1;
         const unsigned short POSITION_UNAVAILABLE = 2;
         const unsigned short TIMEOUT = 3;

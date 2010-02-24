@@ -2,6 +2,8 @@
     Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
 
+    This file is part of the KDE project
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -47,6 +49,8 @@ SVGPathElement::SVGPathElement(const QualifiedName& tagName, Document* doc)
     , SVGTests()
     , SVGLangSpace()
     , SVGExternalResourcesRequired()
+    , m_pathLength(this, SVGNames::pathLengthAttr, 0.0f)
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
 {
 }
 
@@ -67,9 +71,9 @@ FloatPoint SVGPathElement::getPointAtLength(float length)
     return toPathData().pointAtLength(length, ok);
 }
 
-unsigned long SVGPathElement::getPathSegAtLength(float length, ExceptionCode& ec)
+unsigned long SVGPathElement::getPathSegAtLength(float length)
 {
-    return pathSegList()->getPathSegAtLength(length, ec);
+    return pathSegList()->getPathSegAtLength(length);
 }
 
 PassRefPtr<SVGPathSegClosePath> SVGPathElement::createSVGPathSegClosePath()
@@ -202,22 +206,6 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
         SVGExternalResourcesRequired::isKnownAttribute(attrName) ||
         SVGStyledTransformableElement::isKnownAttribute(attrName))
         renderer()->setNeedsLayout(true);
-}
-
-void SVGPathElement::synchronizeProperty(const QualifiedName& attrName)
-{
-    SVGStyledTransformableElement::synchronizeProperty(attrName);
-
-    if (attrName == anyQName()) {
-        synchronizePathLength();
-        synchronizeExternalResourcesRequired();
-        return;
-    }
-
-    if (attrName == SVGNames::pathLengthAttr)
-        synchronizePathLength();
-    else if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
-        synchronizeExternalResourcesRequired();
 }
 
 SVGPathSegList* SVGPathElement::pathSegList() const

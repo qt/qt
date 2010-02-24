@@ -29,7 +29,6 @@
 #if ENABLE(SVG)
 #include "SVGPaintServerPattern.h"
 
-#include "AffineTransform.h"
 #include "GraphicsContext.h"
 #include "Image.h"
 #include "ImageBuffer.h"
@@ -37,6 +36,7 @@
 #include "RenderObject.h"
 #include "SVGPatternElement.h"
 #include "SVGRenderTreeAsText.h"
+#include "TransformationMatrix.h"
 
 using namespace std;
 
@@ -73,12 +73,12 @@ void SVGPaintServerPattern::setTile(PassOwnPtr<ImageBuffer> tile)
     m_tile = tile;
 }
 
-AffineTransform SVGPaintServerPattern::patternTransform() const
+TransformationMatrix SVGPaintServerPattern::patternTransform() const
 {
     return m_patternTransform;
 }
 
-void SVGPaintServerPattern::setPatternTransform(const AffineTransform& transform)
+void SVGPaintServerPattern::setPatternTransform(const TransformationMatrix& transform)
 {
     m_patternTransform = transform;
 }
@@ -95,15 +95,15 @@ TextStream& SVGPaintServerPattern::externalRepresentation(TextStream& ts) const
     return ts;
 }
 
-bool SVGPaintServerPattern::setup(GraphicsContext*& context, const RenderObject* object, const RenderStyle* style, SVGPaintTargetType type, bool isPaintingText) const
+bool SVGPaintServerPattern::setup(GraphicsContext*& context, const RenderObject* object, SVGPaintTargetType type, bool isPaintingText) const
 {
     FloatRect targetRect = object->objectBoundingBox();
 
-    const SVGRenderStyle* svgStyle = style->svgStyle();
-    bool isFilled = (type & ApplyToFillTargetType) && svgStyle->hasFill();
-    bool isStroked = (type & ApplyToStrokeTargetType) && svgStyle->hasStroke();
+    const SVGRenderStyle* style = object->style()->svgStyle();
+    bool isFilled = (type & ApplyToFillTargetType) && style->hasFill();
+    bool isStroked = (type & ApplyToStrokeTargetType) && style->hasStroke();
 
-    ASSERT((isFilled && !isStroked) || (!isFilled && isStroked));
+    ASSERT(isFilled && !isStroked || !isFilled && isStroked);
 
     m_ownerElement->buildPattern(targetRect);
     if (!tile())
@@ -131,7 +131,7 @@ bool SVGPaintServerPattern::setup(GraphicsContext*& context, const RenderObject*
             tileImageContext->translate(0, patternBoundaries().height());
             for (int j = numX; j > 0; j--) {
                 tileImageContext->translate(patternBoundaries().width(), 0);
-                tileImageContext->drawImage(tile()->image(), style->colorSpace(), tileRect, tileRect);
+                tileImageContext->drawImage(tile()->image(), tileRect, tileRect);
             }
             tileImageContext->translate(-patternBoundaries().width() * numX, 0);
         }
@@ -143,17 +143,17 @@ bool SVGPaintServerPattern::setup(GraphicsContext*& context, const RenderObject*
         m_pattern = Pattern::create(tile()->image(), true, true);
 
     if (isFilled) {
-        context->setAlpha(svgStyle->fillOpacity());
+        context->setAlpha(style->fillOpacity());
         context->setFillPattern(m_pattern);
-        context->setFillRule(svgStyle->fillRule());
+        context->setFillRule(style->fillRule());
     }
     if (isStroked) {
-        context->setAlpha(svgStyle->strokeOpacity());
+        context->setAlpha(style->strokeOpacity());
         context->setStrokePattern(m_pattern);
-        applyStrokeStyleToContext(context, style, object);
+        applyStrokeStyleToContext(context, object->style(), object);
     }
 
-    AffineTransform matrix;
+    TransformationMatrix matrix;
     matrix.translate(patternBoundaries().x(), patternBoundaries().y());
     matrix.multiply(patternTransform());
     m_pattern->setPatternSpaceTransform(matrix);

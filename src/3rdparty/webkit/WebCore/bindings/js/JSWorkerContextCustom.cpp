@@ -32,10 +32,8 @@
 #include "JSDOMBinding.h"
 #include "JSDOMGlobalObject.h"
 #include "JSEventListener.h"
-#include "JSEventSourceConstructor.h"
 #include "JSMessageChannelConstructor.h"
 #include "JSMessagePort.h"
-#include "JSWebSocketConstructor.h"
 #include "JSWorkerLocation.h"
 #include "JSWorkerNavigator.h"
 #include "JSXMLHttpRequestConstructor.h"
@@ -44,6 +42,10 @@
 #include "WorkerLocation.h"
 #include "WorkerNavigator.h"
 #include <interpreter/Interpreter.h>
+
+#if ENABLE(EVENTSOURCE)
+#include "JSEventSourceConstructor.h"
+#endif
 
 using namespace JSC;
 
@@ -60,7 +62,7 @@ void JSWorkerContext::markChildren(MarkStack& markStack)
     markDOMObjectWrapper(markStack, globalData, impl()->optionalLocation());
     markDOMObjectWrapper(markStack, globalData, impl()->optionalNavigator());
 
-    impl()->markJSEventListeners(markStack);
+    impl()->markEventListeners(markStack);
 }
 
 bool JSWorkerContext::getOwnPropertySlotDelegate(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -91,13 +93,6 @@ JSValue JSWorkerContext::xmlHttpRequest(ExecState* exec) const
     return getDOMConstructor<JSXMLHttpRequestConstructor>(exec, this);
 }
 
-#if ENABLE(WEB_SOCKETS)
-JSValue JSWorkerContext::webSocket(ExecState* exec) const
-{
-    return getDOMConstructor<JSWebSocketConstructor>(exec, this);
-}
-#endif
-
 JSValue JSWorkerContext::importScripts(ExecState* exec, const ArgList& args)
 {
     if (!args.size())
@@ -127,7 +122,7 @@ JSValue JSWorkerContext::addEventListener(ExecState* exec, const ArgList& args)
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)), args.at(2).toBoolean(exec));
+    impl()->addEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
@@ -137,26 +132,26 @@ JSValue JSWorkerContext::removeEventListener(ExecState* exec, const ArgList& arg
     if (!listener.isObject())
         return jsUndefined();
 
-    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), this, false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
+    impl()->removeEventListener(args.at(0).toString(exec), JSEventListener::create(asObject(listener), false, currentWorld(exec)).get(), args.at(2).toBoolean(exec));
     return jsUndefined();
 }
 
 JSValue JSWorkerContext::setTimeout(ExecState* exec, const ArgList& args)
 {
-    OwnPtr<ScheduledAction> action = ScheduledAction::create(exec, args, currentWorld(exec));
+    ScheduledAction* action = ScheduledAction::create(exec, args, currentWorld(exec));
     if (exec->hadException())
         return jsUndefined();
     int delay = args.at(1).toInt32(exec);
-    return jsNumber(exec, impl()->setTimeout(action.release(), delay));
+    return jsNumber(exec, impl()->setTimeout(action, delay));
 }
 
 JSValue JSWorkerContext::setInterval(ExecState* exec, const ArgList& args)
 {
-    OwnPtr<ScheduledAction> action = ScheduledAction::create(exec, args, currentWorld(exec));
+    ScheduledAction* action = ScheduledAction::create(exec, args, currentWorld(exec));
     if (exec->hadException())
         return jsUndefined();
     int delay = args.at(1).toInt32(exec);
-    return jsNumber(exec, impl()->setInterval(action.release(), delay));
+    return jsNumber(exec, impl()->setInterval(action, delay));
 }
 
 

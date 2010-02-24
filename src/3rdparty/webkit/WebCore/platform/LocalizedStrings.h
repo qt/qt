@@ -124,8 +124,6 @@ namespace WebCore {
     String AXTextFieldActionVerb();
     String AXCheckedCheckBoxActionVerb();
     String AXUncheckedCheckBoxActionVerb();
-    String AXMenuListActionVerb();
-    String AXMenuListPopupActionVerb();
     String AXLinkActionVerb();
 
     String multipleFileUploadText(unsigned numberOfFiles);
@@ -143,15 +141,6 @@ namespace WebCore {
     String localizedMediaControlElementString(const String&);
     String localizedMediaControlElementHelpText(const String&);
     String localizedMediaTimeDescription(float);
-
-    String validationMessageValueMissingText();
-    String validationMessageTypeMismatchText();
-    String validationMessagePatternMismatchText();
-    String validationMessageTooLongText();
-    String validationMessageRangeUnderflowText();
-    String validationMessageRangeOverflowText();
-    String validationMessageStepMismatchText();
-
 }
 
 #endif

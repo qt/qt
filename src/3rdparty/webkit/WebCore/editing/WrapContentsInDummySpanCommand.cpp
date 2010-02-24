@@ -38,37 +38,35 @@ WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(PassRefPtr<Elemen
     ASSERT(m_element);
 }
 
-void WrapContentsInDummySpanCommand::executeApply()
+void WrapContentsInDummySpanCommand::doApply()
 {
     Vector<RefPtr<Node> > children;
     for (Node* child = m_element->firstChild(); child; child = child->nextSibling())
         children.append(child);
-    
+
+    RefPtr<HTMLElement> span = createStyleSpanElement(document());
+ 
     ExceptionCode ec;
-    
+
     size_t size = children.size();
     for (size_t i = 0; i < size; ++i)
-        m_dummySpan->appendChild(children[i].release(), ec);
-    
-    m_element->appendChild(m_dummySpan.get(), ec);
+        span->appendChild(children[i].release(), ec);
+
+    m_element->appendChild(span.get(), ec);
+
+    m_dummySpan = span.release();
 }
 
-void WrapContentsInDummySpanCommand::doApply()
-{
-    m_dummySpan = createStyleSpanElement(document());
-    
-    executeApply();
-}
-    
 void WrapContentsInDummySpanCommand::doUnapply()
 {
     ASSERT(m_element);
 
-    if (!m_dummySpan || !m_element->isContentEditable())
+    RefPtr<HTMLElement> span = m_dummySpan.release();
+    if (!span)
         return;
 
     Vector<RefPtr<Node> > children;
-    for (Node* child = m_dummySpan->firstChild(); child; child = child->nextSibling())
+    for (Node* child = span->firstChild(); child; child = child->nextSibling())
         children.append(child);
 
     ExceptionCode ec;
@@ -77,17 +75,7 @@ void WrapContentsInDummySpanCommand::doUnapply()
     for (size_t i = 0; i < size; ++i)
         m_element->appendChild(children[i].release(), ec);
 
-    m_dummySpan->remove(ec);
+    span->remove(ec);
 }
 
-void WrapContentsInDummySpanCommand::doReapply()
-{
-    ASSERT(m_element);
-    
-    if (!m_dummySpan || !m_element->isContentEditable())
-        return;
-
-    executeApply();
-}
-    
 } // namespace WebCore

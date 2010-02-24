@@ -320,7 +320,7 @@ int SQLiteDatabase::authorizerFunction(void* userData, int actionCode, const cha
         case SQLITE_DROP_VTABLE:
             return auth->dropVTable(parameter1, parameter2);
         case SQLITE_FUNCTION:
-            return auth->allowFunction(parameter2);
+            return auth->allowFunction(parameter1);
 #endif
         default:
             ASSERT_NOT_REACHED();
@@ -359,11 +359,6 @@ void SQLiteDatabase::lock()
 void SQLiteDatabase::unlock()
 {
     m_lockingMutex.unlock();
-}
-
-bool SQLiteDatabase::isAutoCommitOn() const
-{
-    return sqlite3_get_autocommit(m_db);
 }
 
 } // namespace WebCore

@@ -23,7 +23,6 @@
 #if ENABLE(WML)
 #include "WMLDocument.h"
 
-#include "BackForwardList.h"
 #include "Frame.h"
 #include "Page.h"
 #include "Tokenizer.h"
@@ -35,7 +34,7 @@
 namespace WebCore {
 
 WMLDocument::WMLDocument(Frame* frame)
-    : Document(frame, false, false) 
+    : Document(frame, false) 
     , m_activeCard(0)
 {
     clearXMLVersion();

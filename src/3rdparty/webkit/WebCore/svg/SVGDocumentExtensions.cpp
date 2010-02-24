@@ -34,7 +34,6 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "Page.h"
-#include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
 #include "SMILTimeContainer.h"
 #include "XMLTokenizer.h"
@@ -85,17 +84,6 @@ void SVGDocumentExtensions::unpauseAnimations()
     HashSet<SVGSVGElement*>::iterator end = m_timeContainers.end();
     for (HashSet<SVGSVGElement*>::iterator itr = m_timeContainers.begin(); itr != end; ++itr)
         (*itr)->unpauseAnimations();
-}
-
-bool SVGDocumentExtensions::sampleAnimationAtTime(const String& elementId, SVGSMILElement* element, double time)
-{
-    ASSERT(element);
-    SMILTimeContainer* container = element->timeContainer();
-    if (!container || container->isPaused())
-        return false;
-
-    container->sampleAnimationAtTime(elementId, time);
-    return true;
 }
 
 void SVGDocumentExtensions::reportWarning(const String& message)

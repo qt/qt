@@ -40,12 +40,8 @@ namespace JSC {
 
 #if USE(JSVALUE32_64)
 
-void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executablePool, JSGlobalData* globalData, TrampolineStructure *trampolines)
+void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executablePool, JSGlobalData* globalData, CodePtr* ctiStringLengthTrampoline, CodePtr* ctiVirtualCallLink, CodePtr* ctiVirtualCall, CodePtr* ctiNativeCallThunk)
 {
-#if ENABLE(JIT_OPTIMIZE_MOD)
-    Label softModBegin = align();
-    softModulo();
-#endif
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
     // (1) This function provides fast property access for string length
     Label stringLengthBegin = align();
@@ -56,7 +52,8 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     Jump string_failureCases2 = branchPtr(NotEqual, Address(regT0), ImmPtr(m_globalData->jsStringVPtr));
 
     // Checks out okay! - get the length from the Ustring.
-    load32(Address(regT0, OBJECT_OFFSETOF(JSString, m_length)), regT2);
+    loadPtr(Address(regT0, OBJECT_OFFSETOF(JSString, m_value) + OBJECT_OFFSETOF(UString, m_rep)), regT2);
+    load32(Address(regT2, OBJECT_OFFSETOF(UString::Rep, len)), regT2);
 
     Jump string_failureCases3 = branch32(Above, regT2, Imm32(INT_MAX));
     move(regT2, regT0);
@@ -141,7 +138,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     loadPtr(Address(regT2, OBJECT_OFFSETOF(FunctionExecutable, m_jitCode)), regT0);
     jump(regT0);
 
-#if CPU(X86) || CPU(ARM_TRADITIONAL)
+#if PLATFORM(X86)
     Label nativeCallThunk = align();
     preserveReturnAddressAfterCall(regT0);
     emitPutToCallFrameHeader(regT0, RegisterFile::ReturnPC); // Push return address
@@ -152,7 +149,6 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     emitGetFromCallFrameHeaderPtr(RegisterFile::ScopeChain, regT1, regT1);
     emitPutToCallFrameHeader(regT1, RegisterFile::ScopeChain);
     
-#if CPU(X86)
     emitGetFromCallFrameHeader32(RegisterFile::ArgumentCount, regT0);
 
     /* We have two structs that we use to describe the stackframe we set up for our
@@ -164,7 +160,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
      * stack pointer by the right amount after the call.
      */
 
-#if COMPILER(MSVC) || OS(LINUX)
+#if COMPILER(MSVC) || PLATFORM(LINUX)
 #if COMPILER(MSVC)
 #pragma pack(push)
 #pragma pack(4)
@@ -227,7 +223,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     storePtr(regT2, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, thisValue) + OBJECT_OFFSETOF(JSValue, u.asBits.payload)));
     storePtr(regT3, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, thisValue) + OBJECT_OFFSETOF(JSValue, u.asBits.tag)));
 
-#if COMPILER(MSVC) || OS(LINUX)
+#if COMPILER(MSVC) || PLATFORM(LINUX)
     // ArgList is passed by reference so is stackPointerRegister + 4 * sizeof(Register)
     addPtr(Imm32(OBJECT_OFFSETOF(NativeCallFrameStructure, result)), stackPointerRegister, X86Registers::ecx);
 
@@ -251,66 +247,6 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     // We've put a few temporaries on the stack in addition to the actual arguments
     // so pull them off now
     addPtr(Imm32(NativeCallFrameSize - sizeof(NativeFunctionCalleeSignature)), stackPointerRegister);
-
-#elif CPU(ARM_TRADITIONAL)
-    emitGetFromCallFrameHeader32(RegisterFile::ArgumentCount, regT0);
-
-    // Allocate stack space for our arglist
-    COMPILE_ASSERT((sizeof(ArgList) & 0x7) == 0 && sizeof(JSValue) == 8 && sizeof(Register) == 8, ArgList_should_by_8byte_aligned);
-    subPtr(Imm32(sizeof(ArgList)), stackPointerRegister);
-
-    // Set up arguments
-    subPtr(Imm32(1), regT0); // Don't include 'this' in argcount
-
-    // Push argcount
-    storePtr(regT0, Address(stackPointerRegister, OBJECT_OFFSETOF(ArgList, m_argCount)));
-
-    // Calculate the start of the callframe header, and store in regT1
-    move(callFrameRegister, regT1);
-    sub32(Imm32(RegisterFile::CallFrameHeaderSize * (int32_t)sizeof(Register)), regT1);
-
-    // Calculate start of arguments as callframe header - sizeof(Register) * argcount (regT1)
-    mul32(Imm32(sizeof(Register)), regT0, regT0);
-    subPtr(regT0, regT1);
-
-    // push pointer to arguments
-    storePtr(regT1, Address(stackPointerRegister, OBJECT_OFFSETOF(ArgList, m_args)));
-
-    // Argument passing method:
-    // r0 - points to return value
-    // r1 - callFrame
-    // r2 - callee
-    // stack: this(JSValue) and a pointer to ArgList
-
-    move(stackPointerRegister, regT3);
-    subPtr(Imm32(8), stackPointerRegister);
-    move(stackPointerRegister, regT0);
-    subPtr(Imm32(8 + 4 + 4 /* padding */), stackPointerRegister);
-
-    // Setup arg4:
-    storePtr(regT3, Address(stackPointerRegister, 8));
-
-    // Setup arg3
-    // regT1 currently points to the first argument, regT1-sizeof(Register) points to 'this'
-    load32(Address(regT1, -(int32_t)sizeof(void*) * 2), regT3);
-    storePtr(regT3, Address(stackPointerRegister, 0));
-    load32(Address(regT1, -(int32_t)sizeof(void*)), regT3);
-    storePtr(regT3, Address(stackPointerRegister, 4));
-
-    // Setup arg2:
-    emitGetFromCallFrameHeaderPtr(RegisterFile::Callee, regT2);
-
-    // Setup arg1:
-    move(callFrameRegister, regT1);
-
-    call(Address(regT2, OBJECT_OFFSETOF(JSFunction, m_data)));
-
-    // Load return value
-    load32(Address(stackPointerRegister, 16), regT0);
-    load32(Address(stackPointerRegister, 20), regT1);
-
-    addPtr(Imm32(sizeof(ArgList) + 16 + 8), stackPointerRegister);
-#endif
 
     // Check for an exception
     move(ImmPtr(&globalData->exception), regT2);
@@ -369,20 +305,17 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     CodeRef finalCode = patchBuffer.finalizeCode();
     *executablePool = finalCode.m_executablePool;
 
-    trampolines->ctiVirtualCall = trampolineAt(finalCode, virtualCallBegin);
-    trampolines->ctiNativeCallThunk = trampolineAt(finalCode, nativeCallThunk);
+    *ctiVirtualCall = trampolineAt(finalCode, virtualCallBegin);
+    *ctiNativeCallThunk = trampolineAt(finalCode, nativeCallThunk);
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
-    trampolines->ctiStringLengthTrampoline = trampolineAt(finalCode, stringLengthBegin);
+    *ctiStringLengthTrampoline = trampolineAt(finalCode, stringLengthBegin);
 #else
     UNUSED_PARAM(ctiStringLengthTrampoline);
 #endif
 #if ENABLE(JIT_OPTIMIZE_CALL)
-    trampolines->ctiVirtualCallLink = trampolineAt(finalCode, virtualCallLinkBegin);
+    *ctiVirtualCallLink = trampolineAt(finalCode, virtualCallLinkBegin);
 #else
     UNUSED_PARAM(ctiVirtualCallLink);
-#endif
-#if ENABLE(JIT_OPTIMIZE_MOD)
-    trampolines->ctiSoftModulo = trampolineAt(finalCode, softModBegin);
 #endif
 }
 
@@ -414,6 +347,58 @@ void JIT::emit_op_jmp(Instruction* currentInstruction)
 {
     unsigned target = currentInstruction[1].u.operand;
     addJump(jump(), target);
+}
+
+void JIT::emit_op_loop(Instruction* currentInstruction)
+{
+    unsigned target = currentInstruction[1].u.operand;
+    emitTimeoutCheck();
+    addJump(jump(), target);
+}
+
+void JIT::emit_op_loop_if_less(Instruction* currentInstruction)
+{
+    unsigned op1 = currentInstruction[1].u.operand;
+    unsigned op2 = currentInstruction[2].u.operand;
+    unsigned target = currentInstruction[3].u.operand;
+
+    emitTimeoutCheck();
+
+    if (isOperandConstantImmediateInt(op1)) {
+        emitLoad(op2, regT1, regT0);
+        addSlowCase(branch32(NotEqual, regT1, Imm32(JSValue::Int32Tag)));
+        addJump(branch32(GreaterThan, regT0, Imm32(getConstantOperand(op1).asInt32())), target);
+        return;
+    }
+    
+    if (isOperandConstantImmediateInt(op2)) {
+        emitLoad(op1, regT1, regT0);
+        addSlowCase(branch32(NotEqual, regT1, Imm32(JSValue::Int32Tag)));
+        addJump(branch32(LessThan, regT0, Imm32(getConstantOperand(op2).asInt32())), target);
+        return;
+    }
+
+    emitLoad2(op1, regT1, regT0, op2, regT3, regT2);
+    addSlowCase(branch32(NotEqual, regT1, Imm32(JSValue::Int32Tag)));
+    addSlowCase(branch32(NotEqual, regT3, Imm32(JSValue::Int32Tag)));
+    addJump(branch32(LessThan, regT0, regT2), target);
+}
+
+void JIT::emitSlow_op_loop_if_less(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    unsigned op1 = currentInstruction[1].u.operand;
+    unsigned op2 = currentInstruction[2].u.operand;
+    unsigned target = currentInstruction[3].u.operand;
+
+    if (!isOperandConstantImmediateInt(op1) && !isOperandConstantImmediateInt(op2))
+        linkSlowCase(iter); // int32 check
+    linkSlowCase(iter); // int32 check
+
+    JITStubCall stubCall(this, cti_op_loop_if_less);
+    stubCall.addArgument(op1);
+    stubCall.addArgument(op2);
+    stubCall.call();
+    emitJumpSlowToHot(branchTest32(NonZero, regT0), target);
 }
 
 void JIT::emit_op_loop_if_lesseq(Instruction* currentInstruction)
@@ -664,6 +649,40 @@ void JIT::emit_op_strcat(Instruction* currentInstruction)
     stubCall.call(currentInstruction[1].u.operand);
 }
 
+void JIT::emit_op_loop_if_true(Instruction* currentInstruction)
+{
+    unsigned cond = currentInstruction[1].u.operand;
+    unsigned target = currentInstruction[2].u.operand;
+
+    emitTimeoutCheck();
+
+    emitLoad(cond, regT1, regT0);
+
+    Jump isNotInteger = branch32(NotEqual, regT1, Imm32(JSValue::Int32Tag));
+    addJump(branch32(NotEqual, regT0, Imm32(0)), target);
+    Jump isNotZero = jump();
+
+    isNotInteger.link(this);
+
+    addJump(branch32(Equal, regT1, Imm32(JSValue::TrueTag)), target);
+    addSlowCase(branch32(NotEqual, regT1, Imm32(JSValue::FalseTag)));
+
+    isNotZero.link(this);
+}
+
+void JIT::emitSlow_op_loop_if_true(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    unsigned cond = currentInstruction[1].u.operand;
+    unsigned target = currentInstruction[2].u.operand;
+
+    linkSlowCase(iter);
+
+    JITStubCall stubCall(this, cti_op_jtrue);
+    stubCall.addArgument(cond);
+    stubCall.call();
+    emitJumpSlowToHot(branchTest32(NonZero, regT0), target);
+}
+
 void JIT::emit_op_resolve_base(Instruction* currentInstruction)
 {
     JITStubCall stubCall(this, cti_op_resolve_base);
@@ -767,7 +786,7 @@ void JIT::emit_op_jfalse(Instruction* currentInstruction)
 
         zeroDouble(fpRegT0);
         emitLoadDouble(cond, fpRegT1);
-        addJump(branchDouble(DoubleEqualOrUnordered, fpRegT0, fpRegT1), target);
+        addJump(branchDouble(DoubleEqual, fpRegT0, fpRegT1), target);
     } else
         addSlowCase(isNotInteger);
 
@@ -1502,12 +1521,8 @@ void JIT::emit_op_profile_did_call(Instruction* currentInstruction)
 #define RECORD_JUMP_TARGET(targetOffset) \
    do { m_labels[m_bytecodeIndex + (targetOffset)].used(); } while (false)
 
-void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executablePool, JSGlobalData* globalData, TrampolineStructure *trampolines)
+void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executablePool, JSGlobalData* globalData, CodePtr* ctiStringLengthTrampoline, CodePtr* ctiVirtualCallLink, CodePtr* ctiVirtualCall, CodePtr* ctiNativeCallThunk)
 {
-#if ENABLE(JIT_OPTIMIZE_MOD)
-    Label softModBegin = align();
-    softModulo();
-#endif
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
     // (2) The second function provides fast property access for string length
     Label stringLengthBegin = align();
@@ -1517,7 +1532,8 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     Jump string_failureCases2 = branchPtr(NotEqual, Address(regT0), ImmPtr(m_globalData->jsStringVPtr));
 
     // Checks out okay! - get the length from the Ustring.
-    load32(Address(regT0, OBJECT_OFFSETOF(JSString, m_length)), regT0);
+    loadPtr(Address(regT0, OBJECT_OFFSETOF(JSString, m_value) + OBJECT_OFFSETOF(UString, m_rep)), regT0);
+    load32(Address(regT0, OBJECT_OFFSETOF(UString::Rep, len)), regT0);
 
     Jump string_failureCases3 = branch32(Above, regT0, Imm32(JSImmediate::maxImmediateInt));
 
@@ -1612,7 +1628,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     emitPutToCallFrameHeader(regT1, RegisterFile::ScopeChain);
     
 
-#if CPU(X86_64)
+#if PLATFORM(X86_64)
     emitGetFromCallFrameHeader32(RegisterFile::ArgumentCount, X86Registers::ecx);
 
     // Allocate stack space for our arglist
@@ -1648,7 +1664,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     call(Address(X86Registers::esi, OBJECT_OFFSETOF(JSFunction, m_data)));
     
     addPtr(Imm32(sizeof(ArgList)), stackPointerRegister);
-#elif CPU(X86)
+#elif PLATFORM(X86)
     emitGetFromCallFrameHeader32(RegisterFile::ArgumentCount, regT0);
 
     /* We have two structs that we use to describe the stackframe we set up for our
@@ -1659,7 +1675,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
      * not the rest of the callframe so we need a nice way to ensure we increment the
      * stack pointer by the right amount after the call.
      */
-#if COMPILER(MSVC) || OS(LINUX)
+#if COMPILER(MSVC) || PLATFORM(LINUX)
     struct NativeCallFrameStructure {
       //  CallFrame* callFrame; // passed in EDX
         JSObject* callee;
@@ -1712,7 +1728,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     loadPtr(Address(regT1, -(int)sizeof(Register)), regT1);
     storePtr(regT1, Address(stackPointerRegister, OBJECT_OFFSETOF(NativeCallFrameStructure, thisValue)));
 
-#if COMPILER(MSVC) || OS(LINUX)
+#if COMPILER(MSVC) || PLATFORM(LINUX)
     // ArgList is passed by reference so is stackPointerRegister + 4 * sizeof(Register)
     addPtr(Imm32(OBJECT_OFFSETOF(NativeCallFrameStructure, result)), stackPointerRegister, X86Registers::ecx);
 
@@ -1740,7 +1756,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     // so pull them off now
     addPtr(Imm32(NativeCallFrameSize - sizeof(NativeFunctionCalleeSignature)), stackPointerRegister);
 
-#elif CPU(ARM)
+#elif PLATFORM(ARM_TRADITIONAL)
     emitGetFromCallFrameHeader32(RegisterFile::ArgumentCount, regT0);
 
     // Allocate stack space for our arglist
@@ -1774,7 +1790,7 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     move(callFrameRegister, regT0);
 
     // Setup arg4: This is a plain hack
-    move(stackPointerRegister, ARMRegisters::r3);
+    move(stackPointerRegister, ARMRegisters::S0);
 
     call(Address(regT1, OBJECT_OFFSETOF(JSFunction, m_data)));
 
@@ -1838,14 +1854,11 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     CodeRef finalCode = patchBuffer.finalizeCode();
     *executablePool = finalCode.m_executablePool;
 
-    trampolines->ctiVirtualCallLink = trampolineAt(finalCode, virtualCallLinkBegin);
-    trampolines->ctiVirtualCall = trampolineAt(finalCode, virtualCallBegin);
-    trampolines->ctiNativeCallThunk = trampolineAt(finalCode, nativeCallThunk);
-#if ENABLE(JIT_OPTIMIZE_MOD)
-    trampolines->ctiSoftModulo = trampolineAt(finalCode, softModBegin);
-#endif
+    *ctiVirtualCallLink = trampolineAt(finalCode, virtualCallLinkBegin);
+    *ctiVirtualCall = trampolineAt(finalCode, virtualCallBegin);
+    *ctiNativeCallThunk = trampolineAt(finalCode, nativeCallThunk);
 #if ENABLE(JIT_OPTIMIZE_PROPERTY_ACCESS)
-    trampolines->ctiStringLengthTrampoline = trampolineAt(finalCode, stringLengthBegin);
+    *ctiStringLengthTrampoline = trampolineAt(finalCode, stringLengthBegin);
 #else
     UNUSED_PARAM(ctiStringLengthTrampoline);
 #endif
@@ -1887,6 +1900,47 @@ void JIT::emit_op_jmp(Instruction* currentInstruction)
     unsigned target = currentInstruction[1].u.operand;
     addJump(jump(), target);
     RECORD_JUMP_TARGET(target);
+}
+
+void JIT::emit_op_loop(Instruction* currentInstruction)
+{
+    emitTimeoutCheck();
+
+    unsigned target = currentInstruction[1].u.operand;
+    addJump(jump(), target);
+}
+
+void JIT::emit_op_loop_if_less(Instruction* currentInstruction)
+{
+    emitTimeoutCheck();
+
+    unsigned op1 = currentInstruction[1].u.operand;
+    unsigned op2 = currentInstruction[2].u.operand;
+    unsigned target = currentInstruction[3].u.operand;
+    if (isOperandConstantImmediateInt(op2)) {
+        emitGetVirtualRegister(op1, regT0);
+        emitJumpSlowCaseIfNotImmediateInteger(regT0);
+#if USE(JSVALUE64)
+        int32_t op2imm = getConstantOperandImmediateInt(op2);
+#else
+        int32_t op2imm = static_cast<int32_t>(JSImmediate::rawValue(getConstantOperand(op2)));
+#endif
+        addJump(branch32(LessThan, regT0, Imm32(op2imm)), target);
+    } else if (isOperandConstantImmediateInt(op1)) {
+        emitGetVirtualRegister(op2, regT0);
+        emitJumpSlowCaseIfNotImmediateInteger(regT0);
+#if USE(JSVALUE64)
+        int32_t op1imm = getConstantOperandImmediateInt(op1);
+#else
+        int32_t op1imm = static_cast<int32_t>(JSImmediate::rawValue(getConstantOperand(op1)));
+#endif
+        addJump(branch32(GreaterThan, regT0, Imm32(op1imm)), target);
+    } else {
+        emitGetVirtualRegisters(op1, regT0, op2, regT1);
+        emitJumpSlowCaseIfNotImmediateInteger(regT0);
+        emitJumpSlowCaseIfNotImmediateInteger(regT1);
+        addJump(branch32(LessThan, regT0, regT1), target);
+    }
 }
 
 void JIT::emit_op_loop_if_lesseq(Instruction* currentInstruction)
@@ -2127,6 +2181,21 @@ void JIT::emit_op_strcat(Instruction* currentInstruction)
     stubCall.call(currentInstruction[1].u.operand);
 }
 
+void JIT::emit_op_loop_if_true(Instruction* currentInstruction)
+{
+    emitTimeoutCheck();
+
+    unsigned target = currentInstruction[2].u.operand;
+    emitGetVirtualRegister(currentInstruction[1].u.operand, regT0);
+
+    Jump isZero = branchPtr(Equal, regT0, ImmPtr(JSValue::encode(jsNumber(m_globalData, 0))));
+    addJump(emitJumpIfImmediateInteger(regT0), target);
+
+    addJump(branchPtr(Equal, regT0, ImmPtr(JSValue::encode(jsBoolean(true)))), target);
+    addSlowCase(branchPtr(NotEqual, regT0, ImmPtr(JSValue::encode(jsBoolean(false)))));
+
+    isZero.link(this);
+};
 void JIT::emit_op_resolve_base(Instruction* currentInstruction)
 {
     JITStubCall stubCall(this, cti_op_resolve_base);
@@ -2806,6 +2875,36 @@ void JIT::emitSlow_op_get_by_val(Instruction* currentInstruction, Vector<SlowCas
     stubCall.call(dst);
 }
 
+void JIT::emitSlow_op_loop_if_less(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    unsigned op1 = currentInstruction[1].u.operand;
+    unsigned op2 = currentInstruction[2].u.operand;
+    unsigned target = currentInstruction[3].u.operand;
+    if (isOperandConstantImmediateInt(op2)) {
+        linkSlowCase(iter);
+        JITStubCall stubCall(this, cti_op_loop_if_less);
+        stubCall.addArgument(regT0);
+        stubCall.addArgument(op2, regT2);
+        stubCall.call();
+        emitJumpSlowToHot(branchTest32(NonZero, regT0), target);
+    } else if (isOperandConstantImmediateInt(op1)) {
+        linkSlowCase(iter);
+        JITStubCall stubCall(this, cti_op_loop_if_less);
+        stubCall.addArgument(op1, regT2);
+        stubCall.addArgument(regT0);
+        stubCall.call();
+        emitJumpSlowToHot(branchTest32(NonZero, regT0), target);
+    } else {
+        linkSlowCase(iter);
+        linkSlowCase(iter);
+        JITStubCall stubCall(this, cti_op_loop_if_less);
+        stubCall.addArgument(regT0);
+        stubCall.addArgument(regT1);
+        stubCall.call();
+        emitJumpSlowToHot(branchTest32(NonZero, regT0), target);
+    }
+}
+
 void JIT::emitSlow_op_loop_if_lesseq(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
 {
     unsigned op2 = currentInstruction[2].u.operand;
@@ -2844,6 +2943,15 @@ void JIT::emitSlow_op_put_by_val(Instruction* currentInstruction, Vector<SlowCas
     stubPutByValCall.addArgument(property, regT2);
     stubPutByValCall.addArgument(value, regT2);
     stubPutByValCall.call();
+}
+
+void JIT::emitSlow_op_loop_if_true(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
+{
+    linkSlowCase(iter);
+    JITStubCall stubCall(this, cti_op_jtrue);
+    stubCall.addArgument(regT0);
+    stubCall.call();
+    emitJumpSlowToHot(branchTest32(NonZero, regT0), currentInstruction[2].u.operand);
 }
 
 void JIT::emitSlow_op_not(Instruction* currentInstruction, Vector<SlowCaseEntry>::iterator& iter)
@@ -2992,81 +3100,6 @@ void JIT::emitSlow_op_to_jsnumber(Instruction* currentInstruction, Vector<SlowCa
 
 #endif // USE(JSVALUE32_64)
 
-// For both JSValue32_64 and JSValue32
-#if ENABLE(JIT_OPTIMIZE_MOD)
-#if CPU(ARM_TRADITIONAL)
-void JIT::softModulo()
-{
-    push(regS0);
-    push(regS1);
-    push(regT1);
-    push(regT3);
-#if USE(JSVALUE32_64)
-    m_assembler.mov_r(regT3, regT2);
-    m_assembler.mov_r(regT2, regT0);
-#else
-    m_assembler.mov_r(regT3, m_assembler.asr(regT2, 1));
-    m_assembler.mov_r(regT2, m_assembler.asr(regT0, 1));
-#endif
-    m_assembler.mov_r(regT1, ARMAssembler::getOp2(0));
-    
-    m_assembler.teq_r(regT3, ARMAssembler::getOp2(0));
-    m_assembler.rsb_r(regT3, regT3, ARMAssembler::getOp2(0), ARMAssembler::MI);
-    m_assembler.eor_r(regT1, regT1, ARMAssembler::getOp2(1), ARMAssembler::MI);
-    
-    m_assembler.teq_r(regT2, ARMAssembler::getOp2(0));
-    m_assembler.rsb_r(regT2, regT2, ARMAssembler::getOp2(0), ARMAssembler::MI);
-    m_assembler.eor_r(regT1, regT1, ARMAssembler::getOp2(2), ARMAssembler::MI);
-    
-    Jump exitBranch = branch32(LessThan, regT2, regT3);
-
-    m_assembler.sub_r(regS1, regT3, ARMAssembler::getOp2(1));
-    m_assembler.tst_r(regS1, regT3);
-    m_assembler.and_r(regT2, regT2, regS1, ARMAssembler::EQ);
-    m_assembler.and_r(regT0, regS1, regT3);
-    Jump exitBranch2 = branchTest32(Zero, regT0);
-    
-    m_assembler.clz_r(regS1, regT2);
-    m_assembler.clz_r(regS0, regT3);
-    m_assembler.sub_r(regS0, regS0, regS1);
-
-    m_assembler.rsbs_r(regS0, regS0, ARMAssembler::getOp2(31));
-
-    m_assembler.mov_r(regS0, m_assembler.lsl(regS0, 1), ARMAssembler::NE);
-
-    m_assembler.add_r(ARMRegisters::pc, ARMRegisters::pc, m_assembler.lsl(regS0, 2), ARMAssembler::NE);
-    m_assembler.mov_r(regT0, regT0);
-    
-    for (int i = 31; i > 0; --i) {
-        m_assembler.cmp_r(regT2, m_assembler.lsl(regT3, i));
-        m_assembler.sub_r(regT2, regT2, m_assembler.lsl(regT3, i), ARMAssembler::CS);
-    }
-
-    m_assembler.cmp_r(regT2, regT3);
-    m_assembler.sub_r(regT2, regT2, regT3, ARMAssembler::CS);
-    
-    exitBranch.link(this);
-    exitBranch2.link(this);
-    
-    m_assembler.teq_r(regT1, ARMAssembler::getOp2(0));
-    m_assembler.rsb_r(regT2, regT2, ARMAssembler::getOp2(0), ARMAssembler::GT);
-    
-#if USE(JSVALUE32_64)
-    m_assembler.mov_r(regT0, regT2);
-#else
-    m_assembler.mov_r(regT0, m_assembler.lsl(regT2, 1));
-    m_assembler.eor_r(regT0, regT0, ARMAssembler::getOp2(1));
-#endif
-    pop(regT3);
-    pop(regT1);
-    pop(regS1);
-    pop(regS0);
-    ret();
-}
-#else
-#error "JIT_OPTIMIZE_MOD not yet supported on this platform."
-#endif // CPU(ARM_TRADITIONAL)
-#endif
 } // namespace JSC
 
 #endif // ENABLE(JIT)
