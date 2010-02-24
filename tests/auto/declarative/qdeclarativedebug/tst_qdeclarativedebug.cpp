@@ -64,12 +64,12 @@
 Q_DECLARE_METATYPE(QDeclarativeDebugWatch::State)
 
 
-class tst_QmlDebug : public QObject
+class tst_QDeclarativeDebug : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QmlDebug(QDeclarativeDebugTestData *data)
+    tst_QDeclarativeDebug(QDeclarativeDebugTestData *data)
     {
         m_conn = data->conn;
         m_engine = data->engine;
@@ -109,14 +109,14 @@ private slots:
     void queryExpressionResult();
     void queryExpressionResult_data();
 
-    void tst_QmlDebugFileReference();
-    void tst_QmlDebugEngineReference();
-    void tst_QmlDebugObjectReference();
-    void tst_QmlDebugContextReference();
-    void tst_QmlDebugPropertyReference();
+    void tst_QDeclarativeDebugFileReference();
+    void tst_QDeclarativeDebugEngineReference();
+    void tst_QDeclarativeDebugObjectReference();
+    void tst_QDeclarativeDebugContextReference();
+    void tst_QDeclarativeDebugPropertyReference();
 };
 
-QDeclarativeDebugObjectReference tst_QmlDebug::findRootObject()
+QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject()
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
@@ -140,7 +140,7 @@ QDeclarativeDebugObjectReference tst_QmlDebug::findRootObject()
     return result;
 }
 
-QDeclarativeDebugPropertyReference tst_QmlDebug::findProperty(const QList<QDeclarativeDebugPropertyReference> &props, const QString &name) const
+QDeclarativeDebugPropertyReference tst_QDeclarativeDebug::findProperty(const QList<QDeclarativeDebugPropertyReference> &props, const QString &name) const
 {
     foreach(const QDeclarativeDebugPropertyReference &p, props) {
         if (p.name() == name)
@@ -149,7 +149,7 @@ QDeclarativeDebugPropertyReference tst_QmlDebug::findProperty(const QList<QDecla
     return QDeclarativeDebugPropertyReference();
 }
 
-void tst_QmlDebug::waitForQuery(QDeclarativeDebugQuery *query)
+void tst_QDeclarativeDebug::waitForQuery(QDeclarativeDebugQuery *query)
 {
     QVERIFY(query);
     QCOMPARE(query->parent(), this);
@@ -158,7 +158,7 @@ void tst_QmlDebug::waitForQuery(QDeclarativeDebugQuery *query)
         QFAIL("query timed out");
 }
 
-void tst_QmlDebug::recursiveObjectTest(QObject *o, const QDeclarativeDebugObjectReference &oref, bool recursive) const
+void tst_QDeclarativeDebug::recursiveObjectTest(QObject *o, const QDeclarativeDebugObjectReference &oref, bool recursive) const
 {
     const QMetaObject *meta = o->metaObject();
 
@@ -226,7 +226,7 @@ void tst_QmlDebug::recursiveObjectTest(QObject *o, const QDeclarativeDebugObject
     }
 }
 
-void tst_QmlDebug::recursiveCompareObjects(const QDeclarativeDebugObjectReference &a, const QDeclarativeDebugObjectReference &b) const
+void tst_QDeclarativeDebug::recursiveCompareObjects(const QDeclarativeDebugObjectReference &a, const QDeclarativeDebugObjectReference &b) const
 {
     QCOMPARE(a.debugId(), b.debugId());
     QCOMPARE(a.className(), b.className());
@@ -250,7 +250,7 @@ void tst_QmlDebug::recursiveCompareObjects(const QDeclarativeDebugObjectReferenc
         recursiveCompareObjects(a.children()[i], b.children()[i]);
 }
 
-void tst_QmlDebug::recursiveCompareContexts(const QDeclarativeDebugContextReference &a, const QDeclarativeDebugContextReference &b) const
+void tst_QDeclarativeDebug::recursiveCompareContexts(const QDeclarativeDebugContextReference &a, const QDeclarativeDebugContextReference &b) const
 {
     QCOMPARE(a.debugId(), b.debugId());
     QCOMPARE(a.name(), b.name());
@@ -264,7 +264,7 @@ void tst_QmlDebug::recursiveCompareContexts(const QDeclarativeDebugContextRefere
         recursiveCompareContexts(a.contexts()[i], b.contexts()[i]);
 }
 
-void tst_QmlDebug::compareProperties(const QDeclarativeDebugPropertyReference &a, const QDeclarativeDebugPropertyReference &b) const
+void tst_QDeclarativeDebug::compareProperties(const QDeclarativeDebugPropertyReference &a, const QDeclarativeDebugPropertyReference &b) const
 {
     QCOMPARE(a.objectDebugId(), b.objectDebugId());
     QCOMPARE(a.name(), b.name());
@@ -274,14 +274,14 @@ void tst_QmlDebug::compareProperties(const QDeclarativeDebugPropertyReference &a
     QCOMPARE(a.hasNotifySignal(), b.hasNotifySignal());
 }
 
-void tst_QmlDebug::initTestCase()
+void tst_QDeclarativeDebug::initTestCase()
 {
     m_dbg = new QDeclarativeEngineDebug(m_conn, this);
 
     qRegisterMetaType<QDeclarativeDebugWatch::State>();
 }
 
-void tst_QmlDebug::watch_property()
+void tst_QDeclarativeDebug::watch_property()
 {
     QDeclarativeDebugObjectReference obj = findRootObject();
     QDeclarativeDebugPropertyReference prop = findProperty(obj.properties(), "width");
@@ -326,7 +326,7 @@ void tst_QmlDebug::watch_property()
     QCOMPARE(spy.at(0).at(1).value<QVariant>(), qVariantFromValue(origWidth*2));
 }
 
-void tst_QmlDebug::watch_object()
+void tst_QDeclarativeDebug::watch_object()
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
@@ -399,7 +399,7 @@ void tst_QmlDebug::watch_object()
     QCOMPARE(newHeight, origHeight * 2);
 }
 
-void tst_QmlDebug::watch_expression()
+void tst_QDeclarativeDebug::watch_expression()
 {
     QFETCH(QString, expr);
     QFETCH(int, increment);
@@ -462,7 +462,7 @@ void tst_QmlDebug::watch_expression()
     }
 }
 
-void tst_QmlDebug::watch_expression_data()
+void tst_QDeclarativeDebug::watch_expression_data()
 {
     QTest::addColumn<QString>("expr");
     QTest::addColumn<int>("increment");
@@ -472,21 +472,21 @@ void tst_QmlDebug::watch_expression_data()
     QTest::newRow("width+10") << "width + 10" << 10 << 5;
 }
 
-void tst_QmlDebug::watch_context()
+void tst_QDeclarativeDebug::watch_context()
 {
     QDeclarativeDebugContextReference c;
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeEngineDebug::addWatch(): Not implemented");
     QVERIFY(!m_dbg->addWatch(c, QString(), this));
 }
 
-void tst_QmlDebug::watch_file()
+void tst_QDeclarativeDebug::watch_file()
 {
     QDeclarativeDebugFileReference f;
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeEngineDebug::addWatch(): Not implemented");
     QVERIFY(!m_dbg->addWatch(f, this));
 }
 
-void tst_QmlDebug::queryAvailableEngines()
+void tst_QDeclarativeDebug::queryAvailableEngines()
 {
     QDeclarativeDebugEnginesQuery *q_engines;
 
@@ -515,7 +515,7 @@ void tst_QmlDebug::queryAvailableEngines()
     delete q_engines;
 }
 
-void tst_QmlDebug::queryRootContexts()
+void tst_QDeclarativeDebug::queryRootContexts()
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
@@ -549,13 +549,13 @@ void tst_QmlDebug::queryRootContexts()
 
     QCOMPARE(context.contexts().count(), 1);
     QVERIFY(context.contexts()[0].debugId() >= 0);
-    QCOMPARE(context.contexts()[0].name(), QString("tst_QmlDebug_childContext"));
+    QCOMPARE(context.contexts()[0].name(), QString("tst_QDeclarativeDebug_childContext"));
 
     delete q_engines;
     delete q_context;
 }
 
-void tst_QmlDebug::queryObject()
+void tst_QDeclarativeDebug::queryObject()
 {
     QFETCH(bool, recursive);
 
@@ -621,7 +621,7 @@ void tst_QmlDebug::queryObject()
     }
 }
 
-void tst_QmlDebug::queryObject_data()
+void tst_QDeclarativeDebug::queryObject_data()
 {
     QTest::addColumn<bool>("recursive");
 
@@ -629,7 +629,7 @@ void tst_QmlDebug::queryObject_data()
     QTest::newRow("recursive") << true;
 }
 
-void tst_QmlDebug::queryExpressionResult()
+void tst_QDeclarativeDebug::queryExpressionResult()
 {
     QFETCH(QString, expr);
     QFETCH(QVariant, result);
@@ -663,7 +663,7 @@ void tst_QmlDebug::queryExpressionResult()
     delete q_expr;
 }
 
-void tst_QmlDebug::queryExpressionResult_data()
+void tst_QDeclarativeDebug::queryExpressionResult_data()
 {
     QTest::addColumn<QString>("expr");
     QTest::addColumn<QVariant>("result");
@@ -673,7 +673,7 @@ void tst_QmlDebug::queryExpressionResult_data()
     QTest::newRow("bad expr") << "aeaef" << qVariantFromValue(QString("<undefined>"));
 }
 
-void tst_QmlDebug::tst_QmlDebugFileReference()
+void tst_QDeclarativeDebug::tst_QDeclarativeDebugFileReference()
 {
     QDeclarativeDebugFileReference ref;
     QVERIFY(ref.url().isEmpty());
@@ -697,7 +697,7 @@ void tst_QmlDebug::tst_QmlDebugFileReference()
     }
 }
 
-void tst_QmlDebug::tst_QmlDebugEngineReference()
+void tst_QDeclarativeDebug::tst_QDeclarativeDebugEngineReference()
 {
     QDeclarativeDebugEngineReference ref;
     QCOMPARE(ref.debugId(), -1);
@@ -721,7 +721,7 @@ void tst_QmlDebug::tst_QmlDebugEngineReference()
     }
 }
 
-void tst_QmlDebug::tst_QmlDebugObjectReference()
+void tst_QDeclarativeDebug::tst_QDeclarativeDebugObjectReference()
 {
     QDeclarativeDebugObjectReference ref;
     QCOMPARE(ref.debugId(), -1);
@@ -754,7 +754,7 @@ void tst_QmlDebug::tst_QmlDebugObjectReference()
         recursiveCompareObjects(r, ref);
 }
 
-void tst_QmlDebug::tst_QmlDebugContextReference()
+void tst_QDeclarativeDebug::tst_QDeclarativeDebugContextReference()
 {
     QDeclarativeDebugContextReference ref;
     QCOMPARE(ref.debugId(), -1);
@@ -779,7 +779,7 @@ void tst_QmlDebug::tst_QmlDebugContextReference()
         recursiveCompareContexts(r, ref);
 }
 
-void tst_QmlDebug::tst_QmlDebugPropertyReference()
+void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
 {
     QDeclarativeDebugObjectReference rootObject = findRootObject();
     QDeclarativeDebugObjectQuery *query = m_dbg->queryObject(rootObject, this);
@@ -803,14 +803,14 @@ void tst_QmlDebug::tst_QmlDebugPropertyReference()
 }
 
 
-class tst_QmlDebug_Factory : public QDeclarativeTestFactory
+class tst_QDeclarativeDebug_Factory : public QDeclarativeTestFactory
 {
 public:
     QObject *createTest(QDeclarativeDebugTestData *data)
     {
-        tst_QmlDebug *test = new tst_QmlDebug(data);
+        tst_QDeclarativeDebug *test = new tst_QDeclarativeDebug(data);
         QDeclarativeContext *c = new QDeclarativeContext(data->engine->rootContext(), test);
-        c->setObjectName("tst_QmlDebug_childContext");
+        c->setObjectName("tst_QDeclarativeDebug_childContext");
         return test;
     }
 };
@@ -832,10 +832,10 @@ int main(int argc, char *argv[])
     // add second component to test multiple root contexts
     qml << "import Qt 4.6\n"
             "Item {}";
-    tst_QmlDebug_Factory factory;
+    tst_QDeclarativeDebug_Factory factory;
     return QDeclarativeDebugTest::runTests(&factory, qml);
 }
 
-//QTEST_MAIN(tst_QmlDebug)
+//QTEST_MAIN(tst_QDeclarativeDebug)
 
 #include "tst_qdeclarativedebug.moc"

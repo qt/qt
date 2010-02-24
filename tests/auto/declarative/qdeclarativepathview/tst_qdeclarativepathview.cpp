@@ -53,11 +53,11 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include "../../../shared/util.h"
 
-class tst_QmlGraphicsPathView : public QObject
+class tst_QDeclarativePathView : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsPathView();
+    tst_QDeclarativePathView();
 
 private slots:
     void initValues();
@@ -167,11 +167,11 @@ private:
 };
 
 
-tst_QmlGraphicsPathView::tst_QmlGraphicsPathView()
+tst_QDeclarativePathView::tst_QDeclarativePathView()
 {
 }
 
-void tst_QmlGraphicsPathView::initValues()
+void tst_QDeclarativePathView::initValues()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/pathview1.qml"));
@@ -189,7 +189,7 @@ void tst_QmlGraphicsPathView::initValues()
     QCOMPARE(obj->pathItemCount(), -1);
 }
 
-void tst_QmlGraphicsPathView::items()
+void tst_QDeclarativePathView::items()
 {
     QDeclarativeView *canvas = createView();
 
@@ -221,7 +221,7 @@ void tst_QmlGraphicsPathView::items()
     delete canvas;
 }
 
-void tst_QmlGraphicsPathView::pathview2()
+void tst_QDeclarativePathView::pathview2()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/pathview2.qml"));
@@ -239,7 +239,7 @@ void tst_QmlGraphicsPathView::pathview2()
     QCOMPARE(obj->pathItemCount(), 10);
 }
 
-void tst_QmlGraphicsPathView::pathview3()
+void tst_QDeclarativePathView::pathview3()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/pathview3.qml"));
@@ -257,7 +257,7 @@ void tst_QmlGraphicsPathView::pathview3()
     QCOMPARE(obj->pathItemCount(), 4);
 }
 
-void tst_QmlGraphicsPathView::path()
+void tst_QDeclarativePathView::path()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/path.qml"));
@@ -302,7 +302,7 @@ void tst_QmlGraphicsPathView::path()
     QCOMPARE(cubic->control2Y(), 90.);
 }
 
-void tst_QmlGraphicsPathView::dataModel()
+void tst_QDeclarativePathView::dataModel()
 {
     QDeclarativeView *canvas = createView();
 
@@ -382,7 +382,7 @@ void tst_QmlGraphicsPathView::dataModel()
     delete canvas;
 }
 
-void tst_QmlGraphicsPathView::pathMoved()
+void tst_QDeclarativePathView::pathMoved()
 {
     QDeclarativeView *canvas = createView();
 
@@ -425,7 +425,7 @@ void tst_QmlGraphicsPathView::pathMoved()
     delete canvas;
 }
 
-QDeclarativeView *tst_QmlGraphicsPathView::createView()
+QDeclarativeView *tst_QDeclarativePathView::createView()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -438,7 +438,7 @@ QDeclarativeView *tst_QmlGraphicsPathView::createView()
    item must also evaluate the {index} expression equal to index
  */
 template<typename T>
-T *tst_QmlGraphicsPathView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
+T *tst_QDeclarativePathView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->childItems().count() << "children";
@@ -465,7 +465,7 @@ T *tst_QmlGraphicsPathView::findItem(QGraphicsObject *parent, const QString &obj
 }
 
 template<typename T>
-QList<T*> tst_QmlGraphicsPathView::findItems(QGraphicsObject *parent, const QString &objectName)
+QList<T*> tst_QDeclarativePathView::findItems(QGraphicsObject *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
@@ -483,6 +483,6 @@ QList<T*> tst_QmlGraphicsPathView::findItems(QGraphicsObject *parent, const QStr
     return items;
 }
 
-QTEST_MAIN(tst_QmlGraphicsPathView)
+QTEST_MAIN(tst_QDeclarativePathView)
 
 #include "tst_qdeclarativepathview.moc"

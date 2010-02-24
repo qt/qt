@@ -48,12 +48,12 @@
 #include <QGraphicsSceneMouseEvent>
 #include <qmath.h>
 
-class tst_qmlgraphicstext : public QObject
+class tst_qdeclarativetext : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicstext();
+    tst_qdeclarativetext();
 
 private slots:
     void text();
@@ -99,7 +99,7 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlgraphicstext::tst_qmlgraphicstext()
+tst_qdeclarativetext::tst_qdeclarativetext()
 {
     standard << "the quick brown fox jumped over the lazy dog"
             << "the quick brown fox\n jumped over the lazy dog";
@@ -152,7 +152,7 @@ tst_qmlgraphicstext::tst_qmlgraphicstext()
     //
 }
 
-void tst_qmlgraphicstext::text()
+void tst_qdeclarativetext::text()
 {
     {
         QDeclarativeComponent textComponent(&engine);
@@ -193,7 +193,7 @@ void tst_qmlgraphicstext::text()
     }
 }
 
-void tst_qmlgraphicstext::width()
+void tst_qdeclarativetext::width()
 {
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
@@ -245,7 +245,7 @@ void tst_qmlgraphicstext::width()
     }
 }
 
-void tst_qmlgraphicstext::wrap()
+void tst_qdeclarativetext::wrap()
 {
     int textHeight = 0;
     // for specified width and wrap set true
@@ -290,7 +290,7 @@ void tst_qmlgraphicstext::wrap()
 
 }
 
-void tst_qmlgraphicstext::elide()
+void tst_qdeclarativetext::elide()
 {
     for (QDeclarativeText::TextElideMode m = QDeclarativeText::ElideLeft; m<=QDeclarativeText::ElideNone; m=QDeclarativeText::TextElideMode(int(m)+1)) {
         const char* elidename[]={"ElideLeft", "ElideRight", "ElideMiddle", "ElideNone"};
@@ -332,7 +332,7 @@ void tst_qmlgraphicstext::elide()
     }
 }
 
-void tst_qmlgraphicstext::textFormat()
+void tst_qdeclarativetext::textFormat()
 {
     {
         QDeclarativeComponent textComponent(&engine);
@@ -353,7 +353,7 @@ void tst_qmlgraphicstext::textFormat()
 }
 
 //the alignment tests may be trivial o.oa
-void tst_qmlgraphicstext::horizontalAlignment()
+void tst_qdeclarativetext::horizontalAlignment()
 {
     //test one align each, and then test if two align fails.
 
@@ -385,7 +385,7 @@ void tst_qmlgraphicstext::horizontalAlignment()
 
 }
 
-void tst_qmlgraphicstext::verticalAlignment()
+void tst_qdeclarativetext::verticalAlignment()
 {
     //test one align each, and then test if two align fails.
 
@@ -419,7 +419,7 @@ void tst_qmlgraphicstext::verticalAlignment()
 
 }
 
-void tst_qmlgraphicstext::font()
+void tst_qdeclarativetext::font()
 {
     //test size, then bold, then italic, then family
     {
@@ -485,7 +485,7 @@ void tst_qmlgraphicstext::font()
     }
 }
 
-void tst_qmlgraphicstext::style()
+void tst_qdeclarativetext::style()
 {
     //test style
     for (int i = 0; i < styles.size(); i++)
@@ -500,7 +500,7 @@ void tst_qmlgraphicstext::style()
     }
 }
 
-void tst_qmlgraphicstext::color()
+void tst_qdeclarativetext::color()
 {
     //test style
     for (int i = 0; i < colorStrings.size(); i++)
@@ -553,7 +553,7 @@ void tst_qmlgraphicstext::color()
     }
 }
 
-void tst_qmlgraphicstext::smooth()
+void tst_qdeclarativetext::smooth()
 {
     for (int i = 0; i < standard.size(); i++)
     {
@@ -591,7 +591,7 @@ void tst_qmlgraphicstext::smooth()
     }
 }
 
-void tst_qmlgraphicstext::weight()
+void tst_qdeclarativetext::weight()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
@@ -613,7 +613,7 @@ void tst_qmlgraphicstext::weight()
     }
 }
 
-void tst_qmlgraphicstext::underline()
+void tst_qdeclarativetext::underline()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
@@ -635,7 +635,7 @@ void tst_qmlgraphicstext::underline()
     }
 }
 
-void tst_qmlgraphicstext::overline()
+void tst_qdeclarativetext::overline()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
@@ -657,7 +657,7 @@ void tst_qmlgraphicstext::overline()
     }
 }
 
-void tst_qmlgraphicstext::strikeout()
+void tst_qdeclarativetext::strikeout()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
@@ -679,7 +679,7 @@ void tst_qmlgraphicstext::strikeout()
     }
 }
 
-void tst_qmlgraphicstext::capitalization()
+void tst_qdeclarativetext::capitalization()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
@@ -728,7 +728,7 @@ void tst_qmlgraphicstext::capitalization()
     }
 }
 
-void tst_qmlgraphicstext::letterSpacing()
+void tst_qdeclarativetext::letterSpacing()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
@@ -759,7 +759,7 @@ void tst_qmlgraphicstext::letterSpacing()
     }
 }
 
-void tst_qmlgraphicstext::wordSpacing()
+void tst_qdeclarativetext::wordSpacing()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
@@ -808,7 +808,7 @@ public slots:
     void linkClicked(QString l) { link = l; }
 };
 
-void tst_qmlgraphicstext::clickLink()
+void tst_qdeclarativetext::clickLink()
 {
     {
         QString componentStr = "import Qt 4.6\nText { text: \"<a href=\\\"http://qt.nokia.com\\\">Hello world!</a>\" }";
@@ -839,6 +839,6 @@ void tst_qmlgraphicstext::clickLink()
     }
 }
 
-QTEST_MAIN(tst_qmlgraphicstext)
+QTEST_MAIN(tst_qdeclarativetext)
 
 #include "tst_qdeclarativetext.moc"

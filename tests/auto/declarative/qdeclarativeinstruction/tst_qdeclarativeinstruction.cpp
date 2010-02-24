@@ -42,11 +42,11 @@
 #include <qtest.h>
 #include <private/qdeclarativecompiler_p.h>
 
-class tst_qmlinstruction : public QObject
+class tst_qdeclarativeinstruction : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlinstruction() {}
+    tst_qdeclarativeinstruction() {}
 
 private slots:
     void dump();
@@ -58,7 +58,7 @@ static void msgHandler(QtMsgType, const char *msg)
     messages << QLatin1String(msg);
 }
 
-void tst_qmlinstruction::dump()
+void tst_qdeclarativeinstruction::dump()
 {
     QDeclarativeCompiledData *data = new QDeclarativeCompiledData(0);
     {
@@ -580,6 +580,6 @@ void tst_qmlinstruction::dump()
     data->release();
 }
 
-QTEST_MAIN(tst_qmlinstruction)
+QTEST_MAIN(tst_qdeclarativeinstruction)
 
 #include "tst_qdeclarativeinstruction.moc"

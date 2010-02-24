@@ -48,12 +48,12 @@
 #include <QStyle>
 #include <QInputContext>
 
-class tst_qmlgraphicstextinput : public QObject
+class tst_qdeclarativetextinput : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicstextinput();
+    tst_qdeclarativetextinput();
 
 private slots:
     void text();
@@ -82,7 +82,7 @@ private:
     QStringList colorStrings;
 };
 
-tst_qmlgraphicstextinput::tst_qmlgraphicstextinput()
+tst_qdeclarativetextinput::tst_qdeclarativetextinput()
 {
     standard << "the quick brown fox jumped over the lazy dog"
         << "It's supercalifragisiticexpialidocious!"
@@ -102,7 +102,7 @@ tst_qmlgraphicstextinput::tst_qmlgraphicstextinput()
                  << "#2AC05F";
 }
 
-void tst_qmlgraphicstextinput::text()
+void tst_qdeclarativetextinput::text()
 {
     {
         QDeclarativeComponent textinputComponent(&engine);
@@ -126,7 +126,7 @@ void tst_qmlgraphicstextinput::text()
 
 }
 
-void tst_qmlgraphicstextinput::width()
+void tst_qdeclarativetextinput::width()
 {
     // uses Font metrics to find the width for standard
     {
@@ -154,7 +154,7 @@ void tst_qmlgraphicstextinput::width()
     }
 }
 
-void tst_qmlgraphicstextinput::font()
+void tst_qdeclarativetextinput::font()
 {
     //test size, then bold, then italic, then family
     { 
@@ -214,7 +214,7 @@ void tst_qmlgraphicstextinput::font()
     }
 }
 
-void tst_qmlgraphicstextinput::color()
+void tst_qdeclarativetextinput::color()
 {
     //test color
     for (int i = 0; i < colorStrings.size(); i++)
@@ -264,7 +264,7 @@ void tst_qmlgraphicstextinput::color()
     }
 }
 
-void tst_qmlgraphicstextinput::selection()
+void tst_qdeclarativetextinput::selection()
 {
     QString testStr = standard[0];
     QString componentStr = "import Qt 4.6\nTextInput {  text: \""+ testStr +"\"; }";
@@ -345,7 +345,7 @@ void tst_qmlgraphicstextinput::selection()
     QVERIFY(textinputObject->selectedText().size() == 10);
 }
 
-void tst_qmlgraphicstextinput::maxLength()
+void tst_qdeclarativetextinput::maxLength()
 {
     //QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QDeclarativeView *canvas = createView(SRCDIR "/data/maxLength.qml");
@@ -372,7 +372,7 @@ void tst_qmlgraphicstextinput::maxLength()
     }
 }
 
-void tst_qmlgraphicstextinput::masks()
+void tst_qdeclarativetextinput::masks()
 {
     //Not a comprehensive test of the possible masks, that's done elsewhere (QLineEdit)
     //QString componentStr = "import Qt 4.6\nTextInput {  inputMask: 'HHHHhhhh'; }";
@@ -394,7 +394,7 @@ void tst_qmlgraphicstextinput::masks()
     }
 }
 
-void tst_qmlgraphicstextinput::validators()
+void tst_qdeclarativetextinput::validators()
 {
     // Note that this test assumes that the validators are working properly
     // so you may need to run their tests first. All validators are checked
@@ -487,7 +487,7 @@ void tst_qmlgraphicstextinput::validators()
     QCOMPARE(strInput->hasAcceptableInput(), true);
 }
 
-void tst_qmlgraphicstextinput::inputMethodHints()
+void tst_qdeclarativetextinput::inputMethodHints()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/inputmethodhints.qml");
     canvas->show();
@@ -506,7 +506,7 @@ TextInput element should only handle left/right keys until the cursor reaches
 the extent of the text, then they should ignore the keys.
 
 */
-void tst_qmlgraphicstextinput::navigation()
+void tst_qdeclarativetextinput::navigation()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->show();
@@ -538,7 +538,7 @@ void tst_qmlgraphicstextinput::navigation()
     QVERIFY(input->hasFocus() == true);
 }
 
-void tst_qmlgraphicstextinput::cursorDelegate()
+void tst_qdeclarativetextinput::cursorDelegate()
 {
     QDeclarativeView* view = createView(SRCDIR "/data/cursorTest.qml");
     view->show();
@@ -565,7 +565,7 @@ void tst_qmlgraphicstextinput::cursorDelegate()
     QVERIFY(!textInputObject->findChild<QDeclarativeItem*>("cursorInstance"));
 }
 
-void tst_qmlgraphicstextinput::readOnly()
+void tst_qdeclarativetextinput::readOnly()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/readOnly.qml");
     canvas->show();
@@ -587,7 +587,7 @@ void tst_qmlgraphicstextinput::readOnly()
     QCOMPARE(input->text(), initial);
 }
 
-void tst_qmlgraphicstextinput::simulateKey(QDeclarativeView *view, int key)
+void tst_qdeclarativetextinput::simulateKey(QDeclarativeView *view, int key)
 {
     QKeyEvent press(QKeyEvent::KeyPress, key, 0);
     QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
@@ -596,7 +596,7 @@ void tst_qmlgraphicstextinput::simulateKey(QDeclarativeView *view, int key)
     QApplication::sendEvent(view, &release);
 }
 
-QDeclarativeView *tst_qmlgraphicstextinput::createView(const QString &filename)
+QDeclarativeView *tst_qdeclarativetextinput::createView(const QString &filename)
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
 
@@ -627,7 +627,7 @@ public:
     bool softwareInputPanelEventReceived;
 };
 
-void tst_qmlgraphicstextinput::sendRequestSoftwareInputPanelEvent()
+void tst_qdeclarativetextinput::sendRequestSoftwareInputPanelEvent()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
@@ -651,6 +651,6 @@ void tst_qmlgraphicstextinput::sendRequestSoftwareInputPanelEvent()
     QCOMPARE(ic.softwareInputPanelEventReceived, true);
 }
 
-QTEST_MAIN(tst_qmlgraphicstextinput)
+QTEST_MAIN(tst_qdeclarativetextinput)
 
 #include "tst_qdeclarativetextinput.moc"

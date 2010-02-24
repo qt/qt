@@ -43,11 +43,11 @@
 #include <qdeclarativeview.h>
 #include <private/qdeclarativeparticles_p.h>
 
-class tst_QmlGraphicsParticles : public QObject
+class tst_QDeclarativeParticles : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsParticles();
+    tst_QDeclarativeParticles();
 
 private slots:
     void properties();
@@ -59,11 +59,11 @@ private:
 
 };
 
-tst_QmlGraphicsParticles::tst_QmlGraphicsParticles()
+tst_QDeclarativeParticles::tst_QDeclarativeParticles()
 {
 }
 
-void tst_QmlGraphicsParticles::properties()
+void tst_QDeclarativeParticles::properties()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/particles.qml");
     QVERIFY(canvas->rootObject());
@@ -101,7 +101,7 @@ void tst_QmlGraphicsParticles::properties()
     QCOMPARE(particles->emissionRate(), 12);
 }
 
-void tst_QmlGraphicsParticles::motionGravity()
+void tst_QDeclarativeParticles::motionGravity()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/particlemotion.qml");
     QVERIFY(canvas->rootObject());
@@ -140,7 +140,7 @@ void tst_QmlGraphicsParticles::motionGravity()
     QCOMPARE(accelerationSpy.count(), 1);
 }
 
-void tst_QmlGraphicsParticles::motionWander()
+void tst_QDeclarativeParticles::motionWander()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/particlemotion.qml");
     QVERIFY(canvas->rootObject());
@@ -186,7 +186,7 @@ void tst_QmlGraphicsParticles::motionWander()
     QCOMPARE(paceSpy.count(), 1);
 }
 
-void tst_QmlGraphicsParticles::runs()
+void tst_QDeclarativeParticles::runs()
 {
     QDeclarativeView *canvas = createView(SRCDIR "/data/particles.qml");
     QVERIFY(canvas->rootObject());
@@ -195,7 +195,7 @@ void tst_QmlGraphicsParticles::runs()
     QTest::qWait(1000);//Run for one second. Test passes if it doesn't crash.
 }
 
-QDeclarativeView *tst_QmlGraphicsParticles::createView(const QString &filename)
+QDeclarativeView *tst_QDeclarativeParticles::createView(const QString &filename)
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -204,6 +204,6 @@ QDeclarativeView *tst_QmlGraphicsParticles::createView(const QString &filename)
 
     return canvas;
 }
-QTEST_MAIN(tst_QmlGraphicsParticles)
+QTEST_MAIN(tst_QDeclarativeParticles)
 
 #include "tst_qdeclarativeparticles.moc"

@@ -43,7 +43,7 @@
 #include <QDeclarativeError>
 #include <QDebug>
 
-class tst_qmlerror : public QObject
+class tst_qdeclarativeerror : public QObject
 {
     Q_OBJECT
 private slots:
@@ -57,7 +57,7 @@ private slots:
     void debug();
 };
 
-void tst_qmlerror::url()
+void tst_qdeclarativeerror::url()
 {
     QDeclarativeError error;
 
@@ -77,7 +77,7 @@ void tst_qmlerror::url()
     QCOMPARE(error2.url(), QUrl("http://www.nokia.com/main.qml"));
 }
 
-void tst_qmlerror::description()
+void tst_qdeclarativeerror::description()
 {
     QDeclarativeError error;
 
@@ -97,7 +97,7 @@ void tst_qmlerror::description()
     QCOMPARE(error2.description(), QString("An Error"));
 }
 
-void tst_qmlerror::line()
+void tst_qdeclarativeerror::line()
 {
     QDeclarativeError error;
 
@@ -117,7 +117,7 @@ void tst_qmlerror::line()
     QCOMPARE(error2.line(), 102);
 }
 
-void tst_qmlerror::column()
+void tst_qdeclarativeerror::column()
 {
     QDeclarativeError error;
 
@@ -137,7 +137,7 @@ void tst_qmlerror::column()
     QCOMPARE(error2.column(), 16);
 }
 
-void tst_qmlerror::toString()
+void tst_qdeclarativeerror::toString()
 {
     {
         QDeclarativeError error;
@@ -159,7 +159,7 @@ void tst_qmlerror::toString()
     }
 }
 
-void tst_qmlerror::copy()
+void tst_qdeclarativeerror::copy()
 {
     QDeclarativeError error;
     error.setUrl(QUrl("http://www.nokia.com/main.qml"));
@@ -193,7 +193,7 @@ void tst_qmlerror::copy()
 
 }
 
-void tst_qmlerror::debug()
+void tst_qdeclarativeerror::debug()
 {
     {
         QDeclarativeError error;
@@ -237,6 +237,6 @@ void tst_qmlerror::debug()
 
 
 
-QTEST_MAIN(tst_qmlerror)
+QTEST_MAIN(tst_qdeclarativeerror)
 
 #include "tst_qdeclarativeerror.moc"

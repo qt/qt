@@ -46,11 +46,11 @@
 #include <QDeclarativeContext>
 #include <qdeclarativeinfo.h>
 
-class tst_qmlinfo : public QObject
+class tst_qdeclarativeinfo : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlinfo() {}
+    tst_qdeclarativeinfo() {}
 
 private slots:
     void qmlObject();
@@ -68,7 +68,7 @@ inline QUrl TEST_FILE(const QString &filename)
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
 }
 
-void tst_qmlinfo::qmlObject()
+void tst_qdeclarativeinfo::qmlObject()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("qmlObject.qml"));
 
@@ -87,7 +87,7 @@ void tst_qmlinfo::qmlObject()
     qmlInfo(nested) << "Second Test Message";
 }
 
-void tst_qmlinfo::nestedQmlObject()
+void tst_qdeclarativeinfo::nestedQmlObject()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("nestedQmlObject.qml"));
 
@@ -108,7 +108,7 @@ void tst_qmlinfo::nestedQmlObject()
     qmlInfo(nested2) << "Inner Object";
 }
 
-void tst_qmlinfo::nonQmlObject()
+void tst_qdeclarativeinfo::nonQmlObject()
 {
     QObject object;
     QTest::ignoreMessage(QtWarningMsg, "QML QtObject (unknown location) Test Message");
@@ -119,13 +119,13 @@ void tst_qmlinfo::nonQmlObject()
     qmlInfo(&pbObject) << "Test Message";
 }
 
-void tst_qmlinfo::nullObject()
+void tst_qdeclarativeinfo::nullObject()
 {
     QTest::ignoreMessage(QtWarningMsg, "QML (unknown location) Null Object Test Message");
     qmlInfo(0) << "Null Object Test Message";
 }
 
-void tst_qmlinfo::nonQmlContextedObject()
+void tst_qdeclarativeinfo::nonQmlContextedObject()
 {
     QObject object;
     QDeclarativeContext context(&engine);
@@ -134,6 +134,6 @@ void tst_qmlinfo::nonQmlContextedObject()
     qmlInfo(&object) << "Test Message";
 }
 
-QTEST_MAIN(tst_qmlinfo)
+QTEST_MAIN(tst_qdeclarativeinfo)
 
 #include "tst_qdeclarativeinfo.moc"

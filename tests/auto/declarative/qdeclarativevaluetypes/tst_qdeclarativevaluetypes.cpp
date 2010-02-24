@@ -46,11 +46,11 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include "testtypes.h"
 
-class tst_qmlvaluetypes : public QObject
+class tst_qdeclarativevaluetypes : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlvaluetypes() {}
+    tst_qdeclarativevaluetypes() {}
 
 private slots:
     void initTestCase();
@@ -82,7 +82,7 @@ private:
     QDeclarativeEngine engine;
 };
 
-void tst_qmlvaluetypes::initTestCase()
+void tst_qdeclarativevaluetypes::initTestCase()
 {
     registerTypes();
 }
@@ -92,7 +92,7 @@ inline QUrl TEST_FILE(const QString &filename)
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
 }
 
-void tst_qmlvaluetypes::point()
+void tst_qdeclarativevaluetypes::point()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("point_read.qml"));
@@ -117,7 +117,7 @@ void tst_qmlvaluetypes::point()
     }
 }
 
-void tst_qmlvaluetypes::pointf()
+void tst_qdeclarativevaluetypes::pointf()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("pointf_read.qml"));
@@ -142,7 +142,7 @@ void tst_qmlvaluetypes::pointf()
     }
 }
 
-void tst_qmlvaluetypes::size()
+void tst_qdeclarativevaluetypes::size()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("size_read.qml"));
@@ -167,7 +167,7 @@ void tst_qmlvaluetypes::size()
     }
 }
 
-void tst_qmlvaluetypes::sizef()
+void tst_qdeclarativevaluetypes::sizef()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("sizef_read.qml"));
@@ -192,7 +192,7 @@ void tst_qmlvaluetypes::sizef()
     }
 }
 
-void tst_qmlvaluetypes::rect()
+void tst_qdeclarativevaluetypes::rect()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("rect_read.qml"));
@@ -219,7 +219,7 @@ void tst_qmlvaluetypes::rect()
     }
 }
 
-void tst_qmlvaluetypes::rectf()
+void tst_qdeclarativevaluetypes::rectf()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("rectf_read.qml"));
@@ -246,7 +246,7 @@ void tst_qmlvaluetypes::rectf()
     }
 }
 
-void tst_qmlvaluetypes::vector3d()
+void tst_qdeclarativevaluetypes::vector3d()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("vector3d_read.qml"));
@@ -272,7 +272,7 @@ void tst_qmlvaluetypes::vector3d()
     }
 }
 
-void tst_qmlvaluetypes::font()
+void tst_qdeclarativevaluetypes::font()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("font_read.qml"));
@@ -345,7 +345,7 @@ void tst_qmlvaluetypes::font()
 }
 
 // Test bindings can write to value types
-void tst_qmlvaluetypes::bindingAssignment()
+void tst_qdeclarativevaluetypes::bindingAssignment()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("bindingAssignment.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -361,7 +361,7 @@ void tst_qmlvaluetypes::bindingAssignment()
 }
 
 // Test bindings can read from value types
-void tst_qmlvaluetypes::bindingRead()
+void tst_qdeclarativevaluetypes::bindingRead()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("bindingRead.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -377,7 +377,7 @@ void tst_qmlvaluetypes::bindingRead()
 }
 
 // Test static values can assign to value types
-void tst_qmlvaluetypes::staticAssignment()
+void tst_qdeclarativevaluetypes::staticAssignment()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("staticAssignment.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -389,7 +389,7 @@ void tst_qmlvaluetypes::staticAssignment()
 }
 
 // Test scripts can read/write value types
-void tst_qmlvaluetypes::scriptAccess()
+void tst_qdeclarativevaluetypes::scriptAccess()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("scriptAccess.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -403,7 +403,7 @@ void tst_qmlvaluetypes::scriptAccess()
 }
 
 // Test that assigning a constant from script removes any binding
-void tst_qmlvaluetypes::autoBindingRemoval()
+void tst_qdeclarativevaluetypes::autoBindingRemoval()
 {
     {
         QDeclarativeComponent component(&engine, TEST_FILE("autoBindingRemoval.qml"));
@@ -474,7 +474,7 @@ void tst_qmlvaluetypes::autoBindingRemoval()
 }
 
 // Test that property value sources assign to value types
-void tst_qmlvaluetypes::valueSources()
+void tst_qdeclarativevaluetypes::valueSources()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("valueSources.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -497,7 +497,7 @@ static void checkNoErrors(QDeclarativeComponent& component)
 }
 
 // Test that property value interceptors can be applied to value types
-void tst_qmlvaluetypes::valueInterceptors()
+void tst_qdeclarativevaluetypes::valueInterceptors()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("valueInterceptors.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -515,7 +515,7 @@ void tst_qmlvaluetypes::valueInterceptors()
 }
 
 // Test that you can't assign a binding to the "root" value type, and a sub-property
-void tst_qmlvaluetypes::bindingConflict()
+void tst_qdeclarativevaluetypes::bindingConflict()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("bindingConflict.qml"));
     QCOMPARE(component.isError(), true);
@@ -532,7 +532,7 @@ void tst_qmlvaluetypes::bindingConflict()
 
 // Test that accessing a reference to a valuetype after the owning object is deleted
 // doesn't crash
-void tst_qmlvaluetypes::deletedObject()
+void tst_qdeclarativevaluetypes::deletedObject()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("deletedObject.qml"));
     QTest::ignoreMessage(QtDebugMsg, "Test: 2");
@@ -550,7 +550,7 @@ void tst_qmlvaluetypes::deletedObject()
 }
 
 // Test that value types can be assigned to another value type property in a binding
-void tst_qmlvaluetypes::bindingVariantCopy()
+void tst_qdeclarativevaluetypes::bindingVariantCopy()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("bindingVariantCopy.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -562,7 +562,7 @@ void tst_qmlvaluetypes::bindingVariantCopy()
 }
 
 // Test that value types can be assigned to another value type property in script
-void tst_qmlvaluetypes::scriptVariantCopy()
+void tst_qdeclarativevaluetypes::scriptVariantCopy()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("scriptVariantCopy.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -579,7 +579,7 @@ void tst_qmlvaluetypes::scriptVariantCopy()
 
 
 // Test that the value type classes can be used manually
-void tst_qmlvaluetypes::cppClasses()
+void tst_qdeclarativevaluetypes::cppClasses()
 {
     CPP_TEST(QDeclarativePointValueType, QPoint(19, 33));
     CPP_TEST(QDeclarativePointFValueType, QPointF(33.6, -23));
@@ -592,7 +592,7 @@ void tst_qmlvaluetypes::cppClasses()
 
 }
 
-void tst_qmlvaluetypes::enums()
+void tst_qdeclarativevaluetypes::enums()
 {
     {
     QDeclarativeComponent component(&engine, TEST_FILE("enums.1.qml"));
@@ -611,6 +611,6 @@ void tst_qmlvaluetypes::enums()
     }
 }
 
-QTEST_MAIN(tst_qmlvaluetypes)
+QTEST_MAIN(tst_qdeclarativevaluetypes)
 
 #include "tst_qdeclarativevaluetypes.moc"

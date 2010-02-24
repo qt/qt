@@ -54,12 +54,12 @@ typedef QList<QVariantList> QDeclarativeXmlModelData;
 Q_DECLARE_METATYPE(QList<QDeclarativeXmlListRange>)
 Q_DECLARE_METATYPE(QDeclarativeXmlModelData)
 
-class tst_qmlxmllistmodel : public QObject
+class tst_qdeclarativexmllistmodel : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlxmllistmodel() {}
+    tst_qdeclarativexmllistmodel() {}
 
 private slots:
     void buildModel();
@@ -113,7 +113,7 @@ private:
     QDeclarativeEngine engine;
 };
 
-void tst_qmlxmllistmodel::buildModel()
+void tst_qdeclarativexmllistmodel::buildModel()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
     QDeclarativeXmlListModel *listModel = qobject_cast<QDeclarativeXmlListModel*>(component.create());
@@ -132,7 +132,7 @@ void tst_qmlxmllistmodel::buildModel()
     delete listModel;
 }
 
-void tst_qmlxmllistmodel::missingFields()
+void tst_qdeclarativexmllistmodel::missingFields()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model2.qml"));
     QDeclarativeXmlListModel *listModel = qobject_cast<QDeclarativeXmlListModel*>(component.create());
@@ -153,7 +153,7 @@ void tst_qmlxmllistmodel::missingFields()
     delete listModel;
 }
 
-void tst_qmlxmllistmodel::cdata()
+void tst_qdeclarativexmllistmodel::cdata()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/recipes.qml"));
     QDeclarativeXmlListModel *listModel = qobject_cast<QDeclarativeXmlListModel*>(component.create());
@@ -169,7 +169,7 @@ void tst_qmlxmllistmodel::cdata()
     delete listModel;
 }
 
-void tst_qmlxmllistmodel::attributes()
+void tst_qdeclarativexmllistmodel::attributes()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/recipes.qml"));
     QDeclarativeXmlListModel *listModel = qobject_cast<QDeclarativeXmlListModel*>(component.create());
@@ -185,7 +185,7 @@ void tst_qmlxmllistmodel::attributes()
     delete listModel;
 }
 
-void tst_qmlxmllistmodel::roles()
+void tst_qdeclarativexmllistmodel::roles()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
     QDeclarativeXmlListModel *listModel = qobject_cast<QDeclarativeXmlListModel*>(component.create());
@@ -202,7 +202,7 @@ void tst_qmlxmllistmodel::roles()
     delete listModel;
 }
 
-void tst_qmlxmllistmodel::roleErrors()
+void tst_qdeclarativexmllistmodel::roleErrors()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml"));
     QTest::ignoreMessage(QtWarningMsg, QString("QML XmlRole (" + QUrl::fromLocalFile(SRCDIR "/data/roleErrors.qml").toString() + ":6:5) An XmlRole query must not start with '/'").toUtf8().constData());
@@ -227,7 +227,7 @@ void tst_qmlxmllistmodel::roleErrors()
     delete listModel;
 }
 
-void tst_qmlxmllistmodel::uniqueRoleNames()
+void tst_qdeclarativexmllistmodel::uniqueRoleNames()
 {
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/unique.qml"));
     QTest::ignoreMessage(QtWarningMsg, QString("QML XmlRole (" + QUrl::fromLocalFile(SRCDIR "/data/unique.qml").toString() + ":7:5) \"name\" duplicates a previous role name and will be disabled.").toUtf8().constData());
@@ -241,7 +241,7 @@ void tst_qmlxmllistmodel::uniqueRoleNames()
     delete listModel;
 }
 
-void tst_qmlxmllistmodel::useKeys()
+void tst_qdeclarativexmllistmodel::useKeys()
 {
     // If using incremental updates through keys, the model should only
     // insert & remove some of the items, instead of throwing everything
@@ -294,7 +294,7 @@ void tst_qmlxmllistmodel::useKeys()
     }
 }
 
-void tst_qmlxmllistmodel::useKeys_data()
+void tst_qdeclarativexmllistmodel::useKeys_data()
 {
     QTest::addColumn<QString>("oldXml");
     QTest::addColumn<int>("oldCount");
@@ -376,7 +376,7 @@ void tst_qmlxmllistmodel::useKeys_data()
         << (QList<QDeclarativeXmlListRange>() << qMakePair(0, 1) << qMakePair(2,2));
 }
 
-void tst_qmlxmllistmodel::noKeysValueChanges()
+void tst_qdeclarativexmllistmodel::noKeysValueChanges()
 {
     // The 'key' roles are 'name' and 'age', as defined in roleKeys.qml.
     // If a 'sport' value is changed, the model should not be reloaded,
@@ -414,7 +414,7 @@ void tst_qmlxmllistmodel::noKeysValueChanges()
     QCOMPARE(model->count(), 2);
 }
 
-void tst_qmlxmllistmodel::keysChanged()
+void tst_qdeclarativexmllistmodel::keysChanged()
 {
     // If the key roles change, the next time the data is reloaded, it should
     // delete all its data and build a clean model (i.e. same behaviour as
@@ -448,7 +448,7 @@ void tst_qmlxmllistmodel::keysChanged()
     QCOMPARE(spyCount.count(), 0);
 }
 
-QTEST_MAIN(tst_qmlxmllistmodel)
+QTEST_MAIN(tst_qdeclarativexmllistmodel)
 
 #include "tst_qdeclarativexmllistmodel.moc"
 

@@ -47,11 +47,11 @@
 #include <private/qdeclarativerectangle_p.h>
 #include <math.h>
 
-class tst_qmlgraphicsflipable : public QObject
+class tst_qdeclarativeflipable : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicsflipable();
+    tst_qdeclarativeflipable();
 
 private slots:
     void create();
@@ -62,11 +62,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlgraphicsflipable::tst_qmlgraphicsflipable()
+tst_qdeclarativeflipable::tst_qdeclarativeflipable()
 {
 }
 
-void tst_qmlgraphicsflipable::create()
+void tst_qdeclarativeflipable::create()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-flipable.qml"));
@@ -76,7 +76,7 @@ void tst_qmlgraphicsflipable::create()
     delete obj;
 }
 
-void tst_qmlgraphicsflipable::checkFrontAndBack()
+void tst_qdeclarativeflipable::checkFrontAndBack()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-flipable.qml"));
@@ -88,7 +88,7 @@ void tst_qmlgraphicsflipable::checkFrontAndBack()
     delete obj;
 }
 
-void tst_qmlgraphicsflipable::setFrontAndBack()
+void tst_qdeclarativeflipable::setFrontAndBack()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-flipable.qml"));
@@ -108,6 +108,6 @@ void tst_qmlgraphicsflipable::setFrontAndBack()
     delete obj;
 }
 
-QTEST_MAIN(tst_qmlgraphicsflipable)
+QTEST_MAIN(tst_qdeclarativeflipable)
 
 #include "tst_qdeclarativeflipable.moc"

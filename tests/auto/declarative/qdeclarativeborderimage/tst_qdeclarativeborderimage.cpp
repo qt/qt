@@ -68,12 +68,12 @@
     } while (false)
 
 
-class tst_qmlgraphicsborderimage : public QObject
+class tst_qdeclarativeborderimage : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicsborderimage();
+    tst_qdeclarativeborderimage();
 
 private slots:
     void noSource();
@@ -93,11 +93,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlgraphicsborderimage::tst_qmlgraphicsborderimage()
+tst_qdeclarativeborderimage::tst_qdeclarativeborderimage()
 {
 }
 
-void tst_qmlgraphicsborderimage::noSource()
+void tst_qdeclarativeborderimage::noSource()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"\" }";
     QDeclarativeComponent component(&engine);
@@ -113,7 +113,7 @@ void tst_qmlgraphicsborderimage::noSource()
     delete obj;
 }
 
-void tst_qmlgraphicsborderimage::imageSource_data()
+void tst_qdeclarativeborderimage::imageSource_data()
 {
     QTest::addColumn<QString>("source");
     QTest::addColumn<bool>("remote");
@@ -127,7 +127,7 @@ void tst_qmlgraphicsborderimage::imageSource_data()
         << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
 }
 
-void tst_qmlgraphicsborderimage::imageSource()
+void tst_qdeclarativeborderimage::imageSource()
 {
     QFETCH(QString, source);
     QFETCH(bool, remote);
@@ -168,7 +168,7 @@ void tst_qmlgraphicsborderimage::imageSource()
     delete server;
 }
 
-void tst_qmlgraphicsborderimage::clearSource()
+void tst_qdeclarativeborderimage::clearSource()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: srcImage }";
     QDeclarativeContext *ctxt = engine.rootContext();
@@ -188,7 +188,7 @@ void tst_qmlgraphicsborderimage::clearSource()
     QCOMPARE(obj->height(), 0.);
 }
 
-void tst_qmlgraphicsborderimage::resized()
+void tst_qdeclarativeborderimage::resized()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" + QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() + "\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
@@ -203,7 +203,7 @@ void tst_qmlgraphicsborderimage::resized()
     delete obj;
 }
 
-void tst_qmlgraphicsborderimage::smooth()
+void tst_qdeclarativeborderimage::smooth()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
@@ -219,7 +219,7 @@ void tst_qmlgraphicsborderimage::smooth()
     delete obj;
 }
 
-void tst_qmlgraphicsborderimage::tileModes()
+void tst_qdeclarativeborderimage::tileModes()
 {
     {
         QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\"; width: 100; height: 300; horizontalTileMode: BorderImage.Repeat; verticalTileMode: BorderImage.Repeat }";
@@ -249,7 +249,7 @@ void tst_qmlgraphicsborderimage::tileModes()
     }
 }
 
-void tst_qmlgraphicsborderimage::sciSource()
+void tst_qdeclarativeborderimage::sciSource()
 {
     QFETCH(QString, source);
     QFETCH(bool, valid);
@@ -291,7 +291,7 @@ void tst_qmlgraphicsborderimage::sciSource()
     delete server;
 }
 
-void tst_qmlgraphicsborderimage::sciSource_data()
+void tst_qdeclarativeborderimage::sciSource_data()
 {
     QTest::addColumn<QString>("source");
     QTest::addColumn<bool>("valid");
@@ -302,7 +302,7 @@ void tst_qmlgraphicsborderimage::sciSource_data()
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.sci" << false;
 }
 
-void tst_qmlgraphicsborderimage::invalidSciFile()
+void tst_qdeclarativeborderimage::invalidSciFile()
 {
     QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Roun"
     QTest::ignoreMessage(QtWarningMsg, "Unknown tile rule specified. Using Stretch "); // for "Repea"
@@ -321,7 +321,7 @@ void tst_qmlgraphicsborderimage::invalidSciFile()
     delete obj;
 }
 
-void tst_qmlgraphicsborderimage::pendingRemoteRequest()
+void tst_qdeclarativeborderimage::pendingRemoteRequest()
 {
     QFETCH(QString, source);
 
@@ -338,7 +338,7 @@ void tst_qmlgraphicsborderimage::pendingRemoteRequest()
     QTest::qWait(50);
 }
 
-void tst_qmlgraphicsborderimage::pendingRemoteRequest_data()
+void tst_qdeclarativeborderimage::pendingRemoteRequest_data()
 {
     QTest::addColumn<QString>("source");
 
@@ -346,6 +346,6 @@ void tst_qmlgraphicsborderimage::pendingRemoteRequest_data()
     QTest::newRow("sci file") << "http://no-such-qt-server-like-this/none.sci";
 }
 
-QTEST_MAIN(tst_qmlgraphicsborderimage)
+QTEST_MAIN(tst_qdeclarativeborderimage)
 
 #include "tst_qdeclarativeborderimage.moc"

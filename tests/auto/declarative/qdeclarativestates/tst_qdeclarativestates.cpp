@@ -46,11 +46,11 @@
 #include <private/qdeclarativepropertychanges_p.h>
 #include <private/qdeclarativestategroup_p.h>
 
-class tst_qmlstates : public QObject
+class tst_qdeclarativestates : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlstates() {}
+    tst_qdeclarativestates() {}
 
 private:
     static QByteArray fullDataPath(const QString &path);
@@ -83,12 +83,12 @@ private slots:
     void nonExistantProperty();
 };
 
-QByteArray tst_qmlstates::fullDataPath(const QString &path)
+QByteArray tst_qdeclarativestates::fullDataPath(const QString &path)
 {
     return QUrl::fromLocalFile(SRCDIR + path).toString().toUtf8();    
 }
 
-void tst_qmlstates::basicChanges()
+void tst_qdeclarativestates::basicChanges()
 {
     QDeclarativeEngine engine;
 
@@ -158,7 +158,7 @@ void tst_qmlstates::basicChanges()
     }
 }
 
-void tst_qmlstates::basicExtension()
+void tst_qdeclarativestates::basicExtension()
 {
     QDeclarativeEngine engine;
 
@@ -222,7 +222,7 @@ void tst_qmlstates::basicExtension()
     }
 }
 
-void tst_qmlstates::basicBinding()
+void tst_qdeclarativestates::basicBinding()
 {
     QDeclarativeEngine engine;
 
@@ -347,12 +347,12 @@ Q_SIGNALS:
 
 QML_DECLARE_TYPE(MyRect)
 
-void tst_qmlstates::initTestCase()
+void tst_qdeclarativestates::initTestCase()
 {
     QML_REGISTER_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
 }
 
-void tst_qmlstates::signalOverride()
+void tst_qdeclarativestates::signalOverride()
 {
     QDeclarativeEngine engine;
 
@@ -389,7 +389,7 @@ void tst_qmlstates::signalOverride()
     }
 }
 
-void tst_qmlstates::signalOverrideCrash()
+void tst_qdeclarativestates::signalOverrideCrash()
 {
     QDeclarativeEngine engine;
 
@@ -401,7 +401,7 @@ void tst_qmlstates::signalOverrideCrash()
     rect->doSomething();
 }
 
-void tst_qmlstates::parentChange()
+void tst_qdeclarativestates::parentChange()
 {
     QDeclarativeEngine engine;
 
@@ -472,7 +472,7 @@ void tst_qmlstates::parentChange()
     }
 }
 
-void tst_qmlstates::parentChangeErrors()
+void tst_qdeclarativestates::parentChangeErrors()
 {
     QDeclarativeEngine engine;
 
@@ -509,7 +509,7 @@ void tst_qmlstates::parentChangeErrors()
     }
 }
 
-void tst_qmlstates::anchorChanges()
+void tst_qdeclarativestates::anchorChanges()
 {
     QDeclarativeEngine engine;
 
@@ -541,7 +541,7 @@ void tst_qmlstates::anchorChanges()
     delete rect;
 }
 
-void tst_qmlstates::anchorChanges2()
+void tst_qdeclarativestates::anchorChanges2()
 {
     QDeclarativeEngine engine;
 
@@ -562,7 +562,7 @@ void tst_qmlstates::anchorChanges2()
     delete rect;
 }
 
-void tst_qmlstates::anchorChanges3()
+void tst_qdeclarativestates::anchorChanges3()
 {
     QDeclarativeEngine engine;
 
@@ -612,7 +612,7 @@ void tst_qmlstates::anchorChanges3()
     delete rect;
 }
 
-void tst_qmlstates::anchorChanges4()
+void tst_qdeclarativestates::anchorChanges4()
 {
     QDeclarativeEngine engine;
 
@@ -647,7 +647,7 @@ void tst_qmlstates::anchorChanges4()
     delete rect;
 }
 
-void tst_qmlstates::anchorChanges5()
+void tst_qdeclarativestates::anchorChanges5()
 {
     QDeclarativeEngine engine;
 
@@ -682,7 +682,7 @@ void tst_qmlstates::anchorChanges5()
     delete rect;
 }
 
-void tst_qmlstates::script()
+void tst_qdeclarativestates::script()
 {
     QDeclarativeEngine engine;
 
@@ -701,7 +701,7 @@ void tst_qmlstates::script()
     }
 }
 
-void tst_qmlstates::restoreEntryValues()
+void tst_qdeclarativestates::restoreEntryValues()
 {
     QDeclarativeEngine engine;
 
@@ -718,7 +718,7 @@ void tst_qmlstates::restoreEntryValues()
     QCOMPARE(rect->color(),QColor("blue"));
 }
 
-void tst_qmlstates::explicitChanges()
+void tst_qdeclarativestates::explicitChanges()
 {
     QDeclarativeEngine engine;
 
@@ -752,7 +752,7 @@ void tst_qmlstates::explicitChanges()
     QCOMPARE(rect->color(),QColor("yellow"));
 }
 
-void tst_qmlstates::propertyErrors()
+void tst_qdeclarativestates::propertyErrors()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/propertyErrors.qml");
@@ -766,7 +766,7 @@ void tst_qmlstates::propertyErrors()
     rect->setState("blue");
 }
 
-void tst_qmlstates::incorrectRestoreBug()
+void tst_qdeclarativestates::incorrectRestoreBug()
 {
     QDeclarativeEngine engine;
 
@@ -792,7 +792,7 @@ void tst_qmlstates::incorrectRestoreBug()
     QCOMPARE(rect->color(),QColor("green"));
 }
 
-void tst_qmlstates::autoStateAtStartupRestoreBug()
+void tst_qdeclarativestates::autoStateAtStartupRestoreBug()
 {
     QDeclarativeEngine engine;
 
@@ -809,7 +809,7 @@ void tst_qmlstates::autoStateAtStartupRestoreBug()
     delete obj;
 }
 
-void tst_qmlstates::deletingChange()
+void tst_qdeclarativestates::deletingChange()
 {
     QDeclarativeEngine engine;
 
@@ -841,7 +841,7 @@ void tst_qmlstates::deletingChange()
     delete rect;
 }
 
-void tst_qmlstates::deletingState()
+void tst_qdeclarativestates::deletingState()
 {
     QDeclarativeEngine engine;
 
@@ -872,7 +872,7 @@ void tst_qmlstates::deletingState()
     delete rect;
 }
 
-void tst_qmlstates::tempState()
+void tst_qdeclarativestates::tempState()
 {
     QDeclarativeEngine engine;
 
@@ -886,7 +886,7 @@ void tst_qmlstates::tempState()
     QCOMPARE(rect->state(), QLatin1String("idle"));
 }
 
-void tst_qmlstates::illegalTempState()
+void tst_qdeclarativestates::illegalTempState()
 {
     QDeclarativeEngine engine;
 
@@ -899,7 +899,7 @@ void tst_qmlstates::illegalTempState()
     QCOMPARE(rect->state(), QLatin1String("placed"));
 }
 
-void tst_qmlstates::nonExistantProperty()
+void tst_qdeclarativestates::nonExistantProperty()
 {
     QDeclarativeEngine engine;
 
@@ -912,6 +912,6 @@ void tst_qmlstates::nonExistantProperty()
     QCOMPARE(rect->state(), QLatin1String("blue"));
 }
 
-QTEST_MAIN(tst_qmlstates)
+QTEST_MAIN(tst_qdeclarativestates)
 
 #include "tst_qdeclarativestates.moc"

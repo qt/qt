@@ -44,11 +44,11 @@
 #include <QDeclarativeComponent>
 #include <QDebug>
 
-class tst_QmlListModel : public QObject
+class tst_QDeclarativeListModel : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlListModel() {}
+    tst_QDeclarativeListModel() {}
 
 private slots:
     void static_types();
@@ -62,7 +62,7 @@ private slots:
     void error();
 };
 
-void tst_QmlListModel::static_i18n()
+void tst_QDeclarativeListModel::static_i18n()
 {
     QString expect = QString::fromUtf8("na\303\257ve");
     QString componentStr = "import Qt 4.6\nListModel { ListElement { prop1: \""+expect+"\" } }";
@@ -76,7 +76,7 @@ void tst_QmlListModel::static_i18n()
     delete obj;
 }
 
-void tst_QmlListModel::static_nestedElements()
+void tst_QDeclarativeListModel::static_nestedElements()
 {
     QFETCH(int, elementCount);
 
@@ -110,7 +110,7 @@ void tst_QmlListModel::static_nestedElements()
     delete obj;
 }
 
-void tst_QmlListModel::static_nestedElements_data()
+void tst_QDeclarativeListModel::static_nestedElements_data()
 {
     QTest::addColumn<int>("elementCount");
 
@@ -120,7 +120,7 @@ void tst_QmlListModel::static_nestedElements_data()
     QTest::newRow("many items") << 5;
 }
 
-void tst_QmlListModel::dynamic_data()
+void tst_QDeclarativeListModel::dynamic_data()
 {
     QTest::addColumn<QString>("script");
     QTest::addColumn<int>("result");
@@ -205,7 +205,7 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("listprop2a") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.append({'a':4});get(0).bars.get(3).a}" << 4 << "";
 }
 
-void tst_QmlListModel::dynamic()
+void tst_QDeclarativeListModel::dynamic()
 {
     QFETCH(QString, script);
     QFETCH(int, result);
@@ -225,7 +225,7 @@ void tst_QmlListModel::dynamic()
     QCOMPARE(actual,result);
 }
 
-void tst_QmlListModel::static_types_data()
+void tst_QDeclarativeListModel::static_types_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QVariant>("value");
@@ -255,7 +255,7 @@ void tst_QmlListModel::static_types_data()
         << QVariant("QTBUG-5974:ListElement: constant script support for property value");
 }
 
-void tst_QmlListModel::static_types()
+void tst_QDeclarativeListModel::static_types()
 {
     QFETCH(QString, qml);
     QFETCH(QVariant, value);
@@ -286,7 +286,7 @@ void tst_QmlListModel::static_types()
     delete obj;
 }
 
-void tst_QmlListModel::error_data()
+void tst_QDeclarativeListModel::error_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("error");
@@ -320,7 +320,7 @@ void tst_QmlListModel::error_data()
         << "QTBUG-6082 ListElement should not allow child objects";
 }
 
-void tst_QmlListModel::error()
+void tst_QDeclarativeListModel::error()
 {
     QFETCH(QString, qml);
     QFETCH(QString, error);
@@ -341,6 +341,6 @@ void tst_QmlListModel::error()
     }
 }
 
-QTEST_MAIN(tst_QmlListModel)
+QTEST_MAIN(tst_QDeclarativeListModel)
 
 #include "tst_qdeclarativelistmodel.moc"

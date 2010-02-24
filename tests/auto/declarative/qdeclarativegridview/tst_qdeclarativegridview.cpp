@@ -49,11 +49,11 @@
 #include <qdeclarativecontext.h>
 #include <qdeclarativeexpression.h>
 
-class tst_QmlGraphicsGridView : public QObject
+class tst_QDeclarativeGridView : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsGridView();
+    tst_QDeclarativeGridView();
 
 private slots:
     void items();
@@ -136,11 +136,11 @@ private:
     QList<QPair<QString,QString> > list;
 };
 
-tst_QmlGraphicsGridView::tst_QmlGraphicsGridView()
+tst_QDeclarativeGridView::tst_QDeclarativeGridView()
 {
 }
 
-void tst_QmlGraphicsGridView::items()
+void tst_QDeclarativeGridView::items()
 {
     QDeclarativeView *canvas = createView();
 
@@ -188,7 +188,7 @@ void tst_QmlGraphicsGridView::items()
     delete canvas;
 }
 
-void tst_QmlGraphicsGridView::changed()
+void tst_QDeclarativeGridView::changed()
 {
     QDeclarativeView *canvas = createView();
 
@@ -225,7 +225,7 @@ void tst_QmlGraphicsGridView::changed()
     delete canvas;
 }
 
-void tst_QmlGraphicsGridView::inserted()
+void tst_QDeclarativeGridView::inserted()
 {
     QDeclarativeView *canvas = createView();
 
@@ -307,7 +307,7 @@ void tst_QmlGraphicsGridView::inserted()
     delete canvas;
 }
 
-void tst_QmlGraphicsGridView::removed()
+void tst_QDeclarativeGridView::removed()
 {
     QDeclarativeView *canvas = createView();
 
@@ -467,7 +467,7 @@ void tst_QmlGraphicsGridView::removed()
     delete canvas;
 }
 
-void tst_QmlGraphicsGridView::moved()
+void tst_QDeclarativeGridView::moved()
 {
     QDeclarativeView *canvas = createView();
 
@@ -565,7 +565,7 @@ void tst_QmlGraphicsGridView::moved()
     delete canvas;
 }
 
-void tst_QmlGraphicsGridView::currentIndex()
+void tst_QDeclarativeGridView::currentIndex()
 {
     TestModel model;
     for (int i = 0; i < 30; i++)
@@ -687,7 +687,7 @@ void tst_QmlGraphicsGridView::currentIndex()
     delete canvas;
 }
 
-void tst_QmlGraphicsGridView::changeFlow()
+void tst_QDeclarativeGridView::changeFlow()
 {
     QDeclarativeView *canvas = createView();
 
@@ -746,7 +746,7 @@ void tst_QmlGraphicsGridView::changeFlow()
     delete canvas;
 }
 
-void tst_QmlGraphicsGridView::defaultValues()
+void tst_QDeclarativeGridView::defaultValues()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview3.qml"));
@@ -769,7 +769,7 @@ void tst_QmlGraphicsGridView::defaultValues()
     delete obj;
 }
 
-void tst_QmlGraphicsGridView::properties()
+void tst_QDeclarativeGridView::properties()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/gridview2.qml"));
@@ -792,7 +792,7 @@ void tst_QmlGraphicsGridView::properties()
     delete obj;
 }
 
-void tst_QmlGraphicsGridView::positionViewAtIndex()
+void tst_QDeclarativeGridView::positionViewAtIndex()
 {
     QDeclarativeView *canvas = createView();
 
@@ -882,7 +882,7 @@ void tst_QmlGraphicsGridView::positionViewAtIndex()
     delete canvas;
 }
 
-QDeclarativeView *tst_QmlGraphicsGridView::createView()
+QDeclarativeView *tst_QDeclarativeGridView::createView()
 {
     QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setFixedSize(240,320);
@@ -895,7 +895,7 @@ QDeclarativeView *tst_QmlGraphicsGridView::createView()
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QmlGraphicsGridView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
+T *tst_QDeclarativeGridView::findItem(QGraphicsObject *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->childItems().count() << "children";
@@ -925,7 +925,7 @@ T *tst_QmlGraphicsGridView::findItem(QGraphicsObject *parent, const QString &obj
 }
 
 template<typename T>
-QList<T*> tst_QmlGraphicsGridView::findItems(QGraphicsObject *parent, const QString &objectName)
+QList<T*> tst_QDeclarativeGridView::findItems(QGraphicsObject *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
@@ -945,7 +945,7 @@ QList<T*> tst_QmlGraphicsGridView::findItems(QGraphicsObject *parent, const QStr
     return items;
 }
 
-void tst_QmlGraphicsGridView::dumpTree(QDeclarativeItem *parent, int depth)
+void tst_QDeclarativeGridView::dumpTree(QDeclarativeItem *parent, int depth)
 {
     static QString padding("                       ");
     for (int i = 0; i < parent->childItems().count(); ++i) {
@@ -959,6 +959,6 @@ void tst_QmlGraphicsGridView::dumpTree(QDeclarativeItem *parent, int depth)
 }
 
 
-QTEST_MAIN(tst_QmlGraphicsGridView)
+QTEST_MAIN(tst_QDeclarativeGridView)
 
 #include "tst_qdeclarativegridview.moc"

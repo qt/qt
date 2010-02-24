@@ -64,12 +64,12 @@ inline QUrl TEST_FILE(const QString &filename)
         QVERIFY((expr)); \
     } while (false)
 
-class tst_QmlGraphicsLoader : public QObject
+class tst_QDeclarativeLoader : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsLoader();
+    tst_QDeclarativeLoader();
 
 private slots:
     void url();
@@ -93,11 +93,11 @@ private:
 };
 
 
-tst_QmlGraphicsLoader::tst_QmlGraphicsLoader()
+tst_QDeclarativeLoader::tst_QDeclarativeLoader()
 {
 }
 
-void tst_QmlGraphicsLoader::url()
+void tst_QDeclarativeLoader::url()
 {
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray("import Qt 4.6\nLoader { source: \"Rect120x60.qml\" }"), TEST_FILE(""));
@@ -112,7 +112,7 @@ void tst_QmlGraphicsLoader::url()
     delete loader;
 }
 
-void tst_QmlGraphicsLoader::component()
+void tst_QDeclarativeLoader::component()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/SetSourceComponent.qml"));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
@@ -128,7 +128,7 @@ void tst_QmlGraphicsLoader::component()
     delete loader;
 }
 
-void tst_QmlGraphicsLoader::invalidUrl()
+void tst_QDeclarativeLoader::invalidUrl()
 {
     QTest::ignoreMessage(QtWarningMsg, QString("(:-1: File error for URL " + QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString() + ") ").toUtf8().constData());
 
@@ -144,7 +144,7 @@ void tst_QmlGraphicsLoader::invalidUrl()
     delete loader;
 }
 
-void tst_QmlGraphicsLoader::clear()
+void tst_QDeclarativeLoader::clear()
 {
     {
         QDeclarativeComponent component(&engine);
@@ -192,7 +192,7 @@ void tst_QmlGraphicsLoader::clear()
     }
 }
 
-void tst_QmlGraphicsLoader::urlToComponent()
+void tst_QDeclarativeLoader::urlToComponent()
 {
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray("import Qt 4.6\n"
@@ -215,7 +215,7 @@ void tst_QmlGraphicsLoader::urlToComponent()
     delete loader;
 }
 
-void tst_QmlGraphicsLoader::componentToUrl()
+void tst_QDeclarativeLoader::componentToUrl()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/SetSourceComponent.qml"));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
@@ -237,7 +237,7 @@ void tst_QmlGraphicsLoader::componentToUrl()
     delete loader;
 }
 
-void tst_QmlGraphicsLoader::sizeLoaderToItem()
+void tst_QDeclarativeLoader::sizeLoaderToItem()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/SizeToItem.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -269,7 +269,7 @@ void tst_QmlGraphicsLoader::sizeLoaderToItem()
     QCOMPARE(spy.count(),1);
 }
 
-void tst_QmlGraphicsLoader::sizeItemToLoader()
+void tst_QDeclarativeLoader::sizeItemToLoader()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/SizeToLoader.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -297,7 +297,7 @@ void tst_QmlGraphicsLoader::sizeItemToLoader()
     QCOMPARE(loader->height(), 45.0);
 }
 
-void tst_QmlGraphicsLoader::noResize()
+void tst_QDeclarativeLoader::noResize()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/NoResize.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -311,7 +311,7 @@ void tst_QmlGraphicsLoader::noResize()
     QCOMPARE(rect->height(), 60.0);
 }
 
-void tst_QmlGraphicsLoader::sizeLoaderToGraphicsWidget()
+void tst_QDeclarativeLoader::sizeLoaderToGraphicsWidget()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/SizeLoaderToGraphicsWidget.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -338,7 +338,7 @@ void tst_QmlGraphicsLoader::sizeLoaderToGraphicsWidget()
     QCOMPARE(widget->size().height(), 30.0);
 }
 
-void tst_QmlGraphicsLoader::sizeGraphicsWidgetToLoader()
+void tst_QDeclarativeLoader::sizeGraphicsWidgetToLoader()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/SizeGraphicsWidgetToLoader.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -368,7 +368,7 @@ void tst_QmlGraphicsLoader::sizeGraphicsWidgetToLoader()
     QCOMPARE(loader->height(), 45.0);
 }
 
-void tst_QmlGraphicsLoader::noResizeGraphicsWidget()
+void tst_QDeclarativeLoader::noResizeGraphicsWidget()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("/NoResizeGraphicsWidget.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -385,7 +385,7 @@ void tst_QmlGraphicsLoader::noResizeGraphicsWidget()
     QCOMPARE(widget->size().height(), 250.0);
 }
 
-void tst_QmlGraphicsLoader::networkRequestUrl()
+void tst_QDeclarativeLoader::networkRequestUrl()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
@@ -406,7 +406,7 @@ void tst_QmlGraphicsLoader::networkRequestUrl()
 }
 
 /* XXX Component waits until all dependencies are loaded.  Is this actually possible?
-void tst_QmlGraphicsLoader::networkComponent()
+void tst_QDeclarativeLoader::networkComponent()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
@@ -437,7 +437,7 @@ void tst_QmlGraphicsLoader::networkComponent()
 }
 */
 
-void tst_QmlGraphicsLoader::failNetworkRequest()
+void tst_QDeclarativeLoader::failNetworkRequest()
 {
     TestHTTPServer server(SERVER_PORT);
     QVERIFY(server.isValid());
@@ -459,6 +459,6 @@ void tst_QmlGraphicsLoader::failNetworkRequest()
     delete loader;
 }
 
-QTEST_MAIN(tst_QmlGraphicsLoader)
+QTEST_MAIN(tst_QDeclarativeLoader)
 
 #include "tst_qdeclarativeloader.moc"

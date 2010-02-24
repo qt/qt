@@ -46,11 +46,11 @@
 #include <private/qdeclarativetext_p.h>
 #include <QSignalSpy>
 
-class tst_QmlPropertyMap : public QObject
+class tst_QDeclarativePropertyMap : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlPropertyMap() {}
+    tst_QDeclarativePropertyMap() {}
 
 private slots:
     void insert();
@@ -61,7 +61,7 @@ private slots:
     void count();
 };
 
-void tst_QmlPropertyMap::insert()
+void tst_QDeclarativePropertyMap::insert()
 {
     QDeclarativePropertyMap map;
     map.insert(QLatin1String("key1"),100);
@@ -76,7 +76,7 @@ void tst_QmlPropertyMap::insert()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
 }
 
-void tst_QmlPropertyMap::operatorInsert()
+void tst_QDeclarativePropertyMap::operatorInsert()
 {
     QDeclarativePropertyMap map;
     map[QLatin1String("key1")] = 100;
@@ -90,7 +90,7 @@ void tst_QmlPropertyMap::operatorInsert()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
 }
 
-void tst_QmlPropertyMap::operatorValue()
+void tst_QDeclarativePropertyMap::operatorValue()
 {
     QDeclarativePropertyMap map;
     map.insert(QLatin1String("key1"),100);
@@ -106,7 +106,7 @@ void tst_QmlPropertyMap::operatorValue()
     QCOMPARE(constMap[QLatin1String("key2")], constMap.value(QLatin1String("key2")));
 }
 
-void tst_QmlPropertyMap::clear()
+void tst_QDeclarativePropertyMap::clear()
 {
     QDeclarativePropertyMap map;
     map.insert(QLatin1String("key1"),100);
@@ -120,7 +120,7 @@ void tst_QmlPropertyMap::clear()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant());
 }
 
-void tst_QmlPropertyMap::changed()
+void tst_QDeclarativePropertyMap::changed()
 {
     QDeclarativePropertyMap map;
     QSignalSpy spy(&map, SIGNAL(valueChanged(const QString&)));
@@ -148,7 +148,7 @@ void tst_QmlPropertyMap::changed()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
 }
 
-void tst_QmlPropertyMap::count()
+void tst_QDeclarativePropertyMap::count()
 {
     QDeclarativePropertyMap map;
     QCOMPARE(map.isEmpty(), true);
@@ -166,6 +166,6 @@ void tst_QmlPropertyMap::count()
     QCOMPARE(map.size(), map.count());
 }
 
-QTEST_MAIN(tst_QmlPropertyMap)
+QTEST_MAIN(tst_QDeclarativePropertyMap)
 
 #include "tst_qdeclarativepropertymap.moc"

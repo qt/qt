@@ -105,7 +105,7 @@ QByteArray QDeclarativeDebugTestClient::waitForResponse()
     lastMsg.clear();
     QDeclarativeDebugTest::waitForSignal(this, SIGNAL(serverMessage(QByteArray)));
     if (lastMsg.isEmpty()) {
-        qWarning() << "tst_QmlDebugClient: no response from server!";
+        qWarning() << "tst_QDeclarativeDebugClient: no response from server!";
         return QByteArray();
     }
     return lastMsg;
@@ -118,12 +118,12 @@ void QDeclarativeDebugTestClient::messageReceived(const QByteArray &ba)
 }
 
 
-tst_QmlDebug_Thread::tst_QmlDebug_Thread(QDeclarativeDebugTestData *data, QDeclarativeTestFactory *factory)
+tst_QDeclarativeDebug_Thread::tst_QDeclarativeDebug_Thread(QDeclarativeDebugTestData *data, QDeclarativeTestFactory *factory)
     : m_data(data), m_factory(factory)
 {
 }
 
-void tst_QmlDebug_Thread::run()
+void tst_QDeclarativeDebug_Thread::run()
 {
     bool ok = false;
 
@@ -153,7 +153,7 @@ int QDeclarativeDebugTest::runTests(QDeclarativeTestFactory *factory, const QLis
     QEventLoop loop;
     QDeclarativeDebugTestData data(&loop);
 
-    tst_QmlDebug_Thread thread(&data, factory);
+    tst_QDeclarativeDebug_Thread thread(&data, factory);
     QObject::connect(&thread, SIGNAL(testsFinished(int)), &data, SLOT(testsFinished(int)));
     
     QDeclarativeDebugService::notifyOnServerStart(&thread, "start");

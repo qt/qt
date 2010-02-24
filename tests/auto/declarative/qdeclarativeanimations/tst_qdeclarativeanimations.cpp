@@ -47,11 +47,11 @@
 #include <QVariantAnimation>
 #include <QEasingCurve>
 
-class tst_qmlanimations : public QObject
+class tst_qdeclarativeanimations : public QObject
 {
     Q_OBJECT
 public:
-    tst_qmlanimations() {}
+    tst_qdeclarativeanimations() {}
 
 private slots:
     void initTestCase() { QDeclarativeEngine engine; } // ensure types are registered
@@ -84,7 +84,7 @@ private slots:
     QCOMPARE(lhs, rhs); \
 } while (false)
 
-void tst_qmlanimations::simpleProperty()
+void tst_qdeclarativeanimations::simpleProperty()
 {
     QDeclarativeRectangle rect;
     QDeclarativePropertyAnimation animation;
@@ -109,7 +109,7 @@ void tst_qmlanimations::simpleProperty()
     QCOMPARE(rect.pos(), QPointF(100,100));
 }
 
-void tst_qmlanimations::simpleNumber()
+void tst_qdeclarativeanimations::simpleNumber()
 {
     QDeclarativeRectangle rect;
     QDeclarativeNumberAnimation animation;
@@ -134,7 +134,7 @@ void tst_qmlanimations::simpleNumber()
     QCOMPARE(rect.x(), qreal(100));
 }
 
-void tst_qmlanimations::simpleColor()
+void tst_qdeclarativeanimations::simpleColor()
 {
     QDeclarativeRectangle rect;
     QDeclarativeColorAnimation animation;
@@ -168,7 +168,7 @@ void tst_qmlanimations::simpleColor()
     QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
 }
 
-void tst_qmlanimations::alwaysRunToEnd()
+void tst_qdeclarativeanimations::alwaysRunToEnd()
 {
     QDeclarativeRectangle rect;
     QDeclarativePropertyAnimation animation;
@@ -188,7 +188,7 @@ void tst_qmlanimations::alwaysRunToEnd()
     QTIMED_COMPARE(rect.x(), qreal(200));
 }
 
-void tst_qmlanimations::complete()
+void tst_qdeclarativeanimations::complete()
 {
     QDeclarativeRectangle rect;
     QDeclarativePropertyAnimation animation;
@@ -209,7 +209,7 @@ void tst_qmlanimations::complete()
     QCOMPARE(rect.x(), qreal(200));
 }
 
-void tst_qmlanimations::resume()
+void tst_qdeclarativeanimations::resume()
 {
     QDeclarativeRectangle rect;
     QDeclarativePropertyAnimation animation;
@@ -236,7 +236,7 @@ void tst_qmlanimations::resume()
     QVERIFY(rect.x() > x);
 }
 
-void tst_qmlanimations::dotProperty()
+void tst_qdeclarativeanimations::dotProperty()
 {
     QDeclarativeRectangle rect;
     QDeclarativeNumberAnimation animation;
@@ -255,7 +255,7 @@ void tst_qmlanimations::dotProperty()
     QCOMPARE(rect.border()->width(), 5);
 }
 
-void tst_qmlanimations::badTypes()
+void tst_qdeclarativeanimations::badTypes()
 {
     //don't crash
     {
@@ -304,7 +304,7 @@ void tst_qmlanimations::badTypes()
     }
 }
 
-void tst_qmlanimations::badProperties()
+void tst_qdeclarativeanimations::badProperties()
 {
     //make sure we get a runtime error
     {
@@ -329,7 +329,7 @@ void tst_qmlanimations::badProperties()
 
 //test animating mixed types with property animation in a transition
 //for example, int + real; color + real; etc
-void tst_qmlanimations::mixedTypes()
+void tst_qdeclarativeanimations::mixedTypes()
 {
     //assumes border.width stays a real -- not real robust
     {
@@ -365,7 +365,7 @@ void tst_qmlanimations::mixedTypes()
     }
 }
 
-void tst_qmlanimations::properties()
+void tst_qdeclarativeanimations::properties()
 {
     const int waitDuration = 300;
     {
@@ -431,7 +431,7 @@ void tst_qmlanimations::properties()
     }
 }
 
-void tst_qmlanimations::propertiesTransition()
+void tst_qdeclarativeanimations::propertiesTransition()
 {
     const int waitDuration = 300;
     {
@@ -518,7 +518,7 @@ void tst_qmlanimations::propertiesTransition()
     }*/
 }
 
-void tst_qmlanimations::invalidDuration()
+void tst_qdeclarativeanimations::invalidDuration()
 {
     QDeclarativePropertyAnimation *animation = new QDeclarativePropertyAnimation;
     QTest::ignoreMessage(QtWarningMsg, "QML PropertyAnimation (unknown location) Cannot set a duration of < 0");
@@ -531,7 +531,7 @@ void tst_qmlanimations::invalidDuration()
     QCOMPARE(pauseAnimation->duration(), 250);
 }
 
-void tst_qmlanimations::attached()
+void tst_qdeclarativeanimations::attached()
 {
     QDeclarativeEngine engine;
 
@@ -542,7 +542,7 @@ void tst_qmlanimations::attached()
     QVERIFY(rect);
 }
 
-void tst_qmlanimations::propertyValueSourceDefaultStart()
+void tst_qdeclarativeanimations::propertyValueSourceDefaultStart()
 {
     {
         QDeclarativeEngine engine;
@@ -585,7 +585,7 @@ void tst_qmlanimations::propertyValueSourceDefaultStart()
 }
 
 
-void tst_qmlanimations::dontStart()
+void tst_qdeclarativeanimations::dontStart()
 {
     {
         QDeclarativeEngine engine;
@@ -616,7 +616,7 @@ void tst_qmlanimations::dontStart()
     }
 }
 
-void tst_qmlanimations::easingProperties()
+void tst_qdeclarativeanimations::easingProperties()
 {
     {
         QDeclarativeEngine engine;
@@ -667,6 +667,6 @@ void tst_qmlanimations::easingProperties()
     }
 }
 
-QTEST_MAIN(tst_qmlanimations)
+QTEST_MAIN(tst_qdeclarativeanimations)
 
 #include "tst_qdeclarativeanimations.moc"

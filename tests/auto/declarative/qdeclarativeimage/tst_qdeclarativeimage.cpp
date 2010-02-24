@@ -67,12 +67,12 @@
     } while (false)
 
 
-class tst_qmlgraphicsimage : public QObject
+class tst_qdeclarativeimage : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qmlgraphicsimage();
+    tst_qdeclarativeimage();
 
 private slots:
     void noSource();
@@ -87,11 +87,11 @@ private:
     QDeclarativeEngine engine;
 };
 
-tst_qmlgraphicsimage::tst_qmlgraphicsimage()
+tst_qdeclarativeimage::tst_qdeclarativeimage()
 {
 }
 
-void tst_qmlgraphicsimage::noSource()
+void tst_qdeclarativeimage::noSource()
 {
     QString componentStr = "import Qt 4.6\nImage { source: \"\" }";
     QDeclarativeComponent component(&engine);
@@ -108,7 +108,7 @@ void tst_qmlgraphicsimage::noSource()
     delete obj;
 }
 
-void tst_qmlgraphicsimage::imageSource_data()
+void tst_qdeclarativeimage::imageSource_data()
 {
     QTest::addColumn<QString>("source");
     QTest::addColumn<bool>("remote");
@@ -122,7 +122,7 @@ void tst_qmlgraphicsimage::imageSource_data()
         << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
 }
 
-void tst_qmlgraphicsimage::imageSource()
+void tst_qdeclarativeimage::imageSource()
 {
     QFETCH(QString, source);
     QFETCH(bool, remote);
@@ -161,7 +161,7 @@ void tst_qmlgraphicsimage::imageSource()
     delete obj;
 }
 
-void tst_qmlgraphicsimage::clearSource()
+void tst_qdeclarativeimage::clearSource()
 {
     QString componentStr = "import Qt 4.6\nImage { source: srcImage }";
     QDeclarativeContext *ctxt = engine.rootContext();
@@ -183,7 +183,7 @@ void tst_qmlgraphicsimage::clearSource()
     QCOMPARE(obj->progress(), 0.0);
 }
 
-void tst_qmlgraphicsimage::resized()
+void tst_qdeclarativeimage::resized()
 {
     QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
@@ -197,7 +197,7 @@ void tst_qmlgraphicsimage::resized()
     delete obj;
 }
 
-void tst_qmlgraphicsimage::smooth()
+void tst_qdeclarativeimage::smooth()
 {
     QString componentStr = "import Qt 4.6\nImage { source: \"" SRCDIR "/data/colors.png\"; smooth: true; width: 300; height: 300 }";
     QDeclarativeComponent component(&engine);
@@ -212,7 +212,7 @@ void tst_qmlgraphicsimage::smooth()
     delete obj;
 }
 
-void tst_qmlgraphicsimage::pixmap()
+void tst_qdeclarativeimage::pixmap()
 {
     QString componentStr = "import Qt 4.6\nImage { pixmap: testPixmap }";
 
@@ -242,6 +242,6 @@ void tst_qmlgraphicsimage::pixmap()
     delete obj;
 }
 
-QTEST_MAIN(tst_qmlgraphicsimage)
+QTEST_MAIN(tst_qdeclarativeimage)
 
 #include "tst_qdeclarativeimage.moc"
