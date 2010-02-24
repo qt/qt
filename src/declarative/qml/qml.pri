@@ -19,7 +19,6 @@ SOURCES += \
     $$PWD/qdeclarativeboundsignal.cpp \
     $$PWD/qdeclarativedom.cpp \
     $$PWD/qdeclarativerefcount.cpp \
-    $$PWD/qdeclarativeprivate.cpp \
     $$PWD/qdeclarativemetatype.cpp \
     $$PWD/qdeclarativestringconverters.cpp \
     $$PWD/qdeclarativeclassfactory.cpp \

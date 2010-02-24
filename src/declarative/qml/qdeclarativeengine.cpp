@@ -721,6 +721,18 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
     return rv;
 }
 
+QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object, 
+                                     const QMetaObject *attachedMetaObject, bool create)
+{
+    if (*idCache == -1)
+        *idCache = QDeclarativeMetaType::attachedPropertiesFuncId(attachedMetaObject);
+
+    if (*idCache == -1 || !object)
+        return 0;
+
+    return qmlAttachedPropertiesObjectById(*idCache, object, create);
+}
+
 void QDeclarativeDeclarativeData::destroyed(QObject *object)
 {
     if (deferredComponent)

@@ -45,6 +45,7 @@
 #include <qdeclarative.h>
 
 #include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_HEADER
 
