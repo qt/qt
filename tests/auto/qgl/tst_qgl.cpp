@@ -979,7 +979,7 @@ void tst_QGL::glWidgetWithAlpha()
 }
 
 
-bool qt_opengl_draw_test_pattern(QPainter* painter, int width, int height)
+void qt_opengl_draw_test_pattern(QPainter* painter, int width, int height)
 {
     QPainterPath intersectingPath;
     intersectingPath.moveTo(0, 0);
