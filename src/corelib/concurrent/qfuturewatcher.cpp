@@ -499,6 +499,12 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
 /*! \fn void QFutureWatcher::setFuture(const QFuture<T> &future)
 
     Starts watching the given \a future.
+
+    One of the signal might be emit for the current state of the \a future.
+    (For example, if the future is already stopped, the finished signal will be emit)
+
+    To avoid race condition, it is important to call this function after doing
+    the connections.
 */
 
 /*! \fn QFuture<T> QFutureWatcher::future() const
