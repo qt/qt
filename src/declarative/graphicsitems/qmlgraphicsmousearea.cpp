@@ -143,7 +143,8 @@ QmlGraphicsMouseAreaPrivate::~QmlGraphicsMouseAreaPrivate()
 
 
 /*!
-    \qmlclass MouseArea QmlGraphicsMouseArea
+    \qmlclass MouseRegion QmlGraphicsMouseRegion
+    \since 4.7
     \brief The MouseArea item enables simple mouse handling.
     \inherits Item
 

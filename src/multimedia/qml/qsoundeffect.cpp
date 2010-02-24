@@ -52,6 +52,7 @@
 #include "qsoundeffect_qsound_p.h"
 #endif
 
+QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass SoundEffect QSoundEffect
@@ -139,7 +140,7 @@
 QSoundEffect::QSoundEffect(QObject *parent) :
     QObject(parent),
     m_loopCount(1),
-    m_volume(100),
+    m_vol(100),
     m_muted(false),
     m_runningCount(0)
 {
@@ -165,7 +166,7 @@ void QSoundEffect::setSource(const QUrl &url)
     if (d != 0 && d->media().canonicalUrl() == url)
         return;
 
-    d->setVolume(m_volume);
+    d->setVolume(m_vol);
     d->setMuted(m_muted);
     d->setMedia(url);
 
@@ -191,15 +192,15 @@ void QSoundEffect::setLoopCount(int loopCount)
 
 int QSoundEffect::volume() const
 {
-    return d != 0 ? d->volume() : m_volume;
+    return d != 0 ? d->volume() : m_vol;
 }
 
 void QSoundEffect::setVolume(int volume)
 {
-    if (m_volume == volume)
+    if (m_vol == volume)
         return;
 
-    m_volume = volume;
+    m_vol = volume;
     if (d != 0)
         d->setVolume(volume);
     else
@@ -250,3 +251,4 @@ void QSoundEffect::repeat()
     }
 }
 
+QT_END_NAMESPACE

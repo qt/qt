@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Image QmlGraphicsImage
+    \since 4.7
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 

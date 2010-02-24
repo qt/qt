@@ -97,9 +97,9 @@ private:
     friend class QStaticTextPrivate;
 };
 
-Q_DECLARE_METATYPE(QStaticText)
-
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QStaticText)
 
 QT_END_HEADER
 

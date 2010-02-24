@@ -69,12 +69,14 @@ int statusId = qRegisterMetaType<QmlComponent::Status>("QmlComponent::Status");
 
 /*!
     \class QmlComponent
+  \since 4.7
     \brief The QmlComponent class encapsulates a QML component description.
     \mainclass
 */
 
 /*!
     \qmlclass Component QmlComponent
+  \since 4.7
     \brief The Component element encapsulates a QML component description.
 
     Components are reusable, encapsulated Qml element with a well-defined interface.

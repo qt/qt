@@ -93,7 +93,7 @@
     plugin that integrates the QAxContainer module into \l{Qt
     Designer}.
 
-    The ActiveQt modules are part of the \l{Qt Full Framework Edition} and
+    The ActiveQt modules are part of the \l{Qt Commercial Edition} and
     the \l{Open Source Versions of Qt}.
 
     \sa {QAxContainer Module}, {QAxServer Module}

@@ -111,6 +111,8 @@ QmlStyledText::~QmlStyledText()
 
 void QmlStyledText::parse(const QString &string, QTextLayout &layout)
 {
+    if (string.isEmpty())
+        return;
     QmlStyledText styledText(string, layout);
     styledText.d->parse();
 }
@@ -142,8 +144,10 @@ void QmlStyledTextPrivate::parse()
             ++ch;
             if (*ch == slash) {
                 ++ch;
-                if (parseCloseTag(ch, text))
-                    formatStack.pop();
+                if (parseCloseTag(ch, text)) {
+                    if (formatStack.count())
+                        formatStack.pop();
+                }
             } else {
                 QTextCharFormat format;
                 if (formatStack.count())
@@ -164,7 +168,8 @@ void QmlStyledTextPrivate::parse()
         } else {
             ++textLength;
         }
-        ++ch;
+        if (!ch->isNull())
+            ++ch;
     }
     if (textLength)
         drawText.append(QStringRef(&text, textStart, textLength));
@@ -191,20 +196,15 @@ bool QmlStyledTextPrivate::parseTag(const QChar *&ch, const QString &textIn, QSt
             QStringRef tag(&textIn, tagStart, tagLength);
             const QChar char0 = tag.at(0);
             if (char0 == QLatin1Char('b')) {
-                if (tagLength == 1) {
+                if (tagLength == 1)
                     format.setFontWeight(QFont::Bold);
-                    return true;
-                } else if (tagLength == 2 && tag.at(1) == QLatin1Char('r')) {
+                else if (tagLength == 2 && tag.at(1) == QLatin1Char('r'))
                     textOut.append(QChar(QChar::LineSeparator));
-                    return true;
-                }
             } else if (char0 == QLatin1Char('i')) {
-                if (tagLength == 1) {
+                if (tagLength == 1)
                     format.setFontItalic(true);
-                    return true;
-                }
             }
-            return false;
+            return true;
         } else if (ch->isSpace()) {
             // may have params.
             QStringRef tag(&textIn, tagStart, tagLength);

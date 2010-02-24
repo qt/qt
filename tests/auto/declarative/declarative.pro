@@ -58,6 +58,7 @@ SUBDIRS += \
            qmlvaluetypes \          # Cover
            qmlxmlhttprequest \      # Cover
            qmlimageprovider \       # Cover
+           qmlstyledtext \          # Cover
            sql                      # Cover
 
 contains(QT_CONFIG, webkit) {

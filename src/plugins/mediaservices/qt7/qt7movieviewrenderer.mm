@@ -99,6 +99,7 @@ private:
     MapMode m_mode;
 };
 
+QT_END_NAMESPACE
 
 #define VIDEO_TRANSPARENT(m) -(void)m:(NSEvent *)e{[[self superview] m:e];}
 
@@ -223,6 +224,7 @@ VIDEO_TRANSPARENT(scrollWheel)
 
 @end
 
+QT_BEGIN_NAMESPACE
 
 QT7MovieViewRenderer::QT7MovieViewRenderer(QObject *parent)
    :QT7VideoRendererControl(parent),

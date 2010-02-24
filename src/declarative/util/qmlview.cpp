@@ -170,6 +170,7 @@ void QmlViewPrivate::execute()
 
 /*!
     \class QmlView
+  \since 4.7
     \brief The QmlView class provides a widget for displaying a Qt Declarative user interface.
 
     Any QGraphicsObject or QmlGraphicsItem

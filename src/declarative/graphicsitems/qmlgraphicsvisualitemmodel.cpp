@@ -99,6 +99,7 @@ public:
 
 /*!
     \qmlclass VisualItemModel QmlGraphicsVisualItemModel
+  \since 4.7
     \brief The VisualItemModel allows items to be provided to a view.
 
     The children of the VisualItemModel are provided in a model which

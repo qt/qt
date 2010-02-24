@@ -315,7 +315,7 @@ QmlAudio::Error QmlAudio::error() const
 /*!
     \qmlsignal Audio::onError(error, errorString)
 
-    This property is called when an \l {Error}{error} has occurred.  The errorString parameter
+    This handler is called when an \l {Error}{error} has occurred.  The errorString parameter
     may contain more detailed information about the error.
 */
 

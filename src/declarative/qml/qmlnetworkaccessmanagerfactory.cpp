@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QmlNetworkAccessManagerFactory
+  \since 4.7
     \brief The QmlNetworkAccessManagerFactory class provides a factory for QNetworkAccessManager
 
     QNetworkAccessManager is used for all network access by QML.
