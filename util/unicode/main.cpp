@@ -55,21 +55,31 @@
 #define LAST_CODEPOINT 0x10ffff
 
 
-static struct AgeMap {
-    const char *age;
-    const QChar::UnicodeVersion version;
-} ageMap[] = {
-    { "1.1", QChar::Unicode_1_1 },
-    { "2.0", QChar::Unicode_2_0 },
-    { "2.1", QChar::Unicode_2_1_2 },
-    { "3.0", QChar::Unicode_3_0 },
-    { "3.1", QChar::Unicode_3_1 },
-    { "3.2", QChar::Unicode_3_2 },
-    { "4.0", QChar::Unicode_4_0 },
-    { "4.1", QChar::Unicode_4_1 },
-    { "5.0", QChar::Unicode_5_0 },
-    { 0, QChar::Unicode_Unassigned }
-};
+static QHash<QByteArray, QChar::UnicodeVersion> age_map;
+
+static void initAgeMap()
+{
+    struct AgeMap {
+        const QChar::UnicodeVersion version;
+        const char *age;
+    } ageMap[] = {
+        { QChar::Unicode_1_1,   "1.1" },
+        { QChar::Unicode_2_0,   "2.0" },
+        { QChar::Unicode_2_1_2, "2.1" },
+        { QChar::Unicode_3_0,   "3.0" },
+        { QChar::Unicode_3_1,   "3.1" },
+        { QChar::Unicode_3_2,   "3.2" },
+        { QChar::Unicode_4_0,   "4.0" },
+        { QChar::Unicode_4_1,   "4.1" },
+        { QChar::Unicode_5_0,   "5.0" },
+        { QChar::Unicode_Unassigned, 0 }
+    };
+    AgeMap *d = ageMap;
+    while (d->age) {
+        age_map.insert(d->age, d->version);
+        ++d;
+    }
+}
 
 
 static const char *grapheme_break_string =
@@ -822,18 +832,10 @@ static void readDerivedAge()
         if (cl.size() == 2)
             to = cl[1].toInt(&ok, 16);
 
-        QChar::UnicodeVersion age = QChar::Unicode_Unassigned;
-        QByteArray ba = l[1];
-        AgeMap *map = ageMap;
-        while (map->age) {
-            if (ba == map->age) {
-                age = map->version;
-                break;
-            }
-            ++map;
-        }
+        QChar::UnicodeVersion age = age_map.value(l[1].trimmed(), QChar::Unicode_Unassigned);
         //qDebug() << hex << from << ".." << to << ba << age;
-        Q_ASSERT(age != QChar::Unicode_Unassigned);
+        if (age == QChar::Unicode_Unassigned)
+            qFatal("unassigned or unhandled age value: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
@@ -2444,6 +2446,7 @@ QByteArray createCasingInfo()
 
 int main(int, char **)
 {
+    initAgeMap();
     initCategoryMap();
     initDirectionMap();
     initDecompositionMap();
