@@ -102,6 +102,7 @@ class MyQmlObject : public QObject, public MyInterface, public QDeclarativeParse
     Q_PROPERTY(int onLiteralSignal READ onLiteralSignal WRITE setOnLiteralSignal);
     Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType);
     Q_PROPERTY(MyQmlObject *qmlobjectProperty READ qmlobject WRITE setQmlobject)
+    Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
 
     Q_INTERFACES(MyInterface QDeclarativeParserStatus)
 public:
@@ -137,6 +138,9 @@ public:
 
     MyCustomVariantType customType() const { return m_custom; }
     void setCustomType(const MyCustomVariantType &v)  { m_custom = v; }
+
+    int propertyWithNotify() const { return m_propertyWithNotify; }
+    void setPropertyWithNotify(int i) { m_propertyWithNotify = i; emit oddlyNamedNotifySignal(); }
 public slots:
     void basicSlot() { qWarning("MyQmlObject::basicSlot"); }
     void basicSlotWithArgs(int v) { qWarning("MyQmlObject::basicSlotWithArgs(%d)", v); }
@@ -144,6 +148,7 @@ public slots:
 signals:
     void basicSignal();
     void basicParameterizedSignal(int parameter);
+    void oddlyNamedNotifySignal();
 
 private:
     friend class tst_qmllanguage;
@@ -151,6 +156,7 @@ private:
     MyInterface *m_interface;
     MyQmlObject *m_qmlobject;
     MyCustomVariantType m_custom;
+    int m_propertyWithNotify;
 };
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
 QML_DECLARE_TYPE(MyQmlObject);

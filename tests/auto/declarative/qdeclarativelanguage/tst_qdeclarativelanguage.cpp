@@ -88,6 +88,7 @@ private slots:
     void rootAsQmlComponent();
     void inlineQmlComponents();
     void idProperty();
+    void autoNotifyConnection();
     void assignSignal();
     void dynamicProperties();
     void dynamicPropertiesNested();
@@ -509,6 +510,22 @@ void tst_qmllanguage::idProperty()
     QVERIFY(child != 0);
     QCOMPARE(child->id(), QString("myObjectId"));
     QCOMPARE(object->property("object"), QVariant::fromValue((QObject *)child));
+}
+
+// Tests automatic connection to notify signals if "onBlahChanged" syntax is used
+// even if the notify signal for "blah" is not called "blahChanged"
+void tst_qmllanguage::autoNotifyConnection()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("autoNotifyConnection.qml"));
+    VERIFY_ERRORS(0);
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+    QMetaProperty prop = object->metaObject()->property(object->metaObject()->indexOfProperty("receivedNotify"));
+    QVERIFY(prop.isValid());
+
+    QCOMPARE(prop.read(object), QVariant::fromValue(false));
+    object->setPropertyWithNotify(1);
+    QCOMPARE(prop.read(object), QVariant::fromValue(true));
 }
 
 // Tests that signals can be assigned to
