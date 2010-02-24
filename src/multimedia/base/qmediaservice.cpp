@@ -57,6 +57,7 @@ QT_MODULE(Multimedia)
     service implementations.
     \ingroup multimedia-serv
     \preliminary
+    \since 4.7
 
     Media services provide implementations of the functionality promised
     by media objects, and allow multiple providers to implement a QMediaObject.

@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QVideoWindowControl
     \preliminary
+    \since 4.7
     \ingroup multimedia-serv
     \brief The QVideoWindowControl class provides a media control for rendering video to a window.
 

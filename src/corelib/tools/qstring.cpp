@@ -46,6 +46,7 @@
 #include <qtextcodec.h>
 #endif
 #include <private/qutfcodec_p.h>
+#include "qsimd_p.h"
 #include <qdatastream.h>
 #include <qlist.h>
 #include "qlocale.h"
@@ -3479,12 +3480,54 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
     QByteArray ba;
     if (length) {
         ba.resize(length);
-        const ushort *i = reinterpret_cast<const ushort *>(data);
-        const ushort *e = i + length;
-        uchar *s = (uchar*) ba.data();
-        while (i != e) {
-            *s++ = (*i>0xff) ? '?' : (uchar) *i;
-            ++i;
+        const ushort *src = reinterpret_cast<const ushort *>(data);
+        uchar *dst = (uchar*) ba.data();
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (length >= 16) {
+            const int chunkCount = length >> 4; // divided by 16
+            const __m128i questionMark = _mm_set1_epi16('?');
+            const __m128i thresholdMask = _mm_set1_epi16(0xff);
+            for (int i = 0; i < chunkCount; ++i) {
+                __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // each 16 bit is equal to 0xFF if the source is outside latin 1 (>0xff)
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(chunk1, thresholdMask);
+
+                    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
+                    // the 16 bits that were correct contains zeros
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+
+                    // correctBytes contains the bytes that were in limit
+                    // the 16 bits that were off limits contains zeros
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk1);
+
+                    // merge offLimitQuestionMark and correctBytes to have the result
+                    chunk1 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // exactly the same operations as for the previous chunk of data
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(chunk2, thresholdMask);
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk2);
+                    chunk2 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                // pack the two vector to 16 x 8bits elements
+                const __m128i result = _mm_packs_epi16(chunk1, chunk2);
+
+                _mm_storeu_si128((__m128i*)dst, result); // store
+                dst += 16;
+            }
+            length = length % 16;
+        }
+#endif
+        while (length--) {
+            *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+            ++src;
         }
     }
     return ba;
@@ -3647,10 +3690,35 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         d->alloc = d->size = size;
         d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
         d->data = d->array;
-        ushort *i = d->data;
         d->array[size] = '\0';
+        ushort *dst = d->data;
+        /* SIMD:
+         * Unpacking with SSE has been shown to improve performance on recent CPUs
+         * The same method gives no improvement with NEON.
+         */
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (size >= 16) {
+            int chunkCount = size >> 4; // divided by 16
+            const __m128i nullMask = _mm_set1_epi32(0);
+            for (int i = 0; i < chunkCount; ++i) {
+                const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+                str += 16;
+
+                // unpack the first 8 bytes, padding with zeros
+                const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+                dst += 8;
+
+                // unpack the last 8 bytes, padding with zeros
+                const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, secondHalf); // store
+                dst += 8;
+            }
+            size = size % 16;
+        }
+#endif
         while (size--)
-            *i++ = (uchar)*str++;
+            *dst++ = (uchar)*str++;
     }
     return d;
 }
