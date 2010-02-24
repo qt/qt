@@ -2077,13 +2077,13 @@ static QByteArray createPropertyInfo()
 
     out += "#define CURRENT_VERSION "DATA_VERSION_STR"\n\n";
 
-    out += "static const ushort specialCaseMap[] = {";
+    out += "static const ushort specialCaseMap[] = {\n   ";
     for (int i = 0; i < specialCaseMap.size(); ++i) {
-        if (!(i % 16))
-            out += "\n   ";
         out += QByteArray(" 0x") + QByteArray::number(specialCaseMap.at(i), 16);
         if (i < specialCaseMap.size() - 1)
             out += ",";
+        if (!specialCaseMap.at(i))
+            out += "\n   ";
     }
     out += "\n};\n";
     out += "#define SPECIAL_CASE_MAX_LEN " + QByteArray::number(specialCaseMaxLen) + "\n\n";
