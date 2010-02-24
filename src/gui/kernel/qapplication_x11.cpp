@@ -2221,30 +2221,60 @@ void qt_init(QApplicationPrivate *priv, int,
         int format;
         unsigned long length, after;
         uchar *data = 0;
+        int rc;
 
-        if (!qgetenv("KDE_FULL_SESSION").isEmpty()) {
-            X11->desktopEnvironment = DE_KDE;
-            X11->desktopVersion = qgetenv("KDE_SESSION_VERSION").toInt();
-        } else if (!qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty() // Deprecated for some reason.
-                   || qgetenv("DESKTOP_SESSION") == "gnome") { // De-facto-standardized by GNOME.
-            X11->desktopEnvironment = DE_GNOME;
-        } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_DT_SAVE_MODE),
-                                      0, 2, False, XA_STRING, &type, &format, &length,
-                               &after, &data) == Success
-                   && !strcmp(reinterpret_cast<char *>(data), "xfce4")) {
-            // Pretend that xfce4 is gnome, as it uses the same libraries.
-            // The detection above is stolen from xdg-open.
-            X11->desktopEnvironment = DE_GNOME;
-        } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
-                                      0, 1, False, AnyPropertyType, &type, &format, &length,
-                               &after, &data) == Success && length) {
-            // DTWM is running, meaning most likely CDE is running...
-            X11->desktopEnvironment = DE_CDE;
-        } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_SGI_DESKS_MANAGER),
-                                      0, 1, False, XA_WINDOW, &type, &format, &length, &after, &data) == Success
-                   && length) {
-            X11->desktopEnvironment = DE_4DWM;
-        }
+        do {
+            if (!qgetenv("KDE_FULL_SESSION").isEmpty()) {
+                X11->desktopEnvironment = DE_KDE;
+                X11->desktopVersion = qgetenv("KDE_SESSION_VERSION").toInt();
+                break;
+            }
+
+            if (qgetenv("DESKTOP_SESSION") == "gnome") {
+                X11->desktopEnvironment = DE_GNOME;
+                break;
+            }
+
+            // GNOME_DESKTOP_SESSION_ID is deprecated for some reason, but still check it
+            if (!qgetenv("GNOME_DESKTOP_SESSION_ID").isEmpty()) {
+                X11->desktopEnvironment = DE_GNOME;
+                break;
+            }
+
+            rc = XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(_DT_SAVE_MODE),
+                                    0, 2, False, XA_STRING, &type, &format, &length,
+                                    &after, &data);
+            if (rc == Success && length) {
+                if (!strcmp(reinterpret_cast<char *>(data), "xfce4")) {
+                    // Pretend that xfce4 is gnome, as it uses the same libraries.
+                    // The detection above is stolen from xdg-open.
+                    X11->desktopEnvironment = DE_GNOME;
+                    break;
+                }
+
+                // We got the property but it wasn't xfce4. Free data before it gets overwritten.
+                XFree(data);
+                data = 0;
+            }
+
+            rc = XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
+                                    0, 1, False, AnyPropertyType, &type, &format, &length,
+                                    &after, &data);
+            if (rc == Success && length) {
+                // DTWM is running, meaning most likely CDE is running...
+                X11->desktopEnvironment = DE_CDE;
+                break;
+            }
+
+            rc = XGetWindowProperty(X11->display, QX11Info::appRootWindow(),
+                                    ATOM(_SGI_DESKS_MANAGER), 0, 1, False, XA_WINDOW,
+                                    &type, &format, &length, &after, &data);
+            if (rc == Success && length) {
+                X11->desktopEnvironment = DE_4DWM;
+                break;
+            }
+        } while(0);
+
         if (data)
             XFree((char *)data);
 
