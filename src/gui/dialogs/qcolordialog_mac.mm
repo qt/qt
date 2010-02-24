@@ -96,6 +96,7 @@ QT_USE_NAMESPACE
 - (void)finishOffWithCode:(NSInteger)result;
 - (void)showColorPanel;
 - (void)exec;
+- (void)setResultSet:(BOOL)result;
 @end
 
 @implementation QCocoaColorPanelDelegate
@@ -156,6 +157,11 @@ QT_USE_NAMESPACE
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     delete mQtColor;
     [super dealloc];
+}
+
+- (void)setResultSet:(BOOL)result
+{
+    mResultSet = result;
 }
 
 - (BOOL)windowShouldClose:(id)window
@@ -320,7 +326,7 @@ QT_USE_NAMESPACE
             } else {
                 mPriv->colorDialog()->accept();
             }
-        }
+        } 
     }
 }
 
@@ -433,7 +439,7 @@ void QColorDialogPrivate::openCocoaColorPanel(const QColor &initial,
             priv:this];
         [colorPanel setDelegate:static_cast<QCocoaColorPanelDelegate *>(delegate)];
     }
-
+    [delegate setResultSet:false];
     setCocoaPanelColor(initial);
     [static_cast<QCocoaColorPanelDelegate *>(delegate) showColorPanel];
 }
