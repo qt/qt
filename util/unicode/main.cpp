@@ -706,6 +706,7 @@ static void readUnicodeData()
         bool ok;
         int codepoint = properties[UD_Value].toInt(&ok, 16);
         Q_ASSERT(ok);
+        Q_ASSERT(codepoint <= LAST_CODEPOINT);
         int lastCodepoint = codepoint;
 
         QByteArray name = properties[UD_Name];
@@ -714,12 +715,16 @@ static void readUnicodeData()
             nextLine.resize(1024);
             f.readLine(nextLine.data(), 1024);
             QList<QByteArray> properties = nextLine.split(';');
+            Q_ASSERT(properties[UD_Name].startsWith('<') && properties[UD_Name].contains("Last"));
             lastCodepoint = properties[UD_Value].toInt(&ok, 16);
             Q_ASSERT(ok);
+            Q_ASSERT(lastCodepoint <= LAST_CODEPOINT);
         }
 
         UnicodeData data(codepoint);
         data.p.category = categoryMap.value(properties[UD_Category], QChar::NoCategory);
+        if (data.p.category == QChar::NoCategory)
+            qFatal("unassigned char category: %s", properties[UD_Category].constData());
         data.p.combiningClass = properties[UD_CombiningClass].toInt();
 
         if (!combiningClassUsage.contains(data.p.combiningClass))
@@ -781,7 +786,9 @@ static void readUnicodeData()
             highestComposedCharacter = qMax(highestComposedCharacter, codepoint);
             QList<QByteArray> d = decomposition.split(' ');
             if (d[0].contains('<')) {
-                data.decompositionType = decompositionMap.value(d[0], QChar::Canonical);
+                data.decompositionType = decompositionMap.value(d[0], QChar::NoDecomposition);
+                if (data.decompositionType == QChar::NoDecomposition)
+                    qFatal("unassigned decomposition type: %s", d[0].constData());
                 d.takeFirst();
             } else {
                 data.decompositionType = QChar::Canonical;
