@@ -1,1 +1,1 @@
-5:9:Invalid component specification
+5:9:Component elements may not contain script blocks

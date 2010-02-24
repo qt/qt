@@ -68,6 +68,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Animation QmlAbstractAnimation
+  \since 4.7
     \brief The Animation element is the base of all QML animations.
 
     The Animation element cannot be used directly in a QML file.  It exists
@@ -514,6 +515,7 @@ void QmlAbstractAnimation::timelineComplete()
 
 /*!
     \qmlclass PauseAnimation QmlPauseAnimation
+  \since 4.7
     \inherits Animation
     \brief The PauseAnimation element provides a pause for an animation.
 
@@ -587,6 +589,7 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 
 /*!
     \qmlclass ColorAnimation QmlColorAnimation
+  \since 4.7
     \inherits PropertyAnimation
     \brief The ColorAnimation element allows you to animate color changes.
 
@@ -650,6 +653,7 @@ void QmlColorAnimation::setTo(const QColor &t)
 
 /*!
     \qmlclass ScriptAction QmlScriptAction
+  \since 4.7
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
@@ -755,6 +759,7 @@ QAbstractAnimation *QmlScriptAction::qtAnimation()
 
 /*!
     \qmlclass PropertyAction QmlPropertyAction
+  \since 4.7
     \inherits Animation
     \brief The PropertyAction element allows immediate property changes during animation.
 
@@ -1003,6 +1008,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
 
 /*!
     \qmlclass ParentAction QmlParentAction
+  \since 4.7
     \inherits Animation
     \brief The ParentAction element allows parent changes during animation.
 
@@ -1206,6 +1212,7 @@ void QmlParentAction::transition(QmlStateActions &actions,
 
 /*!
     \qmlclass NumberAnimation QmlNumberAnimation
+  \since 4.7
     \inherits PropertyAnimation
     \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
@@ -1269,6 +1276,7 @@ void QmlNumberAnimation::setTo(qreal t)
 
 /*!
     \qmlclass Vector3dAnimation QmlVector3dAnimation
+  \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element allows you to animate changes in properties of type QVector3d.
 */
@@ -1444,7 +1452,7 @@ void QmlRotationAnimation::setTo(qreal t)
     Possible values are Numerical, Clockwise, Counterclockwise,
     or Shortest.
 
-    \list
+    \table
     \row
         \o Numerical
         \o Rotate by linearly interpolating between the two numbers.
@@ -1459,7 +1467,7 @@ void QmlRotationAnimation::setTo(qreal t)
         \o Shortest
         \o Rotate in the direction that produces the shortest animation path.
            A rotation from 10 to 350 will rotate 20 degrees counterclockwise.
-    \list
+    \endtable
 
     The default direction is Shortest.
 */
@@ -1535,6 +1543,7 @@ QmlListProperty<QmlAbstractAnimation> QmlAnimationGroup::animations()
 
 /*!
     \qmlclass SequentialAnimation QmlSequentialAnimation
+  \since 4.7
     \inherits Animation
     \brief The SequentialAnimation element allows you to run animations sequentially.
 
@@ -1595,6 +1604,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
 
 /*!
     \qmlclass ParallelAnimation QmlParallelAnimation
+  \since 4.7
     \inherits Animation
     \brief The ParallelAnimation element allows you to run animations in parallel.
 
@@ -1703,6 +1713,7 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 
 /*!
     \qmlclass PropertyAnimation QmlPropertyAnimation
+  \since 4.7
     \inherits Animation
     \brief The PropertyAnimation element allows you to animate property changes.
 

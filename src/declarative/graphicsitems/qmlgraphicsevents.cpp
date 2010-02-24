@@ -44,6 +44,7 @@
 QT_BEGIN_NAMESPACE
 /*!
     \qmlclass KeyEvent QmlGraphicsKeyEvent
+    \since 4.7
     \brief The KeyEvent object provides information about a key event.
 
     For example, the following changes the Item's state property when the Enter

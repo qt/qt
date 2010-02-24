@@ -872,7 +872,7 @@
 
     Developers using Visual Studio to write Qt applications can use the
     Visual Studio integration facilities provided with the
-    \l{Qt Commercial Editions} and do not need to worry about how
+    \l{Qt Commercial Edition} and do not need to worry about how
     project dependencies are managed.
 
     However, some developers may need to import an existing \c qmake project

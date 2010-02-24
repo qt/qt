@@ -169,17 +169,15 @@ static inline QByteArray methodName(const QMetaMethod &method)
     return signature.left(signature.indexOf('('));
 }
 
-static QVariant variantFromValue(QScriptEnginePrivate *eng,
-                                 int targetType, const QScriptValue &value)
+static QVariant variantFromValue(JSC::ExecState *exec, int targetType, JSC::JSValue value)
 {
     QVariant v(targetType, (void *)0);
-    Q_ASSERT(eng);
-    if (QScriptEnginePrivate::convert(value, targetType, v.data(), eng))
+    if (QScriptEnginePrivate::convertValue(exec, value, targetType, v.data()))
         return v;
     if (uint(targetType) == QVariant::LastType)
-        return value.toVariant();
-    if (value.isVariant()) {
-        v = value.toVariant();
+        return QScriptEnginePrivate::toVariant(exec, value);
+    if (QScriptEnginePrivate::isVariant(value)) {
+        v = QScriptEnginePrivate::variantValue(value);
         if (v.canConvert(QVariant::Type(targetType))) {
             v.convert(QVariant::Type(targetType));
             return v;
@@ -591,38 +589,38 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
         bool converted = true;
         int matchDistance = 0;
         for (int i = 0; converted && i < mtd.argumentCount(); ++i) {
-            QScriptValue actual;
+            JSC::JSValue actual;
             if (i < (int)scriptArgs.size())
-                actual = engine->scriptValueFromJSCValue(scriptArgs.at(i));
+                actual = scriptArgs.at(i);
             else
-                actual = QScriptValue(QScriptValue::UndefinedValue);
+                actual = JSC::jsUndefined();
             QScriptMetaType argType = mtd.argumentType(i);
             int tid = -1;
             QVariant v;
             if (argType.isUnresolved()) {
                 v = QVariant(QMetaType::QObjectStar, (void *)0);
-                converted = engine->convertToNativeQObject(
-                    actual, argType.name(), reinterpret_cast<void* *>(v.data()));
+                converted = QScriptEnginePrivate::convertToNativeQObject(
+                    exec, actual, argType.name(), reinterpret_cast<void* *>(v.data()));
             } else if (argType.isVariant()) {
-                if (actual.isVariant()) {
-                    v = actual.toVariant();
+                if (QScriptEnginePrivate::isVariant(actual)) {
+                    v = QScriptEnginePrivate::variantValue(actual);
                 } else {
-                    v = actual.toVariant();
+                    v = QScriptEnginePrivate::toVariant(exec, actual);
                     converted = v.isValid() || actual.isUndefined() || actual.isNull();
                 }
             } else {
                 tid = argType.typeId();
                 v = QVariant(tid, (void *)0);
-                converted = QScriptEnginePrivate::convert(actual, tid, v.data(), engine);
+                converted = QScriptEnginePrivate::convertValue(exec, actual, tid, v.data());
                 if (exec->hadException())
                     return exec->exception();
             }
 
             if (!converted) {
-                if (actual.isVariant()) {
+                if (QScriptEnginePrivate::isVariant(actual)) {
                     if (tid == -1)
                         tid = argType.typeId();
-                    QVariant vv = actual.toVariant();
+                    QVariant vv = QScriptEnginePrivate::variantValue(actual);
                     if (vv.canConvert(QVariant::Type(tid))) {
                         v = vv;
                         converted = v.convert(QVariant::Type(tid));
@@ -649,14 +647,14 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                     }
                     if (m.isValid()) {
                         if (actual.isNumber()) {
-                            int ival = actual.toInt32();
+                            int ival = QScriptEnginePrivate::toInt32(exec, actual);
                             if (m.valueToKey(ival) != 0) {
                                 qVariantSetValue(v, ival);
                                 converted = true;
                                 matchDistance += 10;
                             }
                         } else {
-                            QString sval = actual.toString();
+                            QString sval = QScriptEnginePrivate::toString(exec, actual);
                             int ival = m.keyToValue(sval.toLatin1());
                             if (ival != -1) {
                                 qVariantSetValue(v, ival);
@@ -718,7 +716,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                         matchDistance += 10;
                         break;
                     }
-                } else if (actual.isDate()) {
+                } else if (QScriptEnginePrivate::isDate(actual)) {
                     switch (tid) {
                     case QMetaType::QDateTime:
                         // perfect
@@ -733,7 +731,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                         matchDistance += 10;
                         break;
                     }
-                } else if (actual.isRegExp()) {
+                } else if (QScriptEnginePrivate::isRegExp(actual)) {
                     switch (tid) {
                     case QMetaType::QRegExp:
                         // perfect
@@ -742,14 +740,14 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                         matchDistance += 10;
                         break;
                     }
-                } else if (actual.isVariant()) {
+                } else if (QScriptEnginePrivate::isVariant(actual)) {
                     if (argType.isVariant()
-                        || (actual.toVariant().userType() == tid)) {
+                        || (QScriptEnginePrivate::toVariant(exec, actual).userType() == tid)) {
                         // perfect
                     } else {
                         matchDistance += 10;
                     }
-                } else if (actual.isArray()) {
+                } else if (QScriptEnginePrivate::isArray(actual)) {
                     switch (tid) {
                     case QMetaType::QStringList:
                     case QMetaType::QVariantList:
@@ -759,7 +757,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                         matchDistance += 10;
                         break;
                     }
-                } else if (actual.isQObject()) {
+                } else if (QScriptEnginePrivate::isQObject(actual)) {
                     switch (tid) {
                     case QMetaType::QObjectStar:
                     case QMetaType::QWidgetStar:
@@ -953,13 +951,11 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
             } else {
                 QScriptMetaType retType = chosenMethod.returnType();
                 if (retType.isVariant()) {
-                    result = engine->jscValueFromVariant(*(QVariant *)params[0]);
+                    result = QScriptEnginePrivate::jscValueFromVariant(exec, *(QVariant *)params[0]);
                 } else if (retType.typeId() != 0) {
-                    result = engine->scriptValueToJSCValue(engine->create(retType.typeId(), params[0]));
-                    if (!result) {
-                        QScriptValue sv = QScriptEnginePrivate::get(engine)->newVariant(QVariant(retType.typeId(), params[0]));
-                        result = engine->scriptValueToJSCValue(sv);
-                    }
+                    result = QScriptEnginePrivate::create(exec, retType.typeId(), params[0]);
+                    if (!result)
+                        result = engine->newVariant(QVariant(retType.typeId(), params[0]));
                 } else {
                     result = JSC::jsUndefined();
                 }
@@ -1065,15 +1061,13 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
 {
     JSC::JSValue result = JSC::jsUndefined();
 
-    // ### don't go via QScriptValue
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     thisValue = engine->toUsableValue(thisValue);
-    QScriptValue object = engine->scriptValueFromJSCValue(thisValue);
-    QObject *qobject = object.toQObject();
+    QObject *qobject = QScriptEnginePrivate::toQObject(exec, thisValue);
     while ((!qobject || (qobject->metaObject() != data->meta))
-           && object.prototype().isObject()) {
-        object = object.prototype();
-        qobject = object.toQObject();
+        && JSC::asObject(thisValue)->prototype().isObject()) {
+        thisValue = JSC::asObject(thisValue)->prototype();
+        qobject = QScriptEnginePrivate::toQObject(exec, thisValue);
     }
     Q_ASSERT_X(qobject, Q_FUNC_INFO, "this-object must be a QObject");
 
@@ -1094,7 +1088,7 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
             if (scriptable)
                 QScriptablePrivate::get(scriptable)->engine = oldEngine;
 
-            result = engine->jscValueFromVariant(v);
+            result = QScriptEnginePrivate::jscValueFromVariant(exec, v);
         }
     } else {
         // set
@@ -1106,9 +1100,7 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
             // string to enum value
             v = (QString)arg.toString(exec);
         } else {
-            // ### don't go via QScriptValue
-            QScriptValue tmp = engine->scriptValueFromJSCValue(arg);
-            v = variantFromValue(engine, prop.userType(), tmp);
+            v = variantFromValue(exec, prop.userType(), arg);
         }
 
         QScriptable *scriptable = scriptableFromQObject(qobject);
@@ -1237,7 +1229,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                     if (!prop.isValid())
                         val = JSC::jsUndefined();
                     else
-                        val = eng->jscValueFromVariant(prop.read(qobject));
+                        val = QScriptEnginePrivate::jscValueFromVariant(exec, prop.read(qobject));
                     slot.setValue(val);
                 }
                 return true;
@@ -1247,7 +1239,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
 
     index = qobject->dynamicPropertyNames().indexOf(name);
     if (index != -1) {
-        JSC::JSValue val = eng->jscValueFromVariant(qobject->property(name));
+        JSC::JSValue val = QScriptEnginePrivate::jscValueFromVariant(exec, qobject->property(name));
         slot.setValue(val);
         return true;
     }
@@ -1274,8 +1266,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
             QObject *child = children.at(index);
             if (child->objectName() == QString(propertyName.ustring())) {
                 QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-                QScriptValue tmp = QScriptEnginePrivate::get(eng)->newQObject(child, QScriptEngine::QtOwnership, opt);
-                slot.setValue(eng->scriptValueToJSCValue(tmp));
+                slot.setValue(eng->newQObject(child, QScriptEngine::QtOwnership, opt));
                 return true;
             }
         }
@@ -1370,7 +1361,7 @@ bool QObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object, JSC::ExecS
                     if (!prop.isValid())
                         val = JSC::jsUndefined();
                     else
-                        val = eng->jscValueFromVariant(prop.read(qobject));
+                        val = QScriptEnginePrivate::jscValueFromVariant(exec, prop.read(qobject));
                     descriptor.setDescriptor(val, attributes);
                 }
                 return true;
@@ -1380,7 +1371,7 @@ bool QObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object, JSC::ExecS
 
     index = qobject->dynamicPropertyNames().indexOf(name);
     if (index != -1) {
-        JSC::JSValue val = eng->jscValueFromVariant(qobject->property(name));
+        JSC::JSValue val = QScriptEnginePrivate::jscValueFromVariant(exec, qobject->property(name));
         descriptor.setDescriptor(val, QObjectMemberAttribute);
         return true;
     }
@@ -1410,8 +1401,8 @@ bool QObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object, JSC::ExecS
             QObject *child = children.at(index);
             if (child->objectName() == QString(propertyName.ustring())) {
                 QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-                QScriptValue tmp = QScriptEnginePrivate::get(eng)->newQObject(child, QScriptEngine::QtOwnership, opt);
-                descriptor.setDescriptor(eng->scriptValueToJSCValue(tmp), JSC::ReadOnly | JSC::DontDelete | JSC::DontEnum);
+                descriptor.setDescriptor(eng->newQObject(child, QScriptEngine::QtOwnership, opt),
+                                         JSC::ReadOnly | JSC::DontDelete | JSC::DontEnum);
                 return true;
             }
         }
@@ -1490,7 +1481,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                         // string to enum value
                         v = (QString)value.toString(exec);
                     } else {
-                        v = eng->jscValueToVariant(value, prop.userType());
+                        v = QScriptEnginePrivate::jscValueToVariant(exec, value, prop.userType());
                     }
                     (void)prop.write(qobject, v);
                 }
@@ -1512,7 +1503,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
 
     index = qobject->dynamicPropertyNames().indexOf(name);
     if ((index != -1) || (opt & QScriptEngine::AutoCreateDynamicProperties)) {
-        QVariant v = eng->scriptValueFromJSCValue(value).toVariant();
+        QVariant v = QScriptEnginePrivate::toVariant(exec, value);
         (void)qobject->setProperty(name, v);
         return;
     }
@@ -2178,24 +2169,23 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     JSC::ExecState *exec = engine->currentFrame;
     QVarLengthArray<JSC::JSValue, 8> argsVector(argc);
     for (int i = 0; i < argc; ++i) {
-        // ### optimize -- no need to convert via QScriptValue
-        QScriptValue actual;
+        JSC::JSValue actual;
         void *arg = argv[i + 1];
         QByteArray typeName = parameterTypes.at(i);
         int argType = QMetaType::type(parameterTypes.at(i));
         if (!argType) {
             if (typeName == "QVariant") {
-                actual = engine->scriptValueFromVariant(*reinterpret_cast<QVariant*>(arg));
+                actual = QScriptEnginePrivate::jscValueFromVariant(exec, *reinterpret_cast<QVariant*>(arg));
             } else {
                 qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
                          "when invoking handler of signal %s::%s",
                          typeName.constData(), meta->className(), method.signature());
-                actual = QScriptValue(QScriptValue::UndefinedValue);
+                actual = JSC::jsUndefined();
             }
         } else {
-            actual = engine->create(argType, arg);
+            actual = QScriptEnginePrivate::create(exec, argType, arg);
         }
-        argsVector[i] = engine->scriptValueToJSCValue(actual);
+        argsVector[i] = actual;
     }
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 

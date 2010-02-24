@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,68 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATICTEXT_H
-#define QSTATICTEXT_H
+#ifndef SYMBIAN_EPOCROOT_H
+#define SYMBIAN_EPOCROOT_H
 
-#include <QtCore/qsize.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qmetatype.h>
 
-#include <QtGui/qtransform.h>
-#include <QtGui/qfont.h>
+/**
+ * Determine the epoc root for the currently active SDK.
+ *
+ * The algorithm used is as follows:
+ * 1. If environment variable EPOCROOT is set and points to an existent
+ *    directory, this is returned.
+ * 2. The location of devices.xml is specified by a registry key.  If this
+ *    file exists, it is parsed.
+ * 3. If the EPOCDEVICE environment variable is set and a corresponding
+ *    entry is found in devices.xml, and its epocroot value points to an
+ *    existent directory, it is returned.
+ * 4. If a device element marked as default is found in devices.xml and its
+ *    epocroot value points to an existent directory, this is returned.
+ * 5. An empty string is returned.
+ *
+ * Any return value other than the empty string therefore is guaranteed to
+ * point to an existent directory.
+ */
+QString epocRoot();
 
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class QStaticTextPrivate;
-class Q_GUI_EXPORT QStaticText
-{    
-public:
-    enum PerformanceHint {
-        ModerateCaching,
-        AggressiveCaching
-    };
-
-    QStaticText();
-    QStaticText(const QString &text, const QSizeF &maximumSize = QSizeF());
-    QStaticText(const QStaticText &other);
-    ~QStaticText();
-
-    void setText(const QString &text);
-    QString text() const;
-
-    void setTextFormat(Qt::TextFormat textFormat);
-    Qt::TextFormat textFormat() const;
-
-    void setMaximumSize(const QSizeF &maximumSize);
-    QSizeF maximumSize() const;
-
-    QSizeF size() const;
-
-    void prepare(const QTransform &matrix, const QFont &font);
-
-    void setPerformanceHint(PerformanceHint performanceHint);
-    PerformanceHint performanceHint() const;
-
-    QStaticText &operator=(const QStaticText &);
-    bool operator==(const QStaticText &) const;
-    bool operator!=(const QStaticText &) const;
-
-private:
-    void detach();
-
-    QExplicitlySharedDataPointer<QStaticTextPrivate> data;
-    friend class QStaticTextPrivate;
-};
-
-QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QStaticText)
-
-QT_END_HEADER
-
-#endif // QSTATICTEXT_H
+#endif // EPOCROOT_H

@@ -67,6 +67,7 @@ typedef QPair<int, int> QmlXmlListRange;
 
 /*!
     \qmlclass XmlRole QmlXmlListModelRole
+  \since 4.7
     \brief The XmlRole element allows you to specify a role for an XmlListModel.
 */
 
@@ -446,6 +447,7 @@ void QmlXmlListModelPrivate::clear_role(QmlListProperty<QmlXmlListModelRole> *li
 
 /*!
     \qmlclass XmlListModel QmlXmlListModel
+  \since 4.7
     \brief The XmlListModel element is used to specify a model using XPath expressions.
 
     XmlListModel is used to create a model from XML data that can be used as a data source

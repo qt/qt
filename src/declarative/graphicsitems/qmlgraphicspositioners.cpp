@@ -297,6 +297,7 @@ void QmlGraphicsBasePositioner::finishApplyTransitions()
 
 /*!
   \qmlclass Column QmlGraphicsColumn
+    \since 4.7
   \brief The Column item lines up its children vertically.
   \inherits Item
 
@@ -346,19 +347,28 @@ Column {
 */
 /*!
     \qmlproperty Transition Column::add
-    This property holds the transition to be applied when adding an item to the positioner. The transition will only be applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
 
-    Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
+    This property holds the transition to be applied when adding an
+    item to the positioner. The transition will only be applied to the
+    added item(s).  Positioner transitions will only affect the
+    position (x,y) of items.
+
+    Added can mean that either the object has been created or
+    reparented, and thus is now a child or the positioner, or that the
+    object has had its opacity increased from zero, and thus is now
+    visible.
 
 
 */
 /*!
     \qmlproperty Transition Column::move
-    This property holds the transition to apply when moving an item within the positioner.
-    Positioner transitions will only affect the position (x,y) of items.
 
-    This can happen when other items are added or removed from the positioner, or when items resize themselves.
+    This property holds the transition to apply when moving an item
+    within the positioner.  Positioner transitions will only affect
+    the position (x,y) of items.
+
+    This can happen when other items are added or removed from the
+    positioner, or when items resize themselves.
 
     \table
     \row
@@ -426,6 +436,7 @@ void QmlGraphicsColumn::doPositioning()
 
 /*!
   \qmlclass Row QmlGraphicsRow
+  \since 4.7
   \brief The Row item lines up its children horizontally.
   \inherits Item
 
@@ -461,16 +472,22 @@ Row {
     The transition will only be applied to the added item(s).
     Positioner transitions will only affect the position (x,y) of items.
 
-    Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
+    Added can mean that either the object has been created or
+    reparented, and thus is now a child or the positioner, or that the
+    object has had its opacity increased from zero, and thus is now
+    visible.
 
 
 */
 /*!
     \qmlproperty Transition Row::move
-    This property holds the transition to apply when moving an item within the positioner.
-    Positioner transitions will only affect the position (x,y) of items.
 
-    This can happen when other items are added or removed from the positioner, or when items resize themselves.
+    This property holds the transition to apply when moving an item
+    within the positioner.  Positioner transitions will only affect
+    the position (x,y) of items.
+
+    This can happen when other items are added or removed from the
+    positioner, or when items resize themselves.
 
     \qml
 Row {
@@ -531,6 +548,7 @@ void QmlGraphicsRow::doPositioning()
 
 /*!
   \qmlclass Grid QmlGraphicsGrid
+  \since 4.7
   \brief The Grid item positions its children in a grid.
   \inherits Item
 
@@ -735,6 +753,7 @@ void QmlGraphicsGrid::doPositioning()
 
 /*!
   \qmlclass Flow QmlGraphicsFlow
+  \since 4.7
   \brief The Flow item lines up its children side by side, wrapping as necessary.
   \inherits Item
 

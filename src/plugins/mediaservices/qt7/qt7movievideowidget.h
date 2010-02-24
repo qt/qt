@@ -57,10 +57,10 @@
 
 QT_BEGIN_HEADER
 
-class GLVideoWidget;
 
 QT_BEGIN_NAMESPACE
 
+class GLVideoWidget;
 class QCvDisplayLink;
 class QT7PlayerSession;
 class QT7PlayerService;

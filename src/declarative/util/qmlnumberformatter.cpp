@@ -67,6 +67,7 @@ public:
 };
 /*!
     \qmlclass NumberFormatter
+  \since 4.7
     \brief The NumberFormatter allows you to control the format of a number string.
 
     The format property documentation has more details on how the format can be manipulated.

@@ -335,7 +335,7 @@ void tst_qmllanguage::errors()
     QFETCH(bool, create);
 
     if (file == "invalidID.6.qml")
-        QSKIP("Test disabled until we strictly disallow ids from beginning with uppercase letters", SkipSingle);
+        QTest::ignoreMessage(QtWarningMsg, "id \"StartsWithUpperCase\" is invalid: ids cannot start with uppercase letters");
 
     QmlComponent component(&engine, TEST_FILE(file));
 

@@ -117,6 +117,7 @@ DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
 /*!
     \qmlclass QtObject QObject
+  \since 4.7
     \brief The QtObject element is the most basic element in QML
 
     The QtObject element is a non-visual element which contains only
@@ -371,6 +372,7 @@ QmlWorkerScriptEngine *QmlEnginePrivate::getWorkerScriptEngine()
 
 /*!
     \class QmlEngine
+  \since 4.7
     \brief The QmlEngine class provides an environment for instantiating QML components.
     \mainclass
 

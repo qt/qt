@@ -74,6 +74,7 @@ public:
 
 /*!
     \qmlclass DateTimeFormatter QmlDateTimeFormatter
+  \since 4.7
     \brief The DateTimeFormatter allows you to control the format of a date string.
 
     \code
