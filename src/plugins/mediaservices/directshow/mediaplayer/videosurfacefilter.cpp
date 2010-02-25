@@ -84,7 +84,11 @@ VideoSurfaceFilter::~VideoSurfaceFilter()
 }
 
 HRESULT VideoSurfaceFilter::QueryInterface(REFIID riid, void **ppvObject)
-{
+{    
+    // 2dd74950-a890-11d1-abe8-00a0c905f375
+    static const GUID iid_IAmFilterMiscFlags = {
+        0x2dd74950, 0xa890, 0x11d1, {0xab, 0xe8, 0x00, 0xa0, 0xc9, 0x05, 0xf3, 0x75} };
+
     if (!ppvObject) {
         return E_POINTER;
     } else if (riid == IID_IUnknown
@@ -92,7 +96,7 @@ HRESULT VideoSurfaceFilter::QueryInterface(REFIID riid, void **ppvObject)
             || riid == IID_IMediaFilter
             || riid == IID_IBaseFilter) {
         *ppvObject = static_cast<IBaseFilter *>(this);
-    } else if (riid == IID_IAMFilterMiscFlags) {
+    } else if (riid == iid_IAmFilterMiscFlags) {
         *ppvObject = static_cast<IAMFilterMiscFlags *>(this);
     } else if (riid == IID_IPin) {
         *ppvObject = static_cast<IPin *>(this);
@@ -570,6 +574,10 @@ void VideoSurfaceFilter::supportedFormatsChanged()
 {
     QMutexLocker locker(&m_mutex);
 
+    // MEDIASUBTYPE_None;
+    static const GUID none = {
+        0xe436eb8e, 0x524f, 0x11ce, {0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70} };
+
     QList<QVideoFrame::PixelFormat> formats = m_surface->supportedPixelFormats();
 
     QVector<AM_MEDIA_TYPE> mediaTypes;
@@ -588,7 +596,7 @@ void VideoSurfaceFilter::supportedFormatsChanged()
     foreach (QVideoFrame::PixelFormat format, formats) {
         type.subtype = DirectShowMediaType::convertPixelFormat(format);
 
-        if (type.subtype != MEDIASUBTYPE_None)
+        if (type.subtype != none)
             mediaTypes.append(type);
     }
 

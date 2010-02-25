@@ -42,10 +42,10 @@
 #ifndef DIRECTSHOWIOSOURCE_H
 #define DIRECTSHOWIOSOURCE_H
 
+#include "directshowglobal.h"
 #include "directshowioreader.h"
 #include "directshowmediatype.h"
 #include "directshowmediatypelist.h"
-
 
 QT_BEGIN_HEADER
 

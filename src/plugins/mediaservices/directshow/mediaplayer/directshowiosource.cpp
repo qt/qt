@@ -121,6 +121,10 @@ void DirectShowIOSource::setAllocator(IMemAllocator *allocator)
 // IUnknown
 HRESULT DirectShowIOSource::QueryInterface(REFIID riid, void **ppvObject)
 {
+    // 2dd74950-a890-11d1-abe8-00a0c905f375
+    static const GUID iid_IAmFilterMiscFlags = {
+        0x2dd74950, 0xa890, 0x11d1, {0xab, 0xe8, 0x00, 0xa0, 0xc9, 0x05, 0xf3, 0x75}};
+
     if (!ppvObject) {
         return E_POINTER;
     } else if (riid == IID_IUnknown
@@ -128,7 +132,7 @@ HRESULT DirectShowIOSource::QueryInterface(REFIID riid, void **ppvObject)
             || riid == IID_IMediaFilter
             || riid == IID_IBaseFilter) {
         *ppvObject = static_cast<IBaseFilter *>(this);
-    } else if (riid == IID_IAMFilterMiscFlags) {
+    } else if (riid == iid_IAmFilterMiscFlags) {
         *ppvObject = static_cast<IAMFilterMiscFlags *>(this);
     } else if (riid == IID_IPin) {
         *ppvObject = static_cast<IPin *>(this);

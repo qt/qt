@@ -82,6 +82,7 @@ QList<QString> DirectShowAudioEndpointControl::availableEndpoints() const
 
 QString DirectShowAudioEndpointControl::endpointDescription(const QString &name) const
 {
+#ifdef __IPropertyBag_INTERFACE_DEFINED__
     QString description;
 
     if (IMoniker *moniker = m_devices.value(name, 0)) {
@@ -97,7 +98,10 @@ QString DirectShowAudioEndpointControl::endpointDescription(const QString &name)
         }
     }
 
-    return description;;
+    return description;
+#else
+    return name.section(QLatin1Char('\\'), -1);
+#endif
 }
 
 QString DirectShowAudioEndpointControl::defaultEndpoint() const

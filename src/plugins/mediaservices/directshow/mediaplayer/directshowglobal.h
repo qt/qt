@@ -42,6 +42,8 @@
 #ifndef DIRECTSHOWGLOBAL_H
 #define DIRECTSHOWGLOBAL_H
 
+#include <QtCore/qglobal.h>
+
 #include <dshow.h>
 
 QT_BEGIN_HEADER
@@ -72,5 +74,74 @@ template <typename T> T *com_new(const IID &clsid, const IID &iid)
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#ifndef __IFilterGraph2_INTERFACE_DEFINED__
+#define __IFilterGraph2_INTERFACE_DEFINED__
+#define INTERFACE IFilterGraph2
+DECLARE_INTERFACE_(IFilterGraph2 ,IGraphBuilder)
+{
+    STDMETHOD(AddSourceFilterForMoniker)(THIS_ IMoniker *, IBindCtx *, LPCWSTR,IBaseFilter **) PURE;
+    STDMETHOD(ReconnectEx)(THIS_ IPin *, const AM_MEDIA_TYPE *) PURE;
+    STDMETHOD(RenderEx)(IPin *, DWORD, DWORD *) PURE;
+};
+#undef INTERFACE  
+#endif
+
+#ifndef __IAMFilterMiscFlags_INTERFACE_DEFINED__
+#define __IAMFilterMiscFlags_INTERFACE_DEFINED__
+#define INTERFACE IAMFilterMiscFlags
+DECLARE_INTERFACE_(IAMFilterMiscFlags ,IUnknown)
+{
+    STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
+	STDMETHOD_(ULONG,AddRef)(THIS) PURE;
+	STDMETHOD_(ULONG,Release)(THIS) PURE;
+    STDMETHOD_(ULONG,GetMiscFlags)(THIS) PURE;
+};
+#undef INTERFACE  
+#endif
+
+#ifndef __IFileSourceFilter_INTERFACE_DEFINED__
+#define __IFileSourceFilter_INTERFACE_DEFINED__
+#define INTERFACE IFileSourceFilter
+DECLARE_INTERFACE_(IFileSourceFilter ,IUnknown)
+{
+    STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
+	STDMETHOD_(ULONG,AddRef)(THIS) PURE;
+	STDMETHOD_(ULONG,Release)(THIS) PURE;
+    STDMETHOD(Load)(THIS_ LPCOLESTR, const AM_MEDIA_TYPE *) PURE;
+    STDMETHOD(GetCurFile)(THIS_ LPOLESTR *ppszFileName, AM_MEDIA_TYPE *) PURE;
+};
+#undef INTERFACE  
+#endif
+
+#ifndef __IAMOpenProgress_INTERFACE_DEFINED__
+#define __IAMOpenProgress_INTERFACE_DEFINED__
+#define INTERFACE IAMOpenProgress
+DECLARE_INTERFACE_(IAMOpenProgress ,IUnknown)
+{
+    STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
+	STDMETHOD_(ULONG,AddRef)(THIS) PURE;
+	STDMETHOD_(ULONG,Release)(THIS) PURE;
+    STDMETHOD(QueryProgress)(THIS_ LONGLONG *, LONGLONG *) PURE;
+    STDMETHOD(AbortOperation)(THIS) PURE;
+};
+#undef INTERFACE  
+#endif
+
+#ifndef __IFilterChain_INTERFACE_DEFINED__
+#define __IFilterChain_INTERFACE_DEFINED__
+#define INTERFACE IFilterChain
+DECLARE_INTERFACE_(IFilterChain ,IUnknown)
+{
+    STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
+	STDMETHOD_(ULONG,AddRef)(THIS) PURE;
+	STDMETHOD_(ULONG,Release)(THIS) PURE;
+    STDMETHOD(StartChain)(IBaseFilter *, IBaseFilter *) PURE;
+    STDMETHOD(PauseChain)(IBaseFilter *, IBaseFilter *) PURE;
+    STDMETHOD(StopChain)(IBaseFilter *, IBaseFilter *) PURE;
+    STDMETHOD(RemoveChain)(IBaseFilter *, IBaseFilter *) PURE;
+};
+#undef INTERFACE  
+#endif
 
 #endif

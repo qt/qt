@@ -297,7 +297,7 @@ QVariant DirectShowMetaDataControl::metaData(QtMultimedia::MetaData key) const
         }
 
         if (string) {
-            value = QString::fromUtf16(string, ::SysStringLen(string));
+            value = QString::fromUtf16(reinterpret_cast<ushort *>(string), ::SysStringLen(string));
 
             ::SysFreeString(string);
         }
