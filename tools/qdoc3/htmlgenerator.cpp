@@ -4316,16 +4316,40 @@ void HtmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
                                            CodeMarker* marker)
 {
     if (cn) {
-        NodeList subs;
+        QStringList subs;
         QmlClassNode::subclasses(cn->name(),subs);
         if (!subs.isEmpty()) {
-            //subs.sort();
+            subs.sort();
             Text text;
             text << Atom::ParaLeft << "Inherited by ";
-            appendSortedNames(text,cn,subs,marker);
+            for (int i = 0; i < subs.size(); ++i) {
+                text << subs.at(i);
+                text << separator(i, subs.size());
+            }
             text << Atom::ParaRight;
             generateText(text, cn, marker);
         }
+#if 0        
+        if (cn->links().contains(Node::InheritsLink)) {
+            QPair<QString,QString> linkPair;
+            linkPair = cn->links()[Node::InheritsLink];
+            QStringList strList(linkPair.first);
+            const Node* n = myTree->findNode(strList,Node::Fake);
+            if (n && n->subType() == Node::QmlClass) {
+                const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
+                out() << "<p style=\"text-align: center\">";
+                Text text;
+                text << "[Inherits ";
+                text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
+                text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
+                text << Atom(Atom::String, linkPair.second);
+                text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+                text << "]";
+                generateText(text, cn, marker);
+                out() << "</p>";
+            }
+        }
+#endif        
     }
 }
 
