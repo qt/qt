@@ -179,7 +179,8 @@ QT7PlayerSession::QT7PlayerSession(QObject *parent)
 QT7PlayerSession::~QT7PlayerSession()
 {
     [(QTMovieObserver*)m_movieObserver setMovie:nil];
-    [(QTMovieObserver*)m_movieObserver release];    
+    [(QTMovieObserver*)m_movieObserver release];
+    [(QTMovie*)m_QTMovie release];
 }
 
 void *QT7PlayerSession::movie() const
