@@ -1,17 +1,16 @@
-gcceExtraFlags = --include=${EPOCROOT}epoc32/include/gcce/gcce.h -march=armv5t -mapcs -mthumb-interwork -nostdinc -c -fvisibility-inlines-hidden -mthumb  -msoft-float -T script
+gcceExtraFlags = -I${EPOCROOT}epoc32/include/ --include=${EPOCROOT}epoc32/include/gcce/gcce.h -march=armv5t -mapcs -mthumb-interwork -nostdinc -c -fvisibility-inlines-hidden -msoft-float -T script
 QMAKE_CFLAGS += $${gcceExtraFlags}
 QMAKE_CXXFLAGS += $${gcceExtraFlags} -x c++ -fexceptions -fno-unit-at-a-time
 
-#   QMAKE_CFLAGS		+= --dllimport_runtime --preinclude rvct2_2.h  --diag_suppress 186,654,1300 --thumb --fpu softvfp --cpu 5T --enum_is_int -Ono_known_library --fpmode ieee_no_fenv --export_all_vtbl --no_vfe --apcs /inter $$QMAKE_CFLAGS.ARMCC
-#   QMAKE_CXXFLAGS		+= $$QMAKE_CFLAGS --no_parse_templates $$QMAKE_CXXFLAGS.ARMCC
-#   QMAKE_LFLAGS      	+= --diag_suppress 6331,6780 --bpabi --reloc --datacompressor=off --split --rw-base 0x800000 --dll --no_scanlib
-#   QMAKE_LFLAGS_APP        += --entry _E32Startup
-#   QMAKE_LFLAGS_SHLIB      += --entry _E32Dll
-#   QMAKE_CFLAGS_DEBUG	+= -g
-#   QMAKE_CXXFLAGS_DEBUG	+= -g
-#   QMAKE_CFLAGS_RELEASE	+= -O2 -Otime
-#   QMAKE_CXXFLAGS_RELEASE	+= -O2 -Otime
-#
+# we have some module specific options (defined in qt.prf) lets add them
+eval(TMPVAR = \$\$QMAKE_$${TARGET}_CXXFLAGS)
+!isEmpty(TMPVAR):QMAKE_CXXFLAGS += $$TMPVAR
+eval(TMPVAR = \$\$QMAKE_$${TARGET}_LFLAGS)
+!isEmpty(TMPVAR) {
+    QMAKE_LFLAGS += $$TMPVAR
+} else {  # lets provide a simple default. Without elf2e32 complains
+    QMAKE_LFLAGS += -Ttext 0x80000 -Tdata 0x400000
+}
 
 symbianObjdir=$$OBJECTS_DIR
 isEmpty(symbianObjdir) {
@@ -22,7 +21,7 @@ isEmpty(symbianDestdir) {
     symbianDestdir = .
 }
 
-contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb") {
+contains(QMAKE_CFLAGS, "-mthumb")|contains(QMAKE_CXXFLAGS, "-mthumb") {
     DEFINES += __MARM_THUMB__
 }
 
@@ -108,14 +107,12 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                 -lgcc
 
     QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
-    -Ttext 0x80000 -Tdata 0x400000 \
     --target1-abs \
     --no-undefined \
     --strip-debug \
     --nostdlib \
      -L/home/zander/work/build-symbian/arm-2009q3/lib/gcc/arm-none-symbianelf/4.4.1/ \
      -L/home/zander/work/build-symbian/arm-2009q3/arm-none-symbianelf/lib/
-
 }
 
 contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {

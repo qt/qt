@@ -9,7 +9,6 @@ INCLUDEPATH = $${EPOCROOT}epoc32/include/variant \
 
 DEFINES *= __PRODUCT_INCLUDE__=\<$${EPOCROOT}epoc32/include/variant/symbian_os.hrh\> \
     __SYMBIAN32__ \
-    __MARM_THUMB__ \
     __MARM_INTERWORK__ \
     NDEBUG \
     _UNICODE \
