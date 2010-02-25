@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtMultimedia/qdeclarative.h>
+#include <QtMultimedia/multimediadeclarative.h>
 #include <QtMultimedia/private/qsoundeffect_p.h>
 #include <QtMultimedia/private/qdeclarativeaudio_p.h>
 #include <QtMultimedia/private/qdeclarativevideo_p.h>
