@@ -445,10 +445,8 @@ void tst_qdeclarativestates::parentChange()
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(15));
         QCOMPARE(innerRect->scale(), qreal(.5));
-        QEXPECT_FAIL("", "QTBUG-2919", Continue);
-        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(12.4148145657));
-        QEXPECT_FAIL("", "QTBUG-2919", Continue);
-        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(10.6470476128));
+        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(-19.9075));
+        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(-8.73433));
     }
 
     {
@@ -469,8 +467,8 @@ void tst_qdeclarativestates::parentChange()
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
         QCOMPARE(innerRect->x(), qreal(5));
-        QEXPECT_FAIL("", "QTBUG-2919", Continue);
-        QCOMPARE(innerRect->y(), qreal(0));
+        //do a non-qFuzzyCompare fuzzy compare
+        QVERIFY(innerRect->y() < qreal(0.00001) && innerRect->y() > qreal(-0.00001));
     }
 }
 
