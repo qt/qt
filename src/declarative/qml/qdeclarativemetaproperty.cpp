@@ -53,6 +53,7 @@
 #include "qdeclarativedeclarativedata_p.h"
 #include "qdeclarativestringconverters_p.h"
 #include "qdeclarativelist_p.h"
+#include "qdeclarativecompiler_p.h"
 
 #include <QStringList>
 #include <QtCore/qdebug.h>
@@ -177,7 +178,7 @@ void QDeclarativeMetaPropertyPrivate::initProperty(QObject *obj, const QString &
         QString signalName = name.mid(2);
         signalName[0] = signalName.at(0).toLower();
 
-        QMetaMethod method = findSignal(obj, signalName);
+        QMetaMethod method = QDeclarativeCompiler::findSignalByName(obj->metaObject(), signalName.toLatin1().constData());
         if (method.signature()) {
             core.load(method);
             return;
@@ -629,23 +630,6 @@ QDeclarativeExpression *QDeclarativeMetaProperty::setSignalExpression(QDeclarati
     } else {
         return 0;
     }
-}
-
-QMetaMethod QDeclarativeMetaPropertyPrivate::findSignal(QObject *obj, const QString &name)
-{
-    const QMetaObject *mo = obj->metaObject();
-
-    int methods = mo->methodCount();
-    for (int ii = methods - 1; ii >= 0; --ii) {
-        QMetaMethod method = mo->method(ii);
-        QString methodName = QString::fromUtf8(method.signature());
-        int idx = methodName.indexOf(QLatin1Char('('));
-        methodName = methodName.left(idx);
-
-        if (methodName == name) 
-            return method;
-    }
-    return QMetaMethod();
 }
 
 QObject *QDeclarativeMetaPropertyPrivate::attachedObject() const

@@ -46,6 +46,29 @@
 #include <private/qdeclarativepropertychanges_p.h>
 #include <private/qdeclarativestategroup_p.h>
 
+
+class MyRect : public QDeclarativeRectangle
+{
+   Q_OBJECT
+   Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
+public:
+    MyRect() {}
+
+    void doSomething() { emit didSomething(); }
+    
+    int propertyWithNotify() const { return m_prop; }
+    void setPropertyWithNotify(int i) { m_prop = i; emit oddlyNamedNotifySignal(); }
+Q_SIGNALS:
+    void didSomething();
+    void oddlyNamedNotifySignal();
+
+private:
+    int m_prop;
+};
+
+QML_DECLARE_TYPE(MyRect)
+
+
 class tst_qdeclarativestates : public QObject
 {
     Q_OBJECT
@@ -82,6 +105,11 @@ private slots:
     void illegalTempState();
     void nonExistantProperty();
 };
+
+void tst_qdeclarativestates::initTestCase()
+{
+    QML_REGISTER_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
+}
 
 QByteArray tst_qdeclarativestates::fullDataPath(const QString &path)
 {
@@ -155,6 +183,28 @@ void tst_qdeclarativestates::basicChanges()
         QCOMPARE(rect->color(),QColor("blue"));
         QCOMPARE(rect->border()->width(),1);
 
+    }
+
+    {
+        // Test basicChanges4.qml can magically connect to propertyWithNotify's notify
+        // signal using 'onPropertyWithNotifyChanged' even though the signal name is
+        // actually 'oddlyNamedNotifySignal'
+
+        QDeclarativeComponent component(&engine, SRCDIR "/data/basicChanges4.qml");
+        QVERIFY(component.isReady());
+
+        MyRect *rect = qobject_cast<MyRect*>(component.create());
+        QVERIFY(rect != 0);
+
+        QMetaProperty prop = rect->metaObject()->property(rect->metaObject()->indexOfProperty("propertyWithNotify"));
+        QVERIFY(prop.hasNotifySignal());
+        QString notifySignal = QByteArray(prop.notifySignal().signature());
+        QVERIFY(!notifySignal.startsWith("propertyWithNotifyChanged("));
+
+        QCOMPARE(rect->color(), QColor(Qt::red));
+
+        rect->setPropertyWithNotify(100);
+        QCOMPARE(rect->color(), QColor(Qt::blue));
     }
 }
 
@@ -333,23 +383,6 @@ void tst_qdeclarativestates::basicBinding()
         rect->setState("");
         QCOMPARE(rect->color(),QColor("red"));
     }
-}
-
-class MyRect : public QDeclarativeRectangle
-{
-   Q_OBJECT
-public:
-    MyRect() {}
-    void doSomething() { emit didSomething(); }
-Q_SIGNALS:
-    void didSomething();
-};
-
-QML_DECLARE_TYPE(MyRect)
-
-void tst_qdeclarativestates::initTestCase()
-{
-    QML_REGISTER_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
 }
 
 void tst_qdeclarativestates::signalOverride()

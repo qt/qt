@@ -1314,8 +1314,9 @@ int QDeclarativeCompiler::componentTypeRef()
     return output->types.count() - 1;
 }
 
-int QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const QByteArray &name)
+QMetaMethod QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const QByteArray &name)
 {
+    Q_ASSERT(mo);
     int methods = mo->methodCount();
     for (int ii = methods - 1; ii >= 0; --ii) {
         QMetaMethod method = mo->method(ii);
@@ -1324,7 +1325,7 @@ int QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const QByteArr
         methodName = methodName.left(idx);
 
         if (methodName == name)
-            return ii;
+            return method;
     }
 
     // If no signal is found, but the signal is of the form "onBlahChanged",
@@ -1332,11 +1333,14 @@ int QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const QByteArr
     if (name.endsWith("Changed")) {
         QByteArray propName = name.mid(0, name.length() - 7);
         int propIdx = mo->indexOfProperty(propName.constData());
-        if (propIdx >= 0)
-            return mo->property(propIdx).notifySignalIndex();
+        if (propIdx >= 0) {
+            QMetaProperty prop = mo->property(propIdx);
+            if (prop.hasNotifySignal())
+                return prop.notifySignal();
+        }
     }
 
-    return -1;
+    return QMetaMethod();
 }
 
 bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj,
@@ -1351,7 +1355,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     if(name[0] >= 'A' && name[0] <= 'Z')
         name[0] = name[0] - 'A' + 'a';
 
-    int sigIdx = findSignalByName(obj->metaObject(), name);
+    int sigIdx = findSignalByName(obj->metaObject(), name).methodIndex();
 
     if (sigIdx == -1) {
 

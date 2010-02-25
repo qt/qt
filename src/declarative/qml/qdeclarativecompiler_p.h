@@ -159,6 +159,8 @@ public:
     static bool isAttachedPropertyName(const QByteArray &);
     static bool isSignalPropertyName(const QByteArray &);
 
+    static QMetaMethod findSignalByName(const QMetaObject *, const QByteArray &name);
+
 private:
     static void reset(QDeclarativeCompiledData *);
 
@@ -263,7 +265,6 @@ private:
 
     int componentTypeRef();
 
-    static int findSignalByName(const QMetaObject *, const QByteArray &name);
     static QDeclarativeType *toQmlType(QDeclarativeParser::Object *from);
     bool canCoerce(int to, QDeclarativeParser::Object *from);
     bool canCoerce(int to, int from);
