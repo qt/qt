@@ -677,7 +677,7 @@ CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
-CFG_AUDIO_BACKEND=yes
+CFG_AUDIO_BACKEND=auto
 CFG_SVG=yes
 CFG_DECLARATIVE=auto
 CFG_WEBKIT=auto # (yes|no|auto)
@@ -2151,6 +2151,7 @@ esac
 # where to find which..
 unixtests="$relpath/config.tests/unix"
 mactests="$relpath/config.tests/mac"
+symbiantests="$relpath/config.tests/symbian"
 WHICH="$unixtests/which.test"
 
 PERL=`$WHICH perl 2>/dev/null`
@@ -5911,6 +5912,14 @@ if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ]; then
     QMakeVar set JAVASCRIPTCORE_JIT yes
 elif [ "$CFG_JAVASCRIPTCORE_JIT" = "no" ]; then
     QMakeVar set JAVASCRIPTCORE_JIT no
+fi
+
+if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
+    if echo "$XQMAKESPEC" | grep symbian > /dev/null 2>&1; then
+        "$symbiantests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/symbian/audio "audio" $L_FLAGS $I_FLAGS $l_FLAGS
+    else
+        CFG_AUDIO_BACKEND=yes
+    fi
 fi
 
 #-------------------------------------------------------------------------------
