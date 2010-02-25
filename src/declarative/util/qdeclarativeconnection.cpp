@@ -105,7 +105,7 @@ public:
     \endqml
 
     More generally, the Connection object can be a child of some other object than
-    the sender of the signal, and the script is the default attribute:
+    the sender of the signal:
 
     \qml
     MouseArea {
@@ -226,8 +226,6 @@ void QDeclarativeConnection::componentComplete()
 /*!
     \qmlproperty script Connection::script
     This property holds the JavaScript executed whenever the signal is sent.
-
-    This is the default attribute of Connection.
 */
 QDeclarativeScriptString QDeclarativeConnection::script() const
 {
