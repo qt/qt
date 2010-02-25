@@ -893,7 +893,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
             for (int i=0; i<count; ++i) {
                 pts[++oset] = points[i].x();
                 pts[++oset] = points[i].y();
-                pts[++oset] = points[i].x() + 1/63;
+                pts[++oset] = points[i].x() + 1/63.;
                 pts[++oset] = points[i].y();
             }
             QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
