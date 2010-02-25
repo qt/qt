@@ -55,7 +55,7 @@ DirectShowAudioEndpointControl::DirectShowAudioEndpointControl(
     , m_deviceEnumerator(0)
 {
     if (CreateBindCtx(0, &m_bindContext) == S_OK) {
-        m_deviceEnumerator = com_new<ICreateDevEnum>(CLSID_SystemDeviceEnum);
+        m_deviceEnumerator = com_new<ICreateDevEnum>(CLSID_SystemDeviceEnum, IID_ICreateDevEnum);
 
         updateEndpoints();
 
@@ -96,6 +96,7 @@ QString DirectShowAudioEndpointControl::endpointDescription(const QString &name)
             propertyBag->Release();
         }
     }
+
     return description;;
 }
 
@@ -120,7 +121,7 @@ void DirectShowAudioEndpointControl::setActiveEndpoint(const QString &name)
         if (moniker->BindToObject(
                 m_bindContext,
                 0,
-                __uuidof(IBaseFilter),
+                IID_IBaseFilter,
                 reinterpret_cast<void **>(&filter)) == S_OK) {
             m_service->setAudioOutput(filter);
 

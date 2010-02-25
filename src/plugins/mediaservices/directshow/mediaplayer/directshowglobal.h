@@ -44,28 +44,26 @@
 
 #include <dshow.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-template <typename T> T *com_cast(IUnknown *unknown)
+template <typename T> T *com_cast(IUnknown *unknown, const IID &iid)
 {
     T *iface = 0;
-    return unknown && unknown->QueryInterface(
-            __uuidof(T), reinterpret_cast<void **>(&iface)) == S_OK
+    return unknown && unknown->QueryInterface(iid, reinterpret_cast<void **>(&iface)) == S_OK
         ? iface
         : 0;
 }
 
-template <typename T> T *com_new(const IID &clsid)
+template <typename T> T *com_new(const IID &clsid, const IID &iid)
 {
     T *object = 0;
     return CoCreateInstance(
             clsid,
             NULL,
             CLSCTX_INPROC_SERVER,
-            __uuidof(T),
+            iid,
             reinterpret_cast<void **>(&object)) == S_OK
         ? object
         : 0;

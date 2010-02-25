@@ -446,7 +446,7 @@ HRESULT VideoSurfaceFilter::EndOfStream()
     QMutexLocker locker(&m_mutex);
 
     if (!m_sampleScheduler.scheduleEndOfStream()) {
-        if (IMediaEventSink *sink = com_cast<IMediaEventSink>(m_graph)) {
+        if (IMediaEventSink *sink = com_cast<IMediaEventSink>(m_graph, IID_IMediaEventSink)) {
             sink->Notify(
                     EC_COMPLETE,
                     S_OK,
@@ -610,7 +610,7 @@ void VideoSurfaceFilter::sampleReady()
         sample->Release();
 
         if (eos) {
-            if (IMediaEventSink *sink = com_cast<IMediaEventSink>(m_graph)) {
+            if (IMediaEventSink *sink = com_cast<IMediaEventSink>(m_graph, IID_IMediaEventSink)) {
                 sink->Notify(
                         EC_COMPLETE,
                         S_OK,

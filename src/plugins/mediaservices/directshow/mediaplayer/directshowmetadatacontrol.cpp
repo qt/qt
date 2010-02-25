@@ -344,7 +344,7 @@ void DirectShowMetaDataControl::updateGraph(IFilterGraph2 *graph, IBaseFilter *s
     if (m_headerInfo)
         m_headerInfo->Release();
 
-    m_headerInfo = com_cast<IWMHeaderInfo>(source);
+    m_headerInfo = com_cast<IWMHeaderInfo>(source, IID_IWMHeaderInfo);
 #endif
     // DirectShowMediaPlayerService holds a lock at this point so defer emitting signals to a later
     // time.
