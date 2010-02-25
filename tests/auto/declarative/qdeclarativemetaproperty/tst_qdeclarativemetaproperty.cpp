@@ -754,19 +754,19 @@ void tst_qdeclarativemetaproperty::name()
 
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty");
+        QDeclarativeMetaProperty p(&o, "rectProperty");
         QCOMPARE(p.name(), QString("rectProperty"));
     }
 
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.x");
+        QDeclarativeMetaProperty p(&o, "rectProperty.x");
         QCOMPARE(p.name(), QString("rectProperty.x"));
     }
 
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.foo");
+        QDeclarativeMetaProperty p(&o, "rectProperty.foo");
         QCOMPARE(p.name(), QString());
     }
 }
@@ -808,14 +808,14 @@ void tst_qdeclarativemetaproperty::read()
     // Value-type prop
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.x");
+        QDeclarativeMetaProperty p(&o, "rectProperty.x");
         QCOMPARE(p.read(), QVariant(10));
     }
 
     // Invalid value-type prop
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.foo");
+        QDeclarativeMetaProperty p(&o, "rectProperty.foo");
         QCOMPARE(p.read(), QVariant());
     }
 
@@ -834,7 +834,7 @@ void tst_qdeclarativemetaproperty::read()
     // Deleted object
     {
         PropertyObject *o = new PropertyObject;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(o, "rectProperty.x");
+        QDeclarativeMetaProperty p(o, "rectProperty.x");
         QCOMPARE(p.read(), QVariant(10));
         delete o;
         QCOMPARE(p.read(), QVariant());
@@ -847,7 +847,7 @@ void tst_qdeclarativemetaproperty::read()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "MyContainer.foo", qmlContext(object));
         QCOMPARE(p.read(), QVariant(13));
         delete object;
     }
@@ -857,7 +857,7 @@ void tst_qdeclarativemetaproperty::read()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "MyContainer.foo", qmlContext(object));
         QCOMPARE(p.read(), QVariant(10));
         delete object;
     }
@@ -867,7 +867,7 @@ void tst_qdeclarativemetaproperty::read()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "Foo.MyContainer.foo", qmlContext(object));
         QCOMPARE(p.read(), QVariant(10));
         delete object;
     }
@@ -946,7 +946,7 @@ void tst_qdeclarativemetaproperty::write()
         QCOMPARE(p.write(QRect(1, 13, 99, 8)), true);
         QCOMPARE(o.wrectProperty(), QRect(1, 13, 99, 8));
 
-        QDeclarativeMetaProperty p2 = QDeclarativeMetaProperty::createProperty(&o, "wrectProperty.x");
+        QDeclarativeMetaProperty p2(&o, "wrectProperty.x");
         QCOMPARE(p2.read(), QVariant(1));
         QCOMPARE(p2.write(QVariant(6)), true);
         QCOMPARE(p2.read(), QVariant(6));
@@ -977,7 +977,7 @@ void tst_qdeclarativemetaproperty::write()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "MyContainer.foo", qmlContext(object));
         p.write(QVariant(99));
         QCOMPARE(p.read(), QVariant(99));
         delete object;
@@ -988,7 +988,7 @@ void tst_qdeclarativemetaproperty::write()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "Foo.MyContainer.foo", qmlContext(object));
         p.write(QVariant(99));
         QCOMPARE(p.read(), QVariant(99));
         delete object;
@@ -1116,7 +1116,7 @@ void tst_qdeclarativemetaproperty::crashOnValueProperty()
     PropertyObject *obj = qobject_cast<PropertyObject*>(component.create());
     QVERIFY(obj != 0);
 
-    QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(obj, "wrectProperty.x", qmlContext(obj));
+    QDeclarativeMetaProperty p(obj, "wrectProperty.x", qmlContext(obj));
     QCOMPARE(p.name(), QString("wrectProperty.x"));
 
     QCOMPARE(p.read(), QVariant(10));

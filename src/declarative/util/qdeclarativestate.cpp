@@ -65,11 +65,11 @@ QDeclarativeAction::QDeclarativeAction()
 
 QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
                const QVariant &value)
-: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), toValue(value), fromBinding(0),
-  toBinding(0), event(0), specifiedObject(target),
-  specifiedProperty(propertyName)
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), 
+  property(target, propertyName), toValue(value), 
+  fromBinding(0), toBinding(0), event(0), 
+  specifiedObject(target), specifiedProperty(propertyName)
 {
-    property = QDeclarativeMetaProperty::createProperty(target, propertyName);
     if (property.isValid())
         fromValue = property.read();
 }

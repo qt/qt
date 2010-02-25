@@ -348,7 +348,7 @@ QDeclarativeMetaProperty
 QDeclarativePropertyChangesPrivate::property(const QByteArray &property)
 {
     Q_Q(QDeclarativePropertyChanges);
-    QDeclarativeMetaProperty prop = QDeclarativeMetaProperty::createProperty(object, QString::fromUtf8(property));
+    QDeclarativeMetaProperty prop(object, QString::fromUtf8(property));
     if (!prop.isValid()) {
         qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(property));
         return QDeclarativeMetaProperty();

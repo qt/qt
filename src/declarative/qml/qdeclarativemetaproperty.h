@@ -121,8 +121,6 @@ public:
 
     QMetaProperty property() const;
 
-    static QDeclarativeMetaProperty createProperty(QObject *, const QString &, QDeclarativeContext *context=0);
-
     int coreIndex() const;
     int valueTypeCoreIndex() const;
 private:
