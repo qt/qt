@@ -58,7 +58,7 @@
 
 #include <QtCore/qvector.h>
 
-#include <private/qscriptdeclarativeclass_p.h>
+#include <QtScript/private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 

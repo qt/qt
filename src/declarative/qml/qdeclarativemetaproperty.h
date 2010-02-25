@@ -121,13 +121,6 @@ public:
 
     QMetaProperty property() const;
 
-    QDeclarativeAbstractBinding *binding() const;
-    QDeclarativeAbstractBinding *setBinding(QDeclarativeAbstractBinding *,
-                                   QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::DontRemoveBinding) const;
-
-    QDeclarativeExpression *signalExpression() const;
-    QDeclarativeExpression *setSignalExpression(QDeclarativeExpression *) const;
-
     static QDeclarativeMetaProperty createProperty(QObject *, const QString &, QDeclarativeContext *context=0);
 
     int coreIndex() const;

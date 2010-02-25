@@ -59,7 +59,7 @@ class QDeclarativeStateGroupPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeStateGroup)
 public:
-    QDeclarativeStateGroupPrivate(QDeclarativeStateGroup *p)
+    QDeclarativeStateGroupPrivate()
     : nullState(0), componentComplete(true),
       ignoreTrans(false), applyingState(false) {}
 
@@ -111,7 +111,7 @@ public:
 */
 
 QDeclarativeStateGroup::QDeclarativeStateGroup(QObject *parent)
-    : QObject(*(new QDeclarativeStateGroupPrivate(this)), parent)
+    : QObject(*(new QDeclarativeStateGroupPrivate), parent)
 {
 }
 

@@ -50,6 +50,7 @@
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativecontext.h>
 #include <qdeclarativeguard_p.h>
+#include <qdeclarativemetaproperty_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -132,12 +133,12 @@ public:
     QDeclarativeGuard<QDeclarativeExpression> ownedExpression;
 
     virtual void execute() {
-        ownedExpression = property.setSignalExpression(expression);
+        ownedExpression = QDeclarativeMetaPropertyPrivate::setSignalExpression(property, expression);
     }
 
     virtual bool isReversable() { return true; }
     virtual void reverse() {
-        ownedExpression = property.setSignalExpression(reverseExpression);
+        ownedExpression = QDeclarativeMetaPropertyPrivate::setSignalExpression(property, reverseExpression);
     }
 
     virtual void saveOriginals() {
@@ -146,9 +147,11 @@ public:
     }
 
     virtual void rewind() {
-        ownedExpression = property.setSignalExpression(rewindExpression);
+        ownedExpression = QDeclarativeMetaPropertyPrivate::setSignalExpression(property, rewindExpression);
     }
-    virtual void saveCurrentValues() { rewindExpression = property.signalExpression(); }
+    virtual void saveCurrentValues() { 
+        rewindExpression = QDeclarativeMetaPropertyPrivate::signalExpression(property); 
+    }
 
     virtual bool override(QDeclarativeActionEvent*other) {
         if (other == this)
