@@ -85,6 +85,7 @@ void tst_QMediaContent::testRequestCtor()
 
     QMediaContent media(request);
 
+    QCOMPARE(media.canonicalRequest(), request);
     QCOMPARE(media.canonicalUrl(), QUrl("http://example.com/movie.mov"));
     QCOMPARE(media.canonicalResource().request(), request);
     QCOMPARE(media.canonicalResource().url(), QUrl("http://example.com/movie.mov"));
