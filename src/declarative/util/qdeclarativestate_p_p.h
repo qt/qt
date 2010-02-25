@@ -58,6 +58,7 @@
 #include "qdeclarativeanimation_p_p.h"
 #include "qdeclarativetransitionmanager_p_p.h"
 
+#include <qdeclarativemetaproperty_p.h>
 #include <qdeclarativeguard_p.h>
 
 #include <private/qobject_p.h>
@@ -76,7 +77,7 @@ public:
         event = a.event;
         if (state == StartState) {
             value = a.fromValue;
-            binding = property.binding();
+            binding = QDeclarativeMetaPropertyPrivate::binding(property);
             reverseEvent = true;
         } else {
             value = a.toValue;

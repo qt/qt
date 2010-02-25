@@ -502,22 +502,23 @@ QMetaMethod QDeclarativeMetaProperty::method() const
     Returns the binding associated with this property, or 0 if no binding 
     exists.
 */
-QDeclarativeAbstractBinding *QDeclarativeMetaProperty::binding() const
+QDeclarativeAbstractBinding *
+QDeclarativeMetaPropertyPrivate::binding(const QDeclarativeMetaProperty &that) 
 {
-    if (!isProperty() || (type() & Attached) || !d->object)
+    if (!that.isProperty() || (that.type() & QDeclarativeMetaProperty::Attached) || !that.d->object)
         return 0;
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(d->object);
+    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(that.d->object);
     if (!data) 
         return 0;
 
-    if (!data->hasBindingBit(d->core.coreIndex))
+    if (!data->hasBindingBit(that.d->core.coreIndex))
         return 0;
 
     QDeclarativeAbstractBinding *binding = data->bindings;
     while (binding) {
         // ### This wont work for value types
-        if (binding->propertyIndex() == d->core.coreIndex)
+        if (binding->propertyIndex() == that.d->core.coreIndex)
             return binding; 
         binding = binding->m_nextBinding;
     }
@@ -538,15 +539,17 @@ QDeclarativeAbstractBinding *QDeclarativeMetaProperty::binding() const
     the binding sets the intial value, it will use these flags for the write).
 */
 QDeclarativeAbstractBinding *
-QDeclarativeMetaProperty::setBinding(QDeclarativeAbstractBinding *newBinding, QDeclarativeMetaProperty::WriteFlags flags) const
+QDeclarativeMetaPropertyPrivate::setBinding(const QDeclarativeMetaProperty &that,
+                                            QDeclarativeAbstractBinding *newBinding, 
+                                            QDeclarativeMetaProperty::WriteFlags flags) 
 {
-    if (!isProperty() || (type() & Attached) || !d->object) {
+    if (!that.isProperty() || (that.type() & QDeclarativeMetaProperty::Attached) || !that.d->object) {
         if (newBinding)
             newBinding->destroy();
         return 0;
     }
 
-    return d->setBinding(d->object, d->core, newBinding, flags);
+    return that.d->setBinding(that.d->object, that.d->core, newBinding, flags);
 }
 
 QDeclarativeAbstractBinding *
@@ -577,22 +580,24 @@ QDeclarativeMetaPropertyPrivate::setBinding(QObject *object, const QDeclarativeP
 
     return 0;
 }
+
 /*!
     Returns the expression associated with this signal property, or 0 if no 
     signal expression exists.
 */
-QDeclarativeExpression *QDeclarativeMetaProperty::signalExpression() const
+QDeclarativeExpression *
+QDeclarativeMetaPropertyPrivate::signalExpression(const QDeclarativeMetaProperty &that)
 {
-    if (!(type() & SignalProperty))
+    if (!(that.type() & QDeclarativeMetaProperty::SignalProperty))
         return 0;
 
-    const QObjectList &children = d->object->children();
+    const QObjectList &children = that.d->object->children();
     
     for (int ii = 0; ii < children.count(); ++ii) {
         QObject *child = children.at(ii);
 
         QDeclarativeBoundSignal *signal = QDeclarativeBoundSignal::cast(child);
-        if (signal && signal->index() == coreIndex()) 
+        if (signal && signal->index() == that.coreIndex()) 
             return signal->expression();
     }
 
@@ -606,25 +611,27 @@ QDeclarativeExpression *QDeclarativeMetaProperty::signalExpression() const
     Ownership of \a expr transfers to QML.  Ownership of the return value is
     assumed by the caller.
 */
-QDeclarativeExpression *QDeclarativeMetaProperty::setSignalExpression(QDeclarativeExpression *expr) const
+QDeclarativeExpression *
+QDeclarativeMetaPropertyPrivate::setSignalExpression(const QDeclarativeMetaProperty &that,
+                                                     QDeclarativeExpression *expr) 
 {
-    if (!(type() & SignalProperty)) {
+    if (!(that.type() & QDeclarativeMetaProperty::SignalProperty)) {
         delete expr;
         return 0;
     }
 
-    const QObjectList &children = d->object->children();
+    const QObjectList &children = that.d->object->children();
     
     for (int ii = 0; ii < children.count(); ++ii) {
         QObject *child = children.at(ii);
 
         QDeclarativeBoundSignal *signal = QDeclarativeBoundSignal::cast(child);
-        if (signal && signal->index() == coreIndex()) 
+        if (signal && signal->index() == that.coreIndex()) 
             return signal->setExpression(expr);
     }
 
     if (expr) {
-        QDeclarativeBoundSignal *signal = new QDeclarativeBoundSignal(d->object, method(), d->object);
+        QDeclarativeBoundSignal *signal = new QDeclarativeBoundSignal(that.d->object, that.method(), that.d->object);
         return signal->setExpression(expr);
     } else {
         return 0;
@@ -758,7 +765,7 @@ bool QDeclarativeMetaPropertyPrivate::writeValueProperty(const QVariant &value,
 {
     // Remove any existing bindings on this property
     if (!(flags & QDeclarativeMetaProperty::DontRemoveBinding)) {
-        QDeclarativeAbstractBinding *binding = q->setBinding(0);
+        QDeclarativeAbstractBinding *binding = setBinding(*q, 0);
         if (binding) binding->destroy();
     }
 

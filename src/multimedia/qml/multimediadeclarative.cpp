@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtMultimedia/multimediadeclarative.h>
+#include <QtMultimedia/qdeclarative.h>
 #include <QtMultimedia/private/qsoundeffect_p.h>
 #include <QtMultimedia/private/qdeclarativeaudio_p.h>
 #include <QtMultimedia/private/qdeclarativevideo_p.h>
@@ -60,9 +60,9 @@ void qRegisterDeclarativeElements(QDeclarativeEngine *engine, const char *uri)
     Q_UNUSED(engine)
     Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.multimedia"));
 
-    qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
-    qmlRegisterType<QDeclarativeAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
-    qmlRegisterType<QDeclarativeVideo>("Qt.multimedia", 4, 7, "Video", "Video");
+    qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect");
+    qmlRegisterType<QDeclarativeAudio>("Qt.multimedia", 4, 7, "Audio");
+    qmlRegisterType<QDeclarativeVideo>("Qt.multimedia", 4, 7, "Video");
 }
 
 }

@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 class QDeclarativeContext;
 class QDeclarativeEnginePrivate;
-class QDeclarativeMetaPropertyPrivate
+class Q_AUTOTEST_EXPORT QDeclarativeMetaPropertyPrivate
 {
 public:
     QDeclarativeMetaPropertyPrivate()
@@ -105,19 +105,32 @@ public:
     bool writeValueProperty(const QVariant &, QDeclarativeMetaProperty::WriteFlags);
 
     static const QMetaObject *rawMetaObjectForType(QDeclarativeEnginePrivate *, int);
-    static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, const QVariant &value, int flags);
-    static bool write(QObject *, const QDeclarativePropertyCache::Data &, const QVariant &, QDeclarativeContext *,
-                      QDeclarativeMetaProperty::WriteFlags flags = 0);
-    static QDeclarativeAbstractBinding *setBinding(QObject *, const QDeclarativePropertyCache::Data &, QDeclarativeAbstractBinding *,
-                                          QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::DontRemoveBinding);
+    static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, 
+                                  const QVariant &value, int flags);
+    static bool write(QObject *, const QDeclarativePropertyCache::Data &, const QVariant &, 
+                      QDeclarativeContext *, QDeclarativeMetaProperty::WriteFlags flags = 0);
+    static QDeclarativeAbstractBinding *setBinding(QObject *, const QDeclarativePropertyCache::Data &, 
+                                                   QDeclarativeAbstractBinding *,
+                                                   QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::DontRemoveBinding);
 
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
     static QByteArray saveProperty(const QMetaObject *, int);
-    static QDeclarativeMetaProperty restore(const QByteArray &, QObject *, QDeclarativeContext * = 0);
+    static QDeclarativeMetaProperty restore(const QByteArray &, QObject *, QDeclarativeContext *);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);
+
+
+    // "Public" (to QML) methods
+    static QDeclarativeAbstractBinding *binding(const QDeclarativeMetaProperty &that);
+    static QDeclarativeAbstractBinding *setBinding(const QDeclarativeMetaProperty &that,
+                                                   QDeclarativeAbstractBinding *,
+                                                   QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::DontRemoveBinding);
+    static QDeclarativeExpression *signalExpression(const QDeclarativeMetaProperty &that);
+    static QDeclarativeExpression *setSignalExpression(const QDeclarativeMetaProperty &that, 
+                                                       QDeclarativeExpression *) ;
+
 };
 
 QT_END_NAMESPACE

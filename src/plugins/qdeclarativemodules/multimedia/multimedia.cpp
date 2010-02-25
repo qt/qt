@@ -41,7 +41,7 @@
 
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
-#include <QtMultimedia/multimediadeclarative.h>
+#include <QtMultimedia/qdeclarative.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,7 +51,7 @@ class QMultimediaQmlModule : public QDeclarativeExtensionPlugin
 public:
     virtual void initialize(QDeclarativeEngine *engine, const char *uri)
     {
-        QtMultimedia::qRegisterDeclarativeElements(engine, uri);
+        QtMultimedia::qRegisterQmlElements(engine, uri);
     }
 };
 
