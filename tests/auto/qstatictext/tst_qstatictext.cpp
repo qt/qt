@@ -45,6 +45,8 @@
 #include <QtGui/QImage>
 
 #include <qstatictext.h>
+#include <qpaintengine.h>
+
 #include <private/qstatictext_p.h>
 #include <private/qapplication_p.h>
 
@@ -297,14 +299,19 @@ void tst_QStaticText::translatedPainter()
 
 bool tst_QStaticText::supportsTransformations() const
 {
+    QPixmap pm(10, 10);
+    QPainter p(&pm);
+    QPaintEngine *engine = p.paintEngine();
 
-    if (QApplicationPrivate::graphics_system_name == QLatin1String("opengl"))
-        return false;
+    QPaintEngine::Type type = engine->type();
 
-#if !defined(Q_WS_WIN)
-    if (QApplicationPrivate::graphics_system_name == "raster")
-        return false;
+    if (type == QPaintEngine::OpenGL2
+        || type == QPaintEngine::OpenGL
+#if !defined Q_WS_WIN
+        || type == QPaintEngine::Raster
 #endif
+        )
+        return false;
 
     return true;
 }
