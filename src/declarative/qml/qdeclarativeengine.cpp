@@ -1624,7 +1624,16 @@ bool QDeclarativeEngine::importExtension(const QString &fileName, const QString 
     QPluginLoader loader(fileName);
 
     if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
-        iface->initialize(this, uri.toUtf8().constData());
+        const QByteArray bytes = uri.toUtf8();
+        const char *moduleId = bytes.constData();
+
+        QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
+        if (! d->importedPlugins.contains(fileName)) {
+            d->importedPlugins.insert(fileName);
+            iface->registerTypes(moduleId);
+        }
+
+        iface->initializeEngine(this, moduleId);
         return true;
     }
 
@@ -1669,7 +1678,6 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
                                         const QStringList &suffixes,
                                         const QString &prefix)
 {
-    qWarning() << baseName;
     foreach (const QString &suffix, suffixes) {
         QString pluginFileName = prefix;
 

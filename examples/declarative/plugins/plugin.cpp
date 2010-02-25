@@ -144,11 +144,10 @@ class QExampleQmlPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
-    void initialize(QDeclarativeEngine *engine, const char *uri)
+    void registerTypes(const char *uri)
     {
-        Q_UNUSED(engine);
         Q_ASSERT(uri == QLatin1String("com.nokia.TimeExample"));
-        qmlRegisterType<Time>(uri, 1, 0, "Time", "Time");
+        qmlRegisterType<Time>(uri, 1, 0, "Time");
     }
 };
 
