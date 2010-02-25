@@ -882,8 +882,8 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
-UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT T_IDENTIFIER T_SEMICOLON ;
+UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT JsIdentifier T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_PROPERTY T_IDENTIFIER T_LT UiPropertyType T_GT JsIdentifier T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(4).sval, sym(6).sval);
@@ -897,8 +897,8 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
-UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_SEMICOLON ;
+UiObjectMember: T_PROPERTY UiPropertyType JsIdentifier T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_PROPERTY UiPropertyType JsIdentifier T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(2).sval, sym(3).sval);
@@ -910,8 +910,8 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_AUTOMATIC_SEMICOLON ;
-UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_SEMICOLON ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType JsIdentifier T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType JsIdentifier T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval);
@@ -925,8 +925,8 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_AUTOMATIC_SEMICOLON ;
-UiObjectMember: T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_SEMICOLON ;
+UiObjectMember: T_PROPERTY UiPropertyType JsIdentifier T_COLON Expression T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_PROPERTY UiPropertyType JsIdentifier T_COLON Expression T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(2).sval, sym(3).sval,
@@ -940,8 +940,8 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: T_READONLY T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_AUTOMATIC_SEMICOLON ;
-UiObjectMember: T_READONLY T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_SEMICOLON ;
+UiObjectMember: T_READONLY T_PROPERTY UiPropertyType JsIdentifier T_COLON Expression T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_READONLY T_PROPERTY UiPropertyType JsIdentifier T_COLON Expression T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval,
@@ -957,8 +957,8 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_AUTOMATIC_SEMICOLON ;
-UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType T_IDENTIFIER T_COLON Expression T_SEMICOLON ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType JsIdentifier T_COLON Expression T_AUTOMATIC_SEMICOLON ;
+UiObjectMember: T_DEFAULT T_PROPERTY UiPropertyType JsIdentifier T_COLON Expression T_SEMICOLON ;
 /.
 case $rule_number: {
     AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), sym(3).sval, sym(4).sval,
