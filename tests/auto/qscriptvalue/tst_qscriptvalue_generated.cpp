@@ -185,6 +185,12 @@ void tst_QScriptValue::initScriptValues()
     DEFINE_TEST_VALUE(engine->newArray());
     DEFINE_TEST_VALUE(engine->newArray(10));
     DEFINE_TEST_VALUE(engine->newDate(QDateTime()));
+    DEFINE_TEST_VALUE(engine->newQMetaObject(&QObject::staticMetaObject));
+    DEFINE_TEST_VALUE(engine->newVariant(QVariant()));
+    DEFINE_TEST_VALUE(engine->newVariant(QVariant(123)));
+    DEFINE_TEST_VALUE(engine->newVariant(QVariant(false)));
+    DEFINE_TEST_VALUE(engine->newQObject(0));
+    DEFINE_TEST_VALUE(engine->newQObject(engine));
 }
 
 
@@ -333,6 +339,12 @@ void tst_QScriptValue::isValid_makeData(const char* expr)
                 << "engine->newArray()"
                 << "engine->newArray(10)"
                 << "engine->newDate(QDateTime())"
+                << "engine->newQMetaObject(&QObject::staticMetaObject)"
+                << "engine->newVariant(QVariant())"
+                << "engine->newVariant(QVariant(123))"
+                << "engine->newVariant(QVariant(false))"
+                << "engine->newQObject(0)"
+                << "engine->newQObject(engine)"
                ;
     }
     newRow(expr) << isValid.contains(expr);
@@ -514,6 +526,7 @@ void tst_QScriptValue::isFunction_makeData(const char* expr)
                 << "engine->evaluate(\"(function() { return 'ciao'; })\")"
                 << "engine->evaluate(\"(function() { throw new Error('foo'); })\")"
                 << "engine->evaluate(\"/foo/\")"
+                << "engine->newQMetaObject(&QObject::staticMetaObject)"
                ;
     }
     newRow(expr) << isFunction.contains(expr);
@@ -544,6 +557,7 @@ void tst_QScriptValue::isNull_makeData(const char* expr)
                 << "QScriptValue(engine, QScriptValue::NullValue)"
                 << "engine->evaluate(\"null\")"
                 << "engine->nullValue()"
+                << "engine->newQObject(0)"
                ;
     }
     newRow(expr) << isNull.contains(expr);
@@ -650,7 +664,84 @@ void tst_QScriptValue::isUndefined_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isUndefined)
 
 
+void tst_QScriptValue::isVariant_initData()
+{
+    QTest::addColumn<bool>("expected");
+    initScriptValues();
+}
 
+void tst_QScriptValue::isVariant_makeData(const char* expr)
+{
+    static QSet<QString> isVariant;
+    if (isVariant.isEmpty()) {
+        isVariant << "engine->newVariant(QVariant())"
+                << "engine->newVariant(QVariant(123))"
+                << "engine->newVariant(QVariant(false))"
+               ;
+    }
+    newRow(expr) << isVariant.contains(expr);
+}
+
+void tst_QScriptValue::isVariant_test(const char*, const QScriptValue& value)
+{
+    QFETCH(bool, expected);
+    QCOMPARE(value.isVariant(), expected);
+    QCOMPARE(value.isVariant(), expected);
+}
+
+DEFINE_TEST_FUNCTION(isVariant)
+
+
+void tst_QScriptValue::isQObject_initData()
+{
+    QTest::addColumn<bool>("expected");
+    initScriptValues();
+}
+
+void tst_QScriptValue::isQObject_makeData(const char* expr)
+{
+    static QSet<QString> isQObject;
+    if (isQObject.isEmpty()) {
+        isQObject << "engine->newQObject(engine)"
+               ;
+    }
+    newRow(expr) << isQObject.contains(expr);
+}
+
+void tst_QScriptValue::isQObject_test(const char*, const QScriptValue& value)
+{
+    QFETCH(bool, expected);
+    QCOMPARE(value.isQObject(), expected);
+    QCOMPARE(value.isQObject(), expected);
+}
+
+DEFINE_TEST_FUNCTION(isQObject)
+
+
+void tst_QScriptValue::isQMetaObject_initData()
+{
+    QTest::addColumn<bool>("expected");
+    initScriptValues();
+}
+
+void tst_QScriptValue::isQMetaObject_makeData(const char* expr)
+{
+    static QSet<QString> isQMetaObject;
+    if (isQMetaObject.isEmpty()) {
+        isQMetaObject << "engine->newQMetaObject(&QObject::staticMetaObject)"
+               ;
+    }
+    newRow(expr) << isQMetaObject.contains(expr);
+}
+
+void tst_QScriptValue::isQMetaObject_test(const char*, const QScriptValue& value)
+{
+    QFETCH(bool, expected);
+    QCOMPARE(value.isQMetaObject(), expected);
+    QCOMPARE(value.isQMetaObject(), expected);
+}
+
+DEFINE_TEST_FUNCTION(isQMetaObject)
 
 
 void tst_QScriptValue::isObject_initData()
@@ -688,6 +779,11 @@ void tst_QScriptValue::isObject_makeData(const char* expr)
                 << "engine->newArray()"
                 << "engine->newArray(10)"
                 << "engine->newDate(QDateTime())"
+                << "engine->newQMetaObject(&QObject::staticMetaObject)"
+                << "engine->newVariant(QVariant())"
+                << "engine->newVariant(QVariant(123))"
+                << "engine->newVariant(QVariant(false))"
+                << "engine->newQObject(engine)"
                ;
     }
     newRow(expr) << isObject.contains(expr);
@@ -964,6 +1060,12 @@ void tst_QScriptValue::toString_makeData(const char* expr)
         toString.insert("engine->newArray()", "");
         toString.insert("engine->newArray(10)", ",,,,,,,,,");
         toString.insert("engine->newDate(QDateTime())", "Invalid Date");
+        toString.insert("engine->newQMetaObject(&QObject::staticMetaObject)", "[object QMetaObject]");
+        toString.insert("engine->newVariant(QVariant())", "undefined");
+        toString.insert("engine->newVariant(QVariant(123))", "123");
+        toString.insert("engine->newVariant(QVariant(false))", "false");
+        toString.insert("engine->newQObject(0)", "null");
+        toString.insert("engine->newQObject(engine)", "QScriptEngine(name = \"\")");
     }
     newRow(expr) << toString.value(expr);
 }
@@ -1124,6 +1226,12 @@ void tst_QScriptValue::toNumber_makeData(const char* expr)
         toNumber.insert("engine->newArray()", 0);
         toNumber.insert("engine->newArray(10)", qQNaN());
         toNumber.insert("engine->newDate(QDateTime())", qQNaN());
+        toNumber.insert("engine->newQMetaObject(&QObject::staticMetaObject)", qQNaN());
+        toNumber.insert("engine->newVariant(QVariant())", qQNaN());
+        toNumber.insert("engine->newVariant(QVariant(123))", 123);
+        toNumber.insert("engine->newVariant(QVariant(false))", 0);
+        toNumber.insert("engine->newQObject(0)", 0);
+        toNumber.insert("engine->newQObject(engine)", qQNaN());
     }
     newRow(expr) << toNumber.value(expr);
 }
@@ -1293,6 +1401,12 @@ void tst_QScriptValue::toBool_makeData(const char* expr)
         toBool.insert("engine->newArray()", true);
         toBool.insert("engine->newArray(10)", true);
         toBool.insert("engine->newDate(QDateTime())", true);
+        toBool.insert("engine->newQMetaObject(&QObject::staticMetaObject)", true);
+        toBool.insert("engine->newVariant(QVariant())", true);
+        toBool.insert("engine->newVariant(QVariant(123))", true);
+        toBool.insert("engine->newVariant(QVariant(false))", true);
+        toBool.insert("engine->newQObject(0)", false);
+        toBool.insert("engine->newQObject(engine)", true);
     }
     newRow(expr) << toBool.value(expr);
 }
@@ -1453,6 +1567,12 @@ void tst_QScriptValue::toBoolean_makeData(const char* expr)
         toBoolean.insert("engine->newArray()", true);
         toBoolean.insert("engine->newArray(10)", true);
         toBoolean.insert("engine->newDate(QDateTime())", true);
+        toBoolean.insert("engine->newQMetaObject(&QObject::staticMetaObject)", true);
+        toBoolean.insert("engine->newVariant(QVariant())", true);
+        toBoolean.insert("engine->newVariant(QVariant(123))", true);
+        toBoolean.insert("engine->newVariant(QVariant(false))", true);
+        toBoolean.insert("engine->newQObject(0)", false);
+        toBoolean.insert("engine->newQObject(engine)", true);
     }
     newRow(expr) << toBoolean.value(expr);
 }
@@ -1613,6 +1733,12 @@ void tst_QScriptValue::toInteger_makeData(const char* expr)
         toInteger.insert("engine->newArray()", 0);
         toInteger.insert("engine->newArray(10)", 0);
         toInteger.insert("engine->newDate(QDateTime())", 0);
+        toInteger.insert("engine->newQMetaObject(&QObject::staticMetaObject)", 0);
+        toInteger.insert("engine->newVariant(QVariant())", 0);
+        toInteger.insert("engine->newVariant(QVariant(123))", 123);
+        toInteger.insert("engine->newVariant(QVariant(false))", 0);
+        toInteger.insert("engine->newQObject(0)", 0);
+        toInteger.insert("engine->newQObject(engine)", 0);
     }
     newRow(expr) << toInteger.value(expr);
 }
@@ -1778,6 +1904,12 @@ void tst_QScriptValue::toInt32_makeData(const char* expr)
         toInt32.insert("engine->newArray()", 0);
         toInt32.insert("engine->newArray(10)", 0);
         toInt32.insert("engine->newDate(QDateTime())", 0);
+        toInt32.insert("engine->newQMetaObject(&QObject::staticMetaObject)", 0);
+        toInt32.insert("engine->newVariant(QVariant())", 0);
+        toInt32.insert("engine->newVariant(QVariant(123))", 123);
+        toInt32.insert("engine->newVariant(QVariant(false))", 0);
+        toInt32.insert("engine->newQObject(0)", 0);
+        toInt32.insert("engine->newQObject(engine)", 0);
     }
     newRow(expr) << toInt32.value(expr);
 }
@@ -1938,6 +2070,12 @@ void tst_QScriptValue::toUInt32_makeData(const char* expr)
         toUInt32.insert("engine->newArray()", 0);
         toUInt32.insert("engine->newArray(10)", 0);
         toUInt32.insert("engine->newDate(QDateTime())", 0);
+        toUInt32.insert("engine->newQMetaObject(&QObject::staticMetaObject)", 0);
+        toUInt32.insert("engine->newVariant(QVariant())", 0);
+        toUInt32.insert("engine->newVariant(QVariant(123))", 123);
+        toUInt32.insert("engine->newVariant(QVariant(false))", 0);
+        toUInt32.insert("engine->newQObject(0)", 0);
+        toUInt32.insert("engine->newQObject(engine)", 0);
     }
     newRow(expr) << toUInt32.value(expr);
 }
@@ -2098,6 +2236,12 @@ void tst_QScriptValue::toUInt16_makeData(const char* expr)
         toUInt16.insert("engine->newArray()", 0);
         toUInt16.insert("engine->newArray(10)", 0);
         toUInt16.insert("engine->newDate(QDateTime())", 0);
+        toUInt16.insert("engine->newQMetaObject(&QObject::staticMetaObject)", 0);
+        toUInt16.insert("engine->newVariant(QVariant())", 0);
+        toUInt16.insert("engine->newVariant(QVariant(123))", 123);
+        toUInt16.insert("engine->newVariant(QVariant(false))", 0);
+        toUInt16.insert("engine->newQObject(0)", 0);
+        toUInt16.insert("engine->newQObject(engine)", 0);
     }
     newRow(expr) << toUInt16.value(expr);
 }
@@ -2135,6 +2279,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(QScriptValue::UndefinedValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(QScriptValue::UndefinedValue) <=> engine->nullValue()");
         equals.insert("QScriptValue(QScriptValue::UndefinedValue) <=> engine->undefinedValue()");
+        equals.insert("QScriptValue(QScriptValue::UndefinedValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> QScriptValue(QScriptValue::UndefinedValue)");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> QScriptValue(0, QScriptValue::UndefinedValue)");
@@ -2146,6 +2291,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->nullValue()");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->undefinedValue()");
+        equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(true) <=> QScriptValue(true)");
         equals.insert("QScriptValue(true) <=> QScriptValue(0, true)");
         equals.insert("QScriptValue(true) <=> QScriptValue(engine, true)");
@@ -2177,6 +2323,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(false) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(false) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(false) <=> engine->newArray()");
+        equals.insert("QScriptValue(false) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(int(122)) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(int(122)) <=> QScriptValue(0, int(122))");
         equals.insert("QScriptValue(int(122)) <=> QScriptValue(engine, int(122))");
@@ -2212,6 +2359,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(0) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(0) <=> engine->newArray()");
+        equals.insert("QScriptValue(0) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(0.0) <=> QScriptValue(false)");
         equals.insert("QScriptValue(0.0) <=> QScriptValue(0)");
         equals.insert("QScriptValue(0.0) <=> QScriptValue(0.0)");
@@ -2239,6 +2387,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0.0) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(0.0) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(0.0) <=> engine->newArray()");
+        equals.insert("QScriptValue(0.0) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(123.0) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(123.0) <=> QScriptValue(QString(\"123\"))");
         equals.insert("QScriptValue(123.0) <=> QScriptValue(0, 123.0)");
@@ -2247,6 +2396,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(123.0) <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("QScriptValue(123.0) <=> engine->evaluate(\"123.0\")");
         equals.insert("QScriptValue(123.0) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(123.0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(6.37e-8) <=> QScriptValue(6.37e-8)");
         equals.insert("QScriptValue(6.37e-8) <=> QScriptValue(0, 6.37e-8)");
         equals.insert("QScriptValue(6.37e-8) <=> QScriptValue(engine, 6.37e-8)");
@@ -2335,6 +2485,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(QString(\"\")) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(QString(\"\")) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(QString(\"\")) <=> engine->newArray()");
+        equals.insert("QScriptValue(QString(\"\")) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(QString()) <=> QScriptValue(false)");
         equals.insert("QScriptValue(QString()) <=> QScriptValue(0)");
         equals.insert("QScriptValue(QString()) <=> QScriptValue(0.0)");
@@ -2358,6 +2509,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(QString()) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(QString()) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(QString()) <=> engine->newArray()");
+        equals.insert("QScriptValue(QString()) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(QString(\"0\")) <=> QScriptValue(false)");
         equals.insert("QScriptValue(QString(\"0\")) <=> QScriptValue(0)");
         equals.insert("QScriptValue(QString(\"0\")) <=> QScriptValue(0.0)");
@@ -2374,6 +2526,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(QString(\"0\")) <=> engine->evaluate(\"0\")");
         equals.insert("QScriptValue(QString(\"0\")) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(QString(\"0\")) <=> engine->evaluate(\"'0'\")");
+        equals.insert("QScriptValue(QString(\"0\")) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(QString(\"123\")) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(QString(\"123\")) <=> QScriptValue(QString(\"123\"))");
         equals.insert("QScriptValue(QString(\"123\")) <=> QScriptValue(0, 123.0)");
@@ -2382,6 +2535,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(QString(\"123\")) <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("QScriptValue(QString(\"123\")) <=> engine->evaluate(\"123.0\")");
         equals.insert("QScriptValue(QString(\"123\")) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(QString(\"123\")) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(QString(\"12.4\")) <=> QScriptValue(QString(\"12.4\"))");
         equals.insert("QScriptValue(QString(\"12.4\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, QScriptValue::UndefinedValue) <=> QScriptValue(QScriptValue::UndefinedValue)");
@@ -2395,6 +2549,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, QScriptValue::UndefinedValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(0, QScriptValue::UndefinedValue) <=> engine->nullValue()");
         equals.insert("QScriptValue(0, QScriptValue::UndefinedValue) <=> engine->undefinedValue()");
+        equals.insert("QScriptValue(0, QScriptValue::UndefinedValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(QScriptValue::UndefinedValue)");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(0, QScriptValue::UndefinedValue)");
@@ -2406,6 +2561,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->nullValue()");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->undefinedValue()");
+        equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(0, true)");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(engine, true)");
@@ -2437,6 +2593,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, false) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(0, false) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(0, false) <=> engine->newArray()");
+        equals.insert("QScriptValue(0, false) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(0, int(122)) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, int(122)) <=> QScriptValue(0, int(122))");
         equals.insert("QScriptValue(0, int(122)) <=> QScriptValue(engine, int(122))");
@@ -2472,6 +2629,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, 0) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(0, 0) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(0, 0) <=> engine->newArray()");
+        equals.insert("QScriptValue(0, 0) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(0, 0.0) <=> QScriptValue(false)");
         equals.insert("QScriptValue(0, 0.0) <=> QScriptValue(0)");
         equals.insert("QScriptValue(0, 0.0) <=> QScriptValue(0.0)");
@@ -2499,6 +2657,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, 0.0) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(0, 0.0) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(0, 0.0) <=> engine->newArray()");
+        equals.insert("QScriptValue(0, 0.0) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(0, 123.0) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(0, 123.0) <=> QScriptValue(QString(\"123\"))");
         equals.insert("QScriptValue(0, 123.0) <=> QScriptValue(0, 123.0)");
@@ -2507,6 +2666,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, 123.0) <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("QScriptValue(0, 123.0) <=> engine->evaluate(\"123.0\")");
         equals.insert("QScriptValue(0, 123.0) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(0, 123.0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, 6.37e-8) <=> QScriptValue(6.37e-8)");
         equals.insert("QScriptValue(0, 6.37e-8) <=> QScriptValue(0, 6.37e-8)");
         equals.insert("QScriptValue(0, 6.37e-8) <=> QScriptValue(engine, 6.37e-8)");
@@ -2595,6 +2755,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString(\"\")) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(0, QString(\"\")) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(0, QString(\"\")) <=> engine->newArray()");
+        equals.insert("QScriptValue(0, QString(\"\")) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(0, QString()) <=> QScriptValue(false)");
         equals.insert("QScriptValue(0, QString()) <=> QScriptValue(0)");
         equals.insert("QScriptValue(0, QString()) <=> QScriptValue(0.0)");
@@ -2618,6 +2779,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString()) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(0, QString()) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(0, QString()) <=> engine->newArray()");
+        equals.insert("QScriptValue(0, QString()) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> QScriptValue(false)");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> QScriptValue(0)");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> QScriptValue(0.0)");
@@ -2634,6 +2796,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->evaluate(\"0\")");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->evaluate(\"'0'\")");
+        equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> QScriptValue(QString(\"123\"))");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> QScriptValue(0, 123.0)");
@@ -2642,6 +2805,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString(\"123\")) <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->evaluate(\"123.0\")");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, QString(\"12.3\")) <=> QScriptValue(0, QString(\"12.3\"))");
         equals.insert("QScriptValue(engine, QScriptValue::UndefinedValue) <=> QScriptValue(QScriptValue::UndefinedValue)");
         equals.insert("QScriptValue(engine, QScriptValue::UndefinedValue) <=> QScriptValue(QScriptValue::NullValue)");
@@ -2654,6 +2818,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QScriptValue::UndefinedValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(engine, QScriptValue::UndefinedValue) <=> engine->nullValue()");
         equals.insert("QScriptValue(engine, QScriptValue::UndefinedValue) <=> engine->undefinedValue()");
+        equals.insert("QScriptValue(engine, QScriptValue::UndefinedValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> QScriptValue(QScriptValue::UndefinedValue)");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> QScriptValue(0, QScriptValue::UndefinedValue)");
@@ -2665,6 +2830,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->nullValue()");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->undefinedValue()");
+        equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(0, true)");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(engine, true)");
@@ -2696,6 +2862,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, false) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(engine, false) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(engine, false) <=> engine->newArray()");
+        equals.insert("QScriptValue(engine, false) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(engine, int(122)) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, int(122)) <=> QScriptValue(0, int(122))");
         equals.insert("QScriptValue(engine, int(122)) <=> QScriptValue(engine, int(122))");
@@ -2731,6 +2898,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, 0) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(engine, 0) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(engine, 0) <=> engine->newArray()");
+        equals.insert("QScriptValue(engine, 0) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(engine, 0.0) <=> QScriptValue(false)");
         equals.insert("QScriptValue(engine, 0.0) <=> QScriptValue(0)");
         equals.insert("QScriptValue(engine, 0.0) <=> QScriptValue(0.0)");
@@ -2758,6 +2926,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, 0.0) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(engine, 0.0) <=> engine->evaluate(\"'0'\")");
         equals.insert("QScriptValue(engine, 0.0) <=> engine->newArray()");
+        equals.insert("QScriptValue(engine, 0.0) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(engine, 123.0) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(engine, 123.0) <=> QScriptValue(QString(\"123\"))");
         equals.insert("QScriptValue(engine, 123.0) <=> QScriptValue(0, 123.0)");
@@ -2766,6 +2935,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, 123.0) <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("QScriptValue(engine, 123.0) <=> engine->evaluate(\"123.0\")");
         equals.insert("QScriptValue(engine, 123.0) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(engine, 123.0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, 6.37e-8) <=> QScriptValue(6.37e-8)");
         equals.insert("QScriptValue(engine, 6.37e-8) <=> QScriptValue(0, 6.37e-8)");
         equals.insert("QScriptValue(engine, 6.37e-8) <=> QScriptValue(engine, 6.37e-8)");
@@ -2854,6 +3024,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->newArray()");
+        equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(engine, QString()) <=> QScriptValue(false)");
         equals.insert("QScriptValue(engine, QString()) <=> QScriptValue(0)");
         equals.insert("QScriptValue(engine, QString()) <=> QScriptValue(0.0)");
@@ -2877,6 +3048,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString()) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(engine, QString()) <=> engine->evaluate(\"''\")");
         equals.insert("QScriptValue(engine, QString()) <=> engine->newArray()");
+        equals.insert("QScriptValue(engine, QString()) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> QScriptValue(false)");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> QScriptValue(0)");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> QScriptValue(0.0)");
@@ -2893,6 +3065,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->evaluate(\"0\")");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->evaluate(\"0.0\")");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->evaluate(\"'0'\")");
+        equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->newVariant(QVariant(false))");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> QScriptValue(QString(\"123\"))");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> QScriptValue(0, 123.0)");
@@ -2901,6 +3074,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->evaluate(\"123.0\")");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> QScriptValue(engine, QString(\"1.23\"))");
         equals.insert("engine->evaluate(\"[]\") <=> QScriptValue(false)");
         equals.insert("engine->evaluate(\"[]\") <=> QScriptValue(0)");
@@ -2933,6 +3107,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"{}\") <=> engine->evaluate(\"null\")");
         equals.insert("engine->evaluate(\"{}\") <=> engine->nullValue()");
         equals.insert("engine->evaluate(\"{}\") <=> engine->undefinedValue()");
+        equals.insert("engine->evaluate(\"{}\") <=> engine->newQObject(0)");
         equals.insert("engine->evaluate(\"Object.prototype\") <=> engine->evaluate(\"Object.prototype\")");
         equals.insert("engine->evaluate(\"Date.prototype\") <=> engine->evaluate(\"Date.prototype\")");
         equals.insert("engine->evaluate(\"Array.prototype\") <=> QScriptValue(false)");
@@ -3003,6 +3178,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"undefined\") <=> engine->evaluate(\"null\")");
         equals.insert("engine->evaluate(\"undefined\") <=> engine->nullValue()");
         equals.insert("engine->evaluate(\"undefined\") <=> engine->undefinedValue()");
+        equals.insert("engine->evaluate(\"undefined\") <=> engine->newQObject(0)");
         equals.insert("engine->evaluate(\"null\") <=> QScriptValue(QScriptValue::UndefinedValue)");
         equals.insert("engine->evaluate(\"null\") <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("engine->evaluate(\"null\") <=> QScriptValue(0, QScriptValue::UndefinedValue)");
@@ -3014,6 +3190,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"null\") <=> engine->evaluate(\"null\")");
         equals.insert("engine->evaluate(\"null\") <=> engine->nullValue()");
         equals.insert("engine->evaluate(\"null\") <=> engine->undefinedValue()");
+        equals.insert("engine->evaluate(\"null\") <=> engine->newQObject(0)");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(0, true)");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(engine, true)");
@@ -3045,6 +3222,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"false\") <=> engine->evaluate(\"''\")");
         equals.insert("engine->evaluate(\"false\") <=> engine->evaluate(\"'0'\")");
         equals.insert("engine->evaluate(\"false\") <=> engine->newArray()");
+        equals.insert("engine->evaluate(\"false\") <=> engine->newVariant(QVariant(false))");
         equals.insert("engine->evaluate(\"122\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"122\") <=> QScriptValue(0, int(122))");
         equals.insert("engine->evaluate(\"122\") <=> QScriptValue(engine, int(122))");
@@ -3080,6 +3258,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"0\") <=> engine->evaluate(\"''\")");
         equals.insert("engine->evaluate(\"0\") <=> engine->evaluate(\"'0'\")");
         equals.insert("engine->evaluate(\"0\") <=> engine->newArray()");
+        equals.insert("engine->evaluate(\"0\") <=> engine->newVariant(QVariant(false))");
         equals.insert("engine->evaluate(\"0.0\") <=> QScriptValue(false)");
         equals.insert("engine->evaluate(\"0.0\") <=> QScriptValue(0)");
         equals.insert("engine->evaluate(\"0.0\") <=> QScriptValue(0.0)");
@@ -3107,6 +3286,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"0.0\") <=> engine->evaluate(\"''\")");
         equals.insert("engine->evaluate(\"0.0\") <=> engine->evaluate(\"'0'\")");
         equals.insert("engine->evaluate(\"0.0\") <=> engine->newArray()");
+        equals.insert("engine->evaluate(\"0.0\") <=> engine->newVariant(QVariant(false))");
         equals.insert("engine->evaluate(\"123.0\") <=> QScriptValue(123.0)");
         equals.insert("engine->evaluate(\"123.0\") <=> QScriptValue(QString(\"123\"))");
         equals.insert("engine->evaluate(\"123.0\") <=> QScriptValue(0, 123.0)");
@@ -3115,6 +3295,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"123.0\") <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("engine->evaluate(\"123.0\") <=> engine->evaluate(\"123.0\")");
         equals.insert("engine->evaluate(\"123.0\") <=> engine->evaluate(\"'123'\")");
+        equals.insert("engine->evaluate(\"123.0\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"6.37e-8\") <=> QScriptValue(6.37e-8)");
         equals.insert("engine->evaluate(\"6.37e-8\") <=> QScriptValue(0, 6.37e-8)");
         equals.insert("engine->evaluate(\"6.37e-8\") <=> QScriptValue(engine, 6.37e-8)");
@@ -3179,6 +3360,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"''\") <=> engine->evaluate(\"0.0\")");
         equals.insert("engine->evaluate(\"''\") <=> engine->evaluate(\"''\")");
         equals.insert("engine->evaluate(\"''\") <=> engine->newArray()");
+        equals.insert("engine->evaluate(\"''\") <=> engine->newVariant(QVariant(false))");
         equals.insert("engine->evaluate(\"'0'\") <=> QScriptValue(false)");
         equals.insert("engine->evaluate(\"'0'\") <=> QScriptValue(0)");
         equals.insert("engine->evaluate(\"'0'\") <=> QScriptValue(0.0)");
@@ -3195,6 +3377,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"'0'\") <=> engine->evaluate(\"0\")");
         equals.insert("engine->evaluate(\"'0'\") <=> engine->evaluate(\"0.0\")");
         equals.insert("engine->evaluate(\"'0'\") <=> engine->evaluate(\"'0'\")");
+        equals.insert("engine->evaluate(\"'0'\") <=> engine->newVariant(QVariant(false))");
         equals.insert("engine->evaluate(\"'123'\") <=> QScriptValue(123.0)");
         equals.insert("engine->evaluate(\"'123'\") <=> QScriptValue(QString(\"123\"))");
         equals.insert("engine->evaluate(\"'123'\") <=> QScriptValue(0, 123.0)");
@@ -3203,6 +3386,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"'123'\") <=> QScriptValue(engine, QString(\"123\"))");
         equals.insert("engine->evaluate(\"'123'\") <=> engine->evaluate(\"123.0\")");
         equals.insert("engine->evaluate(\"'123'\") <=> engine->evaluate(\"'123'\")");
+        equals.insert("engine->evaluate(\"'123'\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"'12.4'\") <=> QScriptValue(QString(\"12.4\"))");
         equals.insert("engine->evaluate(\"'12.4'\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->nullValue() <=> QScriptValue(QScriptValue::UndefinedValue)");
@@ -3216,6 +3400,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->nullValue() <=> engine->evaluate(\"null\")");
         equals.insert("engine->nullValue() <=> engine->nullValue()");
         equals.insert("engine->nullValue() <=> engine->undefinedValue()");
+        equals.insert("engine->nullValue() <=> engine->newQObject(0)");
         equals.insert("engine->undefinedValue() <=> QScriptValue(QScriptValue::UndefinedValue)");
         equals.insert("engine->undefinedValue() <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("engine->undefinedValue() <=> QScriptValue(0, QScriptValue::UndefinedValue)");
@@ -3227,6 +3412,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->undefinedValue() <=> engine->evaluate(\"null\")");
         equals.insert("engine->undefinedValue() <=> engine->nullValue()");
         equals.insert("engine->undefinedValue() <=> engine->undefinedValue()");
+        equals.insert("engine->undefinedValue() <=> engine->newQObject(0)");
         equals.insert("engine->newObject() <=> engine->newObject()");
         equals.insert("engine->newArray() <=> QScriptValue(false)");
         equals.insert("engine->newArray() <=> QScriptValue(0)");
@@ -3250,6 +3436,54 @@ void tst_QScriptValue::equals_makeData(const char *expr)
         equals.insert("engine->newArray() <=> engine->newArray()");
         equals.insert("engine->newArray(10) <=> engine->newArray(10)");
         equals.insert("engine->newDate(QDateTime()) <=> engine->newDate(QDateTime())");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->newVariant(QVariant()) <=> engine->newVariant(QVariant())");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(123.0)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(QString(\"123\"))");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, 123.0)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, QString(\"123\"))");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, 123.0)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, QString(\"123\"))");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"123.0\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"'123'\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(false)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0.0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(QString(\"\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(QString())");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(QString(\"0\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, false)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, 0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, 0.0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, QString(\"\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, QString())");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, QString(\"0\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, false)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, 0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, 0.0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, QString(\"\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, QString())");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, QString(\"0\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"false\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"0\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"0.0\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"''\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"'0'\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->newVariant(QVariant(false))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(QScriptValue::UndefinedValue)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(QScriptValue::NullValue)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, QScriptValue::UndefinedValue)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, QScriptValue::NullValue)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, QScriptValue::UndefinedValue)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, QScriptValue::NullValue)");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"{}\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"undefined\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"null\")");
+        equals.insert("engine->newQObject(0) <=> engine->nullValue()");
+        equals.insert("engine->newQObject(0) <=> engine->undefinedValue()");
+        equals.insert("engine->newQObject(0) <=> engine->newQObject(0)");
+        equals.insert("engine->newQObject(engine) <=> engine->newQObject(engine)");
     }
     QHash<QString, QScriptValue>::const_iterator it;
     for (it = m_values.constBegin(); it != m_values.constEnd(); ++it) {
@@ -3291,6 +3525,7 @@ void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> QScriptValue(engine, QScriptValue::NullValue)");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->nullValue()");
+        equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(true) <=> QScriptValue(true)");
         equals.insert("QScriptValue(true) <=> QScriptValue(0, true)");
         equals.insert("QScriptValue(true) <=> QScriptValue(engine, true)");
@@ -3413,6 +3648,7 @@ void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(engine, QScriptValue::NullValue)");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->nullValue()");
+        equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(0, true)");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(engine, true)");
@@ -3534,6 +3770,7 @@ void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> QScriptValue(engine, QScriptValue::NullValue)");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->evaluate(\"null\")");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->nullValue()");
+        equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(0, true)");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(engine, true)");
@@ -3683,6 +3920,7 @@ void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
         equals.insert("engine->evaluate(\"null\") <=> QScriptValue(engine, QScriptValue::NullValue)");
         equals.insert("engine->evaluate(\"null\") <=> engine->evaluate(\"null\")");
         equals.insert("engine->evaluate(\"null\") <=> engine->nullValue()");
+        equals.insert("engine->evaluate(\"null\") <=> engine->newQObject(0)");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(0, true)");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(engine, true)");
@@ -3776,6 +4014,7 @@ void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
         equals.insert("engine->nullValue() <=> QScriptValue(engine, QScriptValue::NullValue)");
         equals.insert("engine->nullValue() <=> engine->evaluate(\"null\")");
         equals.insert("engine->nullValue() <=> engine->nullValue()");
+        equals.insert("engine->nullValue() <=> engine->newQObject(0)");
         equals.insert("engine->undefinedValue() <=> QScriptValue(QScriptValue::UndefinedValue)");
         equals.insert("engine->undefinedValue() <=> QScriptValue(0, QScriptValue::UndefinedValue)");
         equals.insert("engine->undefinedValue() <=> QScriptValue(engine, QScriptValue::UndefinedValue)");
@@ -3786,6 +4025,17 @@ void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
         equals.insert("engine->newArray() <=> engine->newArray()");
         equals.insert("engine->newArray(10) <=> engine->newArray(10)");
         equals.insert("engine->newDate(QDateTime()) <=> engine->newDate(QDateTime())");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->newVariant(QVariant()) <=> engine->newVariant(QVariant())");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->newVariant(QVariant(false))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(QScriptValue::NullValue)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, QScriptValue::NullValue)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, QScriptValue::NullValue)");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"null\")");
+        equals.insert("engine->newQObject(0) <=> engine->nullValue()");
+        equals.insert("engine->newQObject(0) <=> engine->newQObject(0)");
+        equals.insert("engine->newQObject(engine) <=> engine->newQObject(engine)");
     }
     QHash<QString, QScriptValue>::const_iterator it;
     for (it = m_values.constBegin(); it != m_values.constEnd(); ++it) {
@@ -3863,6 +4113,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(QScriptValue::NullValue) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(true) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(true) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(true) <=> QScriptValue(123.0)");
@@ -3903,6 +4154,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(true) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(true) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(true) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(true) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(false) <=> QScriptValue(true)");
         equals.insert("QScriptValue(false) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(false) <=> QScriptValue(uint(124))");
@@ -3951,6 +4203,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(false) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(false) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(false) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(false) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(int(122)) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(int(122)) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(int(122)) <=> QScriptValue(0x43211234)");
@@ -3982,6 +4235,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(int(122)) <=> engine->evaluate(\"0x10001\")");
         equals.insert("QScriptValue(int(122)) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(int(122)) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(int(122)) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(uint(124)) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(uint(124)) <=> QScriptValue(0x10000)");
         equals.insert("QScriptValue(uint(124)) <=> QScriptValue(0x10001)");
@@ -4049,6 +4303,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0.0) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0.0) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0.0) <=> QScriptValue(uint(124))");
@@ -4097,6 +4352,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0.0) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0.0) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0.0) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0.0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(123.0) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(123.0) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(123.0) <=> QScriptValue(0x10000)");
@@ -4164,6 +4420,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(6.37e-8) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(6.37e-8) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(6.37e-8) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(6.37e-8) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(-6.37e-8) <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(-6.37e-8) <=> QScriptValue(true)");
         equals.insert("QScriptValue(-6.37e-8) <=> QScriptValue(false)");
@@ -4244,6 +4501,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(-6.37e-8) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(-6.37e-8) <=> engine->nullValue()");
         equals.insert("QScriptValue(-6.37e-8) <=> engine->newArray()");
+        equals.insert("QScriptValue(-6.37e-8) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(-6.37e-8) <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(-6.37e-8) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(0x43211234) <=> QScriptValue(qInf())");
         equals.insert("QScriptValue(0x43211234) <=> QScriptValue(\"Infinity\")");
         equals.insert("QScriptValue(0x43211234) <=> QScriptValue(0, qInf())");
@@ -4361,6 +4621,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(-qInf()) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(-qInf()) <=> engine->nullValue()");
         equals.insert("QScriptValue(-qInf()) <=> engine->newArray()");
+        equals.insert("QScriptValue(-qInf()) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(-qInf()) <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(-qInf()) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(\"NaN\") <=> QScriptValue(\"ciao\")");
         equals.insert("QScriptValue(\"NaN\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("QScriptValue(\"NaN\") <=> QScriptValue(0, \"ciao\")");
@@ -4383,6 +4646,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(\"NaN\") <=> engine->evaluate(\"False\")");
         equals.insert("QScriptValue(\"NaN\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(\"NaN\") <=> engine->newObject()");
+        equals.insert("QScriptValue(\"NaN\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(\"NaN\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(\"Infinity\") <=> QScriptValue(\"NaN\")");
         equals.insert("QScriptValue(\"Infinity\") <=> QScriptValue(\"ciao\")");
         equals.insert("QScriptValue(\"Infinity\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
@@ -4408,6 +4673,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(\"Infinity\") <=> engine->evaluate(\"False\")");
         equals.insert("QScriptValue(\"Infinity\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(\"Infinity\") <=> engine->newObject()");
+        equals.insert("QScriptValue(\"Infinity\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(\"Infinity\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(\"-Infinity\") <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(\"-Infinity\") <=> QScriptValue(true)");
         equals.insert("QScriptValue(\"-Infinity\") <=> QScriptValue(false)");
@@ -4509,6 +4776,11 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(\"-Infinity\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(\"-Infinity\") <=> engine->nullValue()");
         equals.insert("QScriptValue(\"-Infinity\") <=> engine->newObject()");
+        equals.insert("QScriptValue(\"-Infinity\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(\"-Infinity\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(\"-Infinity\") <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(\"-Infinity\") <=> engine->newQObject(0)");
+        equals.insert("QScriptValue(\"-Infinity\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(\"ciao\") <=> engine->evaluate(\"Function.prototype\")");
         equals.insert("QScriptValue(\"ciao\") <=> engine->evaluate(\"Object\")");
         equals.insert("QScriptValue(\"ciao\") <=> engine->evaluate(\"Array\")");
@@ -4609,6 +4881,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(QString(\"\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(QString(\"\")) <=> engine->newObject()");
         equals.insert("QScriptValue(QString(\"\")) <=> engine->newArray(10)");
+        equals.insert("QScriptValue(QString(\"\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(QString(\"\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(QString(\"\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(QString()) <=> QScriptValue(true)");
         equals.insert("QScriptValue(QString()) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(QString()) <=> QScriptValue(uint(124))");
@@ -4693,6 +4968,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(QString()) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(QString()) <=> engine->newObject()");
         equals.insert("QScriptValue(QString()) <=> engine->newArray(10)");
+        equals.insert("QScriptValue(QString()) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(QString()) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(QString()) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(QString(\"0\")) <=> QScriptValue(true)");
         equals.insert("QScriptValue(QString(\"0\")) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(QString(\"0\")) <=> QScriptValue(uint(124))");
@@ -4768,6 +5046,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(QString(\"0\")) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(QString(\"0\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(QString(\"0\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(QString(\"0\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(QString(\"0\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(QString(\"0\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(QString(\"123\")) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(QString(\"123\")) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(QString(\"123\")) <=> QScriptValue(0x10000)");
@@ -4818,6 +5099,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(QString(\"123\")) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(QString(\"123\")) <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(QString(\"123\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(QString(\"123\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(QString(\"123\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(QString(\"12.4\")) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(QString(\"12.4\")) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(QString(\"12.4\")) <=> QScriptValue(123.0)");
@@ -4881,6 +5164,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(QString(\"12.4\")) <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(QString(\"12.4\")) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(QString(\"12.4\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(QString(\"12.4\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(QString(\"12.4\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(QString(\"12.4\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> QScriptValue(uint(124))");
@@ -4929,6 +5215,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0, QScriptValue::NullValue) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(0, true) <=> QScriptValue(123.0)");
@@ -4969,6 +5256,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, true) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, true) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, true) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0, true) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, false) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, false) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, false) <=> QScriptValue(uint(124))");
@@ -5017,6 +5305,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, false) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, false) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, false) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0, false) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, int(122)) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(0, int(122)) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(0, int(122)) <=> QScriptValue(0x43211234)");
@@ -5048,6 +5337,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, int(122)) <=> engine->evaluate(\"0x10001\")");
         equals.insert("QScriptValue(0, int(122)) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, int(122)) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(0, int(122)) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, uint(124)) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(0, uint(124)) <=> QScriptValue(0x10000)");
         equals.insert("QScriptValue(0, uint(124)) <=> QScriptValue(0x10001)");
@@ -5115,6 +5405,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, 0) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, 0) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, 0) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0, 0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, 0.0) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, 0.0) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, 0.0) <=> QScriptValue(uint(124))");
@@ -5163,6 +5454,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, 0.0) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, 0.0) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, 0.0) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0, 0.0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, 123.0) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(0, 123.0) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(0, 123.0) <=> QScriptValue(0x10000)");
@@ -5230,6 +5522,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, 6.37e-8) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, 6.37e-8) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, 6.37e-8) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(0, 6.37e-8) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(0, -6.37e-8) <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(0, -6.37e-8) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, -6.37e-8) <=> QScriptValue(false)");
@@ -5310,6 +5603,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, -6.37e-8) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, -6.37e-8) <=> engine->nullValue()");
         equals.insert("QScriptValue(0, -6.37e-8) <=> engine->newArray()");
+        equals.insert("QScriptValue(0, -6.37e-8) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(0, -6.37e-8) <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(0, -6.37e-8) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(0, 0x43211234) <=> QScriptValue(qInf())");
         equals.insert("QScriptValue(0, 0x43211234) <=> QScriptValue(\"Infinity\")");
         equals.insert("QScriptValue(0, 0x43211234) <=> QScriptValue(0, qInf())");
@@ -5427,6 +5723,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, -qInf()) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, -qInf()) <=> engine->nullValue()");
         equals.insert("QScriptValue(0, -qInf()) <=> engine->newArray()");
+        equals.insert("QScriptValue(0, -qInf()) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(0, -qInf()) <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(0, -qInf()) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(0, \"NaN\") <=> QScriptValue(\"ciao\")");
         equals.insert("QScriptValue(0, \"NaN\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("QScriptValue(0, \"NaN\") <=> QScriptValue(0, \"ciao\")");
@@ -5449,6 +5748,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, \"NaN\") <=> engine->evaluate(\"False\")");
         equals.insert("QScriptValue(0, \"NaN\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(0, \"NaN\") <=> engine->newObject()");
+        equals.insert("QScriptValue(0, \"NaN\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, \"NaN\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, \"Infinity\") <=> QScriptValue(\"NaN\")");
         equals.insert("QScriptValue(0, \"Infinity\") <=> QScriptValue(\"ciao\")");
         equals.insert("QScriptValue(0, \"Infinity\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
@@ -5474,6 +5775,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, \"Infinity\") <=> engine->evaluate(\"False\")");
         equals.insert("QScriptValue(0, \"Infinity\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(0, \"Infinity\") <=> engine->newObject()");
+        equals.insert("QScriptValue(0, \"Infinity\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, \"Infinity\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, \"-Infinity\") <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(0, \"-Infinity\") <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, \"-Infinity\") <=> QScriptValue(false)");
@@ -5575,6 +5878,11 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->nullValue()");
         equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->newObject()");
+        equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->newQObject(0)");
+        equals.insert("QScriptValue(0, \"-Infinity\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, \"ciao\") <=> engine->evaluate(\"Function.prototype\")");
         equals.insert("QScriptValue(0, \"ciao\") <=> engine->evaluate(\"Object\")");
         equals.insert("QScriptValue(0, \"ciao\") <=> engine->evaluate(\"Array\")");
@@ -5675,6 +5983,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString(\"\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, QString(\"\")) <=> engine->newObject()");
         equals.insert("QScriptValue(0, QString(\"\")) <=> engine->newArray(10)");
+        equals.insert("QScriptValue(0, QString(\"\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, QString(\"\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(0, QString(\"\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, QString()) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, QString()) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, QString()) <=> QScriptValue(uint(124))");
@@ -5759,6 +6070,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString()) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, QString()) <=> engine->newObject()");
         equals.insert("QScriptValue(0, QString()) <=> engine->newArray(10)");
+        equals.insert("QScriptValue(0, QString()) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, QString()) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(0, QString()) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> QScriptValue(true)");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> QScriptValue(uint(124))");
@@ -5834,6 +6148,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(0, QString(\"0\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> QScriptValue(0x10000)");
@@ -5884,6 +6201,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, QString(\"123\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(0, QString(\"12.3\")) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(0, QString(\"12.3\")) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(0, QString(\"12.3\")) <=> QScriptValue(123.0)");
@@ -5949,6 +6268,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(0, QString(\"12.3\")) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(0, QString(\"12.3\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(0, QString(\"12.3\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(0, QString(\"12.3\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(0, QString(\"12.3\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(0, QString(\"12.3\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> QScriptValue(uint(124))");
@@ -5997,6 +6319,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(engine, QScriptValue::NullValue) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(engine, true) <=> QScriptValue(123.0)");
@@ -6037,6 +6360,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, true) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, true) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, true) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(engine, true) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, false) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, false) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, false) <=> QScriptValue(uint(124))");
@@ -6085,6 +6409,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, false) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, false) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, false) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(engine, false) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, int(122)) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(engine, int(122)) <=> QScriptValue(123.0)");
         equals.insert("QScriptValue(engine, int(122)) <=> QScriptValue(0x43211234)");
@@ -6116,6 +6441,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, int(122)) <=> engine->evaluate(\"0x10001\")");
         equals.insert("QScriptValue(engine, int(122)) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, int(122)) <=> engine->evaluate(\"'123'\")");
+        equals.insert("QScriptValue(engine, int(122)) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, uint(124)) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(engine, uint(124)) <=> QScriptValue(0x10000)");
         equals.insert("QScriptValue(engine, uint(124)) <=> QScriptValue(0x10001)");
@@ -6183,6 +6509,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, 0) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, 0) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, 0) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(engine, 0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, 0.0) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, 0.0) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, 0.0) <=> QScriptValue(uint(124))");
@@ -6231,6 +6558,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, 0.0) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, 0.0) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, 0.0) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(engine, 0.0) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, 123.0) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(engine, 123.0) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(engine, 123.0) <=> QScriptValue(0x10000)");
@@ -6298,6 +6626,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, 6.37e-8) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, 6.37e-8) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, 6.37e-8) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("QScriptValue(engine, 6.37e-8) <=> engine->newVariant(QVariant(123))");
         equals.insert("QScriptValue(engine, -6.37e-8) <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(engine, -6.37e-8) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, -6.37e-8) <=> QScriptValue(false)");
@@ -6378,6 +6707,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, -6.37e-8) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(engine, -6.37e-8) <=> engine->nullValue()");
         equals.insert("QScriptValue(engine, -6.37e-8) <=> engine->newArray()");
+        equals.insert("QScriptValue(engine, -6.37e-8) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(engine, -6.37e-8) <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(engine, -6.37e-8) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(engine, 0x43211234) <=> QScriptValue(qInf())");
         equals.insert("QScriptValue(engine, 0x43211234) <=> QScriptValue(\"Infinity\")");
         equals.insert("QScriptValue(engine, 0x43211234) <=> QScriptValue(0, qInf())");
@@ -6495,6 +6827,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, -qInf()) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(engine, -qInf()) <=> engine->nullValue()");
         equals.insert("QScriptValue(engine, -qInf()) <=> engine->newArray()");
+        equals.insert("QScriptValue(engine, -qInf()) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(engine, -qInf()) <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(engine, -qInf()) <=> engine->newQObject(0)");
         equals.insert("QScriptValue(engine, \"NaN\") <=> QScriptValue(\"ciao\")");
         equals.insert("QScriptValue(engine, \"NaN\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("QScriptValue(engine, \"NaN\") <=> QScriptValue(0, \"ciao\")");
@@ -6517,6 +6852,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, \"NaN\") <=> engine->evaluate(\"False\")");
         equals.insert("QScriptValue(engine, \"NaN\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(engine, \"NaN\") <=> engine->newObject()");
+        equals.insert("QScriptValue(engine, \"NaN\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, \"NaN\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, \"Infinity\") <=> QScriptValue(\"NaN\")");
         equals.insert("QScriptValue(engine, \"Infinity\") <=> QScriptValue(\"ciao\")");
         equals.insert("QScriptValue(engine, \"Infinity\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
@@ -6542,6 +6879,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, \"Infinity\") <=> engine->evaluate(\"False\")");
         equals.insert("QScriptValue(engine, \"Infinity\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(engine, \"Infinity\") <=> engine->newObject()");
+        equals.insert("QScriptValue(engine, \"Infinity\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, \"Infinity\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, \"-Infinity\") <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("QScriptValue(engine, \"-Infinity\") <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, \"-Infinity\") <=> QScriptValue(false)");
@@ -6643,6 +6982,11 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->nullValue()");
         equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->newObject()");
+        equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->newVariant(QVariant(false))");
+        equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->newQObject(0)");
+        equals.insert("QScriptValue(engine, \"-Infinity\") <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, \"ciao\") <=> engine->evaluate(\"Function.prototype\")");
         equals.insert("QScriptValue(engine, \"ciao\") <=> engine->evaluate(\"Object\")");
         equals.insert("QScriptValue(engine, \"ciao\") <=> engine->evaluate(\"Array\")");
@@ -6743,6 +7087,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->newObject()");
         equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->newArray(10)");
+        equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(engine, QString(\"\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, QString()) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, QString()) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, QString()) <=> QScriptValue(uint(124))");
@@ -6827,6 +7174,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString()) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(engine, QString()) <=> engine->newObject()");
         equals.insert("QScriptValue(engine, QString()) <=> engine->newArray(10)");
+        equals.insert("QScriptValue(engine, QString()) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, QString()) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(engine, QString()) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> QScriptValue(true)");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> QScriptValue(uint(124))");
@@ -6902,6 +7252,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(engine, QString(\"0\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> QScriptValue(0x43211234)");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> QScriptValue(0x10000)");
@@ -6952,6 +7305,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->evaluate(\"Infinity\")");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->evaluate(\"'ciao'\")");
         equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, QString(\"123\")) <=> engine->newQObject(engine)");
         equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> QScriptValue(int(122))");
         equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> QScriptValue(uint(124))");
         equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> QScriptValue(123.0)");
@@ -7018,6 +7373,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> engine->evaluate(\"'123'\")");
         equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> engine->newObject()");
+        equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> engine->newVariant(QVariant(123))");
+        equals.insert("QScriptValue(engine, QString(\"1.23\")) <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"[]\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"[]\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"[]\") <=> QScriptValue(uint(124))");
@@ -7102,6 +7460,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"[]\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"[]\") <=> engine->newObject()");
         equals.insert("engine->evaluate(\"[]\") <=> engine->newArray(10)");
+        equals.insert("engine->evaluate(\"[]\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"[]\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"[]\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"Object.prototype\") <=> QScriptValue(\"ciao\")");
         equals.insert("engine->evaluate(\"Object.prototype\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("engine->evaluate(\"Object.prototype\") <=> QScriptValue(0, \"ciao\")");
@@ -7117,6 +7478,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"Object.prototype\") <=> engine->evaluate(\"(function() { return 'ciao'; })\")");
         equals.insert("engine->evaluate(\"Object.prototype\") <=> engine->evaluate(\"(function() { throw new Error('foo'); })\")");
         equals.insert("engine->evaluate(\"Object.prototype\") <=> engine->evaluate(\"'ciao'\")");
+        equals.insert("engine->evaluate(\"Object.prototype\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
         equals.insert("engine->evaluate(\"Array.prototype\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"Array.prototype\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"Array.prototype\") <=> QScriptValue(uint(124))");
@@ -7201,6 +7563,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"Array.prototype\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"Array.prototype\") <=> engine->newObject()");
         equals.insert("engine->evaluate(\"Array.prototype\") <=> engine->newArray(10)");
+        equals.insert("engine->evaluate(\"Array.prototype\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"Array.prototype\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"Array.prototype\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"Function.prototype\") <=> engine->evaluate(\"Object\")");
         equals.insert("engine->evaluate(\"Function.prototype\") <=> engine->evaluate(\"Array\")");
         equals.insert("engine->evaluate(\"Function.prototype\") <=> engine->evaluate(\"Number\")");
@@ -7236,6 +7601,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"Error.prototype\") <=> engine->evaluate(\"False\")");
         equals.insert("engine->evaluate(\"Error.prototype\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"Error.prototype\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"Error.prototype\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"Error.prototype\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"Array\") <=> engine->evaluate(\"Object\")");
         equals.insert("engine->evaluate(\"Array\") <=> engine->evaluate(\"Number\")");
         equals.insert("engine->evaluate(\"Array\") <=> engine->evaluate(\"Function\")");
@@ -7299,6 +7666,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"/foo/\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"/foo/\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"/foo/\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"/foo/\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"/foo/\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"new Object()\") <=> QScriptValue(\"ciao\")");
         equals.insert("engine->evaluate(\"new Object()\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("engine->evaluate(\"new Object()\") <=> QScriptValue(0, \"ciao\")");
@@ -7314,6 +7683,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"new Object()\") <=> engine->evaluate(\"(function() { return 'ciao'; })\")");
         equals.insert("engine->evaluate(\"new Object()\") <=> engine->evaluate(\"(function() { throw new Error('foo'); })\")");
         equals.insert("engine->evaluate(\"new Object()\") <=> engine->evaluate(\"'ciao'\")");
+        equals.insert("engine->evaluate(\"new Object()\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
         equals.insert("engine->evaluate(\"new Array()\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"new Array()\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"new Array()\") <=> QScriptValue(uint(124))");
@@ -7398,6 +7768,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"new Array()\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"new Array()\") <=> engine->newObject()");
         equals.insert("engine->evaluate(\"new Array()\") <=> engine->newArray(10)");
+        equals.insert("engine->evaluate(\"new Array()\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"new Array()\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"new Array()\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"new Error()\") <=> QScriptValue(\"NaN\")");
         equals.insert("engine->evaluate(\"new Error()\") <=> QScriptValue(\"Infinity\")");
         equals.insert("engine->evaluate(\"new Error()\") <=> QScriptValue(\"ciao\")");
@@ -7426,6 +7799,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"new Error()\") <=> engine->evaluate(\"False\")");
         equals.insert("engine->evaluate(\"new Error()\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"new Error()\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"new Error()\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"new Error()\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\") <=> QScriptValue(uint(124))");
         equals.insert("engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\") <=> QScriptValue(123.0)");
@@ -7461,6 +7836,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\") <=> engine->evaluate(\"0x10001\")");
         equals.insert("engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\") <=> engine->evaluate(\"'123'\")");
+        equals.insert("engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"Undefined\") <=> QScriptValue(\"ciao\")");
         equals.insert("engine->evaluate(\"Undefined\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("engine->evaluate(\"Undefined\") <=> QScriptValue(0, \"ciao\")");
@@ -7479,6 +7855,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"Undefined\") <=> engine->evaluate(\"new Object()\")");
         equals.insert("engine->evaluate(\"Undefined\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"Undefined\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"Undefined\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
         equals.insert("engine->evaluate(\"Null\") <=> QScriptValue(\"ciao\")");
         equals.insert("engine->evaluate(\"Null\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("engine->evaluate(\"Null\") <=> QScriptValue(0, \"ciao\")");
@@ -7499,6 +7876,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"Null\") <=> engine->evaluate(\"True\")");
         equals.insert("engine->evaluate(\"Null\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"Null\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"Null\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
         equals.insert("engine->evaluate(\"True\") <=> QScriptValue(\"ciao\")");
         equals.insert("engine->evaluate(\"True\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("engine->evaluate(\"True\") <=> QScriptValue(0, \"ciao\")");
@@ -7518,6 +7896,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"True\") <=> engine->evaluate(\"Undefined\")");
         equals.insert("engine->evaluate(\"True\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"True\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"True\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
         equals.insert("engine->evaluate(\"False\") <=> QScriptValue(\"ciao\")");
         equals.insert("engine->evaluate(\"False\") <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("engine->evaluate(\"False\") <=> QScriptValue(0, \"ciao\")");
@@ -7539,6 +7918,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"False\") <=> engine->evaluate(\"True\")");
         equals.insert("engine->evaluate(\"False\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"False\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"False\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
         equals.insert("engine->evaluate(\"null\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"null\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"null\") <=> QScriptValue(uint(124))");
@@ -7587,6 +7967,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"null\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"null\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"null\") <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->evaluate(\"null\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(uint(124))");
         equals.insert("engine->evaluate(\"true\") <=> QScriptValue(123.0)");
@@ -7627,6 +8008,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"true\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"true\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"true\") <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->evaluate(\"true\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"false\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"false\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"false\") <=> QScriptValue(uint(124))");
@@ -7675,6 +8057,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"false\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"false\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"false\") <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->evaluate(\"false\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"122\") <=> QScriptValue(uint(124))");
         equals.insert("engine->evaluate(\"122\") <=> QScriptValue(123.0)");
         equals.insert("engine->evaluate(\"122\") <=> QScriptValue(0x43211234)");
@@ -7706,6 +8089,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"122\") <=> engine->evaluate(\"0x10001\")");
         equals.insert("engine->evaluate(\"122\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"122\") <=> engine->evaluate(\"'123'\")");
+        equals.insert("engine->evaluate(\"122\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"124\") <=> QScriptValue(0x43211234)");
         equals.insert("engine->evaluate(\"124\") <=> QScriptValue(0x10000)");
         equals.insert("engine->evaluate(\"124\") <=> QScriptValue(0x10001)");
@@ -7773,6 +8157,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"0\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"0\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"0\") <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->evaluate(\"0\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"0.0\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"0.0\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"0.0\") <=> QScriptValue(uint(124))");
@@ -7821,6 +8206,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"0.0\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"0.0\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"0.0\") <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->evaluate(\"0.0\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"123.0\") <=> QScriptValue(uint(124))");
         equals.insert("engine->evaluate(\"123.0\") <=> QScriptValue(0x43211234)");
         equals.insert("engine->evaluate(\"123.0\") <=> QScriptValue(0x10000)");
@@ -7888,6 +8274,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"6.37e-8\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"6.37e-8\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"6.37e-8\") <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->evaluate(\"6.37e-8\") <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->evaluate(\"-6.37e-8\") <=> QScriptValue(QScriptValue::NullValue)");
         equals.insert("engine->evaluate(\"-6.37e-8\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"-6.37e-8\") <=> QScriptValue(false)");
@@ -7968,6 +8355,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"-6.37e-8\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"-6.37e-8\") <=> engine->nullValue()");
         equals.insert("engine->evaluate(\"-6.37e-8\") <=> engine->newArray()");
+        equals.insert("engine->evaluate(\"-6.37e-8\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"-6.37e-8\") <=> engine->newVariant(QVariant(false))");
+        equals.insert("engine->evaluate(\"-6.37e-8\") <=> engine->newQObject(0)");
         equals.insert("engine->evaluate(\"0x43211234\") <=> QScriptValue(qInf())");
         equals.insert("engine->evaluate(\"0x43211234\") <=> QScriptValue(\"Infinity\")");
         equals.insert("engine->evaluate(\"0x43211234\") <=> QScriptValue(0, qInf())");
@@ -8085,6 +8475,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"-Infinity\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"-Infinity\") <=> engine->nullValue()");
         equals.insert("engine->evaluate(\"-Infinity\") <=> engine->newArray()");
+        equals.insert("engine->evaluate(\"-Infinity\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"-Infinity\") <=> engine->newVariant(QVariant(false))");
+        equals.insert("engine->evaluate(\"-Infinity\") <=> engine->newQObject(0)");
         equals.insert("engine->evaluate(\"'ciao'\") <=> engine->evaluate(\"Function.prototype\")");
         equals.insert("engine->evaluate(\"'ciao'\") <=> engine->evaluate(\"Object\")");
         equals.insert("engine->evaluate(\"'ciao'\") <=> engine->evaluate(\"Array\")");
@@ -8177,6 +8570,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"''\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"''\") <=> engine->newObject()");
         equals.insert("engine->evaluate(\"''\") <=> engine->newArray(10)");
+        equals.insert("engine->evaluate(\"''\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"''\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"''\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"'0'\") <=> QScriptValue(true)");
         equals.insert("engine->evaluate(\"'0'\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"'0'\") <=> QScriptValue(uint(124))");
@@ -8252,6 +8648,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"'0'\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"'0'\") <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->evaluate(\"'0'\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"'0'\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"'0'\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"'0'\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"'123'\") <=> QScriptValue(uint(124))");
         equals.insert("engine->evaluate(\"'123'\") <=> QScriptValue(0x43211234)");
         equals.insert("engine->evaluate(\"'123'\") <=> QScriptValue(0x10000)");
@@ -8302,6 +8701,8 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"'123'\") <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->evaluate(\"'123'\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"'123'\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"'123'\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"'123'\") <=> engine->newQObject(engine)");
         equals.insert("engine->evaluate(\"'12.4'\") <=> QScriptValue(int(122))");
         equals.insert("engine->evaluate(\"'12.4'\") <=> QScriptValue(uint(124))");
         equals.insert("engine->evaluate(\"'12.4'\") <=> QScriptValue(123.0)");
@@ -8365,6 +8766,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->evaluate(\"'12.4'\") <=> engine->evaluate(\"'ciao'\")");
         equals.insert("engine->evaluate(\"'12.4'\") <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->evaluate(\"'12.4'\") <=> engine->newObject()");
+        equals.insert("engine->evaluate(\"'12.4'\") <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->evaluate(\"'12.4'\") <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->evaluate(\"'12.4'\") <=> engine->newQObject(engine)");
         equals.insert("engine->nullValue() <=> QScriptValue(true)");
         equals.insert("engine->nullValue() <=> QScriptValue(int(122))");
         equals.insert("engine->nullValue() <=> QScriptValue(uint(124))");
@@ -8413,6 +8817,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->nullValue() <=> engine->evaluate(\"Infinity\")");
         equals.insert("engine->nullValue() <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->nullValue() <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->nullValue() <=> engine->newVariant(QVariant(123))");
         equals.insert("engine->newObject() <=> QScriptValue(\"ciao\")");
         equals.insert("engine->newObject() <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
         equals.insert("engine->newObject() <=> QScriptValue(0, \"ciao\")");
@@ -8428,6 +8833,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->newObject() <=> engine->evaluate(\"(function() { return 'ciao'; })\")");
         equals.insert("engine->newObject() <=> engine->evaluate(\"(function() { throw new Error('foo'); })\")");
         equals.insert("engine->newObject() <=> engine->evaluate(\"'ciao'\")");
+        equals.insert("engine->newObject() <=> engine->newQMetaObject(&QObject::staticMetaObject)");
         equals.insert("engine->newArray() <=> QScriptValue(true)");
         equals.insert("engine->newArray() <=> QScriptValue(int(122))");
         equals.insert("engine->newArray() <=> QScriptValue(uint(124))");
@@ -8512,6 +8918,9 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->newArray() <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->newArray() <=> engine->newObject()");
         equals.insert("engine->newArray() <=> engine->newArray(10)");
+        equals.insert("engine->newArray() <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->newArray() <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->newArray() <=> engine->newQObject(engine)");
         equals.insert("engine->newArray(10) <=> QScriptValue(\"NaN\")");
         equals.insert("engine->newArray(10) <=> QScriptValue(\"Infinity\")");
         equals.insert("engine->newArray(10) <=> QScriptValue(\"-Infinity\")");
@@ -8558,6 +8967,167 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
         equals.insert("engine->newArray(10) <=> engine->evaluate(\"'123'\")");
         equals.insert("engine->newArray(10) <=> engine->evaluate(\"'12.4'\")");
         equals.insert("engine->newArray(10) <=> engine->newObject()");
+        equals.insert("engine->newArray(10) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
+        equals.insert("engine->newArray(10) <=> engine->newQObject(engine)");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> QScriptValue(\"ciao\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> QScriptValue(0, \"ciao\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> QScriptValue(0, QString::fromLatin1(\"ciao\"))");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> QScriptValue(engine, \"ciao\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> QScriptValue(engine, QString::fromLatin1(\"ciao\"))");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"Function.prototype\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"Object\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"Array\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"Number\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"Function\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"(function() { return 1; })\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"(function() { return 'ciao'; })\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"(function() { throw new Error('foo'); })\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"'ciao'\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(uint(124))");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0x43211234)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0x10000)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0x10001)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(qInf())");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(\"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, uint(124))");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, 0x43211234)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, 0x10000)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, 0x10001)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, qInf())");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(0, \"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, uint(124))");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, 0x43211234)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, 0x10000)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, 0x10001)");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, qInf())");
+        equals.insert("engine->newVariant(QVariant(123)) <=> QScriptValue(engine, \"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"124\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"0x43211234\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"0x10000\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"0x10001\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(true)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(int(122))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(uint(124))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(123.0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(6.37e-8)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0x43211234)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0x10000)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0x10001)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(qInf())");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(\"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(QString(\"123\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(QString(\"12.4\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, true)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, int(122))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, uint(124))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, 123.0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, 6.37e-8)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, 0x43211234)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, 0x10000)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, 0x10001)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, qInf())");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, \"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, QString(\"123\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(0, QString(\"12.3\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, true)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, int(122))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, uint(124))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, 123.0)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, 6.37e-8)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, 0x43211234)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, 0x10000)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, 0x10001)");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, qInf())");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, \"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, QString(\"123\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> QScriptValue(engine, QString(\"1.23\"))");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"true\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"122\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"124\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"123.0\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"6.37e-8\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"0x43211234\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"0x10000\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"0x10001\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"Infinity\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"'123'\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(true)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(int(122))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(uint(124))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(123.0)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(6.37e-8)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0x43211234)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0x10000)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0x10001)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(qInf())");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(\"Infinity\")");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(QString(\"123\"))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(QString(\"12.4\"))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, true)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, int(122))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, uint(124))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, 123.0)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, 6.37e-8)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, 0x43211234)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, 0x10000)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, 0x10001)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, qInf())");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, \"Infinity\")");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, QString(\"123\"))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(0, QString(\"12.3\"))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, true)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, int(122))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, uint(124))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, 123.0)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, 6.37e-8)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, 0x43211234)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, 0x10000)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, 0x10001)");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, qInf())");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, \"Infinity\")");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, QString(\"123\"))");
+        equals.insert("engine->newQObject(0) <=> QScriptValue(engine, QString(\"1.23\"))");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"true\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"122\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"124\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"123.0\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"6.37e-8\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"0x43211234\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"0x10000\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"0x10001\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"Infinity\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"'123'\")");
+        equals.insert("engine->newQObject(0) <=> engine->evaluate(\"'12.4'\")");
+        equals.insert("engine->newQObject(0) <=> engine->newVariant(QVariant(123))");
+        equals.insert("engine->newQObject(engine) <=> QScriptValue(\"ciao\")");
+        equals.insert("engine->newQObject(engine) <=> QScriptValue(QString::fromLatin1(\"ciao\"))");
+        equals.insert("engine->newQObject(engine) <=> QScriptValue(0, \"ciao\")");
+        equals.insert("engine->newQObject(engine) <=> QScriptValue(0, QString::fromLatin1(\"ciao\"))");
+        equals.insert("engine->newQObject(engine) <=> QScriptValue(engine, \"ciao\")");
+        equals.insert("engine->newQObject(engine) <=> QScriptValue(engine, QString::fromLatin1(\"ciao\"))");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Object.prototype\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Function.prototype\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Object\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Array\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Number\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Function\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"(function() { return 1; })\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"(function() { return 'ciao'; })\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"(function() { throw new Error('foo'); })\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"new Object()\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Undefined\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Null\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"True\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"False\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"'ciao'\")");
+        equals.insert("engine->newQObject(engine) <=> engine->newObject()");
+        equals.insert("engine->newQObject(engine) <=> engine->newQMetaObject(&QObject::staticMetaObject)");
     }
     QHash<QString, QScriptValue>::const_iterator it;
     for (it = m_values.constBegin(); it != m_values.constEnd(); ++it) {
@@ -8622,6 +9192,11 @@ void tst_QScriptValue::instanceOf_makeData(const char *expr)
         equals.insert("engine->newArray(10) <=> engine->evaluate(\"Object\")");
         equals.insert("engine->newArray(10) <=> engine->evaluate(\"Array\")");
         equals.insert("engine->newDate(QDateTime()) <=> engine->evaluate(\"Object\")");
+        equals.insert("engine->newQMetaObject(&QObject::staticMetaObject) <=> engine->evaluate(\"Object\")");
+        equals.insert("engine->newVariant(QVariant()) <=> engine->evaluate(\"Object\")");
+        equals.insert("engine->newVariant(QVariant(123)) <=> engine->evaluate(\"Object\")");
+        equals.insert("engine->newVariant(QVariant(false)) <=> engine->evaluate(\"Object\")");
+        equals.insert("engine->newQObject(engine) <=> engine->evaluate(\"Object\")");
     }
     QHash<QString, QScriptValue>::const_iterator it;
     for (it = m_values.constBegin(); it != m_values.constEnd(); ++it) {
@@ -8786,6 +9361,12 @@ void tst_QScriptValue::qscriptvalue_castQString_makeData(const char* expr)
         value.insert("engine->newArray()", "");
         value.insert("engine->newArray(10)", ",,,,,,,,,");
         value.insert("engine->newDate(QDateTime())", "Invalid Date");
+        value.insert("engine->newQMetaObject(&QObject::staticMetaObject)", "[object QMetaObject]");
+        value.insert("engine->newVariant(QVariant())", "undefined");
+        value.insert("engine->newVariant(QVariant(123))", "123");
+        value.insert("engine->newVariant(QVariant(false))", "false");
+        value.insert("engine->newQObject(0)", "");
+        value.insert("engine->newQObject(engine)", "QScriptEngine(name = \"\")");
     }
     newRow(expr) << value.value(expr);
 }
@@ -8946,6 +9527,12 @@ void tst_QScriptValue::qscriptvalue_castqsreal_makeData(const char* expr)
         value.insert("engine->newArray()", 0);
         value.insert("engine->newArray(10)", qQNaN());
         value.insert("engine->newDate(QDateTime())", qQNaN());
+        value.insert("engine->newQMetaObject(&QObject::staticMetaObject)", qQNaN());
+        value.insert("engine->newVariant(QVariant())", qQNaN());
+        value.insert("engine->newVariant(QVariant(123))", 123);
+        value.insert("engine->newVariant(QVariant(false))", 0);
+        value.insert("engine->newQObject(0)", 0);
+        value.insert("engine->newQObject(engine)", qQNaN());
     }
     newRow(expr) << value.value(expr);
 }
@@ -9116,6 +9703,12 @@ void tst_QScriptValue::qscriptvalue_castbool_makeData(const char* expr)
         value.insert("engine->newArray()", true);
         value.insert("engine->newArray(10)", true);
         value.insert("engine->newDate(QDateTime())", true);
+        value.insert("engine->newQMetaObject(&QObject::staticMetaObject)", true);
+        value.insert("engine->newVariant(QVariant())", true);
+        value.insert("engine->newVariant(QVariant(123))", true);
+        value.insert("engine->newVariant(QVariant(false))", true);
+        value.insert("engine->newQObject(0)", false);
+        value.insert("engine->newQObject(engine)", true);
     }
     newRow(expr) << value.value(expr);
 }
@@ -9276,6 +9869,12 @@ void tst_QScriptValue::qscriptvalue_castqint32_makeData(const char* expr)
         value.insert("engine->newArray()", 0);
         value.insert("engine->newArray(10)", 0);
         value.insert("engine->newDate(QDateTime())", 0);
+        value.insert("engine->newQMetaObject(&QObject::staticMetaObject)", 0);
+        value.insert("engine->newVariant(QVariant())", 0);
+        value.insert("engine->newVariant(QVariant(123))", 123);
+        value.insert("engine->newVariant(QVariant(false))", 0);
+        value.insert("engine->newQObject(0)", 0);
+        value.insert("engine->newQObject(engine)", 0);
     }
     newRow(expr) << value.value(expr);
 }
@@ -9436,6 +10035,12 @@ void tst_QScriptValue::qscriptvalue_castquint32_makeData(const char* expr)
         value.insert("engine->newArray()", 0);
         value.insert("engine->newArray(10)", 0);
         value.insert("engine->newDate(QDateTime())", 0);
+        value.insert("engine->newQMetaObject(&QObject::staticMetaObject)", 0);
+        value.insert("engine->newVariant(QVariant())", 0);
+        value.insert("engine->newVariant(QVariant(123))", 123);
+        value.insert("engine->newVariant(QVariant(false))", 0);
+        value.insert("engine->newQObject(0)", 0);
+        value.insert("engine->newQObject(engine)", 0);
     }
     newRow(expr) << value.value(expr);
 }
@@ -9596,6 +10201,12 @@ void tst_QScriptValue::qscriptvalue_castquint16_makeData(const char* expr)
         value.insert("engine->newArray()", 0);
         value.insert("engine->newArray(10)", 0);
         value.insert("engine->newDate(QDateTime())", 0);
+        value.insert("engine->newQMetaObject(&QObject::staticMetaObject)", 0);
+        value.insert("engine->newVariant(QVariant())", 0);
+        value.insert("engine->newVariant(QVariant(123))", 123);
+        value.insert("engine->newVariant(QVariant(false))", 0);
+        value.insert("engine->newQObject(0)", 0);
+        value.insert("engine->newQObject(engine)", 0);
     }
     newRow(expr) << value.value(expr);
 }
