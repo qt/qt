@@ -165,6 +165,10 @@ private slots:
     void fromLocal8Bit();
     void local8Bit_data();
     void local8Bit();
+    void fromLatin1Roundtrip_data();
+    void fromLatin1Roundtrip();
+    void toLatin1Roundtrip_data();
+    void toLatin1Roundtrip();
     void fromLatin1();
     void fromAscii();
     void arg();
@@ -3222,6 +3226,109 @@ void tst_QString::local8Bit()
     QFETCH(QByteArray, result);
 
     QCOMPARE(local8Bit.toLocal8Bit(), QByteArray(result));
+}
+
+void tst_QString::fromLatin1Roundtrip_data()
+{
+    QTest::addColumn<QByteArray>("latin1");
+    QTest::addColumn<QString>("unicode");
+
+    QTest::newRow("null") << QByteArray() << QString();
+    QTest::newRow("empty") << QByteArray("") << "";
+
+    static const ushort unicode1[] = { 'H', 'e', 'l', 'l', 'o', 1, '\r', '\n', 0x7f };
+    QTest::newRow("ascii-only") << QByteArray("Hello") << QString::fromUtf16(unicode1, 5);
+    QTest::newRow("ascii+control") << QByteArray("Hello\1\r\n\x7f") << QString::fromUtf16(unicode1, 9);
+
+    static const ushort unicode3[] = { 'a', 0, 'z' };
+    QTest::newRow("ascii+nul") << QByteArray("a\0z", 3) << QString::fromUtf16(unicode3, 3);
+
+    static const ushort unicode4[] = { 0x80, 0xc0, 0xff };
+    QTest::newRow("non-ascii") << QByteArray("\x80\xc0\xff") << QString::fromUtf16(unicode4, 3);
+}
+
+void tst_QString::fromLatin1Roundtrip()
+{
+    QFETCH(QByteArray, latin1);
+    QFETCH(QString, unicode);
+
+    // QtTest safety check:
+    Q_ASSERT(latin1.isNull() == unicode.isNull());
+    Q_ASSERT(latin1.isEmpty() == unicode.isEmpty());
+    Q_ASSERT(latin1.length() == unicode.length());
+
+    if (!latin1.isEmpty())
+        while (latin1.length() < 128) {
+            latin1 += latin1;
+            unicode += unicode;
+        }
+
+    // fromLatin1
+    QCOMPARE(QString::fromLatin1(latin1, latin1.length()).length(), unicode.length());
+    QCOMPARE(QString::fromLatin1(latin1, latin1.length()), unicode);
+
+    // and back:
+    QCOMPARE(unicode.toLatin1().length(), latin1.length());
+    QCOMPARE(unicode.toLatin1(), latin1);
+}
+
+void tst_QString::toLatin1Roundtrip_data()
+{
+    QTest::addColumn<QByteArray>("latin1");
+    QTest::addColumn<QString>("unicodesrc");
+    QTest::addColumn<QString>("unicodedst");
+
+    QTest::newRow("null") << QByteArray() << QString() << QString();
+    QTest::newRow("empty") << QByteArray("") << "" << "";
+
+    static const ushort unicode1[] = { 'H', 'e', 'l', 'l', 'o', 1, '\r', '\n', 0x7f };
+    QTest::newRow("ascii-only") << QByteArray("Hello") << QString::fromUtf16(unicode1, 5) << QString::fromUtf16(unicode1, 5);
+    QTest::newRow("ascii+control") << QByteArray("Hello\1\r\n\x7f") << QString::fromUtf16(unicode1, 9)  << QString::fromUtf16(unicode1, 9);
+
+    static const ushort unicode3[] = { 'a', 0, 'z' };
+    QTest::newRow("ascii+nul") << QByteArray("a\0z", 3) << QString::fromUtf16(unicode3, 3) << QString::fromUtf16(unicode3, 3);
+
+    static const ushort unicode4[] = { 0x80, 0xc0, 0xff };
+    QTest::newRow("non-ascii") << QByteArray("\x80\xc0\xff") << QString::fromUtf16(unicode4, 3) << QString::fromUtf16(unicode4, 3);
+
+    static const ushort unicodeq[] = { '?', '?', '?', '?', '?' };
+    const QString questionmarks = QString::fromUtf16(unicodeq, 5);
+
+    static const ushort unicode5[] = { 0x100, 0x101, 0x17f, 0x7f00, 0x7f7f };
+    QTest::newRow("non-latin1a") << QByteArray("?????") << QString::fromUtf16(unicode5, 5) << questionmarks;
+
+    static const ushort unicode6[] = { 0x180, 0x1ff, 0x8001, 0x8080, 0xfffc };
+    QTest::newRow("non-latin1b") << QByteArray("?????") << QString::fromUtf16(unicode6, 5) << questionmarks;
+}
+
+void tst_QString::toLatin1Roundtrip()
+{
+    QFETCH(QByteArray, latin1);
+    QFETCH(QString, unicodesrc);
+    QFETCH(QString, unicodedst);
+
+    // QtTest safety check:
+    Q_ASSERT(latin1.isNull() == unicodesrc.isNull());
+    Q_ASSERT(latin1.isEmpty() == unicodesrc.isEmpty());
+    Q_ASSERT(latin1.length() == unicodesrc.length());
+    Q_ASSERT(latin1.isNull() == unicodedst.isNull());
+    Q_ASSERT(latin1.isEmpty() == unicodedst.isEmpty());
+    Q_ASSERT(latin1.length() == unicodedst.length());
+
+    if (!latin1.isEmpty())
+        while (latin1.length() < 128) {
+            latin1 += latin1;
+            unicodesrc += unicodesrc;
+            unicodedst += unicodedst;
+        }
+
+    // toLatin1
+    QCOMPARE(unicodesrc.toLatin1().length(), latin1.length());
+    QCOMPARE(unicodesrc.toLatin1(), latin1);
+
+    // and back:
+    QCOMPARE(QString::fromLatin1(latin1, latin1.length()).length(), unicodedst.length());
+    QCOMPARE(QString::fromLatin1(latin1, latin1.length()), unicodedst);
 }
 
 void tst_QString::fromLatin1()
