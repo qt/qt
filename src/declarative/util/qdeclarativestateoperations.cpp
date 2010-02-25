@@ -80,7 +80,7 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
         //### for backwards direction, can we just restore original x, y, scale, rotation
         Q_Q(QDeclarativeParentChange);
         bool ok;
-        const QTransform &transform = target->itemTransform(targetParent, &ok);
+        const QTransform &transform = target->parentItem()->itemTransform(targetParent, &ok);
         if (transform.type() >= QTransform::TxShear || !ok) {
             qmlInfo(q) << QDeclarativeParentChange::tr("Unable to preserve appearance under complex transform");
             ok = false;
@@ -111,8 +111,9 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
             }
         }
 
-        qreal xt = transform.dx();
-        qreal yt = transform.dy();
+        const QPointF &point = transform.map(QPointF(target->x(),target->y()));
+        qreal x = point.x();
+        qreal y = point.y();
         if (ok && target->transformOrigin() != QDeclarativeItem::TopLeft) {
             qreal tempxt = target->transformOriginPoint().x();
             qreal tempyt = target->transformOriginPoint().y();
@@ -121,18 +122,18 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
             t.rotate(rotation);
             t.scale(scale, scale);
             t.translate(tempxt, tempyt);
-            QPointF offset = t.map(QPointF(0,0));
-            xt += offset.x();
-            yt += offset.y();
+            const QPointF &offset = t.map(QPointF(0,0));
+            x += offset.x();
+            y += offset.y();
         }
 
         target->setParentItem(targetParent);
         if (ok) {
-            //qDebug() << xt << yt << rotation << scale;
-            target->setX(xt);
-            target->setY(yt);
-            target->setRotation(rotation);
-            target->setScale(scale);
+            //qDebug() << x << y << rotation << scale;
+            target->setX(x);
+            target->setY(y);
+            target->setRotation(target->rotation() + rotation);
+            target->setScale(target->scale() * scale);
         }
     } else if (target) {
         target->setParentItem(targetParent);
