@@ -48,10 +48,13 @@
 #include "qt7playercontrol.h"
 #include "qt7videooutputcontrol.h"
 
+#include <QtNetwork/qnetworkcookie.h>
 #include <QtMultimedia/qmediaplaylistnavigator.h>
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <Foundation/Foundation.h>
 
+#include <QtCore/qdatetime.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qdebug.h>
 
@@ -365,17 +368,37 @@ void QT7PlayerSession::setMedia(const QMediaContent &content, QIODevice *stream)
     m_mediaStream = stream;
     m_mediaStatus = QMediaPlayer::NoMedia;
 
-    QUrl url;
+    QNetworkRequest request;
 
     if (!content.isNull())
-        url = content.canonicalUrl();
+        request = content.canonicalResource().request();
     else
         return;
 
-//    qDebug() << "Open media" << url;
+    QVariant cookies = request.header(QNetworkRequest::CookieHeader);
+    if (cookies.isValid()) {
+        NSHTTPCookieStorage *store = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+        QList<QNetworkCookie> cookieList = cookies.value<QList<QNetworkCookie> >();
+
+        foreach (const QNetworkCookie &requestCookie, cookieList) {
+            NSMutableDictionary *p = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                               (NSString*)qString2CFStringRef(requestCookie.name()), NSHTTPCookieName,
+                               (NSString*)qString2CFStringRef(requestCookie.value()), NSHTTPCookieValue,
+                               (NSString*)qString2CFStringRef(requestCookie.domain()), NSHTTPCookieDomain,
+                               (NSString*)qString2CFStringRef(requestCookie.path()), NSHTTPCookiePath,
+                               nil
+                               ];
+            if (requestCookie.isSessionCookie())
+                [p setObject:[NSString stringWithUTF8String:"TRUE"] forKey:NSHTTPCookieDiscard];
+            else
+                [p setObject:[NSDate dateWithTimeIntervalSince1970:requestCookie.expirationDate().toTime_t()] forKey:NSHTTPCookieExpires];
+
+            [store setCookie:[NSHTTPCookie cookieWithProperties:p]];
+        }
+    }
 
     NSError *err = 0;
-    NSString *urlString = (NSString *)qString2CFStringRef(url.toString());
+    NSString *urlString = (NSString *)qString2CFStringRef(request.url().toString());
 
     NSDictionary *attr = [NSDictionary dictionaryWithObjectsAndKeys:
                             [NSURL URLWithString:urlString], QTMovieURLAttribute,
