@@ -1580,6 +1580,8 @@ int QDeclarativeListView::currentIndex() const
 void QDeclarativeListView::setCurrentIndex(int index)
 {
     Q_D(QDeclarativeListView);
+    if (d->requestedIndex >= 0)  // currently creating item
+        return;
     if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         cancelFlick();

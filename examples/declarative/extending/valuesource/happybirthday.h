@@ -42,6 +42,7 @@
 #define HAPPYBIRTHDAY_H
 
 #include <QDeclarativePropertyValueSource>
+#include <QDeclarativeMetaProperty>
 #include <qdeclarative.h>
 
 #include <QStringList>

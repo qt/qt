@@ -147,50 +147,111 @@ QDeclarativeMetaProperty::QDeclarativeMetaProperty(QObject *obj, const QString &
     if (!isValid()) { d->object = 0; d->context = 0; }
 }
 
+Q_GLOBAL_STATIC(QDeclarativeValueTypeFactory, qmlValueTypes);
+
 void QDeclarativeMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 {
-    QDeclarativeEnginePrivate *enginePrivate = 0;
-    if (context && context->engine())
-        enginePrivate = QDeclarativeEnginePrivate::get(context->engine());
+    if (!obj) return;
 
-    object = obj;
+    QDeclarativeEngine *engine = context?context->engine():0;
+    QDeclarativeTypeNameCache *typeNameCache = context?QDeclarativeContextPrivate::get(context)->imports:0;
 
-    if (name.isEmpty() || !obj)
-        return;
+    QStringList path = name.split(QLatin1Char('.'));
+    if (path.isEmpty()) return;
 
-    if (enginePrivate && name.at(0).isUpper()) {
-        // Attached property
-        // ### What about qualified types?
-        QDeclarativeTypeNameCache *tnCache = QDeclarativeContextPrivate::get(context)->imports;
-        if (tnCache) {
-            QDeclarativeTypeNameCache::Data *d = tnCache->data(name);
-            if (d && d->type && d->type->attachedPropertiesFunction()) {
-                attachedFunc = d->type->index();
+    QObject *currentObject = obj;
+
+    // Everything up to the last property must be an "object type" property
+    for (int ii = 0; ii < path.count() - 1; ++ii) {
+        const QString &pathName = path.at(ii);
+
+        if (QDeclarativeTypeNameCache::Data *data = typeNameCache?typeNameCache->data(pathName):0) {
+            if (data->type) {
+                QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
+                if (!func) return; // Not an attachable type
+
+                currentObject = qmlAttachedPropertiesObjectById(data->type->index(), currentObject);
+                if (!currentObject) return; // Something is broken with the attachable type
+            } else {
+                Q_ASSERT(data->typeNamespace);
+                if ((ii + 1) == path.count()) return; // No type following the namespace
+                
+                ++ii; data = data->typeNamespace->data(path.at(ii));
+                if (!data || !data->type) return; // Invalid type in namespace 
+
+                QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
+                if (!func) return; // Not an attachable type
+
+                currentObject = qmlAttachedPropertiesObjectById(data->type->index(), currentObject);
+                if (!currentObject) return; // Something is broken with the attachable type
+            }
+        } else {
+
+            QDeclarativePropertyCache::Data local;
+            QDeclarativePropertyCache::Data *property = 
+                QDeclarativePropertyCache::property(engine, obj, pathName, local);
+
+            if (!property) return; // Not a property
+            if (property->flags & QDeclarativePropertyCache::Data::IsFunction) 
+                return; // Not an object property 
+
+            if (ii == (path.count() - 2) && property->propType < (int)QVariant::UserType) {
+                // We're now at a value type property.  We can use a global valuetypes array as we 
+                // never actually use the objects, just look up their properties.
+                QObject *typeObject = qmlValueTypes()->valueTypes[property->propType];
+                if (!typeObject) return; // Not a value type
+
+                int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
+                if (idx == -1) return; // Value type property does not exist
+
+                QMetaProperty vtProp = typeObject->metaObject()->property(idx);
+
+                object = currentObject;
+                core = *property;
+                valueType.flags = QDeclarativePropertyCache::Data::flagsForProperty(vtProp);
+                valueType.valueTypeCoreIdx = idx;
+                valueType.valueTypePropType = vtProp.userType();
+
+                return; 
+            } else {
+                if (!(property->flags & QDeclarativePropertyCache::Data::IsQObjectDerived)) 
+                    return; // Not an object property
+
+                void *args[] = { &currentObject, 0 };
+                QMetaObject::metacall(currentObject, QMetaObject::ReadProperty, property->coreIndex, args);
+                if (!currentObject) return; // No value
+
             }
         }
-        return;
 
-    } else if (name.count() >= 3 && 
-               name.at(0) == QChar(QLatin1Char('o')) && 
-               name.at(1) == QChar(QLatin1Char('n')) && 
-               name.at(2).isUpper()) {
-        // Signal
-        QString signalName = name.mid(2);
+    }
+
+    const QString &terminal = path.last();
+
+    if (terminal.count() >= 3 &&
+        terminal.at(0) == QLatin1Char('o') &&
+        terminal.at(1) == QLatin1Char('n') &&
+        terminal.at(2).isUpper()) {
+
+        QString signalName = terminal.mid(2);
         signalName[0] = signalName.at(0).toLower();
 
-        QMetaMethod method = QDeclarativeCompiler::findSignalByName(obj->metaObject(), signalName.toLatin1().constData());
+        QMetaMethod method = QDeclarativeCompiler::findSignalByName(currentObject->metaObject(), signalName.toLatin1().constData());
         if (method.signature()) {
+            object = currentObject;
             core.load(method);
             return;
         }
-    } 
+    }
 
     // Property
     QDeclarativePropertyCache::Data local;
     QDeclarativePropertyCache::Data *property = 
-        QDeclarativePropertyCache::property(context?context->engine():0, obj, name, local);
-    if (property && !(property->flags & QDeclarativePropertyCache::Data::IsFunction)) 
+        QDeclarativePropertyCache::property(context?context->engine():0, currentObject, terminal, local);
+    if (property && !(property->flags & QDeclarativePropertyCache::Data::IsFunction)) {
+        object = currentObject;
         core = *property;
+    }
 }
 
 /*!
@@ -224,7 +285,6 @@ QDeclarativeMetaProperty::QDeclarativeMetaProperty(const QDeclarativeMetaPropert
   \value Property The property is a regular Qt property.
   \value SignalProperty The property is a signal property.
   \value Default The property is the default property.
-  \value Attached The property is an attached property.
 */
 
 /*!
@@ -242,8 +302,6 @@ QDeclarativeMetaPropertyPrivate::propertyCategory() const
 
     if (type & QDeclarativeMetaProperty::ValueTypeProperty) {
         return QDeclarativeMetaProperty::Normal;
-    } else if (type & QDeclarativeMetaProperty::Attached) {
-        return QDeclarativeMetaProperty::Object;
     } else if (type & QDeclarativeMetaProperty::Property) {
         int type = propertyType();
         if (type == QVariant::Invalid)
@@ -299,8 +357,7 @@ bool QDeclarativeMetaProperty::operator==(const QDeclarativeMetaProperty &other)
     // from the other members
     return d->object == other.d->object &&
            d->core == other.d->core &&
-           d->valueType == other.d->valueType &&
-           d->attachedFunc == other.d->attachedFunc;
+           d->valueType == other.d->valueType;
 }
 
 /*!
@@ -317,8 +374,6 @@ int QDeclarativeMetaPropertyPrivate::propertyType() const
     uint type = q->type();
     if (type & QDeclarativeMetaProperty::ValueTypeProperty) {
         return valueType.valueTypePropType;
-    } else if (type & QDeclarativeMetaProperty::Attached) {
-        return qMetaTypeId<QObject *>();
     } else if (type & QDeclarativeMetaProperty::Property) {
         if (core.propType == (int)QVariant::LastType)
             return qMetaTypeId<QVariant>();
@@ -336,8 +391,6 @@ QDeclarativeMetaProperty::Type QDeclarativeMetaProperty::type() const
 {
     if (d->core.flags & QDeclarativePropertyCache::Data::IsFunction)
         return SignalProperty;
-    else if (d->attachedFunc != -1)
-        return Attached;
     else if (d->valueType.valueTypeCoreIdx != -1)
         return (Type)(Property | ValueTypeProperty);
     else if (d->core.isValid())
@@ -385,7 +438,6 @@ QDeclarativeMetaProperty &QDeclarativeMetaProperty::operator=(const QDeclarative
 
     d->valueType = other.d->valueType;
 
-    d->attachedFunc = other.d->attachedFunc;
     return *this;
 }
 
@@ -503,22 +555,23 @@ QMetaMethod QDeclarativeMetaProperty::method() const
     Returns the binding associated with this property, or 0 if no binding 
     exists.
 */
-QDeclarativeAbstractBinding *QDeclarativeMetaProperty::binding() const
+QDeclarativeAbstractBinding *
+QDeclarativeMetaPropertyPrivate::binding(const QDeclarativeMetaProperty &that) 
 {
-    if (!isProperty() || (type() & Attached) || !d->object)
+    if (!that.isProperty() || !that.d->object)
         return 0;
 
-    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(d->object);
+    QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(that.d->object);
     if (!data) 
         return 0;
 
-    if (!data->hasBindingBit(d->core.coreIndex))
+    if (!data->hasBindingBit(that.d->core.coreIndex))
         return 0;
 
     QDeclarativeAbstractBinding *binding = data->bindings;
     while (binding) {
         // ### This wont work for value types
-        if (binding->propertyIndex() == d->core.coreIndex)
+        if (binding->propertyIndex() == that.d->core.coreIndex)
             return binding; 
         binding = binding->m_nextBinding;
     }
@@ -539,15 +592,17 @@ QDeclarativeAbstractBinding *QDeclarativeMetaProperty::binding() const
     the binding sets the intial value, it will use these flags for the write).
 */
 QDeclarativeAbstractBinding *
-QDeclarativeMetaProperty::setBinding(QDeclarativeAbstractBinding *newBinding, QDeclarativeMetaProperty::WriteFlags flags) const
+QDeclarativeMetaPropertyPrivate::setBinding(const QDeclarativeMetaProperty &that,
+                                            QDeclarativeAbstractBinding *newBinding, 
+                                            QDeclarativeMetaProperty::WriteFlags flags) 
 {
-    if (!isProperty() || (type() & Attached) || !d->object) {
+    if (!that.isProperty() || !that.d->object) {
         if (newBinding)
             newBinding->destroy();
         return 0;
     }
 
-    return d->setBinding(d->object, d->core, newBinding, flags);
+    return that.d->setBinding(that.d->object, that.d->core, newBinding, flags);
 }
 
 QDeclarativeAbstractBinding *
@@ -578,22 +633,24 @@ QDeclarativeMetaPropertyPrivate::setBinding(QObject *object, const QDeclarativeP
 
     return 0;
 }
+
 /*!
     Returns the expression associated with this signal property, or 0 if no 
     signal expression exists.
 */
-QDeclarativeExpression *QDeclarativeMetaProperty::signalExpression() const
+QDeclarativeExpression *
+QDeclarativeMetaPropertyPrivate::signalExpression(const QDeclarativeMetaProperty &that)
 {
-    if (!(type() & SignalProperty))
+    if (!(that.type() & QDeclarativeMetaProperty::SignalProperty))
         return 0;
 
-    const QObjectList &children = d->object->children();
+    const QObjectList &children = that.d->object->children();
     
     for (int ii = 0; ii < children.count(); ++ii) {
         QObject *child = children.at(ii);
 
         QDeclarativeBoundSignal *signal = QDeclarativeBoundSignal::cast(child);
-        if (signal && signal->index() == coreIndex()) 
+        if (signal && signal->index() == that.coreIndex()) 
             return signal->expression();
     }
 
@@ -607,37 +664,31 @@ QDeclarativeExpression *QDeclarativeMetaProperty::signalExpression() const
     Ownership of \a expr transfers to QML.  Ownership of the return value is
     assumed by the caller.
 */
-QDeclarativeExpression *QDeclarativeMetaProperty::setSignalExpression(QDeclarativeExpression *expr) const
+QDeclarativeExpression *
+QDeclarativeMetaPropertyPrivate::setSignalExpression(const QDeclarativeMetaProperty &that,
+                                                     QDeclarativeExpression *expr) 
 {
-    if (!(type() & SignalProperty)) {
+    if (!(that.type() & QDeclarativeMetaProperty::SignalProperty)) {
         delete expr;
         return 0;
     }
 
-    const QObjectList &children = d->object->children();
+    const QObjectList &children = that.d->object->children();
     
     for (int ii = 0; ii < children.count(); ++ii) {
         QObject *child = children.at(ii);
 
         QDeclarativeBoundSignal *signal = QDeclarativeBoundSignal::cast(child);
-        if (signal && signal->index() == coreIndex()) 
+        if (signal && signal->index() == that.coreIndex()) 
             return signal->setExpression(expr);
     }
 
     if (expr) {
-        QDeclarativeBoundSignal *signal = new QDeclarativeBoundSignal(d->object, method(), d->object);
+        QDeclarativeBoundSignal *signal = new QDeclarativeBoundSignal(that.d->object, that.method(), that.d->object);
         return signal->setExpression(expr);
     } else {
         return 0;
     }
-}
-
-QObject *QDeclarativeMetaPropertyPrivate::attachedObject() const
-{
-    if (attachedFunc == -1)
-        return 0;
-    else
-        return qmlAttachedPropertiesObjectById(attachedFunc, object);
 }
 
 /*!
@@ -652,7 +703,7 @@ QVariant QDeclarativeMetaProperty::read() const
 
         return QVariant();
 
-    } else if (type() & Property || type() & Attached) {
+    } else if (type() & Property) {
 
         return d->readValueProperty();
 
@@ -663,11 +714,7 @@ QVariant QDeclarativeMetaProperty::read() const
 QVariant QDeclarativeMetaPropertyPrivate::readValueProperty()
 {
     uint type = q->type();
-    if (type & QDeclarativeMetaProperty::Attached) {
-
-        return QVariant::fromValue(attachedObject());
-
-    } else if(type & QDeclarativeMetaProperty::ValueTypeProperty) {
+    if(type & QDeclarativeMetaProperty::ValueTypeProperty) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
         QDeclarativeValueType *valueType = 0;
@@ -742,7 +789,7 @@ bool QDeclarativeMetaPropertyPrivate::writeValueProperty(const QVariant &value,
 {
     // Remove any existing bindings on this property
     if (!(flags & QDeclarativeMetaProperty::DontRemoveBinding)) {
-        QDeclarativeAbstractBinding *binding = q->setBinding(0);
+        QDeclarativeAbstractBinding *binding = setBinding(*q, 0);
         if (binding) binding->destroy();
     }
 
@@ -978,7 +1025,7 @@ bool QDeclarativeMetaProperty::write(const QVariant &value, QDeclarativeMetaProp
 */
 bool QDeclarativeMetaProperty::hasChangedNotifier() const
 {
-    if (type() & Property && !(type() & Attached) && d->object) {
+    if (type() & Property && d->object) {
         return d->object->metaObject()->property(d->core.coreIndex).hasNotifySignal();
     }
     return false;
@@ -993,8 +1040,7 @@ bool QDeclarativeMetaProperty::hasChangedNotifier() const
 */
 bool QDeclarativeMetaProperty::needsChangedNotifier() const
 {
-    return type() & Property && !(type() & Attached) && 
-           !property().isConstant();
+    return type() & Property && !property().isConstant();
 }
 
 /*!
@@ -1007,7 +1053,7 @@ bool QDeclarativeMetaProperty::needsChangedNotifier() const
 */
 bool QDeclarativeMetaProperty::connectNotifier(QObject *dest, int method) const
 {
-    if (!(type() & Property) || (type() & Attached) || !d->object)
+    if (!(type() & Property) || !d->object)
         return false;
 
     QMetaProperty prop = d->object->metaObject()->property(d->core.coreIndex);
@@ -1028,7 +1074,7 @@ bool QDeclarativeMetaProperty::connectNotifier(QObject *dest, int method) const
 */
 bool QDeclarativeMetaProperty::connectNotifier(QObject *dest, const char *slot) const
 {
-    if (!(type() & Property) || (type() & Attached) || !d->object)
+    if (!(type() & Property) || !d->object)
         return false;
 
     QMetaProperty prop = d->object->metaObject()->property(d->core.coreIndex);
@@ -1053,8 +1099,6 @@ int QDeclarativeMetaProperty::valueTypeCoreIndex() const
 {
     return d->valueType.valueTypeCoreIdx;
 }
-
-Q_GLOBAL_STATIC(QDeclarativeValueTypeFactory, qmlValueTypes);
 
 
 struct SerializedData {
@@ -1115,83 +1159,6 @@ QDeclarativeMetaPropertyPrivate::restore(const QByteArray &data, QObject *object
     }
 
     return prop;
-}
-
-/*!
-    \internal
-
-    Creates a QDeclarativeMetaProperty for the property \a name of \a obj. Unlike
-    the QDeclarativeMetaProperty(QObject*, QString, QDeclarativeContext*) constructor, this static function
-    will correctly handle dot properties, including value types and attached properties.
-*/
-QDeclarativeMetaProperty QDeclarativeMetaProperty::createProperty(QObject *obj, 
-                                                const QString &name,
-                                                QDeclarativeContext *context)
-{
-    QDeclarativeTypeNameCache *typeNameCache = context?QDeclarativeContextPrivate::get(context)->imports:0;
-
-    QStringList path = name.split(QLatin1Char('.'));
-    QObject *object = obj;
-
-    for (int jj = 0; jj < path.count() - 1; ++jj) {
-        const QString &pathName = path.at(jj);
-
-        if (QDeclarativeTypeNameCache::Data *data = typeNameCache?typeNameCache->data(pathName):0) {
-            if (data->type) {
-                QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
-                if (!func) 
-                    return QDeclarativeMetaProperty();
-                object = qmlAttachedPropertiesObjectById(data->type->index(), object);
-                if (!object)
-                    return QDeclarativeMetaProperty();
-                continue;
-            } else {
-                Q_ASSERT(data->typeNamespace);
-                ++jj;
-                data = data->typeNamespace->data(path.at(jj));
-                if (!data || !data->type)
-                    return QDeclarativeMetaProperty();
-                QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
-                if (!func) 
-                    return QDeclarativeMetaProperty();
-                object = qmlAttachedPropertiesObjectById(data->type->index(), object);
-                if (!object)
-                    return QDeclarativeMetaProperty();
-                continue;
-            }
-        }
-
-        QDeclarativeMetaProperty prop(object, pathName, context);
-
-        if (jj == path.count() - 2 && prop.propertyType() < (int)QVariant::UserType &&
-            qmlValueTypes()->valueTypes[prop.propertyType()]) {
-            // We're now at a value type property.  We can use a global valuetypes array as we 
-            // never actually use the objects, just look up their properties.
-            QObject *typeObject = 
-                qmlValueTypes()->valueTypes[prop.propertyType()];
-            int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
-            if (idx == -1)
-                return QDeclarativeMetaProperty();
-            QMetaProperty vtProp = typeObject->metaObject()->property(idx);
-
-            QDeclarativeMetaProperty p = prop;
-            p.d->valueType.valueTypeCoreIdx = idx;
-            p.d->valueType.valueTypePropType = vtProp.userType();
-            return p;
-        }
-
-        QObject *objVal = QDeclarativeMetaType::toQObject(prop.read());
-        if (!objVal)
-            return QDeclarativeMetaProperty();
-        object = objVal;
-    }
-
-    const QString &propName = path.last();
-    QDeclarativeMetaProperty prop(object, propName, context);
-    if (!prop.isValid())
-        return QDeclarativeMetaProperty();
-    else
-        return prop;
 }
 
 /*!

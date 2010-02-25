@@ -43,8 +43,9 @@
 
 #include "qdeclarativeboundsignal_p.h"
 #include "qdeclarativeengine.h"
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 #include "qdeclarativemetaproperty.h"
+#include "qdeclarativemetaproperty_p.h"
 #include "qdeclarativebinding_p.h"
 #include "qdeclarativecontext_p.h"
 #include "qdeclarativewatcher_p.h"
@@ -108,7 +109,8 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     rv.valueTypeName = QString::fromUtf8(prop.typeName());
     rv.name = QString::fromUtf8(prop.name());
     rv.hasNotifySignal = prop.hasNotifySignal();
-    QDeclarativeAbstractBinding *binding = QDeclarativeMetaProperty(obj, rv.name).binding();
+    QDeclarativeAbstractBinding *binding = 
+        QDeclarativeMetaPropertyPrivate::binding(QDeclarativeMetaProperty(obj, rv.name));
     if (binding)
         rv.binding = binding->expression();
 

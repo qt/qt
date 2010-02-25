@@ -43,7 +43,7 @@
 #define QDECLARATIVESTATE_H
 
 #include <qdeclarative.h>
-
+#include <qdeclarativemetaproperty.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER

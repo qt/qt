@@ -1172,6 +1172,17 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 
     See the \l {Keys}{Keys} attached property for detailed documentation.
 
+    \section 1 Property Change Signals
+
+    Most properties on Item and Item derivatives have a signal
+    emitted when they change. By convention, the signals are
+    named <propertyName>Changed, e.g. xChanged will be emitted when an item's
+    x property changes. Note that these also have signal handers e.g.
+    the onXChanged signal handler will be called when an item's x property
+    changes. For many properties in Item or Item derivatives this can be used
+    to add a touch of imperative logic to your application (when absolutely
+    necessary).
+
     \ingroup group_coreitems
 */
 
@@ -1321,7 +1332,7 @@ QDeclarativeItem::~QDeclarativeItem()
     Image {
         source: "myimage.png"
         transformOrigin: Item.BottomRight
-        rotate: 45
+        rotation: 45
     }
     \endqml
 
@@ -2604,7 +2615,6 @@ void QDeclarativeItem::setWidth(qreal w)
 
     prepareGeometryChange();
     d->width = w;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
@@ -2641,7 +2651,6 @@ void QDeclarativeItem::setImplicitWidth(qreal w)
 
     prepareGeometryChange();
     d->width = w;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
@@ -2676,7 +2685,6 @@ void QDeclarativeItem::setHeight(qreal h)
 
     prepareGeometryChange();
     d->height = h;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
@@ -2713,7 +2721,6 @@ void QDeclarativeItem::setImplicitHeight(qreal h)
 
     prepareGeometryChange();
     d->height = h;
-    update();
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));

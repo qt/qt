@@ -56,6 +56,7 @@
 #include "qdeclarative.h"
 #include "qdeclarativepropertyvaluesource.h"
 #include "qdeclarativeexpression.h"
+#include "qdeclarativemetaproperty.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QMetaProperty>

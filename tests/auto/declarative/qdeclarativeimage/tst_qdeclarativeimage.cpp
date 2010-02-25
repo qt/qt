@@ -59,7 +59,7 @@
 
 #define TRY_WAIT(expr) \
     do { \
-        for (int ii = 0; ii < 6; ++ii) { \
+        for (int ii = 0; ii < 60; ++ii) { \
             if ((expr)) break; \
             QTest::qWait(50); \
         } \
@@ -112,13 +112,17 @@ void tst_qdeclarativeimage::imageSource_data()
 {
     QTest::addColumn<QString>("source");
     QTest::addColumn<bool>("remote");
+    QTest::addColumn<bool>("async");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << false << "";
+    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << false << false << "";
+    QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << false << true << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << false
-        << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
-    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << "";
-    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true
+        << false << "Cannot open  QUrl( \"" + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() + "\" )  ";
+    QTest::newRow("local async not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() << false
+        << true << "\"Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() + "\" ";
+    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << true << false << "";
+    QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << true << false
         << "\"Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found\" ";
 }
 
@@ -126,6 +130,7 @@ void tst_qdeclarativeimage::imageSource()
 {
     QFETCH(QString, source);
     QFETCH(bool, remote);
+    QFETCH(bool, async);
     QFETCH(QString, error);
 
     TestHTTPServer server(SERVER_PORT);
@@ -137,13 +142,14 @@ void tst_qdeclarativeimage::imageSource()
     if (!error.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
-    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\" }";
+    QString componentStr = "import Qt 4.6\nImage { source: \"" + source + "\"; asynchronous: "
+        + (async ? QLatin1String("true") : QLatin1String("false")) + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
     QVERIFY(obj != 0);
     
-    if (remote)
+    if (remote || async)
         TRY_WAIT(obj->status() == QDeclarativeImage::Loading);
 
     QCOMPARE(obj->source(), remote ? source : QUrl(source));

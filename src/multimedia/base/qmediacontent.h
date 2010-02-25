@@ -46,6 +46,7 @@
 #include <QtCore/qshareddata.h>
 
 #include <QtMultimedia/qmediaresource.h>
+#include <QtNetwork/qnetworkrequest.h>
 
 
 QT_BEGIN_HEADER
@@ -60,6 +61,7 @@ class Q_MULTIMEDIA_EXPORT QMediaContent
 public:
     QMediaContent();
     QMediaContent(const QUrl &contentUrl);
+    QMediaContent(const QNetworkRequest &contentRequest);
     QMediaContent(const QMediaResource &contentResource);
     QMediaContent(const QMediaResourceList &resources);
     QMediaContent(const QMediaContent &other);

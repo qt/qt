@@ -45,7 +45,7 @@
 #include "qdeclarativeengine_p.h"
 #include "qdeclarativeexpression_p.h"
 #include "qdeclarativecontext_p.h"
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
 #include "qdeclarativeglobal_p.h"

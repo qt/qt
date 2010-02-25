@@ -45,6 +45,8 @@
 #include <qdeclarative.h>
 #include <qdeclarativeinfo.h>
 
+#include <QtCore/qurl.h>
+
 #include "../3rdparty/qlistmodelinterface_p.h"
 
 QT_BEGIN_HEADER

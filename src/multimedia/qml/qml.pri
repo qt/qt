@@ -17,7 +17,7 @@ contains(QT_CONFIG, declarative) {
     }
 
     HEADERS += \
-        $$PWD/qdeclarative.h \
+        $$PWD/multimediadeclarative.h \
         $$PWD/qmetadatacontrolmetaobject_p.h \
         $$PWD/qdeclarativeaudio_p.h \
         $$PWD/qdeclarativevideo_p.h \
@@ -26,7 +26,7 @@ contains(QT_CONFIG, declarative) {
         $$PWD/wavedecoder_p.h
 
     SOURCES += \
-        $$PWD/qdeclarative.cpp \
+        $$PWD/multimediadeclarative.cpp \
         $$PWD/qmetadatacontrolmetaobject.cpp \
         $$PWD/qdeclarativeaudio.cpp \
         $$PWD/qdeclarativevideo.cpp \

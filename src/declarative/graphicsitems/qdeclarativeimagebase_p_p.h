@@ -68,7 +68,8 @@ public:
     QDeclarativeImageBasePrivate()
       : status(QDeclarativeImageBase::Null),
         progress(0.0),
-        pendingPixmapCache(false)
+        pendingPixmapCache(false),
+        async(false)
     {
     }
 
@@ -76,7 +77,8 @@ public:
     QDeclarativeImageBase::Status status;
     QUrl url;
     qreal progress;
-    bool pendingPixmapCache;
+    bool pendingPixmapCache : 1;
+    bool async : 1;
 };
 
 QT_END_NAMESPACE

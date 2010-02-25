@@ -42,6 +42,7 @@
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativemetaproperty.h>
+#include <QtDeclarative/private/qdeclarativemetaproperty_p.h>
 #include <private/qguard_p.h>
 #include <private/qdeclarativebinding_p.h>
 #include <QtGui/QLineEdit>
@@ -160,11 +161,11 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty()
     QCOMPARE(prop.propertyType(), 0);
     QCOMPARE(prop.propertyTypeName(), (const char *)0);
     QVERIFY(prop.property().name() == 0);
-    QVERIFY(prop.binding() == 0);
-    QVERIFY(prop.setBinding(binding) == 0);
+    QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
+    QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
     QVERIFY(binding == 0);
-    QVERIFY(prop.signalExpression() == 0);
-    QVERIFY(prop.setSignalExpression(expression) == 0);
+    QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+    QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
     QVERIFY(expression == 0);
     QCOMPARE(prop.coreIndex(), -1);
     QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -254,11 +255,11 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object()
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
-        QVERIFY(prop.binding() == 0);
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding == 0);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -301,13 +302,13 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object()
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
-        QVERIFY(prop.binding() == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(prop.binding() == binding);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -355,11 +356,11 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
-        QVERIFY(prop.binding() == 0);
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding == 0);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -402,13 +403,13 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
-        QVERIFY(prop.binding() == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(prop.binding() == binding);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -451,13 +452,13 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
-        QVERIFY(prop.binding() == 0);
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding == 0);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression != 0);
-        QVERIFY(prop.signalExpression() == expression);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == expression);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfMethod("clicked()"));
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
 
@@ -552,11 +553,11 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
-        QVERIFY(prop.binding() == 0);
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding == 0);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -599,13 +600,13 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
-        QVERIFY(prop.binding() == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(prop.binding() == binding);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -653,11 +654,11 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
-        QVERIFY(prop.binding() == 0);
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding == 0);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -700,13 +701,13 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
-        QVERIFY(prop.binding() == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
         QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:-1: Unable to assign null to int");
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding != 0);
-        QVERIFY(prop.binding() == binding);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == binding);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
@@ -749,13 +750,13 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
-        QVERIFY(prop.binding() == 0);
-        QVERIFY(prop.setBinding(binding) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setBinding(prop, binding) == 0);
         QVERIFY(binding == 0);
-        QVERIFY(prop.signalExpression() == 0);
-        QVERIFY(prop.setSignalExpression(expression) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression != 0);
-        QVERIFY(prop.signalExpression() == expression);
+        QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == expression);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfMethod("clicked()"));
         QCOMPARE(prop.valueTypeCoreIndex(), -1);
 
@@ -867,19 +868,19 @@ void tst_qdeclarativemetaproperty::name()
 
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty");
+        QDeclarativeMetaProperty p(&o, "rectProperty");
         QCOMPARE(p.name(), QString("rectProperty"));
     }
 
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.x");
+        QDeclarativeMetaProperty p(&o, "rectProperty.x");
         QCOMPARE(p.name(), QString("rectProperty.x"));
     }
 
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.foo");
+        QDeclarativeMetaProperty p(&o, "rectProperty.foo");
         QCOMPARE(p.name(), QString());
     }
 }
@@ -921,14 +922,14 @@ void tst_qdeclarativemetaproperty::read()
     // Value-type prop
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.x");
+        QDeclarativeMetaProperty p(&o, "rectProperty.x");
         QCOMPARE(p.read(), QVariant(10));
     }
 
     // Invalid value-type prop
     {
         PropertyObject o;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(&o, "rectProperty.foo");
+        QDeclarativeMetaProperty p(&o, "rectProperty.foo");
         QCOMPARE(p.read(), QVariant());
     }
 
@@ -938,8 +939,8 @@ void tst_qdeclarativemetaproperty::read()
         QDeclarativeMetaProperty p(&o, "onClicked");
         QCOMPARE(p.read(), QVariant());
 
-        QVERIFY(0 == p.setSignalExpression(new QDeclarativeExpression()));
-        QVERIFY(0 != p.signalExpression());
+        QVERIFY(0 == QDeclarativeMetaPropertyPrivate::setSignalExpression(p, new QDeclarativeExpression()));
+        QVERIFY(0 != QDeclarativeMetaPropertyPrivate::signalExpression(p));
 
         QCOMPARE(p.read(), QVariant());
     }
@@ -959,7 +960,7 @@ void tst_qdeclarativemetaproperty::read()
     // Deleted object
     {
         PropertyObject *o = new PropertyObject;
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(o, "rectProperty.x");
+        QDeclarativeMetaProperty p(o, "rectProperty.x");
         QCOMPARE(p.read(), QVariant(10));
         delete o;
         QCOMPARE(p.read(), QVariant());
@@ -972,7 +973,7 @@ void tst_qdeclarativemetaproperty::read()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "MyContainer.foo", qmlContext(object));
         QCOMPARE(p.read(), QVariant(13));
         delete object;
     }
@@ -982,7 +983,7 @@ void tst_qdeclarativemetaproperty::read()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "MyContainer.foo", qmlContext(object));
         QCOMPARE(p.read(), QVariant(10));
         delete object;
     }
@@ -992,7 +993,7 @@ void tst_qdeclarativemetaproperty::read()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "Foo.MyContainer.foo", qmlContext(object));
         QCOMPARE(p.read(), QVariant(10));
         delete object;
     }
@@ -1054,12 +1055,12 @@ void tst_qdeclarativemetaproperty::write()
         QDeclarativeMetaProperty p(&o, "onClicked");
         QCOMPARE(p.write(QVariant("console.log(1921)")), false);
 
-        QVERIFY(0 == p.setSignalExpression(new QDeclarativeExpression()));
-        QVERIFY(0 != p.signalExpression());
+        QVERIFY(0 == QDeclarativeMetaPropertyPrivate::setSignalExpression(p, new QDeclarativeExpression()));
+        QVERIFY(0 != QDeclarativeMetaPropertyPrivate::signalExpression(p));
 
         QCOMPARE(p.write(QVariant("console.log(1921)")), false);
 
-        QVERIFY(0 != p.signalExpression());
+        QVERIFY(0 != QDeclarativeMetaPropertyPrivate::signalExpression(p));
     }
 
     // Automatic signal property
@@ -1085,7 +1086,7 @@ void tst_qdeclarativemetaproperty::write()
         QCOMPARE(p.write(QRect(1, 13, 99, 8)), true);
         QCOMPARE(o.wrectProperty(), QRect(1, 13, 99, 8));
 
-        QDeclarativeMetaProperty p2 = QDeclarativeMetaProperty::createProperty(&o, "wrectProperty.x");
+        QDeclarativeMetaProperty p2(&o, "wrectProperty.x");
         QCOMPARE(p2.read(), QVariant(1));
         QCOMPARE(p2.write(QVariant(6)), true);
         QCOMPARE(p2.read(), QVariant(6));
@@ -1116,7 +1117,7 @@ void tst_qdeclarativemetaproperty::write()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "MyContainer.foo", qmlContext(object));
         p.write(QVariant(99));
         QCOMPARE(p.read(), QVariant(99));
         delete object;
@@ -1127,7 +1128,7 @@ void tst_qdeclarativemetaproperty::write()
         QObject *object = component.create();
         QVERIFY(object != 0);
 
-        QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "Foo.MyContainer.foo", qmlContext(object));
+        QDeclarativeMetaProperty p(object, "Foo.MyContainer.foo", qmlContext(object));
         p.write(QVariant(99));
         QCOMPARE(p.read(), QVariant(99));
         delete object;
@@ -1264,7 +1265,7 @@ void tst_qdeclarativemetaproperty::crashOnValueProperty()
     PropertyObject *obj = qobject_cast<PropertyObject*>(component.create());
     QVERIFY(obj != 0);
 
-    QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(obj, "wrectProperty.x", qmlContext(obj));
+    QDeclarativeMetaProperty p(obj, "wrectProperty.x", qmlContext(obj));
     QCOMPARE(p.name(), QString("wrectProperty.x"));
 
     QCOMPARE(p.read(), QVariant(10));

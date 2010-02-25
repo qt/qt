@@ -56,9 +56,11 @@
 #include "qdeclarative.h"
 #include "qdeclarativerefcount_p.h"
 
-#include <QtCore/QByteArray>
-#include <QtCore/QList>
+#include <QtCore/qbytearray.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qurl.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
 
 #include <private/qobject_p.h>
 

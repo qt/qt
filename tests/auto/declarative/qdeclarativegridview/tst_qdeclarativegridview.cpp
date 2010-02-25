@@ -66,6 +66,7 @@ private slots:
     void defaultValues();
     void properties();
     void positionViewAtIndex();
+    void QTBUG_8456();
 
 private:
     QDeclarativeView *createView();
@@ -657,6 +658,7 @@ void tst_QDeclarativeGridView::currentIndex()
 
     gridview->setFlow(QDeclarativeGridView::TopToBottom);
 
+    QEXPECT_FAIL("", "QTBUG-8475", Abort);
     QTest::keyClick(canvas, Qt::Key_Right);
     QCOMPARE(gridview->currentIndex(), 5);
 
@@ -880,6 +882,19 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     delete canvas;
+}
+
+void tst_QDeclarativeGridView::QTBUG_8456()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/setindex.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QVERIFY(gridview != 0);
+
+    QCOMPARE(gridview->currentIndex(), 0);
 }
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()

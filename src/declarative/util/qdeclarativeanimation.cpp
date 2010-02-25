@@ -51,6 +51,7 @@
 #include <qdeclarativeexpression.h>
 #include <qdeclarativestringconverters_p.h>
 #include <qdeclarativeglobal_p.h>
+#include <qdeclarativemetatype_p.h>
 
 #include <qvariant.h>
 #include <qcolor.h>
@@ -155,7 +156,7 @@ void QDeclarativeAbstractAnimationPrivate::commence()
 
 QDeclarativeMetaProperty QDeclarativeAbstractAnimationPrivate::createProperty(QObject *obj, const QString &str, QObject *infoObj)
 {
-    QDeclarativeMetaProperty prop = QDeclarativeMetaProperty::createProperty(obj, str, qmlContext(infoObj));
+    QDeclarativeMetaProperty prop(obj, str, qmlContext(infoObj));
     if (!prop.isValid()) {
         qmlInfo(infoObj) << QDeclarativeAbstractAnimation::tr("Cannot animate non-existent property \"%1\"").arg(str);
         return QDeclarativeMetaProperty();

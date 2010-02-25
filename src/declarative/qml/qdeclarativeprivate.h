@@ -43,11 +43,10 @@
 #define QDECLARATIVEPRIVATE_H
 
 #include <QtCore/qglobal.h>
-
+#include <QtCore/qvariant.h>
 #ifndef Q_OS_WIN
 #include <stdint.h>
 #endif
-#include <QtCore/qvariant.h>
 
 QT_BEGIN_HEADER
 
@@ -56,9 +55,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 typedef QObject *(*QDeclarativeAttachedPropertiesFunc)(QObject *);
-
-//template<typename T>
-//struct qml_hasAttached { static bool const value = false; };
 
 template <typename TYPE>
 class QDeclarativeTypeInfo
@@ -70,10 +66,14 @@ public:
 };
 
 
+class QDeclarativeCustomParser;
 namespace QDeclarativePrivate
 {
     template<typename T>
     QObject *create() { return new T; }
+
+    template<typename T>
+    QObject *createParent(QObject *p) { return new T(p); }
 
     template<class From, class To, int N>
     struct StaticCastSelectorClass
@@ -167,41 +167,44 @@ namespace QDeclarativePrivate
         return AttachedPropertySelector<T, has_attachedPropertiesMethod<T, has_attachedPropertiesMember<T>::value>::value>::metaObject();
     }
 
-    struct MetaTypeIds {
+    struct RegisterType {
+        int version;
+
         int typeId;
         int listId;
-    };
-    typedef QObject *(*CreateFunc)(QObject *);
+        QObject *(*create)();
 
-    template<typename T>
-    struct CreateParent {
-        static QObject *create(QObject *other) {
-            return new T(other);
-        }
+        const char *uri;
+        int versionMajor;
+        int versionMinor;
+        const char *elementName;
+        const QMetaObject *metaObject;
+
+        QDeclarativeAttachedPropertiesFunc attachedPropertiesFunction;
+        const QMetaObject *attachedPropertiesMetaObject;
+
+        int parserStatusCast;
+        int valueSourceCast;
+        int valueInterceptorCast;
+
+        QObject *(*extensionObjectCreate)(QObject *);
+        const QMetaObject *extensionMetaObject;
+
+        QDeclarativeCustomParser *customParser;
     };
 
-    template<typename T>
-    struct CreateNoParent {
-        static QObject *create() {
-            return new T;
-        }
+    struct RegisterInterface {
+        int version;
+
+        int typeId;
+        int listId;
+
+        const char *iid;
     };
 
-    struct Q_DECLARATIVE_EXPORT InstanceType {
-       InstanceType(int);
-    };
+    int Q_DECLARATIVE_EXPORT registerType(const RegisterType &);
+    int Q_DECLARATIVE_EXPORT registerType(const RegisterInterface &);
 
-    template<typename T, int VMAJ, int VMIN>
-    struct Define {
-        static InstanceType instance;
-    };
-  
-    template<typename T>
-    struct ExtCreate {
-        static QObject *create(QObject *other) {
-            return new T(other);
-        }
-    };
 }
 
 QT_END_NAMESPACE

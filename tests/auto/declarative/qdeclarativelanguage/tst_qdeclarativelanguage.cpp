@@ -45,7 +45,10 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdir.h>
+
 #include <private/qdeclarativemetaproperty_p.h>
+#include <private/qdeclarativemetatype_p.h>
+
 #include "testtypes.h"
 
 #include "../../../shared/util.h"
@@ -744,7 +747,7 @@ void tst_qdeclarativelanguage::valueTypes()
 
     // ###
 #if 0
-    QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "rectProperty.x");
+    QDeclarativeMetaProperty p(object, "rectProperty.x");
     QCOMPARE(p.read(), QVariant(12));
     p.write(13);
     QCOMPARE(p.read(), QVariant(13));

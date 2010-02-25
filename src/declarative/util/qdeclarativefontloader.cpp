@@ -44,6 +44,7 @@
 #include <qdeclarativecontext.h>
 #include <qdeclarativeengine.h>
 
+#include <QStringList>
 #include <QUrl>
 #include <QDebug>
 #include <QNetworkRequest>

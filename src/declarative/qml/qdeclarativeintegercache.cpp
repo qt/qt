@@ -42,7 +42,7 @@
 #include "qdeclarativeintegercache_p.h"
 
 #include "qdeclarativeengine_p.h"
-#include "qdeclarativemetatype.h"
+#include "qdeclarativemetatype_p.h"
 
 QT_BEGIN_NAMESPACE
 

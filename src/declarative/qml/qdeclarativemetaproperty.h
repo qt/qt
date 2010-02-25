@@ -100,8 +100,7 @@ public:
                 Property = 0x01, 
                 SignalProperty = 0x02,
                 Default = 0x08,
-                Attached = 0x10,
-                ValueTypeProperty = 0x20 };
+                ValueTypeProperty = 0x10 };
 
     Type type() const;
     bool isProperty() const;
@@ -120,15 +119,6 @@ public:
     bool operator==(const QDeclarativeMetaProperty &) const;
 
     QMetaProperty property() const;
-
-    QDeclarativeAbstractBinding *binding() const;
-    QDeclarativeAbstractBinding *setBinding(QDeclarativeAbstractBinding *,
-                                   QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::DontRemoveBinding) const;
-
-    QDeclarativeExpression *signalExpression() const;
-    QDeclarativeExpression *setSignalExpression(QDeclarativeExpression *) const;
-
-    static QDeclarativeMetaProperty createProperty(QObject *, const QString &, QDeclarativeContext *context=0);
 
     int coreIndex() const;
     int valueTypeCoreIndex() const;

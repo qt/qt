@@ -41,9 +41,8 @@
 
 #include <QtMultimedia/QAbstractVideoSurface>
 #include <QtMultimedia/QVideoFrame>
-#include <QDebug>
+#include <QtCore/qdebug.h>
 #include <QMap>
-#include <QDebug>
 #include <QThread>
 #include <QtGui/qx11info_x11.h>
 

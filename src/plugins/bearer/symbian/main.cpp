@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,10 +39,46 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeprivate.h"
+#include "symbianengine.h"
+
+#include <QtNetwork/private/qbearerplugin_p.h>
+
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-QDeclarativePrivate::InstanceType::InstanceType(int) {}
+class QSymbianEnginePlugin : public QBearerEnginePlugin
+{
+public:
+    QSymbianEnginePlugin();
+    ~QSymbianEnginePlugin();
+
+    QStringList keys() const;
+    QBearerEngine *create(const QString &key) const;
+};
+
+QSymbianEnginePlugin::QSymbianEnginePlugin()
+{
+}
+
+QSymbianEnginePlugin::~QSymbianEnginePlugin()
+{
+}
+
+QStringList QSymbianEnginePlugin::keys() const
+{
+    return QStringList() << QLatin1String("symbian");
+}
+
+QBearerEngine *QSymbianEnginePlugin::create(const QString &key) const
+{
+    if (key == QLatin1String("symbian"))
+        return new SymbianEngine;
+    else
+        return 0;
+}
+
+Q_EXPORT_STATIC_PLUGIN(QSymbianEnginePlugin)
+Q_EXPORT_PLUGIN2(qsymbianbearer, QSymbianEnginePlugin)
 
 QT_END_NAMESPACE

@@ -811,8 +811,8 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
             break;
         }
 
-        bool needClip = !clip() && (d->imgCache.width() > width() ||
-                                    d->imgCache.height() > height());
+        bool needClip = clip() && (d->imgCache.width() > width() ||
+                                   d->imgCache.height() > height());
 
         if (needClip) {
             p->save();

@@ -84,6 +84,9 @@ Q_SIGNALS:
     void horizontalTileModeChanged();
     void verticalTileModeChanged();
 
+protected:
+    virtual void load();
+
 private:
     void setGridScaledImage(const QDeclarativeGridScaledImage& sci);
 
