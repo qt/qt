@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+#include "../../shared/util.h"
 
 #include <QtCore/qpropertyanimation.h>
 #include <QtCore/qvariantanimation.h>
@@ -287,7 +288,7 @@ void tst_QPropertyAnimation::statesAndSignals()
 
     anim->start();
     QTest::qWait(1000);
-    QCOMPARE(anim->state(), QAnimationGroup::Stopped);
+    QTRY_COMPARE(anim->state(), QAnimationGroup::Stopped);
     QCOMPARE(runningSpy.count(), 2); //started and stopped again
     runningSpy.clear();
     QCOMPARE(finishedSpy.count(), 1);
@@ -339,7 +340,7 @@ void tst_QPropertyAnimation::deletion1()
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     QTest::qWait(150);
     QVERIFY(anim); //The animation should not have been deleted
-    QCOMPARE(anim->state(), QAnimationGroup::Stopped);
+    QTRY_COMPARE(anim->state(), QAnimationGroup::Stopped);
     QCOMPARE(runningSpy.count(), 2);
     QCOMPARE(finishedSpy.count(), 1);
 
@@ -350,9 +351,9 @@ void tst_QPropertyAnimation::deletion1()
     QVERIFY(anim);
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     QTest::qWait(150);
-    QVERIFY(!anim);  //The animation must have been deleted
-    QCOMPARE(runningSpy.count(), 4);
+    QTRY_COMPARE(runningSpy.count(), 4);
     QCOMPARE(finishedSpy.count(), 2);
+    QVERIFY(!anim);  //The animation must have been deleted
     delete object;
 }
 
@@ -458,7 +459,7 @@ void tst_QPropertyAnimation::noStartValue()
 
     QTest::qWait(300);
 
-    QCOMPARE(o.values.first(), 42);
+    QTRY_COMPARE(o.values.first(), 42);
     QCOMPARE(o.values.last(), 420);
 }
 
@@ -496,7 +497,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
         QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         anim->start(QVariantAnimation::DeleteWhenStopped);
         QTest::qWait(anim->duration() + 100);
-        QCOMPARE(runningSpy.count(), 2); //started and then stopped
+        QTRY_COMPARE(runningSpy.count(), 2); //started and then stopped
         QVERIFY(!anim);
     }
 
@@ -517,7 +518,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
         QVERIFY(!anim); //anim should have been deleted
         QVERIFY(anim2);
         QTest::qWait(anim2->duration());
-        QVERIFY(!anim2); //anim2 is finished: it should have been deleted by now
+        QTRY_VERIFY(!anim2); //anim2 is finished: it should have been deleted by now
         QVERIFY(!anim);
     }
 
@@ -590,7 +591,7 @@ void tst_QPropertyAnimation::startWithoutStartValue()
     QVERIFY(current < 100);
 
     QTest::qWait(200);
-    QCOMPARE(anim.state(), QVariantAnimation::Stopped);
+    QTRY_COMPARE(anim.state(), QVariantAnimation::Stopped);
     current = anim.currentValue().toInt();
     QCOMPARE(current, 100);
     QCOMPARE(o.property("ole").toInt(), current);
@@ -630,7 +631,7 @@ void tst_QPropertyAnimation::startBackwardWithoutEndValue()
     QVERIFY(current < 100);
 
     QTest::qWait(200);
-    QCOMPARE(anim.state(), QVariantAnimation::Stopped);
+    QTRY_COMPARE(anim.state(), QVariantAnimation::Stopped);
     current = anim.currentValue().toInt();
     QCOMPARE(current, 100);
     QCOMPARE(o.property("ole").toInt(), current);
@@ -660,7 +661,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.setEndValue(100);
     anim.start();
     QTest::qWait(anim.duration() + 100);
-    QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+    QTRY_COMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), anim.duration());
 
     //the animation is at the end
@@ -668,7 +669,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.start();
     QCOMPARE(anim.state(), QAbstractAnimation::Running);
     QTest::qWait(anim.duration() + 100);
-    QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+    QTRY_COMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), 0);
 
     //the direction is backward
@@ -677,7 +678,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     QCOMPARE(anim.state(), QAbstractAnimation::Running);
     QCOMPARE(anim.currentTime(), anim.duration());
     QTest::qWait(anim.duration() + 100);
-    QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+    QTRY_COMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), 0);
 }
 
@@ -1095,7 +1096,7 @@ void tst_QPropertyAnimation::valueChanged()
 
     QTest::qWait(anim.duration() + 100);
 
-    QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+    QTRY_COMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), anim.duration());
 
     //let's check that the values go forward
@@ -1145,7 +1146,7 @@ void tst_QPropertyAnimation::twoAnimations()
     o2.anim.start();
 
     QTest::qWait(o1.anim.duration() + 100);
-    QCOMPARE(o1.anim.state(), QAbstractAnimation::Stopped);
+    QTRY_COMPARE(o1.anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(o2.anim.state(), QAbstractAnimation::Stopped);
 
     QCOMPARE(o1.ole(), 1000);
@@ -1196,7 +1197,7 @@ void tst_QPropertyAnimation::deletedInUpdateCurrentTime()
     QCOMPARE(composedAnimation.state(), QAbstractAnimation::Running);
     QTest::qWait(composedAnimation.duration() + 100);
 
-    QCOMPARE(composedAnimation.state(), QAbstractAnimation::Stopped);
+    QTRY_COMPARE(composedAnimation.state(), QAbstractAnimation::Stopped);
     QCOMPARE(o.value(), 1000);
 }
 

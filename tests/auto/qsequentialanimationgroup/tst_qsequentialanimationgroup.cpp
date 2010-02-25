@@ -934,8 +934,8 @@ void tst_QSequentialAnimationGroup::startDelay()
 
     QTest::qWait(500);
 
+    QTRY_COMPARE(group.state(), QAnimationGroup::Stopped);
     QVERIFY(group.currentLoopTime() == 375);
-    QCOMPARE(group.state(), QAnimationGroup::Stopped);
 }
 
 void tst_QSequentialAnimationGroup::clearGroup()
@@ -1029,7 +1029,7 @@ void tst_QSequentialAnimationGroup::groupWithZeroDurationAnimations()
 
     QTest::qWait(500);
 
-    QCOMPARE(o.property("myProperty").toInt(), 44);
+    QTRY_COMPARE(o.property("myProperty").toInt(), 44);
     QCOMPARE(o2.property("myProperty").toInt(), 42);
     QCOMPARE(o2.property("myOtherProperty").toInt(), 31);
     QCOMPARE(a1->state(), QAnimationGroup::Stopped);
@@ -1171,7 +1171,7 @@ void tst_QSequentialAnimationGroup::deleteChildrenWithRunningGroup()
     QCOMPARE(anim1->state(), QAnimationGroup::Running);
 
     QTest::qWait(100);
-    QVERIFY(group.currentLoopTime() > 0);
+    QTRY_VERIFY(group.currentLoopTime() > 0);
 
     delete anim1;
     QCOMPARE(group.animationCount(), 0);
@@ -1430,7 +1430,7 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
     QCOMPARE(notTimeDriven.currentLoopTime(), 0);
 
     QTest::qWait(300); //wait for the end of notTimeDriven
-    QCOMPARE(notTimeDriven.state(), QAnimationGroup::Stopped);
+    QTRY_COMPARE(notTimeDriven.state(), QAnimationGroup::Stopped);
     const int actualDuration = notTimeDriven.currentLoopTime();
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
     QCOMPARE(group.currentLoopTime(), actualDuration);
@@ -1459,14 +1459,14 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
     QCOMPARE(animStateChangedSpy.count(), 0);
 
     QTest::qWait(300); //wait for the end of notTimeDriven
-    QCOMPARE(notTimeDriven.state(), QAnimationGroup::Stopped);
+    QTRY_COMPARE(notTimeDriven.state(), QAnimationGroup::Stopped);
     QCOMPARE(group.state(), QAnimationGroup::Running);
     QCOMPARE(anim.state(), QAnimationGroup::Running);
     QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&anim));
     QCOMPARE(animStateChangedSpy.count(), 1);
     QTest::qWait(300); //wait for the end of anim
 
-    QCOMPARE(anim.state(), QAnimationGroup::Stopped);
+    QTRY_COMPARE(anim.state(), QAnimationGroup::Stopped);
     QCOMPARE(anim.currentLoopTime(), anim.duration());
 
     //we should simply be at the end
@@ -1621,7 +1621,7 @@ void tst_QSequentialAnimationGroup::clear()
 
     group.start();
     QTest::qWait(anim1->duration() + 100);
-    QCOMPARE(group.animationCount(), 0);
+    QTRY_COMPARE(group.animationCount(), 0);
     QCOMPARE(group.state(), QAbstractAnimation::Stopped);
     QCOMPARE(group.currentLoopTime(), 0);
 
@@ -1629,8 +1629,8 @@ void tst_QSequentialAnimationGroup::clear()
     group.connect(anim1, SIGNAL(finished()), SLOT(refill()));
     group.start();
     QTest::qWait(anim1->duration() + 100);
+    QTRY_COMPARE(group.state(), QAbstractAnimation::Running);
     QVERIFY(anim1 == 0); //anim1 should have been deleted
-    QCOMPARE(group.state(), QAbstractAnimation::Running);
 }
 
 void tst_QSequentialAnimationGroup::pauseResume()
@@ -1645,7 +1645,7 @@ void tst_QSequentialAnimationGroup::pauseResume()
     QCOMPARE(group.duration(), 250);
     group.start();
     QTest::qWait(100);
-    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QTRY_COMPARE(group.state(), QAnimationGroup::Running);
     QCOMPARE(anim->state(), QAnimationGroup::Running);
     QCOMPARE(spy.count(), 1);
     spy.clear();
