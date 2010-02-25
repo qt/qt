@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include <QtMultimedia/multimediaqml.h>
+#include <QtMultimedia/multimediadeclarative.h>
 #include <QtMultimedia/private/qsoundeffect_p.h>
-#include <QtMultimedia/private/qmlaudio_p.h>
-#include <QtMultimedia/private/qmlgraphicsvideo_p.h>
+#include <QtMultimedia/private/qdeclarativeaudio_p.h>
+#include <QtMultimedia/private/qdeclarativevideo_p.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -55,11 +55,14 @@ namespace QtMultimedia
     \internal
 */
 
-void qRegisterQmlElements()
+void qRegisterDeclarativeElements(QDeclarativeEngine *engine, const char *uri)
 {
+    Q_UNUSED(engine)
+    Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.multimedia"));
+
     qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
-    qmlRegisterType<QmlAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
-    qmlRegisterType<QmlGraphicsVideo>("Qt.multimedia", 4, 7, "Video", "Video");
+    qmlRegisterType<QDeclarativeAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
+    qmlRegisterType<QDeclarativeVideo>("Qt.multimedia", 4, 7, "Video", "Video");
 }
 
 }
