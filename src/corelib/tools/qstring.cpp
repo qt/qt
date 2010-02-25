@@ -3524,6 +3524,28 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             }
             length = length % 16;
         }
+#elif QT_HAVE_NEON
+        // this use eactly the same method as for SSE except the packing
+        // which is done to 64 bits (8 x 8bits component).
+        // Refer to the documentation of the SSE2 implementation
+        if (length >= 16) {
+            const int chunkCount = length >> 3; // divided by 8
+            const uint16x8_t questionMark = vdupq_n_u16('?'); // set
+            const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
+            for (int i = 0; i < chunkCount; ++i) {
+                uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
+                src += 8;
+
+                const uint16x8_t offLimitMask = vcgeq_u16(chunk, thresholdMask); // ==
+                const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
+                const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
+                chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+                const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
+                vst1_u8(dst, result); // store
+                dst += 8;
+            }
+            length = length % 8;
+        }
 #endif
         while (length--) {
             *dst++ = (*src>0xff) ? '?' : (uchar) *src;
