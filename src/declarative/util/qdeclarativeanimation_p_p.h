@@ -226,11 +226,11 @@ public:
 
     void commence();
 
-    QDeclarativeMetaProperty defaultProperty;
+    QDeclarativeProperty defaultProperty;
 
     QDeclarativeAnimationGroup *group;
 
-    static QDeclarativeMetaProperty createProperty(QObject *obj, const QString &str, QObject *infoObj);
+    static QDeclarativeProperty createProperty(QObject *obj, const QString &str, QObject *infoObj);
 };
 
 class QDeclarativePauseAnimationPrivate : public QDeclarativeAbstractAnimationPrivate

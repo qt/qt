@@ -661,19 +661,19 @@ QList<QDeclarativeAction> QDeclarativeAnchorChanges::extraActions()
     if (d->target) {
         QDeclarativeAction a;
         a.fromValue = d->fromX;
-        a.property = QDeclarativeMetaProperty(d->target, QLatin1String("x"));
+        a.property = QDeclarativeProperty(d->target, QLatin1String("x"));
         extra << a;
 
         a.fromValue = d->fromY;
-        a.property = QDeclarativeMetaProperty(d->target, QLatin1String("y"));
+        a.property = QDeclarativeProperty(d->target, QLatin1String("y"));
         extra << a;
 
         a.fromValue = d->fromWidth;
-        a.property = QDeclarativeMetaProperty(d->target, QLatin1String("width"));
+        a.property = QDeclarativeProperty(d->target, QLatin1String("width"));
         extra << a;
 
         a.fromValue = d->fromHeight;
-        a.property = QDeclarativeMetaProperty(d->target, QLatin1String("height"));
+        a.property = QDeclarativeProperty(d->target, QLatin1String("height"));
         extra << a;
     }
 

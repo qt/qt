@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEMETAPROPERTY_H
-#define QDECLARATIVEMETAPROPERTY_H
+#ifndef QDECLARATIVEPROPERTY_H
+#define QDECLARATIVEPROPERTY_H
 
 #include <QtCore/qmetaobject.h>
 
@@ -59,8 +59,8 @@ struct QMetaObject;
 class QDeclarativeContext;
 class QDeclarativeEngine;
 
-class QDeclarativeMetaPropertyPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeMetaProperty
+class QDeclarativePropertyPrivate;
+class Q_DECLARATIVE_EXPORT QDeclarativeProperty
 {
 public:
     enum PropertyTypeCategory {
@@ -77,17 +77,17 @@ public:
                 ValueTypeProperty = 0x10 
     };
 
-    QDeclarativeMetaProperty();
-    ~QDeclarativeMetaProperty();
+    QDeclarativeProperty();
+    ~QDeclarativeProperty();
 
-    QDeclarativeMetaProperty(QObject *);
-    QDeclarativeMetaProperty(QObject *, QDeclarativeContext *);
+    QDeclarativeProperty(QObject *);
+    QDeclarativeProperty(QObject *, QDeclarativeContext *);
 
-    QDeclarativeMetaProperty(QObject *, const QString &);
-    QDeclarativeMetaProperty(QObject *, const QString &, QDeclarativeContext *);
+    QDeclarativeProperty(QObject *, const QString &);
+    QDeclarativeProperty(QObject *, const QString &, QDeclarativeContext *);
 
-    QDeclarativeMetaProperty(const QDeclarativeMetaProperty &);
-    QDeclarativeMetaProperty &operator=(const QDeclarativeMetaProperty &);
+    QDeclarativeProperty(const QDeclarativeProperty &);
+    QDeclarativeProperty &operator=(const QDeclarativeProperty &);
 
     QString name() const;
 
@@ -113,7 +113,7 @@ public:
     PropertyTypeCategory propertyTypeCategory() const;
     const char *propertyTypeName() const;
 
-    bool operator==(const QDeclarativeMetaProperty &) const;
+    bool operator==(const QDeclarativeProperty &) const;
 
     int coreIndex() const;
     QMetaProperty property() const;
@@ -121,13 +121,13 @@ public:
 
 private:
     friend class QDeclarativeEnginePrivate;
-    friend class QDeclarativeMetaPropertyPrivate;
-    QDeclarativeMetaPropertyPrivate *d;
+    friend class QDeclarativePropertyPrivate;
+    QDeclarativePropertyPrivate *d;
 };
-typedef QList<QDeclarativeMetaProperty> QDeclarativeMetaProperties;
+typedef QList<QDeclarativeProperty> QDeclarativeProperties;
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEMETAPROPERTY_H
+#endif // QDECLARATIVEPROPERTY_H

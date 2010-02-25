@@ -97,7 +97,7 @@ QDeclarativeBinding::~QDeclarativeBinding()
 {
 }
 
-void QDeclarativeBinding::setTarget(const QDeclarativeMetaProperty &prop)
+void QDeclarativeBinding::setTarget(const QDeclarativeProperty &prop)
 {
     Q_D(QDeclarativeBinding);
     d->bindingData()->property = prop;
@@ -105,13 +105,13 @@ void QDeclarativeBinding::setTarget(const QDeclarativeMetaProperty &prop)
     update();
 }
 
-QDeclarativeMetaProperty QDeclarativeBinding::property() const 
+QDeclarativeProperty QDeclarativeBinding::property() const 
 {
    Q_D(const QDeclarativeBinding);
    return d->bindingData()->property; 
 }
 
-void QDeclarativeBinding::update(QDeclarativeMetaPropertyPrivate::WriteFlags flags)
+void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
 
@@ -161,7 +161,7 @@ void QDeclarativeBinding::update(QDeclarativeMetaPropertyPrivate::WriteFlags fla
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
             } else if (!isUndefined && data->property.object() && 
-                       !QDeclarativeMetaPropertyPrivate::write(data->property, value, flags)) {
+                       !QDeclarativePropertyPrivate::write(data->property, value, flags)) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -204,7 +204,7 @@ void QDeclarativeBindingPrivate::emitValueChanged()
     q->update();
 }
 
-void QDeclarativeBinding::setEnabled(bool e, QDeclarativeMetaPropertyPrivate::WriteFlags flags)
+void QDeclarativeBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
     d->bindingData()->enabled = e;
@@ -300,7 +300,7 @@ QString QDeclarativeAbstractBinding::expression() const
     return QLatin1String("<Unknown>");
 }
 
-void QDeclarativeAbstractBinding::setEnabled(bool e, QDeclarativeMetaPropertyPrivate::WriteFlags)
+void QDeclarativeAbstractBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags)
 {
     if (e) m_mePtr = 0;
 }

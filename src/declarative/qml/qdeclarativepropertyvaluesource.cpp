@@ -63,7 +63,7 @@ QDeclarativePropertyValueSource::~QDeclarativePropertyValueSource()
 }
 
 /*!
-    \fn void QDeclarativePropertyValueSource::setTarget(const QDeclarativeMetaProperty &property)
+    \fn void QDeclarativePropertyValueSource::setTarget(const QDeclarativeProperty &property)
     Set the target \a property for the value source.  This method will
     be called by the QML engine when assigning a value source.
 */

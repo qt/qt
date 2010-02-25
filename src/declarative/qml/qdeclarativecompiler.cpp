@@ -58,7 +58,7 @@
 #include "parser/qdeclarativejsast_p.h"
 #include "qdeclarativevmemetaobject_p.h"
 #include "qdeclarativeexpression_p.h"
-#include "qdeclarativemetaproperty_p.h"
+#include "qdeclarativeproperty_p.h"
 #include "qdeclarativerewrite_p.h"
 #include "qdeclarativescriptstring.h"
 #include "qdeclarativeglobal_p.h"
@@ -2036,7 +2036,7 @@ bool QDeclarativeCompiler::buildPropertyObjectAssignment(QDeclarativeParser::Pro
         if (propertyMetaObject) {
             const QMetaObject *c = v->object->metatype;
             while(c) {
-                isAssignable |= (QDeclarativeMetaPropertyPrivate::equal(c, propertyMetaObject));
+                isAssignable |= (QDeclarativePropertyPrivate::equal(c, propertyMetaObject));
                 c = c->superClass();
             }
         }
@@ -2619,7 +2619,7 @@ int QDeclarativeCompiler::genValueTypeData(QDeclarativeParser::Property *valueTy
                                   QDeclarativeParser::Property *prop)
 {
     QByteArray data =
-        QDeclarativeMetaPropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, 
+        QDeclarativePropertyPrivate::saveValueType(prop->parent->metaObject(), prop->index, 
                                               QDeclarativeEnginePrivate::get(engine)->valueTypes[prop->type]->metaObject(), 
                                               valueTypeProp->index);
 //                valueTypeProp->index, valueTypeProp->type);
@@ -2629,7 +2629,7 @@ int QDeclarativeCompiler::genValueTypeData(QDeclarativeParser::Property *valueTy
 
 int QDeclarativeCompiler::genPropertyData(QDeclarativeParser::Property *prop)
 {
-    return output->indexForByteArray(QDeclarativeMetaPropertyPrivate::saveProperty(prop->parent->metaObject(), prop->index));
+    return output->indexForByteArray(QDeclarativePropertyPrivate::saveProperty(prop->parent->metaObject(), prop->index));
 }
 
 bool QDeclarativeCompiler::completeComponentBuild()
@@ -2735,7 +2735,7 @@ bool QDeclarativeCompiler::canCoerce(int to, QDeclarativeParser::Object *from)
     const QMetaObject *fromMo = from->metaObject();
 
     while (fromMo) {
-        if (QDeclarativeMetaPropertyPrivate::equal(fromMo, toMo))
+        if (QDeclarativePropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }
@@ -2754,7 +2754,7 @@ bool QDeclarativeCompiler::canCoerce(int to, int from)
         QDeclarativeEnginePrivate::get(engine)->rawMetaObjectForType(from);
 
     while (fromMo) {
-        if (QDeclarativeMetaPropertyPrivate::equal(fromMo, toMo))
+        if (QDeclarativePropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }

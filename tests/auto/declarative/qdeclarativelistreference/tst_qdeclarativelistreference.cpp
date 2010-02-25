@@ -47,7 +47,7 @@
 #include <QDeclarativeComponent>
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/qdeclarativeprivate.h>
-#include <QtDeclarative/qdeclarativemetaproperty.h>
+#include <QtDeclarative/qdeclarativeproperty.h>
 #include <QDebug>
 
 inline QUrl TEST_FILE(const QString &filename)
@@ -530,7 +530,7 @@ void tst_qdeclarativelistreference::qmlmetaproperty()
     tt.data.append(0);
     tt.data.append(&tt);
 
-    QDeclarativeMetaProperty prop(&tt, QLatin1String("data"));
+    QDeclarativeProperty prop(&tt, QLatin1String("data"));
     QVariant v = prop.read();
     QVERIFY(v.userType() == qMetaTypeId<QDeclarativeListReference>());
     QDeclarativeListReference ref = qvariant_cast<QDeclarativeListReference>(v);
@@ -546,11 +546,11 @@ void tst_qdeclarativelistreference::engineTypes()
     QObject *o = component.create();
     QVERIFY(o);
 
-    QDeclarativeMetaProperty p1(o, QLatin1String("myList"));
-    QVERIFY(p1.propertyTypeCategory() == QDeclarativeMetaProperty::Normal);
+    QDeclarativeProperty p1(o, QLatin1String("myList"));
+    QVERIFY(p1.propertyTypeCategory() == QDeclarativeProperty::Normal);
 
-    QDeclarativeMetaProperty p2(o, QLatin1String("myList"), engine.rootContext());
-    QVERIFY(p2.propertyTypeCategory() == QDeclarativeMetaProperty::List);
+    QDeclarativeProperty p2(o, QLatin1String("myList"), engine.rootContext());
+    QVERIFY(p2.propertyTypeCategory() == QDeclarativeProperty::List);
     QVariant v = p2.read();
     QVERIFY(v.userType() == qMetaTypeId<QDeclarativeListReference>());
     QDeclarativeListReference ref = qvariant_cast<QDeclarativeListReference>(v);

@@ -43,7 +43,7 @@
 #define QDECLARATIVESTATE_H
 
 #include <qdeclarative.h>
-#include <qdeclarativemetaproperty.h>
+#include <qdeclarativeproperty.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
@@ -65,7 +65,7 @@ public:
     bool reverseEvent:1;
     bool deletableToBinding:1;
 
-    QDeclarativeMetaProperty property;
+    QDeclarativeProperty property;
     QVariant fromValue;
     QVariant toValue;
 

@@ -52,7 +52,7 @@
 #include <qdeclarativestringconverters_p.h>
 #include <qdeclarativeglobal_p.h>
 #include <qdeclarativemetatype_p.h>
-#include <qdeclarativemetaproperty_p.h>
+#include <qdeclarativeproperty_p.h>
 
 #include <qvariant.h>
 #include <qcolor.h>
@@ -145,7 +145,7 @@ void QDeclarativeAbstractAnimationPrivate::commence()
     Q_Q(QDeclarativeAbstractAnimation);
 
     QDeclarativeStateActions actions;
-    QDeclarativeMetaProperties properties;
+    QDeclarativeProperties properties;
     q->transition(actions, properties, QDeclarativeAbstractAnimation::Forward);
 
     q->qtAnimation()->start();
@@ -155,15 +155,15 @@ void QDeclarativeAbstractAnimationPrivate::commence()
     }
 }
 
-QDeclarativeMetaProperty QDeclarativeAbstractAnimationPrivate::createProperty(QObject *obj, const QString &str, QObject *infoObj)
+QDeclarativeProperty QDeclarativeAbstractAnimationPrivate::createProperty(QObject *obj, const QString &str, QObject *infoObj)
 {
-    QDeclarativeMetaProperty prop(obj, str, qmlContext(infoObj));
+    QDeclarativeProperty prop(obj, str, qmlContext(infoObj));
     if (!prop.isValid()) {
         qmlInfo(infoObj) << QDeclarativeAbstractAnimation::tr("Cannot animate non-existent property \"%1\"").arg(str);
-        return QDeclarativeMetaProperty();
+        return QDeclarativeProperty();
     } else if (!prop.isWritable()) {
         qmlInfo(infoObj) << QDeclarativeAbstractAnimation::tr("Cannot animate read-only property \"%1\"").arg(str);
-        return QDeclarativeMetaProperty();
+        return QDeclarativeProperty();
     }
     return prop;
 }
@@ -466,7 +466,7 @@ void QDeclarativeAbstractAnimation::complete()
     }
 }
 
-void QDeclarativeAbstractAnimation::setTarget(const QDeclarativeMetaProperty &p)
+void QDeclarativeAbstractAnimation::setTarget(const QDeclarativeProperty &p)
 {
     Q_D(QDeclarativeAbstractAnimation);
     d->defaultProperty = p;
@@ -480,7 +480,7 @@ void QDeclarativeAbstractAnimation::setTarget(const QDeclarativeMetaProperty &p)
     so this function allows us to do the same thing as setTarget without
     that assumption
 */
-void QDeclarativeAbstractAnimation::setDefaultTarget(const QDeclarativeMetaProperty &p)
+void QDeclarativeAbstractAnimation::setDefaultTarget(const QDeclarativeProperty &p)
 {
     Q_D(QDeclarativeAbstractAnimation);
     d->defaultProperty = p;
@@ -498,7 +498,7 @@ void QDeclarativeAbstractAnimation::setDisableUserControl()
 }
 
 void QDeclarativeAbstractAnimation::transition(QDeclarativeStateActions &actions,
-                                      QDeclarativeMetaProperties &modified,
+                                      QDeclarativeProperties &modified,
                                       TransitionDirection direction)
 {
     Q_UNUSED(actions);
@@ -729,7 +729,7 @@ void QDeclarativeScriptActionPrivate::execute()
 }
 
 void QDeclarativeScriptAction::transition(QDeclarativeStateActions &actions,
-                                    QDeclarativeMetaProperties &modified,
+                                    QDeclarativeProperties &modified,
                                     TransitionDirection direction)
 {
     Q_D(QDeclarativeScriptAction);
@@ -912,7 +912,7 @@ QAbstractAnimation *QDeclarativePropertyAction::qtAnimation()
 }
 
 void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
-                                      QDeclarativeMetaProperties &modified,
+                                      QDeclarativeProperties &modified,
                                       TransitionDirection direction)
 {
     Q_D(QDeclarativePropertyAction);
@@ -925,7 +925,7 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
                 const QDeclarativeAction &action = actions.at(ii);
-                QDeclarativeMetaPropertyPrivate::write(action.property, action.toValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
+                QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
             }
         }
     };
@@ -1133,7 +1133,7 @@ QAbstractAnimation *QDeclarativeParentAction::qtAnimation()
 }
 
 void QDeclarativeParentAction::transition(QDeclarativeStateActions &actions,
-                                       QDeclarativeMetaProperties &modified,
+                                       QDeclarativeProperties &modified,
                                        TransitionDirection direction)
 {
     Q_D(QDeclarativeParentAction);
@@ -1582,7 +1582,7 @@ QAbstractAnimation *QDeclarativeSequentialAnimation::qtAnimation()
 }
 
 void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actions,
-                                    QDeclarativeMetaProperties &modified,
+                                    QDeclarativeProperties &modified,
                                     TransitionDirection direction)
 {
     Q_D(QDeclarativeAnimationGroup);
@@ -1647,7 +1647,7 @@ QAbstractAnimation *QDeclarativeParallelAnimation::qtAnimation()
 }
 
 void QDeclarativeParallelAnimation::transition(QDeclarativeStateActions &actions,
-                                      QDeclarativeMetaProperties &modified,
+                                      QDeclarativeProperties &modified,
                                       TransitionDirection direction)
 {
     Q_D(QDeclarativeAnimationGroup);
@@ -2231,7 +2231,7 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
             QDeclarativeAction &action = actions[ii];
 
             if (v == 1.)
-                QDeclarativeMetaPropertyPrivate::write(action.property, action.toValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
+                QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
             else {
                 if (!fromSourced && !fromDefined) {
                     action.fromValue = action.property.read();
@@ -2246,7 +2246,7 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
                     }
                 }
                 if (interpolator)
-                    QDeclarativeMetaPropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
+                    QDeclarativePropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
             }
             if (deleted)
                 return;
@@ -2257,7 +2257,7 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
 };
 
 void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions,
-                                     QDeclarativeMetaProperties &modified,
+                                     QDeclarativeProperties &modified,
                                      TransitionDirection direction)
 {
     Q_D(QDeclarativePropertyAnimation);

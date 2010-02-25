@@ -62,7 +62,7 @@
 #include "qdeclarativevaluetype_p.h"
 #include "qdeclarativecontext.h"
 #include "qdeclarativeexpression.h"
-#include "qdeclarativemetaproperty_p.h"
+#include "qdeclarativeproperty_p.h"
 #include "qdeclarativepropertycache_p.h"
 #include "qdeclarativeobjectscriptclass_p.h"
 #include "qdeclarativecontextscriptclass_p.h"

@@ -49,7 +49,6 @@
 #include "qdeclarativecontext.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativemetaproperty_p.h"
 #include "qdeclarativebinding_p_p.h"
 #include "qdeclarativevme_p.h"
 #include "qdeclarativeenginedebug_p.h"
@@ -110,7 +109,7 @@
 #define CSIDL_APPDATA		0x001a	// <username>\Application Data
 #endif
 
-Q_DECLARE_METATYPE(QDeclarativeMetaProperty)
+Q_DECLARE_METATYPE(QDeclarativeProperty)
 
 QT_BEGIN_NAMESPACE
 

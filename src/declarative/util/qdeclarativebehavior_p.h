@@ -70,7 +70,7 @@ public:
     QDeclarativeBehavior(QObject *parent=0);
     ~QDeclarativeBehavior();
 
-    virtual void setTarget(const QDeclarativeMetaProperty &);
+    virtual void setTarget(const QDeclarativeProperty &);
     virtual void write(const QVariant &value);
 
     QDeclarativeAbstractAnimation *animation();

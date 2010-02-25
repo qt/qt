@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QDeclarativeMetaProperty;
+class QDeclarativeProperty;
 class QDeclarativeEaseFollowPrivate;
 class Q_DECLARATIVE_EXPORT QDeclarativeEaseFollow : public QObject, 
                                            public QDeclarativePropertyValueSource
@@ -94,7 +94,7 @@ public:
     qreal maximumEasingTime() const;
     void setMaximumEasingTime(qreal);
 
-    virtual void setTarget(const QDeclarativeMetaProperty &);
+    virtual void setTarget(const QDeclarativeProperty &);
 
 Q_SIGNALS:
     void sourceChanged();
