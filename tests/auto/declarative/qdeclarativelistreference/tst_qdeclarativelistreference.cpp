@@ -547,10 +547,10 @@ void tst_qdeclarativelistreference::engineTypes()
     QVERIFY(o);
 
     QDeclarativeMetaProperty p1(o, QLatin1String("myList"));
-    QVERIFY(p1.propertyCategory() == QDeclarativeMetaProperty::Normal);
+    QVERIFY(p1.propertyTypeCategory() == QDeclarativeMetaProperty::Normal);
 
     QDeclarativeMetaProperty p2(o, QLatin1String("myList"), engine.rootContext());
-    QVERIFY(p2.propertyCategory() == QDeclarativeMetaProperty::List);
+    QVERIFY(p2.propertyTypeCategory() == QDeclarativeMetaProperty::List);
     QVariant v = p2.read();
     QVERIFY(v.userType() == qMetaTypeId<QDeclarativeListReference>());
     QDeclarativeListReference ref = qvariant_cast<QDeclarativeListReference>(v);

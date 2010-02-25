@@ -63,22 +63,31 @@ class QDeclarativeMetaPropertyPrivate;
 class Q_DECLARATIVE_EXPORT QDeclarativeMetaProperty
 {
 public:
-    enum PropertyCategory {
-        Unknown,
-        InvalidProperty,
-        Bindable,
+    enum PropertyTypeCategory {
+        InvalidCategory,
         List,
         Object,
         Normal
     };
+
+    enum Type { Invalid = 0x00, 
+                Property = 0x01, 
+                SignalProperty = 0x02,
+                Default = 0x08,
+                ValueTypeProperty = 0x10 
+    };
+
     QDeclarativeMetaProperty();
+    ~QDeclarativeMetaProperty();
+
     QDeclarativeMetaProperty(QObject *);
-    QDeclarativeMetaProperty(QObject *, const QString &);
     QDeclarativeMetaProperty(QObject *, QDeclarativeContext *);
+
+    QDeclarativeMetaProperty(QObject *, const QString &);
     QDeclarativeMetaProperty(QObject *, const QString &, QDeclarativeContext *);
+
     QDeclarativeMetaProperty(const QDeclarativeMetaProperty &);
     QDeclarativeMetaProperty &operator=(const QDeclarativeMetaProperty &);
-    ~QDeclarativeMetaProperty();
 
     QString name() const;
 
@@ -96,12 +105,6 @@ public:
 
     QMetaMethod method() const;
 
-    enum Type { Invalid = 0x00, 
-                Property = 0x01, 
-                SignalProperty = 0x02,
-                Default = 0x08,
-                ValueTypeProperty = 0x10 };
-
     Type type() const;
     bool isProperty() const;
     bool isDefault() const;
@@ -111,9 +114,8 @@ public:
     bool isValid() const;
     QObject *object() const;
 
-    PropertyCategory propertyCategory() const;
-
     int propertyType() const;
+    PropertyTypeCategory propertyTypeCategory() const;
     const char *propertyTypeName() const;
 
     bool operator==(const QDeclarativeMetaProperty &) const;

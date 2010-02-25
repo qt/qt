@@ -157,7 +157,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty()
     QCOMPARE(prop.isResettable(), false);
     QCOMPARE(prop.isValid(), false);
     QCOMPARE(prop.object(), (QObject *)0);
-    QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::InvalidProperty);
+    QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::InvalidCategory);
     QCOMPARE(prop.propertyType(), 0);
     QCOMPARE(prop.propertyTypeName(), (const char *)0);
     QVERIFY(prop.property().name() == 0);
@@ -245,7 +245,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::InvalidProperty);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
@@ -292,7 +292,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::Normal);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
@@ -346,7 +346,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::InvalidProperty);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
@@ -393,7 +393,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::Normal);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
@@ -442,7 +442,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::InvalidProperty);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
@@ -495,7 +495,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::InvalidProperty);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
@@ -542,7 +542,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_context()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::Normal);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
@@ -596,7 +596,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), false);
         QCOMPARE(prop.object(), (QObject *)0);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::InvalidProperty);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QVERIFY(prop.property().name() == 0);
@@ -643,7 +643,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::Normal);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
         QCOMPARE(prop.propertyType(), (int)QVariant::Int);
         QCOMPARE(prop.propertyTypeName(), "int");
         QCOMPARE(QString(prop.property().name()), QString("defaultProperty"));
@@ -692,7 +692,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QCOMPARE(prop.isResettable(), false);
         QCOMPARE(prop.isValid(), true);
         QCOMPARE(prop.object(), &dobject);
-        QCOMPARE(prop.propertyCategory(), QDeclarativeMetaProperty::InvalidProperty);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeMetaProperty::InvalidCategory);
         QCOMPARE(prop.propertyType(), 0);
         QCOMPARE(prop.propertyTypeName(), (const char *)0);
         QCOMPARE(prop.property().name(), (const char *)0);
@@ -1139,14 +1139,14 @@ void tst_qdeclarativemetaproperty::copy()
     QCOMPARE(property->name(), QString("defaultProperty"));
     QCOMPARE(property->read(), QVariant(10));
     QCOMPARE(property->type(), QDeclarativeMetaProperty::Property);
-    QCOMPARE(property->propertyCategory(), QDeclarativeMetaProperty::Normal);
+    QCOMPARE(property->propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
     QCOMPARE(property->propertyType(), (int)QVariant::Int);
 
     QDeclarativeMetaProperty p1(*property);
     QCOMPARE(p1.name(), QString("defaultProperty"));
     QCOMPARE(p1.read(), QVariant(10));
     QCOMPARE(p1.type(), QDeclarativeMetaProperty::Property);
-    QCOMPARE(p1.propertyCategory(), QDeclarativeMetaProperty::Normal);
+    QCOMPARE(p1.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
     QCOMPARE(p1.propertyType(), (int)QVariant::Int);
 
     QDeclarativeMetaProperty p2(&object, QLatin1String("url"));
@@ -1155,7 +1155,7 @@ void tst_qdeclarativemetaproperty::copy()
     QCOMPARE(p2.name(), QString("defaultProperty"));
     QCOMPARE(p2.read(), QVariant(10));
     QCOMPARE(p2.type(), QDeclarativeMetaProperty::Property);
-    QCOMPARE(p2.propertyCategory(), QDeclarativeMetaProperty::Normal);
+    QCOMPARE(p2.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
     QCOMPARE(p2.propertyType(), (int)QVariant::Int);
 
     delete property; property = 0;
@@ -1163,13 +1163,13 @@ void tst_qdeclarativemetaproperty::copy()
     QCOMPARE(p1.name(), QString("defaultProperty"));
     QCOMPARE(p1.read(), QVariant(10));
     QCOMPARE(p1.type(), QDeclarativeMetaProperty::Property);
-    QCOMPARE(p1.propertyCategory(), QDeclarativeMetaProperty::Normal);
+    QCOMPARE(p1.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
     QCOMPARE(p1.propertyType(), (int)QVariant::Int);
 
     QCOMPARE(p2.name(), QString("defaultProperty"));
     QCOMPARE(p2.read(), QVariant(10));
     QCOMPARE(p2.type(), QDeclarativeMetaProperty::Property);
-    QCOMPARE(p2.propertyCategory(), QDeclarativeMetaProperty::Normal);
+    QCOMPARE(p2.propertyTypeCategory(), QDeclarativeMetaProperty::Normal);
     QCOMPARE(p2.propertyType(), (int)QVariant::Int);
 }
 

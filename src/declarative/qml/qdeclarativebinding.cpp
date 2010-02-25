@@ -128,7 +128,7 @@ void QDeclarativeBinding::update(QDeclarativeMetaProperty::WriteFlags flags)
     if (!data->updating) {
         data->updating = true;
 
-        if (data->property.propertyCategory() == QDeclarativeMetaProperty::Bindable) {
+        if (data->property.propertyType() == qMetaTypeId<QDeclarativeBinding *>()) {
 
             int idx = data->property.coreIndex();
             Q_ASSERT(idx != -1);

@@ -263,13 +263,11 @@ QDeclarativeMetaProperty::QDeclarativeMetaProperty(const QDeclarativeMetaPropert
 }
 
 /*!
-  \enum QDeclarativeMetaProperty::PropertyCategory
+  \enum QDeclarativeMetaProperty::PropertyTypeCategory
 
   This enum specifies a category of QML property.
 
-  \value Unknown The category is unknown.  This will never be returned from propertyCategory()
-  \value InvalidProperty The property is invalid.
-  \value Bindable The property is a QDeclarativeBinding.
+  \value InvalidCategory The property is invalid.
   \value List The property is a QList pointer
   \value Object The property is a QObject derived type pointer
   \value Normal The property is none of the above.
@@ -289,13 +287,13 @@ QDeclarativeMetaProperty::QDeclarativeMetaProperty(const QDeclarativeMetaPropert
 /*!
     Returns the property category.
 */
-QDeclarativeMetaProperty::PropertyCategory QDeclarativeMetaProperty::propertyCategory() const
+QDeclarativeMetaProperty::PropertyTypeCategory QDeclarativeMetaProperty::propertyTypeCategory() const
 {
-    return d->propertyCategory();
+    return d->propertyTypeCategory();
 }
 
-QDeclarativeMetaProperty::PropertyCategory 
-QDeclarativeMetaPropertyPrivate::propertyCategory() const
+QDeclarativeMetaProperty::PropertyTypeCategory 
+QDeclarativeMetaPropertyPrivate::propertyTypeCategory() const
 {
     uint type = q->type();
 
@@ -304,11 +302,9 @@ QDeclarativeMetaPropertyPrivate::propertyCategory() const
     } else if (type & QDeclarativeMetaProperty::Property) {
         int type = propertyType();
         if (type == QVariant::Invalid)
-            return QDeclarativeMetaProperty::InvalidProperty;
+            return QDeclarativeMetaProperty::InvalidCategory;
         else if ((uint)type < QVariant::UserType)
             return QDeclarativeMetaProperty::Normal;
-        else if (type == qMetaTypeId<QDeclarativeBinding *>())
-            return QDeclarativeMetaProperty::Bindable;
         else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived)
             return QDeclarativeMetaProperty::Object;
         else if (core.flags & QDeclarativePropertyCache::Data::IsQList)
@@ -316,7 +312,7 @@ QDeclarativeMetaPropertyPrivate::propertyCategory() const
         else 
             return QDeclarativeMetaProperty::Normal;
     } else {
-        return QDeclarativeMetaProperty::InvalidProperty;
+        return QDeclarativeMetaProperty::InvalidCategory;
     }
 }
 
@@ -445,7 +441,7 @@ QDeclarativeMetaProperty &QDeclarativeMetaProperty::operator=(const QDeclarative
 */
 bool QDeclarativeMetaProperty::isWritable() const
 {
-    QDeclarativeMetaProperty::PropertyCategory category = propertyCategory();
+    QDeclarativeMetaProperty::PropertyTypeCategory category = propertyTypeCategory();
 
     if (!d->object)
         return false;
