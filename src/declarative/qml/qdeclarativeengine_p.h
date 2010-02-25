@@ -267,7 +267,7 @@ public:
 
 
     QStringList environmentImportPath;
-    QSet<QString> importedPlugins;
+    QSet<QString> initializedPlugins;
 
     QString resolvePlugin(const QDir &dir, const QString &baseName,
                           const QStringList &suffixes,
