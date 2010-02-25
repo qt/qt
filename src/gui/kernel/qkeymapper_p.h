@@ -137,12 +137,21 @@ struct QXCoreDesc {
     KeySym lock_meaning;
 };
 
+#elif defined(Q_OS_SYMBIAN)
+#include <e32keys.h>
+class KeyMapping{
+public:
+    KeyMapping(TKeyCode aS60KeyCode, TStdScanCode aS60ScanCode, Qt::Key aQtKey) : s60KeyCode(aS60KeyCode), s60ScanCode(aS60ScanCode), qtKey(aQtKey) { };
+    TKeyCode s60KeyCode;
+    TStdScanCode s60ScanCode; 
+    Qt::Key qtKey;
+};
 #endif
 
 struct KeyboardLayoutItem;
 typedef struct __TISInputSource * TISInputSourceRef;
 class QKeyEvent;
-class QKeyMapperPrivate : public QObjectPrivate
+class Q_GUI_EXPORT QKeyMapperPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QKeyMapper)
 public:
@@ -208,11 +217,14 @@ public:
 #elif defined(Q_WS_QWS)
 #elif defined(Q_OS_SYMBIAN)
 private:
-    QHash<TUint, int> s60ToQtKeyMap;
+    QList<KeyMapping> keyMapping;
     void fillKeyMap();
 public:
     QString translateKeyEvent(int keySym, Qt::KeyboardModifiers modifiers);
     int mapS60KeyToQt(TUint s60key);
+    int mapS60ScanCodesToQt(TUint s60key);
+    int mapQtToS60Key(int qtKey);
+    int mapQtToS60ScanCodes(int qtKey);
 #endif
 };
 
