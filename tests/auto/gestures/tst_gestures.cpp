@@ -58,7 +58,7 @@
 
 static QPointF mapToGlobal(const QPointF &pt, QGraphicsItem *item, QGraphicsView *view)
 {
-    return view->mapToGlobal(view->mapFromScene(item->mapToScene(pt)));
+    return view->viewport()->mapToGlobal(view->mapFromScene(item->mapToScene(pt)));
 }
 
 class CustomGesture : public QGesture
@@ -353,6 +353,7 @@ private slots:
     void deleteGestureTargetWidget();
     void deleteGestureTargetItem_data();
     void deleteGestureTargetItem();
+    void viewportCoordinates();
 };
 
 tst_Gestures::tst_Gestures()
@@ -742,7 +743,6 @@ public:
         ignoredFinishedGestures.clear();
     }
 
-protected:
     QRectF boundingRect() const
     {
         return size;
@@ -1771,7 +1771,6 @@ void tst_Gestures::panelStacksBehindParent()
 
 void tst_Gestures::deleteGestureTargetWidget()
 {
-
 }
 
 void tst_Gestures::deleteGestureTargetItem_data()
@@ -1855,6 +1854,46 @@ void tst_Gestures::deleteGestureTargetItem()
     event.hotSpot = mapToGlobal(QPointF(5, 5), item2, &view);
     event.hasHotSpot = true;
     sendCustomGesture(&event, item1, &scene);
+}
+
+class GraphicsView : public QGraphicsView
+{
+public:
+    GraphicsView(QGraphicsScene *scene, QWidget *parent = 0)
+        : QGraphicsView(scene, parent)
+    {
+    }
+
+    using QGraphicsView::setViewportMargins;
+};
+
+// just making sure that even if the graphicsview has margins hotspot still
+// works properly. It should use viewport for converting global coordinates to
+// scene coordinates.
+void tst_Gestures::viewportCoordinates()
+{
+    QGraphicsScene scene;
+    GraphicsView view(&scene);
+    view.setViewportMargins(10,20,15,25);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+
+    GestureItem *item1 = new GestureItem("item1");
+    item1->grabGesture(CustomGesture::GestureType);
+    item1->size = QRectF(0, 0, 3, 3);
+    item1->setZValue(2);
+    scene.addItem(item1);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
+
+    CustomEvent event;
+    event.hotSpot = mapToGlobal(item1->boundingRect().center(), item1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item1, &scene);
+    QVERIFY(item1->gestureEventsReceived != 0);
 }
 
 QTEST_MAIN(tst_Gestures)

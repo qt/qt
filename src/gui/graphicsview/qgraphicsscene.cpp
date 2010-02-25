@@ -5972,12 +5972,12 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 
     QList<QGesture *> allGestures = event->gestures();
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
-            << "Delivering gestures:" <<  allGestures;
+            << "Gestures:" <<  allGestures;
 
     QSet<QGesture *> startedGestures;
-    QPoint delta = graphicsView->mapFromGlobal(QPoint());
-    QTransform toScene =  QTransform::fromTranslate(delta.x(), delta.y())
-                          * graphicsView->viewportTransform().inverted();
+    QPoint delta = viewport->mapFromGlobal(QPoint());
+    QTransform toScene = QTransform::fromTranslate(delta.x(), delta.y())
+                         * graphicsView->viewportTransform().inverted();
     foreach (QGesture *gesture, allGestures) {
         // cache scene coordinates of the hot spot
         if (gesture->hasHotSpot()) {
