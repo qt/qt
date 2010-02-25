@@ -156,7 +156,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
     QDeclarativeContextPrivate *cp = (QDeclarativeContextPrivate *)QObjectPrivate::get(ctxt);
 
     int status = -1;    //for dbus
-    QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::BypassInterceptor;
+    QDeclarativeMetaPropertyPrivate::WriteFlags flags = QDeclarativeMetaPropertyPrivate::BypassInterceptor;
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         const QDeclarativeInstruction &instr = comp->bytecode.at(ii);
@@ -648,7 +648,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 obj->setParent(target);
                 vi->setTarget(prop);
                 QDeclarativeVMEMetaObject *mo = static_cast<QDeclarativeVMEMetaObject *>((QMetaObject*)target->metaObject());
-                mo->registerInterceptor(prop.coreIndex(), prop.valueTypeCoreIndex(), vi);
+                mo->registerInterceptor(prop.coreIndex(), QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), vi);
             }
             break;
 
@@ -806,7 +806,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QDeclarativeValueType *valueHandler = 
                     static_cast<QDeclarativeValueType *>(stack.pop());
                 QObject *target = stack.top();
-                valueHandler->write(target, instr.fetchValue.property, QDeclarativeMetaProperty::BypassInterceptor);
+                valueHandler->write(target, instr.fetchValue.property, 
+                                    QDeclarativeMetaPropertyPrivate::BypassInterceptor);
             }
             break;
 

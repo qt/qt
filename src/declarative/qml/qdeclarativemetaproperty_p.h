@@ -67,6 +67,9 @@ class QDeclarativeEnginePrivate;
 class Q_AUTOTEST_EXPORT QDeclarativeMetaPropertyPrivate
 {
 public:
+    enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
+    Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
+
     QDeclarativeMetaPropertyPrivate()
         : q(0), context(0), object(0), isDefaultProperty(false), isNameCached(false) {}
           
@@ -98,16 +101,16 @@ public:
     QDeclarativeMetaProperty::PropertyTypeCategory propertyTypeCategory() const;
 
     QVariant readValueProperty();
-    bool writeValueProperty(const QVariant &, QDeclarativeMetaProperty::WriteFlags);
+    bool writeValueProperty(const QVariant &, WriteFlags);
 
     static const QMetaObject *rawMetaObjectForType(QDeclarativeEnginePrivate *, int);
     static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, 
                                   const QVariant &value, int flags);
     static bool write(QObject *, const QDeclarativePropertyCache::Data &, const QVariant &, 
-                      QDeclarativeContext *, QDeclarativeMetaProperty::WriteFlags flags = 0);
+                      QDeclarativeContext *, WriteFlags flags = 0);
     static QDeclarativeAbstractBinding *setBinding(QObject *, const QDeclarativePropertyCache::Data &, 
                                                    QDeclarativeAbstractBinding *,
-                                                   QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::DontRemoveBinding);
+                                                   WriteFlags flags = DontRemoveBinding);
 
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
@@ -122,12 +125,15 @@ public:
     static QDeclarativeAbstractBinding *binding(const QDeclarativeMetaProperty &that);
     static QDeclarativeAbstractBinding *setBinding(const QDeclarativeMetaProperty &that,
                                                    QDeclarativeAbstractBinding *,
-                                                   QDeclarativeMetaProperty::WriteFlags flags = QDeclarativeMetaProperty::DontRemoveBinding);
+                                                   WriteFlags flags = DontRemoveBinding);
     static QDeclarativeExpression *signalExpression(const QDeclarativeMetaProperty &that);
     static QDeclarativeExpression *setSignalExpression(const QDeclarativeMetaProperty &that, 
                                                        QDeclarativeExpression *) ;
-
+    static bool write(const QDeclarativeMetaProperty &that, const QVariant &, WriteFlags);
+    static int valueTypeCoreIndex(const QDeclarativeMetaProperty &that);
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeMetaPropertyPrivate::WriteFlags)
 
 QT_END_NAMESPACE
 

@@ -589,7 +589,7 @@ QDeclarativeMetaPropertyPrivate::binding(const QDeclarativeMetaProperty &that)
 QDeclarativeAbstractBinding *
 QDeclarativeMetaPropertyPrivate::setBinding(const QDeclarativeMetaProperty &that,
                                             QDeclarativeAbstractBinding *newBinding, 
-                                            QDeclarativeMetaProperty::WriteFlags flags) 
+                                            WriteFlags flags) 
 {
     if (!that.isProperty() || !that.d->object) {
         if (newBinding)
@@ -602,7 +602,7 @@ QDeclarativeMetaPropertyPrivate::setBinding(const QDeclarativeMetaProperty &that
 
 QDeclarativeAbstractBinding *
 QDeclarativeMetaPropertyPrivate::setBinding(QObject *object, const QDeclarativePropertyCache::Data &core, 
-                                   QDeclarativeAbstractBinding *newBinding, QDeclarativeMetaProperty::WriteFlags flags)
+                                   QDeclarativeAbstractBinding *newBinding, WriteFlags flags)
 {
     QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(object, 0 != newBinding);
 
@@ -796,11 +796,10 @@ bool QDeclarativeMetaPropertyPrivate::writeEnumProperty(const QMetaProperty &pro
     return status;
 }
 
-bool QDeclarativeMetaPropertyPrivate::writeValueProperty(const QVariant &value,
-                                                QDeclarativeMetaProperty::WriteFlags flags)
+bool QDeclarativeMetaPropertyPrivate::writeValueProperty(const QVariant &value, WriteFlags flags)
 {
     // Remove any existing bindings on this property
-    if (!(flags & QDeclarativeMetaProperty::DontRemoveBinding)) {
+    if (!(flags & DontRemoveBinding)) {
         QDeclarativeAbstractBinding *binding = setBinding(*q, 0);
         if (binding) binding->destroy();
     }
@@ -838,8 +837,8 @@ bool QDeclarativeMetaPropertyPrivate::writeValueProperty(const QVariant &value,
 }
 
 bool QDeclarativeMetaPropertyPrivate::write(QObject *object, const QDeclarativePropertyCache::Data &property, 
-                                   const QVariant &value, QDeclarativeContext *context, 
-                                   QDeclarativeMetaProperty::WriteFlags flags)
+                                            const QVariant &value, QDeclarativeContext *context, 
+                                            WriteFlags flags)
 {
     int coreIdx = property.coreIndex;
     int status = -1;    //for dbus
@@ -1007,7 +1006,7 @@ const QMetaObject *QDeclarativeMetaPropertyPrivate::rawMetaObjectForType(QDeclar
 */
 bool QDeclarativeMetaProperty::write(const QVariant &value) const
 {
-    return write(value, 0);
+    return QDeclarativeMetaPropertyPrivate::write(*this, value, 0);
 }
 
 /*!
@@ -1024,10 +1023,12 @@ bool QDeclarativeMetaProperty::reset() const
     }
 }
 
-bool QDeclarativeMetaProperty::write(const QVariant &value, QDeclarativeMetaProperty::WriteFlags flags) const
+bool QDeclarativeMetaPropertyPrivate::write(const QDeclarativeMetaProperty &that,
+                                            const QVariant &value, WriteFlags flags) 
 {
-    if (d->object && type() & Property && d->core.isValid() && isWritable()) 
-        return d->writeValueProperty(value, flags);
+    if (that.d->object && that.type() & QDeclarativeMetaProperty::Property && 
+        that.d->core.isValid() && that.isWritable()) 
+        return that.d->writeValueProperty(value, flags);
     else 
         return false;
 }
@@ -1106,12 +1107,10 @@ int QDeclarativeMetaProperty::coreIndex() const
     return d->core.coreIndex;
 }
 
-/*! \internal */
-int QDeclarativeMetaProperty::valueTypeCoreIndex() const
+int QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(const QDeclarativeMetaProperty &that)
 {
-    return d->valueType.valueTypeCoreIdx;
+    return that.d->valueType.valueTypeCoreIdx;
 }
-
 
 struct SerializedData {
     QDeclarativeMetaProperty::Type type;

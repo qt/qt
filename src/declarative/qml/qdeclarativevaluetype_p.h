@@ -54,6 +54,7 @@
 //
 
 #include "qdeclarativemetaproperty.h"
+#include "qdeclarativemetaproperty_p.h"
 
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
@@ -70,7 +71,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeValueType : public QObject
 public:
     QDeclarativeValueType(QObject *parent = 0);
     virtual void read(QObject *, int) = 0;
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags flags) = 0;
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags flags) = 0;
     virtual QVariant value() = 0;
     virtual void setValue(QVariant) = 0;
 };
@@ -95,7 +96,7 @@ public:
     QDeclarativePointFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -117,7 +118,7 @@ public:
     QDeclarativePointValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -139,7 +140,7 @@ public:
     QDeclarativeSizeFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -161,7 +162,7 @@ public:
     QDeclarativeSizeValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -185,7 +186,7 @@ public:
     QDeclarativeRectFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -214,7 +215,7 @@ public:
     QDeclarativeRectValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -242,7 +243,7 @@ public:
     QDeclarativeVector3DValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -296,7 +297,7 @@ public:
     QDeclarativeEasingValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -347,7 +348,7 @@ public:
     QDeclarativeFontValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int, QDeclarativeMetaProperty::WriteFlags);
+    virtual void write(QObject *, int, QDeclarativeMetaPropertyPrivate::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 

@@ -93,17 +93,12 @@ public:
 
     QVariant read() const;
     bool write(const QVariant &) const;
-    enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
-    Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
-    bool write(const QVariant &, QDeclarativeMetaProperty::WriteFlags) const;
     bool reset() const;
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;
     bool connectNotifier(QObject *dest, const char *slot) const;
     bool connectNotifier(QObject *dest, int method) const;
-
-    QMetaMethod method() const;
 
     Type type() const;
     bool isProperty() const;
@@ -120,17 +115,16 @@ public:
 
     bool operator==(const QDeclarativeMetaProperty &) const;
 
-    QMetaProperty property() const;
-
     int coreIndex() const;
-    int valueTypeCoreIndex() const;
+    QMetaProperty property() const;
+    QMetaMethod method() const;
+
 private:
     friend class QDeclarativeEnginePrivate;
     friend class QDeclarativeMetaPropertyPrivate;
     QDeclarativeMetaPropertyPrivate *d;
 };
 typedef QList<QDeclarativeMetaProperty> QDeclarativeMetaProperties;
- Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeMetaProperty::WriteFlags)
 
 QT_END_NAMESPACE
 

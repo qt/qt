@@ -46,6 +46,7 @@
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeinfo.h>
+#include <qdeclarativemetaproperty_p.h>
 
 #include <QtCore/qparallelanimationgroup.h>
 
@@ -156,7 +157,7 @@ void QDeclarativeBehavior::write(const QVariant &value)
 {
     Q_D(QDeclarativeBehavior);
     if (!d->animation || !d->enabled) {
-        d->property.write(value, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+        QDeclarativeMetaPropertyPrivate::write(d->property, value, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
         return;
     }
 
@@ -176,7 +177,7 @@ void QDeclarativeBehavior::write(const QVariant &value)
         d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
     d->animation->qtAnimation()->start();
     if (!after.contains(d->property))
-        d->property.write(value, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+        QDeclarativeMetaPropertyPrivate::write(d->property, value, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
 }
 
 void QDeclarativeBehavior::setTarget(const QDeclarativeMetaProperty &property)

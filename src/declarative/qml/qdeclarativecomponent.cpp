@@ -698,8 +698,8 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
                 state->bindValues.at(ii);
             for (int jj = 0; jj < bv.count; ++jj) {
                 if(bv.at(jj)) 
-                    bv.at(jj)->setEnabled(true, QDeclarativeMetaProperty::BypassInterceptor | 
-                                                QDeclarativeMetaProperty::DontRemoveBinding);
+                    bv.at(jj)->setEnabled(true, QDeclarativeMetaPropertyPrivate::BypassInterceptor | 
+                                                QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
             }
             QDeclarativeEnginePrivate::clear(bv);
         }

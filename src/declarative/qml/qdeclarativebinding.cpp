@@ -111,7 +111,7 @@ QDeclarativeMetaProperty QDeclarativeBinding::property() const
    return d->bindingData()->property; 
 }
 
-void QDeclarativeBinding::update(QDeclarativeMetaProperty::WriteFlags flags)
+void QDeclarativeBinding::update(QDeclarativeMetaPropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
 
@@ -161,7 +161,7 @@ void QDeclarativeBinding::update(QDeclarativeMetaProperty::WriteFlags flags)
                 data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
 
             } else if (!isUndefined && data->property.object() && 
-                       !data->property.write(value, flags)) {
+                       !QDeclarativeMetaPropertyPrivate::write(data->property, value, flags)) {
 
                 QUrl url = QUrl(data->url);
                 int line = data->line;
@@ -204,7 +204,7 @@ void QDeclarativeBindingPrivate::emitValueChanged()
     q->update();
 }
 
-void QDeclarativeBinding::setEnabled(bool e, QDeclarativeMetaProperty::WriteFlags flags)
+void QDeclarativeBinding::setEnabled(bool e, QDeclarativeMetaPropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
     d->bindingData()->enabled = e;
@@ -300,7 +300,7 @@ QString QDeclarativeAbstractBinding::expression() const
     return QLatin1String("<Unknown>");
 }
 
-void QDeclarativeAbstractBinding::setEnabled(bool e, QDeclarativeMetaProperty::WriteFlags)
+void QDeclarativeAbstractBinding::setEnabled(bool e, QDeclarativeMetaPropertyPrivate::WriteFlags)
 {
     if (e) m_mePtr = 0;
 }

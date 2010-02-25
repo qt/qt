@@ -52,6 +52,7 @@
 #include <qdeclarativestringconverters_p.h>
 #include <qdeclarativeglobal_p.h>
 #include <qdeclarativemetatype_p.h>
+#include <qdeclarativemetaproperty_p.h>
 
 #include <qvariant.h>
 #include <qcolor.h>
@@ -924,7 +925,7 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
                 const QDeclarativeAction &action = actions.at(ii);
-                action.property.write(action.toValue, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+                QDeclarativeMetaPropertyPrivate::write(action.property, action.toValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
             }
         }
     };
@@ -2230,7 +2231,7 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
             QDeclarativeAction &action = actions[ii];
 
             if (v == 1.)
-                action.property.write(action.toValue, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+                QDeclarativeMetaPropertyPrivate::write(action.property, action.toValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
             else {
                 if (!fromSourced && !fromDefined) {
                     action.fromValue = action.property.read();
@@ -2245,7 +2246,7 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
                     }
                 }
                 if (interpolator)
-                    action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+                    QDeclarativeMetaPropertyPrivate::write(action.property, interpolator(action.fromValue.constData(), action.toValue.constData(), v), QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
             }
             if (deleted)
                 return;

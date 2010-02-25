@@ -45,6 +45,7 @@
 
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>
+#include <qdeclarativemetaproperty_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -149,9 +150,9 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
         for (int ii = 0; ii < applyList.size(); ++ii) {
             const QDeclarativeAction &action = applyList.at(ii);
             if (action.toBinding) {
-                QDeclarativeMetaPropertyPrivate::setBinding(action.property, action.toBinding, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+                QDeclarativeMetaPropertyPrivate::setBinding(action.property, action.toBinding, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
             } else if (!action.event) {
-                action.property.write(action.toValue, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+                QDeclarativeMetaPropertyPrivate::write(action.property, action.toValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
             } else if (action.event->isReversable()) {
                 if (action.reverseEvent)
                     action.event->reverse();
@@ -192,7 +193,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
             if (action.toBinding)
                 QDeclarativeMetaPropertyPrivate::setBinding(action.property, 0); // Make sure this is disabled during the transition
 
-            action.property.write(action.fromValue, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+            QDeclarativeMetaPropertyPrivate::write(action.property, action.fromValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
         }
     }
 

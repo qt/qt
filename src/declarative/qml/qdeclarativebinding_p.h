@@ -57,6 +57,7 @@
 #include "qdeclarativepropertyvaluesource.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativemetaproperty.h"
+#include "qdeclarativemetaproperty_p.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QMetaProperty>
@@ -73,12 +74,12 @@ public:
 
     virtual QString expression() const;
 
-    void setEnabled(bool e) { setEnabled(e, QDeclarativeMetaProperty::DontRemoveBinding); }
-    virtual void setEnabled(bool, QDeclarativeMetaProperty::WriteFlags) = 0;
+    void setEnabled(bool e) { setEnabled(e, QDeclarativeMetaPropertyPrivate::DontRemoveBinding); }
+    virtual void setEnabled(bool, QDeclarativeMetaPropertyPrivate::WriteFlags) = 0;
     virtual int propertyIndex() = 0;
 
-    void update() { update(QDeclarativeMetaProperty::DontRemoveBinding); }
-    virtual void update(QDeclarativeMetaProperty::WriteFlags) = 0;
+    void update() { update(QDeclarativeMetaPropertyPrivate::DontRemoveBinding); }
+    virtual void update(QDeclarativeMetaPropertyPrivate::WriteFlags) = 0;
 
     void addToObject(QObject *);
     void removeFromObject();
@@ -115,13 +116,13 @@ public:
     bool enabled() const;
 
     // Inherited from  QDeclarativeAbstractBinding
-    virtual void setEnabled(bool, QDeclarativeMetaProperty::WriteFlags flags);
+    virtual void setEnabled(bool, QDeclarativeMetaPropertyPrivate::WriteFlags flags);
     virtual int propertyIndex();
-    virtual void update(QDeclarativeMetaProperty::WriteFlags flags);
+    virtual void update(QDeclarativeMetaPropertyPrivate::WriteFlags flags);
     virtual QString expression() const;
 
 public Q_SLOTS:
-    void update() { update(QDeclarativeMetaProperty::DontRemoveBinding); }
+    void update() { update(QDeclarativeMetaPropertyPrivate::DontRemoveBinding); }
 
 protected:
     void emitValueChanged();

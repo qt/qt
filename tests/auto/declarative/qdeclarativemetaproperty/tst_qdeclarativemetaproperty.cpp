@@ -168,7 +168,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty()
     QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
     QVERIFY(expression == 0);
     QCOMPARE(prop.coreIndex(), -1);
-    QCOMPARE(prop.valueTypeCoreIndex(), -1);
+    QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
     delete obj;
 }
@@ -256,7 +256,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -305,7 +305,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -357,7 +357,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -406,7 +406,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -454,7 +454,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string()
         QVERIFY(expression != 0);
         QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == expression);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfMethod("clicked()"));
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -506,7 +506,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_context()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -555,7 +555,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_context()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -607,7 +607,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), -1);
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -656,7 +656,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QVERIFY(QDeclarativeMetaPropertyPrivate::setSignalExpression(prop, expression) == 0);
         QVERIFY(expression == 0);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfProperty("defaultProperty"));
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }
@@ -704,7 +704,7 @@ void tst_qdeclarativemetaproperty::qmlmetaproperty_object_string_context()
         QVERIFY(expression != 0);
         QVERIFY(QDeclarativeMetaPropertyPrivate::signalExpression(prop) == expression);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfMethod("clicked()"));
-        QCOMPARE(prop.valueTypeCoreIndex(), -1);
+        QCOMPARE(QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
     }

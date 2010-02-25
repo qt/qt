@@ -53,6 +53,7 @@
 #include <qdeclarative.h>
 #include <QDeclarativePropertyValueSource>
 #include <QDeclarativeMetaProperty>
+#include <private/qdeclarativemetaproperty_p.h>
 
 class MyTypeObject : public QObject
 {
@@ -143,7 +144,7 @@ class MyOffsetValueInterceptor : public QObject, public QDeclarativePropertyValu
     Q_OBJECT
 public:
     virtual void setTarget(const QDeclarativeMetaProperty &p) { prop = p; }
-    virtual void write(const QVariant &value) { prop.write(value.toInt() + 13, QDeclarativeMetaProperty::BypassInterceptor); }
+    virtual void write(const QVariant &value) { QDeclarativeMetaPropertyPrivate::write(prop, value.toInt() + 13, QDeclarativeMetaPropertyPrivate::BypassInterceptor); }
 
 private:
     QDeclarativeMetaProperty prop;

@@ -109,9 +109,9 @@ public:
                     scope(0), target(0), parent(0) {}
 
         // Inherited from QDeclarativeAbstractBinding
-        virtual void setEnabled(bool, QDeclarativeMetaProperty::WriteFlags flags);
+        virtual void setEnabled(bool, QDeclarativeMetaPropertyPrivate::WriteFlags flags);
         virtual int propertyIndex();
-        virtual void update(QDeclarativeMetaProperty::WriteFlags flags);
+        virtual void update(QDeclarativeMetaPropertyPrivate::WriteFlags flags);
         virtual void destroy();
 
         int index:30;
@@ -244,7 +244,7 @@ QDeclarativeAbstractBinding *QDeclarativeCompiledBindings::configBinding(int ind
     return rv;
 }
 
-void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarativeMetaProperty::WriteFlags flags)
+void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarativeMetaPropertyPrivate::WriteFlags flags)
 {
     if (e) {
         addToObject(target);
@@ -267,7 +267,7 @@ int QDeclarativeCompiledBindingsPrivate::Binding::propertyIndex()
     return property & 0xFFFF;
 }
 
-void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativeMetaProperty::WriteFlags)
+void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativeMetaPropertyPrivate::WriteFlags)
 {
     parent->run(this);
 }
@@ -324,7 +324,7 @@ void QDeclarativeCompiledBindingsPrivate::run(Binding *binding)
         run(binding->index, cp, binding, binding->scope, target);
 
         vt->write(binding->target, binding->property & 0xFFFF, 
-                  QDeclarativeMetaProperty::DontRemoveBinding);
+                  QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
     } else {
         run(binding->index, cp, binding, binding->scope, binding->target);
     }
