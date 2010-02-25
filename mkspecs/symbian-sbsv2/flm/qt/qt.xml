@@ -16,7 +16,7 @@
 
 	<!-- Extension interfaces : replacements for Template Extension Makefiles -->
     
-    <interface name="qt.qmake_extra_pre_targetdep" extends="Symbian.UserFLM"
+    <interface name="qt.qmake_extra_pre_targetdep.export" extends="Symbian.UserFLM"
                 flm="qmake_extra_pre_targetdep.flm">
         <param name='PREDEP_TARGET' />
         <param name='DEPS' default = '' />

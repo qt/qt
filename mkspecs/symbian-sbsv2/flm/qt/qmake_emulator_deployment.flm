@@ -7,14 +7,12 @@
 # **
 # ****************************************************************************/
 
-include $(FLMHOME)/metaflm.mk
 
 SINGLETON:=$(call sanitise,TARGET_$(DEPLOY_TARGET))
 CLEAN_TARGET:=
 
 define qmake_emulator_deployment
 $(ALLTARGET):: $(1)
-FINAL::$(1)
 
 # Prevent duplicate targets from being created
 $(SINGLETON):=1
