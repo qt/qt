@@ -441,14 +441,14 @@ static bool QT_FASTCALL _scheme(const char **ptr, QUrlParseData *parseData)
 {
     bool first = true;
     bool isSchemeValid = true;
-   
+
     parseData->scheme = *ptr;
     for (;;) {
         char ch = **ptr;
         if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
             ;
         } else if ((ch >= '0' && ch <= '9') || ch == '+' || ch == '-' || ch == '.') {
-            if (first) 
+            if (first)
                 isSchemeValid = false;
         } else {
             break;
