@@ -804,13 +804,13 @@ void QDeclarativeListViewPrivate::createHighlight()
                 highlight->item->setWidth(currentItem->item->width());
             const QLatin1String posProp(orient == QDeclarativeListView::Vertical ? "y" : "x");
             highlightPosAnimator = new QDeclarativeEaseFollow(q);
-            highlightPosAnimator->setTarget(QDeclarativeMetaProperty(highlight->item, posProp));
+            highlightPosAnimator->setTarget(QDeclarativeProperty(highlight->item, posProp));
             highlightPosAnimator->setVelocity(highlightMoveSpeed);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == QDeclarativeListView::Vertical ? "height" : "width");
             highlightSizeAnimator = new QDeclarativeEaseFollow(q);
             highlightSizeAnimator->setVelocity(highlightResizeSpeed);
-            highlightSizeAnimator->setTarget(QDeclarativeMetaProperty(highlight->item, sizeProp));
+            highlightSizeAnimator->setTarget(QDeclarativeProperty(highlight->item, sizeProp));
             highlightSizeAnimator->setEnabled(autoHighlight);
             changed = true;
         }

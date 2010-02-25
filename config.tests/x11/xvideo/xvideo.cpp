@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMultimedia module of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,32 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtMultimedia/qdeclarative.h>
-#include <QtMultimedia/private/qsoundeffect_p.h>
-#include <QtMultimedia/private/qdeclarativeaudio_p.h>
-#include <QtMultimedia/private/qdeclarativevideo_p.h>
+#include <X11/Xlib.h>
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvlib.h>
 
-
-QT_BEGIN_NAMESPACE
-
-namespace QtMultimedia
+int main(int argc, char** argv)
 {
-
-/*!
-    Register the Multimedia QML elements.
-    \internal
-*/
-
-void qRegisterQmlElements(QDeclarativeEngine *engine, const char *uri)
-{
-    Q_UNUSED(engine);
-
-    qmlRegisterType<QSoundEffect>(uri, 4, 7, "SoundEffect", "SoundEffect");
-    qmlRegisterType<QDeclarativeAudio>(uri, 4, 7, "Audio", "Audio");
-    qmlRegisterType<QDeclarativeVideo>(uri, 4, 7, "Video", "Video");
+    unsigned int count = 0;
+    XvAdaptorInfo *adaptors = 0;
+    XvQueryAdaptors(0, 0, &count, &adaptors);
+    return 0;
 }
-
-}
-
-QT_END_NAMESPACE
-

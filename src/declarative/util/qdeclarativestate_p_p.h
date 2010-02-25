@@ -58,7 +58,7 @@
 #include "qdeclarativeanimation_p_p.h"
 #include "qdeclarativetransitionmanager_p_p.h"
 
-#include <qdeclarativemetaproperty_p.h>
+#include <qdeclarativeproperty_p.h>
 #include <qdeclarativeguard_p.h>
 
 #include <private/qobject_p.h>
@@ -77,7 +77,7 @@ public:
         event = a.event;
         if (state == StartState) {
             value = a.fromValue;
-            binding = QDeclarativeMetaPropertyPrivate::binding(property);
+            binding = QDeclarativePropertyPrivate::binding(property);
             reverseEvent = true;
         } else {
             value = a.toValue;
@@ -86,7 +86,7 @@ public:
         }
     }
 
-    QDeclarativeMetaProperty property;
+    QDeclarativeProperty property;
     QVariant value;
     QDeclarativeAbstractBinding *binding;
     QObject *specifiedObject;
@@ -139,7 +139,7 @@ public:
     QDeclarativeTransitionManager transitionManager;
 
     SimpleActionList revertList;
-    QList<QDeclarativeMetaProperty> reverting;
+    QList<QDeclarativeProperty> reverting;
     QString extends;
     mutable bool inState;
     QDeclarativeStateGroup *group;

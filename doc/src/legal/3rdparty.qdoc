@@ -305,17 +305,17 @@
 
     \hr
 
-    Copyright (c) 1987, 1993, 1994
+    Copyright (c) 1987, 1993, 1994\br
     The Regents of the University of California.  All rights reserved.
     
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
-    are met:
+    are met:\br
     1. Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
+       notice, this list of conditions and the following disclaimer.\br
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
+       documentation and/or other materials provided with the distribution.\br
     3. Neither the name of the University nor the names of its contributors
        may be used to endorse or promote products derived from this software
        without specific prior written permission.
@@ -334,22 +334,22 @@
 
     \hr
 
-    Copyright (C) 1988-1997 Sam Leffler
-    Copyright (C) 1991-1997 Silicon Graphics, Inc.
-    Copyright (c) Joris Van Damme <info@awaresystems.be>
-    Copyright (c) AWare Systems <http://www.awaresystems.be/>
-    Portions Copyright (C) 1985-1987, 1990 Regents of the University of California
-    Portions Copyright (C) 1990, 1991 Digital Equipment Corporation
-    Portions Copyright (C) 1990 Sun Microsystems, Inc.
-    Portions Copyright (C) 1990, 1995 Frank D. Cringle
-    Portions Copyright (C) 1996 BancTec AB
-    Portions Copyright (C) 1996 Mike Johnson
-    Portions Copyright (C) 1996 Pixar
-    Portions Copyright (C) 1997 Greg Ward Larson
-    Portions Copyright (C) 2000 Frank Warmerdam
-    Copyright (C) 2004, Andrey Kiselev <dron@ak4719.spb.edu>
-    Copyright (c( 1996 USAF Phillips Laboratory
-    Additions (c) Richard Nolde 2006-2009 
+    Copyright (C) 1988-1997 Sam Leffler\br
+    Copyright (C) 1991-1997 Silicon Graphics, Inc.\br
+    Copyright (c) Joris Van Damme <info@awaresystems.be>\br
+    Copyright (c) AWare Systems <http://www.awaresystems.be/>\br
+    Portions Copyright (C) 1985-1987, 1990 Regents of the University of California\br
+    Portions Copyright (C) 1990, 1991 Digital Equipment Corporation\br
+    Portions Copyright (C) 1990 Sun Microsystems, Inc.\br
+    Portions Copyright (C) 1990, 1995 Frank D. Cringle\br
+    Portions Copyright (C) 1996 BancTec AB\br
+    Portions Copyright (C) 1996 Mike Johnson\br
+    Portions Copyright (C) 1996 Pixar\br
+    Portions Copyright (C) 1997 Greg Ward Larson\br
+    Portions Copyright (C) 2000 Frank Warmerdam\br
+    Copyright (C) 2004, Andrey Kiselev <dron@ak4719.spb.edu>\br
+    Copyright (c( 1996 USAF Phillips Laboratory\br
+    Additions (c) Richard Nolde 2006-2009
     
     Permission to use, copy, modify, distribute, and sell this software and 
     its documentation for any purpose is hereby granted without fee, provided
@@ -372,7 +372,7 @@
 
     \hr
 
-    Copyright (c) 1985, 1986 The Regents of the University of California.
+    Copyright (c) 1985, 1986 The Regents of the University of California.\br
     All rights reserved.
     
     This code is derived from software contributed to Berkeley by
@@ -393,7 +393,7 @@
 
     \hr
 
-    Copyright (c) 1996-1997 Sam Leffler
+    Copyright (c) 1996-1997 Sam Leffler\br
     Copyright (c) 1996 Pixar
     
     Permission to use, copy, modify, distribute, and sell this software and 

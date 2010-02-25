@@ -43,6 +43,7 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativeanchors_p_p.h>
 #include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativetext_p.h>
 #include <private/qdeclarativepropertychanges_p.h>
 #include <private/qdeclarativestategroup_p.h>
 
@@ -104,6 +105,7 @@ private slots:
     void tempState();
     void illegalTempState();
     void nonExistantProperty();
+    void reset();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -476,10 +478,8 @@ void tst_qdeclarativestates::parentChange()
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(15));
         QCOMPARE(innerRect->scale(), qreal(.5));
-        QEXPECT_FAIL("", "QTBUG-2919", Continue);
-        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(12.4148145657));
-        QEXPECT_FAIL("", "QTBUG-2919", Continue);
-        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(10.6470476128));
+        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(-19.9075));
+        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(-8.73433));
     }
 
     {
@@ -500,8 +500,8 @@ void tst_qdeclarativestates::parentChange()
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
         QCOMPARE(innerRect->x(), qreal(5));
-        QEXPECT_FAIL("", "QTBUG-2919", Continue);
-        QCOMPARE(innerRect->y(), qreal(0));
+        //do a non-qFuzzyCompare fuzzy compare
+        QVERIFY(innerRect->y() < qreal(0.00001) && innerRect->y() > qreal(-0.00001));
     }
 }
 
@@ -943,6 +943,25 @@ void tst_qdeclarativestates::nonExistantProperty()
     QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/nonExistantProp.qml") + ":9:9) Cannot assign to non-existent property \"colr\"").constData());
     rect->setState("blue");
     QCOMPARE(rect->state(), QLatin1String("blue"));
+}
+
+void tst_qdeclarativestates::reset()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/reset.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeText *text = rect->findChild<QDeclarativeText*>();
+    QVERIFY(text != 0);
+    QCOMPARE(text->width(), qreal(50.));
+    QVERIFY(text->width() < text->height());
+
+    rect->setState("state1");
+
+    QVERIFY(text->width() > 51);
+    QVERIFY(text->width() > text->height());
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

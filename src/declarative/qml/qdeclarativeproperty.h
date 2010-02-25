@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEMETAPROPERTY_H
-#define QDECLARATIVEMETAPROPERTY_H
+#ifndef QDECLARATIVEPROPERTY_H
+#define QDECLARATIVEPROPERTY_H
 
 #include <QtCore/qmetaobject.h>
 
@@ -59,8 +59,8 @@ struct QMetaObject;
 class QDeclarativeContext;
 class QDeclarativeEngine;
 
-class QDeclarativeMetaPropertyPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeMetaProperty
+class QDeclarativePropertyPrivate;
+class Q_DECLARATIVE_EXPORT QDeclarativeProperty
 {
 public:
     enum PropertyTypeCategory {
@@ -77,33 +77,28 @@ public:
                 ValueTypeProperty = 0x10 
     };
 
-    QDeclarativeMetaProperty();
-    ~QDeclarativeMetaProperty();
+    QDeclarativeProperty();
+    ~QDeclarativeProperty();
 
-    QDeclarativeMetaProperty(QObject *);
-    QDeclarativeMetaProperty(QObject *, QDeclarativeContext *);
+    QDeclarativeProperty(QObject *);
+    QDeclarativeProperty(QObject *, QDeclarativeContext *);
 
-    QDeclarativeMetaProperty(QObject *, const QString &);
-    QDeclarativeMetaProperty(QObject *, const QString &, QDeclarativeContext *);
+    QDeclarativeProperty(QObject *, const QString &);
+    QDeclarativeProperty(QObject *, const QString &, QDeclarativeContext *);
 
-    QDeclarativeMetaProperty(const QDeclarativeMetaProperty &);
-    QDeclarativeMetaProperty &operator=(const QDeclarativeMetaProperty &);
+    QDeclarativeProperty(const QDeclarativeProperty &);
+    QDeclarativeProperty &operator=(const QDeclarativeProperty &);
 
     QString name() const;
 
     QVariant read() const;
     bool write(const QVariant &) const;
-    enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
-    Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
-    bool write(const QVariant &, QDeclarativeMetaProperty::WriteFlags) const;
     bool reset() const;
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;
     bool connectNotifier(QObject *dest, const char *slot) const;
     bool connectNotifier(QObject *dest, int method) const;
-
-    QMetaMethod method() const;
 
     Type type() const;
     bool isProperty() const;
@@ -118,22 +113,21 @@ public:
     PropertyTypeCategory propertyTypeCategory() const;
     const char *propertyTypeName() const;
 
-    bool operator==(const QDeclarativeMetaProperty &) const;
-
-    QMetaProperty property() const;
+    bool operator==(const QDeclarativeProperty &) const;
 
     int coreIndex() const;
-    int valueTypeCoreIndex() const;
+    QMetaProperty property() const;
+    QMetaMethod method() const;
+
 private:
     friend class QDeclarativeEnginePrivate;
-    friend class QDeclarativeMetaPropertyPrivate;
-    QDeclarativeMetaPropertyPrivate *d;
+    friend class QDeclarativePropertyPrivate;
+    QDeclarativePropertyPrivate *d;
 };
-typedef QList<QDeclarativeMetaProperty> QDeclarativeMetaProperties;
- Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeMetaProperty::WriteFlags)
+typedef QList<QDeclarativeProperty> QDeclarativeProperties;
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEMETAPROPERTY_H
+#endif // QDECLARATIVEPROPERTY_H

@@ -46,6 +46,7 @@
 
 #include <qdeclarativecontext.h>
 #include <qdeclarativeinfo.h>
+#include <qdeclarativeproperty_p.h>
 
 #include <QtCore/qparallelanimationgroup.h>
 
@@ -61,7 +62,7 @@ class QDeclarativeBehaviorPrivate : public QObjectPrivate
 public:
     QDeclarativeBehaviorPrivate() : animation(0), enabled(true) {}
 
-    QDeclarativeMetaProperty property;
+    QDeclarativeProperty property;
     QVariant currentValue;
     QDeclarativeAbstractAnimation *animation;
     bool enabled;
@@ -156,7 +157,7 @@ void QDeclarativeBehavior::write(const QVariant &value)
 {
     Q_D(QDeclarativeBehavior);
     if (!d->animation || !d->enabled) {
-        d->property.write(value, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         return;
     }
 
@@ -171,15 +172,15 @@ void QDeclarativeBehavior::write(const QVariant &value)
     action.toValue = value;
     actions << action;
 
-    QList<QDeclarativeMetaProperty> after;
+    QList<QDeclarativeProperty> after;
     if (d->animation)
         d->animation->transition(actions, after, QDeclarativeAbstractAnimation::Forward);
     d->animation->qtAnimation()->start();
     if (!after.contains(d->property))
-        d->property.write(value, QDeclarativeMetaProperty::BypassInterceptor | QDeclarativeMetaProperty::DontRemoveBinding);
+        QDeclarativePropertyPrivate::write(d->property, value, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
 }
 
-void QDeclarativeBehavior::setTarget(const QDeclarativeMetaProperty &property)
+void QDeclarativeBehavior::setTarget(const QDeclarativeProperty &property)
 {
     Q_D(QDeclarativeBehavior);
     d->property = property;

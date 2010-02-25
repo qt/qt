@@ -56,7 +56,8 @@
 #include "qdeclarative.h"
 #include "qdeclarativepropertyvaluesource.h"
 #include "qdeclarativeexpression.h"
-#include "qdeclarativemetaproperty.h"
+#include "qdeclarativeproperty.h"
+#include "qdeclarativeproperty_p.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QMetaProperty>
@@ -73,12 +74,12 @@ public:
 
     virtual QString expression() const;
 
-    void setEnabled(bool e) { setEnabled(e, QDeclarativeMetaProperty::DontRemoveBinding); }
-    virtual void setEnabled(bool, QDeclarativeMetaProperty::WriteFlags) = 0;
+    void setEnabled(bool e) { setEnabled(e, QDeclarativePropertyPrivate::DontRemoveBinding); }
+    virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags) = 0;
     virtual int propertyIndex() = 0;
 
-    void update() { update(QDeclarativeMetaProperty::DontRemoveBinding); }
-    virtual void update(QDeclarativeMetaProperty::WriteFlags) = 0;
+    void update() { update(QDeclarativePropertyPrivate::DontRemoveBinding); }
+    virtual void update(QDeclarativePropertyPrivate::WriteFlags) = 0;
 
     void addToObject(QObject *);
     void removeFromObject();
@@ -88,8 +89,8 @@ protected:
 
 private:
     friend class QDeclarativeDeclarativeData;
-    friend class QDeclarativeMetaProperty;
-    friend class QDeclarativeMetaPropertyPrivate;
+    friend class QDeclarativeProperty;
+    friend class QDeclarativePropertyPrivate;
     friend class QDeclarativeVME;
 
     QObject *m_object;
@@ -109,19 +110,19 @@ public:
                QObject *parent);
     ~QDeclarativeBinding();
 
-    void setTarget(const QDeclarativeMetaProperty &);
-    QDeclarativeMetaProperty property() const;
+    void setTarget(const QDeclarativeProperty &);
+    QDeclarativeProperty property() const;
 
     bool enabled() const;
 
     // Inherited from  QDeclarativeAbstractBinding
-    virtual void setEnabled(bool, QDeclarativeMetaProperty::WriteFlags flags);
+    virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags flags);
     virtual int propertyIndex();
-    virtual void update(QDeclarativeMetaProperty::WriteFlags flags);
+    virtual void update(QDeclarativePropertyPrivate::WriteFlags flags);
     virtual QString expression() const;
 
 public Q_SLOTS:
-    void update() { update(QDeclarativeMetaProperty::DontRemoveBinding); }
+    void update() { update(QDeclarativePropertyPrivate::DontRemoveBinding); }
 
 protected:
     void emitValueChanged();

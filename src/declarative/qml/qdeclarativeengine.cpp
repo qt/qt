@@ -49,7 +49,6 @@
 #include "qdeclarativecontext.h"
 #include "qdeclarativeexpression.h"
 #include "qdeclarativecomponent.h"
-#include "qdeclarativemetaproperty_p.h"
 #include "qdeclarativebinding_p_p.h"
 #include "qdeclarativevme_p.h"
 #include "qdeclarativeenginedebug_p.h"
@@ -110,7 +109,7 @@
 #define CSIDL_APPDATA		0x001a	// <username>\Application Data
 #endif
 
-Q_DECLARE_METATYPE(QDeclarativeMetaProperty)
+Q_DECLARE_METATYPE(QDeclarativeProperty)
 
 QT_BEGIN_NAMESPACE
 
@@ -337,6 +336,7 @@ void QDeclarativeEnginePrivate::clear(SimpleList<QDeclarativeParserStatus> &pss)
 }
 
 Q_GLOBAL_STATIC(QDeclarativeEngineDebugServer, qmlEngineDebugServer);
+Q_GLOBAL_STATIC(QSet<QString>, qmlEnginePluginsWithRegisteredTypes);
 
 void QDeclarativeEnginePrivate::init()
 {
@@ -1409,7 +1409,7 @@ public:
                         qmldirParser.parse();
 
                         foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
-                            QString resolvedFilePath = QDeclarativeEnginePrivate::get(engine)->resolvePlugin(dir + QDir::separator() + plugin.path,
+                            QString resolvedFilePath = QDeclarativeEnginePrivate::get(engine)->resolvePlugin(QDir(dir + QDir::separator() + plugin.path),
                                                                                                     plugin.name);
 
                             if (!resolvedFilePath.isEmpty())
@@ -1622,10 +1622,32 @@ void QDeclarativeEngine::addImportPath(const QString& path)
 */
 bool QDeclarativeEngine::importExtension(const QString &fileName, const QString &uri)
 {
-    QPluginLoader loader(fileName);
+    QFileInfo fileInfo(fileName);
+    const QString absoluteFilePath = fileInfo.absoluteFilePath();
+    QPluginLoader loader(absoluteFilePath);
 
     if (QDeclarativeExtensionInterface *iface = qobject_cast<QDeclarativeExtensionInterface *>(loader.instance())) {
-        iface->initialize(this, uri.toUtf8().constData());
+        const QByteArray bytes = uri.toUtf8();
+        const char *moduleId = bytes.constData();
+
+        // ### this code should probably be protected with a mutex.
+        if (! qmlEnginePluginsWithRegisteredTypes()->contains(absoluteFilePath)) {
+            // types should only be registered once (they're global).
+
+            qmlEnginePluginsWithRegisteredTypes()->insert(absoluteFilePath);
+            iface->registerTypes(moduleId);
+        }
+
+        QDeclarativeEnginePrivate *d = QDeclarativeEnginePrivate::get(this);
+
+        if (! d->initializedPlugins.contains(absoluteFilePath)) {
+            // things on the engine (eg. adding new global objects) have to be done for every engine.
+
+            // protect against double initialization
+            d->initializedPlugins.insert(absoluteFilePath);
+            iface->initializeEngine(this, moduleId);
+        }
+
         return true;
     }
 
@@ -1670,7 +1692,6 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
                                         const QStringList &suffixes,
                                         const QString &prefix)
 {
-    qWarning() << baseName;
     foreach (const QString &suffix, suffixes) {
         QString pluginFileName = prefix;
 

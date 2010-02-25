@@ -338,7 +338,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
         }
     }
 
-    QDeclarativeAbstractBinding *delBinding = QDeclarativeMetaPropertyPrivate::setBinding(obj, *lastData, 0);
+    QDeclarativeAbstractBinding *delBinding = QDeclarativePropertyPrivate::setBinding(obj, *lastData, 0);
     if (delBinding)
         delBinding->destroy();
 
@@ -348,7 +348,7 @@ void QDeclarativeObjectScriptClass::setProperty(QObject *obj,
     } else {
         // ### Can well known types be optimized?
         QVariant v = QDeclarativeScriptClass::toVariant(engine, value);
-        QDeclarativeMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
+        QDeclarativePropertyPrivate::write(obj, *lastData, v, evalContext);
     }
 }
 

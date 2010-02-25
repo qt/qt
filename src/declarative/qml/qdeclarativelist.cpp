@@ -42,7 +42,7 @@
 #include "qdeclarativelist.h"
 #include "qdeclarativelist_p.h"
 #include "qdeclarativeengine_p.h"
-#include "qdeclarativemetaproperty_p.h"
+#include "qdeclarativeproperty_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -174,7 +174,7 @@ bool QDeclarativeListReference::append(QObject *o) const
 {
     if (!canAppend()) return false;
 
-    if (o && !QDeclarativeMetaPropertyPrivate::canConvert(o->metaObject(), d->elementType))
+    if (o && !QDeclarativePropertyPrivate::canConvert(o->metaObject(), d->elementType))
         return false;
 
     d->property.append(&d->property, o);

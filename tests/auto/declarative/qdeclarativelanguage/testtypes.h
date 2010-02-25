@@ -52,7 +52,7 @@
 #include <QtDeclarative/qdeclarativeparserstatus.h>
 #include <QtDeclarative/qdeclarativepropertyvaluesource.h>
 #include <QtDeclarative/qdeclarativescriptstring.h>
-#include <QtDeclarative/qdeclarativemetaproperty.h>
+#include <QtDeclarative/qdeclarativeproperty.h>
 
 QVariant myCustomVariantTypeConverter(const QString &data);
 
@@ -480,8 +480,8 @@ public:
     MyPropertyValueSource()
         : QDeclarativePropertyValueSource() {}
 
-    QDeclarativeMetaProperty prop;
-    virtual void setTarget(const QDeclarativeMetaProperty &p)
+    QDeclarativeProperty prop;
+    virtual void setTarget(const QDeclarativeProperty &p)
     {
         prop = p;
     }

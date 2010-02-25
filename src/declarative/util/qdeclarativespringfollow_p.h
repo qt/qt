@@ -74,7 +74,7 @@ public:
     QDeclarativeSpringFollow(QObject *parent=0);
     ~QDeclarativeSpringFollow();
 
-    virtual void setTarget(const QDeclarativeMetaProperty &);
+    virtual void setTarget(const QDeclarativeProperty &);
 
     qreal sourceValue() const;
     void setSourceValue(qreal value);

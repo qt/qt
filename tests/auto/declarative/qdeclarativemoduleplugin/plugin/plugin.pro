@@ -2,4 +2,5 @@ TEMPLATE = lib
 CONFIG += plugin
 SOURCES = plugin.cpp
 QT = core declarative
-DESTDIR = qdeclarativemodules
+DESTDIR = ../com/nokia/AutoTestQmlPluginType
+

@@ -109,9 +109,9 @@ public:
                     scope(0), target(0), parent(0) {}
 
         // Inherited from QDeclarativeAbstractBinding
-        virtual void setEnabled(bool, QDeclarativeMetaProperty::WriteFlags flags);
+        virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags flags);
         virtual int propertyIndex();
-        virtual void update(QDeclarativeMetaProperty::WriteFlags flags);
+        virtual void update(QDeclarativePropertyPrivate::WriteFlags flags);
         virtual void destroy();
 
         int index:30;
@@ -244,7 +244,7 @@ QDeclarativeAbstractBinding *QDeclarativeCompiledBindings::configBinding(int ind
     return rv;
 }
 
-void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarativeMetaProperty::WriteFlags flags)
+void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags flags)
 {
     if (e) {
         addToObject(target);
@@ -267,7 +267,7 @@ int QDeclarativeCompiledBindingsPrivate::Binding::propertyIndex()
     return property & 0xFFFF;
 }
 
-void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativeMetaProperty::WriteFlags)
+void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags)
 {
     parent->run(this);
 }
@@ -324,7 +324,7 @@ void QDeclarativeCompiledBindingsPrivate::run(Binding *binding)
         run(binding->index, cp, binding, binding->scope, target);
 
         vt->write(binding->target, binding->property & 0xFFFF, 
-                  QDeclarativeMetaProperty::DontRemoveBinding);
+                  QDeclarativePropertyPrivate::DontRemoveBinding);
     } else {
         run(binding->index, cp, binding, binding->scope, binding->target);
     }
@@ -1701,7 +1701,7 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
             const QMetaObject *from = type.metaObject;
             const QMetaObject *to = engine->rawMetaObjectForType(destination->type);
 
-            if (QDeclarativeMetaPropertyPrivate::canConvert(from, to))
+            if (QDeclarativePropertyPrivate::canConvert(from, to))
                 type.type = destination->type;
         }
 

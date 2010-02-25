@@ -607,11 +607,11 @@ void QDeclarativeGridViewPrivate::createHighlight()
             item->setParent(q->viewport());
             highlight = new FxGridItem(item, q);
             highlightXAnimator = new QDeclarativeEaseFollow(q);
-            highlightXAnimator->setTarget(QDeclarativeMetaProperty(highlight->item, QLatin1String("x")));
+            highlightXAnimator->setTarget(QDeclarativeProperty(highlight->item, QLatin1String("x")));
             highlightXAnimator->setDuration(150);
             highlightXAnimator->setEnabled(autoHighlight);
             highlightYAnimator = new QDeclarativeEaseFollow(q);
-            highlightYAnimator->setTarget(QDeclarativeMetaProperty(highlight->item, QLatin1String("y")));
+            highlightYAnimator->setTarget(QDeclarativeProperty(highlight->item, QLatin1String("y")));
             highlightYAnimator->setDuration(150);
             highlightYAnimator->setEnabled(autoHighlight);
             changed = true;

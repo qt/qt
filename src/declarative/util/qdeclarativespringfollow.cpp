@@ -63,7 +63,7 @@ public:
         , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.01)
         , modulus(0.0), useMass(false), haveModulus(false), enabled(true), mode(Track), clock(this) {}
 
-    QDeclarativeMetaProperty property;
+    QDeclarativeProperty property;
     qreal currentValue;
     qreal sourceValue;
     qreal maxVelocity;
@@ -254,7 +254,7 @@ QDeclarativeSpringFollow::~QDeclarativeSpringFollow()
 {
 }
 
-void QDeclarativeSpringFollow::setTarget(const QDeclarativeMetaProperty &property)
+void QDeclarativeSpringFollow::setTarget(const QDeclarativeProperty &property)
 {
     Q_D(QDeclarativeSpringFollow);
     d->property = property;

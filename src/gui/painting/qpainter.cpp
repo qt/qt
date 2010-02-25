@@ -5700,6 +5700,61 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     d->engine->drawImage(QRectF(x, y, w, h), image, QRectF(sx, sy, sw, sh), flags);
 }
 
+
+void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray, const QPointF *positionArray,
+                    int glyphCount)
+{
+    QPainterPrivate *painter_d = QPainterPrivate::get(painter);
+    painter_d->drawGlyphs(glyphArray, positionArray, glyphCount);
+}
+
+void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, const QPointF *positionArray,
+                                 int glyphCount)
+{
+    updateState(state);
+
+    QFontEngine *fontEngine = state->font.d->engineForScript(QUnicodeTables::Common);
+
+    QVarLengthArray<QFixedPoint, 128> positions;
+    for (int i=0; i<glyphCount; ++i) {
+        QFixedPoint fp = QFixedPoint::fromPointF(positionArray[i]);
+        positions.append(fp);
+    }
+
+    if (extended != 0) {
+        QStaticTextItem staticTextItem;
+        staticTextItem.color = state->pen.color();
+        staticTextItem.font = state->font;
+        staticTextItem.fontEngine = fontEngine;
+        staticTextItem.numGlyphs = glyphCount;
+        staticTextItem.glyphs = reinterpret_cast<glyph_t *>(const_cast<glyph_t *>(glyphArray));
+        staticTextItem.glyphPositions = positions.data();
+
+        extended->drawStaticTextItem(&staticTextItem);
+    } else {
+        QTextItemInt textItem;
+        textItem.f = &state->font;
+        textItem.fontEngine = fontEngine;
+
+        QVarLengthArray<QFixed, 128> advances(glyphCount);
+        QVarLengthArray<QGlyphJustification, 128> glyphJustifications(glyphCount);
+        QVarLengthArray<HB_GlyphAttributes, 128> glyphAttributes(glyphCount);
+        qMemSet(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(HB_GlyphAttributes));
+        qMemSet(advances.data(), 0, advances.size() * sizeof(QFixed));
+        qMemSet(glyphJustifications.data(), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
+
+        textItem.glyphs.numGlyphs = glyphCount;
+        textItem.glyphs.glyphs = reinterpret_cast<HB_Glyph *>(const_cast<quint32 *>(glyphArray));
+        textItem.glyphs.offsets = positions.data();
+        textItem.glyphs.advances_x = advances.data();
+        textItem.glyphs.advances_y = advances.data();
+        textItem.glyphs.justifications = glyphJustifications.data();
+        textItem.glyphs.attributes = glyphAttributes.data();
+
+        engine->drawTextItem(QPointF(0, 0), textItem);
+    }
+}
+
 /*!
 
     \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
@@ -8846,6 +8901,160 @@ QTransform QPainter::combinedTransform() const
     }
     return d->state->worldMatrix * d->viewTransform();
 }
+
+/*!
+    \since 4.7
+
+    This function is used to draw \a pixmap, or a sub-rectangle of \a pixmap,
+    at multiple positions with different scale, rotation and opacity. \a
+    fragments is an array of \a fragmentCount elements specifying the
+    parameters used to draw each pixmap fragment. The \a hints
+    parameter can be used to pass in drawing hints.
+
+    This function is potentially faster than multiple calls to drawPixmap(),
+    since the backend can optimize state changes.
+
+    \sa QPainter::Fragment, QPainter::FragmentHint
+*/
+
+void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
+                                   const QPixmap &pixmap, FragmentHints hints)
+{
+    Q_D(QPainter);
+
+    if (!d->engine)
+        return;
+
+    if (d->engine->isExtended()) {
+        d->extended->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
+    } else {
+        qreal oldOpacity = opacity();
+        QTransform oldTransform = transform();
+
+        for (int i = 0; i < fragmentCount; ++i) {
+            QTransform transform = oldTransform;
+            transform.translate(fragments[i].x, fragments[i].y);
+            transform.rotate(fragments[i].rotation);
+            setOpacity(oldOpacity * fragments[i].opacity);
+            setTransform(transform);
+
+            qreal w = fragments[i].scaleX * fragments[i].width;
+            qreal h = fragments[i].scaleY * fragments[i].height;
+            QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
+                              fragments[i].width, fragments[i].height);
+            drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, sourceRect);
+        }
+
+        setOpacity(oldOpacity);
+        setTransform(oldTransform);
+    }
+}
+
+/*!
+    \since 4.7
+    \class QPainter::Fragment
+
+    \brief This class is used in conjunction with the
+    QPainter::drawPixmapFragments() function to specify how a pixmap, or
+    sub-rect of a pixmap, is drawn.
+
+    The \a sourceLeft, \a sourceTop, \a width and \a height variables are used
+    as a source rectangle within the pixmap passed into the
+    QPainter::drawPixmapFragments() function. The variables \a x, \a y, \a
+    width and \a height are used to calculate the target rectangle that is
+    drawn. \a x and \a y denotes the center of the target rectangle. The \a
+    width and \a heigth in the target rectangle is scaled by the \a scaleX and
+    \a scaleY values. The resulting target rectangle is then rotated \a
+    rotation degrees around the \a x, \a y center point.
+
+    \sa QPainter::drawPixmapFragments()
+*/
+
+/*!
+    \since 4.7
+
+    This is a convenience function that returns a QPainter::Fragment that is
+    initialized with the \a pos, \a sourceRect, \a scaleX, \a scaleY, \a
+    rotation, \a opacity parameters.
+*/
+
+QPainter::Fragment QPainter::Fragment::create(const QPointF &pos, const QRectF &sourceRect,
+                                              qreal scaleX, qreal scaleY, qreal rotation,
+                                              qreal opacity)
+{
+    Fragment fragment = {pos.x(), pos.y(), sourceRect.x(), sourceRect.y(), sourceRect.width(),
+                         sourceRect.height(), scaleX, scaleY, rotation, opacity};
+    return fragment;
+}
+
+/*!
+    \variable QPainter::Fragment::x
+    \brief the x coordinate of center point in the target rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::y
+    \brief the y coordinate of the center point in the target rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::sourceLeft
+    \brief the left coordinate of the source rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::sourceTop
+    \brief the top coordinate of the source rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::width
+
+    \brief the width of the source rectangle and is used to calculate the width
+    of the target rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::height
+
+    \brief the height of the source rectangle and is used to calculate the
+    height of the target rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::scaleX
+    \brief the horizontal scale of the target rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::scaleY
+    \brief the vertical scale of the target rectangle.
+*/
+
+/*!
+    \variable QPainter::Fragment::rotation
+
+    \brief the rotation of the target rectangle in degrees. The target
+    rectangle is rotated after it has been scaled.
+*/
+
+/*!
+    \variable QPainter::Fragment::opacity
+
+    \brief the opacity of the target rectangle, where 0.0 is fully transparent
+    and 1.0 is fully opaque.
+*/
+
+/*!
+    \since 4.7
+
+    \enum QPainter::FragmentHint
+
+    \value OpaqueHint Indicates that the pixmap fragments to be drawn are
+    opaque. Opaque fragments are potentially faster to draw.
+
+    \sa QPainter::drawPixmapFragments(), QPainter::Fragment
+*/
 
 void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation)
 {

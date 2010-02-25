@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtMultimedia/qdeclarative.h>
+#include <QtMultimedia/multimediadeclarative.h>
 #include <QtMultimedia/private/qsoundeffect_p.h>
 #include <QtMultimedia/private/qdeclarativeaudio_p.h>
 #include <QtMultimedia/private/qdeclarativevideo_p.h>
@@ -55,14 +55,13 @@ namespace QtMultimedia
     \internal
 */
 
-void qRegisterDeclarativeElements(QDeclarativeEngine *engine, const char *uri)
+void qRegisterDeclarativeElements(const char *uri)
 {
-    Q_UNUSED(engine)
     Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.multimedia"));
 
-    qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect");
-    qmlRegisterType<QDeclarativeAudio>("Qt.multimedia", 4, 7, "Audio");
-    qmlRegisterType<QDeclarativeVideo>("Qt.multimedia", 4, 7, "Video");
+    qmlRegisterType<QSoundEffect>(uri, 4, 7, "SoundEffect");
+    qmlRegisterType<QDeclarativeAudio>(uri, 4, 7, "Audio");
+    qmlRegisterType<QDeclarativeVideo>(uri, 4, 7, "Video");
 }
 
 }

@@ -6,7 +6,7 @@ SOURCES += \
     $$PWD/qdeclarativeengine.cpp \
     $$PWD/qdeclarativeexpression.cpp \
     $$PWD/qdeclarativebinding.cpp \
-    $$PWD/qdeclarativemetaproperty.cpp \
+    $$PWD/qdeclarativeproperty.cpp \
     $$PWD/qdeclarativecomponent.cpp \
     $$PWD/qdeclarativecontext.cpp \
     $$PWD/qdeclarativecustomparser.cpp \
@@ -62,7 +62,7 @@ HEADERS += \
     $$PWD/qdeclarative.h \
     $$PWD/qdeclarativebinding_p.h \
     $$PWD/qdeclarativebinding_p_p.h \
-    $$PWD/qdeclarativemetaproperty.h \
+    $$PWD/qdeclarativeproperty.h \
     $$PWD/qdeclarativecomponent.h \
     $$PWD/qdeclarativecomponent_p.h \
     $$PWD/qdeclarativecustomparser_p.h \
@@ -87,7 +87,7 @@ HEADERS += \
     $$PWD/qdeclarativestringconverters_p.h \
     $$PWD/qdeclarativeclassfactory_p.h \
     $$PWD/qdeclarativeinfo.h \
-    $$PWD/qdeclarativemetaproperty_p.h \
+    $$PWD/qdeclarativeproperty_p.h \
     $$PWD/qdeclarativecontext_p.h \
     $$PWD/qdeclarativecompositetypedata_p.h \
     $$PWD/qdeclarativecompositetypemanager_p.h \

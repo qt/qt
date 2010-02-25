@@ -2084,7 +2084,7 @@ Q3TextStream &Q3TextStream::operator<<( void *ptr )
     setf( hex, basefield );
     setf( showbase );
     unsetf( uppercase );
-    output_int( I_LONG | I_UNSIGNED, (ulong)ptr, FALSE );
+    output_int( I_LONG | I_UNSIGNED, (quintptr)ptr, FALSE );
     flags( f );
     return *this;
 }

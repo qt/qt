@@ -45,7 +45,7 @@
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>
-#include <qdeclarativemetaproperty.h>
+#include <qdeclarativeproperty.h>
 
 #include <QtCore/qfile.h>
 #include <QtCore/qdebug.h>
@@ -196,7 +196,7 @@ void QDeclarativeBind::eval()
     if (!d->obj || d->value.isNull || !d->when || !d->componentComplete)
         return;
 
-    QDeclarativeMetaProperty prop(d->obj, d->prop);
+    QDeclarativeProperty prop(d->obj, d->prop);
     prop.write(d->value.value);
 }
 
