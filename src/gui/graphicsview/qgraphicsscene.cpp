@@ -801,7 +801,8 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             // do it ourselves.
             if (item) {
                 for (int i = 0; i < views.size(); ++i)
-                    views.at(i)->inputContext()->reset();
+                    if (views.at(i)->inputContext())
+                        views.at(i)->inputContext()->reset();
             }
         }
 #endif //QT_NO_IM
