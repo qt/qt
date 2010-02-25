@@ -45,6 +45,8 @@
 
 #include <gst/gstversion.h>
 
+QT_BEGIN_NAMESPACE
+
 struct QGstreamerMetaDataKeyLookup
 {
     QtMultimedia::MetaData key;
@@ -202,3 +204,6 @@ void QGstreamerMetaDataProvider::updateTags()
 {
     emit metaDataChanged();
 }
+
+QT_END_NAMESPACE
+
