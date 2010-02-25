@@ -100,8 +100,7 @@ public:
                 Property = 0x01, 
                 SignalProperty = 0x02,
                 Default = 0x08,
-                Attached = 0x10,
-                ValueTypeProperty = 0x20 };
+                ValueTypeProperty = 0x10 };
 
     Type type() const;
     bool isProperty() const;

@@ -284,7 +284,6 @@ QDeclarativeMetaProperty::QDeclarativeMetaProperty(const QDeclarativeMetaPropert
   \value Property The property is a regular Qt property.
   \value SignalProperty The property is a signal property.
   \value Default The property is the default property.
-  \value Attached The property is an attached property.
 */
 
 /*!
@@ -302,8 +301,6 @@ QDeclarativeMetaPropertyPrivate::propertyCategory() const
 
     if (type & QDeclarativeMetaProperty::ValueTypeProperty) {
         return QDeclarativeMetaProperty::Normal;
-    } else if (type & QDeclarativeMetaProperty::Attached) {
-        return QDeclarativeMetaProperty::Object;
     } else if (type & QDeclarativeMetaProperty::Property) {
         int type = propertyType();
         if (type == QVariant::Invalid)
@@ -359,8 +356,7 @@ bool QDeclarativeMetaProperty::operator==(const QDeclarativeMetaProperty &other)
     // from the other members
     return d->object == other.d->object &&
            d->core == other.d->core &&
-           d->valueType == other.d->valueType &&
-           d->attachedFunc == other.d->attachedFunc;
+           d->valueType == other.d->valueType;
 }
 
 /*!
@@ -377,8 +373,6 @@ int QDeclarativeMetaPropertyPrivate::propertyType() const
     uint type = q->type();
     if (type & QDeclarativeMetaProperty::ValueTypeProperty) {
         return valueType.valueTypePropType;
-    } else if (type & QDeclarativeMetaProperty::Attached) {
-        return qMetaTypeId<QObject *>();
     } else if (type & QDeclarativeMetaProperty::Property) {
         if (core.propType == (int)QVariant::LastType)
             return qMetaTypeId<QVariant>();
@@ -396,8 +390,6 @@ QDeclarativeMetaProperty::Type QDeclarativeMetaProperty::type() const
 {
     if (d->core.flags & QDeclarativePropertyCache::Data::IsFunction)
         return SignalProperty;
-    else if (d->attachedFunc != -1)
-        return Attached;
     else if (d->valueType.valueTypeCoreIdx != -1)
         return (Type)(Property | ValueTypeProperty);
     else if (d->core.isValid())
@@ -445,7 +437,6 @@ QDeclarativeMetaProperty &QDeclarativeMetaProperty::operator=(const QDeclarative
 
     d->valueType = other.d->valueType;
 
-    d->attachedFunc = other.d->attachedFunc;
     return *this;
 }
 
@@ -566,7 +557,7 @@ QMetaMethod QDeclarativeMetaProperty::method() const
 QDeclarativeAbstractBinding *
 QDeclarativeMetaPropertyPrivate::binding(const QDeclarativeMetaProperty &that) 
 {
-    if (!that.isProperty() || (that.type() & QDeclarativeMetaProperty::Attached) || !that.d->object)
+    if (!that.isProperty() || !that.d->object)
         return 0;
 
     QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(that.d->object);
@@ -604,7 +595,7 @@ QDeclarativeMetaPropertyPrivate::setBinding(const QDeclarativeMetaProperty &that
                                             QDeclarativeAbstractBinding *newBinding, 
                                             QDeclarativeMetaProperty::WriteFlags flags) 
 {
-    if (!that.isProperty() || (that.type() & QDeclarativeMetaProperty::Attached) || !that.d->object) {
+    if (!that.isProperty() || !that.d->object) {
         if (newBinding)
             newBinding->destroy();
         return 0;
@@ -716,14 +707,6 @@ QMetaMethod QDeclarativeMetaPropertyPrivate::findSignal(QObject *obj, const QStr
     return QMetaMethod();
 }
 
-QObject *QDeclarativeMetaPropertyPrivate::attachedObject() const
-{
-    if (attachedFunc == -1)
-        return 0;
-    else
-        return qmlAttachedPropertiesObjectById(attachedFunc, object);
-}
-
 /*!
     Returns the property value.
 */
@@ -736,7 +719,7 @@ QVariant QDeclarativeMetaProperty::read() const
 
         return QVariant();
 
-    } else if (type() & Property || type() & Attached) {
+    } else if (type() & Property) {
 
         return d->readValueProperty();
 
@@ -747,11 +730,7 @@ QVariant QDeclarativeMetaProperty::read() const
 QVariant QDeclarativeMetaPropertyPrivate::readValueProperty()
 {
     uint type = q->type();
-    if (type & QDeclarativeMetaProperty::Attached) {
-
-        return QVariant::fromValue(attachedObject());
-
-    } else if(type & QDeclarativeMetaProperty::ValueTypeProperty) {
+    if(type & QDeclarativeMetaProperty::ValueTypeProperty) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
         QDeclarativeValueType *valueType = 0;
@@ -1062,7 +1041,7 @@ bool QDeclarativeMetaProperty::write(const QVariant &value, QDeclarativeMetaProp
 */
 bool QDeclarativeMetaProperty::hasChangedNotifier() const
 {
-    if (type() & Property && !(type() & Attached) && d->object) {
+    if (type() & Property && d->object) {
         return d->object->metaObject()->property(d->core.coreIndex).hasNotifySignal();
     }
     return false;
@@ -1077,8 +1056,7 @@ bool QDeclarativeMetaProperty::hasChangedNotifier() const
 */
 bool QDeclarativeMetaProperty::needsChangedNotifier() const
 {
-    return type() & Property && !(type() & Attached) && 
-           !property().isConstant();
+    return type() & Property && !property().isConstant();
 }
 
 /*!
@@ -1091,7 +1069,7 @@ bool QDeclarativeMetaProperty::needsChangedNotifier() const
 */
 bool QDeclarativeMetaProperty::connectNotifier(QObject *dest, int method) const
 {
-    if (!(type() & Property) || (type() & Attached) || !d->object)
+    if (!(type() & Property) || !d->object)
         return false;
 
     QMetaProperty prop = d->object->metaObject()->property(d->core.coreIndex);
@@ -1112,7 +1090,7 @@ bool QDeclarativeMetaProperty::connectNotifier(QObject *dest, int method) const
 */
 bool QDeclarativeMetaProperty::connectNotifier(QObject *dest, const char *slot) const
 {
-    if (!(type() & Property) || (type() & Attached) || !d->object)
+    if (!(type() & Property) || !d->object)
         return false;
 
     QMetaProperty prop = d->object->metaObject()->property(d->core.coreIndex);

@@ -68,14 +68,14 @@ class Q_AUTOTEST_EXPORT QDeclarativeMetaPropertyPrivate
 {
 public:
     QDeclarativeMetaPropertyPrivate()
-        : q(0), context(0), object(0), isDefaultProperty(false), isNameCached(false),
-          attachedFunc(-1) {}
+        : q(0), context(0), object(0), isDefaultProperty(false), isNameCached(false) {}
+          
 
     QDeclarativeMetaPropertyPrivate(const QDeclarativeMetaPropertyPrivate &other)
         : q(0), context(other.context), object(other.object), 
           isDefaultProperty(other.isDefaultProperty), isNameCached(other.isNameCached),
           core(other.core), nameCache(other.nameCache),
-          valueType(other.valueType), attachedFunc(other.attachedFunc) {}
+          valueType(other.valueType) {}
 
     QDeclarativeMetaProperty *q;
     QDeclarativeContext *context;
@@ -89,13 +89,9 @@ public:
     // Describes the "virtual" value-type sub-property.  
     QDeclarativePropertyCache::ValueTypeData valueType;
 
-    // The attached property accessor
-    int attachedFunc;
-
     void initProperty(QObject *obj, const QString &name);
     void initDefault(QObject *obj);
 
-    QObject *attachedObject() const;
     QMetaMethod findSignal(QObject *, const QString &);
 
     int propertyType() const;
