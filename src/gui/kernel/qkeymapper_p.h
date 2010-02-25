@@ -137,15 +137,6 @@ struct QXCoreDesc {
     KeySym lock_meaning;
 };
 
-#elif defined(Q_OS_SYMBIAN)
-#include <e32keys.h>
-class KeyMapping{
-public:
-    KeyMapping(TKeyCode aS60KeyCode, TStdScanCode aS60ScanCode, Qt::Key aQtKey) : s60KeyCode(aS60KeyCode), s60ScanCode(aS60ScanCode), qtKey(aQtKey) { };
-    TKeyCode s60KeyCode;
-    TStdScanCode s60ScanCode; 
-    Qt::Key qtKey;
-};
 #endif
 
 struct KeyboardLayoutItem;
@@ -216,9 +207,6 @@ public:
     KeyboardLayoutItem *keyLayout[256];
 #elif defined(Q_WS_QWS)
 #elif defined(Q_OS_SYMBIAN)
-private:
-    QList<KeyMapping> keyMapping;
-    void fillKeyMap();
 public:
     QString translateKeyEvent(int keySym, Qt::KeyboardModifiers modifiers);
     int mapS60KeyToQt(TUint s60key);
