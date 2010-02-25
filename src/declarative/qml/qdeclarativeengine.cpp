@@ -1408,7 +1408,7 @@ public:
                         qmldirParser.parse();
 
                         foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
-                            QString resolvedFilePath = QDeclarativeEnginePrivate::get(engine)->resolvePlugin(dir + QDir::separator() + plugin.path,
+                            QString resolvedFilePath = QDeclarativeEnginePrivate::get(engine)->resolvePlugin(QDir(dir + QDir::separator() + plugin.path),
                                                                                                     plugin.name);
 
                             if (!resolvedFilePath.isEmpty())
