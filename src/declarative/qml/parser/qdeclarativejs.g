@@ -65,6 +65,7 @@
 %token T_PUBLIC "public"
 %token T_IMPORT "import"
 %token T_AS "as"
+%token T_ON "on"
 
 --- feed tokens
 %token T_FEED_UI_PROGRAM
@@ -773,6 +774,17 @@ case $rule_number: {
 } break;
 ./
 
+UiObjectMember: UiQualifiedId             T_ON UiQualifiedId  UiObjectInitializer ;
+/.
+case $rule_number: {
+    AST::UiObjectBinding *node = makeAstNode<AST::UiObjectBinding> (driver->nodePool(),
+      sym(3).UiQualifiedId, sym(1).UiQualifiedId, sym(4).UiObjectInitializer);
+    node->colonToken = loc(2);
+    node->hasOnToken = true;
+    sym(1).Node = node;
+} break;
+./
+
 UiObjectMember: UiQualifiedId T_COLON Block ;
 /.case $rule_number:./
 
@@ -997,6 +1009,15 @@ case $rule_number: {
 ./
 
 JsIdentifier: T_READONLY ;
+/.
+case $rule_number: {
+    QString s = QLatin1String(QDeclarativeJSGrammar::spell[T_READONLY]);
+    sym(1).sval = driver->intern(s.constData(), s.length());
+    break;
+}
+./
+
+JsIdentifier: T_ON ;
 /.
 case $rule_number: {
     QString s = QLatin1String(QDeclarativeJSGrammar::spell[T_READONLY]);

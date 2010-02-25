@@ -166,6 +166,8 @@ int Lexer::findReservedWord(const QChar *c, int size) const
             return QDeclarativeJSGrammar::T_IN;
         else if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('s'))
             return QDeclarativeJSGrammar::T_AS;
+        else if (c[0] == QLatin1Char('o') && c[1] == QLatin1Char('n'))
+            return QDeclarativeJSGrammar::T_ON;
     }   break;
 
     case 3: {
