@@ -115,6 +115,7 @@ private Q_SLOTS:
     void ticked();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
+    void modelReset();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
 

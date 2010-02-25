@@ -41,6 +41,7 @@
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativecomponent.h>
+#include <QStringListModel>
 #include <QtTest/QtTest>
 #include <private/qlistmodelinterface_p.h>
 #include <qdeclarativeview.h>
@@ -66,6 +67,7 @@ private slots:
     void defaultValues();
     void properties();
     void positionViewAtIndex();
+    void resetModel();
     void QTBUG_8456();
 
 private:
@@ -882,6 +884,47 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     }
 
     delete canvas;
+}
+
+void tst_QDeclarativeGridView::resetModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStringList strings;
+    strings << "one" << "two" << "three";
+    QStringListModel model(strings);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/displaygrid.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QVERIFY(gridview != 0);
+
+    QDeclarativeItem *viewport = gridview->viewport();
+    QVERIFY(viewport != 0);
+
+    QCOMPARE(gridview->count(), model.rowCount());
+
+    for (int i = 0; i < model.rowCount(); ++i) {
+        QDeclarativeText *display = findItem<QDeclarativeText>(viewport, "displayText", i);
+        QVERIFY(display != 0);
+        QCOMPARE(display->text(), strings.at(i));
+    }
+
+    strings.clear();
+    strings << "four" << "five" << "six" << "seven";
+    model.setStringList(strings);
+
+    QCOMPARE(gridview->count(), model.rowCount());
+
+    for (int i = 0; i < model.rowCount(); ++i) {
+        QDeclarativeText *display = findItem<QDeclarativeText>(viewport, "displayText", i);
+        QVERIFY(display != 0);
+        QCOMPARE(display->text(), strings.at(i));
+    }
 }
 
 void tst_QDeclarativeGridView::QTBUG_8456()

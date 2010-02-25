@@ -206,6 +206,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         disconnect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         for (int i=0; i<d->items.count(); i++){
             QDeclarativeItem *p = d->items[i];
@@ -234,6 +235,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
     if (d->model) {
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
     }
     d->firstIndex = 0;
@@ -782,7 +784,7 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
     if (!d->isValid() || !isComponentComplete())
         return;
     if (d->pathItems == -1) {
-        for (int i = 0; i < count; ++i) {
+        for (int i = 0; i < count && d->items.count() > modelIndex; ++i) {
             QDeclarativeItem* p = d->items.takeAt(modelIndex);
             d->model->release(p);
         }
@@ -810,6 +812,12 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
         targetOffset = 100.0 + targetOffset;
     if (targetOffset != d->_offset)
         d->moveOffset.setValue(targetOffset);
+}
+
+void QDeclarativePathView::modelReset()
+{
+    Q_D(QDeclarativePathView);
+    d->regenerate();
 }
 
 void QDeclarativePathView::createdItem(int index, QDeclarativeItem *item)

@@ -787,6 +787,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        disconnect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         disconnect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
     }
@@ -821,6 +822,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         emit countChanged();
@@ -1686,6 +1688,16 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
     }
 
     d->layout(removedBeforeVisible);
+}
+
+void QDeclarativeGridView::modelReset()
+{
+    Q_D(QDeclarativeGridView);
+    d->clear();
+    refill();
+    d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
+    d->updateCurrent(d->currentIndex);
+    emit countChanged();
 }
 
 void QDeclarativeGridView::createdItem(int index, QDeclarativeItem *item)

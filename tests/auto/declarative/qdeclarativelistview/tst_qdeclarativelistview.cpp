@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <QtTest/QtTest>
+#include <QStringListModel>
 #include <private/qlistmodelinterface_p.h>
 #include <qdeclarativeview.h>
 #include <private/qdeclarativelistview_p.h>
@@ -80,6 +81,7 @@ private slots:
     void sections();
     void cacheBuffer();
     void positionViewAtIndex();
+    void resetModel();
 
 private:
     template <class T> void items();
@@ -1230,6 +1232,47 @@ void tst_QDeclarativeListView::positionViewAtIndex()
     }
 
     delete canvas;
+}
+
+void tst_QDeclarativeListView::resetModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStringList strings;
+    strings << "one" << "two" << "three";
+    QStringListModel model(strings);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/displaylist.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QVERIFY(listview != 0);
+
+    QDeclarativeItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    QCOMPARE(listview->count(), model.rowCount());
+
+    for (int i = 0; i < model.rowCount(); ++i) {
+        QDeclarativeText *display = findItem<QDeclarativeText>(viewport, "displayText", i);
+        QVERIFY(display != 0);
+        QCOMPARE(display->text(), strings.at(i));
+    }
+
+    strings.clear();
+    strings << "four" << "five" << "six" << "seven";
+    model.setStringList(strings);
+
+    QCOMPARE(listview->count(), model.rowCount());
+
+    for (int i = 0; i < model.rowCount(); ++i) {
+        QDeclarativeText *display = findItem<QDeclarativeText>(viewport, "displayText", i);
+        QVERIFY(display != 0);
+        QCOMPARE(display->text(), strings.at(i));
+    }
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()
