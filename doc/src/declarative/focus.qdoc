@@ -41,7 +41,7 @@
 
 /*!
 \target qmlfocus
-\page qmlfocus.html
+\page qdeclarativefocus.html
 \title Keyboard Focus in QML
 
 When a key is pressed or released, a key event is generated and delivered to the
@@ -56,7 +56,7 @@ and to address some of the cases unique to fluid user interfaces, the QML items 
 When the user presses or releases a key, the following occurs:
 \list 1
 \o Qt receives the key action and generates a key event.
-\o If the Qt widget containing the \l QmlView has focus, the key event is delivered to it. Otherwise, regular Qt key handling continues.
+\o If the Qt widget containing the \l QDeclarativeView has focus, the key event is delivered to it. Otherwise, regular Qt key handling continues.
 \o The key event is delivered by the scene to the QML \l Item with \e {active focus}.  If no \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
 \o If the QML \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
 

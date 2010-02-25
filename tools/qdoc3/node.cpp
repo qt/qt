@@ -580,7 +580,7 @@ bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 void InnerNode::addChild(Node *child)
 {
     children.append(child);
-    if ((child->type() == Function) || (child->type() == QmlMethod)) {
+    if ((child->type() == Function) || (child->type() == QDeclarativeMethod)) {
         FunctionNode *func = (FunctionNode *) child;
         if (!primaryFunctionMap.contains(func->name())) {
             primaryFunctionMap.insert(func->name(), func);
@@ -806,8 +806,8 @@ FakeNode::FakeNode(InnerNode *parent, const QString& name, SubType subtype)
     case Group:
         setPageType(ArticlePage);
         break;
-    case QmlClass:
-    case QmlBasicType:
+    case QDeclarativeClass:
+    case QDeclarativeBasicType:
         setPageType(ApiPage);
         break;
     case Example:
@@ -1256,20 +1256,20 @@ bool TargetNode::isInnerNode() const
 }
 
 #ifdef QDOC_QML
-bool QmlClassNode::qmlOnly = false;
-QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
+bool QDeclarativeClassNode::qmlOnly = false;
+QMultiMap<QString,Node*> QDeclarativeClassNode::inheritedBy;
 
 /*!
   Constructs a Qml class node (i.e. a Fake node with the
-  subtype QmlClass. The new node has the given \a parent
+  subtype QDeclarativeClass. The new node has the given \a parent
   and \a name and is associated with the C++ class node
   specified by \a cn which may be null if the the Qml
   class node is not associated with a C++ class node.
  */
-QmlClassNode::QmlClassNode(InnerNode *parent,
+QDeclarativeClassNode::QDeclarativeClassNode(InnerNode *parent,
                            const QString& name,
                            const ClassNode* cn)
-    : FakeNode(parent, name, QmlClass), cnode(cn)
+    : FakeNode(parent, name, QDeclarativeClass), cnode(cn)
 {
     setTitle((qmlOnly ? "" : "QML ") + name + " Element Reference");
 }
@@ -1280,7 +1280,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
 
   But not yet. Still testing.
  */
-QString QmlClassNode::fileBase() const
+QString QDeclarativeClassNode::fileBase() const
 {
 #if 0    
     if (Node::fileBase() == "item")
@@ -1294,7 +1294,7 @@ QString QmlClassNode::fileBase() const
   Record the fact that QML class \a base is inherited by
   QML class \a sub.
  */
-void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
+void QDeclarativeClassNode::addInheritedBy(const QString& base, Node* sub)
 {
     inheritedBy.insert(base,sub);
 }
@@ -1302,7 +1302,7 @@ void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 /*!
   Loads the list \a subs with the nodes of all the subclasses of \a base.
  */
-void QmlClassNode::subclasses(const QString& base, NodeList& subs)
+void QDeclarativeClassNode::subclasses(const QString& base, NodeList& subs)
 {
     subs.clear();
     if (inheritedBy.contains(base))
@@ -1311,24 +1311,24 @@ void QmlClassNode::subclasses(const QString& base, NodeList& subs)
 
 /*!
   Constructs a Qml basic type node (i.e. a Fake node with
-  the subtype QmlBasicType. The new node has the given
+  the subtype QDeclarativeBasicType. The new node has the given
   \a parent and \a name.
  */
-QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
+QDeclarativeBasicTypeNode::QDeclarativeBasicTypeNode(InnerNode *parent,
                                    const QString& name)
-    : FakeNode(parent, name, QmlBasicType)
+    : FakeNode(parent, name, QDeclarativeBasicType)
 {
     setTitle(name);
 }
 
 /*!
   Constructor for the Qml property group node. \a parent is
-  always a QmlClassNode. 
+  always a QDeclarativeClassNode. 
  */
-QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent,
+QDeclarativePropGroupNode::QDeclarativePropGroupNode(QDeclarativeClassNode* parent,
                                    const QString& name,
                                    bool attached)
-    : FakeNode(parent, name, QmlPropertyGroup),
+    : FakeNode(parent, name, QDeclarativePropertyGroup),
       isdefault(false),
       att(attached)
 {
@@ -1338,11 +1338,11 @@ QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent,
 /*!
   Constructor for the QML property node.
  */
-QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
+QDeclarativePropertyNode::QDeclarativePropertyNode(QDeclarativePropGroupNode *parent,
                                  const QString& name,
                                  const QString& type,
                                  bool attached)
-    : LeafNode(QmlProperty, parent, name),
+    : LeafNode(QDeclarativeProperty, parent, name),
       dt(type),
       sto(Trool_Default),
       des(Trool_Default),
@@ -1354,7 +1354,7 @@ QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
 /*!
   I don't know what this is.
  */
-QmlPropertyNode::Trool QmlPropertyNode::toTrool(bool boolean)
+QDeclarativePropertyNode::Trool QDeclarativePropertyNode::toTrool(bool boolean)
 {
     return boolean ? Trool_True : Trool_False;
 }
@@ -1362,7 +1362,7 @@ QmlPropertyNode::Trool QmlPropertyNode::toTrool(bool boolean)
 /*!
   I don't know what this is either.
  */
-bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
+bool QDeclarativePropertyNode::fromTrool(Trool troolean, bool defaultValue)
 {
     switch (troolean) {
     case Trool_True:

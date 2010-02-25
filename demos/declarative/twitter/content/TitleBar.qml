@@ -72,6 +72,6 @@ Item {
     }
 
     transitions: Transition {
-        NumberAnimation { properties: "x"; easing: "easeInOutQuad" }
+        NumberAnimation { properties: "x"; easing.type: "InOutQuad" }
     }
 }

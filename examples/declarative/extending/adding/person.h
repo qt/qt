@@ -43,7 +43,7 @@
 
 #include <QObject>
 // ![0]
-#include <qml.h>
+#include <qdeclarative.h>
 
 class Person : public QObject {
 Q_OBJECT

@@ -90,10 +90,10 @@ class HtmlGenerator : public PageGenerator
         Typedef, 
         Property,
         Variable, 
-        QmlClass,
-        QmlProperty,
-        QmlSignal,
-        QmlMethod,
+        QDeclarativeClass,
+        QDeclarativeProperty,
+        QDeclarativeSignal,
+        QDeclarativeMethod,
         LastSinceType
     };
 
@@ -185,9 +185,9 @@ class HtmlGenerator : public PageGenerator
     void generateDetailedQmlMember(const Node *node,
                                    const InnerNode *relative,
                                    CodeMarker *marker);
-    void generateQmlInherits(const QmlClassNode* cn, CodeMarker* marker);
-    void generateQmlInheritedBy(const QmlClassNode* cn, CodeMarker* marker);
-    void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
+    void generateQmlInherits(const QDeclarativeClassNode* cn, CodeMarker* marker);
+    void generateQmlInheritedBy(const QDeclarativeClassNode* cn, CodeMarker* marker);
+    void generateQmlInstantiates(const QDeclarativeClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 #endif
 #ifdef QDOC_NAME_ALIGNMENT

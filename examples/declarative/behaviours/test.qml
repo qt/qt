@@ -64,7 +64,8 @@ Rectangle {
                         property: "y"
                         from: 0
                         to: 10
-                        easing: "easeOutBounce(amplitude:30)"
+                        easing.type: "OutBounce"
+                        easing.amplitude: 30
                         duration: 250
                     }
                     NumberAnimation {
@@ -72,7 +73,8 @@ Rectangle {
                         property: "y"
                         from: 10
                         to: 0
-                        easing: "easeOutBounce(amplitude:30)"
+                        easing.type: "OutBounce"
+                        easing.amplitude: 30
                         duration: 250
                     }
                 }

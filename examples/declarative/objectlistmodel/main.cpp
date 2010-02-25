@@ -41,11 +41,11 @@
 
 #include <QApplication>
 
-#include <qmlengine.h>
-#include <qmlcontext.h>
-#include <qml.h>
-#include <qmlgraphicsitem.h>
-#include <qmlview.h>
+#include <qdeclarativeengine.h>
+#include <qdeclarativecontext.h>
+#include <qdeclarative.h>
+#include <qdeclarativeitem.h>
+#include <qdeclarativeview.h>
 
 #include "dataobject.h"
 
@@ -58,8 +58,7 @@ int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    QmlView view;
-    view.setSource(QUrl("qrc:view.qml"));
+    QDeclarativeView view;
 
     QList<QObject*> dataList;
     dataList.append(new DataObject("Item 1", "red"));
@@ -67,10 +66,10 @@ int main(int argc, char ** argv)
     dataList.append(new DataObject("Item 3", "blue"));
     dataList.append(new DataObject("Item 4", "yellow"));
 
-    QmlContext *ctxt = view.rootContext();
+    QDeclarativeContext *ctxt = view.rootContext();
     ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
 
-    view.execute();
+    view.setSource(QUrl("qrc:view.qml"));
     view.show();
 
     return app.exec();

@@ -127,7 +127,7 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     subTypeHash["page"] = Node::Page;
     subTypeHash["externalpage"] = Node::ExternalPage;
 #ifdef QDOC_QML
-    subTypeHash["qmlclass"] = Node::QmlClass;
+    subTypeHash["qmlclass"] = Node::QDeclarativeClass;
 #endif
 
     QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
@@ -188,8 +188,8 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
     } else if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
 #ifdef QDOC_QML
-        if (fake->subType() == Node::QmlClass) {
-            details << (QmlClassNode::qmlOnly ? fake->name() : fake->fullTitle());
+        if (fake->subType() == Node::QDeclarativeClass) {
+            details << (QDeclarativeClassNode::qmlOnly ? fake->name() : fake->fullTitle());
             details << "QML." + fake->name();
         } else
 #endif

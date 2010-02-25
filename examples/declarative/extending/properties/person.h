@@ -42,7 +42,7 @@
 #define PERSON_H
 
 #include <QObject>
-#include <qml.h>
+#include <qdeclarative.h>
 
 class Person : public QObject {
 Q_OBJECT

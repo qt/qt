@@ -10,6 +10,7 @@ Rectangle {
         Image {
             id: picture
             source: "pics/niagara_falls.jpg"
+            asynchronous: true
         }
         viewportWidth: picture.width
         viewportHeight: picture.height
