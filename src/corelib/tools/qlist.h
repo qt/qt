@@ -811,15 +811,22 @@ Q_OUTOFLINE_TEMPLATE typename QList<T>::iterator QList<T>::erase(typename QList<
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
-    Node *n = (d->ref != 1)
-              ? detach_helper_grow(INT_MAX, l.size())
-              : reinterpret_cast<Node *>(p.append2(l.p));
-    QT_TRY{
-        node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
-    } QT_CATCH(...) {
-        // restore the old end
-        d->end -= int(reinterpret_cast<Node *>(p.end()) - n);
-        QT_RETHROW;
+    if (!l.isEmpty()) {
+        if (isEmpty()) {
+            *this = l;
+        } else {
+            Node *n = (d->ref != 1)
+                      ? detach_helper_grow(INT_MAX, l.size())
+                      : reinterpret_cast<Node *>(p.append2(l.p));
+            QT_TRY {
+                node_copy(n, reinterpret_cast<Node *>(p.end()),
+                          reinterpret_cast<Node *>(l.p.begin()));
+            } QT_CATCH(...) {
+                // restore the old end
+                d->end -= int(reinterpret_cast<Node *>(p.end()) - n);
+                QT_RETHROW;
+            }
+        }
     }
     return *this;
 }
