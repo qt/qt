@@ -165,6 +165,9 @@ public:
 protected:
     virtual void updateCurrentValue(const QVariant &value)
     {
+        if (state() == QAbstractAnimation::Stopped)
+            return;
+
         if (animValue)
             animValue->setValue(value.toReal());
     }
