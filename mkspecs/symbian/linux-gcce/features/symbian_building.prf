@@ -31,7 +31,7 @@ for(library, LIBS) {
     library = $$replace(library, "^-l", "")
     isFullName = $$find(library, \.)
     isEmpty(isFullName):library="$${library}.dso"
-    newLIBS += "${EPOCROOT}epoc32/release/armv5/lib/$${library}"
+    newLIBS += "-l:$${library}"
 }
 LIBS = $$newLIBS
 newLIBS =
@@ -41,7 +41,7 @@ for(library, QMAKE_LIBS) {
     library = $$replace(library, "^-l", "")
     isFullName = $$find(library, \.)
     isEmpty(isFullName):library="$${library}.dso"
-    newLIBS += "${EPOCROOT}epoc32/release/armv5/lib/$${library}"
+    newLIBS += "-l:$${library}"
 }
 QMAKE_LIBS = $$newLIBS
 
@@ -102,8 +102,8 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.dso
     QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
 
-    QMAKE_LIBS += ${EPOCROOT}/epoc32/release/armv5/udeb/edllstub.lib \
-                  ${EPOCROOT}/epoc32/release/armv5/udeb/edll.lib \
+    QMAKE_LIBS += -l:edllstub.lib \
+                  -l:edll.lib \
                 -lsupc++ \
                 -lgcc
 
