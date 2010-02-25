@@ -142,7 +142,7 @@ struct QXCoreDesc {
 struct KeyboardLayoutItem;
 typedef struct __TISInputSource * TISInputSourceRef;
 class QKeyEvent;
-class Q_GUI_EXPORT QKeyMapperPrivate : public QObjectPrivate
+class QKeyMapperPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QKeyMapper)
 public:
