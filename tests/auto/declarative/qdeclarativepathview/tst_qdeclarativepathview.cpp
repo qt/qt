@@ -49,6 +49,7 @@
 #include <QtDeclarative/private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativerectangle_p.h>
 #include <QAbstractListModel>
+#include <QStringListModel>
 #include <QFile>
 #include <private/qdeclarativevaluetype_p.h>
 #include "../../../shared/util.h"
@@ -67,6 +68,7 @@ private slots:
     void pathview3();
     void path();
     void pathMoved();
+    void resetModel();
 
 private:
     QDeclarativeView *createView();
@@ -424,6 +426,45 @@ void tst_QDeclarativePathView::pathMoved()
 
     delete canvas;
 }
+
+void tst_QDeclarativePathView::resetModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStringList strings;
+    strings << "one" << "two" << "three";
+    QStringListModel model(strings);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/displaypath.qml"));
+    qApp->processEvents();
+
+    QDeclarativePathView *pathview = findItem<QDeclarativePathView>(canvas->rootObject(), "view");
+    QVERIFY(pathview != 0);
+
+    QCOMPARE(pathview->count(), model.rowCount());
+
+    for (int i = 0; i < model.rowCount(); ++i) {
+        QDeclarativeText *display = findItem<QDeclarativeText>(pathview, "displayText", i);
+        QVERIFY(display != 0);
+        QCOMPARE(display->text(), strings.at(i));
+    }
+
+    strings.clear();
+    strings << "four" << "five" << "six" << "seven";
+    model.setStringList(strings);
+
+    QCOMPARE(pathview->count(), model.rowCount());
+
+    for (int i = 0; i < model.rowCount(); ++i) {
+        QDeclarativeText *display = findItem<QDeclarativeText>(pathview, "displayText", i);
+        QVERIFY(display != 0);
+        QCOMPARE(display->text(), strings.at(i));
+    }
+}
+
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
 {

@@ -660,6 +660,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
                             this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
     } else if (d->m_visualItemModel) {
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
                          this, SIGNAL(itemsInserted(int,int)));
@@ -705,6 +706,7 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
                             this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
         QObject::connect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
                             this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         d->m_metaDataCacheable = true;
         return;
     }
@@ -927,6 +929,33 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
     return stat;
 }
 
+/*!
+    \qmlproperty object VisualDataModel::parts
+
+    The \a parts property selects a VisualDataModel which creates
+    delegates from the part named.  This is used in conjunction with
+    the Package element.
+
+    For example, the code below selects a model which creates
+    delegates named \e list from a Package:
+
+    \code
+    VisualDataModel {
+        id: visualModel
+        delegate: Package {
+            Item { Package.name: "list" }
+        }
+        model: myModel
+    }
+
+    ListView {
+        width: 200; height:200
+        model: visualModel.parts.list
+    }
+    \endcode
+
+    \sa Package
+*/
 QObject *QDeclarativeVisualDataModel::parts()
 {
     Q_D(QDeclarativeVisualDataModel);
@@ -1235,6 +1264,12 @@ void QDeclarativeVisualDataModel::_q_dataChanged(const QModelIndex &begin, const
     Q_D(QDeclarativeVisualDataModel);
     if (!begin.parent().isValid())
         _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
+}
+
+void QDeclarativeVisualDataModel::_q_modelReset()
+{
+    Q_D(QDeclarativeVisualDataModel);
+    emit modelReset();
 }
 
 void QDeclarativeVisualDataModel::_q_createdPackage(int index, QDeclarativePackage *package)

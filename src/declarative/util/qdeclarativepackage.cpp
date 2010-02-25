@@ -46,6 +46,33 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \qmlclass Package QDeclarativePackage
+    \brief Package provides a collection of named items
+
+    The Package class is currently used in conjunction with
+    VisualDataModel to enable delegates with a shared context
+    to be provided to multiple views.
+
+    Any item within a Package may be assigned a name via the
+    \e {Package.name} attached property.
+
+    The example below creates a Package containing two named items;
+    \e list and \e grid.  The third element in the package is parented to whichever
+    delegate it should appear in.  This allows an item to move
+    between views.
+
+    \snippet examples/declarative/package/Delegate.qml 0
+
+    These named items are used as the delegates by the two views who
+    reference the special VisualDataModel.parts property to select
+    a model which provides the chosen delegate.
+
+    \snippet examples/declarative/package/view.qml 0
+
+*/
+
+
 class QDeclarativePackagePrivate : public QObjectPrivate
 {
 public:

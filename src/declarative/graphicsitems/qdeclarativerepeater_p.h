@@ -88,6 +88,7 @@ private Q_SLOTS:
     void itemsInserted(int,int);
     void itemsRemoved(int,int);
     void itemsMoved(int,int,int);
+    void modelReset();
 
 private:
     Q_DISABLE_COPY(QDeclarativeRepeater)
