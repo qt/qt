@@ -7,7 +7,6 @@
 # **
 # ****************************************************************************/
 
-include $(FLMHOME)/metaflm.mk
 
 POST_LINK_TARGET:=POST_LINK_$(PLATFORM_PATH)_$(CFG_PATH)_$(call sanitise,$(LINK_TARGET))
 POST_LINK_DEP:=$(EPOCROOT)/epoc32/release/$(PLATFORM_PATH)/$(CFG_PATH)/$(LINK_TARGET)
@@ -21,7 +20,6 @@ endef
 
 define qmake_post_link
 $(ALLTARGET):: $(POST_LINK_TARGET)
-FINAL:: $(POST_LINK_TARGET)
 
 $(POST_LINK_TARGET): $(POST_LINK_DEP)
 	$(call startrule,qmake_post_link) \

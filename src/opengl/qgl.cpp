@@ -5451,7 +5451,7 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
     quint32 level = 0;
     quint32 width = pvrHeader->width;
     quint32 height = pvrHeader->height;
-    while (bufferSize > 0 && level < pvrHeader->mipMapCount) {
+    while (bufferSize > 0 && level <= pvrHeader->mipMapCount) {
         quint32 size =
             (qMax(width, minWidth) * qMax(height, minHeight) *
              pvrHeader->bitsPerPixel) / 8;

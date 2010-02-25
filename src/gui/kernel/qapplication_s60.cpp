@@ -1146,6 +1146,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 #endif
         S60->wsSession().SetAutoFlush(ETrue);
 
+#ifdef Q_SYMBIAN_WINDOW_SIZE_CACHE
+    TRAP_IGNORE(S60->wsSession().EnableWindowSizeCacheL());
+#endif
+
     S60->updateScreenSize();
 
 

@@ -49,9 +49,9 @@ HttpWindow::HttpWindow(QWidget *parent)
     : QDialog(parent)
 {
 #ifndef QT_NO_OPENSSL
-    urlLineEdit = new QLineEdit("https://");
+    urlLineEdit = new QLineEdit("https://qt.nokia.com/");
 #else
-    urlLineEdit = new QLineEdit("http://");
+    urlLineEdit = new QLineEdit("http://qt.nokia.com/");
 #endif
 
     urlLabel = new QLabel(tr("&URL:"));
@@ -70,21 +70,14 @@ HttpWindow::HttpWindow(QWidget *parent)
 
     progressDialog = new QProgressDialog(this);
 
-    http = new QHttp(this);
-
     connect(urlLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableDownloadButton()));
-    connect(http, SIGNAL(requestFinished(int,bool)),
-            this, SLOT(httpRequestFinished(int,bool)));
-    connect(http, SIGNAL(dataReadProgress(int,int)),
-            this, SLOT(updateDataReadProgress(int,int)));
-    connect(http, SIGNAL(responseHeaderReceived(QHttpResponseHeader)),
-            this, SLOT(readResponseHeader(QHttpResponseHeader)));
-    connect(http, SIGNAL(authenticationRequired(QString,quint16,QAuthenticator*)),
-            this, SLOT(slotAuthenticationRequired(QString,quint16,QAuthenticator*)));
+
+    connect(&qnam, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            this, SLOT(slotAuthenticationRequired(QNetworkReply*,QAuthenticator*)));
 #ifndef QT_NO_OPENSSL
-    connect(http, SIGNAL(sslErrors(QList<QSslError>)),
-            this, SLOT(sslErrors(QList<QSslError>)));
+    connect(&qnam, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
+            this, SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
     connect(progressDialog, SIGNAL(canceled()), this, SLOT(cancelDownload()));
     connect(downloadButton, SIGNAL(clicked()), this, SLOT(downloadFile()));
@@ -104,9 +97,21 @@ HttpWindow::HttpWindow(QWidget *parent)
     urlLineEdit->setFocus();
 }
 
+void HttpWindow::startRequest(QUrl url)
+{
+    reply = qnam.get(QNetworkRequest(url));
+    connect(reply, SIGNAL(finished()),
+            this, SLOT(httpFinished()));
+    connect(reply, SIGNAL(readyRead()),
+            this, SLOT(httpReadyRead()));
+    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+            this, SLOT(updateDataReadProgress(qint64,qint64)));
+}
+
 void HttpWindow::downloadFile()
 {
-    QUrl url(urlLineEdit->text());
+    url = urlLineEdit->text();
+
     QFileInfo fileInfo(url.path());
     QString fileName = fileInfo.fileName();
     if (fileName.isEmpty())
@@ -132,35 +137,26 @@ void HttpWindow::downloadFile()
         return;
     }
 
-    QHttp::ConnectionMode mode = url.scheme().toLower() == "https" ? QHttp::ConnectionModeHttps : QHttp::ConnectionModeHttp;
-    http->setHost(url.host(), mode, url.port() == -1 ? 0 : url.port());
-    
-    if (!url.userName().isEmpty())
-        http->setUser(url.userName(), url.password());
-
-    httpRequestAborted = false;
-    QByteArray path = QUrl::toPercentEncoding(url.path(), "!$&'()*+,;=:@/");
-    if (path.isEmpty())
-        path = "/";
-    httpGetId = http->get(path, file);
 
     progressDialog->setWindowTitle(tr("HTTP"));
     progressDialog->setLabelText(tr("Downloading %1.").arg(fileName));
     downloadButton->setEnabled(false);
+
+    // schedule the request
+    httpRequestAborted = false;
+    startRequest(url);
 }
 
 void HttpWindow::cancelDownload()
 {
     statusLabel->setText(tr("Download canceled."));
     httpRequestAborted = true;
-    http->abort();
+    reply->abort();
     downloadButton->setEnabled(true);
 }
 
-void HttpWindow::httpRequestFinished(int requestId, bool error)
+void HttpWindow::httpFinished()
 {
-    if (requestId != httpGetId)
-        return;
     if (httpRequestAborted) {
         if (file) {
             file->close();
@@ -168,54 +164,58 @@ void HttpWindow::httpRequestFinished(int requestId, bool error)
             delete file;
             file = 0;
         }
-
+        reply->deleteLater();
         progressDialog->hide();
         return;
     }
 
-    if (requestId != httpGetId)
-        return;
-
     progressDialog->hide();
+    file->flush();
     file->close();
 
-    if (error) {
+
+    QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+    if (reply->error()) {
         file->remove();
         QMessageBox::information(this, tr("HTTP"),
                                  tr("Download failed: %1.")
-                                 .arg(http->errorString()));
+                                 .arg(reply->errorString()));
+        downloadButton->setEnabled(true);
+    } else if (!redirectionTarget.isNull()) {        
+        QUrl newUrl = url.resolved(redirectionTarget.toUrl());
+        if (QMessageBox::question(this, tr("HTTP"),
+                                  tr("Redirect to %1 ?").arg(newUrl.toString()),
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            url = newUrl;
+            reply->deleteLater();
+            file->open(QIODevice::WriteOnly);
+            file->resize(0);
+            startRequest(url);
+            return;
+        }
     } else {
         QString fileName = QFileInfo(QUrl(urlLineEdit->text()).path()).fileName();
         statusLabel->setText(tr("Downloaded %1 to current directory.").arg(fileName));
+        downloadButton->setEnabled(true);
     }
 
-    downloadButton->setEnabled(true);
+    reply->deleteLater();
+    reply = 0;
     delete file;
     file = 0;
 }
 
-void HttpWindow::readResponseHeader(const QHttpResponseHeader &responseHeader)
+void HttpWindow::httpReadyRead()
 {
-    switch (responseHeader.statusCode()) {
-    case 200:                   // Ok
-    case 301:                   // Moved Permanently
-    case 302:                   // Found
-    case 303:                   // See Other
-    case 307:                   // Temporary Redirect
-        // these are not error conditions
-        break;
-
-    default:
-        QMessageBox::information(this, tr("HTTP"),
-                                 tr("Download failed: %1.")
-                                 .arg(responseHeader.reasonPhrase()));
-        httpRequestAborted = true;
-        progressDialog->hide();
-        http->abort();
-    }
+    // this slot gets called everytime the QNetworkReply has new data.
+    // We read all of its new data and write it into the file.
+    // That way we use less RAM than when reading it at the finished()
+    // signal of the QNetworkReply
+    if (file)
+        file->write(reply->readAll());
 }
 
-void HttpWindow::updateDataReadProgress(int bytesRead, int totalBytes)
+void HttpWindow::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes)
 {
     if (httpRequestAborted)
         return;
@@ -229,14 +229,19 @@ void HttpWindow::enableDownloadButton()
     downloadButton->setEnabled(!urlLineEdit->text().isEmpty());
 }
 
-void HttpWindow::slotAuthenticationRequired(const QString &hostName, quint16, QAuthenticator *authenticator)
+void HttpWindow::slotAuthenticationRequired(QNetworkReply*,QAuthenticator *authenticator)
 {
     QDialog dlg;
     Ui::Dialog ui;
     ui.setupUi(&dlg);
     dlg.adjustSize();
-    ui.siteDescription->setText(tr("%1 at %2").arg(authenticator->realm()).arg(hostName));
-    
+    ui.siteDescription->setText(tr("%1 at %2").arg(authenticator->realm()).arg(url.host()));
+
+    // Did the URL have information? Fill the UI
+    // This is only relevant if the URL-supplied credentials were wrong
+    ui.userEdit->setText(url.userName());
+    ui.passwordEdit->setText(url.password());
+
     if (dlg.exec() == QDialog::Accepted) {
         authenticator->setUser(ui.userEdit->text());
         authenticator->setPassword(ui.passwordEdit->text());
@@ -244,7 +249,7 @@ void HttpWindow::slotAuthenticationRequired(const QString &hostName, quint16, QA
 }
 
 #ifndef QT_NO_OPENSSL
-void HttpWindow::sslErrors(const QList<QSslError> &errors)
+void HttpWindow::sslErrors(QNetworkReply*,const QList<QSslError> &errors)
 {
     QString errorString;
     foreach (const QSslError &error, errors) {
@@ -253,10 +258,10 @@ void HttpWindow::sslErrors(const QList<QSslError> &errors)
         errorString += error.errorString();
     }
     
-    if (QMessageBox::warning(this, tr("HTTP Example"),
+    if (QMessageBox::warning(this, tr("HTTP"),
                              tr("One or more SSL errors has occurred: %1").arg(errorString),
                              QMessageBox::Ignore | QMessageBox::Abort) == QMessageBox::Ignore) {
-        http->ignoreSslErrors();
+        reply->ignoreSslErrors();
     }
 }
 #endif

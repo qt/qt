@@ -472,6 +472,8 @@ public:
 #ifdef QT_KEYPAD_NAVIGATION
     static bool navigateToDirection(Direction direction);
     static QWidget *widgetInNavigationDirection(Direction direction);
+    static inline bool canKeypadNavigate(Qt::Orientation orientation);
+    static inline bool inTabWidget(QWidget *widget);
 #endif
 
     void setWindowIconText_sys(const QString &cap);

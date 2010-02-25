@@ -158,10 +158,9 @@ QT_BEGIN_NAMESPACE
 
     \section1 Reading and writing Qt collection classes
 
-    The Qt collection classes can also be serialized to a QDataStream.
+    The Qt container classes can also be serialized to a QDataStream.
     These include QList, QLinkedList, QVector, QSet, QHash, and QMap.
-    These classes have have stream operators declared as non-member of
-    the class.    
+    The stream operators are declared as non-members of the classes.
 
     \target Serializing Qt Classes
     \section1 Reading and writing other Qt classes.

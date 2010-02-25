@@ -107,7 +107,8 @@ static void ensureInitialized()
     object, which holds the common configuration and settings for the requests
     it sends. It contains the proxy and cache configuration, as well as the
     signals related to such issues, and reply signals that can be used to
-    monitor the progress of a network operation.
+    monitor the progress of a network operation. One QNetworkAccessManager
+    should be enough for the whole Qt application.
 
     Once a QNetworkAccessManager object has been created, the application can
     use it to send requests over the network. A group of standard functions
@@ -118,6 +119,7 @@ static void ensureInitialized()
     A simple download off the network could be accomplished with:
     \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 0
 
+    QNetworkAccessManager has an asynchronous API.
     When the \tt replyFinished slot above is called, the parameter it
     takes is the QNetworkReply object containing the downloaded data
     as well as meta-data (headers, etc.).
@@ -126,6 +128,11 @@ static void ensureInitialized()
     to delete the QNetworkReply object at an appropriate time. Do not directly
     delete it inside the slot connected to finished(). You can use the
     deleteLater() function.
+
+    \note QNetworkAccessManager queues the requests it receives. The number
+    of requests executed in parallel is dependent on the protocol.
+    Currently, for the HTTP protocol on desktop platforms, 6 requests are
+    executed in parallel for one host/port combination.
 
     A more involved example, assuming the manager is already existent,
     can be:
