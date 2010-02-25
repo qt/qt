@@ -43,6 +43,7 @@
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <private/qdeclarativeanchors_p_p.h>
 #include <private/qdeclarativerectangle_p.h>
+#include <private/qdeclarativetext_p.h>
 #include <private/qdeclarativepropertychanges_p.h>
 #include <private/qdeclarativestategroup_p.h>
 
@@ -81,6 +82,7 @@ private slots:
     void tempState();
     void illegalTempState();
     void nonExistantProperty();
+    void reset();
 };
 
 QByteArray tst_qdeclarativestates::fullDataPath(const QString &path)
@@ -910,6 +912,25 @@ void tst_qdeclarativestates::nonExistantProperty()
     QTest::ignoreMessage(QtWarningMsg, QByteArray("QML PropertyChanges (" + fullDataPath("/data/nonExistantProp.qml") + ":9:9) Cannot assign to non-existent property \"colr\"").constData());
     rect->setState("blue");
     QCOMPARE(rect->state(), QLatin1String("blue"));
+}
+
+void tst_qdeclarativestates::reset()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/reset.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeText *text = rect->findChild<QDeclarativeText*>();
+    QVERIFY(text != 0);
+    QCOMPARE(text->width(), qreal(50.));
+    QVERIFY(text->width() < text->height());
+
+    rect->setState("state1");
+
+    QVERIFY(text->width() > 51);
+    QVERIFY(text->width() > text->height());
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

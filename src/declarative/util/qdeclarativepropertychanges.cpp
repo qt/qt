@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass PropertyChanges QDeclarativePropertyChanges
-  \since 4.7
+    \since 4.7
     \brief The PropertyChanges element describes new property values for a state.
 
     PropertyChanges provides a state change that modifies the properties of an item.
@@ -95,6 +95,33 @@ QT_BEGIN_NAMESPACE
     PropertyChanges {
         target: myMouseArea
         onClicked: doSomethingDifferent()
+    }
+    \endqml
+
+    You can reset a property in a state change by assigning \c undefined. In the following
+    example we reset \c theText's width when we enter state1. This will give the text its
+    natural width (which is the whole string on one line).
+
+    \qml
+    import Qt 4.6
+
+    Rectangle {
+        width: 640
+        height: 480
+        Text {
+            id: theText
+            width: 50
+            wrap: true
+            text: "a text string that is longer than 50 pixels"
+        }
+
+        states: State {
+            name: "state1"
+            PropertyChanges {
+                target: theText
+                width: undefined
+            }
+        }
     }
     \endqml
 
