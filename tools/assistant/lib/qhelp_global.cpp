@@ -56,7 +56,7 @@ QString QHelpGlobal::uniquifyConnectionName(const QString &name, void *pointer)
         counter = 0;
 
     return QString::fromLatin1("%1-%2-%3").
-        arg(name).arg(long(pointer)).arg(counter);
+        arg(name).arg(quintptr(pointer)).arg(counter);
 }
 
 QString QHelpGlobal::documentTitle(const QString &content)

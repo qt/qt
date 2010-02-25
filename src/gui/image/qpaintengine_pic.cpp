@@ -486,8 +486,11 @@ void QPicturePaintEngine::drawTextItem(const QPointF &p , const QTextItem &ti)
     qDebug() << " -> drawTextItem():" << p << ti.text();
 #endif
 
+    const QTextItemInt &si = static_cast<const QTextItemInt &>(ti);
+    if (si.chars == 0)
+        QPaintEngine::drawTextItem(p, ti); // Draw as path
+
     if (d->pic_d->formatMajor >= 9) {
-        const QTextItemInt &si = static_cast<const QTextItemInt &>(ti);
         int pos;
         SERIALIZE_CMD(QPicturePrivate::PdcDrawTextItem);
         QFont fnt = ti.font();

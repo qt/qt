@@ -3083,6 +3083,20 @@ void tst_QTreeView::styleOptionViewItem()
         QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 3);
         QApplication::processEvents();
+
+        item00->setText("OnlyOne");
+        item0->insertRow(2, new QStandardItem("OnlyOne Last"));
+        view.collapse(item0->index());
+        item0->removeRow(0);
+        delegate.count = 0;
+        QTRY_VERIFY(delegate.count >= 2);
+        QApplication::processEvents();
+
+        item0->removeRow(1);
+        item0->setText("OnlyOne");
+        delegate.count = 0;
+        QTRY_VERIFY(delegate.count >= 2);
+        QApplication::processEvents();
     }
 }
 

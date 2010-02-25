@@ -368,7 +368,8 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
     }
 
     // We only want to convert the glyphs to text if the entire string is compatible with ASCII
-    bool convertToText = true;
+    // and if we actually have access to the chars.
+    bool convertToText = ti.chars != 0;
     for (int i=0;  i < ti.num_chars; ++i) {
         if (ti.chars[i].unicode() >= 0x80) {
             convertToText = false;

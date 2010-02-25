@@ -45,13 +45,20 @@
 #include <QtGui/QImage>
 
 #include <qstatictext.h>
+#include <qpaintengine.h>
+
 #include <private/qstatictext_p.h>
+#include <private/qapplication_p.h>
 
 // #define DEBUG_SAVE_IMAGE
 
 class tst_QStaticText: public QObject
 {
     Q_OBJECT
+
+private:
+    bool supportsTransformations() const;
+
 private slots:
     void init();
     void cleanup();
@@ -177,6 +184,8 @@ void tst_QStaticText::prepareToCorrectData()
         p.drawStaticText(QPointF(11, 12), text);
     }
 
+    if (!supportsTransformations())
+      QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -288,6 +297,25 @@ void tst_QStaticText::translatedPainter()
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
+bool tst_QStaticText::supportsTransformations() const
+{
+    QPixmap pm(10, 10);
+    QPainter p(&pm);
+    QPaintEngine *engine = p.paintEngine();
+
+    QPaintEngine::Type type = engine->type();
+
+    if (type == QPaintEngine::OpenGL2
+        || type == QPaintEngine::OpenGL
+#if !defined Q_WS_WIN
+        || type == QPaintEngine::Raster
+#endif
+        )
+        return false;
+
+    return true;
+}
+
 void tst_QStaticText::rotatedPainter()
 {
     QPixmap imageDrawText(1000, 1000);
@@ -314,6 +342,8 @@ void tst_QStaticText::rotatedPainter()
     imageDrawStaticText.save("rotatedPainter_imageDrawStaticText.png");
 #endif
 
+    if (!supportsTransformations())
+      QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -340,6 +370,8 @@ void tst_QStaticText::scaledPainter()
         p.drawStaticText(QPointF(11, 12), text);
     }
 
+    if (!supportsTransformations())
+      QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -370,7 +402,6 @@ void tst_QStaticText::projectedPainter()
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
-
 }
 
 void tst_QStaticText::rotatedScaledAndTranslatedPainter()
@@ -405,6 +436,8 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
     imageDrawStaticText.save("rotatedScaledAndPainter_imageDrawStaticText.png");
 #endif
 
+    if (!supportsTransformations())
+      QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
@@ -444,6 +477,8 @@ void tst_QStaticText::transformationChanged()
     imageDrawStaticText.save("transformationChanged_imageDrawStaticText.png");
 #endif
 
+    if (!supportsTransformations())
+      QEXPECT_FAIL("", "Graphics system does not support transformed text on this platform", Abort);
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
