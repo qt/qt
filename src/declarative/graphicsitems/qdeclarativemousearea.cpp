@@ -143,7 +143,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
 
 /*!
-    \qmlclass MouseRegion QDeclarativeMouseRegion
+    \qmlclass MouseArea QDeclarativeMouseArea
     \since 4.7
     \brief The MouseArea item enables simple mouse handling.
     \inherits Item
@@ -172,7 +172,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 /*!
     \qmlsignal MouseArea::onEntered()
 
-    This handler is called when the mouse enters the mouse region.
+    This handler is called when the mouse enters the mouse area.
 
     By default the onEntered handler is only called while a button is
     pressed.  Setting hoverEnabled to true enables handling of
@@ -184,7 +184,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 /*!
     \qmlsignal MouseArea::onExited()
 
-    This handler is called when the mouse exists the mouse region.
+    This handler is called when the mouse exists the mouse area.
 
     By default the onExited handler is only called while a button is
     pressed.  Setting hoverEnabled to true enables handling of
@@ -295,12 +295,12 @@ QDeclarativeMouseArea::~QDeclarativeMouseArea()
 
     If the hoverEnabled property is false then these properties will only be valid
     while a button is pressed, and will remain valid as long as the button is held
-    even if the mouse is moved outside the region.
+    even if the mouse is moved outside the area.
 
     If hoverEnabled is true then these properties will be valid:
     \list
         \i when no button is pressed, but the mouse is within the MouseArea (containsMouse is true).
-        \i if a button is pressed and held, even if it has since moved out of the region.
+        \i if a button is pressed and held, even if it has since moved out of the area.
     \endlist
 
     The coordinates are relative to the MouseArea.
@@ -567,9 +567,9 @@ void QDeclarativeMouseArea::timerEvent(QTimerEvent *event)
 
 /*!
     \qmlproperty bool MouseArea::containsMouse
-    This property holds whether the mouse is currently inside the mouse region.
+    This property holds whether the mouse is currently inside the mouse area.
 
-    \warning This property is not updated if the region moves under the mouse: \e containsMouse will not change.
+    \warning This property is not updated if the area moves under the mouse: \e containsMouse will not change.
     In addition, if hoverEnabled is false, containsMouse will only be valid when the mouse is pressed.
 */
 bool QDeclarativeMouseArea::hovered() const
@@ -580,7 +580,7 @@ bool QDeclarativeMouseArea::hovered() const
 
 /*!
     \qmlproperty bool MouseArea::pressed
-    This property holds whether the mouse region is currently pressed.
+    This property holds whether the mouse area is currently pressed.
 */
 bool QDeclarativeMouseArea::pressed() const
 {
@@ -600,7 +600,7 @@ void QDeclarativeMouseArea::setHovered(bool h)
 
 /*!
     \qmlproperty Qt::MouseButtons MouseArea::acceptedButtons
-    This property holds the mouse buttons that the mouse region reacts to.
+    This property holds the mouse buttons that the mouse area reacts to.
 
     The available buttons are:
     \list
