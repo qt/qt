@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtMultimedia/private/qmlmediabase_p.h>
+#include <QtMultimedia/private/qdeclarativemediabase_p.h>
 
 #include <QtMultimedia/qgraphicsvideoitem.h>
 
