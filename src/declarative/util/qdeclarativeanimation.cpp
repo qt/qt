@@ -156,7 +156,7 @@ void QDeclarativeAbstractAnimationPrivate::commence()
 
 QDeclarativeMetaProperty QDeclarativeAbstractAnimationPrivate::createProperty(QObject *obj, const QString &str, QObject *infoObj)
 {
-    QDeclarativeMetaProperty prop = QDeclarativeMetaProperty::createProperty(obj, str, qmlContext(infoObj));
+    QDeclarativeMetaProperty prop(obj, str, qmlContext(infoObj));
     if (!prop.isValid()) {
         qmlInfo(infoObj) << QDeclarativeAbstractAnimation::tr("Cannot animate non-existent property \"%1\"").arg(str);
         return QDeclarativeMetaProperty();

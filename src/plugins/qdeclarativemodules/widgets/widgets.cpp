@@ -127,12 +127,12 @@ public:
 
         QML_REGISTER_INTERFACE(QGraphicsLayoutItem);
         QML_REGISTER_INTERFACE(QGraphicsLayout);
-        qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,6,"QGraphicsLinearLayoutStretchItem","QGraphicsLinearLayoutStretchItemObject");
-        qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,6,"QGraphicsLinearLayout","QGraphicsLinearLayoutObject");
-        qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,6,"QGraphicsGridLayout","QGraphicsGridLayoutObject");
-        qmlRegisterExtendedType<QGraphicsView, QGraphicsViewDeclarativeUI>(uri,4,6,"QGraphicsView","QGraphicsView");
-        qmlRegisterExtendedType<QGraphicsScene,QGraphicsSceneDeclarativeUI>(uri,4,6,"QGraphicsScene","QGraphicsScene");
-        qmlRegisterExtendedType<QGraphicsWidget,QGraphicsWidgetDeclarativeUI>(uri,4,6,"QGraphicsWidget","QGraphicsWidget");
+        qmlRegisterType<QGraphicsLinearLayoutStretchItemObject>(uri,4,6,"QGraphicsLinearLayoutStretchItem");
+        qmlRegisterType<QGraphicsLinearLayoutObject>(uri,4,6,"QGraphicsLinearLayout");
+        qmlRegisterType<QGraphicsGridLayoutObject>(uri,4,6,"QGraphicsGridLayout");
+        qmlRegisterExtendedType<QGraphicsView, QGraphicsViewDeclarativeUI>(uri,4,6,"QGraphicsView");
+        qmlRegisterExtendedType<QGraphicsScene,QGraphicsSceneDeclarativeUI>(uri,4,6,"QGraphicsScene");
+        qmlRegisterExtendedType<QGraphicsWidget,QGraphicsWidgetDeclarativeUI>(uri,4,6,"QGraphicsWidget");
         QML_REGISTER_INTERFACE(QGraphicsItem);
     }
 };

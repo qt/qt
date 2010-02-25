@@ -43,7 +43,6 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/QIcon>
 #include <QtCore/QDir>
-#include <QtCore/QDebug>
 
 #include "qgstreamerserviceplugin.h"
 
@@ -99,7 +98,7 @@ QMediaService* QGstreamerServicePlugin::create(const QString &key)
         return new QGstreamerCaptureService(key);
 #endif
 
-    qDebug() << "unsupported key:" << key;
+    qWarning() << "GStreamer service plugin: unsupported service -" << key;
     return 0;
 }
 
@@ -145,7 +144,7 @@ void QGstreamerServicePlugin::updateDevices() const
     QFileInfoList entries = devDir.entryInfoList(QStringList() << "video*");
 
     foreach( const QFileInfo &entryInfo, entries ) {
-        qDebug() << "Try" << entryInfo.filePath();
+//        qDebug() << "Try" << entryInfo.filePath();
 
         int fd = ::open(entryInfo.filePath().toLatin1().constData(), O_RDWR );
         if (fd == -1)
@@ -172,7 +171,7 @@ void QGstreamerServicePlugin::updateDevices() const
                 name = entryInfo.fileName();
             else
                 name = QString((const char*)vcap.card);
-            qDebug() << "found camera: " << name;
+//            qDebug() << "found camera: " << name;
 
             m_cameraDevices.append(entryInfo.filePath().toLocal8Bit());
             m_cameraDescriptions.append(name);

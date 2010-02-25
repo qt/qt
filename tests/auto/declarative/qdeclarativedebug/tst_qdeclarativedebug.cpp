@@ -58,6 +58,7 @@
 #include <private/qdeclarativedebugservice_p.h>
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativemetatype_p.h>
+#include <private/qdeclarativemetaproperty_p.h>
 
 #include "../shared/debugutil_p.h"
 
@@ -216,7 +217,8 @@ void tst_QDeclarativeDebug::recursiveObjectTest(QObject *o, const QDeclarativeDe
         else
             QCOMPARE(p.valueTypeName(), QString::fromUtf8(pmeta.typeName()));
 
-        QDeclarativeAbstractBinding *binding = QDeclarativeMetaProperty(o, p.name()).binding();
+        QDeclarativeAbstractBinding *binding = 
+            QDeclarativeMetaPropertyPrivate::binding(QDeclarativeMetaProperty(o, p.name()));
         if (binding)
             QCOMPARE(binding->expression(), p.binding());
 

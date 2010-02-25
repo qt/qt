@@ -99,7 +99,7 @@ Player::Player(QWidget *parent)
     connect(controls, SIGNAL(pause()), player, SLOT(pause()));
     connect(controls, SIGNAL(stop()), player, SLOT(stop()));
     connect(controls, SIGNAL(next()), playlist, SLOT(next()));
-    connect(controls, SIGNAL(previous()), playlist, SLOT(previous()));
+    connect(controls, SIGNAL(previous()), this, SLOT(previousClicked()));
     connect(controls, SIGNAL(changeVolume(int)), player, SLOT(setVolume(int)));
     connect(controls, SIGNAL(changeMuting(bool)), player, SLOT(setMuted(bool)));
     connect(controls, SIGNAL(changeRate(qreal)), player, SLOT(setPlaybackRate(qreal)));
@@ -198,6 +198,16 @@ void Player::metaDataChanged()
                     : QPixmap());
         }
     }
+}
+
+void Player::previousClicked()
+{
+    // Go to previous track if we are within the first 5 seconds of playback
+    // Otherwise, seek to the beginning.
+    if(player->position() <= 5000)
+        playlist->previous();
+    else
+        player->setPosition(0);
 }
 
 void Player::jump(const QModelIndex &index)

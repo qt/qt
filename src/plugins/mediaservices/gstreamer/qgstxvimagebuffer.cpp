@@ -182,7 +182,7 @@ void QGstXvImageBufferPool::queuedAlloc()
             );
 
     if (!xvBuffer->xvImage) {
-        qDebug() << "QGstXvImageBufferPool: XvShmCreateImage failed";
+//        qDebug() << "QGstXvImageBufferPool: XvShmCreateImage failed";
         m_allocWaitCondition.wakeOne();
         return;
     }
@@ -192,7 +192,7 @@ void QGstXvImageBufferPool::queuedAlloc()
     xvBuffer->shmInfo.readOnly = False;
 
     if (!XShmAttach(QX11Info::display(), &xvBuffer->shmInfo)) {
-        qDebug() << "QGstXvImageBufferPool: XShmAttach failed";
+//        qDebug() << "QGstXvImageBufferPool: XShmAttach failed";
         m_allocWaitCondition.wakeOne();
         return;
     }

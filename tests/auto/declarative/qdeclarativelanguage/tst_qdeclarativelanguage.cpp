@@ -747,7 +747,7 @@ void tst_qdeclarativelanguage::valueTypes()
 
     // ###
 #if 0
-    QDeclarativeMetaProperty p = QDeclarativeMetaProperty::createProperty(object, "rectProperty.x");
+    QDeclarativeMetaProperty p(object, "rectProperty.x");
     QCOMPARE(p.read(), QVariant(12));
     p.write(13);
     QCOMPARE(p.read(), QVariant(13));

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,73 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef QTMULTIMEDIA_QML_H
+#define QTMULTIMEDIA_QML_H
 
-#include <QtGui/QWidget>
-
-#include <qmediaplayer.h>
-#include <qmediaplaylist.h>
-#include <qvideowidget.h>
-
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
-class QAbstractItemView;
-class QLabel;
-class QModelIndex;
-class QSlider;
-class QMediaPlayer;
-class QVideoWidget;
-class PlaylistModel;
+QT_MODULE(Multimedia)
 
-class Player : public QWidget
+class QDeclarativeEngine;
+
+namespace QtMultimedia
 {
-    Q_OBJECT
-public:
-    Player(QWidget *parent = 0);
-    ~Player();
-
-Q_SIGNALS:
-    void fullScreenChanged(bool fullScreen);
-
-private slots:
-    void open();
-    void durationChanged(qint64 duration);
-    void positionChanged(qint64 progress);
-    void metaDataChanged();
-
-    void previousClicked();
-
-    void seek(int seconds);
-    void jump(const QModelIndex &index);
-    void playlistPositionChanged(int);
-
-    void statusChanged(QMediaPlayer::MediaStatus status);
-    void bufferingProgress(int progress);
-
-    void showColorDialog();
-
-private:
-    void setTrackInfo(const QString &info);
-    void setStatusInfo(const QString &info);
-
-    QMediaPlayer *player;
-    QMediaPlaylist *playlist;
-    QVideoWidget *videoWidget;
-    QLabel *coverLabel;
-    QSlider *slider;
-    PlaylistModel *playlistModel;
-    QAbstractItemView *playlistView;
-    QDialog *colorDialog;
-    QString trackInfo;
-    QString statusInfo;
-};
+extern void Q_MULTIMEDIA_EXPORT qRegisterDeclarativeElements(QDeclarativeEngine* engine, const char *uri);
+}
 
 QT_END_NAMESPACE
-
 QT_END_HEADER
 
-#endif
+#endif  // ifndef QTMULTIMEDIA_QML_H

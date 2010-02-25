@@ -65,11 +65,11 @@ QDeclarativeAction::QDeclarativeAction()
 
 QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
                const QVariant &value)
-: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), toValue(value), fromBinding(0),
-  toBinding(0), event(0), specifiedObject(target),
-  specifiedProperty(propertyName)
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), 
+  property(target, propertyName), toValue(value), 
+  fromBinding(0), toBinding(0), event(0), 
+  specifiedObject(target), specifiedProperty(propertyName)
 {
-    property = QDeclarativeMetaProperty::createProperty(target, propertyName);
     if (property.isValid())
         fromValue = property.read();
 }
@@ -334,7 +334,7 @@ void QDeclarativeState::cancel()
 void QDeclarativeAction::deleteFromBinding()
 {
     if (fromBinding) {
-        property.setBinding(0);
+        QDeclarativeMetaPropertyPrivate::setBinding(property, 0);
         fromBinding->destroy();
         fromBinding = 0;
     }
@@ -388,7 +388,7 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
             else if (action.event->isRewindable())
                 action.event->saveCurrentValues();
         } else {
-            action.fromBinding = action.property.binding();
+            action.fromBinding = QDeclarativeMetaPropertyPrivate::binding(action.property);
 
             for (jj = 0; jj < d->revertList.count(); ++jj) {
                 if (d->revertList.at(jj).property == action.property) {
@@ -436,7 +436,8 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
         }
         if (!found) {
             QVariant cur = d->revertList.at(ii).property.read();
-            QDeclarativeAbstractBinding *delBinding = d->revertList.at(ii).property.setBinding(0);
+            QDeclarativeAbstractBinding *delBinding = 
+                QDeclarativeMetaPropertyPrivate::setBinding(d->revertList.at(ii).property, 0);
             if (delBinding)
                 delBinding->destroy();
 

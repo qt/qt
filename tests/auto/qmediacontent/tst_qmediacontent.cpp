@@ -51,6 +51,7 @@ class tst_QMediaContent : public QObject
 private slots:
     void testNull();
     void testUrlCtor();
+    void testRequestCtor();
     void testResourceCtor();
     void testResourceListCtor();
     void testCopy();
@@ -74,6 +75,18 @@ void tst_QMediaContent::testUrlCtor()
     QMediaContent media(QUrl("http://example.com/movie.mov"));
 
     QCOMPARE(media.canonicalUrl(), QUrl("http://example.com/movie.mov"));
+    QCOMPARE(media.canonicalResource().url(), QUrl("http://example.com/movie.mov"));
+}
+
+void tst_QMediaContent::testRequestCtor()
+{
+    QNetworkRequest request(QUrl("http://example.com/movie.mov"));
+    request.setAttribute(QNetworkRequest::User, QVariant(1234));
+
+    QMediaContent media(request);
+
+    QCOMPARE(media.canonicalUrl(), QUrl("http://example.com/movie.mov"));
+    QCOMPARE(media.canonicalResource().request(), request);
     QCOMPARE(media.canonicalResource().url(), QUrl("http://example.com/movie.mov"));
 }
 

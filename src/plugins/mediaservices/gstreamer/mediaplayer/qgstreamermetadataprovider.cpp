@@ -41,7 +41,7 @@
 
 #include "qgstreamermetadataprovider.h"
 #include "qgstreamerplayersession.h"
-#include <QDebug>
+#include <QtCore/qdebug.h>
 
 #include <gst/gstversion.h>
 
