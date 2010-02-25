@@ -82,6 +82,7 @@ public:
 /*!
     \class QMediaServiceProviderHint
     \preliminary
+    \since 4.7
     \brief The QMediaServiceProviderHint class describes what is required of a QMediaService.
     
     \ingroup multimedia-serv
@@ -489,6 +490,7 @@ Q_GLOBAL_STATIC(QPluginServiceProvider, pluginProvider);
 /*!
     \class QMediaServiceProvider
     \preliminary
+    \since 4.7
     \brief The QMediaServiceProvider class provides an abstract allocator for media services.
 */
 
@@ -594,11 +596,10 @@ QMediaServiceProvider *QMediaServiceProvider::defaultServiceProvider()
 #endif
 }
 
-QT_END_NAMESPACE
-
 /*!
     \class QMediaServiceProviderPlugin
     \preliminary
+    \since 4.7
     \brief The QMediaServiceProviderPlugin class interface provides an interface for QMediaService
     plug-ins.
 
@@ -632,6 +633,7 @@ QT_END_NAMESPACE
     \class QMediaServiceSupportedFormatsInterface
     \brief The QMediaServiceSupportedFormatsInterface class interface
     identifies if a media service plug-in supports a media format.
+    \since 4.7
 
     A QMediaServiceProviderPlugin may implement this interface.
 */
@@ -658,6 +660,7 @@ QT_END_NAMESPACE
     \class QMediaServiceSupportedDevicesInterface
     \brief The QMediaServiceSupportedDevicesInterface class interface
     identifies the devices supported by a media service plug-in.
+    \since 4.7
 
     A QMediaServiceProviderPlugin may implement this interface.
 */
@@ -684,6 +687,7 @@ QT_END_NAMESPACE
     \class QMediaServiceFeaturesInterface
     \brief The QMediaServiceFeaturesInterface class interface identifies
     features supported by a media service plug-in.
+    \since 4.7
 
     A QMediaServiceProviderPlugin may implement this interface.
 */

@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QMediaPlaylistReader
     \preliminary
+    \since 4.7
     \brief The QMediaPlaylistReader class provides an interface for reading a playlist file.
 
     \sa QMediaPlaylistIOPlugin
@@ -83,6 +84,7 @@ QMediaPlaylistReader::~QMediaPlaylistReader()
 /*!
     \class QMediaPlaylistWriter
     \preliminary
+    \since 4.7
     \brief The QMediaPlaylistWriter class provides an interface for writing a playlist file.
 
     \sa QMediaPlaylistIOPlugin
@@ -111,6 +113,7 @@ QMediaPlaylistWriter::~QMediaPlaylistWriter()
 
 /*!
     \class QMediaPlaylistIOPlugin
+    \since 4.7
     \brief The QMediaPlaylistIOPlugin class provides an interface for media playlist I/O plug-ins.
 */
 

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMultimedia module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,30 +39,48 @@
 **
 ****************************************************************************/
 
-#include <QtMultimedia/qml.h>
-#include <QtMultimedia/private/qsoundeffect_p.h>
-#include <QtMultimedia/private/qmlaudio_p.h>
-#include <QtMultimedia/private/qmlgraphicsvideo_p.h>
+#define QT_NO_KEYWORDS
+#define signals int
+#define slots int
+#define emit public:;
+#define foreach public:;
+#define forever public:;
 
+// include all of Qt here
 
-QT_BEGIN_NAMESPACE
+// core Qt
+#include <QtCore/QtCore>
+#include <QtGui/QtGui>
+#include <QtNetwork/QtNetwork>
 
-namespace QtMultimedia
-{
+// extra
+#include <QtDBus/QtDBus>
+//#include <QtDeclarative/QtDeclarative>
+#include <QtHelp/QtHelp>
+#include <QtMultimedia/QtMultimedia>
+#include <QtOpenGL/QtOpenGL>
+#include <QtScript/QtScript>
+#include <QtScriptTools/QtScriptTools>
+#include <QtSql/QtSql>
+#include <QtSvg/QtSvg>
+#include <QtTest/QtTest>
+#include <QtXml/QtXml>
+#include <QtXmlPatterns/QtXmlPatterns>
 
-/*!
-    Register the Multimedia QML elements.
-    \internal
-*/
+// webkit:
+#include <QtWebKit/QtWebKit>
 
-void qRegisterQmlElements()
-{
-    qmlRegisterType<QSoundEffect>("Qt.multimedia", 4, 7, "SoundEffect", "SoundEffect");
-    qmlRegisterType<QmlAudio>("Qt.multimedia", 4, 7, "Audio", "Audio");
-    qmlRegisterType<QmlGraphicsVideo>("Qt.multimedia", 4, 7, "Video", "Video");
-}
+// designer:
+#include <QtDesigner/QtDesigner>
+#include <QtUiTools/QtUiTools>
 
-}
+// feature dependent:
+#ifndef QT_NO_OPENVG
+#include <QtOpenVG/QtOpenVG>
+#endif
 
-QT_END_NAMESPACE
+// removed in 4.7:
+//#include <QtAssistant/QtAssistant>
 
+// can't include this since it causes a linker error
+//#include <Qt3Support/Qt3Support>
