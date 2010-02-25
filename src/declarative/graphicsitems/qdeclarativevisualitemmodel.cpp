@@ -929,6 +929,33 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
     return stat;
 }
 
+/*!
+    \qmlproperty object VisualDataModel::parts
+
+    The \a parts property selects a VisualDataModel which creates
+    delegates from the part named.  This is used in conjunction with
+    the Package element.
+
+    For example, the code below selects a model which creates
+    delegates named \e list from a Package:
+
+    \code
+    VisualDataModel {
+        id: visualModel
+        delegate: Package {
+            Item { Package.name: "list" }
+        }
+        model: myModel
+    }
+
+    ListView {
+        width: 200; height:200
+        model: visualModel.parts.list
+    }
+    \endcode
+
+    \sa Package
+*/
 QObject *QDeclarativeVisualDataModel::parts()
 {
     Q_D(QDeclarativeVisualDataModel);
