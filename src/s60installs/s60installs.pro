@@ -90,7 +90,7 @@ symbian: {
     }
 
     contains(QT_CONFIG, audio-backend) {
-        qaudio_backend_plugins.sources += qaudio.dll
+        qaudio_backend_plugins.sources += $$QT_BUILD_TREE/plugins/audio/qaudio.dll
         qaudio_backend_plugins.path = c:$$QT_PLUGINS_BASE_DIR/audio
         DEPLOYMENT += qaudio_backend_plugins
     }
