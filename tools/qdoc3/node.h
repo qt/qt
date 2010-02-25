@@ -383,12 +383,12 @@ class QmlClassNode : public FakeNode
 
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;
-    static void addInheritedBy(const QString& base, Node* sub);
-    static void subclasses(const QString& base, NodeList& subs);
+    static void addInheritedBy(const QString& base, const QString& sub);
+    static void subclasses(const QString& base, QStringList& subs);
 
  public:
     static bool qmlOnly;
-    static QMultiMap<QString,Node*> inheritedBy;
+    static QMultiMap<QString,QString> inheritedBy;
 
  private:
     const ClassNode*    cnode;

@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QVideoOutputControl
     \preliminary
-
+    \since 4.7
     \brief The QVideoOutputControl class provides a means of selecting the
     active video output control.
 

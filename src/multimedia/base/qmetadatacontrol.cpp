@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QMetaDataControl
     \ingroup multimedia-serv
-
+    \since 4.7
     \preliminary
     \brief The QMetaDataControl class provides access to the meta-data of a
     QMediaService's media.
