@@ -72,6 +72,8 @@
 // Less than ideal
 #define PA_SCACHE_ENTRY_SIZE_MAX (1024*1024*16)
 
+QT_BEGIN_NAMESPACE
+
 namespace
 {
 inline pa_sample_spec audioFormatToSampleSpec(const QAudioFormat &format)
@@ -501,4 +503,7 @@ void QSoundEffectPrivate::play_callback(pa_context *c, int success, void *userda
         emit self->stateChanged(self->m_state);
     }
 }
+
+QT_END_NAMESPACE
+
 

@@ -249,6 +249,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "MULTIMEDIA" ]      = "yes";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
     dictionary[ "MEDIASERVICE"]     = "auto";
+    dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
@@ -1585,6 +1586,7 @@ bool Configure::displayHelp()
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
                     "[-no-multimedia] [-multimedia] [-no-audio-backend] [-audio-backend]\n"
+                    "[-no-mediaservice] [-mediaservice]\n"
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-graphicssystem raster|opengl|openvg]\n\n", 0, 7);
 
@@ -2069,6 +2071,8 @@ bool Configure::checkAvailability(const QString &part)
             if (!findFile("msdmo.lib")) cout << "msdmo.lib not found" << endl;
             if (!findFile("d3d9.h")) cout << "d3d9.h not found" << endl;
         }
+    } else if (part == "WMSDK") {
+        available = findFile("wmsdk.h");
     } else if (part == "MULTIMEDIA" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
         available = true;
     } else if (part == "WEBKIT") {
@@ -2213,6 +2217,8 @@ void Configure::autoDetection()
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
     if (dictionary["MEDIASERVICE"] == "auto")
         dictionary["MEDIASERVICE"] = checkAvailability("MEDIASERVICE") ? "yes" : "no";
+    if (dictionary["WMSDK"] == "auto")
+        dictionary["WMSDK"] = checkAvailability("WMSDK") ? "yes" : "no";
 
     // Qt/WinCE remote test application
     if (dictionary["CETEST"] == "auto")
@@ -2603,8 +2609,11 @@ void Configure::generateOutputVars()
         qtConfig += "multimedia";
         if (dictionary["AUDIO_BACKEND"] == "yes")
             qtConfig += "audio-backend";
-        if (dictionary["MEDIASERVICE"] == "yes")
+        if (dictionary["MEDIASERVICE"] == "yes") {
             qtConfig += "mediaservice";
+            if (dictionary["WMSDK"] == "yes")
+                qtConfig += "wmsdk";
+        }
     }
 
     if (dictionary["WEBKIT"] == "yes")

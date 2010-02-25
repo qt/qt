@@ -59,6 +59,8 @@
 #include "qsoundeffect_qmedia_p.h"
 
 
+QT_BEGIN_NAMESPACE
+
 QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     QObject(parent),
     m_muted(false),
@@ -160,4 +162,6 @@ void QSoundEffectPrivate::setMedia(const QMediaContent &media)
 
     m_player->setMedia(media.canonicalUrl());
 }
+
+QT_END_NAMESPACE
 

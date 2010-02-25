@@ -51,6 +51,9 @@
 #include <gst/interfaces/xoverlay.h>
 #include <gst/interfaces/propertyprobe.h>
 
+
+QT_BEGIN_NAMESPACE
+
 class QGstreamerVideoWidget : public QWidget
 {
 public:
@@ -320,3 +323,6 @@ void QGstreamerVideoWidgetControl::setSaturation(int saturation)
         emit saturationChanged(saturation);
     }
 }
+
+QT_END_NAMESPACE
+
