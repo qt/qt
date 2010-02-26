@@ -3486,13 +3486,17 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
         if (length >= 16) {
             const int chunkCount = length >> 4; // divided by 16
             const __m128i questionMark = _mm_set1_epi16('?');
-            const __m128i thresholdMask = _mm_set1_epi16(0xff);
+            // SSE has no compare instruction for unsigned comparison.
+            // The variables must be shiffted + 0x8000 to be compared
+            const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
+            const __m128i thresholdMask = _mm_set1_epi16(0xff + 0x8000);
             for (int i = 0; i < chunkCount; ++i) {
                 __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
                 src += 8;
                 {
                     // each 16 bit is equal to 0xFF if the source is outside latin 1 (>0xff)
-                    const __m128i offLimitMask = _mm_cmpgt_epi16(chunk1, thresholdMask);
+                    const __m128i signedChunk = _mm_add_epi16(chunk1, signedBitOffset);
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
 
                     // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
                     // the 16 bits that were correct contains zeros
@@ -3510,19 +3514,43 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
                 src += 8;
                 {
                     // exactly the same operations as for the previous chunk of data
-                    const __m128i offLimitMask = _mm_cmpgt_epi16(chunk2, thresholdMask);
+                    const __m128i signedChunk = _mm_add_epi16(chunk2, signedBitOffset);
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
                     const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
                     const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk2);
                     chunk2 = _mm_or_si128(correctBytes, offLimitQuestionMark);
                 }
 
                 // pack the two vector to 16 x 8bits elements
-                const __m128i result = _mm_packs_epi16(chunk1, chunk2);
+                const __m128i result = _mm_packus_epi16(chunk1, chunk2);
 
                 _mm_storeu_si128((__m128i*)dst, result); // store
                 dst += 16;
             }
             length = length % 16;
+        }
+#elif QT_HAVE_NEON
+        // Refer to the documentation of the SSE2 implementation
+        // this use eactly the same method as for SSE except:
+        // 1) neon has unsigned comparison
+        // 2) packing is done to 64 bits (8 x 8bits component).
+        if (length >= 16) {
+            const int chunkCount = length >> 3; // divided by 8
+            const uint16x8_t questionMark = vdupq_n_u16('?'); // set
+            const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
+            for (int i = 0; i < chunkCount; ++i) {
+                uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
+                src += 8;
+
+                const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
+                const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
+                const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
+                chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+                const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
+                vst1_u8(dst, result); // store
+                dst += 8;
+            }
+            length = length % 8;
         }
 #endif
         while (length--) {

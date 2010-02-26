@@ -1205,7 +1205,7 @@ void QmlGraphicsParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsI
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
 
-    QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
+    QVarLengthArray<QPainter::Fragment, 256> pixmapData;
     pixmapData.resize(d->particles.count());
 
     const QRectF sourceRect = d->image.rect();
@@ -1213,16 +1213,20 @@ void QmlGraphicsParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsI
     qreal halfPHeight = sourceRect.height()/2.;
     for (int i = 0; i < d->particles.count(); ++i) {
         const QmlGraphicsParticle &particle = d->particles.at(i);
-        pixmapData[i].point = QPointF(particle.x - myX + halfPWidth, particle.y - myY + halfPHeight);
+        pixmapData[i].x = particle.x - myX + halfPWidth;
+        pixmapData[i].y = particle.y - myY + halfPHeight;
         pixmapData[i].opacity = particle.opacity;
 
         //these never change
         pixmapData[i].rotation = 0;
         pixmapData[i].scaleX = 1;
         pixmapData[i].scaleY = 1;
-        pixmapData[i].source = sourceRect;
+        pixmapData[i].sourceLeft = sourceRect.left();
+        pixmapData[i].sourceTop = sourceRect.top();
+        pixmapData[i].width = sourceRect.width();
+        pixmapData[i].height = sourceRect.height();
     }
-    qDrawPixmaps(p, pixmapData.data(), d->particles.count(), d->image);
+    p->drawPixmapFragments(pixmapData.data(), d->particles.count(), d->image);
 }
 
 void QmlGraphicsParticles::componentComplete()

@@ -1034,7 +1034,7 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_QMLINHERITS) {
         setLink(node, Node::InheritsLink, arg);
         if (node->subType() == Node::QmlClass) {
-            QmlClassNode::addInheritedBy(arg,node);
+            QmlClassNode::addInheritedBy(arg,node->name());
         }
    }
     else if (command == COMMAND_QMLDEFAULT) {

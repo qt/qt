@@ -1257,7 +1257,7 @@ bool TargetNode::isInnerNode() const
 
 #ifdef QDOC_QML
 bool QmlClassNode::qmlOnly = false;
-QMultiMap<QString,Node*> QmlClassNode::inheritedBy;
+QMultiMap<QString,QString> QmlClassNode::inheritedBy;
 
 /*!
   Constructs a Qml class node (i.e. a Fake node with the
@@ -1302,15 +1302,15 @@ QString QmlClassNode::fileBase() const
   Record the fact that QML class \a base is inherited by
   QML class \a sub.
  */
-void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
+void QmlClassNode::addInheritedBy(const QString& base, const QString& sub)
 {
     inheritedBy.insert(base,sub);
 }
 
 /*!
-  Loads the list \a subs with the nodes of all the subclasses of \a base.
+  Loads the list \a subs with the names of all the subclasses of \a base.
  */
-void QmlClassNode::subclasses(const QString& base, NodeList& subs)
+void QmlClassNode::subclasses(const QString& base, QStringList& subs)
 {
     subs.clear();
     if (inheritedBy.contains(base))

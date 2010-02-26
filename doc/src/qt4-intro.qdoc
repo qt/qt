@@ -475,6 +475,14 @@
 
     \section1 Network Bearer Management
 
+    Bearer Management controls the connectivity state of the system.
+    The new Bearer Management API in the QtNetwork module allows the
+    application to identify whether the system is online and how many
+    interfaces there are, as well as start and stop interfaces, or
+    roam transparently between access points.
+
+    QNetworkAccessManager uses this API for HTTP level roaming.
+
     \section1 Multimedia - playback and playlist management
 
     \section1 New Classes, Functions, Macros, etc.
