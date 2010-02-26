@@ -1317,6 +1317,10 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
             fixedItem = item;
         }
 
+        QString condition;
+        if (!project->isEmpty(item + ".condition"))
+            condition = project->first(item + ".condition");
+
         QFileInfo subdir(fileInfo(fixedItem));
         QString relativePath = directory.relativeFilePath(fixedItem);
         QString subdirFileName = subdir.completeBaseName();
@@ -1345,9 +1349,16 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         bldinfDefine = bldinfDefine.toUpper();
         removeSpecialCharacters(bldinfDefine);
 
+        if (!condition.isEmpty())
+            t << "#if defined(" << condition << ")" << endl;
+
         t << "#ifndef " << bldinfDefine << endl;
         t << "\t#include \"" << bldinfFilename << "\"" << endl;
-        t << "#endif // " << bldinfDefine << endl;
+        t << "#endif" << endl;
+
+        if (!condition.isEmpty())
+            t << "#endif" << endl;
+
     }
 
     // Add supported project platforms

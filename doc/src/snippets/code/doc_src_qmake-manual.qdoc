@@ -982,3 +982,17 @@ MYVARIABLES = LIB
 
 addMMPRules(MYCONDITIONS, MYVARIABLES)
 //! [148]
+
+//! [149]
+SUBDIRS += my_executable my_library
+my_executable.subdir = app
+my_executable.depends = my_library
+my_library.subdir = lib
+//! [149]
+
+//! [150]
+symbian {
+    SUBDIRS += emulator_dll
+    emulator_dll.condition = WINSCW
+}
+//! [150]
