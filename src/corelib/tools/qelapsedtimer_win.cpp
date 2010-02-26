@@ -73,24 +73,19 @@ static quint64 getTickCount()
     resolveLibs();
     if (ptrGetTickCount64)
         return ptrGetTickCount64();
-    return GetTickCount();
+
+    static quint32 highdword = 0;
+    static quint32 lastval = 0;
+    quint32 val = GetTickCount();
+    if (val < lastval)
+        ++highdword;
+    lastval = val;
+    return val | (quint64(highdword) << 32);
 }
 
 QElapsedTimer::ClockType QElapsedTimer::clockType()
 {
     return TickCounter;
-}
-
-static qint64 difference(qint64 a, qint64 b)
-{
-    qint64 retval = a - b;
-    // if we're not using GetTickCount64, then there can be 32-bit rollover
-    // assume there were rollovers if the difference is negative by more than
-    // 75% of the 32-bit range
-
-    if (!ptrGetTickCount64 && retval < Q_INT64_C(-0xc0000000))
-        retval += Q_UINT64_C(0x100000000);
-    return retval;
 }
 
 bool QElapsedTimer::isMonotonic()
@@ -108,12 +103,13 @@ qint64 QElapsedTimer::restart()
 {
     qint64 oldt1 = t1;
     t1 = getTickCount();
-    return difference(t1, oldt1);
+    t2 = 0;
+    return t1 - oldt1;
 }
 
 qint64 QElapsedTimer::elapsed() const
 {
-    return difference(getTickCount(), t1);
+    return getTickCount() - t1;
 }
 
 qint64 QElapsedTimer::msecsSinceReference() const
@@ -123,7 +119,7 @@ qint64 QElapsedTimer::msecsSinceReference() const
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
-    return difference(other.t1, t1);
+    return other.t1 - t1;
 }
 
 qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
@@ -133,7 +129,7 @@ qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
 
 bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
 {
-    return difference(v1.t1, v2.t1) < 0;
+    return (v1.t1 - v2.t1) < 0;
 }
 
 QT_END_NAMESPACE
