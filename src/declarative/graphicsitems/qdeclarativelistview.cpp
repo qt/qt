@@ -203,14 +203,14 @@ public:
 
     qreal position() const {
         Q_Q(const QDeclarativeListView);
-        return orient == QDeclarativeListView::Vertical ? q->viewportY() : q->viewportX();
+        return orient == QDeclarativeListView::Vertical ? q->contentY() : q->contentX();
     }
     void setPosition(qreal pos) {
         Q_Q(QDeclarativeListView);
         if (orient == QDeclarativeListView::Vertical)
-            q->setViewportY(pos);
+            q->setContentY(pos);
         else
-            q->setViewportX(pos);
+            q->setContentX(pos);
     }
     qreal size() const {
         Q_Q(const QDeclarativeListView);
@@ -382,9 +382,9 @@ public:
     void updateViewport() {
         Q_Q(QDeclarativeListView);
         if (orient == QDeclarativeListView::Vertical) {
-            q->setViewportHeight(endPosition() - startPosition() + 1);
+            q->setContentHeight(endPosition() - startPosition() + 1);
         } else {
-            q->setViewportWidth(endPosition() - startPosition() + 1);
+            q->setContentWidth(endPosition() - startPosition() + 1);
         }
     }
 
@@ -1819,10 +1819,10 @@ void QDeclarativeListView::setOrientation(QDeclarativeListView::Orientation orie
     if (d->orient != orientation) {
         d->orient = orientation;
         if (d->orient == QDeclarativeListView::Vertical) {
-            setViewportWidth(-1);
+            setContentWidth(-1);
             setFlickDirection(VerticalFlick);
         } else {
-            setViewportHeight(-1);
+            setContentHeight(-1);
             setFlickDirection(HorizontalFlick);
         }
         d->clear();

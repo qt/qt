@@ -81,12 +81,11 @@ void tst_qdeclarativeflickable::create()
     QCOMPARE(obj->isAtXEnd(), false);
     QCOMPARE(obj->isAtYBeginning(), true);
     QCOMPARE(obj->isAtYEnd(), false);
-    QCOMPARE(obj->viewportX(), 0.);
-    QCOMPARE(obj->viewportY(), 0.);
+    QCOMPARE(obj->contentX(), 0.);
+    QCOMPARE(obj->contentY(), 0.);
 
     QCOMPARE(obj->horizontalVelocity(), 0.);
     QCOMPARE(obj->verticalVelocity(), 0.);
-    QCOMPARE(obj->reportedVelocitySmoothing(), 100.);
 
     QCOMPARE(obj->isInteractive(), true);
     QCOMPARE(obj->overShoot(), true);
@@ -103,8 +102,8 @@ void tst_qdeclarativeflickable::horizontalViewportSize()
     QDeclarativeFlickable *obj = qobject_cast<QDeclarativeFlickable*>(c.create());
 
     QVERIFY(obj != 0);
-    QCOMPARE(obj->viewportWidth(), 800.);
-    QCOMPARE(obj->viewportHeight(), 300.);
+    QCOMPARE(obj->contentWidth(), 800.);
+    QCOMPARE(obj->contentHeight(), 300.);
     QCOMPARE(obj->isAtXBeginning(), true);
     QCOMPARE(obj->isAtXEnd(), false);
     QCOMPARE(obj->isAtYBeginning(), true);
@@ -120,8 +119,8 @@ void tst_qdeclarativeflickable::verticalViewportSize()
     QDeclarativeFlickable *obj = qobject_cast<QDeclarativeFlickable*>(c.create());
 
     QVERIFY(obj != 0);
-    QCOMPARE(obj->viewportWidth(), 200.);
-    QCOMPARE(obj->viewportHeight(), 1200.);
+    QCOMPARE(obj->contentWidth(), 200.);
+    QCOMPARE(obj->contentHeight(), 1200.);
     QCOMPARE(obj->isAtXBeginning(), true);
     QCOMPARE(obj->isAtXEnd(), false);
     QCOMPARE(obj->isAtYBeginning(), true);

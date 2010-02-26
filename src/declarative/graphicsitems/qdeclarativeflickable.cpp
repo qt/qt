@@ -142,8 +142,8 @@ void QDeclarativeFlickablePrivate::init()
     QObject::connect(&timeline, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFiltersChildEvents(true);
-    QObject::connect(viewport, SIGNAL(xChanged()), q, SIGNAL(positionXChanged()));
-    QObject::connect(viewport, SIGNAL(yChanged()), q, SIGNAL(positionYChanged()));
+    QObject::connect(viewport, SIGNAL(xChanged()), q, SIGNAL(contentXChanged()));
+    QObject::connect(viewport, SIGNAL(yChanged()), q, SIGNAL(contentYChanged()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(heightChange()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(widthChange()));
 }
@@ -343,7 +343,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \code
     Flickable {
-        width: 200; height: 200; viewportWidth: image.width; viewportHeight: image.height
+        width: 200; height: 200; contentWidth: image.width; contentHeight: image.height
         Image { id: image; source: "bigimage.png" }
     }
     \endcode
@@ -429,20 +429,20 @@ QDeclarativeFlickable::~QDeclarativeFlickable()
 }
 
 /*!
-    \qmlproperty int Flickable::viewportX
-    \qmlproperty int Flickable::viewportY
+    \qmlproperty int Flickable::contentX
+    \qmlproperty int Flickable::contentY
 
     These properties hold the surface coordinate currently at the top-left
     corner of the Flickable. For example, if you flick an image up 100 pixels,
-    \c yPosition will be 100.
+    \c contentY will be 100.
 */
-qreal QDeclarativeFlickable::viewportX() const
+qreal QDeclarativeFlickable::contentX() const
 {
     Q_D(const QDeclarativeFlickable);
     return -d->_moveX.value();
 }
 
-void QDeclarativeFlickable::setViewportX(qreal pos)
+void QDeclarativeFlickable::setContentX(qreal pos)
 {
     Q_D(QDeclarativeFlickable);
     pos = qRound(pos);
@@ -454,13 +454,13 @@ void QDeclarativeFlickable::setViewportX(qreal pos)
     }
 }
 
-qreal QDeclarativeFlickable::viewportY() const
+qreal QDeclarativeFlickable::contentY() const
 {
     Q_D(const QDeclarativeFlickable);
     return -d->_moveY.value();
 }
 
-void QDeclarativeFlickable::setViewportY(qreal pos)
+void QDeclarativeFlickable::setContentY(qreal pos)
 {
     Q_D(QDeclarativeFlickable);
     pos = qRound(pos);
@@ -506,12 +506,10 @@ void QDeclarativeFlickable::setInteractive(bool interactive)
 /*!
     \qmlproperty real Flickable::horizontalVelocity
     \qmlproperty real Flickable::verticalVelocity
-    \qmlproperty real Flickable::reportedVelocitySmoothing
 
     The instantaneous velocity of movement along the x and y axes, in pixels/sec.
 
     The reported velocity is smoothed to avoid erratic output.
-    reportedVelocitySmoothing determines how much smoothing is applied.
 */
 qreal QDeclarativeFlickable::horizontalVelocity() const
 {
@@ -584,8 +582,8 @@ QDeclarativeFlickableVisibleArea *QDeclarativeFlickable::visibleArea()
 
     \list
     \o AutoFlickDirection (default) - allows flicking vertically if the
-    \e viewportHeight is not equal to the \e height of the Flickable.
-    Allows flicking horizontally if the \e viewportWidth is not equal
+    \e contentHeight is not equal to the \e height of the Flickable.
+    Allows flicking horizontally if the \e contentWidth is not equal
     to the \e width of the Flickable.
     \o HorizontalFlick - allows flicking horizontally.
     \o VerticalFlick - allows flicking vertically.
@@ -992,26 +990,26 @@ void QDeclarativeFlickable::setOverShoot(bool o)
 }
 
 /*!
-    \qmlproperty int Flickable::viewportWidth
-    \qmlproperty int Flickable::viewportHeight
+    \qmlproperty int Flickable::contentWidth
+    \qmlproperty int Flickable::contentHeight
 
     The dimensions of the viewport (the surface controlled by Flickable). Typically this
     should be set to the combined size of the items placed in the Flickable.
 
     \code
     Flickable {
-        width: 320; height: 480; viewportWidth: image.width; viewportHeight: image.height
+        width: 320; height: 480; contentWidth: image.width; contentHeight: image.height
         Image { id: image; source: "bigimage.png" }
     }
     \endcode
 */
-qreal QDeclarativeFlickable::viewportWidth() const
+qreal QDeclarativeFlickable::contentWidth() const
 {
     Q_D(const QDeclarativeFlickable);
     return d->vWidth;
 }
 
-void QDeclarativeFlickable::setViewportWidth(qreal w)
+void QDeclarativeFlickable::setContentWidth(qreal w)
 {
     Q_D(QDeclarativeFlickable);
     if (d->vWidth == w)
@@ -1024,7 +1022,7 @@ void QDeclarativeFlickable::setViewportWidth(qreal w)
     // Make sure that we're entirely in view.
     if (!d->pressed)
         d->fixupX();
-    emit viewportWidthChanged();
+    emit contentWidthChanged();
     d->updateBeginningEnd();
 }
 
@@ -1033,7 +1031,7 @@ void QDeclarativeFlickable::widthChange()
     Q_D(QDeclarativeFlickable);
     if (d->vWidth < 0) {
         d->viewport->setWidth(width());
-        emit viewportWidthChanged();
+        emit contentWidthChanged();
     }
     d->updateBeginningEnd();
 }
@@ -1043,18 +1041,18 @@ void QDeclarativeFlickable::heightChange()
     Q_D(QDeclarativeFlickable);
     if (d->vHeight < 0) {
         d->viewport->setHeight(height());
-        emit viewportHeightChanged();
+        emit contentHeightChanged();
     }
     d->updateBeginningEnd();
 }
 
-qreal QDeclarativeFlickable::viewportHeight() const
+qreal QDeclarativeFlickable::contentHeight() const
 {
     Q_D(const QDeclarativeFlickable);
     return d->vHeight;
 }
 
-void QDeclarativeFlickable::setViewportHeight(qreal h)
+void QDeclarativeFlickable::setContentHeight(qreal h)
 {
     Q_D(QDeclarativeFlickable);
     if (d->vHeight == h)
@@ -1067,7 +1065,7 @@ void QDeclarativeFlickable::setViewportHeight(qreal h)
     // Make sure that we're entirely in view.
     if (!d->pressed)
         d->fixupY();
-    emit viewportHeightChanged();
+    emit contentHeightChanged();
     d->updateBeginningEnd();
 }
 
@@ -1257,22 +1255,6 @@ void QDeclarativeFlickable::setPressDelay(int delay)
         return;
     d->pressDelay = delay;
     emit pressDelayChanged();
-}
-
-qreal QDeclarativeFlickable::reportedVelocitySmoothing() const
-{
-    Q_D(const QDeclarativeFlickable);
-    return d->reportedVelocitySmoothing;
-}
-
-void QDeclarativeFlickable::setReportedVelocitySmoothing(qreal reportedVelocitySmoothing)
-{
-    Q_D(QDeclarativeFlickable);
-    Q_ASSERT(reportedVelocitySmoothing >= 0);
-    if (reportedVelocitySmoothing == d->reportedVelocitySmoothing)
-        return;
-    d->reportedVelocitySmoothing = reportedVelocitySmoothing;
-    emit reportedVelocitySmoothingChanged(reportedVelocitySmoothing);
 }
 
 /*!

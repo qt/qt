@@ -9,10 +9,10 @@ Image {
     source: "pics/header.png"
     width: parent.width
     height: 60
-    x: webView.viewportX < 0 ? -webView.viewportX : webView.viewportX > webView.viewportWidth-webView.width
-                             ? -webView.viewportX+webView.viewportWidth-webView.width : 0
-    y: webView.viewportY < 0 ? -webView.viewportY : progressOff*
-                            (webView.viewportY>height?-height:-webView.viewportY)
+    x: webView.contentX < 0 ? -webView.contentX : webView.contentX > webView.contentWidth-webView.width
+                             ? -webView.contentX+webView.contentWidth-webView.width : 0
+    y: webView.contentY < 0 ? -webView.contentY : progressOff*
+                            (webView.contentY>height?-height:-webView.contentY)
     Text {
         id: headerText
 

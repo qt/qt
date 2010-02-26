@@ -2,7 +2,7 @@ import Qt 4.6
 
 Flickable {
     width: 100; height: 100
-    viewportWidth: column.width; viewportHeight: column.height
+    contentWidth: column.width; contentHeight: column.height
     pressDelay: 200; overShoot: false; interactive: false
     maximumFlickVelocity: 2000
 

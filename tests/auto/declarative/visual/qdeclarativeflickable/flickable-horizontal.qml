@@ -17,7 +17,7 @@ Rectangle {
 
     Flickable {
         id: flickable
-        anchors.fill: parent; viewportWidth: row.width
+        anchors.fill: parent; contentWidth: row.width
 
         Row {
             id: row
