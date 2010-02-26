@@ -548,8 +548,8 @@ int QMetaType::type(const char *typeName)
                                                     normalizedTypeName.size());
             }
         }
-    }
 #endif
+    }
     return type;
 }
 
