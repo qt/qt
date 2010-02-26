@@ -362,7 +362,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                     }
                 }
 
-                t << "START EXTENSION qt/qmake_extra_pre_targetdep" << endl;
+                t << "START EXTENSION qt/qmake_extra_pre_targetdep.export" << endl;
                 t << "OPTION PREDEP_TARGET " << absoluteTarget << endl;
                 t << "OPTION DEPS " << absoluteDeps << endl;
 

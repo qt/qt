@@ -7,7 +7,6 @@
 # **
 # ****************************************************************************/
 
-include $(FLMHOME)/metaflm.mk
 
 SINGLETON:=$(call sanitise,TSTORE_SINGLETON_$(EXTENSION_ROOT))
 
@@ -27,7 +26,7 @@ VISUAL_CFG:=RELEASE
 endif
 
 define qmake_store_build
-FINAL:: $(STORE_BUILD_TARGET)
+$(ALLTARGET):: $(STORE_BUILD_TARGET)
 
 $(STORE_BUILD_TARGET):
 	$(call startrule,qmake_store_build) \
