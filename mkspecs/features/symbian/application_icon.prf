@@ -15,7 +15,7 @@ contains( CONFIG, no_icon ) {
         }
 
         # Try to produce indentical string to fixedTarget in SymbianMakefileGenerator, replaced chars taken
-        # from SymbianMakefileGenerator::removeSpecialCharacters.
+        # from SymbianCommonGenerator::removeSpecialCharacters.
         #
         # Note: it is not a major problem even baseTarget is not 100% identical to fixedTarget since qmake
         # only uses filename from RSS_RULES.icon_file when referring to icon file name.
