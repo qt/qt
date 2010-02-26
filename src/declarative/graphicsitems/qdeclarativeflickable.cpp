@@ -966,10 +966,10 @@ QDeclarativeListProperty<QDeclarativeItem> QDeclarativeFlickable::flickableChild
 
 /*!
     \qmlproperty bool Flickable::overShoot
-    This property holds the number of pixels the surface may overshoot the
+    This property holds whether the surface may overshoot the
     Flickable's boundaries when flicked.
 
-    If overShoot is non-zero the contents can be flicked beyond the boundary
+    If overShoot is true the contents can be flicked beyond the boundary
     of the Flickable before being moved back to the boundary.  This provides
     the feeling that the edges of the view are soft, rather than a hard
     physical boundary.
