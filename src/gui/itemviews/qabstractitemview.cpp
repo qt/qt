@@ -2119,6 +2119,11 @@ void QAbstractItemView::focusOutEvent(QFocusEvent *event)
     Q_D(QAbstractItemView);
     QAbstractScrollArea::focusOutEvent(event);
     d->viewport->update();
+
+#ifdef QT_SOFTKEYS_ENABLED
+    if(!hasEditFocus())
+        removeAction(d->doneSoftKey);
+#endif
 }
 
 /*!
@@ -2144,7 +2149,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             if (!hasEditFocus()) {
                 setEditFocus(true);
 #ifdef QT_SOFTKEYS_ENABLED
-                addAction(d->doneSoftKey);
+                // If we can't keypad navigate to any direction, there is no sense to add
+                // "Done" softkey, since it basically does nothing when there is
+                // only one widget in screen
+                if(QWidgetPrivate::canKeypadNavigate(Qt::Horizontal)
+                        || QWidgetPrivate::canKeypadNavigate(Qt::Vertical))
+                    addAction(d->doneSoftKey);
 #endif
                 return;
             }
@@ -2160,6 +2170,26 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             event->ignore();
         }
         return;
+    case Qt::Key_Down:
+    case Qt::Key_Up:
+        // Let's ignore vertical navigation events, only if there is no other widget
+        // what can take the focus in vertical direction. This means widget can handle navigation events
+        // even the widget don't have edit focus, and there is no other widget in requested direction.
+        if(QApplication::keypadNavigationEnabled() && !hasEditFocus()
+                && QWidgetPrivate::canKeypadNavigate(Qt::Vertical)) {
+            event->ignore();
+            return;
+        }
+        break;
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+        // Similar logic as in up and down events
+        if(QApplication::keypadNavigationEnabled() && !hasEditFocus()
+                && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal) || QWidgetPrivate::inTabWidget(this))) {
+            event->ignore();
+            return;
+        }
+        break;
     default:
         if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
             event->ignore();
@@ -2245,7 +2275,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Down:
     case Qt::Key_Up:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled()) {
+        if (QApplication::keypadNavigationEnabled() && QWidgetPrivate::canKeypadNavigate(Qt::Vertical)) {
             event->accept(); // don't change focus
             break;
         }
@@ -2253,8 +2283,10 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Left:
     case Qt::Key_Right:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
-            event->accept(); // don't change horizontal focus in directional mode
+        if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
+                && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal)
+                || (QWidgetPrivate::inTabWidget(this) && d->model->columnCount(d->root) > 1))) {
+            event->accept(); // don't change focus
             break;
         }
 #endif // QT_KEYPAD_NAVIGATION

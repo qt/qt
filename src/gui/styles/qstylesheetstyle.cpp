@@ -5749,6 +5749,13 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         return positionRect(w, subRule, subRule2, pe, opt->rect, opt->direction);
                                    }
 
+#ifndef QT_NO_TOOLBAR
+    case SE_ToolBarHandle:
+        if (hasStyleRule(w, PseudoElement_ToolBarHandle))
+            return ParentStyle::subElementRect(se, opt, w);
+        break;
+#endif //QT_NO_TOOLBAR
+
     default:
         break;
     }

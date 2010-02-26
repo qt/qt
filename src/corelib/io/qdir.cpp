@@ -960,13 +960,14 @@ void QDir::setNameFilters(const QStringList &nameFilters)
 
 /*!
     \obsolete
+
+    Use QDir::addSearchPath() with a prefix instead.
+
     Adds \a path to the search paths searched in to find resources
     that are not specified with an absolute path. The default search
     path is to search only in the root (\c{:/}).
 
-    Use QDir::addSearchPath() with a prefix instead.
-
-    \sa {The Qt Resource System}, QResource::addSearchPath()
+    \sa {The Qt Resource System}
 */
 void QDir::addResourceSearchPath(const QString &path)
 {

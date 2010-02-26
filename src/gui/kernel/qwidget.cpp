@@ -118,6 +118,10 @@
 #include "private/qgraphicssystem_p.h"
 #include "private/qgesturemanager_p.h"
 
+#ifdef QT_KEYPAD_NAVIGATION
+#include "qtabwidget.h" // Needed in inTabWidget()
+#endif // QT_KEYPAD_NAVIGATION
+
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
 //#define ALIEN_DEBUG
@@ -11640,6 +11644,45 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
         }
     }
     return targetWidget;
+}
+
+/*!
+    \internal
+
+    Tells us if it there is currently a reachable widget by keypad navigation in
+    a certain \a orientation.
+    If no navigation is possible, occuring key events in that \a orientation may
+    be used to interact with the value in the focussed widget, even though it
+    currently has not the editFocus.
+
+    \sa QWidgetPrivate::widgetInNavigationDirection(), QWidget::hasEditFocus()
+*/
+bool QWidgetPrivate::canKeypadNavigate(Qt::Orientation orientation)
+{
+    return orientation == Qt::Horizontal?
+            (QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionEast)
+                    || QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionWest))
+            :(QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionNorth)
+                    || QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionSouth));
+}
+/*!
+    \internal
+
+    Checks, if the \a widget is inside a QTabWidget. If is is inside
+    one, left/right key events will be used to switch between tabs in keypad
+    navigation. If there is no QTabWidget, the horizontal key events can be used
+to
+    interact with the value in the focussed widget, even though it currently has
+    not the editFocus.
+
+    \sa QWidget::hasEditFocus()
+*/
+bool QWidgetPrivate::inTabWidget(QWidget *widget)
+{
+    for (QWidget *tabWidget = widget; tabWidget; tabWidget = tabWidget->parentWidget())
+        if (qobject_cast<const QTabWidget*>(tabWidget))
+            return true;
+    return false;
 }
 #endif
 
