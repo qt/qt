@@ -41,6 +41,8 @@
 
 #include "qgstreamervideooutputcontrol.h"
 
+QT_BEGIN_NAMESPACE
+
 QGstreamerVideoOutputControl::QGstreamerVideoOutputControl(QObject *parent)
     : QVideoOutputControl(parent)
     , m_output(NoOutput)
@@ -70,3 +72,6 @@ void QGstreamerVideoOutputControl::setOutput(Output output)
     if (m_output != output)
         emit outputChanged(m_output = output);
 }
+
+QT_END_NAMESPACE
+
