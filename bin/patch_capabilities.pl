@@ -217,8 +217,8 @@ if (@ARGV)
             $commandToExecute .= $binaryPath;
 
             # Actually execute the elftran command to set the capabilities.
+            print ("Executing ".$commandToExecute."\n");
             system ($commandToExecute." > NUL");
-            print ("Executed ".$commandToExecute."\n");
 
             ## Create another command line to check that the set capabilities are correct.
             #$commandToExecute = "elftran -dump s ".$binaryPath;
