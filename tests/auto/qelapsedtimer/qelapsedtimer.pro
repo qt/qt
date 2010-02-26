@@ -1,7 +1,7 @@
 load(qttest_p4)
 QT -= gui
 
-SOURCES += tst_qtimestamp.cpp
+SOURCES += tst_qelapsedtimer.cpp
 wince* {
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {

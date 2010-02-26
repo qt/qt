@@ -1,11 +1,11 @@
 #include <QtCore/QString>
 #include <QtCore/QTime>
-#include <QtCore/QTimestamp>
+#include <QtCore/QElapsedTimer>
 #include <QtTest/QtTest>
 
 static const int minResolution = 50; // the minimum resolution for the tests
 
-class tst_QTimestamp : public QObject
+class tst_QElapsedTimer : public QObject
 {
     Q_OBJECT
 
@@ -15,9 +15,9 @@ private Q_SLOTS:
     void elapsed();
 };
 
-void tst_QTimestamp::validity()
+void tst_QElapsedTimer::validity()
 {
-    QTimestamp t;
+    QElapsedTimer t;
 
     t.invalidate();
     QVERIFY(!t.isValid());
@@ -29,9 +29,9 @@ void tst_QTimestamp::validity()
     QVERIFY(!t.isValid());
 }
 
-void tst_QTimestamp::basics()
+void tst_QElapsedTimer::basics()
 {
-    QTimestamp t1;
+    QElapsedTimer t1;
     t1.start();
 
     QCOMPARE(t1, t1);
@@ -42,7 +42,7 @@ void tst_QTimestamp::basics()
     QCOMPARE(t1 + 0, t1);
     QCOMPARE(t1 - 0, t1);
 
-    QTimestamp t2 = t1;
+    QElapsedTimer t2 = t1;
     t2 += 1000;   // so we can use secsTo
 
     QVERIFY(t1 != t2);
@@ -58,13 +58,13 @@ void tst_QTimestamp::basics()
     QVERIFY(elapsed < minResolution);
 }
 
-void tst_QTimestamp::elapsed()
+void tst_QElapsedTimer::elapsed()
 {
-    QTimestamp t1;
+    QElapsedTimer t1;
     t1.start();
 
     QTest::qSleep(4*minResolution);
-    QTimestamp t2;
+    QElapsedTimer t2;
     t2.start();
 
     QVERIFY(t1 != t2);
@@ -89,6 +89,6 @@ void tst_QTimestamp::elapsed()
     QVERIFY(diff < minResolution);
 }
 
-QTEST_MAIN(tst_QTimestamp);
+QTEST_MAIN(tst_QElapsedTimer);
 
-#include "tst_qtimestamp.moc"
+#include "tst_qelapsedtimer.moc"
