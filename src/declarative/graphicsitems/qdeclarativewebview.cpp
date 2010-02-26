@@ -177,6 +177,8 @@ void QDeclarativeWebView::init()
 {
     Q_D(QDeclarativeWebView);
 
+    QWebSettings::enablePersistentStorage();
+
     setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
@@ -955,6 +957,7 @@ void QDeclarativeWebView::setPage(QWebPage *page)
     connect(d->page,SIGNAL(repaintRequested(QRect)),this,SLOT(paintPage(QRect)));
     connect(d->page->mainFrame(),SIGNAL(urlChanged(QUrl)),this,SLOT(pageUrlChanged()));
     connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
+    connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(iconChanged()));
     connect(d->page->mainFrame(), SIGNAL(iconChanged()), this, SIGNAL(iconChanged()));
     connect(d->page->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this, SLOT(noteContentsSizeChanged(QSize)));
     connect(d->page->mainFrame(), SIGNAL(initialLayoutCompleted()), this, SLOT(initialLayout()));

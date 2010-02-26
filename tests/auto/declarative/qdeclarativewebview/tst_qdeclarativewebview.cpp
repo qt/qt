@@ -277,6 +277,8 @@ void tst_qdeclarativewebview::historyNav()
     wv->setUrl(QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
     QTRY_COMPARE(wv->progress(), 1.0);
     QCOMPARE(wv->title(),QString("Forward"));
+    QTRY_COMPARE(wv->icon().width(), 32);
+    QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/forward.png"));
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/forward.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
     QCOMPARE(wv->status(), QDeclarativeWebView::Ready);

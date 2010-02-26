@@ -13,31 +13,40 @@ Image {
                              ? -webView.contentX+webView.contentWidth-webView.width : 0
     y: webView.contentY < 0 ? -webView.contentY : progressOff*
                             (webView.contentY>height?-height:-webView.contentY)
-    Text {
-        id: headerText
+    Row {
+        id: headerTitle
 
-        text: webView.title!='' || webView.progress == 1.0 ? webView.title : 'Loading...'
-        elide: Text.ElideRight
-
-        color: "white"
-        styleColor: "black"
-        style: Text.Raised
-
-        font.family: "Helvetica"
-        font.pointSize: 10
-        font.bold: true
-
-        anchors.left: header.left
-        anchors.right: header.right
-        anchors.leftMargin: 4
-        anchors.rightMargin: 4
         anchors.top: header.top
         anchors.topMargin: 4
-        horizontalAlignment: Text.AlignHCenter
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 6
+
+        Image {
+            id: headerIcon
+            pixmap: webView.icon
+        }
+
+        Text {
+            id: headerText
+
+            text: webView.title!='' || webView.progress == 1.0 ? webView.title : 'Loading...'
+            elide: Text.ElideRight
+            //width: parent.width - headerIcon.width-4
+
+            color: "white"
+            styleColor: "black"
+            style: Text.Raised
+
+            font.family: "Helvetica"
+            font.pointSize: 10
+            font.bold: true
+
+            horizontalAlignment: Text.AlignHCenter
+        }
     }
     Item {
         width: parent.width
-        anchors.top: headerText.bottom
+        anchors.top: headerTitle.bottom
         anchors.topMargin: 2
         anchors.bottom: parent.bottom
 
