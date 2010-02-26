@@ -63,6 +63,7 @@
 #include <unistd.h>
 #endif
 
+QT_BEGIN_NAMESPACE
 
 static QString qGetInterfaceType(const QString &interface)
 {

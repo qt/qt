@@ -44,6 +44,7 @@
 #include "qnetworkreply.h"
 #include "qurlinfo.h"
 #include "private/qdataurl_p.h"
+#include <qcoreapplication.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,7 +73,8 @@ void QNetworkAccessDataBackend::open()
     if (operation() != QNetworkAccessManager::GetOperation &&
         operation() != QNetworkAccessManager::HeadOperation) {
         // data: doesn't support anything but GET
-        QString msg = QObject::tr("Operation not supported on %1")
+        const QString msg = QCoreApplication::translate("QNetworkAccessDataBackend",
+                                                        "Operation not supported on %1")
                       .arg(uri.toString());
         error(QNetworkReply::ContentOperationNotPermittedError, msg);
         finished();
@@ -96,7 +98,8 @@ void QNetworkAccessDataBackend::open()
     }
 
     // something wrong with this URI
-    QString msg = QObject::tr("Invalid URI: %1").arg(uri.toString());
+    const QString msg = QCoreApplication::translate("QNetworkAccessDataBackend",
+                                                    "Invalid URI: %1").arg(uri.toString());
     error(QNetworkReply::ProtocolFailure, msg);
     finished();
 }
