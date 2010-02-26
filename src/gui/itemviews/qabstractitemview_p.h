@@ -64,7 +64,7 @@
 #include "QtCore/qdebug.h"
 #include "QtGui/qpainter.h"
 #include "QtCore/qbasictimer.h"
-#include "QtCore/qtimestamp.h"
+#include "QtCore/qelapsedtimer.h"
 
 #ifndef QT_NO_ITEMVIEWS
 
@@ -390,7 +390,7 @@ public:
 #endif
 
     QString keyboardInput;
-    QTimestamp keyboardInputTime;
+    QElapsedTimer keyboardInputTime;
 
     bool autoScroll;
     QBasicTimer autoScrollTimer;

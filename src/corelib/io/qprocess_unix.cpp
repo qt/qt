@@ -100,7 +100,7 @@ QT_END_NAMESPACE
 #include <qsemaphore.h>
 #include <qsocketnotifier.h>
 #include <qthread.h>
-#include <qtimestamp.h>
+#include <qelapsedtimer.h>
 
 #include <errno.h>
 #include <stdlib.h>
@@ -933,7 +933,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
     qDebug("QProcessPrivate::waitForReadyRead(%d)", msecs);
 #endif
 
-    QTimestamp stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     forever {
@@ -1005,7 +1005,7 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
     qDebug("QProcessPrivate::waitForBytesWritten(%d)", msecs);
 #endif
 
-    QTimestamp stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     while (!writeBuffer.isEmpty()) {
@@ -1072,7 +1072,7 @@ bool QProcessPrivate::waitForFinished(int msecs)
     qDebug("QProcessPrivate::waitForFinished(%d)", msecs);
 #endif
 
-    QTimestamp stopWatch;
+    QElapsedTimer stopWatch;
     stopWatch.start();
 
     forever {

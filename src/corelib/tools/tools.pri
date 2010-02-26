@@ -42,7 +42,7 @@ HEADERS +=  \
         tools/qstringmatcher.h \
         tools/qtextboundaryfinder.h \
         tools/qtimeline.h \
-        tools/qtimestamp.h \
+        tools/qelapsedtimer.h \
         tools/qunicodetables_p.h \
         tools/qvarlengtharray.h \
         tools/qvector.h \
@@ -77,16 +77,16 @@ SOURCES += \
         tools/qstringlist.cpp \
         tools/qtextboundaryfinder.cpp \
         tools/qtimeline.cpp \
-        tools/qtimestamp.cpp \
+        tools/qelapsedtimer.cpp \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
 symbian:SOURCES+=tools/qlocale_symbian.cpp
 
-mac:SOURCES += tools/qtimestamp_mac.cpp
-else:unix:SOURCES += tools/qtimestamp_unix.cpp
-else:win32:SOURCES += tools/qtimestamp_win.cpp
-else:SOURCES += tools/qtimestamp_generic.cpp
+mac:SOURCES += tools/qelapsedtimer_mac.cpp
+else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
+else:win32:SOURCES += tools/qelapsedtimer_win.cpp
+else:SOURCES += tools/qelapsedtimer_generic.cpp
 
 #zlib support
 contains(QT_CONFIG, zlib) {

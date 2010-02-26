@@ -44,7 +44,7 @@
 #include <private/qobject_p.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qmath.h>
-#include <QtCore/qtimestamp.h>
+#include <QtCore/qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,7 +70,7 @@ public:
 
     int currentTime;
     int timerId;
-    QTimestamp timer;
+    QElapsedTimer timer;
 
     QTimeLine::Direction direction;
     QEasingCurve easingCurve;

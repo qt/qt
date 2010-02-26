@@ -56,7 +56,7 @@
 #include <QtCore/qbasictimer.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qtimer.h>
-#include <QtCore/qtimestamp.h>
+#include <QtCore/qelapsedtimer.h>
 #include <private/qobject_p.h>
 
 #ifdef Q_OS_WIN
@@ -114,7 +114,7 @@ private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)
 };
 
-typedef QTimestamp ElapsedTimer;
+typedef QElapsedTimer ElapsedTimer;
 
 class QUnifiedTimer : public QObject
 {

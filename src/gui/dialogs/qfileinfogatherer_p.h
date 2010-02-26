@@ -63,7 +63,7 @@
 #include <qstack.h>
 #include <qdatetime.h>
 #include <qdir.h>
-#include <qtimestamp.h>
+#include <qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -175,7 +175,7 @@ protected:
     void getFileInfos(const QString &path, const QStringList &files);
 
 private:
-    void fetch(const QFileInfo &info, QTimestamp &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
+    void fetch(const QFileInfo &info, QElapsedTimer &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);
     QString translateDriveName(const QFileInfo &drive) const;
 
     QMutex mutex;

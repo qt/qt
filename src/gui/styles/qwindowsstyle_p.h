@@ -59,7 +59,7 @@
 #ifndef QT_NO_STYLE_WINDOWS
 #include <qlist.h>
 #include <qhash.h>
-#include <qtimestamp.h>
+#include <qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +80,7 @@ public:
     QList<QProgressBar *> bars;
     int animationFps;
     int animateTimer;
-    QTimestamp startTime;
+    QElapsedTimer startTime;
     int animateStep;    
     QColor inactiveCaptionText;
     QColor activeCaptionColor;

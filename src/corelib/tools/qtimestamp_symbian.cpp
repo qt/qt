@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include <e32std.h>
 
 QT_BEGIN_NAMESPACE
@@ -65,40 +65,40 @@ static qint64 difference(qint64 a, qint64 b)
     return retval;
 }
 
-bool QTimestamp::isMonotonic()
+bool QElapsedTimer::isMonotonic()
 {
     return true;
 }
 
-void QTimestamp::start()
+void QElapsedTimer::start()
 {
     t1 = getMillisecondFromTick();
     t2 = 0;
 }
 
-qint64 QTimestamp::restart()
+qint64 QElapsedTimer::restart()
 {
     qint64 oldt1 = t1;
     t1 = getMillisecondFromTick();
     return difference(t1, oldt1);
 }
 
-qint64 QTimestamp::elapsed() const
+qint64 QElapsedTimer::elapsed() const
 {
     return difference(getMillisecondFromTick(), t1);
 }
 
-qint64 QTimestamp::msecsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
     return difference(other.t1, t1);
 }
 
-qint64 QTimestamp::secsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
 {
     return msecsTo(other) / 1000;
 }
 
-bool operator<(const QTimestamp &v1, const QTimestamp &v2)
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
 {
     return difference(v1.t1, v2.t1) < 0;
 }

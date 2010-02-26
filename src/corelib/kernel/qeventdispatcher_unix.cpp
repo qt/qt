@@ -45,7 +45,7 @@
 #include "qpair.h"
 #include "qsocketnotifier.h"
 #include "qthread.h"
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 
 #include "qeventdispatcher_unix_p.h"
 #include <private/qthread_p.h>
@@ -313,7 +313,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 QTimerInfoList::QTimerInfoList()
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
-    if (!QTimestamp::isMonotonic()) {
+    if (!QElapsedTimer::isMonotonic()) {
         // not using monotonic timers, initialize the timeChanged() machinery
         previousTime = qt_gettime();
 
@@ -392,7 +392,7 @@ bool QTimerInfoList::timeChanged(timeval *delta)
 
 void QTimerInfoList::repairTimersIfNeeded()
 {
-    if (QTimestamp::isMonotonic())
+    if (QElapsedTimer::isMonotonic())
         return;
     timeval delta;
     if (timeChanged(&delta))

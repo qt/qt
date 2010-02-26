@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qcore_unix_p.h"
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 
 #ifndef Q_OS_VXWORKS
 # if !defined(Q_OS_HPUX) || defined(__ia64)
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 static inline bool time_update(struct timeval *tv, const struct timeval &start,
                                const struct timeval &timeout)
 {
-    if (!QTimestamp::isMonotonic()) {
+    if (!QElapsedTimer::isMonotonic()) {
         // we cannot recalculate the timeout without a monotonic clock as the time may have changed
         return false;
     }

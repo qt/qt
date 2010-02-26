@@ -88,7 +88,7 @@ QT_END_NAMESPACE
 #include "qprocess_p.h"
 
 #include <qbytearray.h>
-#include <qtimestamp.h>
+#include <qelapsedtimer.h>
 #include <qcoreapplication.h>
 #include <qsocketnotifier.h>
 #include <qtimer.h>
@@ -1639,7 +1639,7 @@ bool QProcess::waitForBytesWritten(int msecs)
     if (d->processState == QProcess::NotRunning)
         return false;
     if (d->processState == QProcess::Starting) {
-        QTimestamp stopWatch;
+        QElapsedTimer stopWatch;
         stopWatch.start();
         bool started = waitForStarted(msecs);
         if (!started)
@@ -1676,7 +1676,7 @@ bool QProcess::waitForFinished(int msecs)
     if (d->processState == QProcess::NotRunning)
         return false;
     if (d->processState == QProcess::Starting) {
-        QTimestamp stopWatch;
+        QElapsedTimer stopWatch;
         stopWatch.start();
         bool started = waitForStarted(msecs);
         if (!started)

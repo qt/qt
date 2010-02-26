@@ -75,7 +75,7 @@
 #include "qt_x11_p.h"
 #include "qx11info_x11.h"
 #include "qimagewriter.h"
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include "qvariant.h"
 #include "qdnd_p.h"
 #include <private/qwidget_p.h>
@@ -516,9 +516,9 @@ static Bool checkForClipboardEvents(Display *, XEvent *e, XPointer)
 
 bool QX11Data::clipboardWaitForEvent(Window win, int type, XEvent *event, int timeout)
 {
-    QTimestamp started;
+    QElapsedTimer started;
     started.start();
-    QTimestamp now = started;
+    QElapsedTimer now = started;
 
     if (QAbstractEventDispatcher::instance()->inherits("QtMotif")
         || QApplication::clipboard()->property("useEventLoopWhenWaiting").toBool()) {

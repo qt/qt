@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-class Q_CORE_EXPORT QTimestamp
+class Q_CORE_EXPORT QElapsedTimer
 {
 public:
     static bool isMonotonic();
@@ -63,15 +63,15 @@ public:
     qint64 elapsed() const;
     bool hasExpired(qint64 timeout) const;
 
-    qint64 msecsTo(const QTimestamp &other) const;
-    qint64 secsTo(const QTimestamp &other) const;
+    qint64 msecsTo(const QElapsedTimer &other) const;
+    qint64 secsTo(const QElapsedTimer &other) const;
 
-    bool operator==(const QTimestamp &other) const
+    bool operator==(const QElapsedTimer &other) const
     { return t1 == other.t1 && t2 == other.t2; }
-    bool operator!=(const QTimestamp &other) const
+    bool operator!=(const QElapsedTimer &other) const
     { return !(*this == other); }
 
-    friend bool Q_CORE_EXPORT operator<(const QTimestamp &v1, const QTimestamp &v2);
+    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2);
 
 private:
     qint64 t1;

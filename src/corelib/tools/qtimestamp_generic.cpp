@@ -39,24 +39,24 @@
 **
 ****************************************************************************/
 
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include "qdatetime.h"
 
 QT_BEGIN_NAMESPACE
 
-bool QTimestamp::isMonotonic()
+bool QElapsedTimer::isMonotonic()
 {
     return false;
 }
 
-void QTimestamp::start()
+void QElapsedTimer::start()
 {
     QTime t = QTime::currentTime();
     t1 = t.mds;
     t2 = 0;
 }
 
-qint64 QTimestamp::restart()
+qint64 QElapsedTimer::restart()
 {
     QTime t = QTime::currentTime();
     qint64 old = t1;
@@ -64,13 +64,13 @@ qint64 QTimestamp::restart()
     return t1 - old;
 }
 
-qint64 QTimestamp::elapsed() const
+qint64 QElapsedTimer::elapsed() const
 {
     QTime t = QTime::currentTime();
     return t.mds - t1;
 }
 
-qint64 QTimestamp::msecsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
     qint64 diff = other.t1 - t1;
     if (diff < 0)             // passed midnight
@@ -78,12 +78,12 @@ qint64 QTimestamp::msecsTo(const QTimestamp &other) const
     return diff;
 }
 
-qint64 QTimestamp::secsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
 {
     return msecsTo(other) / 1000;
 }
 
-bool operator<(const QTimestamp &v1, const QTimestamp &v2)
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
 {
     return v1.t1 < v2.t1;
 }

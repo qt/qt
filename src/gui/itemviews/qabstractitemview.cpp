@@ -2839,7 +2839,7 @@ void QAbstractItemView::keyboardSearch(const QString &search)
 
     QModelIndex start = currentIndex().isValid() ? currentIndex()
                         : d->model->index(0, 0, d->root);
-    QTimestamp now;
+    QElapsedTimer now;
     now.start();
     bool skipRow = false;
     if (search.isEmpty()

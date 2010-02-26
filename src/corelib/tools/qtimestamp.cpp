@@ -39,23 +39,23 @@
 **
 ****************************************************************************/
 
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 
 QT_BEGIN_NAMESPACE
 
 static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
 
-void QTimestamp::invalidate()
+void QElapsedTimer::invalidate()
 {
      t1 = t2 = invalidData;
 }
 
-bool QTimestamp::isValid() const
+bool QElapsedTimer::isValid() const
 {
     return t1 != invalidData && t2 != invalidData;
 }
 
-bool QTimestamp::hasExpired(qint64 timeout) const
+bool QElapsedTimer::hasExpired(qint64 timeout) const
 {
     // if timeout is -1, quint64(timeout) is LLINT_MAX, so this will be
     // considered as never expired

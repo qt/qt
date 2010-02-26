@@ -43,7 +43,7 @@
 
 #include <qdebug.h>
 #include <qpaintdevice.h>
-#include <qtimestamp.h>
+#include <qelapsedtimer.h>
 
 #include <private/qt_x11_p.h>
 #include "qx11info_x11.h"
@@ -1218,7 +1218,7 @@ static void load(const QString &family = QString(), int script = -1, bool forceX
     }
 
 #ifdef QFONTDATABASE_DEBUG
-    QTimestamp t;
+    QElapsedTimer t;
     t.start();
 #endif
 
@@ -1301,7 +1301,7 @@ static void initializeDb()
     if (!db || db->count)
         return;
 
-    QTimestamp t;
+    QElapsedTimer t;
     t.start();
 
 #ifndef QT_NO_FONTCONFIG

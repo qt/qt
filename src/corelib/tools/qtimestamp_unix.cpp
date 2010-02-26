@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include "qpair.h"
 #include <sys/time.h>
 #include <time.h>
@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 static qint64 fractionAdjustment()
 {
-    if (QTimestamp::isMonotonic()) {
+    if (QElapsedTimer::isMonotonic()) {
         // the monotonic timer is measured in nanoseconds
         // 1 ms = 1000000 ns
         return 1000*1000ull;
@@ -66,7 +66,7 @@ static qint64 fractionAdjustment()
     }
 }
 
-bool QTimestamp::isMonotonic()
+bool QElapsedTimer::isMonotonic()
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 > 0)
     return true;
@@ -95,7 +95,7 @@ static inline QPair<long, long> do_gettime()
     return qMakePair(ts.tv_sec, ts.tv_nsec);
 #else
 #  if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
-    if (QTimestamp::isMonotonic()) {
+    if (QElapsedTimer::isMonotonic()) {
         timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         return qMakePair(ts.tv_sec, ts.tv_nsec);
@@ -116,20 +116,20 @@ timeval qt_gettime()
     timeval tv;
     tv.tv_sec = r.first;
     tv.tv_usec = r.second;
-    if (QTimestamp::isMonotonic())
+    if (QElapsedTimer::isMonotonic())
         tv.tv_usec /= 1000;
 
     return tv;
 }
 
-void QTimestamp::start()
+void QElapsedTimer::start()
 {
     QPair<long, long> r = do_gettime();
     t1 = r.first;
     t2 = r.second;
 }
 
-qint64 QTimestamp::restart()
+qint64 QElapsedTimer::restart()
 {
     QPair<long, long> r = do_gettime();
     qint64 oldt1 = t1;
@@ -142,26 +142,26 @@ qint64 QTimestamp::restart()
     return r.first * 1000 + r.second / fractionAdjustment();
 }
 
-qint64 QTimestamp::elapsed() const
+qint64 QElapsedTimer::elapsed() const
 {
-    QTimestamp now;
+    QElapsedTimer now;
     now.start();
     return msecsTo(now);
 }
 
-qint64 QTimestamp::msecsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
     qint64 secs = other.t1 - t1;
     qint64 fraction = other.t2 - t2;
     return secs * 1000 + fraction / fractionAdjustment();
 }
 
-qint64 QTimestamp::secsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
 {
     return other.t1 - t1;
 }
 
-bool operator<(const QTimestamp &v1, const QTimestamp &v2)
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
 {
     return v1.t1 < v2.t1 || (v1.t1 == v2.t1 && v1.t2 < v2.t2);
 }

@@ -49,7 +49,7 @@
 #include "qpixmap.h"
 #include "qpointer.h"
 #include "qtimer.h"
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
@@ -103,7 +103,7 @@ private:
     int elapsed;
     bool showWidget;
     QTimer anim;
-    QTimestamp checkTime;
+    QElapsedTimer checkTime;
     double windowOpacity;
 };
 
@@ -384,7 +384,7 @@ private:
     int orientation;
 
     QTimer anim;
-    QTimestamp checkTime;
+    QElapsedTimer checkTime;
 
     QPixmap pm;
 };

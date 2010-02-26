@@ -54,7 +54,7 @@
 #include "qiodevice.h"
 #include "qpointer.h"
 #include "qcursor.h"
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include "qvariant.h"
 #include "qvector.h"
 #include "qurl.h"
@@ -1911,7 +1911,7 @@ Qt::DropAction QDragManager::drag(QDrag * o)
         // then we could still have problems, but this is highly unlikely
         QApplication::flush();
 
-        QTimestamp timer;
+        QElapsedTimer timer;
         timer.start();
         do {
             XEvent event;

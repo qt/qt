@@ -53,7 +53,7 @@
 #include "qpushbutton.h"
 #include "qcursor.h"
 #include "qtimer.h"
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include <private/qdialog_p.h>
 #include <limits.h>
 
@@ -103,7 +103,7 @@ public:
     QTimer *forceTimer;
     bool shown_once;
     bool cancellation_flag;
-    QTimestamp starttime;
+    QElapsedTimer starttime;
 #ifndef QT_NO_CURSOR
     QCursor parentCursor;
 #endif

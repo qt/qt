@@ -56,7 +56,7 @@
 #include "qrect.h"
 #include "qpoint.h"
 #include "qgesture.h"
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -148,7 +148,7 @@ public:
     QPoint lastPositions[3];
     bool started;
     qreal speed;
-    QTimestamp time;
+    QElapsedTimer time;
 };
 
 class QTapGesturePrivate : public QGesturePrivate

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qtimestamp.h"
+#include "qelapsedtimer.h"
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QTimestamp::isMonotonic()
+bool QElapsedTimer::isMonotonic()
 {
     return true;
 }
@@ -77,13 +77,13 @@ timeval qt_gettime()
     return tv;
 }
 
-void QTimestamp::start()
+void QElapsedTimer::start()
 {
     t1 = mach_absolute_time();
     t2 = 0;
 }
 
-qint64 QTimestamp::restart()
+qint64 QElapsedTimer::restart()
 {
     qint64 old = t1;
     t1 = mach_absolute_time();
@@ -91,23 +91,23 @@ qint64 QTimestamp::restart()
     return absoluteToMSecs(t1 - old);
 }
 
-qint64 QTimestamp::elapsed() const
+qint64 QElapsedTimer::elapsed() const
 {
     uint64_t cpu_time = mach_absolute_time();
     return absoluteToMSecs(cpu_time - t1);
 }
 
-qint64 QTimestamp::msecsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
     return absoluteToMSecs(other.t1 - t1);
 }
 
-qint64 QTimestamp::secsTo(const QTimestamp &other) const
+qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const
 {
     return msecsTo(other) / 1000;
 }
 
-bool operator<(const QTimestamp &v1, const QTimestamp &v2)
+bool operator<(const QElapsedTimer &v1, const QElapsedTimer &v2)
 {
     return v1.t1 < v2.t1;
 }
