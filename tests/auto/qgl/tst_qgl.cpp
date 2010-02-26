@@ -998,8 +998,7 @@ void tst_QGL::glFBOSimpleRendering()
     QGLFramebufferObjectFormat fboFormat;
     fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
 
-    // Don't complicate things by using NPOT:
-    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(200, 100, fboFormat);
 
     fbo->bind();
 
@@ -1219,7 +1218,7 @@ protected:
         widgetPainterBeginOk = widgetPainter.begin(this);
         QGLFramebufferObjectFormat fboFormat;
         fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
-        QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+        QGLFramebufferObject *fbo = new QGLFramebufferObject(100, 100, fboFormat);
 
         QPainter fboPainter;
         fboPainterBeginOk = fboPainter.begin(fbo);
@@ -1243,7 +1242,7 @@ void tst_QGL::glFBOUseInGLWidget()
 #ifdef Q_WS_QWS
     w.setWindowFlags(Qt::FramelessWindowHint);
 #endif
-    w.resize(128, 128);
+    w.resize(100, 100);
     w.show();
 
 #ifdef Q_WS_X11
@@ -1354,6 +1353,10 @@ void tst_QGL::glWidgetRenderPixmap()
     QImage fb = pm.toImage().convertToFormat(QImage::Format_RGB32);
     QImage reference(fb.size(), QImage::Format_RGB32);
     reference.fill(0xffff0000);
+
+#ifdef QGL_EGL
+    QSKIP("renderPixmap() not yet supported under EGL", SkipAll);
+#endif
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
 }
