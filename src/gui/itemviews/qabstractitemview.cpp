@@ -2283,10 +2283,9 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Left:
     case Qt::Key_Right:
 #ifdef QT_KEYPAD_NAVIGATION
-        int colCount = d->model->columnCount(d->root);
         if (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
                 && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal)
-                || (QWidgetPrivate::inTabWidget(this) && colCount > 1))) {
+                || (QWidgetPrivate::inTabWidget(this) && d->model->columnCount(d->root) > 1))) {
             event->accept(); // don't change focus
             break;
         }
