@@ -2407,7 +2407,9 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
         fi
         ;;
     CYGWIN*:*)
-	CFG_EMBEDDED=x86
+	if [ -z "$XPLATFORM" ]; then
+		CFG_EMBEDDED=x86
+	fi
 	;;
     *)
         echo "Qt for Embedded Linux is not supported on this platform. Disabling."
