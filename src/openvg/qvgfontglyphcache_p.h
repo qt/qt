@@ -74,6 +74,7 @@ public:
     VGFont font;
     VGfloat scaleX;
     VGfloat scaleY;
+    bool invertedGlyphs;
 
     uint cachedGlyphsMask[256 / 32];
     QSet<glyph_t> cachedGlyphs;
@@ -82,6 +83,8 @@ public:
 #if defined(Q_OS_SYMBIAN)
 class QSymbianVGFontGlyphCache : public QVGFontGlyphCache
 {
+public:
+    QSymbianVGFontGlyphCache();
     void cacheGlyphs(QVGPaintEnginePrivate *d,
                      const QTextItemInt &ti,
                      const QVarLengthArray<glyph_t> &glyphs);

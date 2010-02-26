@@ -3272,6 +3272,7 @@ QVGFontGlyphCache::QVGFontGlyphCache()
 {
     font = vgCreateFont(0);
     scaleX = scaleY = 0.0;
+    invertedGlyphs = false;
     memset(cachedGlyphsMask, 0, sizeof(cachedGlyphsMask));
 }
 
@@ -3430,6 +3431,11 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 #if defined(QVG_NO_IMAGE_GLYPHS)
     glyphTransform.scale(glyphCache->scaleX, glyphCache->scaleY);
 #endif
+
+    // Some glyph caches can create the VGImage upright
+    if (glyphCache->invertedGlyphs)
+        glyphTransform.scale(1, -1);
+
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, glyphTransform);
 
     // Add the glyphs from the text item into the glyph cache.

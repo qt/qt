@@ -322,6 +322,11 @@ void* QVGPixmapData::toNativeType(NativeType type)
     return 0;
 }
 
+QSymbianVGFontGlyphCache::QSymbianVGFontGlyphCache() : QVGFontGlyphCache()
+{
+    invertedGlyphs = true;
+}
+
 void QSymbianVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
                                            const QTextItemInt &ti,
                                            const QVarLengthArray<glyph_t> &glyphs)
@@ -359,7 +364,7 @@ void QSymbianVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
         VGfloat origin[2];
         VGfloat escapement[2];
         origin[0] = -glyphBounds.iTl.iX + 0.5f;
-        origin[1] = -glyphBounds.iTl.iY + 0.5f;
+        origin[1] = glyphBounds.iBr.iY + 0.5f;
         escapement[0] = metrics.HorizAdvance();
         escapement[1] = 0;
         vgSetGlyphToImage(font, iter.GlyphCode(), vgImage, origin, escapement);
