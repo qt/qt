@@ -46,6 +46,8 @@
 
 #include "qx11videosurface.h"
 
+QT_BEGIN_NAMESPACE
+
 QGstreamerVideoOverlay::QGstreamerVideoOverlay(QObject *parent)
     : QVideoWindowControl(parent)
     , m_surface(new QX11VideoSurface)
@@ -208,3 +210,6 @@ void QGstreamerVideoOverlay::setScaledDisplayRect()
         break;
     };
 }
+
+QT_END_NAMESPACE
+

@@ -199,7 +199,6 @@ QT7MovieVideoWidget::QT7MovieVideoWidget(QObject *parent)
     }
 }
 
-
 bool QT7MovieVideoWidget::createVisualContext()
 {
 #ifdef QUICKTIME_C_API_AVAILABLE
@@ -210,8 +209,20 @@ bool QT7MovieVideoWidget::createVisualContext()
     NSOpenGLPixelFormat *nsglPixelFormat = [NSOpenGLView defaultPixelFormat];
     CGLPixelFormatObj cglPixelFormat = static_cast<CGLPixelFormatObj>([nsglPixelFormat CGLPixelFormatObj]);
 
-    CFTypeRef keys[] = { kQTVisualContextWorkingColorSpaceKey };
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CFTypeRef keys[] = { kQTVisualContextOutputColorSpaceKey };
+    CGColorSpaceRef colorSpace = NULL;
+    CMProfileRef sysprof = NULL;
+
+    // Get the Systems Profile for the main display
+    if (CMGetSystemProfile(&sysprof) == noErr) {
+        // Create a colorspace with the systems profile
+        colorSpace = CGColorSpaceCreateWithPlatformColorSpace(sysprof);        
+        CMCloseProfile(sysprof);
+    }
+
+    if (!colorSpace)
+        colorSpace = CGColorSpaceCreateDeviceRGB();
+
     CFDictionaryRef textureContextAttributes = CFDictionaryCreate(kCFAllocatorDefault,
                                                                   (const void **)keys,
                                                                   (const void **)&colorSpace, 1,
