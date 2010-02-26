@@ -45,7 +45,7 @@
 #include "qdeclarativeanimation_p_p.h"
 #include "qdeclarativebehavior_p.h"
 #include "qdeclarativebind_p.h"
-#include "qdeclarativeconnection_p.h"
+#include "qdeclarativeconnections_p.h"
 #include "qdeclarativedatetimeformatter_p.h"
 #include "qdeclarativeeasefollow_p.h"
 #include "qdeclarativefontloader_p.h"

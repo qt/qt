@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativeconnection_p.h"
+#include "qdeclarativeconnections_p.h"
 
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeproperty_p.h>

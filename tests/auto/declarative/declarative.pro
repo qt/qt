@@ -7,7 +7,7 @@ SUBDIRS += \
            qdeclarativeanimations \          # Cover
            qdeclarativebehaviors \           # Cover
            qdeclarativebinding \             # Cover
-           qdeclarativeconnection \          # Cover
+           qdeclarativeconnections \          # Cover
            qdeclarativecontext \             # Cover
            qdeclarativedatetimeformatter \   # Cover
            qdeclarativedebug \               # Cover
