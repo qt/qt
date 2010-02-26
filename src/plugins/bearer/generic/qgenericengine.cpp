@@ -126,14 +126,11 @@ static QString qGetInterfaceType(const QString &interface)
 
     ifreq request;
     strncpy(request.ifr_name, interface.toLocal8Bit().data(), sizeof(request.ifr_name));
-    if (ioctl(sock, SIOCGIFHWADDR, &request) >= 0) {
-        switch (request.ifr_hwaddr.sa_family) {
-        case ARPHRD_ETHER:
-            return QLatin1String("Ethernet");
-        }
-    }
-
+    int result = ioctl(sock, SIOCGIFHWADDR, &request);
     close(sock);
+
+    if (result >= 0 && request.ifr_hwaddr.sa_family == ARPHRD_ETHER)
+        return QLatin1String("Ethernet");
 #else
     Q_UNUSED(interface);
 #endif
