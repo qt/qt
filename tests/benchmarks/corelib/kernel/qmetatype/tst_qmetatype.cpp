@@ -96,7 +96,7 @@ void tst_QMetaType::typeBuiltin()
     QFETCH(QByteArray, typeName);
     const char *nm = typeName.constData();
     QBENCHMARK {
-        for (int i = 0; i < 50000; ++i)
+        for (int i = 0; i < 100000; ++i)
             QMetaType::type(nm);
     }
 }
