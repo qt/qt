@@ -149,21 +149,14 @@ private:
     bool running;
 };
 
-class QDeclarativeBulkValueUpdater
-{
-public:
-    virtual ~QDeclarativeBulkValueUpdater() {}
-    virtual void setValue(qreal value) = 0;
-};
-
-//animates QDeclarativeBulkValueUpdater (assumes start and end values will be reals or compatible)
-class QDeclarativeBulkValueAnimator : public QVariantAnimation
+//animates QDeclarativeTimeLineValue (assumes start and end values will be reals or compatible)
+class QDeclarativeTimeLineValueAnimator : public QVariantAnimation
 {
     Q_OBJECT
 public:
-    QDeclarativeBulkValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
-    ~QDeclarativeBulkValueAnimator() { if (policy == DeleteWhenStopped) { delete animValue; animValue = 0; } }
-    void setAnimValue(QDeclarativeBulkValueUpdater *value, DeletionPolicy p)
+    QDeclarativeTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
+    ~QDeclarativeTimeLineValueAnimator() { if (policy == DeleteWhenStopped) { delete animValue; animValue = 0; } }
+    void setAnimValue(QDeclarativeTimeLineValue *value, DeletionPolicy p)
     {
         if (state() == Running)
             stop();
@@ -200,7 +193,7 @@ protected:
     }
 
 private:
-    QDeclarativeBulkValueUpdater *animValue;
+    QDeclarativeTimeLineValue *animValue;
     bool *fromSourced;
     DeletionPolicy policy;
 };
@@ -359,7 +352,7 @@ public:
     int interpolatorType;
     QVariantAnimation::Interpolator interpolator;
 
-    QDeclarativeBulkValueAnimator *va;
+    QDeclarativeTimeLineValueAnimator *va;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
     static void convertVariant(QVariant &variant, int type);
