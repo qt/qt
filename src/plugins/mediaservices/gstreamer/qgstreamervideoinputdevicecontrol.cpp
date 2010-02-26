@@ -57,6 +57,9 @@
 #include <sys/mman.h>
 #include <linux/videodev2.h>
 
+
+QT_BEGIN_NAMESPACE
+
 QGstreamerVideoInputDeviceControl::QGstreamerVideoInputDeviceControl(QObject *parent)
     :QVideoDeviceControl(parent), m_selectedDevice(0)
 {
@@ -155,3 +158,6 @@ void QGstreamerVideoInputDeviceControl::update()
         ::close(fd);
     }
 }
+
+QT_END_NAMESPACE
+

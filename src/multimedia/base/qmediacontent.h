@@ -75,6 +75,7 @@ public:
     bool isNull() const;
 
     QUrl canonicalUrl() const;
+    QNetworkRequest canonicalRequest() const;
     QMediaResource canonicalResource() const;
 
     QMediaResourceList resources() const;
