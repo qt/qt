@@ -40,39 +40,38 @@
 ****************************************************************************/
 #include <QtTest/QtTest>
 #include <private/qlistmodelinterface_p.h>
-#include <qmlview.h>
-#include <private/qmlgraphicslayoutitem_p.h>
-#include <qmlexpression.h>
+#include <qdeclarativeview.h>
+#include <private/qdeclarativelayoutitem_p.h>
+#include <qdeclarativeexpression.h>
 #include <QStyle>
 
-class tst_QmlGraphicsLayouts : public QObject
+class tst_QDeclarativeLayouts : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsLayouts();
+    tst_QDeclarativeLayouts();
 
 private slots:
     void test_qml();//GraphicsLayout set up in Qml
     void test_cpp();//GraphicsLayout set up in C++
 
 private:
-    QmlView *createView(const QString &filename);
+    QDeclarativeView *createView(const QString &filename);
 };
 
-tst_QmlGraphicsLayouts::tst_QmlGraphicsLayouts()
+tst_QDeclarativeLayouts::tst_QDeclarativeLayouts()
 {
 }
 
-void tst_QmlGraphicsLayouts::test_qml()
+void tst_QDeclarativeLayouts::test_qml()
 {
-    QmlView *canvas = createView(SRCDIR "/data/layouts.qml");
+    QDeclarativeView *canvas = createView(SRCDIR "/data/layouts.qml");
 
-    canvas->execute();
     qApp->processEvents();
-    QmlGraphicsLayoutItem *left = static_cast<QmlGraphicsLayoutItem*>(canvas->rootObject()->findChild<QmlGraphicsItem*>("left"));
+    QDeclarativeLayoutItem *left = static_cast<QDeclarativeLayoutItem*>(canvas->rootObject()->findChild<QDeclarativeItem*>("left"));
     QVERIFY(left != 0);
 
-    QmlGraphicsLayoutItem *right = static_cast<QmlGraphicsLayoutItem*>(canvas->rootObject()->findChild<QmlGraphicsItem*>("right"));
+    QDeclarativeLayoutItem *right = static_cast<QDeclarativeLayoutItem*>(canvas->rootObject()->findChild<QDeclarativeItem*>("right"));
     QVERIFY(right != 0);
 
     qreal l = QApplication::style()->pixelMetric(QStyle::PM_LayoutLeftMargin);
@@ -82,7 +81,7 @@ void tst_QmlGraphicsLayouts::test_qml()
     QVERIFY2(l == r && r == t && t == b, "Test assumes equal margins.");
     qreal gvMargin = l;
 
-    QmlGraphicsItem *rootItem = qobject_cast<QmlGraphicsItem*>(canvas->rootObject());
+    QDeclarativeItem *rootItem = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
     QVERIFY(rootItem != 0);
 
     //Preferred Size
@@ -129,20 +128,20 @@ void tst_QmlGraphicsLayouts::test_qml()
     delete canvas;
 }
 
-void tst_QmlGraphicsLayouts::test_cpp()
+void tst_QDeclarativeLayouts::test_cpp()
 {
     //TODO: Waiting on QT-2407 to write this test
 }
 
-QmlView *tst_QmlGraphicsLayouts::createView(const QString &filename)
+QDeclarativeView *tst_QDeclarativeLayouts::createView(const QString &filename)
 {
-    QmlView *canvas = new QmlView(0);
+    QDeclarativeView *canvas = new QDeclarativeView(0);
     canvas->setSource(QUrl::fromLocalFile(filename));
 
     return canvas;
 }
 
 
-QTEST_MAIN(tst_QmlGraphicsLayouts)
+QTEST_MAIN(tst_QDeclarativeLayouts)
 
 #include "tst_layouts.moc"

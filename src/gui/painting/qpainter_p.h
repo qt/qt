@@ -228,6 +228,7 @@ public:
     void draw_helper(const QPainterPath &path, DrawOperation operation = StrokeAndFillDraw);
     void drawStretchedGradient(const QPainterPath &path, DrawOperation operation);
     void drawOpaqueBackground(const QPainterPath &path, DrawOperation operation);
+    void drawGlyphs(const quint32 *glyphArray, const QPointF *positionArray, int glyphCount);
 
     void updateMatrix();
     void updateInvMatrix();
@@ -237,6 +238,11 @@ public:
     }
 
     void checkEmulation();
+
+    static QPainterPrivate *get(QPainter *painter)
+    {
+        return painter->d_ptr.data();
+    }
 
     QTransform viewTransform() const;
     static bool attachPainterPrivate(QPainter *q, QPaintDevice *pdev);
@@ -252,6 +258,8 @@ public:
 };
 
 Q_GUI_EXPORT void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation);
+Q_GUI_EXPORT void qt_draw_glyphs(QPainter *painter, const quint32 *glyphArray,
+                                 const QPointF *positionArray, int glyphCount);
 
 QString qt_generate_brush_key(const QBrush &brush);
 

@@ -20,7 +20,7 @@ if [ -z "$repository" ]; then
     die "error: cannot locate webkit git repository. please run git config --global qtwebkit.url /path-or-url/to/webkit/repo"
 fi
 
-excluded_directories="LayoutTests JavaScriptGlue WebKitLibraries WebKitSite WebKitTools WebCore/platform/cf WebCore/platform/gtk WebCore/platform/chromium"
+excluded_directories="LayoutTests JavaScriptGlue WebKitLibraries WebKitSite WebKitTools WebCore/platform/gtk WebCore/platform/chromium"
 excluded_directories="$excluded_directories PageLoadTests"
 excluded_directories="$excluded_directories BugsSite"
 excluded_directories="$excluded_directories PlanetWebKit"
@@ -49,6 +49,8 @@ excluded_directories="$excluded_directories JavaScriptCore/wtf/mac"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/win"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/chromium"
 excluded_directories="$excluded_directories JavaScriptCore/wtf/haiku"
+excluded_directories="$excluded_directories JavaScriptCore/wtf/android"
+excluded_directories="$excluded_directories JavaScriptCore/wtf/brew"
 
 excluded_directories="$excluded_directories WebCore/WebCore.vcproj"
 excluded_directories="$excluded_directories WebCore/WebCore.gyp"
@@ -81,41 +83,52 @@ excluded_directories="$excluded_directories WebCore/page/wx"
 excluded_directories="$excluded_directories WebCore/page/chromium"
 excluded_directories="$excluded_directories WebCore/page/haiku"
 excluded_directories="$excluded_directories WebCore/page/wince"
+excluded_directories="$excluded_directories WebCore/page/android"
+excluded_directories="$excluded_directories WebCore/page/brew"
 
 excluded_directories="$excluded_directories WebCore/history/mac"
+excluded_directories="$excluded_directories WebCore/history/android"
 
 excluded_directories="$excluded_directories WebCore/editing/mac"
 excluded_directories="$excluded_directories WebCore/editing/wx"
 excluded_directories="$excluded_directories WebCore/editing/haiku"
+excluded_directories="$excluded_directories WebCore/editing/android"
+excluded_directories="$excluded_directories WebCore/editing/chromium"
+excluded_directories="$excluded_directories WebCore/editing/gtk"
 
 excluded_directories="$excluded_directories WebCore/platform/haiku"
+excluded_directories="$excluded_directories WebCore/platform/android"
+excluded_directories="$excluded_directories WebCore/platform/brew"
 
 excluded_directories="$excluded_directories WebCore/platform/text/wx"
 excluded_directories="$excluded_directories WebCore/platform/text/gtk"
 excluded_directories="$excluded_directories WebCore/platform/text/chromium"
 excluded_directories="$excluded_directories WebCore/platform/text/haiku"
+excluded_directories="$excluded_directories WebCore/platform/text/android"
+excluded_directories="$excluded_directories WebCore/platform/text/brew"
 
 excluded_directories="$excluded_directories WebCore/platform/sql/chromium"
 
 excluded_directories="$excluded_directories WebCore/manual-tests"
 
-excluded_directories="$excluded_directories WebCore/platform/network/cf"
 excluded_directories="$excluded_directories WebCore/platform/network/curl"
 excluded_directories="$excluded_directories WebCore/platform/network/mac"
 excluded_directories="$excluded_directories WebCore/platform/network/win"
 excluded_directories="$excluded_directories WebCore/platform/network/soup"
 excluded_directories="$excluded_directories WebCore/platform/network/chromium"
+excluded_directories="$excluded_directories WebCore/platform/network/android"
+excluded_directories="$excluded_directories WebCore/platform/network/brew"
 
 excluded_directories="$excluded_directories WebCore/platform/graphics/cg"
 excluded_directories="$excluded_directories WebCore/platform/graphics/cairo"
 excluded_directories="$excluded_directories WebCore/platform/graphics/gtk"
 excluded_directories="$excluded_directories WebCore/platform/graphics/wx"
 excluded_directories="$excluded_directories WebCore/platform/graphics/mac"
-excluded_directories="$excluded_directories WebCore/platform/graphics/win"
 excluded_directories="$excluded_directories WebCore/platform/graphics/skia"
 excluded_directories="$excluded_directories WebCore/platform/graphics/chromium"
 excluded_directories="$excluded_directories WebCore/platform/graphics/wince"
 excluded_directories="$excluded_directories WebCore/platform/graphics/haiku"
+excluded_directories="$excluded_directories WebCore/platform/graphics/brew"
 
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/bmp"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/gif"
@@ -126,11 +139,13 @@ excluded_directories="$excluded_directories WebCore/platform/image-decoders/jpeg
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/xbm"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/skia"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/haiku"
+excluded_directories="$excluded_directories WebCore/platform/image-decoders/wx"
 
 excluded_directories="$excluded_directories WebCore/platform/image-encoders/skia"
 
 excluded_directories="$excluded_directories WebCore/plugins/gtk"
 excluded_directories="$excluded_directories WebCore/plugins/chromium"
+excluded_directories="$excluded_directories WebCore/plugins/wx"
 
 excluded_directories="$excluded_directories WebCore/accessibility/chromium"
 excluded_directories="$excluded_directories WebCore/accessibility/gtk"
@@ -139,6 +154,7 @@ excluded_directories="$excluded_directories WebCore/accessibility/win"
 excluded_directories="$excluded_directories WebCore/accessibility/wx"
 
 excluded_directories="$excluded_directories WebCore/storage/wince"
+excluded_directories="$excluded_directories WebCore/storage/chromium"
 
 excluded_directories="$excluded_directories WebCore/platform/wx"
 excluded_directories="$excluded_directories WebCore/platform/wince"
@@ -196,6 +212,7 @@ files_to_remove="$files_to_remove autogen.sh"
 files_to_remove="$files_to_remove configure.ac"
 
 files_to_remove="$files_to_remove WebKit.pro"
+files_to_remove="$files_to_remove DerivedSources.pro"
 
 files_to_remove="$files_to_remove WebKit/qt/QtLauncher/QtLauncher.pro"
 files_to_remove="$files_to_remove WebKit/qt/QtLauncher/main.cpp"
@@ -311,16 +328,11 @@ echo "generating extra sources"
 (
   for proj in JavaScriptCore WebCore; do
       cd $absSrcDir/$proj &&
-      rm -rf tmp &&
-      mkdir tmp &&
-      cd tmp &&
-      mkdir -p ../generated &&
-      qmake -o Makefile CONFIG-=QTDIR_build QT_CONFIG+=phonon GENERATED_SOURCES_DIR=`pwd`/../generated  OUTPUT_DIR=`pwd` ../$proj.pro &&
+      qmake -o Makefile DerivedSources.pro &&
       make generated_files &&
-      perl -pi -e "s,$absSrcDir/,,g" ../generated/*.cpp ../generated/*.h &&
-      git add ../generated &&
-      cd .. &&
-      rm -rf tmp &&
+      perl -pi -e "s,$absSrcDir/,,g" generated/*.cpp generated/*.h &&
+      git add generated &&
+      rm DerivedSources.pro Makefile &&
       cd ..
   done
 )

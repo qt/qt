@@ -3,7 +3,7 @@ import Qt 4.6
 Text {
     Script {
         function findGreetings() {
-            var db = openDatabaseSync("QmlExampleDB", "1.0", "The Example QML SQL!", 1000000);
+            var db = openDatabaseSync("QDeclarativeExampleDB", "1.0", "The Example QML SQL!", 1000000);
 
             db.transaction(
                 function(tx) {

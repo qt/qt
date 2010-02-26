@@ -92,7 +92,7 @@ Item {
                                 }
                             }
                             NumberAnimation {
-                                easing: "easeInOutQuad"
+                                easing.type: "InOutQuad"
                                 properties: "angle"
                             }
                             ScriptAction{

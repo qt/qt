@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlelements.html
+\page qdeclarativeelements.html
 \target elements
 \title QML Elements
 
@@ -88,6 +88,8 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Binding
 \o \l ListModel, \l ListElement
 \o \l VisualItemModel
+\o \l VisualDataModel
+\o \l Package
 \o \l XmlListModel and XmlRole
 \o \l DateTimeFormatter
 \o \l NumberFormatter
@@ -96,7 +98,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o
 \list
 \o \l Script
-\o \l Connection
+\o \l Connections
 \o \l Component
 \o \l Timer
 \o \l QtObject

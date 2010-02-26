@@ -77,25 +77,21 @@
 // #define QAX_SUPPORT_BORDERSPACE
 
 // missing interface from win32api
-#if defined(Q_CC_GNU)
-#   if !defined(IOleInPlaceObjectWindowless)
-#       undef INTERFACE
-#       define INTERFACE IOleInPlaceObjectWindowless
-        DECLARE_INTERFACE_(IOleInPlaceObjectWindowless,IOleInPlaceObject)
-        {
-           STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
-           STDMETHOD_(ULONG,AddRef)(THIS) PURE;
-           STDMETHOD_(ULONG,Release)(THIS) PURE;
-           STDMETHOD(GetWindow)(THIS_ HWND*) PURE;
-           STDMETHOD(ContextSensitiveHelp)(THIS_ BOOL) PURE;
-           STDMETHOD(InPlaceDeactivate)(THIS) PURE;
-           STDMETHOD(UIDeactivate)(THIS) PURE;
-           STDMETHOD(SetObjectRects)(THIS_ LPCRECT,LPCRECT) PURE;
-           STDMETHOD(ReactivateAndUndo)(THIS) PURE;
-           STDMETHOD(OnWindowMessage)(THIS_ UINT, WPARAM, LPARAM, LRESULT*) PURE;
-           STDMETHOD(GetDropTarget)(THIS_ IDropTarget**) PURE;
-        };
-#   endif
+#if defined(Q_CC_GNU) && !defined(__MINGW64_VERSION_MAJOR)
+    DECLARE_INTERFACE_(IOleInPlaceObjectWindowless,IOleInPlaceObject)
+    {
+       STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
+       STDMETHOD_(ULONG,AddRef)(THIS) PURE;
+       STDMETHOD_(ULONG,Release)(THIS) PURE;
+       STDMETHOD(GetWindow)(THIS_ HWND*) PURE;
+       STDMETHOD(ContextSensitiveHelp)(THIS_ BOOL) PURE;
+       STDMETHOD(InPlaceDeactivate)(THIS) PURE;
+       STDMETHOD(UIDeactivate)(THIS) PURE;
+       STDMETHOD(SetObjectRects)(THIS_ LPCRECT,LPCRECT) PURE;
+       STDMETHOD(ReactivateAndUndo)(THIS) PURE;
+       STDMETHOD(OnWindowMessage)(THIS_ UINT, WPARAM, LPARAM, LRESULT*) PURE;
+       STDMETHOD(GetDropTarget)(THIS_ IDropTarget**) PURE;
+    };
 #endif
 
 #include "../shared/qaxtypes.h"

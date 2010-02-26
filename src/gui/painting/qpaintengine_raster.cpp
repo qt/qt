@@ -3213,6 +3213,9 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
     return isUnclipped(rect, penWidth) ? data->unclipped_blend : data->blend;
 }
 
+/*!
+   \reimp
+*/
 void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
     ensurePen();

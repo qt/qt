@@ -1070,6 +1070,12 @@ void Configure::parseCmdLine()
             dictionary[ "QT_INSTALL_PLUGINS" ] = configCmdLine.at(i);
         }
 
+        else if( configCmdLine.at(i) == "-importdir" ) {
+            ++i;
+            if(i==argCount)
+                break;
+            dictionary[ "QT_INSTALL_IMPORTS" ] = configCmdLine.at(i);
+        }
         else if( configCmdLine.at(i) == "-datadir" ) {
             ++i;
             if(i==argCount)
@@ -1487,6 +1493,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_HOST_PREFIX" ]      = dictionary[ "QT_INSTALL_PREFIX" ];
         dictionary[ "QT_INSTALL_PREFIX" ]   = "";
         dictionary[ "QT_INSTALL_PLUGINS" ]  = "\\resource\\qt\\plugins";
+        dictionary[ "QT_INSTALL_IMPORTS" ]  = "\\resource\\qt\\imports";
         dictionary[ "ARM_FPU_TYPE" ]        = "softvfp";
         dictionary[ "SQL_SQLITE" ]          = "yes";
         dictionary[ "SQL_SQLITE_LIB" ]      = "system";
@@ -1563,7 +1570,7 @@ bool Configure::displayHelp()
         desc("Usage: configure [-buildkey <key>]\n"
 //      desc("Usage: configure [-prefix dir] [-bindir <dir>] [-libdir <dir>]\n"
 //                  "[-docdir <dir>] [-headerdir <dir>] [-plugindir <dir>]\n"
-//                  "[-datadir <dir>] [-translationdir <dir>]\n"
+//                  "[-importdir <dir>] [-datadir <dir>] [-translationdir <dir>]\n"
 //                  "[-examplesdir <dir>] [-demosdir <dir>][-buildkey <key>]\n"
                     "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
                     "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
@@ -1603,6 +1610,7 @@ bool Configure::displayHelp()
         desc(                   "-docdir <dir>",        "Documentation will be installed to dir\n(default PREFIX/doc)");
         desc(                   "-headerdir <dir>",     "Headers will be installed to dir\n(default PREFIX/include)");
         desc(                   "-plugindir <dir>",     "Plugins will be installed to dir\n(default PREFIX/plugins)");
+        desc(                   "-importdir <dir>",     "Imports for QML will be installed to dir\n(default PREFIX/imports)");
         desc(                   "-datadir <dir>",       "Data used by Qt programs will be installed to dir\n(default PREFIX)");
         desc(                   "-translationdir <dir>","Translations of Qt programs will be installed to dir\n(default PREFIX/translations)\n");
         desc(                   "-examplesdir <dir>",   "Examples will be installed to dir\n(default PREFIX/examples)");
@@ -2074,7 +2082,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     } else if (part == "DECLARATIVE") {
-        available = QFile::exists(sourcePath + "/src/declarative/qml/qmlcomponent.h");
+        available = QFile::exists(sourcePath + "/src/declarative/qml/qdeclarativecomponent.h");
     } else if (part == "AUDIO_BACKEND") {
         available = true;
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
@@ -2657,6 +2665,8 @@ void Configure::generateOutputVars()
         dictionary[ "QT_INSTALL_BINS" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] + "/bin" );
     if( !dictionary[ "QT_INSTALL_PLUGINS" ].size() )
         dictionary[ "QT_INSTALL_PLUGINS" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] + "/plugins" );
+    if( !dictionary[ "QT_INSTALL_IMPORTS" ].size() )
+        dictionary[ "QT_INSTALL_IMPORTS" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] + "/imports" );
     if( !dictionary[ "QT_INSTALL_DATA" ].size() )
         dictionary[ "QT_INSTALL_DATA" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] );
     if( !dictionary[ "QT_INSTALL_TRANSLATIONS" ].size() )
@@ -3161,6 +3171,7 @@ void Configure::generateConfigfiles()
                   << "static const char qt_configure_libraries_path_str    [512 + 12] = \"qt_libspath=" << QString(dictionary["QT_INSTALL_LIBS"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_binaries_path_str     [512 + 12] = \"qt_binspath=" << QString(dictionary["QT_INSTALL_BINS"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_plugins_path_str      [512 + 12] = \"qt_plugpath=" << QString(dictionary["QT_INSTALL_PLUGINS"]).replace( "\\", "\\\\" ) << "\";"  << endl
+                  << "static const char qt_configure_imports_path_str      [512 + 12] = \"qt_impspath=" << QString(dictionary["QT_INSTALL_IMPORTS"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << QString(dictionary["QT_INSTALL_DATA"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << QString(dictionary["QT_INSTALL_TRANSLATIONS"]).replace( "\\", "\\\\" ) << "\";" << endl
                   << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << QString(dictionary["QT_INSTALL_EXAMPLES"]).replace( "\\", "\\\\" ) << "\";"  << endl
@@ -3175,6 +3186,7 @@ void Configure::generateConfigfiles()
                        << "static const char qt_configure_libraries_path_str    [512 + 12] = \"qt_libspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/lib").replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_binaries_path_str     [512 + 12] = \"qt_binspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/bin").replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_plugins_path_str      [512 + 12] = \"qt_plugpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/plugins").replace( "\\", "\\\\" ) <<"\";"  << endl
+                       << "static const char qt_configure_imports_path_str      [512 + 12] = \"qt_impspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/imports").replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ]).replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/translations").replace( "\\", "\\\\" ) <<"\";" << endl
                        << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/example").replace( "\\", "\\\\" ) <<"\";"  << endl
@@ -3190,6 +3202,7 @@ void Configure::generateConfigfiles()
                   << "#define QT_CONFIGURE_LIBRARIES_PATH qt_configure_libraries_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_BINARIES_PATH qt_configure_binaries_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_PLUGINS_PATH qt_configure_plugins_path_str + 12;" << endl
+                  << "#define QT_CONFIGURE_IMPORTS_PATH qt_configure_imports_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;" << endl
@@ -3336,6 +3349,7 @@ void Configure::displayConfig()
     cout << "Headers installed to........" << dictionary[ "QT_INSTALL_HEADERS" ] << endl;
     cout << "Libraries installed to......" << dictionary[ "QT_INSTALL_LIBS" ] << endl;
     cout << "Plugins installed to........" << dictionary[ "QT_INSTALL_PLUGINS" ] << endl;
+    cout << "Imports installed to........" << dictionary[ "QT_INSTALL_IMPORTS" ] << endl;
     cout << "Binaries installed to......." << dictionary[ "QT_INSTALL_BINS" ] << endl;
     cout << "Docs installed to..........." << dictionary[ "QT_INSTALL_DOCS" ] << endl;
     cout << "Data installed to..........." << dictionary[ "QT_INSTALL_DATA" ] << endl;

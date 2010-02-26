@@ -66,7 +66,7 @@ QT_MODULE(Multimedia)
     \class QMediaPlayer
     \brief The QMediaPlayer class allows the playing of a media source.
     \ingroup multimedia
-
+    \since 4.7
     \preliminary
 
     The QMediaPlayer class is a high level media playback class. It can be used

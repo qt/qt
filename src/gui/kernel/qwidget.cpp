@@ -1468,6 +1468,15 @@ QWidget::~QWidget()
         d->declarativeData = 0;                 // don't activate again in ~QObject
     }
 
+#ifdef QT_MAC_USE_COCOA
+    // QCocoaView holds a pointer back to this widget. Clear it now
+    // to make sure it's not followed later on. The lifetime of the
+    // QCocoaView might exceed the lifetime of this widget in cases
+    // where Cocoa itself holds references to it.
+    extern void qt_mac_clearCocoaViewQWidgetPointers(QWidget *);
+    qt_mac_clearCocoaViewQWidgetPointers(this);
+#endif
+
     if (!d->children.isEmpty())
         d->deleteChildren();
 

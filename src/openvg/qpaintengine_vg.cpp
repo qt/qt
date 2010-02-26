@@ -93,7 +93,7 @@ public:
     VGFont font;
     VGfloat scaleX;
     VGfloat scaleY;
-    
+
     uint cachedGlyphsMask[256 / 32];
     QSet<glyph_t> cachedGlyphs;
 };
@@ -3035,9 +3035,8 @@ void QVGPaintEngine::drawTiledPixmap
 // (i.e. no opacity), no rotation or scaling, and drawing the full
 // pixmap rather than parts of the pixmap.  Even having just one of
 // these conditions will improve performance.
-void QVGPaintEngine::drawPixmaps
-    (const QDrawPixmaps::Data *drawingData, int dataCount,
-     const QPixmap &pixmap, QFlags<QDrawPixmaps::DrawingHint> hints)
+void QVGPaintEngine::drawPixmapFragments(const QPainter::Fragment *drawingData, int dataCount,
+                                         const QPixmap &pixmap, QFlags<QPainter::FragmentHint> hints)
 {
 #if !defined(QT_SHIVAVG)
     Q_D(QVGPaintEngine);
@@ -3048,7 +3047,7 @@ void QVGPaintEngine::drawPixmaps
     if (!pd)
         return; // null QPixmap
     if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
-        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+        QPaintEngineEx::drawPixmapFragments(drawingData, dataCount, pixmap, hints);
         return;
     }
 
@@ -3072,7 +3071,7 @@ void QVGPaintEngine::drawPixmaps
     QVarLengthArray<QRect> cachedSources;
 
     // Select the opacity paint object.
-    if ((hints & QDrawPixmaps::OpaqueHint) != 0 && d->opacity == 1.0f) {
+    if ((hints & QPainter::OpaqueHint) != 0 && d->opacity == 1.0f) {
         d->setImageMode(VG_DRAW_IMAGE_NORMAL);
     }  else {
         hints = 0;
@@ -3084,12 +3083,13 @@ void QVGPaintEngine::drawPixmaps
 
     for (int i = 0; i < dataCount; ++i) {
         QTransform transform(d->imageTransform);
-        transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
+        transform.translate(drawingData[i].x, drawingData[i].y);
         transform.rotate(drawingData[i].rotation);
 
         VGImage child;
         QSize imageSize = vgpd->size();
-        QRectF sr = drawingData[i].source;
+        QRectF sr(drawingData[i].sourceLeft, drawingData[i].sourceTop,
+                  drawingData[i].width, drawingData[i].height);
         if (sr.topLeft().isNull() && sr.size() == imageSize) {
             child = vgImg;
         } else {
@@ -3118,7 +3118,7 @@ void QVGPaintEngine::drawPixmaps
         transform.scale(scaleX, scaleY);
         d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
-        if ((hints & QDrawPixmaps::OpaqueHint) == 0) {
+        if ((hints & QPainter::OpaqueHint) == 0) {
             qreal opacity = d->opacity * drawingData[i].opacity;
             if (opacity != 1.0f) {
                 if (d->paintOpacity != opacity) {
@@ -3144,7 +3144,7 @@ void QVGPaintEngine::drawPixmaps
     for (int i = 0; i < cachedImages.size(); ++i)
         vgDestroyImage(cachedImages[i]);
 #else
-    QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+    QPaintEngineEx::drawPixmapFragments(drawingData, dataCount, pixmap, hints);
 #endif
 }
 
@@ -3274,7 +3274,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         QPaintEngineEx::drawTextItem(p, textItem);
         return;
     }
- 
+
     // Get the glyphs and positions associated with the text item.
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -3284,7 +3284,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         (ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
-        QPaintEngineEx::drawTextItem(p, textItem);    
+        QPaintEngineEx::drawTextItem(p, textItem);
 #else
     // OpenGL 1.0 does not have support for VGFont and glyphs,
     // so fall back to the default Qt path stroking algorithm.
@@ -3312,7 +3312,7 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
         glyphCache = new QVGFontGlyphCache();
         if (glyphCache->font == VG_INVALID_HANDLE) {
             qWarning("QVGPaintEngine::drawTextItem: OpenVG fonts are not supported by the OpenVG engine");
-            delete glyphCache;            
+            delete glyphCache;
             return false;
         }
         glyphCache->setScaleFromText(font, fontEngine);

@@ -43,25 +43,25 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DEFINE_PERFORMANCE_LOG(QmlPerf, "QmlGraphics") {
-    Q_DEFINE_PERFORMANCE_METRIC(QmlParsing, "Compilation: QML Parsing")
+Q_DEFINE_PERFORMANCE_LOG(QDeclarativePerf, "QDeclarativeGraphics") {
+    Q_DEFINE_PERFORMANCE_METRIC(QDeclarativeParsing, "Compilation: QML Parsing")
     Q_DEFINE_PERFORMANCE_METRIC(Compilation, "             QML Compilation")
     Q_DEFINE_PERFORMANCE_METRIC(VMEExecution, "Execution:   QML VME Execution")
     Q_DEFINE_PERFORMANCE_METRIC(BindInit, "BindValue Initialization")
     Q_DEFINE_PERFORMANCE_METRIC(BindValue, "BindValue execution")
     Q_DEFINE_PERFORMANCE_METRIC(BindValueSSE, "BindValue execution SSE")
     Q_DEFINE_PERFORMANCE_METRIC(BindValueQt, "BindValue execution QtScript")
-    Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QmlBinding::update")
+    Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QDeclarativeBinding::update")
     Q_DEFINE_PERFORMANCE_METRIC(PixmapLoad, "Pixmap loading")
     Q_DEFINE_PERFORMANCE_METRIC(FontDatabase, "Font database creation")
-    Q_DEFINE_PERFORMANCE_METRIC(QmlGraphicsPathViewPathCache, "FX Items:    QmlGraphicsPathView: Path cache")
-    Q_DEFINE_PERFORMANCE_METRIC(CreateParticle, "             QmlGraphicsParticles: Particle creation")
-    Q_DEFINE_PERFORMANCE_METRIC(ItemComponentComplete, "             QmlGraphicsItem::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(ImageComponentComplete, "             QmlGraphicsImage::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "             QmlGraphicsBasePositioner::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "             QmlGraphicsText::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(QmlGraphicsText_setText, "             QmlGraphicsText::setText")
-    Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QmlScript::addScriptToEngine")
+    Q_DEFINE_PERFORMANCE_METRIC(QDeclarativePathViewPathCache, "FX Items:    QDeclarativePathView: Path cache")
+    Q_DEFINE_PERFORMANCE_METRIC(CreateParticle, "             QDeclarativeParticles: Particle creation")
+    Q_DEFINE_PERFORMANCE_METRIC(ItemComponentComplete, "             QDeclarativeItem::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(ImageComponentComplete, "             QDeclarativeImage::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "             QDeclarativeBasePositioner::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "             QDeclarativeText::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(QDeclarativeText_setText, "             QDeclarativeText::setText")
+    Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QDeclarativeScript::addScriptToEngine")
 }
 
 QT_END_NAMESPACE

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlexamples.html
+\page qdeclarativeexamples.html
 \title QML Examples and Walkthroughs
 
 \section1 Running Examples and Demos
@@ -77,7 +77,7 @@ These will be documented, and demonstrate how to achieve various things in QML.
     \o Elastic Dial
     \o \image dial-example.gif
 \row
-    \o \l{qmlexampletoggleswitch.html}{Toggle Switch}
+    \o \l{qdeclarativeexampletoggleswitch.html}{Toggle Switch}
     \o \image switch-example.gif
 \row
     \o \l{QML Advanced Tutorial}{SameGame}

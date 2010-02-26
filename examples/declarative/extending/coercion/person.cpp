@@ -65,22 +65,16 @@ void Person::setShoeSize(int s)
     m_shoeSize = s;
 }
 
-// ![0]
-QML_DEFINE_NOCREATE_TYPE(Person);
-// ![0]
-
 // ![1]
 Boy::Boy(QObject * parent)
 : Person(parent)
 {
 }
 
-QML_DEFINE_TYPE(People, 1,0, Boy, Boy);
 
 Girl::Girl(QObject * parent)
 : Person(parent)
 {
 }
 
-QML_DEFINE_TYPE(People, 1,0, Girl, Girl);
 // ![1]

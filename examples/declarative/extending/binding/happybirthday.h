@@ -41,20 +41,20 @@
 #ifndef HAPPYBIRTHDAY_H
 #define HAPPYBIRTHDAY_H
 
-#include <QmlPropertyValueSource>
-#include <QmlMetaProperty>
-#include <qml.h>
+#include <QDeclarativePropertyValueSource>
+#include <QDeclarativeMetaProperty>
+#include <qdeclarative.h>
 
 #include <QStringList>
 
-class HappyBirthday : public QObject, public QmlPropertyValueSource
+class HappyBirthday : public QObject, public QDeclarativePropertyValueSource
 {
 Q_OBJECT
 Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
 public:
     HappyBirthday(QObject *parent = 0);
 
-    virtual void setTarget(const QmlMetaProperty &);
+    virtual void setTarget(const QDeclarativeMetaProperty &);
 
     QString name() const;
     void setName(const QString &);
@@ -67,7 +67,7 @@ signals:
 private:
     int m_line;
     QStringList m_lyrics;
-    QmlMetaProperty m_target;
+    QDeclarativeMetaProperty m_target;
     QString m_name;
 };
 QML_DECLARE_TYPE(HappyBirthday);

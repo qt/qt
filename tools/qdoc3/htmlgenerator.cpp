@@ -73,7 +73,6 @@ QString HtmlGenerator::sinceTitles[] =
         "    New Typedefs",
         "    New Properties",
         "    New Variables",
-        "    New QML Elements",
         "    New Qml Properties",
         "    New Qml Signals",
         "    New Qml Methods",
@@ -688,8 +687,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             nsmap = newSinceMaps.find(atom->string());
             NewClassMaps::const_iterator ncmap;
             ncmap = newClassMaps.find(atom->string());
-            NewClassMaps::const_iterator nqcmap;
-            nqcmap = newQmlClassMaps.find(atom->string());
             if ((nsmap != newSinceMaps.constEnd()) && !nsmap.value().isEmpty()) {
                 QList<Section> sections;
                 QList<Section>::ConstIterator s;
@@ -700,10 +697,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 while (n != nsmap.value().constEnd()) {
                     const Node* node = n.value();
                     switch (node->type()) {
-                      case Node::Fake:
-                          if (node->subType() == Node::QmlClass)
-                              sections[QmlClass].appendMember((Node*)node);
-                          break;
                       case Node::Namespace:
                           sections[Namespace].appendMember((Node*)node);
                           break;
@@ -789,8 +782,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                         out() << "<h3>" << protectEnc((*s).name) << "</h3>\n";
                         if (idx == Class)
                             generateCompactList(0, marker, ncmap.value(), QString("Q"));
-                        else if (idx == QmlClass)
-                            generateCompactList(0, marker, nqcmap.value(), QString("Q"));
                         else if (idx == MemberFunction) {
                             ParentMaps parentmaps;
                             ParentMaps::iterator pmap;
@@ -2341,11 +2332,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     out() << "<a href=\""
                         << linkForNode(it.value(), relative)
                         << "\">";
-                    QStringList pieces;
-                    if (it.value()->subType() == Node::QmlClass)
-                        pieces << it.value()->name();
-                    else
-                        pieces = fullName(it.value(), relative, marker).split("::");
+                    QStringList pieces = fullName(it.value(), relative, marker).split("::");
                     out() << protectEnc(pieces.last());
                     out() << "</a>";
                     if (pieces.size() > 1) {
@@ -3736,9 +3723,6 @@ void HtmlGenerator::findAllSince(const InnerNode *node)
             NewClassMaps::iterator ncmap = newClassMaps.find(sinceVersion);
             if (ncmap == newClassMaps.end())
                 ncmap = newClassMaps.insert(sinceVersion,NodeMap());
-            NewClassMaps::iterator nqcmap = newQmlClassMaps.find(sinceVersion);
-            if (nqcmap == newQmlClassMaps.end())
-                nqcmap = newQmlClassMaps.insert(sinceVersion,NodeMap());
  
             if ((*child)->type() == Node::Function) {
                 FunctionNode *func = static_cast<FunctionNode *>(*child);
@@ -3757,15 +3741,6 @@ void HtmlGenerator::findAllSince(const InnerNode *node)
                         className = (*child)->parent()->name()+"::"+className;
                     nsmap.value().insert(className,(*child));
                     ncmap.value().insert(className,(*child));
-                }
-                else if ((*child)->subType() == Node::QmlClass) {
-                    QString className = (*child)->name();
-                    if ((*child)->parent() &&
-                        (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty())
-                        className = (*child)->parent()->name()+"::"+className;
-                    nsmap.value().insert(className,(*child));
-                    nqcmap.value().insert(className,(*child));
                 }
             }
             else {
@@ -4341,15 +4316,40 @@ void HtmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
                                            CodeMarker* marker)
 {
     if (cn) {
-        NodeList subs;
+        QStringList subs;
         QmlClassNode::subclasses(cn->name(),subs);
         if (!subs.isEmpty()) {
+            subs.sort();
             Text text;
             text << Atom::ParaLeft << "Inherited by ";
-            appendSortedNames(text,cn,subs,marker);
+            for (int i = 0; i < subs.size(); ++i) {
+                text << subs.at(i);
+                text << separator(i, subs.size());
+            }
             text << Atom::ParaRight;
             generateText(text, cn, marker);
         }
+#if 0        
+        if (cn->links().contains(Node::InheritsLink)) {
+            QPair<QString,QString> linkPair;
+            linkPair = cn->links()[Node::InheritsLink];
+            QStringList strList(linkPair.first);
+            const Node* n = myTree->findNode(strList,Node::Fake);
+            if (n && n->subType() == Node::QmlClass) {
+                const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
+                out() << "<p style=\"text-align: center\">";
+                Text text;
+                text << "[Inherits ";
+                text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
+                text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
+                text << Atom(Atom::String, linkPair.second);
+                text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+                text << "]";
+                generateText(text, cn, marker);
+                out() << "</p>";
+            }
+        }
+#endif        
     }
 }
 

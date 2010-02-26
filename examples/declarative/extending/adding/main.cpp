@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 #include <QCoreApplication>
-#include <QmlEngine>
-#include <QmlComponent>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
 #include <QDebug>
 #include "person.h"
 
@@ -48,8 +48,10 @@ int main(int argc, char ** argv)
 {
     QCoreApplication app(argc, argv);
 
-    QmlEngine engine;
-    QmlComponent component(&engine, ":example.qml");
+    QML_REGISTER_TYPE(People, 1,0, Person, Person);
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, ":example.qml");
     Person *person = qobject_cast<Person *>(component.create());
     if (person) {
         qWarning() << "The person's name is" << person->name();
