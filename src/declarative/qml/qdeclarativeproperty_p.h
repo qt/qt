@@ -97,6 +97,7 @@ public:
 
     QMetaMethod findSignal(QObject *, const QString &);
 
+    bool isValueType() const;
     int propertyType() const;
     QDeclarativeProperty::PropertyTypeCategory propertyTypeCategory() const;
 

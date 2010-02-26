@@ -63,10 +63,30 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QDeclarativeProperty
-    \brief The QDeclarativeProperty class abstracts accessing QML properties.
-    \internal
- */
+\class QDeclarativeProperty
+\brief The QDeclarativeProperty class abstracts accessing properties on objects created from  QML.
+
+As QML uses Qt's meta-type system all of the existing QMetaObject classes can be used to introspect
+and interact with objects created by QML.  However, some of the new features provided by QML - such 
+as type safety and attached properties - are most easily used through the QDeclarativeProperty class 
+that simplifies some of their natural complexity.
+
+Unlike QMetaProperty which represents a property on a class type, QDeclarativeProperty encapsulates 
+a property on a specific object instance.  To read a property's value, programmers create a 
+QDeclarativeProperty instance and call the read() method.  Likewise to write a property value the
+write() method is used.
+
+\code
+
+QObject *object = declarativeComponent.create();
+
+QDeclarativeProperty property(object, "font.pixelSize");
+qWarning() << "Current pixel size:" << property.read().toInt();
+property.write(24);
+qWarning() << "Pixel size should now be 24:" << property.read().toInt();
+
+\endcode
+*/
 
 /*!
     Create an invalid QDeclarativeProperty.
@@ -298,7 +318,7 @@ QDeclarativePropertyPrivate::propertyTypeCategory() const
 {
     uint type = q->type();
 
-    if (type & QDeclarativeProperty::ValueTypeProperty) {
+    if (isValueType()) {
         return QDeclarativeProperty::Normal;
     } else if (type & QDeclarativeProperty::Property) {
         int type = propertyType();
@@ -323,7 +343,7 @@ QDeclarativePropertyPrivate::propertyTypeCategory() const
 */
 const char *QDeclarativeProperty::propertyTypeName() const
 {
-    if (type() & ValueTypeProperty) {
+    if (d->isValueType()) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(d->context);
         QDeclarativeValueType *valueType = 0;
@@ -365,10 +385,15 @@ int QDeclarativeProperty::propertyType() const
     return d->propertyType();
 }
 
+bool QDeclarativePropertyPrivate::isValueType() const
+{
+    return valueType.valueTypeCoreIdx != -1;
+}
+
 int QDeclarativePropertyPrivate::propertyType() const
 {
     uint type = q->type();
-    if (type & QDeclarativeProperty::ValueTypeProperty) {
+    if (isValueType()) {
         return valueType.valueTypePropType;
     } else if (type & QDeclarativeProperty::Property) {
         if (core.propType == (int)QVariant::LastType)
@@ -387,8 +412,6 @@ QDeclarativeProperty::Type QDeclarativeProperty::type() const
 {
     if (d->core.flags & QDeclarativePropertyCache::Data::IsFunction)
         return SignalProperty;
-    else if (d->valueType.valueTypeCoreIdx != -1)
-        return (Type)(Property | ValueTypeProperty);
     else if (d->core.isValid())
         return (Type)(Property | ((d->isDefaultProperty)?Default:0));
     else
@@ -495,7 +518,7 @@ QString QDeclarativeProperty::name() const
     if (!d->isNameCached) {
         // ###
         if (!d->object) {
-        } else if (type() & ValueTypeProperty) {
+        } else if (d->isValueType()) {
             QString rv = d->core.name(d->object) + QLatin1Char('.');
 
             QDeclarativeEnginePrivate *ep = d->context?QDeclarativeEnginePrivate::get(d->context->engine()):0;
@@ -709,8 +732,7 @@ QVariant QDeclarativeProperty::read() const
 
 QVariant QDeclarativePropertyPrivate::readValueProperty()
 {
-    uint type = q->type();
-    if(type & QDeclarativeProperty::ValueTypeProperty) {
+    if(isValueType()) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
         QDeclarativeValueType *valueType = 0;
@@ -789,8 +811,7 @@ bool QDeclarativePropertyPrivate::writeValueProperty(const QVariant &value, Writ
     }
 
     bool rv = false;
-    uint type = q->type();
-    if (type & QDeclarativeProperty::ValueTypeProperty) {
+    if (isValueType()) {
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
 
         QDeclarativeValueType *writeBack = 0;
@@ -1097,7 +1118,7 @@ int QDeclarativePropertyPrivate::valueTypeCoreIndex(const QDeclarativeProperty &
 }
 
 struct SerializedData {
-    QDeclarativeProperty::Type type;
+    bool isValueType;
     QDeclarativePropertyCache::Data core;
 };
 
@@ -1112,7 +1133,7 @@ QByteArray QDeclarativePropertyPrivate::saveValueType(const QMetaObject *metaObj
     QMetaProperty subProp = subObject->property(subIndex);
 
     ValueTypeSerializedData sd;
-    sd.type = QDeclarativeProperty::ValueTypeProperty;
+    sd.isValueType = true;
     sd.core.load(metaObject->property(index));
     sd.valueType.flags = QDeclarativePropertyCache::Data::flagsForProperty(subProp);
     sd.valueType.valueTypeCoreIdx = subIndex;
@@ -1126,7 +1147,7 @@ QByteArray QDeclarativePropertyPrivate::saveValueType(const QMetaObject *metaObj
 QByteArray QDeclarativePropertyPrivate::saveProperty(const QMetaObject *metaObject, int index)
 {
     SerializedData sd;
-    sd.type = QDeclarativeProperty::Property;
+    sd.isValueType = false;
     sd.core.load(metaObject->property(index));
 
     QByteArray rv((const char *)&sd, sizeof(sd));
@@ -1145,12 +1166,12 @@ QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QD
     prop.d->context = ctxt;
 
     const SerializedData *sd = (const SerializedData *)data.constData();
-    if (sd->type == QDeclarativeProperty::Property) {
-        prop.d->core = sd->core;
-    } else if(sd->type == QDeclarativeProperty::ValueTypeProperty) {
+    if (sd->isValueType) {
         const ValueTypeSerializedData *vt = (const ValueTypeSerializedData *)sd;
         prop.d->core = vt->core;
         prop.d->valueType = vt->valueType;
+    } else {
+        prop.d->core = sd->core;
     }
 
     return prop;

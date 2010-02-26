@@ -73,8 +73,7 @@ public:
     enum Type { Invalid = 0x00, 
                 Property = 0x01, 
                 SignalProperty = 0x02,
-                Default = 0x08,
-                ValueTypeProperty = 0x10 
+                Default = 0x08
     };
 
     QDeclarativeProperty();
