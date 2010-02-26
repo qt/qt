@@ -69,6 +69,7 @@ void QmlGraphicsVideo::_q_error(int errorCode, const QString &errorString)
 
 /*!
     \qmlclass Video QmlGraphicsVideo
+    \since 4.7
     \brief The Video element allows you to add videos to a scene.
     \inherits Item
 

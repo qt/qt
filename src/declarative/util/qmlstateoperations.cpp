@@ -147,6 +147,7 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
 /*!
     \preliminary
     \qmlclass ParentChange QmlParentChange
+    \since 4.7
     \brief The ParentChange element allows you to reparent an Item in a state change.
 
     ParentChange reparents an Item while preserving its visual appearance (position, rotation,
@@ -316,6 +317,7 @@ public:
 
 /*!
     \qmlclass StateChangeScript QmlStateChangeScript
+    \since 4.7
     \brief The StateChangeScript element allows you to run a script in a state.
 
     The script specified will be run immediately when the state is made current.
@@ -394,6 +396,7 @@ QString QmlStateChangeScript::typeName() const
 
 /*!
     \qmlclass AnchorChanges QmlAnchorChanges
+    \since 4.7
     \brief The AnchorChanges element allows you to change the anchors of an item in a state.
 
     In the following example we change the top and bottom anchors of an item:

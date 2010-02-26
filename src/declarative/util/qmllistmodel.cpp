@@ -78,6 +78,7 @@ static void dump(ModelNode *node, int ind);
 
 /*!
     \qmlclass ListModel QmlListModel
+    \since 4.7
     \brief The ListModel element defines a free-form list data source.
 
     The ListModel is a simple hierarchy of elements containing data roles. The contents can
@@ -957,6 +958,7 @@ QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, ListModel, QmlListModel, QmlListModelParser)
 
 /*!
     \qmlclass ListElement
+    \since 4.7
     \brief The ListElement element defines a data item in a ListModel.
 
     \sa ListModel

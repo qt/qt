@@ -213,6 +213,7 @@ void QmlSpringFollowPrivate::stop()
 
 /*!
     \qmlclass SpringFollow QmlSpringFollow
+    \since 4.7
     \brief The SpringFollow element allows a property to track a value.
 
     In example below, \e rect2 will follow \e rect1 moving with a velocity of up to 200:

@@ -336,6 +336,7 @@ void QmlGraphicsFlickablePrivate::updateBeginningEnd()
 
 /*!
     \qmlclass Flickable QmlGraphicsFlickable
+    \since 4.7
     \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 

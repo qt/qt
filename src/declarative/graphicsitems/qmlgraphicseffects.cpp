@@ -45,6 +45,7 @@
 
 /*!
     \qmlclass Blur QGraphicsBlurEffect
+    \since 4.7
     \brief The Blur object provides a blur effect.
 
     A blur effect blurs the source item. This effect is useful for reducing details;
@@ -80,6 +81,7 @@
 
 /*!
     \qmlclass Colorize QGraphicsColorizeEffect
+    \since 4.7
     \brief The Colorize object provides a colorize effect.
 
     A colorize effect renders the source item with a tint of its color.
@@ -106,6 +108,7 @@
 
 /*!
     \qmlclass DropShadow QGraphicsDropShadowEffect
+    \since 4.7
     \brief The DropShadow object provides a drop shadow effect.
 
     A drop shadow effect renders the source item with a drop shadow. The color of
@@ -147,6 +150,7 @@
 
 /*!
     \qmlclass Opacity QGraphicsOpacityEffect
+    \since 4.7
     \brief The Opacity object provides an opacity effect.
 
     An opacity effect renders the source with an opacity. This effect is useful

@@ -114,6 +114,7 @@ Item {
 
 /*!
     \qmlclass MouseEvent QmlGraphicsMouseEvent
+    \since 4.7
     \brief The MouseEvent object provides information about a mouse event.
 
     The position of the mouse can be found via the x and y properties.

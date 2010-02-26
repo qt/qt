@@ -69,6 +69,7 @@ public:
 
 /*!
     \qmlclass Behavior QmlBehavior
+    \since 4.7
     \brief The Behavior element allows you to specify a default animation for a property change.
 
     Behaviors provide one way to specify \l{qmlanimation.html}{animations} in QML.

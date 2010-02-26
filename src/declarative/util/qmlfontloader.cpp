@@ -74,6 +74,7 @@ QML_DEFINE_TYPE(Qt,4,6,FontLoader,QmlFontLoader)
 
 /*!
     \qmlclass FontLoader QmlFontLoader
+    \since 4.7
     \ingroup group_utility
     \brief This item allows using fonts by name or url.
 

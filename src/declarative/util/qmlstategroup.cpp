@@ -84,6 +84,7 @@ public:
 
 /*!
    \qmlclass StateGroup QmlStateGroup
+   \since 4.7
    \brief The StateGroup element provides state support for non-Item elements.
 
    Item (and all dervied elements) provides built in support for states and transitions

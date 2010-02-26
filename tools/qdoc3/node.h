@@ -379,7 +379,7 @@ class QmlClassNode : public FakeNode
     QmlClassNode(InnerNode *parent, 
                  const QString& name, 
                  const ClassNode* cn);
-    virtual ~QmlClassNode() { }
+    virtual ~QmlClassNode();
 
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;

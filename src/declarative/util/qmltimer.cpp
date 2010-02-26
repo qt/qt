@@ -70,6 +70,7 @@ public:
 
 /*!
     \qmlclass Timer QmlTimer
+    \since 4.7
     \brief The Timer item triggers a handler at a specified interval.
 
     A timer can be used to trigger an action either once, or repeatedly

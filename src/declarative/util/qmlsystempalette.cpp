@@ -58,6 +58,7 @@ QML_DEFINE_TYPE(Qt,4,6,SystemPalette,QmlSystemPalette)
 
 /*!
     \qmlclass SystemPalette QmlSystemPalette
+    \since 4.7
     \ingroup group_utility
     \brief The SystemPalette item gives access to the Qt palettes.
     \sa QPalette
