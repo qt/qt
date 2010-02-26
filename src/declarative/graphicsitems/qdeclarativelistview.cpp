@@ -817,7 +817,7 @@ void QDeclarativeListViewPrivate::createHighlight()
         }
     }
     if (changed)
-        emit q->highlightChanged();
+        emit q->highlightItemChanged();
 }
 
 void QDeclarativeListViewPrivate::updateHighlight()
@@ -1474,6 +1474,8 @@ QVariant QDeclarativeListView::model() const
 void QDeclarativeListView::setModel(const QVariant &model)
 {
     Q_D(QDeclarativeListView);
+    if (d->modelVariant == model)
+        return;
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -1518,6 +1520,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         emit countChanged();
     }
+    emit modelChanged();
 }
 
 /*!
@@ -1564,6 +1567,7 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             d->updateCurrent(d->currentIndex);
         }
     }
+    emit delegateChanged();
 }
 
 /*!
@@ -1664,6 +1668,7 @@ void QDeclarativeListView::setHighlight(QDeclarativeComponent *highlight)
         d->createHighlight();
         if (d->currentItem)
             d->updateHighlight();
+        emit highlightChanged();
     }
 }
 
@@ -1701,6 +1706,7 @@ void QDeclarativeListView::setHighlightFollowsCurrentItem(bool autoHighlight)
             d->highlightSizeAnimator->setEnabled(d->autoHighlight);
         }
         d->updateHighlight();
+        emit highlightFollowsCurrentItemChanged();
     }
 }
 
@@ -1746,8 +1752,11 @@ qreal QDeclarativeListView::preferredHighlightBegin() const
 void QDeclarativeListView::setPreferredHighlightBegin(qreal start)
 {
     Q_D(QDeclarativeListView);
+    if (d->highlightRangeStart == start)
+        return;
     d->highlightRangeStart = start;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit preferredHighlightBeginChanged();
 }
 
 qreal QDeclarativeListView::preferredHighlightEnd() const
@@ -1759,8 +1768,11 @@ qreal QDeclarativeListView::preferredHighlightEnd() const
 void QDeclarativeListView::setPreferredHighlightEnd(qreal end)
 {
     Q_D(QDeclarativeListView);
+    if (d->highlightRangeEnd == end)
+        return;
     d->highlightRangeEnd = end;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit preferredHighlightEndChanged();
 }
 
 QDeclarativeListView::HighlightRangeMode QDeclarativeListView::highlightRangeMode() const
@@ -1772,8 +1784,11 @@ QDeclarativeListView::HighlightRangeMode QDeclarativeListView::highlightRangeMod
 void QDeclarativeListView::setHighlightRangeMode(HighlightRangeMode mode)
 {
     Q_D(QDeclarativeListView);
+    if (d->highlightRange == mode)
+        return;
     d->highlightRange = mode;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
+    emit highlightRangeModeChanged();
 }
 
 /*!
@@ -1849,7 +1864,10 @@ bool QDeclarativeListView::isWrapEnabled() const
 void QDeclarativeListView::setWrapEnabled(bool wrap)
 {
     Q_D(QDeclarativeListView);
+    if (d->wrap == wrap)
+        return;
     d->wrap = wrap;
+    emit keyNavigationWrapsChanged();
 }
 
 /*!
@@ -1875,6 +1893,7 @@ void QDeclarativeListView::setCacheBuffer(int b)
             d->bufferMode = QDeclarativeListViewPrivate::BufferBefore | QDeclarativeListViewPrivate::BufferAfter;
             refill();
         }
+        emit cacheBufferChanged();
     }
 }
 
@@ -1999,6 +2018,7 @@ void QDeclarativeListView::setSnapMode(SnapMode mode)
     Q_D(QDeclarativeListView);
     if (d->snapMode != mode) {
         d->snapMode = mode;
+        emit snapModeChanged();
     }
 }
 
@@ -2021,6 +2041,7 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
         d->maxExtentDirty = true;
         d->updateFooter();
         d->updateViewport();
+        emit footerChanged();
     }
 }
 
@@ -2044,6 +2065,7 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
         d->updateHeader();
         d->updateFooter();
         d->updateViewport();
+        emit headerChanged();
     }
 }
 

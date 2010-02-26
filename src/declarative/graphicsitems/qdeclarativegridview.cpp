@@ -619,7 +619,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
         }
     }
     if (changed)
-        emit q->highlightChanged();
+        emit q->highlightItemChanged();
 }
 
 void QDeclarativeGridViewPrivate::updateHighlight()
@@ -785,6 +785,8 @@ QVariant QDeclarativeGridView::model() const
 void QDeclarativeGridView::setModel(const QVariant &model)
 {
     Q_D(QDeclarativeGridView);
+    if (d->modelVariant == model)
+        return;
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -829,6 +831,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         emit countChanged();
     }
+    emit modelChanged();
 }
 
 /*!
@@ -872,6 +875,7 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
         }
+        emit delegateChanged();
     }
 }
 
@@ -967,6 +971,7 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
     if (highlight != d->highlightComponent) {
         d->highlightComponent = highlight;
         d->updateCurrent(d->currentIndex);
+        emit highlightChanged();
     }
 }
 
@@ -1040,6 +1045,7 @@ void QDeclarativeGridView::setFlow(Flow flow)
         d->updateGrid();
         refill();
         d->updateCurrent(d->currentIndex);
+        emit flowChanged();
     }
 }
 
@@ -1059,7 +1065,10 @@ bool QDeclarativeGridView::isWrapEnabled() const
 void QDeclarativeGridView::setWrapEnabled(bool wrap)
 {
     Q_D(QDeclarativeGridView);
+    if (d->wrap == wrap)
+        return;
     d->wrap = wrap;
+    emit keyNavigationWrapsChanged();
 }
 
 /*!
@@ -1083,6 +1092,7 @@ void QDeclarativeGridView::setCacheBuffer(int buffer)
         d->buffer = buffer;
         if (isComponentComplete())
             refill();
+        emit cacheBufferChanged();
     }
 }
 
