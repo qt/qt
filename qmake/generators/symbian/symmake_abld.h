@@ -57,7 +57,7 @@ protected:
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile);
     virtual void appendAbldTempDirs(QStringList& sysincspaths, QString includepath);
 
-    bool writeDeploymentTargets(QTextStream &t);
+    bool writeDeploymentTargets(QTextStream &t, bool isRom);
 
 public:
 

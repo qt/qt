@@ -1126,6 +1126,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
     if (displayArgs.contains(QLatin1String("boundingrectflip"), Qt::CaseInsensitive)) {
         d_ptr->directFBFlags |= BoundingRectFlip;
+    } else if (displayArgs.contains(QLatin1String("nopartialflip"), Qt::CaseInsensitive)) {
+        d_ptr->directFBFlags |= NoPartialFlip;
     }
 
 #ifdef QT_DIRECTFB_IMAGECACHE
@@ -1138,6 +1140,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("fullscreen")))
 #endif
         d_ptr->dfb->SetCooperativeLevel(d_ptr->dfb, DFSCL_FULLSCREEN);
+
+    const bool forcePremultiplied = displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive);
 
     DFBSurfaceDescription description;
     memset(&description, 0, sizeof(DFBSurfaceDescription));
@@ -1167,7 +1171,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
             description.caps |= capabilities[i].cap;
     }
 
-    if (displayArgs.contains(QLatin1String("forcepremultiplied"), Qt::CaseInsensitive)) {
+    if (forcePremultiplied) {
         description.caps |= DSCAPS_PREMULTIPLIED;
     }
 
@@ -1217,6 +1221,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         d_ptr->alphaPixmapFormat = QImage::Format_ARGB32_Premultiplied;
         break;
     case QImage::Format_ARGB32:
+        if (forcePremultiplied)
+            d_ptr->alphaPixmapFormat = pixelFormat = QImage::Format_ARGB32_Premultiplied;
     case QImage::Format_ARGB32_Premultiplied:
     case QImage::Format_ARGB4444_Premultiplied:
     case QImage::Format_ARGB8555_Premultiplied:
@@ -1674,7 +1680,7 @@ bool QDirectFBScreen::initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *d
 
 uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl)
 {
-    void *mem;
+    void *mem = 0;
     const DFBResult result = surface->Lock(surface, flags, &mem, bpl);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBScreen::lockSurface()", result);
@@ -1683,11 +1689,22 @@ uchar *QDirectFBScreen::lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFla
     return reinterpret_cast<uchar*>(mem);
 }
 
+static inline bool isFullUpdate(IDirectFBSurface *surface, const QRegion &region, const QPoint &offset)
+{
+    if (offset == QPoint(0, 0) && region.rectCount() == 1) {
+	QSize size;
+	surface->GetSize(surface, &size.rwidth(), &size.rheight());
+	if (region.boundingRect().size() == size)
+	    return true;
+    }
+    return false;
+}
 
 void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                                   const QRegion &region, const QPoint &offset)
 {
-    if (!(flipFlags & DSFLIP_BLIT)) {
+    if (d_ptr->directFBFlags & NoPartialFlip
+        || (!(flipFlags & DSFLIP_BLIT) && QT_PREPEND_NAMESPACE(isFullUpdate(surface, region, offset)))) {
         surface->Flip(surface, 0, flipFlags);
     } else {
         if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.rectCount() > 1) {

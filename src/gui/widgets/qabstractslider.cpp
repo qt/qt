@@ -47,9 +47,6 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
-#ifdef QT_KEYPAD_NAVIGATION
-#include "qtabwidget.h" // Needed in inTabWidget()
-#endif // QT_KEYPAD_NAVIGATION
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
@@ -702,7 +699,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
         stepsToScroll = qBound(-pageStep, int(offset * pageStep), pageStep);
         offset_accumulated = 0;
     } else {
-        // Calculate how many lines to scroll. Depending on what delta is (and 
+        // Calculate how many lines to scroll. Depending on what delta is (and
         // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
         // only scroll whole lines, so we keep the reminder until next event.
         qreal stepsToScrollF =
@@ -749,45 +746,7 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
 }
 
 #endif
-#ifdef QT_KEYPAD_NAVIGATION
-/*!
-    \internal
 
-    Tells us if it there is currently a reachable widget by keypad navigation in
-    a certain \a orientation.
-    If no navigation is possible, occuring key events in that \a orientation may
-    be used to interact with the value in the focussed widget, even though it
-    currently has not the editFocus.
-
-    \sa QWidgetPrivate::widgetInNavigationDirection(), QWidget::hasEditFocus()
-*/
-inline static bool canKeypadNavigate(Qt::Orientation orientation)
-{
-    return orientation == Qt::Horizontal?
-            (QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionEast)
-                    || QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionWest))
-            :(QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionNorth)
-                    || QWidgetPrivate::widgetInNavigationDirection(QWidgetPrivate::DirectionSouth));
-}
-/*!
-    \internal
-
-    Checks, if the \a widget is inside a QTabWidget. If is is inside
-    one, left/right key events will be used to switch between tabs in keypad
-    navigation. If there is no QTabWidget, the horizontal key events can be used to
-    interact with the value in the focussed widget, even though it currently has
-    not the editFocus.
-
-    \sa QWidget::hasEditFocus()
-*/
-inline static bool inTabWidget(QWidget *widget)
-{
-    for (QWidget *tabWidget = widget; tabWidget; tabWidget = tabWidget->parentWidget())
-        if (qobject_cast<const QTabWidget*>(tabWidget))
-            return true;
-    return false;
-}
-#endif // QT_KEYPAD_NAVIGATION
 /*!
     \reimp
 */
@@ -853,7 +812,8 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             if (QApplication::keypadNavigationEnabled()
                     && (!hasEditFocus() && QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
                     || d->orientation == Qt::Vertical
-                    || !hasEditFocus() && (canKeypadNavigate(Qt::Horizontal) || inTabWidget(this)))) {
+                    || !hasEditFocus()
+                    && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal) || QWidgetPrivate::inTabWidget(this)))) {
                 ev->ignore();
                 return;
             }
@@ -872,7 +832,8 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             if (QApplication::keypadNavigationEnabled()
                     && (!hasEditFocus() && QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
                     || d->orientation == Qt::Vertical
-                    || !hasEditFocus() && (canKeypadNavigate(Qt::Horizontal) || inTabWidget(this)))) {
+                    || !hasEditFocus()
+                    && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal) || QWidgetPrivate::inTabWidget(this)))) {
                 ev->ignore();
                 return;
             }
@@ -892,7 +853,7 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             if (QApplication::keypadNavigationEnabled()
                     && (QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
                     || d->orientation == Qt::Horizontal
-                    || !hasEditFocus() && canKeypadNavigate(Qt::Vertical))) {
+                    || !hasEditFocus() && QWidgetPrivate::canKeypadNavigate(Qt::Vertical))) {
                 ev->ignore();
                 break;
             }
@@ -905,7 +866,7 @@ void QAbstractSlider::keyPressEvent(QKeyEvent *ev)
             if (QApplication::keypadNavigationEnabled()
                     && (QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
                     || d->orientation == Qt::Horizontal
-                    || !hasEditFocus() && canKeypadNavigate(Qt::Vertical))) {
+                    || !hasEditFocus() && QWidgetPrivate::canKeypadNavigate(Qt::Vertical))) {
                 ev->ignore();
                 break;
             }
