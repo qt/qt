@@ -993,7 +993,7 @@ void QDeclarativeFlickable::setOverShoot(bool o)
     \qmlproperty int Flickable::contentWidth
     \qmlproperty int Flickable::contentHeight
 
-    The dimensions of the viewport (the surface controlled by Flickable). Typically this
+    The dimensions of the content (the surface controlled by Flickable). Typically this
     should be set to the combined size of the items placed in the Flickable.
 
     \code
