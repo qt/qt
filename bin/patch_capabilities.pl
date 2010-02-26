@@ -73,11 +73,16 @@ if (@ARGV)
     if (($pkgFileName =~ m|_template\.pkg$|i) && -r($pkgFileName))
     {
         my $targetplatform;
-        unless ($targetplatform = shift(@ARGV))
+        my $templateFile;
+        my $templateContents;
+        open($templateFile, "< $pkgFileName") or die ("Could not open $pkgFileName");
+        $templateContents = <$templateFile>;
+        close($templateFile);
+        unless (($targetplatform = shift(@ARGV)) || $templateContents !~ /\$\(PLATFORM\)/)
         {
             Usage();
         }
-
+        $targetplatform = "-" if (!$targetplatform);
         my @tmpvalues = split('-', $targetplatform);
         $target = $tmpvalues[0];
         $platform = $tmpvalues[1];
@@ -174,7 +179,7 @@ if (@ARGV)
                 my $destinationPath = $2;
 
                 # If the given file is a binary, check the target and binary type (+ the actual filename) from its path.
-                if ($sourcePath =~ m:/epoc32/release/([^/]+)/(udeb|urel|\$\(TARGET\))/(\w+(\.dll|\.exe)):i)
+                if ($sourcePath =~ m:\w+(\.dll|\.exe)$:i)
                 {
                     # Do preprocessing for template pkg,
                     # In case of template pkg target and platform variables are set
