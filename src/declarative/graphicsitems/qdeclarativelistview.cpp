@@ -1073,7 +1073,7 @@ void QDeclarativeListViewPrivate::fixupY()
             qreal pos = currentItem->position() - highlightRangeStart;
             timeline.reset(_moveY);
             if (fixupDuration)
-                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
             else
                 _moveY.setValue(-pos);
             vTime = timeline.time();
@@ -1085,7 +1085,7 @@ void QDeclarativeListViewPrivate::fixupY()
             if (dist > 0) {
                 timeline.reset(_moveY);
                 if (fixupDuration)
-                    timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
+                    timeline.move(_moveY, -pos, QEasingCurve(QEasingCurve::InOutQuad), fixupDuration/2);
                 else
                     _moveY.setValue(-pos);
                 vTime = timeline.time();
@@ -1155,7 +1155,7 @@ void QDeclarativeListViewPrivate::flickX(qreal velocity)
             if (FxListItem *item = firstVisibleItem())
                 maxDistance = qAbs(item->position() + _moveX.value());
         } else if (_moveX.value() < minX) {
-            maxDistance = qAbs(minX -_moveX.value() + (overShoot?30:0));
+            maxDistance = qAbs(minX -_moveX.value() + (overShoot?overShootDistance(velocity, q->width()):0));
         }
         if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             flickTargetX = minX;
@@ -1164,7 +1164,7 @@ void QDeclarativeListViewPrivate::flickX(qreal velocity)
             if (FxListItem *item = nextVisibleItem())
                 maxDistance = qAbs(item->position() + _moveX.value());
         } else if (_moveX.value() > maxX) {
-            maxDistance = qAbs(maxX - _moveX.value()) + (overShoot?30:0);
+            maxDistance = qAbs(maxX - _moveX.value()) + (overShoot?overShootDistance(velocity, q->width()):0);
         }
         if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             flickTargetX = maxX;
@@ -1196,7 +1196,7 @@ void QDeclarativeListViewPrivate::flickX(qreal velocity)
                 overshootDist = 0.0;
             } else {
                 flickTargetX = velocity > 0 ? minX : maxX;
-                overshootDist = overShoot ? 30 : 0;
+                overshootDist = overShoot ? overShootDistance(v, q->width()) : 0;
             }
             timeline.reset(_moveX);
             timeline.accel(_moveX, v, accel, maxDistance + overshootDist);
@@ -1253,7 +1253,7 @@ void QDeclarativeListViewPrivate::flickY(qreal velocity)
             if (FxListItem *item = firstVisibleItem())
                 maxDistance = qAbs(item->position() + _moveY.value());
         } else if (_moveY.value() < minY) {
-            maxDistance = qAbs(minY -_moveY.value() + (overShoot?30:0));
+            maxDistance = qAbs(minY -_moveY.value() + (overShoot?overShootDistance(velocity, q->height()):0));
         }
         if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             flickTargetY = minY;
@@ -1262,7 +1262,7 @@ void QDeclarativeListViewPrivate::flickY(qreal velocity)
             if (FxListItem *item = nextVisibleItem())
                 maxDistance = qAbs(item->position() + _moveY.value());
         } else if (_moveY.value() > maxY) {
-            maxDistance = qAbs(maxY - _moveY.value()) + (overShoot?30:0);
+            maxDistance = qAbs(maxY - _moveY.value()) + (overShoot?overShootDistance(velocity, q->height()):0);
         }
         if (snapMode != QDeclarativeListView::SnapToItem && highlightRange != QDeclarativeListView::StrictlyEnforceRange)
             flickTargetY = maxY;
@@ -1294,7 +1294,7 @@ void QDeclarativeListViewPrivate::flickY(qreal velocity)
                 overshootDist = 0.0;
             } else {
                 flickTargetY = velocity > 0 ? minY : maxY;
-                overshootDist = overShoot ? 30 : 0;
+                overshootDist = overShoot ? overShootDistance(v, q->height()) : 0;
             }
             timeline.reset(_moveY);
             timeline.accel(_moveY, v, accel, maxDistance + overshootDist);
