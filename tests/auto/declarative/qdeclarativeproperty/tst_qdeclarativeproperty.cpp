@@ -181,6 +181,7 @@ class PropertyObject : public QObject
     Q_PROPERTY(QRect wrectProperty READ wrectProperty WRITE setWRectProperty);
     Q_PROPERTY(QUrl url READ url WRITE setUrl);
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty);
+    Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
 
     Q_CLASSINFO("DefaultProperty", "defaultProperty");
 public:
@@ -199,13 +200,18 @@ public:
     void setResettableProperty(int r) { m_resetProperty = r; }
     void resetProperty() { m_resetProperty = 9; }
 
+    int propertyWithNotify() const { return m_propertyWithNotify; }
+    void setPropertyWithNotify(int i) { m_propertyWithNotify = i; emit oddlyNamedNotifySignal(); }
+
 signals:
     void clicked();
+    void oddlyNamedNotifySignal();
 
 private:
     int m_resetProperty;
     QRect m_rect;
     QUrl m_url;
+    int m_propertyWithNotify;
 };
 
 QML_DECLARE_TYPE(PropertyObject);
@@ -454,6 +460,54 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string()
         QVERIFY(expression != 0);
         QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression);
         QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfMethod("clicked()"));
+        QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
+
+        delete obj;
+    }
+
+    {
+        QDeclarativeProperty prop(&dobject, QString("onPropertyWithNotifyChanged"));
+
+        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding->setTarget(prop);
+        QVERIFY(binding != 0);
+        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QVERIFY(expression != 0);
+
+        QObject *obj = new QObject;
+
+        QCOMPARE(prop.name(), QString("onOddlyNamedNotifySignal"));
+        QCOMPARE(prop.read(), QVariant());
+        QCOMPARE(prop.write(QVariant("Hello")), false);
+        QCOMPARE(prop.hasChangedNotifier(), false);
+        QCOMPARE(prop.needsChangedNotifier(), false);
+        QCOMPARE(prop.connectNotifier(0, SLOT(deleteLater())), false);
+        QCOMPARE(prop.connectNotifier(obj, SLOT(deleteLater())), false);
+        QCOMPARE(prop.connectNotifier(obj, 0), false);
+        QCOMPARE(prop.connectNotifier(0, obj->metaObject()->indexOfMethod("deleteLater()")), false);
+        QCOMPARE(prop.connectNotifier(obj, obj->metaObject()->indexOfMethod("deleteLater()")), false);
+        QCOMPARE(prop.connectNotifier(obj, -1), false);
+        QCOMPARE(QString(prop.method().signature()), QString("oddlyNamedNotifySignal()"));
+        QCOMPARE(prop.type(), QDeclarativeProperty::SignalProperty);
+        QCOMPARE(prop.isProperty(), false);
+        QCOMPARE(prop.isDefault(), false);
+        QCOMPARE(prop.isWritable(), false);
+        QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isValid(), true);
+        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
+        QCOMPARE(prop.propertyType(), 0);
+        QCOMPARE(prop.propertyTypeName(), (const char *)0);
+        QCOMPARE(prop.property().name(), (const char *)0);
+        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(binding == 0);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(expression != 0);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression);
+        QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfMethod("oddlyNamedNotifySignal()"));
         QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
 
         delete obj;
@@ -708,6 +762,54 @@ void tst_qdeclarativeproperty::qmlmetaproperty_object_string_context()
 
         delete obj;
     }
+
+    {
+        QDeclarativeProperty prop(&dobject, QString("onPropertyWithNotifyChanged"), engine.rootContext());
+
+        QGuard<QDeclarativeBinding> binding(new QDeclarativeBinding(QLatin1String("null"), 0, engine.rootContext()));
+        binding->setTarget(prop);
+        QVERIFY(binding != 0);
+        QGuard<QDeclarativeExpression> expression(new QDeclarativeExpression());
+        QVERIFY(expression != 0);
+
+        QObject *obj = new QObject;
+
+        QCOMPARE(prop.name(), QString("onOddlyNamedNotifySignal"));
+        QCOMPARE(prop.read(), QVariant());
+        QCOMPARE(prop.write(QVariant("Hello")), false);
+        QCOMPARE(prop.hasChangedNotifier(), false);
+        QCOMPARE(prop.needsChangedNotifier(), false);
+        QCOMPARE(prop.connectNotifier(0, SLOT(deleteLater())), false);
+        QCOMPARE(prop.connectNotifier(obj, SLOT(deleteLater())), false);
+        QCOMPARE(prop.connectNotifier(obj, 0), false);
+        QCOMPARE(prop.connectNotifier(0, obj->metaObject()->indexOfMethod("deleteLater()")), false);
+        QCOMPARE(prop.connectNotifier(obj, obj->metaObject()->indexOfMethod("deleteLater()")), false);
+        QCOMPARE(prop.connectNotifier(obj, -1), false);
+        QCOMPARE(QString(prop.method().signature()), QString("oddlyNamedNotifySignal()"));
+        QCOMPARE(prop.type(), QDeclarativeProperty::SignalProperty);
+        QCOMPARE(prop.isProperty(), false);
+        QCOMPARE(prop.isDefault(), false);
+        QCOMPARE(prop.isWritable(), false);
+        QCOMPARE(prop.isDesignable(), false);
+        QCOMPARE(prop.isResettable(), false);
+        QCOMPARE(prop.isValid(), true);
+        QCOMPARE(prop.object(), &dobject);
+        QCOMPARE(prop.propertyTypeCategory(), QDeclarativeProperty::InvalidCategory);
+        QCOMPARE(prop.propertyType(), 0);
+        QCOMPARE(prop.propertyTypeName(), (const char *)0);
+        QCOMPARE(prop.property().name(), (const char *)0);
+        QVERIFY(QDeclarativePropertyPrivate::binding(prop) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setBinding(prop, binding) == 0);
+        QVERIFY(binding == 0);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == 0);
+        QVERIFY(QDeclarativePropertyPrivate::setSignalExpression(prop, expression) == 0);
+        QVERIFY(expression != 0);
+        QVERIFY(QDeclarativePropertyPrivate::signalExpression(prop) == expression);
+        QCOMPARE(prop.coreIndex(), dobject.metaObject()->indexOfMethod("oddlyNamedNotifySignal()"));
+        QCOMPARE(QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), -1);
+
+        delete obj;
+    }
 }
 
 void tst_qdeclarativeproperty::name()
@@ -738,6 +840,18 @@ void tst_qdeclarativeproperty::name()
     {
         QObject o;
         QDeclarativeProperty p(&o, "onClicked");
+        QCOMPARE(p.name(), QString());
+    }
+
+    {
+        PropertyObject o;
+        QDeclarativeProperty p(&o, "onPropertyWithNotifyChanged");
+        QCOMPARE(p.name(), QString("onOddlyNamedNotifySignal"));
+    }
+
+    {
+        QObject o;
+        QDeclarativeProperty p(&o, "onPropertyWithNotifyChanged");
         QCOMPARE(p.name(), QString());
     }
 
@@ -823,6 +937,18 @@ void tst_qdeclarativeproperty::read()
     {
         PropertyObject o;
         QDeclarativeProperty p(&o, "onClicked");
+        QCOMPARE(p.read(), QVariant());
+
+        QVERIFY(0 == QDeclarativePropertyPrivate::setSignalExpression(p, new QDeclarativeExpression()));
+        QVERIFY(0 != QDeclarativePropertyPrivate::signalExpression(p));
+
+        QCOMPARE(p.read(), QVariant());
+    }
+
+    // Automatic signal property 
+    {
+        PropertyObject o;
+        QDeclarativeProperty p(&o, "onPropertyWithNotifyChanged");
         QCOMPARE(p.read(), QVariant());
 
         QVERIFY(0 == QDeclarativePropertyPrivate::setSignalExpression(p, new QDeclarativeExpression()));
@@ -927,6 +1053,20 @@ void tst_qdeclarativeproperty::write()
     {
         PropertyObject o;
         QDeclarativeProperty p(&o, "onClicked");
+        QCOMPARE(p.write(QVariant("console.log(1921)")), false);
+
+        QVERIFY(0 == QDeclarativePropertyPrivate::setSignalExpression(p, new QDeclarativeExpression()));
+        QVERIFY(0 != QDeclarativePropertyPrivate::signalExpression(p));
+
+        QCOMPARE(p.write(QVariant("console.log(1921)")), false);
+
+        QVERIFY(0 != QDeclarativePropertyPrivate::signalExpression(p));
+    }
+
+    // Automatic signal property
+    {
+        PropertyObject o;
+        QDeclarativeProperty p(&o, "onPropertyWithNotifyChanged");
         QCOMPARE(p.write(QVariant("console.log(1921)")), false);
 
         QVERIFY(0 == QDeclarativePropertyPrivate::setSignalExpression(p, new QDeclarativeExpression()));
@@ -1062,6 +1202,15 @@ void tst_qdeclarativeproperty::reset()
     {
         PropertyObject o;
         QDeclarativeProperty p(&o, "onClicked");
+
+        QCOMPARE(p.isResettable(), false);
+        QCOMPARE(p.reset(), false);
+    }
+
+    // Automatic signal property
+    {
+        PropertyObject o;
+        QDeclarativeProperty p(&o, "onPropertyWithNotifyChanged");
 
         QCOMPARE(p.isResettable(), false);
         QCOMPARE(p.reset(), false);
