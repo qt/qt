@@ -39,16 +39,17 @@
 **
 ****************************************************************************/
 
-#include <qdeclarativeengine.h>
-#include <qdeclarativecomponent.h>
-#include <QStringListModel>
 #include <QtTest/QtTest>
-#include <private/qlistmodelinterface_p.h>
-#include <qdeclarativeview.h>
-#include <private/qdeclarativegridview_p.h>
-#include <private/qdeclarativetext_p.h>
-#include <qdeclarativecontext.h>
-#include <qdeclarativeexpression.h>
+#include <QtGui/qstringlistmodel.h>
+#include <QtDeclarative/qdeclarativeview.h>
+#include <QtDeclarative/qdeclarativeengine.h>
+#include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtDeclarative/qdeclarativecontext.h>
+#include <QtDeclarative/qdeclarativeexpression.h>
+#include <QtDeclarative/private/qlistmodelinterface_p.h>
+#include <QtDeclarative/private/qdeclarativegridview_p.h>
+#include <QtDeclarative/private/qdeclarativetext_p.h>
+#include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 
 class tst_QDeclarativeGridView : public QObject
 {
@@ -66,6 +67,9 @@ private slots:
     void currentIndex();
     void defaultValues();
     void properties();
+    void propertyChanges();
+    void componentChanges();
+    void modelChanges();
     void positionViewAtIndex();
     void resetModel();
     void QTBUG_8456();
@@ -91,7 +95,7 @@ public:
         setRoleNames(roles);
     }
 
-    int rowCount(const QModelIndex &parent=QModelIndex()) const { return list.count(); }
+    int rowCount(const QModelIndex &parent=QModelIndex()) const { Q_UNUSED(parent); return list.count(); }
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const {
         QVariant rv;
         if (role == Name)
@@ -794,6 +798,107 @@ void tst_QDeclarativeGridView::properties()
     QCOMPARE(obj->cellWidth(), 100);
     QCOMPARE(obj->cellHeight(), 100);
     delete obj;
+}
+
+void tst_QDeclarativeGridView::propertyChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
+    QVERIFY(gridView);
+
+    QSignalSpy keyNavigationWrapsSpy(gridView, SIGNAL(keyNavigationWrapsChanged()));
+    QSignalSpy cacheBufferSpy(gridView, SIGNAL(cacheBufferChanged()));
+    QSignalSpy flowSpy(gridView, SIGNAL(flowChanged()));
+
+    QCOMPARE(gridView->isWrapEnabled(), true);
+    QCOMPARE(gridView->cacheBuffer(), 10);
+    QCOMPARE(gridView->flow(), QDeclarativeGridView::LeftToRight);
+
+    gridView->setWrapEnabled(false);
+    gridView->setCacheBuffer(3);
+    gridView->setFlow(QDeclarativeGridView::TopToBottom);
+
+    QCOMPARE(gridView->isWrapEnabled(), false);
+    QCOMPARE(gridView->cacheBuffer(), 3);
+    QCOMPARE(gridView->flow(), QDeclarativeGridView::TopToBottom);
+
+    QCOMPARE(keyNavigationWrapsSpy.count(),1);
+    QCOMPARE(cacheBufferSpy.count(),1);
+    QCOMPARE(flowSpy.count(),1);
+
+    gridView->setWrapEnabled(false);
+    gridView->setCacheBuffer(3);
+    gridView->setFlow(QDeclarativeGridView::TopToBottom);
+
+    QCOMPARE(keyNavigationWrapsSpy.count(),1);
+    QCOMPARE(cacheBufferSpy.count(),1);
+    QCOMPARE(flowSpy.count(),1);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeGridView::componentChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
+    QVERIFY(gridView);
+
+    QDeclarativeComponent component(canvas->engine());
+    component.setData("import Qt 4.6; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
+
+    QDeclarativeComponent delegateComponent(canvas->engine());
+    delegateComponent.setData("import Qt 4.6; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+
+    QSignalSpy highlightSpy(gridView, SIGNAL(highlightChanged()));
+    QSignalSpy delegateSpy(gridView, SIGNAL(delegateChanged()));
+
+    gridView->setHighlight(&component);
+    gridView->setDelegate(&delegateComponent);
+
+    QCOMPARE(gridView->highlight(), &component);
+    QCOMPARE(gridView->delegate(), &delegateComponent);
+
+    QCOMPARE(highlightSpy.count(),1);
+    QCOMPARE(delegateSpy.count(),1);
+
+    gridView->setHighlight(&component);
+    gridView->setDelegate(&delegateComponent);
+
+    QCOMPARE(highlightSpy.count(),1);
+    QCOMPARE(delegateSpy.count(),1);
+    delete canvas;
+}
+
+void tst_QDeclarativeGridView::modelChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativeGridView *gridView = canvas->rootObject()->findChild<QDeclarativeGridView*>("gridView");
+    QVERIFY(gridView);
+
+    QDeclarativeListModel *alternateModel = canvas->rootObject()->findChild<QDeclarativeListModel*>("alternateModel");
+    QVERIFY(alternateModel);
+    QVariant modelVariant = QVariant::fromValue(alternateModel);
+    QSignalSpy modelSpy(gridView, SIGNAL(modelChanged()));
+
+    gridView->setModel(modelVariant);
+    QCOMPARE(gridView->model(), modelVariant);
+    QCOMPARE(modelSpy.count(),1);
+
+    gridView->setModel(modelVariant);
+    QCOMPARE(modelSpy.count(),1);
+
+    gridView->setModel(QVariant());
+    QCOMPARE(modelSpy.count(),2);
+    delete canvas;
 }
 
 void tst_QDeclarativeGridView::positionViewAtIndex()
