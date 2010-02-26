@@ -27,16 +27,16 @@ Item {
         y: SequentialAnimation {
             repeat: true
 
-            // Move from minHeight to maxHeight in 300ms, using the easeOutExpo easing function
+            // Move from minHeight to maxHeight in 300ms, using the OutExpo easing function
             NumberAnimation {
                 from: smiley.minHeight; to: smiley.maxHeight
-                easing: "easeOutExpo"; duration: 300
+                easing.type: "OutExpo"; duration: 300
             }
             
-            // Then move back to minHeight in 1 second, using the easeOutBounce easing function
+            // Then move back to minHeight in 1 second, using the OutBounce easing function
             NumberAnimation {
                 from: smiley.maxHeight; to: smiley.minHeight
-                easing: "easeOutBounce"; duration: 1000
+                easing.type: "OutBounce"; duration: 1000
             }
 
             // Then pause for 500ms

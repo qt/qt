@@ -600,11 +600,11 @@ QEasingCurve::QEasingCurve(Type type)
     Construct a copy of \a other.
  */
 QEasingCurve::QEasingCurve(const QEasingCurve &other)
-: d_ptr(new QEasingCurvePrivate)
+    : d_ptr(new QEasingCurvePrivate)
 {
     // ### non-atomic, requires malloc on shallow copy
     *d_ptr = *other.d_ptr;
-    if(other.d_ptr->config)
+    if (other.d_ptr->config)
         d_ptr->config = other.d_ptr->config->copy();
 }
 
@@ -629,7 +629,7 @@ QEasingCurve &QEasingCurve::operator=(const QEasingCurve &other)
     }
 
     *d_ptr = *other.d_ptr;
-    if(other.d_ptr->config)
+    if (other.d_ptr->config)
         d_ptr->config = other.d_ptr->config->copy();
 
     return *this;
@@ -845,6 +845,67 @@ QDebug operator<<(QDebug debug, const QEasingCurve &item)
     }
     return debug;
 }
-#endif
+#endif // QT_NO_DEBUG_STREAM
+
+#ifndef QT_NO_DATASTREAM
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
+    \relates QEasingCurve
+
+    Writes the given \a easing curve to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QEasingCurve &easing)
+{
+    stream << quint8(easing.d_ptr->type);
+    stream << quint64(quintptr(easing.d_ptr->func));
+
+    bool hasConfig = easing.d_ptr->config;
+    stream << hasConfig;
+    if (hasConfig) {
+        stream << easing.d_ptr->config->_p;
+        stream << easing.d_ptr->config->_a;
+        stream << easing.d_ptr->config->_o;
+    }
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
+    \relates QQuaternion
+
+    Reads an easing curve from the given \a stream into the given \a quaternion
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
+{
+    QEasingCurve::Type type;
+    quint8 int_type;
+    stream >> int_type;
+    type = static_cast<QEasingCurve::Type>(int_type);
+    easing.setType(type);
+
+    quint64 ptr_func;
+    stream >> ptr_func;
+    easing.d_ptr->func = QEasingCurve::EasingFunction(quintptr(ptr_func));
+
+    bool hasConfig;
+    stream >> hasConfig;
+    if (hasConfig) {
+        QEasingCurveFunction *config = curveToFunctionObject(type);
+        stream >> config->_p;
+        stream >> config->_a;
+        stream >> config->_o;
+        easing.d_ptr->config = config;
+    }
+    return stream;
+}
+#endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE

@@ -50,7 +50,7 @@ Flipable {
         LikeOMeter { x: 40; y: 250; rating: container.rating }
 
         Flickable { id: flickable; x: 220; width: 480; height: 210; y: 130; clip: true
-                    viewportWidth: 480; viewportHeight: descriptionText.height
+                    contentWidth: 480; contentHeight: descriptionText.height
 
             WebView { id: descriptionText; width: parent.width
                       html: "<style TYPE=\"text/css\">body {color: white;} a:link {color: cyan; text-decoration: underline; }</style>" + container.photoDescription }
@@ -84,7 +84,7 @@ Flipable {
         Flickable {
             id: flick; width: container.width - 10; height: container.height - 10
             x: 5; y: 5; clip: true;
-            viewportWidth: imageContainer.width; viewportHeight: imageContainer.height
+            contentWidth: imageContainer.width; contentHeight: imageContainer.height
 
             Item {
                 id: imageContainer
@@ -122,12 +122,12 @@ Flipable {
             id: slider; x: 25; y: 374; visible: { bigImage.status == 1 && maximum > minimum }
             onValueChanged: {
                 if (bigImage.width * value > flick.width) {
-                    var xoff = (flick.width/2 + flick.viewportX) * value / prevScale;
-                    flick.viewportX = xoff - flick.width/2;
+                    var xoff = (flick.width/2 + flick.contentX) * value / prevScale;
+                    flick.contentX = xoff - flick.width/2;
                 }
                 if (bigImage.height * value > flick.height) {
-                    var yoff = (flick.height/2 + flick.viewportY) * value / prevScale;
-                    flick.viewportY = yoff - flick.height/2;
+                    var yoff = (flick.height/2 + flick.contentY) * value / prevScale;
+                    flick.contentY = yoff - flick.height/2;
                 }
                 prevScale = value;
             }
@@ -149,7 +149,7 @@ Flipable {
                     property: "smooth"
                     value: false
                 }
-                NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 500 }
+                NumberAnimation { easing.type: "InOutQuad"; properties: "angle"; duration: 500 }
                 PropertyAction {
                     target: bigImage
                     property: "smooth"

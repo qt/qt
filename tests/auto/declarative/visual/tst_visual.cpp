@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 #include <qtest.h>
-#include <QmlView>
+#include <QDeclarativeView>
 #include <QApplication>
 #include <QLibraryInfo>
 #include <QDir>
@@ -65,30 +65,30 @@ private slots:
     void visual();
 
 private:
-    QString qmlviewer;
+    QString qmlruntime;
 };
 
 
 tst_visual::tst_visual() 
 {
-    qmlviewer = viewer();
+    qmlruntime = viewer();
 }
 
 QString tst_visual::viewer()
 {
     QString binaries = QLibraryInfo::location(QLibraryInfo::BinariesPath);
 
-    QString qmlviewer;
+    QString qmlruntime;
 
 #if defined(Q_WS_MAC)
-    qmlviewer = QDir(binaries).absoluteFilePath("qmlviewer.app/Contents/MacOS/qmlviewer");
+    qmlruntime = QDir(binaries).absoluteFilePath("qml.app/Contents/MacOS/qml");
 #elif defined(Q_WS_WIN)
-    qmlviewer = QDir(binaries).absoluteFilePath("qmlviewer.exe");
+    qmlruntime = QDir(binaries).absoluteFilePath("qml.exe");
 #else
-    qmlviewer = QDir(binaries).absoluteFilePath("qmlviewer");
+    qmlruntime = QDir(binaries).absoluteFilePath("qml");
 #endif
 
-    return qmlviewer;
+    return qmlruntime;
 }
 
 void tst_visual::visual_data()
@@ -118,7 +118,7 @@ void tst_visual::visual()
               << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
               << file;
     QProcess p;
-    p.start(qmlviewer, arguments);
+    p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
     if (p.exitCode() != 0)
         qDebug() << p.readAllStandardError();
@@ -211,7 +211,7 @@ void action(Mode mode, const QString &file)
     QStringList arguments;
     switch (mode) {
         case Test:
-            // Don't run qmlviewer
+            // Don't run qml
             break;
         case Record:
             arguments << "-script" << testdata

@@ -66,7 +66,7 @@ Item {
 
 //![7]
     transitions: Transition {
-        NumberAnimation { properties: "x"; easing: "easeInOutQuad"; duration: 200 }
+        NumberAnimation { properties: "x"; easing.type: "InOutQuad"; duration: 200 }
     }
 //![7]
 }

@@ -313,8 +313,6 @@ SUBDIRS += \
            qmediaserviceprovider \
            qmediatimerange \
            qvideowidget \
-           qmlaudio \
-           qmlgraphicsvideo \
            qspinbox \
            qsplitter \
            qsql \
@@ -484,6 +482,9 @@ SUBDIRS += \
 contains(QT_CONFIG,opengl):SUBDIRS += qgl qglbuffer qgl_threads
 
 contains(QT_CONFIG,qt3support):!wince*:SUBDIRS += $$Q3SUBDIRS
+
+contains(QT_CONFIG,multimedia):contains(QT_CONFIG,declarative):SUBDIRS += qdeclarativeaudio \
+                                                                          qdeclarativevideo
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {

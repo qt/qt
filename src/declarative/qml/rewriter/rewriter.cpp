@@ -41,11 +41,11 @@
 
 #include "rewriter_p.h"
 
-#include <qmljsast_p.h>
+#include <qdeclarativejsast_p.h>
 
 QT_QML_BEGIN_NAMESPACE
 
-using namespace QmlJS;
+using namespace QDeclarativeJS;
 
 void Rewriter::replace(const AST::SourceLocation &loc, const QString &text)
 { replace(loc.offset, loc.length, text); }
@@ -77,8 +77,8 @@ QString Rewriter::textAt(const AST::SourceLocation &loc) const
 QString Rewriter::textAt(const AST::SourceLocation &firstLoc, const AST::SourceLocation &lastLoc) const
 { return _code.mid(firstLoc.offset, lastLoc.offset + lastLoc.length - firstLoc.offset); }
 
-void Rewriter::accept(QmlJS::AST::Node *node)
-{ QmlJS::AST::Node::acceptChild(node, this); }
+void Rewriter::accept(QDeclarativeJS::AST::Node *node)
+{ QDeclarativeJS::AST::Node::acceptChild(node, this); }
 
 void Rewriter::moveTextBefore(const AST::SourceLocation &firstLoc,
                               const AST::SourceLocation &lastLoc,

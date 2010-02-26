@@ -794,6 +794,7 @@ QT_INSTALL_HEADERS=
 QT_INSTALL_LIBS=
 QT_INSTALL_BINS=
 QT_INSTALL_PLUGINS=
+QT_INSTALL_IMPORTS=
 QT_INSTALL_DATA=
 QT_INSTALL_TRANSLATIONS=
 QT_INSTALL_SETTINGS=
@@ -1142,6 +1143,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     plugindir)
         QT_INSTALL_PLUGINS="$VAL"
+        ;;
+    importdir)
+        QT_INSTALL_IMPORTS="$VAL"
         ;;
     datadir)
         QT_INSTALL_DATA="$VAL"
@@ -3202,6 +3206,17 @@ if [ -z "$QT_INSTALL_PLUGINS" ]; then #default
 fi
 QT_INSTALL_PLUGINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PLUGINS"`
 
+#imports
+if [ -z "$QT_INSTALL_IMPORTS" ]; then #default
+    if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
+	if [ "$PLATFORM_MAC" = "yes" ]; then
+	    QT_INSTALL_IMPORTS="/Developer/Applications/Qt/imports"
+        fi
+    fi
+    [ -z "$QT_INSTALL_IMPORTS" ] && QT_INSTALL_IMPORTS="$QT_INSTALL_PREFIX/imports" #fallback
+fi
+QT_INSTALL_IMPORTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_IMPORTS"`
+
 #data
 if [ -z "$QT_INSTALL_DATA" ]; then #default
     QT_INSTALL_DATA="$QT_INSTALL_PREFIX"
@@ -3365,6 +3380,8 @@ cat <<EOF
                             (default PREFIX/include)
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default PREFIX/plugins)
+    -importdir <dir> ...... Imports for QML will be installed to <dir>
+                            (default PREFIX/imports)
     -datadir <dir> ........ Data used by Qt programs will be installed to <dir>
                             (default PREFIX)
     -translationdir <dir> . Translations of Qt programs will be installed to <dir>
@@ -4174,6 +4191,7 @@ HEADERS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_hdrspath=$QT_IN
 LIBRARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_libspath=$QT_INSTALL_LIBS"`
 BINARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_binspath=$QT_INSTALL_BINS"`
 PLUGINS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_plugpath=$QT_INSTALL_PLUGINS"`
+IMPORTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_impspath=$QT_INSTALL_IMPORTS"`
 DATA_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_datapath=$QT_INSTALL_DATA"`
 TRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_INSTALL_TRANSLATIONS"`
 SETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
@@ -4198,6 +4216,7 @@ if [ ! -z "$QT_HOST_PREFIX" ]; then
     HOSTLIBRARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_libspath=$QT_HOST_PREFIX/lib"`
     HOSTBINARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_binspath=$QT_HOST_PREFIX/bin"`
     HOSTPLUGINS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_plugpath=$QT_HOST_PREFIX/plugins"`
+    HOSTIMPORTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_impspath=$QT_HOST_PREFIX/IMPORTS"`
     HOSTDATA_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_datapath=$QT_HOST_PREFIX"`
     HOSTTRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_HOST_PREFIX/translations"`
     HOSTSETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
@@ -4214,6 +4233,7 @@ static const char qt_configure_headers_path_str      [256 + 12] = "$HOSTHEADERS_
 static const char qt_configure_libraries_path_str    [256 + 12] = "$HOSTLIBRARIES_PATH_STR";
 static const char qt_configure_binaries_path_str     [256 + 12] = "$HOSTBINARIES_PATH_STR";
 static const char qt_configure_plugins_path_str      [256 + 12] = "$HOSTPLUGINS_PATH_STR";
+static const char qt_configure_imports_path_str      [256 + 12] = "$HOSTIMPORTS_PATH_STR";
 static const char qt_configure_data_path_str         [256 + 12] = "$HOSTDATA_PATH_STR";
 static const char qt_configure_translations_path_str [256 + 12] = "$HOSTTRANSLATIONS_PATH_STR";
 static const char qt_configure_settings_path_str     [256 + 12] = "$HOSTSETTINGS_PATH_STR";
@@ -4231,6 +4251,7 @@ static const char qt_configure_headers_path_str      [256 + 12] = "$HEADERS_PATH
 static const char qt_configure_libraries_path_str    [256 + 12] = "$LIBRARIES_PATH_STR";
 static const char qt_configure_binaries_path_str     [256 + 12] = "$BINARIES_PATH_STR";
 static const char qt_configure_plugins_path_str      [256 + 12] = "$PLUGINS_PATH_STR";
+static const char qt_configure_imports_path_str      [256 + 12] = "$IMPORTS_PATH_STR";
 static const char qt_configure_data_path_str         [256 + 12] = "$DATA_PATH_STR";
 static const char qt_configure_translations_path_str [256 + 12] = "$TRANSLATIONS_PATH_STR";
 static const char qt_configure_settings_path_str     [256 + 12] = "$SETTINGS_PATH_STR";
@@ -4255,6 +4276,7 @@ cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 #define QT_CONFIGURE_LIBRARIES_PATH qt_configure_libraries_path_str + 12;
 #define QT_CONFIGURE_BINARIES_PATH qt_configure_binaries_path_str + 12;
 #define QT_CONFIGURE_PLUGINS_PATH qt_configure_plugins_path_str + 12;
+#define QT_CONFIGURE_IMPORTS_PATH qt_configure_imports_path_str + 12;
 #define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;
 #define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;
 #define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;

@@ -1,0 +1,194 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qdeclarativepackage_p.h"
+
+#include <private/qobject_p.h>
+#include "private/qdeclarativeguard_p.h"
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \qmlclass Package QDeclarativePackage
+    \brief Package provides a collection of named items
+
+    The Package class is currently used in conjunction with
+    VisualDataModel to enable delegates with a shared context
+    to be provided to multiple views.
+
+    Any item within a Package may be assigned a name via the
+    \e {Package.name} attached property.
+
+    The example below creates a Package containing two named items;
+    \e list and \e grid.  The third element in the package is parented to whichever
+    delegate it should appear in.  This allows an item to move
+    between views.
+
+    \snippet examples/declarative/package/Delegate.qml 0
+
+    These named items are used as the delegates by the two views who
+    reference the special VisualDataModel.parts property to select
+    a model which provides the chosen delegate.
+
+    \snippet examples/declarative/package/view.qml 0
+
+*/
+
+
+class QDeclarativePackagePrivate : public QObjectPrivate
+{
+public:
+    QDeclarativePackagePrivate() {}
+
+    struct DataGuard : public QDeclarativeGuard<QObject>
+    {
+        DataGuard(QObject *obj, QList<DataGuard> *l) : list(l) { (QDeclarativeGuard<QObject>&)*this = obj; }
+        QList<DataGuard> *list;
+        void objectDestroyed(QObject *) {
+            // we assume priv will always be destroyed after objectDestroyed calls
+            list->removeOne(*this);
+        }
+    };
+
+    QList<DataGuard> dataList;
+    static void data_append(QDeclarativeListProperty<QObject> *prop, QObject *o) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        list->append(DataGuard(o, list));
+    }
+    static void data_clear(QDeclarativeListProperty<QObject> *prop) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        list->clear();
+    }
+    static QObject *data_at(QDeclarativeListProperty<QObject> *prop, int index) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        return list->at(index);
+    }
+    static int data_count(QDeclarativeListProperty<QObject> *prop) {
+        QList<DataGuard> *list = static_cast<QList<DataGuard> *>(prop->data);
+        return list->count();
+    }
+};
+
+QHash<QObject *, QDeclarativePackageAttached *> QDeclarativePackageAttached::attached;
+
+QDeclarativePackageAttached::QDeclarativePackageAttached(QObject *parent)
+: QObject(parent)
+{
+    attached.insert(parent, this);
+}
+
+QDeclarativePackageAttached::~QDeclarativePackageAttached()
+{
+    attached.remove(parent());
+}
+
+QString QDeclarativePackageAttached::name() const 
+{ 
+    return _name; 
+}
+
+void QDeclarativePackageAttached::setName(const QString &n) 
+{ 
+    _name = n; 
+}
+
+QDeclarativePackage::QDeclarativePackage(QObject *parent)
+    : QObject(*(new QDeclarativePackagePrivate), parent)
+{
+}
+
+QDeclarativePackage::~QDeclarativePackage()
+{
+    Q_D(QDeclarativePackage);
+    for (int ii = 0; ii < d->dataList.count(); ++ii) {
+        QObject *obj = d->dataList.at(ii);
+        obj->setParent(this);
+    }
+}
+
+QDeclarativeListProperty<QObject> QDeclarativePackage::data()
+{
+    Q_D(QDeclarativePackage);
+    return QDeclarativeListProperty<QObject>(this, &d->dataList, QDeclarativePackagePrivate::data_append, 
+                                                        QDeclarativePackagePrivate::data_count, 
+                                                        QDeclarativePackagePrivate::data_at, 
+                                                        QDeclarativePackagePrivate::data_clear);
+}
+
+bool QDeclarativePackage::hasPart(const QString &name)
+{
+    Q_D(QDeclarativePackage);
+    for (int ii = 0; ii < d->dataList.count(); ++ii) {
+        QObject *obj = d->dataList.at(ii);
+        QDeclarativePackageAttached *a = QDeclarativePackageAttached::attached.value(obj);
+        if (a && a->name() == name)
+            return true;
+    }
+    return false;
+}
+
+QObject *QDeclarativePackage::part(const QString &name)
+{
+    Q_D(QDeclarativePackage);
+    if (name.isEmpty() && !d->dataList.isEmpty())
+        return d->dataList.at(0);
+
+    for (int ii = 0; ii < d->dataList.count(); ++ii) {
+        QObject *obj = d->dataList.at(ii);
+        QDeclarativePackageAttached *a = QDeclarativePackageAttached::attached.value(obj);
+        if (a && a->name() == name)
+            return obj;
+    }
+
+    if (name == QLatin1String("default") && !d->dataList.isEmpty())
+        return d->dataList.at(0);
+
+    return 0;
+}
+
+QDeclarativePackageAttached *QDeclarativePackage::qmlAttachedProperties(QObject *o)
+{
+    return new QDeclarativePackageAttached(o);
+}
+
+
+
+QT_END_NAMESPACE

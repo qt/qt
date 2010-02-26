@@ -58,7 +58,6 @@ void BirthdayPartyAttached::setRsvp(const QDate &d)
     }
 }
 
-QML_DEFINE_NOCREATE_TYPE(BirthdayPartyAttached);
 
 BirthdayParty::BirthdayParty(QObject *parent)
 : QObject(parent), m_celebrant(0)
@@ -77,9 +76,9 @@ void BirthdayParty::setCelebrant(Person *c)
     emit celebrantChanged();
 }
 
-QmlListProperty<Person> BirthdayParty::guests() 
+QDeclarativeListProperty<Person> BirthdayParty::guests() 
 {
-    return QmlListProperty<Person>(this, m_guests);
+    return QDeclarativeListProperty<Person>(this, m_guests);
 }
 
 int BirthdayParty::guestCount() const
@@ -113,4 +112,3 @@ BirthdayPartyAttached *BirthdayParty::qmlAttachedProperties(QObject *object)
     return new BirthdayPartyAttached(object);
 }
 
-QML_DEFINE_TYPE(People, 1,0, BirthdayParty, BirthdayParty);

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-  \page qmlbasictypes.html
+  \page qdeclarativebasictypes.html
   \title QML Basic Types
 
   QML uses a set of property types, which are primitive within QML.
