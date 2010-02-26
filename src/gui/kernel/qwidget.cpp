@@ -7929,13 +7929,16 @@ inline void setDisabledStyle(QWidget *w, bool setStyle)
     // set/reset WS_DISABLED style.
     if(w && w->isWindow() && w->isVisible() && w->isEnabled()) {
         LONG dwStyle = GetWindowLong(w->winId(), GWL_STYLE);
+        LONG newStyle = dwStyle;
         if (setStyle)
-            dwStyle |= WS_DISABLED;
+            newStyle |= WS_DISABLED;
         else
-            dwStyle &= ~WS_DISABLED;
-        SetWindowLong(w->winId(), GWL_STYLE, dwStyle);
-        // we might need to repaint in some situations (eg. menu)
-        w->repaint();
+            newStyle &= ~WS_DISABLED;
+        if (newStyle != dwStyle) {
+            SetWindowLong(w->winId(), GWL_STYLE, newStyle);
+            // we might need to repaint in some situations (eg. menu)
+            w->repaint();
+        }
     }
 }
 #endif
