@@ -53,9 +53,9 @@ Item {
             onButton2Clicked: if (screen.inListView == true) screen.inListView = false; else screen.inListView = true
         }
 
-        Connection {
-            sender: imageDetails; signal: "closed()"
-            script: {
+        Connections {
+            target: imageDetails
+            onClosed: {
                 if (background.state == "DetailedView") {
                     background.state = '';
                     imageDetails.photoUrl = "";

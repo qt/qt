@@ -6,5 +6,5 @@ Item {
     property string tested
     signal testMe(int param1, string param2)
 
-    Connection { sender: screen; signal: "testMe(param1, param2)"; script: screen.tested = param2 + param1 }
+    Connections { target: screen; onTestMe: screen.tested = param2 + param1 }
 }

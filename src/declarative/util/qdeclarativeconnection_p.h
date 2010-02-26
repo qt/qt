@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVECONNECTION_H
-#define QDECLARATIVECONNECTION_H
+#ifndef QDECLARATIVECONNECTIONS_H
+#define QDECLARATIVECONNECTIONS_H
 
 #include <qdeclarative.h>
 #include <qdeclarativescriptstring.h>
+#include <private/qdeclarativecustomparser_p.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
@@ -56,37 +57,41 @@ QT_MODULE(Declarative)
 
 class QDeclarativeBoundSignal;
 class QDeclarativeContext;
-class QDeclarativeConnectionPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeConnection : public QObject, public QDeclarativeParserStatus
+class QDeclarativeConnectionsPrivate;
+class Q_DECLARATIVE_EXPORT QDeclarativeConnections : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeConnection)
+    Q_DECLARE_PRIVATE(QDeclarativeConnections)
 
     Q_INTERFACES(QDeclarativeParserStatus)
-    Q_PROPERTY(QObject *sender READ signalSender WRITE setSignalSender)
-    Q_PROPERTY(QDeclarativeScriptString script READ script WRITE setScript)
-    Q_PROPERTY(QString signal READ signal WRITE setSignal)
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
 
 public:
-    QDeclarativeConnection(QObject *parent=0);
-    ~QDeclarativeConnection();
+    QDeclarativeConnections(QObject *parent=0);
+    ~QDeclarativeConnections();
 
-    QObject *signalSender() const;
-    void setSignalSender(QObject *);
-    QDeclarativeScriptString script() const;
-    void setScript(const QDeclarativeScriptString&);
-    QString signal() const;
-    void setSignal(const QString&);
+    QObject *target() const;
+    void setTarget(QObject *);
+
+Q_SIGNALS:
+    void targetChanged();
 
 private:
-    void disconnectIfValid();
-    void connectIfValid();
+    void connectSignals();
     void componentComplete();
 };
 
+class QDeclarativeConnectionsParser : public QDeclarativeCustomParser
+{
+public:
+    virtual QByteArray compile(const QList<QDeclarativeCustomParserProperty> &);
+    virtual void setCustomData(QObject *, const QByteArray &);
+};
+
+
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QDeclarativeConnection)
+QML_DECLARE_TYPE(QDeclarativeConnections)
 
 QT_END_HEADER
 

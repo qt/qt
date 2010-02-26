@@ -71,12 +71,10 @@ void tst_qdeclarativeconnection::defaultValues()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection3.qml"));
-    QDeclarativeConnection *item = qobject_cast<QDeclarativeConnection*>(c.create());
+    QDeclarativeConnections *item = qobject_cast<QDeclarativeConnections*>(c.create());
 
     QVERIFY(item != 0);
-    QVERIFY(item->signalSender() == 0);
-    QCOMPARE(item->script().script(), QString());
-    QCOMPARE(item->signal(), QString());
+    QVERIFY(item->target() == 0);
 
     delete item;
 }
@@ -85,14 +83,12 @@ void tst_qdeclarativeconnection::properties()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/test-connection2.qml"));
-    QDeclarativeConnection *item = qobject_cast<QDeclarativeConnection*>(c.create());
+    QDeclarativeConnections *item = qobject_cast<QDeclarativeConnections*>(c.create());
 
     QVERIFY(item != 0);
 
     QVERIFY(item != 0);
-    QVERIFY(item->signalSender() == item);
-    QCOMPARE(item->script().script(), QString("1 == 1"));
-    QCOMPARE(item->signal(), QString("widthChanged()"));
+    QVERIFY(item->target() == item);
 
     delete item;
 }

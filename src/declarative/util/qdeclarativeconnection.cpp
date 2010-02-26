@@ -42,8 +42,10 @@
 #include "qdeclarativeconnection_p.h"
 
 #include <qdeclarativeexpression.h>
+#include <qdeclarativeproperty_p.h>
 #include <qdeclarativeboundsignal_p.h>
 #include <qdeclarativecontext.h>
+#include <qdeclarativeinfo.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
@@ -52,236 +54,192 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeConnectionPrivate : public QObjectPrivate
+class QDeclarativeConnectionsPrivate : public QObjectPrivate
 {
 public:
-    QDeclarativeConnectionPrivate() : boundsignal(0), signalSender(0), scriptset(false), componentcomplete(false) {}
+    QDeclarativeConnectionsPrivate() : target(0), componentcomplete(false) {}
 
-    QDeclarativeBoundSignal *boundsignal;
-    QObject *signalSender;
-    QDeclarativeScriptString script;
-    bool scriptset;
-    QString signal;
+    QList<QDeclarativeBoundSignal*> boundsignals;
+    QObject *target;
+
     bool componentcomplete;
+
+    QByteArray data;
 };
 
 /*!
-    \qmlclass Connection QDeclarativeConnection
+    \qmlclass Connections QDeclarativeConnections
   \since 4.7
-    \brief A Connection object describes generalized connections to signals.
+    \brief A Connections object describes generalized connections to signals.
 
     When connecting to signals in QML, the usual way is to create an
     "on<Signal>" handler that reacts when a signal is received, like this:
 
     \qml
     MouseArea {
-        onClicked: { foo(x+123,y+456) }
+        onClicked: { foo(...) }
     }
     \endqml
 
     However, in some cases, it is not possible to connect to a signal in this
-    way. For example, JavaScript-in-HTML style signal properties do not allow:
+    way, such as:
 
     \list
-        \i connecting to signals with the same name but different parameters
-        \i conformance checking that parameters are correctly named
         \i multiple connections to the same signal
         \i connections outside the scope of the signal sender
-        \i signals in classes with coincidentally-named on<Signal> properties
+        \i connections to targets not defined in QML
     \endlist
 
-    When any of these are needed, the Connection object can be used instead.
+    When any of these are needed, the Connections object can be used instead.
 
-    For example, the above code can be changed to use a Connection object,
+    For example, the above code can be changed to use a Connections object,
     like this:
 
     \qml
     MouseArea {
-        Connection {
-            signal: "clicked(x,y)"
-            script: { foo(x+123,y+456) }
+        Connections {
+            onClicked: foo(...)
         }
     }
     \endqml
 
-    More generally, the Connection object can be a child of some other object than
+    More generally, the Connections object can be a child of some other object than
     the sender of the signal:
 
     \qml
     MouseArea {
-        id: mr
+        id: area
     }
     ...
-    Connection {
-        sender: mr
-        signal: "clicked(x,y)"
-        script: { foo(x+123,y+456) }
+    Connections {
+        target: area
+        onClicked: foo(...)
     }
     \endqml
 */
 
 /*!
     \internal
-    \class QDeclarativeConnection
-    \brief The QDeclarativeConnection class describes generalized connections to signals.
+    \class QDeclarativeConnections
+    \brief The QDeclarativeConnections class describes generalized connections to signals.
 
 */
-QDeclarativeConnection::QDeclarativeConnection(QObject *parent) :
-    QObject(*(new QDeclarativeConnectionPrivate), parent)
+QDeclarativeConnections::QDeclarativeConnections(QObject *parent) :
+    QObject(*(new QDeclarativeConnectionsPrivate), parent)
 {
 }
 
-QDeclarativeConnection::~QDeclarativeConnection()
+QDeclarativeConnections::~QDeclarativeConnections()
 {
-    Q_D(QDeclarativeConnection);
-    delete d->boundsignal;
 }
 
 /*!
-    \qmlproperty Object Connection::sender
+    \qmlproperty Object Connections::target
     This property holds the object that sends the signal.
 
-    By default, the sender is assumed to be the parent of the Connection.
+    By default, the target is assumed to be the parent of the Connections.
 */
-QObject *QDeclarativeConnection::signalSender() const
+QObject *QDeclarativeConnections::target() const
 {
-    Q_D(const QDeclarativeConnection);
-    return d->signalSender ? d->signalSender : parent();
+    Q_D(const QDeclarativeConnections);
+    return d->target ? d->target : parent();
 }
 
-void QDeclarativeConnection::setSignalSender(QObject *obj)
+void QDeclarativeConnections::setTarget(QObject *obj)
 {
-    Q_D(QDeclarativeConnection);
-    if (d->signalSender == obj)
+    Q_D(QDeclarativeConnections);
+    if (d->target == obj)
         return;
-    disconnectIfValid();
-    d->signalSender = obj;
-    connectIfValid();
+    foreach (QDeclarativeBoundSignal *s, d->boundsignals)
+        delete s;
+    d->boundsignals.clear();
+    d->target = obj;
+    connectSignals();
+    emit targetChanged();
 }
 
-void QDeclarativeConnection::connectIfValid()
+
+QByteArray
+QDeclarativeConnectionsParser::compile(const QList<QDeclarativeCustomParserProperty> &props)
 {
-    Q_D(QDeclarativeConnection);
-    if (!d->componentcomplete)
-        return;
-    // boundsignal must not exist
-    if ((d->signalSender || parent()) && !d->signal.isEmpty() && d->scriptset) {
-        // create
-        // XXX scope?
-        int sigIdx = -1;
-        int lparen = d->signal.indexOf(QLatin1Char('('));
-        QList<QByteArray> sigparams;
-        if (lparen >= 0 && d->signal.length() > lparen+2) {
-            QStringList l = d->signal.mid(lparen+1,d->signal.length()-lparen-2).split(QLatin1Char(','));
-            foreach (const QString &s, l) {
-                sigparams.append(s.trimmed().toUtf8());
+    QByteArray rv;
+    QDataStream ds(&rv, QIODevice::WriteOnly);
+
+    for(int ii = 0; ii < props.count(); ++ii)
+    {
+        QString propName = QString::fromUtf8(props.at(ii).name());
+        if (!propName.startsWith(QLatin1String("on")) || !propName.at(2).isUpper()) {
+            error(props.at(ii), QDeclarativeConnections::tr("Cannot assign to non-existent property \"%1\"").arg(propName));
+            return QByteArray();
+        }
+
+        QList<QVariant> values = props.at(ii).assignedValues();
+
+        for (int i = 0; i < values.count(); ++i) {
+            const QVariant &value = values.at(i);
+
+            if (value.userType() == qMetaTypeId<QDeclarativeCustomParserNode>()) {
+                error(props.at(ii), QDeclarativeConnections::tr("Connections: nested objects not allowed"));
+                return QByteArray();
+            } else if (value.userType() == qMetaTypeId<QDeclarativeCustomParserProperty>()) {
+                error(props.at(ii), QDeclarativeConnections::tr("Connections: syntax error"));
+                return QByteArray();
+            } else {
+                QDeclarativeParser::Variant v = qvariant_cast<QDeclarativeParser::Variant>(value);
+                if (v.isScript()) {
+                    ds << propName;
+                    ds << v.asScript();
+                } else {
+                    error(props.at(ii), QDeclarativeConnections::tr("Connections: script expected"));
+                    return QByteArray();
+                }
             }
         }
-        QString signalname = d->signal.left(lparen);
-        QObject *sender = d->signalSender ? d->signalSender : parent();
-        const QMetaObject *mo = sender->metaObject();
-        int methods = mo->methodCount();
-        for (int ii = 0; ii < methods; ++ii) {
-            QMetaMethod method = mo->method(ii);
-            QString methodName = QString::fromUtf8(method.signature());
-            int idx = methodName.indexOf(QLatin1Char('('));
-            methodName = methodName.left(idx);
-            if (methodName == signalname && (lparen<0 || method.parameterNames() == sigparams)) {
-                sigIdx = ii;
-                break;
-            }
-        }
-        if (sigIdx < 0) {
-            // Cannot usefully warn, since could be in middle of
-            // changing sender and signal.
-            // XXX need state change transactions to do better
-            return;
-        }
-
-        d->boundsignal = new QDeclarativeBoundSignal(qmlContext(this), d->script.script(), sender, mo->method(sigIdx), this);
     }
+
+    return rv;
 }
 
-void QDeclarativeConnection::disconnectIfValid()
+void QDeclarativeConnectionsParser::setCustomData(QObject *object,
+                                            const QByteArray &data)
 {
-    Q_D(QDeclarativeConnection);
+    QDeclarativeConnectionsPrivate *p =
+        static_cast<QDeclarativeConnectionsPrivate *>(QObjectPrivate::get(object));
+    p->data = data;
+}
+
+
+void QDeclarativeConnections::connectSignals()
+{
+    Q_D(QDeclarativeConnections);
     if (!d->componentcomplete)
         return;
-    if ((d->signalSender || parent()) && !d->signal.isEmpty() && d->scriptset) {
-        // boundsignal must exist
-        // destroy
-        delete d->boundsignal;
-        d->boundsignal = 0;
-    }
-}
 
-void QDeclarativeConnection::componentComplete()
-{
-    Q_D(QDeclarativeConnection);
-    d->componentcomplete=true;
-    connectIfValid();
-}
-
-
-/*!
-    \qmlproperty script Connection::script
-    This property holds the JavaScript executed whenever the signal is sent.
-*/
-QDeclarativeScriptString QDeclarativeConnection::script() const
-{
-    Q_D(const QDeclarativeConnection);
-    return d->script;
-}
-
-void QDeclarativeConnection::setScript(const QDeclarativeScriptString& script)
-{
-    Q_D(QDeclarativeConnection);
-    if ((d->signalSender || parent()) && !d->signal.isEmpty()) {
-        if (!d->scriptset) {
-            // mustn't exist - create
-            d->scriptset = true;
-            d->script = script;
-            connectIfValid();
+    QDataStream ds(d->data);
+    while (!ds.atEnd()) {
+        QString propName;
+        ds >> propName;
+        QString script;
+        ds >> script;
+        QDeclarativeProperty prop(target(), propName);
+        if (!prop.isValid()) {
+            qmlInfo(this) << tr("Cannot assign to non-existent property \"%1\"").arg(propName);
+        } else if (prop.type() & QDeclarativeProperty::SignalProperty) {
+            QDeclarativeBoundSignal *signal =
+                new QDeclarativeBoundSignal(target(), prop.method(), this);
+            signal->setExpression(new QDeclarativeExpression(qmlContext(this), script, 0));
+            d->boundsignals += signal;
         } else {
-            // must exist - update
-            d->script = script;
-            d->boundsignal->expression()->setExpression(script.script());
+            qmlInfo(this) << tr("Cannot assign to non-existent property \"%1\"").arg(propName);
         }
-    } else {
-        d->scriptset = true;
-        d->script = script;
     }
 }
 
-/*!
-    \qmlproperty string Connection::signal
-    This property holds the signal from the sender to which the script is attached.
-
-    The signal's formal parameter names must be given in parentheses:
-
-    \qml
-Connection {
-    signal: "clicked(x,y)"
-    script: { ... }
-}
-    \endqml
-*/
-QString QDeclarativeConnection::signal() const
+void QDeclarativeConnections::componentComplete()
 {
-    Q_D(const QDeclarativeConnection);
-    return d->signal;
+    Q_D(QDeclarativeConnections);
+    d->componentcomplete=true;
+    connectSignals();
 }
-
-void QDeclarativeConnection::setSignal(const QString& sig)
-{
-    Q_D(QDeclarativeConnection);
-    if (d->signal == sig)
-        return;
-    disconnectIfValid();
-    d->signal =  sig;
-    connectIfValid();
-}
-
-
 
 QT_END_NAMESPACE
