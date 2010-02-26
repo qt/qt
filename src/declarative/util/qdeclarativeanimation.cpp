@@ -1509,6 +1509,11 @@ QDeclarativeAnimationGroup::QDeclarativeAnimationGroup(QObject *parent)
 {
 }
 
+QDeclarativeAnimationGroup::QDeclarativeAnimationGroup(QDeclarativeAnimationGroupPrivate &dd, QObject *parent)
+    : QDeclarativeAbstractAnimation(dd, parent)
+{
+}
+
 void QDeclarativeAnimationGroupPrivate::append_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, QDeclarativeAbstractAnimation *a)
 {
     QDeclarativeAnimationGroup *q = qobject_cast<QDeclarativeAnimationGroup *>(list->object);
@@ -2366,10 +2371,8 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     }
 }
 
-
-
 QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
-    : QDeclarativeAnimationGroup(parent)
+    : QDeclarativeAnimationGroup(*(new QDeclarativeParentAnimationPrivate), parent)
 {
     Q_D(QDeclarativeParentAnimation);
     d->topLevelGroup = new QSequentialAnimationGroup;
