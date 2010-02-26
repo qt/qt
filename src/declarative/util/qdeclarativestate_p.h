@@ -53,7 +53,9 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeActionEvent;
+class QDeclarativeAbstractBinding;
 class QDeclarativeBinding;
+class QDeclarativeExpression;
 class Q_DECLARATIVE_EXPORT QDeclarativeAction
 {
 public:

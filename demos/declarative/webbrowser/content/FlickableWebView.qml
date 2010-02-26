@@ -2,6 +2,7 @@ import Qt 4.6
 
 Flickable {
     property alias title: webView.title
+    property alias icon: webView.icon
     property alias progress: webView.progress
     property alias url: webView.url
     property alias back: webView.back

@@ -413,6 +413,9 @@ public:
 
     QDeclarativeListProperty<QDeclarativeAbstractAnimation> animations();
     friend class QDeclarativeAbstractAnimation;
+
+protected:
+    QDeclarativeAnimationGroup(QDeclarativeAnimationGroupPrivate &dd, QObject *parent);
 };
 
 class QDeclarativeSequentialAnimation : public QDeclarativeAnimationGroup
