@@ -80,6 +80,7 @@ private slots:
     void setSourceModel();
     void submit_data();
     void submit();
+    void testRoleNames();
 };
 
 // Subclass that exposes the protected functions.
@@ -360,6 +361,87 @@ void tst_QAbstractProxyModel::submit()
 
     SubQAbstractProxyModel model;
     QCOMPARE(model.submit(), submit);
+}
+
+class StandardItemModelWithCustomRoleNames : public QStandardItemModel
+{
+public:
+    enum CustomRole {
+        CustomRole1 = Qt::UserRole,
+        CustomRole2
+    };
+
+    StandardItemModelWithCustomRoleNames() {
+        QHash<int, QByteArray> _roleNames = roleNames();
+        _roleNames.insert(CustomRole1, "custom1");
+        _roleNames.insert(CustomRole2, "custom2");
+        setRoleNames(_roleNames);
+    }
+};
+
+class AnotherStandardItemModelWithCustomRoleNames : public QStandardItemModel
+{
+    public:
+        enum CustomRole {
+            AnotherCustomRole1 = Qt::UserRole + 10,  // Different to StandardItemModelWithCustomRoleNames::CustomRole1
+            AnotherCustomRole2
+        };
+
+        AnotherStandardItemModelWithCustomRoleNames() {
+            QHash<int, QByteArray> _roleNames = roleNames();
+            _roleNames.insert(AnotherCustomRole1, "another_custom1");
+            _roleNames.insert(AnotherCustomRole2, "another_custom2");
+            setRoleNames(_roleNames);
+        }
+};
+
+/**
+    Verifies that @p subSet is a subset of @p superSet. That is, all keys in @p subSet exist in @p superSet and have the same values.
+*/
+static void verifySubSetOf(const QHash<int, QByteArray> &superSet, const QHash<int, QByteArray> &subSet)
+{
+    QHash<int, QByteArray>::const_iterator it = subSet.constBegin();
+    const QHash<int, QByteArray>::const_iterator end = subSet.constEnd();
+    for ( ; it != end; ++it ) {
+        QVERIFY(superSet.contains(it.key()));
+        QVERIFY(it.value() == superSet.value(it.key()));
+    }
+}
+
+void tst_QAbstractProxyModel::testRoleNames()
+{
+    QStandardItemModel defaultModel;
+    StandardItemModelWithCustomRoleNames model;
+    QHash<int, QByteArray> rootModelRoleNames = model.roleNames();
+    QHash<int, QByteArray> defaultModelRoleNames = defaultModel.roleNames();
+
+    verifySubSetOf( rootModelRoleNames, defaultModelRoleNames);
+    QVERIFY( rootModelRoleNames.size() == defaultModelRoleNames.size() + 2 );
+    QVERIFY( rootModelRoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole1));
+    QVERIFY( rootModelRoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole2));
+    QVERIFY( rootModelRoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole1) == "custom1" );
+    QVERIFY( rootModelRoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole2) == "custom2" );
+
+    SubQAbstractProxyModel proxy1;
+    proxy1.setSourceModel(&model);
+    QHash<int, QByteArray> proxy1RoleNames = proxy1.roleNames();
+    verifySubSetOf( proxy1RoleNames, defaultModelRoleNames );
+    QVERIFY( proxy1RoleNames.size() == defaultModelRoleNames.size() + 2 );
+    QVERIFY( proxy1RoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole1));
+    QVERIFY( proxy1RoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole2));
+    QVERIFY( proxy1RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole1) == "custom1" );
+    QVERIFY( proxy1RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole2) == "custom2" );
+
+    SubQAbstractProxyModel proxy2;
+    proxy2.setSourceModel(&proxy1);
+    QHash<int, QByteArray> proxy2RoleNames = proxy2.roleNames();
+    verifySubSetOf( proxy2RoleNames, defaultModelRoleNames );
+    QVERIFY( proxy2RoleNames.size() == defaultModelRoleNames.size() + 2 );
+    QVERIFY( proxy2RoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole1));
+    QVERIFY( proxy2RoleNames.contains(StandardItemModelWithCustomRoleNames::CustomRole2));
+    QVERIFY( proxy2RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole1) == "custom1" );
+    QVERIFY( proxy2RoleNames.value(StandardItemModelWithCustomRoleNames::CustomRole2) == "custom2" );
+
 }
 
 QTEST_MAIN(tst_QAbstractProxyModel)

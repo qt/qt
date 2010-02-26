@@ -46,7 +46,6 @@ QT_BEGIN_NAMESPACE
 
 QKeyMapperPrivate::QKeyMapperPrivate()
 {
-    fillKeyMap();
 }
 
 QKeyMapperPrivate::~QKeyMapperPrivate()
@@ -74,174 +73,145 @@ QString QKeyMapperPrivate::translateKeyEvent(int keySym, Qt::KeyboardModifiers /
     return QString(QChar(keySym));
 }
 
-void QKeyMapperPrivate::fillKeyMap()
-{
-    using namespace Qt;
-    static const struct {
-        TUint s60Key;
-        int qtKey;
-    } map[] = {
-        {EKeyBell, Key_unknown},
-        {EKeyBackspace, Key_Backspace},
-        {EKeyTab, Key_Tab},
-        {EKeyLineFeed, Key_unknown},
-        {EKeyVerticalTab, Key_unknown},
-        {EKeyFormFeed, Key_unknown},
-        {EKeyEnter, Key_Enter},
-        {EKeyEscape, Key_Escape},
-        {EKeySpace, Key_Space},
-        {EKeyDelete, Key_Delete},
-        {EKeyPrintScreen, Key_SysReq},
-        {EKeyPause, Key_Pause},
-        {EKeyHome, Key_Home},
-        {EKeyEnd, Key_End},
-        {EKeyPageUp, Key_PageUp},
-        {EKeyPageDown, Key_PageDown},
-        {EKeyInsert, Key_Insert},
-        {EKeyLeftArrow, Key_Left},
-        {EKeyRightArrow, Key_Right},
-        {EKeyUpArrow, Key_Up},
-        {EKeyDownArrow, Key_Down},
-        {EKeyLeftShift, Key_Shift},
-        {EKeyRightShift, Key_Shift},
-        {EKeyLeftAlt, Key_Alt},
-        {EKeyRightAlt, Key_AltGr},
-        {EKeyLeftCtrl, Key_Control},
-        {EKeyRightCtrl, Key_Control},
-        {EKeyLeftFunc, Key_Super_L},
-        {EKeyRightFunc, Key_Super_R},
-        {EKeyCapsLock, Key_CapsLock},
-        {EKeyNumLock, Key_NumLock},
-        {EKeyScrollLock, Key_ScrollLock},
-        {EKeyF1, Key_F1},
-        {EKeyF2, Key_F2},
-        {EKeyF3, Key_F3},
-        {EKeyF4, Key_F4},
-        {EKeyF5, Key_F5},
-        {EKeyF6, Key_F6},
-        {EKeyF7, Key_F7},
-        {EKeyF8, Key_F8},
-        {EKeyF9, Key_F9},
-        {EKeyF10, Key_F10},
-        {EKeyF11, Key_F11},
-        {EKeyF12, Key_F12},
-        {EKeyF13, Key_F13},
-        {EKeyF14, Key_F14},
-        {EKeyF15, Key_F15},
-        {EKeyF16, Key_F16},
-        {EKeyF17, Key_F17},
-        {EKeyF18, Key_F18},
-        {EKeyF19, Key_F19},
-        {EKeyF20, Key_F20},
-        {EKeyF21, Key_F21},
-        {EKeyF22, Key_F22},
-        {EKeyF23, Key_F23},
-        {EKeyF24, Key_F24},
-        {EKeyOff, Key_unknown},
-        {EKeyIncContrast, Key_unknown},
-        {EKeyDecContrast, Key_unknown},
-        {EKeyBacklightOn, Key_unknown},
-        {EKeyBacklightOff, Key_unknown},
-        {EKeyBacklightToggle, Key_unknown},
-        {EKeySliderDown, Key_unknown},
-        {EKeySliderUp, Key_unknown},
-        {EKeyMenu, Key_Menu},
-        {EKeyDictaphonePlay, Key_unknown},
-        {EKeyDictaphoneStop, Key_unknown},
-        {EKeyDictaphoneRecord, Key_unknown},
-        {EKeyHelp, Key_unknown},
-        {EKeyDial, Key_Call},
-        {EKeyScreenDimension0, Key_unknown},
-        {EKeyScreenDimension1, Key_unknown},
-        {EKeyScreenDimension2, Key_unknown},
-        {EKeyScreenDimension3, Key_unknown},
-        {EKeyIncVolume, Key_unknown},
-        {EKeyDecVolume, Key_unknown},
-        {EKeyDevice0, Key_Context1}, // Found by manual testing, left softkey.
-        {EKeyDevice1, Key_Context2}, // Found by manual testing.
-        {EKeyDevice2, Key_unknown},
-        {EKeyDevice3, Key_Select}, // Found by manual testing.
-        {EKeyDevice4, Key_unknown},
-        {EKeyDevice5, Key_unknown},
-        {EKeyDevice6, Key_unknown},
-        {EKeyDevice7, Key_unknown},
-        {EKeyDevice8, Key_unknown},
-        {EKeyDevice9, Key_unknown},
-        {EKeyDeviceA, Key_unknown},
-        {EKeyDeviceB, Key_unknown},
-        {EKeyDeviceC, Key_unknown},
-        {EKeyDeviceD, Key_unknown},
-        {EKeyDeviceE, Key_unknown},
-        {EKeyDeviceF, Key_unknown},
-        {EKeyApplication0, Key_Launch0},
-        {EKeyApplication1, Key_Launch1},
-        {EKeyApplication2, Key_Launch2},
-        {EKeyApplication3, Key_Launch3},
-        {EKeyApplication4, Key_Launch4},
-        {EKeyApplication5, Key_Launch5},
-        {EKeyApplication6, Key_Launch6},
-        {EKeyApplication7, Key_Launch7},
-        {EKeyApplication8, Key_Launch8},
-        {EKeyApplication9, Key_Launch9},
-        {EKeyApplicationA, Key_LaunchA},
-        {EKeyApplicationB, Key_LaunchB},
-        {EKeyApplicationC, Key_LaunchC},
-        {EKeyApplicationD, Key_LaunchD},
-        {EKeyApplicationE, Key_LaunchE},
-        {EKeyApplicationF, Key_LaunchF},
-        {EKeyYes, Key_Yes},
-        {EKeyNo, Key_No},
-        {EKeyIncBrightness, Key_unknown},
-        {EKeyDecBrightness, Key_unknown},
-        {EKeyKeyboardExtend, Key_unknown},
-        {EKeyDevice10, Key_unknown},
-        {EKeyDevice11, Key_unknown},
-        {EKeyDevice12, Key_unknown},
-        {EKeyDevice13, Key_unknown},
-        {EKeyDevice14, Key_unknown},
-        {EKeyDevice15, Key_unknown},
-        {EKeyDevice16, Key_unknown},
-        {EKeyDevice17, Key_unknown},
-        {EKeyDevice18, Key_unknown},
-        {EKeyDevice19, Key_unknown},
-        {EKeyDevice1A, Key_unknown},
-        {EKeyDevice1B, Key_unknown},
-        {EKeyDevice1C, Key_unknown},
-        {EKeyDevice1D, Key_unknown},
-        {EKeyDevice1E, Key_unknown},
-        {EKeyDevice1F, Key_unknown},
-        {EKeyApplication10, Key_unknown},
-        {EKeyApplication11, Key_unknown},
-        {EKeyApplication12, Key_unknown},
-        {EKeyApplication13, Key_unknown},
-        {EKeyApplication14, Key_unknown},
-        {EKeyApplication15, Key_unknown},
-        {EKeyApplication16, Key_unknown},
-        {EKeyApplication17, Key_unknown},
-        {EKeyApplication18, Key_unknown},
-        {EKeyApplication19, Key_unknown},
-        {EKeyApplication1A, Key_unknown},
-        {EKeyApplication1B, Key_unknown},
-        {EKeyApplication1C, Key_unknown},
-        {EKeyApplication1D, Key_unknown},
-        {EKeyApplication1E, Key_unknown},
-        {EKeyApplication1F, Key_unknown}
-    };
-    const int mapSize = int(sizeof(map)/sizeof(map[0]));
-    s60ToQtKeyMap.reserve(mapSize + 5); // +5? docs: Ideally, slightly more than number of items
-    for (int i = 0; i < mapSize; ++i)
-        s60ToQtKeyMap.insert(map[i].s60Key, map[i].qtKey);
-}
+#include <e32keys.h>
+struct KeyMapping{
+    TKeyCode s60KeyCode;
+    TStdScanCode s60ScanCode;
+    Qt::Key qtKey;
+};
+
+using namespace Qt;
+
+static const KeyMapping keyMapping[] = {
+    {EKeyBackspace, EStdKeyBackspace, Key_Backspace},
+    {EKeyTab, EStdKeyTab, Key_Tab},
+    {EKeyEnter, EStdKeyEnter, Key_Enter},
+    {EKeyEscape, EStdKeyEscape, Key_Escape},
+    {EKeySpace, EStdKeySpace, Key_Space},
+    {EKeyDelete, EStdKeyDelete, Key_Delete},
+    {EKeyPrintScreen, EStdKeyPrintScreen, Key_SysReq},
+    {EKeyPause, EStdKeyPause, Key_Pause},
+    {EKeyHome, EStdKeyHome, Key_Home},
+    {EKeyEnd, EStdKeyEnd, Key_End},
+    {EKeyPageUp, EStdKeyPageUp, Key_PageUp},
+    {EKeyPageDown, EStdKeyPageDown, Key_PageDown},
+    {EKeyInsert, EStdKeyInsert, Key_Insert},
+    {EKeyLeftArrow, EStdKeyLeftArrow, Key_Left},
+    {EKeyRightArrow, EStdKeyRightArrow, Key_Right},
+    {EKeyUpArrow, EStdKeyUpArrow, Key_Up},
+    {EKeyDownArrow, EStdKeyDownArrow, Key_Down},
+    {EKeyLeftShift, EStdKeyLeftShift, Key_Shift},
+    {EKeyRightShift, EStdKeyRightShift, Key_Shift},
+    {EKeyLeftAlt, EStdKeyLeftAlt, Key_Alt},
+    {EKeyRightAlt, EStdKeyRightAlt, Key_AltGr},
+    {EKeyLeftCtrl, EStdKeyLeftCtrl, Key_Control},
+    {EKeyRightCtrl, EStdKeyRightCtrl, Key_Control},
+    {EKeyLeftFunc, EStdKeyLeftFunc, Key_Super_L},
+    {EKeyRightFunc, EStdKeyRightFunc, Key_Super_R},
+    {EKeyCapsLock, EStdKeyCapsLock, Key_CapsLock},
+    {EKeyNumLock, EStdKeyNumLock, Key_NumLock},
+    {EKeyScrollLock, EStdKeyScrollLock, Key_ScrollLock},
+    {EKeyF1, EStdKeyF1, Key_F1},
+    {EKeyF2, EStdKeyF2, Key_F2},
+    {EKeyF3, EStdKeyF3, Key_F3},
+    {EKeyF4, EStdKeyF4, Key_F4},
+    {EKeyF5, EStdKeyF5, Key_F5},
+    {EKeyF6, EStdKeyF6, Key_F6},
+    {EKeyF7, EStdKeyF7, Key_F7},
+    {EKeyF8, EStdKeyF8, Key_F8},
+    {EKeyF9, EStdKeyF9, Key_F9},
+    {EKeyF10, EStdKeyF10, Key_F10},
+    {EKeyF11, EStdKeyF11, Key_F11},
+    {EKeyF12, EStdKeyF12, Key_F12},
+    {EKeyF13, EStdKeyF13, Key_F13},
+    {EKeyF14, EStdKeyF14, Key_F14},
+    {EKeyF15, EStdKeyF15, Key_F15},
+    {EKeyF16, EStdKeyF16, Key_F16},
+    {EKeyF17, EStdKeyF17, Key_F17},
+    {EKeyF18, EStdKeyF18, Key_F18},
+    {EKeyF19, EStdKeyF19, Key_F19},
+    {EKeyF20, EStdKeyF20, Key_F20},
+    {EKeyF21, EStdKeyF21, Key_F21},
+    {EKeyF22, EStdKeyF22, Key_F22},
+    {EKeyF23, EStdKeyF23, Key_F23},
+    {EKeyF24, EStdKeyF24, Key_F24},
+    {EKeyOff, EStdKeyOff, Key_PowerOff},
+//    {EKeyMenu, EStdKeyMenu, Key_Menu}, // Menu is EKeyApplication0
+    {EKeyHelp, EStdKeyHelp, Key_Help},
+    {EKeyDial, EStdKeyDial, Key_Call},
+    {EKeyIncVolume, EStdKeyIncVolume, Key_VolumeUp},
+    {EKeyDecVolume, EStdKeyDecVolume, Key_VolumeDown},
+    {EKeyDevice0, EStdKeyDevice0, Key_Context1}, // Found by manual testing.
+    {EKeyDevice1, EStdKeyDevice1, Key_Context2}, // Found by manual testing.
+    {EKeyDevice3, EStdKeyDevice3, Key_Select},
+//    {EKeyDevice7, EStdKeyDevice7, Key_Camera},  //not supported by qt yet
+    {EKeyApplication0, EStdKeyApplication0, Key_Menu}, // Found by manual testing.
+    {EKeyApplication1, EStdKeyApplication1, Key_Launch1}, // Found by manual testing.
+    {EKeyApplication2, EStdKeyApplication2, Key_MediaPlay}, // Found by manual testing.
+    {EKeyApplication3, EStdKeyApplication3, Key_MediaStop}, // Found by manual testing.
+    {EKeyApplication4, EStdKeyApplication4, Key_MediaNext}, // Found by manual testing.
+    {EKeyApplication5, EStdKeyApplication5, Key_MediaPrevious}, // Found by manual testing.
+    {EKeyApplication6, EStdKeyApplication6, Key_Launch6},
+    {EKeyApplication7, EStdKeyApplication7, Key_Launch7},
+    {EKeyApplication8, EStdKeyApplication8, Key_Launch8},
+    {EKeyApplication9, EStdKeyApplication9, Key_Launch9},
+    {EKeyApplicationA, EStdKeyApplicationA, Key_LaunchA},
+    {EKeyApplicationB, EStdKeyApplicationB, Key_LaunchB},
+    {EKeyApplicationC, EStdKeyApplicationC, Key_LaunchC},
+    {EKeyApplicationD, EStdKeyApplicationD, Key_LaunchD},
+    {EKeyApplicationE, EStdKeyApplicationE, Key_LaunchE},
+    {EKeyApplicationF, EStdKeyApplicationF, Key_LaunchF},
+//    {EKeyApplication19, EStdKeyApplication19, Key_CameraFocus},  //not supported by qt yet
+    {EKeyYes, EStdKeyYes, Key_Yes},
+    {EKeyNo, EStdKeyNo, Key_No},
+    {TKeyCode(0), TStdScanCode(0), Qt::Key(0)}
+};
 
 int QKeyMapperPrivate::mapS60KeyToQt(TUint s60key)
 {
-    QHash<TUint, int>::const_iterator mapping;
-    mapping = s60ToQtKeyMap.find(s60key);
-    if (mapping != s60ToQtKeyMap.end()) {
-        return *mapping;
-    } else {
-        return Qt::Key_unknown;
+    int res = Qt::Key_unknown;
+    for (int i = 0; keyMapping[i].s60KeyCode != 0; i++) {
+        if (keyMapping[i].s60KeyCode == s60key) {
+            res = keyMapping[i].qtKey;
+            break;
+        }
     }
+    return res;
 }
 
+int QKeyMapperPrivate::mapS60ScanCodesToQt(TUint s60scanCode)
+{
+    int res = Qt::Key_unknown;
+    for (int i = 0; keyMapping[i].s60KeyCode != 0; i++) {
+        if (keyMapping[i].s60ScanCode == s60scanCode) {
+            res = keyMapping[i].qtKey;
+            break;
+        }
+    }
+    return res;
+}
+
+int QKeyMapperPrivate::mapQtToS60Key(int qtKey)
+{
+    int res = KErrUnknown;
+    for (int i = 0; keyMapping[i].s60KeyCode != 0; i++) {
+        if (keyMapping[i].qtKey == qtKey) {
+            res = keyMapping[i].s60KeyCode;
+            break;
+        }
+    }
+    return res;
+}
+
+int QKeyMapperPrivate::mapQtToS60ScanCodes(int qtKey)
+{
+    int res = KErrUnknown;
+    for (int i = 0; keyMapping[i].s60KeyCode != 0; i++) {
+        if (keyMapping[i].qtKey == qtKey) {
+            res = keyMapping[i].s60ScanCode;
+            break;
+        }
+    }
+    return res;
+}
 QT_END_NAMESPACE

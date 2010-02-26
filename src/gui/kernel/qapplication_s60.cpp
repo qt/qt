@@ -597,7 +597,9 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         TUint s60Keysym = QApplicationPrivate::resolveS60ScanCode(keyEvent.iScanCode,
                 keyEvent.iCode);
         int keyCode;
-        if (s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) {
+		if (s60Keysym == EKeyNull){ //some key events have 0 in iCode, for them iScanCode should be used
+			keyCode = qt_keymapper_private()->mapS60ScanCodesToQt(keyEvent.iScanCode);
+		} else if (s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) {
             // Normal characters keys.
             keyCode = s60Keysym;
         } else {
@@ -1145,6 +1147,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     if (!qgetenv("QT_S60_AUTO_FLUSH_WSERV").isEmpty())
 #endif
         S60->wsSession().SetAutoFlush(ETrue);
+
+#ifdef Q_SYMBIAN_WINDOW_SIZE_CACHE
+    TRAP_IGNORE(S60->wsSession().EnableWindowSizeCacheL());
+#endif
 
     S60->updateScreenSize();
 

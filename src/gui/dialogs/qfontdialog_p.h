@@ -152,6 +152,12 @@ public:
     inline QFontDialog *fontDialog() { return q_func(); }
 
     void *delegate;
+    bool nativeDialogInUse;
+    bool canBeNativeDialog();
+    bool setVisible_sys(bool visible);
+    void *_q_constructNativePanel();
+    void _q_macRunNativeAppModalPanel();
+    void mac_nativeDialogModalHelp();
 
     static bool sharedFontPanelAvailable;
 #endif

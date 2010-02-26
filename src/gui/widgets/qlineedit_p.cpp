@@ -129,7 +129,7 @@ void QLineEditPrivate::_q_editFocusChange(bool e)
 void QLineEditPrivate::_q_selectionChanged()
 {
     Q_Q(QLineEdit);
-    if (control->preeditAreaText().isEmpty()) {
+    if (!control->text().isEmpty() && control->preeditAreaText().isEmpty()) {
         QStyleOptionFrameV2 opt;
         q->initStyleOption(&opt);
         bool showCursor = control->hasSelectedText() ?
