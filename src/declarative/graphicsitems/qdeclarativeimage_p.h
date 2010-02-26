@@ -76,7 +76,6 @@ public:
     qreal paintedWidth() const;
     qreal paintedHeight() const;
 
-    void setSource(const QUrl &url);
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 Q_SIGNALS:

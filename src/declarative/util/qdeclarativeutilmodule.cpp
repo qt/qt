@@ -45,7 +45,7 @@
 #include "qdeclarativeanimation_p_p.h"
 #include "qdeclarativebehavior_p.h"
 #include "qdeclarativebind_p.h"
-#include "qdeclarativeconnection_p.h"
+#include "qdeclarativeconnections_p.h"
 #include "qdeclarativedatetimeformatter_p.h"
 #include "qdeclarativeeasefollow_p.h"
 #include "qdeclarativefontloader_p.h"
@@ -80,7 +80,7 @@ void QDeclarativeUtilModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,Behavior,QDeclarativeBehavior);
     QML_REGISTER_TYPE(Qt,4,6,Binding,QDeclarativeBind);
     QML_REGISTER_TYPE(Qt,4,6,ColorAnimation,QDeclarativeColorAnimation);
-    QML_REGISTER_TYPE(Qt,4,6,Connection,QDeclarativeConnection);
+    QML_REGISTER_TYPE(Qt,4,6,Connections,QDeclarativeConnections);
     QML_REGISTER_TYPE(Qt,4,6,DateTimeFormatter,QDeclarativeDateTimeFormatter);
     QML_REGISTER_TYPE(Qt,4,6,EaseFollow,QDeclarativeEaseFollow);;
     QML_REGISTER_TYPE(Qt,4,6,FontLoader,QDeclarativeFontLoader);
@@ -118,4 +118,5 @@ void QDeclarativeUtilModule::defineModule()
 
     QML_REGISTER_CUSTOM_TYPE(Qt, 4,6, ListModel, QDeclarativeListModel, QDeclarativeListModelParser);
     QML_REGISTER_CUSTOM_TYPE(Qt, 4,6, PropertyChanges, QDeclarativePropertyChanges, QDeclarativePropertyChangesParser);
+    QML_REGISTER_CUSTOM_TYPE(Qt, 4,6, Connections, QDeclarativeConnections, QDeclarativeConnectionsParser);
 }

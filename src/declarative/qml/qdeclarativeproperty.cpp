@@ -311,10 +311,10 @@ QDeclarativeProperty::QDeclarativeProperty(const QDeclarativeProperty &other)
 
   This enum specifies a category of QML property.
 
-  \value InvalidCategory The property is invalid.
-  \value List The property is a QList pointer
+  \value InvalidCategory The property is invalid, or is a signal property.
+  \value List The property is a QDeclarativeListProperty list property
   \value Object The property is a QObject derived type pointer
-  \value Normal The property is none of the above.
+  \value Normal The property is a normal value property.
  */
 
 /*!
@@ -752,18 +752,39 @@ QVariant QDeclarativeProperty::read() const
     return QVariant();
 }
 
+/*!
+Return the \a name property value of \a object.  This method is equivalent to:
+\code
+    QDeclarativeProperty p(object, name);
+    p.read();
+\endcode
+*/
 QVariant QDeclarativeProperty::read(QObject *object, const QString &name)
 {
     QDeclarativeProperty p(object, name);
     return p.read();
 }
 
+/*!
+Return the \a name property value of \a object.  This method is equivalent to:
+\code
+    QDeclarativeProperty p(object, name, context);
+    p.read();
+\endcode
+*/
 QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeContext *ctxt)
 {
     QDeclarativeProperty p(object, name, ctxt);
     return p.read();
 }
 
+/*!
+Return the \a name property value of \a object.  This method is equivalent to:
+\code
+    QDeclarativeProperty p(object, name, engine);
+    p.read();
+\endcode
+*/
 QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeEngine *engine)
 {
     QDeclarativeProperty p(object, name, engine);
@@ -802,9 +823,7 @@ QVariant QDeclarativePropertyPrivate::readValueProperty()
     }
 }
 
-//###
 //writeEnumProperty MIRRORS the relelvant bit of QMetaProperty::write AND MUST BE KEPT IN SYNC!
-//###
 bool QDeclarativePropertyPrivate::writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, const QVariant &value, int flags)
 {
     if (!object || !prop.isWritable())
@@ -1054,12 +1073,26 @@ bool QDeclarativeProperty::write(const QVariant &value) const
     return QDeclarativePropertyPrivate::write(*this, value, 0);
 }
 
+/*!
+Writes \a value to the \a name property of \a object.  This method is equivalent to:
+\code
+    QDeclarativeProperty p(object, name);
+    p.write(value);
+\endcode
+*/
 bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value)
 {
     QDeclarativeProperty p(object, name);
     return p.write(value);
 }
 
+/*!
+Writes \a value to the \a name property of \a object.  This method is equivalent to:
+\code
+    QDeclarativeProperty p(object, name, ctxt);
+    p.write(value);
+\endcode
+*/
 bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
                                  QDeclarativeContext *ctxt)
 {
@@ -1067,6 +1100,13 @@ bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVa
     return p.write(value);
 }
 
+/*!
+Writes \a value to the \a name property of \a object.  This method is equivalent to:
+\code
+    QDeclarativeProperty p(object, name, engine);
+    p.write(value);
+\endcode
+*/
 bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
                                  QDeclarativeEngine *engine)
 {

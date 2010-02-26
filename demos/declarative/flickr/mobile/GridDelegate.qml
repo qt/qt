@@ -33,9 +33,9 @@
                  Image { source: "images/gloss.png" }
              }
 
-             Connection {
-                 sender: toolBar; signal: "button2Clicked()"
-                 script: if (scaleMe.state == 'Details' ) scaleMe.state = 'Show';
+             Connections {
+                 target: toolBar
+                 onButton2Clicked: if (scaleMe.state == 'Details' ) scaleMe.state = 'Show'
              }
 
              states: [
