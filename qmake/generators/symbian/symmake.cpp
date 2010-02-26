@@ -147,10 +147,14 @@ QString SymbianMakefileGenerator::absolutizePath(const QString& origPath)
         resultPath = QDir::fromNativeSeparators(epocRoot()) + resultPath.mid(1);
 
     QFileInfo fi(fileInfo(resultPath));
-    if (fi.isDir()) {
-        resultPath = fi.absoluteFilePath();
-    } else {
+
+    // Since origPath can be something given in HEADERS, we need to check if we are dealing
+    // with a file or a directory. In case the origPath doesn't yet exist, isFile() returns
+    // false and we default to assuming it is a dir.
+    if (fi.isFile()) {
         resultPath = fi.absolutePath();
+    } else {
+        resultPath = fi.absoluteFilePath();
     }
 
     resultPath = QDir::cleanPath(resultPath);
