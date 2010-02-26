@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 
 class QDeclarativeContext;
 class QDeclarativeEnginePrivate;
+class QDeclarativeExpression;
 class Q_AUTOTEST_EXPORT QDeclarativePropertyPrivate
 {
 public:
@@ -71,20 +72,20 @@ public:
     Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
 
     QDeclarativePropertyPrivate()
-        : q(0), context(0), object(0), isDefaultProperty(false), isNameCached(false) {}
+        : q(0), context(0), engine(0), object(0), isNameCached(false) {}
           
 
     QDeclarativePropertyPrivate(const QDeclarativePropertyPrivate &other)
-        : q(0), context(other.context), object(other.object), 
-          isDefaultProperty(other.isDefaultProperty), isNameCached(other.isNameCached),
+        : q(0), context(other.context), engine(other.engine), object(other.object), 
+          isNameCached(other.isNameCached),
           core(other.core), nameCache(other.nameCache),
           valueType(other.valueType) {}
 
     QDeclarativeProperty *q;
     QDeclarativeContext *context;
+    QDeclarativeEngine *engine;
     QDeclarativeGuard<QObject> object;
 
-    bool isDefaultProperty:1;
     bool isNameCached:1;
     QDeclarativePropertyCache::Data core;
     QString nameCache;

@@ -115,7 +115,6 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj)
 }
 
 /*!
-    \internal
     Creates a QDeclarativeProperty for the default property of \a obj. If there is no
     default property, an invalid QDeclarativeProperty will be created.
  */
@@ -124,6 +123,20 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeContext *ct
 {
     d->q = this;
     d->context = ctxt;
+    d->engine = ctxt?ctxt->engine():0;
+    d->initDefault(obj);
+}
+
+/*!
+    Creates a QDeclarativeProperty for the default property of \a obj. If there is no
+    default property, an invalid QDeclarativeProperty will be created.
+ */
+QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeEngine *engine)
+: d(new QDeclarativePropertyPrivate)
+{
+    d->q = this;
+    d->context = 0;
+    d->engine = engine;
     d->initDefault(obj);
 }
 
@@ -137,10 +150,8 @@ void QDeclarativePropertyPrivate::initDefault(QObject *obj)
 
     QMetaProperty p = QDeclarativeMetaType::defaultProperty(obj);
     core.load(p);
-    if (core.isValid()) {
-        isDefaultProperty = true;
+    if (core.isValid()) 
         object = obj;
-    }
 }
 
 /*!
@@ -155,7 +166,6 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name)
 }
 
 /*!
-    \internal
     Creates a QDeclarativeProperty for the property \a name of \a obj.
  */
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeContext *ctxt)
@@ -163,8 +173,22 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QD
 {
     d->q = this;
     d->context = ctxt;
+    d->engine = ctxt?ctxt->engine():0;
     d->initProperty(obj, name);
-    if (!isValid()) { d->object = 0; d->context = 0; }
+    if (!isValid()) { d->object = 0; d->context = 0; d->engine = 0; }
+}
+
+/*!
+    Creates a QDeclarativeProperty for the property \a name of \a obj.
+ */
+QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeEngine *engine)
+: d(new QDeclarativePropertyPrivate)
+{
+    d->q = this;
+    d->context = 0;
+    d->engine = engine;
+    d->initProperty(obj, name);
+    if (!isValid()) { d->object = 0; d->context = 0; d->engine = 0; }
 }
 
 Q_GLOBAL_STATIC(QDeclarativeValueTypeFactory, qmlValueTypes);
@@ -173,7 +197,6 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
 {
     if (!obj) return;
 
-    QDeclarativeEngine *engine = context?context->engine():0;
     QDeclarativeTypeNameCache *typeNameCache = context?QDeclarativeContextPrivate::get(context)->imports:0;
 
     QStringList path = name.split(QLatin1Char('.'));
@@ -267,7 +290,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
     // Property
     QDeclarativePropertyCache::Data local;
     QDeclarativePropertyCache::Data *property = 
-        QDeclarativePropertyCache::property(context?context->engine():0, currentObject, terminal, local);
+        QDeclarativePropertyCache::property(engine, currentObject, terminal, local);
     if (property && !(property->flags & QDeclarativePropertyCache::Data::IsFunction)) {
         object = currentObject;
         core = *property;
@@ -302,7 +325,6 @@ QDeclarativeProperty::QDeclarativeProperty(const QDeclarativeProperty &other)
   \value Invalid The property is invalid.
   \value Property The property is a regular Qt property.
   \value SignalProperty The property is a signal property.
-  \value Default The property is the default property.
 */
 
 /*!
@@ -413,7 +435,7 @@ QDeclarativeProperty::Type QDeclarativeProperty::type() const
     if (d->core.flags & QDeclarativePropertyCache::Data::IsFunction)
         return SignalProperty;
     else if (d->core.isValid())
-        return (Type)(Property | ((d->isDefaultProperty)?Default:0));
+        return Property;
     else
         return Invalid;
 }
@@ -427,11 +449,11 @@ bool QDeclarativeProperty::isProperty() const
 }
 
 /*!
-    Returns true if this QDeclarativeProperty represents a default property.
+    Returns true if this QDeclarativeProperty represents a QML signal property.
 */
-bool QDeclarativeProperty::isDefault() const
+bool QDeclarativeProperty::isSignalProperty() const
 {
-    return type() & Default;
+    return type() & SignalProperty;
 }
 
 /*!
@@ -448,9 +470,9 @@ QObject *QDeclarativeProperty::object() const
 QDeclarativeProperty &QDeclarativeProperty::operator=(const QDeclarativeProperty &other)
 {
     d->context = other.d->context;
+    d->engine = other.d->engine;
     d->object = other.d->object;
 
-    d->isDefaultProperty = other.d->isDefaultProperty;
     d->isNameCached = other.d->isNameCached;
     d->core = other.d->core;
     d->nameCache = other.d->nameCache;
@@ -521,7 +543,7 @@ QString QDeclarativeProperty::name() const
         } else if (d->isValueType()) {
             QString rv = d->core.name(d->object) + QLatin1Char('.');
 
-            QDeclarativeEnginePrivate *ep = d->context?QDeclarativeEnginePrivate::get(d->context->engine()):0;
+            QDeclarativeEnginePrivate *ep = d->engine?QDeclarativeEnginePrivate::get(d->engine):0;
             QDeclarativeValueType *valueType = 0;
             if (ep) valueType = ep->valueTypes[d->core.propType];
             else valueType = QDeclarativeValueTypeFactory::valueType(d->core.propType);
@@ -669,7 +691,7 @@ QDeclarativePropertyPrivate::signalExpression(const QDeclarativeProperty &that)
         QObject *child = children.at(ii);
 
         QDeclarativeBoundSignal *signal = QDeclarativeBoundSignal::cast(child);
-        if (signal && signal->index() == that.coreIndex()) 
+        if (signal && signal->index() == that.index()) 
             return signal->expression();
     }
 
@@ -698,7 +720,7 @@ QDeclarativePropertyPrivate::setSignalExpression(const QDeclarativeProperty &tha
         QObject *child = children.at(ii);
 
         QDeclarativeBoundSignal *signal = QDeclarativeBoundSignal::cast(child);
-        if (signal && signal->index() == that.coreIndex()) 
+        if (signal && signal->index() == that.index()) 
             return signal->setExpression(expr);
     }
 
@@ -730,6 +752,24 @@ QVariant QDeclarativeProperty::read() const
     return QVariant();
 }
 
+QVariant QDeclarativeProperty::read(QObject *object, const QString &name)
+{
+    QDeclarativeProperty p(object, name);
+    return p.read();
+}
+
+QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeContext *ctxt)
+{
+    QDeclarativeProperty p(object, name, ctxt);
+    return p.read();
+}
+
+QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDeclarativeEngine *engine)
+{
+    QDeclarativeProperty p(object, name, engine);
+    return p.read();
+}
+
 QVariant QDeclarativePropertyPrivate::readValueProperty()
 {
     if(isValueType()) {
@@ -753,7 +793,7 @@ QVariant QDeclarativePropertyPrivate::readValueProperty()
         QDeclarativeListProperty<QObject> prop;
         void *args[] = { &prop, 0 };
         QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
-        return QVariant::fromValue(QDeclarativeListReferencePrivate::init(prop, core.propType, context?context->engine():0));
+        return QVariant::fromValue(QDeclarativeListReferencePrivate::init(prop, core.propType, engine)); 
 
     } else {
 
@@ -952,13 +992,13 @@ bool QDeclarativePropertyPrivate::write(QObject *object, const QDeclarativePrope
 
             for (int ii = 0; ii < list.count(); ++ii) {
                 QObject *o = list.at(ii);
-                if (!canConvert(o->metaObject(), listType))
+                if (o && !canConvert(o->metaObject(), listType))
                     o = 0;
                 prop.append(&prop, (void *)o);
             }
         } else {
             QObject *o = enginePriv?enginePriv->toQObject(value):QDeclarativeMetaType::toQObject(value);
-            if (!canConvert(o->metaObject(), listType))
+            if (o && !canConvert(o->metaObject(), listType))
                 o = 0;
             prop.append(&prop, (void *)o);
         }
@@ -1014,6 +1054,26 @@ bool QDeclarativeProperty::write(const QVariant &value) const
     return QDeclarativePropertyPrivate::write(*this, value, 0);
 }
 
+bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value)
+{
+    QDeclarativeProperty p(object, name);
+    return p.write(value);
+}
+
+bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
+                                 QDeclarativeContext *ctxt)
+{
+    QDeclarativeProperty p(object, name, ctxt);
+    return p.write(value);
+}
+
+bool QDeclarativeProperty::write(QObject *object, const QString &name, const QVariant &value, 
+                                 QDeclarativeEngine *engine)
+{
+    QDeclarativeProperty p(object, name, engine);
+    return p.write(value);
+}
+
 /*!
     Resets the property value.
 */
@@ -1041,7 +1101,7 @@ bool QDeclarativePropertyPrivate::write(const QDeclarativeProperty &that,
 /*!
     Returns true if the property has a change notifier signal, otherwise false.
 */
-bool QDeclarativeProperty::hasChangedNotifier() const
+bool QDeclarativeProperty::hasNotifySignal() const
 {
     if (type() & Property && d->object) {
         return d->object->metaObject()->property(d->core.coreIndex).hasNotifySignal();
@@ -1056,7 +1116,7 @@ bool QDeclarativeProperty::hasChangedNotifier() const
     Some properties, such as attached properties or those whose value never 
     changes, do not require a change notifier.
 */
-bool QDeclarativeProperty::needsChangedNotifier() const
+bool QDeclarativeProperty::needsNotifySignal() const
 {
     return type() & Property && !property().isConstant();
 }
@@ -1069,7 +1129,7 @@ bool QDeclarativeProperty::needsChangedNotifier() const
     change notifier signal, or if the \a dest object does
     not have the specified \a method.
 */
-bool QDeclarativeProperty::connectNotifier(QObject *dest, int method) const
+bool QDeclarativeProperty::connectNotifySignal(QObject *dest, int method) const
 {
     if (!(type() & Property) || !d->object)
         return false;
@@ -1090,7 +1150,7 @@ bool QDeclarativeProperty::connectNotifier(QObject *dest, int method) const
     change notifier signal, or if the \a dest object does
     not have the specified \a slot.
 */
-bool QDeclarativeProperty::connectNotifier(QObject *dest, const char *slot) const
+bool QDeclarativeProperty::connectNotifySignal(QObject *dest, const char *slot) const
 {
     if (!(type() & Property) || !d->object)
         return false;
@@ -1107,7 +1167,7 @@ bool QDeclarativeProperty::connectNotifier(QObject *dest, const char *slot) cons
 /*!
     Return the Qt metaobject index of the property.
 */
-int QDeclarativeProperty::coreIndex() const
+int QDeclarativeProperty::index() const
 {
     return d->core.coreIndex;
 }
@@ -1164,6 +1224,7 @@ QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QD
 
     prop.d->object = object;
     prop.d->context = ctxt;
+    prop.d->engine = ctxt?ctxt->engine():0;
 
     const SerializedData *sd = (const SerializedData *)data.constData();
     if (sd->isValueType) {
