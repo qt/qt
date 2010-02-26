@@ -53,7 +53,19 @@ QT_MODULE(Core)
 class Q_CORE_EXPORT QElapsedTimer
 {
 public:
+    enum ClockType {
+        SystemTime,
+        MonotonicClock,
+        TickCounter,
+        MachAbsoluteTime
+    };
+    static ClockType clockType();
     static bool isMonotonic();
+
+    static inline QElapsedTimer started()
+    { QElapsedTimer t; t.start(); return t; }
+    static inline QElapsedTimer invalid()
+    { QElapsedTimer t; t.invalidate(); return t; }
 
     void start();
     qint64 restart();
@@ -63,6 +75,7 @@ public:
     qint64 elapsed() const;
     bool hasExpired(qint64 timeout) const;
 
+    qint64 msecsSinceReference() const;
     qint64 msecsTo(const QElapsedTimer &other) const;
     qint64 secsTo(const QElapsedTimer &other) const;
 

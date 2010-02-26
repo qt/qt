@@ -87,6 +87,11 @@ bool QElapsedTimer::isMonotonic()
 #endif
 }
 
+QElapsedTimer::ClockType QElapsedTimer::clockType()
+{
+    return isMonotonic() ? MonotonicClock : SystemTime;
+}
+
 static inline QPair<long, long> do_gettime()
 {
 #if (_POSIX_MONOTONIC_CLOCK-0 > 0)
@@ -139,7 +144,7 @@ qint64 QElapsedTimer::restart()
 
     r.first -= oldt1;
     r.second -= oldt2;
-    return r.first * 1000 + r.second / fractionAdjustment();
+    return r.first * Q_INT64_C(1000) + r.second / fractionAdjustment();
 }
 
 qint64 QElapsedTimer::elapsed() const
@@ -149,11 +154,16 @@ qint64 QElapsedTimer::elapsed() const
     return msecsTo(now);
 }
 
+qint64 QElapsedTimer::msecsSinceReference() const
+{
+    return t1 * Q_INT64_C(1000) + t2 / fractionAdjustment();
+}
+
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
     qint64 secs = other.t1 - t1;
     qint64 fraction = other.t2 - t2;
-    return secs * 1000 + fraction / fractionAdjustment();
+    return secs * Q_INT64_C(1000) + fraction / fractionAdjustment();
 }
 
 qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const

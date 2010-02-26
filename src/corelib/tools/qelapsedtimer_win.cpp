@@ -76,6 +76,11 @@ static quint64 getTickCount()
     return GetTickCount();
 }
 
+QElapsedTimer::ClockType QElapsedTimer::clockType()
+{
+    return TickCounter;
+}
+
 static qint64 difference(qint64 a, qint64 b)
 {
     qint64 retval = a - b;
@@ -109,6 +114,11 @@ qint64 QElapsedTimer::restart()
 qint64 QElapsedTimer::elapsed() const
 {
     return difference(getTickCount(), t1);
+}
+
+qint64 QElapsedTimer::msecsSinceReference() const
+{
+    return t1;
 }
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const

@@ -47,6 +47,11 @@
 
 QT_BEGIN_NAMESPACE
 
+QElapsedTimer::ClockType QElapsedTimer::clockType()
+{
+    return MachAbsoluteTime;
+}
+
 bool QElapsedTimer::isMonotonic()
 {
     return true;
@@ -87,6 +92,7 @@ qint64 QElapsedTimer::restart()
 {
     qint64 old = t1;
     t1 = mach_absolute_time();
+    t2 = 0;
 
     return absoluteToMSecs(t1 - old);
 }
@@ -95,6 +101,11 @@ qint64 QElapsedTimer::elapsed() const
 {
     uint64_t cpu_time = mach_absolute_time();
     return absoluteToMSecs(cpu_time - t1);
+}
+
+qint64 QElapsedTimer::msecsSinceReference()
+{
+    return absoluteToMSecs(t1);
 }
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const

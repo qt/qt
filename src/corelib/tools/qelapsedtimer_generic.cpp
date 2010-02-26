@@ -44,6 +44,17 @@
 
 QT_BEGIN_NAMESPACE
 
+static qint64 currentDateTimeMsec()
+{
+    QDateTime t = QDateTime::currentDateTime();
+    return t.toTime_t() * Q_INT64_C(1000) + t.time().msec();
+}
+
+QElapsedTimer::ClockType QElapsedTimer::clockType()
+{
+    return SystemTime;
+}
+
 bool QElapsedTimer::isMonotonic()
 {
     return false;
@@ -51,30 +62,30 @@ bool QElapsedTimer::isMonotonic()
 
 void QElapsedTimer::start()
 {
-    QTime t = QTime::currentTime();
-    t1 = t.mds;
-    t2 = 0;
+    restart();
 }
 
 qint64 QElapsedTimer::restart()
 {
-    QTime t = QTime::currentTime();
     qint64 old = t1;
-    t1 = t.mds;
+    t1 = currentDateTimeMsec();
+    t2 = 0;
     return t1 - old;
 }
 
 qint64 QElapsedTimer::elapsed() const
 {
-    QTime t = QTime::currentTime();
-    return t.mds - t1;
+    return currentDateTimeMsec() - t1;
+}
+
+qint64 QElapsedTimer::msecsSinceReference() const
+{
+    return t1;
 }
 
 qint64 QElapsedTimer::msecsTo(const QElapsedTimer &other) const
 {
     qint64 diff = other.t1 - t1;
-    if (diff < 0)             // passed midnight
-        diff += 86400 * 1000;
     return diff;
 }
 
