@@ -410,29 +410,35 @@ const char *QMetaType::typeName(int type)
 }
 
 /*! \internal
-    Same as QMetaType::type(), but doesn't lock the mutex.
+    Similar to QMetaType::type(), but only looks in the static set of types.
 */
-static int qMetaTypeType_unlocked(const char *typeName)
+static inline int qMetaTypeStaticType(const char *typeName, int length)
 {
-    int length = qstrlen(typeName);
     int i = 0;
     while (types[i].typeName && ((length != types[i].typeNameLength)
                                  || strcmp(typeName, types[i].typeName))) {
         ++i;
     }
-    if (!types[i].type) {
-        const QVector<QCustomTypeInfo> * const ct = customTypes();
-        if (!ct)
-            return 0;
+    return types[i].type;
+}
 
-        for (int v = 0; v < ct->count(); ++v) {
-            if ((length == ct->at(v).typeName.size())
-                 && !strcmp(typeName, ct->at(v).typeName.constData())) {
-                return v + QMetaType::User;
-            }
+/*! \internal
+    Similar to QMetaType::type(), but only looks in the custom set of
+    types, and doesn't lock the mutex.
+*/
+static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
+{
+    const QVector<QCustomTypeInfo> * const ct = customTypes();
+    if (!ct)
+        return 0;
+
+    for (int v = 0; v < ct->count(); ++v) {
+        if ((length == ct->at(v).typeName.size())
+            && !strcmp(typeName, ct->at(v).typeName.constData())) {
+            return v + QMetaType::User;
         }
     }
-    return types[i].type;
+    return 0;
 }
 
 /*! \internal
@@ -454,16 +460,21 @@ int QMetaType::registerType(const char *typeName, Destructor destructor,
     NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
 #endif
 
-    QWriteLocker locker(customTypesLock());
-    int idx = qMetaTypeType_unlocked(normalizedTypeName.constData());
+    int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
+                                  normalizedTypeName.size());
 
     if (!idx) {
-        QCustomTypeInfo inf;
-        inf.typeName = normalizedTypeName;
-        inf.constr = constructor;
-        inf.destr = destructor;
-        idx = ct->size() + User;
-        ct->append(inf);
+        QWriteLocker locker(customTypesLock());
+        idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                           normalizedTypeName.size());
+        if (!idx) {
+            QCustomTypeInfo inf;
+            inf.typeName = normalizedTypeName;
+            inf.constr = constructor;
+            inf.destr = destructor;
+            idx = ct->size() + User;
+            ct->append(inf);
+        }
     }
     return idx;
 }
@@ -522,12 +533,21 @@ bool QMetaType::isRegistered(int type)
 */
 int QMetaType::type(const char *typeName)
 {
-    QReadLocker locker(customTypesLock());
-    int type = qMetaTypeType_unlocked(typeName);
-#ifndef QT_NO_QOBJECT
+    int length = qstrlen(typeName);
+    int type = qMetaTypeStaticType(typeName, length);
     if (!type) {
-        const NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
-        type = qMetaTypeType_unlocked(normalizedTypeName.constData());
+        QReadLocker locker(customTypesLock());
+        type = qMetaTypeCustomType_unlocked(typeName, length);
+#ifndef QT_NO_QOBJECT
+        if (!type) {
+            const NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
+            type = qMetaTypeStaticType(normalizedTypeName.constData(),
+                                       normalizedTypeName.size());
+            if (!type) {
+                type = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                                    normalizedTypeName.size());
+            }
+        }
     }
 #endif
     return type;
