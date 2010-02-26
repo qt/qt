@@ -447,6 +447,36 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
 };
 
+class QDeclarativeParentAnimationPrivate;
+class QDeclarativeParentAnimation : public QDeclarativeAnimationGroup
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QDeclarativeParentAnimation)
+
+    Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget)
+    //Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent)
+    Q_PROPERTY(QDeclarativeItem *via READ via WRITE setVia)
+
+public:
+    QDeclarativeParentAnimation(QObject *parent=0);
+    virtual ~QDeclarativeParentAnimation();
+
+    QDeclarativeItem *target() const;
+    void setTarget(QDeclarativeItem *);
+
+    QDeclarativeItem *newParent() const;
+    void setNewParent(QDeclarativeItem *);
+
+    QDeclarativeItem *via() const;
+    void setVia(QDeclarativeItem *);
+
+protected:
+    virtual void transition(QDeclarativeStateActions &actions,
+                            QDeclarativeProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+};
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeAbstractAnimation)
@@ -461,6 +491,7 @@ QML_DECLARE_TYPE(QDeclarativeSequentialAnimation)
 QML_DECLARE_TYPE(QDeclarativeParallelAnimation)
 QML_DECLARE_TYPE(QDeclarativeVector3dAnimation)
 QML_DECLARE_TYPE(QDeclarativeRotationAnimation)
+QML_DECLARE_TYPE(QDeclarativeParentAnimation)
 
 QT_END_HEADER
 

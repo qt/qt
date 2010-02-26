@@ -59,6 +59,7 @@
 #include "qdeclarativetimeline_p_p.h"
 
 #include <qdeclarative.h>
+#include <qdeclarativeitem.h>
 #include <qdeclarativecontext.h>
 
 #include <QtCore/QPauseAnimation>
@@ -104,6 +105,12 @@ public:
         : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped), running(false) {}
     ~QActionAnimation() { if (policy == DeleteWhenStopped) { delete animAction; animAction = 0; } }
     virtual int duration() const { return 0; }
+    void clearAnimAction()
+    {
+        if (policy == DeleteWhenStopped)
+            delete animAction;
+        animAction = 0;
+    }
     void setAnimAction(QAbstractAnimationAction *action, DeletionPolicy p)
     {
         if (state() == Running)
@@ -311,8 +318,6 @@ public:
 
     static void append_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, QDeclarativeAbstractAnimation *role);
     static void clear_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list);
-    static void removeAt_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, int i);
-    static void insert_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, int i, QDeclarativeAbstractAnimation *role);
     QList<QDeclarativeAbstractAnimation *> animations;
     QAnimationGroup *ag;
 };
@@ -360,6 +365,25 @@ public:
     QDeclarativeRotationAnimationPrivate() : direction(QDeclarativeRotationAnimation::Shortest) {}
 
     QDeclarativeRotationAnimation::RotationDirection direction;
+};
+
+class QDeclarativeParentAnimationPrivate : public QDeclarativeAnimationGroupPrivate
+{
+    Q_DECLARE_PUBLIC(QDeclarativeParentAnimation)
+public:
+    QDeclarativeParentAnimationPrivate()
+    : QDeclarativeAnimationGroupPrivate(), target(0), newParent(0),
+       via(0), topLevelGroup(0), startAction(0), endAction(0) {}
+
+    QDeclarativeItem *target;
+    QDeclarativeItem *newParent;
+    QDeclarativeItem *via;
+
+    QSequentialAnimationGroup *topLevelGroup;
+    QActionAnimation *startAction;
+    QActionAnimation *endAction;
+
+    QPointF computeTransformOrigin(QDeclarativeItem::TransformOrigin origin, qreal width, qreal height) const;
 };
 
 QT_END_NAMESPACE
