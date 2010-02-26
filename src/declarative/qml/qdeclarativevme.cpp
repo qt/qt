@@ -525,7 +525,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                     if (!QMetaObject::checkConnectArgs(prop.method().signature(), method.signature()))
                         VME_EXCEPTION(QCoreApplication::translate("QDeclarativeVME","Cannot connect mismatched signal/slot %1 %vs. %2").arg(QString::fromLatin1(method.signature())).arg(QString::fromLatin1(prop.method().signature())));
 
-                    QMetaObject::connect(target, prop.coreIndex(), assign, method.methodIndex());
+                    QMetaObject::connect(target, prop.index(), assign, method.methodIndex());
 
                 } else {
                     VME_EXCEPTION(QCoreApplication::translate("QDeclarativeVME","Cannot assign an object to signal property %1").arg(QString::fromUtf8(pr)));
@@ -593,7 +593,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QDeclarativeProperty mp = 
                     QDeclarativePropertyPrivate::restore(datas.at(instr.assignBinding.property), target, ctxt);
 
-                int coreIndex = mp.coreIndex();
+                int coreIndex = mp.index();
 
                 if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
                     break;
@@ -648,7 +648,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 obj->setParent(target);
                 vi->setTarget(prop);
                 QDeclarativeVMEMetaObject *mo = static_cast<QDeclarativeVMEMetaObject *>((QMetaObject*)target->metaObject());
-                mo->registerInterceptor(prop.coreIndex(), QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), vi);
+                mo->registerInterceptor(prop.index(), QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), vi);
             }
             break;
 
