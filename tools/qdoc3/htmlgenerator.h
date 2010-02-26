@@ -90,10 +90,9 @@ class HtmlGenerator : public PageGenerator
         Typedef, 
         Property,
         Variable, 
-        QDeclarativeClass,
-        QDeclarativeProperty,
-        QDeclarativeSignal,
-        QDeclarativeMethod,
+        QmlProperty,
+        QmlSignal,
+        QmlMethod,
         LastSinceType
     };
 
@@ -185,9 +184,9 @@ class HtmlGenerator : public PageGenerator
     void generateDetailedQmlMember(const Node *node,
                                    const InnerNode *relative,
                                    CodeMarker *marker);
-    void generateQmlInherits(const QDeclarativeClassNode* cn, CodeMarker* marker);
-    void generateQmlInheritedBy(const QDeclarativeClassNode* cn, CodeMarker* marker);
-    void generateQmlInstantiates(const QDeclarativeClassNode* qcn, CodeMarker* marker);
+    void generateQmlInherits(const QmlClassNode* cn, CodeMarker* marker);
+    void generateQmlInheritedBy(const QmlClassNode* cn, CodeMarker* marker);
+    void generateQmlInstantiates(const QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(const ClassNode* cn, CodeMarker* marker);
 #endif
 #ifdef QDOC_NAME_ALIGNMENT
@@ -327,7 +326,6 @@ class HtmlGenerator : public PageGenerator
     NewSinceMaps newSinceMaps;
     static QString sinceTitles[];
     NewClassMaps newClassMaps;
-    NewClassMaps newQmlClassMaps;
     static int id;
 };
 

@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QMediaResource
     \preliminary
+    \since 4.7
     \brief The QMediaResource class provides a description of a media resource.
     \ingroup multimedia
 

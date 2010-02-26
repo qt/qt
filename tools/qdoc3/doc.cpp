@@ -553,7 +553,7 @@ void DocParser::parse(const QString& source,
                         append(Atom::Qml, getCode(CMD_QML, marker));
                         break;
                     case CMD_QMLTEXT:
-                        append(Atom::QDeclarativeText);
+                        append(Atom::QmlText);
                         break;
 #endif                        
                     case CMD_CODELINE:
@@ -2842,7 +2842,7 @@ void Doc::initialize(const Config& config)
     DocParser::quoting = config.getBool(CONFIG_QUOTINGINFORMATION);
 
 #ifdef QDOC_QML
-    QDeclarativeClassNode::qmlOnly = config.getBool(CONFIG_QMLONLY);
+    QmlClassNode::qmlOnly = config.getBool(CONFIG_QMLONLY);
 #endif
 
     QStringMap reverseAliasMap;

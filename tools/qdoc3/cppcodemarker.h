@@ -79,7 +79,7 @@ class CppCodeMarker : public CodeMarker
     QList<Section> sections(const InnerNode *innerNode, 
                             SynopsisStyle style, 
                             Status status);
-    QList<Section> qmlSections(const QDeclarativeClassNode* qmlClassNode,
+    QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
                                SynopsisStyle style);
     const Node *resolveTarget(const QString& target, 
                               const Tree *tree, 

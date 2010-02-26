@@ -101,7 +101,7 @@ class Generator
                                  const Node *relative,
                                  CodeMarker *marker,
                                  const QString& qmlName);
-    virtual void generateQmlInherits(const QDeclarativeClassNode* cn, 
+    virtual void generateQmlInherits(const QmlClassNode* cn, 
                                      CodeMarker* marker);
 #endif
     virtual void generateBody(const Node *node, CodeMarker *marker);
@@ -169,13 +169,6 @@ class Generator
                            const QList<RelatedClass> &classes,
                            CodeMarker *marker);
 
- protected:
-    void appendSortedNames(Text& text,
-                           const Node* base,
-                           const NodeList& subs,
-                           CodeMarker *marker);
-
- private:
     QString amp;
     QString lt;
     QString gt;

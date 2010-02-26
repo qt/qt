@@ -209,6 +209,7 @@ namespace QtSharedPointer {
 
         inline bool destroy() { destroyer(this); return true; }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
+        inline void operator delete(void *, void *) { }
     };
     // sizeof(ExternalRefCountWithDestroyFn) = 16 (32-bit) / 24 (64-bit)
 

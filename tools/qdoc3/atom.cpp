@@ -133,7 +133,7 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value ParaLeft
   \value ParaRight
   \value Qml
-  \value QDeclarativeText
+  \value QmlText
   \value QuotationLeft
   \value QuotationRight
   \value RawString
@@ -210,7 +210,7 @@ static const struct {
     { "ParaRight", Atom::ParaRight },
 #ifdef QDOC_QML
     { "Qml", Atom::Qml},
-    { "QDeclarativeText", Atom::QDeclarativeText },
+    { "QmlText", Atom::QmlText },
 #endif
     { "QuotationLeft", Atom::QuotationLeft },
     { "QuotationRight", Atom::QuotationRight },

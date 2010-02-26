@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,55 +39,48 @@
 **
 ****************************************************************************/
 
-#include <gst/gst.h>
+#define QT_NO_KEYWORDS
+#define signals int
+#define slots int
+#define emit public:;
+#define foreach public:;
+#define forever public:;
 
-#include "qgstreamermessage.h"
+// include all of Qt here
 
+// core Qt
+#include <QtCore/QtCore>
+#include <QtGui/QtGui>
+#include <QtNetwork/QtNetwork>
 
-static int wuchi = qRegisterMetaType<QGstreamerMessage>();
+// extra
+#include <QtDBus/QtDBus>
+//#include <QtDeclarative/QtDeclarative>
+#include <QtHelp/QtHelp>
+#include <QtMultimedia/QtMultimedia>
+#include <QtOpenGL/QtOpenGL>
+#include <QtScript/QtScript>
+#include <QtScriptTools/QtScriptTools>
+#include <QtSql/QtSql>
+#include <QtSvg/QtSvg>
+#include <QtTest/QtTest>
+#include <QtXml/QtXml>
+#include <QtXmlPatterns/QtXmlPatterns>
 
+// webkit:
+#include <QtWebKit/QtWebKit>
 
-/*!
-    \class gstreamer::QGstreamerMessage
-    \internal
-*/
+// designer:
+#include <QtDesigner/QtDesigner>
+#include <QtUiTools/QtUiTools>
 
-QGstreamerMessage::QGstreamerMessage():
-    m_message(0)
-{
-}
+// feature dependent:
+#ifndef QT_NO_OPENVG
+#include <QtOpenVG/QtOpenVG>
+#endif
 
-QGstreamerMessage::QGstreamerMessage(GstMessage* message):
-    m_message(message)
-{
-    gst_message_ref(m_message);
-}
+// removed in 4.7:
+//#include <QtAssistant/QtAssistant>
 
-QGstreamerMessage::QGstreamerMessage(QGstreamerMessage const& m):
-    m_message(m.m_message)
-{
-    gst_message_ref(m_message);
-}
-
-
-QGstreamerMessage::~QGstreamerMessage()
-{
-    if (m_message != 0)
-        gst_message_unref(m_message);
-}
-
-GstMessage* QGstreamerMessage::rawMessage() const
-{
-    return m_message;
-}
-
-QGstreamerMessage& QGstreamerMessage::operator=(QGstreamerMessage const& rhs)
-{
-    if (m_message != 0)
-        gst_message_unref(m_message);
-
-    if ((m_message = rhs.m_message) != 0)
-        gst_message_ref(m_message);
-
-    return *this;
-}
+// can't include this since it causes a linker error
+//#include <Qt3Support/Qt3Support>

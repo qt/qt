@@ -854,7 +854,7 @@ inline bool QScriptEnginePrivate::isQObject(JSC::JSValue value)
 inline bool QScriptEnginePrivate::isQMetaObject(JSC::JSValue value)
 {
 #ifndef QT_NO_QOBJECT
-    return JSC::asObject(value)->inherits(&QScript::QMetaObjectWrapperObject::info);
+    return isObject(value) && JSC::asObject(value)->inherits(&QScript::QMetaObjectWrapperObject::info);
 #else
     return false;
 #endif
