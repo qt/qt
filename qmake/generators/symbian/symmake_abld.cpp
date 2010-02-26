@@ -69,7 +69,7 @@ SymbianAbldMakefileGenerator::~SymbianAbldMakefileGenerator() { }
 void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
     QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-    removeSpecialCharacters(gnuMakefileName);
+    removeEpocSpecialCharacters(gnuMakefileName);
     gnuMakefileName.append(".mk");
 
     QFile ft(gnuMakefileName);
@@ -451,7 +451,7 @@ void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool ad
     // do not get that, special deployment only makefile is generated for them if needed.
     if (targetType != TypeSubdirs || addDeploymentExtension) {
         QString gnuMakefileName = QLatin1String("Makefile_") + uid3;
-        removeSpecialCharacters(gnuMakefileName);
+        removeEpocSpecialCharacters(gnuMakefileName);
         gnuMakefileName.append(".mk");
         t << "gnumakefile " << gnuMakefileName << endl;
     }

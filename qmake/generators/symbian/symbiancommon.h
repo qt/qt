@@ -67,6 +67,7 @@ protected:
 
     QString removePathSeparators(QString &file);
     void removeSpecialCharacters(QString& str);
+    void removeEpocSpecialCharacters(QString& str);
     void generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild);
     bool containsStartWithItem(const QChar &c, const QStringList& src);
 

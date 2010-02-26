@@ -22,10 +22,12 @@ contains( CONFIG, no_icon ) {
         baseTarget = $$basename(TARGET)
         baseTarget = $$replace(baseTarget, /,_)
         baseTarget = $$replace(baseTarget, \\,_)
-        baseTarget = $$replace(baseTarget, -,_)
-        baseTarget = $$replace(baseTarget, :,_)
-        baseTarget = $$replace(baseTarget, \.,_)
         baseTarget = $$replace(baseTarget, " ",_)
+        symbian-abld|symbian-sbsv2 {
+            baseTarget = $$replace(baseTarget, -,_)
+            baseTarget = $$replace(baseTarget, \.,_)
+            baseTarget = $$replace(baseTarget, :,_)
+        }
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         !symbian-sbsv2 {

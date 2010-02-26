@@ -68,9 +68,13 @@ void SymbianCommonGenerator::init()
     fixedTarget = project->first("QMAKE_ORIG_TARGET");
     if (fixedTarget.isEmpty())
         fixedTarget = project->first("TARGET");
-    fixedTarget = generator->escapeFilePath(fixedTarget);
+    fixedTarget = generator->unescapeFilePath(fixedTarget);
     fixedTarget = removePathSeparators(fixedTarget);
-    removeSpecialCharacters(fixedTarget);
+    if (project->first("MAKEFILE_GENERATOR") == "SYMBIAN_ABLD"
+        || project->first("MAKEFILE_GENERATOR") == "SYMBIAN_SBSV2")
+        removeEpocSpecialCharacters(fixedTarget);
+    else
+        removeSpecialCharacters(fixedTarget);
 
     // This should not be empty since the mkspecs are supposed to set it if missing.
     uid3 = project->first("TARGET.UID3").trimmed();
@@ -120,10 +124,16 @@ void SymbianCommonGenerator::removeSpecialCharacters(QString& str)
     // When modifying this method check also application_icon.prf
     str.replace(QString("/"), QString("_"));
     str.replace(QString("\\"), QString("_"));
+    str.replace(QString(" "), QString("_"));
+}
+
+void SymbianCommonGenerator::removeEpocSpecialCharacters(QString& str)
+{
+    // When modifying this method check also application_icon.prf
     str.replace(QString("-"), QString("_"));
     str.replace(QString(":"), QString("_"));
     str.replace(QString("."), QString("_"));
-    str.replace(QString(" "), QString("_"));
+    removeSpecialCharacters(str);
 }
 
 void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, DeploymentList &depList, bool epocBuild)
@@ -132,7 +142,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
     QString pkgTarget = project->first("QMAKE_ORIG_TARGET");
     if (pkgTarget.isEmpty())
         pkgTarget = project->first("TARGET");
-    pkgTarget = generator->escapeFilePath(pkgTarget);
+    pkgTarget = generator->unescapeFilePath(pkgTarget);
     pkgTarget = removePathSeparators(pkgTarget);
     QString pkgFilename = QString("%1_template.%2").arg(pkgTarget).arg("pkg");
     if (!Option::output_dir.isEmpty())
@@ -309,7 +319,6 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
                     QDir mifIconDir(project->first("DESTDIR"));
                     QFileInfo mifIcon(mifIconDir.relativeFilePath(project->first("TARGET")));
                     QString mifIconFileName = mifIcon.fileName();
-                    mifIconFileName.replace(QRegExp("[-: .]"), "_");
                     mifIconFileName.append(".mif");
                     t << QString("\"%1/%2\"    - \"!:%3\"")
                          .arg(mifIcon.path())

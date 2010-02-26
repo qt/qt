@@ -173,7 +173,7 @@ void SymbianMakefileGenerator::writeHeader(QTextStream &t)
     bldinfDefine.append(generate_uid(project->projectFile()));
 
     bldinfDefine.prepend("BLD_INF_");
-    removeSpecialCharacters(bldinfDefine);
+    removeEpocSpecialCharacters(bldinfDefine);
 
     t << "#define " << bldinfDefine.toUpper() << endl << endl;
 }
@@ -1032,7 +1032,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         QString uid = generate_uid(fullProName);
         QString bldinfDefine = QString("BLD_INF_") + subdirFileName + QString("_") + uid;
         bldinfDefine = bldinfDefine.toUpper();
-        removeSpecialCharacters(bldinfDefine);
+        removeEpocSpecialCharacters(bldinfDefine);
 
         t << "#ifndef " << bldinfDefine << endl;
         t << "\t#include \"" << bldinfFilename << "\"" << endl;
