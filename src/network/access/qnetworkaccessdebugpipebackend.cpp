@@ -252,7 +252,7 @@ void QNetworkAccessDebugPipeBackend::socketError()
         break;
     }
 
-    error(code, QObject::tr("Socket error on %1: %2")
+    error(code, QNetworkAccessDebugPipeBackend::tr("Socket error on %1: %2")
           .arg(url().toString(), socket.errorString()));
     finished();
     disconnect(&socket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
@@ -267,7 +267,7 @@ void QNetworkAccessDebugPipeBackend::socketDisconnected()
         // normal close
     } else {
         // abnormal close
-        QString msg = QObject::tr("Remote host closed the connection prematurely on %1")
+        QString msg = QNetworkAccessDebugPipeBackend::tr("Remote host closed the connection prematurely on %1")
                              .arg(url().toString());
         error(QNetworkReply::RemoteHostClosedError, msg);
         finished();

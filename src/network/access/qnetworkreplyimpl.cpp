@@ -565,7 +565,7 @@ void QNetworkReplyImplPrivate::finished()
                         }
                     } else {
                         error(QNetworkReply::TemporaryNetworkFailureError,
-                              q->tr("Temporary network failure."));
+                              QNetworkReply::tr("Temporary network failure."));
                     }
                 }
             }

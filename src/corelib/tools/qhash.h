@@ -625,6 +625,7 @@ template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QList<Key> QHash<Key, T>::uniqueKeys() const
 {
     QList<Key> res;
+    res.reserve(size()); // May be too much, but assume short lifetime
     const_iterator i = begin();
     if (i != end()) {
         for (;;) {
@@ -644,6 +645,7 @@ template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QList<Key> QHash<Key, T>::keys() const
 {
     QList<Key> res;
+    res.reserve(size());
     const_iterator i = begin();
     while (i != end()) {
         res.append(i.key());
@@ -688,6 +690,7 @@ template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QList<T> QHash<Key, T>::values() const
 {
     QList<T> res;
+    res.reserve(size());
     const_iterator i = begin();
     while (i != end()) {
         res.append(i.value());
