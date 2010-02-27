@@ -2152,12 +2152,14 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
         ret += " -nodependheuristics";
     if(!Option::mkfile::qmakespec_commandline.isEmpty())
         ret += " -spec " + specdir(outdir);
-    if(Option::target_mode == Option::TARG_MACX_MODE)
-        ret += " -macx";
-    else if(Option::target_mode == Option::TARG_UNIX_MODE)
-        ret += " -unix";
-    else if(Option::target_mode == Option::TARG_WIN_MODE)
-        ret += " -win32";
+    if (Option::target_mode_overridden) {
+        if (Option::target_mode == Option::TARG_MACX_MODE)
+            ret += " -macx";
+        else if (Option::target_mode == Option::TARG_UNIX_MODE)
+            ret += " -unix";
+        else if (Option::target_mode == Option::TARG_WIN_MODE)
+            ret += " -win32";
+    }
 
     //configs
     for(QStringList::Iterator it = Option::user_configs.begin();

@@ -78,6 +78,7 @@ class QMakeProject
     FunctionBlock *function;
     QMap<QString, FunctionBlock*> testFunctions, replaceFunctions;
 
+    bool recursive;
     bool own_prop;
     QString pfile, cfile;
     QMakeProperty *prop;
@@ -105,6 +106,7 @@ class QMakeProject
     QStringList doVariableReplaceExpand(const QString &str, QMap<QString, QStringList> &place, bool *ok=0);
     void init(QMakeProperty *, const QMap<QString, QStringList> *);
     QStringList &values(const QString &v, QMap<QString, QStringList> &place);
+    void validateModes();
 
 public:
     QMakeProject() { init(0, 0); }
@@ -154,6 +156,8 @@ public:
     QString first(const QString &v);
     QMap<QString, QStringList> &variables();
 
+    bool isRecursive() const { return recursive; }
+
 protected:
     friend class MakefileGenerator;
     bool read(const QString &file, QMap<QString, QStringList> &place);
@@ -191,10 +195,6 @@ inline QString QMakeProject::first(const QString &v)
 
 inline QMap<QString, QStringList> &QMakeProject::variables()
 { return vars; }
-
-// Helper functions needed for Symbian
-bool isForSymbian();
-bool isForSymbianSbsv2();
 
 QT_END_NAMESPACE
 
