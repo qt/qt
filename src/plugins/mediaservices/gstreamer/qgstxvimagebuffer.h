@@ -56,13 +56,12 @@
 #include <X11/extensions/Xv.h>
 #include <X11/extensions/Xvlib.h>
 
-
 #include <gst/gst.h>
+
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
 
 class QGstXvImageBufferPool;
 
@@ -82,7 +81,6 @@ struct QGstXvImageBuffer {
 
 const QAbstractVideoBuffer::HandleType XvHandleType = QAbstractVideoBuffer::HandleType(4);
 
-Q_DECLARE_METATYPE(XvImage*)
 
 
 class QGstXvImageBufferPool : public QObject {
@@ -124,6 +122,8 @@ private:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(::XvImage*)
 
 QT_END_HEADER
 
