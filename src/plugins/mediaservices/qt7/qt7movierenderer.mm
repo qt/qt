@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+//#define USE_MAIN_MONITOR_COLOR_SPACE 1
+
 class CVGLTextureVideoBuffer : public QAbstractVideoBuffer
 {
 public:
@@ -233,7 +235,24 @@ bool QT7MovieRenderer::createPixelBufferVisualContext()
                                                                              &kCFTypeDictionaryKeyCallBacks,
                                                                              &kCFTypeDictionaryValueCallBacks);
     CFDictionarySetValue(visualContextOptions, kQTVisualContextPixelBufferAttributesKey, pixelBufferOptions);
-    CFDictionarySetValue(visualContextOptions, kQTVisualContextWorkingColorSpaceKey, CGColorSpaceCreateDeviceRGB());
+
+    CGColorSpaceRef colorSpace = NULL;
+
+#if USE_MAIN_MONITOR_COLOR_SPACE
+    CMProfileRef sysprof = NULL;
+
+    // Get the Systems Profile for the main display
+    if (CMGetSystemProfile(&sysprof) == noErr) {
+        // Create a colorspace with the systems profile
+        colorSpace = CGColorSpaceCreateWithPlatformColorSpace(sysprof);        
+        CMCloseProfile(sysprof);
+    }
+#endif
+
+    if (!colorSpace)
+        colorSpace = CGColorSpaceCreateDeviceRGB();
+
+    CFDictionarySetValue(visualContextOptions, kQTVisualContextOutputColorSpaceKey, colorSpace);
 
     OSStatus err = QTPixelBufferContextCreate(kCFAllocatorDefault,
                                                visualContextOptions,

@@ -41,6 +41,12 @@
 
 #include "qgstreamervideorendererinterface.h"
 
+
+QT_BEGIN_NAMESPACE
+
 QGstreamerVideoRendererInterface::~QGstreamerVideoRendererInterface()
 {
 }
+
+QT_END_NAMESPACE
+

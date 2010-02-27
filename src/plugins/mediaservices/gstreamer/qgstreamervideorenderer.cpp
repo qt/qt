@@ -47,6 +47,9 @@
 
 #include <gst/gst.h>
 
+
+QT_BEGIN_NAMESPACE
+
 QGstreamerVideoRenderer::QGstreamerVideoRenderer(QObject *parent)
     :QVideoRendererControl(parent),m_videoSink(0)
 {
@@ -79,4 +82,7 @@ void QGstreamerVideoRenderer::setSurface(QAbstractVideoSurface *surface)
 {
     m_surface = surface;
 }
+
+QT_END_NAMESPACE
+
 
