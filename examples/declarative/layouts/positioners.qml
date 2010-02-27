@@ -11,12 +11,12 @@ Rectangle {
         y: 0
         move: Transition {
             NumberAnimation {
-                properties: "y"; easing: "easeOutBounce"
+                properties: "y"; easing.type: "OutBounce"
             }
         }
         add: Transition {
             NumberAnimation {
-                properties: "y"; easing: "easeOutQuad"
+                properties: "y"; easing.type: "OutQuad"
             }
         }
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
@@ -35,12 +35,12 @@ Rectangle {
         y: 300 
         move: Transition {
             NumberAnimation {
-                properties: "x"; easing: "easeOutBounce"
+                properties: "x"; easing.type: "OutBounce"
             }
         }
         add: Transition {
             NumberAnimation {
-                properties: "x"; easing: "easeOutQuad"
+                properties: "x"; easing.type: "OutQuad"
             }
         }
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
@@ -101,13 +101,13 @@ Rectangle {
 
         move: Transition {
             NumberAnimation {
-                properties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing.type: "OutBounce"
             }
         }
 
         add: Transition {
             NumberAnimation {
-                properties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing.type: "OutBounce"
             }
         }
 
@@ -136,13 +136,13 @@ Rectangle {
 
         move: Transition {
             NumberAnimation {
-                properties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing.type: "OutBounce"
             }
         }
 
         add: Transition {
             NumberAnimation {
-                properties: "x,y"; easing: "easeOutBounce"
+                properties: "x,y"; easing.type: "OutBounce"
             }
         }
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }

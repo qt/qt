@@ -2,6 +2,7 @@ import Qt 4.6
 
 Flickable {
     property alias title: webView.title
+    property alias icon: webView.icon
     property alias progress: webView.progress
     property alias url: webView.url
     property alias back: webView.back
@@ -10,8 +11,8 @@ Flickable {
 
     id: flickable
     width: parent.width
-    viewportWidth: Math.max(parent.width,webView.width*webView.scale)
-    viewportHeight: Math.max(parent.height,webView.height*webView.scale)
+    contentWidth: Math.max(parent.width,webView.width*webView.scale)
+    contentHeight: Math.max(parent.height,webView.height*webView.scale)
     anchors.top: headerSpace.bottom
     anchors.bottom: footer.top
     anchors.left: parent.left
@@ -53,10 +54,10 @@ Flickable {
             if (centerX) {
                 var sc = zoom/contentsScale;
                 scaleAnim.to = sc;
-                flickVX.from = flickable.viewportX
+                flickVX.from = flickable.contentX
                 flickVX.to = Math.max(0,Math.min(centerX-flickable.width/2,webView.width*sc-flickable.width))
                 finalX.value = flickVX.to
-                flickVY.from = flickable.viewportY
+                flickVY.from = flickable.contentY
                 flickVY.to = Math.max(0,Math.min(centerY-flickable.height/2,webView.height*sc-flickable.height))
                 finalY.value = flickVY.to
                 finalZoom.value = zoom
@@ -76,8 +77,8 @@ Flickable {
         }
         onUrlChanged: {
             // got to topleft
-            flickable.viewportX = 0
-            flickable.viewportY = 0
+            flickable.contentX = 0
+            flickable.contentY = 0
             if (url != null) { header.editUrl = url.toString(); }
         }
         onDoubleClick: {
@@ -104,14 +105,14 @@ Flickable {
                     property: "scale"
                     from: 1
                     to: 0 // set before calling
-                    easing: "easeLinear"
+                    easing.type: "Linear"
                     duration: 200
                 }
                 NumberAnimation {
                     id: flickVX
                     target: flickable
-                    property: "viewportX"
-                    easing: "easeLinear"
+                    property: "contentX"
+                    easing.type: "Linear"
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling
@@ -119,8 +120,8 @@ Flickable {
                 NumberAnimation {
                     id: flickVY
                     target: flickable
-                    property: "viewportY"
-                    easing: "easeLinear"
+                    property: "contentY"
+                    easing.type: "Linear"
                     duration: 200
                     from: 0 // set before calling
                     to: 0 // set before calling
@@ -136,19 +137,19 @@ Flickable {
                 property: "scale"
                 value: 1.0
             }
-            // Have to set the viewportXY, since the above 2
+            // Have to set the contentXY, since the above 2
             // size changes may have started a correction if
             // contentsScale < 1.0.
             PropertyAction {
                 id: finalX
                 target: flickable
-                property: "viewportX"
+                property: "contentX"
                 value: 0 // set before calling
             }
             PropertyAction {
                 id: finalY
                 target: flickable
-                property: "viewportY"
+                property: "contentY"
                 value: 0 // set before calling
             }
             PropertyAction {

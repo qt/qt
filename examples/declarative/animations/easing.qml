@@ -6,47 +6,47 @@ Rectangle {
 
     ListModel {
         id: easingTypes
-        ListElement { type: "easeLinear"; ballColor: "DarkRed" }
-        ListElement { type: "easeInQuad"; ballColor: "IndianRed" }
-        ListElement { type: "easeOutQuad"; ballColor: "Salmon" }
-        ListElement { type: "easeInOutQuad"; ballColor: "Tomato" }
-        ListElement { type: "easeOutInQuad"; ballColor: "DarkOrange" }
-        ListElement { type: "easeInCubic"; ballColor: "Gold" }
-        ListElement { type: "easeOutCubic"; ballColor: "Yellow" }
-        ListElement { type: "easeInOutCubic"; ballColor: "PeachPuff" }
-        ListElement { type: "easeOutInCubic"; ballColor: "Thistle" }
-        ListElement { type: "easeInQuart"; ballColor: "Orchid" }
-        ListElement { type: "easeOutQuart"; ballColor: "Purple" }
-        ListElement { type: "easeInOutQuart"; ballColor: "SlateBlue" }
-        ListElement { type: "easeOutInQuart"; ballColor: "Chartreuse" }
-        ListElement { type: "easeInQuint"; ballColor: "LimeGreen" }
-        ListElement { type: "easeOutQuint"; ballColor: "SeaGreen" }
-        ListElement { type: "easeInOutQuint"; ballColor: "DarkGreen" }
-        ListElement { type: "easeOutInQuint"; ballColor: "Olive" }
-        ListElement { type: "easeInSine"; ballColor: "DarkSeaGreen" }
-        ListElement { type: "easeOutSine"; ballColor: "Teal" }
-        ListElement { type: "easeInOutSine"; ballColor: "Turquoise" }
-        ListElement { type: "easeOutInSine"; ballColor: "SteelBlue" }
-        ListElement { type: "easeInExpo"; ballColor: "SkyBlue" }
-        ListElement { type: "easeOutExpo"; ballColor: "RoyalBlue" }
-        ListElement { type: "easeInOutExpo"; ballColor: "MediumBlue" }
-        ListElement { type: "easeOutInExpo"; ballColor: "MidnightBlue" }
-        ListElement { type: "easeInCirc"; ballColor: "CornSilk" }
-        ListElement { type: "easeOutCirc"; ballColor: "Bisque" }
-        ListElement { type: "easeInOutCirc"; ballColor: "RosyBrown" }
-        ListElement { type: "easeOutInCirc"; ballColor: "SandyBrown" }
-        ListElement { type: "easeInElastic"; ballColor: "DarkGoldenRod" }
-        ListElement { type: "easeOutElastic"; ballColor: "Chocolate" }
-        ListElement { type: "easeInOutElastic"; ballColor: "SaddleBrown" }
-        ListElement { type: "easeOutInElastic"; ballColor: "Brown" }
-        ListElement { type: "easeInBack"; ballColor: "Maroon" }
-        ListElement { type: "easeOutBack"; ballColor: "LavenderBlush" }
-        ListElement { type: "easeInOutBack"; ballColor: "MistyRose" }
-        ListElement { type: "easeOutInBack"; ballColor: "Gainsboro" }
-        ListElement { type: "easeOutBounce"; ballColor: "Silver" }
-        ListElement { type: "easeInBounce"; ballColor: "DimGray" }
-        ListElement { type: "easeInOutBounce"; ballColor: "SlateGray" }
-        ListElement { type: "easeOutInBounce"; ballColor: "DarkSlateGray" }
+        ListElement { type: "Linear"; ballColor: "DarkRed" }
+        ListElement { type: "InQuad"; ballColor: "IndianRed" }
+        ListElement { type: "OutQuad"; ballColor: "Salmon" }
+        ListElement { type: "InOutQuad"; ballColor: "Tomato" }
+        ListElement { type: "OutInQuad"; ballColor: "DarkOrange" }
+        ListElement { type: "InCubic"; ballColor: "Gold" }
+        ListElement { type: "OutCubic"; ballColor: "Yellow" }
+        ListElement { type: "InOutCubic"; ballColor: "PeachPuff" }
+        ListElement { type: "OutInCubic"; ballColor: "Thistle" }
+        ListElement { type: "InQuart"; ballColor: "Orchid" }
+        ListElement { type: "OutQuart"; ballColor: "Purple" }
+        ListElement { type: "InOutQuart"; ballColor: "SlateBlue" }
+        ListElement { type: "OutInQuart"; ballColor: "Chartreuse" }
+        ListElement { type: "InQuint"; ballColor: "LimeGreen" }
+        ListElement { type: "OutQuint"; ballColor: "SeaGreen" }
+        ListElement { type: "InOutQuint"; ballColor: "DarkGreen" }
+        ListElement { type: "OutInQuint"; ballColor: "Olive" }
+        ListElement { type: "InSine"; ballColor: "DarkSeaGreen" }
+        ListElement { type: "OutSine"; ballColor: "Teal" }
+        ListElement { type: "InOutSine"; ballColor: "Turquoise" }
+        ListElement { type: "OutInSine"; ballColor: "SteelBlue" }
+        ListElement { type: "InExpo"; ballColor: "SkyBlue" }
+        ListElement { type: "OutExpo"; ballColor: "RoyalBlue" }
+        ListElement { type: "InOutExpo"; ballColor: "MediumBlue" }
+        ListElement { type: "OutInExpo"; ballColor: "MidnightBlue" }
+        ListElement { type: "InCirc"; ballColor: "CornSilk" }
+        ListElement { type: "OutCirc"; ballColor: "Bisque" }
+        ListElement { type: "InOutCirc"; ballColor: "RosyBrown" }
+        ListElement { type: "OutInCirc"; ballColor: "SandyBrown" }
+        ListElement { type: "InElastic"; ballColor: "DarkGoldenRod" }
+        ListElement { type: "OutElastic"; ballColor: "Chocolate" }
+        ListElement { type: "InOutElastic"; ballColor: "SaddleBrown" }
+        ListElement { type: "OutInElastic"; ballColor: "Brown" }
+        ListElement { type: "InBack"; ballColor: "Maroon" }
+        ListElement { type: "OutBack"; ballColor: "LavenderBlush" }
+        ListElement { type: "InOutBack"; ballColor: "MistyRose" }
+        ListElement { type: "OutInBack"; ballColor: "Gainsboro" }
+        ListElement { type: "OutBounce"; ballColor: "Silver" }
+        ListElement { type: "InBounce"; ballColor: "DimGray" }
+        ListElement { type: "InOutBounce"; ballColor: "SlateGray" }
+        ListElement { type: "OutInBounce"; ballColor: "DarkSlateGray" }
     }
 
     Component {
@@ -80,8 +80,8 @@ Rectangle {
 
                 transitions: Transition {
                     ParallelAnimation {
-                        NumberAnimation { properties: "x"; easing: type; duration: 1000 }
-                        ColorAnimation { properties: "color"; easing: type; duration: 1000 }
+                        NumberAnimation { properties: "x"; easing.type: type; duration: 1000 }
+                        ColorAnimation { properties: "color"; easing.type: type; duration: 1000 }
                     }
                 }
             }
@@ -89,7 +89,7 @@ Rectangle {
     }
 
     Flickable {
-        anchors.fill: parent; viewportHeight: layout.height
+        anchors.fill: parent; contentHeight: layout.height
         Column {
             id: layout
             anchors.left: parent.left; anchors.right: parent.right

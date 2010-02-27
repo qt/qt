@@ -6,7 +6,7 @@ Rectangle {
     width: 600; height: 405; color: "#edecec"
 
     Flickable {
-        anchors.fill: parent; viewportHeight: column.height + 20
+        anchors.fill: parent; contentHeight: column.height + 20
         Column {
             id: column; x: 10; y: 10; spacing: 10
             Repeater {

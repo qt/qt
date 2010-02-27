@@ -182,7 +182,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* 
             qWarning() << "Error while marking the shared memory segment to be destroyed";
         ok = (xshminfo.shmaddr != (char*)-1);
         if (ok)
-            image = QImage((uchar *)xshmimg->data, width, height, systemFormat());
+            image = QImage((uchar *)xshmimg->data, width, height, format);
     }
     xshminfo.readOnly = false;
     if (ok)

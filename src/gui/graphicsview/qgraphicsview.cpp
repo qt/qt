@@ -3400,6 +3400,13 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         if (!d->scene->d_func()->painterStateProtection)
             painter.setWorldTransform(viewTransform);
     } else {
+        // Make sure we don't have unpolished items before we draw
+        if (!d->scene->d_func()->unpolishedItems.isEmpty())
+            d->scene->d_func()->_q_polishItems();
+        // We reset updateAll here (after we've issued polish events)
+        // so that we can discard update requests coming from polishEvent().
+        d->scene->d_func()->updateAll = false;
+
         // Find all exposed items
         bool allItems = false;
         QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems, viewTransform);
@@ -3408,9 +3415,25 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             const int numItems = itemList.size();
             QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
             QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
+            QTransform transform(Qt::Uninitialized);
             for (int i = 0; i < numItems; ++i) {
-                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform,
-                                                     d->exposedRegion, allItems);
+                QGraphicsItem *item = itemArray[i];
+                QGraphicsItemPrivate *itemd = item->d_ptr.data();
+                itemd->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
+                // Cache the item's area in view coordinates.
+                // Note that we have to do this here in case the base class implementation
+                // (QGraphicsScene::drawItems) is not called. If it is, we'll do this
+                // operation twice, but that's the price one has to pay for using indirect
+                // painting :-/.
+                const QRectF brect = adjustedItemEffectiveBoundingRect(item);
+                if (!itemd->itemIsUntransformable()) {
+                    transform = item->sceneTransform();
+                    if (viewTransformed)
+                        transform *= viewTransform;
+                } else {
+                    transform = item->deviceTransform(viewTransform);
+                }
+                itemd->paintedViewBoundingRects.insert(d->viewport, transform.mapRect(brect).toRect());
             }
             // Draw the items.
             drawItems(&painter, numItems, itemArray, styleOptionArray);

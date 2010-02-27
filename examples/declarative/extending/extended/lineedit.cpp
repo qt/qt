@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 #include "lineedit.h"
-#include <qml.h>
+#include <qdeclarative.h>
 
 LineEditExtension::LineEditExtension(QObject *object)
 : QObject(object), m_lineedit(static_cast<QLineEdit *>(object))
@@ -103,4 +103,3 @@ void LineEditExtension::setBottomMargin(int m)
 }
 
 QML_DECLARE_TYPE(QLineEdit);
-QML_DEFINE_EXTENDED_TYPE(People, 1,0, QLineEdit, QLineEdit, LineEditExtension);

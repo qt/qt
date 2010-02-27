@@ -844,7 +844,7 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : registeredScriptValues(0), freeScriptValues(0),
+    : registeredScriptValues(0), freeScriptValues(0), freeScriptValuesCount(0),
       registeredScriptStrings(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();

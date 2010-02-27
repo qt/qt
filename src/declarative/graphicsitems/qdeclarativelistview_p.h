@@ -1,0 +1,306 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QDECLARATIVELISTVIEW_H
+#define QDECLARATIVELISTVIEW_H
+
+#include "qdeclarativeflickable_p.h"
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
+class Q_DECLARATIVE_EXPORT QDeclarativeViewSection : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY changed)
+    Q_PROPERTY(SectionCriteria criteria READ criteria WRITE setCriteria NOTIFY changed)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
+    Q_ENUMS(SectionCriteria)
+public:
+    QDeclarativeViewSection(QObject *parent=0) : QObject(parent), m_criteria(FullString), m_delegate(0) {}
+
+    QString property() const { return m_property; }
+    void setProperty(const QString &);
+
+    enum SectionCriteria { FullString, FirstCharacter };
+    SectionCriteria criteria() const { return m_criteria; }
+    void setCriteria(SectionCriteria);
+
+    QDeclarativeComponent *delegate() const { return m_delegate; }
+    void setDelegate(QDeclarativeComponent *delegate);
+
+    QString sectionString(const QString &value);
+
+Q_SIGNALS:
+    void changed();
+    void delegateChanged();
+
+private:
+    QString m_property;
+    SectionCriteria m_criteria;
+    QDeclarativeComponent *m_delegate;
+};
+
+
+class QDeclarativeVisualModel;
+class QDeclarativeListViewAttached;
+class QDeclarativeListViewPrivate;
+class Q_DECLARATIVE_EXPORT QDeclarativeListView : public QDeclarativeFlickable
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeListView)
+
+    Q_PROPERTY(QVariant model READ model WRITE setModel)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
+    Q_PROPERTY(QDeclarativeItem *currentItem READ currentItem NOTIFY currentIndexChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+
+    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight)
+    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightChanged)
+    Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
+    Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
+    Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
+
+    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin)
+    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd)
+    Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode)
+
+    Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
+    Q_PROPERTY(Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
+    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
+    Q_PROPERTY(QDeclarativeViewSection *section READ sectionCriteria CONSTANT)
+    Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
+
+    Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode)
+
+    Q_PROPERTY(QDeclarativeComponent *header READ header WRITE setHeader)
+    Q_PROPERTY(QDeclarativeComponent *footer READ footer WRITE setFooter)
+
+    Q_ENUMS(HighlightRangeMode)
+    Q_ENUMS(Orientation)
+    Q_ENUMS(SnapMode)
+    Q_CLASSINFO("DefaultProperty", "data")
+
+public:
+    QDeclarativeListView(QDeclarativeItem *parent=0);
+    ~QDeclarativeListView();
+
+    QVariant model() const;
+    void setModel(const QVariant &);
+
+    QDeclarativeComponent *delegate() const;
+    void setDelegate(QDeclarativeComponent *);
+
+    int currentIndex() const;
+    void setCurrentIndex(int idx);
+
+    QDeclarativeItem *currentItem();
+    QDeclarativeItem *highlightItem();
+    int count() const;
+
+    QDeclarativeComponent *highlight() const;
+    void setHighlight(QDeclarativeComponent *highlight);
+
+    bool highlightFollowsCurrentItem() const;
+    void setHighlightFollowsCurrentItem(bool);
+
+    enum HighlightRangeMode { NoHighlightRange, ApplyRange, StrictlyEnforceRange };
+    HighlightRangeMode highlightRangeMode() const;
+    void setHighlightRangeMode(HighlightRangeMode mode);
+
+    qreal preferredHighlightBegin() const;
+    void setPreferredHighlightBegin(qreal);
+
+    qreal preferredHighlightEnd() const;
+    void setPreferredHighlightEnd(qreal);
+
+    qreal spacing() const;
+    void setSpacing(qreal spacing);
+
+    enum Orientation { Horizontal = Qt::Horizontal, Vertical = Qt::Vertical };
+    Orientation orientation() const;
+    void setOrientation(Orientation);
+
+    bool isWrapEnabled() const;
+    void setWrapEnabled(bool);
+
+    int cacheBuffer() const;
+    void setCacheBuffer(int);
+
+    QDeclarativeViewSection *sectionCriteria();
+    QString currentSection() const;
+
+    qreal highlightMoveSpeed() const;
+    void setHighlightMoveSpeed(qreal);
+
+    qreal highlightResizeSpeed() const;
+    void setHighlightResizeSpeed(qreal);
+
+    enum SnapMode { NoSnap, SnapToItem, SnapOneItem };
+    SnapMode snapMode() const;
+    void setSnapMode(SnapMode mode);
+
+    QDeclarativeComponent *footer() const;
+    void setFooter(QDeclarativeComponent *);
+
+    QDeclarativeComponent *header() const;
+    void setHeader(QDeclarativeComponent *);
+
+    static QDeclarativeListViewAttached *qmlAttachedProperties(QObject *);
+
+public Q_SLOTS:
+    void incrementCurrentIndex();
+    void decrementCurrentIndex();
+    void positionViewAtIndex(int index);
+
+Q_SIGNALS:
+    void countChanged();
+    void spacingChanged();
+    void orientationChanged();
+    void currentIndexChanged();
+    void currentSectionChanged();
+    void highlightMoveSpeedChanged();
+    void highlightResizeSpeedChanged();
+    void highlightChanged();
+
+protected:
+    virtual void viewportMoved();
+    virtual qreal minYExtent() const;
+    virtual qreal maxYExtent() const;
+    virtual qreal minXExtent() const;
+    virtual qreal maxXExtent() const;
+    virtual void keyPressEvent(QKeyEvent *);
+    virtual void componentComplete();
+
+private Q_SLOTS:
+    void refill();
+    void trackedPositionChanged();
+    void itemsInserted(int index, int count);
+    void itemsRemoved(int index, int count);
+    void itemsMoved(int from, int to, int count);
+    void modelReset();
+    void destroyRemoved();
+    void createdItem(int index, QDeclarativeItem *item);
+    void destroyingItem(QDeclarativeItem *item);
+    void animStopped();
+};
+
+class QDeclarativeListViewAttached : public QObject
+{
+    Q_OBJECT
+public:
+    QDeclarativeListViewAttached(QObject *parent)
+        : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
+    ~QDeclarativeListViewAttached() {}
+
+    Q_PROPERTY(QDeclarativeListView *view READ view CONSTANT)
+    QDeclarativeListView *view() { return m_view; }
+
+    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
+    bool isCurrentItem() const { return m_isCurrent; }
+    void setIsCurrentItem(bool c) {
+        if (m_isCurrent != c) {
+            m_isCurrent = c;
+            emit currentItemChanged();
+        }
+    }
+
+    Q_PROPERTY(QString prevSection READ prevSection NOTIFY prevSectionChanged)
+    QString prevSection() const { return m_prevSection; }
+    void setPrevSection(const QString &sect) {
+        if (m_prevSection != sect) {
+            m_prevSection = sect;
+            emit prevSectionChanged();
+        }
+    }
+
+    Q_PROPERTY(QString section READ section NOTIFY sectionChanged)
+    QString section() const { return m_section; }
+    void setSection(const QString &sect) {
+        if (m_section != sect) {
+            m_section = sect;
+            emit sectionChanged();
+        }
+    }
+
+    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged)
+    bool delayRemove() const { return m_delayRemove; }
+    void setDelayRemove(bool delay) {
+        if (m_delayRemove != delay) {
+            m_delayRemove = delay;
+            emit delayRemoveChanged();
+        }
+    }
+
+    void emitAdd() { emit add(); }
+    void emitRemove() { emit remove(); }
+
+Q_SIGNALS:
+    void currentItemChanged();
+    void sectionChanged();
+    void prevSectionChanged();
+    void delayRemoveChanged();
+    void add();
+    void remove();
+
+public:
+    QDeclarativeListView *m_view;
+    bool m_isCurrent;
+    mutable QString m_section;
+    QString m_prevSection;
+    bool m_delayRemove;
+};
+
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPEINFO(QDeclarativeListView, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QDeclarativeListView)
+QML_DECLARE_TYPE(QDeclarativeViewSection)
+
+QT_END_HEADER
+
+#endif

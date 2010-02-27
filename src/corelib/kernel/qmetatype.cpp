@@ -48,6 +48,7 @@
 #include "qstringlist.h"
 #include "qvector.h"
 #include "qlocale.h"
+#include "qeasingcurve.h"
 
 #ifdef QT_BOOTSTRAPPED
 # ifndef QT_NO_GEOM_VARIANT
@@ -176,6 +177,7 @@ QT_BEGIN_NAMESPACE
     \value QVector3D QVector3D
     \value QVector4D QVector4D
     \value QQuaternion QQuaternion
+    \value QEasingCurve QEasingCurve
 
     \value User  Base value for user types
 
@@ -259,6 +261,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_ADD_STATIC_METATYPE("QPointF", QMetaType::QPointF),
     QT_ADD_STATIC_METATYPE("QRegExp", QMetaType::QRegExp),
     QT_ADD_STATIC_METATYPE("QVariantHash", QMetaType::QVariantHash),
+    QT_ADD_STATIC_METATYPE("QEasingCurve", QMetaType::QEasingCurve),
 
     /* All GUI types */
     QT_ADD_STATIC_METATYPE("QColorGroup", 63),
@@ -695,6 +698,11 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
         stream << *static_cast<const NS(QRegExp)*>(data);
         break;
 #endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        stream << *static_cast<const NS(QEasingCurve)*>(data);
+        break;
+#endif
 #ifdef QT3_SUPPORT
     case QMetaType::QColorGroup:
 #endif
@@ -892,6 +900,11 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
         stream >> *static_cast< NS(QRegExp)*>(data);
         break;
 #endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        stream >> *static_cast< NS(QEasingCurve)*>(data);
+        break;
+#endif
 #ifdef QT3_SUPPORT
     case QMetaType::QColorGroup:
 #endif
@@ -1036,6 +1049,10 @@ void *QMetaType::construct(int type, const void *copy)
         case QMetaType::QRegExp:
             return new NS(QRegExp)(*static_cast<const NS(QRegExp)*>(copy));
 #endif
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QEasingCurve:
+            return new NS(QEasingCurve)(*static_cast<const NS(QEasingCurve)*>(copy));
+#endif
         case QMetaType::Void:
             return 0;
         default:
@@ -1126,6 +1143,10 @@ void *QMetaType::construct(int type, const void *copy)
 #ifndef QT_NO_REGEXP
         case QMetaType::QRegExp:
             return new NS(QRegExp);
+#endif
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QEasingCurve:
+            return new NS(QEasingCurve);
 #endif
         case QMetaType::Void:
             return 0;
@@ -1280,6 +1301,11 @@ void QMetaType::destroy(int type, void *data)
 #ifndef QT_NO_REGEXP
     case QMetaType::QRegExp:
         delete static_cast< NS(QRegExp)* >(data);
+        break;
+#endif
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QEasingCurve:
+        delete static_cast< NS(QEasingCurve)* >(data);
         break;
 #endif
     case QMetaType::Void:

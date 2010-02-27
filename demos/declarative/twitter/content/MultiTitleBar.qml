@@ -18,7 +18,7 @@ Item {
         }
     ]
     transitions: [
-        Transition { NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" } }
+        Transition { NumberAnimation { properties: "x,y"; duration: 500; easing.type: "InOutQuad" } }
     ]
 }
 
