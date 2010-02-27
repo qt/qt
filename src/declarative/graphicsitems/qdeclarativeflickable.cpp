@@ -365,6 +365,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
 /*!
     \qmlclass Flickable QDeclarativeFlickable
+    \since 4.7
     \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 

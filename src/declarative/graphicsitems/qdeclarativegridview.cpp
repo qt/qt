@@ -675,6 +675,7 @@ void QDeclarativeGridViewPrivate::updateCurrent(int modelIndex)
 
 /*!
     \qmlclass GridView QDeclarativeGridView
+    \since 4.7
     \inherits Flickable
     \brief The GridView item provides a grid view of items provided by a model.
 

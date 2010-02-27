@@ -270,9 +270,9 @@ public:
     inline DataPtr &data_ptr() { return d; }
 };
 
-inline uint qHash(const QUrl &uri)
+inline uint qHash(const QUrl &url)
 {
-    return qHash(uri.toEncoded(QUrl::FormattingOption(0x100)));
+    return qHash(url.toEncoded(QUrl::FormattingOption(0x100)));
 }
 
 Q_DECLARE_TYPEINFO(QUrl, Q_MOVABLE_TYPE);
