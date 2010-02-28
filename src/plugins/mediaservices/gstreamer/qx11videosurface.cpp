@@ -46,7 +46,9 @@
 
 #include "qx11videosurface.h"
 
-Q_DECLARE_METATYPE(XvImage*);
+Q_DECLARE_METATYPE(::XvImage*);
+
+QT_BEGIN_NAMESPACE
 
 static QAbstractVideoBuffer::HandleType XvHandleType = QAbstractVideoBuffer::HandleType(4);
 
@@ -507,3 +509,5 @@ void QX11VideoSurface::querySupportedFormats()
         XFree(attributes);
     }
 }
+
+QT_END_NAMESPACE

@@ -54,20 +54,20 @@ namespace
 
     static const TypeLookup qt_typeLookup[] =
     {
-        { QVideoFrame::Format_RGB32, MEDIASUBTYPE_RGB32 },
-        { QVideoFrame::Format_BGR24, MEDIASUBTYPE_RGB24 },
-        { QVideoFrame::Format_RGB565, MEDIASUBTYPE_RGB565 },
-        { QVideoFrame::Format_RGB555, MEDIASUBTYPE_RGB555 },
-        { QVideoFrame::Format_AYUV444, MEDIASUBTYPE_AYUV },
-        { QVideoFrame::Format_YUYV, MEDIASUBTYPE_YUY2 },
-        { QVideoFrame::Format_UYVY, MEDIASUBTYPE_UYVY },
-        { QVideoFrame::Format_IMC1, MEDIASUBTYPE_IMC1 },
-        { QVideoFrame::Format_IMC2, MEDIASUBTYPE_IMC2 },
-        { QVideoFrame::Format_IMC3, MEDIASUBTYPE_IMC3 },
-        { QVideoFrame::Format_IMC4, MEDIASUBTYPE_IMC4 },
-        { QVideoFrame::Format_YV12, MEDIASUBTYPE_YV12 },
-        { QVideoFrame::Format_NV12, MEDIASUBTYPE_NV12 },
-        { QVideoFrame::Format_YUV420P, MEDIASUBTYPE_IYUV }
+        { QVideoFrame::Format_RGB32,   /*MEDIASUBTYPE_RGB32*/  {0xe436eb7e, 0x524f, 0x11ce, {0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70}} },
+        { QVideoFrame::Format_BGR24,   /*MEDIASUBTYPE_RGB24*/  {0xe436eb7d, 0x524f, 0x11ce, {0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70}} },
+        { QVideoFrame::Format_RGB565,  /*MEDIASUBTYPE_RGB565*/ {0xe436eb7b, 0x524f, 0x11ce, {0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70}} },
+        { QVideoFrame::Format_RGB555,  /*MEDIASUBTYPE_RGB555*/ {0xe436eb7c, 0x524f, 0x11ce, {0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70}} },
+        { QVideoFrame::Format_AYUV444, /*MEDIASUBTYPE_AYUV*/   {0x56555941, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_YUYV,    /*MEDIASUBTYPE_YUY2*/   {0x32595559, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_UYVY,    /*MEDIASUBTYPE_UYVY*/   {0x59565955, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_IMC1,    /*MEDIASUBTYPE_IMC1*/   {0x31434D49, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_IMC2,    /*MEDIASUBTYPE_IMC2*/   {0x32434D49, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_IMC3,    /*MEDIASUBTYPE_IMC3*/   {0x33434D49, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_IMC4,    /*MEDIASUBTYPE_IMC4*/   {0x34434D49, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_YV12,    /*MEDIASUBTYPE_YV12*/   {0x32315659, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_NV12,    /*MEDIASUBTYPE_NV12*/   {0x3231564E, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} },
+        { QVideoFrame::Format_YUV420P, /*MEDIASUBTYPE_IYUV*/   {0x56555949, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}} }
     };
 }
 
@@ -102,12 +102,16 @@ void DirectShowMediaType::freeData(AM_MEDIA_TYPE *type)
 
 GUID DirectShowMediaType::convertPixelFormat(QVideoFrame::PixelFormat format)
 {
+    // MEDIASUBTYPE_None;
+    static const GUID none = {
+        0xe436eb8e, 0x524f, 0x11ce, {0x9f, 0x53, 0x00, 0x20, 0xaf, 0x0b, 0xa7, 0x70} };
+
     const int count = sizeof(qt_typeLookup) / sizeof(TypeLookup);
 
     for (int i = 0; i < count; ++i)
         if (qt_typeLookup[i].pixelFormat == format)
             return qt_typeLookup[i].mediaType;
-    return MEDIASUBTYPE_None;
+    return none;
 }
 
 QVideoSurfaceFormat DirectShowMediaType::formatFromType(const AM_MEDIA_TYPE &type)
