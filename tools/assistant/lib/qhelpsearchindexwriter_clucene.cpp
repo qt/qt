@@ -586,7 +586,7 @@ void QHelpSearchIndexWriter::updateIndex(const QString &collectionFile,
     this->m_indexFilesFolder = indexFilesFolder;
     mutex.unlock();
 
-    start(QThread::NormalPriority);
+    start(QThread::LowestPriority);
 }
 
 void QHelpSearchIndexWriter::optimizeIndex()
