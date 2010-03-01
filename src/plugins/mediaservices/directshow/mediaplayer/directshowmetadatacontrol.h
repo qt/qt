@@ -42,9 +42,10 @@
 #ifndef DIRECTSHOWMETADATACONTROL_H
 #define DIRECTSHOWMETADATACONTROL_H
 
+#include "directshowglobal.h"
+
 #include <QtMultimedia/qmetadatacontrol.h>
 
-#include <dshow.h>
 #include <qnetwork.h>
 
 #ifndef QT_NO_WMSDK

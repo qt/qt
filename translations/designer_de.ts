@@ -506,7 +506,7 @@
         <translation>Werkzeugleiste löschen</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1195"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="+1194"/>
         <source>Set action text</source>
         <translation>Text der Aktion setzen</translation>
     </message>
@@ -621,7 +621,7 @@
         <translation>Skript ändern</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1213"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertycommand.cpp" line="+1225"/>
         <source>Changed &apos;%1&apos; of &apos;%2&apos;</source>
         <translation>&apos;%1&apos; von &apos;%2&apos; geändert</translation>
     </message>
@@ -635,7 +635,7 @@
         </translation>
     </message>
     <message>
-        <location line="+76"/>
+        <location line="+84"/>
         <source>Reset &apos;%1&apos; of &apos;%2&apos;</source>
         <translation>&apos;%1&apos; von &apos;%2&apos; zurücksetzen</translation>
     </message>
@@ -1109,7 +1109,7 @@
 <context>
     <name>FormWindow</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1701"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="+1754"/>
         <source>Unexpected element &lt;%1&gt;</source>
         <translation>Ungültiges Element &lt;%1&gt;</translation>
     </message>
@@ -1985,7 +1985,7 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerMenu</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1181"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menu.cpp" line="-1179"/>
         <source>Type Here</source>
         <translation>Geben Sie Text ein</translation>
     </message>
@@ -2011,7 +2011,7 @@ Möchten Sie es noch einmal versuchen?</translation>
     </message>
     <message>
         <location line="+27"/>
-        <location line="+650"/>
+        <location line="+648"/>
         <source>Add separator</source>
         <translation>Trenner hinzufügen</translation>
     </message>
@@ -2085,7 +2085,7 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerPropertySheet</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+754"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+755"/>
         <source>Dynamic Properties</source>
         <translation>Dynamische Eigenschaften</translation>
     </message>
@@ -2456,7 +2456,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtBoolEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+247"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+255"/>
         <location line="+10"/>
         <location line="+25"/>
         <source>True</source>
@@ -2472,7 +2472,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtBoolPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1469"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1507"/>
         <source>True</source>
         <translation>Wahr</translation>
     </message>
@@ -2501,7 +2501,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4750"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4718"/>
         <source>Red</source>
         <translation>Rot</translation>
     </message>
@@ -2524,7 +2524,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtCursorDatabase</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-226"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="-234"/>
         <source>Arrow</source>
         <translation>Pfeil</translation>
     </message>
@@ -3080,7 +3080,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtKeySequenceEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+241"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertybrowserutils.cpp" line="+249"/>
         <source>Clear Shortcut</source>
         <translation>Tastenkürzel löschen</translation>
     </message>
@@ -3522,7 +3522,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtResourceViewDialog</name>
     <message>
-        <location line="+250"/>
+        <location line="+252"/>
         <source>Select Resource</source>
         <translation>Ressource auswählen</translation>
     </message>
@@ -4034,7 +4034,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::ActionModel</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/actionrepository.cpp" line="+95"/>
+        <location filename="../tools/designer/src/lib/shared/actionrepository.cpp" line="+89"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -4727,7 +4727,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::FormWindow</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="-1267"/>
+        <location filename="../tools/designer/src/components/formeditor/formwindow.cpp" line="-1322"/>
         <source>Edit contents</source>
         <translation>Ändern</translation>
     </message>
@@ -4737,34 +4737,33 @@ Möchten Sie sie überschreiben?</translation>
         <translation>F2</translation>
     </message>
     <message>
-        <location line="+841"/>
+        <location line="+840"/>
         <source>Resize</source>
         <translation>Größe ändern</translation>
     </message>
     <message>
-        <location line="+218"/>
-        <location line="+15"/>
+        <location line="+248"/>
         <source>Key Move</source>
         <translation>Verschieben mittels Tastatur</translation>
     </message>
     <message>
-        <location line="+276"/>
+        <location line="+317"/>
         <source>Paste error</source>
         <translation>Fehler beim Einfügen</translation>
     </message>
     <message>
-        <location line="+450"/>
+        <location line="+448"/>
         <source>Lay out</source>
         <translation>Layout</translation>
     </message>
     <message>
-        <location line="+493"/>
+        <location line="+485"/>
         <location line="+55"/>
         <source>Drop widget</source>
         <translation>Widget einfügen</translation>
     </message>
     <message numerus="yes">
-        <location line="-1063"/>
+        <location line="-1053"/>
         <source>Paste %n action(s)</source>
         <translation>
             <numerusform>Eine Aktion einfügen</numerusform>
@@ -4772,12 +4771,17 @@ Möchten Sie sie überschreiben?</translation>
         </translation>
     </message>
     <message>
-        <location line="-511"/>
+        <location line="-565"/>
         <source>Insert widget &apos;%1&apos;</source>
         <translation>Widget &apos;%1&apos; einfügen</translation>
     </message>
+    <message>
+        <location line="+313"/>
+        <source>Key Resize</source>
+        <translation>Größe ändern mittels Tastatur</translation>
+    </message>
     <message numerus="yes">
-        <location line="+513"/>
+        <location line="+254"/>
         <source>Paste %n widget(s)</source>
         <translation>
             <numerusform>Widget einfügen</numerusform>
@@ -4800,17 +4804,17 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Bitte lösen Sie das Layout des gewünschten Containers auf und wählen Sie ihn erneut aus, um die Widgets einzufügen.</translation>
     </message>
     <message>
-        <location line="+408"/>
+        <location line="+406"/>
         <source>Select Ancestor</source>
         <translation>Übergeordnetes Widget auswählen</translation>
     </message>
     <message>
-        <location line="+581"/>
+        <location line="+573"/>
         <source>A QMainWindow-based form does not contain a central widget.</source>
         <translation>Ein auf QMainWindow basierendes Formular enthält kein zentrales Widget.</translation>
     </message>
     <message>
-        <location line="-802"/>
+        <location line="-794"/>
         <source>Raise widgets</source>
         <translation>Widgets nach vorn bringen</translation>
     </message>

@@ -2221,7 +2221,8 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             return;
         }
         case QHeaderViewPrivate::MoveSection: {
-            if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()) {
+            if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
+                || !d->sectionIndicator->isHidden()) {
                 int indicatorCenter = (d->orientation == Qt::Horizontal
                                        ? d->sectionIndicator->width()
                                        : d->sectionIndicator->height()) / 2;
@@ -2233,12 +2234,6 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
                     return;
                 d->target = d->logicalIndex(visual);
                 d->updateSectionIndicator(d->section, pos);
-            } else {
-                int visual = visualIndexAt(d->firstPos);
-                if (visual == -1)
-                    return;
-                d->target = d->logicalIndex(visual);
-                d->updateSectionIndicator(d->section, d->firstPos);
             }
             return;
         }

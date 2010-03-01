@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass SoundEffect QSoundEffect
+    \since 4.7
     \brief The SoundEffect element provides a way to play sound effects in qml.
 
     The following example plays a wav file on mouse click.

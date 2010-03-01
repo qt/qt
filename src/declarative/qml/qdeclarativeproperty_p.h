@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEMETAPROPERTY_P_H
-#define QDECLARATIVEMETAPROPERTY_P_H
+#ifndef QDECLARATIVEPROPERTY_P_H
+#define QDECLARATIVEPROPERTY_P_H
 
 //
 //  W A R N I N G
@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qdeclarativemetaproperty.h"
+#include "qdeclarativeproperty.h"
 
 #include "qdeclarativepropertycache_p.h"
 #include "qdeclarativeguard_p.h"
@@ -64,27 +64,28 @@ QT_BEGIN_NAMESPACE
 
 class QDeclarativeContext;
 class QDeclarativeEnginePrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeMetaPropertyPrivate
+class QDeclarativeExpression;
+class Q_AUTOTEST_EXPORT QDeclarativePropertyPrivate
 {
 public:
     enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
     Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
 
-    QDeclarativeMetaPropertyPrivate()
-        : q(0), context(0), object(0), isDefaultProperty(false), isNameCached(false) {}
+    QDeclarativePropertyPrivate()
+        : q(0), context(0), engine(0), object(0), isNameCached(false) {}
           
 
-    QDeclarativeMetaPropertyPrivate(const QDeclarativeMetaPropertyPrivate &other)
-        : q(0), context(other.context), object(other.object), 
-          isDefaultProperty(other.isDefaultProperty), isNameCached(other.isNameCached),
+    QDeclarativePropertyPrivate(const QDeclarativePropertyPrivate &other)
+        : q(0), context(other.context), engine(other.engine), object(other.object), 
+          isNameCached(other.isNameCached),
           core(other.core), nameCache(other.nameCache),
           valueType(other.valueType) {}
 
-    QDeclarativeMetaProperty *q;
+    QDeclarativeProperty *q;
     QDeclarativeContext *context;
+    QDeclarativeEngine *engine;
     QDeclarativeGuard<QObject> object;
 
-    bool isDefaultProperty:1;
     bool isNameCached:1;
     QDeclarativePropertyCache::Data core;
     QString nameCache;
@@ -97,8 +98,9 @@ public:
 
     QMetaMethod findSignal(QObject *, const QString &);
 
+    bool isValueType() const;
     int propertyType() const;
-    QDeclarativeMetaProperty::PropertyTypeCategory propertyTypeCategory() const;
+    QDeclarativeProperty::PropertyTypeCategory propertyTypeCategory() const;
 
     QVariant readValueProperty();
     bool writeValueProperty(const QVariant &, WriteFlags);
@@ -115,26 +117,26 @@ public:
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
     static QByteArray saveProperty(const QMetaObject *, int);
-    static QDeclarativeMetaProperty restore(const QByteArray &, QObject *, QDeclarativeContext *);
+    static QDeclarativeProperty restore(const QByteArray &, QObject *, QDeclarativeContext *);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);
 
 
     // "Public" (to QML) methods
-    static QDeclarativeAbstractBinding *binding(const QDeclarativeMetaProperty &that);
-    static QDeclarativeAbstractBinding *setBinding(const QDeclarativeMetaProperty &that,
+    static QDeclarativeAbstractBinding *binding(const QDeclarativeProperty &that);
+    static QDeclarativeAbstractBinding *setBinding(const QDeclarativeProperty &that,
                                                    QDeclarativeAbstractBinding *,
                                                    WriteFlags flags = DontRemoveBinding);
-    static QDeclarativeExpression *signalExpression(const QDeclarativeMetaProperty &that);
-    static QDeclarativeExpression *setSignalExpression(const QDeclarativeMetaProperty &that, 
+    static QDeclarativeExpression *signalExpression(const QDeclarativeProperty &that);
+    static QDeclarativeExpression *setSignalExpression(const QDeclarativeProperty &that, 
                                                        QDeclarativeExpression *) ;
-    static bool write(const QDeclarativeMetaProperty &that, const QVariant &, WriteFlags);
-    static int valueTypeCoreIndex(const QDeclarativeMetaProperty &that);
+    static bool write(const QDeclarativeProperty &that, const QVariant &, WriteFlags);
+    static int valueTypeCoreIndex(const QDeclarativeProperty &that);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativeMetaPropertyPrivate::WriteFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyPrivate::WriteFlags)
 
 QT_END_NAMESPACE
 
-#endif // QDECLARATIVEMETAPROPERTY_P_H
+#endif // QDECLARATIVEPROPERTY_P_H

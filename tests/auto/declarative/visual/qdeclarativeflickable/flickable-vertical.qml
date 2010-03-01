@@ -18,7 +18,7 @@ Rectangle {
     flickable {
         id: flick
         height: parent.height-50
-        width: parent.width; viewportHeight: column.height
+        width: parent.width; contentHeight: column.height
 
         Column {
             id: column

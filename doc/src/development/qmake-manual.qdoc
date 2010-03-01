@@ -1727,8 +1727,15 @@ distinction between shared and
     
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 139
 
+    There is also a convenience function for adding conditional rules
+    called \c{addMMPRules}. Suppose you need certain functionality
+    to require different library depending on architecture. This
+    can be specified with \c{addMMPRules} as follows:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 148
+
     \note You should not use this variable to add MMP statements that are
-    explicitly supported by their own variables, such as 
+    explicitly supported by their own variables, such as
     \c TARGET.EPOCSTACKSIZE. 
     Doing so could result in duplicate statements in the MMP file.
 

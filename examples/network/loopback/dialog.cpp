@@ -44,12 +44,12 @@
 
 #include "dialog.h"
 
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 static const int TotalBytes = 50 * 1024 * 1024;
 #else
 static const int TotalBytes = 5 * 1024 * 1024;
 #endif
-static const int PayloadSize = 65536;
+static const int PayloadSize = 64 * 1024; // 64 KB
 
 Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
@@ -130,6 +130,7 @@ void Dialog::acceptConnection()
 
 void Dialog::startTransfer()
 {
+    // called when the TCP client connected to the loopback server
     bytesToWrite = TotalBytes - (int)tcpClient.write(QByteArray(PayloadSize, '@'));
     clientStatusLabel->setText(tr("Connected"));
 }
@@ -155,8 +156,11 @@ void Dialog::updateServerProgress()
 
 void Dialog::updateClientProgress(qint64 numBytes)
 {
+    // callen when the TCP client has written some bytes
     bytesWritten += (int)numBytes;
-    if (bytesToWrite > 0)
+
+    // only write more if not finished and when the Qt write buffer is below a certain size.
+    if (bytesToWrite > 0 && tcpClient.bytesToWrite() <= 4*PayloadSize)
         bytesToWrite -= (int)tcpClient.write(QByteArray(qMin(bytesToWrite, PayloadSize), '@'));
 
     clientProgressBar->setMaximum(TotalBytes);

@@ -73,15 +73,10 @@ public:
         qWarning("plugin created");
     }
 
-    QStringList keys() const
-    {
-        return QStringList() << QLatin1String("com.nokia.AutoTestQmlPluginType");
-    }
-
-    void initialize(QDeclarativeEngine*, const char *uri)
+    void registerTypes(const char *uri)
     {
         Q_ASSERT(QLatin1String(uri) == "com.nokia.AutoTestQmlPluginType");
-        QML_REGISTER_TYPE(com.nokia.AutoTestQmlPluginType,1,0,MyPluginType,MyPluginType);
+        qmlRegisterType<MyPluginType>(uri, 1, 0, "MyPluginType");
     }
 };
 

@@ -2993,8 +2993,7 @@ bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
         QRect r = constrainedRect(placeHolder->topLevelRect, desktop.screenGeometry(dockWidget));
         dockWidget->d_func()->setWindowState(true, true, r);
     }
-    dockWidget->show();
-//    dockWidget->setVisible(!placeHolder->hidden);
+    dockWidget->setVisible(!placeHolder->hidden);
 #ifdef Q_WS_X11
     if (placeHolder->window) // gets rid of the X11BypassWindowManager window flag
         dockWidget->d_func()->setWindowState(true);

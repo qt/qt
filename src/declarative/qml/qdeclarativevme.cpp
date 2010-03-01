@@ -156,7 +156,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
     QDeclarativeContextPrivate *cp = (QDeclarativeContextPrivate *)QObjectPrivate::get(ctxt);
 
     int status = -1;    //for dbus
-    QDeclarativeMetaPropertyPrivate::WriteFlags flags = QDeclarativeMetaPropertyPrivate::BypassInterceptor;
+    QDeclarativePropertyPrivate::WriteFlags flags = QDeclarativePropertyPrivate::BypassInterceptor;
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         const QDeclarativeInstruction &instr = comp->bytecode.at(ii);
@@ -217,7 +217,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                             // TODO: parent might be a layout 
                         } 
                     } else { 
-			    QDeclarativeGraphics_setParent_noEvent(o, parent);
+			    QDeclarative_setParent_noEvent(o, parent);
        //                 o->setParent(parent); 
                     } 
                 }
@@ -515,8 +515,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 int sigIdx = instr.assignSignalObject.signal;
                 const QByteArray &pr = datas.at(sigIdx);
 
-                QDeclarativeMetaProperty prop(target, QString::fromUtf8(pr));
-                if (prop.type() & QDeclarativeMetaProperty::SignalProperty) {
+                QDeclarativeProperty prop(target, QString::fromUtf8(pr));
+                if (prop.type() & QDeclarativeProperty::SignalProperty) {
 
                     QMetaMethod method = QDeclarativeMetaType::defaultMethod(assign);
                     if (method.signature() == 0)
@@ -525,7 +525,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                     if (!QMetaObject::checkConnectArgs(prop.method().signature(), method.signature()))
                         VME_EXCEPTION(QCoreApplication::translate("QDeclarativeVME","Cannot connect mismatched signal/slot %1 %vs. %2").arg(QString::fromLatin1(method.signature())).arg(QString::fromLatin1(prop.method().signature())));
 
-                    QMetaObject::connect(target, prop.coreIndex(), assign, method.methodIndex());
+                    QMetaObject::connect(target, prop.index(), assign, method.methodIndex());
 
                 } else {
                     VME_EXCEPTION(QCoreApplication::translate("QDeclarativeVME","Cannot assign an object to signal property %1").arg(QString::fromUtf8(pr)));
@@ -590,10 +590,10 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignBinding.context);
 
-                QDeclarativeMetaProperty mp = 
-                    QDeclarativeMetaPropertyPrivate::restore(datas.at(instr.assignBinding.property), target, ctxt);
+                QDeclarativeProperty mp = 
+                    QDeclarativePropertyPrivate::restore(datas.at(instr.assignBinding.property), target, ctxt);
 
-                int coreIndex = mp.coreIndex();
+                int coreIndex = mp.index();
 
                 if (stack.count() == 1 && bindingSkipList.testBit(coreIndex))  
                     break;
@@ -631,8 +631,8 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QDeclarativePropertyValueSource *vs = reinterpret_cast<QDeclarativePropertyValueSource *>(reinterpret_cast<char *>(obj) + instr.assignValueSource.castValue);
                 QObject *target = stack.at(stack.count() - 1 - instr.assignValueSource.owner);
 
-                QDeclarativeMetaProperty prop = 
-                    QDeclarativeMetaPropertyPrivate::restore(datas.at(instr.assignValueSource.property), target, ctxt);
+                QDeclarativeProperty prop = 
+                    QDeclarativePropertyPrivate::restore(datas.at(instr.assignValueSource.property), target, ctxt);
                 obj->setParent(target);
                 vs->setTarget(prop);
             }
@@ -643,12 +643,12 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                 QObject *obj = stack.pop();
                 QDeclarativePropertyValueInterceptor *vi = reinterpret_cast<QDeclarativePropertyValueInterceptor *>(reinterpret_cast<char *>(obj) + instr.assignValueInterceptor.castValue);
                 QObject *target = stack.at(stack.count() - 1 - instr.assignValueInterceptor.owner);
-                QDeclarativeMetaProperty prop = 
-                    QDeclarativeMetaPropertyPrivate::restore(datas.at(instr.assignValueInterceptor.property), target, ctxt);
+                QDeclarativeProperty prop = 
+                    QDeclarativePropertyPrivate::restore(datas.at(instr.assignValueInterceptor.property), target, ctxt);
                 obj->setParent(target);
                 vi->setTarget(prop);
                 QDeclarativeVMEMetaObject *mo = static_cast<QDeclarativeVMEMetaObject *>((QMetaObject*)target->metaObject());
-                mo->registerInterceptor(prop.coreIndex(), QDeclarativeMetaPropertyPrivate::valueTypeCoreIndex(prop), vi);
+                mo->registerInterceptor(prop.index(), QDeclarativePropertyPrivate::valueTypeCoreIndex(prop), vi);
             }
             break;
 
@@ -807,7 +807,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                     static_cast<QDeclarativeValueType *>(stack.pop());
                 QObject *target = stack.top();
                 valueHandler->write(target, instr.fetchValue.property, 
-                                    QDeclarativeMetaPropertyPrivate::BypassInterceptor);
+                                    QDeclarativePropertyPrivate::BypassInterceptor);
             }
             break;
 

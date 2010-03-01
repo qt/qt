@@ -138,7 +138,7 @@ class CodeMarker
                                     SynopsisStyle style, 
                                     Status status) = 0;
 #ifdef QDOC_QML
-    virtual QList<Section> qmlSections(const QDeclarativeClassNode* qmlClassNode,
+    virtual QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
                                        SynopsisStyle style);
 #endif
     virtual const Node *resolveTarget(const QString& target, 

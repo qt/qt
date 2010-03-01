@@ -105,7 +105,7 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
     int id = _id;
     if(c == QMetaObject::WriteProperty) {
         int flags = *reinterpret_cast<int*>(a[3]);
-        if (!(flags & QDeclarativeMetaPropertyPrivate::BypassInterceptor)
+        if (!(flags & QDeclarativePropertyPrivate::BypassInterceptor)
             && !aInterceptors.isEmpty()
             && aInterceptors.testBit(id)) {
             QPair<int, QDeclarativePropertyValueInterceptor*> pair = interceptors.value(id);

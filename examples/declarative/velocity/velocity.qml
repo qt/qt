@@ -96,7 +96,7 @@ Rectangle {
     }
     Flickable {
         id: flickable
-        anchors.fill: parent; viewportWidth: lay.width
+        anchors.fill: parent; contentWidth: lay.width
         Row {
             id: lay
             Repeater {

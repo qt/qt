@@ -45,7 +45,7 @@
 
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativeglobal_p.h>
-#include <qdeclarativemetaproperty_p.h>
+#include <qdeclarativeproperty_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -85,7 +85,7 @@ void QDeclarativeTransitionManager::complete()
     d->applyBindings();
 
     for (int ii = 0; ii < d->completeList.count(); ++ii) {
-        const QDeclarativeMetaProperty &prop = d->completeList.at(ii).property;
+        const QDeclarativeProperty &prop = d->completeList.at(ii).property;
         prop.write(d->completeList.at(ii).value);
     }
 
@@ -99,7 +99,7 @@ void QDeclarativeTransitionManagerPrivate::applyBindings()
 {
     foreach(const QDeclarativeAction &action, bindingsList) {
         if (action.toBinding) {
-            QDeclarativeMetaPropertyPrivate::setBinding(action.property, action.toBinding);
+            QDeclarativePropertyPrivate::setBinding(action.property, action.toBinding);
         } else if (action.event) {
             if (action.reverseEvent)
                 action.event->reverse();
@@ -123,7 +123,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
         if (action.toBinding)
             d->bindingsList << action;
         if (action.fromBinding)
-            QDeclarativeMetaPropertyPrivate::setBinding(action.property, 0); // Disable current binding
+            QDeclarativePropertyPrivate::setBinding(action.property, 0); // Disable current binding
         if (action.event && action.event->changesBindings()) {  //### assume isReversable()?
             d->bindingsList << action;
             if (action.reverseEvent)
@@ -150,9 +150,9 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
         for (int ii = 0; ii < applyList.size(); ++ii) {
             const QDeclarativeAction &action = applyList.at(ii);
             if (action.toBinding) {
-                QDeclarativeMetaPropertyPrivate::setBinding(action.property, action.toBinding, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
+                QDeclarativePropertyPrivate::setBinding(action.property, action.toBinding, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
             } else if (!action.event) {
-                QDeclarativeMetaPropertyPrivate::write(action.property, action.toValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
+                QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
             } else if (action.event->isReversable()) {
                 if (action.reverseEvent)
                     action.event->reverse();
@@ -167,7 +167,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
             QDeclarativeAction *action = &applyList[ii];
             if (action->event)
                 continue;
-            const QDeclarativeMetaProperty &prop = action->property;
+            const QDeclarativeProperty &prop = action->property;
             if (action->toBinding || !action->toValue.isValid()) {  //### is this always right (used for exta actions)
                 action->toValue = prop.read();
             }
@@ -191,14 +191,14 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
             }
 
             if (action.toBinding)
-                QDeclarativeMetaPropertyPrivate::setBinding(action.property, 0); // Make sure this is disabled during the transition
+                QDeclarativePropertyPrivate::setBinding(action.property, 0); // Make sure this is disabled during the transition
 
-            QDeclarativeMetaPropertyPrivate::write(action.property, action.fromValue, QDeclarativeMetaPropertyPrivate::BypassInterceptor | QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
+            QDeclarativePropertyPrivate::write(action.property, action.fromValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
         }
     }
 
     if (transition) {
-        QList<QDeclarativeMetaProperty> touched;
+        QList<QDeclarativeProperty> touched;
         d->transition = transition;
         d->transition->prepare(applyList, touched, this);
 
@@ -267,7 +267,7 @@ void QDeclarativeTransitionManager::cancel()
     for(int i = 0; i < d->bindingsList.count(); ++i) {
         QDeclarativeAction action = d->bindingsList[i];
         if (action.toBinding && action.deletableToBinding) {
-            QDeclarativeMetaPropertyPrivate::setBinding(action.property, 0);
+            QDeclarativePropertyPrivate::setBinding(action.property, 0);
             action.toBinding->destroy();
             action.toBinding = 0;
             action.deletableToBinding = false;

@@ -43,6 +43,7 @@
 
 /*!
     \qmlclass Script QDeclarativeScript
+    \since 4.7
     \brief The Script element provides a way to add JavaScript code snippets in QML.
     \ingroup group_utility
 

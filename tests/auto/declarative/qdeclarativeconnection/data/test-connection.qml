@@ -6,5 +6,5 @@ Item {
     property bool tested: false
     signal testMe
 
-    Connection { sender: screen; signal: "widthChanged()"; script: screen.tested = true }
+    Connections { target: screen; onWidthChanged: screen.tested = true }
 }

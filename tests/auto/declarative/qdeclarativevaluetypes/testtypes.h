@@ -52,8 +52,8 @@
 #include <QFont>
 #include <qdeclarative.h>
 #include <QDeclarativePropertyValueSource>
-#include <QDeclarativeMetaProperty>
-#include <private/qdeclarativemetaproperty_p.h>
+#include <QDeclarativeProperty>
+#include <private/qdeclarativeproperty_p.h>
 
 class MyTypeObject : public QObject
 {
@@ -135,7 +135,7 @@ class MyConstantValueSource : public QObject, public QDeclarativePropertyValueSo
 {
     Q_OBJECT
 public:
-    virtual void setTarget(const QDeclarativeMetaProperty &p) { p.write(3345); }
+    virtual void setTarget(const QDeclarativeProperty &p) { p.write(3345); }
 };
 QML_DECLARE_TYPE(MyConstantValueSource);
 
@@ -143,11 +143,11 @@ class MyOffsetValueInterceptor : public QObject, public QDeclarativePropertyValu
 {
     Q_OBJECT
 public:
-    virtual void setTarget(const QDeclarativeMetaProperty &p) { prop = p; }
-    virtual void write(const QVariant &value) { QDeclarativeMetaPropertyPrivate::write(prop, value.toInt() + 13, QDeclarativeMetaPropertyPrivate::BypassInterceptor); }
+    virtual void setTarget(const QDeclarativeProperty &p) { prop = p; }
+    virtual void write(const QVariant &value) { QDeclarativePropertyPrivate::write(prop, value.toInt() + 13, QDeclarativePropertyPrivate::BypassInterceptor); }
 
 private:
-    QDeclarativeMetaProperty prop;
+    QDeclarativeProperty prop;
 };
 QML_DECLARE_TYPE(MyOffsetValueInterceptor);
 

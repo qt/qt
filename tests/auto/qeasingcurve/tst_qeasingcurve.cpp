@@ -69,8 +69,6 @@ private slots:
     void valueForProgress();
     void setCustomType();
     void operators();
-    void dataStreamOperators_data();
-    void dataStreamOperators();
     void properties();
     void metaTypes();
 
@@ -506,58 +504,6 @@ void tst_QEasingCurve::operators()
     QVERIFY(curve2 != curve);
     curve2.setType(QEasingCurve::InBack);
     QCOMPARE(curve.overshoot(), curve2.overshoot());
-    QVERIFY(curve2 == curve);
-}
-
-void tst_QEasingCurve::dataStreamOperators_data()
-{
-    QTest::addColumn<int>("type");
-    QTest::addColumn<qreal>("amplitude");
-    QTest::addColumn<qreal>("overshoot");
-    QTest::addColumn<qreal>("period");
-    QTest::addColumn<QEasingCurve>("easingCurve");
-    QTest::newRow("Linear") << int(QEasingCurve::Linear) << -1.0 << -1.0 << -1.0 << QEasingCurve(QEasingCurve::Linear);
-    QTest::newRow("OutCubic") << int(QEasingCurve::OutCubic) << -1.0 << -1.0 << -1.0 << QEasingCurve(QEasingCurve::OutCubic);
-    QTest::newRow("InOutSine") << int(QEasingCurve::InOutSine) << -1.0 << -1.0 << -1.0 << QEasingCurve(QEasingCurve::InOutSine);
-    QEasingCurve inOutElastic(QEasingCurve::InOutElastic);
-    inOutElastic.setPeriod(1.5);
-    inOutElastic.setAmplitude(2.0);
-    QTest::newRow("InOutElastic") << int(QEasingCurve::InOutElastic) << 2.0 << -1.0 << 1.5 << inOutElastic;
-    QTest::newRow("OutInBack") << int(QEasingCurve::OutInBack) << -1.0 << -1.0 << -1.0 << QEasingCurve(QEasingCurve::OutInBack);
-    QTest::newRow("OutCurve") << int(QEasingCurve::OutCurve) << -1.0 << -1.0 << -1.0 << QEasingCurve(QEasingCurve::OutCurve);
-    QEasingCurve inOutBack(QEasingCurve::InOutBack);
-    inOutBack.setOvershoot(0.5);
-    QTest::newRow("InOutBack") << int(QEasingCurve::InOutBack) << -1.0 << 0.5 << -1.0 << inOutBack;
-}
-
-void tst_QEasingCurve::dataStreamOperators()
-{
-    QFETCH(int, type);
-    QFETCH(qreal, amplitude);
-    QFETCH(qreal, overshoot);
-    QFETCH(qreal, period);
-    QFETCH(QEasingCurve, easingCurve);
-
-    // operator <<
-    QEasingCurve curve;
-    curve.setType(QEasingCurve::Type(type));
-    if (amplitude != -1.0)
-        curve.setAmplitude(amplitude);
-    if (overshoot != -1.0)
-        curve.setOvershoot(overshoot);
-    if (period != -1.0)
-        curve.setPeriod(period);
-
-    QVERIFY(easingCurve == curve);
-
-    QByteArray array;
-    QDataStream out(&array, QIODevice::WriteOnly);
-    out << curve;
-
-    QDataStream in(array);
-    QEasingCurve curve2;
-    in >> curve2;
-
     QVERIFY(curve2 == curve);
 }
 

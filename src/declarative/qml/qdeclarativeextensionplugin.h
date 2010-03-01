@@ -62,7 +62,8 @@ public:
     explicit QDeclarativeExtensionPlugin(QObject *parent = 0);
     ~QDeclarativeExtensionPlugin();
 
-    virtual void initialize(QDeclarativeEngine *engine, const char *uri) = 0;
+    virtual void registerTypes(const char *uri) = 0;
+    virtual void initializeEngine(QDeclarativeEngine *engine, const char *uri);
 };
 
 QT_END_NAMESPACE

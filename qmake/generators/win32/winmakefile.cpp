@@ -764,6 +764,11 @@ QString Win32MakefileGenerator::getLibTarget()
     return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".lib");
 }
 
+QString Win32MakefileGenerator::getPdbTarget()
+{
+    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
+}
+
 QString Win32MakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
@@ -797,6 +802,18 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             lib_target.remove('"');
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + lib_target;
             QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + lib_target, FileFixifyAbsolute));
+            if(!ret.isEmpty())
+                ret += "\n\t";
+            ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";
+            if(!uninst.isEmpty())
+                uninst.append("\n\t");
+            uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
+        }
+        if(project->isActiveConfig("shared") && project->isActiveConfig("debug")) {
+            QString pdb_target = getPdbTarget();
+            pdb_target.remove('"');
+            QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
+            QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
             if(!ret.isEmpty())
                 ret += "\n\t";
             ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";

@@ -82,6 +82,7 @@ void tst_qstylesheetstyle::empty()
 {
     QWidget *w = buildSimpleWidgets();
     w->setStyleSheet("/* */");
+    QApplication::processEvents();
     int i = 0;
     QBENCHMARK {
         w->setStyleSheet("/*" + QString::number(i) + "*/");
@@ -94,6 +95,7 @@ void tst_qstylesheetstyle::empty_events()
 {
     QWidget *w = buildSimpleWidgets();
     w->setStyleSheet("/* */");
+    QApplication::processEvents();
     int i = 0;
     QBENCHMARK {
         w->setStyleSheet("/*" + QString::number(i) + "*/");
@@ -112,6 +114,7 @@ void tst_qstylesheetstyle::simple()
 {
     QWidget *w = buildSimpleWidgets();
     w->setStyleSheet("/* */");
+    QApplication::processEvents();
     int i = 0;
     QBENCHMARK {
         w->setStyleSheet(QString(simple_css) + "/*" + QString::number(i) + "*/");
@@ -124,6 +127,7 @@ void tst_qstylesheetstyle::simple_events()
 {
     QWidget *w = buildSimpleWidgets();
     w->setStyleSheet("/* */");
+    QApplication::processEvents();
     int i = 0;
     QBENCHMARK {
         w->setStyleSheet(QString(simple_css) + "/*" + QString::number(i) + "*/");
@@ -175,8 +179,13 @@ void tst_qstylesheetstyle::grid()
     w->setStyleSheet("/* */");
     if(show) {
         w->show();
+        QTest::qWaitForWindowShown(w);
+        QApplication::flush();
+        QApplication::processEvents();
         QTest::qWait(30);
+        QApplication::processEvents();
     }
+    QApplication::processEvents();
     int i = 0;
     QBENCHMARK {
         w->setStyleSheet(stylesheet + "/*" + QString::number(i) + "*/");

@@ -618,7 +618,7 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContext *context, const QB
     QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
 
     if (rv) {
-        QDeclarativeGraphics_setParent_noEvent(ctxt, rv);
+        QDeclarative_setParent_noEvent(ctxt, rv);
     } else {
         delete ctxt;
     }
@@ -698,8 +698,8 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
                 state->bindValues.at(ii);
             for (int jj = 0; jj < bv.count; ++jj) {
                 if(bv.at(jj)) 
-                    bv.at(jj)->setEnabled(true, QDeclarativeMetaPropertyPrivate::BypassInterceptor | 
-                                                QDeclarativeMetaPropertyPrivate::DontRemoveBinding);
+                    bv.at(jj)->setEnabled(true, QDeclarativePropertyPrivate::BypassInterceptor | 
+                                                QDeclarativePropertyPrivate::DontRemoveBinding);
             }
             QDeclarativeEnginePrivate::clear(bv);
         }

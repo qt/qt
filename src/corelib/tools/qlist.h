@@ -525,7 +525,8 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
             PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
             Node *n = reinterpret_cast<Node *>(p.append());
             QT_TRY {
-                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+                void *ptr = &cpy;
+                node_construct(n, *reinterpret_cast<T *>(ptr));
             } QT_CATCH(...) {
                 --d->end;
                 QT_RETHROW;
@@ -559,7 +560,8 @@ inline void QList<T>::prepend(const T &t)
             PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
             Node *n = reinterpret_cast<Node *>(p.prepend());
             QT_TRY {
-                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+                void *ptr = &cpy;
+                node_construct(n, *reinterpret_cast<T *>(ptr));
             } QT_CATCH(...) {
                 ++d->begin;
                 QT_RETHROW;
@@ -593,7 +595,8 @@ inline void QList<T>::insert(int i, const T &t)
             PodNode cpy = *reinterpret_cast<const PodNode *>(&t);
             Node *n = reinterpret_cast<Node *>(p.insert(i));
             QT_TRY {
-                node_construct(n, *reinterpret_cast<const T *>(&cpy));
+                void *ptr = &cpy;
+                node_construct(n, *reinterpret_cast<T *>(ptr));
             } QT_CATCH(...) {
                 p.remove(i);
                 QT_RETHROW;
@@ -808,15 +811,22 @@ Q_OUTOFLINE_TEMPLATE typename QList<T>::iterator QList<T>::erase(typename QList<
 template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
-    Node *n = (d->ref != 1)
-              ? detach_helper_grow(INT_MAX, l.size())
-              : reinterpret_cast<Node *>(p.append2(l.p));
-    QT_TRY{
-        node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
-    } QT_CATCH(...) {
-        // restore the old end
-        d->end -= int(reinterpret_cast<Node *>(p.end()) - n);
-        QT_RETHROW;
+    if (!l.isEmpty()) {
+        if (isEmpty()) {
+            *this = l;
+        } else {
+            Node *n = (d->ref != 1)
+                      ? detach_helper_grow(INT_MAX, l.size())
+                      : reinterpret_cast<Node *>(p.append2(l.p));
+            QT_TRY {
+                node_copy(n, reinterpret_cast<Node *>(p.end()),
+                          reinterpret_cast<Node *>(l.p.begin()));
+            } QT_CATCH(...) {
+                // restore the old end
+                d->end -= int(reinterpret_cast<Node *>(p.end()) - n);
+                QT_RETHROW;
+            }
+        }
     }
     return *this;
 }

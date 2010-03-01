@@ -73,7 +73,6 @@ QString HtmlGenerator::sinceTitles[] =
         "    New Typedefs",
         "    New Properties",
         "    New Variables",
-        "    New QML Elements",
         "    New Qml Properties",
         "    New Qml Signals",
         "    New Qml Methods",
@@ -688,8 +687,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             nsmap = newSinceMaps.find(atom->string());
             NewClassMaps::const_iterator ncmap;
             ncmap = newClassMaps.find(atom->string());
-            NewClassMaps::const_iterator nqcmap;
-            nqcmap = newQmlClassMaps.find(atom->string());
             if ((nsmap != newSinceMaps.constEnd()) && !nsmap.value().isEmpty()) {
                 QList<Section> sections;
                 QList<Section>::ConstIterator s;
@@ -700,10 +697,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 while (n != nsmap.value().constEnd()) {
                     const Node* node = n.value();
                     switch (node->type()) {
-                      case Node::Fake:
-                          if (node->subType() == Node::QDeclarativeClass)
-                              sections[QDeclarativeClass].appendMember((Node*)node);
-                          break;
                       case Node::Namespace:
                           sections[Namespace].appendMember((Node*)node);
                           break;
@@ -745,14 +738,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                       case Node::Variable: 
                           sections[Variable].appendMember((Node*)node);
                           break;
-                      case Node::QDeclarativeProperty:
-                          sections[QDeclarativeProperty].appendMember((Node*)node);
+                      case Node::QmlProperty:
+                          sections[QmlProperty].appendMember((Node*)node);
                           break;
-                      case Node::QDeclarativeSignal:
-                          sections[QDeclarativeSignal].appendMember((Node*)node);
+                      case Node::QmlSignal:
+                          sections[QmlSignal].appendMember((Node*)node);
                           break;
-                      case Node::QDeclarativeMethod:
-                          sections[QDeclarativeMethod].appendMember((Node*)node);
+                      case Node::QmlMethod:
+                          sections[QmlMethod].appendMember((Node*)node);
                           break;
                       default:
                           break;
@@ -789,8 +782,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                         out() << "<h3>" << protectEnc((*s).name) << "</h3>\n";
                         if (idx == Class)
                             generateCompactList(0, marker, ncmap.value(), QString("Q"));
-                        else if (idx == QDeclarativeClass)
-                            generateCompactList(0, marker, nqcmap.value(), QString("Q"));
                         else if (idx == MemberFunction) {
                             ParentMaps parentmaps;
                             ParentMaps::iterator pmap;
@@ -1190,7 +1181,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
               << "</code></b></font>";
         break;
 #ifdef QDOC_QML
-    case Atom::QDeclarativeText:
+    case Atom::QmlText:
     case Atom::EndQmlText:
         // don't do anything with these. They are just tags.
         break;
@@ -1453,7 +1444,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         subTitleSize = SmallSubTitle;
         htmlTitle += " (" + fake->subTitle() + ")";
     }
-    else if (fake->subType() == Node::QDeclarativeBasicType) {
+    else if (fake->subType() == Node::QmlBasicType) {
         fullTitle = "QML Basic Type: " + fullTitle;
         htmlTitle = fullTitle;
     }
@@ -1527,8 +1518,8 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         }
     }
 #ifdef QDOC_QML
-    else if (fake->subType() == Node::QDeclarativeClass) {
-        const QDeclarativeClassNode* qml_cn = static_cast<const QDeclarativeClassNode*>(fake);
+    else if (fake->subType() == Node::QmlClass) {
+        const QmlClassNode* qml_cn = static_cast<const QmlClassNode*>(fake);
         const ClassNode* cn = qml_cn->classNode();
         generateQmlInherits(qml_cn, marker);
         generateQmlInstantiates(qml_cn, marker);
@@ -2341,11 +2332,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                     out() << "<a href=\""
                         << linkForNode(it.value(), relative)
                         << "\">";
-                    QStringList pieces;
-                    if (it.value()->subType() == Node::QDeclarativeClass)
-                        pieces << it.value()->name();
-                    else
-                        pieces = fullName(it.value(), relative, marker).split("::");
+                    QStringList pieces = fullName(it.value(), relative, marker).split("::");
                     out() << protectEnc(pieces.last());
                     out() << "</a>";
                     if (pieces.size() > 1) {
@@ -3507,18 +3494,18 @@ QString HtmlGenerator::refForNode(const Node *node)
         break;
 #ifdef QDOC_QML        
     case Node::Fake:
-        if (node->subType() != Node::QDeclarativePropertyGroup)
+        if (node->subType() != Node::QmlPropertyGroup)
             break;
-    case Node::QDeclarativeProperty:
+    case Node::QmlProperty:
 #endif        
     case Node::Property:
         ref = node->name() + "-prop";
         break;
 #ifdef QDOC_QML
-    case Node::QDeclarativeSignal:
+    case Node::QmlSignal:
         ref = node->name() + "-signal";
         break;
-    case Node::QDeclarativeMethod:
+    case Node::QmlMethod:
         ref = node->name() + "-method";
         break;
 #endif        
@@ -3555,7 +3542,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
 #endif
     link += fn;
 
-    if (!node->isInnerNode() || node->subType() == Node::QDeclarativePropertyGroup) {
+    if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
         ref = refForNode(node);
         if (relative && fn == fileName(relative) && ref == refForNode(relative))
             return QString();
@@ -3736,9 +3723,6 @@ void HtmlGenerator::findAllSince(const InnerNode *node)
             NewClassMaps::iterator ncmap = newClassMaps.find(sinceVersion);
             if (ncmap == newClassMaps.end())
                 ncmap = newClassMaps.insert(sinceVersion,NodeMap());
-            NewClassMaps::iterator nqcmap = newQmlClassMaps.find(sinceVersion);
-            if (nqcmap == newQmlClassMaps.end())
-                nqcmap = newQmlClassMaps.insert(sinceVersion,NodeMap());
  
             if ((*child)->type() == Node::Function) {
                 FunctionNode *func = static_cast<FunctionNode *>(*child);
@@ -3757,15 +3741,6 @@ void HtmlGenerator::findAllSince(const InnerNode *node)
                         className = (*child)->parent()->name()+"::"+className;
                     nsmap.value().insert(className,(*child));
                     ncmap.value().insert(className,(*child));
-                }
-                else if ((*child)->subType() == Node::QDeclarativeClass) {
-                    QString className = (*child)->name();
-                    if ((*child)->parent() &&
-                        (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty())
-                        className = (*child)->parent()->name()+"::"+className;
-                    nsmap.value().insert(className,(*child));
-                    nqcmap.value().insert(className,(*child));
                 }
             }
             else {
@@ -3865,9 +3840,9 @@ void HtmlGenerator::findAllQmlClasses(const InnerNode *node)
     while (c != node->childNodes().constEnd()) {
         if ((*c)->type() == Node::Fake) {
             const FakeNode* fakeNode = static_cast<const FakeNode *>(*c);
-            if (fakeNode->subType() == Node::QDeclarativeClass) {
-                const QDeclarativeClassNode* qmlNode =
-                    static_cast<const QDeclarativeClassNode*>(fakeNode);
+            if (fakeNode->subType() == Node::QmlClass) {
+                const QmlClassNode* qmlNode =
+                    static_cast<const QmlClassNode*>(fakeNode);
                 const Node* n = qmlNode->classNode();
             }
             qmlClasses.insert(fakeNode->name(),*c);
@@ -4203,7 +4178,7 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
         NodeList::ConstIterator m;
         int count = section.members.size();
         bool twoColumn = false;
-        if (section.members.first()->type() == Node::QDeclarativeProperty) {
+        if (section.members.first()->type() == Node::QmlProperty) {
             twoColumn = (count >= 5);
         }
         if (twoColumn)
@@ -4237,18 +4212,18 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                                               const InnerNode *relative,
                                               CodeMarker *marker)
 {
-    const QDeclarativePropertyNode* qpn = 0;
+    const QmlPropertyNode* qpn = 0;
     generateMacRef(node, marker);
     out() << "<div class=\"qmlitem\">";
-    if (node->subType() == Node::QDeclarativePropertyGroup) {
-        const QDeclarativePropGroupNode* qpgn = static_cast<const QDeclarativePropGroupNode*>(node);
+    if (node->subType() == Node::QmlPropertyGroup) {
+        const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
         out() << "<div class=\"qmlproto\">";
         out() << "<table width=\"100%\" class=\"qmlname\">";
 
         while (p != qpgn->childNodes().end()) {
-            if ((*p)->type() == Node::QDeclarativeProperty) {
-                qpn = static_cast<const QDeclarativePropertyNode*>(*p);
+            if ((*p)->type() == Node::QmlProperty) {
+                qpn = static_cast<const QmlPropertyNode*>(*p);
                 out() << "<tr><td>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
                 if (!qpn->isWritable())
@@ -4270,7 +4245,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "</table>";
         out() << "</div>";
     }
-    else if (node->type() == Node::QDeclarativeSignal) {
+    else if (node->type() == Node::QmlSignal) {
         const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
@@ -4282,7 +4257,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "</table>";
         out() << "</div>";
     }
-    else if (node->type() == Node::QDeclarativeMethod) {
+    else if (node->type() == Node::QmlMethod) {
         const FunctionNode* qmn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
@@ -4307,7 +4282,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
   Output the "Inherits" line for the QML element,
   if there should be one.
  */
-void HtmlGenerator::generateQmlInherits(const QDeclarativeClassNode* cn,
+void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
                                         CodeMarker* marker)
 {
     if (cn && !cn->links().empty()) {
@@ -4316,8 +4291,8 @@ void HtmlGenerator::generateQmlInherits(const QDeclarativeClassNode* cn,
             linkPair = cn->links()[Node::InheritsLink];
             QStringList strList(linkPair.first);
             const Node* n = myTree->findNode(strList,Node::Fake);
-            if (n && n->subType() == Node::QDeclarativeClass) {
-                const QDeclarativeClassNode* qcn = static_cast<const QDeclarativeClassNode*>(n);
+            if (n && n->subType() == Node::QmlClass) {
+                const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
                 out() << "<p style=\"text-align: center\">";
                 Text text;
                 text << "[Inherits ";
@@ -4337,30 +4312,55 @@ void HtmlGenerator::generateQmlInherits(const QDeclarativeClassNode* cn,
   Output the "Inherit by" list for the QML element,
   if it is inherited by any other elements.
  */
-void HtmlGenerator::generateQmlInheritedBy(const QDeclarativeClassNode* cn,
+void HtmlGenerator::generateQmlInheritedBy(const QmlClassNode* cn,
                                            CodeMarker* marker)
 {
     if (cn) {
-        NodeList subs;
-        QDeclarativeClassNode::subclasses(cn->name(),subs);
+        QStringList subs;
+        QmlClassNode::subclasses(cn->name(),subs);
         if (!subs.isEmpty()) {
+            subs.sort();
             Text text;
             text << Atom::ParaLeft << "Inherited by ";
-            appendSortedNames(text,cn,subs,marker);
+            for (int i = 0; i < subs.size(); ++i) {
+                text << subs.at(i);
+                text << separator(i, subs.size());
+            }
             text << Atom::ParaRight;
             generateText(text, cn, marker);
         }
+#if 0        
+        if (cn->links().contains(Node::InheritsLink)) {
+            QPair<QString,QString> linkPair;
+            linkPair = cn->links()[Node::InheritsLink];
+            QStringList strList(linkPair.first);
+            const Node* n = myTree->findNode(strList,Node::Fake);
+            if (n && n->subType() == Node::QmlClass) {
+                const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
+                out() << "<p style=\"text-align: center\">";
+                Text text;
+                text << "[Inherits ";
+                text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
+                text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
+                text << Atom(Atom::String, linkPair.second);
+                text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+                text << "]";
+                generateText(text, cn, marker);
+                out() << "</p>";
+            }
+        }
+#endif        
     }
 }
 
 /*!
-  Output the "[Xxx instantiates the C++ class QDeclarativeXxx]"
+  Output the "[Xxx instantiates the C++ class QmlGraphicsXxx]"
   line for the QML element, if there should be one.
 
   If there is no class node, or if the class node status
   is set to Node::Internal, do nothing. 
  */
-void HtmlGenerator::generateQmlInstantiates(const QDeclarativeClassNode* qcn,
+void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
                                             CodeMarker* marker)
 {
     const ClassNode* cn = qcn->classNode();
@@ -4384,7 +4384,7 @@ void HtmlGenerator::generateQmlInstantiates(const QDeclarativeClassNode* qcn,
 }
 
 /*!
-  Output the "[QDeclarativeXxx is instantiated by QML element Xxx]"
+  Output the "[QmlGraphicsXxx is instantiated by QML element Xxx]"
   line for the class, if there should be one.
 
   If there is no QML element, or if the class node status
@@ -4395,7 +4395,7 @@ void HtmlGenerator::generateInstantiatedBy(const ClassNode* cn,
 {
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
         const Node* n = myTree->root()->findNode(cn->qmlElement(),Node::Fake);
-        if (n && n->subType() == Node::QDeclarativeClass) {
+        if (n && n->subType() == Node::QmlClass) {
             out() << "<p style=\"text-align: center\">";
             Text text;
             text << "[";

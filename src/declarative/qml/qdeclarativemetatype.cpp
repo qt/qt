@@ -619,7 +619,7 @@ QDeclarativeType *QDeclarativeMetaType::qmlType(const QByteArray &name, int vers
 
     QList<QDeclarativeType*> types = data->nameToType.values(name);
     foreach (QDeclarativeType *t, types) {
-        // XXX version_major<0 just a kludge for QDeclarativeMetaPropertyPrivate::initProperty
+        // XXX version_major<0 just a kludge for QDeclarativePropertyPrivate::initProperty
         if (version_major<0 || t->availableInVersion(version_major,version_minor))
             return t;
     }

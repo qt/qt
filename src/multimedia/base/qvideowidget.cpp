@@ -488,7 +488,7 @@ void QVideoWidgetPrivate::_q_dimensionsChanged()
 /*!
     \class QVideoWidget
     \preliminary
-
+    \since 4.7
     \brief The QVideoWidget class provides a widget which presents video
     produced by a media object.
     \ingroup multimedia

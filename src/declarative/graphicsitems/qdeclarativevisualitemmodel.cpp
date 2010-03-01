@@ -917,7 +917,7 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
         if (inPackage) {
             emit destroyingPackage(qobject_cast<QDeclarativePackage*>(obj));
         } else {
-            item->setVisible(false);
+            item->setOpacity(0.0);
             static_cast<QGraphicsItem*>(item)->setParentItem(0);
         }
         stat |= Destroyed;

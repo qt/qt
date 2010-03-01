@@ -50,13 +50,13 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QDeclarativeMetaProperty;
+class QDeclarativeProperty;
 class Q_DECLARATIVE_EXPORT QDeclarativePropertyValueSource
 {
 public:
     QDeclarativePropertyValueSource();
     virtual ~QDeclarativePropertyValueSource();
-    virtual void setTarget(const QDeclarativeMetaProperty &) = 0;
+    virtual void setTarget(const QDeclarativeProperty &) = 0;
 };
 Q_DECLARE_INTERFACE(QDeclarativePropertyValueSource, "com.trolltech.qml.QDeclarativePropertyValueSource")
 

@@ -49,11 +49,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Multimedia)
 
-class QDeclarativeEngine;
-
 namespace QtMultimedia
 {
-extern void Q_MULTIMEDIA_EXPORT qRegisterDeclarativeElements(QDeclarativeEngine* engine, const char *uri);
+extern void Q_MULTIMEDIA_EXPORT qRegisterDeclarativeElements(const char *uri);
 }
 
 QT_END_NAMESPACE

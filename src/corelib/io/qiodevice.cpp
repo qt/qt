@@ -1003,8 +1003,8 @@ QByteArray QIODevice::readAll()
     to a maximum of \a maxSize - 1 bytes, stores the characters in \a
     data, and returns the number of bytes read. If a line could not be
     read but no error ocurred, this function returns 0. If an error
-    occurs, this function returns what it could the length of what
-    could be read, or -1 if nothing was read.
+    occurs, this function returns the length of what could be read, or
+    -1 if nothing was read.
 
     A terminating '\0' byte is always appended to \a data, so \a
     maxSize must be larger than 1.

@@ -193,6 +193,7 @@ int QMediaPlaylistNavigatorPrivate::previousItemPos(int steps) const
 /*!
     \class QMediaPlaylistNavigator
     \preliminary
+    \since 4.7
     \brief The QMediaPlaylistNavigator class provides navigation for a media playlist.
 
     \sa QMediaPlaylist, QMediaPlaylistProvider

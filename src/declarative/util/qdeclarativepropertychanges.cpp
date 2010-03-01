@@ -50,7 +50,7 @@
 #include <qdeclarativebinding_p.h>
 #include <qdeclarativecontext.h>
 #include <qdeclarativeguard_p.h>
-#include <qdeclarativemetaproperty_p.h>
+#include <qdeclarativeproperty_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -153,19 +153,19 @@ public:
 
     virtual QString typeName() const { return QLatin1String("ReplaceSignalHandler"); }
 
-    QDeclarativeMetaProperty property;
+    QDeclarativeProperty property;
     QDeclarativeExpression *expression;
     QDeclarativeExpression *reverseExpression;
     QDeclarativeExpression *rewindExpression;
     QDeclarativeGuard<QDeclarativeExpression> ownedExpression;
 
     virtual void execute() {
-        ownedExpression = QDeclarativeMetaPropertyPrivate::setSignalExpression(property, expression);
+        ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, expression);
     }
 
     virtual bool isReversable() { return true; }
     virtual void reverse() {
-        ownedExpression = QDeclarativeMetaPropertyPrivate::setSignalExpression(property, reverseExpression);
+        ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, reverseExpression);
     }
 
     virtual void saveOriginals() {
@@ -174,10 +174,10 @@ public:
     }
 
     virtual void rewind() {
-        ownedExpression = QDeclarativeMetaPropertyPrivate::setSignalExpression(property, rewindExpression);
+        ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, rewindExpression);
     }
     virtual void saveCurrentValues() { 
-        rewindExpression = QDeclarativeMetaPropertyPrivate::signalExpression(property); 
+        rewindExpression = QDeclarativePropertyPrivate::signalExpression(property); 
     }
 
     virtual bool override(QDeclarativeActionEvent*other) {
@@ -212,7 +212,7 @@ public:
     QList<QPair<QByteArray, QDeclarativeExpression *> > expressions;
     QList<QDeclarativeReplaceSignalHandler*> signalReplacements;
 
-    QDeclarativeMetaProperty property(const QByteArray &);
+    QDeclarativeProperty property(const QByteArray &);
 };
 
 void
@@ -296,8 +296,8 @@ void QDeclarativePropertyChangesPrivate::decode()
         ds >> isScript;
         ds >> data;
 
-        QDeclarativeMetaProperty prop = property(name);      //### better way to check for signal property?
-        if (prop.type() & QDeclarativeMetaProperty::SignalProperty) {
+        QDeclarativeProperty prop = property(name);      //### better way to check for signal property?
+        if (prop.type() & QDeclarativeProperty::SignalProperty) {
             QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(q), data.toString(), object);
             QDeclarativeReplaceSignalHandler *handler = new QDeclarativeReplaceSignalHandler;
             handler->property = prop;
@@ -371,17 +371,17 @@ void QDeclarativePropertyChanges::setRestoreEntryValues(bool v)
     d->restore = v;
 }
 
-QDeclarativeMetaProperty
+QDeclarativeProperty
 QDeclarativePropertyChangesPrivate::property(const QByteArray &property)
 {
     Q_Q(QDeclarativePropertyChanges);
-    QDeclarativeMetaProperty prop(object, QString::fromUtf8(property));
+    QDeclarativeProperty prop(object, QString::fromUtf8(property));
     if (!prop.isValid()) {
         qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(property));
-        return QDeclarativeMetaProperty();
-    } else if (!(prop.type() & QDeclarativeMetaProperty::SignalProperty) && !prop.isWritable()) {
+        return QDeclarativeProperty();
+    } else if (!(prop.type() & QDeclarativeProperty::SignalProperty) && !prop.isWritable()) {
         qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to read-only property \"%1\"").arg(QString::fromUtf8(property));
-        return QDeclarativeMetaProperty();
+        return QDeclarativeProperty();
     }
     return prop;
 }
@@ -426,7 +426,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
     for (int ii = 0; ii < d->expressions.count(); ++ii) {
 
         QByteArray property = d->expressions.at(ii).first;
-        QDeclarativeMetaProperty prop = d->property(property);
+        QDeclarativeProperty prop = d->property(property);
 
         if (prop.isValid()) {
             QDeclarativeAction a;

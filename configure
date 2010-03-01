@@ -640,6 +640,7 @@ CFG_SHARED=yes
 CFG_SM=auto
 CFG_XSHAPE=auto
 CFG_XSYNC=auto
+CFG_XVIDEO=auto
 CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
@@ -925,7 +926,8 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservice|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
+
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xvideo|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservice|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1536,6 +1538,13 @@ while [ "$#" -gt 0 ]; do
     xshape)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XSHAPE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xvideo)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XVIDEO="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2402,7 +2411,9 @@ if [ "$CFG_EMBEDDED" != "no" ]; then
         fi
         ;;
     CYGWIN*:*)
-	CFG_EMBEDDED=x86
+	if [ -z "$XPLATFORM" ]; then
+		CFG_EMBEDDED=x86
+	fi
 	;;
     *)
         echo "Qt for Embedded Linux is not supported on this platform. Disabling."
@@ -3655,6 +3666,13 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         SHY="*"
         SHN=" "
     fi
+    if [ "$CFG_XVIDEO" = "no" ]; then
+        XVY=" "
+        XVN="*"
+    else
+        XVY="*"
+        XVN=" "
+    fi
     if [ "$CFG_XINERAMA" = "no" ]; then
         XAY=" "
         XAN="*"
@@ -3757,6 +3775,10 @@ Qt/X11 only:
  $SHN  -no-xshape ......... Do not compile XShape support.
  $SHY  -xshape ............ Compile XShape support.
                          Requires X11/extensions/shape.h.
+
+ $XVN  -no-xvideo ......... Do not compile XVideo support.
+ $XVY  -xvideo ............ Compile XVideo support.
+                         Requires X11/extensions/Xv.h & Xvlib.h.
 
  $SHN  -no-xsync .......... Do not compile XSync support.
  $SHY  -xsync ............. Compile XSync support.
@@ -5041,32 +5063,33 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 
-    if [ "$CFG_PHONON" != "no" ]; then
-        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
-            if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-                if [ -n "$PKG_CONFIG" ]; then
-                    QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                    QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                fi
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
-                    CFG_GSTREAMER=yes
-                    QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-                    QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
-                else
-                    if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                        echo "Gstreamer support cannot be enabled due to functionality tests!"
-                        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                        echo " If you believe this message is in error you may use the continue"
-                        echo " switch (-continue) to $0 to continue."
-                        exit 101
-                    else
-                        CFG_GSTREAMER=no
-                    fi
-                fi
-            elif [ "$CFG_GLIB" = "no" ]; then
+    # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
+    if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ]; then
+            QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+            QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
+            CFG_GSTREAMER=yes
+            QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
+            QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
+        else
+            if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                echo "Gstreamer support cannot be enabled due to functionality tests!"
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            else
                 CFG_GSTREAMER=no
             fi
+        fi
+    elif [ "$CFG_GLIB" = "no" ]; then
+        CFG_GSTREAMER=no
+    fi
 
+    if [ "$CFG_PHONON" != "no" ]; then
+        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
             if [ "$CFG_GSTREAMER" = "yes" ]; then
                 CFG_PHONON=yes
             else
@@ -5336,6 +5359,23 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 		exit 101
 	    else
 		CFG_XSHAPE=no
+	    fi
+	fi
+    fi
+
+    # auto-detect XVideo support
+    if [ "$CFG_XVIDEO" != "no" ]; then
+	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xvideo "XVideo" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+	    CFG_XVIDEO=yes
+	else
+	    if [ "$CFG_XVIDEO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+		echo "XVideo support cannot be enabled due to functionality tests!"
+		echo " Turn on verbose messaging (-v) to $0 to see the final report."
+		echo " If you believe this message is in error you may use the continue"
+		echo " switch (-continue) to $0 to continue."
+		exit 101
+	    else
+		CFG_XVIDEO=no
 	    fi
 	fi
     fi
@@ -6297,6 +6337,9 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_XSHAPE" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xshape"
     fi
+    if [ "$CFG_XVIDEO" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG xvideo"
+    fi
     if [ "$CFG_XSYNC" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xsync"
     fi
@@ -7101,6 +7144,7 @@ fi
 [ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
 [ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
 [ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
+[ "$CFG_XVIDEO" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XVIDEO"
 [ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
 [ "$CFG_XINPUT" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINPUT QT_NO_TABLET"
 
@@ -7581,6 +7625,7 @@ fi
 if [ "$PLATFORM_X11" = "yes" ]; then
     echo "NAS sound support ...... $CFG_NAS"
     echo "XShape support ......... $CFG_XSHAPE"
+    echo "XVideo support ......... $CFG_XVIDEO"
     echo "XSync support .......... $CFG_XSYNC"
     echo "Xinerama support ....... $CFG_XINERAMA"
     echo "Xcursor support ........ $CFG_XCURSOR"

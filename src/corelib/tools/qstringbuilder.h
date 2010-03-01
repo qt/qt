@@ -100,14 +100,18 @@ public:
 
     operator QString() const
     {
-        QString s(QConcatenable< QStringBuilder<A, B> >::size(*this),
-            Qt::Uninitialized);
+        const uint size = QConcatenable< QStringBuilder<A, B> >::size(*this);
+        QString s(size, Qt::Uninitialized);
 
         QChar *d = s.data();
+        const QChar * const start = d;
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
-        // this resize is necessary since we allocate a bit too much
-        // when dealing with variable sized 8-bit encodings
-        s.resize(d - s.data());
+
+        if (!QConcatenable< QStringBuilder<A, B> >::ExactSize && int(size) != d - start) {
+            // this resize is necessary since we allocate a bit too much
+            // when dealing with variable sized 8-bit encodings
+            s.resize(d - start);
+        }
         return s;
     }
     QByteArray toLatin1() const { return QString(*this).toLatin1(); }
@@ -116,10 +120,24 @@ public:
     const B &b;
 };
 
+template <>
+class QStringBuilder <QString, QString>
+{
+    public:
+        QStringBuilder(const QString &a_, const QString &b_) : a(a_), b(b_) {}
+
+        operator QString() const
+        { QString r(a); r += b; return r; }
+        QByteArray toLatin1() const { return QString(*this).toLatin1(); }
+
+        const QString &a;
+        const QString &b;
+};
 
 template <> struct QConcatenable<char> : private QAbstractConcatenable
 {
     typedef char type;
+    enum { ExactSize = true };
     static int size(const char) { return 1; }
     static inline void appendTo(const char c, QChar *&out)
     {
@@ -130,6 +148,7 @@ template <> struct QConcatenable<char> : private QAbstractConcatenable
 template <> struct QConcatenable<QLatin1Char>
 {
     typedef QLatin1Char type;
+    enum { ExactSize = true };
     static int size(const QLatin1Char) { return 1; }
     static inline void appendTo(const QLatin1Char c, QChar *&out)
     {
@@ -140,6 +159,7 @@ template <> struct QConcatenable<QLatin1Char>
 template <> struct QConcatenable<QChar>
 {
     typedef QChar type;
+    enum { ExactSize = true };
     static int size(const QChar) { return 1; }
     static inline void appendTo(const QChar c, QChar *&out)
     {
@@ -150,6 +170,7 @@ template <> struct QConcatenable<QChar>
 template <> struct QConcatenable<QCharRef>
 {
     typedef QCharRef type;
+    enum { ExactSize = true };
     static int size(const QCharRef &) { return 1; }
     static inline void appendTo(const QCharRef &c, QChar *&out)
     {
@@ -160,6 +181,7 @@ template <> struct QConcatenable<QCharRef>
 template <> struct QConcatenable<QLatin1String>
 {
     typedef QLatin1String type;
+    enum { ExactSize = true };
     static int size(const QLatin1String &a) { return qstrlen(a.latin1()); }
     static inline void appendTo(const QLatin1String &a, QChar *&out)
     {
@@ -172,6 +194,7 @@ template <> struct QConcatenable<QLatin1String>
 template <> struct QConcatenable<QLatin1Literal>
 {
     typedef QLatin1Literal type;
+    enum { ExactSize = true };
     static int size(const QLatin1Literal &a) { return a.size(); }
     static inline void appendTo(const QLatin1Literal &a, QChar *&out)
     {
@@ -183,6 +206,7 @@ template <> struct QConcatenable<QLatin1Literal>
 template <> struct QConcatenable<QString>
 {
     typedef QString type;
+    enum { ExactSize = true };
     static int size(const QString &a) { return a.size(); }
     static inline void appendTo(const QString &a, QChar *&out)
     {
@@ -195,6 +219,7 @@ template <> struct QConcatenable<QString>
 template <> struct QConcatenable<QStringRef>
 {
     typedef QStringRef type;
+    enum { ExactSize = true };
     static int size(const QStringRef &a) { return a.size(); }
     static inline void appendTo(QStringRef a, QChar *&out)
     {
@@ -208,6 +233,7 @@ template <> struct QConcatenable<QStringRef>
 template <int N> struct QConcatenable<char[N]> : private QAbstractConcatenable
 {
     typedef char type[N];
+    enum { ExactSize = false };
     static int size(const char[N])
     {
         return N - 1;
@@ -221,6 +247,7 @@ template <int N> struct QConcatenable<char[N]> : private QAbstractConcatenable
 template <int N> struct QConcatenable<const char[N]> : private QAbstractConcatenable
 {
     typedef const char type[N];
+    enum { ExactSize = false };
     static int size(const char[N]) { return N - 1; }
     static inline void appendTo(const char a[N], QChar *&out)
     {
@@ -231,6 +258,7 @@ template <int N> struct QConcatenable<const char[N]> : private QAbstractConcaten
 template <> struct QConcatenable<const char *> : private QAbstractConcatenable
 {
     typedef char const *type;
+    enum { ExactSize = false };
     static int size(const char *a) { return qstrlen(a); }
     static inline void appendTo(const char *a, QChar *&out)
     {
@@ -241,6 +269,7 @@ template <> struct QConcatenable<const char *> : private QAbstractConcatenable
 template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
 {
     typedef QByteArray type;
+    enum { ExactSize = false };
     static int size(const QByteArray &ba) { return qstrnlen(ba.constData(), ba.size()); }
     static inline void appendTo(const QByteArray &ba, QChar *&out)
     {
@@ -253,6 +282,7 @@ template <typename A, typename B>
 struct QConcatenable< QStringBuilder<A, B> >
 {
     typedef QStringBuilder<A, B> type;
+    enum { ExactSize = QConcatenable<A>::ExactSize && QConcatenable<B>::ExactSize };
     static int size(const type &p)
     {
         return QConcatenable<A>::size(p.a) + QConcatenable<B>::size(p.b);

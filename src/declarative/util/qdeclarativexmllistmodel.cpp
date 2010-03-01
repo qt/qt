@@ -709,8 +709,24 @@ void QDeclarativeXmlListModel::reload()
     d->qmlXmlQuery.abort();
     d->queryId = -1;
 
-    if (d->size < 0)
+    int count = d->size;
+    if (count < 0)
         d->size = 0;
+    bool hasKeys = false;
+    for (int i=0; i<d->roleObjects.count(); i++) {
+        if (d->roleObjects[i]->isKey()) {
+            hasKeys = true;
+            break;
+        }
+    }
+    if (!hasKeys) {
+        d->data.clear();
+        d->size = 0;
+        if (count > 0) {
+            emit itemsRemoved(0, count);
+            emit countChanged();
+        }
+    }
 
     if (d->src.isEmpty() && d->xml.isEmpty())
         return;
@@ -782,9 +798,10 @@ void QDeclarativeXmlListModel::queryCompleted(int id, int size)
     d->data = d->qmlXmlQuery.modelData();
 
     QList<QDeclarativeXmlListRange> removed = d->qmlXmlQuery.removedItemRanges();
+    QList<QDeclarativeXmlListRange> inserted = d->qmlXmlQuery.insertedItemRanges();
+
     for (int i=0; i<removed.count(); i++)
         emit itemsRemoved(removed[i].first, removed[i].second);
-    QList<QDeclarativeXmlListRange> inserted = d->qmlXmlQuery.insertedItemRanges();
     for (int i=0; i<inserted.count(); i++)
         emit itemsInserted(inserted[i].first, inserted[i].second);
 

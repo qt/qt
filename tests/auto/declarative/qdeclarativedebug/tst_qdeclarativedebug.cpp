@@ -49,7 +49,7 @@
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtDeclarative/qdeclarativeexpression.h>
-#include <QtDeclarative/qdeclarativemetaproperty.h>
+#include <QtDeclarative/qdeclarativeproperty.h>
 
 #include <private/qdeclarativebinding_p.h>
 #include <private/qdeclarativedebug_p.h>
@@ -58,7 +58,7 @@
 #include <private/qdeclarativedebugservice_p.h>
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativemetatype_p.h>
-#include <private/qdeclarativemetaproperty_p.h>
+#include <private/qdeclarativeproperty_p.h>
 
 #include "../shared/debugutil_p.h"
 
@@ -218,7 +218,7 @@ void tst_QDeclarativeDebug::recursiveObjectTest(QObject *o, const QDeclarativeDe
             QCOMPARE(p.valueTypeName(), QString::fromUtf8(pmeta.typeName()));
 
         QDeclarativeAbstractBinding *binding = 
-            QDeclarativeMetaPropertyPrivate::binding(QDeclarativeMetaProperty(o, p.name()));
+            QDeclarativePropertyPrivate::binding(QDeclarativeProperty(o, p.name()));
         if (binding)
             QCOMPARE(binding->expression(), p.binding());
 

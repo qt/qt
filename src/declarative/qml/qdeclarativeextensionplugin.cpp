@@ -63,9 +63,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QDeclarativeExtensionPlugin::initialize(QDeclarativeEngine *engine)
+    \fn void QDeclarativeExtensionPlugin::registerTypes(const char *uri)
 
-    Initializes the extension specified in the given \a engine.
+    Registers the QML types in the given \a uri.
 */
 
 /*!
@@ -82,6 +82,18 @@ QDeclarativeExtensionPlugin::QDeclarativeExtensionPlugin(QObject *parent)
 
 QDeclarativeExtensionPlugin::~QDeclarativeExtensionPlugin()
 {
+}
+
+/*!
+    \fn void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
+
+    Initializes the extension specified in the given \a engine.
+*/
+
+void QDeclarativeExtensionPlugin::initializeEngine(QDeclarativeEngine *engine, const char *uri)
+{
+    Q_UNUSED(engine);
+    Q_UNUSED(uri);
 }
 
 QT_END_NAMESPACE

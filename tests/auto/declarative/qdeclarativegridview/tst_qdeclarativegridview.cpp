@@ -298,14 +298,14 @@ void tst_QDeclarativeGridView::inserted()
         model.insertItem(i, "Hello", QString::number(i));
     QTest::qWait(300);
 
-    gridview->setViewportY(120);
+    gridview->setContentY(120);
     QTest::qWait(300);
 
     // Insert item outside visible area
     model.insertItem(1, "Hello", "1324");
     QTest::qWait(300);
 
-    QVERIFY(gridview->viewportY() == 120);
+    QVERIFY(gridview->contentY() == 120);
 
     delete canvas;
 }
@@ -392,7 +392,7 @@ void tst_QDeclarativeGridView::removed()
     }
 
     // Remove items before visible
-    gridview->setViewportY(120);
+    gridview->setContentY(120);
     QTest::qWait(500);
     gridview->setCurrentIndex(10);
 
@@ -400,7 +400,7 @@ void tst_QDeclarativeGridView::removed()
     QTest::qWait(300);
 
     // Setting currentIndex above shouldn't cause view to scroll
-    QCOMPARE(gridview->viewportY(), 120.0);
+    QCOMPARE(gridview->contentY(), 120.0);
 
     model.removeItem(1);
 
@@ -424,7 +424,7 @@ void tst_QDeclarativeGridView::removed()
     QCOMPARE(gridview->currentIndex(), 9);
     QVERIFY(gridview->currentItem() != oldCurrent);
 
-    gridview->setViewportY(0);
+    gridview->setContentY(0);
     // let transitions settle.
     QTest::qWait(300);
 
@@ -441,7 +441,7 @@ void tst_QDeclarativeGridView::removed()
     // remove item outside current view.
     gridview->setCurrentIndex(32);
     QTest::qWait(500);
-    gridview->setViewportY(240);
+    gridview->setContentY(240);
 
     model.removeItem(30);
     QVERIFY(gridview->currentIndex() == 31);
@@ -449,7 +449,7 @@ void tst_QDeclarativeGridView::removed()
     // remove current item beyond visible items.
     gridview->setCurrentIndex(20);
     QTest::qWait(500);
-    gridview->setViewportY(0);
+    gridview->setContentY(0);
     model.removeItem(20);
     QTest::qWait(500);
 
@@ -459,7 +459,7 @@ void tst_QDeclarativeGridView::removed()
     // remove item before current, but visible
     gridview->setCurrentIndex(8);
     QTest::qWait(500);
-    gridview->setViewportY(240);
+    gridview->setContentY(240);
     oldCurrent = gridview->currentItem();
     model.removeItem(6);
     QTest::qWait(500);
@@ -520,7 +520,7 @@ void tst_QDeclarativeGridView::moved()
         QVERIFY(item->y() == (i/3)*60);
     }
 
-    gridview->setViewportY(120);
+    gridview->setContentY(120);
 
     // move outside visible area
     model.moveItem(1, 25);
@@ -638,13 +638,13 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->currentIndex(), model.count()-1);
 
     QTest::qWait(500);
-    QCOMPARE(gridview->viewportY(), 279.0);
+    QCOMPARE(gridview->contentY(), 279.0);
 
     gridview->moveCurrentIndexRight();
     QCOMPARE(gridview->currentIndex(), 0);
 
     QTest::qWait(500);
-    QCOMPARE(gridview->viewportY(), 0.0);
+    QCOMPARE(gridview->contentY(), 0.0);
 
     // Test keys
     qApp->setActiveWindow(canvas);
@@ -829,7 +829,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position on a currently visible item
     gridview->positionViewAtIndex(4);
-    QCOMPARE(gridview->viewportY(), 60.);
+    QCOMPARE(gridview->contentY(), 60.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -843,7 +843,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position on an item beyond the visible items
     gridview->positionViewAtIndex(21);
-    QCOMPARE(gridview->viewportY(), 420.);
+    QCOMPARE(gridview->contentY(), 420.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -857,7 +857,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position on an item that would leave empty space if positioned at the top
     gridview->positionViewAtIndex(31);
-    QCOMPARE(gridview->viewportY(), 520.);
+    QCOMPARE(gridview->contentY(), 520.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -871,7 +871,7 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
 
     // Position at the beginning again
     gridview->positionViewAtIndex(0);
-    QCOMPARE(gridview->viewportY(), 0.);
+    QCOMPARE(gridview->contentY(), 0.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();

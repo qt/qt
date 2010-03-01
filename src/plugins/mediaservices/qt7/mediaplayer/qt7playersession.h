@@ -107,7 +107,7 @@ public slots:
     void setMuted(bool muted);
 
     void processEOS();
-    void processStateChange();
+    void processLoadStateChange();
     void processVolumeChange();
     void processNaturalSizeChange();
 
@@ -138,6 +138,10 @@ private:
     bool m_muted;
     int m_volume;
     qreal m_rate;
+
+    qint64 m_duration;
+    bool m_videoAvailable;
+    bool m_audioAvailable;
 };
 
 QT_END_NAMESPACE

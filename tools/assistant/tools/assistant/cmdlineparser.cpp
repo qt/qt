@@ -167,10 +167,10 @@ void CmdLineParser::handleCollectionFileOption()
         const QString &fileName = nextArg();
         m_collectionFile = getFileName(fileName);
         if (m_collectionFile.isEmpty())
-            m_error = tr("The collection file '%1' does not exist!").
+            m_error = tr("The collection file '%1' does not exist.").
                           arg(fileName);
     } else {
-        m_error = tr("Missing collection file!");
+        m_error = tr("Missing collection file.");
     }
 }
 
@@ -183,9 +183,9 @@ void CmdLineParser::handleShowUrlOption()
         if (url.isValid()) {
             m_url = url;
         } else
-            m_error = tr("Invalid URL '%1'!").arg(urlString);
+            m_error = tr("Invalid URL '%1'.").arg(urlString);
     } else {
-        m_error = tr("Missing URL!");
+        m_error = tr("Missing URL.");
     }
 }
 
@@ -223,7 +223,7 @@ void CmdLineParser::handleShowOrHideOrActivateOption(ShowState state)
         else
             m_error = tr("Unknown widget: %1").arg(widget);
     } else {
-        m_error = tr("Missing widget!");
+        m_error = tr("Missing widget.");
     }
 }
 
@@ -246,11 +246,11 @@ void CmdLineParser::handleRegisterOrUnregisterOption(RegisterState state)
         const QString &fileName = nextArg();
         m_helpFile = getFileName(fileName);
         if (m_helpFile.isEmpty())
-            m_error = tr("The Qt help file '%1' does not exist!").arg(fileName);
+            m_error = tr("The Qt help file '%1' does not exist.").arg(fileName);
         else
             m_register = state;
     } else {
-        m_error = tr("Missing help file!");
+        m_error = tr("Missing help file.");
     }
 }
 
@@ -260,7 +260,7 @@ void CmdLineParser::handleSetCurrentFilterOption()
     if (hasMoreArgs())
         m_currentFilter = nextArg();
     else
-        m_error = tr("Missing filter argument!");
+        m_error = tr("Missing filter argument.");
 }
 
 QString CmdLineParser::getFileName(const QString &fileName)

@@ -55,7 +55,7 @@
 
 #include "qdeclarativebinding_p.h"
 
-#include "qdeclarativemetaproperty.h"
+#include "qdeclarativeproperty.h"
 #include "qdeclarativeexpression_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +69,7 @@ public:
     bool updating:1;
     bool enabled:1;
 
-    QDeclarativeMetaProperty property;
+    QDeclarativeProperty property;
 
     virtual void refresh();
 };

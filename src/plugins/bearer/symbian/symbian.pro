@@ -21,6 +21,7 @@ exists($${EPOCROOT}epoc32/release/armv5/lib/cmmanager.lib) {
 }
 
 INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
+symbian-abld:INCLUDEPATH += $$QT_BUILD_TREE/include/QtNetwork/private
 
 LIBS += -lcommdb \
         -lapsettingshandlerui \

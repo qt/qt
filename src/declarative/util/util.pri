@@ -5,7 +5,7 @@ SOURCES += \
     $$PWD/qdeclarativeview.cpp \
     $$PWD/qfxperf.cpp \
     $$PWD/qperformancelog.cpp \
-    $$PWD/qdeclarativeconnection.cpp \
+    $$PWD/qdeclarativeconnections.cpp \
     $$PWD/qdeclarativepackage.cpp \
     $$PWD/qdeclarativeanimation.cpp \
     $$PWD/qdeclarativesystempalette.cpp \
@@ -37,7 +37,7 @@ HEADERS += \
     $$PWD/qdeclarativeview.h \
     $$PWD/qfxperf_p_p.h \
     $$PWD/qperformancelog_p_p.h \
-    $$PWD/qdeclarativeconnection_p.h \
+    $$PWD/qdeclarativeconnections_p.h \
     $$PWD/qdeclarativepackage_p.h \
     $$PWD/qdeclarativeanimation_p.h \
     $$PWD/qdeclarativeanimation_p_p.h \

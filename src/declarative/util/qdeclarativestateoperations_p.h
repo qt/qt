@@ -45,7 +45,7 @@
 #include "qdeclarativestate_p.h"
 
 #include <qdeclarativeitem.h>
-#include "private/qdeclarativeanchors_p.h"
+#include <private/qdeclarativeanchors_p.h>
 #include <qdeclarativescriptstring.h>
 
 QT_BEGIN_HEADER
@@ -62,6 +62,12 @@ class Q_DECLARATIVE_EXPORT QDeclarativeParentChange : public QDeclarativeStateOp
 
     Q_PROPERTY(QDeclarativeItem *target READ object WRITE setObject)
     Q_PROPERTY(QDeclarativeItem *parent READ parent WRITE setParent)
+    Q_PROPERTY(qreal x READ x WRITE setX)
+    Q_PROPERTY(qreal y READ y WRITE setY)
+    Q_PROPERTY(qreal width READ width WRITE setWidth)
+    Q_PROPERTY(qreal height READ height WRITE setHeight)
+    Q_PROPERTY(qreal scale READ scale WRITE setScale)
+    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation)
 public:
     QDeclarativeParentChange(QObject *parent=0);
     ~QDeclarativeParentChange();
@@ -71,6 +77,32 @@ public:
 
     QDeclarativeItem *parent() const;
     void setParent(QDeclarativeItem *);
+
+    QDeclarativeItem *originalParent() const;
+
+    qreal x() const;
+    void setX(qreal x);
+    bool xIsSet() const;
+
+    qreal y() const;
+    void setY(qreal y);
+    bool yIsSet() const;
+
+    qreal width() const;
+    void setWidth(qreal width);
+    bool widthIsSet() const;
+
+    qreal height() const;
+    void setHeight(qreal height);
+    bool heightIsSet() const;
+
+    qreal scale() const;
+    void setScale(qreal scale);
+    bool scaleIsSet() const;
+
+    qreal rotation() const;
+    void setRotation(qreal rotation);
+    bool rotationIsSet() const;
 
     virtual ActionList actions();
 

@@ -97,7 +97,7 @@ class ValueSourceTestType : public QObject, public QDeclarativePropertyValueSour
     Q_OBJECT
     Q_INTERFACES(QDeclarativePropertyValueSource)
 public:
-    virtual void setTarget(const QDeclarativeMetaProperty &) {}
+    virtual void setTarget(const QDeclarativeProperty &) {}
 };
 QML_DECLARE_TYPE(ValueSourceTestType);
 
@@ -106,7 +106,7 @@ class ValueInterceptorTestType : public QObject, public QDeclarativePropertyValu
     Q_OBJECT
     Q_INTERFACES(QDeclarativePropertyValueInterceptor)
 public:
-    virtual void setTarget(const QDeclarativeMetaProperty &) {}
+    virtual void setTarget(const QDeclarativeProperty &) {}
     virtual void write(const QVariant &) {}
 };
 QML_DECLARE_TYPE(ValueInterceptorTestType);

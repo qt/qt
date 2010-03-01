@@ -148,7 +148,7 @@ void QDeclarativeTransition::setReversed(bool r)
 }
 
 void QDeclarativeTransition::prepare(QDeclarativeStateOperation::ActionList &actions,
-                            QList<QDeclarativeMetaProperty> &after,
+                            QList<QDeclarativeProperty> &after,
                             QDeclarativeTransitionManager *endState)
 {
     Q_D(QDeclarativeTransition);

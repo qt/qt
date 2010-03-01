@@ -301,7 +301,7 @@ bool Generator::generateQmlText(const Text& text,
 
     startText(relative, marker);
     while (atom) {
-        if (atom->type() != Atom::QDeclarativeText)
+        if (atom->type() != Atom::QmlText)
             atom = atom->next();
         else {
             atom = atom->next();
@@ -520,7 +520,7 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
 #ifdef QDOC_QML
 /*!
  */
-void Generator::generateQmlInherits(const QDeclarativeClassNode* , CodeMarker* )
+void Generator::generateQmlInherits(const QmlClassNode* , CodeMarker* )
 {
     // stub.
 }
@@ -1174,32 +1174,6 @@ void Generator::appendSortedNames(Text& text,
             appendFullName(className, (*r).node, classe, marker);
             classMap[className.toString().toLower()] = className;
         }
-        ++r;
-    }
-
-    QStringList classNames = classMap.keys();
-    classNames.sort();
-
-    foreach (const QString &className, classNames) {
-        text << classMap[className];
-        text << separator(index++, classNames.count());
-    }
-}
-
-void Generator::appendSortedNames(Text& text,
-                                  const Node* base,
-                                  const NodeList& subs,
-                                  CodeMarker *marker)
-{
-    NodeList::ConstIterator r;
-    QMap<QString,Text> classMap;
-    int index = 0;
-
-    r = subs.begin();
-    while (r != subs.end()) {
-        Text className;
-        appendFullName(className, (*r), base, marker);
-        classMap[className.toString().toLower()] = className;
         ++r;
     }
 

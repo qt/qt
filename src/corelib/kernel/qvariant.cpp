@@ -1936,13 +1936,13 @@ static const ushort map_from_three[MapFromThreeCount] =
     QVariant::Date,
     QVariant::Time,
     QVariant::DateTime,
-    QVariant::EasingCurve,
     QVariant::ByteArray,
     QVariant::BitArray,
     QVariant::KeySequence,
     QVariant::Pen,
     QVariant::LongLong,
-    QVariant::ULongLong
+    QVariant::ULongLong,
+    QVariant::EasingCurve
 };
 
 /*!

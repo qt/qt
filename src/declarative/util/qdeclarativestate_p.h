@@ -43,7 +43,7 @@
 #define QDECLARATIVESTATE_H
 
 #include <qdeclarative.h>
-#include <qdeclarativemetaproperty.h>
+#include <qdeclarativeproperty.h>
 #include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
@@ -53,7 +53,9 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeActionEvent;
+class QDeclarativeAbstractBinding;
 class QDeclarativeBinding;
+class QDeclarativeExpression;
 class Q_DECLARATIVE_EXPORT QDeclarativeAction
 {
 public:
@@ -65,7 +67,7 @@ public:
     bool reverseEvent:1;
     bool deletableToBinding:1;
 
-    QDeclarativeMetaProperty property;
+    QDeclarativeProperty property;
     QVariant fromValue;
     QVariant toValue;
 

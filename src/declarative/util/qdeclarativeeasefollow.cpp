@@ -43,7 +43,7 @@
 
 #include "qdeclarativeanimation_p_p.h"
 
-#include <qdeclarativemetaproperty.h>
+#include <qdeclarativeproperty.h>
 
 #include <QtCore/qdebug.h>
 
@@ -77,7 +77,7 @@ public:
 
     qreal trackVelocity;
 
-    QDeclarativeMetaProperty target;
+    QDeclarativeProperty target;
 
     int clockOffset;
     int lastTick;
@@ -251,6 +251,7 @@ void QDeclarativeEaseFollowPrivate::tick(int t)
 
 /*!
     \qmlclass EaseFollow QDeclarativeEaseFollow
+    \since 4.7
     \brief The EaseFollow element allows a property to smoothly track a value.
 
     The EaseFollow smoothly animates a property's value to a set target value 
@@ -500,7 +501,7 @@ void QDeclarativeEaseFollow::setEnabled(bool enabled)
     emit enabledChanged();
 }
 
-void QDeclarativeEaseFollow::setTarget(const QDeclarativeMetaProperty &t)
+void QDeclarativeEaseFollow::setTarget(const QDeclarativeProperty &t)
 {
     Q_D(QDeclarativeEaseFollow);
     d->target = t;

@@ -41,7 +41,7 @@ SUBDIRS += \
            qdeclarativelanguage \            # Cover
            qdeclarativelistreference \       # Cover
            qdeclarativelistmodel \           # Cover
-           qdeclarativemetaproperty \        # Cover
+           qdeclarativeproperty \        # Cover
            qdeclarativemetatype \            # Cover
            qdeclarativemoduleplugin \        # Cover
            qdeclarativenumberformatter \     # Cover

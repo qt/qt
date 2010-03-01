@@ -85,7 +85,7 @@ public:
     QDeclarativeListProperty<QDeclarativeAbstractAnimation> animations();
 
     void prepare(QDeclarativeStateOperation::ActionList &actions,
-                 QList<QDeclarativeMetaProperty> &after,
+                 QList<QDeclarativeProperty> &after,
                  QDeclarativeTransitionManager *end);
 
     void setReversed(bool r);

@@ -49,9 +49,9 @@ class QMultimediaQmlModule : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
-    virtual void initialize(QDeclarativeEngine *engine, const char *uri)
+    virtual void registerTypes(const char *uri)
     {
-        QtMultimedia::qRegisterDeclarativeElements(engine, uri);
+        QtMultimedia::qRegisterDeclarativeElements(uri);
     }
 };
 

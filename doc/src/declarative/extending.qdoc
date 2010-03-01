@@ -421,9 +421,8 @@ C++ signature:
 \snippet examples/declarative/extending/signal/birthdayparty.h 0
 
 In classes with multiple signals with the same name, only the final signal
-is accessible as a signal property.  Although QML provides an element,
-\l Connection, for accessing the other signals it is less elegant.  For the best
-QML API, class developers should avoid overloading signal names.
+is accessible as a signal property.  Note that signals with the same name
+but different parameters cannot be distinguished.
 
 Signal parameters become accessible by name to the assigned script.  An
 unnamed parameter cannot be accessed, so care should be taken to name all the

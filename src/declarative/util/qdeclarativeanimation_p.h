@@ -95,7 +95,7 @@ public:
     QDeclarativeAnimationGroup *group() const;
     void setGroup(QDeclarativeAnimationGroup *);
 
-    void setDefaultTarget(const QDeclarativeMetaProperty &);
+    void setDefaultTarget(const QDeclarativeProperty &);
     void setDisableUserControl();
 
     void classBegin();
@@ -123,7 +123,7 @@ protected:
 public:
     enum TransitionDirection { Forward, Backward };
     virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeMetaProperties &modified,
+                            QDeclarativeProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation() = 0;
 
@@ -131,7 +131,7 @@ private Q_SLOTS:
     void timelineComplete();
 
 private:
-    virtual void setTarget(const QDeclarativeMetaProperty &);
+    virtual void setTarget(const QDeclarativeProperty &);
 };
 
 class QDeclarativePauseAnimationPrivate;
@@ -177,7 +177,7 @@ public:
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeMetaProperties &modified,
+                            QDeclarativeProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 };
@@ -221,7 +221,7 @@ Q_SIGNALS:
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeMetaProperties &modified,
+                            QDeclarativeProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 };
@@ -248,7 +248,7 @@ public:
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeMetaProperties &modified,
+                            QDeclarativeProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 };
@@ -300,7 +300,7 @@ public:
 protected:
     QDeclarativePropertyAnimation(QDeclarativePropertyAnimationPrivate &dd, QObject *parent);
     virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeMetaProperties &modified,
+                            QDeclarativeProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 
@@ -413,6 +413,9 @@ public:
 
     QDeclarativeListProperty<QDeclarativeAbstractAnimation> animations();
     friend class QDeclarativeAbstractAnimation;
+
+protected:
+    QDeclarativeAnimationGroup(QDeclarativeAnimationGroupPrivate &dd, QObject *parent);
 };
 
 class QDeclarativeSequentialAnimation : public QDeclarativeAnimationGroup
@@ -426,7 +429,7 @@ public:
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeMetaProperties &modified,
+                            QDeclarativeProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 };
@@ -442,7 +445,37 @@ public:
 
 protected:
     virtual void transition(QDeclarativeStateActions &actions,
-                            QDeclarativeMetaProperties &modified,
+                            QDeclarativeProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+};
+
+class QDeclarativeParentAnimationPrivate;
+class QDeclarativeParentAnimation : public QDeclarativeAnimationGroup
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QDeclarativeParentAnimation)
+
+    Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget)
+    //Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent)
+    Q_PROPERTY(QDeclarativeItem *via READ via WRITE setVia)
+
+public:
+    QDeclarativeParentAnimation(QObject *parent=0);
+    virtual ~QDeclarativeParentAnimation();
+
+    QDeclarativeItem *target() const;
+    void setTarget(QDeclarativeItem *);
+
+    QDeclarativeItem *newParent() const;
+    void setNewParent(QDeclarativeItem *);
+
+    QDeclarativeItem *via() const;
+    void setVia(QDeclarativeItem *);
+
+protected:
+    virtual void transition(QDeclarativeStateActions &actions,
+                            QDeclarativeProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 };
@@ -461,6 +494,7 @@ QML_DECLARE_TYPE(QDeclarativeSequentialAnimation)
 QML_DECLARE_TYPE(QDeclarativeParallelAnimation)
 QML_DECLARE_TYPE(QDeclarativeVector3dAnimation)
 QML_DECLARE_TYPE(QDeclarativeRotationAnimation)
+QML_DECLARE_TYPE(QDeclarativeParentAnimation)
 
 QT_END_HEADER
 

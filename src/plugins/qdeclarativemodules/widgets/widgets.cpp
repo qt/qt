@@ -114,15 +114,8 @@ class QWidgetsQmlModule : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
-    QStringList keys() const
+    virtual void registerTypes(const char *uri)
     {
-        return QStringList() << QLatin1String("Qt.widgets");
-    }
-
-    virtual void initialize(QDeclarativeEngine *engine, const char *uri)
-    {
-        Q_UNUSED(engine);
-
         Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.widgets"));
 
         QML_REGISTER_INTERFACE(QGraphicsLayoutItem);

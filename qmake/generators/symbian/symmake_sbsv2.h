@@ -56,6 +56,7 @@ protected:
     virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly);
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile);
     virtual void appendAbldTempDirs(QStringList& sysincspaths, QString includepath);
+    virtual bool isForSymbianSbsv2() const { return true; } // FIXME: killme - i'm ugly!
 
 public:
 
@@ -64,6 +65,7 @@ public:
 
 private:
     void exportFlm();
+    void writeSbsDeploymentList(const DeploymentList& depList, QTextStream& t);
 
     QString extraTargetsCache;
     QString extraCompilersCache;
