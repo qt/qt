@@ -317,6 +317,10 @@ bool MyWidget::flag(int row, int col)
 
 int main(int argc, char ** argv)
 {
+#ifdef Q_WS_X11
+    // native on X11 is terrible for this demo.
+    QApplication::setGraphicsSystem("raster");
+#endif
     QApplication app(argc, argv);
 
     bool frameless = false;
