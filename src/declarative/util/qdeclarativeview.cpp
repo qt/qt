@@ -282,13 +282,14 @@ QDeclarativeView::~QDeclarativeView()
 
 /*!
     Sets the source to the \a url, loads the QML component and instantiates it.
+
+    Calling this methods multiple times with the same url will result
+    in the QML being reloaded.
  */
 void QDeclarativeView::setSource(const QUrl& url)
 {
-    if (url != d->source) {
-        d->source = url;
-        d->execute();
-    }
+    d->source = url;
+    d->execute();
 }
 
 /*!
