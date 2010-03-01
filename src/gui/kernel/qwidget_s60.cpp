@@ -1042,7 +1042,13 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     Q_D(QWidget);
 
     Qt::WindowStates oldstate = windowState();
-    if (oldstate == newstate)
+
+    const TBool isFullscreen = newstate & Qt::WindowFullScreen;
+    const TBool cbaRequested = windowFlags() & Qt::WindowSoftkeysVisibleHint;
+    const TBool cbaVisible = CEikButtonGroupContainer::Current() ? true : false;
+    const TBool softkeyVisibilityChange = isFullscreen && (cbaRequested != cbaVisible);
+
+    if (oldstate == newstate && !softkeyVisibilityChange)
         return;
 
     if (isWindow()) {
@@ -1058,16 +1064,27 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
 #ifdef Q_WS_S60
         // Hide window decoration when switching to fullsccreen / minimized otherwise show decoration.
-        // The window decoration visibility has to be changed before doing actual window state 
-        // change since in that order the availableGeometry will return directly the right size and 
+        // The window decoration visibility has to be changed before doing actual window state
+        // change since in that order the availableGeometry will return directly the right size and
         // we will avoid unnecessarty redraws
-        CEikStatusPane* statusPane = S60->statusPane();
-        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
-        TBool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized)); 
+        CEikStatusPane *statusPane = S60->statusPane();
+        CEikButtonGroupContainer *buttonGroup = S60->buttonGroupContainer();
+        TBool visible = !(newstate & (Qt::WindowFullScreen | Qt::WindowMinimized));
         if (statusPane)
             statusPane->MakeVisible(visible);
-        if (buttonGroup)
-            buttonGroup->MakeVisible(visible);
+        if (buttonGroup) {
+            // Visibility
+            buttonGroup->MakeVisible(visible || (isFullscreen && cbaRequested));
+
+            // Responsiviness
+            CEikCba *cba = static_cast<CEikCba *>( buttonGroup->ButtonGroup() ); // downcast from MEikButtonGroup
+            TUint cbaFlags = cba->ButtonGroupFlags();
+            if(windowFlags() & Qt::WindowSoftkeysRespondHint)
+                cbaFlags |= EAknCBAFlagRespondWhenInvisible;
+            else
+                cbaFlags &= ~EAknCBAFlagRespondWhenInvisible;
+            cba->SetButtonGroupFlags(cbaFlags);
+        }
 #endif // Q_WS_S60
 
         createWinId();
@@ -1080,7 +1097,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
         const QRect normalGeometry = (top->normalGeometry.width() < 0) ? geometry() : top->normalGeometry;
 
         if (newstate & Qt::WindowFullScreen)
-            setGeometry(qApp->desktop()->screenGeometry(this));
+            setGeometry(qApp->desktop()->availableGeometry(this));
         else if (newstate & Qt::WindowMaximized)
             setGeometry(qApp->desktop()->availableGeometry(this));
         else
