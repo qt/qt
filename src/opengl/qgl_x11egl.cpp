@@ -508,8 +508,13 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
     }
 
     if (pixmapData->gl_surface == 0) {
-        bool success = qt_createEGLSurfaceForPixmap(pixmapData, true);
-        if (!success) {
+        EGLConfig config = QEgl::defaultConfig(QInternal::Pixmap,
+                                               QEgl::OpenGL,
+                                               hasAlpha ? QEgl::Translucent : QEgl::NoOptions);
+
+        QPixmap tmpPixmap(pixmapData); //###
+        pixmapData->gl_surface = (Qt::HANDLE)QEgl::createSurface(&tmpPixmap, config);
+        if (pixmapData->gl_surface == (Qt::HANDLE)EGL_NO_SURFACE) {
             haveTFP = false;
             return 0;
         }

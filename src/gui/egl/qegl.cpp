@@ -88,10 +88,8 @@ bool QEglContext::isCurrent() const
     return current;
 }
 
-EGLConfig QEgl::defaultConfig(QPaintDevice* device, API api, ConfigOptions options)
+EGLConfig QEgl::defaultConfig(int devType, API api, ConfigOptions options)
 {
-    int devType = device->devType();
-
     if ( (devType != QInternal::Pixmap) && ((options & Renderable) == 0))
         qWarning("QEgl::defaultConfig() - Only configs for pixmaps make sense to be read-only!");
 
@@ -243,8 +241,8 @@ EGLConfig QEgl::defaultConfig(QPaintDevice* device, API api, ConfigOptions optio
 #endif
     }
 
-    // Finally, set the color format based on the device:
-    configAttribs.setPaintDeviceFormat(device);
+    if (options & Translucent)
+        configAttribs.setValue(EGL_ALPHA_SIZE, 1);
 
     *targetConfig = chooseConfig(&configAttribs, QEgl::BestPixelFormat);
     return *targetConfig;

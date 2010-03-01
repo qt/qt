@@ -116,10 +116,8 @@ namespace QEgl {
 
     enum ConfigOptions
     {
-        Opaque      = 0x00,
+        NoOptions   = 0,
         Translucent = 0x01,
-
-        ReadOnly    = 0x00,
         Renderable  = 0x02  // Config will be compatable with the paint engines (VG or GL)
     };
 
@@ -127,7 +125,7 @@ namespace QEgl {
     // go through the eglChooseConfig loop every time, we use defaultConfig, which will return
     // the config for a particular device/api/option combo. This function assumes that once a
     // config is chosen for a particular combo, it's safe to always use that combo.
-    Q_GUI_EXPORT EGLConfig  defaultConfig(QPaintDevice* device, API api, ConfigOptions options);
+    Q_GUI_EXPORT EGLConfig  defaultConfig(int devType, API api, ConfigOptions options);
 
     Q_GUI_EXPORT EGLConfig  chooseConfig(const QEglProperties* configAttribs, QEgl::PixelFormatMatch match = QEgl::ExactPixelFormat);
     Q_GUI_EXPORT EGLSurface createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *surfaceAttribs = 0);

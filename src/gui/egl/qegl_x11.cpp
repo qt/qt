@@ -361,9 +361,26 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
     }
 
     if (x11PixmapData) {
-        VisualID currentVisualId = XVisualIDFromVisual((Visual*)qt_x11Info(device)->visual());
-        if (visualId != currentVisualId)
-            qWarning("Error: The QPixmap's visual does not match the EGLConfig's visual!");
+        // X11 Pixmaps are only created with a depth, so that's all we need to check
+        EGLint configDepth;
+        eglGetConfigAttrib(QEgl::display(), config, EGL_BUFFER_SIZE , &configDepth);
+        if (x11PixmapData->depth() != configDepth) {
+            // The bit depths are wrong which means the EGLConfig isn't compatable with
+            // this pixmap. So we need to replace the pixmap's existing data with a new
+            // one which is created with the correct depth:
+
+#ifndef QT_NO_XRENDER
+            if (configDepth == 32) {
+                qWarning("Warning: EGLConfig's depth (32) != pixmap's depth (%d), converting to ARGB32",
+                         x11PixmapData->depth());
+                x11PixmapData->convertToARGB32(true);
+            } else
+#endif
+            {
+                qWarning("Warning: EGLConfig's depth (%d) != pixmap's depth (%d)",
+                         configDepth, x11PixmapData->depth());
+            }
+        }
 
         QEglProperties surfaceAttribs;
 
