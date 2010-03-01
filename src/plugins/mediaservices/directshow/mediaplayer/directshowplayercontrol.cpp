@@ -371,7 +371,7 @@ void DirectShowPlayerControl::updateAudioOutput(IBaseFilter *filter)
     if (m_audio)
         m_audio->Release();
 
-    m_audio = com_cast<IBasicAudio>(filter);
+    m_audio = com_cast<IBasicAudio>(filter, IID_IBasicAudio);
 }
 
 void DirectShowPlayerControl::updateError(QMediaPlayer::Error error, const QString &errorString)

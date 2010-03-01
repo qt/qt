@@ -127,6 +127,7 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     } else {
         d->model = QAbstractItemModelPrivate::staticEmptyModel();
     }
+    d->roleNames = d->model->roleNames();
 }
 
 /*!

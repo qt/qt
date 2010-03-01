@@ -165,7 +165,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     if (name.isEmpty()) {
         QHostInfo hostInfo(id);
         hostInfo.setError(QHostInfo::HostNotFound);
-        hostInfo.setErrorString(QObject::tr("No host name given"));
+        hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
         QScopedPointer<QHostInfoResult> result(new QHostInfoResult);
         QObject::connect(result.data(), SIGNAL(resultsReady(QHostInfo)),
                          receiver, member, Qt::QueuedConnection);

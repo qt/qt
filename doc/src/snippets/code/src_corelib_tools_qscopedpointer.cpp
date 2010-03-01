@@ -128,7 +128,7 @@ private:
 QScopedPointer<int, QScopedPointerArrayDeleter<int> > arrayPointer(new int[42]);
 
 // this QScopedPointer frees its data using free():
-QScopedPointer<int, QScopedPointerPodDeleter<int> > podPointer(reinterpret_cast<int *>(malloc(42)));
+QScopedPointer<int, QScopedPointerPodDeleter> podPointer(reinterpret_cast<int *>(malloc(42)));
 
 // this struct calls "myCustomDeallocator" to delete the pointer
 struct ScopedPointerCustomDeleter

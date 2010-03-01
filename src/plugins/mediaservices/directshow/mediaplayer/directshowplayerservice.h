@@ -57,7 +57,6 @@
 
 #include <QtCore/private/qwineventnotifier_p.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

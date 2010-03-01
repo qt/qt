@@ -1275,6 +1275,14 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
 }
 
 /*!
+  I made this so I could print a debug message here.
+ */
+QmlClassNode::~QmlClassNode()
+{
+    qDebug() << "Deleting QmlClassNode:" << name();
+}
+
+/*!
   The base file name for this kind of node has "qml_"
   prepended to it.
 

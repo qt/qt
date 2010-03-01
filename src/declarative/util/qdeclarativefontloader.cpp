@@ -75,6 +75,7 @@ public:
 
 /*!
     \qmlclass FontLoader QDeclarativeFontLoader
+    \since 4.7
     \ingroup group_utility
     \brief This item allows using fonts by name or url.
 

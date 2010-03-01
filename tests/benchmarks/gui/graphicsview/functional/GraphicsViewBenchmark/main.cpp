@@ -751,7 +751,7 @@ int main(int argc, char *argv[])
             aargv[aargc++] = argv[i];
     }
 
-    QApplication app(argc, argv);
+    QApplication app(aargc, aargv);
 
     int returnValue = 0;
     if (settings.options() & Settings::ManualTest) {

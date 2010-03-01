@@ -74,9 +74,8 @@
     \o \c MainWindow provides a menu above the \c ScribbleArea.
     \endlist
 
-    We will start by reviewing the \c ScribbleArea class, which
-    contains the interesting, then we will take a look at the \c
-    MainWindow class that uses it.
+    We will start by reviewing the \c ScribbleArea class. Then we will
+    review the \c MainWindow class, which uses \c ScribbleArea.
 
     \section1 ScribbleArea Class Definition
 

@@ -814,7 +814,7 @@ namespace QT_NAMESPACE {}
 #      define Q_WS_MAC32
 #    endif
 #  elif defined(Q_OS_SYMBIAN)
-#    if (defined(__SERIES60_31__) || defined(__S60_32__) || defined(__S60_50__)) && !defined(QT_NO_S60)
+#    if !defined(QT_NO_S60)
 #      define Q_WS_S60
 #    endif
 #  elif !defined(Q_WS_QWS)
@@ -2414,10 +2414,11 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #if defined(Q_OS_SYMBIAN)
 
-#ifdef SYMBIAN_GRAPHICS_USE_GCE
+#ifdef SYMBIAN_BUILD_GCE
 //RWsPointerCursor is fixed, so don't use low performance sprites
 #define Q_SYMBIAN_FIXED_POINTER_CURSORS
 #define Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
+#define Q_SYMBIAN_WINDOW_SIZE_CACHE
 //enabling new graphics resources
 #define QT_SYMBIAN_SUPPORTS_SGIMAGE
 #define QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER

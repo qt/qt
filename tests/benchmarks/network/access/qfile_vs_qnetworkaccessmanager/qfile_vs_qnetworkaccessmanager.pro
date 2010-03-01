@@ -1,6 +1,6 @@
 load(qttest_p4)
 TEMPLATE = app
-TARGET = qfile_vs_qnetworkaccessmanager
+TARGET = tst_qfile_vs_qnetworkaccessmanager
 DEPENDPATH += .
 INCLUDEPATH += .
 

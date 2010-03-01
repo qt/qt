@@ -51,6 +51,9 @@
 
 //#define USE_PLAYBIN2
 
+
+QT_BEGIN_NAMESPACE
+
 QGstreamerPlayerSession::QGstreamerPlayerSession(QObject *parent)
     :QObject(parent),
      m_state(QMediaPlayer::StoppedState),
@@ -710,3 +713,6 @@ void QGstreamerPlayerSession::getStreamsInfo()
 
     emit streamsChanged();
 }
+
+QT_END_NAMESPACE
+

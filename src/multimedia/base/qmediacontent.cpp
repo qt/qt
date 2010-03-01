@@ -207,6 +207,15 @@ QUrl QMediaContent::canonicalUrl() const
 }
 
 /*!
+    Returns a QNetworkRequest that represents that canonical resource for this media content.
+*/
+
+QNetworkRequest QMediaContent::canonicalRequest() const
+{
+    return canonicalResource().request();
+}
+
+/*!
     Returns a QMediaResource that represents that canonical resource for this media content.
 */
 

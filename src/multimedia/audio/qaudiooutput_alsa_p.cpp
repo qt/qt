@@ -259,6 +259,7 @@ void QAudioOutputPrivate::stop()
 {
     if(deviceState == QAudio::StoppedState)
         return;
+    errorState = QAudio::NoError;
     deviceState = QAudio::StoppedState;
     close();
     emit stateChanged(deviceState);
@@ -494,10 +495,13 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
         err = snd_pcm_writei( handle, data, frames );
     }
     if(err > 0) {
-        totalTimeValue += err*1000000/settings.frequency();
+        totalTimeValue += err;
         resuming = false;
         errorState = QAudio::NoError;
-        deviceState = QAudio::ActiveState;
+        if (deviceState != QAudio::ActiveState) {
+            deviceState = QAudio::ActiveState;
+            emit stateChanged(deviceState);
+        }
         return snd_pcm_frames_to_bytes( handle, err );
     } else
         err = xrun_recovery(err);
@@ -542,7 +546,7 @@ int QAudioOutputPrivate::notifyInterval() const
 
 qint64 QAudioOutputPrivate::processedUSecs() const
 {
-    return totalTimeValue;
+    return qint64(1000000) * totalTimeValue / settings.frequency();
 }
 
 void QAudioOutputPrivate::resume()
@@ -562,10 +566,8 @@ void QAudioOutputPrivate::resume()
             bytesAvailable = (int)snd_pcm_frames_to_bytes(handle, buffer_frames);
         }
         resuming = true;
-        if(pullMode)
-            deviceState = QAudio::ActiveState;
-        else
-            deviceState = QAudio::IdleState;
+
+        deviceState = QAudio::ActiveState;
 
         errorState = QAudio::NoError;
         timer->start(period_time/1000);
@@ -637,7 +639,9 @@ bool QAudioOutputPrivate::deviceReady()
             // Got some data to output
             if(deviceState != QAudio::ActiveState)
                 return true;
-            write(audioBuffer,l);
+            qint64 bytesWritten = write(audioBuffer,l);
+            if (bytesWritten != l)
+                audioSource->seek(audioSource->pos()-(l-bytesWritten));
             bytesAvailable = bytesFree();
 
         } else if(l == 0) {
@@ -645,9 +649,11 @@ bool QAudioOutputPrivate::deviceReady()
             bytesAvailable = bytesFree();
             if(bytesAvailable > snd_pcm_frames_to_bytes(handle, buffer_frames-period_frames)) {
                 // Underrun
-                errorState = QAudio::UnderrunError;
-                deviceState = QAudio::IdleState;
-                emit stateChanged(deviceState);
+                if (deviceState != QAudio::IdleState) {
+                    errorState = QAudio::UnderrunError;
+                    deviceState = QAudio::IdleState;
+                    emit stateChanged(deviceState);
+                }
             }
 
         } else if(l < 0) {
@@ -655,8 +661,17 @@ bool QAudioOutputPrivate::deviceReady()
             errorState = QAudio::IOError;
             emit stateChanged(deviceState);
         }
-    } else
+    } else {
         bytesAvailable = bytesFree();
+        if(bytesAvailable > snd_pcm_frames_to_bytes(handle, buffer_frames-period_frames)) {
+            // Underrun
+            if (deviceState != QAudio::IdleState) {
+                errorState = QAudio::UnderrunError;
+                deviceState = QAudio::IdleState;
+                emit stateChanged(deviceState);
+            }
+        }
+    }
 
     if(deviceState != QAudio::ActiveState)
         return true;
@@ -671,35 +686,10 @@ bool QAudioOutputPrivate::deviceReady()
 
 qint64 QAudioOutputPrivate::elapsedUSecs() const
 {
-    if(!handle)
-        return 0;
-
     if (deviceState == QAudio::StoppedState)
         return 0;
 
-#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
-    snd_pcm_status_t* status;
-    snd_pcm_status_alloca(&status);
-
-    snd_timestamp_t t1,t2;
-    if( snd_pcm_status(handle, status) >= 0) {
-        snd_pcm_status_get_tstamp(status,&t1);
-        snd_pcm_status_get_trigger_tstamp(status,&t2);
-        t1.tv_sec-=t2.tv_sec;
-
-        signed long l = (signed long)t1.tv_usec - (signed long)t2.tv_usec;
-        if(l < 0) {
-            t1.tv_sec--;
-            l = -l;
-            l %= 1000000;
-        }
-        return ((t1.tv_sec * 1000000)+l);
-    } else
-        return 0;
-#else
     return clockStamp.elapsed()*1000;
-#endif
-    return 0;
 }
 
 void QAudioOutputPrivate::reset()

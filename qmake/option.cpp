@@ -88,7 +88,7 @@ int Option::warn_level = WarnLogic;
 int Option::debug_level = 0;
 QFile Option::output;
 QString Option::output_dir;
-bool Option::recursive = false;
+Option::QMAKE_RECURSIVE Option::recursive = Option::QMAKE_RECURSIVE_DEFAULT;
 QStringList Option::before_user_vars;
 QStringList Option::after_user_vars;
 QStringList Option::user_configs;
@@ -96,13 +96,9 @@ QStringList Option::after_user_configs;
 QString Option::user_template;
 QString Option::user_template_prefix;
 QStringList Option::shellPath;
-#if defined(Q_OS_WIN32)
-Option::TARG_MODE Option::target_mode = Option::TARG_WIN_MODE;
-#elif defined(Q_OS_MAC)
-Option::TARG_MODE Option::target_mode = Option::TARG_MACX_MODE;
-#else
-Option::TARG_MODE Option::target_mode = Option::TARG_UNIX_MODE;
-#endif
+Option::HOST_MODE Option::host_mode = Option::HOST_UNKNOWN_MODE;
+Option::TARG_MODE Option::target_mode = Option::TARG_UNKNOWN_MODE;
+bool Option::target_mode_overridden = false;
 
 //QMAKE_*_PROPERTY stuff
 QStringList Option::prop::properties;
@@ -126,7 +122,7 @@ QString Option::mkfile::qmakespec_commandline;
 
 static Option::QMAKE_MODE default_mode(QString progname)
 {
-    int s = progname.lastIndexOf(Option::dir_sep);
+    int s = progname.lastIndexOf(QDir::separator());
     if(s != -1)
         progname = progname.right(progname.length() - (s + 1));
     if(progname == "qmakegen")
@@ -184,9 +180,6 @@ bool usage(const char *a0)
             "   * processed as if it was in [files]. These assignments will be parsed *\n"
             "   * before [files].                                                     *\n"
             "  -o file        Write output to file\n"
-            "  -unix          Run in unix mode\n"
-            "  -win32         Run in win32 mode\n"
-            "  -macx          Run in Mac OS X mode\n"
             "  -d             Increase debug level\n"
             "  -t templ       Overrides TEMPLATE as templ\n"
             "  -tp prefix     Overrides TEMPLATE so that prefix is prefixed into the value\n"
@@ -223,7 +216,7 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             if(x == 1) {
                 bool specified = true;
                 if(opt == "project") {
-                    Option::recursive = true;
+                    Option::recursive = Option::QMAKE_RECURSIVE_YES;
                     Option::qmake_mode = Option::QMAKE_GENERATE_PROJECT;
                 } else if(opt == "prl") {
                     Option::mkfile::do_deps = false;
@@ -251,11 +244,20 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "tp" || opt == "template_prefix") {
                 Option::user_template_prefix = argv[++x];
             } else if(opt == "macx") {
+                fprintf(stderr, "-macx is deprecated.\n");
+                Option::host_mode = HOST_MACX_MODE;
                 Option::target_mode = TARG_MACX_MODE;
+                Option::target_mode_overridden = true;
             } else if(opt == "unix") {
+                fprintf(stderr, "-unix is deprecated.\n");
+                Option::host_mode = HOST_UNIX_MODE;
                 Option::target_mode = TARG_UNIX_MODE;
+                Option::target_mode_overridden = true;
             } else if(opt == "win32") {
+                fprintf(stderr, "-win32 is deprecated.\n");
+                Option::host_mode = HOST_WIN_MODE;
                 Option::target_mode = TARG_WIN_MODE;
+                Option::target_mode_overridden = true;
             } else if(opt == "d") {
                 Option::debug_level++;
             } else if(opt == "version" || opt == "v" || opt == "-version") {
@@ -279,9 +281,9 @@ Option::parseCommandLine(int argc, char **argv, int skip)
             } else if(opt == "Wnone") {
                 Option::warn_level = WarnNone;
             } else if(opt == "r" || opt == "recursive") {
-                Option::recursive = true;
-            } else if(opt == "norecursive") {
-                Option::recursive = false;
+                Option::recursive = Option::QMAKE_RECURSIVE_YES;
+            } else if(opt == "nr" || opt == "norecursive") {
+                Option::recursive = Option::QMAKE_RECURSIVE_NO;
             } else if(opt == "config") {
                 Option::user_configs += argv[++x];
             } else {
@@ -405,6 +407,7 @@ Option::init(int argc, char **argv)
 #ifdef Q_OS_WIN
     Option::dirlist_sep = ";";
     Option::shellPath = detectShellPath();
+    Option::res_ext = ".res";
 #else
     Option::dirlist_sep = ":";
 #endif
@@ -525,16 +528,21 @@ Option::init(int argc, char **argv)
     }
 
     //defaults for globals
-    if(Option::target_mode == Option::TARG_WIN_MODE) {
-        Option::dir_sep = "\\";
-        Option::obj_ext = ".obj";
-        Option::res_ext = ".res";
-    } else {
-        Option::dir_sep = "/";
-        Option::obj_ext = ".o";
-    }
-    Option::qmake_abslocation = Option::fixPathToTargetOS(Option::qmake_abslocation);
+    if (Option::host_mode != Option::HOST_UNKNOWN_MODE)
+        applyHostMode();
     return QMAKE_CMDLINE_SUCCESS;
+}
+
+void Option::applyHostMode()
+{
+   if (Option::host_mode == Option::HOST_WIN_MODE) {
+       Option::dir_sep = "\\";
+       Option::obj_ext = ".obj";
+   } else {
+       Option::dir_sep = "/";
+       Option::obj_ext = ".o";
+   }
+   Option::qmake_abslocation = Option::fixPathToTargetOS(Option::qmake_abslocation);
 }
 
 bool Option::postProcessProject(QMakeProject *project)

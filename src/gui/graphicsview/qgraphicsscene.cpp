@@ -813,7 +813,8 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             // do it ourselves.
             if (item) {
                 for (int i = 0; i < views.size(); ++i)
-                    views.at(i)->inputContext()->reset();
+                    if (views.at(i)->inputContext())
+                        views.at(i)->inputContext()->reset();
             }
         }
 #endif //QT_NO_IM
@@ -4692,7 +4693,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (widget)
             item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         viewBoundingRect.adjust(-1, -1, 1, 1);
-        drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect) : !viewBoundingRect.isEmpty();
+        drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect)
+                                 : !viewBoundingRect.normalized().isEmpty();
         if (!drawItem) {
             if (!itemHasChildren)
                 return;

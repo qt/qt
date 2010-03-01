@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Audio QDeclarativeAudio
+    \since 4.7
     \brief The Audio element allows you to add audio playback to a scene.
 
     \qml

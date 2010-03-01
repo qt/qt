@@ -251,6 +251,7 @@ void QDeclarativeEaseFollowPrivate::tick(int t)
 
 /*!
     \qmlclass EaseFollow QDeclarativeEaseFollow
+    \since 4.7
     \brief The EaseFollow element allows a property to smoothly track a value.
 
     The EaseFollow smoothly animates a property's value to a set target value 

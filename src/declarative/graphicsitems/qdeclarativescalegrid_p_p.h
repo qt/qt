@@ -44,7 +44,7 @@
 
 #include "qdeclarativeborderimage_p.h"
 
-#include "../util/qdeclarativepixmapcache_p.h"
+#include <private/qdeclarativepixmapcache_p.h>
 #include <qdeclarative.h>
 
 #include <QtCore/QString>
