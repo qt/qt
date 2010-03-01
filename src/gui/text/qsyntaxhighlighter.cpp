@@ -203,7 +203,6 @@ void QSyntaxHighlighterPrivate::reformatBlock(const QTextBlock &block)
     Q_ASSERT_X(!currentBlock.isValid(), "QSyntaxHighlighter::reformatBlock()", "reFormatBlock() called recursively");
 
     currentBlock = block;
-    QTextBlock previous = block.previous();
 
     formatChanges.fill(QTextCharFormat(), block.length() - 1);
     q->highlightBlock(block.text());
