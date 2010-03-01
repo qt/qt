@@ -65,6 +65,9 @@ sub trim($) {
     return $string;
 }
 
+my $nullDevice = "/dev/null";
+$nullDevice = "NUL" if ($^O =~ /MSWin/);
+
 my @capabilitiesToAllow = ("LocalServices", "NetworkServices", "ReadUserData", "UserEnvironment", "WriteUserData");
 my @capabilitiesSpecified = ();
 
@@ -246,7 +249,7 @@ if (@ARGV)
 
             # Actually execute the elftran command to set the capabilities.
             print ("Executing ".$commandToExecute."\n");
-            system ($commandToExecute." > NUL");
+            system ($commandToExecute." > $nullDevice");
 
             ## Create another command line to check that the set capabilities are correct.
             #$commandToExecute = "elftran -dump s ".$binaryPath;
