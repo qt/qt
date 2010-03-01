@@ -1980,6 +1980,12 @@ void QDeclarativeListView::setHighlightResizeSpeed(qreal speed)
     visible item at the time the mouse button is released.  This mode is particularly
     useful for moving one page at a time.
     \endlist
+
+    snapMode does not affect the currentIndex.  To update the
+    currentIndex as the list is moved set \e highlightRangeMode
+    to \e StrictlyEnforceRange.
+
+    \sa highlightRangeMode
 */
 QDeclarativeListView::SnapMode QDeclarativeListView::snapMode() const
 {
