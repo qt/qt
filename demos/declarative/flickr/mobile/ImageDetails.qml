@@ -66,8 +66,7 @@ Flipable {
 
                 Image {
                     id: bigImage; source: container.photoUrl; scale: slider.value
-                    anchors.centerIn: parent
-                    smooth: !flickable.moving
+                    anchors.centerIn: parent; smooth: !flickable.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == 1 && width != 0) {
