@@ -217,7 +217,7 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack, QDeclarati
                             // TODO: parent might be a layout 
                         } 
                     } else { 
-			    QDeclarativeGraphics_setParent_noEvent(o, parent);
+			    QDeclarative_setParent_noEvent(o, parent);
        //                 o->setParent(parent); 
                     } 
                 }

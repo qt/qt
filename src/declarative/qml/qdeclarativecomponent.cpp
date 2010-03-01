@@ -618,7 +618,7 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContext *context, const QB
     QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
 
     if (rv) {
-        QDeclarativeGraphics_setParent_noEvent(ctxt, rv);
+        QDeclarative_setParent_noEvent(ctxt, rv);
     } else {
         delete ctxt;
     }

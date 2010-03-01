@@ -104,7 +104,7 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QObject *scope, const QMetaMeth
     // is that they both do the work to figure it out.  Boo hoo.
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    QDeclarativeGraphics_setParent_noEvent(this, parent);
+    QDeclarative_setParent_noEvent(this, parent);
     QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 }
 
@@ -120,7 +120,7 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QDeclarativeContext *ctxt, cons
     // is that they both do the work to figure it out.  Boo hoo.
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    QDeclarativeGraphics_setParent_noEvent(this, parent);
+    QDeclarative_setParent_noEvent(this, parent);
     QMetaObject::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
 
     m_expression = new QDeclarativeExpression(ctxt, val, scope);

@@ -44,7 +44,7 @@
 
 #include "qdeclarativeitem.h"
 
-#include "../util/qdeclarativestate_p.h"
+#include <private/qdeclarativestate_p.h>
 #include <private/qpodvector_p.h>
 
 #include <QtCore/QObject>
