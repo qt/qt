@@ -399,7 +399,7 @@ void QSyntaxHighlighter::rehighlight()
 void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
 {
     Q_D(QSyntaxHighlighter);
-    if (!d->doc)
+    if (!d->doc || !block.isValid() || block.document() != d->doc)
         return;
 
     const bool rehighlightPending = d->rehighlightPending;
