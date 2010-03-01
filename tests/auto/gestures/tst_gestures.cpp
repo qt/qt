@@ -354,6 +354,7 @@ private slots:
     void deleteGestureTargetItem_data();
     void deleteGestureTargetItem();
     void viewportCoordinates();
+    void partialGesturePropagation();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1894,6 +1895,58 @@ void tst_Gestures::viewportCoordinates()
     event.hasHotSpot = true;
     sendCustomGesture(&event, item1, &scene);
     QVERIFY(item1->gestureEventsReceived != 0);
+}
+
+void tst_Gestures::partialGesturePropagation()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+
+    GestureItem *item1 = new GestureItem("item1");
+    item1->grabGesture(CustomGesture::GestureType);
+    item1->setZValue(8);
+    scene.addItem(item1);
+
+    GestureItem *item2 = new GestureItem("item2[partial]");
+    item2->grabGesture(CustomGesture::GestureType, Qt::ReceivePartialGestures);
+    item2->setZValue(6);
+    scene.addItem(item2);
+
+    GestureItem *item3 = new GestureItem("item3");
+    item3->grabGesture(CustomGesture::GestureType);
+    item3->setZValue(4);
+    scene.addItem(item3);
+
+    GestureItem *item4 = new GestureItem("item4[partial]");
+    item4->grabGesture(CustomGesture::GestureType, Qt::ReceivePartialGestures);
+    item4->setZValue(2);
+    scene.addItem(item4);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
+
+    item1->ignoredUpdatedGestures << CustomGesture::GestureType;
+
+    CustomEvent event;
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item1, &scene);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+
+    QCOMPARE(item1->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item2->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item3->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item4->gestureOverrideEventsReceived, 1);
+
+    QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item2->gestureEventsReceived, TotalGestureEventsCount-2); // except for started and finished
+    QCOMPARE(item3->gestureEventsReceived, 0);
+    QCOMPARE(item4->gestureEventsReceived, 0);
 }
 
 QTEST_MAIN(tst_Gestures)
