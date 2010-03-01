@@ -147,6 +147,8 @@ void QNetworkSessionPrivateImpl::open()
         if ((activeConfig.state() & QNetworkConfiguration::Discovered) !=
             QNetworkConfiguration::Discovered) {
             lastError =QNetworkSession::InvalidConfigurationError;
+            state = QNetworkSession::Invalid;
+            emit stateChanged(state);
             emit QNetworkSessionPrivate::error(lastError);
             return;
         }
@@ -400,7 +402,6 @@ void QNetworkSessionPrivateImpl::connectionError(const QString &id,
             lastError = QNetworkSession::UnknownSessionError;
         }
 
-        emit quitPendingWaitsForOpened();
         emit QNetworkSessionPrivate::error(lastError);
     }
 }

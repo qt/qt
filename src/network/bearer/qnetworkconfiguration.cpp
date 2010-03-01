@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qnetworkconfiguration.h"
-
 #include "qnetworkconfiguration_p.h"
 
 QT_BEGIN_NAMESPACE

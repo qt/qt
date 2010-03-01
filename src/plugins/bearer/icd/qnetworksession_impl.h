@@ -75,7 +75,7 @@ class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 
 public:
     QNetworkSessionPrivateImpl(QIcdEngine *engine)
-    :   engine(engine), connectFlags(ICD_CONNECTION_FLAG_USER_EVENT)
+    :   engine(engine), connectFlags(ICD_CONNECTION_FLAG_USER_EVENT), currentState(QNetworkSession::Invalid)
     {
     }
 
@@ -118,6 +118,7 @@ private Q_SLOTS:
     void do_open();
     void networkConfigurationsChanged();
     void configurationChanged(const QNetworkConfiguration &config);
+    void updateProxies(QNetworkSession::State newState);
 
 private:
     QNetworkConfigurationManager manager;
@@ -139,6 +140,10 @@ private:
     void updateIdentifier(QString &newId);
     quint64 getStatistics(bool sent) const;
     void cleanupSession(void);
+
+    void updateProxyInformation();
+    void clearProxyInformation();
+    QNetworkSession::State currentState;
 };
 
 QT_END_NAMESPACE
