@@ -48,6 +48,7 @@
 #include "qgl_egl_p.h"
 #include "qcolormap.h"
 #include <QDebug>
+#include <QPixmap>
 
 
 QT_BEGIN_NAMESPACE
@@ -164,55 +165,53 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     int devType = device()->devType();
 
-    // Get the display and initialize it.
+    QX11PixmapData *x11PixmapData = 0;
+    if (devType == QInternal::Pixmap) {
+        QPixmapData *pmd = static_cast<QPixmap*>(device())->data_ptr().data();
+        if (pmd->classId() == QPixmapData::X11Class)
+            x11PixmapData = static_cast<QX11PixmapData*>(pmd);
+        else {
+            // TODO: Replace the pixmap's data with a new QX11PixmapData
+            qWarning("WARNING: Creating a QGLContext on a QPixmap is only supported for X11 pixmap backend");
+            return false;
+        }
+    } else if ((devType != QInternal::Widget) && (devType != QInternal::Pbuffer)) {
+        qWarning("WARNING: Creating a QGLContext not supported on device type %d", devType);
+        return false;
+    }
+
+    // Only create the eglContext if we don't already have one:
     if (d->eglContext == 0) {
         d->eglContext = new QEglContext();
         d->eglContext->setApi(QEgl::OpenGL);
 
+        // If the device is a widget with WA_TranslucentBackground set, make sure the glFormat
+        // has the alpha channel option set:
+        if (devType == QInternal::Widget) {
+            QWidget* widget = static_cast<QWidget*>(device());
+            if (widget->testAttribute(Qt::WA_TranslucentBackground))
+                d->glFormat.setAlpha(true);
+        }
+
         // Construct the configuration we need for this surface.
         QEglProperties configProps;
-        qt_eglproperties_set_glformat(configProps, d->glFormat);
         configProps.setDeviceType(devType);
-        configProps.setPaintDeviceFormat(device());
         configProps.setRenderableType(QEgl::OpenGL);
+        qt_eglproperties_set_glformat(configProps, d->glFormat);
 
-#if We_have_an_EGL_library_which_bothers_to_check_EGL_BUFFER_SIZE
-        if (device()->depth() == 16 && configProps.value(EGL_ALPHA_SIZE) <= 0) {
-            qDebug("Setting EGL_BUFFER_SIZE to 16");
+        // Use EGL_BUFFER_SIZE to make sure we prefer a 16-bit config over a 32-bit config
+        if (device()->depth() == 16 && !d->glFormat.alpha())
             configProps.setValue(EGL_BUFFER_SIZE, 16);
-            configProps.setValue(EGL_ALPHA_SIZE, 0);
-        }
 
         if (!d->eglContext->chooseConfig(configProps, QEgl::BestPixelFormat)) {
             delete d->eglContext;
             d->eglContext = 0;
             return false;
         }
-#else
-        QEgl::PixelFormatMatch matchType = QEgl::BestPixelFormat;
-        if ((device()->depth() == 16) && configProps.value(EGL_ALPHA_SIZE) == 0) {
-            configProps.setValue(EGL_RED_SIZE, 5);
-            configProps.setValue(EGL_GREEN_SIZE, 6);
-            configProps.setValue(EGL_BLUE_SIZE, 5);
-            configProps.setValue(EGL_ALPHA_SIZE, 0);
-            matchType = QEgl::ExactPixelFormat;
-        }
-
-        // Search for a matching configuration, reducing the complexity
-        // each time until we get something that matches.
-        if (!d->eglContext->chooseConfig(configProps, matchType)) {
-            delete d->eglContext;
-            d->eglContext = 0;
-            return false;
-        }
-#endif
-
-//        qDebug("QGLContext::chooseContext() - using EGL config %d:", d->eglContext->config());
-//        qDebug() << QEglProperties(d->eglContext->config()).toString();
 
         // Create a new context for the configuration.
-        if (!d->eglContext->createContext
-                (shareContext ? shareContext->d_func()->eglContext : 0)) {
+        QEglContext* eglSharedContext = shareContext ? shareContext->d_func()->eglContext : 0;
+        if (!d->eglContext->createContext(eglSharedContext)) {
             delete d->eglContext;
             d->eglContext = 0;
             return false;
@@ -220,15 +219,33 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->sharing = d->eglContext->isSharing();
         if (d->sharing && shareContext)
             const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
-
-#if defined(EGL_VERSION_1_1)
-        if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)
-            eglSwapInterval(d->eglContext->display(), d->glFormat.swapInterval());
-#endif
     }
 
     // Inform the higher layers about the actual format properties.
     qt_egl_update_format(*(d->eglContext), d->glFormat);
+
+
+    // Do don't create the EGLSurface for everything.
+    //    QWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface
+    //    QGLWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface
+    //    QPixmap - yes, create the EGLSurface but store it in QX11PixmapData::gl_surface
+    //    QGLPixelBuffer - no, it creates the surface itself
+
+    if (devType == QInternal::Widget) {
+        if (d->eglSurface != EGL_NO_SURFACE)
+            eglDestroySurface(d->eglContext->display(), d->eglSurface);
+        d->eglSurface = QEgl::createSurface(device(), d->eglContext->config());
+        XFlush(X11->display);
+        setWindowCreated(true);
+    }
+
+    if (x11PixmapData) {
+        // TODO: Actually check to see if the existing surface can be re-used
+        if (x11PixmapData->gl_surface)
+            eglDestroySurface(d->eglContext->display(), (EGLSurface)x11PixmapData->gl_surface);
+
+        x11PixmapData->gl_surface = (Qt::HANDLE)QEgl::createSurface(device(), d->eglContext->config());
+    }
 
     return true;
 }
@@ -277,20 +294,6 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
 
-    if (parentWidget()) {
-        // force creation of delay-created widgets
-        parentWidget()->winId();
-        if (parentWidget()->x11Info().screen() != x11Info().screen())
-            d_func()->xinfo = parentWidget()->d_func()->xinfo;
-    }
-
-    // If the application has set WA_TranslucentBackground and not explicitly set
-    // the alpha buffer size to zero, modify the format so it have an alpha channel
-    QGLFormat& fmt = d->glcx->d_func()->glFormat;
-    const bool tryArgbVisual = testAttribute(Qt::WA_TranslucentBackground) || fmt.alpha();
-    if (tryArgbVisual && fmt.alphaBufferSize() == -1)
-        fmt.setAlphaBufferSize(1);
-
     bool createFailed = false;
     if (!d->glcx->isValid()) {
         // Create the QGLContext here, which in turn chooses the EGL config
@@ -304,74 +307,8 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         return;
     }
 
-    if (d->glcx->windowCreated() || d->glcx->deviceIsPixmap()) {
-        if (deleteOldContext)
-            delete oldcx;
-        return;
-    }
 
-    bool visible = isVisible();
-    if (visible)
-        hide();
-
-    QEglContext *eglContext = d->glcx->d_func()->eglContext;
-
-    XVisualInfo vi;
-    memset(&vi, 0, sizeof(XVisualInfo));
-    vi.visualid = QEgl::getCompatibleVisualId(eglContext->config());
-
-    {
-    XVisualInfo *visualInfoPtr;
-    int matchingCount = 0;
-    visualInfoPtr = XGetVisualInfo(X11->display, VisualIDMask, &vi, &matchingCount);
-    vi = *visualInfoPtr;
-    XFree(visualInfoPtr);
-    }
-
-    bool usingArgbVisual = eglContext->configAttrib(EGL_ALPHA_SIZE) > 0;
-
-    XSetWindowAttributes a;
-
-    Window p = RootWindow(x11Info().display(), x11Info().screen());
-    if (parentWidget())
-        p = parentWidget()->winId();
-
-    QColormap colmap = QColormap::instance(vi.screen);
-    a.background_pixel = colmap.pixel(palette().color(backgroundRole()));
-    a.border_pixel = colmap.pixel(Qt::black);
-
-    unsigned int valueMask = CWBackPixel|CWBorderPixel;
-    if (usingArgbVisual) {
-        a.colormap = XCreateColormap(x11Info().display(), p, vi.visual, AllocNone);
-        valueMask |= CWColormap;
-    }
-
-    Window w = XCreateWindow(x11Info().display(), p, x(), y(), width(), height(),
-                             0, vi.depth, InputOutput, vi.visual, valueMask, &a);
-
-    if (deleteOldContext)
-        delete oldcx;
-    oldcx = 0;
-
-    create(w); // Create with the ID of the window we've just created
-
-
-    // Create the EGL surface to draw into.
-    QGLContextPrivate *ctxpriv = d->glcx->d_func();
-    ctxpriv->eglSurface = ctxpriv->eglContext->createSurface(this);
-    if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
-        delete ctxpriv->eglContext;
-        ctxpriv->eglContext = 0;
-        return;
-    }
-
-    d->eglSurfaceWindowId = w; // Remember the window id we created the surface for
-
-    if (visible)
-        show();
-
-    XFlush(X11->display);
-    d->glcx->setWindowCreated(true);
+    d->eglSurfaceWindowId = winId(); // Remember the window id we created the surface for
 }
 
 void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
@@ -380,7 +317,7 @@ void QGLWidgetPrivate::init(QGLContext *context, const QGLWidget* shareWidget)
 
     initContext(context, shareWidget);
 
-    if(q->isValid() && glcx->format().hasOverlay()) {
+    if (q->isValid() && glcx->format().hasOverlay()) {
         //no overlay
         qWarning("QtOpenGL ES doesn't currently support overlays");
     }
