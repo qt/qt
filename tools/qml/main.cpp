@@ -324,7 +324,7 @@ int main(int argc, char ** argv)
     if (!skin.isEmpty()) {
         if (skin == "list") {
             foreach (QString s, viewer.builtinSkins())
-                qWarning(s.toUtf8());
+                qWarning() << qPrintable(s);
             exit(0);
         } else {
             viewer.setSkin(skin);
