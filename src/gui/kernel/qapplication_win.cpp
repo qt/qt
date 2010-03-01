@@ -2524,6 +2524,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             result = false;
             break;
+#if !defined(Q_WS_WINCE) || defined(QT_WINCE_GESTURES)
         case WM_GESTURE: {
             GESTUREINFO gi;
             memset(&gi, 0, sizeof(GESTUREINFO));
@@ -2556,6 +2557,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             result = true;
             break;
         }
+#endif // !defined(Q_WS_WINCE) || defined(QT_WINCE_GESTURES)
         default:
             result = false;                        // event was not processed
             break;
