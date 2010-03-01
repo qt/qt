@@ -723,19 +723,19 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
     if ((args.size() > 4) && !args.at(4).isNumber())
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): fifth argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
-    QString context(args.at(0).toString(exec));
+    JSC::UString context = args.at(0).toString(exec);
 #endif
-    QString text(args.at(1).toString(exec));
+    JSC::UString text = args.at(1).toString(exec);
 #ifndef QT_NO_QOBJECT
-    QString comment;
+    JSC::UString comment;
     if (args.size() > 2)
         comment = args.at(2).toString(exec);
     QCoreApplication::Encoding encoding = QCoreApplication::CodecForTr;
     if (args.size() > 3) {
-        QString encStr(args.at(3).toString(exec));
-        if (encStr == QLatin1String("CodecForTr"))
+        JSC::UString encStr = args.at(3).toString(exec);
+        if (encStr == "CodecForTr")
             encoding = QCoreApplication::CodecForTr;
-        else if (encStr == QLatin1String("UnicodeUTF8"))
+        else if (encStr == "UnicodeUTF8")
             encoding = QCoreApplication::UnicodeUTF8;
         else
             return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr));
@@ -744,11 +744,11 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
     if (args.size() > 4)
         n = args.at(4).toInt32(exec);
 #endif
-    QString result;
+    JSC::UString result;
 #ifndef QT_NO_QOBJECT
-    result = QCoreApplication::translate(context.toLatin1().constData(),
-                                         text.toLatin1().constData(),
-                                         comment.toLatin1().constData(),
+    result = QCoreApplication::translate(QScript::convertToLatin1(context).constData(),
+                                         QScript::convertToLatin1(text).constData(),
+                                         QScript::convertToLatin1(comment).constData(),
                                          encoding, n);
 #else
     result = text;
@@ -774,25 +774,25 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     if ((args.size() > 2) && !args.at(2).isNumber())
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
-    QString context;
+    JSC::UString context;
     QScriptContext *ctx = QScriptEnginePrivate::contextForFrame(exec);
     if (ctx && ctx->parentContext())
         context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
 #endif
-    QString text(args.at(0).toString(exec));
+    JSC::UString text = args.at(0).toString(exec);
 #ifndef QT_NO_QOBJECT
-    QString comment;
+    JSC::UString comment;
     if (args.size() > 1)
         comment = args.at(1).toString(exec);
     int n = -1;
     if (args.size() > 2)
         n = args.at(2).toInt32(exec);
 #endif
-    QString result;
+    JSC::UString result;
 #ifndef QT_NO_QOBJECT
-    result = QCoreApplication::translate(context.toLatin1().constData(),
-                                         text.toLatin1().constData(),
-                                         comment.toLatin1().constData(),
+    result = QCoreApplication::translate(QScript::convertToLatin1(context).constData(),
+                                         QScript::convertToLatin1(text).constData(),
+                                         QScript::convertToLatin1(comment).constData(),
                                          QCoreApplication::CodecForTr, n);
 #else
     result = text;

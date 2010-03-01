@@ -123,6 +123,9 @@ namespace QScript
     inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(JSC::JSValue value);
 
+    inline void convertToLatin1_helper(const UChar *i, int length, char *s);
+    inline QByteArray convertToLatin1(const JSC::UString &str);
+
     class UStringSourceProviderWithFeedback;
 
 struct GlobalClientData : public JSC::JSGlobalData::ClientData
@@ -514,6 +517,21 @@ inline bool ToBool(qsreal value)
 inline bool ToBool(const QString &value)
 {
      return !value.isEmpty();
+}
+
+inline void convertToLatin1_helper(const UChar *i, int length, char *s)
+{
+    const UChar *e = i + length;
+    while (i != e)
+        *(s++) = (uchar) *(i++);
+    *s = '\0';
+}
+
+inline QByteArray convertToLatin1(const JSC::UString &str)
+{
+    QByteArray ba(str.size(), Qt::Uninitialized);
+    convertToLatin1_helper(str.data(), str.size(), ba.data());
+    return ba;
 }
 
 } // namespace QScript
