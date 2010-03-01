@@ -8,11 +8,11 @@ Item {
     Image { id: img
         source: {
             if(type == 0){
-                "pics/redStone.png";
+                "../shared/pics/redStone.png";
             } else if(type == 1) {
-                "pics/blueStone.png";
+                "../shared/pics/blueStone.png";
             } else {
-                "pics/greenStone.png";
+                "../shared/pics/greenStone.png";
             }
         }
         anchors.fill: parent
