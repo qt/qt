@@ -831,21 +831,14 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    bool ok;
-
-    if (data) {
-        ok = data->fromFile(fileName, format, flags);
-    } else {
-        QScopedPointer<QPixmapData> tmp(QPixmapData::create(0, 0, QPixmapData::PixmapType));
-        ok = tmp->fromFile(fileName, format, flags);
-        if (ok)
-            data = tmp.take();
+    QScopedPointer<QPixmapData> tmp(QPixmapData::create(0, 0, data ? data->type : QPixmapData::PixmapType));
+    if (tmp->fromFile(fileName, format, flags)) {
+        data = tmp.take();
+        QPixmapCache::insert(key, *this);
+        return true;
     }
 
-    if (ok)
-        QPixmapCache::insert(key, *this);
-
-    return ok;
+    return false;
 }
 
 /*!
