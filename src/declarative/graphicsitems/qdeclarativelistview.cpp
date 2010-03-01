@@ -530,9 +530,9 @@ FxListItem *QDeclarativeListViewPrivate::createItem(int modelIndex)
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
             }
         }
+        listItem->item->setZValue(1);
         // complete
         model->completeItem();
-        listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
         QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
         itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
