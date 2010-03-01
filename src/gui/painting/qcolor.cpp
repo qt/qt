@@ -532,25 +532,46 @@ QString QColor::name() const
 
 void QColor::setNamedColor(const QString &name)
 {
+    if (!setColorFromString(name))
+        qWarning("QColor::setNamedColor: Unknown color name '%s'", name.toLatin1().constData());
+}
+
+/*!
+   Checks if the \a name is a valid color name. The algorithm used is the same as with
+   \a setNamedColor().
+
+   \return true if the color name is valid, false otherwise.
+
+   \sa setNamedColor()
+*/
+bool QColor::isValidColor(const QString &name)
+{
+    return QColor().setColorFromString(name);
+}
+
+bool QColor::setColorFromString(const QString &name)
+{
     if (name.isEmpty()) {
         invalidate();
-        return;
+        return false;
     }
 
     if (name.startsWith(QLatin1Char('#'))) {
         QRgb rgb;
         if (qt_get_hex_rgb(name.constData(), name.length(), &rgb)) {
             setRgb(rgb);
+            return true;
         } else {
             invalidate();
+            return false;
         }
-        return;
     }
 
 #ifndef QT_NO_COLORNAMES
     QRgb rgb;
     if (qt_get_named_rgb(name.constData(), name.length(), &rgb)) {
         setRgba(rgb);
+        return true;
     } else
 #endif
     {
@@ -561,11 +582,12 @@ void QColor::setNamedColor(const QString &name)
             && QX11Info::display()
             && XParseColor(QX11Info::display(), QX11Info::appColormap(), name.toLatin1().constData(), &result)) {
             setRgb(result.red >> 8, result.green >> 8, result.blue >> 8);
+            return true;
         } else
 #endif
         {
-            qWarning("QColor::setNamedColor: Unknown color name '%s'", name.toLatin1().constData());
             invalidate();
+            return false;
         }
     }
 }
