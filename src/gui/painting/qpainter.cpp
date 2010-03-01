@@ -8933,8 +8933,15 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
 
         for (int i = 0; i < fragmentCount; ++i) {
             QTransform transform = oldTransform;
-            transform.translate(fragments[i].x, fragments[i].y);
-            transform.rotate(fragments[i].rotation);
+            qreal xOffset = 0;
+            qreal yOffset = 0;
+            if (fragments[i].rotation == 0) {
+                xOffset = fragments[i].x;
+                yOffset = fragments[i].y;
+            } else {
+                transform.translate(fragments[i].x, fragments[i].y);
+                transform.rotate(fragments[i].rotation);
+            }
             setOpacity(oldOpacity * fragments[i].opacity);
             setTransform(transform);
 
@@ -8942,7 +8949,7 @@ void QPainter::drawPixmapFragments(const Fragment *fragments, int fragmentCount,
             qreal h = fragments[i].scaleY * fragments[i].height;
             QRectF sourceRect(fragments[i].sourceLeft, fragments[i].sourceTop,
                               fragments[i].width, fragments[i].height);
-            drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, sourceRect);
+            drawPixmap(QRectF(-0.5 * w + xOffset, -0.5 * h + yOffset, w, h), pixmap, sourceRect);
         }
 
         setOpacity(oldOpacity);
