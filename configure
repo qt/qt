@@ -640,6 +640,7 @@ CFG_SHARED=yes
 CFG_SM=auto
 CFG_XSHAPE=auto
 CFG_XSYNC=auto
+CFG_XVIDEO=auto
 CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
@@ -677,6 +678,7 @@ CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
+CFG_MEDIASERVICE=yes
 CFG_AUDIO_BACKEND=auto
 CFG_SVG=yes
 CFG_DECLARATIVE=auto
@@ -783,6 +785,8 @@ OPT_HELP=
 CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
 CFG_ALSA=auto
+CFG_NETWORKMANAGER=auto
+CFG_COREWLAN=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -791,6 +795,7 @@ QT_INSTALL_HEADERS=
 QT_INSTALL_LIBS=
 QT_INSTALL_BINS=
 QT_INSTALL_PLUGINS=
+QT_INSTALL_IMPORTS=
 QT_INSTALL_DATA=
 QT_INSTALL_TRANSLATIONS=
 QT_INSTALL_SETTINGS=
@@ -922,7 +927,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-mediaservice|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1138,6 +1143,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     plugindir)
         QT_INSTALL_PLUGINS="$VAL"
+        ;;
+    importdir)
+        QT_INSTALL_IMPORTS="$VAL"
         ;;
     datadir)
         QT_INSTALL_DATA="$VAL"
@@ -1526,6 +1534,13 @@ while [ "$#" -gt 0 ]; do
     xshape)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XSHAPE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xvideo)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XVIDEO="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2099,6 +2114,13 @@ while [ "$#" -gt 0 ]; do
     multimedia)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_MULTIMEDIA="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    mediaservice)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_MEDIASERVICE="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3188,6 +3210,17 @@ if [ -z "$QT_INSTALL_PLUGINS" ]; then #default
 fi
 QT_INSTALL_PLUGINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PLUGINS"`
 
+#imports
+if [ -z "$QT_INSTALL_IMPORTS" ]; then #default
+    if [ "$CFG_PREFIX_INSTALL" = "no" ]; then
+	if [ "$PLATFORM_MAC" = "yes" ]; then
+	    QT_INSTALL_IMPORTS="/Developer/Applications/Qt/imports"
+        fi
+    fi
+    [ -z "$QT_INSTALL_IMPORTS" ] && QT_INSTALL_IMPORTS="$QT_INSTALL_PREFIX/imports" #fallback
+fi
+QT_INSTALL_IMPORTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_IMPORTS"`
+
 #data
 if [ -z "$QT_INSTALL_DATA" ]; then #default
     QT_INSTALL_DATA="$QT_INSTALL_PREFIX"
@@ -3306,7 +3339,8 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
-        [-no-audio-backend] [-audio-backend] [-no-openssl] [-openssl] [-openssl-linked]
+        [-no-mediaservice] [-mediaservice] [-no-audio-backend] [-audio-backend] 
+        [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
         [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
         [-no-s60] [-s60]
@@ -3351,6 +3385,8 @@ cat <<EOF
                             (default PREFIX/include)
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default PREFIX/plugins)
+    -importdir <dir> ...... Imports for QML will be installed to <dir>
+                            (default PREFIX/imports)
     -datadir <dir> ........ Data used by Qt programs will be installed to <dir>
                             (default PREFIX)
     -translationdir <dir> . Translations of Qt programs will be installed to <dir>
@@ -3444,6 +3480,9 @@ fi
 
     -no-multimedia ..... Do not build the QtMultimedia module.
  +  -multimedia ........ Build the QtMultimedia module.
+
+    -no-mediaservice.... Do not build platform mediaservice plugin.
+ +  -mediaservice ...... Build the platform mediaservice plugin.
 
     -no-audio-backend .. Do not build the platform audio backend into QtMultimedia.
  +  -audio-backend ..... Build the platform audio backend into QtMultimedia if available.
@@ -3633,6 +3672,13 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         SHY="*"
         SHN=" "
     fi
+    if [ "$CFG_XVIDEO" = "no" ]; then
+        XVY=" "
+        XVN="*"
+    else
+        XVY="*"
+        XVN=" "
+    fi
     if [ "$CFG_XINERAMA" = "no" ]; then
         XAY=" "
         XAN="*"
@@ -3735,6 +3781,10 @@ Qt/X11 only:
  $SHN  -no-xshape ......... Do not compile XShape support.
  $SHY  -xshape ............ Compile XShape support.
                          Requires X11/extensions/shape.h.
+
+ $XVN  -no-xvideo ......... Do not compile XVideo support.
+ $XVY  -xvideo ............ Compile XVideo support.
+                         Requires X11/extensions/Xv.h & Xvlib.h.
 
  $SHN  -no-xsync .......... Do not compile XSync support.
  $SHY  -xsync ............. Compile XSync support.
@@ -4149,6 +4199,7 @@ HEADERS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_hdrspath=$QT_IN
 LIBRARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_libspath=$QT_INSTALL_LIBS"`
 BINARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_binspath=$QT_INSTALL_BINS"`
 PLUGINS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_plugpath=$QT_INSTALL_PLUGINS"`
+IMPORTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_impspath=$QT_INSTALL_IMPORTS"`
 DATA_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_datapath=$QT_INSTALL_DATA"`
 TRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_INSTALL_TRANSLATIONS"`
 SETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
@@ -4173,6 +4224,7 @@ if [ ! -z "$QT_HOST_PREFIX" ]; then
     HOSTLIBRARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_libspath=$QT_HOST_PREFIX/lib"`
     HOSTBINARIES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_binspath=$QT_HOST_PREFIX/bin"`
     HOSTPLUGINS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_plugpath=$QT_HOST_PREFIX/plugins"`
+    HOSTIMPORTS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_impspath=$QT_HOST_PREFIX/IMPORTS"`
     HOSTDATA_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_datapath=$QT_HOST_PREFIX"`
     HOSTTRANSLATIONS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_trnspath=$QT_HOST_PREFIX/translations"`
     HOSTSETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_INSTALL_SETTINGS"`
@@ -4189,6 +4241,7 @@ static const char qt_configure_headers_path_str      [256 + 12] = "$HOSTHEADERS_
 static const char qt_configure_libraries_path_str    [256 + 12] = "$HOSTLIBRARIES_PATH_STR";
 static const char qt_configure_binaries_path_str     [256 + 12] = "$HOSTBINARIES_PATH_STR";
 static const char qt_configure_plugins_path_str      [256 + 12] = "$HOSTPLUGINS_PATH_STR";
+static const char qt_configure_imports_path_str      [256 + 12] = "$HOSTIMPORTS_PATH_STR";
 static const char qt_configure_data_path_str         [256 + 12] = "$HOSTDATA_PATH_STR";
 static const char qt_configure_translations_path_str [256 + 12] = "$HOSTTRANSLATIONS_PATH_STR";
 static const char qt_configure_settings_path_str     [256 + 12] = "$HOSTSETTINGS_PATH_STR";
@@ -4206,6 +4259,7 @@ static const char qt_configure_headers_path_str      [256 + 12] = "$HEADERS_PATH
 static const char qt_configure_libraries_path_str    [256 + 12] = "$LIBRARIES_PATH_STR";
 static const char qt_configure_binaries_path_str     [256 + 12] = "$BINARIES_PATH_STR";
 static const char qt_configure_plugins_path_str      [256 + 12] = "$PLUGINS_PATH_STR";
+static const char qt_configure_imports_path_str      [256 + 12] = "$IMPORTS_PATH_STR";
 static const char qt_configure_data_path_str         [256 + 12] = "$DATA_PATH_STR";
 static const char qt_configure_translations_path_str [256 + 12] = "$TRANSLATIONS_PATH_STR";
 static const char qt_configure_settings_path_str     [256 + 12] = "$SETTINGS_PATH_STR";
@@ -4230,6 +4284,7 @@ cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 #define QT_CONFIGURE_LIBRARIES_PATH qt_configure_libraries_path_str + 12;
 #define QT_CONFIGURE_BINARIES_PATH qt_configure_binaries_path_str + 12;
 #define QT_CONFIGURE_PLUGINS_PATH qt_configure_plugins_path_str + 12;
+#define QT_CONFIGURE_IMPORTS_PATH qt_configure_imports_path_str + 12;
 #define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;
 #define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;
 #define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;
@@ -5030,32 +5085,33 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
         fi
     fi
 
-    if [ "$CFG_PHONON" != "no" ]; then
-        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
-            if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-                if [ -n "$PKG_CONFIG" ]; then
-                    QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                    QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-                fi
-                if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
-                    CFG_GSTREAMER=yes
-                    QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-                    QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
-                else
-                    if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                        echo "Gstreamer support cannot be enabled due to functionality tests!"
-                        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                        echo " If you believe this message is in error you may use the continue"
-                        echo " switch (-continue) to $0 to continue."
-                        exit 101
-                    else
-                        CFG_GSTREAMER=no
-                    fi
-                fi
-            elif [ "$CFG_GLIB" = "no" ]; then
+    # Auto-detect GStreamer support (needed for both Phonon & QtMultimedia)
+    if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
+        if [ -n "$PKG_CONFIG" ]; then
+            QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+            QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
+        fi
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/gstreamer "GStreamer" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER $X11TESTS_FLAGS; then
+            CFG_GSTREAMER=yes
+            QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
+            QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
+        else
+            if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                echo "Gstreamer support cannot be enabled due to functionality tests!"
+                echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                echo " If you believe this message is in error you may use the continue"
+                echo " switch (-continue) to $0 to continue."
+                exit 101
+            else
                 CFG_GSTREAMER=no
             fi
+        fi
+    elif [ "$CFG_GLIB" = "no" ]; then
+        CFG_GSTREAMER=no
+    fi
 
+    if [ "$CFG_PHONON" != "no" ]; then
+        if [ "$CFG_PHONON_BACKEND" != "no" ]; then
             if [ "$CFG_GSTREAMER" = "yes" ]; then
                 CFG_PHONON=yes
             else
@@ -5329,6 +5385,23 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 	fi
     fi
 
+    # auto-detect XVideo support
+    if [ "$CFG_XVIDEO" != "no" ]; then
+	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xvideo "XVideo" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+	    CFG_XVIDEO=yes
+	else
+	    if [ "$CFG_XVIDEO" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+		echo "XVideo support cannot be enabled due to functionality tests!"
+		echo " Turn on verbose messaging (-v) to $0 to see the final report."
+		echo " If you believe this message is in error you may use the continue"
+		echo " switch (-continue) to $0 to continue."
+		exit 101
+	    else
+		CFG_XVIDEO=no
+	    fi
+	fi
+    fi
+
     # auto-detect XSync support
     if [ "$CFG_XSYNC" != "no" ]; then
 	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xsync "XSync" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
@@ -5431,6 +5504,14 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_PHONON" != "no" ]; then
         # Always enable Phonon (unless it was explicitly disabled)
         CFG_PHONON=yes
+    fi
+
+    if [ "$CFG_COREWLAN" = "auto" ]; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            CFG_COREWLAN=yes
+        else
+            CFG_COREWLAN=no
+        fi
     fi
 fi
 
@@ -5886,6 +5967,14 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
+if [ "$CFG_NETWORKMANAGER" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/networkmanager "NetworkManager" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_NETWORKMANAGER=yes
+    else
+        CFG_NETWORKMANAGER=no
+    fi
+fi
+
 if [ -f "$relpath/src/declarative/declarative.pro" ]; then
     if [ "$CFG_DECLARATIVE" = "auto" ]; then
         CFG_DECLARATIVE=yes
@@ -6289,6 +6378,9 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     if [ "$CFG_XSHAPE" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xshape"
     fi
+    if [ "$CFG_XVIDEO" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG xvideo"
+    fi
     if [ "$CFG_XSYNC" = "yes" ]; then
         QT_CONFIG="$QT_CONFIG xsync"
     fi
@@ -6386,6 +6478,14 @@ fi
 
 if [ "$CFG_ALSA" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG alsa"
+fi
+
+if [ "$CFG_NETWORKMANAGER" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG networkmanager"
+fi
+
+if [ "$CFG_COREWLAN" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG corewlan"
 fi
 
 #
@@ -6533,6 +6633,9 @@ if [ "$CFG_MULTIMEDIA" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
 else
     QT_CONFIG="$QT_CONFIG multimedia"
+    if [ "$CFG_MEDIASERVICE" = "yes" ]; then
+        QT_CONFIG="$QT_CONFIG mediaservice"
+    fi
 fi
 
 if [ "$CFG_AUDIO_BACKEND" = "yes" ]; then
@@ -7083,6 +7186,7 @@ fi
 [ "$CFG_XRENDER" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XRENDER"
 [ "$CFG_MITSHM" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MITSHM"
 [ "$CFG_XSHAPE" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SHAPE"
+[ "$CFG_XVIDEO" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XVIDEO"
 [ "$CFG_XSYNC" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XSYNC"
 [ "$CFG_XINPUT" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XINPUT QT_NO_TABLET"
 
@@ -7092,6 +7196,8 @@ fi
 [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
 [ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
+[ "$CFG_NETWORKMANAGER" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NETWORKMANAGER"
+[ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
@@ -7436,163 +7542,164 @@ fi
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
     if echo '\c' | grep '\c' >/dev/null; then
-        echo -n "qmake vars .......... "
+        echo -n "qmake vars ............. "
     else
-        echo "qmake vars .......... \c"
+        echo "qmake vars ............. \c"
     fi
     cat "$QMAKE_VARS_FILE" | tr '\n' ' '
-    echo "qmake switches ...... $QMAKE_SWITCHES"
+    echo "qmake switches ......... $QMAKE_SWITCHES"
 fi
 
-[ "$CFG_INCREMENTAL" = "yes" ] && [ '!' -z "$INCREMENTAL" ] && echo "Incremental ......... $INCREMENTAL"
-echo "Build ............... $CFG_BUILD_PARTS"
-echo "Configuration ....... $QMAKE_CONFIG $QT_CONFIG"
+[ "$CFG_INCREMENTAL" = "yes" ] && [ '!' -z "$INCREMENTAL" ] && echo "Incremental ............ $INCREMENTAL"
+echo "Build .................. $CFG_BUILD_PARTS"
+echo "Configuration .......... $QMAKE_CONFIG $QT_CONFIG"
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-   echo "Debug ............... yes (combined)"
+   echo "Debug .................. yes (combined)"
    if [ "$CFG_DEBUG" = "yes" ]; then
-       echo "Default Link ........ debug"
+       echo "Default Link ........... debug"
    else
-       echo "Default Link ........ release"
+       echo "Default Link ........... release"
    fi
 else
-   echo "Debug ............... $CFG_DEBUG"
+   echo "Debug .................. $CFG_DEBUG"
 fi
-echo "Qt 3 compatibility .. $CFG_QT3SUPPORT"
-[ "$CFG_DBUS" = "no" ]     && echo "QtDBus module ....... no"
-[ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module ....... yes (run-time)"
-[ "$CFG_DBUS" = "linked" ] && echo "QtDBus module ....... yes (linked)"
-echo "QtConcurrent code.... $CFG_CONCURRENT"
-echo "QtScript module ..... $CFG_SCRIPT"
-echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
-echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
-echo "Phonon module ....... $CFG_PHONON"
-echo "Multimedia module ... $CFG_MULTIMEDIA"
-echo "SVG module .......... $CFG_SVG"
-echo "WebKit module ....... $CFG_WEBKIT"
+echo "Qt 3 compatibility ..... $CFG_QT3SUPPORT"
+[ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
+[ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
+[ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
+echo "QtConcurrent code ...... $CFG_CONCURRENT"
+echo "QtScript module ........ $CFG_SCRIPT"
+echo "QtScriptTools module ... $CFG_SCRIPTTOOLS"
+echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
+echo "Phonon module .......... $CFG_PHONON"
+echo "Multimedia module ...... $CFG_MULTIMEDIA"
+echo "SVG module ............. $CFG_SVG"
+echo "WebKit module .......... $CFG_WEBKIT"
 if [ "$CFG_WEBKIT" = "yes" ]; then 
     if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
-        echo "JavaScriptCore JIT .. To be decided by JavaScriptCore"
+        echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
     else
-        echo "JavaScriptCore JIT .. $CFG_JAVASCRIPTCORE_JIT"
+        echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
     fi
 fi
-echo "Declarative module .. $CFG_DECLARATIVE"
-echo "Support for S60 ..... $CFG_S60"
-echo "STL support ......... $CFG_STL"
-echo "PCH support ......... $CFG_PRECOMPILE"
-echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
+echo "Declarative module ..... $CFG_DECLARATIVE"
+echo "Support for S60 ........ $CFG_S60"
+echo "STL support ............ $CFG_STL"
+echo "PCH support ............ $CFG_PRECOMPILE"
+echo "MMX/3DNOW/SSE/SSE2...... ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"
 if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
-    echo "iWMMXt support ...... ${CFG_IWMMXT}"
-    echo "NEON support ........ ${CFG_NEON}"
+    echo "iWMMXt support ......... ${CFG_IWMMXT}"
+    echo "NEON support ........... ${CFG_NEON}"
 fi
-[ "${PLATFORM_QWS}" != "yes" ] && echo "Graphics System ..... $CFG_GRAPHICS_SYSTEM"
-echo "IPv6 support ........ $CFG_IPV6"
-echo "IPv6 ifname support . $CFG_IPV6IFNAME"
-echo "getaddrinfo support . $CFG_GETADDRINFO"
-echo "getifaddrs support .. $CFG_GETIFADDRS"
-echo "Accessibility ....... $CFG_ACCESSIBILITY"
-echo "NIS support ......... $CFG_NIS"
-echo "CUPS support ........ $CFG_CUPS"
-echo "Iconv support ....... $CFG_ICONV"
-echo "Glib support ........ $CFG_GLIB"
-echo "GStreamer support ... $CFG_GSTREAMER"
-echo "Large File support .. $CFG_LARGEFILE"
-echo "GIF support ......... $CFG_GIF"
+[ "${PLATFORM_QWS}" != "yes" ] && echo "Graphics System ........ $CFG_GRAPHICS_SYSTEM"
+echo "IPv6 support ........... $CFG_IPV6"
+echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
+echo "getaddrinfo support .... $CFG_GETADDRINFO"
+echo "getifaddrs support ..... $CFG_GETIFADDRS"
+echo "Accessibility .......... $CFG_ACCESSIBILITY"
+echo "NIS support ............ $CFG_NIS"
+echo "CUPS support ........... $CFG_CUPS"
+echo "Iconv support .......... $CFG_ICONV"
+echo "Glib support ........... $CFG_GLIB"
+echo "GStreamer support ...... $CFG_GSTREAMER"
+echo "Large File support ..... $CFG_LARGEFILE"
+echo "GIF support ............ $CFG_GIF"
 if [ "$CFG_TIFF" = "no" ]; then
-    echo "TIFF support ........ $CFG_TIFF"
+    echo "TIFF support ........... $CFG_TIFF"
 else
-    echo "TIFF support ........ $CFG_TIFF ($CFG_LIBTIFF)"
+    echo "TIFF support ........... $CFG_TIFF ($CFG_LIBTIFF)"
 fi
 if [ "$CFG_JPEG" = "no" ]; then
-    echo "JPEG support ........ $CFG_JPEG"
+    echo "JPEG support ........... $CFG_JPEG"
 else
-    echo "JPEG support ........ $CFG_JPEG ($CFG_LIBJPEG)"
+    echo "JPEG support ........... $CFG_JPEG ($CFG_LIBJPEG)"
 fi
 if [ "$CFG_PNG" = "no" ]; then
-    echo "PNG support ......... $CFG_PNG"
+    echo "PNG support ............ $CFG_PNG"
 else
-    echo "PNG support ......... $CFG_PNG ($CFG_LIBPNG)"
+    echo "PNG support ............ $CFG_PNG ($CFG_LIBPNG)"
 fi
 if [ "$CFG_MNG" = "no" ]; then
-    echo "MNG support ......... $CFG_MNG"
+    echo "MNG support ............ $CFG_MNG"
 else
-    echo "MNG support ......... $CFG_MNG ($CFG_LIBMNG)"
+    echo "MNG support ............ $CFG_MNG ($CFG_LIBMNG)"
 fi
-echo "zlib support ........ $CFG_ZLIB"
-echo "Session management .. $CFG_SM"
+echo "zlib support ........... $CFG_ZLIB"
+echo "Session management ..... $CFG_SM"
 if [ "$PLATFORM_QWS" = "yes" ]; then
-    echo "Embedded support .... $CFG_EMBEDDED"
+    echo "Embedded support ....... $CFG_EMBEDDED"
     if [ "$CFG_QWS_FREETYPE" = "auto" ]; then
-	echo "Freetype2 support ... $CFG_QWS_FREETYPE ($CFG_LIBFREETYPE)"
+	echo "Freetype2 support ...... $CFG_QWS_FREETYPE ($CFG_LIBFREETYPE)"
     else
-	echo "Freetype2 support ... $CFG_QWS_FREETYPE"
+	echo "Freetype2 support ...... $CFG_QWS_FREETYPE"
     fi
     # Normalize the decoration output first
     CFG_GFX_ON=`echo ${CFG_GFX_ON}`
     CFG_GFX_PLUGIN=`echo ${CFG_GFX_PLUGIN}`
-    echo "Graphics (qt) ....... ${CFG_GFX_ON}"
-    echo "Graphics (plugin) ... ${CFG_GFX_PLUGIN}"
+    echo "Graphics (qt) .......... ${CFG_GFX_ON}"
+    echo "Graphics (plugin) ...... ${CFG_GFX_PLUGIN}"
     CFG_DECORATION_ON=`echo ${CFG_DECORATION_ON}`
     CFG_DECORATION_PLUGIN=`echo ${CFG_DECORATION_PLUGIN}`
-    echo "Decorations (qt) .... $CFG_DECORATION_ON"
-    echo "Decorations (plugin)  $CFG_DECORATION_PLUGIN"
+    echo "Decorations (qt) ....... $CFG_DECORATION_ON"
+    echo "Decorations (plugin) ... $CFG_DECORATION_PLUGIN"
     CFG_KBD_ON=`echo ${CFG_KBD_ON}`
     CFG_KBD_PLUGIN=`echo ${CFG_KBD_PLUGIN}`
-    echo "Keyboard driver (qt). ${CFG_KBD_ON}"
-    echo "Keyboard driver (plugin) ${CFG_KBD_PLUGIN}"
+    echo "Keyboard driver (qt) ... ${CFG_KBD_ON}"
+    echo "Keyboard driver (plugin) .. ${CFG_KBD_PLUGIN}"
     CFG_MOUSE_ON=`echo ${CFG_MOUSE_ON}`
     CFG_MOUSE_PLUGIN=`echo ${CFG_MOUSE_PLUGIN}`
-    echo "Mouse driver (qt) ... $CFG_MOUSE_ON"
-    echo "Mouse driver (plugin) $CFG_MOUSE_PLUGIN"
+    echo "Mouse driver (qt) ...... $CFG_MOUSE_ON"
+    echo "Mouse driver (plugin) .. $CFG_MOUSE_PLUGIN"
 fi
 if [ "$CFG_OPENGL" = "desktop" ]; then
-    echo "OpenGL support ...... yes (Desktop OpenGL)"
+    echo "OpenGL support ......... yes (Desktop OpenGL)"
 elif [ "$CFG_OPENGL" = "es1" ]; then
-    echo "OpenGL support ...... yes (OpenGL ES 1.x Common profile)"
+    echo "OpenGL support ......... yes (OpenGL ES 1.x Common profile)"
 elif [ "$CFG_OPENGL" = "es2" ]; then
-    echo "OpenGL support ...... yes (OpenGL ES 2.x)"
+    echo "OpenGL support ......... yes (OpenGL ES 2.x)"
 else
-    echo "OpenGL support ...... no"
+    echo "OpenGL support ......... no"
 fi
 if [ "$CFG_EGL" != "no" ]; then
     if [ "$CFG_EGL_GLES_INCLUDES" != "no" ]; then
-        echo "EGL support ......... yes <GLES/egl.h>"
+        echo "EGL support ............ yes <GLES/egl.h>"
     else
-        echo "EGL support ......... yes <EGL/egl.h>"
+        echo "EGL support ............ yes <EGL/egl.h>"
     fi
 fi
 if [ "$CFG_OPENVG" ]; then
     if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
-        echo "OpenVG support ...... ShivaVG"
+        echo "OpenVG support ......... ShivaVG"
     else
-        echo "OpenVG support ...... $CFG_OPENVG"
+        echo "OpenVG support ......... $CFG_OPENVG"
     fi
 fi
 if [ "$PLATFORM_X11" = "yes" ]; then
-    echo "NAS sound support ... $CFG_NAS"
-    echo "XShape support ...... $CFG_XSHAPE"
-    echo "XSync support ....... $CFG_XSYNC"
-    echo "Xinerama support .... $CFG_XINERAMA"
-    echo "Xcursor support ..... $CFG_XCURSOR"
-    echo "Xfixes support ...... $CFG_XFIXES"
-    echo "Xrandr support ...... $CFG_XRANDR"
-    echo "Xrender support ..... $CFG_XRENDER"
-    echo "Xi support .......... $CFG_XINPUT"
-    echo "MIT-SHM support ..... $CFG_MITSHM"
-    echo "FontConfig support .. $CFG_FONTCONFIG"
-    echo "XKB Support ......... $CFG_XKB"
-    echo "immodule support .... $CFG_IM"
-    echo "GTK theme support ... $CFG_QGTKSTYLE"
+    echo "NAS sound support ...... $CFG_NAS"
+    echo "XShape support ......... $CFG_XSHAPE"
+    echo "XVideo support ......... $CFG_XVIDEO"
+    echo "XSync support .......... $CFG_XSYNC"
+    echo "Xinerama support ....... $CFG_XINERAMA"
+    echo "Xcursor support ........ $CFG_XCURSOR"
+    echo "Xfixes support ......... $CFG_XFIXES"
+    echo "Xrandr support ......... $CFG_XRANDR"
+    echo "Xrender support ........ $CFG_XRENDER"
+    echo "Xi support ............. $CFG_XINPUT"
+    echo "MIT-SHM support ........ $CFG_MITSHM"
+    echo "FontConfig support ..... $CFG_FONTCONFIG"
+    echo "XKB Support ............ $CFG_XKB"
+    echo "immodule support ....... $CFG_IM"
+    echo "GTK theme support ...... $CFG_QGTKSTYLE"
 fi
-[ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support ....... $CFG_SQL_mysql"
-[ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support .. $CFG_SQL_psql"
-[ "$CFG_SQL_odbc" != "no" ] && echo "ODBC support ........ $CFG_SQL_odbc"
-[ "$CFG_SQL_oci" != "no" ] && echo "OCI support ......... $CFG_SQL_oci"
-[ "$CFG_SQL_tds" != "no" ] && echo "TDS support ......... $CFG_SQL_tds"
-[ "$CFG_SQL_db2" != "no" ] && echo "DB2 support ......... $CFG_SQL_db2"
-[ "$CFG_SQL_ibase" != "no" ] && echo "InterBase support ... $CFG_SQL_ibase"
-[ "$CFG_SQL_sqlite2" != "no" ] && echo "SQLite 2 support .... $CFG_SQL_sqlite2"
-[ "$CFG_SQL_sqlite" != "no" ] && echo "SQLite support ...... $CFG_SQL_sqlite ($CFG_SQLITE)"
+[ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support .......... $CFG_SQL_mysql"
+[ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support ..... $CFG_SQL_psql"
+[ "$CFG_SQL_odbc" != "no" ] && echo "ODBC support ........... $CFG_SQL_odbc"
+[ "$CFG_SQL_oci" != "no" ] && echo "OCI support ............ $CFG_SQL_oci"
+[ "$CFG_SQL_tds" != "no" ] && echo "TDS support ............ $CFG_SQL_tds"
+[ "$CFG_SQL_db2" != "no" ] && echo "DB2 support ............ $CFG_SQL_db2"
+[ "$CFG_SQL_ibase" != "no" ] && echo "InterBase support ...... $CFG_SQL_ibase"
+[ "$CFG_SQL_sqlite2" != "no" ] && echo "SQLite 2 support ....... $CFG_SQL_sqlite2"
+[ "$CFG_SQL_sqlite" != "no" ] && echo "SQLite support ......... $CFG_SQL_sqlite ($CFG_SQLITE)"
 
 OPENSSL_LINKAGE=""
 if [ "$CFG_OPENSSL" = "yes" ]; then
@@ -7600,11 +7707,15 @@ if [ "$CFG_OPENSSL" = "yes" ]; then
 elif [ "$CFG_OPENSSL" = "linked" ]; then
     OPENSSL_LINKAGE="(linked)"
 fi
-echo "OpenSSL support ..... $CFG_OPENSSL $OPENSSL_LINKAGE"
-echo "Alsa support ........ $CFG_ALSA"
+echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
+echo "Alsa support ........... $CFG_ALSA"
+echo "NetworkManager support . $CFG_NETWORKMANAGER"
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    echo "CoreWlan support ....... $CFG_COREWLAN"
+fi
 echo
 
-[ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........ $CFG_PTMALLOC"
+[ "$CFG_PTMALLOC" != "no" ] && echo "Use ptmalloc ........... $CFG_PTMALLOC"
 
 # complain about not being able to use dynamic plugins if we are using a static build
 if [ "$CFG_SHARED" = "no" ]; then

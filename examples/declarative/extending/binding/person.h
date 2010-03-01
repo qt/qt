@@ -43,7 +43,7 @@
 
 #include <QObject>
 #include <QColor>
-#include <qml.h>
+#include <qdeclarative.h>
 
 class ShoeDescription : public QObject {
 Q_OBJECT

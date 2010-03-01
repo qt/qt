@@ -69,6 +69,8 @@ private slots:
     void property();
     void setProperty();
     void propertyFlags();
+    void readMetaProperty();
+    void writeMetaProperty();
 };
 
 tst_QScriptValue::tst_QScriptValue()
@@ -198,6 +200,29 @@ void tst_QScriptValue::propertyFlags()
     obj.setProperty(propertyName, 123, QScriptValue::SkipInEnumeration | QScriptValue::ReadOnly);
     QBENCHMARK {
         (void)obj.propertyFlags(propertyName);
+    }
+}
+
+void tst_QScriptValue::readMetaProperty()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newQObject(QCoreApplication::instance());
+    QScriptString propertyName = engine.toStringHandle("objectName");
+    QBENCHMARK {
+        for (int i = 0; i < 10000; ++i)
+            object.property(propertyName);
+    }
+}
+
+void tst_QScriptValue::writeMetaProperty()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newQObject(QCoreApplication::instance());
+    QScriptString propertyName = engine.toStringHandle("objectName");
+    QScriptValue value(&engine, "foo");
+    QBENCHMARK {
+        for (int i = 0; i < 10000; ++i)
+            object.setProperty(propertyName, value);
     }
 }
 

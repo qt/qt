@@ -66,6 +66,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMediaPluginLoader, playlistIOLoader,
 /*!
     \class QMediaPlaylist
     \ingroup multimedia
+    \since 4.7
 
     \preliminary
     \brief The QMediaPlaylist class provides a list of media content to play.

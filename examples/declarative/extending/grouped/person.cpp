@@ -84,7 +84,6 @@ void ShoeDescription::setPrice(qreal p)
 {
     m_price = p;
 }
-QML_DEFINE_NOCREATE_TYPE(ShoeDescription);
 
 Person::Person(QObject *parent)
 : QObject(parent)
@@ -106,18 +105,15 @@ ShoeDescription *Person::shoe()
     return &m_shoe;
 }
 
-QML_DEFINE_NOCREATE_TYPE(Person);
 
 Boy::Boy(QObject * parent)
 : Person(parent)
 {
 }
 
-QML_DEFINE_TYPE(People, 1,0, Boy, Boy);
 
 Girl::Girl(QObject * parent)
 : Person(parent)
 {
 }
 
-QML_DEFINE_TYPE(People, 1,0, Girl, Girl);

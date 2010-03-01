@@ -330,7 +330,7 @@
 #endif
 
 /* Enough people need this for various reasons to include it here */
-#if !defined(MACOS) && !defined(RISCOS)
+#if !defined(MACOS) && !defined(RISCOS) && !defined(_WIN32_WCE)
 #  include <sys/types.h>
 #endif
 
@@ -1379,7 +1379,7 @@ typedef char            FAR * FAR * FAR * png_charppp;
 
 /* memory model/platform independent fns */
 #ifndef PNG_ABORT
-#  ifdef _WINDOWS_
+#  if defined(_WINDOWS_) || defined(_WIN32_WCE)
 #     define PNG_ABORT() ExitProcess(0)
 #  else
 #     define PNG_ABORT() abort()

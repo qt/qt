@@ -248,6 +248,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "PHONON_BACKEND" ]  = "yes";
     dictionary[ "MULTIMEDIA" ]      = "yes";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
+    dictionary[ "MEDIASERVICE"]     = "auto";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
     dictionary[ "DECLARATIVE" ]     = "auto";
@@ -907,6 +908,10 @@ void Configure::parseCmdLine()
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if( configCmdLine.at(i) == "-no-audio-backend" ) {
             dictionary[ "AUDIO_BACKEND" ] = "no";
+        } else if( configCmdLine.at(i) == "-mediaservice") {
+            dictionary[ "MEDIASERVICE" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-mediaservice") {
+            dictionary[ "MEDIASERVICE" ] = "no";
         } else if( configCmdLine.at(i) == "-no-phonon" ) {
             dictionary[ "PHONON" ] = "no";
         } else if( configCmdLine.at(i) == "-phonon" ) {
@@ -1065,6 +1070,12 @@ void Configure::parseCmdLine()
             dictionary[ "QT_INSTALL_PLUGINS" ] = configCmdLine.at(i);
         }
 
+        else if( configCmdLine.at(i) == "-importdir" ) {
+            ++i;
+            if(i==argCount)
+                break;
+            dictionary[ "QT_INSTALL_IMPORTS" ] = configCmdLine.at(i);
+        }
         else if( configCmdLine.at(i) == "-datadir" ) {
             ++i;
             if(i==argCount)
@@ -1482,6 +1493,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_HOST_PREFIX" ]      = dictionary[ "QT_INSTALL_PREFIX" ];
         dictionary[ "QT_INSTALL_PREFIX" ]   = "";
         dictionary[ "QT_INSTALL_PLUGINS" ]  = "\\resource\\qt\\plugins";
+        dictionary[ "QT_INSTALL_IMPORTS" ]  = "\\resource\\qt\\imports";
         dictionary[ "ARM_FPU_TYPE" ]        = "softvfp";
         dictionary[ "SQL_SQLITE" ]          = "yes";
         dictionary[ "SQL_SQLITE_LIB" ]      = "system";
@@ -1558,7 +1570,7 @@ bool Configure::displayHelp()
         desc("Usage: configure [-buildkey <key>]\n"
 //      desc("Usage: configure [-prefix dir] [-bindir <dir>] [-libdir <dir>]\n"
 //                  "[-docdir <dir>] [-headerdir <dir>] [-plugindir <dir>]\n"
-//                  "[-datadir <dir>] [-translationdir <dir>]\n"
+//                  "[-importdir <dir>] [-datadir <dir>] [-translationdir <dir>]\n"
 //                  "[-examplesdir <dir>] [-demosdir <dir>][-buildkey <key>]\n"
                     "[-release] [-debug] [-debug-and-release] [-shared] [-static]\n"
                     "[-no-fast] [-fast] [-no-exceptions] [-exceptions]\n"
@@ -1598,6 +1610,7 @@ bool Configure::displayHelp()
         desc(                   "-docdir <dir>",        "Documentation will be installed to dir\n(default PREFIX/doc)");
         desc(                   "-headerdir <dir>",     "Headers will be installed to dir\n(default PREFIX/include)");
         desc(                   "-plugindir <dir>",     "Plugins will be installed to dir\n(default PREFIX/plugins)");
+        desc(                   "-importdir <dir>",     "Imports for QML will be installed to dir\n(default PREFIX/imports)");
         desc(                   "-datadir <dir>",       "Data used by Qt programs will be installed to dir\n(default PREFIX)");
         desc(                   "-translationdir <dir>","Translations of Qt programs will be installed to dir\n(default PREFIX/translations)\n");
         desc(                   "-examplesdir <dir>",   "Examples will be installed to dir\n(default PREFIX/examples)");
@@ -1763,6 +1776,8 @@ bool Configure::displayHelp()
         desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
+        desc("MEDIASERVICE", "no","-no-mediaservice",   "Do not compile in the platform-specific QtMultimedia media service.");
+        desc("MEDIASERVICE", "yes","-mediaservice",     "Compile in the platform-specific QtMultimedia media service.");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
         desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
@@ -2044,7 +2059,7 @@ bool Configure::checkAvailability(const QString &part)
                && dictionary.value("QMAKESPEC") != "win32-msvc.net" // Leave for now, since we can't be sure if they are using 2002 or 2003 with this spec
                && dictionary.value("QMAKESPEC") != "win32-msvc2002"
                && dictionary.value("EXCEPTIONS") == "yes";
-    } else if (part == "PHONON") {
+    } else if (part == "PHONON" || part == "MEDIASERVICE") {
         available = findFile("vmr9.h") && findFile("dshow.h") && findFile("dmo.h") && findFile("dmodshow.h")
             && (findFile("strmiids.lib") || findFile("libstrmiids.a"))
             && (findFile("dmoguids.lib") || findFile("libdmoguids.a"))
@@ -2067,7 +2082,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
     } else if (part == "DECLARATIVE") {
-        available = QFile::exists(sourcePath + "/src/declarative/qml/qmlcomponent.h");
+        available = QFile::exists(sourcePath + "/src/declarative/qml/qdeclarativecomponent.h");
     } else if (part == "AUDIO_BACKEND") {
         available = true;
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
@@ -2204,6 +2219,8 @@ void Configure::autoDetection()
         dictionary["DECLARATIVE"] = checkAvailability("DECLARATIVE") ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
+    if (dictionary["MEDIASERVICE"] == "auto")
+        dictionary["MEDIASERVICE"] = checkAvailability("MEDIASERVICE") ? "yes" : "no";
 
     // Qt/WinCE remote test application
     if (dictionary["CETEST"] == "auto")
@@ -2594,6 +2611,8 @@ void Configure::generateOutputVars()
         qtConfig += "multimedia";
         if (dictionary["AUDIO_BACKEND"] == "yes")
             qtConfig += "audio-backend";
+        if (dictionary["MEDIASERVICE"] == "yes")
+            qtConfig += "mediaservice";
     }
 
     if (dictionary["WEBKIT"] == "yes")
@@ -2646,6 +2665,8 @@ void Configure::generateOutputVars()
         dictionary[ "QT_INSTALL_BINS" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] + "/bin" );
     if( !dictionary[ "QT_INSTALL_PLUGINS" ].size() )
         dictionary[ "QT_INSTALL_PLUGINS" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] + "/plugins" );
+    if( !dictionary[ "QT_INSTALL_IMPORTS" ].size() )
+        dictionary[ "QT_INSTALL_IMPORTS" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] + "/imports" );
     if( !dictionary[ "QT_INSTALL_DATA" ].size() )
         dictionary[ "QT_INSTALL_DATA" ] = qipempty ? "" : fixSeparators( dictionary[ "QT_INSTALL_PREFIX" ] );
     if( !dictionary[ "QT_INSTALL_TRANSLATIONS" ].size() )
@@ -3150,6 +3171,7 @@ void Configure::generateConfigfiles()
                   << "static const char qt_configure_libraries_path_str    [512 + 12] = \"qt_libspath=" << QString(dictionary["QT_INSTALL_LIBS"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_binaries_path_str     [512 + 12] = \"qt_binspath=" << QString(dictionary["QT_INSTALL_BINS"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_plugins_path_str      [512 + 12] = \"qt_plugpath=" << QString(dictionary["QT_INSTALL_PLUGINS"]).replace( "\\", "\\\\" ) << "\";"  << endl
+                  << "static const char qt_configure_imports_path_str      [512 + 12] = \"qt_impspath=" << QString(dictionary["QT_INSTALL_IMPORTS"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << QString(dictionary["QT_INSTALL_DATA"]).replace( "\\", "\\\\" ) << "\";"  << endl
                   << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << QString(dictionary["QT_INSTALL_TRANSLATIONS"]).replace( "\\", "\\\\" ) << "\";" << endl
                   << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << QString(dictionary["QT_INSTALL_EXAMPLES"]).replace( "\\", "\\\\" ) << "\";"  << endl
@@ -3164,6 +3186,7 @@ void Configure::generateConfigfiles()
                        << "static const char qt_configure_libraries_path_str    [512 + 12] = \"qt_libspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/lib").replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_binaries_path_str     [512 + 12] = \"qt_binspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/bin").replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_plugins_path_str      [512 + 12] = \"qt_plugpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/plugins").replace( "\\", "\\\\" ) <<"\";"  << endl
+                       << "static const char qt_configure_imports_path_str      [512 + 12] = \"qt_impspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/imports").replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_data_path_str         [512 + 12] = \"qt_datapath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ]).replace( "\\", "\\\\" ) <<"\";"  << endl
                        << "static const char qt_configure_translations_path_str [512 + 12] = \"qt_trnspath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/translations").replace( "\\", "\\\\" ) <<"\";" << endl
                        << "static const char qt_configure_examples_path_str     [512 + 12] = \"qt_xmplpath=" << fixSeparators(dictionary[ "QT_HOST_PREFIX" ] + "/example").replace( "\\", "\\\\" ) <<"\";"  << endl
@@ -3179,6 +3202,7 @@ void Configure::generateConfigfiles()
                   << "#define QT_CONFIGURE_LIBRARIES_PATH qt_configure_libraries_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_BINARIES_PATH qt_configure_binaries_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_PLUGINS_PATH qt_configure_plugins_path_str + 12;" << endl
+                  << "#define QT_CONFIGURE_IMPORTS_PATH qt_configure_imports_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_DATA_PATH qt_configure_data_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_TRANSLATIONS_PATH qt_configure_translations_path_str + 12;" << endl
                   << "#define QT_CONFIGURE_EXAMPLES_PATH qt_configure_examples_path_str + 12;" << endl
@@ -3325,6 +3349,7 @@ void Configure::displayConfig()
     cout << "Headers installed to........" << dictionary[ "QT_INSTALL_HEADERS" ] << endl;
     cout << "Libraries installed to......" << dictionary[ "QT_INSTALL_LIBS" ] << endl;
     cout << "Plugins installed to........" << dictionary[ "QT_INSTALL_PLUGINS" ] << endl;
+    cout << "Imports installed to........" << dictionary[ "QT_INSTALL_IMPORTS" ] << endl;
     cout << "Binaries installed to......." << dictionary[ "QT_INSTALL_BINS" ] << endl;
     cout << "Docs installed to..........." << dictionary[ "QT_INSTALL_DOCS" ] << endl;
     cout << "Data installed to..........." << dictionary[ "QT_INSTALL_DATA" ] << endl;

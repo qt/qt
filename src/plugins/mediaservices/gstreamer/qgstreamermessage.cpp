@@ -48,7 +48,7 @@ static int wuchi = qRegisterMetaType<QGstreamerMessage>();
 
 
 /*!
-    \class QGstreamerMessage
+    \class gstreamer::QGstreamerMessage
     \internal
 */
 

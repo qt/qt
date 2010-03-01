@@ -313,8 +313,6 @@ SUBDIRS += \
            qmediaserviceprovider \
            qmediatimerange \
            qvideowidget \
-           qmlaudio \
-           qmlgraphicsvideo \
            qspinbox \
            qsplitter \
            qsql \
@@ -456,7 +454,10 @@ SUBDIRS += \
            qmargins \
            qnetworkaddressentry \
            qnetworkcachemetadata \
+           qnetworkconfigmanager \
+           qnetworkconfiguration \
            qnetworkdiskcache \
+           qnetworksession \
            qobjectperformance \
            qpainterpathstroker \
            qplugin \
@@ -481,6 +482,9 @@ SUBDIRS += \
 contains(QT_CONFIG,opengl):SUBDIRS += qgl qglbuffer qgl_threads
 
 contains(QT_CONFIG,qt3support):!wince*:SUBDIRS += $$Q3SUBDIRS
+
+contains(QT_CONFIG,multimedia):contains(QT_CONFIG,declarative):SUBDIRS += qdeclarativeaudio \
+                                                                          qdeclarativevideo
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 mac: {
@@ -605,10 +609,3 @@ contains(QT_CONFIG, declarative): SUBDIRS += declarative
            xmlpatternsxqts \
            xmlpatternsxslts
 
-
-############### make check recursively for testcases ##################
-check.CONFIG = recursive
-check.recurse = $$SUBDIRS
-check.recurse_target = check
-QMAKE_EXTRA_TARGETS += check
-###########################################################

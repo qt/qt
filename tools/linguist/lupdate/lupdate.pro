@@ -26,7 +26,7 @@ SOURCES += \
     cpp.cpp \
     java.cpp \
     qscript.cpp \
-    qml.cpp \
+    qdeclarative.cpp \
     ui.cpp
 
 HEADERS += \

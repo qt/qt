@@ -202,18 +202,18 @@ QAudioFormat QAudioOutput::format() const
     Passing a QIODevice allows the data to be transfered without any extra code.
     All that is required is to open the QIODevice.
 
+    If able to successfully output audio data to the systems audio device the
+    state() is set to QAudio::ActiveState, error() is set to QAudio::NoError
+    and the stateChanged() signal is emitted.
+
+    If a problem occurs during this process the error() is set to QAudio::OpenError,
+    state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
+
     \sa QIODevice
 */
 
 void QAudioOutput::start(QIODevice* device)
 {
-    /*
-    -If currently not StoppedState, stop.
-    -If previous start was push mode, delete internal QIODevice.
-    -open audio output.
-    -If ok, NoError and ActiveState, else OpenError and StoppedState
-    -emit stateChanged()
-    */
     d->start(device);
 }
 
@@ -221,34 +221,30 @@ void QAudioOutput::start(QIODevice* device)
     Returns a pointer to the QIODevice being used to handle the data
     transfer. This QIODevice can be used to write() audio data directly.
 
+    If able to access the systems audio device the state() is set to
+    QAudio::IdleState, error() is set to QAudio::NoError
+    and the stateChanged() signal is emitted.
+
+    If a problem occurs during this process the error() is set to QAudio::OpenError,
+    state() is set to QAudio::StoppedState and stateChanged() signal is emitted.
+
     \sa QIODevice
 */
 
 QIODevice* QAudioOutput::start()
 {
-    /*
-    -If currently not StoppedState, stop.
-    -If no internal QIODevice, create one.
-    -open audio output.
-    -If ok, NoError and IdleState, else OpenError and StoppedState
-    -emit stateChanged()
-    -return internal QIODevice
-    */
     return d->start(0);
 }
 
 /*!
-    Stops the audio output.
+    Stops the audio output, detaching from the system resource.
+
+    Sets error() to QAudio::NoError, state() to QAudio::StoppedState and
+    emit stateChanged() signal.
 */
 
 void QAudioOutput::stop()
 {
-    /*
-    -If StoppedState, return
-    -set to StoppedState
-    -detach from audio device
-    -emit stateChanged()
-    */
     d->stop();
 }
 
@@ -258,55 +254,44 @@ void QAudioOutput::stop()
 
 void QAudioOutput::reset()
 {
-    /*
-    -drop all buffered audio, set buffers to zero.
-    -call stop()
-    */
     d->reset();
 }
 
 /*!
     Stops processing audio data, preserving buffered audio data.
+
+    Sets error() to QAudio::NoError, state() to QAudio::SuspendedState and
+    emit stateChanged() signal.
 */
 
 void QAudioOutput::suspend()
 {
-    /*
-    -If not ActiveState|IdleState, return
-    -stop processing audio, saving all buffered audio data
-    -set NoError and SuspendedState
-    -emit stateChanged()
-    */
     d->suspend();
 }
 
 /*!
     Resumes processing audio data after a suspend().
+
+    Sets error() to QAudio::NoError.
+    Sets state() to QAudio::ActiveState if you previously called start(QIODevice*).
+    Sets state() to QAudio::IdleState if you previously called start().
+    emits stateChanged() signal.
 */
 
 void QAudioOutput::resume()
 {
-    /*
-    -If SuspendedState, return
-    -resume audio
-    -(PULL MODE): set ActiveState, NoError
-    -(PUSH MODE): set IdleState, NoError
-    -kick start audio if needed
-    -emit stateChanged()
-    */
      d->resume();
 }
 
 /*!
     Returns the free space available in bytes in the audio buffer.
+
+    NOTE: returned value is only valid while in QAudio::ActiveState or QAudio::IdleState
+    state, otherwise returns zero.
 */
 
 int QAudioOutput::bytesFree() const
 {
-    /*
-    -If not ActiveState|IdleState, return 0
-    -return space available in audio buffer in bytes
-    */
     return d->bytesFree();
 }
 
@@ -353,7 +338,10 @@ int QAudioOutput::bufferSize() const
 /*!
     Sets the interval for notify() signal to be emitted.
     This is based on the \a ms of audio data processed
-    not on actual real-time. The resolution of the timer is platform specific.
+    not on actual real-time.
+    The minimum resolution of the timer is platform specific and values
+    should be checked with notifyInterval() to confirm actual value
+    being used.
 */
 
 void QAudioOutput::setNotifyInterval(int ms)

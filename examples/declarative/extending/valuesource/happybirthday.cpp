@@ -50,7 +50,7 @@ HappyBirthday::HappyBirthday(QObject *parent)
     timer->start(1000);
 }
 
-void HappyBirthday::setTarget(const QmlMetaProperty &p)
+void HappyBirthday::setTarget(const QDeclarativeMetaProperty &p)
 {
     m_target = p;
 }
@@ -79,4 +79,3 @@ void HappyBirthday::advance()
     m_target.write(m_lyrics.at(m_line));
 }
 
-QML_DEFINE_TYPE(People, 1,0, HappyBirthday, HappyBirthday);

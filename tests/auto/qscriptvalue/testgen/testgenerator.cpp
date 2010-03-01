@@ -119,6 +119,7 @@ static QString generateIsXXXDef(const QString& name, const QList<QString>& list)
                                "{\n"\
                                "    QFETCH(bool, expected);\n"\
                                "    QCOMPARE(value.%1(), expected);\n"\
+                               "    QCOMPARE(value.%1(), expected);\n"\
                                "}\n"\
                                "\n"\
                                "DEFINE_TEST_FUNCTION(%1)\n"\
@@ -165,6 +166,7 @@ static QString generateToXXXDef(const QString& name, const QList<QPair<QString, 
                                  "void tst_QScriptValue::%1_test(const char*, const QScriptValue& value)\n"\
                                  "{\n"\
                                  "    QFETCH(%2, expected);\n"\
+                                 "    QCOMPARE(value.%1(), expected);\n"\
                                  "    QCOMPARE(value.%1(), expected);\n"\
                                  "}\n"\
                                  "\n"\
@@ -213,8 +215,10 @@ QString generateToXXXDef<qsreal>(const QString& name, const QList<QPair<QString,
                                  "%666"
                                  "    if (qIsInf(expected)) {\n"\
                                  "        QVERIFY(qIsInf(value.%1()));\n"\
+                                 "        QVERIFY(qIsInf(value.%1()));\n"\
                                  "        return;\n"\
                                  "    }\n"\
+                                 "    QCOMPARE(value.%1(), expected);\n"\
                                  "    QCOMPARE(value.%1(), expected);\n"\
                                  "}\n"\
                                  "\n"\
@@ -269,6 +273,7 @@ static QString generateCastDef(const QList<QPair<QString, T> >& list)
                                  "{\n"\
                                  "    QFETCH(%2, expected);\n"\
                                  "    QCOMPARE(qscriptvalue_cast<%2>(value), expected);\n"\
+                                 "    QCOMPARE(qscriptvalue_cast<%2>(value), expected);\n"\
                                  "}\n"\
                                  "\n"\
                                  "DEFINE_TEST_FUNCTION(qscriptvalue_cast%2)\n";
@@ -313,12 +318,15 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
                                  "    QFETCH(%2, expected);\n"\
                                  "    if (qIsNaN(expected)) {\n"
                                  "        QVERIFY(qIsNaN(qscriptvalue_cast<%2>(value)));\n"
+                                 "        QVERIFY(qIsNaN(qscriptvalue_cast<%2>(value)));\n"
                                  "        return;\n"
                                  "    }\n"\
                                  "    if (qIsInf(expected)) {\n"
                                  "        QVERIFY(qIsInf(qscriptvalue_cast<%2>(value)));\n"
+                                 "        QVERIFY(qIsInf(qscriptvalue_cast<%2>(value)));\n"
                                  "        return;\n"
                                  "    }\n"
+                                 "    QCOMPARE(qscriptvalue_cast<%2>(value), expected);\n"\
                                  "    QCOMPARE(qscriptvalue_cast<%2>(value), expected);\n"\
                                  "}\n"\
                                  "\n"\

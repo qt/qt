@@ -28,7 +28,7 @@ Rectangle {
         transitions: Transition {
             from: ""; to: "down"; reversible: true
             ParallelAnimation {
-                NumberAnimation { properties: "y,rotation"; duration: 500; easing: "easeInOutQuad" }
+                NumberAnimation { properties: "y,rotation"; duration: 500; easing.type: "InOutQuad" }
                 ColorAnimation { duration: 500 }
             }
         }

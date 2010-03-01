@@ -207,12 +207,12 @@ public:
     KeyboardLayoutItem *keyLayout[256];
 #elif defined(Q_WS_QWS)
 #elif defined(Q_OS_SYMBIAN)
-private:
-    QHash<TUint, int> s60ToQtKeyMap;
-    void fillKeyMap();
 public:
     QString translateKeyEvent(int keySym, Qt::KeyboardModifiers modifiers);
     int mapS60KeyToQt(TUint s60key);
+    int mapS60ScanCodesToQt(TUint s60key);
+    int mapQtToS60Key(int qtKey);
+    int mapQtToS60ScanCodes(int qtKey);
 #endif
 };
 

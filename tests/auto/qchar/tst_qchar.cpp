@@ -499,10 +499,7 @@ void tst_QChar::normalization()
         QVERIFY(composed.normalized(QString::NormalizationForm_KC) == decomposed);
     }
 
-    QFile f("NormalizationTest.txt");
-    // Windows - current directory is the debug/release subdirectory where the executable is located
-    if (!f.exists())
-        f.setFileName("../NormalizationTest.txt");;
+    QFile f(SRCDIR "NormalizationTest.txt");
     if (!f.exists()) {
         QFAIL("Couldn't find NormalizationTest.txt");
         return;

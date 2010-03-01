@@ -138,7 +138,6 @@ void QMacWindowFader::performFade()
 }
 
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // qapplication.cpp;
-extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QWidget * mac_mouse_grabber;
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
@@ -370,6 +369,16 @@ QMacTabletHash *qt_mac_tablet_hash()
 }
 
 #ifdef QT_MAC_USE_COCOA
+
+// Clears the QWidget pointer that each QCocoaView holds.
+void qt_mac_clearCocoaViewQWidgetPointers(QWidget *widget)
+{
+    QCocoaView *cocoaView = reinterpret_cast<QCocoaView *>(qt_mac_nativeview_for(widget));
+    if (cocoaView && [cocoaView respondsToSelector:@selector(qt_qwidget)]) {
+        [cocoaView qt_clearQWidget];
+    }
+}
+
 void qt_dispatchTabletProximityEvent(void * /*NSEvent * */ tabletEvent)
 {
     NSEvent *proximityEvent = static_cast<NSEvent *>(tabletEvent);
@@ -971,7 +980,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
 #ifndef QT_NAMESPACE
         Q_ASSERT(clickCount > 0);
 #endif
-        if (clickCount % 2 == 0)
+        if (clickCount % 2 == 0 && buttons == button)
             eventType = QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
@@ -983,6 +992,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
             button = Qt::RightButton;
             [theView qt_setLeftButtonIsRightButton: false];
         }
+        qt_button_down = 0;
         break;
     }
     [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->localPoint = localPoint;

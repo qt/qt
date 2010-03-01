@@ -563,7 +563,7 @@ QVector<QPair<int, QVector<int > > > QSortFilterProxyModelPrivate::proxy_interva
     int proxy_item = 0;
     int source_items_index = 0;
     QVector<int> source_items_in_interval;
-    bool compare = (orient == Qt::Vertical && source_sort_column >= 0);
+    bool compare = (orient == Qt::Vertical && source_sort_column >= 0 && dynamic_sortfilter);
     while (source_items_index < source_items.size()) {
         source_items_in_interval.clear();
         int first_new_source_item = source_items.at(source_items_index);
@@ -1244,7 +1244,7 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsInserted(
     const QModelIndex &source_parent, int start, int end)
 {
     source_items_inserted(source_parent, start, end, Qt::Vertical);
-    if (update_source_sort_column()) //previous call to update_source_sort_column may fail if the model has no column.
+    if (update_source_sort_column() && dynamic_sortfilter) //previous call to update_source_sort_column may fail if the model has no column.
         sort();                      // now it should succeed so we need to make sure to sort again
 }
 
@@ -1281,8 +1281,8 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsInserted(
     if (source_parent.isValid())
         return; //we sort according to the root column only
     if (source_sort_column == -1) {
-        //we update the source_sort_column depending on the prox_sort_column
-        if (update_source_sort_column())
+        //we update the source_sort_column depending on the proxy_sort_column
+        if (update_source_sort_column() && dynamic_sortfilter)
             sort();
     } else {
         if (start <= source_sort_column)

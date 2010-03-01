@@ -56,7 +56,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qdeclarative.h>
 
 
 QT_BEGIN_HEADER
@@ -109,7 +109,7 @@ private:
     Q_DISABLE_COPY(QSoundEffect)
 
     int m_loopCount;
-    int m_volume;
+    int m_vol;
     bool m_muted;
     int m_runningCount;
 

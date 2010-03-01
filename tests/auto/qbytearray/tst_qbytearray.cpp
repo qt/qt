@@ -111,6 +111,7 @@ private slots:
     void remove();
     void replace_data();
     void replace();
+    void replaceWithSpecifiedLength();
     void indexOf_data();
     void indexOf();
     void lastIndexOf_data();
@@ -838,6 +839,18 @@ void tst_QByteArray::replace()
 
     QCOMPARE(str1.replace(pos, len, after).constData(), expected.constData());
     QCOMPARE(str2.replace(pos, len, after.data()), expected);
+}
+
+void tst_QByteArray::replaceWithSpecifiedLength()
+{
+    const char after[] = "zxc\0vbnmqwert";
+    int lenAfter = 6;
+    QByteArray ba("abcdefghjk");
+    ba.replace(0,2,after,lenAfter);
+
+    const char _expected[] = "zxc\0vbcdefghjk";
+    QByteArray expected(_expected,sizeof(_expected)-1);
+    QCOMPARE(ba,expected);
 }
 
 void tst_QByteArray::indexOf_data()

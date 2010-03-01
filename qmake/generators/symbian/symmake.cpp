@@ -63,7 +63,7 @@
 #define BLD_INF_TAG_MMPFILES "prj_mmpfiles"
 #define BLD_INF_TAG_TESTMMPFILES "prj_testmmpfiles"
 #define BLD_INF_TAG_EXTENSIONS "prj_extensions"
-#define BLD_INF_TAG_EXPORTS "prj_exports"
+#define BLD_INF_TAG_TESTEXTENSIONS "prj_testextensions"
 
 #define MMP_TARGET "TARGET"
 #define MMP_TARGETTYPE "TARGETTYPE"
@@ -88,11 +88,13 @@ QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const Q
 {
     static QString epocRootStr;
     if (epocRootStr.isEmpty()) {
-        QFileInfo efi(epocRoot());
-        epocRootStr = efi.canonicalFilePath();
-        if (epocRootStr.isEmpty()) {
+        epocRootStr = epocRoot();
+        QFileInfo efi(epocRootStr);
+        if (!efi.exists() || epocRootStr.isEmpty()) {
             fprintf(stderr, "Unable to resolve epocRoot '%s' to real dir on current drive, defaulting to '/' for mmp paths\n", qPrintable(epocRoot()));
             epocRootStr = "/";
+        } else {
+            epocRootStr = efi.absoluteFilePath();
         }
         if (!epocRootStr.endsWith("/"))
             epocRootStr += "/";
@@ -116,32 +118,25 @@ QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const Q
     return resultPath;
 }
 
-QString SymbianMakefileGenerator::canonizePath(const QString& origPath)
+QString SymbianMakefileGenerator::absolutizePath(const QString& origPath)
 {
-    // Since current path gets appended almost always anyway, use it as default
-    // for nonexisting paths.
-    static QString defaultPath;
-    if (defaultPath.isEmpty()) {
-        QFileInfo fi(".");
-        defaultPath = fi.canonicalFilePath();
-    }
-
     // Prepend epocroot to any paths beginning with "/epoc32/"
     QString resultPath = QDir::fromNativeSeparators(origPath);
     if (resultPath.startsWith("/epoc32/", Qt::CaseInsensitive))
         resultPath = QDir::fromNativeSeparators(epocRoot()) + resultPath.mid(1);
 
     QFileInfo fi(fileInfo(resultPath));
-    if (fi.isDir()) {
-        resultPath = fi.canonicalFilePath();
+
+    // Since origPath can be something given in HEADERS, we need to check if we are dealing
+    // with a file or a directory. In case the origPath doesn't yet exist, isFile() returns
+    // false and we default to assuming it is a dir.
+    if (fi.isFile()) {
+        resultPath = fi.absolutePath();
     } else {
-        resultPath = fi.canonicalPath();
+        resultPath = fi.absoluteFilePath();
     }
 
     resultPath = QDir::cleanPath(resultPath);
-
-    if (resultPath.isEmpty())
-        resultPath = defaultPath;
 
     return resultPath;
 }
@@ -379,7 +374,7 @@ void SymbianMakefileGenerator::initMmpVariables()
     srcpaths << project->values("UI_DIR");
 
     QDir current = QDir::current();
-    QString canonizedCurrent = canonizePath(".");
+    QString absolutizedCurrent = absolutizePath(".");
 
     for (int j = 0; j < srcpaths.size(); ++j) {
         QFileInfo fi(fileInfo(srcpaths.at(j)));
@@ -387,10 +382,10 @@ void SymbianMakefileGenerator::initMmpVariables()
         if (fi.suffix().startsWith("c")) {
             if (fi.filePath().length() > fi.fileName().length()) {
                 appendIfnotExist(srcincpaths, fi.path());
-                sources[canonizePath(fi.path())] += fi.fileName();
+                sources[absolutizePath(fi.path())] += fi.fileName();
             } else {
-                sources[canonizedCurrent] += fi.fileName();
-                appendIfnotExist(srcincpaths, canonizedCurrent);
+                sources[absolutizedCurrent] += fi.fileName();
+                appendIfnotExist(srcincpaths, absolutizedCurrent);
             }
         }
     }
@@ -404,7 +399,7 @@ void SymbianMakefileGenerator::initMmpVariables()
     incpaths << project->values("UI_DIR");
 
     for (int j = 0; j < incpaths.size(); ++j) {
-        QString includepath = canonizePath(incpaths.at(j));
+        QString includepath = absolutizePath(incpaths.at(j));
         appendIfnotExist(sysincspaths, includepath);
         appendAbldTempDirs(sysincspaths, includepath);
     }
@@ -446,15 +441,14 @@ void SymbianMakefileGenerator::initMmpVariables()
     QStringList restrictedMmpKeywords;
     bool inResourceBlock = false;
 
-    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE);
+    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE) << QLatin1String(MMP_EPOCHEAPSIZE);
     restrictableMmpKeywords << QLatin1String(MMP_TARGET) << QLatin1String(MMP_SECUREID)
        << QLatin1String(MMP_OPTION_CW) << QLatin1String(MMP_OPTION_ARMCC)
        << QLatin1String(MMP_OPTION_GCCE) << QLatin1String(MMP_LINKEROPTION_CW)
        << QLatin1String(MMP_LINKEROPTION_ARMCC) << QLatin1String(MMP_LINKEROPTION_GCCE)
        << QLatin1String(MMP_CAPABILITY) << QLatin1String(MMP_EPOCALLOWDLLDATA)
-       << QLatin1String(MMP_EPOCHEAPSIZE) << QLatin1String(MMP_EPOCSTACKSIZE)
-       << QLatin1String(MMP_UID) << QLatin1String(MMP_VENDORID)
-       << QLatin1String(MMP_VERSION);
+       << QLatin1String(MMP_EPOCSTACKSIZE) << QLatin1String(MMP_UID)
+       << QLatin1String(MMP_VENDORID) << QLatin1String(MMP_VERSION);
 
     foreach (QString item, project->values("MMP_RULES")) {
         if (project->values(item).isEmpty()) {
@@ -624,6 +618,7 @@ void SymbianMakefileGenerator::addMacro(QTextStream& t, const QString& value)
 void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 {
     bool skipTargetType = overriddenMmpKeywords.contains(MMP_TARGETTYPE);
+    bool skipEpocHeapSize = overriddenMmpKeywords.contains(MMP_EPOCHEAPSIZE);
 
     if (targetType == TypeExe) {
         t << MMP_TARGET "\t\t" << fixedTarget << ".exe" << endl;
@@ -675,7 +670,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 
     if (0 != project->first("TARGET.EPOCSTACKSIZE").size())
         t << MMP_EPOCSTACKSIZE "\t\t" << project->first("TARGET.EPOCSTACKSIZE") << endl;
-    if (0 != project->values("TARGET.EPOCHEAPSIZE").size())
+    if (!skipEpocHeapSize && 0 != project->values("TARGET.EPOCHEAPSIZE").size())
         t << MMP_EPOCHEAPSIZE "\t\t" << project->values("TARGET.EPOCHEAPSIZE").join(" ") << endl;
     if (0 != project->values("TARGET.EPOCALLOWDLLDATA").size())
         t << MMP_EPOCALLOWDLLDATA << endl;
@@ -1054,7 +1049,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     // Add project mmps and old style extension makefiles
 
     QString mmpTag;
-    if (project->isActiveConfig("symbian_test"))
+    if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
         mmpTag = QLatin1String(BLD_INF_TAG_TESTMMPFILES);
     else
         mmpTag = QLatin1String(BLD_INF_TAG_MMPFILES);
@@ -1077,35 +1072,22 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         t << item << endl;
     userBldInfRules.remove(mmpTag);
 
-    t << endl << BLD_INF_TAG_EXTENSIONS << endl << endl;
+    QString extensionTag;
+    if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
+        extensionTag = QLatin1String(BLD_INF_TAG_TESTEXTENSIONS);
+    else
+        extensionTag = QLatin1String(BLD_INF_TAG_EXTENSIONS);
+
+    t << endl << extensionTag << endl << endl;
 
     // Generate extension rules
 
     writeBldInfExtensionRulesPart(t, iconFile);
 
-    userItems = userBldInfRules.value(BLD_INF_TAG_EXTENSIONS);
+    userItems = userBldInfRules.value(extensionTag);
     foreach(QString item, userItems)
         t << item << endl;
-    userBldInfRules.remove(BLD_INF_TAG_EXTENSIONS);
-
-    t << endl << BLD_INF_TAG_EXPORTS << endl << endl;
-
-    // Generate export rules
-
-    // Export any deployed plugin stubs under /epoc32/data/z to support ROM builds
-    for (int i = 0; i < depList.size(); ++i)  {
-        int index = depList.at(i).from.indexOf(PLUGIN_STUB_DIR);
-        if (index != -1) {
-            t << QString("%1 /epoc32/data/z%2")
-                .arg(QString(depList.at(i).from).mid(index).replace('\\','/'))
-                .arg(QString(depList.at(i).to).mid(2).replace('\\','/')) << endl;
-        }
-    }
-
-    userItems = userBldInfRules.value(BLD_INF_TAG_EXPORTS);
-    foreach(QString item, userItems)
-        t << item << endl;
-    userBldInfRules.remove(BLD_INF_TAG_EXPORTS);
+    userBldInfRules.remove(extensionTag);
 
     // Add rest of the user defined content
 

@@ -96,7 +96,7 @@ static void createPluginStub(const QFileInfo& info,
         generatedDirs << PLUGIN_STUB_DIR;
     // Plugin stubs must have different name from the actual plugins, because
     // the toolchain for creating ROM images cannot handle non-binary .dll files properly.
-    QFile stubFile(QDir::toNativeSeparators(QLatin1String(PLUGIN_STUB_DIR "/") + info.completeBaseName() + "." SUFFIX_QTPLUGIN));
+    QFile stubFile(QLatin1String(PLUGIN_STUB_DIR "/") + info.completeBaseName() + "." SUFFIX_QTPLUGIN);
     if (stubFile.open(QIODevice::WriteOnly)) {
         if (!generatedFiles.contains(stubFile.fileName()))
             generatedFiles << stubFile.fileName();
@@ -175,19 +175,27 @@ void initProjectDeploySymbian(QMakeProject* project,
 
     foreach(QString item, project->values("DEPLOYMENT")) {
         QString devicePath = project->first(item + ".path");
-        if (!deployBinaries
-                && !devicePath.isEmpty()
-                && (0 == devicePath.compare(project->values("APP_RESOURCE_DIR").join(""), Qt::CaseInsensitive)
-                    || 0 == devicePath.compare(project->values("REG_RESOURCE_IMPORT_DIR").join(""), Qt::CaseInsensitive))) {
-            // Do not deploy resources in emulator builds, as that seems to cause conflicts
-            // If there is ever a real need to deploy pre-built resources for emulator,
-            // BLD_INF_RULES.prj_exports can be used as a workaround.
-            continue;
-        }
+        QString devicePathWithoutDrive = devicePath;
 
         bool devicePathHasDriveLetter = false;
         if (devicePath.size() > 1) {
             devicePathHasDriveLetter = devicePath.at(1) == QLatin1Char(':');
+        }
+
+        // Sometimes devicePath can contain disk but APP_RESOURCE_DIR does not,
+        // so remove the drive letter for comparison purposes.
+        if (devicePathHasDriveLetter)
+        {
+            devicePathWithoutDrive.remove(0,2);
+        }
+        if (!deployBinaries
+                && !devicePathWithoutDrive.isEmpty()
+                && (0 == devicePathWithoutDrive.compare(project->values("APP_RESOURCE_DIR").join(""), Qt::CaseInsensitive)
+                    || 0 == devicePathWithoutDrive.compare(project->values("REG_RESOURCE_IMPORT_DIR").join(""), Qt::CaseInsensitive))) {
+            // Do not deploy resources in emulator builds, as that seems to cause conflicts
+            // If there is ever a real need to deploy pre-built resources for emulator,
+            // BLD_INF_RULES.prj_exports can be used as a workaround.
+            continue;
         }
 
         if (devicePath.isEmpty() || devicePath == QLatin1String(".")) {
@@ -197,19 +205,30 @@ void initProjectDeploySymbian(QMakeProject* project,
         else if (!(devicePath.at(0) == QLatin1Char('/')
                    || devicePath.at(0) == QLatin1Char('\\')
                    || devicePathHasDriveLetter)) {
-            // create output path
+            // Create output path
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('/') + devicePath));
         } else {
-            if (0 == platform.compare(QLatin1String("winscw"), Qt::CaseInsensitive)) {
+            if (!platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))) {
                 if (devicePathHasDriveLetter) {
                     devicePath = epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
                 } else {
                     devicePath = epocRoot() + "epoc32/winscw/c" + devicePath;
                 }
             } else {
-                // Drive letter needed if targetpath contains one and it is not already in
-                if (targetPathHasDriveLetter && !devicePathHasDriveLetter) {
-                    devicePath = deploymentDrive + devicePath;
+                if (!devicePathHasDriveLetter) {
+                    if (!platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+                        //For plugin deployment under ARM no needed drive letter
+                        devicePath = epocRoot() + "epoc32/data/z" + devicePath;
+                    } else if (targetPathHasDriveLetter) {
+                        // Drive letter needed if targetpath contains one and it is not already in
+                        devicePath = deploymentDrive + devicePath;
+                    }
+                } else {
+                    //it is necessary to delete drive letter for ARM deployment
+                    if (!platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+                        devicePath.remove(0,2);
+                        devicePath = epocRoot() + "epoc32/data/z" + devicePath;
+                    }
                 }
             }
         }
@@ -307,7 +326,8 @@ void initProjectDeploySymbian(QMakeProject* project,
                                     + iterator.fileName())));
                             }
                         }
-                        createPluginStub(info, devicePath + "/" + absoluteItemPath.right(diffSize), deploymentList, generatedDirs, generatedFiles);
+                        createPluginStub(info, devicePath + "/" + absoluteItemPath.right(diffSize),
+                            deploymentList, generatedDirs, generatedFiles);
                         continue;
                     } else {
                         deploymentList.append(CopyItem(

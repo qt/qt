@@ -17,20 +17,20 @@ contains(QT_CONFIG, declarative) {
     }
 
     HEADERS += \
-        $$PWD/qml.h \
+        $$PWD/multimediadeclarative.h \
         $$PWD/qmetadatacontrolmetaobject_p.h \
-        $$PWD/qmlaudio_p.h \
-        $$PWD/qmlgraphicsvideo_p.h \
-        $$PWD/qmlmediabase_p.h \
+        $$PWD/qdeclarativeaudio_p.h \
+        $$PWD/qdeclarativevideo_p.h \
+        $$PWD/qdeclarativemediabase_p.h \
         $$PWD/qsoundeffect_p.h \
         $$PWD/wavedecoder_p.h
 
     SOURCES += \
-        $$PWD/qml.cpp \
+        $$PWD/multimediadeclarative.cpp \
         $$PWD/qmetadatacontrolmetaobject.cpp \
-        $$PWD/qmlaudio.cpp \
-        $$PWD/qmlgraphicsvideo.cpp \
-        $$PWD/qmlmediabase.cpp \
+        $$PWD/qdeclarativeaudio.cpp \
+        $$PWD/qdeclarativevideo.cpp \
+        $$PWD/qdeclarativemediabase.cpp \
         $$PWD/qsoundeffect.cpp \
         $$PWD/wavedecoder_p.cpp
 }

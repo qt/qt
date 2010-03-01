@@ -76,6 +76,7 @@ private:
     \class QMediaContent
     \preliminary
     \brief The QMediaContent class provides access to the resources relating to a media content.
+    \since 4.7
 
     \ingroup multimedia
 
@@ -106,6 +107,19 @@ QMediaContent::QMediaContent(const QUrl &url):
     d(new QMediaContentPrivate)
 {
     d->resources << QMediaResource(url);
+}
+
+/*!
+    Constructs a media content with \a request providing a reference to the content.
+
+    This constructor can be used to reference media content via network protocols such as HTTP.
+    This may include additional information required to obtain the resource, such as Cookies or HTTP headers.
+*/
+
+QMediaContent::QMediaContent(const QNetworkRequest &request):
+    d(new QMediaContentPrivate)
+{
+    d->resources << QMediaResource(request);
 }
 
 /*!

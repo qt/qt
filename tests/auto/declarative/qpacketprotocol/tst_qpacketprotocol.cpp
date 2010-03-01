@@ -117,7 +117,7 @@ void tst_QPacketProtocol::setMaximumPacketSize()
         QByteArray b;
         b.fill('a', size + 1);
         out.send() << b.constData();
-        QVERIFY(QmlDebugTest::waitForSignal(&in, SIGNAL(invalidPacket())));
+        QVERIFY(QDeclarativeDebugTest::waitForSignal(&in, SIGNAL(invalidPacket())));
     }
 }
 
@@ -149,7 +149,7 @@ void tst_QPacketProtocol::send()
         out.send(packet);
     }
 
-    QVERIFY(QmlDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
 
     QPacket p = in.read();
     p >> ba >> num;
@@ -178,7 +178,7 @@ void tst_QPacketProtocol::packetsAvailable()
     for (int i=0; i<packetCount; i++)
         out.send() << "Hello";
 
-    QVERIFY(QmlDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
     QCOMPARE(in.packetsAvailable(), qint64(packetCount));
 }
 
@@ -198,7 +198,7 @@ void tst_QPacketProtocol::clear()
 
     out.send() << 123;
     out.send() << 456;
-    QVERIFY(QmlDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
 
     in.clear();
     QVERIFY(in.read().isEmpty());
@@ -213,7 +213,7 @@ void tst_QPacketProtocol::read()
 
     out.send() << 123;
     out.send() << 456;
-    QVERIFY(QmlDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
 
     int num;
 
@@ -253,7 +253,7 @@ void tst_QPacketProtocol::tst_QPacket_clear()
     QByteArray ba;
     int num;
     QPacketProtocol in(m_serverConn);
-    QVERIFY(QmlDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
+    QVERIFY(QDeclarativeDebugTest::waitForSignal(&in, SIGNAL(readyRead())));
 
     QPacket p1 = in.read();
     p1 >> ba >> num;

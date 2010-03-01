@@ -64,6 +64,7 @@ public:
 
 private:
     void exportFlm();
+    void writeSbsDeploymentList(const DeploymentList& depList, QTextStream& t);
 
     QString extraTargetsCache;
     QString extraCompilersCache;
