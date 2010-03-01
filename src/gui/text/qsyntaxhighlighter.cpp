@@ -102,20 +102,22 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
     const int preeditAreaStart = layout->preeditAreaPosition();
     const int preeditAreaLength = layout->preeditAreaText().length();
 
-    QList<QTextLayout::FormatRange>::Iterator it = ranges.begin();
-    while (it != ranges.end()) {
-        if (it->start >= preeditAreaStart
-            && it->start + it->length <= preeditAreaStart + preeditAreaLength) {
-            ++it;
-        } else {
-            it = ranges.erase(it);
+    if (preeditAreaLength != 0) {
+        QList<QTextLayout::FormatRange>::Iterator it = ranges.begin();
+        while (it != ranges.end()) {
+            if (it->start >= preeditAreaStart
+                && it->start + it->length <= preeditAreaStart + preeditAreaLength) {
+                ++it;
+            } else {
+                it = ranges.erase(it);
+            }
         }
     }
 
     QTextCharFormat emptyFormat;
 
     QTextLayout::FormatRange r;
-    r.start = r.length = -1;
+    r.start = -1;
 
     int i = 0;
     while (i < formatChanges.count()) {
@@ -137,22 +139,26 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
 
         r.length = i - r.start;
 
-        if (r.start >= preeditAreaStart)
-            r.start += preeditAreaLength;
-        else if (r.start + r.length >= preeditAreaStart)
-            r.length += preeditAreaLength;
+        if (preeditAreaLength != 0) {
+            if (r.start >= preeditAreaStart)
+                r.start += preeditAreaLength;
+            else if (r.start + r.length >= preeditAreaStart)
+                r.length += preeditAreaLength;
+        }
 
         ranges << r;
-        r.start = r.length = -1;
+        r.start = -1;
     }
 
     if (r.start != -1) {
         r.length = formatChanges.count() - r.start;
 
-        if (r.start >= preeditAreaStart)
-            r.start += preeditAreaLength;
-        else if (r.start + r.length >= preeditAreaStart)
-            r.length += preeditAreaLength;
+        if (preeditAreaLength != 0) {
+            if (r.start >= preeditAreaStart)
+                r.start += preeditAreaLength;
+            else if (r.start + r.length >= preeditAreaStart)
+                r.length += preeditAreaLength;
+        }
 
         ranges << r;
     }
