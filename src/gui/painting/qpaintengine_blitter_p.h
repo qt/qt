@@ -86,6 +86,7 @@ public:
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr, Qt::ImageConversionFlags flags);
 
     virtual void drawTextItem(const QPointF &pos, const QTextItem &ti);
+    virtual void drawStaticTextItem(QStaticTextItem *);
 
     virtual void drawEllipse(const QRectF &r);
 

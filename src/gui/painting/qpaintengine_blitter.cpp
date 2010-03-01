@@ -571,6 +571,18 @@ void QBlitterPaintEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
     d->pmData->markRasterOverlay(pos,ti);
 }
 
+void QBlitterPaintEngine::drawStaticTextItem(QStaticTextItem *sti)
+{
+    Q_D(QBlitterPaintEngine);
+    d->lock();
+    d->raster->drawStaticTextItem(sti);
+
+//#### d->pmData->markRasterOverlay(sti);
+    qWarning("not implemented: markRasterOverlay for QStaticTextItem");
+
+}
+
+
 void QBlitterPaintEngine::drawEllipse(const QRectF &r)
 {
     Q_D(QBlitterPaintEngine);
