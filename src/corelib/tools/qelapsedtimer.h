@@ -62,11 +62,6 @@ public:
     static ClockType clockType();
     static bool isMonotonic();
 
-    static inline QElapsedTimer started()
-    { QElapsedTimer t; t.start(); return t; }
-    static inline QElapsedTimer invalid()
-    { QElapsedTimer t; t.invalidate(); return t; }
-
     void start();
     qint64 restart();
     void invalidate();

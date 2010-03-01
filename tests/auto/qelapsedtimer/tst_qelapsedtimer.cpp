@@ -20,7 +20,9 @@ void tst_QElapsedTimer::statics()
 {
     qDebug() << "Clock type is" << QElapsedTimer::clockType();
     qDebug() << "Said clock is" << (QElapsedTimer::isMonotonic() ? "monotonic" : "not monotonic");
-    qDebug() << "Current time is" << QElapsedTimer::started().msecsSinceReference();
+    QElapsedTimer t;
+    t.start();
+    qDebug() << "Current time is" << t.msecsSinceReference();
 }
 
 void tst_QElapsedTimer::validity()
@@ -34,12 +36,6 @@ void tst_QElapsedTimer::validity()
     QVERIFY(t.isValid());
 
     t.invalidate();
-    QVERIFY(!t.isValid());
-
-    t = QElapsedTimer::started();
-    QVERIFY(t.isValid());
-
-    t = QElapsedTimer::invalid();
     QVERIFY(!t.isValid());
 }
 
