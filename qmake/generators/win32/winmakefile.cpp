@@ -150,7 +150,10 @@ Win32MakefileGenerator::findLibraries(const QString &where)
                     if(QMakeMetaInfo::libExists((*it).local() + Option::dir_sep + lib) ||
                        exists((*it).local() + Option::dir_sep + lib + extension)) {
                         out = (*it).real() + Option::dir_sep + lib + extension;
-                        break;
+                        if (out.contains(QLatin1Char(' '))) {
+                            out.prepend(QLatin1Char('\"'));
+                            out.append(QLatin1Char('\"'));
+                        }
                     }
                 }
             }
