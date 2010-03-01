@@ -451,6 +451,11 @@ QHostInfoLookupManager::QHostInfoLookupManager() : mutex(QMutex::Recursive), was
 QHostInfoLookupManager::~QHostInfoLookupManager()
 {
     wasDeleted = true;
+
+    // don't qDeleteAll currentLookups, the QThreadPool has ownership
+    qDeleteAll(postponedLookups);
+    qDeleteAll(scheduledLookups);
+    qDeleteAll(finishedLookups);
 }
 
 void QHostInfoLookupManager::work()
