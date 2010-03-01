@@ -63,7 +63,7 @@
 
 #include "qsoundeffect_pulse_p.h"
 
-#if(Q_WS_MAEMO_5)
+#if defined(Q_WS_MAEMO_5)
 #include <pulse/ext-stream-restore.h>
 #endif
 
@@ -155,7 +155,7 @@ private:
         lock();
         m_context = pa_context_new(m_mainLoopApi, QString(QLatin1String("QtPulseAudio:%1")).arg(::getpid()).toAscii().constData());
 
-#if(Q_WS_MAEMO_5)
+#if defined(Q_WS_MAEMO_5)
         pa_context_set_state_callback(m_context, context_state_callback, this);
 #endif
         if (m_context == 0) {
@@ -183,7 +183,7 @@ private:
         m_prepared = false;
     }
 
-#if(Q_WS_MAEMO_5)
+#if defined(Q_WS_MAEMO_5)
     static void context_state_callback(pa_context *c, void *userdata)
     {
         PulseDaemon *self = reinterpret_cast<PulseDaemon*>(userdata);
@@ -299,7 +299,7 @@ void QSoundEffectPrivate::play()
     pa_volume_t m_vol = PA_VOLUME_NORM;
 
     daemon()->lock();
-#if(Q_WS_MAEMO_5)
+#if defined(Q_WS_MAEMO_5)
     m_vol = PA_VOLUME_NORM/100*((daemon()->volume()+m_vol)/2);
 #endif
     pa_operation_unref(
