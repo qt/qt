@@ -58,7 +58,7 @@ ControllerWindow::ControllerWindow()
     bottomLayout->addStretch();
     bottomLayout->addWidget(quitButton);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QHBoxLayout *mainLayout = new QHBoxLayout;
     mainLayout->addWidget(typeGroupBox);
     mainLayout->addWidget(hintsGroupBox);
     mainLayout->addLayout(bottomLayout);
@@ -149,7 +149,7 @@ void ControllerWindow::createTypeGroupBox()
     splashScreenRadioButton = createRadioButton(tr("Splash screen"));
     windowRadioButton->setChecked(true);
 
-    QGridLayout *layout = new QGridLayout;
+    QVBoxLayout *layout = new QGridLayout;
     layout->addWidget(windowRadioButton, 0, 0);
     layout->addWidget(dialogRadioButton, 1, 0);
     layout->addWidget(sheetRadioButton, 2, 0);

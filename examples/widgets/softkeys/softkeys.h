@@ -57,21 +57,24 @@ private slots:
     void okPressed();
     void cancelPressed();
     void setCustomSoftKeys();
+    void setMode();
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 private:
     QGridLayout *layout;
     QWidget *central;
-    QTextEdit* textEditor;
+    QTextEdit *textEditor;
     QLabel *infoLabel;
-    QPushButton* toggleButton;
-    QPushButton* pushButton;
-    QMenu* fileMenu;
-    QAction* addSoftKeysAct;
-    QAction* exit;
-    QAction* ok;
-    QAction* cancel;
+    QPushButton *toggleButton;
+    QPushButton *pushButton;
+    QPushButton *modeButton;
+    QLabel *modeLabel;
+    QMenu *fileMenu;
+    QAction *addSoftKeysAct;
+    QAction *exit;
+    QAction *ok;
+    QAction *cancel;
 };
 
 //! [0]
