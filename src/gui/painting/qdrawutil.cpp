@@ -1361,14 +1361,21 @@ void qDrawPixmaps(QPainter *painter, const QDrawPixmaps::Data *drawingData, int 
 
         for (int i = 0; i < dataCount; ++i) {
             QTransform transform = oldTransform;
-            transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
-            transform.rotate(drawingData[i].rotation);
-            painter->setOpacity(oldOpacity * drawingData[i].opacity);
+            qreal xOffset = 0;
+            qreal yOffset = 0;
+            if (drawingData[i].rotation == 0) {
+                xOffset = drawingData[i].point.x();
+                yOffset = drawingData[i].point.y();
+            } else {
+                transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
+                transform.rotate(drawingData[i].rotation);
+            }
             painter->setTransform(transform);
+            painter->setOpacity(oldOpacity * drawingData[i].opacity);
 
             qreal w = drawingData[i].scaleX * drawingData[i].source.width();
             qreal h = drawingData[i].scaleY * drawingData[i].source.height();
-            painter->drawPixmap(QRectF(-0.5 * w, -0.5 * h, w, h), pixmap, drawingData[i].source);
+            painter->drawPixmap(QRectF(-0.5 * w + xOffset, -0.5 * h + yOffset, w, h), pixmap, drawingData[i].source);
         }
 
         painter->setOpacity(oldOpacity);
