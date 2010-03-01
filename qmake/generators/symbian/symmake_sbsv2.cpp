@@ -386,7 +386,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     //write emulator deployment
     t << "#if defined(WINSCW)" << endl;
-    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
     writeSbsDeploymentList(depList, t);
     t << "#endif" << endl;
