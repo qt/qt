@@ -50,7 +50,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QVariant>
-#include "../3rdparty/qlistmodelinterface_p.h"
+#include <private/qlistmodelinterface_p.h>
 #include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_HEADER
