@@ -704,6 +704,8 @@ bool QDeclarativeTextInput::event(QEvent* ev)
             break;
         default:
             handled = d->control->processEvent(ev);
+            if (ev->type() == QEvent::InputMethod)
+                updateSize();
     }
     if(!handled)
         return QDeclarativePaintedItem::event(ev);
