@@ -402,8 +402,13 @@ void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)
     if (!d->doc)
         return;
 
+    const bool rehighlightPending = d->rehighlightPending;
+
     QTextCursor cursor(block);
     d->rehighlight(cursor, QTextCursor::EndOfBlock);
+
+    if (rehighlightPending)
+        d->rehighlightPending = rehighlightPending;
 }
 
 /*!
