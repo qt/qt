@@ -154,6 +154,7 @@ Win32MakefileGenerator::findLibraries(const QString &where)
                             out.prepend(QLatin1Char('\"'));
                             out.append(QLatin1Char('\"'));
                         }
+                        break;
                     }
                 }
             }
