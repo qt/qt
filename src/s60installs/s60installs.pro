@@ -100,7 +100,7 @@ symbian: {
     qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
 
     bearer_plugins.path = c:$$QT_PLUGINS_BASE_DIR/bearer
-    bearer_plugins.sources += qsymbianbearer.dll
+    bearer_plugins.sources += $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer.dll
 
     DEPLOYMENT += qtresources \
                   qtlibraries \
