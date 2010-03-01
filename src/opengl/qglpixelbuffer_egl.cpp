@@ -47,10 +47,6 @@
 #include <qimage.h>
 #include <private/qgl_p.h>
 
-#ifdef QT_OPENGL_ES_1_CL
-#include "qgl_cl_p.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifdef EGL_BIND_TO_TEXTURE_RGBA
@@ -64,13 +60,6 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     // Create the EGL context.
     ctx = new QEglContext();
     ctx->setApi(QEgl::OpenGL);
-
-    // Open the EGL display.
-    if (!ctx->openDisplay(0)) {
-        delete ctx;
-        ctx = 0;
-        return false;
-    }
 
     // Find the shared context.
     QEglContext *shareContext = 0;
@@ -215,7 +204,7 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
 bool QGLPixelBuffer::hasOpenGLPbuffers()
 {
     // See if we have at least 1 configuration that matches the default format.
-    EGLDisplay dpy = QEglContext::defaultDisplay(0);
+    EGLDisplay dpy = QEglContext::display();
     if (dpy == EGL_NO_DISPLAY)
         return false;
     QEglProperties configProps;

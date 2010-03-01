@@ -57,7 +57,7 @@ class ContentWindow : public QWidget
     Q_OBJECT
 
 public:
-    ContentWindow(QHelpEngine *helpEngine);
+    ContentWindow();
     ~ContentWindow();
 
     bool syncToContent(const QUrl &url);
@@ -78,8 +78,7 @@ private:
     bool eventFilter(QObject *o, QEvent *e);
     bool isPdfFile(QHelpContentItem *item) const;
 
-    QHelpEngine *m_helpEngine;
-    QHelpContentWidget *m_contentWidget;
+    QHelpContentWidget * const m_contentWidget;
     int m_expandDepth;
 };
 

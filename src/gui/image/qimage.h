@@ -182,6 +182,7 @@ public:
 
     uchar *bits();
     const uchar *bits() const;
+    const uchar *constBits() const;
 #ifdef QT_DEPRECATED
     QT_DEPRECATED int numBytes() const;
 #endif
@@ -189,6 +190,7 @@ public:
 
     uchar *scanLine(int);
     const uchar *scanLine(int) const;
+    const uchar *constScanLine(int) const;
     int bytesPerLine() const;
 
     bool valid(int x, int y) const;

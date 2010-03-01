@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 /*!
   \class QFileIconProvider
 
-  \brief The QFileIconProvider class provides file icons for the QDirModel class.
+  \brief The QFileIconProvider class provides file icons for the QDirModel and the QFileSystemModel classes.
 */
 
 /*!

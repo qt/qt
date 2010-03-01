@@ -846,6 +846,9 @@ namespace QTest
     static int mouseDelay = -1;
     static int eventDelay = -1;
     static int keyVerbose = -1;
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    static bool noCrashHandler = false;
+#endif
 
 void filter_unprintable(char *str)
 {
@@ -976,6 +979,9 @@ static void qParseArgs(int argc, char *argv[])
          " -keyevent-verbose : Turn on verbose messages for keyboard simulation\n"
          " -maxwarnings n    : Sets the maximum amount of messages to output.\n"
          "                     0 means unlimited, default: 2000\n"
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+         " -nocrashhandler   : Disables the crash handler\n"
+#endif
          "\n"
          " Benchmark related options:\n"
 #ifdef QTESTLIB_USE_VALGRIND
@@ -1056,6 +1062,10 @@ static void qParseArgs(int argc, char *argv[])
             } else {
                 QTestLog::setMaxWarnings(qToInt(argv[++i]));
             }
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+        } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
+            QTest::noCrashHandler = true;
+#endif
         } else if (strcmp(argv[i], "-keyevent-verbose") == 0) {
             QTest::keyVerbose = 1;
 #ifdef QTESTLIB_USE_VALGRIND
@@ -1113,6 +1123,14 @@ static void qParseArgs(int argc, char *argv[])
 #endif
         } else if (strcmp(argv[i], "-qws") == 0) {
             // do nothing
+        } else if (strcmp(argv[i], "-graphicssystem") == 0) {
+            // do nothing
+            if (i + 1 >= argc) {
+                printf("-graphicssystem needs an extra parameter specifying the graphics system\n");
+                exit(1);
+            } else {
+                ++i;
+            }
         } else if (argv[i][0] == '-') {
             printf("Unknown option: '%s'\n\n%s", argv[i], testOptions);
             exit(1);
@@ -1298,11 +1316,23 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
             const int dataCount = table.dataCount();
             QTestResult::setSkipCurrentTest(false);
 
+            // Data tag requested but none available?
+            if (data && !dataCount) {
+                // Let empty data tag through.
+                if (!*data)
+                    data = 0;
+                else {
+                    printf("Unknown testdata for function %s: '%s'\n", slotName, data);
+                    printf("Function has no testdata.\n");
+                    return false;
+                }
+            }
+
             /* For each entry in the data table, do: */
             do {
                 if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
                     foundFunction = true;
-                    QTestDataSetter s(table.isEmpty() ? static_cast<QTestData *>(0)
+                    QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
                     qInvokeTestMethodDataEntry(slot);
@@ -1521,7 +1551,11 @@ FatalSignalHandler::FatalSignalHandler()
 #ifndef Q_WS_QWS
         // Don't overwrite any non-default handlers
         // however, we need to replace the default QWS handlers
-        if (oldact.sa_flags & SA_SIGINFO || oldact.sa_handler != SIG_DFL) {
+        if (
+#ifdef SA_SIGINFO
+            oldact.sa_flags & SA_SIGINFO ||
+#endif
+            oldact.sa_handler != SIG_DFL) {
             sigaction(fatalSignals[i], &oldact, 0);
         } else
 #endif
@@ -1661,7 +1695,9 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 #endif
     {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-        FatalSignalHandler handler;
+        QScopedPointer<FatalSignalHandler> handler;
+        if (!noCrashHandler)
+            handler.reset(new FatalSignalHandler);
 #endif
         qInvokeTestMethods(testObject);
     }

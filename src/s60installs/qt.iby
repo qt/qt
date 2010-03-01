@@ -80,6 +80,9 @@ file=ABI_DIR\BUILD_DIR\qsvgicon.dll          SHARED_LIB_DIR\qsvgicon.dll     PAG
 // Phonon MMF backend
 file=ABI_DIR\BUILD_DIR\phonon_mmf.dll        SHARED_LIB_DIR\phonon_mmf.dll   PAGED
 
+// QtMultimedia audio backend
+file=ABI_DIR\BUILD_DIR\qaudio.dll            SHARED_LIB_DIR\qaudio.dll       PAGED
+
 // graphicssystems
 file=ABI_DIR\BUILD_DIR\qvggraphicssystem.dll SHARED_LIB_DIR\qvggraphicssystem.dll     PAGED
 
@@ -109,10 +112,14 @@ data=\epoc32\data\z\resource\qt\plugins\iconengines\qsvgicon.qtplugin      resou
 // Phonon MMF backend
 data=\epoc32\data\z\resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin resource\qt\plugins\phonon_backend\phonon_mmf.qtplugin
 
+// QtMultimedia audio backend
+data=\epoc32\data\qt\qtlibspluginstubs\qaudio.qtplugin resource\qt\plugins\audio\qaudio.qtplugin
+
 // graphicssystems
 data=\epoc32\data\z\resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin      resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin
 
 // Stub sis file
-data=ZSYSTEM\install\qt.sis    System\Install\qt.sis
+data=ZSYSTEM\install\qt_stub.sis    System\Install\qt_stub.sis
+data=ZSYSTEM\install\qtwebkit_stub.sis    System\Install\qtwebkit_stub.sis
 
 #endif // __QT_IBY__

@@ -475,8 +475,16 @@ static int sortFilesBy = (int)QDir::Name;
 static bool sortAscending = true;
 static bool detailViewMode = false;
 
-static Q3CleanupHandler<QPixmap> qfd_cleanup_pixmap;
 static Q3CleanupHandler<QString> qfd_cleanup_string;
+
+static void qt_cleanup_fd_pixmaps();
+typedef QList<QPixmap *> FDPixmaps;
+Q_GLOBAL_STATIC_WITH_INITIALIZER(FDPixmaps, qfd_pixmaps, qAddPostRoutine(qt_cleanup_fd_pixmaps))
+
+static void qt_cleanup_fd_pixmaps()
+{
+    qDeleteAll(*qfd_pixmaps());
+}
 
 static QString toRootIfNotExists( const QString &path )
 {
@@ -533,37 +541,37 @@ static void makeVariables() {
         qfd_cleanup_string.add(&workingDirectory);
 
         openFolderIcon = new QPixmap((const char **)open_xpm);
-        qfd_cleanup_pixmap.add(&openFolderIcon);
+        qfd_pixmaps()->append(openFolderIcon);
         symLinkDirIcon = new QPixmap((const char **)link_dir_xpm);
-        qfd_cleanup_pixmap.add(&symLinkDirIcon);
+        qfd_pixmaps()->append(symLinkDirIcon);
         symLinkFileIcon = new QPixmap((const char **)link_file_xpm);
-        qfd_cleanup_pixmap.add(&symLinkFileIcon);
+        qfd_pixmaps()->append(symLinkFileIcon);
         fileIcon = new QPixmap((const char **)file_xpm);
-        qfd_cleanup_pixmap.add(&fileIcon);
+        qfd_pixmaps()->append(fileIcon);
         closedFolderIcon = new QPixmap((const char **)closed_xpm);
-        qfd_cleanup_pixmap.add(&closedFolderIcon);
+        qfd_pixmaps()->append(closedFolderIcon);
         detailViewIcon = new QPixmap((const char **)detailedview_xpm);
-        qfd_cleanup_pixmap.add(&detailViewIcon);
+        qfd_pixmaps()->append(detailViewIcon);
         multiColumnListViewIcon = new QPixmap((const char **)mclistview_xpm);
-        qfd_cleanup_pixmap.add(&multiColumnListViewIcon);
+        qfd_pixmaps()->append(multiColumnListViewIcon);
         cdToParentIcon = new QPixmap((const char **)cdtoparent_xpm);
-        qfd_cleanup_pixmap.add(&cdToParentIcon);
+        qfd_pixmaps()->append(cdToParentIcon);
         newFolderIcon = new QPixmap((const char **)newfolder_xpm);
-        qfd_cleanup_pixmap.add(&newFolderIcon);
+        qfd_pixmaps()->append(newFolderIcon);
         previewInfoViewIcon
             = new QPixmap((const char **)previewinfoview_xpm);
-        qfd_cleanup_pixmap.add(&previewInfoViewIcon);
+        qfd_pixmaps()->append(previewInfoViewIcon);
         previewContentsViewIcon
             = new QPixmap((const char **)previewcontentsview_xpm);
-        qfd_cleanup_pixmap.add(&previewContentsViewIcon);
+        qfd_pixmaps()->append(previewContentsViewIcon);
         startCopyIcon = new QPixmap((const char **)start_xpm);
-        qfd_cleanup_pixmap.add(&startCopyIcon);
+        qfd_pixmaps()->append(startCopyIcon);
         endCopyIcon = new QPixmap((const char **)end_xpm);
-        qfd_cleanup_pixmap.add(&endCopyIcon);
+        qfd_pixmaps()->append(endCopyIcon);
         goBackIcon = new QPixmap((const char **)back_xpm);
-        qfd_cleanup_pixmap.add(&goBackIcon);
+        qfd_pixmaps()->append(goBackIcon);
         fifteenTransparentPixels = new QPixmap(closedFolderIcon->width(), 1);
-        qfd_cleanup_pixmap.add(&fifteenTransparentPixels);
+        qfd_pixmaps()->append(fifteenTransparentPixels);
         QBitmap m(fifteenTransparentPixels->width(), 1);
         m.fill(Qt::color0);
         fifteenTransparentPixels->setMask(m);

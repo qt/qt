@@ -291,6 +291,7 @@ private:
     friend class QFontMetricsF;
     friend class QFontInfo;
     friend class QPainter;
+    friend class QPainterPrivate;
     friend class QPSPrintEngineFont;
     friend class QApplication;
     friend class QWidget;

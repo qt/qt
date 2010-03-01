@@ -154,12 +154,16 @@
         \row
             \o -unregister <doc.qch>
             \o Unregisters the specified compressed help file from the given
-            collection file.
+               collection file.
         \row
             \o -remove-search-index
             \o Purges the help search engine's index. This option is
                useful in case the associated index files get corrupted.
                \QA will re-index the documentation at the next start-up.
+        \row
+            \o -rebuild-search-index
+            \o Rebuilds the help search engine's index. 
+               Note that this operation may take a while to finish.
         \row
             \o -setCurrentFilter <filter>
             \o Sets the given filter as the active filter.
@@ -638,12 +642,19 @@
             file in the \c{file} tags. It is possible to specify a different file or any
             language. The icon defined by the \c{icon} tags is applied to any language.
         \row
-            \o \c{<cacheDirectory>}
-            \o Specified as a path relative to the directory given by
-            QDesktopServices::DataLocation, the cache path is used to store index files
+            \o \c{<cacheDirectory base="collection|default">}
+            \o The cache directory is used to store index files
             needed for the full text search and a copy of the collection file.
-            The copy is needed because \QA stores all its settings in the collection file;
-            i.e., it must be writable for the user.
+            The copy is needed because \QA stores all its settings in the collection file; i.e., it must be writable for the user.
+            The directory is specified as a relative path. 
+            If the \c{base} attribute is set to "collection", the path is 
+            relative to the directory the collection file resides in. 
+            If the attribute is set to "default" or if it is missing, 
+            the path is relative to the directory given by 
+            QDesktopServices::DataLocation. The first form is useful for 
+            collections that are used in a "mobile" way, e.g. carried around 
+            on a USB stick.
+            
     \endtable
 
     In addition to those \QA specific tags, the tags for generating and registering
@@ -677,9 +688,6 @@
     to make Assistant listen to your application, turn on its remote control
     functionality by passing the \c{-enableRemoteControl} command line option.
 
-    \warning The trailing '\0' must be appended separately to the QByteArray,
-    e.g., \c{QByteArray("command" + '\0')}.
-
     The following example shows how this can be done:
 
     \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 2
@@ -689,6 +697,9 @@
     page in the documentation.
 
     \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 3
+
+    Note that the trailing newline character is required to mark the end
+    of the input.
 
     The following commands can be used to control \QA:
 
@@ -727,13 +738,20 @@
             \o Selects the item in the contents widget which corresponds to
             the currently displayed page.
         \row
-            \o \c{setCurrentFilter}
+            \o \c{setCurrentFilter <filter>}
             \o Selects the specified filter and updates the visual representation
             accordingly.
         \row
             \o \c{expandToc <Depth>}
             \o Expands the table of contents tree to the given depth. If depth
-            is less than 1, the tree will be collapsed completely.
+            is 0, the tree will be collapsed completely. If depth is -1,
+            the tree will be expanded completely.
+        \row
+            \o \c{register <help file>}
+            \o Adds the given Qt compressed help file to the collection.
+        \row
+            \o \c{unregister <help file>}
+            \o Removes the given Qt compressed help file from the collection.
     \endtable
 
     If you want to send several commands within a short period of time, it is

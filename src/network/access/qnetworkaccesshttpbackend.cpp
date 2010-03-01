@@ -213,6 +213,7 @@ QNetworkAccessHttpBackendFactory::create(QNetworkAccessManager::Operation op,
     case QNetworkAccessManager::HeadOperation:
     case QNetworkAccessManager::PutOperation:
     case QNetworkAccessManager::DeleteOperation:
+    case QNetworkAccessManager::CustomOperation:
         break;
 
     default:
@@ -296,6 +297,7 @@ QNetworkAccessHttpBackend::QNetworkAccessHttpBackend()
 #ifndef QT_NO_OPENSSL
     , pendingSslConfiguration(0), pendingIgnoreAllSslErrors(false)
 #endif
+    , resumeOffset(0)
 {
 }
 
@@ -480,10 +482,24 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
         loadedFromCache = false;
 }
 
+static QHttpNetworkRequest::Priority convert(const QNetworkRequest::Priority& prio)
+{
+    switch (prio) {
+    case QNetworkRequest::LowPriority:
+        return QHttpNetworkRequest::LowPriority;
+    case QNetworkRequest::HighPriority:
+        return QHttpNetworkRequest::HighPriority;
+    case QNetworkRequest::NormalPriority:
+    default:
+        return QHttpNetworkRequest::NormalPriority;
+    }
+}
+
 void QNetworkAccessHttpBackend::postRequest()
 {
     bool loadedFromCache = false;
     QHttpNetworkRequest httpRequest;
+    httpRequest.setPriority(convert(request().priority()));
     switch (operation()) {
     case QNetworkAccessManager::GetOperation:
         httpRequest.setOperation(QHttpNetworkRequest::Get);
@@ -512,6 +528,14 @@ void QNetworkAccessHttpBackend::postRequest()
         httpRequest.setOperation(QHttpNetworkRequest::Delete);
         break;
 
+    case QNetworkAccessManager::CustomOperation:
+        invalidateCache(); // for safety reasons, we don't know what the operation does
+        httpRequest.setOperation(QHttpNetworkRequest::Custom);
+        httpRequest.setUploadByteDevice(createUploadByteDevice());
+        httpRequest.setCustomVerb(request().attribute(
+                QNetworkRequest::CustomVerbAttribute).toByteArray());
+        break;
+
     default:
         break;                  // can't happen
     }
@@ -519,6 +543,28 @@ void QNetworkAccessHttpBackend::postRequest()
     httpRequest.setUrl(url());
 
     QList<QByteArray> headers = request().rawHeaderList();
+    if (resumeOffset != 0) {
+        if (headers.contains("Range")) {
+            // Need to adjust resume offset for user specified range
+
+            headers.removeOne("Range");
+
+            // We've already verified that requestRange starts with "bytes=", see canResume.
+            QByteArray requestRange = request().rawHeader("Range").mid(6);
+
+            int index = requestRange.indexOf('-');
+
+            quint64 requestStartOffset = requestRange.left(index).toULongLong();
+            quint64 requestEndOffset = requestRange.mid(index + 1).toULongLong();
+
+            requestRange = "bytes=" + QByteArray::number(resumeOffset + requestStartOffset) +
+                           '-' + QByteArray::number(requestEndOffset);
+
+            httpRequest.setHeaderField("Range", requestRange);
+        } else {
+            httpRequest.setHeaderField("Range", "bytes=" + QByteArray::number(resumeOffset) + '-');
+        }
+    }
     foreach (const QByteArray &header, headers)
         httpRequest.setHeaderField(header, request().rawHeader(header));
 
@@ -976,7 +1022,7 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
         // of writes to disk when using a QNetworkDiskCache (i.e. don't
         // write to disk when only the date changes).
         // However, without the date we cannot calculate the age of the page
-        // anymore. Consider a proper fix of that problem for 4.6.1.
+        // anymore.
         //if (header == "date")
             //continue;
 
@@ -1092,6 +1138,31 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
     }
     metaData.setAttributes(attributes);
     return metaData;
+}
+
+bool QNetworkAccessHttpBackend::canResume() const
+{
+    // Only GET operation supports resuming.
+    if (operation() != QNetworkAccessManager::GetOperation)
+        return false;
+
+    // Can only resume if server/resource supports Range header.
+    if (httpReply->headerField("Accept-Ranges", "none") == "none")
+        return false;
+
+    // We only support resuming for byte ranges.
+    if (request().hasRawHeader("Range")) {
+        QByteArray range = request().rawHeader("Range");
+        if (!range.startsWith("bytes="))
+            return false;
+    }
+
+    return true;
+}
+
+void QNetworkAccessHttpBackend::setResumeOffset(quint64 offset)
+{
+    resumeOffset = offset;
 }
 
 QT_END_NAMESPACE

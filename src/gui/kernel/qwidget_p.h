@@ -158,6 +158,7 @@ struct QTLWExtra {
     quint32 newCounterValueLo;
 #endif
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
+    uint hotkeyRegistered: 1; // Hot key from the STARTUPINFO has been registered.
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
@@ -385,6 +386,8 @@ public:
     QRegion prepareToRender(const QRegion &region, QWidget::RenderFlags renderFlags);
     void render_helper(QPainter *painter, const QPoint &targetOffset, const QRegion &sourceRegion,
                        QWidget::RenderFlags renderFlags);
+    void render(QPaintDevice *target, const QPoint &targetOffset, const QRegion &sourceRegion,
+                QWidget::RenderFlags renderFlags, bool readyToRender);
     void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
                     QPainter *sharedPainter = 0, QWidgetBackingStore *backingStore = 0);
 
@@ -472,6 +475,8 @@ public:
 #ifdef QT_KEYPAD_NAVIGATION
     static bool navigateToDirection(Direction direction);
     static QWidget *widgetInNavigationDirection(Direction direction);
+    static bool canKeypadNavigate(Qt::Orientation orientation);
+    static bool inTabWidget(QWidget *widget);
 #endif
 
     void setWindowIconText_sys(const QString &cap);
@@ -683,6 +688,7 @@ public:
     uint inDirtyList : 1;
     uint isScrolled : 1;
     uint isMoved : 1;
+    uint isGLWidget : 1;
     uint usesDoubleBufferedGLContext : 1;
 
     // *************************** Platform specific ************************************
@@ -714,7 +720,6 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
-    uint isGLWidget : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -761,6 +766,8 @@ public:
     void initWindowPtr();
     void finishCreateWindow_sys_Carbon(OSWindowRef windowRef);
 #else
+    void setSubWindowStacking(bool set);
+    void setWindowLevel();
     void finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ windowRef);
     void syncCocoaMask();
     void finishCocoaMaskSetup();

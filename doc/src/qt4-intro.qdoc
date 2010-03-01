@@ -225,9 +225,9 @@
     \row    \o \l{Qt3Support}   \o Qt 3 support classes
     \row    \o \l{QAxContainer} \o ActiveQt client extension
     \row    \o \l{QAxServer}    \o ActiveQt server extension
-    \row    \o \l{QtAssistant}  \o Classes for launching Qt Assistant
+    \row    \o \l{QtHelp}  	\o Classes for integrating online documentation
     \row    \o \l{QtDesigner}   \o Classes for extending and embedding Qt Designer
-    \row    \o \l{QtUiTools}       \o Classes for dynamic GUI generation
+    \row    \o \l{QtUiTools}    \o Classes for dynamic GUI generation
     \row    \o \l{QtTest}       \o Tool classes for unit testing
     \endtable
 
@@ -454,6 +454,51 @@
 
     to your \c .pro file, depending on whether you want compatibility
     function calls to generate compiler warnings or not.
+*/
+
+/*!
+    \page qt4-7-intro.html
+    \title What's New in Qt 4.7
+
+    Qt 4.7 provides many improvements and enhancements over the
+    previous releases in the Qt 4 series. This document covers the
+    most important features in this release, separated by category.
+
+    A list of other Qt 4 features can be found on the \bold{\l{What's
+    New in Qt 4}} page.
+
+    \bold{Highlights}
+
+    \tableofcontents
+
+    \section1 Declarative UI development with Qt Quick
+
+    \section1 Network Bearer Management
+
+    Bearer Management controls the connectivity state of the system.
+    The new Bearer Management API in the QtNetwork module allows the
+    application to identify whether the system is online and how many
+    interfaces there are, as well as start and stop interfaces, or
+    roam transparently between access points.
+
+    QNetworkAccessManager uses this API for HTTP level roaming.
+
+    \section1 Multimedia - playback and declarative elements
+
+    The Multimedia API provides media playback and playlist support
+    for Qt Applications. Play music and movies through a single interface
+    with selectable output for movies to widgets or graphics view.
+
+    Multimedia support for Quick is also available with the new multimedia
+    declarative elements.
+
+    \section1 New Classes, Functions, Macros, etc.
+
+    Links to new classes, functions, macros, and other items
+    introduced in Qt 4.7.
+
+    \sincelist 4.7
+
 */
 
 /*!

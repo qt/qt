@@ -43,6 +43,8 @@
 #include "qnetworkrequest.h"
 #include "qnetworkreply.h"
 #include "qurlinfo.h"
+#include "private/qdataurl_p.h"
+#include <qcoreapplication.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,64 +73,33 @@ void QNetworkAccessDataBackend::open()
     if (operation() != QNetworkAccessManager::GetOperation &&
         operation() != QNetworkAccessManager::HeadOperation) {
         // data: doesn't support anything but GET
-        QString msg = QObject::tr("Operation not supported on %1")
+        const QString msg = QCoreApplication::translate("QNetworkAccessDataBackend",
+                                                        "Operation not supported on %1")
                       .arg(uri.toString());
         error(QNetworkReply::ContentOperationNotPermittedError, msg);
         finished();
         return;
     }
 
-    if (uri.host().isEmpty()) {
-        setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("text/plain;charset=US-ASCII"));
+    QPair<QString, QByteArray> decoded = qDecodeDataUrl(uri);
 
-        // the following would have been the correct thing, but
-        // reality often differs from the specification. People have
-        // data: URIs with ? and #
-        //QByteArray data = QByteArray::fromPercentEncoding(uri.encodedPath());
-        QByteArray data = QByteArray::fromPercentEncoding(uri.toEncoded());
+    if (! decoded.first.isNull()) {
+        setHeader(QNetworkRequest::ContentTypeHeader, decoded.first);
+        setHeader(QNetworkRequest::ContentLengthHeader, decoded.second.size());
+        emit metaDataChanged();
 
-        // remove the data: scheme
-        data.remove(0, 5);
+        QByteDataBuffer list;
+        list.append(decoded.second);
+        decoded.second.clear(); // important because of implicit sharing!
+        writeDownstreamData(list);
 
-        // parse it:
-        int pos = data.indexOf(',');
-        if (pos != -1) {
-            QByteArray payload = data.mid(pos + 1);
-            data.truncate(pos);
-            data = data.trimmed();
-
-            // find out if the payload is encoded in Base64
-            if (data.endsWith(";base64")) {
-                payload = QByteArray::fromBase64(payload);
-                data.chop(7);
-            }
-
-            if (data.toLower().startsWith("charset")) {
-                int i = 7;      // strlen("charset")
-                while (data.at(i) == ' ')
-                    ++i;
-                if (data.at(i) == '=')
-                    data.prepend("text/plain;");
-            }
-
-            if (!data.isEmpty())
-                setHeader(QNetworkRequest::ContentTypeHeader, data.trimmed());
-
-            setHeader(QNetworkRequest::ContentLengthHeader, payload.size());
-            emit metaDataChanged();
-
-            QByteDataBuffer list;
-            list.append(payload);
-            payload.clear(); // important because of implicit sharing!
-            writeDownstreamData(list);
-
-            finished();
-            return;
-        }
+        finished();
+        return;
     }
 
     // something wrong with this URI
-    QString msg = QObject::tr("Invalid URI: %1").arg(uri.toString());
+    const QString msg = QCoreApplication::translate("QNetworkAccessDataBackend",
+                                                    "Invalid URI: %1").arg(uri.toString());
     error(QNetworkReply::ProtocolFailure, msg);
     finished();
 }

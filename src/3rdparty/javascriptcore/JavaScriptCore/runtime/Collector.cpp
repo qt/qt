@@ -241,7 +241,7 @@ NEVER_INLINE CollectorBlock* Heap::allocateBlock()
 #elif PLATFORM(WINCE)
     void* address = VirtualAlloc(NULL, BLOCK_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 #elif PLATFORM(WIN_OS)
-#if COMPILER(MINGW)
+#if COMPILER(MINGW) && !PLATFORM(X86_64)
     void* address = __mingw_aligned_malloc(BLOCK_SIZE, BLOCK_SIZE);
 #else
     void* address = _aligned_malloc(BLOCK_SIZE, BLOCK_SIZE);
@@ -327,7 +327,7 @@ NEVER_INLINE void Heap::freeBlock(CollectorBlock* block)
 #elif PLATFORM(WINCE)
     VirtualFree(block, 0, MEM_RELEASE);
 #elif PLATFORM(WIN_OS)
-#if COMPILER(MINGW)
+#if COMPILER(MINGW) && !PLATFORM(X86_64)
     __mingw_aligned_free(block);
 #else
     _aligned_free(block);
@@ -617,7 +617,7 @@ static inline void* currentThreadStackBase()
         MOV pTib, EAX
     }
     return static_cast<void*>(pTib->StackBase);
-#elif PLATFORM(WIN_OS) && PLATFORM(X86_64) && COMPILER(MSVC)
+#elif PLATFORM(WIN_OS) && PLATFORM(X86_64) && (COMPILER(MSVC) ||COMPILER(GCC))
     PNT_TIB64 pTib = reinterpret_cast<PNT_TIB64>(NtCurrentTeb());
     return reinterpret_cast<void*>(pTib->StackBase);
 #elif PLATFORM(WIN_OS) && PLATFORM(X86) && COMPILER(GCC)

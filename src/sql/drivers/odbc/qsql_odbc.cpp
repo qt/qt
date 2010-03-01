@@ -62,15 +62,8 @@ QT_BEGIN_NAMESPACE
 // undefine this to prevent initial check of the ODBC driver
 #define ODBC_CHECK_DRIVER
 
-#if defined(Q_ODBC_VERSION_2)
-//crude hack to get non-unicode capable driver managers to work
-# undef UNICODE
-# define SQLTCHAR SQLCHAR
-# define SQL_C_WCHAR SQL_C_CHAR
-#endif
-
 // newer platform SDKs use SQLLEN instead of SQLINTEGER
-#if defined(WIN32) && (_MSC_VER < 1300)
+#if defined(WIN32) && (_MSC_VER < 1300) && !defined(__MINGW64_VERSION_MAJOR)
 # define QSQLLEN SQLINTEGER
 # define QSQLULEN SQLUINTEGER
 #else
@@ -298,13 +291,11 @@ static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSi
     case SQL_TYPE_TIMESTAMP:
         type = QVariant::DateTime;
         break;
-#ifndef Q_ODBC_VERSION_2
     case SQL_WCHAR:
     case SQL_WVARCHAR:
     case SQL_WLONGVARCHAR:
         type = QVariant::String;
         break;
-#endif
     case SQL_CHAR:
     case SQL_VARCHAR:
     case SQL_GUID:
@@ -577,10 +568,8 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
 
 static int qGetODBCVersion(const QString &connOpts)
 {
-#ifndef Q_ODBC_VERSION_2
     if (connOpts.contains(QLatin1String("SQL_ATTR_ODBC_VERSION=SQL_OV_ODBC3"), Qt::CaseInsensitive))
         return SQL_OV_ODBC3;
-#endif
     return SQL_OV_ODBC2;
 }
 
@@ -679,7 +668,6 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACE, (SQLPOINTER) v, 0);
-#ifndef Q_ODBC_VERSION_2
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_CONNECTION_POOLING")) {
             if (val == QLatin1String("SQL_CP_OFF"))
                 v = SQL_CP_OFF;
@@ -706,7 +694,6 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CP_MATCH, (SQLPOINTER)v, 0);
-#endif
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_ODBC_VERSION")) {
             // Already handled in QODBCDriver::open()
             continue;
@@ -1432,7 +1419,6 @@ bool QODBCResult::exec()
                                       *ind == SQL_NULL_DATA ? ind : NULL);
                 break;
             case QVariant::String:
-#ifndef Q_ODBC_VERSION_2
                 if (d->unicode) {
                     QString str = val.toString();
                     str.utf16();
@@ -1469,7 +1455,6 @@ bool QODBCResult::exec()
                     break;
                 }
                 else
-#endif
                 {
                     QByteArray str = val.toString().toAscii();
                     if (*ind != SQL_NULL_DATA)
@@ -1573,7 +1558,7 @@ bool QODBCResult::exec()
             case QVariant::String:
                 if (d->unicode) {
                     if (bindValueType(i) & QSql::Out)
-                        values[i] = QString::fromUtf16((ushort*)tmpStorage.takeFirst().constData());
+                        values[i] = QString((QChar *)tmpStorage.takeFirst().constData());
                     break;
                 }
                 // fall through
@@ -1870,11 +1855,6 @@ void QODBCDriver::cleanup()
 // as two byte unicode characters
 void QODBCDriverPrivate::checkUnicode()
 {
-#if defined(Q_ODBC_VERSION_2)
-    unicode = false;
-    return;
-#endif
-
     SQLRETURN   r;
     SQLUINTEGER fFunc;
 

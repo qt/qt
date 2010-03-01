@@ -41,6 +41,7 @@
 
 #include "QtTest/qbenchmark.h"
 #include "QtTest/private/qbenchmark_p.h"
+#include "QtTest/private/qbenchmarkmetric_p.h"
 
 #ifdef QT_GUI_LIB
 #include <QtGui/qapplication.h>
@@ -138,7 +139,7 @@ void QBenchmarkTestMethodData::endDataRun()
 
 int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
 {
-    // Let the -iteration-count option override the measurer.
+    // Let the -iterations option override the measurer.
     if (QBenchmarkGlobalData::current->iterationCount != -1) {
         iterationCount = QBenchmarkGlobalData::current->iterationCount;
     } else {
@@ -148,20 +149,21 @@ int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
     return iterationCount;
 }
 
-void QBenchmarkTestMethodData::setResult(qint64 value)
+void QBenchmarkTestMethodData::setResult(
+    qreal value, QTest::QBenchmarkMetric metric, bool setByMacro)
 {
     bool accepted = false;
 
     // Always accept the result if the iteration count has been
-    // specified on the command line with -iteartion-count.
+    // specified on the command line with -iterations.
     if (QBenchmarkGlobalData::current->iterationCount != -1)
         accepted = true;
 
-    if (QBenchmarkTestMethodData::current->runOnce) {
+    if (QBenchmarkTestMethodData::current->runOnce || !setByMacro) {
         iterationCount = 1;
         accepted = true;
     }
-    
+
     // Test the result directly without calling the measurer if the minimum time 
     // has been specifed on the command line with -minimumvalue.
     else if (QBenchmarkGlobalData::current->walltimeMinimum != -1)
@@ -175,8 +177,8 @@ void QBenchmarkTestMethodData::setResult(qint64 value)
     else
         iterationCount *= 2;
 
-    this->result = 
-        QBenchmarkResult(QBenchmarkGlobalData::current->context, value, iterationCount);
+    this->result = QBenchmarkResult(
+        QBenchmarkGlobalData::current->context, value, iterationCount, metric, setByMacro);
 }
 
 /*!
@@ -208,7 +210,8 @@ QTest::QBenchmarkIterationController::QBenchmarkIterationController()
 */
 QTest::QBenchmarkIterationController::~QBenchmarkIterationController()
 {
-    QBenchmarkTestMethodData::current->setResult(QTest::endBenchmarkMeasurement());
+    const qreal result = QTest::endBenchmarkMeasurement();
+    QBenchmarkTestMethodData::current->setResult(result, QBenchmarkGlobalData::current->measurer->metricType());
 }
 
 /*! \internal
@@ -259,28 +262,32 @@ void QTest::beginBenchmarkMeasurement()
 
 /*! \internal
 */
-qint64 QTest::endBenchmarkMeasurement()
+quint64 QTest::endBenchmarkMeasurement()
 {
     // the clock is ticking before the line below, don't add code here.
     return QBenchmarkGlobalData::current->measurer->stop();    
 }
 
-/*! \internal
-*/
-void QTest::setResult(qint64 result)
-{
-    QBenchmarkTestMethodData::current->setResult(result);
-}
+/*!
+    Sets the benchmark result for this test function to \a result.
+ 
+    Use this function if you want to report benchmark results without
+    using the QBENCHMARK macro. Use \a metric to specify how QTestLib
+    should interpret the results.
+ 
+    The context for the result will be the test function name and any
+    data tag from the _data function. This function can only be called
+    once in each test function, subsequent calls will replace the
+    earlier reported results.
 
-/*! \internal
+    Note that the -iterations command line argument has no effect
+    on test functions without the QBENCHMARK macro.
+
+    \since 4.7
 */
-void QTest::setResult(const QString &tag, qint64 result)
+void QTest::setBenchmarkResult(qreal result, QTest::QBenchmarkMetric metric)
 {
-    QBenchmarkContext context = QBenchmarkGlobalData::current->context;
-    context.tag = tag;
-    QBenchmarkTestMethodData::current->result = 
-        QBenchmarkResult( context, result,
-            QBenchmarkTestMethodData::current->iterationCount);
+    QBenchmarkTestMethodData::current->setResult(result, metric, false);
 }
 
 template <typename T>
@@ -298,6 +305,4 @@ Q_TYPENAME T::value_type qAverage(const T &container)
     return acc / count;
 }
 
-
 QT_END_NAMESPACE
-

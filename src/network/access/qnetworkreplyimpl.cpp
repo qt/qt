@@ -46,7 +46,9 @@
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qdatetime.h"
 #include "QtNetwork/qsslconfiguration.h"
+#include "QtNetwork/qnetworksession.h"
 #include "qnetworkaccesshttpbackend_p.h"
+#include "qnetworkaccessmanager_p.h"
 
 #include <QtCore/QCoreApplication>
 
@@ -57,7 +59,7 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       copyDevice(0),
       cacheEnabled(false), cacheSaveDevice(0),
       notificationHandlingPaused(false),
-      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
+      bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1), preMigrationDownloaded(-1),
       httpStatusCode(0),
       state(Idle)
 {
@@ -82,7 +84,24 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         return;
     }
 
-    backend->open();
+    if (!backend->start()) {
+        // backend failed to start because the session state is not Connected.
+        // QNetworkAccessManager will call reply->backend->start() again for us when the session
+        // state changes.
+        state = WaitingForSession;
+
+        QNetworkSession *session = manager->d_func()->networkSession;
+
+        if (session) {
+            if (!session->isOpen())
+                session->open();
+        } else {
+            qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
+        }
+
+        return;
+    }
+
     if (state != Finished) {
         if (operation == QNetworkAccessManager::GetOperation)
             pendingNotifications.append(NotifyDownstreamReadyWrite);
@@ -134,6 +153,8 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
 
     lastBytesDownloaded = bytesDownloaded;
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    if (preMigrationDownloaded != Q_INT64_C(-1))
+        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
@@ -203,6 +224,26 @@ void QNetworkReplyImplPrivate::_q_bufferOutgoingData()
             // don't break, try to read() again
             outgoingDataBuffer->chop(bytesToBuffer - bytesBuffered);
         }
+    }
+}
+
+void QNetworkReplyImplPrivate::_q_networkSessionOnline()
+{
+    Q_Q(QNetworkReplyImpl);
+
+    switch (state) {
+    case QNetworkReplyImplPrivate::Buffering:
+    case QNetworkReplyImplPrivate::Working:
+    case QNetworkReplyImplPrivate::Reconnecting:
+        // Migrate existing downloads to new network connection.
+        migrateBackend();
+        break;
+    case QNetworkReplyImplPrivate::WaitingForSession:
+        // Start waiting requests.
+        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+        break;
+    default:
+        ;
     }
 }
 
@@ -457,6 +498,8 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QByteDataBuffer &data)
     QPointer<QNetworkReplyImpl> qq = q;
 
     QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    if (preMigrationDownloaded != Q_INT64_C(-1))
+        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
     pauseNotificationHandling();
     emit q->downloadProgress(bytesDownloaded,
                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
@@ -498,14 +541,42 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 void QNetworkReplyImplPrivate::finished()
 {
     Q_Q(QNetworkReplyImpl);
-    if (state == Finished || state == Aborted)
+
+    if (state == Finished || state == Aborted || state == WaitingForSession)
         return;
+
+    pauseNotificationHandling();
+    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    if (preMigrationDownloaded != Q_INT64_C(-1))
+        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
+
+    if (!manager.isNull()) {
+        QNetworkSession *session = manager->d_func()->networkSession;
+        if (session && session->state() == QNetworkSession::Roaming &&
+            state == Working && errorCode != QNetworkReply::OperationCanceledError) {
+            // only content with a known size will fail with a temporary network failure error
+            if (!totalSize.isNull()) {
+                if (bytesDownloaded != totalSize) {
+                    if (migrateBackend()) {
+                        // either we are migrating or the request is finished/aborted
+                        if (state == Reconnecting || state == WaitingForSession) {
+                            resumeNotificationHandling();
+                            return; // exit early if we are migrating.
+                        }
+                    } else {
+                        error(QNetworkReply::TemporaryNetworkFailureError,
+                              QNetworkReply::tr("Temporary network failure."));
+                    }
+                }
+            }
+        }
+    }
+    resumeNotificationHandling();
 
     state = Finished;
     pendingNotifications.clear();
 
     pauseNotificationHandling();
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
     if (totalSize.isNull() || totalSize == -1) {
         emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
     }
@@ -514,7 +585,9 @@ void QNetworkReplyImplPrivate::finished()
         emit q->uploadProgress(0, 0);
     resumeNotificationHandling();
 
-    completeCacheSave();
+    // if we don't know the total size of or we received everything save the cache
+    if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
+        completeCacheSave();
 
     // note: might not be a good idea, since users could decide to delete us
     // which would delete the backend too...
@@ -720,6 +793,83 @@ bool QNetworkReplyImpl::event(QEvent *e)
     }
 
     return QObject::event(e);
+}
+
+/*
+    Migrates the backend of the QNetworkReply to a new network connection if required.  Returns
+    true if the reply is migrated or it is not required; otherwise returns false.
+*/
+bool QNetworkReplyImplPrivate::migrateBackend()
+{
+    Q_Q(QNetworkReplyImpl);
+
+    // Network reply is already finished or aborted, don't need to migrate.
+    if (state == Finished || state == Aborted)
+        return true;
+
+    // Backend does not support resuming download.
+    if (!backend->canResume())
+        return false;
+
+    // Request has outgoing data, not migrating.
+    if (outgoingData)
+        return false;
+
+    // Request is serviced from the cache, don't need to migrate.
+    if (copyDevice)
+        return true;
+
+    state = QNetworkReplyImplPrivate::Reconnecting;
+
+    if (backend) {
+        delete backend;
+        backend = 0;
+    }
+
+    cookedHeaders.clear();
+    rawHeaders.clear();
+
+    preMigrationDownloaded = bytesDownloaded;
+
+    backend = manager->d_func()->findBackend(operation, request);
+
+    if (backend) {
+        backend->setParent(q);
+        backend->reply = this;
+        backend->setResumeOffset(bytesDownloaded);
+    }
+
+    if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
+        _q_startOperation();
+    } else {
+        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+    }
+
+    return true;
+}
+
+QDisabledNetworkReply::QDisabledNetworkReply(QObject *parent,
+                                             const QNetworkRequest &req,
+                                             QNetworkAccessManager::Operation op)
+:   QNetworkReply(parent)
+{
+    setRequest(req);
+    setUrl(req.url());
+    setOperation(op);
+
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+
+    QString msg = QCoreApplication::translate("QNetworkAccessManager",
+                                              "Network access is disabled.");
+    setError(UnknownNetworkError, msg);
+
+    QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+        Q_ARG(QNetworkReply::NetworkError, UnknownNetworkError));
+    QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
+}
+
+QDisabledNetworkReply::~QDisabledNetworkReply()
+{
 }
 
 QT_END_NAMESPACE

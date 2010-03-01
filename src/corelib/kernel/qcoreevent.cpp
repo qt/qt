@@ -272,7 +272,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue MacGLClearDrawable
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
-    \omitvalue CocoaRequestModal
     \omitvalue UpdateSoftKeys
     \omitvalue NativeGesture
 */
@@ -331,7 +330,7 @@ QEvent::~QEvent()
     equivalent of calling setAccepted(false).
 
     Clearing the accept parameter indicates that the event receiver
-    does not want the event. Unwanted events might be propgated to the
+    does not want the event. Unwanted events might be propagated to the
     parent widget.
 
     \sa accept()

@@ -10,7 +10,7 @@ CONFIG += qdbus
 
 # Input
 # DBUS_ADAPTORS += car.xml
-HEADERS += car.h car_adaptor_p.h
+HEADERS += car.h car_adaptor.h
 SOURCES += car.cpp main.cpp car_adaptor.cpp
 
 # install

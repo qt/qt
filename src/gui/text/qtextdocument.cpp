@@ -61,6 +61,7 @@
 #include <qapplication.h>
 #include "qtextcontrol_p.h"
 #include "private/qtextedit_p.h"
+#include "private/qdataurl_p.h"
 
 #include "qtextdocument_p.h"
 #include <private/qprinter_p.h>
@@ -432,6 +433,30 @@ void QTextDocument::redo(QTextCursor *cursor)
         *cursor = QTextCursor(this);
         cursor->setPosition(pos);
     }
+}
+
+/*! \enum QTextDocument::Stacks
+  
+  \value UndoStack              The undo stack.
+  \value RedoStack              The redo stack.
+  \value UndoAndRedoStacks      Both the undo and redo stacks.
+*/
+        
+/*!
+    \since 4.7
+    Clears the stacks specified by \a stacksToClear.
+
+    This method clears any commands on the undo stack, the redo stack,
+    or both (the default). If commands are cleared, the appropriate
+    signals are emitted, QTextDocument::undoAvailable() or
+    QTextDocument::redoAvailable().
+
+    \sa QTextDocument::undoAvailable() QTextDocument::redoAvailable()
+*/
+void QTextDocument::clearUndoRedoStacks(Stacks stacksToClear)
+{
+    Q_D(QTextDocument);
+    d->clearUndoRedoStacks(stacksToClear, true);
 }
 
 /*!
@@ -1749,9 +1774,9 @@ void QTextDocument::print(QPrinter *printer) const
     int pageCopies;
     if (printer->collateCopies() == true){
         docCopies = 1;
-        pageCopies = printer->numCopies();
+        pageCopies = printer->supportsMultipleCopies() ? 1 : printer->copyCount();
     } else {
-        docCopies = printer->numCopies();
+        docCopies = printer->supportsMultipleCopies() ? 1 : printer->copyCount();
         pageCopies = 1;
     }
 
@@ -1923,6 +1948,10 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
         r = control->loadResource(type, name);
     }
 #endif
+
+    // handle data: URLs
+    if (r.isNull() && name.scheme() == QLatin1String("data"))
+        r = qDecodeDataUrl(name).second;
 
     // if resource was not loaded try to load it here
     if (!doc && r.isNull() && name.isRelative()) {

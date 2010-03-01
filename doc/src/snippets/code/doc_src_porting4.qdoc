@@ -452,7 +452,7 @@ QSimpleRichText richText(text, font);
 // Set the width of the paragraph to w
 richText.setWidth(w);
 
-// Or set a resonable default size
+// Or set a reasonable default size
 richText.adjustSize();
 
 // Query for its used size

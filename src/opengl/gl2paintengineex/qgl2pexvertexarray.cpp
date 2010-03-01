@@ -61,12 +61,6 @@ QGLRect QGL2PEXVertexArray::boundingRect() const
         return QGLRect(minX, minY, maxX, maxY);
 }
 
-void QGL2PEXVertexArray::addRect(const QRectF &rect)
-{
-    vertexArray << rect.topLeft() << rect.topRight() << rect.bottomRight()
-                << rect.bottomRight() << rect.bottomLeft() << rect.topLeft();
-}
-
 void QGL2PEXVertexArray::addClosingLine(int index)
 {
     if (QPointF(vertexArray.at(index)) != QPointF(vertexArray.last()))
@@ -145,7 +139,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
                 // threshold based on same algorithm as in qtriangulatingstroker.cpp
                 int threshold = qMin<float>(64, qMax(bounds.width(), bounds.height()) * 3.14f / (curveInverseScale * 6));
                 if (threshold < 3) threshold = 3;
-                qreal one_over_threshold_minus_1 = 1.f / (threshold - 1);
+                qreal one_over_threshold_minus_1 = qreal(1) / (threshold - 1);
                 for (int t=0; t<threshold; ++t) {
                     QPointF pt = b.pointAt(t * one_over_threshold_minus_1);
                     lineToArray(pt.x(), pt.y());

@@ -1,0 +1,223 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QDECLARATIVEGRIDVIEW_H
+#define QDECLARATIVEGRIDVIEW_H
+
+#include "qdeclarativeflickable_p.h"
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+class QDeclarativeVisualModel;
+class QDeclarativeGridViewAttached;
+class QDeclarativeGridViewPrivate;
+class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeGridView)
+
+    Q_PROPERTY(QVariant model READ model WRITE setModel)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
+    Q_PROPERTY(QDeclarativeItem *currentItem READ currentItem NOTIFY currentIndexChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+
+    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight)
+    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightChanged)
+    Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
+
+    Q_PROPERTY(Flow flow READ flow WRITE setFlow)
+    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
+    Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellWidthChanged)
+    Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellHeightChanged)
+    Q_CLASSINFO("DefaultProperty", "data")
+
+public:
+    QDeclarativeGridView(QDeclarativeItem *parent=0);
+    ~QDeclarativeGridView();
+
+    QVariant model() const;
+    void setModel(const QVariant &);
+
+    QDeclarativeComponent *delegate() const;
+    void setDelegate(QDeclarativeComponent *);
+
+    int currentIndex() const;
+    void setCurrentIndex(int idx);
+
+    QDeclarativeItem *currentItem();
+    QDeclarativeItem *highlightItem();
+    int count() const;
+
+    QDeclarativeComponent *highlight() const;
+    void setHighlight(QDeclarativeComponent *highlight);
+
+    bool highlightFollowsCurrentItem() const;
+    void setHighlightFollowsCurrentItem(bool);
+
+    Q_ENUMS(Flow)
+    enum Flow { LeftToRight, TopToBottom };
+    Flow flow() const;
+    void setFlow(Flow);
+
+    bool isWrapEnabled() const;
+    void setWrapEnabled(bool);
+
+    int cacheBuffer() const;
+    void setCacheBuffer(int);
+
+    int cellWidth() const;
+    void setCellWidth(int);
+
+    int cellHeight() const;
+    void setCellHeight(int);
+
+    static QDeclarativeGridViewAttached *qmlAttachedProperties(QObject *);
+
+public Q_SLOTS:
+    void moveCurrentIndexUp();
+    void moveCurrentIndexDown();
+    void moveCurrentIndexLeft();
+    void moveCurrentIndexRight();
+    void positionViewAtIndex(int index);
+
+Q_SIGNALS:
+    void countChanged();
+    void currentIndexChanged();
+    void cellWidthChanged();
+    void cellHeightChanged();
+    void highlightChanged();
+
+protected:
+    virtual void viewportMoved();
+    virtual qreal minYExtent() const;
+    virtual qreal maxYExtent() const;
+    virtual qreal minXExtent() const;
+    virtual qreal maxXExtent() const;
+    virtual void keyPressEvent(QKeyEvent *);
+    virtual void componentComplete();
+
+private Q_SLOTS:
+    void trackedPositionChanged();
+    void itemsInserted(int index, int count);
+    void itemsRemoved(int index, int count);
+    void itemsMoved(int from, int to, int count);
+    void modelReset();
+    void destroyRemoved();
+    void createdItem(int index, QDeclarativeItem *item);
+    void destroyingItem(QDeclarativeItem *item);
+    void sizeChange();
+    void layout();
+
+private:
+    void refill();
+};
+
+class QDeclarativeGridViewAttached : public QObject
+{
+    Q_OBJECT
+public:
+    QDeclarativeGridViewAttached(QObject *parent)
+        : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
+    ~QDeclarativeGridViewAttached() {
+        attachedProperties.remove(parent());
+    }
+
+    Q_PROPERTY(QDeclarativeGridView *view READ view CONSTANT)
+    QDeclarativeGridView *view() { return m_view; }
+
+    Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
+    bool isCurrentItem() const { return m_isCurrent; }
+    void setIsCurrentItem(bool c) {
+        if (m_isCurrent != c) {
+            m_isCurrent = c;
+            emit currentItemChanged();
+        }
+    }
+
+    Q_PROPERTY(bool delayRemove READ delayRemove WRITE setDelayRemove NOTIFY delayRemoveChanged)
+    bool delayRemove() const { return m_delayRemove; }
+    void setDelayRemove(bool delay) {
+        if (m_delayRemove != delay) {
+            m_delayRemove = delay;
+            emit delayRemoveChanged();
+        }
+    }
+
+    static QDeclarativeGridViewAttached *properties(QObject *obj) {
+        QDeclarativeGridViewAttached *rv = attachedProperties.value(obj);
+        if (!rv) {
+            rv = new QDeclarativeGridViewAttached(obj);
+            attachedProperties.insert(obj, rv);
+        }
+        return rv;
+    }
+
+    void emitAdd() { emit add(); }
+    void emitRemove() { emit remove(); }
+
+Q_SIGNALS:
+    void currentItemChanged();
+    void delayRemoveChanged();
+    void add();
+    void remove();
+
+public:
+    QDeclarativeGridView *m_view;
+    bool m_isCurrent;
+    bool m_delayRemove;
+
+    static QHash<QObject*, QDeclarativeGridViewAttached*> attachedProperties;
+};
+
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QDeclarativeGridView)
+QML_DECLARE_TYPEINFO(QDeclarativeGridView, QML_HAS_ATTACHED_PROPERTIES)
+
+QT_END_HEADER
+
+#endif

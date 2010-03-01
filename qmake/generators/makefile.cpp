@@ -1808,8 +1808,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 tmp_clean = tmp_out;
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
                 t << "\n\t" << "-$(DEL_FILE) " << tmp_clean;
-                if (isForSymbian())
-                    t << " 2> NUL"; // Eliminate unnecessary warnings
                 wrote_clean = true;
             }
             if(!wrote_clean_cmds || !wrote_clean) {
@@ -1837,12 +1835,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             cleans.append(files);
                     }
                 }
-                if(!cleans.isEmpty()) {
-                    if (isForSymbian())
-                        t << valGlue(cleans, "\n\t" + del_statement, " 2> NUL\n\t" + del_statement, " 2> NUL");
-                    else
-                        t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
-                }
+                if(!cleans.isEmpty())
+                    t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
                 if(!wrote_clean_cmds) {
                     for(QStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
                         t << "\n\t" << replaceExtraCompilerVariables(tmp_clean_cmds, (*input),
@@ -2158,14 +2152,14 @@ QString MakefileGenerator::buildArgs(const QString &outdir)
         ret += " -nodependheuristics";
     if(!Option::mkfile::qmakespec_commandline.isEmpty())
         ret += " -spec " + specdir(outdir);
-    if(Option::target_mode == Option::TARG_MAC9_MODE)
-        ret += " -mac9";
-    else if(Option::target_mode == Option::TARG_MACX_MODE)
-        ret += " -macx";
-    else if(Option::target_mode == Option::TARG_UNIX_MODE)
-        ret += " -unix";
-    else if(Option::target_mode == Option::TARG_WIN_MODE)
-        ret += " -win32";
+    if (Option::target_mode_overridden) {
+        if (Option::target_mode == Option::TARG_MACX_MODE)
+            ret += " -macx";
+        else if (Option::target_mode == Option::TARG_UNIX_MODE)
+            ret += " -unix";
+        else if (Option::target_mode == Option::TARG_WIN_MODE)
+            ret += " -win32";
+    }
 
     //configs
     for(QStringList::Iterator it = Option::user_configs.begin();
@@ -2675,8 +2669,6 @@ MakefileGenerator::writeMakeQmake(QTextStream &t)
             if(!specdir().isEmpty()) {
                 if(exists(Option::fixPathToLocalOS(specdir()+QDir::separator()+"qmake.conf")))
                     t << escapeDependencyPath(specdir() + Option::dir_sep + "qmake.conf") << " ";
-                else if(exists(Option::fixPathToLocalOS(specdir()+QDir::separator()+"tmake.conf")))
-                    t << escapeDependencyPath(specdir() + Option::dir_sep + "tmake.conf") << " ";
             }
             const QStringList &included = project->values("QMAKE_INTERNAL_INCLUDED_FILES");
             t << escapeDependencyPaths(included).join(" \\\n\t\t") << "\n\t"

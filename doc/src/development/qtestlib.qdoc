@@ -237,14 +237,14 @@
     
     The code insde the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected
-    measurement back-end. Several back-ends are available an can be selected on the
+    measurement back-end. Several back-ends are available. They can be selected on the
     command line:
     
     \target testlib-benchmarking-measurement
 
     \table
     \header \o Name
-         \o Commmand-line Arguemnt
+         \o Commmand-line Argument
          \o Availability
     \row \o Walltime
          \o (default)
@@ -582,7 +582,7 @@
 /*!
     \example qtestlib/tutorial3
 
-    \previouspage {Chapter 2 Data Driven Testing}{Chapter 2}
+    \previouspage {Chapter 2: Data Driven Testing}{Chapter 2}
     \contentspage {QTestLib Tutorial}{Contents}
     \nextpage {Chapter 4: Replaying GUI Events}{Chapter 4}
 

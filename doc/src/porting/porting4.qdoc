@@ -3201,8 +3201,8 @@
 
     The \c QShared class has been obsoleted by the more powerful
     QSharedData and QSharedDataPointer as a means of creating custom
-    implicitly shared classes. It has been renamed Q3Shared moved to
-    the Qt3Support library.
+    implicitly shared classes. It has been renamed Q3Shared and moved
+    to the Qt3Support library.
 
     An easy way of porting to Qt 4 is to include this class into your
     project and to use it instead of \c QShared:
@@ -3226,7 +3226,7 @@
     \section1 QSimpleRichText
 
     QSimpleRichText has been obsoleted by QTextDocument. It has
-    bene renamed Q3SimpleRichText and moved to the Qt3Support
+    been renamed Q3SimpleRichText and moved to the Qt3Support
     library.
 
     Previously, you would do the following with Q3SimpleRichText:
@@ -3793,11 +3793,10 @@
     multimedia timer API, which gives us 1 millisecond resolution for
     QTimer.
 
-    Note that other versions of Windows have a lower timer resolution,
-    and that code relying on underlying system timer restrictions
-    encounters no such limitations using Qt 4 (e.g., setting an
-    interval of 0 millisecond results in Qt occupying all of the
-    processor time when no GUI events need processing).
+    Note that Windows 2000 has a lower timer resolution, and that code relying
+    on underlying system timer restrictions encounters no such limitations
+    using Qt 4 (e.g., setting an interval of 0 millisecond results in Qt
+    occupying all of the processor time when no GUI events need processing).
 
     \section1 QToolBar
 

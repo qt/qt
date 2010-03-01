@@ -432,7 +432,9 @@ public:
     static int  cursor_flash_time;
     static int  mouse_double_click_time;
     static int  keyboard_input_time;
+#ifndef QT_NO_WHEELEVENT
     static int  wheel_scroll_lines;
+#endif
 
     static bool animate_ui;
     static bool animate_menu;
@@ -462,6 +464,12 @@ public:
     static OSStatus globalEventProcessor(EventHandlerCallRef, EventRef, void *);
     static OSStatus globalAppleEventProcessor(const AppleEvent *, AppleEvent *, long);
     static OSStatus tabletProximityCallback(EventHandlerCallRef, EventRef, void *);
+#ifdef QT_MAC_USE_COCOA
+    static void qt_initAfterNSAppStarted();
+    static void setupAppleEvents();
+    static void updateOverrideCursor();
+    static void disableUsageOfCursorRects(bool disable);
+#endif
     static bool qt_mac_apply_settings();
 #endif
 
@@ -529,6 +537,13 @@ public:
 
     QGestureManager *gestureManager;
     QWidget *gestureWidget;
+    QPixmap *move_cursor;
+    QPixmap *copy_cursor;
+    QPixmap *link_cursor;
+#if defined(Q_WS_WIN)
+    QPixmap *ignore_cursor;
+#endif
+    QPixmap getPixmapCursor(Qt::CursorShape cshape);
 
     QMap<int, QWeakPointer<QWidget> > widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;

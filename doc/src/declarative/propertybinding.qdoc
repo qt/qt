@@ -1,0 +1,110 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page propertybinding.html
+\title Property Binding
+
+Property binding is a declarative way of specifying the value of a property.  Binding allows
+a property's value to be expressed as an JavaScript expression that defines the value relative
+to other property values or data accessible in the application.  The property value is 
+automatically kept up to date if the other properties or data values change.
+
+Property bindings are created implicitly in QML whenever a property is assigned an JavaScript
+expression.  The following QML uses two property bindings to connect the size of the rectangle
+to that of \c otherItem.
+
+\code
+Rectangle {
+    width: otherItem.width
+    height: otherItem.height
+}
+\endcode
+
+QML extends a standards compliant JavaScript engine, so any valid JavaScript expression can be 
+used as a property binding.  Bindings can access object properties, make function calls and even
+use builtin JavaScript objects like \e {Date} and \e {Math}.  Assigning a constant value to a 
+property can even be thought of as a binding - afterall, a constant is a valid JavaScript 
+expression!  Here are some examples of more complex bindings:
+
+\code
+Rectangle {
+    Script {
+        function calculateMyHeight() {
+            return Math.max(otherItem.height, thirdItem.height);
+        }
+    }
+
+    anchors.centerIn: parent
+    width: Math.min(otherItem.width, 10)
+    height: calculateMyHeight()
+    color: { if (width > 10) "blue"; else "red" }
+}
+\endcode
+
+Being JavaScript expressions, bindings are evaluated in a scope chain.  The \l {QML Scope} 
+documentation covers the specifics of scoping in QML.
+
+\list
+\o When does a binding not get updated?
+\o Scope
+\o Assigning a constant/other binding clears existing binding
+\o Loops
+\o Using model data
+\endlist
+
+\section1 Binding Element
+
+The implicit binding syntax shown previously is easy to use and works perfectly for most uses
+of bindings.  In some advanced cases, it is necessary to create bindings explicitly using the 
+\l Binding element.
+
+For example, to bind a property exposed from C++ (\c system.brightness) to a value
+coming from QML (\c slider.value), you could use the Binding element as follows:
+\qml
+Binding {
+    target: system
+    property: "brightness"
+    value: slider.value
+}
+\endqml
+*/
+

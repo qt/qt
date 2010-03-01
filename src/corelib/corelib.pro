@@ -35,4 +35,42 @@ symbian: {
     # Workaroud for problems with paging this dll
     MMP_RULES -= PAGED
     MMP_RULES *= UNPAGED
+
+    # Partial upgrade SIS file
+    vendorinfo = \
+        "&EN" \
+        "; Localised Vendor name" \
+        "%{\"Nokia, Qt\"}" \
+        " " \
+        "; Unique Vendor name" \
+        ":\"Nokia, Qt\"" \
+        " "
+    pu_header = "; Partial upgrade package for testing QtCore changes without reinstalling everything" \
+                "$${LITERAL_HASH}{\"Qt corelib\"}, (0x2001E61C), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
+    partial_upgrade.pkg_prerules = pu_header vendorinfo
+    partial_upgrade.sources = qtcore.dll
+    partial_upgrade.path = c:/sys/bin
+    DEPLOYMENT = partial_upgrade $$DEPLOYMENT
 }
+
+mmx {
+    DEFINES += QT_HAVE_MMX
+}
+3dnow {
+    DEFINES += QT_HAVE_3DNOW
+}
+sse {
+    DEFINES += QT_HAVE_SSE
+    DEFINES += QT_HAVE_MMXEXT
+}
+sse2 {
+    DEFINES += QT_HAVE_SSE2
+}
+iwmmxt {
+    DEFINES += QT_HAVE_IWMMXT
+}
+neon {
+    DEFINES += QT_HAVE_NEON
+    QMAKE_CXXFLAGS *= -mfpu=neon
+}
+

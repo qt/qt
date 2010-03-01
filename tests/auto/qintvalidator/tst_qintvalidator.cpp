@@ -50,6 +50,7 @@ private slots:
     void validate_data();
     void validate();
     void validateArabic();
+    void validateFrench();
 };
 
 Q_DECLARE_METATYPE(QValidator::State);
@@ -182,6 +183,30 @@ void tst_QIntValidator::validateArabic()
 
 }
 
+
+void tst_QIntValidator::validateFrench()
+{
+    QIntValidator validator(-2000, 2000, 0);
+    validator.setLocale(QLocale::French);
+    int i;
+
+    QString s = QLatin1String("1 ");
+    QCOMPARE(validator.validate(s, i), QValidator::Acceptable);
+    validator.fixup(s);
+    QCOMPARE(s, s);
+
+    s = QLatin1String("1 000");
+    QCOMPARE(validator.validate(s, i), QValidator::Acceptable);
+    validator.fixup(s);
+    QCOMPARE(s, s);
+
+
+    s = QLatin1String("1 0 00");
+    QCOMPARE(validator.validate(s, i), QValidator::Intermediate);
+    validator.fixup(s);
+    QCOMPARE(s, validator.locale().toString(1000));
+}
+
 void tst_QIntValidator::validate()
 {
     QFETCH(int, minimum);
@@ -190,6 +215,7 @@ void tst_QIntValidator::validate()
     QFETCH(QValidator::State, state);
 
     QIntValidator iv(minimum, maximum, 0);
+    iv.setLocale(QLocale::C);
     int dummy;
     QCOMPARE((int)iv.validate(value, dummy), (int)state);
 }

@@ -83,7 +83,7 @@ public:
                   Modified    = 0x080,
                   Hidden      = 0x100,
                   System      = 0x200,
-                 
+
                   AccessMask  = 0x3F0,
 
                   AllDirs       = 0x400,
@@ -215,6 +215,7 @@ public:
     static bool match(const QStringList &filters, const QString &fileName);
     static bool match(const QString &filter, const QString &fileName);
 #endif
+
     static QString cleanPath(const QString &path);
     void refresh() const;
 
@@ -246,7 +247,7 @@ public:
     inline QT3_SUPPORT static QString homeDirPath() { return homePath(); }
     inline QT3_SUPPORT static QString rootDirPath() { return rootPath(); }
     inline QT3_SUPPORT static QString cleanDirPath(const QString &name) { return cleanPath(name); }
-#endif
+#endif // QT3_SUPPORT
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDir::Filters)

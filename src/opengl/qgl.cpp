@@ -67,7 +67,7 @@
 #include "qimage.h"
 #include "qgl_p.h"
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 #endif
 
@@ -95,13 +95,12 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef QT_OPENGL_ES_1_CL
-#include "qgl_cl_p.h"
-#endif
-
-
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
+#endif
+
+#ifdef Q_WS_X11
+extern const QX11Info *qt_x11Info(const QPaintDevice *pd);
 #endif
 
 struct QGLThreadContext {
@@ -222,6 +221,9 @@ bool qt_gl_preferGL2Engine()
     \value DirectRendering   Specifies that the context is used for direct rendering to a display.
     \value HasOverlay        Enables the use of an overlay.
     \value SampleBuffers     Enables the use of sample buffers.
+    \value DeprecatedFunctions      Enables the use of deprecated functionality for OpenGL 3.x
+                                    contexts. A context with deprecated functionality enabled is
+                                    called a full context in the OpenGL specification.
     \value SingleBuffer      Specifies the use of a single buffer, as opposed to double buffers.
     \value NoDepthBuffer     Disables the use of a depth buffer.
     \value ColorIndex        Specifies that the context should use a color index as its pixel format.
@@ -232,6 +234,9 @@ bool qt_gl_preferGL2Engine()
     \value IndirectRendering Specifies that the context is used for indirect rendering to a buffer.
     \value NoOverlay         Disables the use of an overlay.
     \value NoSampleBuffers   Disables the use of sample buffers.
+    \value NoDeprecatedFunctions    Disables the use of deprecated functionality for OpenGL 3.x
+                                    contexts. A context with deprecated functionality disabled is
+                                    called a forward compatible context in the OpenGL specification.
 
     \sa {Sample Buffers Example}
 */
@@ -1077,6 +1082,90 @@ int QGLFormat::stencilBufferSize() const
 }
 
 /*!
+    \since 4.7
+
+    Set the OpenGL version to the \a major and \a minor numbers. If a
+    context compatible with the requested OpenGL version cannot be
+    created, a context compatible with version 1.x is created instead.
+
+    \sa majorVersion(), minorVersion()
+*/
+void QGLFormat::setVersion(int major, int minor)
+{
+    if (major < 1 || minor < 0) {
+        qWarning("QGLFormat::setVersion: Cannot set zero or negative version number %d.%d", major, minor);
+        return;
+    }
+    detach();
+    d->majorVersion = major;
+    d->minorVersion = minor;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL major version.
+
+    \sa setVersion(), minorVersion()
+*/
+int QGLFormat::majorVersion() const
+{
+    return d->majorVersion;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL minor version.
+
+    \sa setVersion(), majorVersion()
+*/
+int QGLFormat::minorVersion() const
+{
+    return d->minorVersion;
+}
+
+/*!
+    \enum QGLFormat::OpenGLContextProfile
+    \since 4.7
+
+    This enum describes the OpenGL context profiles that can be
+    specified for contexts implementing OpenGL version 3.2 or
+    higher. These profiles are different from OpenGL ES profiles.
+
+    \value NoProfile            OpenGL version is lower than 3.2.
+    \value CoreProfile          Functionality deprecated in OpenGL version 3.0 is not available.
+    \value CompatibilityProfile Functionality from earlier OpenGL versions is available.
+*/
+
+/*!
+    \since 4.7
+
+    Set the OpenGL context profile to \a profile. The \a profile is
+    ignored if the requested OpenGL version is less than 3.2.
+
+    \sa profile()
+*/
+void QGLFormat::setProfile(OpenGLContextProfile profile)
+{
+    detach();
+    d->profile = profile;
+}
+
+/*!
+    \since 4.7
+
+    Returns the OpenGL context profile.
+
+    \sa setProfile()
+*/
+QGLFormat::OpenGLContextProfile QGLFormat::profile() const
+{
+    return d->profile;
+}
+
+
+/*!
     \fn bool QGLFormat::hasOpenGL()
 
     Returns true if the window system has any OpenGL support;
@@ -1112,25 +1201,21 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_Common_Version_1_1 |
                                         QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
-                }
-                else {
+                } else {
                     // Not -CM, must be CL, CommonLite
                     versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_0;
                     if (parts[2].startsWith(QLatin1String("1.1")))
                         versionFlags |= QGLFormat::OpenGL_ES_CommonLite_Version_1_1;
                 }
-            }
-            else {
+            } else {
                 // OpenGL ES version 2.0 or higher
                 versionFlags |= QGLFormat::OpenGL_ES_Version_2_0;
             }
-        }
-        else {
+        } else {
             // if < 3 parts to the name, it is an unrecognised OpenGL ES
             qWarning("Unrecognised OpenGL ES version");
         }
-    }
-    else {
+    } else {
         // not ES, regular OpenGL, the version numbers are first in the string
         if (versionString.startsWith(QLatin1String("1."))) {
             switch (versionString[2].toAscii()) {
@@ -1147,30 +1232,35 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
             default:
                 break;
             }
-        }
-        else if (versionString.startsWith(QLatin1String("2."))) {
+        } else if (versionString.startsWith(QLatin1String("2."))) {
             versionFlags |= QGLFormat::OpenGL_Version_1_1 |
                             QGLFormat::OpenGL_Version_1_2 |
                             QGLFormat::OpenGL_Version_1_3 |
                             QGLFormat::OpenGL_Version_1_4 |
                             QGLFormat::OpenGL_Version_1_5 |
                             QGLFormat::OpenGL_Version_2_0;
-            QString minorVersion = versionString.section(QLatin1Char(' '), 0, 0).section(QLatin1Char('.'), 1, 1);
-            if (minorVersion == QChar(QLatin1Char('1')))
+            if (versionString[2].toAscii() == '1')
                 versionFlags |= QGLFormat::OpenGL_Version_2_1;
-        }
-        else if (versionString.startsWith(QLatin1String("3."))) {
-         versionFlags |= QGLFormat::OpenGL_Version_1_1 |
-                         QGLFormat::OpenGL_Version_1_2 |
-                         QGLFormat::OpenGL_Version_1_3 |
-                         QGLFormat::OpenGL_Version_1_4 |
-                         QGLFormat::OpenGL_Version_1_5 |
-                         QGLFormat::OpenGL_Version_2_0 |
-                         QGLFormat::OpenGL_Version_2_1 |
-                         QGLFormat::OpenGL_Version_3_0;
-        }
-        else
+        } else if (versionString.startsWith(QLatin1String("3."))) {
+            versionFlags |= QGLFormat::OpenGL_Version_1_1 |
+                            QGLFormat::OpenGL_Version_1_2 |
+                            QGLFormat::OpenGL_Version_1_3 |
+                            QGLFormat::OpenGL_Version_1_4 |
+                            QGLFormat::OpenGL_Version_1_5 |
+                            QGLFormat::OpenGL_Version_2_0 |
+                            QGLFormat::OpenGL_Version_2_1 |
+                            QGLFormat::OpenGL_Version_3_0;
+            switch (versionString[2].toAscii()) {
+            case '2':
+                versionFlags |= QGLFormat::OpenGL_Version_3_2;
+            case '1':
+                versionFlags |= QGLFormat::OpenGL_Version_3_1;
+            default:
+                break;
+            }
+        } else {
             qWarning("Unrecognised OpenGL version");
+        }
     }
     return versionFlags;
 }
@@ -1201,6 +1291,12 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
     \value OpenGL_Version_2_1  OpenGL version 2.1 or higher is present.
 
     \value OpenGL_Version_3_0  OpenGL version 3.0 or higher is present.
+
+    \value OpenGL_Version_3_1  OpenGL version 3.1 or higher is present.
+    Note that OpenGL version 3.1 or higher does not necessarily support all the features of
+    version 3.0 and lower.
+
+    \value OpenGL_Version_3_2  OpenGL version 3.2 or higher is present.
 
     \value OpenGL_ES_CommonLite_Version_1_0  OpenGL ES version 1.0 Common Lite or higher is present.
 
@@ -1373,14 +1469,20 @@ void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 
 bool operator==(const QGLFormat& a, const QGLFormat& b)
 {
-    return (int) a.d->opts == (int) b.d->opts && a.d->pln == b.d->pln && a.d->alphaSize == b.d->alphaSize
-        && a.d->accumSize == b.d->accumSize && a.d->stencilSize == b.d->stencilSize
+    return (a.d == b.d) || ((int) a.d->opts == (int) b.d->opts
+        && a.d->pln == b.d->pln
+        && a.d->alphaSize == b.d->alphaSize
+        && a.d->accumSize == b.d->accumSize
+        && a.d->stencilSize == b.d->stencilSize
         && a.d->depthSize == b.d->depthSize
         && a.d->redSize == b.d->redSize
         && a.d->greenSize == b.d->greenSize
         && a.d->blueSize == b.d->blueSize
         && a.d->numSamples == b.d->numSamples
-        && a.d->swapInterval == b.d->swapInterval;
+        && a.d->swapInterval == b.d->swapInterval
+        && a.d->majorVersion == b.d->majorVersion
+        && a.d->minorVersion == b.d->minorVersion
+        && a.d->profile == b.d->profile);
 }
 
 
@@ -1554,7 +1656,7 @@ QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alp
     QImage img(size, alpha_format ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
-#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_ES_1)
     //### glGetTexImage not in GL ES 2.0, need to do something else here!
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
 #endif
@@ -1590,22 +1692,23 @@ QGLTextureCache::QGLTextureCache()
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
 
-    QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(cleanupTextures);
+    QImagePixmapCleanupHooks::instance()->addPixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->addPixmapDataDestructionHook(cleanupBeforePixmapDestruction);
-    QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
+    QImagePixmapCleanupHooks::instance()->addImageHook(cleanupTexturesForCacheKey);
 }
 
 QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
 
-    QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTextures);
+    QImagePixmapCleanupHooks::instance()->removePixmapDataModificationHook(cleanupTexturesForPixampData);
     QImagePixmapCleanupHooks::instance()->removePixmapDataDestructionHook(cleanupBeforePixmapDestruction);
-    QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
+    QImagePixmapCleanupHooks::instance()->removeImageHook(cleanupTexturesForCacheKey);
 }
 
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
+    QWriteLocker locker(&m_lock);
     if (m_cache.totalCost() + cost > m_cache.maxCost()) {
         // the cache is full - make an attempt to remove something
         const QList<qint64> keys = m_cache.keys();
@@ -1623,6 +1726,7 @@ void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, i
 
 bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 {
+    QWriteLocker locker(&m_lock);
     QList<qint64> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         QGLTexture *tex = m_cache.object(keys.at(i));
@@ -1637,6 +1741,7 @@ bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
 
 void QGLTextureCache::removeContextTextures(QGLContext* ctx)
 {
+    QWriteLocker locker(&m_lock);
     QList<qint64> keys = m_cache.keys();
     for (int i = 0; i < keys.size(); ++i) {
         const qint64 &key = keys.at(i);
@@ -1657,32 +1762,22 @@ QGLTextureCache* QGLTextureCache::instance()
   a hook that removes textures from the cache when a pixmap/image
   is deref'ed
 */
-void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
+void QGLTextureCache::cleanupTexturesForCacheKey(qint64 cacheKey)
 {
-    // ### remove when the GL texture cache becomes thread-safe
-    if (qApp->thread() != QThread::currentThread())
-        return;
-    QGLTexture *texture = instance()->getTexture(cacheKey);
-    if (texture && texture->options & QGLContext::MemoryManagedBindOption)
-        instance()->remove(cacheKey);
+    instance()->remove(cacheKey);
+    Q_ASSERT(instance()->getTexture(cacheKey) == 0);
 }
 
 
-void QGLTextureCache::cleanupTextures(QPixmapData* pmd)
+void QGLTextureCache::cleanupTexturesForPixampData(QPixmapData* pmd)
 {
-    // ### remove when the GL texture cache becomes thread-safe
-    if (qApp->thread() == QThread::currentThread()) {
-        const qint64 cacheKey = pmd->cacheKey();
-        QGLTexture *texture = instance()->getTexture(cacheKey);
-        if (texture && texture->options & QGLContext::MemoryManagedBindOption)
-            instance()->remove(cacheKey);
-    }
+    cleanupTexturesForCacheKey(pmd->cacheKey());
 }
 
 void QGLTextureCache::cleanupBeforePixmapDestruction(QPixmapData* pmd)
 {
     // Remove any bound textures first:
-    cleanupTextures(pmd);
+    cleanupTexturesForPixampData(pmd);
 
 #if defined(Q_WS_X11)
     if (pmd->classId() == QPixmapData::X11Class) {
@@ -2083,8 +2178,9 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
     Q_ASSERT(texture);
 
-    if (texture->id > 0)
-        QImagePixmapCleanupHooks::enableCleanupHooks(image);
+    // Enable the cleanup hooks for this image so that the texture cache entry is removed when the
+    // image gets deleted:
+    QImagePixmapCleanupHooks::enableCleanupHooks(image);
 
     return texture;
 }
@@ -2138,6 +2234,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     int tx_h = qt_next_power_of_two(image.height());
 
     QImage img = image;
+
     if (!(QGLExtensions::glExtensions() & QGLExtensions::NPOTTextures)
         && !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0)
         && (target == GL_TEXTURE_2D && (tx_w != image.width() || tx_h != image.height())))
@@ -2291,7 +2388,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #ifndef QT_NO_DEBUG
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        qWarning(" - texture upload failed, error code 0x%x\n", error);
+        qWarning(" - texture upload failed, error code 0x%x, enum: %d (%x)\n", error, target, target);
     }
 #endif
 
@@ -2306,6 +2403,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     int cost = img.width()*img.height()*4/1024;
     QGLTexture *texture = new QGLTexture(q, tx_id, target, options);
     QGLTextureCache::instance()->insert(q, key, texture, cost);
+
     return texture;
 }
 
@@ -2327,7 +2425,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 {
     Q_Q(QGLContext);
     QPixmapData *pd = pixmap.pixmapData();
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
     if (target == GL_TEXTURE_2D && pd->classId() == QPixmapData::OpenGLClass) {
         const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
 
@@ -2350,7 +2448,10 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 
 #if defined(Q_WS_X11)
     // Try to use texture_from_pixmap
-    if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType) {
+    const QX11Info *xinfo = qt_x11Info(paintDevice);
+    if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType
+        && xinfo && xinfo->screen() == pixmap.x11Info().screen())
+    {
         texture = bindTextureFromNativePixmap(pd, key, options);
         if (texture) {
             texture->options |= QGLContext::MemoryManagedBindOption;
@@ -2419,7 +2520,7 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
         return 0;
 
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(image, target, format, false, DefaultBindOption);
+    QGLTexture *texture = d->bindTexture(image, target, format, DefaultBindOption);
     return texture->id;
 }
 
@@ -2559,11 +2660,13 @@ void QGLContext::deleteTexture(GLuint id)
     for (int i = 0; i < ddsKeys.size(); ++i) {
         GLuint texture = dds_cache->value(ddsKeys.at(i));
         if (id == texture) {
-            glDeleteTextures(1, &texture);
             dds_cache->remove(ddsKeys.at(i));
-            return;
+            break;
         }
     }
+
+    // Finally, actually delete the texture ID
+    glDeleteTextures(1, &id);
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
@@ -2574,41 +2677,41 @@ void QGLContext::deleteTexture(QMacCompatGLuint id)
 }
 #endif
 
-void qt_add_rect_to_array(const QRectF &r, q_vertexType *array)
+void qt_add_rect_to_array(const QRectF &r, GLfloat *array)
 {
     qreal left = r.left();
     qreal right = r.right();
     qreal top = r.top();
     qreal bottom = r.bottom();
 
-    array[0] = f2vt(left);
-    array[1] = f2vt(top);
-    array[2] = f2vt(right);
-    array[3] = f2vt(top);
-    array[4] = f2vt(right);
-    array[5] = f2vt(bottom);
-    array[6] = f2vt(left);
-    array[7] = f2vt(bottom);
+    array[0] = left;
+    array[1] = top;
+    array[2] = right;
+    array[3] = top;
+    array[4] = right;
+    array[5] = bottom;
+    array[6] = left;
+    array[7] = bottom;
 }
 
-void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array)
+void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, GLfloat *array)
 {
-    array[0] = f2vt(x1);
-    array[1] = f2vt(y1);
-    array[2] = f2vt(x2);
-    array[3] = f2vt(y1);
-    array[4] = f2vt(x2);
-    array[5] = f2vt(y2);
-    array[6] = f2vt(x1);
-    array[7] = f2vt(y2);
+    array[0] = x1;
+    array[1] = y1;
+    array[2] = x2;
+    array[3] = y1;
+    array[4] = x2;
+    array[5] = y2;
+    array[6] = x1;
+    array[7] = y2;
 }
 
 #if !defined(QT_OPENGL_ES_2)
 
 static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint textureHeight, GLenum textureTarget)
 {
-    q_vertexType tx = f2vt(1);
-    q_vertexType ty = f2vt(1);
+    GLfloat tx = 1.0f;
+    GLfloat ty = 1.0f;
 
 #ifdef QT_OPENGL_ES
     Q_UNUSED(textureWidth);
@@ -2621,20 +2724,20 @@ static void qDrawTextureRect(const QRectF &target, GLint textureWidth, GLint tex
             glGetTexLevelParameteriv(textureTarget, 0, GL_TEXTURE_HEIGHT, &textureHeight);
         }
 
-        tx = f2vt(textureWidth);
-        ty = f2vt(textureHeight);
+        tx = GLfloat(textureWidth);
+        ty = GLfloat(textureHeight);
     }
 #endif
 
-    q_vertexType texCoordArray[4*2] = {
+    GLfloat texCoordArray[4*2] = {
         0, ty, tx, ty, tx, 0, 0, 0
     };
 
-    q_vertexType vertexArray[4*2];
+    GLfloat vertexArray[4*2];
     qt_add_rect_to_array(target, vertexArray);
 
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
-    glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
+    glTexCoordPointer(2, GL_FLOAT, 0, texCoordArray);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -3187,6 +3290,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 */
 
 
+
 /*****************************************************************************
   QGLWidget implementation
  *****************************************************************************/
@@ -3306,6 +3410,15 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     Overpainting 2D content on top of 3D content takes a little more effort.
     One approach to doing this is shown in the
     \l{Overpainting Example}{Overpainting} example.
+
+    \section1 Threading
+
+    It is possible to render into a QGLWidget from another thread, but it
+    requires that all access to the GL context is safe guarded. The Qt GUI
+    thread will try to use the context in resizeEvent and paintEvent, so in
+    order for threaded rendering using a GL widget to work, these functions
+    need to be intercepted in the GUI thread and handled accordingly in the
+    application.
 
     \e{OpenGL is a trademark of Silicon Graphics, Inc. in the United States and other
     countries.}
@@ -4796,7 +4909,7 @@ void QGLWidget::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QM
 }
 #endif
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
 #endif
 
@@ -4806,7 +4919,7 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
 
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
     return qt_gl_engine();
 #elif defined(QT_OPENGL_ES_2)
     return qt_gl_2_engine();
@@ -4929,7 +5042,7 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     glExtensions |= GenerateMipmap;
     glExtensions |= FragmentShader;
 #endif
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
     if (extensions.match("GL_OES_framebuffer_object"))
         glExtensions |= FramebufferObject;
 #endif
@@ -5446,7 +5559,7 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
     quint32 level = 0;
     quint32 width = pvrHeader->width;
     quint32 height = pvrHeader->height;
-    while (bufferSize > 0 && level < pvrHeader->mipMapCount) {
+    while (bufferSize > 0 && level <= pvrHeader->mipMapCount) {
         quint32 size =
             (qMax(width, minWidth) * qMax(height, minHeight) *
              pvrHeader->bitsPerPixel) / 8;

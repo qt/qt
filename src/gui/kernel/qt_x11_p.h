@@ -331,7 +331,7 @@ struct QXdndDropTransaction
 class QMimeData;
 
 struct QX11Data;
-extern QX11Data *qt_x11Data;
+extern Q_GUI_EXPORT QX11Data *qt_x11Data;
 
 enum DesktopEnvironment {
     DE_UNKNOWN,
@@ -564,11 +564,8 @@ struct QX11Data
         _MOTIF_WM_HINTS,
 
         DTWM_IS_RUNNING,
-        KDE_FULL_SESSION,
-        KWIN_RUNNING,
-        KWM_RUNNING,
-        GNOME_BACKGROUND_PROPERTIES,
         ENLIGHTENMENT_DESKTOP,
+        _DT_SAVE_MODE,
         _SGI_DESKS_MANAGER,
 
         // EWMH (aka NETWM)

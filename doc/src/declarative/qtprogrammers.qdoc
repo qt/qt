@@ -1,0 +1,163 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+
+   INCOMPLETE
+
+\page qtprogrammers.html
+\target qtprogrammers
+\title QML for Qt programmers
+
+\section1 Overview
+
+While QML does not require Qt knowledge to use, if you \e are already familar with Qt,
+much of your knowledge is directly relevant to learning and using QML. Of course,
+an application with a UI defined in QML also uses Qt for all the non-UI logic.
+
+\section1 Familiar Concepts
+
+QML provides direct access to the following concepts from Qt:
+
+\list
+ \o QAction - the \l {QML Basic Types}{action} type
+ \o QObject signals and slots - available as functions to call in JavaScript
+ \o QObject properties - available as variables in JavaScript
+ \o QWidget - QDeclarativeView is a QML-displaying widget
+ \o Qt models - used directly in data binding (QAbstractItemModel and next generation QListModelInterface)
+\endlist
+
+Qt knowledge is \e required for \l {Extending QML}, and also for \l{Integrating QML with existing Qt UI code}.
+
+\section1 QML Items compared with QWidgets
+
+QML Items are very similar to QWidgets: they define the look and feel of the user interface. (Note that while QWidgets
+haven't traditionally been used to define the look and feel of view delegates, QML Items can be used for this as well.)
+
+There are three structurally different types of QWidget:
+
+\list
+ \o Simple widgets that are not used as parents (QLabel, QCheckBox, QToolButton, etc.)
+ \o Parent widgets that are normally used as parents to other widgets (QGroupBox, QStackedWidget, QTabWidget, etc.)
+ \o Compound widgets that are internally composed of child widgets (QComboBox, QSpinBox, QFileDialog, QTabWidget, etc.)
+\endlist
+
+QML Items also serve these purposes. Each is considered separately below.
+
+\section2 Simple Widgets
+
+The most important rule to remember while implementing a new QDeclarativeItem in C++
+is that it should not contain any look and feel policies - leave that to the
+QML usage of the item.
+
+As an example, imagine you wanted a reusable Button item. If you therefore
+decided to write a QDeclarativeItem subclass to implement a button,
+just as QToolButton subclasses QWidget for this purpose, following the rule above, your
+\c QDeclarativeButton would not have any appearance - just the notions of enabled, triggering, etc.
+
+But there is already an object in Qt that does this: QAction.
+
+QAction is the UI-agnostic essence of QPushButton, QCheckBox, QMenu items, QToolButton,
+and other visual widgets that are commonly bound to a QAction.
+
+So, the job of implementing a checkbox abstraction for QML is already done - it's QAction.
+The look and feel of an action - the appearance of the button, the transition between states,
+and exactly how it respond to mouse, key, or touch input, should all be left for definition
+in QML.
+
+It is illustrative to note that QDeclarativeTextEdit is built upon QTextControl,
+QDeclarativeWebView is built upon QWebPage, and ListView uses QListModelInterface,
+just as QTextEdit, QWebView, and QListView are built upon
+those same UI-agnostic components.
+
+The encapsulation of the look and feel that QWidgets gives is important, and for this
+the QML concept of \l {qdeclarativedocuments.html}{components} serves the same purpose. If you are building a complete
+suite of applications which should have a consistent look and feel, you should build
+a set of reusable components with the look and feel you desire.
+
+So, to implement your reusable button, you would simply build a QML component.
+
+
+\section2 Parent Widgets
+
+Parent widgets each provide a generic way to interface to one or more arbitrary other widgets.
+A QTabWidget provides an interface to multiple "pages", one of which is visible at any time,
+and a mechnism for selecting among them (the QTabBar). A QScollArea provides scrollbars around
+a widget that is otherwise too large to fit in available space.
+
+Nearly all such components can be created directly in QML. Only a few cases
+which require very particular event handling, such as Flickable, require C++ implementations.
+
+As an example, imagine you decided to make a generic tab widget item to be used
+through your application suite wherever information is in such quantity that it
+needs to be divided up into pages.
+
+A significant difference in the parenting concept with QML compare to QWidgets
+is that while child items are positioned relative to their parents,
+there is no requirement that they be wholy contained ("clipped") to
+the parent (although the clipped property of the child Item does allow
+this where it is needed).
+This difference has rather far-reaching consequences, for example:
+
+\list
+    \o A shadow or highlight around a widget could be a child of that widget.
+    \o Particle effects can flow outside the object where they originate.
+    \o Transitioning animations can "hide" items by visibly moving them beyond the screen bounds.
+\endlist
+
+
+\section2 Compound Widgets
+
+Some widgets provide functionality by composing other widgets as an "implementation detail",
+providing a higher level API to the composition. QSpinBox for example is a line edit and some
+buttons to increase/decrease the edited value. QFileDialog uses a whole host of widgets to
+give the user a way of finding and selecting a file name.
+
+When developing reusable QML Items, you may choose to do the same: build an item composed
+of other items you have already defined.
+
+The only caveat when doing this is to consider the possible animations and transitions that
+users of the compound item might wish to employ. For example, a spinbox might need to smoothly
+transition from an arbitrary Text item, or characters within a Text item, so your spinbox
+item would need to be sufficiently flexible to allow such animation.
+
+\section1 QML Items Compared With QGraphicsWidgets
+*/

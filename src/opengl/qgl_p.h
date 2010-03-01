@@ -64,22 +64,6 @@
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
-#ifndef QT_OPENGL_ES_1_CL
-#define q_vertexType float
-#define q_vertexTypeEnum GL_FLOAT
-#define f2vt(f)     (f)
-#define vt2f(x)     (x)
-#define i2vt(i)     (float(i))
-#else
-#define FLOAT2X(f)      (int( (f) * (65536)))
-#define X2FLOAT(x)      (float(x) / 65536.0f)
-#define f2vt(f)     FLOAT2X(f)
-#define i2vt(i)     ((i)*65536)
-#define vt2f(x)     X2FLOAT(x)
-#define q_vertexType GLfixed
-#define q_vertexTypeEnum GL_FIXED
-#endif //QT_OPENGL_ES_1_CL
-
 #ifdef QT_OPENGL_ES
 QT_BEGIN_INCLUDE_NAMESPACE
 #if defined(QT_OPENGL_ES_2)
@@ -132,11 +116,15 @@ public:
     QGLFormatPrivate()
         : ref(1)
     {
-        opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
+        opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering
+             | QGL::StencilBuffer | QGL::DeprecatedFunctions;
         pln = 0;
         depthSize = accumSize = stencilSize = redSize = greenSize = blueSize = alphaSize = -1;
         numSamples = -1;
         swapInterval = -1;
+        majorVersion = 1;
+        minorVersion = 0;
+        profile = QGLFormat::NoProfile;
     }
     QGLFormatPrivate(const QGLFormatPrivate *other)
         : ref(1),
@@ -150,7 +138,10 @@ public:
           blueSize(other->blueSize),
           alphaSize(other->alphaSize),
           numSamples(other->numSamples),
-          swapInterval(other->swapInterval)
+          swapInterval(other->swapInterval),
+          majorVersion(other->majorVersion),
+          minorVersion(other->minorVersion),
+          profile(other->profile)
     {
     }
     QAtomicInt ref;
@@ -165,6 +156,9 @@ public:
     int alphaSize;
     int numSamples;
     int swapInterval;
+    int majorVersion;
+    int minorVersion;
+    QGLFormat::OpenGLContextProfile profile;
 };
 
 class QGLWidgetPrivate : public QWidgetPrivate
@@ -179,7 +173,9 @@ public:
 #if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
                        , eglSurfaceWindowId(0)
 #endif
-        {}
+    {
+        isGLWidget = 1;
+    }
 
     ~QGLWidgetPrivate() {}
 
@@ -342,6 +338,10 @@ public:
 
     void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
     void syncGlState(); // Makes sure the GL context's state is what we think it is
+
+#if defined(Q_WS_WIN)
+    void updateFormatVersion();
+#endif
 
 #if defined(Q_WS_WIN)
     HGLRC rc;
@@ -528,23 +528,53 @@ public:
     ~QGLTextureCache();
 
     void insert(QGLContext *ctx, qint64 key, QGLTexture *texture, int cost);
-    void remove(quint64 key) { m_cache.remove(key); }
+    inline void remove(quint64 key);
+    inline int size();
+    inline void setMaxCost(int newMax);
+    inline int maxCost();
+    inline QGLTexture* getTexture(quint64 key);
+
     bool remove(QGLContext *ctx, GLuint textureId);
     void removeContextTextures(QGLContext *ctx);
-    int size() { return m_cache.size(); }
-    void setMaxCost(int newMax) { m_cache.setMaxCost(newMax); }
-    int maxCost() {return m_cache.maxCost(); }
-    QGLTexture* getTexture(quint64 key) { return m_cache.object(key); }
-
     static QGLTextureCache *instance();
     static void deleteIfEmpty();
-    static void imageCleanupHook(qint64 cacheKey);
-    static void cleanupTextures(QPixmapData* pixmap);
+    static void cleanupTexturesForCacheKey(qint64 cacheKey);
+    static void cleanupTexturesForPixampData(QPixmapData* pixmap);
     static void cleanupBeforePixmapDestruction(QPixmapData* pixmap);
 
 private:
     QCache<qint64, QGLTexture> m_cache;
+    QReadWriteLock m_lock;
 };
+
+int QGLTextureCache::size() {
+    QReadLocker locker(&m_lock);
+    return m_cache.size();
+}
+
+void QGLTextureCache::setMaxCost(int newMax)
+{
+    QWriteLocker locker(&m_lock);
+    m_cache.setMaxCost(newMax);
+}
+
+int QGLTextureCache::maxCost()
+{
+    QReadLocker locker(&m_lock);
+    return m_cache.maxCost();
+}
+
+QGLTexture* QGLTextureCache::getTexture(quint64 key)
+{
+    QReadLocker locker(&m_lock);
+    return m_cache.object(key);
+}
+
+void QGLTextureCache::remove(quint64 key)
+{
+    QWriteLocker locker(&m_lock);
+    m_cache.remove(key);
+}
 
 
 extern Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine();

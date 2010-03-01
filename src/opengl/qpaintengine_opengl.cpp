@@ -60,6 +60,7 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qbezier_p.h>
 #include <qglframebufferobject.h>
+#include <private/qstatictext_p.h>
 
 #include "private/qtessellator_p.h"
 
@@ -69,10 +70,6 @@
 #include "private/qglwindowsurface_qws_p.h"
 #include "qwsmanager_qws.h"
 #include "private/qwsmanager_p.h"
-#endif
-
-#ifdef QT_OPENGL_ES_1_CL
-#include "qgl_cl_p.h"
 #endif
 
 #define QGL_FUNC_CONTEXT QGLContext *ctx = const_cast<QGLContext *>(device->context());
@@ -780,7 +777,7 @@ public:
     void drawOffscreenPath(const QPainterPath &path);
 
     void composite(const QRectF &rect, const QPoint &maskOffset = QPoint());
-    void composite(GLuint primitive, const q_vertexType *vertexArray, int vertexCount, const QPoint &maskOffset = QPoint());
+    void composite(GLuint primitive, const GLfloat *vertexArray, int vertexCount, const QPoint &maskOffset = QPoint());
 
     bool createFragmentPrograms();
     void deleteFragmentPrograms();
@@ -1787,7 +1784,7 @@ class QOpenGLTrapezoidToArrayTessellator : public QOpenGLTessellator
 public:
     QOpenGLTrapezoidToArrayTessellator() : vertices(0), allocated(0), size(0) {}
     ~QOpenGLTrapezoidToArrayTessellator() { free(vertices); }
-    q_vertexType *vertices;
+    GLfloat *vertices;
     int allocated;
     int size;
     QRectF bounds;
@@ -1808,36 +1805,36 @@ void QOpenGLTrapezoidToArrayTessellator::addTrap(const Trapezoid &trap)
     if (size > allocated - 12) {
 #endif
         allocated = qMax(2*allocated, 512);
-        vertices = (q_vertexType *)realloc(vertices, allocated * sizeof(q_vertexType));
+        vertices = (GLfloat *)realloc(vertices, allocated * sizeof(GLfloat));
     }
 
     QGLTrapezoid t = toGLTrapezoid(trap);
 
 #ifndef QT_OPENGL_ES
-    vertices[size++] = f2vt(t.topLeftX);
-    vertices[size++] = f2vt(t.top);
-    vertices[size++] = f2vt(t.topRightX);
-    vertices[size++] = f2vt(t.top);
-    vertices[size++] = f2vt(t.bottomRightX);
-    vertices[size++] = f2vt(t.bottom);
-    vertices[size++] = f2vt(t.bottomLeftX);
-    vertices[size++] = f2vt(t.bottom);
+    vertices[size++] = t.topLeftX;
+    vertices[size++] = t.top;
+    vertices[size++] = t.topRightX;
+    vertices[size++] = t.top;
+    vertices[size++] = t.bottomRightX;
+    vertices[size++] = t.bottom;
+    vertices[size++] = t.bottomLeftX;
+    vertices[size++] = t.bottom;
 #else
     // First triangle
-    vertices[size++] = f2vt(t.topLeftX);
-    vertices[size++] = f2vt(t.top);
-    vertices[size++] = f2vt(t.topRightX);
-    vertices[size++] = f2vt(t.top);
-    vertices[size++] = f2vt(t.bottomRightX);
-    vertices[size++] = f2vt(t.bottom);
+    vertices[size++] = t.topLeftX;
+    vertices[size++] = t.top;
+    vertices[size++] = t.topRightX;
+    vertices[size++] = t.top;
+    vertices[size++] = t.bottomRightX;
+    vertices[size++] = t.bottom;
 
     // Second triangle
-    vertices[size++] = f2vt(t.bottomLeftX);
-    vertices[size++] = f2vt(t.bottom);
-    vertices[size++] = f2vt(t.topLeftX);
-    vertices[size++] = f2vt(t.top);
-    vertices[size++] = f2vt(t.bottomRightX);
-    vertices[size++] = f2vt(t.bottom);
+    vertices[size++] = t.bottomLeftX;
+    vertices[size++] = t.bottom;
+    vertices[size++] = t.topLeftX;
+    vertices[size++] = t.top;
+    vertices[size++] = t.bottomRightX;
+    vertices[size++] = t.bottom;
 #endif
 }
 
@@ -1864,7 +1861,7 @@ void QOpenGLPaintEnginePrivate::fillPolygon_dev(const QPointF *polygonPoints, in
     if (use_fragment_programs && !(fast_style && has_fast_composition_mode)) {
         composite(geometry_mode, tessellator.vertices, tessellator.size / 2);
     } else {
-        glVertexPointer(2, q_vertexTypeEnum, 0, tessellator.vertices);
+        glVertexPointer(2, GL_FLOAT, 0, tessellator.vertices);
         glEnableClientState(GL_VERTEX_ARRAY);
         glDrawArrays(geometry_mode, 0, tessellator.size/2);
         glDisableClientState(GL_VERTEX_ARRAY);
@@ -2265,7 +2262,7 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
         return;
     }
 
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_2)
     glClearDepthf(0.0f);
 #else
     glClearDepth(0.0f);
@@ -2281,12 +2278,12 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
     const QVector<QRect> rects = q->state()->clipEnabled ? q->state()->clipRegion.rects() : q->systemClip().rects();
 
     // rectangle count * 2 (triangles) * vertex count * component count (Z omitted)
-    QDataBuffer<q_vertexType> clipVertex(rects.size()*2*3*2);
+    QDataBuffer<GLfloat> clipVertex(rects.size()*2*3*2);
     for (int i = 0; i < rects.size(); ++i) {
-        q_vertexType x = i2vt(rects.at(i).left());
-        q_vertexType w = i2vt(rects.at(i).width());
-        q_vertexType h = i2vt(rects.at(i).height());
-        q_vertexType y = i2vt(rects.at(i).top());
+        GLfloat x = GLfloat(rects.at(i).left());
+        GLfloat w = GLfloat(rects.at(i).width());
+        GLfloat h = GLfloat(rects.at(i).height());
+        GLfloat y = GLfloat(rects.at(i).top());
 
         // First triangle
         clipVertex.add(x);
@@ -2314,7 +2311,7 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
         glLoadIdentity();
 
         glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(2, q_vertexTypeEnum, 0, clipVertex.data());
+        glVertexPointer(2, GL_FLOAT, 0, clipVertex.data());
 
         glDrawArrays(GL_TRIANGLES, 0, rects.size()*2*3);
         glDisableClientState(GL_VERTEX_ARRAY);
@@ -3106,8 +3103,8 @@ QGLTrapezoidMaskGenerator::QGLTrapezoidMaskGenerator(const QPainterPath &path, c
 {
 }
 
-extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
-extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
+extern void qt_add_rect_to_array(const QRectF &r, GLfloat *array);
+extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, GLfloat *array);
 
 void QGLTrapezoidMaskGenerator::drawMask(const QRect &rect)
 {
@@ -3138,7 +3135,7 @@ void QGLTrapezoidMaskGenerator::drawMask(const QRect &rect)
 
     // clear mask
     glBlendFunc(GL_ZERO, GL_ZERO); // clear
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
     glEnableClientState(GL_VERTEX_ARRAY);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glDisableClientState(GL_VERTEX_ARRAY);
@@ -3369,7 +3366,7 @@ void QGLEllipseMaskGenerator::drawMask(const QRect &rect)
     glProgramLocalParameter4fvARB(GL_FRAGMENT_PROGRAM_ARB, maskVariableLocations[VAR_ELLIPSE_OFFSET], ellipse_offset);
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisable(GL_FRAGMENT_PROGRAM_ARB);
@@ -3399,7 +3396,7 @@ void QOpenGLPaintEnginePrivate::drawFastRect(const QRectF &r)
     Q_Q(QOpenGLPaintEngine);
     DEBUG_ONCE_STR("QOpenGLPaintEngine::drawRects(): drawing fast rect");
 
-    q_vertexType vertexArray[10];
+    GLfloat vertexArray[10];
     qt_add_rect_to_array(r, vertexArray);
 
     if (has_pen)
@@ -3420,7 +3417,7 @@ void QOpenGLPaintEnginePrivate::drawFastRect(const QRectF &r)
 
         if (fast_style && has_fast_composition_mode) {
             glEnableClientState(GL_VERTEX_ARRAY);
-            glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
+            glVertexPointer(2, GL_FLOAT, 0, vertexArray);
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
             glDisableClientState(GL_VERTEX_ARRAY);
         } else {
@@ -3439,7 +3436,7 @@ void QOpenGLPaintEnginePrivate::drawFastRect(const QRectF &r)
             vertexArray[8] = vertexArray[0];
             vertexArray[9] = vertexArray[1];
 
-            glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
+            glVertexPointer(2, GL_FLOAT, 0, vertexArray);
             glEnableClientState(GL_VERTEX_ARRAY);
             glDrawArrays(GL_LINE_STRIP, 0, 5);
             glDisableClientState(GL_VERTEX_ARRAY);
@@ -3546,7 +3543,7 @@ void QOpenGLPaintEngine::drawRects(const QRectF *rects, int rectCount)
     }
 }
 
-static void addQuadAsTriangle(q_vertexType *quad, q_vertexType *triangle)
+static void addQuadAsTriangle(GLfloat *quad, GLfloat *triangle)
 {
     triangle[0] = quad[0];
     triangle[1] = quad[1];
@@ -3607,7 +3604,7 @@ void QOpenGLPaintEngine::drawPoints(const QPointF *points, int pointCount)
     d->flushDrawQueue();
 
     if (d->has_fast_pen) {
-        QVarLengthArray<q_vertexType> vertexArray(6 * pointCount);
+        QVarLengthArray<GLfloat> vertexArray(6 * pointCount);
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -3617,25 +3614,22 @@ void QOpenGLPaintEngine::drawPoints(const QPointF *points, int pointCount)
         for (int i = 0; i < pointCount; ++i) {
             QPointF mapped = d->matrix.map(points[i]);
 
-            qreal xf = qRound(mapped.x());
-            qreal yf = qRound(mapped.y());
-
-            q_vertexType x = f2vt(xf);
-            q_vertexType y = f2vt(yf);
+            GLfloat x = GLfloat(qRound(mapped.x()));
+            GLfloat y = GLfloat(qRound(mapped.y()));
 
             vertexArray[j++] = x;
-            vertexArray[j++] = y - f2vt(0.5);
+            vertexArray[j++] = y - 0.5f;
 
-            vertexArray[j++] = x + f2vt(1.5);
-            vertexArray[j++] = y + f2vt(1.0);
+            vertexArray[j++] = x + 1.5f;
+            vertexArray[j++] = y + 1.0f;
 
             vertexArray[j++] = x;
-            vertexArray[j++] = y + f2vt(1.0);
+            vertexArray[j++] = y + 1.0f;
         }
 
         glEnableClientState(GL_VERTEX_ARRAY);
 
-        glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray.constData());
+        glVertexPointer(2, GL_FLOAT, 0, vertexArray.constData());
         glDrawArrays(GL_TRIANGLES, 0, pointCount*3);
 
         glDisableClientState(GL_VERTEX_ARRAY);
@@ -3652,7 +3646,7 @@ void QOpenGLPaintEngine::drawPoints(const QPointF *points, int pointCount)
     }
     else {
         Q_ASSERT(sizeof(QPointF) == 8);
-        glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
+        glVertexPointer(2, GL_FLOAT, 0, vertexArray);
     }
 
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -3720,47 +3714,47 @@ void QOpenGLPaintEngine::drawLines(const QLineF *lines, int lineCount)
                 }
             }
 
-            q_vertexType endCap = f2vt(d->cpen.capStyle() == Qt::FlatCap ? 0 : 0.5);
+            GLfloat endCap = d->cpen.capStyle() == Qt::FlatCap ? 0.0f : 0.5f;
             if (useRects) {
-                QVarLengthArray<q_vertexType> vertexArray(12 * lineCount);
+                QVarLengthArray<GLfloat> vertexArray(12 * lineCount);
 
-                q_vertexType quad[8];
+                GLfloat quad[8];
                 for (int i = 0; i < lineCount; ++i) {
-                    q_vertexType x1 = f2vt(lines[i].x1());
-                    q_vertexType x2 = f2vt(lines[i].x2());
-                    q_vertexType y1 = f2vt(lines[i].y1());
-                    q_vertexType y2 = f2vt(lines[i].y2());
+                    GLfloat x1 = lines[i].x1();
+                    GLfloat x2 = lines[i].x2();
+                    GLfloat y1 = lines[i].y1();
+                    GLfloat y2 = lines[i].y2();
 
                     if (x1 == x2) {
                         if (y1 > y2)
                             qSwap(y1, y2);
 
-                        quad[0] = x1 - f2vt(0.5);
+                        quad[0] = x1 - 0.5f;
                         quad[1] = y1 - endCap;
 
-                        quad[2] = x1 + f2vt(0.5);
+                        quad[2] = x1 + 0.5f;
                         quad[3] = y1 - endCap;
 
-                        quad[4] = x1 + f2vt(0.5);
+                        quad[4] = x1 + 0.5f;
                         quad[5] = y2 + endCap;
 
-                        quad[6] = x1 - f2vt(0.5);
+                        quad[6] = x1 - 0.5f;
                         quad[7] = y2 + endCap;
                     } else {
                         if (x1 > x2)
                             qSwap(x1, x2);
 
                         quad[0] = x1 - endCap;
-                        quad[1] = y1 + f2vt(0.5);
+                        quad[1] = y1 + 0.5f;
 
                         quad[2] = x1 - endCap;
-                        quad[3] = y1 - f2vt(0.5);
+                        quad[3] = y1 - 0.5f;
 
                         quad[4] = x2 + endCap;
-                        quad[5] = y1 - f2vt(0.5);
+                        quad[5] = y1 - 0.5f;
 
                         quad[6] = x2 + endCap;
-                        quad[7] = y1 + f2vt(0.5);
+                        quad[7] = y1 + 0.5f;
                     }
 
                     addQuadAsTriangle(quad, &vertexArray[12*i]);
@@ -3768,26 +3762,26 @@ void QOpenGLPaintEngine::drawLines(const QLineF *lines, int lineCount)
 
                 glEnableClientState(GL_VERTEX_ARRAY);
 
-                glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray.constData());
+                glVertexPointer(2, GL_FLOAT, 0, vertexArray.constData());
                 glDrawArrays(GL_TRIANGLES, 0, lineCount*6);
 
                 glDisableClientState(GL_VERTEX_ARRAY);
             } else {
-                QVarLengthArray<q_vertexType> vertexArray(4 * lineCount);
+                QVarLengthArray<GLfloat> vertexArray(4 * lineCount);
                 for (int i = 0; i < lineCount; ++i) {
                     const QPointF a = lines[i].p1();
-                    vertexArray[4*i]   = f2vt(lines[i].x1());
-                    vertexArray[4*i+1] = f2vt(lines[i].y1());
-                    vertexArray[4*i+2] = f2vt(lines[i].x2());
-                    vertexArray[4*i+3] = f2vt(lines[i].y2());
+                    vertexArray[4*i]   = lines[i].x1();
+                    vertexArray[4*i+1] = lines[i].y1();
+                    vertexArray[4*i+2] = lines[i].x2();
+                    vertexArray[4*i+3] = lines[i].y2();
                 }
 
                 glEnableClientState(GL_VERTEX_ARRAY);
 
-                glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray.constData());
+                glVertexPointer(2, GL_FLOAT, 0, vertexArray.constData());
                 glDrawArrays(GL_LINES, 0, lineCount*2);
 
-                glVertexPointer(2, q_vertexTypeEnum, 4*sizeof(q_vertexType), vertexArray.constData() + 2);
+                glVertexPointer(2, GL_FLOAT, 4*sizeof(GLfloat), vertexArray.constData() + 2);
                 glDrawArrays(GL_POINTS, 0, lineCount);
 
                 glDisableClientState(GL_VERTEX_ARRAY);
@@ -3874,7 +3868,7 @@ void QOpenGLPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
             }
             else {
                 Q_ASSERT(sizeof(QPointF) == 8);
-                glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
+                glVertexPointer(2, GL_FLOAT, 0, vertexArray);
             }
 
             glEnableClientState(GL_VERTEX_ARRAY);
@@ -3893,12 +3887,12 @@ void QOpenGLPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
     if (d->has_pen) {
         if (d->has_fast_pen && !d->high_quality_antialiasing) {
             d->setGradientOps(d->cpen.brush(), bounds);
-            QVarLengthArray<q_vertexType> vertexArray(pointCount*2 + 2);
-            glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray.constData());
+            QVarLengthArray<GLfloat> vertexArray(pointCount*2 + 2);
+            glVertexPointer(2, GL_FLOAT, 0, vertexArray.constData());
             int i;
             for (i=0; i<pointCount; ++i) {
-                vertexArray[i*2] = f2vt(points[i].x());
-                vertexArray[i*2+1] = f2vt(points[i].y());
+                vertexArray[i*2] = points[i].x();
+                vertexArray[i*2+1] = points[i].y();
             }
 
             glEnableClientState(GL_VERTEX_ARRAY);
@@ -4074,7 +4068,7 @@ void QOpenGLPaintEnginePrivate::strokePathFastPen(const QPainterPath &path, bool
         switch (e.type) {
         case QPainterPath::MoveToElement:
             if (i != 0) {
-                glVertexPointer(2, q_vertexTypeEnum, 0, tess_points.data());
+                glVertexPointer(2, GL_FLOAT, 0, tess_points.data());
                 glDrawArrays(GL_LINE_STRIP, 0, tess_points.size());
                 tess_points.reset();
             }
@@ -4124,7 +4118,7 @@ void QOpenGLPaintEnginePrivate::strokePathFastPen(const QPainterPath &path, bool
             break;
         } // end of switch
     }
-    glVertexPointer(2, q_vertexTypeEnum, 0, tess_points.data());
+    glVertexPointer(2, GL_FLOAT, 0, tess_points.data());
     glDrawArrays(GL_LINE_STRIP, 0, tess_points.size());
     glDisableClientState(GL_VERTEX_ARRAY);
 #endif
@@ -4391,8 +4385,8 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
             glRotatef(180.0, 0.0, 0.0, 1.0);
         }
 
-        q_vertexType vertexArray[4*2];
-        q_vertexType texCoordArray[4*2];
+        GLfloat vertexArray[4*2];
+        GLfloat texCoordArray[4*2];
 
         double offset_x = offset.x() / pm.width();
         double offset_y = offset.y() / pm.height();
@@ -4401,8 +4395,8 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         qt_add_texcoords_to_array(offset_x, offset_y,
                                   tc_w + offset_x, tc_h + offset_y, texCoordArray);
 
-        glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
-        glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
+        glVertexPointer(2, GL_FLOAT, 0, vertexArray);
+        glTexCoordPointer(2, GL_FLOAT, 0, texCoordArray);
 
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -4483,14 +4477,14 @@ void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRec
         y2 = sr.y();
     }
 
-    q_vertexType vertexArray[4*2];
-    q_vertexType texCoordArray[4*2];
+    GLfloat vertexArray[4*2];
+    GLfloat texCoordArray[4*2];
 
     qt_add_rect_to_array(r, vertexArray);
     qt_add_texcoords_to_array(x1, y2, x2, y1, texCoordArray);
 
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
-    glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
+    glTexCoordPointer(2, GL_FLOAT, 0, texCoordArray);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -4555,7 +4549,7 @@ public:
     QGLGlyphCache() : QObject(0) { current_cache = 0; }
     ~QGLGlyphCache();
     QGLGlyphCoord *lookup(QFontEngine *, glyph_t);
-    void cacheGlyphs(QGLContext *, const QTextItemInt &, const QVarLengthArray<glyph_t> &);
+    void cacheGlyphs(QGLContext *, QFontEngine *, glyph_t *glyphs, int numGlyphs);
     void cleanCache();
     void allocTexture(int width, int height, GLuint texture);
 
@@ -4707,8 +4701,8 @@ static QImage getCurrentTexture(const QColor &color, QGLFontTexture *font_tex)
 }
 #endif
 
-void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
-                                const QVarLengthArray<glyph_t> &glyphs)
+void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
+                                glyph_t *glyphs, int numGlyphs)
 {
     QGLContextHash::const_iterator dev_it = qt_context_cache.constFind(context);
     QGLFontGlyphHash *font_cache = 0;
@@ -4744,25 +4738,25 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
     }
     Q_ASSERT(font_cache != 0);
 
-    QGLFontGlyphHash::const_iterator cache_it = font_cache->constFind(ti.fontEngine);
+    QGLFontGlyphHash::const_iterator cache_it = font_cache->constFind(fontEngine);
     QGLGlyphHash *cache = 0;
     if (cache_it == font_cache->constEnd()) {
         cache = new QGLGlyphHash;
-        font_cache->insert(ti.fontEngine, cache);
-        connect(ti.fontEngine, SIGNAL(destroyed(QObject*)), SLOT(fontEngineDestroyed(QObject*)));
+        font_cache->insert(fontEngine, cache);
+        connect(fontEngine, SIGNAL(destroyed(QObject*)), SLOT(fontEngineDestroyed(QObject*)));
     } else {
         cache = cache_it.value();
     }
     current_cache = cache;
 
     quint64 font_key = (reinterpret_cast<quint64>(context_key ? context_key : context) << 32)
-                       | reinterpret_cast<quint64>(ti.fontEngine);
+                       | reinterpret_cast<quint64>(fontEngine);
     QGLFontTexHash::const_iterator it = qt_font_textures.constFind(font_key);
     QGLFontTexture *font_tex;
     if (it == qt_font_textures.constEnd()) {
         GLuint font_texture;
         glGenTextures(1, &font_texture);
-        GLint tex_height = qt_next_power_of_two(qRound(ti.ascent.toReal() + ti.descent.toReal())+2);
+        GLint tex_height = qt_next_power_of_two(qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2);
         GLint tex_width = qt_next_power_of_two(tex_height*30); // ###
         GLint max_tex_size;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
@@ -4784,16 +4778,16 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
         glBindTexture(GL_TEXTURE_2D, font_tex->texture);
     }
 
-    for (int i=0; i< glyphs.size(); ++i) {
+    for (int i=0; i< numGlyphs; ++i) {
         QGLGlyphHash::const_iterator it = cache->constFind(glyphs[i]);
         if (it == cache->constEnd()) {
             // render new glyph and put it in the cache
-            glyph_metrics_t metrics = ti.fontEngine->boundingBox(glyphs[i]);
+            glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
             int glyph_width = qRound(metrics.width.toReal())+2;
-            int glyph_height = qRound(ti.ascent.toReal() + ti.descent.toReal())+2;
+            int glyph_height = qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2;
 
             if (font_tex->x_offset + glyph_width + x_margin > font_tex->width) {
-                int strip_height = qt_next_power_of_two(qRound(ti.ascent.toReal() + ti.descent.toReal())+2);
+                int strip_height = qt_next_power_of_two(qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2);
                 font_tex->x_offset = x_margin;
                 font_tex->y_offset += strip_height;
                 if (font_tex->y_offset >= font_tex->height) {
@@ -4826,7 +4820,7 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
                 }
             }
 
-            QImage glyph_im(ti.fontEngine->alphaMapForGlyph(glyphs[i]));
+            QImage glyph_im(fontEngine->alphaMapForGlyph(glyphs[i]));
             glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
             glyph_width = glyph_im.width();
             Q_ASSERT(glyph_width >= 0);
@@ -4906,30 +4900,15 @@ void qgl_cleanup_glyph_cache(QGLContext *ctx)
     qt_glyph_cache()->cleanupContext(ctx);
 }
 
-void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
+void QOpenGLPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
     Q_D(QOpenGLPaintEngine);
 
-    const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
-
-    // fall back to drawing a polygon if the scale factor is large, or
-    // we use a gradient pen
-    if ((d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
-                                  && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
-        QPaintEngine::drawTextItem(p, textItem);
-        return;
-    }
-
     d->flushDrawQueue();
 
-    // add the glyphs used to the glyph texture cache
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = QTransform::fromTranslate(qRound(p.x()), qRound(p.y()));
-    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-
     // make sure the glyphs we want to draw are in the cache
-    qt_glyph_cache()->cacheGlyphs(d->device->context(), ti, glyphs);
+    qt_glyph_cache()->cacheGlyphs(d->device->context(), textItem->fontEngine, textItem->glyphs,
+                                  textItem->numGlyphs);
 
     d->setGradientOps(Qt::SolidPattern, QRectF()); // turns off gradient ops
     qt_glColor4ubv(d->pen_color);
@@ -4943,21 +4922,21 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 #endif
 
     // do the actual drawing
-    q_vertexType vertexArray[4*2];
-    q_vertexType texCoordArray[4*2];
+    GLfloat vertexArray[4*2];
+    GLfloat texCoordArray[4*2];
 
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
-    glTexCoordPointer(2, q_vertexTypeEnum, 0, texCoordArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
+    glTexCoordPointer(2, GL_FLOAT, 0, texCoordArray);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    bool antialias = !(ti.fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
-                   && (d->matrix.type() > QTransform::TxTranslate);
+    bool antialias = !(textItem->fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
+				   && (d->matrix.type() > QTransform::TxTranslate);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
 
-    for (int i=0; i< glyphs.size(); ++i) {
-        QGLGlyphCoord *g = qt_glyph_cache()->lookup(ti.fontEngine, glyphs[i]);
+    for (int i=0; i< textItem->numGlyphs; ++i) {
+        QGLGlyphCoord *g = qt_glyph_cache()->lookup(textItem->fontEngine, textItem->glyphs[i]);
 
         // we don't cache glyphs with no width/height
         if (!g)
@@ -4969,8 +4948,8 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         x2 = x1 + g->width;
         y2 = y1 + g->height;
 
-        QPointF logical_pos((positions[i].x - g->x_offset).toReal(),
-                            (positions[i].y + g->y_offset).toReal());
+        QPointF logical_pos((textItem->glyphPositions[i].x - g->x_offset).toReal(),
+                            (textItem->glyphPositions[i].y + g->y_offset).toReal());
 
         qt_add_rect_to_array(QRectF(logical_pos, QSizeF(g->log_width, g->log_height)), vertexArray);
         qt_add_texcoords_to_array(x1, y1, x2, y2, texCoordArray);
@@ -4987,6 +4966,40 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // XXX: This may not be needed as this behavior does seem to be caused by driver bug
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 #endif
+
+}
+
+void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
+{
+    Q_D(QOpenGLPaintEngine);
+
+    const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
+
+    // fall back to drawing a polygon if the scale factor is large, or
+    // we use a gradient pen
+    if ((d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
+                                  && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
+        QPaintEngine::drawTextItem(p, textItem);
+        return;
+    }
+
+    // add the glyphs used to the glyph texture cache
+    QVarLengthArray<QFixedPoint> positions;
+    QVarLengthArray<glyph_t> glyphs;
+    QTransform matrix = QTransform::fromTranslate(qRound(p.x()), qRound(p.y()));
+    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
+    {
+        QStaticTextItem staticTextItem;
+        staticTextItem.chars = ti.chars;
+        staticTextItem.fontEngine = ti.fontEngine;
+        staticTextItem.glyphs = glyphs.data();
+        staticTextItem.numChars = ti.num_chars;
+        staticTextItem.numGlyphs = glyphs.size();
+        staticTextItem.glyphPositions = positions.data();
+        drawStaticTextItem(&staticTextItem);
+    }
+
 }
 
 
@@ -5160,7 +5173,7 @@ void QOpenGLPaintEnginePrivate::composite(const QRectF &rect, const QPoint &mask
     Q_UNUSED(rect);
     Q_UNUSED(maskOffset);
 #else
-    q_vertexType vertexArray[8];
+    GLfloat vertexArray[8];
     qt_add_rect_to_array(rect, vertexArray);
 
     composite(GL_TRIANGLE_FAN, vertexArray, 4, maskOffset);
@@ -5168,7 +5181,7 @@ void QOpenGLPaintEnginePrivate::composite(const QRectF &rect, const QPoint &mask
 }
 
 
-void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *vertexArray, int vertexCount, const QPoint &maskOffset)
+void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const GLfloat *vertexArray, int vertexCount, const QPoint &maskOffset)
 {
 #ifdef QT_OPENGL_ES
     Q_UNUSED(primitive);
@@ -5191,8 +5204,8 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
         qreal minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
 
         for (int i = 0; i < vertexCount; ++i) {
-            qreal x = vt2f(vertexArray[2 * i]);
-            qreal y = vt2f(vertexArray[2 * i + 1]);
+            qreal x = vertexArray[2 * i];
+            qreal y = vertexArray[2 * i + 1];
 
             qreal tx, ty;
             matrix.map(x, y, &tx, &ty);
@@ -5251,7 +5264,7 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
     }
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
+    glVertexPointer(2, GL_FLOAT, 0, vertexArray);
     glEnable(GL_FRAGMENT_PROGRAM_ARB);
     GLuint program = qt_gl_program_cache()->getProgram(device->context(),
                                                        fragment_brush,

@@ -138,6 +138,8 @@ QT_BEGIN_NAMESPACE
         default follow redirections: it's up to the application to
         determine if the requested redirection should be allowed,
         according to its security policies.
+        The returned URL might be relative. Use QUrl::resolved()
+        to create an absolute URL out of it.
 
     \value ConnectionEncryptedAttribute
         Replies only, type: QVariant::Bool (default: false)
@@ -182,6 +184,12 @@ QT_BEGIN_NAMESPACE
         Indicates whether the HTTP pipelining was used for receiving
         this reply.
 
+    \value CustomVerbAttribute
+       Requests only, type: QVariant::ByteArray
+        Holds the value for the custom HTTP verb to send (destined for usage
+        of other verbs than GET, POST, PUT and DELETE). This verb is set
+        when calling QNetworkAccessManager::sendCustomRequest().
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
@@ -218,8 +226,9 @@ class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
 {
 public:
     inline QNetworkRequestPrivate()
+        : priority(QNetworkRequest::NormalPriority)
 #ifndef QT_NO_OPENSSL
-        : sslConfiguration(0)
+        , sslConfiguration(0)
 #endif
     { qRegisterMetaType<QNetworkRequest>(); }
     ~QNetworkRequestPrivate()
@@ -234,6 +243,7 @@ public:
         : QSharedData(other), QNetworkHeadersPrivate(other)
     {
         url = other.url;
+        priority = other.priority;
 
 #ifndef QT_NO_OPENSSL
         sslConfiguration = 0;
@@ -245,12 +255,14 @@ public:
     inline bool operator==(const QNetworkRequestPrivate &other) const
     {
         return url == other.url &&
+            priority == other.priority &&
             rawHeaders == other.rawHeaders &&
             attributes == other.attributes;
         // don't compare cookedHeaders
     }
 
     QUrl url;
+    QNetworkRequest::Priority priority;
 #ifndef QT_NO_OPENSSL
     mutable QSslConfiguration *sslConfiguration;
 #endif
@@ -514,6 +526,45 @@ void QNetworkRequest::setOriginatingObject(QObject *object)
 QObject *QNetworkRequest::originatingObject() const
 {
     return d->originatingObject.data();
+}
+
+/*!
+    \since 4.7
+
+    Return the priority of this request.
+
+    \sa setPriority()
+*/
+QNetworkRequest::Priority QNetworkRequest::priority() const
+{
+    return d->priority;
+}
+
+/*! \enum QNetworkRequest::Priority
+
+  \since 4.7
+  
+  This enum lists the possible network request priorities.
+
+  \value HighPriority   High priority
+  \value NormalPriority Normal priority
+  \value LowPriority    Low priority
+ */
+
+/*!
+    \since 4.7
+
+    Set the priority of this request to \a priority.
+
+    \note The \a priority is only a hint to the network access
+    manager.  It can use it or not. Currently it is used for HTTP to
+    decide which request should be sent first to a server.
+
+    \sa priority()
+*/
+void QNetworkRequest::setPriority(Priority priority)
+{
+    d->priority = priority;
 }
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)

@@ -45,7 +45,7 @@
 #include <private/qegl_p.h>
 #include <private/qeglproperties_p.h>
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #include <private/qpaintengineex_opengl2_p.h>
 #endif
 
@@ -96,14 +96,14 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
 #endif
             EGL_NONE
         };
-        qPixmapARGBSharedEglContext = eglCreateContext(QEglContext::defaultDisplay(0),
+        qPixmapARGBSharedEglContext = eglCreateContext(QEglContext::display(),
                                                        argbConfig, 0, contextAttribs);
 
         if (argbConfig == rgbConfig) {
             // If the configs are the same, we can re-use the same context.
             qPixmapRGBSharedEglContext = qPixmapARGBSharedEglContext;
         } else {
-            qPixmapRGBSharedEglContext = eglCreateContext(QEglContext::defaultDisplay(0),
+            qPixmapRGBSharedEglContext = eglCreateContext(QEglContext::display(),
                                                            rgbConfig, 0, contextAttribs);
         }
 
@@ -114,7 +114,7 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
         if (!qt_createEGLSurfaceForPixmap(argbPixmapData, false))
             break;
 
-        haveX11Pixmaps = eglMakeCurrent(QEglContext::defaultDisplay(0),
+        haveX11Pixmaps = eglMakeCurrent(QEglContext::display(),
                                         (EGLSurface)argbPixmapData->gl_surface,
                                         (EGLSurface)argbPixmapData->gl_surface,
                                         qPixmapARGBSharedEglContext);
@@ -134,7 +134,7 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
             if (!qt_createEGLSurfaceForPixmap(rgbPixmapData, false))
                 break;
 
-            haveX11Pixmaps = eglMakeCurrent(QEglContext::defaultDisplay(0),
+            haveX11Pixmaps = eglMakeCurrent(QEglContext::display(),
                                             (EGLSurface)rgbPixmapData->gl_surface,
                                             (EGLSurface)rgbPixmapData->gl_surface,
                                             qPixmapRGBSharedEglContext);
@@ -147,7 +147,7 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
     } while (0);
 
     if (qPixmapARGBSharedEglContext || qPixmapRGBSharedEglContext) {
-        eglMakeCurrent(QEglContext::defaultDisplay(0),
+        eglMakeCurrent(QEglContext::display(),
                        EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     }
 
@@ -167,12 +167,12 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
     if (!haveX11Pixmaps) {
         // Clean up the context(s) if we can't use X11GL pixmaps
         if (qPixmapARGBSharedEglContext != EGL_NO_CONTEXT)
-            eglDestroyContext(QEglContext::defaultDisplay(0), qPixmapARGBSharedEglContext);
+            eglDestroyContext(QEglContext::display(), qPixmapARGBSharedEglContext);
 
         if (qPixmapRGBSharedEglContext != qPixmapARGBSharedEglContext &&
             qPixmapRGBSharedEglContext != EGL_NO_CONTEXT)
         {
-            eglDestroyContext(QEglContext::defaultDisplay(0), qPixmapRGBSharedEglContext);
+            eglDestroyContext(QEglContext::display(), qPixmapRGBSharedEglContext);
         }
         qPixmapRGBSharedEglContext = EGL_NO_CONTEXT;
         qPixmapARGBSharedEglContext = EGL_NO_CONTEXT;
@@ -196,7 +196,7 @@ QX11GLPixmapData::~QX11GLPixmapData()
 {
 }
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_pixmap_2_engine)
 #endif
 
@@ -212,7 +212,6 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
         ctx = new QGLContext(glFormat());
         if (ctx->d_func()->eglContext == 0)
             ctx->d_func()->eglContext = new QEglContext();
-        ctx->d_func()->eglContext->openDisplay(0); // ;-)
         ctx->d_func()->eglContext->setApi(QEgl::OpenGL);
         ctx->d_func()->eglContext->setContext(hasAlphaChannel() ? qPixmapARGBSharedEglContext
                                                                 : qPixmapRGBSharedEglContext);
@@ -220,7 +219,7 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
 
     QPaintEngine* engine;
 
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
     engine = qt_gl_pixmap_engine();
 #elif defined(QT_OPENGL_ES_2)
     engine = qt_gl_pixmap_2_engine();
@@ -237,7 +236,7 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
     if (engine->isActive()) {
         qWarning("Pixmap paint engine already active");
 
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+#if defined(QT_OPENGL_ES_1)
         engine = new QOpenGLPaintEngine;
 #elif defined(QT_OPENGL_ES_2)
         engine = new QGL2PaintEngineEx;

@@ -116,9 +116,9 @@
 
     \hr
 
-    Copyright (C) 2004,2007  Red Hat, Inc.\br
-    Copyright (C) 1998-2004  David Turner and Werner Lemberg\br
-    Copyright (C) 2006  Behdad Esfahbod\br
+    Copyright (C) 2004,2007 Red Hat, Inc.\br
+    Copyright (C) 1998-2004 David Turner and Werner Lemberg\br
+    Copyright (C) 2006 Behdad Esfahbod\br
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
 
     This is part of HarfBuzz, an OpenType Layout engine library.
@@ -137,7 +137,7 @@
 
     THE COPYRIGHT HOLDER SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
     BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-    FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
+    FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS
     ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
     PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
@@ -146,7 +146,7 @@
     See \c src/3rdparty/harfbuzz/COPYING.FTL and src/3rdparty/harfbuzz/COPYING.GPL
     for license details.
 
-    \section1 The Independent JPEG Group's JPEG Software (\c libjpeg) version 6b
+    \section1 The Independent JPEG Group's JPEG Software (\c libjpeg) version 8
 
     \e{This package contains C software to implement JPEG image compression and
     decompression.  JPEG (pronounced "jay-peg") is a standardized compression
@@ -155,6 +155,12 @@
     are not its strong suit.  JPEG is lossy, meaning that the output image is not
     exactly identical to the input image.} -- quoted from \c
     src/3rdparty/libjpeg/README.
+
+    \hr
+
+    This software is based in part on the work of the Independent JPEG Group.
+
+    \hr
 
     See \c src/3rdparty/libjpeg/README for license details.
 
@@ -192,12 +198,52 @@
 
     See \c src/3rdparty/libmng/LICENSE for license details.
 
-    \section1 PNG Reference Library (\c libpng) version 1.2.29
+    \section1 PNG Reference Library (\c libpng) version 1.4.0
 
     \e{Libpng was written as a companion to the PNG specification, as a way
     of reducing the amount of time and effort it takes to support the PNG
     file format in application programs.} -- quoted from \c
     src/3rdparty/libpng/libpng.txt.
+
+    \hr
+
+    copyright (C) 1999 by Willem van Schaik <willem@schaik.com>
+    
+    version 1.0 - 1999.10.15 - First version.
+    
+    Permission to use, copy, modify, and distribute this software and
+    its documentation for any purpose and without fee is hereby granted,
+    provided that the above copyright notice appear in all copies and
+    that both that copyright notice and this permission notice appear in
+    supporting documentation. This software is provided "as is" without
+    express or implied warranty.
+    
+    \hr
+
+    Copyright (c) 1998-2001 Greg Roelofs.  All rights reserved.
+
+    This software is provided "as is," without warranty of any kind,
+    express or implied.  In no event shall the author or contributors
+    be held liable for any damages arising in any way from the use of
+    this software.
+
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute
+    it freely, subject to the following restrictions:
+
+    1. Redistributions of source code must retain the above copyright
+       notice, disclaimer, and this list of conditions.
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, disclaimer, and this list of conditions in the documenta-
+       tion and/or other materials provided with the distribution.
+    3. All advertising materials mentioning features or use of this
+       software must display the following acknowledgment:
+
+          This product includes software developed by Greg Roelofs
+          and contributors for the book, "PNG: The Definitive Guide,"
+          published by O'Reilly and Associates.
+
+    \hr
 
     See \c src/3rdparty/libpng/LICENSE for license details.
 
@@ -259,11 +305,52 @@
 
     \hr
 
-    Copyright (c) 1988-1997 Sam Leffler\br
-    Copyright (c) 1991-1997 Silicon Graphics, Inc.\br
-    Copyright (C) 2004, Andrey Kiselev <dron@ak4719.spb.edu>\br
-    Copyright (c) 1997 Greg Ward Larson
+    Copyright (c) 1987, 1993, 1994\br
+    The Regents of the University of California.  All rights reserved.
+    
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:\br
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.\br
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.\br
+    3. Neither the name of the University nor the names of its contributors
+       may be used to endorse or promote products derived from this software
+       without specific prior written permission.
+    
+    THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+    OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
 
+    \hr
+
+    Copyright (C) 1988-1997 Sam Leffler\br
+    Copyright (C) 1991-1997 Silicon Graphics, Inc.\br
+    Copyright (c) Joris Van Damme <info@awaresystems.be>\br
+    Copyright (c) AWare Systems <http://www.awaresystems.be/>\br
+    Portions Copyright (C) 1985-1987, 1990 Regents of the University of California\br
+    Portions Copyright (C) 1990, 1991 Digital Equipment Corporation\br
+    Portions Copyright (C) 1990 Sun Microsystems, Inc.\br
+    Portions Copyright (C) 1990, 1995 Frank D. Cringle\br
+    Portions Copyright (C) 1996 BancTec AB\br
+    Portions Copyright (C) 1996 Mike Johnson\br
+    Portions Copyright (C) 1996 Pixar\br
+    Portions Copyright (C) 1997 Greg Ward Larson\br
+    Portions Copyright (C) 2000 Frank Warmerdam\br
+    Copyright (C) 2004, Andrey Kiselev <dron@ak4719.spb.edu>\br
+    Copyright (c( 1996 USAF Phillips Laboratory\br
+    Additions (c) Richard Nolde 2006-2009
+    
     Permission to use, copy, modify, distribute, and sell this software and 
     its documentation for any purpose is hereby granted without fee, provided
     that (i) the above copyright notices and this permission notice appear in
@@ -271,38 +358,12 @@
     Sam Leffler and Silicon Graphics may not be used in any advertising or
     publicity relating to the software without the specific, prior written
     permission of Sam Leffler and Silicon Graphics.
-
+    
     THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
     EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
     WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
-
+    
     IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
-    ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
-    OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-    WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
-    LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
-    OF THIS SOFTWARE.
-
-    \hr
-
-    Copyright (c) 1996-1997 Sam Leffler\br
-    Copyright (c) 1996 Pixar\br
-    Copyright (c) 1991-1997 Silicon Graphics, Inc.\br
-    Copyright (C) 2004, Andrey Kiselev <dron@ak4719.spb.edu>
-
-    Permission to use, copy, modify, distribute, and sell this software and 
-    its documentation for any purpose is hereby granted without fee, provided
-    that (i) the above copyright notices and this permission notice appear in
-    all copies of the software and related documentation, and (ii) the names of
-    Pixar, Sam Leffler and Silicon Graphics may not be used in any advertising or
-    publicity relating to the software without the specific, prior written
-    permission of Pixar, Sam Leffler and Silicon Graphics.
-
-    THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
-    EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
-    WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
-
-    IN NO EVENT SHALL PIXAR, SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
     ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
     OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
     WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
@@ -313,17 +374,17 @@
 
     Copyright (c) 1985, 1986 The Regents of the University of California.\br
     All rights reserved.
-
+    
     This code is derived from software contributed to Berkeley by
     James A. Woods, derived from original work by Spencer Thomas
     and Joseph Orost.
-
+    
     Redistribution and use in source and binary forms are permitted
     provided that the above copyright notice and this paragraph are
     duplicated in all such forms and that any documentation,
     advertising materials, and other materials related to such
     distribution and use acknowledge that the software was developed
-    by the University of California, Berkeley.  The name of the
+    by the University of California, Berkeley.  The name of the
     University may not be used to endorse or promote products derived
     from this software without specific prior written permission.
     THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
@@ -332,7 +393,31 @@
 
     \hr
 
-    See \c src/3rdparty/libtiff/COPYRIGHT for license details.
+    Copyright (c) 1996-1997 Sam Leffler\br
+    Copyright (c) 1996 Pixar
+    
+    Permission to use, copy, modify, distribute, and sell this software and 
+    its documentation for any purpose is hereby granted without fee, provided
+    that (i) the above copyright notices and this permission notice appear in
+    all copies of the software and related documentation, and (ii) the names of
+    Pixar, Sam Leffler and Silicon Graphics may not be used in any advertising or
+    publicity relating to the software without the specific, prior written
+    permission of Pixar, Sam Leffler and Silicon Graphics.
+    
+    THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+    EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+    WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+    
+    IN NO EVENT SHALL PIXAR, SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
+    ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+    OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+    WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
+    LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+    OF THIS SOFTWARE.
+
+    \hr
+
+    See \c src/3rdparty/libtiff/README for license details.
 
     \section1 Wintab API (\c wintab)
 
@@ -364,7 +449,7 @@
     documentation for such software.
 
     THIS SOFTWARE IS BEING PROVIDED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
-    WARRANTY.  IN PARTICULAR, NEITHER THE AUTHOR NOR LUCENT MAKES ANY
+    WARRANTY. IN PARTICULAR, NEITHER THE AUTHOR NOR LUCENT MAKES ANY
     REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
     OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
 

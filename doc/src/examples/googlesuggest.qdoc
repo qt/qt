@@ -111,7 +111,7 @@
     event processing.
 
     Key event handling is implemented so that Enter and Return execute the
-    selected link, while the Escape key hides the popup. Sine we want to be
+    selected link, while the Escape key hides the popup. Since we want to be
     able to navigate the list of suggestions using the different navigation
     keys on the keyboard we let Qt continue regular event processing for those
     by returning false from the eventFilter reimplementation.

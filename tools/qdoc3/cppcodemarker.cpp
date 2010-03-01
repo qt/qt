@@ -145,7 +145,7 @@ QString CppCodeMarker::plainFullName(const Node *node, const Node *relative)
     }
     else {
 	QString fullName;
-	for (;;) {
+	while (node) {
 	    fullName.prepend(plainName(node));
 	    if (node->parent() == relative || node->parent()->name().isEmpty())
 		break;
@@ -881,7 +881,7 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
     static QRegExp globalX("[\n{()=] *([a-zA-Z_][a-zA-Z_0-9]*)[ \n]*\\(");
     static QRegExp multiLineComment("/(?:( )?\\*(?:[^*]+|\\*(?! /))*\\*\\1/)");
     multiLineComment.setMinimal(true);
-    static QRegExp singleLineComment("//(?!!)[^!\n]*");
+    static QRegExp singleLineComment("[^:]//(?!!)[^!\\n]*");
     static QRegExp preprocessor("(?:^|\n)(#[ \t]*(?:include|if|elif|endif|error|pragma|define"
                                 "|warning)(?:(?:\\\\\n|\\n#)[^\n]*)*)");
     static QRegExp literals("&quot;(?:[^\\\\&]|\\\\[^\n]|&(?!quot;))*&quot;"
@@ -1067,13 +1067,13 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
             len = multiLineComment.matchedLength();
         }
         else if (mlpos == -1) {
-            pos = slpos;
-            len = singleLineComment.matchedLength();
+            pos = slpos + 1;
+            len = singleLineComment.matchedLength() - 1;
         }
         else {
             if (slpos < mlpos) {
-                pos = slpos;
-                len = singleLineComment.matchedLength();
+                pos = slpos + 1;
+                len = singleLineComment.matchedLength() - 1;
             }
             else {
                 pos = mlpos;
@@ -1127,7 +1127,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                 "signal",
                                 "signals");
 	    FastSection qmlattachedsignals(qmlClassNode,
-                                           "QML Attached Signals",
+                                           "Attached Signals",
                                            "signal",
                                            "signals");
 	    FastSection qmlmethods(qmlClassNode,
@@ -1135,7 +1135,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                    "method",
                                    "methods");
 	    FastSection qmlattachedmethods(qmlClassNode,
-                                           "QML Attached Methods",
+                                           "Attached Methods",
                                            "method",
                                            "methods");
 

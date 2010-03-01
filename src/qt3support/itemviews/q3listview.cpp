@@ -70,9 +70,6 @@ QT_BEGIN_NAMESPACE
 
 const int Unsorted = 16383;
 
-static Q3CleanupHandler<QBitmap> qlv_cleanup_bitmap;
-
-
 struct Q3ListViewPrivate
 {
     // classes that are here to avoid polluting the global name space

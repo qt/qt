@@ -50,7 +50,8 @@ HEADERS += \
 }
 
 win32 {
-    HEADERS += dialogs/qwizard_win_p.h
+    HEADERS += dialogs/qwizard_win_p.h \
+               dialogs/qfiledialog_win_p.h
     SOURCES += dialogs/qdialogsbinarycompat_win.cpp \
                dialogs/qfiledialog_win.cpp \
                dialogs/qpagesetupdialog_win.cpp \

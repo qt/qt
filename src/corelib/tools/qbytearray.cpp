@@ -1061,6 +1061,11 @@ QByteArray &QByteArray::operator=(const char *str)
     \internal
 */
 
+/*! \fn bool QByteArray::isSharedWith(const QByteArray &other) const
+
+    \internal
+*/
+
 /*! \fn char QByteArray::at(int i) const
 
     Returns the character at index position \a i in the byte array.
@@ -1799,7 +1804,20 @@ QByteArray &QByteArray::replace(int pos, int len, const QByteArray &after)
 */
 QByteArray &QByteArray::replace(int pos, int len, const char *after)
 {
-    int alen = qstrlen(after);
+    return replace(pos,len,after,qstrlen(after));
+}
+
+/*! \fn QByteArray &QByteArray::replace(int pos, int len, const char *after, int alen)
+
+    \overload
+
+    Replaces \a len bytes from index position \a pos with \a alen bytes
+    from the string \a after. \a after is allowed to have '\0' characters.
+
+    \since 4.7
+*/
+QByteArray &QByteArray::replace(int pos, int len, const char *after, int alen)
+{
     if (len == alen && (pos + len <= d->size)) {
         detach();
         memcpy(d->data + pos, after, len*sizeof(char));

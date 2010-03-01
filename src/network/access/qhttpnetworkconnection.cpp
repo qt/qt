@@ -404,6 +404,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     QHttpNetworkReply *reply = new QHttpNetworkReply(request.url());
     reply->setRequest(request);
     reply->d_func()->connection = q;
+    reply->d_func()->connectionChannel = &channels[0]; // will have the correct one set later
     HttpMessagePair pair = qMakePair(request, reply);
 
     switch (request.priority()) {
@@ -415,13 +416,25 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
         lowPriorityQueue.prepend(pair);
         break;
     }
+
     // this used to be called via invokeMethod and a QueuedConnection
+    // It is the only place _q_startNextRequest is called directly without going
+    // through the event loop using a QueuedConnection.
+    // This is dangerous because of recursion that might occur when emitting
+    // signals as DirectConnection from this code path. Therefore all signal
+    // emissions that can come out from this code path need to
+    // be QueuedConnection.
+    // We are currently trying to fine-tune this.
     _q_startNextRequest();
+
+
     return reply;
 }
 
 void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
 {
+    Q_Q(QHttpNetworkConnection);
+
     QHttpNetworkRequest request = pair.first;
     switch (request.priority()) {
     case QHttpNetworkRequest::HighPriority:
@@ -432,8 +445,8 @@ void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
         lowPriorityQueue.prepend(pair);
         break;
     }
-    // this used to be called via invokeMethod and a QueuedConnection
-    _q_startNextRequest();
+
+    QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
 void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socket)
@@ -681,6 +694,8 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
 
 
 
+// This function must be called from the event loop. The only
+// exception is documented in QHttpNetworkConnectionPrivate::queueRequest
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 {
     //resend the necessary ones.
@@ -688,14 +703,12 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (channels[i].resendCurrent) {
             channels[i].resendCurrent = false;
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
-            if (channels[i].reply) {
 
-                // if this is not possible, error will be emitted and connection terminated
-                if (!channels[i].resetUploadData())
-                    continue;
+            // if this is not possible, error will be emitted and connection terminated
+            if (!channels[i].resetUploadData())
+                continue;
 
-                channels[i].sendRequest();
-            }
+            channels[i].sendRequest();
         }
     }
 
@@ -861,17 +874,6 @@ QNetworkProxy QHttpNetworkConnection::transparentProxy() const
 
 // SSL support below
 #ifndef QT_NO_OPENSSL
-QSslConfiguration QHttpNetworkConnectionPrivate::sslConfiguration(const QHttpNetworkReply &reply) const
-{
-    if (!encrypt)
-        return QSslConfiguration();
-
-    for (int i = 0; i < channelCount; ++i)
-        if (channels[i].reply == &reply)
-            return static_cast<QSslSocket *>(channels[0].socket)->sslConfiguration();
-    return QSslConfiguration(); // pending or done request
-}
-
 void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config)
 {
     Q_D(QHttpNetworkConnection);

@@ -69,7 +69,7 @@ public:
         QBitArray = 13, QDate = 14, QTime = 15, QDateTime = 16, QUrl = 17,
         QLocale = 18, QRect = 19, QRectF = 20, QSize = 21, QSizeF = 22,
         QLine = 23, QLineF = 24, QPoint = 25, QPointF = 26, QRegExp = 27,
-        QVariantHash = 28, LastCoreType = 28 /* QVariantHash */,
+        QVariantHash = 28, QEasingCurve = 29, LastCoreType = QEasingCurve,
 
         FirstGuiType = 63 /* QColorGroup */,
 #ifdef QT3_SUPPORT
@@ -81,12 +81,12 @@ public:
         QTextLength = 78, QTextFormat = 79, QMatrix = 80, QTransform = 81,
         QMatrix4x4 = 82, QVector2D = 83, QVector3D = 84, QVector4D = 85,
         QQuaternion = 86,
-        LastGuiType = 86 /* QQuaternion */,
+        LastGuiType = QQuaternion,
 
         FirstCoreExtType = 128 /* VoidStar */,
         VoidStar = 128, Long = 129, Short = 130, Char = 131, ULong = 132,
         UShort = 133, UChar = 134, Float = 135, QObjectStar = 136, QWidgetStar = 137,
-        LastCoreExtType = 137 /* QWidgetStar */,
+        LastCoreExtType = QWidgetStar,
 
 // This logic must match the one in qglobal.h
 #if defined(QT_COORD_TYPE)
@@ -107,6 +107,8 @@ public:
     typedef void (*SaveOperator)(QDataStream &, const void *);
     typedef void (*LoadOperator)(QDataStream &, void *);
     static void registerStreamOperators(const char *typeName, SaveOperator saveOp,
+                                        LoadOperator loadOp);
+    static void registerStreamOperators(int type, SaveOperator saveOp,
                                         LoadOperator loadOp);
 #endif
     static int registerType(const char *typeName, Destructor destructor,
@@ -224,6 +226,24 @@ inline int qRegisterMetaType(
 #endif
 }
 
+#ifndef QT_NO_DATASTREAM
+template <typename T>
+inline int qRegisterMetaTypeStreamOperators()
+{
+    typedef void(*SavePtr)(QDataStream &, const T *);
+    typedef void(*LoadPtr)(QDataStream &, T *);
+    SavePtr sptr = qMetaTypeSaveHelper<T>;
+    LoadPtr lptr = qMetaTypeLoadHelper<T>;
+
+    register int id = qMetaTypeId<T>();
+    QMetaType::registerStreamOperators(id,
+                                       reinterpret_cast<QMetaType::SaveOperator>(sptr),
+                                       reinterpret_cast<QMetaType::LoadOperator>(lptr));
+
+    return id;
+}
+#endif
+
 #define Q_DECLARE_METATYPE(TYPE)                                        \
     QT_BEGIN_NAMESPACE                                                  \
     template <>                                                         \
@@ -270,6 +290,7 @@ class QPointF;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
+class QEasingCurve;
 class QWidget;
 class QObject;
 
@@ -339,6 +360,7 @@ Q_DECLARE_BUILTIN_METATYPE(QPointF, QPointF)
 #ifndef QT_NO_REGEXP
 Q_DECLARE_BUILTIN_METATYPE(QRegExp, QRegExp)
 #endif
+Q_DECLARE_BUILTIN_METATYPE(QEasingCurve, QEasingCurve)
 
 #ifdef QT3_SUPPORT
 Q_DECLARE_BUILTIN_METATYPE(QColorGroup, QColorGroup)

@@ -1237,7 +1237,7 @@ void qt_init(QApplicationPrivate *priv, int)
 
     // Cocoa application delegate
 #ifdef QT_MAC_USE_COCOA
-    NSApplication *cocoaApp = [NSApplication sharedApplication];
+    NSApplication *cocoaApp = [QNSApplication sharedApplication];
     QMacCocoaAutoReleasePool pool;
     NSObject *oldDelegate = [cocoaApp delegate];
     QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
@@ -1258,10 +1258,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [cocoaApp setMenu:[qtMenuLoader menu]];
         [newDelegate setMenuLoader:qtMenuLoader];
         [qtMenuLoader release];
-
-        NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-        [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
-          forEventClass:kInternetEventClass andEventID:kAEGetURL];
     }
 #endif
     // Register for Carbon tablet proximity events on the event monitor target.
@@ -1361,12 +1357,39 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 /*****************************************************************************
   QApplication cursor stack
  *****************************************************************************/
+#ifdef QT_MAC_USE_COCOA
+void QApplicationPrivate::disableUsageOfCursorRects(bool disable)
+{
+    // In Cocoa there are two competing ways of setting the cursor; either
+    // by using cursor rects (see qcocoaview_mac.mm), or by pushing/popping
+    // the cursor manually. When we use override cursors, it makes most sense
+    // to use the latter. But then we need to tell cocoa to stop using the
+    // first approach so it doesn't change the cursor back when hovering over
+    // a cursor rect:
+    QWidgetList topLevels = qApp->topLevelWidgets();
+    for (int i=0; i<topLevels.size(); ++i) {
+        if (NSWindow *window = qt_mac_window_for(topLevels.at(i)))
+            disable ? [window disableCursorRects] : [window enableCursorRects];
+    }
+}
+
+void QApplicationPrivate::updateOverrideCursor()
+{
+    // Sometimes Cocoa forgets that we have set a Cursor
+    // manually. In those cases, remind it again:
+    if (QCursor *override = qApp->overrideCursor())
+        [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(*override)) set];
+}
+#endif
+
 void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
+    if (qApp->d_func()->cursor_list.size() == 1)
+        qApp->d_func()->disableUsageOfCursorRects(true);
     [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) push];
 #else
     if (qApp && qApp->activeWindow())
@@ -1383,6 +1406,8 @@ void QApplication::restoreOverrideCursor()
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
     [NSCursor pop];
+    if (qApp->d_func()->cursor_list.isEmpty())
+        qApp->d_func()->disableUsageOfCursorRects(false);
 #else
     if (qApp && qApp->activeWindow()) {
         const QCursor def(Qt::ArrowCursor);
@@ -2143,6 +2168,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             }
 
             if (wheel_deltaX || wheel_deltaY) {
+#ifndef QT_NO_WHEELEVENT
                 if (wheel_deltaX) {
                     QWheelEvent qwe(plocal, p, wheel_deltaX, buttons, modifiers, Qt::Horizontal);
                     QApplication::sendSpontaneousEvent(widget, &qwe);
@@ -2165,6 +2191,7 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                             handled_event = false;
                     }
                 }
+#endif // QT_NO_WHEELEVENT
             } else {
 #ifdef QMAC_SPEAK_TO_ME
                 const int speak_keys = Qt::AltModifier | Qt::ShiftModifier;
@@ -2455,6 +2482,28 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
 #endif
 }
 
+#ifdef QT_MAC_USE_COCOA
+void QApplicationPrivate::qt_initAfterNSAppStarted()
+{
+    setupAppleEvents();
+    updateOverrideCursor();
+}
+
+void QApplicationPrivate::setupAppleEvents()
+{
+    // This function is called from the event dispatcher when NSApplication has
+    // finished initialization, which appears to be just after [NSApplication run] has
+    // started to execute. By setting up our apple events handlers this late, we override
+    // the ones set up by NSApplication.
+    QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
+    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(appleEventQuit:withReplyEvent:)
+     forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
+    [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
+      forEventClass:kInternetEventClass andEventID:kAEGetURL];
+}
+#endif
+
 // In Carbon this is your one stop for apple events.
 // In Cocoa, it ISN'T. This is the catch-all Apple Event handler that exists
 // for the time between instantiating the NSApplication, but before the
@@ -2717,6 +2766,7 @@ int QApplication::keyboardInputInterval()
     return QApplicationPrivate::keyboard_input_time;
 }
 
+#ifndef QT_NO_WHEELEVENT
 void QApplication::setWheelScrollLines(int n)
 {
     QApplicationPrivate::wheel_scroll_lines = n;
@@ -2726,6 +2776,7 @@ int QApplication::wheelScrollLines()
 {
     return QApplicationPrivate::wheel_scroll_lines;
 }
+#endif
 
 void QApplication::setEffectEnabled(Qt::UIEffect effect, bool enable)
 {
@@ -2888,9 +2939,11 @@ bool QApplicationPrivate::qt_mac_apply_settings()
                             QApplication::cursorFlashTime()).toInt();
         QApplication::setCursorFlashTime(num);
 
+#ifndef QT_NO_WHEELEVENT
         num = settings.value(QLatin1String("wheelScrollLines"),
                             QApplication::wheelScrollLines()).toInt();
         QApplication::setWheelScrollLines(num);
+#endif
 
         QString colorspec = settings.value(QLatin1String("colorSpec"),
                                             QVariant(QLatin1String("default"))).toString();
@@ -3002,7 +3055,7 @@ void onApplicationWindowChangedActivation(QWidget *widget, bool activated)
     }
 
     QMenuBar::macUpdateMenuBar();
-
+    QApplicationPrivate::updateOverrideCursor();
 #else
     Q_UNUSED(widget);
     Q_UNUSED(activated);

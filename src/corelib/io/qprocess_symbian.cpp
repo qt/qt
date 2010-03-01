@@ -1002,7 +1002,7 @@ bool QProcessPrivate::waitForDeadChild()
             TExitCategoryName catName = symbianProcess->ExitCategory();
             qDebug() << "QProcessPrivate::waitForDeadChild() dead with exitCode"
                      << exitCode << ", crashed:" << crashed
-                     << ", category:" << QString::fromUtf16(catName.Ptr());
+                     << ", category:" << QString((const QChar *)catName.Ptr());
 #endif
         } else {
             QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForDeadChild() not dead!");

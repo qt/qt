@@ -176,7 +176,7 @@ consult the installation instructions provided instead of the ones in
 this document.
 \o \l{Open Source Versions of Qt} is not officially supported for use with
 any version of Visual Studio. Integration with Visual Studio is available
-as part of the \l{Qt Commercial Editions}.
+as part of the \l{Qt Commercial Edition}.
 
 \endlist
 \endtable
@@ -740,9 +740,9 @@ If you are using pre-built binaries, follow the instructions given in the
     \l{http://www.microsoft.com/downloads/details.aspx?FamilyId=BB4A75AB-E2D4-4C96-B39D-37BAF6B5B1DC&amp;displaylang=en}{here}
     to avoid runtime conflicts.
 
-    If you are using a source code package of Qt, you must first install Perl so 
+    If you are using a source edition of Qt, you must first install Perl so
     that the syncqt script invoked by configure can be executed. You can download
-    this \l{http://www.activestate/downloads/}{here}.  
+    this \l{http://www.activestate.com/downloads/}{here}.
 
     To build Qt with Phonon on Windows, you require:
 
@@ -1023,9 +1023,11 @@ If you are using pre-built binaries, follow the instructions given in the
               See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
               compiler version and how to patch it, if needed.
            \endlist
-        \o \l{http://downloads.activestate.com/ActivePerl/Windows/5.6/ActivePerl-5.6.1.638-MSWin32-x86.msi}{ActivePerl v5.6.1 build 638}
+        \o \l{http://downloads.activestate.com/ActivePerl/releases}{ActivePerl 5.6.1 build 638 or higher}
            \list
-           \o \bold{Note:} According to Symbian, version 5.6.1 build 638 is mandatory. Using later versions may result in unexplained errors.
+           \o \bold{Note:} According to Symbian, version 5.6.1 build 638 is mandatory for building Symbian applications,
+              but that version is no longer available from ActiveState. However, Qt for Symbian has been successfully
+              compiled using both 5.8.x and 5.10.x versions.
            \endlist
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
            \list

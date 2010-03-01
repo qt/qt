@@ -49,9 +49,9 @@ QT_BEGIN_NAMESPACE
 
 #define BLD_INF_FILENAME "bld.inf"
 #define MAKEFILE_DEPENDENCY_SEPARATOR " \\\n\t"
-
 #define QT_EXTRA_INCLUDE_DIR "tmp"
 #define MAKE_CACHE_NAME ".make.cache"
+#define SYMBIAN_TEST_CONFIG "symbian_test"
 
 class SymbianMakefileGenerator : public MakefileGenerator
 {
@@ -84,7 +84,7 @@ protected:
 
     void removeSpecialCharacters(QString& str);
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
-    QString canonizePath(const QString& origPath);
+    QString absolutizePath(const QString& origPath);
 
     virtual bool writeMakefile(QTextStream &t);
     void generatePkgFile(const QString &iconFile, DeploymentList &depList);
@@ -147,7 +147,6 @@ protected:
                                const QString& itemPrefix,
                                const QString& itemSuffix);
 
-    void writeSisTargets(QTextStream &t);
     void generateDistcleanTargets(QTextStream& t);
     void generateExecutionTargets(QTextStream& t, const QStringList& platforms);
 

@@ -74,6 +74,7 @@ public:
 
     bool generate(QHelpDataInterface *helpData,
         const QString &outputFileName);
+    bool checkLinks(const QHelpDataInterface &helpData);
     QString error() const;
 
 Q_SIGNALS:
@@ -96,7 +97,7 @@ private:
         const QStringList &filterAttribs, bool forceUpdate = false);
     bool registerVirtualFolder(const QString &folderName, const QString &ns);
     bool insertFilterAttributes(const QStringList &attributes);
-    bool insertKeywords(const QList<QHelpDataIndexItem> keywords,
+    bool insertKeywords(const QList<QHelpDataIndexItem> &keywords,
         const QStringList &filterAttributes);
     bool insertFiles(const QStringList &files, const QString &rootPath,
         const QStringList &filterAttributes);

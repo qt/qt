@@ -42,6 +42,7 @@
 /*!
     \namespace Qt
     \inmodule QtCore
+    \target Qt Namespace
 
     \brief The Qt namespace contains miscellaneous identifiers
     used throughout the Qt library.
@@ -157,7 +158,7 @@
 
     \value AA_MacDontSwapCtrlAndMeta On Mac OS X by default, Qt swaps the
            Control and Meta (Command) keys (i.e., whenever Control is pressed, Qt
-           sends Meta and whenever Meta is pressed Control is sent. When this
+           sends Meta, and whenever Meta is pressed Control is sent). When this
            attribute is true, Qt will not do the flip. QKeySequence::StandardShortcuts
            will also flip accordingly (i.e., QKeySequence::Copy will be
            Command+C on the keyboard regardless of the value set, though what is output for
@@ -493,7 +494,7 @@
     \omitvalue WordBreak
     \omitvalue TextForceLeftToRight
     \omitvalue TextForceRightToLeft
-    \omitvalue TextLongestVariant Always use the longest variant when computing the size of a multi-variant string
+    \omitvalue TextLongestVariant Always use the longest variant when computing the size of a multi-variant string.
 
     You can use as many modifier flags as you want, except that
     Qt::TextSingleLine and Qt::TextWordWrap cannot be combined.
@@ -2115,7 +2116,7 @@
            On some platforms this implies Qt::WindowSystemMenuHint for it to work.
 
     \value MacWindowToolBarButtonHint On Mac OS X adds a tool bar button (i.e.,
-           the oblong button that is on the top right of windows that have toolbars.
+           the oblong button that is on the top right of windows that have toolbars).
 
     \value BypassGraphicsProxyWidget Prevents the window and its children from
            automatically embedding themselves into a QGraphicsProxyWidget if the
@@ -2508,6 +2509,15 @@
                           operations that allow the user to interact with
                           the application while they are performed in the
                           background.
+    \value DragMoveCursor
+                          A cursor that is usually used when dragging an item.
+    \value DragCopyCursor
+                          A cursor that is usually used when dragging an item
+                          to copy it.
+    \value DragLinkCursor
+                          A cursor that is usually used when dragging an item
+                          to make a link to it.
+
     \value BitmapCursor
     \omitvalue LastCursor
     \omitvalue CustomCursor

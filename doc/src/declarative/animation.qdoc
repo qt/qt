@@ -1,0 +1,266 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qdeclarativeanimation.html
+\title QML Animation
+
+Animation in QML is done by animating properties of objects. Properties of type
+real, int, color, rect, point, size, and vector3d can all be animated.
+
+QML supports three main forms of animation - basic property animation,
+transitions, and property behaviors.
+
+\tableofcontents
+
+\section1 Basic Property Animation
+
+The simplest form of animation is directly using \l PropertyAnimation, which can animate all of the property
+types listed above. If the property you are animating is a number or color, you can alternatively use
+NumberAnimation or ColorAnimation. These elements don't add any additional functionality,
+but will help enforce type correctness and are slightly more efficient.
+
+A property animation can be specified as a value source. This is especially useful for repeating animations.
+
+The following example creates a bouncing effect:
+\qml
+Rectangle {
+    id: rect
+    width: 120; height: 200;
+    Image {
+        id: img
+        source: "qt-logo.png"
+        x: 60-img.width/2
+        y: 0
+        y: SequentialAnimation {
+            repeat: true
+            NumberAnimation { to: 200-img.height; easing.type: "OutBounce"; duration: 2000 }
+            PauseAnimation { duration: 1000 }
+            NumberAnimation { to: 0; easing.type: "OutQuad"; duration: 1000 }
+        }
+    }
+}
+\endqml
+
+\image propanim.gif
+
+When you assign an animation as a value source, you do not need to specify \c property
+or \c target; they are automatically selected for you. You do, however, need to specify \c to.
+An animation specified as a value source will be \c running by default.
+
+\qml
+Rectangle {
+    id: rect
+    width: 200; height: 200;
+    Rectangle {
+        color: "red"
+        width: 50; height: 50
+        x: NumberAnimation { to: 50; }
+    }
+}
+\endqml
+
+A property animation can also be specified as a resource that is manipulated from script.
+
+\qml
+PropertyAnimation {
+    id: animation
+    target: image
+    property: "scale"
+    from: 1; to: .5
+}
+Image {
+    id: image
+    source: "image.png"
+    MouseArea {
+        anchors.fill: parent
+        onPressed: animation.start()
+    }
+}
+\endqml
+
+As can be seen, when an animation is used like this (as opposed to as a value source) you will need
+to explicitly set the \c target and \c property to animate.
+
+Animations can be joined into a group using SequentialAnimation and ParallelAnimation.
+
+\target state-transitions
+\section1 Transitions
+
+QML transitions describe animations to perform when \l{qmlstates}{state} changes occur. A transition
+can only be triggered by a state change.
+
+For example, a transition could describe how an item moves from its initial position to its new position:
+
+\code
+transitions: [
+    Transition {
+        NumberAnimation {
+            properties: "x,y"
+            easing.type: "OutBounce"
+            duration: 200
+        }
+    }
+]
+\endcode
+
+As can be seen, transitions make use of the same basic animation classes introduced above.
+In the above example we have specified that we want to animate the \c x and \c y properties, but have not
+specified the objects to animate or the \c to values. By default these values are supplied by the framework --
+the animation will animate any \c targets whose \c x and \c y have changed, and the \c to values will be those
+defined in the end state. You can always supply explicit values to override these implicit values when needed.
+
+\code
+Transition {
+    from: "*"
+    to: "MyState"
+    reversible: true
+    SequentialAnimation {
+        NumberAnimation {
+            duration: 1000
+            easing.type: "OutBounce"
+            // animate myItem's x and y if they have changed in the state
+            target: myItem
+            properties: "x,y"
+        }
+        NumberAnimation {
+            duration: 1000
+            // animate myItem2's y to 200, regardless of what happens in the state
+            target: myItem2
+            property: "y"
+            to: 200
+        }
+    }
+}
+\endcode
+
+QML transitions have selectors to determine which state changes a transition should apply to.
+The following transition will only be triggered when we enter into the \c "details" state.
+
+\code
+Transition {
+    from: "*"
+    to: "details"
+    ...
+}
+\endcode
+
+Transitions can happen in parallel, in sequence, or in any combination of the two. By default, the top-level
+animations in a transition will happen in parallel. The following example shows a rather complex transition
+making use of both sequential and parallel animations:
+
+\code
+Transition {
+    from: "*"
+    to: "MyState"
+    reversible: true
+    SequentialAnimation {
+        ColorAnimation { duration: 1000 }
+        PauseAnimation { duration: 1000 }
+        ParallelAnimation {
+            NumberAnimation {
+                duration: 1000
+                easing.type: "OutBounce"
+                targets: box1
+                properties: "x,y"
+            }
+            NumberAnimation {
+                duration: 1000
+                targets: box2
+                properties: "x,y"
+            }
+        }
+    }
+}
+\endcode
+
+\section1 Property Behaviors
+
+A \l{Behavior}{property behavior} specifies a default animation to run whenever the property's value changes, regardless
+of what caused the change. The \c enabled property can be used to force a \l Behavior
+to only apply under certain circumstances.
+
+In the following snippet, we specify that we want the x position of redRect to be animated
+whenever it changes. The animation will last 300 milliseconds and use an InOutQuad easing curve.
+
+\qml
+Rectangle {
+    id: redRect
+    color: "red"
+    width: 100; height: 100
+    x: Behavior { NumberAnimation { duration: 300; easing.type: "InOutQuad" } }
+}
+\endqml
+
+Like using an animation as a value source, when used in a Behavior and animation does not need to specify
+a \c target or \c property.
+
+To trigger this behavior, we could:
+\list
+\o Enter a state that changes x
+
+\qml
+State {
+    name: "myState"
+    PropertyChanges {
+        target: redRect
+        x: 200
+        ...
+    }
+}
+\endqml
+
+\o Update x from a script
+
+\qml
+MouseArea {
+    ....
+    onClicked: redRect.x = 24;
+}
+\endqml
+\endlist
+
+If x were bound to another property, triggering the binding would also trigger the behavior.
+
+If a state change has a transition animation matching a property with a Behavior, the transition animation
+will override the Behavior for that state change.
+
+*/

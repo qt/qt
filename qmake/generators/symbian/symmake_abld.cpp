@@ -48,6 +48,9 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
 #define DO_NOTHING_TARGET "do_nothing"
 #define CREATE_TEMPS_TARGET "create_temps"
 #define EXTENSION_CLEAN "extension_clean"
@@ -56,6 +59,8 @@
 #define FINALIZE_TARGET "finalize"
 #define GENERATED_SOURCES_TARGET "generated_sources"
 #define ALL_SOURCE_DEPS_TARGET "all_source_deps"
+#define DEPLOYMENT_TARGET "deployment"
+#define DEPLOYMENT_CLEAN_TARGET "deployment_clean"
 #define WINSCW_DEPLOYMENT_TARGET "winscw_deployment"
 #define WINSCW_DEPLOYMENT_CLEAN_TARGET "winscw_deployment_clean"
 #define STORE_BUILD_TARGET "store_build"
@@ -109,25 +114,29 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QStringList wrapperTargets;
         if (deploymentOnly) {
             buildDeps.append(STORE_BUILD_TARGET);
-            cleanDeps.append(DO_NOTHING_TARGET);
-            cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET);
-            finalDeps.append(DO_NOTHING_TARGET);
-            finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET);
+            cleanDeps.append(DEPLOYMENT_CLEAN_TARGET);
+            cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET " " DEPLOYMENT_CLEAN_TARGET);
+            finalDeps.append(DEPLOYMENT_TARGET);
+            finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET " " DEPLOYMENT_TARGET);
             wrapperTargets << WINSCW_DEPLOYMENT_TARGET
                 << WINSCW_DEPLOYMENT_CLEAN_TARGET
+                << DEPLOYMENT_TARGET
+                << DEPLOYMENT_CLEAN_TARGET
                 << STORE_BUILD_TARGET;
         } else {
             buildDeps.append(CREATE_TEMPS_TARGET " " PRE_TARGETDEPS_TARGET " " STORE_BUILD_TARGET);
-            cleanDeps.append(EXTENSION_CLEAN);
-            cleanDepsWinscw.append(EXTENSION_CLEAN " " WINSCW_DEPLOYMENT_CLEAN_TARGET);
-            finalDeps.append(FINALIZE_TARGET);
-            finalDepsWinscw.append(FINALIZE_TARGET " " WINSCW_DEPLOYMENT_TARGET);
+            cleanDeps.append(EXTENSION_CLEAN " " DEPLOYMENT_CLEAN_TARGET);
+            cleanDepsWinscw.append(EXTENSION_CLEAN " " WINSCW_DEPLOYMENT_CLEAN_TARGET " " DEPLOYMENT_CLEAN_TARGET);
+            finalDeps.append(FINALIZE_TARGET " " DEPLOYMENT_TARGET);
+            finalDepsWinscw.append(FINALIZE_TARGET " " WINSCW_DEPLOYMENT_TARGET " " DEPLOYMENT_TARGET);
             wrapperTargets << PRE_TARGETDEPS_TARGET
                 << CREATE_TEMPS_TARGET
                 << EXTENSION_CLEAN
                 << FINALIZE_TARGET
                 << WINSCW_DEPLOYMENT_CLEAN_TARGET
                 << WINSCW_DEPLOYMENT_TARGET
+                << DEPLOYMENT_CLEAN_TARGET
+                << DEPLOYMENT_TARGET
                 << STORE_BUILD_TARGET;
         }
 
@@ -172,7 +181,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     releasePlatforms.removeAll("winscw"); // No release for emulator
 
     QString testClause;
-    if (project->isActiveConfig("symbian_test"))
+    if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
         testClause = QLatin1String(" test");
     else
         testClause = QLatin1String("");
@@ -195,16 +204,21 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
     t << "MOVE              = " << var("QMAKE_MOVE") << endl;
+#ifdef Q_OS_WIN32
     t << "XCOPY             = xcopy /d /f /h /r /y /i" << endl;
     t << "ABLD              = ABLD.BAT" << endl;
+#else
+    t << "XCOPY             = cp -u -v" << endl;
+    t << "ABLD              = abld" << endl;
+#endif
     t << "DEBUG_PLATFORMS   = " << debugPlatforms.join(" ") << endl;
     t << "RELEASE_PLATFORMS = " << releasePlatforms.join(" ") << endl;
     t << "MAKE              = make" << endl;
     t << endl;
     t << "ifeq (WINS,$(findstring WINS, $(PLATFORM)))" << endl;
-    t << "ZDIR=$(EPOCROOT)epoc32\\release\\$(PLATFORM)\\$(CFG)\\Z" << endl;
+    t << "ZDIR=$(EPOCROOT)" << QDir::toNativeSeparators("epoc32/release/$(PLATFORM)/$(CFG)/z") << endl;
     t << "else" << endl;
-    t << "ZDIR=$(EPOCROOT)epoc32\\data\\z" << endl;
+    t << "ZDIR=$(EPOCROOT)" << QDir::toNativeSeparators("epoc32/data/z") << endl;
     t << "endif" << endl;
     t << endl;
     t << "DEFINES" << '\t' << " = "
@@ -298,14 +312,16 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // generate command lines like this ...
         // -@ if NOT EXIST  ".\somedir"         mkdir ".\somedir"
         QStringList dirsToClean;
+        QString dirExists = var("QMAKE_CHK_DIR_EXISTS");
+        QString mkdir = var("QMAKE_MKDIR");
         for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
             QStringList values = it.value();
             for (int i = 0; i < values.size(); ++i) {
                 if (values.at(i).endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
                     QString fixedValue(QDir::toNativeSeparators(values.at(i)));
                     dirsToClean << fixedValue;
-                    t << "\t-@ if NOT EXIST \""  << fixedValue << "\" mkdir \""
-                      << fixedValue << "\"" << endl;
+                    t << "\t-@ " << dirExists << " \""  << fixedValue << "\" "
+                      << mkdir << " \"" << fixedValue << "\"" << endl;
                 }
             }
         }
@@ -314,7 +330,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         // Note: EXTENSION_CLEAN will get called many times when doing reallyclean
         //       This is why the "2> NUL" gets appended to generated clean targets in makefile.cpp.
         t << EXTENSION_CLEAN ": " COMPILER_CLEAN_TARGET << endl;
-        generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_DIR"), " /S /Q ", "", "");
+        generateCleanCommands(t, dirsToClean, var("QMAKE_DEL_TREE"), "", "", "");
         t << endl;
 
         t << PRE_TARGETDEPS_TARGET ":"
@@ -359,11 +375,9 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         qDeleteAll(subtargets);
     }
 
-    writeDeploymentTargets(t);
-
-    writeSisTargets(t);
-
-    writeStoreBuildTarget(t);
+    // Deploymend targets for both emulator and rom deployment
+    writeDeploymentTargets(t, false);
+    writeDeploymentTargets(t, true);
 
     generateDistcleanTargets(t);
 
@@ -404,13 +418,21 @@ void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t,
     Q_UNUSED(iconTargetFile);
 }
 
-bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
+bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool isRom)
 {
-    t << WINSCW_DEPLOYMENT_TARGET ":" << endl;
+    if (isRom)
+        t << DEPLOYMENT_TARGET ":" << endl;
+    else
+        t << WINSCW_DEPLOYMENT_TARGET ":" << endl;
 
-    QString remoteTestPath = epocRoot() + QLatin1String("epoc32\\winscw\\c\\private\\") + privateDirUid;   // default 4 OpenC; 4 all Symbian too
+    QString remoteTestPath = epocRoot()
+        + QLatin1String(isRom ? "epoc32\\data\\z\\private\\" : "epoc32\\winscw\\c\\private\\")
+        + privateDirUid;
     DeploymentList depList;
-    initProjectDeploySymbian(project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
+
+    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+        QLatin1String(isRom ? ROM_DEPLOYMENT_PLATFORM : EMULATOR_DEPLOYMENT_PLATFORM),
+        QString(), generatedDirs, generatedFiles);
 
     if (depList.size())
         t << "\t-echo Deploying changed files..." << endl;
@@ -419,12 +441,17 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
         // Xcopy prompts for selecting file or directory if target doesn't exist,
         // and doesn't provide switch to force file selection. It does provide dir forcing, though,
         // so strip the last part of the destination.
-        t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \"" << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\") + 1) << "\"" << endl;
+        t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \""
+          << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\") + 1) << "\"" << endl;
     }
 
     t << endl;
 
-    t << WINSCW_DEPLOYMENT_CLEAN_TARGET ":" << endl;
+    if (isRom)
+        t << DEPLOYMENT_CLEAN_TARGET ":" << endl;
+    else
+        t << WINSCW_DEPLOYMENT_CLEAN_TARGET ":" << endl;
+
     QStringList cleanList;
     for (int i = 0; i < depList.size(); ++i) {
         cleanList.append(depList.at(i).to);
@@ -437,25 +464,6 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t)
     t << endl;
 
     return true;
-}
-
-void SymbianAbldMakefileGenerator::writeStoreBuildTarget(QTextStream &t)
-{
-    t << STORE_BUILD_TARGET ":" << endl;
-    t << "\t@echo # ============================================================================== > " MAKE_CACHE_NAME << endl;
-    t << "\t@echo # This file is generated by make and should not be modified by the user >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Name        : " << MAKE_CACHE_NAME << " >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Part of     : " << project->values("TARGET").join(" ") << " >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Description : This file is used to cache last build target for >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #                make sis target. >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #  Version     :  >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo # >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo # ============================================================================== >> " MAKE_CACHE_NAME <<  endl;
-    t << "\t@echo. >> " MAKE_CACHE_NAME <<  endl;
-    t << "\t@echo QT_SIS_TARGET ?= $(QT_SIS_TARGET) >> " MAKE_CACHE_NAME << endl;
-    t << endl;
-
-    generatedFiles << MAKE_CACHE_NAME;
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension)

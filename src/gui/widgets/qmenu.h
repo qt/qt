@@ -162,7 +162,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
     void mouseMoveEvent(QMouseEvent *);
+#ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *);
+#endif
     void enterEvent(QEvent *);
     void leaveEvent(QEvent *);
     void hideEvent(QHideEvent *);
@@ -415,6 +417,7 @@ private:
     friend OSStatus qt_mac_menu_event(EventHandlerCallRef, EventRef, void *);
     friend bool qt_mac_activate_action(OSMenuRef, uint, QAction::ActionEvent, bool);
     friend void qt_mac_emit_menuSignals(QMenu *, bool);
+    friend void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action);
 #endif
 };
 

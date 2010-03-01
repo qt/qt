@@ -544,7 +544,6 @@ UnixMakefileGenerator::processPrlFiles()
 {
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
-    frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
     const QString lflags[] = { "QMAKE_LIBDIR_FLAGS", "QMAKE_FRAMEWORKPATH_FLAGS", "QMAKE_LFLAGS", "QMAKE_LIBS", QString() };
     for(int i = 0; !lflags[i].isNull(); i++) {
         QStringList &l = project->values(lflags[i]);
@@ -779,10 +778,8 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
         if(!links.isEmpty()) {
             for(int i = 0; i < links.size(); ++i) {
-                if(Option::target_mode == Option::TARG_WIN_MODE ||
-                   Option::target_mode == Option::TARG_MAC9_MODE) {
-                } else if(Option::target_mode == Option::TARG_UNIX_MODE ||
-                          Option::target_mode == Option::TARG_MACX_MODE) {
+                if(Option::target_mode == Option::TARG_UNIX_MODE ||
+                   Option::target_mode == Option::TARG_MACX_MODE) {
                     QString link = Option::fixPathToTargetOS(destdir + links[i], false);
                     int lslash = link.lastIndexOf(Option::dir_sep);
                     if(lslash != -1)

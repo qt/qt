@@ -38,178 +38,118 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #ifndef BOOKMARKMANAGER_H
 #define BOOKMARKMANAGER_H
 
-#include "ui_bookmarkdialog.h"
-
-#include <QtCore/QUrl>
-#include <QtCore/QObject>
-#include <QtCore/QString>
-#include <QtCore/QByteArray>
-#include <QtCore/QDataStream>
-
-#include <QtGui/QIcon>
-#include <QtGui/QDialog>
-#include <QtGui/QWidget>
+#include <QtCore/QMutex>
 #include <QtGui/QTreeView>
-#include <QtGui/QStandardItemModel>
+
+#include "ui_bookmarkwidget.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEvent;
-class QLineEdit;
-class QTreeView;
-class QToolButton;
-class QStandardItem;
-class QHelpEngineCore;
-class QAbstractItemModel;
+class BookmarkManagerWidget;
+class BookmarkModel;
+class BookmarkFilterModel;
+class QKeyEvent;
 class QSortFilterProxyModel;
-
-class BookmarkManager;
-
-class BookmarkDialog : public QDialog
-{
-    Q_OBJECT
-
-public:
-    BookmarkDialog(BookmarkManager *manager, const QString &title,
-        const QString &url, QWidget *parent = 0);
-    ~BookmarkDialog();
-
-private slots:
-    void addAccepted();
-    void addNewFolder();
-    void toolButtonClicked();
-    void itemChanged(QStandardItem *item);
-    void textChanged(const QString& string);
-    void selectBookmarkFolder(const QString &folderName);
-    void customContextMenuRequested(const QPoint &point);
-    void currentChanged(const QModelIndex& current);
-
-private:
-    bool eventFilter(QObject *object, QEvent *e);
-
-private:
-    QString m_url;
-    QString m_title;
-
-    QString oldText;
-    QStandardItem *renameItem;
-
-    Ui::BookmarkDialog ui;
-    BookmarkManager *bookmarkManager;
-    QSortFilterProxyModel *proxyModel;
-};
-
-class TreeView : public QTreeView {
-    Q_OBJECT
-public:
-    TreeView(QWidget* parent = 0) : QTreeView(parent) {}
-    void subclassKeyPressEvent(QKeyEvent* event)
-    {
-        QTreeView::keyPressEvent(event);
-    }
-};
-
-class BookmarkWidget : public QWidget
-{
-    Q_OBJECT
-
-public:
-    BookmarkWidget(BookmarkManager *manager, QWidget *parent = 0,
-        bool showButtons = true);
-    ~BookmarkWidget();
-
-signals:
-    void addBookmark();
-    void requestShowLink(const QUrl &url);
-    void escapePressed();
-
-private slots:
-    void removeClicked();
-    void filterChanged();
-    void expand(const QModelIndex& index);
-    void activated(const QModelIndex &index);
-    void customContextMenuRequested(const QPoint &point);
-
-private:
-    void setup(bool showButtons);
-    void expandItems();
-    void focusInEvent(QFocusEvent *e);
-    bool eventFilter(QObject *object, QEvent *event);
-
-private:
-    QRegExp regExp;
-    TreeView *treeView;
-    QLineEdit *searchField;
-    QToolButton *addButton;
-    QToolButton *removeButton;
-    BookmarkManager *bookmarkManager;
-    QSortFilterProxyModel* filterBookmarkModel;
-};
-
-class BookmarkModel : public QStandardItemModel
-{
-    Q_OBJECT
-
-public:
-    BookmarkModel(int rows, int columns, QObject *parent = 0);
-    ~BookmarkModel();
-
-    Qt::DropActions supportedDropActions() const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-};
 
 class BookmarkManager : public QObject
 {
     Q_OBJECT
+    class BookmarkWidget;
+    class BookmarkTreeView;
+    class BookmarkListView;
+    Q_DISABLE_COPY(BookmarkManager);
 
 public:
-    BookmarkManager(QHelpEngineCore* helpEngine);
-    ~BookmarkManager();
+    static BookmarkManager* instance();
+    static void destroy();
 
-    BookmarkModel* treeBookmarkModel();
-    BookmarkModel* listBookmarkModel();
+    QWidget* bookmarkDockWidget() const;
+    void takeBookmarksMenu(QMenu* menu);
 
-    void saveBookmarks();
-    QStringList bookmarkFolders() const;
-    QModelIndex addNewFolder(const QModelIndex& index);
-    void removeBookmarkItem(QTreeView *treeView, const QModelIndex& index);
-    void showBookmarkDialog(QWidget* parent, const QString &name,
-        const QString &url);
-    void addNewBookmark(const QModelIndex& index, const QString &name,
-        const QString &url);
-    void setupBookmarkModels();
-
-    void fillBookmarkMenu(QMenu *menu);
-    QUrl urlForAction(QAction* action) const;
+public slots:
+    void addBookmark(const QString &title, const QString &url);
 
 signals:
-    void bookmarksChanged();
+    void escapePressed();
+    void setSource(const QUrl &url);
+    void setSourceInNewTab(const QUrl &url);
+
+private:
+    BookmarkManager();
+    ~BookmarkManager();
+
+    void removeItem(const QModelIndex &index);
+    bool eventFilter(QObject *object, QEvent *event);
+    void buildBookmarksMenu(const QModelIndex &index, QMenu *menu);
+    void showBookmarkDialog(const QString &name, const QString &url);
 
 private slots:
-    void itemChanged(QStandardItem *item);
+    void setupFinished();
+
+    void addBookmark();
+    void removeBookmark();
+    void manageBookmarks();
+    void refeshBookmarkMenu();
+    void renameBookmark(const QModelIndex &index);
+
+    void setSourceFromAction(QAction *action);
+    void setSourceFromIndex(const QModelIndex &index, bool newTab = false);
+
+    void focusInEvent();
+    void managerWidgetAboutToClose();
+    void textChanged(const QString &text);
+    void customContextMenuRequested(const QPoint &point);
 
 private:
-    QString uniqueFolderName() const;
-    void removeBookmarkFolderItems(QStandardItem *item);
-    void readBookmarksRecursive(const QStandardItem *item, QDataStream &stream,
-        const qint32 depth) const;
-    void fillBookmarkMenu(QMenu *menu, QStandardItem *root);
+    bool typeAndSearch;
+
+    static QMutex mutex;
+    static BookmarkManager *bookmarkManager;
+
+    QMenu *bookmarkMenu;
+
+    BookmarkModel *bookmarkModel;
+    BookmarkFilterModel *bookmarkFilterModel;
+    QSortFilterProxyModel *typeAndSearchModel;
+
+    BookmarkWidget *bookmarkWidget;
+    BookmarkTreeView *bookmarkTreeView;
+    BookmarkManagerWidget *bookmarkManagerWidget;
+};
+
+class BookmarkManager::BookmarkWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    BookmarkWidget(QWidget *parent = 0)
+        : QWidget(parent) { ui.setupUi(this); }
+    virtual ~BookmarkWidget() {}
+
+    Ui::BookmarkWidget ui;
+
+signals:
+    void focusInEvent();
 
 private:
-    QString oldText;
-    QIcon folderIcon;
+    void focusInEvent(QFocusEvent *event);
+};
 
-    BookmarkModel *treeModel;
-    BookmarkModel *listModel;
-    QStandardItem *renameItem;
-    QHelpEngineCore *helpEngine;
-    QMap<QAction*, QModelIndex> map;
+class BookmarkManager::BookmarkTreeView : public QTreeView
+{
+    Q_OBJECT
+public:
+    BookmarkTreeView(QWidget *parent = 0);
+    ~BookmarkTreeView() {}
+
+    void subclassKeyPressEvent(QKeyEvent *event);
+
+private slots:
+    void setExpandedData(const QModelIndex &index);
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif  // BOOKMARKMANAGER_H

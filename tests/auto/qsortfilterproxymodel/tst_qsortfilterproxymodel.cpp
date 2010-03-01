@@ -136,6 +136,8 @@ private slots:
     void task252507_mapFromToSource();
     void task255652_removeRowsRecursive();
     void taskQTBUG_6205_doubleProxySelectionSetSourceModel();
+    void taskQTBUG_7537_appearsAndSort();
+    void taskQTBUG_7716_unnecessaryDynamicSorting();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -917,14 +919,15 @@ void tst_QSortFilterProxyModel::removeRows()
     QStandardItemModel model;
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
-    if (sortOrder != -1)
-        proxy.sort(0, static_cast<Qt::SortOrder>(sortOrder));
-    if (!filter.isEmpty())
-        proxy.setFilterRegExp(QRegExp(filter));
 
     // prepare model
     foreach (QString s, initial)
         model.appendRow(new QStandardItem(s));
+
+    if (sortOrder != -1)
+        proxy.sort(0, static_cast<Qt::SortOrder>(sortOrder));
+    if (!filter.isEmpty())
+        proxy.setFilterRegExp(QRegExp(filter));
 
     // remove the rows
     QCOMPARE(proxy.removeRows(position, count, QModelIndex()), success);
@@ -2418,6 +2421,7 @@ void tst_QSortFilterProxyModel::sortColumnTracking2()
 {
     QStandardItemModel model;
     QSortFilterProxyModel proxyModel;
+    proxyModel.setDynamicSortFilter(true);
     proxyModel.setSourceModel(&model);
 
     proxyModel.sort(0);
@@ -2850,6 +2854,101 @@ void tst_QSortFilterProxyModel::taskQTBUG_6205_doubleProxySelectionSetSourceMode
     toggleProxy->setSourceModel(model2);
     // No crash, it's good news!
     QVERIFY(ism.selection().isEmpty());
+}
+
+void tst_QSortFilterProxyModel::taskQTBUG_7537_appearsAndSort()
+{
+    class PModel : public QSortFilterProxyModel
+    {
+        public:
+            PModel() : mVisible(false) {};
+        protected:
+            bool filterAcceptsRow(int, const QModelIndex &) const
+            {
+                return mVisible;
+            }
+
+        public:
+            void updateXX()
+            {
+                mVisible = true;
+                invalidate();
+            }
+        private:
+            bool mVisible;
+    } proxyModel;
+
+
+    QStringListModel sourceModel;
+    QStringList list;
+    list << "b" << "a" << "c";
+    sourceModel.setStringList(list);
+
+    proxyModel.setSourceModel(&sourceModel);
+    proxyModel.setDynamicSortFilter(true);
+    proxyModel.sort(0, Qt::AscendingOrder);
+
+    QApplication::processEvents();
+    QCOMPARE(sourceModel.rowCount(), 3);
+    QCOMPARE(proxyModel.rowCount(), 0); //all rows are hidden at first;
+
+    QSignalSpy spyAbout1(&proxyModel, SIGNAL(layoutAboutToBeChanged()));
+    QSignalSpy spyChanged1(&proxyModel, SIGNAL(layoutChanged()));
+
+    //introducing secondProxyModel to test the layoutChange when many items appears at once
+    QSortFilterProxyModel secondProxyModel;
+    secondProxyModel.setSourceModel(&proxyModel);
+    secondProxyModel.setDynamicSortFilter(true);
+    secondProxyModel.sort(0, Qt::DescendingOrder);
+    QCOMPARE(secondProxyModel.rowCount(), 0); //all rows are hidden at first;
+    QSignalSpy spyAbout2(&secondProxyModel, SIGNAL(layoutAboutToBeChanged()));
+    QSignalSpy spyChanged2(&secondProxyModel, SIGNAL(layoutChanged()));
+
+    proxyModel.updateXX();
+    QApplication::processEvents();
+    //now rows should be visible, and sorted
+    QCOMPARE(proxyModel.rowCount(), 3);
+    QCOMPARE(proxyModel.data(proxyModel.index(0,0), Qt::DisplayRole).toString(), QString::fromLatin1("a"));
+    QCOMPARE(proxyModel.data(proxyModel.index(1,0), Qt::DisplayRole).toString(), QString::fromLatin1("b"));
+    QCOMPARE(proxyModel.data(proxyModel.index(2,0), Qt::DisplayRole).toString(), QString::fromLatin1("c"));
+
+    //now rows should be visible, and sorted
+    QCOMPARE(secondProxyModel.rowCount(), 3);
+    QCOMPARE(secondProxyModel.data(secondProxyModel.index(0,0), Qt::DisplayRole).toString(), QString::fromLatin1("c"));
+    QCOMPARE(secondProxyModel.data(secondProxyModel.index(1,0), Qt::DisplayRole).toString(), QString::fromLatin1("b"));
+    QCOMPARE(secondProxyModel.data(secondProxyModel.index(2,0), Qt::DisplayRole).toString(), QString::fromLatin1("a"));
+
+    QCOMPARE(spyAbout1.count(), 1);
+    QCOMPARE(spyChanged1.count(), 1);
+    QCOMPARE(spyAbout2.count(), 1);
+    QCOMPARE(spyChanged2.count(), 1);
+}
+
+void tst_QSortFilterProxyModel::taskQTBUG_7716_unnecessaryDynamicSorting()
+{
+    QStringListModel model;
+    const QStringList initial = QString("bravo charlie delta echo").split(" ");
+    model.setStringList(initial);
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(false);
+    proxy.setSourceModel(&model);
+    proxy.sort(Qt::AscendingOrder);
+
+    //append two rows
+    int maxrows = proxy.rowCount(QModelIndex());
+    model.insertRows(maxrows, 2);
+    model.setData(model.index(maxrows, 0), QString("alpha"));
+    model.setData(model.index(maxrows + 1, 0), QString("fondue"));
+
+    //append new items to the initial string list and compare with model
+    QStringList expected = initial;
+    expected << QString("alpha") << QString("fondue");
+
+    //if bug 7716 is present, new rows were prepended, when they should have been appended
+    for (int row = 0; row < proxy.rowCount(QModelIndex()); ++row) {
+        QModelIndex index = proxy.index(row, 0, QModelIndex());
+        QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), expected.at(row));
+    }
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)

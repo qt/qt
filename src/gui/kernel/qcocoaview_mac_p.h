@@ -87,7 +87,6 @@ Q_GUI_EXPORT
     int composingLength;
     bool sendKeyEvents;
     QString *composingText;
-    QStringList *currentCustomTypes;
     NSInteger dragEnterSequence;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
@@ -97,7 +96,6 @@ Q_GUI_EXPORT
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender;
 - (void)draggingExited:(id < NSDraggingInfo >)sender;
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
-- (void)registerDragTypes;
 - (void)removeDropData;
 - (void)addDropData:(id <NSDraggingInfo>)sender;
 - (void)setSupportedActions:(NSDragOperation)actions;
@@ -105,6 +103,7 @@ Q_GUI_EXPORT
 - (void)draggedImage:(NSImage *)anImage endedAt:(NSPoint)aPoint operation:(NSDragOperation)operation;
 - (BOOL)isComposing;
 - (QWidget *)qt_qwidget;
+- (void) qt_clearQWidget;
 - (BOOL)qt_leftButtonIsRightButton;
 - (void)qt_setLeftButtonIsRightButton:(BOOL)isSwapped;
 + (DnDParams*)currentMouseEvent;

@@ -79,6 +79,8 @@
 #include <private/qcocoaapplicationdelegate_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 
+QT_USE_NAMESPACE
+
 @implementation NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
 
 - (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu
@@ -107,5 +109,49 @@
             | NSFontPanelStrikethroughEffectModeMask;
 }
 
+- (void)qt_sendPostedMessage:(NSEvent *)event
+{
+    // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5! 
+    // That is why we need to split the address in two parts:
+    quint64 lower = [event data1];
+    quint64 upper = [event data2];
+    QCocoaPostMessageArgs *args = reinterpret_cast<QCocoaPostMessageArgs *>(lower | (upper << 32));
+    [args->target performSelector:args->selector];
+    delete args;
+}
+
+- (BOOL)qt_sendEvent:(NSEvent *)event
+{
+    if ([event type] == NSApplicationDefined) {
+        switch ([event subtype]) {
+            case QtCocoaEventSubTypePostMessage:
+                [NSApp qt_sendPostedMessage:event];
+                return true;
+            default:
+                break;
+        }
+    }
+    return false;
+}
+
 @end
+
+@implementation QNSApplication
+
+// WARNING: If Qt did not create NSApplication (this can e.g.
+// happend if Qt is used as a plugin from a 3rd-party cocoa
+// application), QNSApplication::sendEvent will never be called.
+// SO DO NOT RELY ON THIS FUNCTION BEING AVAILABLE. 
+// Plugin developers that _do_ control the NSApplication sub-class
+// implementation of the 3rd-party application can call qt_sendEvent
+// from the sub-class event handler (like we do here) to work around
+// any issues.
+- (void)sendEvent:(NSEvent *)event
+{
+    if (![self qt_sendEvent:event])
+        [super sendEvent:event];
+}
+
+@end
+
 #endif

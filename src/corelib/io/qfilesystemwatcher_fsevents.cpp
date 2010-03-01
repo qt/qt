@@ -94,7 +94,7 @@ static void addPathToHash(PathHash &pathHash, const QString &key, const QFileInf
 {
     PathInfoList &list = pathHash[key];
     list.push_back(PathInfo(path,
-                            fileInfo.absoluteFilePath().normalized(QString::NormalizationForm_D).toUtf8()));
+                            fileInfo.canonicalFilePath().normalized(QString::NormalizationForm_D).toUtf8()));
     pathHash.insert(key, list);
 }
 
@@ -206,7 +206,7 @@ QStringList QFSEventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             } else {
                 directories->append(path);
                 // Full file path for dirs.
-                QCFString cfpath(createFSStreamPath(fileInfo.absoluteFilePath()));
+                QCFString cfpath(createFSStreamPath(fileInfo.canonicalFilePath()));
                 addPathToHash(dirPathInfoHash, cfpath, fileInfo, path);
                 CFArrayAppendValue(tmpArray, cfpath);
             }
@@ -216,7 +216,7 @@ QStringList QFSEventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
                 continue;
             } else {
                 // Just the absolute path (minus it's filename) for files.
-                QCFString cfpath(createFSStreamPath(fileInfo.absolutePath()));
+                QCFString cfpath(createFSStreamPath(fileInfo.canonicalPath()));
                 files->append(path);
                 addPathToHash(filePathInfoHash, cfpath, fileInfo, path);
                 CFArrayAppendValue(tmpArray, cfpath);
@@ -293,7 +293,7 @@ QStringList QFSEventsFileSystemWatcherEngine::removePaths(const QStringList &pat
         itemCount = CFArrayGetCount(tmpArray);
         const QString &path = paths.at(i);
         QFileInfo fi(path);
-        QCFString cfpath(createFSStreamPath(fi.absolutePath()));
+        QCFString cfpath(createFSStreamPath(fi.canonicalPath()));
 
         CFIndex index = CFArrayGetFirstIndexOfValue(tmpArray, CFRangeMake(0, itemCount), cfpath);
         if (index != -1) {
@@ -302,7 +302,7 @@ QStringList QFSEventsFileSystemWatcherEngine::removePaths(const QStringList &pat
             removePathFromHash(filePathInfoHash, cfpath, path);
         } else {
             // Could be a directory we are watching instead.
-            QCFString cfdirpath(createFSStreamPath(fi.absoluteFilePath()));
+            QCFString cfdirpath(createFSStreamPath(fi.canonicalFilePath()));
             index = CFArrayGetFirstIndexOfValue(tmpArray, CFRangeMake(0, itemCount), cfdirpath);
             if (index != -1) {
                 CFArrayRemoveValueAtIndex(tmpArray, index);
@@ -445,7 +445,16 @@ void QFSEventsFileSystemWatcherEngine::updateFiles()
     updateHash(dirPathInfoHash);
     if (filePathInfoHash.isEmpty() && dirPathInfoHash.isEmpty()) {
         // Everything disappeared before we got to start, don't bother.
-        stop();
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+        // Code duplicated from stop(), with the exception that we
+        // don't wait on waitForStop here. Doing this will lead to
+        // a deadlock since this function is called from the worker
+        // thread. (waitForStop.wakeAll() is only called from the
+        // end of run()).
+        stopFSStream(fsStream);
+        if (threadsRunLoop)
+            CFRunLoopStop(threadsRunLoop);
+#endif
         cleanupFSStream(fsStream);
     }
     waitCondition.wakeAll();

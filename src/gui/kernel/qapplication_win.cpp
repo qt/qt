@@ -928,7 +928,11 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     uint style;
     bool icon;
     QString cname;
-    if (flags & Qt::MSWindowsOwnDC) {
+    if (qt_widget_private(w)->isGLWidget) {
+        cname = QLatin1String("QGLWidget");
+        style = CS_DBLCLKS;
+        icon  = true;
+    } else if (flags & Qt::MSWindowsOwnDC) {
         cname = QLatin1String("QWidgetOwnDC");
         style = CS_DBLCLKS;
 #ifndef Q_WS_WINCE
@@ -1021,7 +1025,7 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     }
     wc.hCursor      = 0;
 #ifndef Q_WS_WINCE
-    wc.hbrBackground = (HBRUSH)GetSysColorBrush(COLOR_WINDOW);
+    wc.hbrBackground = qt_widget_private(w)->isGLWidget ? 0 : (HBRUSH)GetSysColorBrush(COLOR_WINDOW);
 #else
     wc.hbrBackground = 0;
 #endif
@@ -1901,8 +1905,13 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 break;
 
             if (!msg.wParam) {
+#ifdef Q_WS_WINCE
+                // On Windows CE, lParam parameter is a constant, not a char pointer.
+                if (msg.lParam == INI_INTL) {
+#else
                 QString area = QString::fromWCharArray((wchar_t*)msg.lParam);
                 if (area == QLatin1String("intl")) {
+#endif
                     QLocalePrivate::updateSystemPrivate();
                     if (!widget->testAttribute(Qt::WA_SetLocale))
                         widget->dptr()->setLocale_helper(QLocale(), true);
@@ -2547,6 +2556,17 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             result = true;
             break;
         }
+#ifndef QT_NO_CURSOR
+        case WM_SETCURSOR: {
+            QCursor *ovr = QApplication::overrideCursor();
+            if (ovr) {
+                SetCursor(ovr->handle());
+                RETURN(TRUE);
+            }
+            result = false;
+            break;
+        }
+#endif
         default:
             result = false;                        // event was not processed
             break;
@@ -2969,7 +2989,10 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
                 // most recent one.
                 msgPtr->lParam = mouseMsg.lParam;
                 msgPtr->wParam = mouseMsg.wParam;
-                msgPtr->pt = mouseMsg.pt;
+                // Extract the x,y coordinates from the lParam as we do in the WndProc
+                msgPtr->pt.x = GET_X_LPARAM(mouseMsg.lParam);
+                msgPtr->pt.y = GET_Y_LPARAM(mouseMsg.lParam);
+                ClientToScreen(msg.hwnd, &(msgPtr->pt));
                 // Remove the mouse move message
                 PeekMessage(&mouseMsg, msg.hwnd, WM_MOUSEMOVE,
                             WM_MOUSEMOVE, PM_REMOVE);
@@ -3616,13 +3639,19 @@ bool QETWidget::translatePaintEvent(const MSG &msg)
         return true;
 
     setAttribute(Qt::WA_PendingUpdate, false);
-    const QRegion dirtyInBackingStore(qt_dirtyRegion(this));
-    // Make sure the invalidated region contains the region we're about to repaint.
-    // BeginPaint will set the clip to the invalidated region and it is impossible
-    // to enlarge it afterwards (only shrink it). Using GetDCEx is not suffient
-    // as it may return an invalid context (especially on Windows Vista).
-    if (!dirtyInBackingStore.isEmpty())
-        InvalidateRgn(internalWinId(), dirtyInBackingStore.handle(), false);
+
+    if (d_func()->isGLWidget) {
+        if (d_func()->usesDoubleBufferedGLContext)
+            InvalidateRect(internalWinId(), 0, false);
+    } else {
+        const QRegion dirtyInBackingStore(qt_dirtyRegion(this));
+        // Make sure the invalidated region contains the region we're about to repaint.
+        // BeginPaint will set the clip to the invalidated region and it is impossible
+        // to enlarge it afterwards (only shrink it). Using GetDCEx is not suffient
+        // as it may return an invalid context (especially on Windows Vista).
+        if (!dirtyInBackingStore.isEmpty())
+            InvalidateRgn(internalWinId(), dirtyInBackingStore.handle(), false);
+    }
     PAINTSTRUCT ps;
     d_func()->hd = BeginPaint(internalWinId(), &ps);
 

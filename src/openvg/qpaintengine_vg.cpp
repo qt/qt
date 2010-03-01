@@ -50,10 +50,10 @@
 #endif
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qdrawhelper_p.h>
-#include <QtGui/private/qtextureglyphcache_p.h>
 #include <QtGui/private/qtextengine_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
+#include <QtGui/private/qstatictext_p.h>
 #include <QDebug>
 #include <QSet>
 
@@ -86,15 +86,14 @@ public:
     QVGFontGlyphCache();
     ~QVGFontGlyphCache();
 
-    void cacheGlyphs(QVGPaintEnginePrivate *d,
-                     const QTextItemInt &ti,
-                     const QVarLengthArray<glyph_t> &glyphs);
-    void setScaleFromText(const QTextItemInt &ti);
+    void cacheGlyphs(QVGPaintEnginePrivate *d, QFontEngine *fontEngine, const glyph_t *g, int count);
+
+    void setScaleFromText(const QFont &font, QFontEngine *fontEngine);
 
     VGFont font;
     VGfloat scaleX;
     VGfloat scaleY;
-    
+
     uint cachedGlyphsMask[256 / 32];
     QSet<glyph_t> cachedGlyphs;
 };
@@ -131,8 +130,9 @@ public:
     void draw(VGPath path, const QPen& pen, const QBrush& brush, VGint rule = VG_EVEN_ODD);
     void stroke(VGPath path, const QPen& pen);
     void fill(VGPath path, const QBrush& brush, VGint rule = VG_EVEN_ODD);
-    VGPath vectorPathToVGPath(const QVectorPath& path);
-    VGPath painterPathToVGPath(const QPainterPath& path);
+    inline void releasePath(VGPath path);
+    VGPath vectorPathToVGPath(const QVectorPath& path, bool forceNewPath = false);
+    VGPath painterPathToVGPath(const QPainterPath& path, bool forceNewPath = false);
     VGPath roundedRectPath(const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode);
     VGPaintType setBrush
         (VGPaint paint, const QBrush& brush, VGMatrixMode mode,
@@ -177,6 +177,8 @@ public:
     VGPath linePath;        // Cached path for quick drawing of lines.
     VGPath roundRectPath;   // Cached path for quick drawing of rounded rects.
 #endif
+
+    VGPath reusablePath;    // Reusable path for vectorPathToVGPath(), etc.
 
     QTransform transform;   // Currently active transform.
     bool simpleTransform;   // True if the transform is simple (non-projective).
@@ -350,6 +352,8 @@ void QVGPaintEnginePrivate::init()
     roundRectPath = 0;
 #endif
 
+    reusablePath = 0;
+
     simpleTransform = true;
     pathTransformSet = false;
     penScale = 1.0;
@@ -446,6 +450,15 @@ void QVGPaintEnginePrivate::initObjects()
                             VG_PATH_CAPABILITY_ALL);
     vgAppendPathData(linePath, 2, segments, coords);
 #endif
+
+    // This path can be reused over and over by calling vgClearPath().
+    reusablePath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                                VG_PATH_DATATYPE_F,
+                                1.0f,        // scale
+                                0.0f,        // bias
+                                32 + 1,      // segmentCapacityHint
+                                32 * 2,      // coordCapacityHint
+                                VG_PATH_CAPABILITY_ALL);
 }
 
 void QVGPaintEnginePrivate::destroy()
@@ -465,6 +478,8 @@ void QVGPaintEnginePrivate::destroy()
     if (roundRectPath)
         vgDestroyPath(roundRectPath);
 #endif
+    if (reusablePath)
+        vgDestroyPath(reusablePath);
 
 #if !defined(QVG_NO_DRAW_GLYPHS)
     QVGFontCache::Iterator it;
@@ -541,19 +556,32 @@ void QVGPaintEnginePrivate::updateTransform(QPaintDevice *pdev)
     qt_scaleForTransform(transform, &penScale);
 }
 
-VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
+inline void QVGPaintEnginePrivate::releasePath(VGPath path)
+{
+    if (path == reusablePath)
+        vgClearPath(path, VG_PATH_CAPABILITY_ALL);
+    else
+        vgDestroyPath(path);
+}
+
+VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path, bool forceNewPath)
 {
     int count = path.elementCount();
     const qreal *points = path.points();
     const QPainterPath::ElementType *elements = path.elements();
 
-    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                                 VG_PATH_DATATYPE_F,
-                                 1.0f,        // scale
-                                 0.0f,        // bias
-                                 count + 1,   // segmentCapacityHint
-                                 count * 2,   // coordCapacityHint
-                                 VG_PATH_CAPABILITY_ALL);
+    VGPath vgpath;
+    if (forceNewPath) {
+        vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                              VG_PATH_DATATYPE_F,
+                              1.0f,        // scale
+                              0.0f,        // bias
+                              count + 1,   // segmentCapacityHint
+                              count * 2,   // coordCapacityHint
+                              VG_PATH_CAPABILITY_ALL);
+    } else {
+        vgpath = reusablePath;
+    }
 
     // Size is sufficient segments for drawRoundedRect() paths.
     QVarLengthArray<VGubyte, 20> segments;
@@ -725,17 +753,22 @@ VGPath QVGPaintEnginePrivate::vectorPathToVGPath(const QVectorPath& path)
     return vgpath;
 }
 
-VGPath QVGPaintEnginePrivate::painterPathToVGPath(const QPainterPath& path)
+VGPath QVGPaintEnginePrivate::painterPathToVGPath(const QPainterPath& path, bool forceNewPath)
 {
     int count = path.elementCount();
 
-    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                                 VG_PATH_DATATYPE_F,
-                                 1.0f,        // scale
-                                 0.0f,        // bias
-                                 count + 1,   // segmentCapacityHint
-                                 count * 2,   // coordCapacityHint
-                                 VG_PATH_CAPABILITY_ALL);
+    VGPath vgpath;
+    if (forceNewPath) {
+        vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
+                              VG_PATH_DATATYPE_F,
+                              1.0f,        // scale
+                              0.0f,        // bias
+                              count + 1,   // segmentCapacityHint
+                              count * 2,   // coordCapacityHint
+                              VG_PATH_CAPABILITY_ALL);
+    } else {
+        vgpath = reusablePath;
+    }
 
     if (count == 0)
         return vgpath;
@@ -954,13 +987,7 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
         vgModifyPathCoords(vgpath, 0, 9, pts);
     }
 #else
-    VGPath vgpath = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                                 VG_PATH_DATATYPE_F,
-                                 1.0f,        // scale
-                                 0.0f,        // bias
-                                 10,          // segmentCapacityHint
-                                 17 * 2,      // coordCapacityHint
-                                 VG_PATH_CAPABILITY_ALL);
+    VGPath vgpath = reusablePath;
     vgAppendPathData(vgpath, 10, roundedrect_types, pts);
 #endif
 
@@ -980,16 +1007,13 @@ static QImage colorizeBitmap(const QImage &image, const QColor &color)
     int height = sourceImage.height();
     int width = sourceImage.width();
     for (int y=0; y<height; ++y) {
-        uchar *source = sourceImage.scanLine(y);
+        const uchar *source = sourceImage.constScanLine(y);
         QRgb *target = reinterpret_cast<QRgb *>(dest.scanLine(y));
         for (int x=0; x < width; ++x)
             target[x] = (source[x>>3] >> (x&7)) & 1 ? fg : bg;
     }
     return dest;
 }
-
-// defined in qpixmapdata_vg.cpp.
-const uchar *qt_vg_imageBits(const QImage& image);
 
 static VGImage toVGImage
     (const QImage & image, Qt::ImageConversionFlags flags = Qt::AutoColor)
@@ -1024,7 +1048,7 @@ static VGImage toVGImage
         break;
     }
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (format, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1068,7 +1092,7 @@ static VGImage toVGImageSubRect
         break;
     }
 
-    const uchar *pixels = qt_vg_imageBits(img) + bpp * sr.x() +
+    const uchar *pixels = img.constBits() + bpp * sr.x() +
                           img.bytesPerLine() * sr.y();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
@@ -1090,7 +1114,7 @@ static VGImage toVGImageWithOpacity(const QImage & image, qreal opacity)
     painter.drawImage(0, 0, image);
     painter.end();
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1112,7 +1136,7 @@ static VGImage toVGImageWithOpacitySubRect
     painter.drawImage(QPoint(0, 0), image, sr);
     painter.end();
 
-    const uchar *pixels = qt_vg_imageBits(img);
+    const uchar *pixels = img.constBits();
 
     VGImage vgImg = QVGImagePool::instance()->createPermanentImage
         (VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
@@ -1516,7 +1540,7 @@ void QVGPaintEngine::draw(const QVectorPath &path)
         d->draw(vgpath, s->pen, s->brush, VG_EVEN_ODD);
     else
         d->draw(vgpath, s->pen, s->brush, VG_NON_ZERO);
-    vgDestroyPath(vgpath);
+    d->releasePath(vgpath);
 }
 
 void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
@@ -1527,7 +1551,7 @@ void QVGPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         d->fill(vgpath, brush, VG_EVEN_ODD);
     else
         d->fill(vgpath, brush, VG_NON_ZERO);
-    vgDestroyPath(vgpath);
+    d->releasePath(vgpath);
 }
 
 void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
@@ -1535,7 +1559,7 @@ void QVGPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     Q_D(QVGPaintEngine);
     VGPath vgpath = d->vectorPathToVGPath(path);
     d->stroke(vgpath, pen);
-    vgDestroyPath(vgpath);
+    d->releasePath(vgpath);
 }
 
 // Determine if a co-ordinate transform is simple enough to allow
@@ -1731,7 +1755,7 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 
         default: break;
     }
-    vgDestroyPath(vgpath);
+    d->releasePath(vgpath);
 
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
@@ -2048,7 +2072,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
 
         default: break;
     }
-    vgDestroyPath(vgpath);
+    d->releasePath(vgpath);
 
     vgSeti(VG_MASKING, VG_TRUE);
     d->maskValid = true;
@@ -2399,7 +2423,7 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         return;
 
     // Check to see if we can use vgClear() for faster filling.
-    if (brush.style() == Qt::SolidPattern &&
+    if (brush.style() == Qt::SolidPattern && brush.isOpaque() &&
             clipTransformIsSimple(d->transform) && d->opacity == 1.0f &&
             clearRect(rect, brush.color())) {
         return;
@@ -2442,7 +2466,7 @@ void QVGPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     Q_D(QVGPaintEngine);
 
     // Check to see if we can use vgClear() for faster filling.
-    if (clipTransformIsSimple(d->transform) && d->opacity == 1.0f &&
+    if (clipTransformIsSimple(d->transform) && d->opacity == 1.0f && color.alpha() == 255 &&
             clearRect(rect, color)) {
         return;
     }
@@ -2487,7 +2511,7 @@ void QVGPaintEngine::drawRoundedRect(const QRectF &rect, qreal xrad, qreal yrad,
         VGPath vgpath = d->roundedRectPath(rect, xrad, yrad, mode);
         d->draw(vgpath, s->pen, s->brush);
 #if defined(QVG_NO_MODIFY_PATH)
-        vgDestroyPath(vgpath);
+        d->releasePath(vgpath);
 #endif
     } else {
         QPaintEngineEx::drawRoundedRect(rect, xrad, yrad, mode);
@@ -2636,13 +2660,7 @@ void QVGPaintEngine::drawEllipse(const QRectF &r)
     Q_D(QVGPaintEngine);
     if (d->simpleTransform) {
         QVGPainterState *s = state();
-        VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                                   VG_PATH_DATATYPE_F,
-                                   1.0f, // scale
-                                   0.0f, // bias
-                                   4,    // segmentCapacityHint
-                                   12,   // coordCapacityHint
-                                   VG_PATH_CAPABILITY_ALL);
+        VGPath path = d->reusablePath;
         static VGubyte segments[4] = {
             VG_MOVE_TO_ABS,
             VG_SCCWARC_TO_REL,
@@ -2666,7 +2684,7 @@ void QVGPaintEngine::drawEllipse(const QRectF &r)
         coords[11] = 0.0f;
         vgAppendPathData(path, 4, segments, coords);
         d->draw(path, s->pen, s->brush);
-        vgDestroyPath(path);
+        d->releasePath(path);
     } else {
         // The projective transform version of an ellipse is difficult.
         // Generate a QVectorPath containing cubic curves and transform that.
@@ -2690,7 +2708,7 @@ void QVGPaintEngine::drawPath(const QPainterPath &path)
         d->draw(vgpath, s->pen, s->brush, VG_EVEN_ODD);
     else
         d->draw(vgpath, s->pen, s->brush, VG_NON_ZERO);
-    vgDestroyPath(vgpath);
+    d->releasePath(vgpath);
 }
 
 void QVGPaintEngine::drawPoints(const QPointF *points, int pointCount)
@@ -2765,13 +2783,7 @@ void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
 {
     Q_D(QVGPaintEngine);
     QVGPainterState *s = state();
-    VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                               VG_PATH_DATATYPE_F,
-                               1.0f,             // scale
-                               0.0f,             // bias
-                               pointCount + 1,   // segmentCapacityHint
-                               pointCount * 2,   // coordCapacityHint
-                               VG_PATH_CAPABILITY_ALL);
+    VGPath path = d->reusablePath;
     QVarLengthArray<VGfloat, 16> coords;
     QVarLengthArray<VGubyte, 10> segments;
     for (int i = 0; i < pointCount; ++i, ++points) {
@@ -2805,20 +2817,14 @@ void QVGPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonD
             d->draw(path, s->pen, s->brush, VG_EVEN_ODD);
             break;
     }
-    vgDestroyPath(path);
+    d->releasePath(path);
 }
 
 void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QVGPaintEngine);
     QVGPainterState *s = state();
-    VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD,
-                               VG_PATH_DATATYPE_F,
-                               1.0f,             // scale
-                               0.0f,             // bias
-                               pointCount + 1,   // segmentCapacityHint
-                               pointCount * 2,   // coordCapacityHint
-                               VG_PATH_CAPABILITY_ALL);
+    VGPath path = d->reusablePath;
     QVarLengthArray<VGfloat, 16> coords;
     QVarLengthArray<VGubyte, 10> segments;
     for (int i = 0; i < pointCount; ++i, ++points) {
@@ -2852,7 +2858,7 @@ void QVGPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDr
             d->draw(path, s->pen, s->brush, VG_EVEN_ODD);
             break;
     }
-    vgDestroyPath(path);
+    d->releasePath(path);
 }
 
 void QVGPaintEnginePrivate::setImageOptions()
@@ -3039,9 +3045,8 @@ void QVGPaintEngine::drawTiledPixmap
 // (i.e. no opacity), no rotation or scaling, and drawing the full
 // pixmap rather than parts of the pixmap.  Even having just one of
 // these conditions will improve performance.
-void QVGPaintEngine::drawPixmaps
-    (const QDrawPixmaps::Data *drawingData, int dataCount,
-     const QPixmap &pixmap, QFlags<QDrawPixmaps::DrawingHint> hints)
+void QVGPaintEngine::drawPixmapFragments(const QPainter::Fragment *drawingData, int dataCount,
+                                         const QPixmap &pixmap, QFlags<QPainter::FragmentHint> hints)
 {
 #if !defined(QT_SHIVAVG)
     Q_D(QVGPaintEngine);
@@ -3052,7 +3057,7 @@ void QVGPaintEngine::drawPixmaps
     if (!pd)
         return; // null QPixmap
     if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
-        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+        QPaintEngineEx::drawPixmapFragments(drawingData, dataCount, pixmap, hints);
         return;
     }
 
@@ -3076,7 +3081,7 @@ void QVGPaintEngine::drawPixmaps
     QVarLengthArray<QRect> cachedSources;
 
     // Select the opacity paint object.
-    if ((hints & QDrawPixmaps::OpaqueHint) != 0 && d->opacity == 1.0f) {
+    if ((hints & QPainter::OpaqueHint) != 0 && d->opacity == 1.0f) {
         d->setImageMode(VG_DRAW_IMAGE_NORMAL);
     }  else {
         hints = 0;
@@ -3088,12 +3093,13 @@ void QVGPaintEngine::drawPixmaps
 
     for (int i = 0; i < dataCount; ++i) {
         QTransform transform(d->imageTransform);
-        transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
+        transform.translate(drawingData[i].x, drawingData[i].y);
         transform.rotate(drawingData[i].rotation);
 
         VGImage child;
         QSize imageSize = vgpd->size();
-        QRectF sr = drawingData[i].source;
+        QRectF sr(drawingData[i].sourceLeft, drawingData[i].sourceTop,
+                  drawingData[i].width, drawingData[i].height);
         if (sr.topLeft().isNull() && sr.size() == imageSize) {
             child = vgImg;
         } else {
@@ -3122,7 +3128,7 @@ void QVGPaintEngine::drawPixmaps
         transform.scale(scaleX, scaleY);
         d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
-        if ((hints & QDrawPixmaps::OpaqueHint) == 0) {
+        if ((hints & QPainter::OpaqueHint) == 0) {
             qreal opacity = d->opacity * drawingData[i].opacity;
             if (opacity != 1.0f) {
                 if (d->paintOpacity != opacity) {
@@ -3148,7 +3154,7 @@ void QVGPaintEngine::drawPixmaps
     for (int i = 0; i < cachedImages.size(); ++i)
         vgDestroyImage(cachedImages[i]);
 #else
-    QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+    QPaintEngineEx::drawPixmapFragments(drawingData, dataCount, pixmap, hints);
 #endif
 }
 
@@ -3188,22 +3194,20 @@ QVGFontGlyphCache::~QVGFontGlyphCache()
         vgDestroyFont(font);
 }
 
-void QVGFontGlyphCache::setScaleFromText(const QTextItemInt &ti)
+void QVGFontGlyphCache::setScaleFromText(const QFont &font, QFontEngine *fontEngine)
 {
-    QFontInfo fi(ti.font());
+    QFontInfo fi(font);
     qreal pixelSize = fi.pixelSize();
-    qreal emSquare = ti.fontEngine->properties().emSquare.toReal();
+    qreal emSquare = fontEngine->properties().emSquare.toReal();
     scaleX = scaleY = static_cast<VGfloat>(pixelSize / emSquare);
 }
 
-void QVGFontGlyphCache::cacheGlyphs
-        (QVGPaintEnginePrivate *d, const QTextItemInt &ti,
-         const QVarLengthArray<glyph_t> &glyphs)
+void QVGFontGlyphCache::cacheGlyphs(QVGPaintEnginePrivate *d,
+                                    QFontEngine *fontEngine,
+                                    const glyph_t *g, int count)
 {
     VGfloat origin[2];
     VGfloat escapement[2];
-    const glyph_t *g = glyphs.constData();
-    int count = glyphs.size();
     glyph_metrics_t metrics;
     // Some Qt font engines don't set yoff in getUnscaledGlyph().
     // Zero the metric structure so that everything has a default value.
@@ -3222,21 +3226,21 @@ void QVGFontGlyphCache::cacheGlyphs
         }
 #if !defined(QVG_NO_IMAGE_GLYPHS)
         Q_UNUSED(d);
-        QImage scaledImage = ti.fontEngine->alphaMapForGlyph(glyph);
+        QImage scaledImage = fontEngine->alphaMapForGlyph(glyph);
         VGImage vgImage = VG_INVALID_HANDLE;
-        metrics = ti.fontEngine->boundingBox(glyph);
+        metrics = fontEngine->boundingBox(glyph);
         if (!scaledImage.isNull()) {  // Not a space character
             if (scaledImage.format() == QImage::Format_Indexed8) {
                 vgImage = vgCreateImage(VG_A_8, scaledImage.width(), scaledImage.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(scaledImage), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
+                vgImageSubData(vgImage, scaledImage.constBits(), scaledImage.bytesPerLine(), VG_A_8, 0, 0, scaledImage.width(), scaledImage.height());
             } else if (scaledImage.format() == QImage::Format_Mono) {
                 QImage img = scaledImage.convertToFormat(QImage::Format_Indexed8);
                 vgImage = vgCreateImage(VG_A_8, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, img.constBits(), img.bytesPerLine(), VG_A_8, 0, 0, img.width(), img.height());
             } else {
                 QImage img = scaledImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
                 vgImage = vgCreateImage(VG_sARGB_8888_PRE, img.width(), img.height(), VG_IMAGE_QUALITY_FASTER);
-                vgImageSubData(vgImage, qt_vg_imageBits(img), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
+                vgImageSubData(vgImage, img.constBits(), img.bytesPerLine(), VG_sARGB_8888_PRE, 0, 0, img.width(), img.height());
             }
         }
         origin[0] = -metrics.x.toReal() + 0.5f;
@@ -3248,10 +3252,10 @@ void QVGFontGlyphCache::cacheGlyphs
 #else
         // Calculate the path for the glyph and cache it.
         QPainterPath path;
-        ti.fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
+        fontEngine->getUnscaledGlyph(glyph, &path, &metrics);
         VGPath vgPath;
         if (!path.isEmpty()) {
-            vgPath = d->painterPathToVGPath(path);
+            vgPath = d->painterPathToVGPath(path, true);
         } else {
             // Probably a "space" character with no visible outline.
             vgPath = VG_INVALID_HANDLE;
@@ -3280,7 +3284,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         QPaintEngineEx::drawTextItem(p, textItem);
         return;
     }
- 
+
     // Get the glyphs and positions associated with the text item.
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
@@ -3289,8 +3293,28 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     ti.fontEngine->getGlyphPositions
         (ti.glyphs, matrix, ti.flags, glyphs, positions);
 
+    if (!drawCachedGlyphs(glyphs.size(), glyphs.data(), ti.font(), ti.fontEngine, p))
+        QPaintEngineEx::drawTextItem(p, textItem);
+#else
+    // OpenGL 1.0 does not have support for VGFont and glyphs,
+    // so fall back to the default Qt path stroking algorithm.
+    QPaintEngineEx::drawTextItem(p, textItem);
+#endif
+}
+
+void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
+                     QPointF(0, 0));
+}
+
+ bool QVGPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFont &font,
+                                       QFontEngine *fontEngine, const QPointF &p)
+ {
+    Q_D(QVGPaintEngine);
+
     // Find the glyph cache for this font.
-    QVGFontCache::ConstIterator it = d->fontCache.constFind(ti.fontEngine);
+    QVGFontCache::ConstIterator it = d->fontCache.constFind(fontEngine);
     QVGFontGlyphCache *glyphCache;
     if (it != d->fontCache.constEnd()) {
         glyphCache = it.value();
@@ -3299,14 +3323,13 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
         if (glyphCache->font == VG_INVALID_HANDLE) {
             qWarning("QVGPaintEngine::drawTextItem: OpenVG fonts are not supported by the OpenVG engine");
             delete glyphCache;
-            QPaintEngineEx::drawTextItem(p, textItem);
-            return;
+            return false;
         }
-        glyphCache->setScaleFromText(ti);
-        d->fontCache.insert(ti.fontEngine, glyphCache);
+        glyphCache->setScaleFromText(font, fontEngine);
+        d->fontCache.insert(fontEngine, glyphCache);
         if (!d->fontEngineCleaner)
             d->fontEngineCleaner = new QVGFontEngineCleaner(d);
-        QObject::connect(ti.fontEngine, SIGNAL(destroyed()),
+        QObject::connect(fontEngine, SIGNAL(destroyed()),
                          d->fontEngineCleaner, SLOT(fontEngineDestroyed()));
     }
 
@@ -3319,7 +3342,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, glyphTransform);
 
     // Add the glyphs from the text item into the glyph cache.
-    glyphCache->cacheGlyphs(d, ti, glyphs);
+    glyphCache->cacheGlyphs(d, fontEngine, glyphs, numGlyphs);
 
     // Set the glyph drawing origin.
     VGfloat origin[2];
@@ -3338,13 +3361,10 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     // Draw the glyphs.  We need to fill with the brush associated with
     // the Qt pen, not the Qt brush.
     d->ensureBrush(state()->pen.brush());
-    vgDrawGlyphs(glyphCache->font, glyphs.size(), (VGuint*)glyphs.data(),
+    vgDrawGlyphs(glyphCache->font, numGlyphs, (VGuint*)glyphs,
                  NULL, NULL, VG_FILL_PATH, VG_TRUE);
-#else
-    // OpenGL 1.0 does not have support for VGFont and glyphs,
-    // so fall back to the default Qt path stroking algorithm.
-    QPaintEngineEx::drawTextItem(p, textItem);
-#endif
+
+    return true;
 }
 
 void QVGPaintEngine::setState(QPainterState *s)
@@ -3704,7 +3724,7 @@ void QVGCompositionHelper::drawCursorPixmap
         if (vgImage == VG_INVALID_HANDLE)
             return;
         vgImageSubData
-            (vgImage, qt_vg_imageBits(img) + img.bytesPerLine() * (img.height() - 1),
+            (vgImage, img.constBits() + img.bytesPerLine() * (img.height() - 1),
              -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
              img.width(), img.height());
 

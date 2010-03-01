@@ -46,104 +46,20 @@
 #include <qsettings.h>
 #include <qdebug.h>
 
-#define SYSBIN_DIR "\\sys\\bin"
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
+#define SYSBIN_DIR "/sys/bin"
 
 #define SUFFIX_DLL "dll"
 #define SUFFIX_EXE "exe"
 #define SUFFIX_QTPLUGIN "qtplugin"
 
-static void fixEpocRootStr(QString& path)
+static QString fixPathToEpocOS(const QString &src)
 {
-    path.replace("\\", "/");
-
-    if (path.size() > 1 && path[1] == QChar(':')) {
-        path = path.mid(2);
-    }
-
-    if (!path.size() || path[path.size()-1] != QChar('/')) {
-        path += QChar('/');
-    }
+    QString ret = Option::fixPathToTargetOS(src);
+    return ret.replace('/', '\\');
 }
-
-#define SYMBIAN_SDKS_KEY "HKEY_LOCAL_MACHINE\\Software\\Symbian\\EPOC SDKs"
-
-static QString epocRootStr;
-
-QString epocRoot()
-{
-    if (!epocRootStr.isEmpty()) {
-        return epocRootStr;
-    }
-
-    // First, check the env variable
-    epocRootStr = qgetenv("EPOCROOT");
-
-    if (epocRootStr.isEmpty()) {
-        // No EPOCROOT set, check the default device
-        // First check EPOCDEVICE env variable
-        QString defaultDevice = qgetenv("EPOCDEVICE");
-
-        // Check the windows registry via QSettings for devices.xml path
-        QSettings settings(SYMBIAN_SDKS_KEY, QSettings::NativeFormat);
-        QString devicesXmlPath = settings.value("CommonPath").toString();
-
-        if (!devicesXmlPath.isEmpty()) {
-            // Parse xml for correct device
-            devicesXmlPath += "/devices.xml";
-            QFile devicesFile(devicesXmlPath);
-            if (devicesFile.open(QIODevice::ReadOnly)) {
-                QXmlStreamReader xml(&devicesFile);
-                while (!xml.atEnd()) {
-                    xml.readNext();
-                    if (xml.isStartElement() && xml.name() == "devices") {
-                        if (xml.attributes().value("version") == "1.0") {
-                            // Look for correct device
-                            while (!(xml.isEndElement() && xml.name() == "devices") && !xml.atEnd()) {
-                                xml.readNext();
-                                if (xml.isStartElement() && xml.name() == "device") {
-                                    if ((defaultDevice.isEmpty() && xml.attributes().value("default") == "yes") ||
-                                        (!defaultDevice.isEmpty() && (xml.attributes().value("id").toString() + QString(":") + xml.attributes().value("name").toString()) == defaultDevice)) {
-                                        // Found the correct device
-                                        while (!(xml.isEndElement() && xml.name() == "device") && !xml.atEnd()) {
-                                            xml.readNext();
-                                            if (xml.isStartElement() && xml.name() == "epocroot") {
-                                                epocRootStr = xml.readElementText();
-                                                fixEpocRootStr(epocRootStr);
-                                                return epocRootStr;
-                                            }
-                                        }
-                                        xml.raiseError("No epocroot element found");
-                                    }
-                                }
-                            }
-                        } else {
-                            xml.raiseError("Invalid 'devices' element version");
-                        }
-                    }
-                }
-                if (xml.hasError()) {
-                    fprintf(stderr, "ERROR: \"%s\" when parsing devices.xml\n", qPrintable(xml.errorString()));
-                }
-            } else {
-                fprintf(stderr, "Could not open devices.xml (%s)\n", qPrintable(devicesXmlPath));
-            }
-        } else {
-            fprintf(stderr, "Could not retrieve " SYMBIAN_SDKS_KEY " setting\n");
-        }
-
-        fprintf(stderr, "Failed to determine epoc root.\n");
-        if (!defaultDevice.isEmpty())
-            fprintf(stderr, "The device indicated by EPOCDEVICE environment variable (%s) could not be found.\n", qPrintable(defaultDevice));
-        fprintf(stderr, "Either set EPOCROOT or EPOCDEVICE environment variable to a valid value, or provide a default Symbian device.\n");
-
-        // No valid device found; set epocroot to "/"
-        epocRootStr = QLatin1String("/");
-    }
-
-    fixEpocRootStr(epocRootStr);
-    return epocRootStr;
-}
-
 
 static bool isPlugin(const QFileInfo& info, const QString& devicePath)
 {
@@ -175,12 +91,12 @@ static void createPluginStub(const QFileInfo& info,
                              QStringList& generatedDirs,
                              QStringList& generatedFiles)
 {
-    QDir().mkpath(QLatin1String(PLUGIN_STUB_DIR "\\"));
+    QDir().mkpath(QLatin1String(PLUGIN_STUB_DIR));
     if (!generatedDirs.contains(PLUGIN_STUB_DIR))
         generatedDirs << PLUGIN_STUB_DIR;
     // Plugin stubs must have different name from the actual plugins, because
     // the toolchain for creating ROM images cannot handle non-binary .dll files properly.
-    QFile stubFile(QLatin1String(PLUGIN_STUB_DIR "\\") + info.completeBaseName() + "." SUFFIX_QTPLUGIN);
+    QFile stubFile(QLatin1String(PLUGIN_STUB_DIR "/") + info.completeBaseName() + "." SUFFIX_QTPLUGIN);
     if (stubFile.open(QIODevice::WriteOnly)) {
         if (!generatedFiles.contains(stubFile.fileName()))
             generatedFiles << stubFile.fileName();
@@ -194,7 +110,7 @@ static void createPluginStub(const QFileInfo& info,
     }
     QFileInfo stubInfo(stubFile);
     deploymentList.append(CopyItem(Option::fixPathToLocalOS(stubInfo.absoluteFilePath()),
-                                   Option::fixPathToLocalOS(devicePath + "\\" + stubInfo.fileName())));
+                                   fixPathToEpocOS(devicePath + "/" + stubInfo.fileName())));
 }
 
 QString generate_uid(const QString& target)
@@ -207,7 +123,7 @@ QString generate_uid(const QString& target)
         return tmp;
     }
 
-    unsigned long hash = 5381;
+    quint32 hash = 5381;
     int c;
 
     for (int i = 0; i < target.size(); ++i) {
@@ -258,19 +174,27 @@ void initProjectDeploySymbian(QMakeProject* project,
 
     foreach(QString item, project->values("DEPLOYMENT")) {
         QString devicePath = project->first(item + ".path");
-        if (!deployBinaries
-                && !devicePath.isEmpty()
-                && (0 == devicePath.compare(project->values("APP_RESOURCE_DIR").join(""), Qt::CaseInsensitive)
-                    || 0 == devicePath.compare(project->values("REG_RESOURCE_IMPORT_DIR").join(""), Qt::CaseInsensitive))) {
-            // Do not deploy resources in emulator builds, as that seems to cause conflicts
-            // If there is ever a real need to deploy pre-built resources for emulator,
-            // BLD_INF_RULES.prj_exports can be used as a workaround.
-            continue;
-        }
+        QString devicePathWithoutDrive = devicePath;
 
         bool devicePathHasDriveLetter = false;
         if (devicePath.size() > 1) {
             devicePathHasDriveLetter = devicePath.at(1) == QLatin1Char(':');
+        }
+
+        // Sometimes devicePath can contain disk but APP_RESOURCE_DIR does not,
+        // so remove the drive letter for comparison purposes.
+        if (devicePathHasDriveLetter)
+        {
+            devicePathWithoutDrive.remove(0,2);
+        }
+        if (!deployBinaries
+                && !devicePathWithoutDrive.isEmpty()
+                && (0 == devicePathWithoutDrive.compare(project->values("APP_RESOURCE_DIR").join(""), Qt::CaseInsensitive)
+                    || 0 == devicePathWithoutDrive.compare(project->values("REG_RESOURCE_IMPORT_DIR").join(""), Qt::CaseInsensitive))) {
+            // Do not deploy resources in emulator builds, as that seems to cause conflicts
+            // If there is ever a real need to deploy pre-built resources for emulator,
+            // BLD_INF_RULES.prj_exports can be used as a workaround.
+            continue;
         }
 
         if (devicePath.isEmpty() || devicePath == QLatin1String(".")) {
@@ -280,24 +204,35 @@ void initProjectDeploySymbian(QMakeProject* project,
         else if (!(devicePath.at(0) == QLatin1Char('/')
                    || devicePath.at(0) == QLatin1Char('\\')
                    || devicePathHasDriveLetter)) {
-            // create output path
-            devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
+            // Create output path
+            devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('/') + devicePath));
         } else {
-            if (0 == platform.compare(QLatin1String("winscw"), Qt::CaseInsensitive)) {
+            if (!platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))) {
                 if (devicePathHasDriveLetter) {
-                    devicePath = epocRoot() + "epoc32\\winscw\\" + devicePath.remove(1, 1);
+                    devicePath = epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
                 } else {
-                    devicePath = epocRoot() + "epoc32\\winscw\\c" + devicePath;
+                    devicePath = epocRoot() + "epoc32/winscw/c" + devicePath;
                 }
             } else {
-                // Drive letter needed if targetpath contains one and it is not already in
-                if (targetPathHasDriveLetter && !devicePathHasDriveLetter) {
-                    devicePath = deploymentDrive + devicePath;
+                if (!devicePathHasDriveLetter) {
+                    if (!platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+                        //For plugin deployment under ARM no needed drive letter
+                        devicePath = epocRoot() + "epoc32/data/z" + devicePath;
+                    } else if (targetPathHasDriveLetter) {
+                        // Drive letter needed if targetpath contains one and it is not already in
+                        devicePath = deploymentDrive + devicePath;
+                    }
+                } else {
+                    //it is necessary to delete drive letter for ARM deployment
+                    if (!platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
+                        devicePath.remove(0,2);
+                        devicePath = epocRoot() + "epoc32/data/z" + devicePath;
+                    }
                 }
             }
         }
 
-        devicePath.replace(QLatin1String("/"), QLatin1String("\\"));
+        devicePath.replace(QLatin1String("\\"), QLatin1String("/"));
 
         if (!deployBinaries &&
                 0 == devicePath.right(8).compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive)) {
@@ -321,7 +256,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                 dirSearch = true;
             } else {
                 if (info.exists() || source.indexOf('*') != -1) {
-                    nameFilter = source.split('\\').last();
+                    nameFilter = source.split(QDir::separator()).last();
                     searchPath = info.absolutePath();
                 } else {
                     // Entry was not found. That is ok if it is a binary, since those do not necessarily yet exist.
@@ -329,13 +264,19 @@ void initProjectDeploySymbian(QMakeProject* project,
                     if (isBinary(info)) {
                         if (deployBinaries) {
                             // Executables and libraries are deployed to \sys\bin
-                            QFileInfo releasePath(epocRoot() + "epoc32\\release\\" + platform + "\\" + build + "\\");
+                            QFileInfo targetPath(epocRoot() + "epoc32/release/" + platform + "/" + build + "/");
                             if(devicePathHasDriveLetter) {
-                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
-                                                               Option::fixPathToLocalOS(devicePath.left(2) + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
+                                deploymentList.append(CopyItem(
+                                    Option::fixPathToLocalOS(targetPath.absolutePath() + "/" + info.fileName(),
+                                    false, true),
+                                    fixPathToEpocOS(devicePath.left(2) + QLatin1String(SYSBIN_DIR "/")
+                                    + info.fileName())));
                             } else {
-                                deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
-                                                               Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
+                                deploymentList.append(CopyItem(
+                                    Option::fixPathToLocalOS(targetPath.absolutePath() + "/" + info.fileName(),
+                                    false, true),
+                                    fixPathToEpocOS(deploymentDrive + QLatin1String(SYSBIN_DIR "/")
+                                    + info.fileName())));
                             }
                         }
                         if (isPlugin(info, devicePath)) {
@@ -346,7 +287,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                         // Generate deployment even if file doesn't exist, as this may be the case
                         // when generating .pkg files.
                         deploymentList.append(CopyItem(Option::fixPathToLocalOS(info.absoluteFilePath()),
-                                                       Option::fixPathToLocalOS(devicePath + "\\" + info.fileName())));
+                                                       fixPathToEpocOS(devicePath + "/" + info.fileName())));
                         continue;
                     }
                 }
@@ -368,14 +309,26 @@ void initProjectDeploySymbian(QMakeProject* project,
                         // This deploys pre-built plugins. Other pre-built binaries will deploy normally,
                         // as they have SYSBIN_DIR target path.
                         if (deployBinaries) {
-                            deploymentList.append(CopyItem(Option::fixPathToLocalOS(absoluteItemPath + "\\" + iterator.fileName()),
-                                                           Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + iterator.fileName())));
+                            if (devicePathHasDriveLetter) {
+                                deploymentList.append(CopyItem(
+                                    Option::fixPathToLocalOS(absoluteItemPath + "/" + iterator.fileName()),
+                                    fixPathToEpocOS(devicePath.left(2) + QLatin1String(SYSBIN_DIR "/")
+                                    + iterator.fileName())));
+                            } else {
+                                deploymentList.append(CopyItem(
+                                    Option::fixPathToLocalOS(absoluteItemPath + "/" + iterator.fileName()),
+                                    fixPathToEpocOS(deploymentDrive + QLatin1String(SYSBIN_DIR "/")
+                                    + iterator.fileName())));
+                            }
                         }
-                        createPluginStub(info, devicePath + "\\" + absoluteItemPath.right(diffSize), deploymentList, generatedDirs, generatedFiles);
+                        createPluginStub(info, devicePath + "/" + absoluteItemPath.right(diffSize),
+                            deploymentList, generatedDirs, generatedFiles);
                         continue;
                     } else {
-                        deploymentList.append(CopyItem(Option::fixPathToLocalOS(absoluteItemPath + "\\" + iterator.fileName()),
-                                                       Option::fixPathToLocalOS(devicePath + "\\" + absoluteItemPath.right(diffSize) + "\\" + iterator.fileName())));
+                        deploymentList.append(CopyItem(
+                            Option::fixPathToLocalOS(absoluteItemPath + "/" + iterator.fileName()),
+                            fixPathToEpocOS(devicePath + "/" + absoluteItemPath.right(diffSize)
+                            + "/" + iterator.fileName())));
                     }
                 }
             }

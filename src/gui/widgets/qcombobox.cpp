@@ -607,7 +607,13 @@ void QComboBoxPrivateContainer::changeEvent(QEvent *e)
         view->setMouseTracking(combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking, &opt, combo) ||
                                combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo));
         setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
+#ifdef QT_SOFTKEYS_ENABLED
+    } else if (e->type() == QEvent::LanguageChange) {
+        selectAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::SelectSoftKey));
+        cancelAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::CancelSoftKey));
+#endif
     }
+
     QWidget::changeEvent(e);
 }
 
@@ -1268,7 +1274,8 @@ QComboBox::~QComboBox()
 
     By default, this property has a value of 10.
 
-    \note This property is ignored for non-editable comboboxes in Mac style.
+    \note This property is ignored for non-editable comboboxes in styles that returns
+    false for QStyle::SH_ComboBox_Popup such as the Mac style or the Gtk+ Style.
 */
 int QComboBox::maxVisibleItems() const
 {
@@ -2348,7 +2355,7 @@ void QComboBox::showPopup()
                     toCheck.push(idx);
 #endif
                 ++count;
-                if (!usePopup && count > d->maxVisibleItems) {
+                if (!usePopup && count >= d->maxVisibleItems) {
                     toCheck.clear();
                     break;
                 }

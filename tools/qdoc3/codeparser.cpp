@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_MAINCLASS               Doc::alias(QLatin1String("mainclass"))
 #define COMMAND_NONREENTRANT            Doc::alias(QLatin1String("nonreentrant"))
 #define COMMAND_OBSOLETE                Doc::alias(QLatin1String("obsolete"))
+#define COMMAND_PAGEKEYWORDS            Doc::alias(QLatin1String("pagekeywords"))
 #define COMMAND_PRELIMINARY             Doc::alias(QLatin1String("preliminary"))
 #define COMMAND_INPUBLICGROUP           Doc::alias(QLatin1String("inpublicgroup"))
 #define COMMAND_REENTRANT               Doc::alias(QLatin1String("reentrant"))
@@ -170,6 +171,7 @@ QSet<QString> CodeParser::commonMetaCommands()
                            << COMMAND_MAINCLASS
                            << COMMAND_NONREENTRANT
                            << COMMAND_OBSOLETE
+                           << COMMAND_PAGEKEYWORDS
                            << COMMAND_PRELIMINARY
                            << COMMAND_INPUBLICGROUP
                            << COMMAND_REENTRANT
@@ -229,6 +231,9 @@ void CodeParser::processCommonMetaCommand(const Location &location,
     }
     else if (command == COMMAND_SINCE) {
         node->setSince(arg);
+    }
+    else if (command == COMMAND_PAGEKEYWORDS) {
+        node->addPageKeywords(arg);
     }
     else if (command == COMMAND_SUBTITLE) {
 	if (node->type() == Node::Fake) {

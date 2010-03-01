@@ -67,6 +67,7 @@
 //   #include <private/qpolygonclipper_p.h>
 //   #include <private/qrasterizer_p.h>
 #include <private/qimage_p.h>
+#include <private/qstatictext_p.h>
 
 #include "qpaintengine_raster_p.h"
 //   #include "qbezier_p.h"
@@ -99,10 +100,6 @@
 #  include <malloc.h>
 #endif
 #include <limits.h>
-
-#if defined(QT_NO_FPU) || (_MSC_VER >= 1300 && _MSC_VER < 1400)
-#  define FLOATING_POINT_BUGGY_OR_NO_FPU
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -3006,27 +3003,22 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
         blend(current, spans, &s->penData);
 }
 
-void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti)
+void QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
+                                          const QFixedPoint *positions, QFontEngine *fontEngine)
 {
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = s->matrix;
-    matrix.translate(p.x(), p.y());
-    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-
-    QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat) : d->glyphCacheType;
+    QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0 ? QFontEngineGlyphCache::Type(fontEngine->glyphFormat) : d->glyphCacheType;
 
     QImageTextureGlyphCache *cache =
-        (QImageTextureGlyphCache *) ti.fontEngine->glyphCache(0, glyphType, s->matrix);
+        static_cast<QImageTextureGlyphCache *>(fontEngine->glyphCache(0, glyphType, s->matrix));
     if (!cache) {
         cache = new QImageTextureGlyphCache(glyphType, s->matrix);
-        ti.fontEngine->setGlyphCache(0, cache);
+        fontEngine->setGlyphCache(0, cache);
     }
 
-    cache->populate(ti, glyphs, positions);
+    cache->populate(fontEngine, numGlyphs, glyphs, positions);
 
     const QImage &image = cache->image();
     int bpl = image.bytesPerLine();
@@ -3044,7 +3036,7 @@ void QRasterPaintEngine::drawCachedGlyphs(const QPointF &p, const QTextItemInt &
     const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
 
     const uchar *bits = image.bits();
-    for (int i=0; i<glyphs.size(); ++i) {
+    for (int i=0; i<numGlyphs; ++i) {
         const QTextureGlyphCache::Coord &c = cache->coords.value(glyphs[i]);
         int x = qFloor(positions[i].x + offs) + c.baseLineX - margin;
         int y = qFloor(positions[i].y + offs) - c.baseLineY - margin;
@@ -3222,6 +3214,18 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
 }
 
 /*!
+   \reimp
+*/
+void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    ensurePen();
+    ensureState();
+
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
+                     textItem->fontEngine);
+}
+
+/*!
     \reimp
 */
 void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -3269,7 +3273,17 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         drawCached = false;
 #endif
     if (drawCached) {
-        drawCachedGlyphs(p, ti);
+        QRasterPaintEngineState *s = state();
+
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+
+        QTransform matrix = s->matrix;
+        matrix.translate(p.x(), p.y());
+
+        ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
+        drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), ti.fontEngine);
         return;
     }
 
@@ -3679,9 +3693,6 @@ void QRasterPaintEngine::drawEllipse(const QRectF &rect)
     if (((qpen_style(s->lastPen) == Qt::SolidLine && s->flags.fast_pen)
          || (qpen_style(s->lastPen) == Qt::NoPen && !s->flags.antialiased))
         && qMax(rect.width(), rect.height()) < QT_RASTER_COORD_LIMIT
-#ifdef FLOATING_POINT_BUGGY_OR_NO_FPU
-        && qMax(rect.width(), rect.height()) < 128 // integer math breakdown
-#endif
         && s->matrix.type() <= QTransform::TxScale) // no shear
     {
         ensureBrush();
@@ -6054,15 +6065,9 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
                                    ProcessSpans pen_func, ProcessSpans brush_func,
                                    QSpanData *pen_data, QSpanData *brush_data)
 {
-#ifdef FLOATING_POINT_BUGGY_OR_NO_FPU // no fpu, so use fixed point
-    const QFixed a = QFixed(rect.width()) >> 1;
-    const QFixed b = QFixed(rect.height()) >> 1;
-    QFixed d = b*b - (a*a*b) + ((a*a) >> 2);
-#else
     const qreal a = qreal(rect.width()) / 2;
     const qreal b = qreal(rect.height()) / 2;
     qreal d = b*b - (a*a*b) + 0.25*a*a;
-#endif
 
     int x = 0;
     int y = (rect.height() + 1) / 2;
@@ -6085,12 +6090,7 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
                       pen_func, brush_func, pen_data, brush_data);
 
     // region 2
-#ifdef FLOATING_POINT_BUGGY_OR_NO_FPU
-    d = b*b*(x + (QFixed(1) >> 1))*(x + (QFixed(1) >> 1))
-        + a*a*((y - 1)*(y - 1) - b*b);
-#else
     d = b*b*(x + 0.5)*(x + 0.5) + a*a*((y - 1)*(y - 1) - b*b);
-#endif
     const int miny = rect.height() & 0x1;
     while (y > miny) {
         if (d < 0) { // select SE

@@ -354,6 +354,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     }
     if (!updatedFiles.isEmpty())
         emit updates(path, updatedFiles);
+    emit directoryLoaded(path);
 }
 
 void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QTime &base, bool &firstTime, QList<QPair<QString, QFileInfo> > &updatedFiles, const QString &path) {

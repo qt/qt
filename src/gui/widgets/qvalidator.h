@@ -105,6 +105,7 @@ public:
     ~QIntValidator();
 
     QValidator::State validate(QString &, int &) const;
+    void fixup(QString &input) const;
 
     void setBottom(int);
     void setTop(int);
@@ -136,10 +137,11 @@ class Q_GUI_EXPORT QDoubleValidator : public QValidator
     Q_PROPERTY(double bottom READ bottom WRITE setBottom)
     Q_PROPERTY(double top READ top WRITE setTop)
     Q_PROPERTY(int decimals READ decimals WRITE setDecimals)
+    Q_ENUMS(Notation)
     Q_PROPERTY(Notation notation READ notation WRITE setNotation)
 
 public:
-    explicit QDoubleValidator(QObject * parent);
+    explicit QDoubleValidator(QObject * parent = 0);
     QDoubleValidator(double bottom, double top, int decimals, QObject * parent);
     ~QDoubleValidator();
 
@@ -183,7 +185,7 @@ class Q_GUI_EXPORT QRegExpValidator : public QValidator
     Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
 
 public:
-    explicit QRegExpValidator(QObject *parent);
+    explicit QRegExpValidator(QObject *parent = 0);
     QRegExpValidator(const QRegExp& rx, QObject *parent);
     ~QRegExpValidator();
 

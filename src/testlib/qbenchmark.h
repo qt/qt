@@ -43,6 +43,7 @@
 #define QBENCHMARK_H
 
 #include <QtTest/qtest_global.h>
+#include <QtTest/qbenchmarkmetric.h>
 
 QT_BEGIN_HEADER
 
@@ -75,6 +76,8 @@ public:
 
 }
 
+// --- BEGIN public API ---
+
 #define QBENCHMARK \
     for (QTest::QBenchmarkIterationController __iteration_controller; \
             __iteration_controller.isDone() == false; __iteration_controller.next())
@@ -82,6 +85,13 @@ public:
 #define QBENCHMARK_ONCE \
     for (QTest::QBenchmarkIterationController __iteration_controller(QTest::QBenchmarkIterationController::RunOnce); \
             __iteration_controller.isDone() == false; __iteration_controller.next())
+
+namespace QTest
+{
+    void Q_TESTLIB_EXPORT setBenchmarkResult(qreal result, QBenchmarkMetric metric);
+}
+
+// --- END public API ---
 
 QT_END_NAMESPACE
 

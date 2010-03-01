@@ -48,6 +48,9 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 
+// Included from tools/shared
+#include <symbian/epocroot.h>
+
 SymbianSbsv2MakefileGenerator::SymbianSbsv2MakefileGenerator() : SymbianMakefileGenerator() { }
 SymbianSbsv2MakefileGenerator::~SymbianSbsv2MakefileGenerator() { }
 
@@ -87,6 +90,23 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
     }
 }
 
+void SymbianSbsv2MakefileGenerator::writeSbsDeploymentList(const DeploymentList& depList, QTextStream& t)
+{
+    for (int i = 0; i < depList.size(); ++i) {
+        t << "START EXTENSION qt/qmake_emulator_deployment" << endl;
+        QString fromItem = depList.at(i).from;
+        QString toItem = depList.at(i).to;
+        fromItem.replace("\\", "/");
+        toItem.replace("\\", "/");
+#if defined(Q_OS_WIN)
+        toItem.prepend(QDir::current().absolutePath().left(2)); // add drive
+#endif
+        t << "OPTION DEPLOY_SOURCE " << fromItem << endl;
+        t << "OPTION DEPLOY_TARGET " << toItem << endl;
+        t << "END" << endl;
+    }
+}
+
 void SymbianSbsv2MakefileGenerator::writeMkFile(const QString& wrapperFileName, bool deploymentOnly)
 {
     // Can't use extension makefile with sbsv2
@@ -106,7 +126,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     releasePlatforms.removeAll("winscw"); // No release for emulator
 
     QString testClause;
-    if (project->isActiveConfig("symbian_test"))
+    if (project->isActiveConfig(SYMBIAN_TEST_CONFIG))
         testClause = QLatin1String(".test");
     else
         testClause = QLatin1String("");
@@ -231,8 +251,6 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         qDeleteAll(subtargets);
     }
 
-    writeSisTargets(t);
-
     generateDistcleanTargets(t);
 
     t << "clean: " << BLD_INF_FILENAME << endl;
@@ -342,7 +360,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                     }
                 }
 
-                t << "START EXTENSION qt/qmake_extra_pre_targetdep" << endl;
+                t << "START EXTENSION qt/qmake_extra_pre_targetdep.export" << endl;
                 t << "OPTION PREDEP_TARGET " << absoluteTarget << endl;
                 t << "OPTION DEPS " << absoluteDeps << endl;
 
@@ -362,27 +380,23 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     t << endl;
 
-    // Write winscw deployment rules
+    // Write deployment rules
     QString remoteTestPath = epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
     DeploymentList depList;
-    initProjectDeploySymbian(project, depList, remoteTestPath, false, QLatin1String("winscw"), QLatin1String("udeb"), generatedDirs, generatedFiles);
 
+    //write emulator deployment
     t << "#if defined(WINSCW)" << endl;
-    for (int i = 0; i < depList.size(); ++i) {
-        t << "START EXTENSION qt/qmake_emulator_deployment" << endl;
-        QString fromItem = depList.at(i).from;
-        QString toItem = depList.at(i).to;
-        fromItem.replace("\\", "/");
-        toItem.replace("\\", "/");
-#if defined(Q_OS_WIN)
-        toItem.prepend(QDir::current().absolutePath().left(2)); // add drive
-#endif
-        t << "OPTION DEPLOY_SOURCE " << fromItem << endl;
-        t << "OPTION DEPLOY_TARGET " << toItem << endl;
-        t << "END" << endl;
-    }
+    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+        QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
+    writeSbsDeploymentList(depList, t);
     t << "#endif" << endl;
 
+    //write ROM deployment
+    remoteTestPath = epocRoot() + QLatin1String("epoc32/data/z/private/") + privateDirUid;
+    depList.clear();
+    initProjectDeploySymbian(project, depList, remoteTestPath, false,
+        QLatin1String(ROM_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
+    writeSbsDeploymentList(depList, t);
     t << endl;
 
     // Write post link rules

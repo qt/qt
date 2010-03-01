@@ -38,29 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "tracer.h"
 
 #include <QtCore/QFileInfo>
+#include <QtCore/QStringBuilder>
 #include <QtGui/QMessageBox>
 
 #include "cmdlineparser.h"
 
 QT_BEGIN_NAMESPACE
 
-#define CHECK_NEXT_ARG \
-    ++i < arguments.count() && !arguments.at(i).startsWith(QLatin1String("-"))
-
-CmdLineParser::CmdLineParser()
-    : m_enableRemoteControl(false),
-    m_contents(Untouched),
-    m_index(Untouched),
-    m_bookmarks(Untouched),
-    m_search(Untouched),
-    m_register(None),
-    m_removeSearchIndex(false),
-    m_copy(false),
-    m_quiet(false)
-{
-    m_helpMessage = QLatin1String(
+const QString CmdLineParser::m_helpMessage = QLatin1String(
         "Usage: assistant [Options]\n\n"
         "-collectionFile file       Uses the specified collection\n"
         "                           file instead of the default one\n"
@@ -85,156 +73,72 @@ CmdLineParser::CmdLineParser()
         "                           file.\n"
         "-setCurrentFilter filter   Set the filter as the active filter.\n"
         "-remove-search-index       Removes the full text search index.\n"
+        "-rebuild-search-index      Re-builds the full text search index (potentially slow).\n"
         "-quiet                     Does not display any error or\n"
         "                           status message.\n"
         "-help                      Displays this help.\n"
         );
+
+
+CmdLineParser::CmdLineParser(const QStringList &arguments)
+    : m_pos(0),
+    m_enableRemoteControl(false),
+    m_contents(Untouched),
+    m_index(Untouched),
+    m_bookmarks(Untouched),
+    m_search(Untouched),
+    m_register(None),
+    m_removeSearchIndex(false),
+    m_rebuildSearchIndex(false),
+    m_quiet(false)
+{
+    TRACE_OBJ
+    for (int i = 1; i < arguments.count(); ++i) {
+        const QString &arg = arguments.at(i);
+        if (arg.toLower() == "-quiet")
+            m_quiet = true;
+        else
+            m_arguments.append(arg);
+    }
 }
 
-CmdLineParser::Result CmdLineParser::parse(const QStringList &arguments)
+CmdLineParser::Result CmdLineParser::parse()
 {
-    QString error;
+    TRACE_OBJ
     bool showHelp = false;
 
-    for (int j=1; j<arguments.count(); ++j) {
-        if (arguments.at(j).toLower() == QLatin1String("-quiet")) {
-            m_quiet = true;
-            break;
-        }
-    }
-
-    for (int i=1; i<arguments.count(); ++i) {
-        QString arg = arguments.at(i).toLower();
-        if (arg == QLatin1String("-collectionfile")) {
-            if (CHECK_NEXT_ARG) {
-                m_collectionFile = getFileName(arguments.at(i));
-                if (m_collectionFile.isEmpty()) {
-                    error = QObject::tr("The specified collection file does not exist!");
-                    break;
-                }
-            } else {
-                error = QObject::tr("Missing collection file!");
-                break;
-            }
-        } else if (arg == QLatin1String("-showurl")) {
-            if (CHECK_NEXT_ARG) {
-                QUrl url(arguments.at(i));
-                if (url.isValid()) {
-                    m_url = url;
-                } else {
-                    error = QObject::tr("Invalid URL!");
-                    break;
-                }
-            } else {
-                error = QObject::tr("Missing URL!");
-                break;
-            }
-        } else if (arg == QLatin1String("-enableremotecontrol")) {
+    while (m_error.isEmpty() && hasMoreArgs()) {
+        const QString &arg = nextArg().toLower();
+        if (arg == QLatin1String("-collectionfile"))
+            handleCollectionFileOption();
+        else if (arg == QLatin1String("-showurl"))
+            handleShowUrlOption();
+        else if (arg == QLatin1String("-enableremotecontrol"))
             m_enableRemoteControl = true;
-        } else if (arg == QLatin1String("-show")) {
-            if (CHECK_NEXT_ARG) {
-                arg = arguments.at(i).toLower();
-                if (arg == QLatin1String("contents")) {
-                    m_contents = Show;
-                } else if (arg == QLatin1String("index")) {
-                    m_index = Show;
-                } else if (arg == QLatin1String("bookmarks")) {
-                    m_bookmarks = Show;
-                } else if (arg == QLatin1String("search")) {
-                    m_search = Show;
-                } else {
-                    error = QObject::tr("Unknown widget: %1").arg(arg);
-                    break;
-                }
-            } else {
-                error = QObject::tr("Missing widget!");
-                break;
-            }
-        } else if (arg == QLatin1String("-hide")) {
-            if (CHECK_NEXT_ARG) {
-                arg = arguments.at(i).toLower();
-                if (arg == QLatin1String("contents")) {
-                    m_contents = Hide;
-                } else if (arg == QLatin1String("index")) {
-                    m_index = Hide;
-                } else if (arg == QLatin1String("bookmarks")) {
-                    m_bookmarks = Hide;
-                } else if (arg == QLatin1String("search")) {
-                    m_search = Hide;
-                } else {
-                    error = QObject::tr("Unknown widget: %1").arg(arg);
-                    break;
-                }
-            } else {
-                error = QObject::tr("Missing widget!");
-                break;
-            }
-        } else if (arg == QLatin1String("-activate")) {
-            if (CHECK_NEXT_ARG) {
-                arg = arguments.at(i).toLower();
-                if (arg == QLatin1String("contents")) {
-                    m_contents = Activate;
-                } else if (arg == QLatin1String("index")) {
-                    m_index = Activate;
-                } else if (arg == QLatin1String("bookmarks")) {
-                    m_bookmarks = Activate;
-                } else if (arg == QLatin1String("search")) {
-                    m_search = Activate;
-                } else {
-                    error = QObject::tr("Unknown widget: %1").arg(arg);
-                    break;
-                }
-            } else {
-                error = QObject::tr("Missing widget!");
-                break;
-            }
-        } else if (arg == QLatin1String("-register")) {
-            if (CHECK_NEXT_ARG) {
-                m_helpFile = getFileName(arguments.at(i));
-                if (m_helpFile.isEmpty()) {
-                    error = QObject::tr("The specified Qt help file does not exist!");
-                    break;
-                }
-                m_register = Register;
-            } else {
-                error = QObject::tr("Missing help file!");
-                break;
-            }
-        } else if (arg == QLatin1String("-unregister")) {
-            if (CHECK_NEXT_ARG) {
-                m_helpFile = getFileName(arguments.at(i));
-                if (m_helpFile.isEmpty()) {
-                    error = QObject::tr("The specified Qt help file does not exist!");
-                    break;
-                }
-                m_register = Unregister;
-            } else {
-                error = QObject::tr("Missing help file!");
-                break;
-            }
-        } else if (arg == QLatin1String("-setcurrentfilter")) {
-            if (CHECK_NEXT_ARG) {
-                m_currentFilter = arguments.at(i);
-            } else {
-                error = QObject::tr("Missing filter argument!");
-                break;
-            }
-        } else if (arg == QLatin1String("-remove-search-index")) {
+        else if (arg == QLatin1String("-show"))
+            handleShowOption();
+        else if (arg == QLatin1String("-hide"))
+            handleHideOption();
+        else if (arg == QLatin1String("-activate"))
+            handleActivateOption();
+        else if (arg == QLatin1String("-register"))
+            handleRegisterOption();
+        else if (arg == QLatin1String("-unregister"))
+            handleUnregisterOption();
+        else if (arg == QLatin1String("-setcurrentfilter"))
+            handleSetCurrentFilterOption();
+        else if (arg == QLatin1String("-remove-search-index"))
             m_removeSearchIndex = true;
-        } else if (arg == QLatin1String("-quiet")) {
-            continue;
-        } else if (arg == QLatin1String("-help")) {
+        else if (arg == QLatin1String("-rebuild-search-index"))
+            m_rebuildSearchIndex = true;
+        else if (arg == QLatin1String("-help"))
             showHelp = true;
-        } else if (arg == QLatin1String("-copy")) {
-            m_copy = true;
-        } else {
-            error = QObject::tr("Unknown option: %1").arg(arg);
-            break;
-        }
+        else
+            m_error = tr("Unknown option: %1").arg(arg);
     }
 
-    if (!error.isEmpty()) {
-        showMessage(error + QLatin1String("\n\n\n") + m_helpMessage, true);
+    if (!m_error.isEmpty()) {
+        showMessage(m_error + QLatin1String("\n\n\n") + m_helpMessage, true);
         return Error;
     } else if (showHelp) {
         showMessage(m_helpMessage, false);
@@ -243,8 +147,125 @@ CmdLineParser::Result CmdLineParser::parse(const QStringList &arguments)
     return Ok;
 }
 
+bool CmdLineParser::hasMoreArgs() const
+{
+    TRACE_OBJ
+    return m_pos < m_arguments.count();
+}
+
+const QString &CmdLineParser::nextArg()
+{
+    TRACE_OBJ
+    Q_ASSERT(hasMoreArgs());
+    return m_arguments.at(m_pos++);
+}
+
+void CmdLineParser::handleCollectionFileOption()
+{
+    TRACE_OBJ
+    if (hasMoreArgs()) {
+        const QString &fileName = nextArg();
+        m_collectionFile = getFileName(fileName);
+        if (m_collectionFile.isEmpty())
+            m_error = tr("The collection file '%1' does not exist.").
+                          arg(fileName);
+    } else {
+        m_error = tr("Missing collection file.");
+    }
+}
+
+void CmdLineParser::handleShowUrlOption()
+{
+    TRACE_OBJ
+    if (hasMoreArgs()) {
+        const QString &urlString = nextArg();
+        QUrl url(urlString);
+        if (url.isValid()) {
+            m_url = url;
+        } else
+            m_error = tr("Invalid URL '%1'.").arg(urlString);
+    } else {
+        m_error = tr("Missing URL.");
+    }
+}
+
+void CmdLineParser::handleShowOption()
+{
+    TRACE_OBJ
+    handleShowOrHideOrActivateOption(Show);
+}
+
+void CmdLineParser::handleHideOption()
+{
+    TRACE_OBJ
+    handleShowOrHideOrActivateOption(Hide);
+}
+
+void CmdLineParser::handleActivateOption()
+{
+    TRACE_OBJ
+    handleShowOrHideOrActivateOption(Activate);
+}
+
+void CmdLineParser::handleShowOrHideOrActivateOption(ShowState state)
+{
+    TRACE_OBJ
+    if (hasMoreArgs()) {
+        const QString &widget = nextArg().toLower();
+        if (widget == QLatin1String("contents"))
+            m_contents = state;
+        else if (widget == QLatin1String("index"))
+            m_index = state;
+        else if (widget == QLatin1String("bookmarks"))
+            m_bookmarks = state;
+        else if (widget == QLatin1String("search"))
+            m_search = state;
+        else
+            m_error = tr("Unknown widget: %1").arg(widget);
+    } else {
+        m_error = tr("Missing widget.");
+    }
+}
+
+void CmdLineParser::handleRegisterOption()
+{
+    TRACE_OBJ
+    handleRegisterOrUnregisterOption(Register);
+}
+
+void CmdLineParser::handleUnregisterOption()
+{
+    TRACE_OBJ
+    handleRegisterOrUnregisterOption(Unregister);
+}
+
+void CmdLineParser::handleRegisterOrUnregisterOption(RegisterState state)
+{
+    TRACE_OBJ
+    if (hasMoreArgs()) {
+        const QString &fileName = nextArg();
+        m_helpFile = getFileName(fileName);
+        if (m_helpFile.isEmpty())
+            m_error = tr("The Qt help file '%1' does not exist.").arg(fileName);
+        else
+            m_register = state;
+    } else {
+        m_error = tr("Missing help file.");
+    }
+}
+
+void CmdLineParser::handleSetCurrentFilterOption()
+{
+    TRACE_OBJ
+    if (hasMoreArgs())
+        m_currentFilter = nextArg();
+    else
+        m_error = tr("Missing filter argument.");
+}
+
 QString CmdLineParser::getFileName(const QString &fileName)
 {
+    TRACE_OBJ
     QFileInfo fi(fileName);
     if (!fi.exists())
         return QString();
@@ -253,14 +274,15 @@ QString CmdLineParser::getFileName(const QString &fileName)
 
 void CmdLineParser::showMessage(const QString &msg, bool error)
 {
+    TRACE_OBJ
     if (m_quiet)
         return;
 #ifdef Q_OS_WIN
-    QString s = QLatin1String("<pre>") + msg + QLatin1String("</pre>");
+    QString message = QLatin1String("<pre>") % msg % QLatin1String("</pre>");
     if (error)
-        QMessageBox::critical(0, QObject::tr("Qt Assistant"), s);
+        QMessageBox::critical(0, tr("Error"), message);
     else
-        QMessageBox::information(0, QObject::tr("Qt Assistant"), s);
+        QMessageBox::information(0, tr("Notice"), message);
 #else
     fprintf(error ? stderr : stdout, "%s\n", qPrintable(msg));
 #endif
@@ -268,61 +290,79 @@ void CmdLineParser::showMessage(const QString &msg, bool error)
 
 void CmdLineParser::setCollectionFile(const QString &file)
 {
+    TRACE_OBJ
     m_collectionFile = file;
 }
 
 QString CmdLineParser::collectionFile() const
 {
+    TRACE_OBJ
     return m_collectionFile;
 }
 
 QUrl CmdLineParser::url() const
 {
+    TRACE_OBJ
     return m_url;
 }
 
 bool CmdLineParser::enableRemoteControl() const
 {
+    TRACE_OBJ
     return m_enableRemoteControl;
 }
 
 CmdLineParser::ShowState CmdLineParser::contents() const
 {
+    TRACE_OBJ
     return m_contents;
 }
 
 CmdLineParser::ShowState CmdLineParser::index() const
 {
+    TRACE_OBJ
     return m_index;
 }
 
 CmdLineParser::ShowState CmdLineParser::bookmarks() const
 {
+    TRACE_OBJ
     return m_bookmarks;
 }
 
 CmdLineParser::ShowState CmdLineParser::search() const
 {
+    TRACE_OBJ
     return m_search;
 }
 
 QString CmdLineParser::currentFilter() const
 {
+    TRACE_OBJ
     return m_currentFilter;
 }
 
 bool CmdLineParser::removeSearchIndex() const
 {
+    TRACE_OBJ
     return m_removeSearchIndex;
+}
+
+bool CmdLineParser::rebuildSearchIndex() const
+{
+    TRACE_OBJ
+    return m_rebuildSearchIndex;
 }
 
 CmdLineParser::RegisterState CmdLineParser::registerRequest() const
 {
+    TRACE_OBJ
     return m_register;
 }
 
 QString CmdLineParser::helpFile() const
 {
+    TRACE_OBJ
     return m_helpFile;
 }
 

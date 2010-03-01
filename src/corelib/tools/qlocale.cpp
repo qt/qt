@@ -465,7 +465,7 @@ static QString winToQtFormat(const QString &sys_fmt)
             if (text == QLatin1String("'"))
                 result += QLatin1String("''");
             else
-                result += QLatin1Char('\'') + text + QLatin1Char('\'');
+                result += QString(QLatin1Char('\'') + text + QLatin1Char('\''));
             continue;
         }
 
@@ -681,8 +681,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 
     case DateTimeFormatLong:
     case DateTimeFormatShort:
-        return query(type == DateTimeFormatLong ? DateFormatLong : DateFormatShort).toString()
-            + QLatin1Char(' ') + query(type == DateTimeFormatLong ? TimeFormatLong : TimeFormatShort).toString();
+        return QString(query(type == DateTimeFormatLong ? DateFormatLong : DateFormatShort).toString()
+            + QLatin1Char(' ') + query(type == DateTimeFormatLong ? TimeFormatLong : TimeFormatShort).toString());
     case DayNameLong:
     case DayNameShort:
         return winDayName(in.toInt(), (type == DayNameShort));
@@ -698,8 +698,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case DateTimeToStringShort:
     case DateTimeToStringLong: {
         const QDateTime dt = in.toDateTime();
-        return winDateToString(dt.date(), type == DateTimeToStringShort ? DATE_SHORTDATE : DATE_LONGDATE)
-            + QLatin1Char(' ') + winTimeToString(dt.time()); }
+        return QString(winDateToString(dt.date(), type == DateTimeToStringShort ? DATE_SHORTDATE : DATE_LONGDATE)
+            + QLatin1Char(' ') + winTimeToString(dt.time())); }
 
     case ZeroDigit:
         locale_info = LOCALE_SNATIVEDIGITS;
@@ -2917,7 +2917,7 @@ QDate QLocale::toDate(const QString &string, FormatType format) const
 #ifndef QT_NO_DATESTRING
 QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 {
-    return toDateTime(string, dateFormat(format));
+    return toDateTime(string, dateTimeFormat(format));
 }
 #endif
 
@@ -4293,6 +4293,7 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
 
     const bool scientific = numMode == DoubleScientificMode;
     bool lastWasE = false;
+    bool lastWasDigit = false;
     int eCnt = 0;
     int decPointCnt = 0;
     bool dec = false;
@@ -4307,6 +4308,7 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
                 if (dec && decDigits != -1 && decDigits < ++decDigitCnt)
                     return false;
             }
+            lastWasDigit = true;
         } else {
             switch (c) {
                 case '.':
@@ -4344,7 +4346,10 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
                     break;
 
                 case ',':
-                    return false;
+                    //it can only be placed after a digit which is before the decimal point
+                    if (!lastWasDigit || decPointCnt > 0)
+                        return false;
+                    break;
 
                 case 'e':
                     if (scientific) {
@@ -4362,10 +4367,12 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
                     // If it's not a valid digit, it shall be Invalid.
                     return false;
             }
+            lastWasDigit = false;
         }
 
         lastWasE = c == 'e';
-        buff->append(c);
+        if (c != ',')
+            buff->append(c);
     }
 
     return true;

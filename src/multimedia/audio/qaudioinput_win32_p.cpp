@@ -192,9 +192,11 @@ QIODevice* QAudioInputPrivate::start(QIODevice* device)
         //set to pull mode
         pullMode = true;
         audioSource = device;
+        deviceState = QAudio::ActiveState;
     } else {
         //set to push mode
         pullMode = false;
+        deviceState = QAudio::IdleState;
         audioSource = new InputPrivate(this);
         audioSource->open(QIODevice::ReadOnly | QIODevice::Unbuffered);
     }
@@ -230,6 +232,11 @@ bool QAudioInputPrivate::open()
     } else {
         period_size = buffer_size/5;
     }
+#ifdef Q_OS_WINCE
+    // For wince reduce size to 40ms for buffer size and 20ms period
+    buffer_size = settings.sampleRate()*settings.channelCount()*(settings.sampleSize()/8)*0.04;
+    period_size = buffer_size/2;
+#endif
     timeStamp.restart();
     elapsedTimeOffset = 0;
     wfx.nSamplesPerSec = settings.frequency();
@@ -250,7 +257,7 @@ bool QAudioInputPrivate::open()
         if(waveInGetDevCaps(ii, &wic, sizeof(WAVEINCAPS))
 	    == MMSYSERR_NOERROR) {
 	    QString tmp;
-	    tmp = QString::fromUtf16((const unsigned short*)wic.szPname);
+	    tmp = QString((const QChar *)wic.szPname);
 	    if(tmp.compare(QLatin1String(m_device)) == 0) {
 	        devId = ii;
 		break;
@@ -306,7 +313,6 @@ bool QAudioInputPrivate::open()
     elapsedTimeOffset = 0;
     totalTimeValue = 0;
     errorState  = QAudio::NoError;
-    deviceState = QAudio::ActiveState;
     return true;
 }
 
@@ -315,9 +321,9 @@ void QAudioInputPrivate::close()
     if(deviceState == QAudio::StoppedState)
         return;
 
+    deviceState = QAudio::StoppedState;
     waveInReset(hWaveIn);
     waveInClose(hWaveIn);
-    deviceState = QAudio::StoppedState;
 
     int count = 0;
     while(!finished && count < 500) {
@@ -352,7 +358,6 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
     char*  p = data;
     qint64 l = 0;
     qint64 written = 0;
-
     while(!done) {
         // Read in some audio data
         if(waveBlocks[header].dwBytesRecorded > 0 && waveBlocks[header].dwFlags & WHDR_DONE) {
@@ -373,11 +378,12 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
                     errorState = QAudio::IOError;
 
                 } else {
-                    totalTimeValue += waveBlocks[header].dwBytesRecorded
-                        /((settings.channels()*settings.sampleSize()/8))
-                        *10000/settings.frequency()*100;
+                    totalTimeValue += waveBlocks[header].dwBytesRecorded;
                     errorState = QAudio::NoError;
-                    deviceState = QAudio::ActiveState;
+                    if (deviceState != QAudio::ActiveState) {
+                        deviceState = QAudio::ActiveState;
+                        emit stateChanged(deviceState);
+                    }
 		    resuming = false;
                 }
             } else {
@@ -387,16 +393,17 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
 #ifdef DEBUG_AUDIO
                 qDebug()<<"IN: "<<waveBlocks[header].dwBytesRecorded<<", OUT: "<<l;
 #endif
-                totalTimeValue += waveBlocks[header].dwBytesRecorded
-                    /((settings.channels()*settings.sampleSize()/8))
-                    *10000/settings.frequency()*100;
+                totalTimeValue += waveBlocks[header].dwBytesRecorded;
                 errorState = QAudio::NoError;
-                deviceState = QAudio::ActiveState;
+                if (deviceState != QAudio::ActiveState) {
+                    deviceState = QAudio::ActiveState;
+                    emit stateChanged(deviceState);
+                }
 		resuming = false;
             }
         } else {
             //no data, not ready yet, next time
-            return 0;
+            break;
         }
 
         waveInUnprepareHeader(hWaveIn,&waveBlocks[header], sizeof(WAVEHDR));
@@ -505,7 +512,13 @@ int QAudioInputPrivate::notifyInterval() const
 
 qint64 QAudioInputPrivate::processedUSecs() const
 {
-    return totalTimeValue;
+    if (deviceState == QAudio::StoppedState)
+        return 0;
+    qint64 result = qint64(1000000) * totalTimeValue /
+        (settings.channels()*(settings.sampleSize()/8)) /
+        settings.frequency();
+
+    return result;
 }
 
 void QAudioInputPrivate::suspend()
@@ -535,6 +548,9 @@ bool QAudioInputPrivate::deviceReady()
     QTime now(QTime::currentTime());
     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :deviceReady() INPUT";
 #endif
+    if(deviceState != QAudio::ActiveState && deviceState != QAudio::IdleState)
+        return true;
+
     if(pullMode) {
         // reads some audio data and writes it to QIODevice
         read(0,0);
@@ -543,8 +559,6 @@ bool QAudioInputPrivate::deviceReady()
 	InputPrivate* a = qobject_cast<InputPrivate*>(audioSource);
 	a->trigger();
     }
-    if(deviceState != QAudio::ActiveState)
-        return true;
 
     if((timeStamp.elapsed() + elapsedTimeOffset) > intervalTime) {
         emit notify();
@@ -577,7 +591,8 @@ InputPrivate::~InputPrivate() {}
 qint64 InputPrivate::readData( char* data, qint64 len)
 {
     // push mode, user read() called
-    if(audioDevice->deviceState != QAudio::ActiveState)
+    if(audioDevice->deviceState != QAudio::ActiveState &&
+            audioDevice->deviceState != QAudio::IdleState)
         return 0;
     // Read in some audio data
     return audioDevice->read(data,len);

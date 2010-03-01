@@ -132,6 +132,8 @@
                                 Smart installer will attempt to download
                                 missing dependencies in addition to
                                 just installing the application.
+    \row \o \c stub_sis      \o Create a stub sis to allow upgradability of projects
+                                that are deployed in ROM
     \endtable
 
     The following lines perform a debug build for the emulator

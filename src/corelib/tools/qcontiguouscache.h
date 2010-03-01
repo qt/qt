@@ -97,7 +97,7 @@ public:
     typedef const value_type* const_pointer;
     typedef value_type& reference;
     typedef const value_type& const_reference;
-    typedef ptrdiff_t difference_type;
+    typedef qptrdiff difference_type;
     typedef int size_type;
 
     explicit QContiguousCache(int capacity = 0);
@@ -221,22 +221,29 @@ void QContiguousCache<T>::setCapacity(int asize)
     x.d->alloc = asize;
     x.d->count = qMin(d->count, asize);
     x.d->offset = d->offset + d->count - x.d->count;
-    x.d->start = x.d->offset % x.d->alloc;
-    T *dest = x.p->array + (x.d->start + x.d->count-1) % x.d->alloc;
-    T *src = p->array + (d->start + d->count-1) % d->alloc;
+    if(asize)
+        x.d->start = x.d->offset % x.d->alloc;
+    else
+        x.d->start = 0;
+
     int oldcount = x.d->count;
-    while (oldcount--) {
-        if (QTypeInfo<T>::isComplex) {
-            new (dest) T(*src);
-        } else {
-            *dest = *src;
+    if(oldcount)
+    {
+        T *dest = x.p->array + (x.d->start + x.d->count-1) % x.d->alloc;
+        T *src = p->array + (d->start + d->count-1) % d->alloc;
+        while (oldcount--) {
+            if (QTypeInfo<T>::isComplex) {
+                new (dest) T(*src);
+            } else {
+                *dest = *src;
+            }
+            if (dest == x.p->array)
+                dest = x.p->array + x.d->alloc;
+            dest--;
+            if (src == p->array)
+                src = p->array + d->alloc;
+            src--;
         }
-        if (dest == x.p->array)
-            dest = x.p->array + x.d->alloc;
-        dest--;
-        if (src == p->array)
-            src = p->array + d->alloc;
-        src--;
     }
     /* free old */
     free(p);

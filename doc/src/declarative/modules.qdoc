@@ -1,0 +1,187 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qdeclarativemodules.html
+\title Modules
+
+A \bold module is a collection of QML types.
+
+To use types from a module it must be imported using the \c import statement. Successive
+import statements override earlier import statements, however, since imports have version
+qualifiers, changes in modules do not alter the semantics of imports.
+
+\section1 Importing Types Defined in C++
+
+Types \link adding-types defined in C++\endlink can be from types your application defines, standard QML types,
+or types defined in plugins. To use any such types, you must import
+the module defining them.  For example, to use types from Qt, import it:
+
+\code
+import Qt 4.6
+\endcode
+
+This makes available all types in Qt that were available in Qt 4.6, regardless of the
+actual version of Qt executing the QML. So even if Qt 4.7 adds a type that would conflict
+with a type you defined while using 4.6, that type is not imported, so there is no conflict.
+
+Types defined by plugins are made using QDeclarativeExtensionPlugin.  Installed plugins and QML files
+can both contribute types to the same module.
+
+
+\section1 Importing Types Defined in QML
+
+When importing types \link components defined using QML\endlink, the syntax depends
+on whether or not the types are installed on the system.
+
+
+\section2 Installed QML Files
+
+To import types defined in QML files that are installed on the system running the
+QML, a URI import is used:
+
+\code
+import com.nokia.Example 1.0
+\endcode
+
+Files imported in this way are found on the paths added by QDeclarativeEngine::addImportPath(),
+which by default only inludes \c $QTDIR/qml, so the above would make available those types
+defined in \c $QTDIR/qml/com/nokia/Example which are specified as being in version 1.0.
+Installed plugins and QML files can both contribute types to the same module.
+
+The specification of types to versions is given by a special file, \c qmldir which must
+exist in the module directory. The syntax is described below.
+
+The \c -L option to the \l {qmlviewer}{viewer} application also adds paths to the import path.
+
+
+\section2 Local QML Files
+
+To import types defined in QML files in directories relative to the file importing them,
+a quoted import directory is used:
+
+\code
+import "path"
+\endcode
+
+This allows all components defined in the directory \c path to be used in
+the component where this statement appears.
+
+In this case, and only this case, it is not necessary for the module directory to include
+a \c qmldir file, nor is it necessary to provide a version qualifier. The basis of this is
+that the files in the subdirectory are assumed to be packaged with the importer, and therefore
+they form a single versioned unit.
+
+
+\section2 Remote QML Files
+
+To import types defined in QML file at arbitrary network locations, a quoted absolute URL is used:
+
+\code
+import "http://url/.../" 1.0
+\endcode
+
+This works the same as for relative directory imports, except that the target location \e must
+include a \c qmldir file, and a version qualifier must be given.
+
+
+\section2 The \c qmldir File
+
+Directories of installed files and remote content must include a file \c qmldir which specifies the
+mapping from all type names to versioned QML files. It is a list of lines of the form:
+
+\code
+# <Comment>
+<TypeName> <InitialVersion> <File>
+\endcode
+
+<TypeName> is the type being made available; <InitialVersion> is a version
+number like \c 4.0; <File> is the (relative)
+file name of the QML file defining the type.
+
+The same type can be provided by different files in different versions, in which
+case later earlier versions (eg. 1.2) must precede earlier versions (eg. 1.0),
+since the \e first name-version match is used.
+
+Installed files do not need to import the module of which they are a part, as they can refer
+to the other QML files in the module as relative (local) files.
+
+Installed and remote files \e must be referred to by version information described above,
+local files \e may have it.
+
+The versioning system ensures that a given QML file will work regardless of the version
+of installed software, since a versioned import \e only imports types for that version,
+leaving other identifiers available, even if the actual installed version might otherwise
+use those identifiers.
+
+
+\section1 Namespaces - Named Imports
+
+When importing content it by default imports types into the global namespace.
+You may choose to import the module into another namespace, either to allow identically-named
+types to be referenced, or purely for readability.
+
+To import a module into a namespace:
+
+\code
+import Qt 4.6 as TheQtLibrary
+\endcode
+
+Types from Qt 4.6 may then be used, but only by qualifying them with the namespace:
+
+\code
+TheQtLibrary.Rectangle { ... }
+\endcode
+
+Multiple modules can be imported into the same namespace in the same way that multiple
+modules can be imported into the global namespace:
+
+\code
+import Qt 4.6 as Nokia
+import Ovi 1.0 as Nokia
+\endcode
+*/
+
+/*
+
+See original requirement QT-558.
+
+*/

@@ -267,7 +267,9 @@ void QTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     QTestElement *benchmarkElement = new QTestElement(QTest::LET_Benchmark);
 //    printf("element %i", benchmarkElement->elementType());
 
-    benchmarkElement->addAttribute(QTest::AI_Metric, QBenchmarkGlobalData::current->measurer->metricText().toAscii().data());
+    benchmarkElement->addAttribute(
+        QTest::AI_Metric,
+        QTest::benchmarkMetricName(QBenchmarkTestMethodData::current->result.metric));
     benchmarkElement->addAttribute(QTest::AI_Tag, result.context.tag.toAscii().data());
     benchmarkElement->addAttribute(QTest::AI_Value, QByteArray::number(result.value).constData());
 

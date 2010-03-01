@@ -48,12 +48,8 @@
 #include <private/qpixmapdata_x11gl_p.h>
 #endif
 
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
 #include <private/qpixmapdata_gl_p.h>
-#endif
-
-#if defined(QT_OPENGL_ES_1_CL)
-#include "qgl_cl_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -128,6 +124,11 @@ QGLFormat QGLPaintDevice::format() const
     return context()->format();
 }
 
+bool QGLPaintDevice::alphaRequested() const
+{
+    return context()->d_func()->reqFormat.alpha();
+}
+
 
 
 
@@ -198,7 +199,7 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
             glpd = &(static_cast<QGLFramebufferObject*>(pd)->d_func()->glDevice);
             break;
         case QInternal::Pixmap: {
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined(QT_OPENGL_ES_1)
             QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
             if (pmd->classId() == QPixmapData::OpenGLClass)
                 glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
