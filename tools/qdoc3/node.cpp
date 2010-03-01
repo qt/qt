@@ -43,7 +43,6 @@
   node.cpp
 */
 
-#include <QtCore>
 #include "node.h"
 
 QT_BEGIN_NAMESPACE
@@ -1161,7 +1160,8 @@ QString FunctionNode::signature(bool values) const
  */
 void FunctionNode::debug() const
 {
-    qDebug() << "QML METHOD" << name() << "rt" << rt << "pp" << pp;
+    qDebug("QML METHOD %s rt %s pp %s",
+            qPrintable(name()), qPrintable(rt), qPrintable(pp.join(" ")));
 }
 
 /*!

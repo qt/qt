@@ -43,7 +43,6 @@
   cppcodeparser.cpp
 */
 
-#include <QtCore>
 #include <qfile.h>
 
 #include <stdio.h>
