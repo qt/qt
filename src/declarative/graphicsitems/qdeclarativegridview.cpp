@@ -133,14 +133,14 @@ public:
 
     qreal position() const {
         Q_Q(const QDeclarativeGridView);
-        return flow == QDeclarativeGridView::LeftToRight ? q->viewportY() : q->viewportX();
+        return flow == QDeclarativeGridView::LeftToRight ? q->contentY() : q->contentX();
     }
     void setPosition(qreal pos) {
         Q_Q(QDeclarativeGridView);
         if (flow == QDeclarativeGridView::LeftToRight)
-            q->setViewportY(pos);
+            q->setContentY(pos);
         else
-            q->setViewportX(pos);
+            q->setContentX(pos);
     }
     int size() const {
         Q_Q(const QDeclarativeGridView);
@@ -315,9 +315,9 @@ FxGridItem *QDeclarativeGridViewPrivate::createItem(int modelIndex)
     if (QDeclarativeItem *item = model->item(modelIndex, false)) {
         listItem = new FxGridItem(item, q);
         listItem->index = modelIndex;
+        listItem->item->setZValue(1);
         // complete
         model->completeItem();
-        listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
         unrequestedItems.remove(listItem->item);
     }
@@ -458,9 +458,9 @@ void QDeclarativeGridViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     }
     if (changed) {
         if (flow == QDeclarativeGridView::LeftToRight)
-            q->setViewportHeight(endPosition() - startPosition());
+            q->setContentHeight(endPosition() - startPosition());
         else
-            q->setViewportWidth(endPosition() - startPosition());
+            q->setContentWidth(endPosition() - startPosition());
     } else if (!doBuffer && buffer && bufferMode != NoBuffer) {
         refill(from, to, true);
     }
@@ -473,9 +473,9 @@ void QDeclarativeGridViewPrivate::updateGrid()
     columns = (int)qMax((flow == QDeclarativeGridView::LeftToRight ? q->width() : q->height()) / colSize(), qreal(1.));
     if (isValid()) {
         if (flow == QDeclarativeGridView::LeftToRight)
-            q->setViewportHeight(endPosition() - startPosition());
+            q->setContentHeight(endPosition() - startPosition());
         else
-            q->setViewportWidth(endPosition() - startPosition());
+            q->setContentWidth(endPosition() - startPosition());
     }
 }
 
@@ -516,10 +516,10 @@ void QDeclarativeGridViewPrivate::layout(bool removed)
     updateHighlight();
     moveReason = Other;
     if (flow == QDeclarativeGridView::LeftToRight) {
-        q->setViewportHeight(endPosition() - startPosition());
+        q->setContentHeight(endPosition() - startPosition());
         fixupY();
     } else {
-        q->setViewportWidth(endPosition() - startPosition());
+        q->setContentWidth(endPosition() - startPosition());
         fixupX();
     }
     updateUnrequestedPositions();
@@ -675,6 +675,7 @@ void QDeclarativeGridViewPrivate::updateCurrent(int modelIndex)
 
 /*!
     \qmlclass GridView QDeclarativeGridView
+    \since 4.7
     \inherits Flickable
     \brief The GridView item provides a grid view of items provided by a model.
 
@@ -1028,10 +1029,10 @@ void QDeclarativeGridView::setFlow(Flow flow)
     if (d->flow != flow) {
         d->flow = flow;
         if (d->flow == LeftToRight) {
-            setViewportWidth(-1);
+            setContentWidth(-1);
             setFlickDirection(QDeclarativeFlickable::VerticalFlick);
         } else {
-            setViewportHeight(-1);
+            setContentHeight(-1);
             setFlickDirection(QDeclarativeFlickable::HorizontalFlick);
         }
         d->clear();

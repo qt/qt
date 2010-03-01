@@ -486,14 +486,14 @@ void tst_QDeclarativeListView::inserted()
         model.insertItem(i, "Hello", QString::number(i));
     QTest::qWait(500);
 
-    listview->setViewportY(80);
+    listview->setContentY(80);
     QTest::qWait(500);
 
     // Insert item outside visible area
     model.insertItem(1, "Hello", "1324");
     QTest::qWait(500);
 
-    QVERIFY(listview->viewportY() == 80);
+    QVERIFY(listview->contentY() == 80);
 
     // Confirm items positioned correctly
     for (int i = 5; i < 5+15; ++i) {
@@ -591,7 +591,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     }
 
     // Remove items before visible
-    listview->setViewportY(80);
+    listview->setContentY(80);
     listview->setCurrentIndex(10);
 
     model.removeItem(1); // post: top item will be at 40
@@ -615,7 +615,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     QCOMPARE(listview->currentIndex(), 9);
     QVERIFY(listview->currentItem() != oldCurrent);
 
-    listview->setViewportY(40); // That's the top now
+    listview->setContentY(40); // That's the top now
     // let transitions settle.
     QTest::qWait(500);
 
@@ -631,7 +631,7 @@ void tst_QDeclarativeListView::removed(bool animated)
     // remove current item beyond visible items.
     listview->setCurrentIndex(20);
     QTest::qWait(500);
-    listview->setViewportY(40);
+    listview->setContentY(40);
     model.removeItem(20);
     QTest::qWait(500);
 
@@ -682,7 +682,7 @@ void tst_QDeclarativeListView::clear()
 
     QVERIFY(listview->count() == 0);
     QVERIFY(listview->currentItem() == 0);
-    QVERIFY(listview->viewportY() == 0);
+    QVERIFY(listview->contentY() == 0);
 
     delete canvas;
 }
@@ -740,7 +740,7 @@ void tst_QDeclarativeListView::moved()
         QVERIFY(item->y() == i*20);
     }
 
-    listview->setViewportY(80);
+    listview->setContentY(80);
 
     // move outside visible area
     model.moveItem(1, 18);
@@ -812,7 +812,7 @@ void tst_QDeclarativeListView::enforceRange()
     // view should be positioned at the top of the range.
     QDeclarativeItem *item = findItem<QDeclarativeItem>(viewport, "wrapper", 0);
     QVERIFY(item);
-    QCOMPARE(listview->viewportY(), -100.0);
+    QCOMPARE(listview->contentY(), -100.0);
 
     QDeclarativeText *name = findItem<QDeclarativeText>(viewport, "textName", 0);
     QVERIFY(name != 0);
@@ -822,7 +822,7 @@ void tst_QDeclarativeListView::enforceRange()
     QCOMPARE(number->text(), model.number(0));
 
     // Check currentIndex is updated when viewport moves
-    listview->setViewportY(20);
+    listview->setContentY(20);
     QTest::qWait(500);
 
     QCOMPARE(listview->currentIndex(), 6);
@@ -948,10 +948,10 @@ void tst_QDeclarativeListView::sections()
 
     QCOMPARE(listview->currentSection(), QString("0"));
 
-    listview->setViewportY(140);
+    listview->setContentY(140);
     QCOMPARE(listview->currentSection(), QString("1"));
 
-    listview->setViewportY(20);
+    listview->setContentY(20);
     QCOMPARE(listview->currentSection(), QString("0"));
 
     item = findItem<QDeclarativeItem>(viewport, "wrapper", 1);
@@ -1012,13 +1012,13 @@ void tst_QDeclarativeListView::currentIndex()
     QCOMPARE(listview->currentIndex(), model.count()-1);
 
     QTest::qWait(1000);
-    QCOMPARE(listview->viewportY(), 279.0);
+    QCOMPARE(listview->contentY(), 279.0);
 
     listview->incrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), 0);
 
     QTest::qWait(1000);
-    QCOMPARE(listview->viewportY(), 0.0);
+    QCOMPARE(listview->contentY(), 0.0);
 
     // Test keys
     canvas->show();
@@ -1181,7 +1181,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
 
     // Position on a currently visible item
     listview->positionViewAtIndex(3);
-    QCOMPARE(listview->viewportY(), 60.);
+    QCOMPARE(listview->contentY(), 60.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -1194,7 +1194,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
 
     // Position on an item beyond the visible items
     listview->positionViewAtIndex(22);
-    QCOMPARE(listview->viewportY(), 440.);
+    QCOMPARE(listview->contentY(), 440.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -1207,7 +1207,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
 
     // Position on an item that would leave empty space if positioned at the top
     listview->positionViewAtIndex(28);
-    QCOMPARE(listview->viewportY(), 480.);
+    QCOMPARE(listview->contentY(), 480.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();
@@ -1220,7 +1220,7 @@ void tst_QDeclarativeListView::positionViewAtIndex()
 
     // Position at the beginning again
     listview->positionViewAtIndex(0);
-    QCOMPARE(listview->viewportY(), 0.);
+    QCOMPARE(listview->contentY(), 0.);
 
     // Confirm items positioned correctly
     itemCount = findItems<QDeclarativeItem>(viewport, "wrapper").count();

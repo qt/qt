@@ -22,6 +22,6 @@ Rectangle {
         anchors { right: parent.right; bottom: parent.bottom; rightMargin: 10; bottomMargin: 10 }
     }
 
-    Connection { sender: leftButton; signal: "clicked()"; script: window.angle -= 90 }
-    Connection { sender: rightButton; signal: "clicked()"; script: window.angle += 90 }
+    Connections { target: leftButton; onClicked: window.angle -= 90 }
+    Connections { target: rightButton; onClicked: window.angle += 90 }
 }

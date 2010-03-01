@@ -419,6 +419,8 @@ extern "C" {
 
 - (BOOL)isOpaque;
 {
+    if (!qwidgetprivate)
+        return [super isOpaque];
     return qwidgetprivate->isOpaque;
 }
 
@@ -450,7 +452,7 @@ extern "C" {
     }
 
     // Make sure the opengl context is updated on resize.
-    if (qwidgetprivate->isGLWidget) {
+    if (qwidgetprivate && qwidgetprivate->isGLWidget) {
         qwidgetprivate->needWindowChange = true;
         QEvent event(QEvent::MacGLWindowChange);
         qApp->sendEvent(qwidget, &event);
@@ -459,6 +461,9 @@ extern "C" {
 
 - (void)drawRect:(NSRect)aRect
 {
+    if (!qwidget)
+        return;
+
     if (QApplicationPrivate::graphicsSystem() != 0) {
         if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore()) {
             // Drawing is handled on the window level
@@ -552,12 +557,18 @@ extern "C" {
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
+    if (!qwidget)
+        return NO;
+
     Q_UNUSED(theEvent);
     return !qwidget->testAttribute(Qt::WA_MacNoClickThrough);
 }
 
 - (NSView *)hitTest:(NSPoint)aPoint
 {
+    if (!qwidget)
+        return [super hitTest:aPoint];
+
     if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents))
         return nil; // You cannot hit a transparent for mouse event widget.
     return [super hitTest:aPoint];
@@ -565,6 +576,9 @@ extern "C" {
 
 - (void)updateTrackingAreas
 {
+    if (!qwidget)
+        return;
+
     // [NSView addTrackingArea] is slow, so bail out early if we can:
     if (NSIsEmptyRect([self visibleRect]))
         return;
@@ -598,6 +612,9 @@ extern "C" {
 
 - (void)mouseEntered:(NSEvent *)event
 {
+    if (!qwidget)
+        return;
+
     if (qwidgetprivate->data.in_destructor)
         return;
     QEvent enterEvent(QEvent::Enter);
@@ -620,6 +637,9 @@ extern "C" {
 
 - (void)mouseExited:(NSEvent *)event
 {
+    if (!qwidget)
+        return;
+
     QEvent leaveEvent(QEvent::Leave);
     NSPoint globalPoint = [[event window] convertBaseToScreen:[event locationInWindow]];
     if (!qAppInstance()->activeModalWidget() || QApplicationPrivate::tryModalHelper(qwidget, 0)) {
@@ -638,6 +658,9 @@ extern "C" {
 
 - (void)flagsChanged:(NSEvent *)theEvent
 {
+    if (!qwidget)
+        return;
+
     QWidget *widgetToGetKey = qwidget;
 
     QWidget *popup = qAppInstance()->activePopupWidget();
@@ -649,6 +672,9 @@ extern "C" {
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
+    if (!qwidget)
+        return;
+
     // We always enable mouse tracking for all QCocoaView-s. In cases where we have
     // child views, we will receive mouseMoved for both parent & the child (if
     // mouse is over the child). We need to ignore the parent mouseMoved in such
@@ -939,6 +965,8 @@ extern "C" {
 - (void)frameDidChange:(NSNotification *)note
 {
     Q_UNUSED(note);
+    if (!qwidget)
+        return;
     if (qwidget->isWindow())
         return;
     NSRect newFrame = [self frame];
@@ -962,7 +990,7 @@ extern "C" {
 {
     QMacCocoaAutoReleasePool pool;
     [super setEnabled:flag];
-    if (qwidget->isEnabled() != flag)
+    if (qwidget && qwidget->isEnabled() != flag)
         qwidget->setEnabled(flag);
 }
 
@@ -973,6 +1001,8 @@ extern "C" {
 
 - (BOOL)acceptsFirstResponder
 {
+    if (!qwidget)
+        return NO;
     if (qwidget->isWindow())
         return YES;  // Always do it, so that windows can accept key press events.
     return qwidget->focusPolicy() != Qt::NoFocus;
@@ -980,6 +1010,8 @@ extern "C" {
 
 - (BOOL)resignFirstResponder
 {
+    if (!qwidget)
+        return NO;
     // Seems like the following test only triggers if this
     // view is inside a QMacNativeWidget:
     if (qwidget == QApplication::focusWidget())
@@ -1013,6 +1045,12 @@ extern "C" {
 - (QWidget *)qt_qwidget
 {
     return qwidget;
+}
+
+- (void) qt_clearQWidget
+{
+    qwidget = 0;
+    qwidgetprivate = 0;
 }
 
 - (BOOL)qt_leftButtonIsRightButton
@@ -1068,9 +1106,11 @@ extern "C" {
 
 - (void)viewWillMoveToWindow:(NSWindow *)window
 {
+    if (qwidget == 0)
+        return;
+
     if (qwidget->windowFlags() & Qt::MSWindowsOwnDC
           && (window != [self window])) { // OpenGL Widget
-        // Create a stupid ClearDrawable Event
         QEvent event(QEvent::MacGLClearDrawable);
         qApp->sendEvent(qwidget, &event);
     }
@@ -1078,6 +1118,9 @@ extern "C" {
 
 - (void)viewDidMoveToWindow
 {
+    if (qwidget == 0)
+        return;
+
     if (qwidget->windowFlags() & Qt::MSWindowsOwnDC && [self window]) {
         // call update paint event
         qwidgetprivate->needWindowChange = true;
@@ -1273,6 +1316,9 @@ extern "C" {
 
 - (NSArray*) validAttributesForMarkedText
 {
+    if (qwidget == 0)
+        return nil;
+
     if (!qwidget->testAttribute(Qt::WA_InputMethodEnabled))
         return nil;  // Not sure if that's correct, but it's saves a malloc.
 

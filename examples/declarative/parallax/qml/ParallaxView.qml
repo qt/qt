@@ -10,8 +10,8 @@ Item {
     Image {
         id: background
         fillMode: Image.TileHorizontally
-        x: -list.viewportX / 2
-        width: Math.max(list.viewportWidth, parent.width)
+        x: -list.contentX / 2
+        width: Math.max(list.contentWidth, parent.width)
     }
 
     ListView {

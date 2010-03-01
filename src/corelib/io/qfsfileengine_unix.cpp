@@ -1270,7 +1270,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     int pageSize = getpagesize();
     int extra = offset % pageSize;
 
-    if (size + extra > (size_t)-1) {
+    if (quint64(size + extra) > quint64((size_t)-1)) {
         q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
     }

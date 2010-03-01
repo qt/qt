@@ -57,7 +57,7 @@ Flipable {
         Common.Progress { anchors.centerIn: parent; width: 200; height: 18; progress: bigImage.progress; visible: bigImage.status!=1 }
         Flickable {
             id: flickable; anchors.fill: parent; clip: true
-            viewportWidth: imageContainer.width; viewportHeight: imageContainer.height
+            contentWidth: imageContainer.width; contentHeight: imageContainer.height
 
             Item {
                 id: imageContainer
@@ -97,12 +97,12 @@ Flipable {
             }
             onValueChanged: {
                 if (bigImage.width * value > flickable.width) {
-                    var xoff = (flickable.width/2 + flickable.viewportX) * value / prevScale;
-                    flickable.viewportX = xoff - flickable.width/2;
+                    var xoff = (flickable.width/2 + flickable.contentX) * value / prevScale;
+                    flickable.contentX = xoff - flickable.width/2;
                 }
                 if (bigImage.height * value > flickable.height) {
-                    var yoff = (flickable.height/2 + flickable.viewportY) * value / prevScale;
-                    flickable.viewportY = yoff - flickable.height/2;
+                    var yoff = (flickable.height/2 + flickable.contentY) * value / prevScale;
+                    flickable.contentY = yoff - flickable.height/2;
                 }
                 prevScale = value;
             }

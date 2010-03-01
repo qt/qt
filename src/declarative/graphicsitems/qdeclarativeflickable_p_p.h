@@ -85,6 +85,8 @@ public:
     void setRoundedViewportX(qreal x);
     void setRoundedViewportY(qreal y);
 
+    qreal overShootDistance(qreal velocity, qreal size);
+
 public:
     QDeclarativeItem *viewport;
     QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> _moveX;

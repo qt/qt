@@ -51,11 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QObject;
-class QDeclarativeAbstractBinding;
-class QDeclarativeExpression;
-class QStringList;
 class QVariant;
-struct QMetaObject;
 class QDeclarativeContext;
 class QDeclarativeEngine;
 
@@ -70,11 +66,10 @@ public:
         Normal
     };
 
-    enum Type { Invalid = 0x00, 
-                Property = 0x01, 
-                SignalProperty = 0x02,
-                Default = 0x08,
-                ValueTypeProperty = 0x10 
+    enum Type { 
+        Invalid,
+        Property,
+        SignalProperty
     };
 
     QDeclarativeProperty();
@@ -82,45 +77,55 @@ public:
 
     QDeclarativeProperty(QObject *);
     QDeclarativeProperty(QObject *, QDeclarativeContext *);
+    QDeclarativeProperty(QObject *, QDeclarativeEngine *);
 
     QDeclarativeProperty(QObject *, const QString &);
     QDeclarativeProperty(QObject *, const QString &, QDeclarativeContext *);
+    QDeclarativeProperty(QObject *, const QString &, QDeclarativeEngine *);
 
     QDeclarativeProperty(const QDeclarativeProperty &);
     QDeclarativeProperty &operator=(const QDeclarativeProperty &);
 
-    QString name() const;
-
-    QVariant read() const;
-    bool write(const QVariant &) const;
-    bool reset() const;
-
-    bool hasChangedNotifier() const;
-    bool needsChangedNotifier() const;
-    bool connectNotifier(QObject *dest, const char *slot) const;
-    bool connectNotifier(QObject *dest, int method) const;
+    bool operator==(const QDeclarativeProperty &) const;
 
     Type type() const;
-    bool isProperty() const;
-    bool isDefault() const;
-    bool isWritable() const;
-    bool isDesignable() const;
-    bool isResettable() const;
     bool isValid() const;
-    QObject *object() const;
+    bool isProperty() const;
+    bool isSignalProperty() const;
 
     int propertyType() const;
     PropertyTypeCategory propertyTypeCategory() const;
     const char *propertyTypeName() const;
 
-    bool operator==(const QDeclarativeProperty &) const;
+    QString name() const;
 
-    int coreIndex() const;
+    QVariant read() const;
+    static QVariant read(QObject *, const QString &);
+    static QVariant read(QObject *, const QString &, QDeclarativeContext *);
+    static QVariant read(QObject *, const QString &, QDeclarativeEngine *);
+
+    bool write(const QVariant &) const;
+    static bool write(QObject *, const QString &, const QVariant &);
+    static bool write(QObject *, const QString &, const QVariant &, QDeclarativeContext *);
+    static bool write(QObject *, const QString &, const QVariant &, QDeclarativeEngine *);
+
+    bool reset() const;
+
+    bool hasNotifySignal() const;
+    bool needsNotifySignal() const;
+    bool connectNotifySignal(QObject *dest, const char *slot) const;
+    bool connectNotifySignal(QObject *dest, int method) const;
+
+    bool isWritable() const;
+    bool isDesignable() const;
+    bool isResettable() const;
+    QObject *object() const;
+
+    int index() const;
     QMetaProperty property() const;
     QMetaMethod method() const;
 
 private:
-    friend class QDeclarativeEnginePrivate;
     friend class QDeclarativePropertyPrivate;
     QDeclarativePropertyPrivate *d;
 };

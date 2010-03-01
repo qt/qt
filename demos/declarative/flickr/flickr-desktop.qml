@@ -21,9 +21,9 @@ Item {
                 angle: wrapper.PathView.angle ? wrapper.PathView.angle : 0
             }
 
-            Connection {
-                sender: imageDetails; signal: "closed()"
-                script: {
+            Connections {
+                target: imageDetails
+                onClosed: {
                     if (wrapper.state == 'Details') {
                         wrapper.state = '';
                         imageDetails.photoUrl = "";

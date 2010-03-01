@@ -555,16 +555,15 @@ QStringList QResource::children() const
 /*!
   \obsolete
 
+  Use QDir::addSearchPath() with a prefix instead.
+
   Adds \a path to the search paths searched in to find resources that are
   not specified with an absolute path. The \a path must be an absolute
   path (start with \c{/}).
 
   The default search path is to search only in the root (\c{:/}). The last
   path added will be consulted first upon next QResource creation.
-
-  Use QDir::addSearchPath() with a prefix instead.
 */
-
 void
 QResource::addSearchPath(const QString &path)
 {
@@ -578,6 +577,10 @@ QResource::addSearchPath(const QString &path)
 }
 
 /*!
+  \obsolete
+
+  Use QDir::searchPaths() instead.
+  
   Returns the current search path list. This list is consulted when
   creating a relative resource.
 

@@ -48,6 +48,7 @@
 #include <qdeclarativeanchors_p_p.h>
 #include <qdeclarativeitem_p.h>
 #include <qdeclarativeguard_p.h>
+#include <qdeclarativenullablevalue_p_p.h>
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qgraphicsitem.h>
@@ -62,7 +63,7 @@ class QDeclarativeParentChangePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeParentChange)
 public:
     QDeclarativeParentChangePrivate() : target(0), parent(0), origParent(0), origStackBefore(0),
-                               rewindParent(0), rewindStackBefore(0) {}
+        rewindParent(0), rewindStackBefore(0) {}
 
     QDeclarativeItem *target;
     QDeclarativeItem *parent;
@@ -70,6 +71,13 @@ public:
     QDeclarativeGuard<QDeclarativeItem> origStackBefore;
     QDeclarativeItem *rewindParent;
     QDeclarativeItem *rewindStackBefore;
+
+    QDeclarativeNullableValue<qreal> x;
+    QDeclarativeNullableValue<qreal> y;
+    QDeclarativeNullableValue<qreal> width;
+    QDeclarativeNullableValue<qreal> height;
+    QDeclarativeNullableValue<qreal> scale;
+    QDeclarativeNullableValue<qreal> rotation;
 
     void doChange(QDeclarativeItem *targetParent, QDeclarativeItem *stackBefore = 0);
 };
@@ -173,6 +181,120 @@ QDeclarativeParentChange::~QDeclarativeParentChange()
 {
 }
 
+qreal QDeclarativeParentChange::x() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->x.isNull ? qreal(0.) : d->x.value;
+}
+
+void QDeclarativeParentChange::setX(qreal x)
+{
+    Q_D(QDeclarativeParentChange);
+    d->x = x;
+}
+
+bool QDeclarativeParentChange::xIsSet() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->x.isValid();
+}
+
+qreal QDeclarativeParentChange::y() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->y.isNull ? qreal(0.) : d->y.value;
+}
+
+void QDeclarativeParentChange::setY(qreal y)
+{
+    Q_D(QDeclarativeParentChange);
+    d->y = y;
+}
+
+bool QDeclarativeParentChange::yIsSet() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->y.isValid();
+}
+
+qreal QDeclarativeParentChange::width() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->width.isNull ? qreal(0.) : d->width.value;
+}
+
+void QDeclarativeParentChange::setWidth(qreal width)
+{
+    Q_D(QDeclarativeParentChange);
+    d->width = width;
+}
+
+bool QDeclarativeParentChange::widthIsSet() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->width.isValid();
+}
+
+qreal QDeclarativeParentChange::height() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->height.isNull ? qreal(0.) : d->height.value;
+}
+
+void QDeclarativeParentChange::setHeight(qreal height)
+{
+    Q_D(QDeclarativeParentChange);
+    d->height = height;
+}
+
+bool QDeclarativeParentChange::heightIsSet() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->height.isValid();
+}
+
+qreal QDeclarativeParentChange::scale() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->scale.isNull ? qreal(1.) : d->scale.value;
+}
+
+void QDeclarativeParentChange::setScale(qreal scale)
+{
+    Q_D(QDeclarativeParentChange);
+    d->scale = scale;
+}
+
+bool QDeclarativeParentChange::scaleIsSet() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->scale.isValid();
+}
+
+qreal QDeclarativeParentChange::rotation() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->rotation.isNull ? qreal(0.) : d->rotation.value;
+}
+
+void QDeclarativeParentChange::setRotation(qreal rotation)
+{
+    Q_D(QDeclarativeParentChange);
+    d->rotation = rotation;
+}
+
+bool QDeclarativeParentChange::rotationIsSet() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->rotation.isValid();
+}
+
+QDeclarativeItem *QDeclarativeParentChange::originalParent() const
+{
+    Q_D(const QDeclarativeParentChange);
+    return d->origParent;
+}
+
 /*!
     \qmlproperty Item ParentChange::target
     This property holds the item to be reparented
@@ -213,10 +335,43 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     if (!d->target || !d->parent)
         return ActionList();
 
+    ActionList actions;
+
     QDeclarativeAction a;
     a.event = this;
+    actions << a;
 
-    return ActionList() << a;
+    if (d->x.isValid()) {
+        QDeclarativeAction xa(d->target, QLatin1String("x"), x());
+        actions << xa;
+    }
+
+    if (d->y.isValid()) {
+        QDeclarativeAction ya(d->target, QLatin1String("y"), y());
+        actions << ya;
+    }
+
+    if (d->scale.isValid()) {
+        QDeclarativeAction sa(d->target, QLatin1String("scale"), scale());
+        actions << sa;
+    }
+
+    if (d->rotation.isValid()) {
+        QDeclarativeAction ra(d->target, QLatin1String("rotation"), rotation());
+        actions << ra;
+    }
+
+    if (d->width.isValid()) {
+        QDeclarativeAction wa(d->target, QLatin1String("width"), width());
+        actions << wa;
+    }
+
+    if (d->height.isValid()) {
+        QDeclarativeAction ha(d->target, QLatin1String("height"), height());
+        actions << ha;
+    }
+
+    return actions;
 }
 
 class AccessibleFxItem : public QDeclarativeItem

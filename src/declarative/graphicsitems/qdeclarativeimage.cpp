@@ -127,7 +127,7 @@ QT_BEGIN_NAMESPACE
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)
     : QDeclarativeImageBase(*(new QDeclarativeImagePrivate), parent)
 {
-    connect(this, SIGNAL(sourceChanged(QUrl)), this, SLOT(updatePaintedGeometry()));
+    connect(this, SIGNAL(pixmapChanged()), this, SLOT(updatePaintedGeometry()));
 }
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeItem *parent)
@@ -137,12 +137,6 @@ QDeclarativeImage::QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeI
 
 QDeclarativeImage::~QDeclarativeImage()
 {
-}
-
-void QDeclarativeImage::setSource(const QUrl &url)
-{
-    QDeclarativeImageBase::setSource(url);
-    updatePaintedGeometry();
 }
 
 /*!
@@ -268,10 +262,10 @@ void QDeclarativeImage::updatePaintedGeometry()
     Q_D(QDeclarativeImage);
 
     if (d->fillMode == PreserveAspectFit) {
-        qreal widthScale = width() / qreal(d->pix.width());
-        qreal heightScale = height() / qreal(d->pix.height());
         if (!d->pix.width() || !d->pix.height())
             return;
+        qreal widthScale = width() / qreal(d->pix.width());
+        qreal heightScale = height() / qreal(d->pix.height());
         if (widthScale <= heightScale) {
             d->paintedWidth = width();
             d->paintedHeight = widthScale * qreal(d->pix.height());

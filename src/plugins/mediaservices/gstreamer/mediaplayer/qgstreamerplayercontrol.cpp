@@ -54,6 +54,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+QT_BEGIN_NAMESPACE
+
 QGstreamerPlayerControl::QGstreamerPlayerControl(QGstreamerPlayerSession *session, QObject *parent)
     : QMediaPlayerControl(parent)
     , m_session(session)
@@ -341,3 +343,6 @@ void QGstreamerPlayerControl::closeFifo()
         m_bufferOffset = 0;
     }
 }
+
+QT_END_NAMESPACE
+

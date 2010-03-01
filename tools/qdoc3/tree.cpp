@@ -1914,8 +1914,8 @@ QString Tree::fullDocumentLocation(const Node *node) const
     }
     else if (node->type() == Node::Fake) {
 #ifdef QDOC_QML
-        if ((node->subType() == Node::QDeclarativeClass) ||
-            (node->subType() == Node::QDeclarativeBasicType))
+        if ((node->subType() == Node::QmlClass) ||
+            (node->subType() == Node::QmlBasicType))
             return "qml-" + node->fileBase() + ".html";
         else
 #endif

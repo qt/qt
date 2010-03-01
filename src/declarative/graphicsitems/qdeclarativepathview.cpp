@@ -111,7 +111,7 @@ QDeclarativeItem *QDeclarativePathViewPrivate::getItem(int modelIndex)
 {
     Q_Q(QDeclarativePathView);
     requestedIndex = modelIndex;
-    QDeclarativeItem *item = model->item(modelIndex);
+    QDeclarativeItem *item = model->item(modelIndex, false);
     if (item) {
         if (QObject *obj = QDeclarativePathView::qmlAttachedProperties(item))
             static_cast<QDeclarativePathViewAttached *>(obj)->setOnPath(true);
@@ -655,6 +655,7 @@ void QDeclarativePathViewPrivate::regenerate()
         }
         items.append(item);
         item->setZValue(i);
+        model->completeItem();
         if (currentIndex == index)
             item->setFocus(true);
     }
@@ -715,6 +716,7 @@ void QDeclarativePathView::refill()
                 int index = (d->firstIndex + d->items.count())%d->model->count();
                 QDeclarativeItem *item = d->getItem(index);
                 item->setZValue(wrapIndex);
+                d->model->completeItem();
                 if (d->currentIndex == index)
                     item->setFocus(true);
                 d->items << item;
@@ -731,6 +733,7 @@ void QDeclarativePathView::refill()
                     d->firstIndex = d->model->count() - 1;
                 QDeclarativeItem *item = d->getItem(d->firstIndex);
                 item->setZValue(d->firstIndex);
+                d->model->completeItem();
                 if (d->currentIndex == d->firstIndex)
                     item->setFocus(true);
                 d->items.prepend(item);
@@ -757,6 +760,7 @@ void QDeclarativePathView::itemsInserted(int modelIndex, int count)
         for (int i = 0; i < count; ++i) {
             QDeclarativeItem *item = d->getItem(modelIndex + i);
             item->setZValue(modelIndex + i);
+            d->model->completeItem();
             d->items.insert(modelIndex + i, item);
         }
         refill();

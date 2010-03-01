@@ -130,7 +130,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 
         if (data->property.propertyType() == qMetaTypeId<QDeclarativeBinding *>()) {
 
-            int idx = data->property.coreIndex();
+            int idx = data->property.index();
             Q_ASSERT(idx != -1);
 
 
@@ -223,7 +223,7 @@ void QDeclarativeBinding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteF
 int QDeclarativeBinding::propertyIndex()
 {
     Q_D(QDeclarativeBinding);
-    return d->bindingData()->property.coreIndex();
+    return d->bindingData()->property.index();
 }
 
 bool QDeclarativeBinding::enabled() const

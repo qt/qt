@@ -63,6 +63,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
+#include <QtCore/qmath.h>
 
 #include <private/qvariantanimation_p.h>
 
@@ -70,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Animation QDeclarativeAbstractAnimation
-  \since 4.7
+    \since 4.7
     \brief The Animation element is the base of all QML animations.
 
     The Animation element cannot be used directly in a QML file.  It exists
@@ -360,9 +361,6 @@ void QDeclarativeAbstractAnimation::setGroup(QDeclarativeAnimationGroup *g)
     if (d->group && !static_cast<QDeclarativeAnimationGroupPrivate *>(d->group->d_func())->animations.contains(this))
         static_cast<QDeclarativeAnimationGroupPrivate *>(d->group->d_func())->animations.append(this);
 
-    if (d->group)
-        ((QAnimationGroup*)d->group->qtAnimation())->addAnimation(qtAnimation());
-
     //if (g) //if removed from a group, then the group should no longer be the parent
         setParent(g);
 }
@@ -517,7 +515,7 @@ void QDeclarativeAbstractAnimation::timelineComplete()
 
 /*!
     \qmlclass PauseAnimation QDeclarativePauseAnimation
-  \since 4.7
+    \since 4.7
     \inherits Animation
     \brief The PauseAnimation element provides a pause for an animation.
 
@@ -554,7 +552,7 @@ void QDeclarativePauseAnimationPrivate::init()
 {
     Q_Q(QDeclarativePauseAnimation);
     pa = new QPauseAnimation;
-    QDeclarativeGraphics_setParent_noEvent(pa, q);
+    QDeclarative_setParent_noEvent(pa, q);
 }
 
 /*!
@@ -591,7 +589,7 @@ QAbstractAnimation *QDeclarativePauseAnimation::qtAnimation()
 
 /*!
     \qmlclass ColorAnimation QDeclarativeColorAnimation
-  \since 4.7
+    \since 4.7
     \inherits PropertyAnimation
     \brief The ColorAnimation element allows you to animate color changes.
 
@@ -655,7 +653,7 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
 
 /*!
     \qmlclass ScriptAction QDeclarativeScriptAction
-  \since 4.7
+    \since 4.7
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
@@ -679,7 +677,7 @@ void QDeclarativeScriptActionPrivate::init()
 {
     Q_Q(QDeclarativeScriptAction);
     rsa = new QActionAnimation(&proxy);
-    QDeclarativeGraphics_setParent_noEvent(rsa, q);
+    QDeclarative_setParent_noEvent(rsa, q);
 }
 
 /*!
@@ -761,7 +759,7 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
 
 /*!
     \qmlclass PropertyAction QDeclarativePropertyAction
-  \since 4.7
+    \since 4.7
     \inherits Animation
     \brief The PropertyAction element allows immediate property changes during animation.
 
@@ -797,7 +795,7 @@ void QDeclarativePropertyActionPrivate::init()
 {
     Q_Q(QDeclarativePropertyAction);
     spa = new QActionAnimation;
-    QDeclarativeGraphics_setParent_noEvent(spa, q);
+    QDeclarative_setParent_noEvent(spa, q);
 }
 
 /*!
@@ -1010,7 +1008,7 @@ void QDeclarativePropertyAction::transition(QDeclarativeStateActions &actions,
 
 /*!
     \qmlclass ParentAction QDeclarativeParentAction
-  \since 4.7
+    \since 4.7
     \inherits Animation
     \brief The ParentAction element allows parent changes during animation.
 
@@ -1058,7 +1056,7 @@ void QDeclarativeParentActionPrivate::init()
 {
     Q_Q(QDeclarativeParentAction);
     cpa = new QActionAnimation;
-    QDeclarativeGraphics_setParent_noEvent(cpa, q);
+    QDeclarative_setParent_noEvent(cpa, q);
 }
 
 /*!
@@ -1214,7 +1212,7 @@ void QDeclarativeParentAction::transition(QDeclarativeStateActions &actions,
 
 /*!
     \qmlclass NumberAnimation QDeclarativeNumberAnimation
-  \since 4.7
+    \since 4.7
     \inherits PropertyAnimation
     \brief The NumberAnimation element allows you to animate changes in properties of type qreal.
 
@@ -1278,7 +1276,7 @@ void QDeclarativeNumberAnimation::setTo(qreal t)
 
 /*!
     \qmlclass Vector3dAnimation QDeclarativeVector3dAnimation
-  \since 4.7
+    \since 4.7
     \inherits PropertyAnimation
     \brief The Vector3dAnimation element allows you to animate changes in properties of type QVector3d.
 */
@@ -1337,6 +1335,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
 /*!
     \qmlclass RotationAnimation QDeclarativeRotationAnimation
+    \since 4.7
     \inherits PropertyAnimation
     \brief The RotationAnimation element allows you to animate rotations.
 
@@ -1511,12 +1510,18 @@ QDeclarativeAnimationGroup::QDeclarativeAnimationGroup(QObject *parent)
 {
 }
 
+QDeclarativeAnimationGroup::QDeclarativeAnimationGroup(QDeclarativeAnimationGroupPrivate &dd, QObject *parent)
+    : QDeclarativeAbstractAnimation(dd, parent)
+{
+}
+
 void QDeclarativeAnimationGroupPrivate::append_animation(QDeclarativeListProperty<QDeclarativeAbstractAnimation> *list, QDeclarativeAbstractAnimation *a)
 {
     QDeclarativeAnimationGroup *q = qobject_cast<QDeclarativeAnimationGroup *>(list->object);
     if (q) {
         q->d_func()->animations.append(a);
         a->setGroup(q);
+        q->d_func()->ag->addAnimation(a->qtAnimation());
     }
 }
 
@@ -1545,7 +1550,7 @@ QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeAnimationGro
 
 /*!
     \qmlclass SequentialAnimation QDeclarativeSequentialAnimation
-  \since 4.7
+    \since 4.7
     \inherits Animation
     \brief The SequentialAnimation element allows you to run animations sequentially.
 
@@ -1606,7 +1611,7 @@ void QDeclarativeSequentialAnimation::transition(QDeclarativeStateActions &actio
 
 /*!
     \qmlclass ParallelAnimation QDeclarativeParallelAnimation
-  \since 4.7
+    \since 4.7
     \inherits Animation
     \brief The ParallelAnimation element allows you to run animations in parallel.
 
@@ -1715,7 +1720,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
 
 /*!
     \qmlclass PropertyAnimation QDeclarativePropertyAnimation
-  \since 4.7
+    \since 4.7
     \inherits Animation
     \brief The PropertyAnimation element allows you to animate property changes.
 
@@ -1793,7 +1798,7 @@ void QDeclarativePropertyAnimationPrivate::init()
 {
     Q_Q(QDeclarativePropertyAnimation);
     va = new QDeclarativeTimeLineValueAnimator;
-    QDeclarativeGraphics_setParent_noEvent(va, q);
+    QDeclarative_setParent_noEvent(va, q);
 }
 
 /*!
@@ -2366,6 +2371,241 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     }
 }
 
+QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
+    : QDeclarativeAnimationGroup(*(new QDeclarativeParentAnimationPrivate), parent)
+{
+    Q_D(QDeclarativeParentAnimation);
+    d->topLevelGroup = new QSequentialAnimationGroup;
+    QDeclarative_setParent_noEvent(d->topLevelGroup, this);
 
+    d->startAction = new QActionAnimation;
+    d->topLevelGroup->addAnimation(d->startAction);
+
+    d->ag = new QParallelAnimationGroup;
+    d->topLevelGroup->addAnimation(d->ag);
+
+    d->endAction = new QActionAnimation;
+    d->topLevelGroup->addAnimation(d->endAction);
+}
+
+QDeclarativeParentAnimation::~QDeclarativeParentAnimation()
+{
+}
+
+QDeclarativeItem *QDeclarativeParentAnimation::target() const
+{
+    Q_D(const QDeclarativeParentAnimation);
+    return d->target;
+}
+
+void QDeclarativeParentAnimation::setTarget(QDeclarativeItem *target)
+{
+    Q_D(QDeclarativeParentAnimation);
+    d->target = target;
+}
+
+QDeclarativeItem *QDeclarativeParentAnimation::newParent() const
+{
+    Q_D(const QDeclarativeParentAnimation);
+    return d->newParent;
+}
+
+void QDeclarativeParentAnimation::setNewParent(QDeclarativeItem *newParent)
+{
+    Q_D(QDeclarativeParentAnimation);
+    d->newParent = newParent;
+}
+
+QDeclarativeItem *QDeclarativeParentAnimation::via() const
+{
+    Q_D(const QDeclarativeParentAnimation);
+    return d->via;
+}
+
+void QDeclarativeParentAnimation::setVia(QDeclarativeItem *via)
+{
+    Q_D(QDeclarativeParentAnimation);
+    d->via = via;
+}
+
+//### mirrors same-named function in QDeclarativeItem
+QPointF QDeclarativeParentAnimationPrivate::computeTransformOrigin(QDeclarativeItem::TransformOrigin origin, qreal width, qreal height) const
+{
+    switch(origin) {
+    default:
+    case QDeclarativeItem::TopLeft:
+        return QPointF(0, 0);
+    case QDeclarativeItem::Top:
+        return QPointF(width / 2., 0);
+    case QDeclarativeItem::TopRight:
+        return QPointF(width, 0);
+    case QDeclarativeItem::Left:
+        return QPointF(0, height / 2.);
+    case QDeclarativeItem::Center:
+        return QPointF(width / 2., height / 2.);
+    case QDeclarativeItem::Right:
+        return QPointF(width, height / 2.);
+    case QDeclarativeItem::BottomLeft:
+        return QPointF(0, height);
+    case QDeclarativeItem::Bottom:
+        return QPointF(width / 2., height);
+    case QDeclarativeItem::BottomRight:
+        return QPointF(width, height);
+    }
+}
+
+void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
+                        QDeclarativeProperties &modified,
+                        TransitionDirection direction)
+{
+    Q_D(QDeclarativeParentAnimation);
+
+    struct QDeclarativeParentActionData : public QAbstractAnimationAction
+    {
+        QDeclarativeParentActionData(): pc(0) {}
+        ~QDeclarativeParentActionData() { delete pc; }
+
+        QDeclarativeStateActions actions;
+        bool reverse;
+        QDeclarativeParentChange *pc;
+        virtual void doAction()
+        {
+            for (int ii = 0; ii < actions.count(); ++ii) {
+                const QDeclarativeAction &action = actions.at(ii);
+                if (reverse)
+                    action.event->reverse();
+                else
+                    action.event->execute();
+            }
+        }
+    };
+
+    QDeclarativeParentActionData *data = new QDeclarativeParentActionData;
+    QDeclarativeParentActionData *viaData = new QDeclarativeParentActionData;
+    for (int i = 0; i < actions.size(); ++i) {
+        QDeclarativeAction &action = actions[i];
+        if (action.event && action.event->typeName() == QLatin1String("ParentChange")
+            && (!d->target || static_cast<QDeclarativeParentChange*>(action.event)->object() == d->target)) {
+
+            QDeclarativeParentChange *pc = static_cast<QDeclarativeParentChange*>(action.event);
+            QDeclarativeAction myAction = action;
+            data->reverse = action.reverseEvent;
+            action.actionDone = true;
+            data->actions << myAction;
+
+            if (d->via) {
+                viaData->reverse = false;
+                QDeclarativeAction myAction;
+                QDeclarativeParentChange *vpc = new QDeclarativeParentChange;
+                vpc->setObject(pc->object());
+                vpc->setParent(d->via);
+                myAction.event = vpc;
+                viaData->pc = vpc;
+                viaData->actions << myAction;
+                QDeclarativeAction dummyAction;
+                QDeclarativeAction &xAction = pc->xIsSet() ? actions[++i] : dummyAction;
+                QDeclarativeAction &yAction = pc->yIsSet() ? actions[++i] : dummyAction;
+                QDeclarativeAction &sAction = pc->scaleIsSet() ? actions[++i] : dummyAction;
+                QDeclarativeAction &rAction = pc->rotationIsSet() ? actions[++i] : dummyAction;
+                bool forward = (direction == QDeclarativeAbstractAnimation::Forward);
+                QDeclarativeItem *target = pc->object();
+                QDeclarativeItem *targetParent = forward ? pc->parent() : pc->originalParent();
+
+                //### this mirrors the logic in QDeclarativeParentChange.
+                bool ok;
+                const QTransform &transform = targetParent->itemTransform(d->via, &ok);
+                if (transform.type() >= QTransform::TxShear || !ok) {
+                    qmlInfo(this) << QDeclarativeParentAnimation::tr("Unable to preserve appearance under complex transform");
+                    ok = false;
+                }
+
+                qreal scale = 1;
+                qreal rotation = 0;
+                if (ok && transform.type() != QTransform::TxRotate) {
+                    if (transform.m11() == transform.m22())
+                        scale = transform.m11();
+                    else {
+                        qmlInfo(this) << QDeclarativeParentAnimation::tr("Unable to preserve appearance under non-uniform scale");
+                        ok = false;
+                    }
+                } else if (ok && transform.type() == QTransform::TxRotate) {
+                    if (transform.m11() == transform.m22())
+                        scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
+                    else {
+                        qmlInfo(this) << QDeclarativeParentAnimation::tr("Unable to preserve appearance under non-uniform scale");
+                        ok = false;
+                    }
+
+                    if (scale != 0)
+                        rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/M_PI;
+                    else {
+                        qmlInfo(this) << QDeclarativeParentAnimation::tr("Unable to preserve appearance under scale of 0");
+                        ok = false;
+                    }
+                }
+
+                const QPointF &point = transform.map(QPointF(xAction.toValue.toReal(),yAction.toValue.toReal()));
+                qreal x = point.x();
+                qreal y = point.y();
+                if (ok && target->transformOrigin() != QDeclarativeItem::TopLeft) {
+                    qreal w = target->width();
+                    qreal h = target->height();
+                    if (pc->widthIsSet())
+                        w = actions[++i].toValue.toReal();
+                    if (pc->heightIsSet())
+                        h = actions[++i].toValue.toReal();
+                    const QPointF &transformOrigin
+                            = d->computeTransformOrigin(target->transformOrigin(), w,h);
+                    qreal tempxt = transformOrigin.x();
+                    qreal tempyt = transformOrigin.y();
+                    QTransform t;
+                    t.translate(-tempxt, -tempyt);
+                    t.rotate(rotation);
+                    t.scale(scale, scale);
+                    t.translate(tempxt, tempyt);
+                    const QPointF &offset = t.map(QPointF(0,0));
+                    x += offset.x();
+                    y += offset.y();
+                }
+
+                if (ok) {
+                    //qDebug() << x << y << rotation << scale;
+                    xAction.toValue = x;
+                    yAction.toValue = y;
+                    sAction.toValue = sAction.toValue.toReal() * scale;
+                    rAction.toValue = rAction.toValue.toReal() + rotation;
+                }
+            }
+        }
+    }
+
+    if (data->actions.count()) {
+        if (direction == QDeclarativeAbstractAnimation::Forward) {
+            d->startAction->setAnimAction(d->via ? viaData : data, QActionAnimation::DeleteWhenStopped);
+            d->endAction->setAnimAction(d->via ? data : 0, QActionAnimation::DeleteWhenStopped);
+        } else {
+            d->endAction->setAnimAction(d->via ? viaData : data, QActionAnimation::DeleteWhenStopped);
+            d->startAction->setAnimAction(d->via ? data : 0, QActionAnimation::DeleteWhenStopped);
+        }
+    } else {
+        delete data;
+        delete viaData;
+    }
+
+    //take care of any child animations
+    bool valid = d->defaultProperty.isValid();
+    for (int ii = 0; ii < d->animations.count(); ++ii) {
+        if (valid)
+            d->animations.at(ii)->setDefaultTarget(d->defaultProperty);
+        d->animations.at(ii)->transition(actions, modified, direction);
+    }
+
+}
+
+QAbstractAnimation *QDeclarativeParentAnimation::qtAnimation()
+{
+    Q_D(QDeclarativeParentAnimation);
+    return d->topLevelGroup;
+}
 
 QT_END_NAMESPACE

@@ -89,7 +89,7 @@ Rectangle {
     }
 
     Flickable {
-        anchors.fill: parent; viewportHeight: layout.height
+        anchors.fill: parent; contentHeight: layout.height
         Column {
             id: layout
             anchors.left: parent.left; anchors.right: parent.right

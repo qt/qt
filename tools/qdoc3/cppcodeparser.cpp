@@ -728,7 +728,7 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             if (n)
                 classNode = static_cast<const ClassNode*>(n);
         }
-        return new QDeclarativeClassNode(tre->root(), names[0], classNode);
+        return new QmlClassNode(tre->root(), names[0], classNode);
     }
     else if (command == COMMAND_QMLBASICTYPE) {
 #if 0        
@@ -738,11 +738,11 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             FakeNode* pageNode = static_cast<FakeNode*>(tre->root()->findNode(parts[1], Node::Fake));
             if (pageNode) {
                 qDebug() << "FOUND";
-                return new QDeclarativeBasicTypeNode(pageNode, parts[0]);
+                return new QmlBasicTypeNode(pageNode, parts[0]);
             }
         }
 #endif        
-        return new QDeclarativeBasicTypeNode(tre->root(), arg);
+        return new QmlBasicTypeNode(tre->root(), arg);
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
              (command == COMMAND_QMLMETHOD) ||
@@ -750,19 +750,19 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
              (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString element;
         QString type;
-        QDeclarativeClassNode* qmlClass = 0;
+        QmlClassNode* qmlClass = 0;
         if (splitQmlMethodArg(doc,arg,type,element)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
-            if (n && n->subType() == Node::QDeclarativeClass) {
-                qmlClass = static_cast<QDeclarativeClassNode*>(n);
+            if (n && n->subType() == Node::QmlClass) {
+                qmlClass = static_cast<QmlClassNode*>(n);
                 if (command == COMMAND_QMLSIGNAL)
-                    return makeFunctionNode(doc,arg,qmlClass,Node::QDeclarativeSignal,false,COMMAND_QMLSIGNAL);
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,false,COMMAND_QMLSIGNAL);
                 else if (command == COMMAND_QMLATTACHEDSIGNAL)
-                    return makeFunctionNode(doc,arg,qmlClass,Node::QDeclarativeSignal,true,COMMAND_QMLATTACHEDSIGNAL);
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlSignal,true,COMMAND_QMLATTACHEDSIGNAL);
                 else if (command == COMMAND_QMLMETHOD)
-                    return makeFunctionNode(doc,arg,qmlClass,Node::QDeclarativeMethod,false,COMMAND_QMLMETHOD);
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,false,COMMAND_QMLMETHOD);
                 else if (command == COMMAND_QMLATTACHEDMETHOD)
-                    return makeFunctionNode(doc,arg,qmlClass,Node::QDeclarativeMethod,true,COMMAND_QMLATTACHEDMETHOD);
+                    return makeFunctionNode(doc,arg,qmlClass,Node::QmlMethod,true,COMMAND_QMLATTACHEDMETHOD);
                 else
                     return 0; // never get here.
             }
@@ -850,7 +850,7 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
                                               const QString& command,
                                               const QStringList& args)
 {
-    QDeclarativePropGroupNode* qmlPropGroup = 0;
+    QmlPropGroupNode* qmlPropGroup = 0;
     if ((command == COMMAND_QMLPROPERTY) ||
         (command == COMMAND_QMLATTACHEDPROPERTY)) {
         QString type;
@@ -860,20 +860,20 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
         QStringList::ConstIterator arg = args.begin();
         if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
-            if (n && n->subType() == Node::QDeclarativeClass) {
-                QDeclarativeClassNode* qmlClass = static_cast<QDeclarativeClassNode*>(n);
+            if (n && n->subType() == Node::QmlClass) {
+                QmlClassNode* qmlClass = static_cast<QmlClassNode*>(n);
                 if (qmlClass)
-                    qmlPropGroup = new QDeclarativePropGroupNode(qmlClass,
+                    qmlPropGroup = new QmlPropGroupNode(qmlClass,
                                                         property,
                                                         attached);
             }
         }
         if (qmlPropGroup) {
-            const ClassNode *correspondingClass = static_cast<const QDeclarativeClassNode*>(qmlPropGroup->parent())->classNode();
+            const ClassNode *correspondingClass = static_cast<const QmlClassNode*>(qmlPropGroup->parent())->classNode();
             PropertyNode *correspondingProperty = 0;
             if (correspondingClass)
                 correspondingProperty = static_cast<PropertyNode*>((Node*)correspondingClass->findNode(property, Node::Property));
-            QDeclarativePropertyNode *qmlPropNode = new QDeclarativePropertyNode(qmlPropGroup,property,type,attached);
+            QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
             if (correspondingProperty) {
                 bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
                 qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
@@ -881,7 +881,7 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             ++arg;
             while (arg != args.end()) {
                 if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
-                    QDeclarativePropertyNode* qmlPropNode = new QDeclarativePropertyNode(qmlPropGroup,
+                    QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
                                                                        property,
                                                                        type,
                                                                        attached);
@@ -1033,12 +1033,12 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
 #ifdef QDOC_QML
     else if (command == COMMAND_QMLINHERITS) {
         setLink(node, Node::InheritsLink, arg);
-        if (node->subType() == Node::QDeclarativeClass) {
-            QDeclarativeClassNode::addInheritedBy(arg,node);
+        if (node->subType() == Node::QmlClass) {
+            QmlClassNode::addInheritedBy(arg,node->name());
         }
    }
     else if (command == COMMAND_QMLDEFAULT) {
-        QDeclarativePropGroupNode* qpgn = static_cast<QDeclarativePropGroupNode*>(node);
+        QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
         qpgn->setDefault();
     }
 #endif

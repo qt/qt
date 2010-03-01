@@ -128,7 +128,7 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
     , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
-    , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(200)
+    , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(600)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
     , flickDirection(QDeclarativeFlickable::AutoFlickDirection)
 {
@@ -142,10 +142,27 @@ void QDeclarativeFlickablePrivate::init()
     QObject::connect(&timeline, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFiltersChildEvents(true);
-    QObject::connect(viewport, SIGNAL(xChanged()), q, SIGNAL(positionXChanged()));
-    QObject::connect(viewport, SIGNAL(yChanged()), q, SIGNAL(positionYChanged()));
+    QObject::connect(viewport, SIGNAL(xChanged()), q, SIGNAL(contentXChanged()));
+    QObject::connect(viewport, SIGNAL(yChanged()), q, SIGNAL(contentYChanged()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(heightChange()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(widthChange()));
+}
+
+/*
+    Returns the amount to overshoot by given a velocity.
+    Will be roughly in range 0 - size/4
+*/
+qreal QDeclarativeFlickablePrivate::overShootDistance(qreal velocity, qreal size)
+{
+    Q_Q(QDeclarativeFlickable);
+    if (maxVelocity <= 0)
+        return 0.0;
+
+    velocity = qAbs(velocity);
+    if (velocity > maxVelocity)
+        velocity = maxVelocity;
+    qreal dist = size / 4 * velocity / maxVelocity;
+    return dist;
 }
 
 void QDeclarativeFlickablePrivate::flickX(qreal velocity)
@@ -156,12 +173,12 @@ void QDeclarativeFlickablePrivate::flickX(qreal velocity)
     if (velocity > 0) {
         const qreal minX = q->minXExtent();
         if (_moveX.value() < minX)
-            maxDistance = qAbs(minX -_moveX.value() + (overShoot?30:0));
+            maxDistance = qAbs(minX -_moveX.value() + (overShoot?overShootDistance(velocity,q->width()):0));
         flickTargetX = minX;
     } else {
         const qreal maxX = q->maxXExtent();
         if (_moveX.value() > maxX)
-            maxDistance = qAbs(maxX - _moveX.value()) + (overShoot?30:0);
+            maxDistance = qAbs(maxX - _moveX.value()) + (overShoot?overShootDistance(velocity,q->width()):0);
         flickTargetX = maxX;
     }
     if (maxDistance > 0) {
@@ -194,12 +211,12 @@ void QDeclarativeFlickablePrivate::flickY(qreal velocity)
     if (velocity > 0) {
         const qreal minY = q->minYExtent();
         if (_moveY.value() < minY)
-            maxDistance = qAbs(minY -_moveY.value() + (overShoot?30:0));
+            maxDistance = qAbs(minY -_moveY.value() + (overShoot?overShootDistance(velocity,q->height()):0));
         flickTargetY = minY;
     } else {
         const qreal maxY = q->maxYExtent();
         if (_moveY.value() > maxY)
-            maxDistance = qAbs(maxY - _moveY.value()) + (overShoot?30:0);
+            maxDistance = qAbs(maxY - _moveY.value()) + (overShoot?overShootDistance(velocity,q->height()):0);
         flickTargetY = maxY;
     }
     if (maxDistance > 0) {
@@ -233,18 +250,24 @@ void QDeclarativeFlickablePrivate::fixupX()
     if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->minXExtent())) {
         timeline.reset(_moveX);
         if (_moveX.value() != q->minXExtent()) {
-            if (fixupDuration)
-                timeline.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
-            else
-                _moveY.setValue(q->minYExtent());
+            if (fixupDuration) {
+                qreal dist = q->minXExtent() - _moveX;
+                timeline.move(_moveX, q->minXExtent() - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
+                timeline.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
+            } else {
+                _moveX.setValue(q->minXExtent());
+            }
         }
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
         timeline.reset(_moveX);
-        if (fixupDuration)
-            timeline.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
-        else
-            _moveY.setValue(q->maxYExtent());
+        if (fixupDuration) {
+            qreal dist = q->maxXExtent() - _moveX;
+            timeline.move(_moveX, q->maxXExtent() - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
+            timeline.move(_moveX, q->maxXExtent(), QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
+        } else {
+            _moveX.setValue(q->maxXExtent());
+        }
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -272,18 +295,24 @@ void QDeclarativeFlickablePrivate::fixupY()
     if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
         timeline.reset(_moveY);
         if (_moveY.value() != q->minYExtent()) {
-            if (fixupDuration)
-                timeline.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
-            else
+            if (fixupDuration) {
+                qreal dist = q->minYExtent() - _moveY;
+                timeline.move(_moveY, q->minYExtent() - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
+                timeline.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
+            } else {
                 _moveY.setValue(q->minYExtent());
+            }
         }
         //emit flickingChanged();
     } else if (_moveY.value() < q->maxYExtent()) {
         timeline.reset(_moveY);
-        if (fixupDuration)
-            timeline.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), fixupDuration);
-        else
+        if (fixupDuration) {
+            qreal dist = q->maxYExtent() - _moveY;
+            timeline.move(_moveY, q->maxYExtent() - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
+            timeline.move(_moveY, q->maxYExtent(), QEasingCurve(QEasingCurve::OutQuint), 3*fixupDuration/4);
+        } else {
             _moveY.setValue(q->maxYExtent());
+        }
         //emit flickingChanged();
     } else {
         flicked = false;
@@ -336,6 +365,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
 /*!
     \qmlclass Flickable QDeclarativeFlickable
+    \since 4.7
     \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 
@@ -343,7 +373,7 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \code
     Flickable {
-        width: 200; height: 200; viewportWidth: image.width; viewportHeight: image.height
+        width: 200; height: 200; contentWidth: image.width; contentHeight: image.height
         Image { id: image; source: "bigimage.png" }
     }
     \endcode
@@ -429,20 +459,20 @@ QDeclarativeFlickable::~QDeclarativeFlickable()
 }
 
 /*!
-    \qmlproperty int Flickable::viewportX
-    \qmlproperty int Flickable::viewportY
+    \qmlproperty int Flickable::contentX
+    \qmlproperty int Flickable::contentY
 
     These properties hold the surface coordinate currently at the top-left
     corner of the Flickable. For example, if you flick an image up 100 pixels,
-    \c yPosition will be 100.
+    \c contentY will be 100.
 */
-qreal QDeclarativeFlickable::viewportX() const
+qreal QDeclarativeFlickable::contentX() const
 {
     Q_D(const QDeclarativeFlickable);
     return -d->_moveX.value();
 }
 
-void QDeclarativeFlickable::setViewportX(qreal pos)
+void QDeclarativeFlickable::setContentX(qreal pos)
 {
     Q_D(QDeclarativeFlickable);
     pos = qRound(pos);
@@ -454,13 +484,13 @@ void QDeclarativeFlickable::setViewportX(qreal pos)
     }
 }
 
-qreal QDeclarativeFlickable::viewportY() const
+qreal QDeclarativeFlickable::contentY() const
 {
     Q_D(const QDeclarativeFlickable);
     return -d->_moveY.value();
 }
 
-void QDeclarativeFlickable::setViewportY(qreal pos)
+void QDeclarativeFlickable::setContentY(qreal pos)
 {
     Q_D(QDeclarativeFlickable);
     pos = qRound(pos);
@@ -506,12 +536,10 @@ void QDeclarativeFlickable::setInteractive(bool interactive)
 /*!
     \qmlproperty real Flickable::horizontalVelocity
     \qmlproperty real Flickable::verticalVelocity
-    \qmlproperty real Flickable::reportedVelocitySmoothing
 
     The instantaneous velocity of movement along the x and y axes, in pixels/sec.
 
     The reported velocity is smoothed to avoid erratic output.
-    reportedVelocitySmoothing determines how much smoothing is applied.
 */
 qreal QDeclarativeFlickable::horizontalVelocity() const
 {
@@ -584,8 +612,8 @@ QDeclarativeFlickableVisibleArea *QDeclarativeFlickable::visibleArea()
 
     \list
     \o AutoFlickDirection (default) - allows flicking vertically if the
-    \e viewportHeight is not equal to the \e height of the Flickable.
-    Allows flicking horizontally if the \e viewportWidth is not equal
+    \e contentHeight is not equal to the \e height of the Flickable.
+    Allows flicking horizontally if the \e contentWidth is not equal
     to the \e width of the Flickable.
     \o HorizontalFlick - allows flicking horizontally.
     \o VerticalFlick - allows flicking vertically.
@@ -968,10 +996,10 @@ QDeclarativeListProperty<QDeclarativeItem> QDeclarativeFlickable::flickableChild
 
 /*!
     \qmlproperty bool Flickable::overShoot
-    This property holds the number of pixels the surface may overshoot the
+    This property holds whether the surface may overshoot the
     Flickable's boundaries when flicked.
 
-    If overShoot is non-zero the contents can be flicked beyond the boundary
+    If overShoot is true the contents can be flicked beyond the boundary
     of the Flickable before being moved back to the boundary.  This provides
     the feeling that the edges of the view are soft, rather than a hard
     physical boundary.
@@ -992,26 +1020,26 @@ void QDeclarativeFlickable::setOverShoot(bool o)
 }
 
 /*!
-    \qmlproperty int Flickable::viewportWidth
-    \qmlproperty int Flickable::viewportHeight
+    \qmlproperty int Flickable::contentWidth
+    \qmlproperty int Flickable::contentHeight
 
-    The dimensions of the viewport (the surface controlled by Flickable). Typically this
+    The dimensions of the content (the surface controlled by Flickable). Typically this
     should be set to the combined size of the items placed in the Flickable.
 
     \code
     Flickable {
-        width: 320; height: 480; viewportWidth: image.width; viewportHeight: image.height
+        width: 320; height: 480; contentWidth: image.width; contentHeight: image.height
         Image { id: image; source: "bigimage.png" }
     }
     \endcode
 */
-qreal QDeclarativeFlickable::viewportWidth() const
+qreal QDeclarativeFlickable::contentWidth() const
 {
     Q_D(const QDeclarativeFlickable);
     return d->vWidth;
 }
 
-void QDeclarativeFlickable::setViewportWidth(qreal w)
+void QDeclarativeFlickable::setContentWidth(qreal w)
 {
     Q_D(QDeclarativeFlickable);
     if (d->vWidth == w)
@@ -1024,7 +1052,7 @@ void QDeclarativeFlickable::setViewportWidth(qreal w)
     // Make sure that we're entirely in view.
     if (!d->pressed)
         d->fixupX();
-    emit viewportWidthChanged();
+    emit contentWidthChanged();
     d->updateBeginningEnd();
 }
 
@@ -1033,7 +1061,7 @@ void QDeclarativeFlickable::widthChange()
     Q_D(QDeclarativeFlickable);
     if (d->vWidth < 0) {
         d->viewport->setWidth(width());
-        emit viewportWidthChanged();
+        emit contentWidthChanged();
     }
     d->updateBeginningEnd();
 }
@@ -1043,18 +1071,18 @@ void QDeclarativeFlickable::heightChange()
     Q_D(QDeclarativeFlickable);
     if (d->vHeight < 0) {
         d->viewport->setHeight(height());
-        emit viewportHeightChanged();
+        emit contentHeightChanged();
     }
     d->updateBeginningEnd();
 }
 
-qreal QDeclarativeFlickable::viewportHeight() const
+qreal QDeclarativeFlickable::contentHeight() const
 {
     Q_D(const QDeclarativeFlickable);
     return d->vHeight;
 }
 
-void QDeclarativeFlickable::setViewportHeight(qreal h)
+void QDeclarativeFlickable::setContentHeight(qreal h)
 {
     Q_D(QDeclarativeFlickable);
     if (d->vHeight == h)
@@ -1067,7 +1095,7 @@ void QDeclarativeFlickable::setViewportHeight(qreal h)
     // Make sure that we're entirely in view.
     if (!d->pressed)
         d->fixupY();
-    emit viewportHeightChanged();
+    emit contentHeightChanged();
     d->updateBeginningEnd();
 }
 
@@ -1257,22 +1285,6 @@ void QDeclarativeFlickable::setPressDelay(int delay)
         return;
     d->pressDelay = delay;
     emit pressDelayChanged();
-}
-
-qreal QDeclarativeFlickable::reportedVelocitySmoothing() const
-{
-    Q_D(const QDeclarativeFlickable);
-    return d->reportedVelocitySmoothing;
-}
-
-void QDeclarativeFlickable::setReportedVelocitySmoothing(qreal reportedVelocitySmoothing)
-{
-    Q_D(QDeclarativeFlickable);
-    Q_ASSERT(reportedVelocitySmoothing >= 0);
-    if (reportedVelocitySmoothing == d->reportedVelocitySmoothing)
-        return;
-    d->reportedVelocitySmoothing = reportedVelocitySmoothing;
-    emit reportedVelocitySmoothingChanged(reportedVelocitySmoothing);
 }
 
 /*!

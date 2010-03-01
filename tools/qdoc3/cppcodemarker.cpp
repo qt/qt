@@ -145,7 +145,7 @@ QString CppCodeMarker::plainFullName(const Node *node, const Node *relative)
     }
     else {
 	QString fullName;
-	for (;;) {
+	while (node) {
 	    fullName.prepend(plainName(node));
 	    if (node->parent() == relative || node->parent()->name().isEmpty())
 		break;
@@ -194,8 +194,8 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
 	synopsis = "class " + name;
 	break;
     case Node::Function:
-    case Node::QDeclarativeSignal:
-    case Node::QDeclarativeMethod:
+    case Node::QmlSignal:
+    case Node::QmlMethod:
 	func = (const FunctionNode *) node;
 	if (style != SeparateList && !func->returnType().isEmpty())
 	    synopsis = typified(func->returnType()) + " ";
@@ -355,15 +355,15 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
     QString name = taggedQmlNode(node);
     if (summary) {
 	name = linkTag(node,name);
-    } else if (node->type() == Node::QDeclarativeProperty) {
-        const QDeclarativePropertyNode* pn = static_cast<const QDeclarativePropertyNode*>(node);
+    } else if (node->type() == Node::QmlProperty) {
+        const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
         if (pn->isAttached())
             name.prepend(pn->element() + QLatin1Char('.'));
     }
     name = "<@name>" + name + "</@name>";
     QString synopsis = name;
-    if (node->type() == Node::QDeclarativeProperty) {
-        const QDeclarativePropertyNode* pn = static_cast<const QDeclarativePropertyNode*>(node);
+    if (node->type() == Node::QmlProperty) {
+        const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
         synopsis += " : " + typified(pn->dataType());
     }
 
@@ -1108,7 +1108,7 @@ QString CppCodeMarker::addMarkUp(const QString& protectedCode,
 
   Currently, it only handles QML property groups.
  */
-QList<Section> CppCodeMarker::qmlSections(const QDeclarativeClassNode* qmlClassNode,
+QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                           SynopsisStyle style)
 {
     QList<Section> sections;
@@ -1141,12 +1141,12 @@ QList<Section> CppCodeMarker::qmlSections(const QDeclarativeClassNode* qmlClassN
 
             NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
             while (c != qmlClassNode->childNodes().end()) {
-                if ((*c)->subType() == Node::QDeclarativePropertyGroup) {
-                    const QDeclarativePropGroupNode* qpgn = static_cast<const QDeclarativePropGroupNode*>(*c);
+                if ((*c)->subType() == Node::QmlPropertyGroup) {
+                    const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(*c);
                     NodeList::ConstIterator p = qpgn->childNodes().begin();
                     while (p != qpgn->childNodes().end()) {
-                        if ((*p)->type() == Node::QDeclarativeProperty) {
-                            const QDeclarativePropertyNode* pn = static_cast<const QDeclarativePropertyNode*>(*p);
+                        if ((*p)->type() == Node::QmlProperty) {
+                            const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*p);
                             if (pn->isAttached())
                                 insert(qmlattachedproperties,*p,style,Okay);
                             else
@@ -1155,14 +1155,14 @@ QList<Section> CppCodeMarker::qmlSections(const QDeclarativeClassNode* qmlClassN
                         ++p;
                     }
                 }
-                else if ((*c)->type() == Node::QDeclarativeSignal) {
+                else if ((*c)->type() == Node::QmlSignal) {
                     const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                     if (sn->isAttached())
                         insert(qmlattachedsignals,*c,style,Okay);
                     else
                         insert(qmlsignals,*c,style,Okay);
                 }
-                else if ((*c)->type() == Node::QDeclarativeMethod) {
+                else if ((*c)->type() == Node::QmlMethod) {
                     const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                     if (mn->isAttached())
                         insert(qmlattachedmethods,*c,style,Okay);
@@ -1187,21 +1187,21 @@ QList<Section> CppCodeMarker::qmlSections(const QDeclarativeClassNode* qmlClassN
 	    FastSection qmlattachedmethods(qmlClassNode,"Attached Method Documentation");
 	    NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
 	    while (c != qmlClassNode->childNodes().end()) {
-                if ((*c)->subType() == Node::QDeclarativePropertyGroup) {
-                    const QDeclarativePropGroupNode* pgn = static_cast<const QDeclarativePropGroupNode*>(*c);
+                if ((*c)->subType() == Node::QmlPropertyGroup) {
+                    const QmlPropGroupNode* pgn = static_cast<const QmlPropGroupNode*>(*c);
                     if (pgn->isAttached())
                         insert(qmlattachedproperties,*c,style,Okay);
                     else
                         insert(qmlproperties,*c,style,Okay);
 	        }
-                else if ((*c)->type() == Node::QDeclarativeSignal) {
+                else if ((*c)->type() == Node::QmlSignal) {
                     const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                     if (sn->isAttached())
                         insert(qmlattachedsignals,*c,style,Okay);
                     else
                         insert(qmlsignals,*c,style,Okay);
                 }
-                else if ((*c)->type() == Node::QDeclarativeMethod) {
+                else if ((*c)->type() == Node::QmlMethod) {
                     const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                     if (mn->isAttached())
                         insert(qmlattachedmethods,*c,style,Okay);

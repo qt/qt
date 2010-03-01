@@ -56,14 +56,13 @@ class Q_DECLARATIVE_EXPORT QDeclarativeFlickable : public QDeclarativeItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(qreal viewportWidth READ viewportWidth WRITE setViewportWidth NOTIFY viewportWidthChanged)
-    Q_PROPERTY(qreal viewportHeight READ viewportHeight WRITE setViewportHeight NOTIFY viewportHeightChanged)
-    Q_PROPERTY(qreal viewportX READ viewportX WRITE setViewportX NOTIFY positionXChanged)
-    Q_PROPERTY(qreal viewportY READ viewportY WRITE setViewportY NOTIFY positionYChanged)
+    Q_PROPERTY(qreal contentWidth READ contentWidth WRITE setContentWidth NOTIFY contentWidthChanged)
+    Q_PROPERTY(qreal contentHeight READ contentHeight WRITE setContentHeight NOTIFY contentHeightChanged)
+    Q_PROPERTY(qreal contentX READ contentX WRITE setContentX NOTIFY contentXChanged)
+    Q_PROPERTY(qreal contentY READ contentY WRITE setContentY NOTIFY contentYChanged)
 
     Q_PROPERTY(qreal horizontalVelocity READ horizontalVelocity NOTIFY horizontalVelocityChanged)
     Q_PROPERTY(qreal verticalVelocity READ verticalVelocity NOTIFY verticalVelocityChanged)
-    Q_PROPERTY(qreal reportedVelocitySmoothing READ reportedVelocitySmoothing WRITE setReportedVelocitySmoothing NOTIFY reportedVelocitySmoothingChanged)
 
     Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot NOTIFY overShootChanged)
     Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity NOTIFY maximumFlickVelocityChanged)
@@ -98,26 +97,23 @@ public:
     bool overShoot() const;
     void setOverShoot(bool);
 
-    qreal viewportWidth() const;
-    void setViewportWidth(qreal);
+    qreal contentWidth() const;
+    void setContentWidth(qreal);
 
-    qreal viewportHeight() const;
-    void setViewportHeight(qreal);
+    qreal contentHeight() const;
+    void setContentHeight(qreal);
 
-    qreal viewportX() const;
-    void setViewportX(qreal pos);
+    qreal contentX() const;
+    void setContentX(qreal pos);
 
-    qreal viewportY() const;
-    void setViewportY(qreal pos);
+    qreal contentY() const;
+    void setContentY(qreal pos);
 
     bool isMoving() const;
     bool isFlicking() const;
 
     int pressDelay() const;
     void setPressDelay(int delay);
-
-    qreal reportedVelocitySmoothing() const;
-    void setReportedVelocitySmoothing(qreal);
 
     qreal maximumFlickVelocity() const;
     void setMaximumFlickVelocity(qreal);
@@ -143,17 +139,16 @@ public:
     void setFlickDirection(FlickDirection);
 
 Q_SIGNALS:
-    void viewportWidthChanged();
-    void viewportHeightChanged();
-    void positionXChanged();
-    void positionYChanged();
+    void contentWidthChanged();
+    void contentHeightChanged();
+    void contentXChanged();
+    void contentYChanged();
     void movingChanged();
     void flickingChanged();
     void movementStarted();
     void movementEnded();
     void flickStarted();
     void flickEnded();
-    void reportedVelocitySmoothingChanged(int);
     void horizontalVelocityChanged();
     void verticalVelocityChanged();
     void isAtBoundaryChanged();
