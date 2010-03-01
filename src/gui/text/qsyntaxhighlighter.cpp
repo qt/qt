@@ -59,23 +59,24 @@ class QSyntaxHighlighterPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QSyntaxHighlighter)
 public:
-    inline QSyntaxHighlighterPrivate() : rehighlightPending(false) {}
+    inline QSyntaxHighlighterPrivate()
+        : rehighlightPending(false), inReformatBlocks(false)
+    {}
 
     QPointer<QTextDocument> doc;
 
     void _q_reformatBlocks(int from, int charsRemoved, int charsAdded);
+    void reformatBlocks(int from, int charsRemoved, int charsAdded);
     void reformatBlock(QTextBlock block);
     
     inline void rehighlight(QTextCursor &cursor, QTextCursor::MoveOperation operation) {
-        QObject::disconnect(doc, SIGNAL(contentsChange(int,int,int)),
-                            q_func(), SLOT(_q_reformatBlocks(int,int,int)));
+        inReformatBlocks = true;
         cursor.beginEditBlock();
         int from = cursor.position();
         cursor.movePosition(operation);
-        _q_reformatBlocks(from, 0, cursor.position() - from);
+        reformatBlocks(from, 0, cursor.position() - from);
         cursor.endEditBlock();
-        QObject::connect(doc, SIGNAL(contentsChange(int,int,int)),
-                         q_func(), SLOT(_q_reformatBlocks(int,int,int)));
+        inReformatBlocks = false;
     }
 
     inline void _q_delayedRehighlight() {
@@ -90,6 +91,7 @@ public:
     QVector<QTextCharFormat> formatChanges;
     QTextBlock currentBlock;
     bool rehighlightPending;
+    bool inReformatBlocks;
 };
 
 void QSyntaxHighlighterPrivate::applyFormatChanges()
@@ -161,6 +163,12 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
 }
 
 void QSyntaxHighlighterPrivate::_q_reformatBlocks(int from, int charsRemoved, int charsAdded)
+{
+    if (!inReformatBlocks)
+        reformatBlocks(from, charsRemoved, charsAdded);
+}
+
+void QSyntaxHighlighterPrivate::reformatBlocks(int from, int charsRemoved, int charsAdded)
 {
     Q_UNUSED(charsRemoved);
     rehighlightPending = false;
