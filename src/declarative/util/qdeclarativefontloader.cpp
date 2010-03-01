@@ -189,6 +189,16 @@ void QDeclarativeFontLoader::setName(const QString &name)
     \o Loading - the font is currently being loaded
     \o Error - an error occurred while loading the font
     \endlist
+
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened to the font loader internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: loader.status = FontLoader.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. FontLoader{id: loader; onStatusChanged: if(loader.status == FontLoader.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(loader.status!=FontLoader.Ready){'Not Loaded';}else{'Loaded';}}
+    \endlist
 */
 QDeclarativeFontLoader::Status QDeclarativeFontLoader::status() const
 {
