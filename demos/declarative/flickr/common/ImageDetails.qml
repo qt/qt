@@ -93,9 +93,7 @@ Flipable {
 
                 Image {
                     id: bigImage; source: container.photoUrl; scale: slider.value
-                    // Center image if it is smaller than the flickable area.
-                    x: imageContainer.width > width*scale ? (imageContainer.width - width*scale) / 2 : 0
-                    y: imageContainer.height > height*scale ? (imageContainer.height - height*scale) / 2 : 0
+                    anchors.centerIn: parent;
                     smooth: !flick.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
