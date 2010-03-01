@@ -44,12 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static qint64 currentDateTimeMsec()
-{
-    QDateTime t = QDateTime::currentDateTime();
-    return t.toTime_t() * Q_INT64_C(1000) + t.time().msec();
-}
-
 QElapsedTimer::ClockType QElapsedTimer::clockType()
 {
     return SystemTime;
@@ -68,14 +62,14 @@ void QElapsedTimer::start()
 qint64 QElapsedTimer::restart()
 {
     qint64 old = t1;
-    t1 = currentDateTimeMsec();
+    t1 = QDateTime::currentMsecsSinceEpoch();
     t2 = 0;
     return t1 - old;
 }
 
 qint64 QElapsedTimer::elapsed() const
 {
-    return currentDateTimeMsec() - t1;
+    return QDateTime::currentMsecsSinceEpoch() - t1;
 }
 
 qint64 QElapsedTimer::msecsSinceReference() const

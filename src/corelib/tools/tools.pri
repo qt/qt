@@ -57,6 +57,7 @@ SOURCES += \
         tools/qcryptographichash.cpp \
         tools/qdatetime.cpp \
         tools/qeasingcurve.cpp \
+        tools/qelapsedtimer.cpp \
         tools/qhash.cpp \
         tools/qline.cpp \
         tools/qlinkedlist.cpp \
@@ -77,13 +78,13 @@ SOURCES += \
         tools/qstringlist.cpp \
         tools/qtextboundaryfinder.cpp \
         tools/qtimeline.cpp \
-        tools/qelapsedtimer.cpp \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
 symbian:SOURCES+=tools/qlocale_symbian.cpp
 
 mac:SOURCES += tools/qelapsedtimer_mac.cpp
+else:symbian:SOURCES += tools/qelapsedtimer_generic.cpp
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
 else:win32:SOURCES += tools/qelapsedtimer_win.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
