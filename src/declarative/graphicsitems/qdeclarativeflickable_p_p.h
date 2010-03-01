@@ -134,8 +134,10 @@ public:
         Velocity(QDeclarativeFlickablePrivate *p)
             : parent(p) {}
         virtual void setValue(qreal v) {
-            QDeclarativeTimeLineValue::setValue(v);
-            parent->updateVelocity();
+            if (v != value()) {
+                QDeclarativeTimeLineValue::setValue(v);
+                parent->updateVelocity();
+            }
         }
         QDeclarativeFlickablePrivate *parent;
     };
