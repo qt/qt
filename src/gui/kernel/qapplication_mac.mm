@@ -1222,9 +1222,16 @@ void qt_init(QApplicationPrivate *priv, int)
 #endif
         if (!app_proc_ae_handlerUPP) {
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
-            for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
-                AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
-                        app_proc_ae_handlerUPP, SRefCon(qApp), false);
+            for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i) {
+                // Install apple event handler, but avoid overwriting an already
+                // existing handler (it means a 3rd party application has installed one):
+                SRefCon refCon = 0;
+                AEEventHandlerUPP current_handler = NULL;
+                AEGetEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id, &current_handler, &refCon, false);
+                if (!current_handler)
+                    AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
+                            app_proc_ae_handlerUPP, SRefCon(qApp), false);
+            }
         }
 
         if (QApplicationPrivate::app_style) {
@@ -2495,6 +2502,13 @@ void QApplicationPrivate::setupAppleEvents()
     // finished initialization, which appears to be just after [NSApplication run] has
     // started to execute. By setting up our apple events handlers this late, we override
     // the ones set up by NSApplication.
+
+    // If Qt is used as a plugin, we let the 3rd party application handle events
+    // like quit and open file events. Otherwise, if we install our own handlers, we
+    // easily end up breaking functionallity the 3rd party application depend on:
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return;
+
     QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
     NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
     [eventManager setEventHandler:newDelegate andSelector:@selector(appleEventQuit:withReplyEvent:)

@@ -130,8 +130,9 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QDeclarativeBinding)
 };
-Q_DECLARE_METATYPE(QDeclarativeBinding*);
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QDeclarativeBinding*);
 
 #endif // QDECLARATIVEBINDING_P_H

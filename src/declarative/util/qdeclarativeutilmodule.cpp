@@ -70,7 +70,9 @@
 #include "qdeclarativetransitionmanager_p_p.h"
 #include "qdeclarativetransition_p.h"
 #include "qdeclarativeview.h"
+#ifndef QT_NO_XMLPATTERNS
 #include "qdeclarativexmllistmodel_p.h"
+#endif
 #include "qnumberformat_p.h"
 #include "qperformancelog_p_p.h"
 
