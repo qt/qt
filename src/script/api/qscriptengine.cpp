@@ -563,7 +563,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
             slot = arg1;
         else {
             QScript::SaveFrameHelper saveFrame(engine, exec);
-            QString propertyName(QScriptEnginePrivate::toString(exec, arg1));
+            JSC::UString propertyName = QScriptEnginePrivate::toString(exec, arg1);
             slot = QScriptEnginePrivate::property(exec, arg0, propertyName, QScriptValue::ResolvePrototype);
         }
     }
@@ -645,7 +645,7 @@ JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject *
             slot = arg1;
         else {
             QScript::SaveFrameHelper saveFrame(engine, exec);
-            QString propertyName = QScriptEnginePrivate::toString(exec, arg1);
+            JSC::UString propertyName = QScriptEnginePrivate::toString(exec, arg1);
             slot = QScriptEnginePrivate::property(exec, arg0, propertyName, QScriptValue::ResolvePrototype);
         }
     }
@@ -1580,9 +1580,9 @@ QRegExp QScriptEnginePrivate::toRegExp(JSC::ExecState *exec, JSC::JSValue value)
 {
     if (!isRegExp(value))
         return QRegExp();
-    QString pattern = toString(exec, property(exec, value, QLatin1String("source"), QScriptValue::ResolvePrototype));
+    QString pattern = toString(exec, property(exec, value, "source", QScriptValue::ResolvePrototype));
     Qt::CaseSensitivity kase = Qt::CaseSensitive;
-    if (toBool(exec, property(exec, value, QLatin1String("ignoreCase"), QScriptValue::ResolvePrototype)))
+    if (toBool(exec, property(exec, value, "ignoreCase", QScriptValue::ResolvePrototype)))
         kase = Qt::CaseInsensitive;
     return QRegExp(pattern, kase, QRegExp::RegExp2);
 }
@@ -1637,7 +1637,7 @@ JSC::JSValue QScriptEnginePrivate::propertyHelper(JSC::ExecState *exec, JSC::JSV
     }
     if (!result && (resolveMode & QScriptValue::ResolveScope)) {
         // ### check if it's a function object and look in the scope chain
-        JSC::JSValue scope = property(exec, value, QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
+        JSC::JSValue scope = property(exec, value, "__qt_scope__", QScriptValue::ResolveLocal);
         if (isObject(scope))
             result = property(exec, scope, id, resolveMode);
     }
