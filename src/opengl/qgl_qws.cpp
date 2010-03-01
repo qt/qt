@@ -186,7 +186,8 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 
     // Construct the configuration we need for this surface.
     QEglProperties configProps;
-    qt_egl_set_format(configProps, devType, d->glFormat);
+    qt_eglproperties_set_glformat(configProps, d->glFormat);
+    configProps.setDeviceType(devType);
     configProps.setPaintDeviceFormat(device());
     configProps.setRenderableType(QEgl::OpenGL);
 

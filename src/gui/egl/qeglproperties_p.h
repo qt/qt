@@ -82,9 +82,9 @@ public:
 #ifdef Q_WS_X11
     void setVisualFormat(const QX11Info *xinfo);
 #endif
-    void setRenderableType(QEgl::API api);
-
+    void setDeviceType(int devType);
     void setPaintDeviceFormat(QPaintDevice *dev);
+    void setRenderableType(QEgl::API api);
 
     bool reduceConfiguration();
 

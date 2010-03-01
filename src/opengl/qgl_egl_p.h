@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QGLFormat;
 
-void qt_egl_set_format(QEglProperties& props, int deviceType, const QGLFormat& f);
+void qt_eglproperties_set_glformat(QEglProperties& props, const QGLFormat& format);
 void qt_egl_update_format(const QEglContext& context, QGLFormat& format);
 
 QT_END_NAMESPACE

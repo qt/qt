@@ -82,7 +82,8 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 #endif
     } else {
         QEglProperties configProps;
-        qt_egl_set_format(configProps, QInternal::Pbuffer, f);
+        qt_eglproperties_set_glformat(configProps, f);
+        configProps.setDeviceType(QInternal::Pbuffer);
         configProps.setRenderableType(ctx->api());
         bool ok = false;
 #if QGL_RENDER_TEXTURE
@@ -208,7 +209,8 @@ bool QGLPixelBuffer::hasOpenGLPbuffers()
     if (dpy == EGL_NO_DISPLAY)
         return false;
     QEglProperties configProps;
-    qt_egl_set_format(configProps, QInternal::Pbuffer, QGLFormat::defaultFormat());
+    qt_eglproperties_set_glformat(configProps, QGLFormat::defaultFormat());
+    configProps.setDeviceType(QInternal::Pbuffer);
     configProps.setRenderableType(QEgl::OpenGL);
     do {
         EGLConfig cfg = 0;

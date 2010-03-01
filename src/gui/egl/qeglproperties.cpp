@@ -167,6 +167,17 @@ bool QEglProperties::removeValue(int name)
     return false;
 }
 
+void QEglProperties::setDeviceType(int devType)
+{
+    if (devType == QInternal::Pixmap || devType == QInternal::Image)
+        setValue(EGL_SURFACE_TYPE, EGL_PIXMAP_BIT);
+    else if (devType == QInternal::Pbuffer)
+        setValue(EGL_SURFACE_TYPE, EGL_PBUFFER_BIT);
+    else
+        setValue(EGL_SURFACE_TYPE, EGL_WINDOW_BIT);
+}
+
+
 // Sets the red, green, blue, and alpha sizes based on a pixel format.
 // Normally used to match a configuration request to the screen format.
 void QEglProperties::setPixelFormat(QImage::Format pixelFormat)
