@@ -407,7 +407,7 @@ void QDeclarativeStateGroupPrivate::setCurrentStateInternal(const QString &state
     }
 
     if (oldState == 0 || newState == 0) {
-        if (!nullState) { nullState = new QDeclarativeState; QDeclarativeGraphics_setParent_noEvent(nullState, q); }
+        if (!nullState) { nullState = new QDeclarativeState; QDeclarative_setParent_noEvent(nullState, q); }
         if (!oldState) oldState = nullState;
         if (!newState) newState = nullState;
     }

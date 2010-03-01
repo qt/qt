@@ -552,7 +552,7 @@ void QDeclarativePauseAnimationPrivate::init()
 {
     Q_Q(QDeclarativePauseAnimation);
     pa = new QPauseAnimation;
-    QDeclarativeGraphics_setParent_noEvent(pa, q);
+    QDeclarative_setParent_noEvent(pa, q);
 }
 
 /*!
@@ -677,7 +677,7 @@ void QDeclarativeScriptActionPrivate::init()
 {
     Q_Q(QDeclarativeScriptAction);
     rsa = new QActionAnimation(&proxy);
-    QDeclarativeGraphics_setParent_noEvent(rsa, q);
+    QDeclarative_setParent_noEvent(rsa, q);
 }
 
 /*!
@@ -795,7 +795,7 @@ void QDeclarativePropertyActionPrivate::init()
 {
     Q_Q(QDeclarativePropertyAction);
     spa = new QActionAnimation;
-    QDeclarativeGraphics_setParent_noEvent(spa, q);
+    QDeclarative_setParent_noEvent(spa, q);
 }
 
 /*!
@@ -1056,7 +1056,7 @@ void QDeclarativeParentActionPrivate::init()
 {
     Q_Q(QDeclarativeParentAction);
     cpa = new QActionAnimation;
-    QDeclarativeGraphics_setParent_noEvent(cpa, q);
+    QDeclarative_setParent_noEvent(cpa, q);
 }
 
 /*!
@@ -1798,7 +1798,7 @@ void QDeclarativePropertyAnimationPrivate::init()
 {
     Q_Q(QDeclarativePropertyAnimation);
     va = new QDeclarativeTimeLineValueAnimator;
-    QDeclarativeGraphics_setParent_noEvent(va, q);
+    QDeclarative_setParent_noEvent(va, q);
 }
 
 /*!
@@ -2376,7 +2376,7 @@ QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
 {
     Q_D(QDeclarativeParentAnimation);
     d->topLevelGroup = new QSequentialAnimationGroup;
-    QDeclarativeGraphics_setParent_noEvent(d->topLevelGroup, this);
+    QDeclarative_setParent_noEvent(d->topLevelGroup, this);
 
     d->startAction = new QActionAnimation;
     d->topLevelGroup->addAnimation(d->startAction);
