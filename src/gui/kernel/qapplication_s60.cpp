@@ -1029,6 +1029,16 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         } else if (qwidget->isMaximized()) {
             TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
             SetExtent(r.iTl, r.Size());
+        } else if (!qwidget->isMinimized()){ // Normal geometry
+            if (!qwidget->testAttribute(Qt::WA_Resized)) {
+                qwidget->adjustSize();
+                qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
+            }
+            if (!qwidget->testAttribute(Qt::WA_Moved)) {
+                TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+                SetPosition(r.iTl);
+                qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
+            }
         }
         break;
     }
