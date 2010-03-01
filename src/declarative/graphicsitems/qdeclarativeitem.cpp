@@ -1730,8 +1730,12 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
     if (d->_anchors)
         d->_anchors->d_func()->updateMe();
 
-    if (transformOrigin() != QDeclarativeItem::TopLeft)
-        setTransformOriginPoint(d->computeTransformOrigin());
+    if (transformOrigin() != QDeclarativeItem::TopLeft
+        && (newGeometry.width() != oldGeometry.width() || newGeometry.height() != oldGeometry.height())) {
+        QPointF origin = d->computeTransformOrigin();
+        if (transformOriginPoint() != origin)
+            setTransformOriginPoint(origin);
+    }
 
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
