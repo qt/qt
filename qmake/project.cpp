@@ -3136,7 +3136,6 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         }
     } else if (var == QLatin1String("QMAKE_QMAKE")) {
         if (place[var].isEmpty()) {
-            var = ".BUILTIN." + var;
             if (!Option::qmake_abslocation.isNull())
                 place[var] = QStringList(Option::qmake_abslocation);
             else
