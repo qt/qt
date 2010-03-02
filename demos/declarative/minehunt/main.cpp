@@ -100,8 +100,8 @@ public:
     MyWidget(int = 370, int = 480, QWidget *parent=0, Qt::WindowFlags flags=0);
     ~MyWidget();
 
-    Q_PROPERTY(QList<Tile *> *tiles READ tiles CONSTANT);
-    QList<Tile *> *tiles() { return &_tiles; }
+    Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT);
+    QDeclarativeListProperty<Tile> tiles() { return QDeclarativeListProperty<Tile>(this, _tiles); }
 
     Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged);
     bool isPlaying() {return playing;}
@@ -168,7 +168,6 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
 
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);
-    ctxt->setContextProperty("tiles", QVariant::fromValue<QList<Tile*>*>(&_tiles));//QTBUG-5675
 
     canvas->setSource(QUrl::fromLocalFile(fileName));
 }

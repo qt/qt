@@ -21,11 +21,11 @@ Rectangle {
         }
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueV1; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "green"; width: 100; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueV2; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "orange"; width: 100; height: 50; border.color: "black"; radius: 15 }
     }
@@ -45,11 +45,11 @@ Rectangle {
         }
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
         Rectangle { id: blueH1; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "green"; width: 50; height: 100; border.color: "black"; radius: 15 }
         Rectangle { id: blueH2; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "orange"; width: 50; height: 100; border.color: "black"; radius: 15 }
     }
@@ -113,15 +113,15 @@ Rectangle {
 
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueG1; color: "lightsteelblue"; width: 50; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "green"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueG2; color: "lightsteelblue"; width: 50; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "orange"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueG3; color: "lightsteelblue"; width: 50; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { color: "green"; width: 50; height: 50; border.color: "black"; radius: 15 }
@@ -147,15 +147,15 @@ Rectangle {
         }
         Rectangle { color: "red"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueF1; color: "lightsteelblue"; width: 60; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "green"; width: 30; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueF2; color: "lightsteelblue"; width: 60; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "orange"; width: 50; height: 50; border.color: "black"; radius: 15 }
         Rectangle { id: blueF3; color: "lightsteelblue"; width: 40; height: 50; border.color: "black"; radius: 15 
-            opacity: Behavior{NumberAnimation{}}
+            Behavior on opacity {NumberAnimation{}}
         }
         Rectangle { color: "red"; width: 80; height: 50; border.color: "black"; radius: 15 }
     }

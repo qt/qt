@@ -45,7 +45,7 @@ Flipable {
             Text { color: "white"; elide: Text.ElideRight; text: "<b>Author:</b> " + container.photoAuthor }
             Text { color: "white"; elide: Text.ElideRight; text: "<b>Published:</b> " + container.photoDate }
             Text { color: "white"; elide: Text.ElideRight; text: container.photoTags == "" ? "" : "<b>Tags:</b> " }
-            Text { color: "white"; elide: Text.ElideRight; elide: Text.ElideRight; text: container.photoTags }
+            Text { color: "white"; elide: Text.ElideRight; text: container.photoTags }
         }
     }
 

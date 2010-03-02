@@ -11,7 +11,7 @@ Rectangle {
         source: "pic.png"
 
         effect: Blur {
-            blurRadius: NumberAnimation {
+            NumberAnimation on blurRadius {
                 id: blurEffect
                 running: false
                 from: 0; to: 10
@@ -33,7 +33,7 @@ Rectangle {
         effect: DropShadow {
             blurRadius: 3
             offset.x: 3
-            offset.y: NumberAnimation { id: dropShadowEffect; from: 0; to: 10; duration: 1000; running: false; repeat: true; }
+            NumberAnimation on offset.y { id: dropShadowEffect; from: 0; to: 10; duration: 1000; running: false; repeat: true; }
         }
 
         MouseArea { anchors.fill: parent; onClicked: dropShadowEffect.running = !dropShadowEffect.running }
