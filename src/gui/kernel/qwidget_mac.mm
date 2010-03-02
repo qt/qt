@@ -1268,6 +1268,11 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 if (widget->isVisible() && widget->updatesEnabled()) { //process the actual paint event.
                     if(widget->testAttribute(Qt::WA_WState_InPaintEvent))
                         qWarning("QWidget::repaint: Recursive repaint detected");
+                    if (widget->isWindow() && !widget->d_func()->isOpaque
+                        && !widget->testAttribute(Qt::WA_MacBrushedMetal)) {
+                        QRect qrgnRect = qrgn.boundingRect();
+                        CGContextClearRect(cg, CGRectMake(qrgnRect.x(), qrgnRect.y(), qrgnRect.width(), qrgnRect.height()));
+                    }
 
                     QPoint redirectionOffset(0, 0);
                     QWidget *tl = widget->window();
@@ -1317,13 +1322,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         if (!redirectionOffset.isNull())
                             widget->d_func()->restoreRedirected();
                     }
-
-                    if (widget->isWindow() && !widget->d_func()->isOpaque
-                           && !widget->testAttribute(Qt::WA_MacBrushedMetal)) {
-                        QRect qrgnRect = qrgn.boundingRect();
-                        CGContextClearRect(cg, CGRectMake(qrgnRect.x(), qrgnRect.y(), qrgnRect.width(), qrgnRect.height()));
-                    }
-
 
                     if(!HIObjectIsOfClass((HIObjectRef)hiview, kObjectQWidget))
                         CallNextEventHandler(er, event);
