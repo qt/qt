@@ -55,6 +55,7 @@ SUBDIRS += \
            qdeclarativexmllistmodel \        # Cover
            qpacketprotocol \        # Cover
            qdeclarativerepeater \    # Cover
+           qdeclarativeworkerlistmodel \    # Cover
            qdeclarativevaluetypes \          # Cover
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
