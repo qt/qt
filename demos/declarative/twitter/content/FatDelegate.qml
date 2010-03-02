@@ -37,7 +37,7 @@ Component {
                     + '<a href="app://@'+userScreenName+'"><b>'+userScreenName + "</b></a>  from " +source
                     + "<br /><b>" + addTags(statusText) + "</b></html>";
                 textFormat: Qt.RichText
-                color: "white"; color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrap: true
+                color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrap: true
                 anchors.left: whiteRect.right; anchors.right: blackRect.right; anchors.leftMargin: 6; anchors.rightMargin: 6
                 onLinkActivated: handleLink(link)
             }

@@ -9,7 +9,7 @@ Rectangle {
             id: text; color: "white"; anchors.centerIn: parent
             text: "Hello world!"; font.pixelSize: 60
 
-            font.letterSpacing: SequentialAnimation {
+            SequentialAnimation on font.letterSpacing {
                 repeat: true;
                 NumberAnimation { from: 100; to: 300; easing.type: "InQuad"; duration: 3000 }
                 ScriptAction { script: {
@@ -17,7 +17,7 @@ Rectangle {
                     container.x = (screen.width / 4) + (Math.random() * screen.width / 2)
                 } }
             }
-            opacity: SequentialAnimation {
+            SequentialAnimation on opacity {
                 repeat: true;
                 NumberAnimation { from: 1; to: 0; duration: 2600 }
                 PauseAnimation { duration: 400 }

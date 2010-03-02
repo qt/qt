@@ -18,7 +18,7 @@ Rectangle {
         source: "pics/face.png"
         x: (parent.width-width*scale)/2
         y: (parent.height-height*scale)/2
-        scale: SpringFollow {
+        SpringFollow on scale {
             source: Math.max(Math.min(face.parent.width/face.width*1.333,face.parent.height/face.height),
                         Math.min(face.parent.width/face.width,face.parent.height/face.height*1.333))
             spring: 1
