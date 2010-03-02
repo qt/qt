@@ -85,10 +85,22 @@ isEmpty(capability): capability = "None"
 capability = "--capability=$$capability"
 
 contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
-    !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK += &&
-    QMAKE_POST_LINK += $$QMAKE_MOVE $$symbianDestdir/$${TARGET}.dll $$symbianDestdir/$${TARGET}.sym
+    !isEmpty(QMAKE_POST_LINK) {
+        # No way to honor the '@' :-(
+        QMAKE_POST_LINK = $$replace(QMAKE_POST_LINK, "^@", "")
+        QMAKE_POST_LINK = && $$QMAKE_POST_LINK
+    }
     # the tee and grep at the end work around the issue that elf2e32 doesn't return non-null on error
-    QMAKE_POST_LINK += && elf2e32  --version=$$decVersion --sid=$$TARGET.SID  --uid1=0x10000079 --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --fpu=softvfp --targettype=DLL --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.dll --dso=$$symbianDestdir/$${TARGET}.dso --defoutput=$$symbianObjdir/$${TARGET}.def --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log
+    QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${TARGET}.dll $$symbianDestdir/$${TARGET}.sym \
+                      && elf2e32  --version=$$decVersion --sid=$$TARGET.SID  --uid1=0x10000079 \
+                      --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 \
+                      --stack=0x00014000 --fpu=softvfp --targettype=DLL \
+                      --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.dll \
+                      --dso=$$symbianDestdir/$${TARGET}.dso --defoutput=$$symbianObjdir/$${TARGET}.def \
+                      --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
+                      --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability \
+                      | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
+                      $$QMAKE_POST_LINK
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.dso
     QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
@@ -99,11 +111,21 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
 }
 
 contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
-    !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK += &&
-
-    QMAKE_POST_LINK += $$QMAKE_MOVE $$symbianDestdir/$${TARGET} $$symbianDestdir/$${TARGET}.sym
+    !isEmpty(QMAKE_POST_LINK) {
+        # No way to honor the '@' :-(
+        QMAKE_POST_LINK = $$replace(QMAKE_POST_LINK, "^@", "")
+        QMAKE_POST_LINK = && $$QMAKE_POST_LINK
+    }
     # the tee and grep at the end work around the issue that elf2e32 doesn't return non-null on error
-    QMAKE_POST_LINK += && elf2e32  --version $$decVersion --sid=$$TARGET.SID  --uid1=0x1000007a --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 --stack=0x00014000 --fpu=softvfp --targettype=EXE --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.exe --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log
+    QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${TARGET} $$symbianDestdir/$${TARGET}.sym \
+                      && elf2e32  --version $$decVersion --sid=$$TARGET.SID  --uid1=0x1000007a \
+                      --uid2=$$TARGET.UID2 --uid3=$$TARGET.UID3 --dlldata --heap=0x00020000,0x00800000 \
+                      --stack=0x00014000 --fpu=softvfp --targettype=EXE \
+                      --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.exe \
+                      --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
+                      --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability \
+                      | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
+                      $$QMAKE_POST_LINK
     QMAKE_POST_LINK += && ln "$${TARGET}.exe" "$$TARGET"
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.sym
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.exe
