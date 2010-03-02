@@ -115,6 +115,9 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
                 formatsChanged = true;
             }
         }
+    } else if (!ranges.isEmpty()) {
+        ranges.clear();
+        formatsChanged = true;
     }
 
     QTextCharFormat emptyFormat;
