@@ -40,15 +40,6 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-<<<<<<< HEAD
-#include <private/qlistmodelinterface_p.h>
-#include <qdeclarativeview.h>
-#include <private/qdeclarativegridview_p.h>
-#include <private/qdeclarativetext_p.h>
-#include <private/qdeclarativerectangle_p.h>
-#include <qdeclarativecontext.h>
-#include <qdeclarativeexpression.h>
-=======
 #include <QtGui/qstringlistmodel.h>
 #include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeengine.h>
@@ -59,7 +50,6 @@
 #include <QtDeclarative/private/qdeclarativegridview_p.h>
 #include <QtDeclarative/private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
->>>>>>> Add NOTIFY signals to list, grid and path views
 
 class tst_QDeclarativeGridView : public QObject
 {
