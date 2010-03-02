@@ -117,6 +117,10 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
+#ifndef QT_GUI_DOUBLE_CLICK_RADIUS
+#define QT_GUI_DOUBLE_CLICK_RADIUS 5
+#endif
+
 //#define ALIEN_DEBUG
 
 static void initResources()

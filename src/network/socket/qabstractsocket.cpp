@@ -354,6 +354,8 @@
 #include "qabstractsocket.h"
 #include "qabstractsocket_p.h"
 
+#include "private/qhostinfo_p.h"
+
 #include <qabstracteventdispatcher.h>
 #include <qdatetime.h>
 #include <qhostaddress.h>
@@ -1369,8 +1371,20 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
         return;
 #endif
     } else {
-        if (d->threadData->eventDispatcher)
-            d->hostLookupId = QHostInfo::lookupHost(hostName, this, SLOT(_q_startConnecting(QHostInfo)));
+        if (d->threadData->eventDispatcher) {
+            // this internal API for QHostInfo either immediatly gives us the desired
+            // QHostInfo from cache or later calls the _q_startConnecting slot.
+            bool immediateResultValid = false;
+            QHostInfo hostInfo = qt_qhostinfo_lookup(hostName,
+                                                     this,
+                                                     SLOT(_q_startConnecting(QHostInfo)),
+                                                     &immediateResultValid,
+                                                     &d->hostLookupId);
+            if (immediateResultValid) {
+                d->hostLookupId = -1;
+                d->_q_startConnecting(hostInfo);
+            }
+        }
     }
 
 #if defined(QABSTRACTSOCKET_DEBUG)
