@@ -46,6 +46,7 @@
 
 #include <QMap>
 #include <QTimer>
+#include <SystemConfiguration/SystemConfiguration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,6 +91,11 @@ private:
 
     bool isKnownSsid(const QString &interfaceName, const QString &ssid);
     QList<QNetworkConfigurationPrivate *> foundConfigurations;
+
+    SCDynamicStoreRef storeSession;
+    CFRunLoopSourceRef runloopSource;
+
+    void startNetworkChangeLoop();
 
 };
 

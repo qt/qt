@@ -162,6 +162,7 @@ private: // MConnectionMonitorObserver
     void EventL(const CConnMonEventBase& aEvent);
 
 private: // Data
+    bool               iFirstUpdate; 
     CCommsDatabase*    ipCommsDB;
     RConnectionMonitor iConnectionMonitor;
 

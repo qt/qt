@@ -105,12 +105,23 @@ static QString qGetInterfaceType(const QString &interfaceString)
     return networkInterfaces.value(interfaceString, QLatin1String("Unknown"));
 }
 
+void networkChangeCallback(SCDynamicStoreRef/* store*/, CFArrayRef changedKeys, void *info)
+{
+    for ( long i = 0; i < CFArrayGetCount(changedKeys); i++) {
+
+        CFStringRef changed = (CFStringRef)CFArrayGetValueAtIndex(changedKeys, i);
+        if( cfstringRefToQstring(changed).contains("/Network/Global/IPv4")) {
+            QCoreWlanEngine* wlanEngine = static_cast<QCoreWlanEngine*>(info);
+            wlanEngine->requestUpdate();
+        }
+    }
+    return;
+}
+
 QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
 :   QBearerEngineImpl(parent)
 {
-    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(doRequestUpdate()));
-    pollTimer.setInterval(10000);
-    doRequestUpdate();
+    startNetworkChangeLoop();
 }
 
 QCoreWlanEngine::~QCoreWlanEngine()
@@ -150,7 +161,6 @@ void QCoreWlanEngine::connectToId(const QString &id)
         NSEnumerator *enumerator = [remNets objectEnumerator];
         CWWirelessProfile *wProfile;
         NSUInteger index=0;
-        CWNetwork *apNetwork;
         NSDictionary *parametersDict;
         NSArray* apArray;
 
@@ -179,7 +189,7 @@ void QCoreWlanEngine::connectToId(const QString &id)
                 if(!err) {
 
                     for(uint row=0; row < [apArray count]; row++ ) {
-                        apNetwork = [apArray objectAtIndex:row];
+                        CWNetwork *apNetwork = [apArray objectAtIndex:row];
                         if([[apNetwork ssid] compare:[wProfile ssid]] == NSOrderedSame) {
 
                             bool result = [wifiInterface associateToNetwork: apNetwork parameters:[NSDictionary dictionaryWithDictionary:params] error:&err];
@@ -191,12 +201,12 @@ void QCoreWlanEngine::connectToId(const QString &id)
                                 return;
                             }
                         }
+                        [apNetwork release];
                     }
                 }
             }
             index++;
         }
-        [apNetwork release];
 
         emit connectionError(id, InterfaceLookupError);
 #endif
@@ -534,6 +544,60 @@ QNetworkSession::State QCoreWlanEngine::sessionStateForId(const QString &id)
 QNetworkConfigurationManager::Capabilities QCoreWlanEngine::capabilities() const
 {
     return QNetworkConfigurationManager::ForcedRoaming;
+}
+
+void QCoreWlanEngine::startNetworkChangeLoop()
+{
+    storeSession = NULL;
+
+    SCDynamicStoreContext dynStoreContext = { 0, this/*(void *)storeSession*/, NULL, NULL, NULL };
+    storeSession = SCDynamicStoreCreate(NULL,
+                                 CFSTR("networkChangeCallback"),
+                                 networkChangeCallback,
+                                 &dynStoreContext);
+    if (!storeSession ) {
+        qWarning() << "could not open dynamic store: error:" << SCErrorString(SCError());
+        return;
+    }
+
+    CFMutableArrayRef notificationKeys;
+    notificationKeys = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+    CFMutableArrayRef patternsArray;
+    patternsArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
+
+    CFStringRef storeKey;
+    storeKey = SCDynamicStoreKeyCreateNetworkGlobalEntity(NULL,
+                                                     kSCDynamicStoreDomainState,
+                                                     kSCEntNetIPv4);
+    CFArrayAppendValue(notificationKeys, storeKey);
+    CFRelease(storeKey);
+
+    storeKey = SCDynamicStoreKeyCreateNetworkServiceEntity(NULL,
+                                                      kSCDynamicStoreDomainState,
+                                                      kSCCompAnyRegex,
+                                                      kSCEntNetIPv4);
+    CFArrayAppendValue(patternsArray, storeKey);
+    CFRelease(storeKey);
+
+    if (!SCDynamicStoreSetNotificationKeys(storeSession , notificationKeys, patternsArray)) {
+        qWarning() << "register notification error:"<< SCErrorString(SCError());
+        CFRelease(storeSession );
+        CFRelease(notificationKeys);
+        CFRelease(patternsArray);
+        return;
+    }
+    CFRelease(notificationKeys);
+    CFRelease(patternsArray);
+
+    runloopSource = SCDynamicStoreCreateRunLoopSource(NULL, storeSession , 0);
+    if (!runloopSource) {
+        qWarning() << "runloop source error:"<< SCErrorString(SCError());
+        CFRelease(storeSession );
+        return;
+    }
+
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), runloopSource, kCFRunLoopDefaultMode);
+    return;
 }
 
 QNetworkSessionPrivate *QCoreWlanEngine::createSessionBackend()
