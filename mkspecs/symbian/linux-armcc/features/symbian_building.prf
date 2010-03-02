@@ -14,27 +14,28 @@ contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb") {
     DEFINES += __MARM_THUMB__
 }
 
-for(libraries, LIBS) {
-    libraries = $$replace(libraries, "\.dll$", ".dso")
-    isFullName = $$find(libraries, \.)
+defineReplace(processSymbianLibraries) {
+    library = $$replace(1, "\.dll$", ".dso")
+    isFullName = $$find(library, \.)
     isEmpty(isFullName) {
-        newLIBS += "$${libraries}.dso"
+        newLIB = "$${library}.dso"
     } else {
-        newLIBS += "$${libraries}"
+        newLIB = "$${library}"
     }
+    return($$newLIB)
+}
+
+for(libraries, LIBS) {
+    newLIBS += $$processSymbianLibraries($$libraries)
 }
 LIBS = $$newLIBS
+PRE_TARGETDEPS += $$replace(newLIBS, "-l", "")
 newLIBS =
 for(libraries, QMAKE_LIBS) {
-    libraries = $$replace(libraries, "\.dll$", ".dso")
-    isFullName = $$find(libraries, \.)
-    isEmpty(isFullName) {
-        newLIBS += "$${libraries}.dso"
-    } else {
-        newLIBS += "$${libraries}"
-    }
+    newLIBS += $$processSymbianLibraries($$libraries)
 }
 QMAKE_LIBS = $$newLIBS
+PRE_TARGETDEPS += $$replace(newLIBS, "-l", "")
 
 # This needs to be done after the above LIBS mangling.
 include(../platformlibs.conf)
