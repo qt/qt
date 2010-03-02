@@ -61,6 +61,8 @@
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qurl.h>
 
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeWorkerScript;
@@ -84,7 +86,7 @@ private:
     QDeclarativeWorkerScriptEnginePrivate *d;
 };
 
-class QDeclarativeWorkerScript : public QObject, public QDeclarativeParserStatus
+class Q_DECLARATIVE_EXPORT QDeclarativeWorkerScript : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
@@ -115,7 +117,7 @@ private:
 };
 
 class QDeclarativeWorkerListModelAgent;
-class QDeclarativeWorkerListModel : public QListModelInterface
+class Q_DECLARATIVE_EXPORT QDeclarativeWorkerListModel : public QListModelInterface
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
@@ -130,6 +132,7 @@ public:
     Q_INVOKABLE void insert(int index, const QScriptValue&);
     Q_INVOKABLE QScriptValue get(int index) const;
     Q_INVOKABLE void set(int index, const QScriptValue &);
+    Q_INVOKABLE void sync();
 
     QDeclarativeWorkerListModelAgent *agent();
 
@@ -156,5 +159,7 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QDeclarativeWorkerScript);
 QML_DECLARE_TYPE(QDeclarativeWorkerListModel);
+
+QT_END_HEADER
 
 #endif // QDECLARATIVEWORKERSCRIPT_P_H
