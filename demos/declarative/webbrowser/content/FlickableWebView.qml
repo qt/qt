@@ -23,6 +23,7 @@ Flickable {
     WebView {
         id: webView
         pixelCacheSize: 4000000
+        transformOrigin: Item.TopLeft
 
         Script {
             function fixUrl(url)
