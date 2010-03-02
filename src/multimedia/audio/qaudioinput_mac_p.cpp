@@ -169,8 +169,10 @@ public:
 
     void reset()
     {
-        for (UInt32 i = 0; i < bfs->mNumberBuffers; ++i)
+        for (UInt32 i = 0; i < bfs->mNumberBuffers; ++i) {
             bfs->mBuffers[i].mDataByteSize = dataSize;
+            bfs->mBuffers[i].mData = 0;
+        }
     }
 
 private:
