@@ -34,7 +34,7 @@ Item {
         transform: Rotation {
             id: hourRotation
             origin.x: 7.5; origin.y: 73; angle: 0
-            angle: SpringFollow {
+            SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
                 source: (clock.hours * 30) + (clock.minutes * 0.5)
             }
@@ -48,7 +48,7 @@ Item {
         transform: Rotation {
             id: minuteRotation
             origin.x: 6.5; origin.y: 83; angle: 0
-            angle: SpringFollow {
+            SpringFollow on angle {
                 spring: 2; damping: 0.2; modulus: 360
                 source: clock.minutes * 6
             }
@@ -62,7 +62,7 @@ Item {
         transform: Rotation {
             id: secondRotation
             origin.x: 2.5; origin.y: 80; angle: 0
-            angle: SpringFollow {
+            SpringFollow on angle {
                 spring: 5; damping: 0.25; modulus: 360
                 source: clock.seconds * 6
             }

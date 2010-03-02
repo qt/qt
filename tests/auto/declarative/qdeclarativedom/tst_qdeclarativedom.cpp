@@ -274,7 +274,7 @@ void tst_qdeclarativedom::loadComposite()
 void tst_qdeclarativedom::testValueSource()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "Rectangle { height: SpringFollow { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
+                     "Rectangle { SpringFollow on height { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
 
     QDeclarativeEngine freshEngine;
     QDeclarativeDomDocument document;
@@ -306,7 +306,7 @@ void tst_qdeclarativedom::testValueSource()
 void tst_qdeclarativedom::testValueInterceptor()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "Rectangle { height: Behavior { NumberAnimation { duration: 100 } } }";
+                     "Rectangle { Behavior on height { NumberAnimation { duration: 100 } } }";
 
     QDeclarativeEngine freshEngine;
     QDeclarativeDomDocument document;
@@ -823,8 +823,8 @@ void tst_qdeclarativedom::copy()
                      "    property int a: 10\n"
                      "    x: 10\n"
                      "    y: x + 10\n"
-                     "    z: NumberAnimation {}\n"
-                     "    opacity: Behavior {}\n"
+                     "    NumberAnimation on z {}\n"
+                     "    Behavior on opacity {}\n"
                      "    Component {\n"
                      "        Item{}\n"
                      "    }\n"
@@ -1193,18 +1193,18 @@ void tst_qdeclarativedom::copy()
 void tst_qdeclarativedom::position()
 {
     QByteArray qml = "import Qt 4.6\n"
-         /*14*/      "Item {\n"
-         /*21*/      "    id: myItem\n"
-         /*36*/      "    property int a: 10\n"
-         /*59*/      "    x: 10\n"
-         /*69*/      "    y: x + 10\n"
-         /*83*/      "    z: NumberAnimation {}\n"
-        /*109*/      "    opacity: Behavior {}\n"
-        /*134*/      "    Component {\n"
-        /*150*/      "        Item{}\n"
-        /*165*/      "    }\n"
-        /*171*/      "    children: [ Item{}, Item{} ]\n"
-        /*204*/      "}\n";
+                     "Item {\n"
+                     "    id: myItem\n"
+                     "    property int a: 10\n"
+                     "    x: 10\n"
+                     "    y: x + 10\n"
+                     "    NumberAnimation on z {}\n"
+                     "    Behavior on opacity {}\n"
+                     "    Component {\n"
+                     "        Item{}\n"
+                     "    }\n"
+                     "    children: [ Item{}, Item{} ]\n"
+                     "}\n";
 
 
     QDeclarativeDomDocument document;
@@ -1227,19 +1227,19 @@ void tst_qdeclarativedom::position()
     QCOMPARE(y.length(), 1);
 
     QDeclarativeDomProperty z = root.property("z");
-    QCOMPARE(z.position(), 87);
+    QCOMPARE(z.position(), 106);
     QCOMPARE(z.length(), 1);
 
     QDeclarativeDomProperty opacity = root.property("opacity");
-    QCOMPARE(opacity.position(), 113);
+    QCOMPARE(opacity.position(), 127);
     QCOMPARE(opacity.length(), 7);
 
     QDeclarativeDomProperty data = root.property("data");
-    QCOMPARE(data.position(), 138);
+    QCOMPARE(data.position(), 142);
     QCOMPARE(data.length(), 0);
 
     QDeclarativeDomProperty children = root.property("children");
-    QCOMPARE(children.position(), 175);
+    QCOMPARE(children.position(), 179);
     QCOMPARE(children.length(), 8);
 
     QDeclarativeDomList dataList = data.value().toList();
@@ -1249,30 +1249,30 @@ void tst_qdeclarativedom::position()
 
     // All QDeclarativeDomObject
     QCOMPARE(root.position(), 14);
-    QCOMPARE(root.length(), 191);
+    QCOMPARE(root.length(), 195);
 
     QDeclarativeDomObject numberAnimation = z.value().toValueSource().object();
-    QCOMPARE(numberAnimation.position(), 90);
-    QCOMPARE(numberAnimation.length(), 18);
+    QCOMPARE(numberAnimation.position(), 87);
+    QCOMPARE(numberAnimation.length(), 23);
 
     QDeclarativeDomObject behavior = opacity.value().toValueInterceptor().object();
-    QCOMPARE(behavior.position(), 122);
-    QCOMPARE(behavior.length(), 11);
+    QCOMPARE(behavior.position(), 115);
+    QCOMPARE(behavior.length(), 22);
 
     QDeclarativeDomObject component = dataList.values().at(0).toObject();
-    QCOMPARE(component.position(), 138);
+    QCOMPARE(component.position(), 142);
     QCOMPARE(component.length(), 32);
 
     QDeclarativeDomObject componentRoot = component.toComponent().componentRoot();
-    QCOMPARE(componentRoot.position(), 158);
+    QCOMPARE(componentRoot.position(), 162);
     QCOMPARE(componentRoot.length(), 6);
 
     QDeclarativeDomObject child1 = childrenList.values().at(0).toObject();
-    QCOMPARE(child1.position(), 187);
+    QCOMPARE(child1.position(), 191);
     QCOMPARE(child1.length(), 6);
 
     QDeclarativeDomObject child2 = childrenList.values().at(1).toObject();
-    QCOMPARE(child2.position(), 195);
+    QCOMPARE(child2.position(), 199);
     QCOMPARE(child2.length(), 6);
 
     // All QDeclarativeDomValue
@@ -1285,23 +1285,23 @@ void tst_qdeclarativedom::position()
     QCOMPARE(yValue.length(), 6);
 
     QDeclarativeDomValue zValue = z.value();
-    QCOMPARE(zValue.position(), 90);
-    QCOMPARE(zValue.length(), 18);
+    QCOMPARE(zValue.position(), 87);
+    QCOMPARE(zValue.length(), 23);
 
     QDeclarativeDomValue opacityValue = opacity.value();
-    QCOMPARE(opacityValue.position(), 122);
-    QCOMPARE(opacityValue.length(), 11);
+    QCOMPARE(opacityValue.position(), 115);
+    QCOMPARE(opacityValue.length(), 22);
 
     QDeclarativeDomValue dataValue = data.value();
-    QCOMPARE(dataValue.position(), 138);
+    QCOMPARE(dataValue.position(), 142);
     QCOMPARE(dataValue.length(), 32);
 
     QDeclarativeDomValue child1Value = childrenList.values().at(0);
-    QCOMPARE(child1Value.position(), 187);
+    QCOMPARE(child1Value.position(), 191);
     QCOMPARE(child1Value.length(), 6);
 
     QDeclarativeDomValue child2Value = childrenList.values().at(1);
-    QCOMPARE(child2Value.position(), 195);
+    QCOMPARE(child2Value.position(), 199);
     QCOMPARE(child2Value.length(), 6);
 
     // All QDeclarativeDomList
