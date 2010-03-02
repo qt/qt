@@ -51,6 +51,7 @@
 #include <qdeclarativedebug_p.h>
 #include <qdeclarativedebugservice_p.h>
 #include <qdeclarativeglobal_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -136,8 +137,8 @@ public:
 
     QDeclarativeView *q;
 
-    QGuard<QGraphicsObject> root;
-    QGuard<QDeclarativeItem> qmlRoot;
+    QDeclarativeGuard<QGraphicsObject> root;
+    QDeclarativeGuard<QDeclarativeItem> qmlRoot;
 
     QUrl source;
 
@@ -282,13 +283,14 @@ QDeclarativeView::~QDeclarativeView()
 
 /*!
     Sets the source to the \a url, loads the QML component and instantiates it.
+
+    Calling this methods multiple times with the same url will result
+    in the QML being reloaded.
  */
 void QDeclarativeView::setSource(const QUrl& url)
 {
-    if (url != d->source) {
-        d->source = url;
-        d->execute();
-    }
+    d->source = url;
+    d->execute();
 }
 
 /*!

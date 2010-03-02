@@ -103,7 +103,10 @@ public:
 
     static QDeclarativeDeclarativeData *get(const QObject *object, bool create = false) {
         QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
-        if (priv->declarativeData) {
+        if (priv->wasDeleted) {
+            Q_ASSERT(!create);
+            return 0;
+        } else if (priv->declarativeData) {
             return static_cast<QDeclarativeDeclarativeData *>(priv->declarativeData);
         } else if (create) {
             priv->declarativeData = new QDeclarativeDeclarativeData;

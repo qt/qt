@@ -114,7 +114,10 @@ qreal QDeclarativePath::startX() const
 void QDeclarativePath::setStartX(qreal x)
 {
     Q_D(QDeclarativePath);
+    if (qFuzzyCompare(x, d->startX))
+        return;
     d->startX = x;
+    emit startXChanged();
 }
 
 qreal QDeclarativePath::startY() const
@@ -126,7 +129,10 @@ qreal QDeclarativePath::startY() const
 void QDeclarativePath::setStartY(qreal y)
 {
     Q_D(QDeclarativePath);
+    if (qFuzzyCompare(y, d->startY))
+        return;
     d->startY = y;
+    emit startYChanged();
 }
 
 /*!
@@ -522,7 +528,10 @@ QString QDeclarativePathAttribute::name() const
 
 void QDeclarativePathAttribute::setName(const QString &name)
 {
-    _name = name;
+    if (_name == name)
+        return;
+     _name = name;
+    emit nameChanged();
 }
 
 /*!

@@ -1,5 +1,5 @@
 import Qt 4.6
-import "content" as Twitter
+import TwitterCore 1.0 as Twitter
 
 Item {
     id: screen; width: 320; height: 480
@@ -28,14 +28,14 @@ Item {
         id: background
         anchors.fill: parent; color: "#343434";
 
-        Image { source: "content/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
+        Image { source: "TwitterCore/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
 
         Twitter.RssModel { id: rssModel }
         Twitter.Loading { anchors.centerIn: parent; visible: rssModel.status==XmlListModel.Loading && state!='unauthed'}
         Text {
             width: 180
             text: "Could not access twitter using this screen name and password pair.";
-            color: "white"; color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrap: true
+            color: "#cccccc"; style: Text.Raised; styleColor: "black"; wrap: true
             visible: rssModel.status==XmlListModel.Error; anchors.centerIn: parent
         }
 

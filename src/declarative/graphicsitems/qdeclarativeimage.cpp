@@ -232,6 +232,16 @@ qreal QDeclarativeImage::paintedHeight() const
     \o Error - an error occurred while loading the image
     \endlist
 
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened with the image internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: image.status = Image.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. Image{id: image; onStatusChanged: if(image.status == Image.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(image.status!=Image.Ready){'Not Loaded';}else{'Loaded';}}
+    \endlist
+
     \sa progress
 */
 

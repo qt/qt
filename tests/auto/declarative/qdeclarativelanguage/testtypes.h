@@ -166,11 +166,16 @@ class MyGroupedObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QDeclarativeScriptString script READ script WRITE setScript);
+    Q_PROPERTY(int value READ value WRITE setValue);
 public:
     QDeclarativeScriptString script() const { return m_script; }
     void setScript(const QDeclarativeScriptString &s) { m_script = s; }
 
+    int value() const { return m_value; }
+    void setValue(int v) { m_value = v; }
+
 private:
+    int m_value;
     QDeclarativeScriptString m_script;
 };
 

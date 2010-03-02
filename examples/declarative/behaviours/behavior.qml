@@ -50,12 +50,12 @@ Rectangle {
             radius: 5
             border.width: 10; border.color: "white";
             x: 100-37; y: 100-25
-            x: Behavior { NumberAnimation { duration: 300 } }
-            y: Behavior { NumberAnimation { duration: 300 } }
+            Behavior on x { NumberAnimation { duration: 300 } }
+            Behavior on y { NumberAnimation { duration: 300 } }
             Text {
                 id: focusText
                 text: focusRect.text;
-                text: Behavior {
+                Behavior on text {
                     SequentialAnimation {
                         NumberAnimation { target: focusText; property: "opacity"; to: 0; duration: 150 }
                         PropertyAction {}

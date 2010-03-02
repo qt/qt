@@ -1,0 +1,3 @@
+To run, simply load the minehunt.qml file with the qml runtime.
+
+Note that on X11, this demo has problems with the native graphicssystem. If you are using the X11 window system, please pass -graphicssystem raster to the qml binary.

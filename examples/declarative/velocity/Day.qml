@@ -24,7 +24,7 @@ Rectangle {
             id: stickyPage
             x: Math.random() * 200 + 100
             y: Math.random() * 300 + 50
-            rotation: SpringFollow {
+            SpringFollow on rotation {
                 source: -flickable.horizontalVelocity / 100
                 spring: 2.0; damping: 0.1
             }
