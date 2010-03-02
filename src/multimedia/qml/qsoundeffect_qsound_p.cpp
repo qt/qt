@@ -157,7 +157,7 @@ void QSoundEffectPrivate::setMedia(const QMediaContent &media)
 {
     m_queued = false;
 
-    if (media.isNull() || media.canonicalUrl().scheme() != "file") {
+    if (media.isNull() || media.canonicalUrl().scheme() != QLatin1String("file")) {
         m_media = QMediaContent();
         return;
     }
