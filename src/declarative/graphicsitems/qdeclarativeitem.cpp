@@ -1172,7 +1172,7 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 
     See the \l {Keys}{Keys} attached property for detailed documentation.
 
-    \section 1 Property Change Signals
+    \section1 Property Change Signals
 
     Most properties on Item and Item derivatives have a signal
     emitted when they change. By convention, the signals are

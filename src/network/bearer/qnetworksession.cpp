@@ -527,7 +527,7 @@ QVariant QNetworkSession::sessionProperty(const QString& key) const
     \a key. Removing an already set  property can be achieved by passing an 
     invalid QVariant.
 
-    Note that the \i UserChoiceConfiguration and \i ActiveConfiguration
+    Note that the \e UserChoiceConfiguration and \e ActiveConfiguration
     properties are read only and cannot be changed using this method.
 */
 void QNetworkSession::setSessionProperty(const QString& key, const QVariant& value)
