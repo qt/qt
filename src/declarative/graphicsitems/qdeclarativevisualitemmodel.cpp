@@ -81,6 +81,14 @@ public:
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->emitChildrenChanged();
     }
 
+    static int children_count(QDeclarativeListProperty<QDeclarativeItem> *prop) {
+        return static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.count();
+    }
+
+    static QDeclarativeItem *children_at(QDeclarativeListProperty<QDeclarativeItem> *prop, int index) {
+        return static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.at(index);
+    }
+
     void itemAppended() {
         Q_Q(QDeclarativeVisualItemModel);
         QDeclarativeVisualItemModelAttached *attached = QDeclarativeVisualItemModelAttached::properties(children.last());
@@ -136,7 +144,8 @@ QDeclarativeVisualItemModel::QDeclarativeVisualItemModel()
 QDeclarativeListProperty<QDeclarativeItem> QDeclarativeVisualItemModel::children()
 {
     Q_D(QDeclarativeVisualItemModel);
-    return QDeclarativeListProperty<QDeclarativeItem>(this, d, QDeclarativeVisualItemModelPrivate::children_append);
+    return QDeclarativeListProperty<QDeclarativeItem>(this, d, d->children_append, 
+                                                      d->children_count, d->children_at);
 }
 
 /*!
