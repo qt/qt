@@ -95,7 +95,6 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
     BOOL mPanelHackedWithButtons;
     CGFloat mDialogExtraWidth;
     CGFloat mDialogExtraHeight;
-    NSModalSession mModalSession;
 }
 - (id)initWithFontPanel:(NSFontPanel *)panel
       stolenContentView:(NSView *)stolenContentView
@@ -106,7 +105,6 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
             extraHeight:(CGFloat)extraHeight;
 - (void)changeFont:(id)sender;
 - (void)changeAttributes:(id)sender;
-- (void)setModalSession:(NSModalSession)session;
 - (BOOL)windowShouldClose:(id)window;
 - (NSSize)windowWillResize:(NSWindow *)window toSize:(NSSize)proposedFrameSize;
 - (void)relayout;
@@ -163,7 +161,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     mPanelHackedWithButtons = (okButton != 0);
     mDialogExtraWidth = extraWidth;
     mDialogExtraHeight = extraHeight;
-    mModalSession = 0;
 
     if (mPanelHackedWithButtons) {
         [self relayout];
@@ -214,12 +211,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
     if (mPriv)
         mPriv->updateSampleFont(*mQtFont);
-}
-
-- (void)setModalSession:(NSModalSession)session
-{
-    Q_ASSERT(!mModalSession);
-    mModalSession = session;
 }
 
 - (BOOL)windowShouldClose:(id)window
@@ -368,21 +359,14 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 - (void)finishOffWithCode:(NSInteger)code
 {
-    if (mPriv) {
-        if (mModalSession) {
-            [NSApp endModalSession:mModalSession];
-            mModalSession = 0;
-        }
-        // Hack alert!
-        // Since this code path was never intended to be followed when starting from exec
-        // we need to force the dialog to communicate the new font, otherwise the signal
-        // won't get emitted.
-        if(code == NSOKButton)
-            mPriv->sampleEdit->setFont([self qtFont]);
-        mPriv->done((code == NSOKButton) ? QDialog::Accepted : QDialog::Rejected);
-    } else {
-        [NSApp stopModalWithCode:code];
-    }
+    [NSApp stopModalWithCode:code];
+    // Hack alert!
+    // Since this code path was never intended to be followed when starting from exec
+    // we need to force the dialog to communicate the new font, otherwise the signal
+    // won't get emitted.
+    if(code == NSOKButton)
+        mPriv->sampleEdit->setFont([self qtFont]);
+    mPriv->done((code == NSOKButton) ? QDialog::Accepted : QDialog::Rejected);
 }
 
 - (void)cleanUpAfterMyself
@@ -544,8 +528,6 @@ void *QFontDialogPrivate::_q_constructNativePanel()
     }
     NSString *title = @"Select font";
     [ourPanel setTitle:title];
-
-    [delegate setModalSession:[NSApp beginModalSessionForWindow:ourPanel]];
     return delegate;
 }
 
@@ -575,6 +557,7 @@ void QFontDialogPrivate::_q_macRunNativeAppModalPanel()
     QCocoaFontPanelDelegate *delegate = (QCocoaFontPanelDelegate *)_q_constructNativePanel();
     NSWindow *ourPanel = [delegate actualPanel];
     [ourPanel retain];
+
     int rval = [NSApp runModalForWindow:ourPanel];
     QAbstractEventDispatcher::instance()->interrupt();
     [ourPanel release];
