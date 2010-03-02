@@ -31,7 +31,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         source: "pics/flag.png"
-                        opacity: model.hasFlag
+                        opacity: modelData.hasFlag
                         Behavior on opacity {
                             NumberAnimation {
                                 property: "opacity"
@@ -47,16 +47,16 @@ Item {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
-                        text: model.hint
+                        text: modelData.hint
                         color: "white"
                         font.bold: true
-                        opacity: !model.hasMine && model.hint > 0
+                        opacity: !modelData.hasMine && modelData.hint > 0
                     }
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                         source: "pics/bomb.png"
-                        opacity: model.hasMine
+                        opacity: modelData.hasMine
                     }
                     Explosion {
                         id: expl
@@ -65,7 +65,7 @@ Item {
                 states: [
                     State {
                         name: "back"
-                        when: model.flipped
+                        when: modelData.flipped
                         PropertyChanges { target: flipable; angle: 180 }
                     }
                 ]
@@ -81,7 +81,7 @@ Item {
                                     else
                                         ret = 0;
                                     if (ret > 0) {
-                                        if (model.hasMine && model.flipped) {
+                                        if (modelData.hasMine && modelData.flipped) {
                                             ret*3;
                                         } else {
                                             ret;
@@ -96,7 +96,7 @@ Item {
                                 properties: "angle"
                             }
                             ScriptAction{
-                                script: if(model.hasMine && model.flipped){expl.explode = true;}
+                                script: if(modelData.hasMine && modelData.flipped){expl.explode = true;}
                             }
                         }
                     }

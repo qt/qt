@@ -4,7 +4,7 @@ Item {
     id:block
     
     Image { id: img
-        source: "pics/redStone.png";
+        source: "../shared/pics/redStone.png";
         anchors.fill: parent
     }
 }
