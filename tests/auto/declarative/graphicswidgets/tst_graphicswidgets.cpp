@@ -40,9 +40,9 @@
 ****************************************************************************/
 #include <qtest.h>
 #include <QFile>
-#include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <private/graphicswidgets_p.h>
+#include <QtDeclarative/qdeclarativeengine.h>
+#include <QtDeclarative/qdeclarativecomponent.h>
+#include <QtGui/qgraphicsview.h>
 
 class tst_graphicswidgets : public QObject
 
@@ -61,8 +61,8 @@ tst_graphicswidgets::tst_graphicswidgets()
 
 void tst_graphicswidgets::widgets()
 {
-    QmlEngine engine;
-    QmlComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/graphicswidgets.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/graphicswidgets.qml"));
     QGraphicsView *obj = qobject_cast<QGraphicsView*>(c.create());
 
     QVERIFY(obj != 0);

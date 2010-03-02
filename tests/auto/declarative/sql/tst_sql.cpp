@@ -40,10 +40,10 @@
 ****************************************************************************/
 #include <qtest.h>
 #include "../../../shared/util.h"
-#include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <private/qmlgraphicstext_p.h>
-#include <private/qmlengine_p.h>
+#include <QtDeclarative/qdeclarativeengine.h>
+#include <QtDeclarative/qdeclarativecomponent.h>
+#include <private/qdeclarativetext_p.h>
+#include <private/qdeclarativeengine_p.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
@@ -62,7 +62,7 @@ public:
         qApp->setApplicationName("tst_sql");
         qApp->setOrganizationName("Nokia");
         qApp->setOrganizationDomain("nokia.com");
-        engine = new QmlEngine;
+        engine = new QDeclarativeEngine;
     }
 
     ~tst_sql()
@@ -85,7 +85,7 @@ private slots:
 
 private:
     QString dbDir() const;
-    QmlEngine *engine;
+    QDeclarativeEngine *engine;
 };
 
 class QWebPageWithJavaScriptConsoleMessages : public QWebPage {
@@ -200,9 +200,9 @@ void tst_sql::testQml()
         "Text { Script { source: \""+jsfile+"\" } text: test() }";
 
     engine->setOfflineStoragePath(dbDir());
-    QmlComponent component(engine);
+    QDeclarativeComponent component(engine);
     component.setData(qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
-    QmlGraphicsText *text = qobject_cast<QmlGraphicsText*>(component.create());
+    QDeclarativeText *text = qobject_cast<QDeclarativeText*>(component.create());
     QVERIFY(text != 0);
     QCOMPARE(text->text(),QString("passed"));
 }
@@ -221,7 +221,7 @@ void tst_sql::testQml_cleanopen()
     // making it more like the tests are running in new processes.
     testQml();
 
-    QmlEnginePrivate::getScriptEngine(engine)->collectGarbage(); // close databases
+    QDeclarativeEnginePrivate::getScriptEngine(engine)->collectGarbage(); // close databases
     foreach (QString dbname, QSqlDatabase::connectionNames()) {
         QSqlDatabase::removeDatabase(dbname);
     }

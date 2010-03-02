@@ -42,7 +42,7 @@
 #ifndef NUMBERFORMAT_H
 #define NUMBERFORMAT_H 
 
-#include <qml.h>
+#include <qdeclarative.h>
 
 #include <QtCore/QLocale>
 #include <QtCore/QTime>

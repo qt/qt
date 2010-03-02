@@ -563,7 +563,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
             slot = arg1;
         else {
             QScript::SaveFrameHelper saveFrame(engine, exec);
-            QString propertyName(QScriptEnginePrivate::toString(exec, arg1));
+            JSC::UString propertyName = QScriptEnginePrivate::toString(exec, arg1);
             slot = QScriptEnginePrivate::property(exec, arg0, propertyName, QScriptValue::ResolvePrototype);
         }
     }
@@ -645,7 +645,7 @@ JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject *
             slot = arg1;
         else {
             QScript::SaveFrameHelper saveFrame(engine, exec);
-            QString propertyName = QScriptEnginePrivate::toString(exec, arg1);
+            JSC::UString propertyName = QScriptEnginePrivate::toString(exec, arg1);
             slot = QScriptEnginePrivate::property(exec, arg0, propertyName, QScriptValue::ResolvePrototype);
         }
     }
@@ -723,19 +723,19 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
     if ((args.size() > 4) && !args.at(4).isNumber())
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): fifth argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
-    QString context(args.at(0).toString(exec));
+    JSC::UString context = args.at(0).toString(exec);
 #endif
-    QString text(args.at(1).toString(exec));
+    JSC::UString text = args.at(1).toString(exec);
 #ifndef QT_NO_QOBJECT
-    QString comment;
+    JSC::UString comment;
     if (args.size() > 2)
         comment = args.at(2).toString(exec);
     QCoreApplication::Encoding encoding = QCoreApplication::CodecForTr;
     if (args.size() > 3) {
-        QString encStr(args.at(3).toString(exec));
-        if (encStr == QLatin1String("CodecForTr"))
+        JSC::UString encStr = args.at(3).toString(exec);
+        if (encStr == "CodecForTr")
             encoding = QCoreApplication::CodecForTr;
-        else if (encStr == QLatin1String("UnicodeUTF8"))
+        else if (encStr == "UnicodeUTF8")
             encoding = QCoreApplication::UnicodeUTF8;
         else
             return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr));
@@ -744,11 +744,11 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
     if (args.size() > 4)
         n = args.at(4).toInt32(exec);
 #endif
-    QString result;
+    JSC::UString result;
 #ifndef QT_NO_QOBJECT
-    result = QCoreApplication::translate(context.toLatin1().constData(),
-                                         text.toLatin1().constData(),
-                                         comment.toLatin1().constData(),
+    result = QCoreApplication::translate(QScript::convertToLatin1(context).constData(),
+                                         QScript::convertToLatin1(text).constData(),
+                                         QScript::convertToLatin1(comment).constData(),
                                          encoding, n);
 #else
     result = text;
@@ -774,25 +774,25 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
     if ((args.size() > 2) && !args.at(2).isNumber())
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): third argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
-    QString context;
+    JSC::UString context;
     QScriptContext *ctx = QScriptEnginePrivate::contextForFrame(exec);
     if (ctx && ctx->parentContext())
         context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
 #endif
-    QString text(args.at(0).toString(exec));
+    JSC::UString text = args.at(0).toString(exec);
 #ifndef QT_NO_QOBJECT
-    QString comment;
+    JSC::UString comment;
     if (args.size() > 1)
         comment = args.at(1).toString(exec);
     int n = -1;
     if (args.size() > 2)
         n = args.at(2).toInt32(exec);
 #endif
-    QString result;
+    JSC::UString result;
 #ifndef QT_NO_QOBJECT
-    result = QCoreApplication::translate(context.toLatin1().constData(),
-                                         text.toLatin1().constData(),
-                                         comment.toLatin1().constData(),
+    result = QCoreApplication::translate(QScript::convertToLatin1(context).constData(),
+                                         QScript::convertToLatin1(text).constData(),
+                                         QScript::convertToLatin1(comment).constData(),
                                          QCoreApplication::CodecForTr, n);
 #else
     result = text;
@@ -844,7 +844,7 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : registeredScriptValues(0), freeScriptValues(0),
+    : registeredScriptValues(0), freeScriptValues(0), freeScriptValuesCount(0),
       registeredScriptStrings(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
@@ -1580,9 +1580,9 @@ QRegExp QScriptEnginePrivate::toRegExp(JSC::ExecState *exec, JSC::JSValue value)
 {
     if (!isRegExp(value))
         return QRegExp();
-    QString pattern = toString(exec, property(exec, value, QLatin1String("source"), QScriptValue::ResolvePrototype));
+    QString pattern = toString(exec, property(exec, value, "source", QScriptValue::ResolvePrototype));
     Qt::CaseSensitivity kase = Qt::CaseSensitive;
-    if (toBool(exec, property(exec, value, QLatin1String("ignoreCase"), QScriptValue::ResolvePrototype)))
+    if (toBool(exec, property(exec, value, "ignoreCase", QScriptValue::ResolvePrototype)))
         kase = Qt::CaseInsensitive;
     return QRegExp(pattern, kase, QRegExp::RegExp2);
 }
@@ -1637,7 +1637,7 @@ JSC::JSValue QScriptEnginePrivate::propertyHelper(JSC::ExecState *exec, JSC::JSV
     }
     if (!result && (resolveMode & QScriptValue::ResolveScope)) {
         // ### check if it's a function object and look in the scope chain
-        JSC::JSValue scope = property(exec, value, QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
+        JSC::JSValue scope = property(exec, value, "__qt_scope__", QScriptValue::ResolveLocal);
         if (isObject(scope))
             result = property(exec, scope, id, resolveMode);
     }

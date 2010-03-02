@@ -225,4 +225,59 @@ QT_BEGIN_NAMESPACE
   Swap this pointer with \a other.
  */
 
+/*!
+  \class QScopedArrayPointer
+  
+  \brief The QScopedArrayPointer class stores a pointer to a
+  dynamically allocated array of objects, and deletes it upon
+  destruction.
+
+  \since 4.6
+  \reentrant
+  \ingroup misc
+
+  A QScopedArrayPointer is a QScopedPointer that defaults to
+  deleting the object it is pointing to with the delete[] operator. It
+  also features operator[] for convenience, so we can write:
+
+  \code
+    void foo()
+    {
+        QScopedArrayPointer<int> i(new int[10]);
+        i[2] = 42;
+        ...
+        return; // our integer array is now deleted using delete[]
+    }
+  \endcode
+*/
+
+/*!
+    \fn QScopedArrayPointer::QScopedArrayPointer(T *p = 0)
+
+    Constructs this QScopedArrayPointer instance and sets its pointer
+    to \a p.
+*/
+
+/*!
+    \fn T *QScopedArrayPointer::operator[](int i)
+
+    Provides access to entry \a i of the scoped pointer's array of
+    objects.
+
+    If the contained pointer is \c null, behavior is undefined.
+
+    \sa isNull()
+*/
+
+/*!
+    \fn T *QScopedArrayPointer::operator[](int i) const
+
+    Provides access to entry \a i of the scoped pointer's array of
+    objects.
+
+    If the contained pointer is \c null, behavior is undefined.
+
+    \sa isNull()
+*/
+
 QT_END_NAMESPACE

@@ -125,7 +125,7 @@ public:
 
     virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
+    virtual void drawPixmapFragments(const QPainter::Fragment *fragments, int fragmentCount, const QPixmap &pixmap, QPainter::FragmentHints hints);
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
@@ -196,7 +196,7 @@ public:
     void fill(const QVectorPath &path);
     void stroke(const QVectorPath &path, const QPen &pen);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
-    void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
+    void drawPixmapFragments(const QPainter::Fragment *fragments, int fragmentCount, const QPixmap &pixmap, QPainter::FragmentHints hints);
     void drawCachedGlyphs(QFontEngineGlyphCache::Type glyphType, QStaticTextItem *staticTextItem,
                           bool includeMatrixInCache);
 

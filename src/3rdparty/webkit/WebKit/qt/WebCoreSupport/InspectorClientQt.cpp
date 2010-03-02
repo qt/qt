@@ -179,7 +179,7 @@ void InspectorClientQt::populateSetting(const String& key, InspectorController::
         return;
     }
 
-    QString settingKey(settingStoragePrefix + key);
+    QString settingKey(settingStoragePrefix + QString(key));
     QString storedValueType = qsettings.value(settingKey + settingStorageTypeSuffix).toString();
     QVariant storedValue = qsettings.value(settingKey);
     storedValue.convert(QVariant::nameToType(storedValueType.toAscii().data()));
@@ -196,7 +196,7 @@ void InspectorClientQt::storeSetting(const String& key, const InspectorControlle
     }
 
     QVariant valueToStore = settingToVariant(setting);
-    QString settingKey(settingStoragePrefix + key);
+    QString settingKey(settingStoragePrefix + QString(key));
     qsettings.setValue(settingKey, valueToStore);
     qsettings.setValue(settingKey + settingStorageTypeSuffix, QVariant::typeToName(valueToStore.type()));
 }

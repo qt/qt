@@ -26,7 +26,7 @@ mac {
 
 embedded:SUBDIRS += kmap2qmap
 
-contains(QT_CONFIG, declarative):SUBDIRS += qmlviewer
+contains(QT_CONFIG, declarative):SUBDIRS += qml
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
 !wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
 embedded: SUBDIRS += makeqpf

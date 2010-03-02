@@ -60,8 +60,10 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <net/if_arp.h>
+#include <unistd.h>
 #endif
 
+QT_BEGIN_NAMESPACE
 
 static QString qGetInterfaceType(const QString &interface)
 {

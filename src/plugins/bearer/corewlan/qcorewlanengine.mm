@@ -164,9 +164,9 @@ void QCoreWlanEngine::connectToId(const QString &id)
         NSDictionary *parametersDict;
         NSArray* apArray;
 
- CW8021XProfile *user8021XProfile;
- NSError *err;
- NSMutableDictionary *params;
+        CW8021XProfile *user8021XProfile;
+        NSError *err;
+        NSMutableDictionary *params;
 
         while ((wProfile = [enumerator nextObject])) { //CWWirelessProfile
 
@@ -431,12 +431,8 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                 }
                 [looppool release];
             }
-        } /*else {
-            qWarning() << "ERROR scanning for ssids" << nsstringToQString([err localizedDescription])
-                    <<nsstringToQString([err domain]);
-        }*/
+        }
     }
-
     [autoreleasepool drain];
 #else
     Q_UNUSED(interfaceName);

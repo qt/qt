@@ -245,6 +245,7 @@ private slots:
 #endif
     void render_data();
     void render();
+    void renderItemsWithNegativeWidthOrHeight();
     void contextMenuEvent();
     void contextMenuEvent_ItemIgnoresTransformations();
     void update();
@@ -2749,6 +2750,41 @@ void tst_QGraphicsScene::render()
         qDebug() << "Updating" << QTest::currentDataTag() << ":" << bigImage.save(fileName, "png");
 #endif
     }
+}
+
+void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
+{
+    QGraphicsScene scene(0, 0, 150, 150);
+
+    // Add item with negative width.
+    QGraphicsRectItem *item1 = new QGraphicsRectItem(0, 0, -150, 50);
+    item1->setBrush(Qt::red);
+    item1->setPos(150, 50);
+    scene.addItem(item1);
+
+    // Add item with negative height.
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(0, 0, 50, -150);
+    item2->setBrush(Qt::blue);
+    item2->setPos(50, 150);
+    scene.addItem(item2);
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(QFrame::NoFrame);
+    view.resize(150, 150);
+    view.show();
+    QCOMPARE(view.viewport()->size(), QSize(150, 150));
+
+    QImage expected(view.viewport()->size(), QImage::Format_RGB32);
+    view.viewport()->render(&expected);
+
+    // Make sure the scene background is the same as the viewport background.
+    scene.setBackgroundBrush(view.viewport()->palette().brush(view.viewport()->backgroundRole()));
+    QImage actual(150, 150, QImage::Format_RGB32);
+    QPainter painter(&actual);
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(actual, expected);
 }
 
 void tst_QGraphicsScene::contextMenuEvent()

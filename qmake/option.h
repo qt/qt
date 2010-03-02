@@ -106,6 +106,7 @@ struct Option
 
     //both of these must be called..
     static int init(int argc=0, char **argv=0); //parse cmdline
+    static void applyHostMode();
     static bool postProcessProject(QMakeProject *);
 
     enum StringFixFlags {
@@ -148,10 +149,15 @@ struct Option
     static QString output_dir;
     static int debug_level;
     static int warn_level;
-    static bool recursive;
+    enum QMAKE_RECURSIVE { QMAKE_RECURSIVE_DEFAULT, QMAKE_RECURSIVE_YES, QMAKE_RECURSIVE_NO };
+    static QMAKE_RECURSIVE recursive;
     static QStringList before_user_vars, after_user_vars, user_configs, after_user_configs;
-    enum TARG_MODE { TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE };
+    enum HOST_MODE { HOST_UNKNOWN_MODE, HOST_UNIX_MODE, HOST_WIN_MODE, HOST_MACX_MODE };
+    static HOST_MODE host_mode;
+    enum TARG_MODE { TARG_UNKNOWN_MODE, TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE,
+                     TARG_SYMBIAN_MODE };
     static TARG_MODE target_mode;
+    static bool target_mode_overridden;
     static QString user_template, user_template_prefix;
     static QStringList shellPath;
 
@@ -205,7 +211,8 @@ public:
         TranslationsPath,
         SettingsPath,
         DemosPath,
-        ExamplesPath
+        ExamplesPath,
+        ImportsPath
     };
     static QString location(LibraryLocation);
 };

@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlnetwork.html
+\page qdeclarativenetwork.html
 \title Network Transparency
 
 QML supports network transparency by using URLs (rather than file names) for all
@@ -128,9 +128,9 @@ See the \tt demos/declarative/flickr for a real demonstration of this.
 
 \section1 Configuring the Network Access Manager
 
-All network access from QML is managed by a QNetworkAccessManager set on the QmlEngine which executes the QML.
+All network access from QML is managed by a QNetworkAccessManager set on the QDeclarativeEngine which executes the QML.
 By default, this is an unmodified Qt QNetworkAccessManager. You may set a different manager using
-QmlEngine::setNetworkAccessManager() as appropriate for the policies of your application.
+QDeclarativeEngine::setNetworkAccessManager() as appropriate for the policies of your application.
 For example, the \l qmlviewer tool sets a new QNetworkAccessManager which
 trusts HTTP Expiry headers to avoid network cache checks, allows HTTP Pipelining, adds a persistent HTTP CookieJar,
 a simple disk cache, and supports proxy settings.
@@ -143,7 +143,7 @@ the executable using \l{The Qt Resource System}. Using this, an executable can r
 that is compiled into the executable:
 
 \code
-    QmlView *canvas = new QmlView;
+    QDeclarativeView *canvas = new QDeclarativeView;
     canvas->setUrl(QUrl("qrc:/dial.qml"));
 \endcode
 

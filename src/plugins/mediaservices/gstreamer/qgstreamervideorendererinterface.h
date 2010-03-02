@@ -59,10 +59,10 @@ public:
     virtual void precessNewStream() {}
 };
 
-QT_END_NAMESPACE
-
 #define QGstreamerVideoRendererInterface_iid "com.nokia.Qt.QGstreamerVideoRendererInterface/1.0"
 Q_DECLARE_INTERFACE(QGstreamerVideoRendererInterface, QGstreamerVideoRendererInterface_iid)
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

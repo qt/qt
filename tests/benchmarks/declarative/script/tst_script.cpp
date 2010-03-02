@@ -40,13 +40,19 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include <QmlEngine>
-#include <QmlComponent>
-#include <private/qmlengine_p.h>
-#include <private/qmlobjectscriptclass_p.h>
-#include <private/qmlgraphicsrectangle_p.h>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
+#include <private/qdeclarativeengine_p.h>
+#include <private/qdeclarativeobjectscriptclass_p.h>
+#include <private/qdeclarativerectangle_p.h>
 #include <QScriptEngine>
 #include <QScriptValue>
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// Application private dir is default serach path for files, so SRCDIR can be set to empty
+#define SRCDIR "."
+#endif
 
 class tst_script : public QObject
 {
@@ -55,6 +61,8 @@ public:
     tst_script() {}
 
 private slots:
+    void initTestCase();
+
     void property_js();
     void property_getter();
     void property_getter_js();
@@ -87,6 +95,11 @@ private slots:
     void block();
 private:
 };
+
+void tst_script::initTestCase()
+{
+    QML_REGISTER_TYPE(Qt.test, 1, 0, TestObject, TestObject);
+}
 
 inline QUrl TEST_FILE(const QString &filename)
 {
@@ -123,7 +136,6 @@ private:
     int m_x;
 };
 QML_DECLARE_TYPE(TestObject);
-QML_DEFINE_TYPE(Qt.test, 1, 0, TestObject, TestObject);
 
 TestObject::TestObject(QObject *parent)
 : QObject(parent), m_x(0)
@@ -289,12 +301,12 @@ void tst_script::property_qobject()
 
 void tst_script::property_qmlobject()
 {
-    QmlEngine qmlengine;
+    QDeclarativeEngine qmlengine;
 
-    QScriptEngine *engine = QmlEnginePrivate::getScriptEngine(&qmlengine);
+    QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(&qmlengine);
     TestObject to;
 
-    QScriptValue v = QmlEnginePrivate::get(&qmlengine)->objectClass->newQObject(&to);
+    QScriptValue v = QDeclarativeEnginePrivate::get(&qmlengine)->objectClass->newQObject(&to);
 
     QScriptValueList args;
     args << v;
@@ -373,12 +385,12 @@ void tst_script::function_qobject()
 
 void tst_script::function_qmlobject()
 {
-    QmlEngine qmlengine;
+    QDeclarativeEngine qmlengine;
 
-    QScriptEngine *engine = QmlEnginePrivate::getScriptEngine(&qmlengine);
+    QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(&qmlengine);
     TestObject to;
 
-    QScriptValue v = QmlEnginePrivate::get(&qmlengine)->objectClass->newQObject(&to);
+    QScriptValue v = QDeclarativeEnginePrivate::get(&qmlengine)->objectClass->newQObject(&to);
 
     QScriptValueList args;
     args << v;
@@ -457,12 +469,12 @@ void tst_script::function_args_qobject()
 
 void tst_script::function_args_qmlobject()
 {
-    QmlEngine qmlengine;
+    QDeclarativeEngine qmlengine;
 
-    QScriptEngine *engine = QmlEnginePrivate::getScriptEngine(&qmlengine);
+    QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(&qmlengine);
     TestObject to;
 
-    QScriptValue v = QmlEnginePrivate::get(&qmlengine)->objectClass->newQObject(&to);
+    QScriptValue v = QDeclarativeEnginePrivate::get(&qmlengine)->objectClass->newQObject(&to);
 
     QScriptValueList args;
     args << v;
@@ -476,8 +488,8 @@ void tst_script::function_args_qmlobject()
 
 void tst_script::signal_unconnected()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("signal_unconnected.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("signal_unconnected.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -490,8 +502,8 @@ void tst_script::signal_unconnected()
 
 void tst_script::signal_qml()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("signal_qml.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("signal_qml.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -504,8 +516,8 @@ void tst_script::signal_qml()
 
 void tst_script::signal_args()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("signal_args.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("signal_args.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -518,8 +530,8 @@ void tst_script::signal_args()
 
 void tst_script::signal_unusedArgs()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("signal_unusedArgs.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("signal_unusedArgs.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -532,8 +544,8 @@ void tst_script::signal_unusedArgs()
 
 void tst_script::slot_simple()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("slot_simple.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("slot_simple.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -546,8 +558,8 @@ void tst_script::slot_simple()
 
 void tst_script::slot_simple_js()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("slot_simple_js.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("slot_simple_js.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -560,8 +572,8 @@ void tst_script::slot_simple_js()
 
 void tst_script::slot_complex()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("slot_complex.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("slot_complex.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -574,8 +586,8 @@ void tst_script::slot_complex()
 
 void tst_script::slot_complex_js()
 {
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("slot_complex_js.qml"));
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("slot_complex_js.qml"));
     TestObject *object = qobject_cast<TestObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -597,9 +609,9 @@ void tst_script::block_data()
 void tst_script::block()
 {
     QFETCH(QString, methodName);
-    QmlEngine engine;
-    QmlComponent component(&engine, TEST_FILE("block.qml"));
-    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle *>(component.create());
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, TEST_FILE("block.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle *>(component.create());
     QVERIFY(rect != 0);
 
     int index = rect->metaObject()->indexOfMethod(methodName.toUtf8());

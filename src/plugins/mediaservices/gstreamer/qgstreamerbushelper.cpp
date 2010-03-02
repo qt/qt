@@ -45,6 +45,7 @@
 
 #include "qgstreamerbushelper.h"
 
+QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_GLIB
 class QGstreamerBusHelperPrivate : public QObject
@@ -199,5 +200,7 @@ void QGstreamerBusHelper::installSyncEventFilter(QGstreamerSyncEventFilter *filt
     QMutexLocker lock(&d->filterMutex);
     d->filter = filter;
 }
+
+QT_END_NAMESPACE
 
 #include "qgstreamerbushelper.moc"

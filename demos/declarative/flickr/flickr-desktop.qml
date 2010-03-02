@@ -21,9 +21,9 @@ Item {
                 angle: wrapper.PathView.angle ? wrapper.PathView.angle : 0
             }
 
-            Connection {
-                sender: imageDetails; signal: "closed()"
-                script: {
+            Connections {
+                target: imageDetails
+                onClosed: {
                     if (wrapper.state == 'Details') {
                         wrapper.state = '';
                         imageDetails.photoUrl = "";
@@ -86,14 +86,14 @@ Item {
                     from: "*"; to: "Details"
                     SequentialAnimation {
                         ParentAction { }
-                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing.type: "InOutQuad" }
                     }
                 },
                 Transition {
                     from: "Details"; to: "*"
                     SequentialAnimation {
                         ParentAction { }
-                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing.type: "InOutQuad" }
                         PropertyAction { targets: wrapper; properties: "z" }
                     }
                 }
@@ -180,7 +180,7 @@ Item {
         transitions: [
             Transition {
                 from: "*"; to: "*"
-                NumberAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
+                NumberAnimation { properties: "y"; duration: 1000; easing.type: "OutBounce"; easing.amplitude: 0.5 }
             }
         ]
     }

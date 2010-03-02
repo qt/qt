@@ -158,7 +158,7 @@ namespace QtSharedPointer {
 #if defined(Q_NO_TEMPLATE_FRIENDS)
     public:
 #else
-        template <class X> friend class QWeakPointer;
+        template <class X> friend class QT_PREPEND_NAMESPACE(QWeakPointer);
 #endif
 
         Type *value;
@@ -209,6 +209,7 @@ namespace QtSharedPointer {
 
         inline bool destroy() { destroyer(this); return true; }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
+        inline void operator delete(void *, void *) { }
     };
     // sizeof(ExternalRefCountWithDestroyFn) = 16 (32-bit) / 24 (64-bit)
 
@@ -401,7 +402,7 @@ namespace QtSharedPointer {
     public:
 #else
         template <class X> friend class ExternalRefCount;
-        template <class X> friend class QWeakPointer;
+        template <class X> friend class QT_PREPEND_NAMESPACE(QWeakPointer);
         template <class X, class Y> friend QSharedPointer<X> copyAndSetPointer(X * ptr, const QSharedPointer<Y> &src);
 #endif
 

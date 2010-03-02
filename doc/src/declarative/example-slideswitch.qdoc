@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlexampletoggleswitch.html
+\page qdeclarativeexampletoggleswitch.html
 \title QML Example - Toggle Switch
 
 This example shows how to create a reusable switch component in QML.
@@ -121,7 +121,7 @@ states (\e on and \e off).
 This second function is called when the knob is released and we want to make sure that the knob does not end up between states
 (neither \e on nor \e off). If it is the case call the \c toggle() function otherwise we do nothing.
 
-For more information on scripts see \l{qmljavascript.html}{JavaScript Blocks}.
+For more information on scripts see \l{qdeclarativejavascript.html}{JavaScript Blocks}.
 
 \section2 Transition
 \snippet examples/declarative/slideswitch/content/Switch.qml 7

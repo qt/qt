@@ -1,21 +1,21 @@
 INCLUDEPATH += $$PWD
 
 HEADERS += \
-    $$PWD/qmljsast_p.h \
-    $$PWD/qmljsastfwd_p.h \
-    $$PWD/qmljsastvisitor_p.h \
-    $$PWD/qmljsengine_p.h \
-    $$PWD/qmljsgrammar_p.h \
-    $$PWD/qmljslexer_p.h \
-    $$PWD/qmljsmemorypool_p.h \
-    $$PWD/qmljsnodepool_p.h \
-    $$PWD/qmljsparser_p.h \
-    $$PWD/qmljsglobal_p.h
+    $$PWD/qdeclarativejsast_p.h \
+    $$PWD/qdeclarativejsastfwd_p.h \
+    $$PWD/qdeclarativejsastvisitor_p.h \
+    $$PWD/qdeclarativejsengine_p.h \
+    $$PWD/qdeclarativejsgrammar_p.h \
+    $$PWD/qdeclarativejslexer_p.h \
+    $$PWD/qdeclarativejsmemorypool_p.h \
+    $$PWD/qdeclarativejsnodepool_p.h \
+    $$PWD/qdeclarativejsparser_p.h \
+    $$PWD/qdeclarativejsglobal_p.h
 
 SOURCES += \
-    $$PWD/qmljsast.cpp \
-    $$PWD/qmljsastvisitor.cpp \
-    $$PWD/qmljsengine_p.cpp \
-    $$PWD/qmljsgrammar.cpp \
-    $$PWD/qmljslexer.cpp \
-    $$PWD/qmljsparser.cpp
+    $$PWD/qdeclarativejsast.cpp \
+    $$PWD/qdeclarativejsastvisitor.cpp \
+    $$PWD/qdeclarativejsengine_p.cpp \
+    $$PWD/qdeclarativejsgrammar.cpp \
+    $$PWD/qdeclarativejslexer.cpp \
+    $$PWD/qdeclarativejsparser.cpp

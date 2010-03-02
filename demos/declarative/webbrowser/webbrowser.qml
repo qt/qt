@@ -30,10 +30,10 @@ Item {
             anchors.bottom: footer.top
         }
         RectSoftShadow {
-            x: -webView.viewportX
-            y: -webView.viewportY
-            width: webView.viewportWidth
-            height: webView.viewportHeight+headerSpace.height
+            x: -webView.contentX
+            y: -webView.contentY
+            width: webView.contentWidth
+            height: webView.contentHeight+headerSpace.height
         }
         Item {
             id: headerSpace
@@ -98,7 +98,7 @@ Item {
                     Transition {
                         NumberAnimation {
                             properties: "opacity"
-                            easing: "easeInOutQuad"
+                            easing.type: "InOutQuad"
                             duration: 300
                         }
                     }
@@ -154,7 +154,7 @@ Item {
                     Transition {
                         NumberAnimation {
                             properties: "opacity"
-                            easing: "easeInOutQuad"
+                            easing.type: "InOutQuad"
                             duration: 320
                         }
                     }

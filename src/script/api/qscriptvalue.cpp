@@ -562,7 +562,7 @@ QScriptValue QScriptValue::scope() const
     if (!d || !d->isObject())
         return QScriptValue();
     // ### make hidden property
-    JSC::JSValue result = d->property(QLatin1String("__qt_scope__"), QScriptValue::ResolveLocal);
+    JSC::JSValue result = d->property("__qt_scope__", QScriptValue::ResolveLocal);
     return d->engine->scriptValueFromJSCValue(result);
 }
 

@@ -57,7 +57,7 @@ Flipable {
         Common.Progress { anchors.centerIn: parent; width: 200; height: 18; progress: bigImage.progress; visible: bigImage.status!=1 }
         Flickable {
             id: flickable; anchors.fill: parent; clip: true
-            viewportWidth: imageContainer.width; viewportHeight: imageContainer.height
+            contentWidth: imageContainer.width; contentHeight: imageContainer.height
 
             Item {
                 id: imageContainer
@@ -66,10 +66,7 @@ Flipable {
 
                 Image {
                     id: bigImage; source: container.photoUrl; scale: slider.value
-                    // Center image if it is smaller than the flickable area.
-                    x: imageContainer.width > width*scale ? (imageContainer.width - width*scale) / 2 : 0
-                    y: imageContainer.height > height*scale ? (imageContainer.height - height*scale) / 2 : 0
-                    smooth: !flickable.moving
+                    anchors.centerIn: parent; smooth: !flickable.moving
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == 1 && width != 0) {
@@ -97,12 +94,12 @@ Flipable {
             }
             onValueChanged: {
                 if (bigImage.width * value > flickable.width) {
-                    var xoff = (flickable.width/2 + flickable.viewportX) * value / prevScale;
-                    flickable.viewportX = xoff - flickable.width/2;
+                    var xoff = (flickable.width/2 + flickable.contentX) * value / prevScale;
+                    flickable.contentX = xoff - flickable.width/2;
                 }
                 if (bigImage.height * value > flickable.height) {
-                    var yoff = (flickable.height/2 + flickable.viewportY) * value / prevScale;
-                    flickable.viewportY = yoff - flickable.height/2;
+                    var yoff = (flickable.height/2 + flickable.contentY) * value / prevScale;
+                    flickable.contentY = yoff - flickable.height/2;
                 }
                 prevScale = value;
             }
@@ -117,7 +114,7 @@ Flipable {
     transitions: Transition {
         SequentialAnimation {
             PropertyAction { target: bigImage; property: "smooth"; value: false }
-            NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 500 }
+            NumberAnimation { easing.type: "InOutQuad"; properties: "angle"; duration: 500 }
             PropertyAction { target: bigImage; property: "smooth"; value: !flickable.moving }
         }
     }

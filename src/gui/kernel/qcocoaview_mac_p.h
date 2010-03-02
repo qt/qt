@@ -103,6 +103,7 @@ Q_GUI_EXPORT
 - (void)draggedImage:(NSImage *)anImage endedAt:(NSPoint)aPoint operation:(NSDragOperation)operation;
 - (BOOL)isComposing;
 - (QWidget *)qt_qwidget;
+- (void) qt_clearQWidget;
 - (BOOL)qt_leftButtonIsRightButton;
 - (void)qt_setLeftButtonIsRightButton:(BOOL)isSwapped;
 + (DnDParams*)currentMouseEvent;

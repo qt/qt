@@ -2513,13 +2513,9 @@ void tst_QUrl::schemeValidator()
 
 void tst_QUrl::invalidSchemeValidator()
 {
-    // enable that test when QUrl is fixed
-    return;
-
     // test that if scheme does not start with an ALPHA, QUrl::isValid() returns false
     {
         QUrl url("1http://qt.nokia.com", QUrl::StrictMode);
-        qDebug() << url;
         QCOMPARE(url.isValid(), false);
     }
     {

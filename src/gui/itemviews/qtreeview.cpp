@@ -3770,10 +3770,15 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
         if (previousSibiling != -1 && after && model->rowCount(parent) == start)
             viewItems[previousSibiling].hasMoreSiblings = false;
 
-
-        updateChildCount(parentItem, -removedCount);
-        if (parentItem != -1 && viewItems.at(parentItem).total == 0)
-            viewItems[parentItem].hasChildren = false; //every children have been removed;
+        if (parentItem != -1) {
+            if (viewItems.at(parentItem).expanded) {
+                updateChildCount(parentItem, -removedCount);
+                if (viewItems.at(parentItem).total == 0)
+                    viewItems[parentItem].hasChildren = false; //every children have been removed;
+            } else if (viewItems[parentItem].hasChildren && !hasVisibleChildren(parent)) {
+                viewItems[parentItem].hasChildren = false;
+            }
+        }
         if (after) {
             q->updateGeometries();
             viewport->update();

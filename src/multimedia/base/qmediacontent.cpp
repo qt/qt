@@ -76,6 +76,7 @@ private:
     \class QMediaContent
     \preliminary
     \brief The QMediaContent class provides access to the resources relating to a media content.
+    \since 4.7
 
     \ingroup multimedia
 
@@ -203,6 +204,15 @@ bool QMediaContent::isNull() const
 QUrl QMediaContent::canonicalUrl() const
 {
     return canonicalResource().url();
+}
+
+/*!
+    Returns a QNetworkRequest that represents that canonical resource for this media content.
+*/
+
+QNetworkRequest QMediaContent::canonicalRequest() const
+{
+    return canonicalResource().request();
 }
 
 /*!

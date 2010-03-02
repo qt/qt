@@ -261,15 +261,19 @@ protected:
                 eventsPtr->all << g->gestureType();
                 switch(g->state()) {
                 case Qt::GestureStarted:
+                    emit gestureStarted(e->type(), g);
                     eventsPtr->started << g->gestureType();
                     break;
                 case Qt::GestureUpdated:
+                    emit gestureUpdated(e->type(), g);
                     eventsPtr->updated << g->gestureType();
                     break;
                 case Qt::GestureFinished:
+                    emit gestureFinished(e->type(), g);
                     eventsPtr->finished << g->gestureType();
                     break;
                 case Qt::GestureCanceled:
+                    emit gestureCanceled(e->type(), g);
                     eventsPtr->canceled << g->gestureType();
                     break;
                 default:
@@ -283,13 +287,23 @@ protected:
         }
         return true;
     }
+
+Q_SIGNALS:
+    void gestureStarted(QEvent::Type, QGesture *);
+    void gestureUpdated(QEvent::Type, QGesture *);
+    void gestureFinished(QEvent::Type, QGesture *);
+    void gestureCanceled(QEvent::Type, QGesture *);
+
+public Q_SLOTS:
+    void deleteThis() { delete this; }
 };
 
 // TODO rename to sendGestureSequence
 static void sendCustomGesture(CustomEvent *event, QObject *object, QGraphicsScene *scene = 0)
 {
+    QWeakPointer<QObject> receiver(object);
     for (int i = CustomGesture::SerialMaybeThreshold;
-         i <= CustomGesture::SerialFinishedThreshold; ++i) {
+         i <= CustomGesture::SerialFinishedThreshold && receiver; ++i) {
         event->serial = i;
         if (scene)
             scene->sendEvent(qobject_cast<QGraphicsObject *>(object), event);
@@ -336,6 +350,9 @@ private slots:
     void graphicsViewParentPropagation();
     void panelPropagation();
     void panelStacksBehindParent();
+    void deleteGestureTargetWidget();
+    void deleteGestureTargetItem_data();
+    void deleteGestureTargetItem();
 };
 
 tst_Gestures::tst_Gestures()
@@ -657,14 +674,16 @@ static const QColor InstanceColors[] = {
 
 class GestureItem : public QGraphicsObject
 {
+    Q_OBJECT
     static int InstanceCount;
-
 public:
     GestureItem(const char *name = 0)
     {
         instanceNumber = InstanceCount++;
-        if (name)
+        if (name) {
             setObjectName(QLatin1String(name));
+            setToolTip(name);
+        }
         size = QRectF(0, 0, 100, 100);
         customEventsReceived = 0;
         gestureEventsReceived = 0;
@@ -672,6 +691,8 @@ public:
         events.clear();
         overrideEvents.clear();
         acceptGestureOverride = false;
+
+        scene = 0;
     }
     ~GestureItem()
     {
@@ -773,15 +794,19 @@ protected:
                 switch(g->state()) {
                 case Qt::GestureStarted:
                     eventsPtr->started << g->gestureType();
+                    emit gestureStarted(e->type(), g);
                     break;
                 case Qt::GestureUpdated:
                     eventsPtr->updated << g->gestureType();
+                    emit gestureUpdated(e->type(), g);
                     break;
                 case Qt::GestureFinished:
                     eventsPtr->finished << g->gestureType();
+                    emit gestureFinished(e->type(), g);
                     break;
                 case Qt::GestureCanceled:
                     eventsPtr->canceled << g->gestureType();
+                    emit gestureCanceled(e->type(), g);
                     break;
                 default:
                     Q_ASSERT(false);
@@ -793,6 +818,26 @@ protected:
             return QGraphicsObject::event(event);
         }
         return true;
+    }
+
+Q_SIGNALS:
+    void gestureStarted(QEvent::Type, QGesture *);
+    void gestureUpdated(QEvent::Type, QGesture *);
+    void gestureFinished(QEvent::Type, QGesture *);
+    void gestureCanceled(QEvent::Type, QGesture *);
+
+public:
+    // some arguments for the slots below:
+    QGraphicsScene *scene;
+
+public Q_SLOTS:
+    void deleteThis() { delete this; }
+    void addSelfToScene(QEvent::Type eventType, QGesture *)
+    {
+        if (eventType == QEvent::Gesture) {
+            disconnect(sender(), 0, this, SLOT(addSelfToScene(QEvent::Type,QGesture*)));
+            scene->addItem(this);
+        }
     }
 };
 int GestureItem::InstanceCount = 0;
@@ -1549,7 +1594,7 @@ void tst_Gestures::graphicsViewParentPropagation()
 
     QCOMPARE(item1_c1_c1->gestureEventsReceived, TotalGestureEventsCount);
     QCOMPARE(item1_c1_c1->gestureOverrideEventsReceived, 1);
-    QCOMPARE(item1_c1->gestureEventsReceived, 0);
+    QCOMPARE(item1_c1->gestureEventsReceived, TotalGestureEventsCount-1);
     QCOMPARE(item1_c1->gestureOverrideEventsReceived, 1);
     QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount-1);
     QCOMPARE(item1->gestureOverrideEventsReceived, 1);
@@ -1722,6 +1767,94 @@ void tst_Gestures::panelStacksBehindParent()
     QCOMPARE(item1->gestureOverrideEventsReceived, 0);
     QCOMPARE(panel->gestureEventsReceived, TotalGestureEventsCount);
     QCOMPARE(panel->gestureOverrideEventsReceived, 0);
+}
+
+void tst_Gestures::deleteGestureTargetWidget()
+{
+
+}
+
+void tst_Gestures::deleteGestureTargetItem_data()
+{
+    QTest::addColumn<bool>("propagateUpdateGesture");
+    QTest::addColumn<QString>("emitter");
+    QTest::addColumn<QString>("receiver");
+    QTest::addColumn<QByteArray>("signalName");
+    QTest::addColumn<QByteArray>("slotName");
+
+    QByteArray gestureUpdated = SIGNAL(gestureUpdated(QEvent::Type,QGesture*));
+    QByteArray gestureFinished = SIGNAL(gestureFinished(QEvent::Type,QGesture*));
+    QByteArray deleteThis = SLOT(deleteThis());
+    QByteArray deleteLater = SLOT(deleteLater());
+
+    QTest::newRow("delete1")
+            << false << "item1" << "item1" << gestureUpdated << deleteThis;
+    QTest::newRow("delete2")
+            << false << "item2" << "item2" << gestureUpdated << deleteThis;
+    QTest::newRow("delete3")
+            << false << "item1" << "item2" << gestureUpdated << deleteThis;
+
+    QTest::newRow("deleteLater1")
+            << false << "item1" << "item1" << gestureUpdated << deleteLater;
+    QTest::newRow("deleteLater2")
+            << false << "item2" << "item2" << gestureUpdated << deleteLater;
+    QTest::newRow("deleteLater3")
+            << false << "item1" << "item2" << gestureUpdated << deleteLater;
+    QTest::newRow("deleteLater4")
+            << false << "item2" << "item1" << gestureUpdated << deleteLater;
+
+    QTest::newRow("delete-self-and-propagate")
+            << true << "item2" << "item2" << gestureUpdated << deleteThis;
+    QTest::newRow("deleteLater-self-and-propagate")
+            << true << "item2" << "item2" << gestureUpdated << deleteLater;
+    QTest::newRow("propagate-to-deletedLater")
+            << true << "item2" << "item1" << gestureUpdated << deleteLater;
+}
+
+void tst_Gestures::deleteGestureTargetItem()
+{
+    QFETCH(bool, propagateUpdateGesture);
+    QFETCH(QString, emitter);
+    QFETCH(QString, receiver);
+    QFETCH(QByteArray, signalName);
+    QFETCH(QByteArray, slotName);
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+
+    GestureItem *item1 = new GestureItem("item1");
+    item1->grabGesture(CustomGesture::GestureType);
+    item1->setZValue(2);
+    scene.addItem(item1);
+
+    GestureItem *item2 = new GestureItem("item2");
+    item2->grabGesture(CustomGesture::GestureType);
+    item2->setZValue(5);
+    scene.addItem(item2);
+
+    QMap<QString, GestureItem *> items;
+    items.insert(item1->objectName(), item1);
+    items.insert(item2->objectName(), item2);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
+
+    if (propagateUpdateGesture)
+        item2->ignoredUpdatedGestures << CustomGesture::GestureType;
+    connect(items.value(emitter, 0), signalName, items.value(receiver, 0), slotName);
+
+    // some debug output to see the current test data tag, so if we crash
+    // we know which one caused the crash.
+    qDebug() << "<-- testing";
+
+    CustomEvent event;
+    event.hotSpot = mapToGlobal(QPointF(5, 5), item2, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item1, &scene);
 }
 
 QTEST_MAIN(tst_Gestures)

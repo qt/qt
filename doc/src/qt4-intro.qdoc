@@ -471,9 +471,53 @@
 
     \tableofcontents
 
+    \section1 Declarative UI development with Qt Quick
+
+    Qt 4.7 introduces Quick, the Qt UI Creation Kit. that enables the creation
+    of dynamic user interfaces, easier and more effective than possible
+    with existing UI technologies. This UI Creation Kit consist of three
+    technologies:
+
+    \list
+    \i QML is a declarative language oriented on JavaScript that utilizes
+    Qt's Meta-Object capabilities to enable designers and developers to
+    collaborate tightly and create animated and fluid user experiences,
+    using existing knowledge in script language and design.
+
+    \i QtDeclarative is a C++ library that provides the underlying engine,
+    which translates the declarative description of the UI in QML into
+    items on a QGraphicsScene. The library also provides APIs to bind
+    custom C++ types and elements to QML, and to connect the QML UI with
+    the underlying application logic written in C++.
+
+    \i Qt Creator has been improved to support interactive editing of
+    QML UIs through drag-and-drop. The text editor supports the QML
+    syntax and provides authoring assistance such as auto-completion,
+    error lookup, help lookup and easy preview of QML UI's.
+    \endlist
+
+    \section1 Network Bearer Management
+
+    Bearer Management controls the connectivity state of the system.
+    The new Bearer Management API in the QtNetwork module allows the
+    application to identify whether the system is online and how many
+    interfaces there are, as well as start and stop interfaces, or
+    roam transparently between access points.
+
+    QNetworkAccessManager uses this API for HTTP level roaming.
+
+    \section1 Multimedia - playback and declarative elements
+
+    The Multimedia API provides media playback and playlist support
+    for Qt Applications. Play music and movies through a single interface
+    with selectable output for movies to widgets or graphics view.
+
+    Multimedia support for Quick is also available with the new multimedia
+    declarative elements.
+
     \section1 New Classes, Functions, Macros, etc.
 
-    Links to new classes, functions, macros, and other items
+    Links to new classes, elements, functions, macros, and other items
     introduced in Qt 4.7.
 
     \sincelist 4.7

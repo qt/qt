@@ -148,7 +148,7 @@ void BookmarkManager::takeBookmarksMenu(QMenu* menu)
 void BookmarkManager::addBookmark(const QString &title, const QString &url)
 {
     TRACE_OBJ
-    showBookmarkDialog(title.isEmpty() ? tr("Untiled") : title,
+    showBookmarkDialog(title.isEmpty() ? tr("Untitled") : title,
         url.isEmpty() ? QLatin1String("about:blank") : url);
 }
 

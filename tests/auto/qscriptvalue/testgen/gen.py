@@ -70,8 +70,7 @@ class Options():
     return getattr(self._o, attr)
 
 
-mainTempl = Template("""/*
-/****************************************************************************
+mainTempl = Template("""/****************************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.

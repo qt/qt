@@ -1082,14 +1082,14 @@ QString QNetworkSessionPrivateImpl::errorString() const
     QString errorStr;
     switch(q->error()) {
     case QNetworkSession::RoamingError:
-        errorStr = QObject::tr("Roaming error");
+        errorStr = QNetworkSessionPrivateImpl::tr("Roaming error");
         break;
     case QNetworkSession::SessionAbortedError:
-        errorStr = QObject::tr("Session aborted by user or system");
+        errorStr = QNetworkSessionPrivateImpl::tr("Session aborted by user or system");
         break;
     default:
     case QNetworkSession::UnknownSessionError:
-        errorStr = QObject::tr("Unidentified Error");
+        errorStr = QNetworkSessionPrivateImpl::tr("Unidentified Error");
         break;
     }
     return errorStr;

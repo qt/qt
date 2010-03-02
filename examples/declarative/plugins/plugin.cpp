@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlmoduleplugin.h>
-#include <QtDeclarative/qml.h>
+#include <QtDeclarative/QDeclarativeExtensionPlugin>
+#include <QtDeclarative/qdeclarative.h>
 #include <qdebug.h>
 #include <qdatetime.h>
 #include <qbasictimer.h>
@@ -140,19 +140,14 @@ MinuteTimer *Time::timer=0;
 QML_DECLARE_TYPE(Time);
 
 
-class QExampleQmlPlugin : public QmlModulePlugin
+class QExampleQmlPlugin : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
-    QStringList keys() const
-    {
-        return QStringList() << QLatin1String("com.nokia.TimeExample");
-    }
-
-    void defineModule(const QString& uri)
+    void registerTypes(const char *uri)
     {
         Q_ASSERT(uri == QLatin1String("com.nokia.TimeExample"));
-        qmlRegisterType<Time>("com.nokia.TimeExample", 1, 0, "Time", "Time");
+        qmlRegisterType<Time>(uri, 1, 0, "Time");
     }
 };
 

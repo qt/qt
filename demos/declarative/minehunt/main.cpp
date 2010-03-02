@@ -38,11 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qmlengine.h"
-#include "qmlcontext.h"
-#include "qml.h"
-#include <qmlgraphicsitem.h>
-#include <qmlview.h>
+#include "qdeclarativeengine.h"
+#include "qdeclarativecontext.h"
+#include "qdeclarative.h"
+#include <qdeclarativeitem.h>
+#include <qdeclarativeview.h>
 
 #include <QWidget>
 #include <QApplication>
@@ -92,7 +92,6 @@ private:
 };
 
 QML_DECLARE_TYPE(Tile);
-QML_DEFINE_TYPE(0,0,0,Tile,Tile);
 
 class MyWidget : public QWidget
 {
@@ -101,8 +100,8 @@ public:
     MyWidget(int = 370, int = 480, QWidget *parent=0, Qt::WindowFlags flags=0);
     ~MyWidget();
 
-    Q_PROPERTY(QList<Tile *> *tiles READ tiles CONSTANT);
-    QList<Tile *> *tiles() { return &_tiles; }
+    Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT);
+    QDeclarativeListProperty<Tile> tiles() { return _tilesProperty; }
 
     Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged);
     bool isPlaying() {return playing;}
@@ -117,8 +116,8 @@ public:
     int numFlags() const{return nFlags;}
 
 public slots:
-    Q_INVOKABLE void flip(int row, int col);
-    Q_INVOKABLE void flag(int row, int col);
+    Q_INVOKABLE bool flip(int row, int col);
+    Q_INVOKABLE bool flag(int row, int col);
     void setBoard();
     void reset();
 
@@ -134,9 +133,10 @@ private:
     int getHint(int row, int col);
     void setPlaying(bool b){if(b==playing) return; playing=b; emit isPlayingChanged();}
 
-    QmlView *canvas;
+    QDeclarativeView *canvas;
 
     QList<Tile *> _tiles;
+    QDeclarativeListProperty<Tile> _tilesProperty;
     int numCols;
     int numRows;
     bool playing;
@@ -146,6 +146,7 @@ private:
     int nFlags;
 };
 
+Q_DECLARE_METATYPE(QList<Tile*>)
 MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags)
 : QWidget(parent, flags), canvas(0), numCols(9), numRows(9), playing(true), won(false)
 {
@@ -156,24 +157,22 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     for(int ii = 0; ii < numRows * numCols; ++ii) {
         _tiles << new Tile;
     }
-
     reset();
 
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->setMargin(0);
     setLayout(vbox);
 
-    canvas = new QmlView(this);
+    canvas = new QDeclarativeView(this);
     canvas->setFixedSize(width, height);
     vbox->addWidget(canvas);
 
-    canvas->setSource(QUrl::fromLocalFile(fileName));
+    _tilesProperty = QDeclarativeListProperty<Tile>(this, _tiles);
 
-    QmlContext *ctxt = canvas->rootContext();
+    QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);
-    ctxt->setContextProperty("tiles", QVariant::fromValue<QList<Tile*>*>(&_tiles));//QTBUG-5675
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(fileName));
 }
 
 MyWidget::~MyWidget()
@@ -238,14 +237,14 @@ int MyWidget::getHint(int row, int col)
     return hint;
 }
 
-void MyWidget::flip(int row, int col)
+bool MyWidget::flip(int row, int col)
 {
     if(!playing)
-        return;
+        return false;
 
     Tile *t = tile(row, col);
     if (!t || t->hasFlag())
-        return;
+        return false;
 
     if(t->flipped()){
         int flags = 0;
@@ -258,7 +257,7 @@ void MyWidget::flip(int row, int col)
                     flags++;
             }
         if(!t->hint() || t->hint() != flags)
-            return;
+            return false;
         for (int c = col-1; c <= col+1; c++)
             for (int r = row-1; r <= row+1; r++) {
                 Tile *nearT = tile(r, c);
@@ -266,7 +265,7 @@ void MyWidget::flip(int row, int col)
                     flip( r, c );
                 }
             }
-        return;
+        return true;
     }
 
     t->flip();
@@ -300,28 +299,36 @@ void MyWidget::flip(int row, int col)
         hasWonChanged();
         setPlaying(false);
     }
+    return true;
 }
 
-void MyWidget::flag(int row, int col)
+bool MyWidget::flag(int row, int col)
 {
     Tile *t = tile(row, col);
     if(!t)
-        return;
+        return false;
 
     t->setHasFlag(!t->hasFlag());
     nFlags += (t->hasFlag()?1:-1);
     emit numFlagsChanged();
+    return true;
 }
 /////////////////////////////////////////////////////////
 
 int main(int argc, char ** argv)
 {
+#ifdef Q_WS_X11
+    // native on X11 is terrible for this demo.
+    QApplication::setGraphicsSystem("raster");
+#endif
     QApplication app(argc, argv);
 
     bool frameless = false;
 
     int width = 370;
     int height = 480;
+
+    QML_REGISTER_TYPE(0,0,0,Tile,Tile);
 
     for (int i = 1; i < argc; ++i) {
         QString arg = argv[i];
