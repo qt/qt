@@ -92,6 +92,23 @@ void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
         setPixelFormat(screen->pixelFormat());
 }
 
+EGLNativeDisplayType QEgl::nativeDisplay()
+{
+    return EGL_DEFAULT_DISPLAY;
+}
+
+EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
+{
+    return (EGLNativeWindowType)(widget->winId()); // Might work
+}
+
+EGLNativePixmapType QEgl::nativePixmap(QPixmap*)
+{
+    qWarning("QEgl: EGL pixmap surfaces not supported on QWS");
+    return (EGLNativePixmapType)0;
+}
+
+
 QT_END_NAMESPACE
 
 #endif // !QT_NO_EGL

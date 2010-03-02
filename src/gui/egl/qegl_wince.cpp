@@ -62,6 +62,17 @@ EGLNativeDisplayType QEgl::nativeDisplay()
     return EGLNativeDisplayType(myDc);
 }
 
+EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
+{
+    return (EGLNativeWindowType)(widget->winId());
+}
+
+EGLNativePixmapType QEgl::nativePixmap(QPixmap*)
+{
+    qWarning("QEgl: EGL pixmap surfaces not supported on WinCE");
+    return (EGLNativePixmapType)0;
+}
+
 // Set pixel format and other properties based on a paint device.
 void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
 {

@@ -67,6 +67,16 @@ EGLNativeDisplayType QEgl::nativeDisplay()
     return EGLNativeDisplayType(xdpy);
 }
 
+EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
+{
+    return (EGLNativeWindowType)(widget->winId());
+}
+
+EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
+{
+    return (EGLNativePixmapType)(pixmap->handle());
+}
+
 static int countBits(unsigned long mask)
 {
     int count = 0;
@@ -398,6 +408,5 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
 
     return EGL_NO_SURFACE;
 }
-
 
 QT_END_NAMESPACE

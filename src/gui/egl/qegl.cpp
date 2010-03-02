@@ -549,25 +549,6 @@ EGLDisplay QEgl::display()
     return dpy;
 }
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WINCE) // WinCE & X11 implement this properly
-EGLNativeDisplayType QEgl::nativeDisplay()
-{
-    return EGL_DEFAULT_DISPLAY;
-}
-#endif
-
-#if !defined(Q_OS_SYMBIAN)
-EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
-{
-    return (EGLNativeWindowType)(widget->winId());
-}
-#endif
-
-EGLNativePixmapType QEgl::nativePixmap(QPixmap* pixmap)
-{
-    return (EGLNativePixmapType)(pixmap->handle());
-}
-
 #ifndef Q_WS_X11
 EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)
 {

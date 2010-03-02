@@ -50,9 +50,20 @@
 
 QT_BEGIN_NAMESPACE
 
+EGLNativeDisplayType QEgl::nativeDisplay()
+{
+    return EGL_DEFAULT_DISPLAY;
+}
+
 EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
 {
     return (EGLNativeWindowType)(widget->winId()->DrawableWindow());
+}
+
+EGLNativePixmapType QEgl::nativePixmap(QPixmap*)
+{
+    qWarning("QEgl: EGL pixmap surfaces not implemented yet on Symbian");
+    return (EGLNativePixmapType)0;
 }
 
 // Set pixel format and other properties based on a paint device.
