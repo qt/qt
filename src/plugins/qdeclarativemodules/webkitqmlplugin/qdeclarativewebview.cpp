@@ -42,11 +42,11 @@
 #include "qdeclarativewebview_p.h"
 #include "qdeclarativewebview_p_p.h"
 
-#include "qdeclarativepainteditem_p_p.h"
+#include <private/qdeclarativepainteditem_p_p.h>
 
 #include <qdeclarative.h>
 #include <qdeclarativeengine.h>
-#include <qdeclarativestate_p.h>
+#include <private/qdeclarativestate_p.h>
 
 #include <QDebug>
 #include <QPen>
@@ -61,7 +61,7 @@
 #include <QtWebKit/QWebFrame>
 #include <QtWebKit/QWebElement>
 #include <QtWebKit/QWebSettings>
-#include <qlistmodelinterface_p.h>
+#include <private/qlistmodelinterface_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -128,6 +128,8 @@ public:
     usually laying out the web content to fit the preferredWidth.
 
     \qml
+    import org.webkit 1.0
+
     WebView {
         url: "http://www.nokia.com"
         width: 490
@@ -929,7 +931,7 @@ QWebPage *QDeclarativeWebView::page() const
         }
     \endqml
 */
-QDeclarativeWebSettings *QDeclarativeWebView::settingsObject() const
+QObject *QDeclarativeWebView::settingsObject() const
 {
     Q_D(const QDeclarativeWebView);
     d->settings.s = page()->settings();
