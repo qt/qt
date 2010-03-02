@@ -42,7 +42,9 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
+
 #include "qegl_p.h"
+#include "qeglcontext_p.h"
 
 #if !defined(QT_NO_EGL)
 
@@ -52,17 +54,6 @@
 #include <qdesktopwidget.h>
 
 QT_BEGIN_NAMESPACE
-
-// Create the surface for a QPixmap, QImage, or QWidget.
-// We don't have QGLScreen to create EGL surfaces for us,
-// so surface creation needs to be done in QtOpenGL or
-// QtOpenVG for Qt/Embedded.
-EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
-{
-    Q_UNUSED(device);
-    Q_UNUSED(properties);
-    return EGL_NO_SURFACE;
-}
 
 static QScreen *screenForDevice(QPaintDevice *device)
 {

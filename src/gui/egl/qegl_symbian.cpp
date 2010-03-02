@@ -42,48 +42,17 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
+
 #include "qegl_p.h"
+#include "qeglcontext_p.h"
 
 #include <coecntrl.h>
 
 QT_BEGIN_NAMESPACE
 
-EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+EGLNativeWindowType QEgl::nativeWindow(QWidget* widget)
 {
-    // Create the native drawable for the paint device.
-    int devType = device->devType();
-    EGLNativePixmapType pixmapDrawable = 0;
-    EGLNativeWindowType windowDrawable = 0;
-    bool ok;
-    if (devType == QInternal::Pixmap) {
-        pixmapDrawable = 0;
-        ok = (pixmapDrawable != 0);
-    } else if (devType == QInternal::Widget) {
-        QWidget *w = static_cast<QWidget *>(device);
-        windowDrawable = (EGLNativeWindowType)(w->winId()->DrawableWindow());
-        ok = (windowDrawable != 0);
-    } else {
-        ok = false;
-    }
-    if (!ok) {
-        qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return EGL_NO_SURFACE;
-    }
-
-    // Create the EGL surface to draw into, based on the native drawable.
-    const int *props;
-    if (properties)
-        props = properties->properties();
-    else
-        props = 0;
-    EGLSurface surf;
-    if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, props);
-    else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, props);
-    if (surf == EGL_NO_SURFACE)
-        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-    return surf;
+    return (EGLNativeWindowType)(widget->winId()->DrawableWindow());
 }
 
 // Set pixel format and other properties based on a paint device.
