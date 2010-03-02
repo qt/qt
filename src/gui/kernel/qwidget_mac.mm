@@ -459,7 +459,13 @@ static bool qt_isGenuineQWidget(OSViewRef ref)
 
 bool qt_isGenuineQWidget(const QWidget *window)
 {
-    return window && qt_isGenuineQWidget(OSViewRef(window->winId()));
+    if (!window)
+        return false;
+
+    if (!window->internalWinId())
+        return true;  //alien
+
+    return qt_isGenuineQWidget(OSViewRef(window->internalWinId()));
 }
 
 Q_GUI_EXPORT OSWindowRef qt_mac_window_for(const QWidget *w)
@@ -2608,7 +2614,16 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         }
     } else {
         data.fstrut_dirty = false; // non-toplevel widgets don't have a frame, so no need to update the strut
-        if(OSViewRef osview = qt_mac_create_widget(q, this, qt_mac_nativeview_for(parentWidget))) {
+
+#ifdef QT_MAC_USE_COCOA
+        if (q->testAttribute(Qt::WA_NativeWindow) == false ||
+            q->internalWinId() != 0) {
+#ifdef ALIEN_DEBUG
+            qDebug() << "Skipping native widget creation for" << this;
+#endif
+        } else
+#endif
+        if (OSViewRef osview = qt_mac_create_widget(q, this, qt_mac_nativeview_for(parentWidget))) {
 #ifndef QT_MAC_USE_COCOA
             HIRect bounds = CGRectMake(data.crect.x(), data.crect.y(), data.crect.width(), data.crect.height());
             HIViewSetFrame(osview, &bounds);
@@ -2869,9 +2884,12 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_WState_Visible, false);
     q->setAttribute(Qt::WA_WState_Hidden, false);
     adjustFlags(data.window_flags, q);
-    // keep compatibility with previous versions, we need to preserve the created state
-    // (but we recreate the winId for the widget being reparented, again for compatibility)
-    if (wasCreated || (!q->isWindow() && parent->testAttribute(Qt::WA_WState_Created))) {
+    // keep compatibility with previous versions, we need to preserve the created state.
+    // (but we recreate the winId for the widget being reparented, again for compatibility,
+    // unless this is an alien widget. )
+    const bool nonWindowWithCreatedParent = !q->isWindow() && parent->testAttribute(Qt::WA_WState_Created);
+    const bool nativeWidget = q->internalWinId() != 0;
+    if (wasCreated || nativeWidget && nonWindowWithCreatedParent) {
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
@@ -2955,7 +2973,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 QPoint QWidget::mapToGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created)) {
+    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
         QPoint p = pos + data->crect.topLeft();
         return isWindow() ?  p : parentWidget()->mapToGlobal(p);
     }
@@ -2982,7 +3000,7 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
 QPoint QWidget::mapFromGlobal(const QPoint &pos) const
 {
     Q_D(const QWidget);
-    if (!testAttribute(Qt::WA_WState_Created)) {
+    if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
         QPoint p = isWindow() ?  pos : parentWidget()->mapFromGlobal(pos);
         return p - data->crect.topLeft();
     }
@@ -3320,10 +3338,20 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
     }
 #else
     // Cocoa doesn't do regions, it seems more efficient to just update the bounding rect instead of a potential number of message passes for each rect.
-    const QRect &boundingRect = rgn.boundingRect();
-    [qt_mac_nativeview_for(q) setNeedsDisplayInRect:NSMakeRect(boundingRect.x(),
-                                                            boundingRect.y(), boundingRect.width(),
-                                                            boundingRect.height())];
+    const QRect & boundingRect = rgn.boundingRect();
+
+    // Alien support: get the first native ancestor widget (will be q itself in the non-alien case),
+    // map the coordinates from q space to NSView space and invalidate the rect.
+    QWidget *nativeParent = q->internalWinId() ? q : q->nativeParentWidget();
+    if (nativeParent == 0)
+            return;
+    const QRect nativeBoundingRect = QRect(
+            QPoint(q->mapTo(nativeParent, boundingRect.topLeft())),
+            QSize(boundingRect.size()));
+
+    [qt_mac_nativeview_for(nativeParent) setNeedsDisplayInRect:NSMakeRect(nativeBoundingRect.x(),
+                                                            nativeBoundingRect.y(), nativeBoundingRect.width(),
+                                                            nativeBoundingRect.height())];
 #endif
 }
 

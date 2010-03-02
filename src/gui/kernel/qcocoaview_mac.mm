@@ -185,6 +185,9 @@ extern "C" {
     extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
+#ifdef ALIEN_DEBUG
+static int qCocoaViewCount = 0;
+#endif
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaView)
 
@@ -195,6 +198,12 @@ extern "C" {
         [self finishInitWithQWidget:widget widgetPrivate:widgetprivate];
     }
     composingText = new QString();
+
+#ifdef ALIEN_DEBUG
+    ++qCocoaViewCount;
+    qDebug() << "init: qCocoaViewCount is" << qCocoaViewCount;
+#endif
+
     composing = false;
     sendKeyEvents = true;
     [self setHidden:YES];
@@ -414,6 +423,12 @@ extern "C" {
 {
     delete composingText;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+#ifdef ALIEN_DEBUG
+    --qCocoaViewCount;
+    qDebug() << "qCocoaViewCount is" << qCocoaViewCount;
+#endif
+
     [super dealloc];
 }
 
@@ -523,6 +538,10 @@ extern "C" {
             CGContextClearRect(cg, NSRectToCGRect(aRect));
         }
 
+        // Check for alien widgets, use qwidgetPrivate->drawWidget() to draw the widget if this
+        // is the case. This makes sure child widgets are drawn as well, Cocoa does not know about
+        // those and wont send them drawRect calls.
+        if (qwidget->testAttribute(Qt::WA_NativeWindow) && qt_widget_private(qwidget)->hasAlienChildren == false) {
         if (engine && !qwidget->testAttribute(Qt::WA_NoSystemBackground)
             && (qwidget->isWindow() || qwidget->autoFillBackground())
                 || qwidget->testAttribute(Qt::WA_TintedBackground)
@@ -542,6 +561,12 @@ extern "C" {
         e.setErased(true);
 #endif
         qt_sendSpontaneousEvent(qwidget, &e);
+        } else {
+           qwidget->setAttribute(Qt::WA_WState_InPaintEvent, false); // QWidgetPrivate::drawWidget sets this
+           QWidgetPrivate *qwidgetPrivate = qt_widget_private(qwidget);
+           qwidgetPrivate->drawWidget(qwidget, qrgn, QPoint(), QWidgetPrivate::DrawAsRoot | QWidgetPrivate::DrawPaintOnScreen | QWidgetPrivate::DrawRecursive, 0);
+        }
+
         if (!redirectionOffset.isNull())
             QPainter::restoreRedirected(qwidget);
         if (engine)

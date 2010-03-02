@@ -1268,7 +1268,6 @@ void QDeclarativeVisualDataModel::_q_dataChanged(const QModelIndex &begin, const
 
 void QDeclarativeVisualDataModel::_q_modelReset()
 {
-    Q_D(QDeclarativeVisualDataModel);
     emit modelReset();
 }
 
