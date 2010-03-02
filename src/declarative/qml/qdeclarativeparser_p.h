@@ -320,6 +320,7 @@ namespace QDeclarativeParser
 
         Object *getValue();
         void addValue(Value *v);
+        void addOnValue(Value *v);
 
         // The QVariant::Type of the property, or 0 (QVariant::Invalid) if 
         // unknown.
@@ -333,6 +334,8 @@ namespace QDeclarativeParser
         // The list of values assigned to this property.  Content in values
         // and value are mutually exclusive
         QList<Value *> values;
+        // The list of values assigned to this property using the "on" syntax
+        QList<Value *> onValues;
         // The accessed property.  This is used to represent dot properties.
         // Content in value and values are mutually exclusive.
         Object *value;

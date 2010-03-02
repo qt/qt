@@ -53,6 +53,7 @@
 #include <qdeclarativedeclarativedata_p.h>
 #include <qdeclarativepropertycache_p.h>
 #include <qdeclarativeguard_p.h>
+#include <qdeclarativeglobal_p.h>
 
 #include <qlistmodelinterface_p.h>
 #include <qhash.h>
@@ -78,6 +79,14 @@ public:
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.append(item);
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->itemAppended();
         static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->emitChildrenChanged();
+    }
+
+    static int children_count(QDeclarativeListProperty<QDeclarativeItem> *prop) {
+        return static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.count();
+    }
+
+    static QDeclarativeItem *children_at(QDeclarativeListProperty<QDeclarativeItem> *prop, int index) {
+        return static_cast<QDeclarativeVisualItemModelPrivate *>(prop->data)->children.at(index);
     }
 
     void itemAppended() {
@@ -135,7 +144,8 @@ QDeclarativeVisualItemModel::QDeclarativeVisualItemModel()
 QDeclarativeListProperty<QDeclarativeItem> QDeclarativeVisualItemModel::children()
 {
     Q_D(QDeclarativeVisualItemModel);
-    return QDeclarativeListProperty<QDeclarativeItem>(this, d, QDeclarativeVisualItemModelPrivate::children_append);
+    return QDeclarativeListProperty<QDeclarativeItem>(this, d, d->children_append, 
+                                                      d->children_count, d->children_at);
 }
 
 /*!
@@ -984,8 +994,8 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         if (complete)
             d->m_delegate->completeCreate();
         if (nobj) {
-            ctxt->setParent(nobj);
-            data->setParent(nobj);
+            QDeclarative_setParent_noEvent(ctxt, nobj);
+            QDeclarative_setParent_noEvent(data, nobj);
             d->m_cache.insertItem(index, nobj);
             if (QDeclarativePackage *package = qobject_cast<QDeclarativePackage *>(nobj))
                 emit createdPackage(index, package);
@@ -1268,7 +1278,6 @@ void QDeclarativeVisualDataModel::_q_dataChanged(const QModelIndex &begin, const
 
 void QDeclarativeVisualDataModel::_q_modelReset()
 {
-    Q_D(QDeclarativeVisualDataModel);
     emit modelReset();
 }
 
