@@ -284,7 +284,12 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
         setNativeSoftkey(cba, position, command, nativeText);
-        cba.DimCommand(command, !action->isEnabled());
+        // QMainWindow "Options" action is set to invisible in order it does not appear in context menu
+        // and all invisible actions are by default disabled.
+        // However we never want to dim options softkey, even it is set to invisible
+        QVariant property = action->property(MENU_ACTION_PROPERTY);
+        const bool dimmed = (property.isValid() && property.toBool()) ? false : !action->isEnabled();
+        cba.DimCommand(command, dimmed);
         realSoftKeyActions.insert(command, action);
         return true;
     }
