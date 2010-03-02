@@ -101,18 +101,11 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.dso
     QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
 
-    QMAKE_LIBS += -l:edllstub.lib \
-                  -l:edll.lib \
-                -lsupc++ \
-                -lgcc
-
     QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
     --target1-abs \
     --no-undefined \
     --strip-debug \
-    --nostdlib \
-     -L/home/zander/work/build-symbian/arm-2009q3/lib/gcc/arm-none-symbianelf/4.4.1/ \
-     -L/home/zander/work/build-symbian/arm-2009q3/arm-none-symbianelf/lib/
+    --nostdlib
 }
 
 contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
@@ -126,14 +119,11 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.exe
     QMAKE_CLEAN += $${symbianDestdir}/$${TARGET}
 
-    QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
-
-    QMAKE_LFLAGS += --symver_soname --soname=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
+    QMAKE_LFLAGS += --soname=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
     --target1-abs \
     --no-undefined \
+    --strip-debug \
     --shared \
-    -lsupc++ \
-    -lgcc \
     --nostdlib
 }
 
