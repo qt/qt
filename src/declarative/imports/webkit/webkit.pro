@@ -1,5 +1,5 @@
 TARGET  = webkitqmlplugin
-include(../../qpluginbase.pri)
+include(../qimportbase.pri)
 
 contains(QT_CONFIG, webkit) {
     QT += webkit declarative

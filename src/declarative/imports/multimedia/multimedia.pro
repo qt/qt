@@ -1,5 +1,5 @@
 TARGET  = multimedia
-include(../../qpluginbase.pri)
+include(../qimportbase.pri)
 
 QT += multimedia declarative
 

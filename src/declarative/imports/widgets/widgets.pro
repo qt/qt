@@ -1,5 +1,5 @@
 TARGET  = widgets
-include(../../qpluginbase.pri)
+include(../qimportbase.pri)
 
 QT += declarative
 
