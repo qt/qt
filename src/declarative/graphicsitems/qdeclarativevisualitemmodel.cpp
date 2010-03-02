@@ -53,6 +53,7 @@
 #include <qdeclarativedeclarativedata_p.h>
 #include <qdeclarativepropertycache_p.h>
 #include <qdeclarativeguard_p.h>
+#include <qdeclarativeglobal_p.h>
 
 #include <qlistmodelinterface_p.h>
 #include <qhash.h>
@@ -984,8 +985,8 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
         if (complete)
             d->m_delegate->completeCreate();
         if (nobj) {
-            ctxt->setParent(nobj);
-            data->setParent(nobj);
+            QDeclarative_setParent_noEvent(ctxt, nobj);
+            QDeclarative_setParent_noEvent(data, nobj);
             d->m_cache.insertItem(index, nobj);
             if (QDeclarativePackage *package = qobject_cast<QDeclarativePackage *>(nobj))
                 emit createdPackage(index, package);
