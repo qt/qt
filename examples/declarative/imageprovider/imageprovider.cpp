@@ -39,7 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
+
+#include <qdeclarativeextensionplugin.h>
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativecontext.h>
@@ -70,29 +71,37 @@ public:
     }
 };
 
-int main(int argc, char ** argv)
+
+class ImageProviderExtensionPlugin : public QDeclarativeExtensionPlugin
 {
-    QApplication app(argc, argv);
+    Q_OBJECT
+public:
+    void registerTypes(const char *uri) {
+        Q_UNUSED(uri);
 
-    QDeclarativeView view;
+    }
 
-    view.engine()->addImageProvider("colors", new ColorImageProvider);
+    void initializeEngine(QDeclarativeEngine *engine, const char *uri) {
+        Q_UNUSED(uri);
 
-    QStringList dataList;
-    dataList.append("image://colors/red");
-    dataList.append("image://colors/green");
-    dataList.append("image://colors/blue");
-    dataList.append("image://colors/brown");
-    dataList.append("image://colors/orange");
-    dataList.append("image://colors/purple");
-    dataList.append("image://colors/yellow");
+        engine->addImageProvider("colors", new ColorImageProvider);
 
-    QDeclarativeContext *ctxt = view.rootContext();
-    ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+        QStringList dataList;
+        dataList.append("image://colors/red");
+        dataList.append("image://colors/green");
+        dataList.append("image://colors/blue");
+        dataList.append("image://colors/brown");
+        dataList.append("image://colors/orange");
+        dataList.append("image://colors/purple");
+        dataList.append("image://colors/yellow");
 
-    view.setSource(QUrl("qrc:view.qml"));
-    view.show();
+        QDeclarativeContext *ctxt = engine->rootContext();
+        ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+    }
 
-    return app.exec();
-}
-//![0]
+};
+
+#include "imageprovider.moc"
+
+Q_EXPORT_PLUGIN(ImageProviderExtensionPlugin);
+
