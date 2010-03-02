@@ -49,6 +49,7 @@ contains(sql-drivers, odbc) {
 
      mac:!contains( LIBS, .*odbc.* ):LIBS        *= -liodbc
      unix:!contains( LIBS, .*odbc.* ):LIBS       *= -lodbc
+     unix:DEFINES += UNICODE
 
      win32 {
          !win32-borland:LIBS     *= -lodbc32
