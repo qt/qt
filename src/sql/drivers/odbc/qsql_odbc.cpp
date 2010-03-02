@@ -694,9 +694,9 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             val.utf16(); // 0 terminate
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CURRENT_CATALOG,
 #ifdef UNICODE
-                                    toSQLTCHAR(val).constData(),
+                                    toSQLTCHAR(val).data(),
 #else
-                                    (SQLCHAR*) val.toUtf8().constData(),
+                                    (SQLCHAR*) val.toUtf8().data(),
 #endif
                                     val.length()*sizeof(SQLTCHAR));
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_METADATA_ID")) {
@@ -716,9 +716,9 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             val.utf16(); // 0 terminate
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACEFILE,
 #ifdef UNICODE
-                                    toSQLTCHAR(val).constData(),
+                                    toSQLTCHAR(val).data(),
 #else
-                                    (SQLCHAR*) val.toUtf8().constData(),
+                                    (SQLCHAR*) val.toUtf8().data(),
 #endif
                                     val.length()*sizeof(SQLTCHAR));
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_TRACE")) {
@@ -932,12 +932,12 @@ bool QODBCResult::reset (const QString& query)
 
 #ifdef UNICODE
     r = SQLExecDirect(d->hStmt,
-                       toSQLTCHAR(query).constData(),
+                       toSQLTCHAR(query).data(),
                        (SQLINTEGER) query.length());
 #else
     QByteArray query8 = query.toUtf8();
     r = SQLExecDirect(d->hStmt,
-                       (SQLCHAR*) query8.constData(),
+                       (SQLCHAR*) query8.data(),
                        (SQLINTEGER) query8.length());
 #endif
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r!= SQL_NO_DATA) {
@@ -1283,12 +1283,12 @@ bool QODBCResult::prepare(const QString& query)
 
 #ifdef UNICODE
     r = SQLPrepare(d->hStmt,
-                    toSQLTCHAR(query).constData(),
+                    toSQLTCHAR(query).data(),
                     (SQLINTEGER) query.length());
 #else
     QByteArray query8 = query.toUtf8();
     r = SQLPrepare(d->hStmt,
-                    (SQLCHAR*) query8.constData(),
+                    (SQLCHAR*) query8.data(),
                     (SQLINTEGER) query8.length());
 #endif
 
@@ -1849,9 +1849,9 @@ bool QODBCDriver::open(const QString & db,
     r = SQLDriverConnect(d->hDbc,
                           NULL,
 #ifdef UNICODE
-                          toSQLTCHAR(connQStr).constData(),
+                          toSQLTCHAR(connQStr).data(),
 #else
-                          (SQLCHAR*)connQStr.toUtf8().constData(),
+                          (SQLCHAR*)connQStr.toUtf8().data(),
 #endif
                           (SQLSMALLINT)connQStr.length(),
                           connOut.data(),
@@ -2192,9 +2192,9 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
                    NULL,
                    0,
 #ifdef UNICODE
-                   toSQLTCHAR(joinedTableTypeString).constData(),
+                   toSQLTCHAR(joinedTableTypeString).data(),
 #else
-                   (SQLCHAR*)joinedTableTypeString.toUtf8().constData(),
+                   (SQLCHAR*)joinedTableTypeString.toUtf8().data(),
 #endif
                    joinedTableTypeString.length() /* characters, not bytes */);
 
@@ -2271,21 +2271,21 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
                         SQL_IS_UINTEGER);
     r = SQLPrimaryKeys(hStmt,
 #ifdef UNICODE
-                        catalog.length() == 0 ? NULL : toSQLTCHAR(catalog).constData(),
+                        catalog.length() == 0 ? NULL : toSQLTCHAR(catalog).data(),
 #else
-                        catalog.length() == 0 ? NULL : (SQLCHAR*)catalog.toUtf8().constData(),
+                        catalog.length() == 0 ? NULL : (SQLCHAR*)catalog.toUtf8().data(),
 #endif
                         catalog.length(),
 #ifdef UNICODE
-                        schema.length() == 0 ? NULL : toSQLTCHAR(schema).constData(),
+                        schema.length() == 0 ? NULL : toSQLTCHAR(schema).data(),
 #else
-                        schema.length() == 0 ? NULL : (SQLCHAR*)schema.toUtf8().constData(),
+                        schema.length() == 0 ? NULL : (SQLCHAR*)schema.toUtf8().data(),
 #endif
                         schema.length(),
 #ifdef UNICODE
-                        toSQLTCHAR(table).constData(),
+                        toSQLTCHAR(table).data(),
 #else
-                        (SQLCHAR*)table.toUtf8().constData(),
+                        (SQLCHAR*)table.toUtf8().data(),
 #endif
                         table.length() /* in characters, not in bytes */);
 
@@ -2296,21 +2296,21 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
             r = SQLSpecialColumns(hStmt,
                         SQL_BEST_ROWID,
 #ifdef UNICODE
-                        catalog.length() == 0 ? NULL : toSQLTCHAR(catalog).constData(),
+                        catalog.length() == 0 ? NULL : toSQLTCHAR(catalog).data(),
 #else
-                        catalog.length() == 0 ? NULL : (SQLCHAR*)catalog.toUtf8().constData(),
+                        catalog.length() == 0 ? NULL : (SQLCHAR*)catalog.toUtf8().data(),
 #endif
                         catalog.length(),
 #ifdef UNICODE
-                        schema.length() == 0 ? NULL : toSQLTCHAR(schema).constData(),
+                        schema.length() == 0 ? NULL : toSQLTCHAR(schema).data(),
 #else
-                        schema.length() == 0 ? NULL : (SQLCHAR*)schema.toUtf8().constData(),
+                        schema.length() == 0 ? NULL : (SQLCHAR*)schema.toUtf8().data(),
 #endif
                         schema.length(),
 #ifdef UNICODE
-                        toSQLTCHAR(table).constData(),
+                        toSQLTCHAR(table).data(),
 #else
-                        (SQLCHAR*)table.toUtf8().constData(),
+                        (SQLCHAR*)table.toUtf8().data(),
 #endif
                         table.length(),
                         SQL_SCOPE_CURROW,
@@ -2396,21 +2396,21 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
                         SQL_IS_UINTEGER);
     r =  SQLColumns(hStmt,
 #ifdef UNICODE
-                     catalog.length() == 0 ? NULL : toSQLTCHAR(catalog).constData(),
+                     catalog.length() == 0 ? NULL : toSQLTCHAR(catalog).data(),
 #else
-                     catalog.length() == 0 ? NULL : (SQLCHAR*)catalog.toUtf8().constData(),
+                     catalog.length() == 0 ? NULL : (SQLCHAR*)catalog.toUtf8().data(),
 #endif
                      catalog.length(),
 #ifdef UNICODE
-                     schema.length() == 0 ? NULL : toSQLTCHAR(schema).constData(),
+                     schema.length() == 0 ? NULL : toSQLTCHAR(schema).data(),
 #else
-                     schema.length() == 0 ? NULL : (SQLCHAR*)schema.toUtf8().constData(),
+                     schema.length() == 0 ? NULL : (SQLCHAR*)schema.toUtf8().data(),
 #endif
                      schema.length(),
 #ifdef UNICODE
-                     toSQLTCHAR(table).constData(),
+                     toSQLTCHAR(table).data(),
 #else
-                     (SQLCHAR*)table.toUtf8().constData(),
+                     (SQLCHAR*)table.toUtf8().data(),
 #endif
                      table.length(),
                      NULL,
