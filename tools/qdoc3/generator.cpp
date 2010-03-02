@@ -1186,6 +1186,35 @@ void Generator::appendSortedNames(Text& text,
     }
 }
 
+void Generator::appendSortedQmlNames(Text& text,
+                                     const Node* base,
+                                     const NodeList& subs,
+                                     CodeMarker *marker)
+{
+    NodeList::ConstIterator r;
+    QMap<QString,Text> classMap;
+    int index = 0;
+
+    qDebug() << "Generator::appendSortedQmlNames():" << base->name() << "is inherited by...";
+
+    r = subs.begin();
+    while (r != subs.end()) {
+        Text t;
+        qDebug() << "    " << (*r)->name();
+        appendFullName(t, (*r), base, marker);
+        classMap[t.toString().toLower()] = t;
+        ++r;
+    }
+
+    QStringList names = classMap.keys();
+    names.sort();
+
+    foreach (const QString &name, names) {
+        text << classMap[name];
+        text << separator(index++, names.count());
+    }
+}
+
 int Generator::skipAtoms(const Atom *atom, Atom::Type type) const
 {
     int skipAhead = 0;
