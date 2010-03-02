@@ -85,7 +85,7 @@ Item {
         font.bold: true
         text: label
         opacity: textEdit.text == '' ? 1 : 0
-        opacity: Behavior {
+        Behavior on opacity {
             NumberAnimation {
                 property: "opacity"
                 duration: 250
