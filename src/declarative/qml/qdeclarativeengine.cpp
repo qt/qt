@@ -1733,7 +1733,7 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 # ifdef QT_DEBUG
                          << QLatin1String("d.dll") // try a qmake-style debug build first
 # endif
-                         << QLatin1String(".dll");
+                         << QLatin1String(".dll"));
 #elif defined(Q_OS_SYMBIAN)
     return resolvePlugin(dir, baseName,
                          QStringList()
