@@ -145,7 +145,7 @@ QString CppCodeMarker::plainFullName(const Node *node, const Node *relative)
     }
     else {
 	QString fullName;
-	for (;;) {
+	while (node) {
 	    fullName.prepend(plainName(node));
 	    if (node->parent() == relative || node->parent()->name().isEmpty())
 		break;

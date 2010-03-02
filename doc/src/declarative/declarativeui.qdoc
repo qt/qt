@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -73,8 +73,8 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \section1 Getting Started:
 \list
 \o \l {Introduction to the QML language}
-\o \l {Tutorial}{Tutorial: 'Hello World'}
-\o \l {advtutorial.html}{Tutorial: 'Same Game'}
+\o \l {QML Tutorial}{Tutorial: 'Hello World'}
+\o \l {QML Advanced Tutorial}{Tutorial: 'Same Game'}
 \o \l {QML Examples and Walkthroughs}
 \o \l {Using QML in C++ Applications}
 \endlist
@@ -88,10 +88,10 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {Network Transparency}
 \o \l {Data Models}
 \o \l {anchor-layout.html}{Anchor-based Layout}
-\o \l {qmlstates.html}{States}
-\o \l {qmlanimation.html}{Animation}
-\o \l {qmlmodules.html}{Modules}
-\o \l {qmlfocus.html}{Keyboard Focus}
+\o \l {qdeclarativestates.html}{States}
+\o \l {qdeclarativeanimation.html}{Animation}
+\o \l {qdeclarativemodules.html}{Modules}
+\o \l {qdeclarativefocus.html}{Keyboard Focus}
 \o \l {Extending types from QML}
 \o \l {Dynamic Object Creation}
 \endlist

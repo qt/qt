@@ -3400,6 +3400,13 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         if (!d->scene->d_func()->painterStateProtection)
             painter.setWorldTransform(viewTransform);
     } else {
+        // Make sure we don't have unpolished items before we draw
+        if (!d->scene->d_func()->unpolishedItems.isEmpty())
+            d->scene->d_func()->_q_polishItems();
+        // We reset updateAll here (after we've issued polish events)
+        // so that we can discard update requests coming from polishEvent().
+        d->scene->d_func()->updateAll = false;
+
         // Find all exposed items
         bool allItems = false;
         QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems, viewTransform);
@@ -3408,9 +3415,25 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             const int numItems = itemList.size();
             QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
             QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
+            QTransform transform(Qt::Uninitialized);
             for (int i = 0; i < numItems; ++i) {
-                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform,
-                                                     d->exposedRegion, allItems);
+                QGraphicsItem *item = itemArray[i];
+                QGraphicsItemPrivate *itemd = item->d_ptr.data();
+                itemd->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
+                // Cache the item's area in view coordinates.
+                // Note that we have to do this here in case the base class implementation
+                // (QGraphicsScene::drawItems) is not called. If it is, we'll do this
+                // operation twice, but that's the price one has to pay for using indirect
+                // painting :-/.
+                const QRectF brect = adjustedItemEffectiveBoundingRect(item);
+                if (!itemd->itemIsUntransformable()) {
+                    transform = item->sceneTransform();
+                    if (viewTransformed)
+                        transform *= viewTransform;
+                } else {
+                    transform = item->deviceTransform(viewTransform);
+                }
+                itemd->paintedViewBoundingRects.insert(d->viewport, transform.mapRect(brect).toRect());
             }
             // Draw the items.
             drawItems(&painter, numItems, itemArray, styleOptionArray);
@@ -3609,6 +3632,8 @@ void QGraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
 }
 
 /*!
+    \obsolete 
+
     Draws the items \a items in the scene using \a painter, after the
     background and before the foreground are drawn. \a numItems is the number
     of items in \a items and options in \a options. \a options is a list of
@@ -3617,7 +3642,7 @@ void QGraphicsView::drawForeground(QPainter *painter, const QRectF &rect)
 
     The default implementation calls the scene's drawItems() function.
 
-    \obsolete Since Qt 4.6, this function is not called anymore unless
+    Since Qt 4.6, this function is not called anymore unless
     the QGraphicsView::IndirectPainting flag is given as an Optimization
     flag.
 

@@ -157,6 +157,12 @@ QT_BEGIN_NAMESPACE
     data, followed by the data. Note that any encoding/decoding of
     the data (apart from the length quint32) must be done by you.
 
+    \section1 Reading and writing Qt collection classes
+
+    The Qt container classes can also be serialized to a QDataStream.
+    These include QList, QLinkedList, QVector, QSet, QHash, and QMap.
+    The stream operators are declared as non-members of the classes.
+
     \target Serializing Qt Classes
     \section1 Reading and writing other Qt classes.
 

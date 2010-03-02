@@ -2,7 +2,7 @@ import Qt 4.6
 
 Item {
     id: scrollBar
-    // The matchProperties that define the scrollbar's state.
+    // The properties that define the scrollbar's state.
     // position and pageSize are in the range 0.0 - 1.0.  They are relative to the
     // height of the page, i.e. a pageSize of 0.5 means that you can see 50%
     // of the height of the view.

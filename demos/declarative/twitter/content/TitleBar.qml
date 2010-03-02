@@ -72,6 +72,6 @@ Item {
     }
 
     transitions: Transition {
-        NumberAnimation { matchProperties: "x"; easing: "easeInOutQuad" }
+        NumberAnimation { properties: "x"; easing.type: "InOutQuad" }
     }
 }

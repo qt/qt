@@ -2853,13 +2853,14 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 
     //recreate and setup flags
     QObjectPrivate::setParent_helper(parent);
-    QPoint pt = q->pos();
     bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
     if (wasCreated && !qt_isGenuineQWidget(q))
         return;
 
-    if ((data.window_flags & Qt::Sheet) && topData && topData->opacity == 242)
+    if (!q->testAttribute(Qt::WA_WState_WindowOpacitySet)) {
         q->setWindowOpacity(1.0f);
+        q->setAttribute(Qt::WA_WState_WindowOpacitySet, false);
+    }
 
     setWinId(0); //do after the above because they may want the id
 
@@ -4542,8 +4543,20 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
         }
     }
 
+    // ### Scroll the dirty regions as well, the following is not correct.
+    QRegion displayRegion = r.isNull() ? dirtyOnWidget : (dirtyOnWidget & r);
+    const QVector<QRect> &rects = dirtyOnWidget.rects();
+    const QVector<QRect>::const_iterator end = rects.end();
+    QVector<QRect>::const_iterator it = rects.begin();
+    while (it != end) {
+	const QRect rect = *it;
+	const NSRect dirtyRect = NSMakeRect(rect.x() + dx, rect.y() + dy,
+		rect.width(), rect.height());
+	[view setNeedsDisplayInRect:dirtyRect];
+	++it;
+    }
+
     NSSize deltaSize = NSMakeSize(dx, dy);
-    [view translateRectsNeedingDisplayInRect:scrollRect by:deltaSize];
     [view scrollRect:scrollRect by:deltaSize];
     [view setNeedsDisplayInRect:deltaXRect];
     [view setNeedsDisplayInRect:deltaYRect];

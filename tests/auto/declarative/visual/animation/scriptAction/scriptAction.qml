@@ -7,7 +7,7 @@ Rectangle {
         width: 100; height: 100
         color: "red"
     }
-    MouseRegion {
+    MouseArea {
         id: clickable
         anchors.fill: parent
     }
@@ -27,9 +27,9 @@ Rectangle {
 
     transitions: Transition {
         SequentialAnimation {
-            NumberAnimation { matchProperties: "x"; easing: "InOutQuad" }
+            NumberAnimation { properties: "x"; easing.type: "InOutQuad" }
             ScriptAction { stateChangeScriptName: "setColor" }
-            NumberAnimation { matchProperties: "y"; easing: "InOutQuad" }
+            NumberAnimation { properties: "y"; easing.type: "InOutQuad" }
         }
     }
 }

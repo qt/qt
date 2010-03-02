@@ -25,7 +25,7 @@ Item {
         Text { text: "Bottom"; anchors.bottom: parent.bottom }
     }
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: content
         onPressed: window.state = "FullScreen"
         onReleased: window.state = ""
@@ -41,6 +41,6 @@ Item {
     }
 
     transitions : Transition {
-        NumberAnimation { matchProperties: "y,height" }
+        NumberAnimation { properties: "y,height" }
     }
 }

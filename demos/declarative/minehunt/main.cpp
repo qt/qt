@@ -38,11 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qmlengine.h"
-#include "qmlcontext.h"
-#include "qml.h"
-#include <qmlgraphicsitem.h>
-#include <qmlview.h>
+#include "qdeclarativeengine.h"
+#include "qdeclarativecontext.h"
+#include "qdeclarative.h"
+#include <qdeclarativeitem.h>
+#include <qdeclarativeview.h>
 
 #include <QWidget>
 #include <QApplication>
@@ -92,7 +92,6 @@ private:
 };
 
 QML_DECLARE_TYPE(Tile);
-QML_DEFINE_TYPE(0,0,0,Tile,Tile);
 
 class MyWidget : public QWidget
 {
@@ -134,7 +133,7 @@ private:
     int getHint(int row, int col);
     void setPlaying(bool b){if(b==playing) return; playing=b; emit isPlayingChanged();}
 
-    QmlView *canvas;
+    QDeclarativeView *canvas;
 
     QList<Tile *> _tiles;
     int numCols;
@@ -163,20 +162,15 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     vbox->setMargin(0);
     setLayout(vbox);
 
-    canvas = new QmlView(this);
+    canvas = new QDeclarativeView(this);
     canvas->setFixedSize(width, height);
     vbox->addWidget(canvas);
 
-    QFile file(fileName);
-    file.open(QFile::ReadOnly);
-    QString qml = file.readAll();
-    canvas->setQml(qml, fileName);
-
-    QmlContext *ctxt = canvas->rootContext();
+    QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);
     ctxt->setContextProperty("tiles", QVariant::fromValue<QList<Tile*>*>(&_tiles));//QTBUG-5675
 
-    canvas->execute();
+    canvas->setSource(QUrl::fromLocalFile(fileName));
 }
 
 MyWidget::~MyWidget()
@@ -325,6 +319,8 @@ int main(int argc, char ** argv)
 
     int width = 370;
     int height = 480;
+
+    QML_REGISTER_TYPE(0,0,0,Tile,Tile);
 
     for (int i = 1; i < argc; ++i) {
         QString arg = argv[i];

@@ -64,12 +64,6 @@ EGLSurface QEglContext::createSurface(QPaintDevice *device, const QEglProperties
     return EGL_NO_SURFACE;
 }
 
-EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
-{
-    Q_UNUSED(device);
-    return eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
-}
-
 static QScreen *screenForDevice(QPaintDevice *device)
 {
     QScreen *screen = qt_screen;

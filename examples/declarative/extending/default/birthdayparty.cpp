@@ -55,9 +55,18 @@ void BirthdayParty::setCelebrant(Person *c)
     m_celebrant = c;
 }
 
-QmlList<Person *> *BirthdayParty::guests() 
+QDeclarativeListProperty<Person> BirthdayParty::guests() 
 {
-    return &m_guests;
+    return QDeclarativeListProperty<Person>(this, m_guests);
 }
 
-QML_DEFINE_TYPE(People, 1,0, BirthdayParty, BirthdayParty);
+int BirthdayParty::guestCount() const
+{
+    return m_guests.count();
+}
+
+Person *BirthdayParty::guest(int index) const
+{
+    return m_guests.at(index);
+}
+

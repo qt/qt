@@ -108,6 +108,10 @@ symbian {
         }
     }
     load(armcc_warnings)
+
+    # workaround for the fact that some of our required includes in Symbian^3
+    # now depend upon files in epoc32/include/platform
+    INCLUDEPATH += $$OS_LAYER_SYSTEMINCLUDE
 }
 win32-borland:INCLUDEPATH += kernel
 
@@ -153,6 +157,7 @@ contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
 DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
 contains(QT_CONFIG, qt3support):DEFINES *= QT3_SUPPORT
 DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
+DEFINES *= QT_USE_FAST_OPERATOR_PLUS QT_USE_FAST_CONCATENATION
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 

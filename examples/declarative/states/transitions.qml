@@ -10,7 +10,7 @@ Rectangle {
         anchors { left: parent.left; top: parent.top; leftMargin: 10; topMargin: 20 }
         width: 64; height: 64; radius: 6
         color: "Transparent"; border.color: "Gray"
-        MouseRegion { anchors.fill: parent; onClicked: page.state = '' }
+        MouseArea { anchors.fill: parent; onClicked: page.state = '' }
     }
 
     // Another target region.  Clicking in here sets the state to 'Position1'
@@ -19,7 +19,7 @@ Rectangle {
         anchors { right: parent.right; verticalCenter: parent.verticalCenter; rightMargin: 20 }
         width: 64; height: 64; radius: 6
         color: "Transparent"; border.color: "Gray"
-        MouseRegion { anchors.fill: parent; onClicked: page.state = 'Position1' }
+        MouseArea { anchors.fill: parent; onClicked: page.state = 'Position1' }
     }
 
     // Another target region.  Clicking in here sets the state to 'Position2'
@@ -28,7 +28,7 @@ Rectangle {
         anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 20 }
         width: 64; height: 64; radius: 6
         color: "Transparent"; border.color: "Gray"
-        MouseRegion { anchors.fill: parent; onClicked: page.state = 'Position2' }
+        MouseArea { anchors.fill: parent; onClicked: page.state = 'Position2' }
     }
 
     // The image which will be moved when my state changes
@@ -48,23 +48,23 @@ Rectangle {
         }
     ]
 
-    // transitions define how the matchProperties change.
+    // transitions define how the properties change.
     transitions: [
         // When transitioning to 'Position1' move x,y over a duration of 1 second,
-        // with easeOutBounce easing function.
+        // with OutBounce easing function.
         Transition {
             from: "*"; to: "Position1"
-            NumberAnimation { matchProperties: "x,y"; easing: "easeOutBounce"; duration: 1000 }
+            NumberAnimation { properties: "x,y"; easing.type: "OutBounce"; duration: 1000 }
         },
         // When transitioning to 'Position2' move x,y over a duration of 2 seconds,
-        // with easeInOutQuad easing function.
+        // with InOutQuad easing function.
         Transition {
             from: "*"; to: "Position2"
-            NumberAnimation { matchProperties: "x,y"; easing: "easeInOutQuad"; duration: 2000 }
+            NumberAnimation { properties: "x,y"; easing.type: "InOutQuad"; duration: 2000 }
         },
         // For any other state changes move x,y linearly over duration of 200ms.
         Transition {
-            NumberAnimation { matchProperties: "x,y"; duration: 200 }
+            NumberAnimation { properties: "x,y"; duration: 200 }
         }
     ]
 }

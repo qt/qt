@@ -55,24 +55,24 @@ QT_BEGIN_NAMESPACE
 
 QSoftKeyManager *QSoftKeyManagerPrivate::self = 0;
 
-const char *QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
+QString QSoftKeyManager::standardSoftKeyText(StandardSoftKey standardKey)
 {
-    const char *softKeyText = 0;
+    QString softKeyText;
     switch (standardKey) {
     case OkSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Ok");
+        softKeyText = QSoftKeyManager::tr("Ok");
         break;
     case SelectSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Select");
+        softKeyText = QSoftKeyManager::tr("Select");
         break;
     case DoneSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Done");
+        softKeyText = QSoftKeyManager::tr("Done");
         break;
     case MenuSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Options");
+        softKeyText = QSoftKeyManager::tr("Options");
         break;
     case CancelSoftKey:
-        softKeyText = QT_TRANSLATE_NOOP("QSoftKeyManager", "Cancel");
+        softKeyText = QSoftKeyManager::tr("Cancel");
         break;
     default:
         break;
@@ -100,8 +100,7 @@ QSoftKeyManager::QSoftKeyManager() :
 
 QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *actionWidget)
 {
-    const char* text = standardSoftKeyText(standardKey);
-    QAction *action = new QAction(QSoftKeyManager::tr(text), actionWidget);
+    QAction *action = new QAction(standardSoftKeyText(standardKey), actionWidget);
     QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
     case MenuSoftKey: // FALL-THROUGH
@@ -211,13 +210,11 @@ bool QSoftKeyManager::handleUpdateSoftKeys()
     d->requestedSoftKeyActions.clear();
     bool recursiveMerging = false;
     QWidget *source = softkeySource(NULL, recursiveMerging);
-    do {
-        if (source) {
-            bool added = appendSoftkeys(*source, level);
-            source = softkeySource(source, recursiveMerging);
-            level = added ? ++level : level;
-        }
-    } while (source);
+    while (source) {
+        if (appendSoftkeys(*source, level))
+            ++level;
+        source = softkeySource(source, recursiveMerging);
+    }
 
     d->updateSoftKeys_sys();
     return true;

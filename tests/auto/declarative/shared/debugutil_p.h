@@ -45,56 +45,63 @@
 #include <QThread>
 #include <QTest>
 
-#include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qdeclarativeengine.h>
 
-#include <private/qmldebugclient_p.h>
-#include <private/qmldebugservice_p.h>
-#include <private/qmlgraphicsitem_p.h>
+#include <private/qdeclarativedebugclient_p.h>
+#include <private/qdeclarativedebugservice_p.h>
+#include <private/qdeclarativeitem_p.h>
 
+class QDeclarativeTestFactory;
 
-class QmlDebugTestData : public QObject
+class QDeclarativeDebugTest
+{
+public:
+    static bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
+
+    static int runTests(QDeclarativeTestFactory *factory, const QList<QByteArray> &qml = QList<QByteArray>());
+};
+
+class QDeclarativeDebugTestData : public QObject
 {
     Q_OBJECT
 public:
-    QmlDebugTestData(QEventLoop *el);
+    QDeclarativeDebugTestData(QEventLoop *el);
 
-    ~QmlDebugTestData();
+    ~QDeclarativeDebugTestData();
 
-    QmlDebugConnection *conn;
-    QmlEngine *engine;
+    QDeclarativeDebugConnection *conn;
+    QDeclarativeEngine *engine;
 
     int exitCode;
     QEventLoop *loop;
 
-    QList<QmlGraphicsItem *> items;
+    QList<QDeclarativeItem *> items;
+
+signals:
+    void engineCreated();
 
 public slots:
     void testsFinished(int code);
+
+private:
+    friend class QDeclarativeDebugTest;
 };
 
 
-class QmlTestFactory
+class QDeclarativeTestFactory
 {
 public:
-    QmlTestFactory() {}
-    virtual ~QmlTestFactory() {}
+    QDeclarativeTestFactory() {}
+    virtual ~QDeclarativeTestFactory() {}
 
-    virtual QObject *createTest(QmlDebugTestData *data) = 0;
+    virtual QObject *createTest(QDeclarativeDebugTestData *data) = 0;
 };
 
-
-namespace QmlDebugTest {
-
-    bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
-
-    int runTests(QmlTestFactory *factory, const QList<QByteArray> &qml = QList<QByteArray>());
-}
-
-class QmlDebugTestService : public QmlDebugService
+class QDeclarativeDebugTestService : public QDeclarativeDebugService
 {
     Q_OBJECT
 public:
-    QmlDebugTestService(const QString &s, QObject *parent = 0);
+    QDeclarativeDebugTestService(const QString &s, QObject *parent = 0);
     bool enabled;
 
 signals:
@@ -106,11 +113,11 @@ protected:
     virtual void enabledChanged(bool e);
 };
 
-class QmlDebugTestClient : public QmlDebugClient
+class QDeclarativeDebugTestClient : public QDeclarativeDebugClient
 {
     Q_OBJECT
 public:
-    QmlDebugTestClient(const QString &s, QmlDebugConnection *c);
+    QDeclarativeDebugTestClient(const QString &s, QDeclarativeDebugConnection *c);
 
     QByteArray waitForResponse();
 
@@ -124,22 +131,20 @@ private:
     QByteArray lastMsg;
 };
 
-class tst_QmlDebug_Thread : public QThread
+class tst_QDeclarativeDebug_Thread : public QThread
 {
     Q_OBJECT
 public:
-    tst_QmlDebug_Thread(QmlDebugTestData *data, QmlTestFactory *factory);
+    tst_QDeclarativeDebug_Thread(QDeclarativeDebugTestData *data, QDeclarativeTestFactory *factory);
 
     void run();
-
-    bool m_ready;
 
 signals:
     void testsFinished(int);
 
 private:
-    QmlDebugTestData *m_data;
-    QmlTestFactory *m_factory;
+    QDeclarativeDebugTestData *m_data;
+    QDeclarativeTestFactory *m_factory;
 };
 
 

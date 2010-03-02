@@ -60,6 +60,7 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qbezier_p.h>
 #include <qglframebufferobject.h>
+#include <private/qstatictext_p.h>
 
 #include "private/qtessellator_p.h"
 
@@ -4548,7 +4549,7 @@ public:
     QGLGlyphCache() : QObject(0) { current_cache = 0; }
     ~QGLGlyphCache();
     QGLGlyphCoord *lookup(QFontEngine *, glyph_t);
-    void cacheGlyphs(QGLContext *, const QTextItemInt &, const QVarLengthArray<glyph_t> &);
+    void cacheGlyphs(QGLContext *, QFontEngine *, glyph_t *glyphs, int numGlyphs);
     void cleanCache();
     void allocTexture(int width, int height, GLuint texture);
 
@@ -4700,8 +4701,8 @@ static QImage getCurrentTexture(const QColor &color, QGLFontTexture *font_tex)
 }
 #endif
 
-void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
-                                const QVarLengthArray<glyph_t> &glyphs)
+void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
+                                glyph_t *glyphs, int numGlyphs)
 {
     QGLContextHash::const_iterator dev_it = qt_context_cache.constFind(context);
     QGLFontGlyphHash *font_cache = 0;
@@ -4737,25 +4738,25 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
     }
     Q_ASSERT(font_cache != 0);
 
-    QGLFontGlyphHash::const_iterator cache_it = font_cache->constFind(ti.fontEngine);
+    QGLFontGlyphHash::const_iterator cache_it = font_cache->constFind(fontEngine);
     QGLGlyphHash *cache = 0;
     if (cache_it == font_cache->constEnd()) {
         cache = new QGLGlyphHash;
-        font_cache->insert(ti.fontEngine, cache);
-        connect(ti.fontEngine, SIGNAL(destroyed(QObject*)), SLOT(fontEngineDestroyed(QObject*)));
+        font_cache->insert(fontEngine, cache);
+        connect(fontEngine, SIGNAL(destroyed(QObject*)), SLOT(fontEngineDestroyed(QObject*)));
     } else {
         cache = cache_it.value();
     }
     current_cache = cache;
 
     quint64 font_key = (reinterpret_cast<quint64>(context_key ? context_key : context) << 32)
-                       | reinterpret_cast<quint64>(ti.fontEngine);
+                       | reinterpret_cast<quint64>(fontEngine);
     QGLFontTexHash::const_iterator it = qt_font_textures.constFind(font_key);
     QGLFontTexture *font_tex;
     if (it == qt_font_textures.constEnd()) {
         GLuint font_texture;
         glGenTextures(1, &font_texture);
-        GLint tex_height = qt_next_power_of_two(qRound(ti.ascent.toReal() + ti.descent.toReal())+2);
+        GLint tex_height = qt_next_power_of_two(qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2);
         GLint tex_width = qt_next_power_of_two(tex_height*30); // ###
         GLint max_tex_size;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
@@ -4777,16 +4778,16 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
         glBindTexture(GL_TEXTURE_2D, font_tex->texture);
     }
 
-    for (int i=0; i< glyphs.size(); ++i) {
+    for (int i=0; i< numGlyphs; ++i) {
         QGLGlyphHash::const_iterator it = cache->constFind(glyphs[i]);
         if (it == cache->constEnd()) {
             // render new glyph and put it in the cache
-            glyph_metrics_t metrics = ti.fontEngine->boundingBox(glyphs[i]);
+            glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
             int glyph_width = qRound(metrics.width.toReal())+2;
-            int glyph_height = qRound(ti.ascent.toReal() + ti.descent.toReal())+2;
+            int glyph_height = qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2;
 
             if (font_tex->x_offset + glyph_width + x_margin > font_tex->width) {
-                int strip_height = qt_next_power_of_two(qRound(ti.ascent.toReal() + ti.descent.toReal())+2);
+                int strip_height = qt_next_power_of_two(qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2);
                 font_tex->x_offset = x_margin;
                 font_tex->y_offset += strip_height;
                 if (font_tex->y_offset >= font_tex->height) {
@@ -4819,7 +4820,7 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
                 }
             }
 
-            QImage glyph_im(ti.fontEngine->alphaMapForGlyph(glyphs[i]));
+            QImage glyph_im(fontEngine->alphaMapForGlyph(glyphs[i]));
             glyph_im = glyph_im.convertToFormat(QImage::Format_Indexed8);
             glyph_width = glyph_im.width();
             Q_ASSERT(glyph_width >= 0);
@@ -4899,30 +4900,15 @@ void qgl_cleanup_glyph_cache(QGLContext *ctx)
     qt_glyph_cache()->cleanupContext(ctx);
 }
 
-void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
+void QOpenGLPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
     Q_D(QOpenGLPaintEngine);
 
-    const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
-
-    // fall back to drawing a polygon if the scale factor is large, or
-    // we use a gradient pen
-    if ((d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
-                                  && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
-        QPaintEngine::drawTextItem(p, textItem);
-        return;
-    }
-
     d->flushDrawQueue();
 
-    // add the glyphs used to the glyph texture cache
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = QTransform::fromTranslate(qRound(p.x()), qRound(p.y()));
-    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
-
     // make sure the glyphs we want to draw are in the cache
-    qt_glyph_cache()->cacheGlyphs(d->device->context(), ti, glyphs);
+    qt_glyph_cache()->cacheGlyphs(d->device->context(), textItem->fontEngine, textItem->glyphs,
+                                  textItem->numGlyphs);
 
     d->setGradientOps(Qt::SolidPattern, QRectF()); // turns off gradient ops
     qt_glColor4ubv(d->pen_color);
@@ -4944,13 +4930,13 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    bool antialias = !(ti.fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
-                   && (d->matrix.type() > QTransform::TxTranslate);
+    bool antialias = !(textItem->fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
+				   && (d->matrix.type() > QTransform::TxTranslate);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
 
-    for (int i=0; i< glyphs.size(); ++i) {
-        QGLGlyphCoord *g = qt_glyph_cache()->lookup(ti.fontEngine, glyphs[i]);
+    for (int i=0; i< textItem->numGlyphs; ++i) {
+        QGLGlyphCoord *g = qt_glyph_cache()->lookup(textItem->fontEngine, textItem->glyphs[i]);
 
         // we don't cache glyphs with no width/height
         if (!g)
@@ -4962,8 +4948,8 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         x2 = x1 + g->width;
         y2 = y1 + g->height;
 
-        QPointF logical_pos((positions[i].x - g->x_offset).toReal(),
-                            (positions[i].y + g->y_offset).toReal());
+        QPointF logical_pos((textItem->glyphPositions[i].x - g->x_offset).toReal(),
+                            (textItem->glyphPositions[i].y + g->y_offset).toReal());
 
         qt_add_rect_to_array(QRectF(logical_pos, QSizeF(g->log_width, g->log_height)), vertexArray);
         qt_add_texcoords_to_array(x1, y1, x2, y2, texCoordArray);
@@ -4980,6 +4966,40 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // XXX: This may not be needed as this behavior does seem to be caused by driver bug
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 #endif
+
+}
+
+void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
+{
+    Q_D(QOpenGLPaintEngine);
+
+    const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
+
+    // fall back to drawing a polygon if the scale factor is large, or
+    // we use a gradient pen
+    if ((d->matrix.det() > 1) || (d->pen_brush_style >= Qt::LinearGradientPattern
+                                  && d->pen_brush_style <= Qt::ConicalGradientPattern)) {
+        QPaintEngine::drawTextItem(p, textItem);
+        return;
+    }
+
+    // add the glyphs used to the glyph texture cache
+    QVarLengthArray<QFixedPoint> positions;
+    QVarLengthArray<glyph_t> glyphs;
+    QTransform matrix = QTransform::fromTranslate(qRound(p.x()), qRound(p.y()));
+    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
+    {
+        QStaticTextItem staticTextItem;
+        staticTextItem.chars = ti.chars;
+        staticTextItem.fontEngine = ti.fontEngine;
+        staticTextItem.glyphs = glyphs.data();
+        staticTextItem.numChars = ti.num_chars;
+        staticTextItem.numGlyphs = glyphs.size();
+        staticTextItem.glyphPositions = positions.data();
+        drawStaticTextItem(&staticTextItem);
+    }
+
 }
 
 

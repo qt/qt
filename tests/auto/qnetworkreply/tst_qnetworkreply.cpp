@@ -263,6 +263,13 @@ private Q_SLOTS:
 
     void httpConnectionCount();
 
+    void httpReUsingConnectionSequential_data();
+    void httpReUsingConnectionSequential();
+    void httpReUsingConnectionFromFinishedSlot_data();
+    void httpReUsingConnectionFromFinishedSlot();
+
+    void httpRecursiveCreation();
+
 #ifndef QT_NO_OPENSSL
     void ioPostToHttpsUploadProgress();
     void ignoreSslErrorsList_data();
@@ -318,18 +325,20 @@ QT_END_NAMESPACE
             QFAIL(qPrintable(errorMsg));        \
     } while (0);
 
+
+// Does not work for POST/PUT!
 class MiniHttpServer: public QTcpServer
 {
     Q_OBJECT
-    QTcpSocket *client;
-
 public:
+    QTcpSocket *client; // always the last one that was received
     QByteArray dataToTransmit;
     QByteArray receivedData;
     bool doClose;
+    bool multiple;
     int totalConnections;
 
-    MiniHttpServer(const QByteArray &data) : client(0), dataToTransmit(data), doClose(true), totalConnections(0)
+    MiniHttpServer(const QByteArray &data) : client(0), dataToTransmit(data), doClose(true), multiple(false), totalConnections(0)
     {
         listen();
         connect(this, SIGNAL(newConnection()), this, SLOT(doAccept()));
@@ -339,15 +348,21 @@ public slots:
     void doAccept()
     {
         client = nextPendingConnection();
+        client->setParent(this);
         ++totalConnections;
-        connect(client, SIGNAL(readyRead()), this, SLOT(sendData()));
+        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
     }
 
-    void sendData()
+    void readyReadSlot()
     {
         receivedData += client->readAll();
-        if (receivedData.contains("\r\n\r\n") ||
-            receivedData.contains("\n\n")) {
+        int doubleEndlPos = receivedData.indexOf("\r\n\r\n");
+
+        if (doubleEndlPos != -1) {
+            // multiple requests incoming. remove the bytes of the current one
+            if (multiple)
+                receivedData.remove(0, doubleEndlPos+4);
+
             client->write(dataToTransmit);
             if (doClose) {
                 client->disconnectFromHost();
@@ -2117,6 +2132,11 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
     QTest::newRow("invalid-version+disconnect") << QByteArray("HTTP/123 200 ") << true;
     QTest::newRow("invalid-version2+disconnect") << QByteArray("HTTP/a.\033 200 ") << true;
     QTest::newRow("invalid-reply-code+disconnect") << QByteArray("HTTP/1.0 fuu ") << true;
+
+    QTest::newRow("immediate disconnect") << QByteArray("") << true;
+    QTest::newRow("justHalfStatus+disconnect") << QByteArray("HTTP/1.1") << true;
+    QTest::newRow("justStatus+disconnect") << QByteArray("HTTP/1.1 200 OK\r\n") << true;
+    QTest::newRow("justStatusAndHalfHeaders+disconnect") << QByteArray("HTTP/1.1 200 OK\r\nContent-L") << true;
 }
 
 void tst_QNetworkReply::ioGetFromHttpBrokenServer()
@@ -3864,6 +3884,174 @@ void tst_QNetworkReply::httpConnectionCount()
 #else
     QCOMPARE(pendingConnectionCount, 6);
 #endif
+}
+
+void tst_QNetworkReply::httpReUsingConnectionSequential_data()
+{
+    QTest::addColumn<bool>("doDeleteLater");
+    QTest::newRow("deleteLater") << true;
+    QTest::newRow("noDeleteLater") << false;
+}
+
+void tst_QNetworkReply::httpReUsingConnectionSequential()
+{
+    QFETCH(bool, doDeleteLater);
+
+    QByteArray response("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    MiniHttpServer server(response);
+    server.multiple = true;
+    server.doClose = false;
+
+    QUrl url;
+    url.setScheme("http");
+    url.setPort(server.serverPort());
+    url.setHost("127.0.0.1");
+    // first request
+    QNetworkReply* reply1 = manager.get(QNetworkRequest(url));
+    connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(!reply1->error());
+    int reply1port = server.client->peerPort();
+
+    if (doDeleteLater)
+        reply1->deleteLater();
+
+    // finished received, send the next one
+    QNetworkReply*reply2 = manager.get(QNetworkRequest(url));
+    connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(!reply2->error());
+    int reply2port = server.client->peerPort(); // should still be the same object
+
+    QVERIFY(reply1port > 0);
+    QCOMPARE(server.totalConnections, 1);
+    QCOMPARE(reply2port, reply1port);
+
+    if (!doDeleteLater)
+        reply1->deleteLater(); // only do it if it was not done earlier
+    reply2->deleteLater();
+}
+
+class HttpReUsingConnectionFromFinishedSlot : public QObject {
+    Q_OBJECT;
+public:
+    QNetworkReply* reply1;
+    QNetworkReply* reply2;
+    QUrl url;
+    QNetworkAccessManager manager;
+public slots:
+    void finishedSlot() {
+        QVERIFY(!reply1->error());
+
+        QFETCH(bool, doDeleteLater);
+        if (doDeleteLater) {
+            reply1->deleteLater();
+            reply1 = 0;
+        }
+
+        // kick off 2nd request and exit the loop when it is done
+        reply2 = manager.get(QNetworkRequest(url));
+        reply2->setParent(this);
+        connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    }
+};
+
+void tst_QNetworkReply::httpReUsingConnectionFromFinishedSlot_data()
+{
+    httpReUsingConnectionSequential_data();
+}
+
+void tst_QNetworkReply::httpReUsingConnectionFromFinishedSlot()
+{
+    QByteArray response("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
+    MiniHttpServer server(response);
+    server.multiple = true;
+    server.doClose = false;
+
+    HttpReUsingConnectionFromFinishedSlot helper;
+    helper.reply1 = 0;
+    helper.reply2 = 0;
+    helper.url.setScheme("http");
+    helper.url.setPort(server.serverPort());
+    helper.url.setHost("127.0.0.1");
+
+    // first request
+    helper.reply1 = helper.manager.get(QNetworkRequest(helper.url));
+    helper.reply1->setParent(&helper);
+    connect(helper.reply1, SIGNAL(finished()), &helper, SLOT(finishedSlot()));
+    QTestEventLoop::instance().enterLoop(4);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(helper.reply2);
+    QVERIFY(!helper.reply2->error());
+
+    QCOMPARE(server.totalConnections, 1);
+}
+
+class HttpRecursiveCreationHelper : public QObject {
+    Q_OBJECT
+public:
+
+    HttpRecursiveCreationHelper():
+            QObject(0),
+            requestsStartedCount_finished(0),
+            requestsStartedCount_readyRead(0),
+            requestsFinishedCount(0)
+    {
+    }
+    QNetworkAccessManager manager;
+    int requestsStartedCount_finished;
+    int requestsStartedCount_readyRead;
+    int requestsFinishedCount;
+public slots:
+    void finishedSlot() {
+        requestsFinishedCount++;
+
+        QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+        QVERIFY(!reply->error());
+        QVERIFY(reply->bytesAvailable() == 27906);
+
+        if (requestsFinishedCount == 60) {
+            QTestEventLoop::instance().exitLoop();
+            return;
+        }
+
+        if (requestsStartedCount_finished < 30) {
+            startOne();
+            requestsStartedCount_finished++;
+        }
+
+        reply->deleteLater();
+    }
+    void readyReadSlot() {
+        QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+        QVERIFY(!reply->error());
+
+        if (requestsStartedCount_readyRead < 30 && reply->bytesAvailable() > 27906/2) {
+            startOne();
+            requestsStartedCount_readyRead++;
+        }
+    }
+    void startOne() {
+        QUrl url = "http://" + QtNetworkSettings::serverName() + "/gif/fluke.gif";
+        QNetworkRequest request(url);
+        QNetworkReply *reply = manager.get(request);
+        reply->setParent(this);
+        connect(reply, SIGNAL(finished()), this, SLOT(finishedSlot()));
+        connect(reply, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+    }
+};
+
+void tst_QNetworkReply::httpRecursiveCreation()
+{
+    // this test checks if creation of new requests to the same host properly works
+    // from readyRead() and finished() signals
+    HttpRecursiveCreationHelper helper;
+    helper.startOne();
+    QTestEventLoop::instance().enterLoop(30);
+    QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
 #ifndef QT_NO_OPENSSL

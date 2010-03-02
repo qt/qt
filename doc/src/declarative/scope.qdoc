@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlscope.html
+\page qdeclarativescope.html
 \title QML Scope
 
 \tableofcontents
@@ -317,7 +317,7 @@ Rectangle {
         anchors.centerIn: parent
         text: root.text
     }
-    MouseRegion { 
+    MouseArea { 
         anchors.fill: parent
         onClicked: buttonClicked(text) 
     }
@@ -348,14 +348,14 @@ Item {
 }
 \endcode
 
-\section1 QmlContext chain
+\section1 QDeclarativeContext chain
 
-The \l QmlContext chain allows C++ applications to pass data into QML applications.  
-\l QmlComponent object instances created from C++ are passed a \l QmlContext in which they
-are created.  Variables defined in this context appear in the scope chain.  Each QmlContext 
-also defines a parent context.  Variables in child QmlContext's shadow those in its parent.
+The \l QDeclarativeContext chain allows C++ applications to pass data into QML applications.  
+\l QDeclarativeComponent object instances created from C++ are passed a \l QDeclarativeContext in which they
+are created.  Variables defined in this context appear in the scope chain.  Each QDeclarativeContext 
+also defines a parent context.  Variables in child QDeclarativeContext's shadow those in its parent.
 
-Consider the following QmlContext tree.
+Consider the following QDeclarativeContext tree.
 
 \image qml-context-tree.png
 

@@ -115,7 +115,7 @@ Item {
     transitions: [
         Transition {
             from: "*"; to: "*"
-            NumberAnimation { matchProperties: "x,y,width,height"; easing: "easeInOutQuad" }
+            NumberAnimation { properties: "x,y,width,height"; easing.type: "InOutQuad" }
         }
     ]
 }

@@ -1832,7 +1832,7 @@ void tst_QUrl::compat_constructor_01_data()
     QTest::addColumn<QString>("res");
 
     //next we fill it with data
-    QTest::newRow( "data0" )  << QString("Makefile") << QString("Makefile"); // nolonger add file by defualt
+    QTest::newRow( "data0" )  << QString("Makefile") << QString("Makefile"); // nolonger add file by default
     QTest::newRow( "data1" )  << QString("Makefile") << QString("Makefile");
     QTest::newRow( "data2" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
     QTest::newRow( "data3" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
@@ -2513,13 +2513,9 @@ void tst_QUrl::schemeValidator()
 
 void tst_QUrl::invalidSchemeValidator()
 {
-    // enable that test when QUrl is fixed
-    return;
-
     // test that if scheme does not start with an ALPHA, QUrl::isValid() returns false
     {
         QUrl url("1http://qt.nokia.com", QUrl::StrictMode);
-        qDebug() << url;
         QCOMPARE(url.isValid(), false);
     }
     {

@@ -42,7 +42,7 @@
 #ifndef TEXTWRITER_H
 #define TEXTWRITER_H
 
-#include <qmljsglobal_p.h>
+#include <qdeclarativejsglobal_p.h>
 
 #include <QtCore/QString>
 #include <QtCore/QList>
@@ -51,7 +51,7 @@
 QT_BEGIN_HEADER
 QT_QML_BEGIN_NAMESPACE
 
-namespace QmlJS {
+namespace QDeclarativeJS {
 
 class TextWriter
 {
@@ -93,7 +93,7 @@ public:
 
 };
 
-} // end of namespace QmlJS
+} // end of namespace QDeclarativeJS
 
 QT_QML_END_NAMESPACE
 QT_END_HEADER

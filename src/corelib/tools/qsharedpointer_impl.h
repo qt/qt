@@ -132,7 +132,7 @@ namespace QtSharedPointer {
         typedef const value_type *const_pointer;
         typedef value_type &reference;
         typedef const value_type &const_reference;
-        typedef ptrdiff_t difference_type;
+        typedef qptrdiff difference_type;
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
@@ -209,6 +209,7 @@ namespace QtSharedPointer {
 
         inline bool destroy() { destroyer(this); return true; }
         inline void operator delete(void *ptr) { ::operator delete(ptr); }
+        inline void operator delete(void *, void *) { }
     };
     // sizeof(ExternalRefCountWithDestroyFn) = 16 (32-bit) / 24 (64-bit)
 
@@ -541,7 +542,7 @@ public:
     typedef const value_type *const_pointer;
     typedef value_type &reference;
     typedef const value_type &const_reference;
-    typedef ptrdiff_t difference_type;
+    typedef qptrdiff difference_type;
 
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
 #ifndef Q_CC_NOKIAX86

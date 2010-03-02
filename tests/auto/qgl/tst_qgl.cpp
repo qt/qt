@@ -57,6 +57,8 @@
 #ifdef QT_BUILD_INTERNAL
 #include <QtOpenGL/private/qgl_p.h>
 #include <QtGui/private/qpixmapdata_p.h>
+#include <QtGui/private/qimage_p.h>
+#include <QtGui/private/qimagepixmapcleanuphooks_p.h>
 #endif
 
 //TESTED_CLASS=
@@ -976,6 +978,47 @@ void tst_QGL::glWidgetWithAlpha()
     delete w;
 }
 
+
+void qt_opengl_draw_test_pattern(QPainter* painter, int width, int height)
+{
+    QPainterPath intersectingPath;
+    intersectingPath.moveTo(0, 0);
+    intersectingPath.lineTo(100, 0);
+    intersectingPath.lineTo(0, 100);
+    intersectingPath.lineTo(100, 100);
+    intersectingPath.closeSubpath();
+
+    QPainterPath trianglePath;
+    trianglePath.moveTo(50, 0);
+    trianglePath.lineTo(100, 100);
+    trianglePath.lineTo(0, 100);
+    trianglePath.closeSubpath();
+
+    painter->setTransform(QTransform()); // reset xform
+    painter->fillRect(-1, -1, width+2, height+2, Qt::red); // Background
+    painter->translate(14, 14);
+    painter->fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
+    painter->translate(128, 0);
+    painter->setClipPath(trianglePath); // Test depth buffer works
+    painter->setTransform(QTransform()); // reset xform ready for fill
+    painter->fillRect(-1, -1, width+2, height+2, Qt::green);
+}
+
+void qt_opengl_check_test_pattern(const QImage& img)
+{
+    // As we're doing more than trivial painting, we can't just compare to
+    // an image rendered with raster. Instead, we sample at well-defined
+    // test-points:
+    QFUZZY_COMPARE_PIXELS(img.pixel(39, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(89, 64), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(64, 39), QColor(Qt::blue).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(64, 89), QColor(Qt::blue).rgb());
+
+    QFUZZY_COMPARE_PIXELS(img.pixel(167, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(217, 39), QColor(Qt::red).rgb());
+    QFUZZY_COMPARE_PIXELS(img.pixel(192, 64), QColor(Qt::green).rgb());
+}
+
 class GLWidget : public QGLWidget
 {
 public:
@@ -990,9 +1033,7 @@ public:
         QPaintEngine* pe = p.paintEngine();
         engineType = pe->type();
 
-        // This test only ensures it's possible to paint onto a QGLWidget. Full
-        // paint engine feature testing is way out of scope!
-        p.fillRect(-1, -1, width()+2, height()+2, Qt::red);
+        qt_opengl_draw_test_pattern(&p, width(), height());
 
         // No p.end() or swap buffers, should be done automatically
     }
@@ -1005,7 +1046,7 @@ void tst_QGL::glWidgetRendering()
 #ifdef Q_WS_QWS
     w.setWindowFlags(Qt::FramelessWindowHint);
 #endif
-    w.setGeometry(100, 100, 200, 200);
+    w.resize(256, 128);
     w.show();
 
 #ifdef Q_WS_X11
@@ -1016,11 +1057,8 @@ void tst_QGL::glWidgetRendering()
     QVERIFY(w.beginOk);
     QVERIFY(w.engineType == QPaintEngine::OpenGL || w.engineType == QPaintEngine::OpenGL2);
 
-    QImage fb = w.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
-    QImage reference(fb.size(), QImage::Format_RGB32);
-    reference.fill(0xffff0000);
-
-    QFUZZY_COMPARE_IMAGES(fb, reference);
+    QImage fb = w.grabFrameBuffer(false);
+    qt_opengl_check_test_pattern(fb);
 }
 
 void tst_QGL::glFBOSimpleRendering()
@@ -1073,46 +1111,23 @@ void tst_QGL::glFBORendering()
     // Don't complicate things by using NPOT:
     QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
 
+    if (fbo->attachment() != QGLFramebufferObject::CombinedDepthStencil) {
+        delete fbo;
+        QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
+    }
+
     QPainter fboPainter;
     bool painterBegun = fboPainter.begin(fbo);
     QVERIFY(painterBegun);
 
-    QPainterPath intersectingPath;
-    intersectingPath.moveTo(0, 0);
-    intersectingPath.lineTo(100, 0);
-    intersectingPath.lineTo(0, 100);
-    intersectingPath.lineTo(100, 100);
-    intersectingPath.closeSubpath();
+    qt_opengl_draw_test_pattern(&fboPainter, fbo->width(), fbo->height());
 
-    QPainterPath trianglePath;
-    trianglePath.moveTo(50, 0);
-    trianglePath.lineTo(100, 100);
-    trianglePath.lineTo(0, 100);
-    trianglePath.closeSubpath();
-
-    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::red); // Background
-    fboPainter.translate(14, 14);
-    fboPainter.fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
-    fboPainter.translate(128, 0);
-    fboPainter.setClipPath(trianglePath); // Test depth buffer works
-    fboPainter.setTransform(QTransform()); // reset xform
-    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::green);
     fboPainter.end();
 
     QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
     delete fbo;
 
-    // As we're doing more than trivial painting, we can't just compare to
-    // an image rendered with raster. Instead, we sample at well-defined
-    // test-points:
-    QFUZZY_COMPARE_PIXELS(fb.pixel(39, 64), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(89, 64), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(64, 39), QColor(Qt::blue).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(64, 89), QColor(Qt::blue).rgb());
-
-    QFUZZY_COMPARE_PIXELS(fb.pixel(167, 39), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(217, 39), QColor(Qt::red).rgb());
-    QFUZZY_COMPARE_PIXELS(fb.pixel(192, 64), QColor(Qt::green).rgb());
+    qt_opengl_check_test_pattern(fb);
 }
 
 
@@ -1134,6 +1149,16 @@ void tst_QGL::multipleFBOInterleavedRendering()
     QGLFramebufferObject *fbo1 = new QGLFramebufferObject(256, 128, fboFormat);
     QGLFramebufferObject *fbo2 = new QGLFramebufferObject(256, 128, fboFormat);
     QGLFramebufferObject *fbo3 = new QGLFramebufferObject(256, 128, fboFormat);
+
+    if ( (fbo1->attachment() != QGLFramebufferObject::CombinedDepthStencil) ||
+         (fbo2->attachment() != QGLFramebufferObject::CombinedDepthStencil) ||
+         (fbo3->attachment() != QGLFramebufferObject::CombinedDepthStencil)    )
+    {
+        delete fbo1;
+        delete fbo2;
+        delete fbo3;
+        QSKIP("FBOs missing combined depth~stencil support", SkipSingle);
+    }
 
     QPainter fbo1Painter;
     QPainter fbo2Painter;
@@ -1240,7 +1265,7 @@ protected:
         QPainter widgetPainter;
         widgetPainterBeginOk = widgetPainter.begin(this);
         QGLFramebufferObjectFormat fboFormat;
-        fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
         QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
 
         QPainter fboPainter;
@@ -1986,7 +2011,6 @@ void tst_QGL::qglContextDefaultBindTexture()
 #ifdef QT_BUILD_INTERNAL
     QGLWidget w;
     w.makeCurrent();
-
     QGLContext *ctx = const_cast<QGLContext*>(w.context());
 
     QImage *boundImage = new QImage(256, 256, QImage::Format_RGB32);
@@ -1994,29 +2018,36 @@ void tst_QGL::qglContextDefaultBindTexture()
     QPixmap *boundPixmap = new QPixmap(256, 256);
     boundPixmap->fill(Qt::red);
 
-    // Check that calling QGLContext::bindTexture with default args adds textures to cache
     int startCacheItemCount = QGLTextureCache::instance()->size();
+
     GLuint boundImageTextureId = ctx->bindTexture(*boundImage);
     GLuint boundPixmapTextureId = ctx->bindTexture(*boundPixmap);
+
+    // Make sure the image & pixmap have been added to the cache:
     QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
+
+    // Make sure the image & pixmap have the is_cached flag set:
+    QVERIFY(QImagePixmapCleanupHooks::isImageCached(*boundImage));
+    QVERIFY(QImagePixmapCleanupHooks::isPixmapCached(*boundPixmap));
 
     // Make sure the texture IDs returned are valid:
     QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_TRUE);
     QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_TRUE);
 
-    // Make sure the textures are still there after we delete the image/pixmap:
+    // Make sure the textures are still valid after we delete the image/pixmap:
+    // Also check that although the textures are left intact, the cache entries are removed:
     delete boundImage;
     boundImage = 0;
+    QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_TRUE);
+    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+1);
     delete boundPixmap;
     boundPixmap = 0;
-    QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount+2);
-
-    // Make sure the textures are deleted from the cache after calling QGLContext::deleteTexture()
-    ctx->deleteTexture(boundImageTextureId);
-    ctx->deleteTexture(boundPixmapTextureId);
+    QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_TRUE);
     QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
 
-    // Finally, make sure QGLContext::deleteTexture also deleted the texture IDs:
+    // Finally, make sure QGLContext::deleteTexture deletes the texture IDs:
+    ctx->deleteTexture(boundImageTextureId);
+    ctx->deleteTexture(boundPixmapTextureId);
     QCOMPARE((bool)glIsTexture(boundImageTextureId), GL_FALSE);
     QCOMPARE((bool)glIsTexture(boundPixmapTextureId), GL_FALSE);
 #endif

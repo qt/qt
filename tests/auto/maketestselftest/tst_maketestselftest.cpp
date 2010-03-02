@@ -92,7 +92,9 @@ void tst_MakeTestSelfTest::auto_dot_pro_data()
     QStringList subdirs = dir.entryList(QDir::AllDirs|QDir::NoDotAndDotDot);
 
     foreach (const QString& subdir, subdirs) {
-        if (subdir == QString::fromLatin1("tmp")) {
+        if (subdir == QString::fromLatin1("tmp")
+            || subdir.startsWith("."))
+        {
             continue;
         }
         QTest::newRow(qPrintable(subdir)) << subdir;

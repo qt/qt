@@ -50,9 +50,9 @@
 #include <qfile.h>
 #include <stdlib.h>
 
-#include "epocroot.h"
-
 #define PLUGIN_STUB_DIR "qmakepluginstubs"
+#define ROM_DEPLOYMENT_PLATFORM "rom"
+#define EMULATOR_DEPLOYMENT_PLATFORM "emulator"
 
 struct CopyItem
 {

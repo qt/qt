@@ -87,6 +87,8 @@ void tst_QScriptString::test()
 
         QScriptString str2 = str;
         QVERIFY(!str2.isValid());
+
+        QCOMPARE(str.toArrayIndex(), quint32(0xffffffff));
     }
 
     for (int x = 0; x < 2; ++x) {
@@ -172,8 +174,15 @@ void tst_QScriptString::toArrayIndex_data()
     QTest::newRow("0a") << QString::fromLatin1("0a") << false << quint32(0xffffffff);
     QTest::newRow("0x1") << QString::fromLatin1("0x1") << false << quint32(0xffffffff);
     QTest::newRow("01") << QString::fromLatin1("01") << false << quint32(0xffffffff);
+    QTest::newRow("101a") << QString::fromLatin1("101a") << false << quint32(0xffffffff);
     QTest::newRow("4294967294") << QString::fromLatin1("4294967294") << true << quint32(0xfffffffe);
     QTest::newRow("4294967295") << QString::fromLatin1("4294967295") << false << quint32(0xffffffff);
+    QTest::newRow("0.0") << QString::fromLatin1("0.0") << false << quint32(0xffffffff);
+    QTest::newRow("1.0") << QString::fromLatin1("1.0") << false << quint32(0xffffffff);
+    QTest::newRow("1.5") << QString::fromLatin1("1.5") << false << quint32(0xffffffff);
+    QTest::newRow("1.") << QString::fromLatin1("1.") << false << quint32(0xffffffff);
+    QTest::newRow(".1") << QString::fromLatin1(".1") << false << quint32(0xffffffff);
+    QTest::newRow("1e0") << QString::fromLatin1("1e0") << false << quint32(0xffffffff);
 }
 
 void tst_QScriptString::toArrayIndex()

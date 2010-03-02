@@ -101,7 +101,7 @@ Rectangle {
                 id: skull
             }
 
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onPressed: {
                     if (!head || !heartbeat.running) {
@@ -172,14 +172,14 @@ Rectangle {
     states: [
         State {
             name: "starting"
-            when: startHeartbeatTimer.running;
+            when: startHeartbeatTimer.running
             PropertyChanges {target: progressIndicator; width: 200}
             PropertyChanges {target: title; opacity: 0}
             PropertyChanges {target: progressBar; opacity: 1}
         },
         State {
             name: "running"
-            when: heartbeat.running
+            when: (heartbeat.running && !startHeartbeatTimer.running)
             PropertyChanges {target: progressIndicator; width: 200}
             PropertyChanges {target: title; opacity: 0}
             PropertyChanges {target: skull; row: 0; column: 0; }

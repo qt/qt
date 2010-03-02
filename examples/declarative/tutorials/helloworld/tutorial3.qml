@@ -14,7 +14,7 @@ Rectangle {
         transformOrigin: Item.Center
 
 //![1]
-        MouseRegion { id: mouseRegion; anchors.fill: parent }
+        MouseArea { id: mouseRegion; anchors.fill: parent }
 //![1]
 
 //![2]
@@ -28,7 +28,7 @@ Rectangle {
         transitions: Transition {
             from: ""; to: "down"; reversible: true
             ParallelAnimation {
-                NumberAnimation { matchProperties: "y,rotation"; duration: 500; easing: "easeInOutQuad" }
+                NumberAnimation { properties: "y,rotation"; duration: 500; easing.type: "InOutQuad" }
                 ColorAnimation { duration: 500 }
             }
         }

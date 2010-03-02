@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -41,7 +41,7 @@
 
 /*!
 \target qmlfocus
-\page qmlfocus.html
+\page qdeclarativefocus.html
 \title Keyboard Focus in QML
 
 When a key is pressed or released, a key event is generated and delivered to the
@@ -56,7 +56,7 @@ and to address some of the cases unique to fluid user interfaces, the QML items 
 When the user presses or releases a key, the following occurs:
 \list 1
 \o Qt receives the key action and generates a key event.
-\o If the Qt widget containing the \l QmlView has focus, the key event is delivered to it. Otherwise, regular Qt key handling continues.
+\o If the Qt widget containing the \l QDeclarativeView has focus, the key event is delivered to it. Otherwise, regular Qt key handling continues.
 \o The key event is delivered by the scene to the QML \l Item with \e {active focus}.  If no \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
 \o If the QML \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
 
@@ -263,7 +263,7 @@ Rectangle {
 FocusScope {
     id: page; width: 240; height: 25
     MyWidget { focus: true }
-    MouseRegion { anchors.fill: parent; onClicked: { page.focus = true } }
+    MouseArea { anchors.fill: parent; onClicked: { page.focus = true } }
 }
 \endcode
 \endtable
@@ -326,7 +326,7 @@ which in turn gives \e {active focus} to the \c {Text} element that
 actually performs the work of handling the \e {Return} key.
 
 All of the QML view classes, such as \l PathView and \l GridView, behave
-in a similar mannor to allow key handling in their respective delegates.
+in a similar manner to allow key handling in their respective delegates.
 
 \section1 Focus Panels
 

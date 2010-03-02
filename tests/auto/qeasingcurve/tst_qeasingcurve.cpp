@@ -69,6 +69,8 @@ private slots:
     void valueForProgress();
     void setCustomType();
     void operators();
+    void properties();
+    void metaTypes();
 
 protected:
 };
@@ -505,6 +507,65 @@ void tst_QEasingCurve::operators()
     QVERIFY(curve2 == curve);
 }
 
+class tst_QEasingProperties : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QEasingCurve easing READ easing WRITE setEasing)
+public:
+    tst_QEasingProperties(QObject *parent = 0) : QObject(parent) {}
+
+    QEasingCurve easing() const { return e; }
+    void setEasing(const QEasingCurve& value) { e = value; }
+
+private:
+    QEasingCurve e;
+};
+
+// Test getting and setting easing properties via the metaobject system.
+void tst_QEasingCurve::properties()
+{
+    tst_QEasingProperties obj;
+
+    QEasingCurve inOutBack(QEasingCurve::InOutBack);
+    qreal overshoot = 1.5f;
+    inOutBack.setOvershoot(overshoot);
+    qreal amplitude = inOutBack.amplitude();
+    qreal period = inOutBack.period();
+
+    obj.setEasing(inOutBack);
+
+    QEasingCurve easing = qVariantValue<QEasingCurve>(obj.property("easing"));
+    QCOMPARE(easing.type(), QEasingCurve::InOutBack);
+    QCOMPARE(easing.overshoot(), overshoot);
+    QCOMPARE(easing.amplitude(), amplitude);
+    QCOMPARE(easing.period(), period);
+
+    QEasingCurve linear(QEasingCurve::Linear);
+    overshoot = linear.overshoot();
+    amplitude = linear.amplitude();
+    period = linear.period();
+
+    obj.setProperty("easing",
+                    qVariantFromValue(QEasingCurve(QEasingCurve::Linear)));
+
+    easing = qVariantValue<QEasingCurve>(obj.property("easing"));
+    QCOMPARE(easing.type(), QEasingCurve::Linear);
+    QCOMPARE(easing.overshoot(), overshoot);
+    QCOMPARE(easing.amplitude(), amplitude);
+    QCOMPARE(easing.period(), period);
+}
+
+void tst_QEasingCurve::metaTypes()
+{
+    QVERIFY(QMetaType::type("QEasingCurve") == QMetaType::QEasingCurve);
+
+    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QEasingCurve)),
+             QByteArray("QEasingCurve"));
+
+    QVERIFY(QMetaType::isRegistered(QMetaType::QEasingCurve));
+
+    QVERIFY(qMetaTypeId<QEasingCurve>() == QMetaType::QEasingCurve);
+}
 
 QTEST_MAIN(tst_QEasingCurve)
 #include "tst_qeasingcurve.moc"

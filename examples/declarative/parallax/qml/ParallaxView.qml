@@ -10,8 +10,8 @@ Item {
     Image {
         id: background
         fillMode: Image.TileHorizontally
-        x: -list.viewportX / 2
-        width: Math.max(list.viewportWidth, parent.width)
+        x: -list.contentX / 2
+        width: Math.max(list.contentWidth, parent.width)
     }
 
     ListView {
@@ -58,7 +58,7 @@ Item {
                 transformOrigin: "Center"
             }
 
-            MouseRegion {
+            MouseArea {
                 anchors.fill: parent
                 onClicked: { root.currentIndex = index }
             }
@@ -74,7 +74,7 @@ Item {
             }
             transitions: Transition {
                 NumberAnimation {
-                    matchProperties: "scale,y"
+                    properties: "scale,y"
                 }
              }
         }

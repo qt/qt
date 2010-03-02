@@ -46,6 +46,7 @@
 #include <qtextcodec.h>
 #endif
 #include <private/qutfcodec_p.h>
+#include "qsimd_p.h"
 #include <qdatastream.h>
 #include <qlist.h>
 #include "qlocale.h"
@@ -989,6 +990,40 @@ QString::QString(const QChar *unicode, int size)
     }
 }
 
+/*!
+    \since 4.7
+
+    Constructs a string initialized with the characters of the QChar array
+    \a unicode, which must be terminated with a 0.
+
+    QString makes a deep copy of the string data. The unicode data is copied as
+    is and the Byte Order Mark is preserved if present.
+*/
+QString::QString(const QChar *unicode)
+{
+     if (!unicode) {
+         d = &shared_null;
+         d->ref.ref();
+     } else {
+         int size = 0;
+         while (unicode[size] != 0)
+             ++size;
+         if (!size) {
+             d = &shared_empty;
+             d->ref.ref();
+         } else {
+             d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+             Q_CHECK_PTR(d);
+             d->ref = 1;
+             d->alloc = d->size = size;
+             d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+             d->data = d->array;
+             memcpy(d->array, unicode, size * sizeof(QChar));
+             d->array[size] = '\0';
+         }
+     }
+}
+
 
 /*!
     Constructs a string of the given \a size with every character set
@@ -1766,13 +1801,14 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
     }
 
     QT_TRY {
-        detach();
         if (blen == alen) {
             // replace in place
+            detach();
             for (int i = 0; i < nIndices; ++i)
                 memcpy(d->data + indices[i], afterBuffer, alen * sizeof(QChar));
         } else if (alen < blen) {
             // replace from front
+            detach();
             uint to = indices[0];
             if (alen)
                 memcpy(d->data+to, after, alen*sizeof(QChar));
@@ -3444,12 +3480,82 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
     QByteArray ba;
     if (length) {
         ba.resize(length);
-        const ushort *i = reinterpret_cast<const ushort *>(data);
-        const ushort *e = i + length;
-        uchar *s = (uchar*) ba.data();
-        while (i != e) {
-            *s++ = (*i>0xff) ? '?' : (uchar) *i;
-            ++i;
+        const ushort *src = reinterpret_cast<const ushort *>(data);
+        uchar *dst = (uchar*) ba.data();
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (length >= 16) {
+            const int chunkCount = length >> 4; // divided by 16
+            const __m128i questionMark = _mm_set1_epi16('?');
+            // SSE has no compare instruction for unsigned comparison.
+            // The variables must be shiffted + 0x8000 to be compared
+            const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
+            const __m128i thresholdMask = _mm_set1_epi16(0xff + 0x8000);
+            for (int i = 0; i < chunkCount; ++i) {
+                __m128i chunk1 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // each 16 bit is equal to 0xFF if the source is outside latin 1 (>0xff)
+                    const __m128i signedChunk = _mm_add_epi16(chunk1, signedBitOffset);
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
+
+                    // offLimitQuestionMark contains '?' for each 16 bits that was off-limit
+                    // the 16 bits that were correct contains zeros
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+
+                    // correctBytes contains the bytes that were in limit
+                    // the 16 bits that were off limits contains zeros
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk1);
+
+                    // merge offLimitQuestionMark and correctBytes to have the result
+                    chunk1 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                __m128i chunk2 = _mm_loadu_si128((__m128i*)src); // load
+                src += 8;
+                {
+                    // exactly the same operations as for the previous chunk of data
+                    const __m128i signedChunk = _mm_add_epi16(chunk2, signedBitOffset);
+                    const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);
+                    const __m128i offLimitQuestionMark = _mm_and_si128(offLimitMask, questionMark);
+                    const __m128i correctBytes = _mm_andnot_si128(offLimitMask, chunk2);
+                    chunk2 = _mm_or_si128(correctBytes, offLimitQuestionMark);
+                }
+
+                // pack the two vector to 16 x 8bits elements
+                const __m128i result = _mm_packus_epi16(chunk1, chunk2);
+
+                _mm_storeu_si128((__m128i*)dst, result); // store
+                dst += 16;
+            }
+            length = length % 16;
+        }
+#elif QT_HAVE_NEON
+        // Refer to the documentation of the SSE2 implementation
+        // this use eactly the same method as for SSE except:
+        // 1) neon has unsigned comparison
+        // 2) packing is done to 64 bits (8 x 8bits component).
+        if (length >= 16) {
+            const int chunkCount = length >> 3; // divided by 8
+            const uint16x8_t questionMark = vdupq_n_u16('?'); // set
+            const uint16x8_t thresholdMask = vdupq_n_u16(0xff); // set
+            for (int i = 0; i < chunkCount; ++i) {
+                uint16x8_t chunk = vld1q_u16((uint16_t *)src); // load
+                src += 8;
+
+                const uint16x8_t offLimitMask = vcgtq_u16(chunk, thresholdMask); // chunk > thresholdMask
+                const uint16x8_t offLimitQuestionMark = vandq_u16(offLimitMask, questionMark); // offLimitMask & questionMark
+                const uint16x8_t correctBytes = vbicq_u16(chunk, offLimitMask); // !offLimitMask & chunk
+                chunk = vorrq_u16(correctBytes, offLimitQuestionMark); // correctBytes | offLimitQuestionMark
+                const uint8x8_t result = vmovn_u16(chunk); // narrowing move->packing
+                vst1_u8(dst, result); // store
+                dst += 8;
+            }
+            length = length % 8;
+        }
+#endif
+        while (length--) {
+            *dst++ = (*src>0xff) ? '?' : (uchar) *src;
+            ++src;
         }
     }
     return ba;
@@ -3612,10 +3718,35 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         d->alloc = d->size = size;
         d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
         d->data = d->array;
-        ushort *i = d->data;
         d->array[size] = '\0';
+        ushort *dst = d->data;
+        /* SIMD:
+         * Unpacking with SSE has been shown to improve performance on recent CPUs
+         * The same method gives no improvement with NEON.
+         */
+#if defined(QT_ALWAYS_HAVE_SSE2)
+        if (size >= 16) {
+            int chunkCount = size >> 4; // divided by 16
+            const __m128i nullMask = _mm_set1_epi32(0);
+            for (int i = 0; i < chunkCount; ++i) {
+                const __m128i chunk = _mm_loadu_si128((__m128i*)str); // load
+                str += 16;
+
+                // unpack the first 8 bytes, padding with zeros
+                const __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, firstHalf); // store
+                dst += 8;
+
+                // unpack the last 8 bytes, padding with zeros
+                const __m128i secondHalf = _mm_unpackhi_epi8 (chunk, nullMask);
+                _mm_storeu_si128((__m128i*)dst, secondHalf); // store
+                dst += 8;
+            }
+            size = size % 16;
+        }
+#endif
         while (size--)
-            *i++ = (uchar)*str++;
+            *dst++ = (uchar)*str++;
     }
     return d;
 }
@@ -3867,7 +3998,7 @@ QString QString::fromUtf8(const char *str, int size)
     host byte order is assumed.
 
     This function is comparatively slow.
-    Use QString(const ushort *, int) if possible.
+    Use QString(const ushort *, int) or QString(const ushort *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
@@ -3960,24 +4091,74 @@ QString QString::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QString result(d->size, Qt::Uninitialized);
-    const QChar *from = (const QChar*) d->data;
-    const QChar *fromend = (const QChar*) from+d->size;
-    int outc=0;
-    QChar *to   = (QChar*) result.d->data;
-    for (;;) {
-        while (from!=fromend && from->isSpace())
-            from++;
-        while (from!=fromend && !from->isSpace())
-            to[outc++] = *from++;
-        if (from!=fromend)
-            to[outc++] = QLatin1Char(' ');
-        else
+
+    const QChar * const start = reinterpret_cast<QChar *>(d->data);
+    const QChar *from = start;
+    const QChar *fromEnd = start + d->size;
+    forever {
+        QChar ch = *from;
+        if (!ch.isSpace())
             break;
+        if (++from == fromEnd) {
+            // All-whitespace string
+            shared_empty.ref.ref();
+            return QString(&shared_empty, 0);
+        }
     }
-    if (outc > 0 && to[outc-1] == QLatin1Char(' '))
-        outc--;
-    result.truncate(outc);
+    // This loop needs no underflow check, as we already determined that
+    // the string contains non-whitespace. If the string has exactly one
+    // non-whitespace, it will be checked twice - we can live with that.
+    while (fromEnd[-1].isSpace())
+        fromEnd--;
+    // The rest of the function depends on the fact that we already know
+    // that the last character in the source is no whitespace.
+    const QChar *copyFrom = from;
+    int copyCount;
+    forever {
+        if (++from == fromEnd) {
+            // Only leading and/or trailing whitespace, if any at all
+            return mid(copyFrom - start, from - copyFrom);
+        }
+        QChar ch = *from;
+        if (!ch.isSpace())
+            continue;
+        if (ch != QLatin1Char(' ')) {
+            copyCount = from - copyFrom;
+            break;
+        }
+        ch = *++from;
+        if (ch.isSpace()) {
+            copyCount = from - copyFrom - 1;
+            break;
+        }
+    }
+    // 'from' now points at the non-trailing whitespace which made the
+    // string not simplified in the first place. 'copyCount' is the number
+    // of already simplified characters - at least one, obviously -
+    // without a trailing space.
+    QString result((fromEnd - from) + copyCount, Qt::Uninitialized);
+    QChar *to = reinterpret_cast<QChar *>(result.d->data);
+    ::memcpy(to, copyFrom, copyCount * 2);
+    to += copyCount;
+    fromEnd--;
+    QChar ch;
+    forever {
+        *to++ = QLatin1Char(' ');
+        do {
+            ch = *++from;
+        } while (ch.isSpace());
+        if (from == fromEnd)
+            break;
+        do {
+            *to++ = ch;
+            ch = *++from;
+            if (from == fromEnd)
+                goto done;
+        } while (!ch.isSpace());
+    }
+  done:
+    *to++ = ch;
+    result.truncate(to - reinterpret_cast<QChar *>(result.d->data));
     return result;
 }
 

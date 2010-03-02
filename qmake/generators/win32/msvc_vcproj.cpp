@@ -67,6 +67,7 @@ QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN32
 #include <qt_windows.h>
+#include <windows/registry.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -93,102 +94,6 @@ struct {
     {NETUnknown, "", ""},
 };
 
-static QString keyPath(const QString &rKey)
-{
-    int idx = rKey.lastIndexOf(QLatin1Char('\\'));
-    if (idx == -1)
-        return QString();
-    return rKey.left(idx + 1);
-}
-
-static QString keyName(const QString &rKey)
-{
-    int idx = rKey.lastIndexOf(QLatin1Char('\\'));
-    if (idx == -1)
-        return rKey;
-
-    QString res(rKey.mid(idx + 1));
-    if (res == "Default" || res == ".")
-        res = "";
-    return res;
-}
-
-static QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
-{
-
-    QString rSubkeyName = keyName(rSubkey);
-    QString rSubkeyPath = keyPath(rSubkey);
-
-    HKEY handle = 0;
-    LONG res = RegOpenKeyEx(parentHandle, (wchar_t*)rSubkeyPath.utf16(), 0, KEY_READ, &handle);
-
-    if (res != ERROR_SUCCESS)
-        return QString();
-
-    // get the size and type of the value
-    DWORD dataType;
-    DWORD dataSize;
-    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, &dataType, 0, &dataSize);
-    if (res != ERROR_SUCCESS) {
-        RegCloseKey(handle);
-        return QString();
-    }
-
-    // get the value
-    QByteArray data(dataSize, 0);
-    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, 0,
-                          reinterpret_cast<unsigned char*>(data.data()), &dataSize);
-    if (res != ERROR_SUCCESS) {
-        RegCloseKey(handle);
-        return QString();
-    }
-
-    QString result;
-    switch (dataType) {
-        case REG_EXPAND_SZ:
-        case REG_SZ: {
-            result = QString::fromWCharArray(((const wchar_t *)data.constData()));
-            break;
-        }
-
-        case REG_MULTI_SZ: {
-            QStringList l;
-            int i = 0;
-            for (;;) {
-                QString s = QString::fromWCharArray((const wchar_t *)data.constData() + i);
-                i += s.length() + 1;
-
-                if (s.isEmpty())
-                    break;
-                l.append(s);
-            }
-            result = l.join(", ");
-            break;
-        }
-
-        case REG_NONE:
-        case REG_BINARY: {
-            result = QString::fromWCharArray((const wchar_t *)data.constData(), data.size() / 2);
-            break;
-        }
-
-        case REG_DWORD_BIG_ENDIAN:
-        case REG_DWORD: {
-            Q_ASSERT(data.size() == sizeof(int));
-            int i;
-            memcpy((char*)&i, data.constData(), sizeof(int));
-            result = QString::number(i);
-            break;
-        }
-
-        default:
-            qWarning("QSettings: unknown data %d type in windows registry", dataType);
-            break;
-    }
-
-    RegCloseKey(handle);
-    return result;
-}
 QT_END_NAMESPACE
 #endif
 

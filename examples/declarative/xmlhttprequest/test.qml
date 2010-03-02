@@ -3,7 +3,7 @@ import Qt 4.6
 Rectangle {
     width: 800; height: 600
 
-    MouseRegion {
+    MouseArea {
         anchors.fill: parent
         onClicked: { 
 

@@ -156,8 +156,8 @@ public:
         needSortChildren(0),
         allChildrenDirty(0),
         fullUpdatePending(0),
-        flags(0),
         dirtyChildrenBoundingRect(1),
+        flags(0),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
         geometryChanged(1),
@@ -474,11 +474,11 @@ public:
     quint32 inSetPosHelper : 1;
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
+    quint32 fullUpdatePending : 1;
+    quint32 dirtyChildrenBoundingRect : 1;
 
     // Packed 32 bits
-    quint32 fullUpdatePending : 1;
     quint32 flags : 17;
-    quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
     quint32 geometryChanged : 1;
@@ -492,10 +492,10 @@ public:
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
-
-    // New 32 bits
     quint32 mouseSetsFocus : 1;
     quint32 explicitActivate : 1;
+
+    // New 32 bits
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
     quint32 sequentialOrdering : 1;
@@ -503,6 +503,7 @@ public:
     quint32 scenePosDescendants : 1;
     quint32 pendingPolish : 1;
     quint32 mayHaveChildWithGraphicsEffect : 1;
+    quint32 padding : 25;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -608,7 +609,7 @@ public:
         return item->type() == QGraphicsPixmapItem::Type
                && !(item->flags() & QGraphicsItem::ItemIsSelectable)
                && item->d_ptr->children.size() == 0;
-            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
+            //|| (item->d_ptr->isObject && qobject_cast<QDeclarativeImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const

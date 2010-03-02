@@ -237,6 +237,7 @@ public:
     QByteArray &insert(int i, const QByteArray &a);
     QByteArray &remove(int index, int len);
     QByteArray &replace(int index, int len, const char *s);
+    QByteArray &replace(int index, int len, const char *s, int alen);
     QByteArray &replace(int index, int len, const QByteArray &s);
     QByteArray &replace(char before, const char *after);
     QByteArray &replace(char before, const QByteArray &after);

@@ -75,6 +75,7 @@ public:
     virtual QGLContext* context() const = 0;
     virtual QGLFormat format() const;
     virtual QSize size() const = 0;
+    virtual bool alphaRequested() const;
 
     // returns the QGLPaintDevice for the given QPaintDevice
     static QGLPaintDevice* getDevice(QPaintDevice*);

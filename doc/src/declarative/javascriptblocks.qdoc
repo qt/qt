@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmljavascript.html
+\page qdeclarativejavascript.html
 \title JavaScript Blocks
 
 QML encourages building UIs declaratively, using \l {Property Binding} and the 
@@ -124,7 +124,7 @@ The \c source property may reference a relative file, or an absolute path.  In t
 case of a relative file, the location is resolved relative to the location of the
 \l {QML Document} that contains the \l Script element.  If the script file is not 
 accessible, an error will occur.  If the source is on a network resource, the
-enclosing QML document will remain in the \l {QmlComponent::status()}{waiting state}
+enclosing QML document will remain in the \l {QDeclarativeComponent::status()}{waiting state}
 until the script has been retrieved.
 
 \section1 Running Script at Startup

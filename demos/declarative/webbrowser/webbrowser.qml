@@ -30,10 +30,10 @@ Item {
             anchors.bottom: footer.top
         }
         RectSoftShadow {
-            x: -webView.viewportX
-            y: -webView.viewportY
-            width: webView.viewportWidth
-            height: webView.viewportHeight+headerSpace.height
+            x: -webView.contentX
+            y: -webView.contentY
+            width: webView.contentWidth
+            height: webView.contentHeight+headerSpace.height
         }
         Item {
             id: headerSpace
@@ -97,13 +97,13 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            matchProperties: "opacity"
-                            easing: "easeInOutQuad"
+                            properties: "opacity"
+                            easing.type: "InOutQuad"
                             duration: 300
                         }
                     }
                 ]
-                MouseRegion {
+                MouseArea {
                     anchors.fill: back_e
                     onClicked: { if (webView.back.enabled) webView.back.trigger() }
                 }
@@ -114,7 +114,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
-            MouseRegion {
+            MouseArea {
                 anchors.fill: reload
                 onClicked: { webView.reload.trigger() }
             }
@@ -153,13 +153,13 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            matchProperties: "opacity"
-                            easing: "easeInOutQuad"
+                            properties: "opacity"
+                            easing.type: "InOutQuad"
                             duration: 320
                         }
                     }
                 ]
-                MouseRegion {
+                MouseArea {
                     anchors.fill: parent
                     onClicked: { if (webView.forward.enabled) webView.forward.trigger() }
                 }

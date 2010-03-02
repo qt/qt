@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 #include <QCoreApplication>
-#include <QmlEngine>
-#include <QmlComponent>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
 #include <QDebug>
 #include "birthdayparty.h"
 #include "person.h"
@@ -49,8 +49,14 @@ int main(int argc, char ** argv)
 {
     QCoreApplication app(argc, argv);
 
-    QmlEngine engine;
-    QmlComponent component(&engine, ":example.qml");
+    QML_REGISTER_TYPE(People, 1,0, BirthdayParty, BirthdayParty);
+    QML_REGISTER_NOCREATE_TYPE(ShoeDescription);
+    QML_REGISTER_NOCREATE_TYPE(Person);
+    QML_REGISTER_TYPE(People, 1,0, Boy, Boy);
+    QML_REGISTER_TYPE(People, 1,0, Girl, Girl);
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent component(&engine, ":example.qml");
     BirthdayParty *party = qobject_cast<BirthdayParty *>(component.create());
 
     if (party && party->celebrant()) {
@@ -62,8 +68,8 @@ int main(int argc, char ** argv)
             qWarning() << "She is inviting:";
 
         Person *bestShoe = 0;
-        for (int ii = 0; ii < party->guests()->count(); ++ii) {
-            Person *guest = party->guests()->at(ii);
+        for (int ii = 0; ii < party->guestCount(); ++ii) {
+            Person *guest = party->guest(ii);
             qWarning() << "   " << guest->name();
 
             if (!bestShoe || bestShoe->shoe()->price() < guest->shoe()->price())

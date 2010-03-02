@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-  \page qmlbasictypes.html
+  \page qdeclarativebasictypes.html
   \title QML Basic Types
 
   QML uses a set of property types, which are primitive within QML.
@@ -294,7 +294,7 @@
   Actions are used like this:
 
   \qml
-  MouseRegion { onClicked: MyItem.myaction.trigger() }
+  MouseArea { onClicked: MyItem.myaction.trigger() }
   State { name: "enabled"; when: MyItem.myaction.enabled == true }
   Text { text: MyItem.someaction.text }
   \endqml

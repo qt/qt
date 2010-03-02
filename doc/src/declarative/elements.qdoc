@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlelements.html
+\page qdeclarativeelements.html
 \target elements
 \title QML Elements
 
@@ -88,6 +88,8 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Binding
 \o \l ListModel, \l ListElement
 \o \l VisualItemModel
+\o \l VisualDataModel
+\o \l Package
 \o \l XmlListModel and XmlRole
 \o \l DateTimeFormatter
 \o \l NumberFormatter
@@ -96,7 +98,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o
 \list
 \o \l Script
-\o \l Connection
+\o \l Connections
 \o \l Component
 \o \l Timer
 \o \l QtObject
@@ -126,7 +128,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l MouseRegion
+\o \l MouseArea
 \o \l FocusScope
 \endlist
 
@@ -143,6 +145,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Repeater
 \o \l SystemPalette
 \o \l GraphicsObjectContainer
+\o \l LayoutItem
 \endlist
 
 \header

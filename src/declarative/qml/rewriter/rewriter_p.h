@@ -44,7 +44,7 @@
 
 #include "textwriter_p.h"
 
-#include <qmljsastvisitor_p.h>
+#include <qdeclarativejsastvisitor_p.h>
 
 #include <QtCore/QList>
 #include <QtCore/QString>
@@ -52,7 +52,7 @@
 QT_BEGIN_HEADER
 QT_QML_BEGIN_NAMESPACE
 
-namespace QmlJS {
+namespace QDeclarativeJS {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Replacement
@@ -145,7 +145,7 @@ private:
 	QList<Replacement> _replacementList;
 };
 
-} // end of namespace QmlJS
+} // end of namespace QDeclarativeJS
 
 QT_QML_END_NAMESPACE
 QT_END_HEADER

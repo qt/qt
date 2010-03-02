@@ -39,7 +39,13 @@
 **
 ****************************************************************************/
 #include <QtGui>
+
+#ifdef Q_WS_WIN
+#define CALLGRIND_START_INSTRUMENTATION  {}
+#define CALLGRIND_STOP_INSTRUMENTATION   {}
+#else
 #include "valgrind/callgrind.h"
+#endif
 
 class ItemMover : public QObject
 {

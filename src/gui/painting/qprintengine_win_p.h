@@ -108,7 +108,6 @@ public:
 private:
     friend class QPrintDialog;
     friend class QPageSetupDialog;
-    friend int qt_printerRealNumCopies(QPaintEngine *);
 };
 
 class QWin32PrintEnginePrivate : public QAlphaPaintEnginePrivate

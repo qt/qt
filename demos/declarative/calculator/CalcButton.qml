@@ -15,7 +15,7 @@ Rectangle {
 
     Text { id: label; anchors.centerIn: parent; color: palette.buttonText }
 
-    MouseRegion {
+    MouseArea {
         id: clickRegion
         anchors.fill: parent
         onClicked: {

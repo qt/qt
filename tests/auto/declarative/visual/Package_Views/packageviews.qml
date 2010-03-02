@@ -29,14 +29,14 @@ Rectangle {
         delegate: Package {
             Rectangle {
                 id: listItem; Package.name: "list"; width:root.width/2; height: 50; color: "transparent"; border.color: "white"
-                MouseRegion {
+                MouseArea {
                     anchors.fill: parent
                     onClicked: myState.state = myState.state == "list" ? "grid" : "list"
                 }
             }
             Rectangle {
                 id: gridItem; Package.name: "grid"; width:50; height: 50; color: "transparent"; border.color: "white"
-                MouseRegion {
+                MouseArea {
                     anchors.fill: parent
                     onClicked: myState.state = myState.state == "list" ? "grid" : "list"
                 }
@@ -64,7 +64,7 @@ Rectangle {
                         from: "*"; to: "*"
                         SequentialAnimation {
                             ParentAction{}
-                            NumberAnimation { matchProperties: "x,y,width"; easing: "easeInOutQuad" }
+                            NumberAnimation { properties: "x,y,width"; easing.type: "InOutQuad" }
                         }
                     }
                 ]

@@ -872,7 +872,7 @@
 
     Developers using Visual Studio to write Qt applications can use the
     Visual Studio integration facilities provided with the
-    \l{Qt Commercial Editions} and do not need to worry about how
+    \l{Qt Commercial Edition} and do not need to worry about how
     project dependencies are managed.
 
     However, some developers may need to import an existing \c qmake project
@@ -1727,8 +1727,15 @@ distinction between shared and
     
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 139
 
+    There is also a convenience function for adding conditional rules
+    called \c{addMMPRules}. Suppose you need certain functionality
+    to require different library depending on architecture. This
+    can be specified with \c{addMMPRules} as follows:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 148
+
     \note You should not use this variable to add MMP statements that are
-    explicitly supported by their own variables, such as 
+    explicitly supported by their own variables, such as
     \c TARGET.EPOCSTACKSIZE. 
     Doing so could result in duplicate statements in the MMP file.
 

@@ -32,7 +32,7 @@ Rectangle {
             // This mouse region covers the entire delegate.
             // When clicked it changes mode to 'Details'.  If we are already
             // in Details mode, then no change will happen.
-            MouseRegion {
+            MouseArea {
                 id: pageMouse
                 anchors.fill: parent
                 onClicked: wrapper.state = 'Details';
@@ -81,7 +81,7 @@ Rectangle {
                 Flickable {
                     id: flick
                     anchors.top: methodTitle.bottom; anchors.bottom: parent.bottom
-                    width: parent.width; viewportHeight: methodText.height; clip: true
+                    width: parent.width; contentHeight: methodText.height; clip: true
                     Text { id: methodText; text: method; wrap: true; width: details.width }
                 }
                 Image {
@@ -114,7 +114,7 @@ Rectangle {
                 // Make the detailed view fill the entire list area
                 PropertyChanges { target: wrapper; height: list.height }
                 // Move the list so that this item is at the top.
-                PropertyChanges { target: wrapper.ListView.view; explicit: true; viewportY: wrapper.y }
+                PropertyChanges { target: wrapper.ListView.view; explicit: true; contentY: wrapper.y }
                 // Disallow flicking while we're in detailed view
                 PropertyChanges { target: wrapper.ListView.view; interactive: false }
             }
@@ -124,7 +124,7 @@ Rectangle {
                 ParallelAnimation {
                     ColorAnimation { property: "color"; duration: 500 }
                     NumberAnimation {
-                        duration: 300; matchProperties: "detailsOpacity,x,viewportY,height,width"
+                        duration: 300; properties: "detailsOpacity,x,contentY,height,width"
                     }
                 }
             }

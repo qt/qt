@@ -5,16 +5,12 @@ Rectangle {
     id: window; color: "#646464"
     width: 640; height: 480
 
-    function turnLeft() {
-        image.rotation -= 90
-    }
-    function turnRight() {
-        image.rotation += 90
-    }
+    property int angle: 0
 
     Image {
         id: image; source: "content/bg1.jpg"; anchors.centerIn: parent; transformOrigin: Item.Center
-        rotation: Behavior { NumberAnimation { easing: "easeOutCubic"; duration: 300 } }
+	rotation: window.angle
+        rotation: Behavior { NumberAnimation { easing.type: "OutCubic"; duration: 300 } }
     }
 
     Button {
@@ -26,6 +22,6 @@ Rectangle {
         anchors { right: parent.right; bottom: parent.bottom; rightMargin: 10; bottomMargin: 10 }
     }
 
-    Connection { sender: leftButton; signal: "clicked()"; script: window.turnLeft() }
-    Connection { sender: rightButton; signal: "clicked()"; script: window.turnRight() }
+    Connections { target: leftButton; onClicked: window.angle -= 90 }
+    Connections { target: rightButton; onClicked: window.angle += 90 }
 }

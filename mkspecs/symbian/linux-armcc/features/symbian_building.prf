@@ -159,9 +159,7 @@ QMAKE_EXTRA_COMPILERS += symbianresources
 
 contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
     baseTarget = $$basename(TARGET)
-    baseTarget = $$replace(baseTarget, -,_)
-    baseTarget = $$replace(baseTarget, :,_)
-    baseTarget = $$replace(baseTarget, \.,_)
+    # If you change this, also see application_icon.prf
     baseTarget = $$replace(baseTarget, " ",_)
 
     # Make our own extra compiler target in order to get dependencies for generated

@@ -10,9 +10,10 @@ Rectangle {
         Image {
             id: picture
             source: "pics/niagara_falls.jpg"
+            asynchronous: true
         }
-        viewportWidth: picture.width
-        viewportHeight: picture.height
+        contentWidth: picture.width
+        contentHeight: picture.height
         // Only show the scrollbars when the view is moving.
         states: [
             State {
@@ -27,7 +28,7 @@ Rectangle {
                 from: "*"
                 to: "*"
                 NumberAnimation {
-                    matchProperties: "opacity"
+                    properties: "opacity"
                     duration: 400
                 }
             }

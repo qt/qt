@@ -1021,14 +1021,14 @@ QString decodeMSG(const MSG& msg)
                 LPWINDOWPOS winPos = (LPWINDOWPOS)lParam;
                 if (!winPos)
                     break;
-                QString hwndAfter = valueCheck((uint)winPos->hwndInsertAfter,
-                                          FLAG_STRING((uint)HWND_BOTTOM,    "HWND_BOTTOM"),
-                                          FLAG_STRING((int)HWND_NOTOPMOST, "HWND_NOTOPMOST"),
-                                          FLAG_STRING((uint)HWND_TOP,       "HWND_TOP"),
-                                          FLAG_STRING((int)HWND_TOPMOST,   "HWND_TOPMOST"),
+                QString hwndAfter = valueCheck(quint64(winPos->hwndInsertAfter),
+                                          FLAG_STRING((quintptr)HWND_BOTTOM,    "HWND_BOTTOM"),
+                                          FLAG_STRING((quintptr)HWND_NOTOPMOST, "HWND_NOTOPMOST"),
+                                          FLAG_STRING((quintptr)HWND_TOP,       "HWND_TOP"),
+                                          FLAG_STRING((quintptr)HWND_TOPMOST,   "HWND_TOPMOST"),
                                           FLAG_STRING());
                 if (hwndAfter.size() == 0)
-                    hwndAfter = QString::number((uint)winPos->hwndInsertAfter, 16);
+                    hwndAfter = QString::number((quintptr)winPos->hwndInsertAfter, 16);
                 QString flags = flagCheck(winPos->flags,
                                           FLGSTR(SWP_DRAWFRAME),
                                           FLGSTR(SWP_FRAMECHANGED),

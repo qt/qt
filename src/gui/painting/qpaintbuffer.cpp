@@ -45,6 +45,8 @@
 #include <private/qfontengine_p.h>
 #include <private/qemulationpaintengine_p.h>
 #include <private/qimage_p.h>
+#include <qstatictext.h>
+#include <private/qstatictext_p.h>
 
 #include <QDebug>
 
@@ -306,6 +308,8 @@ public:
         Q_Q(QPaintBufferEngine);
         q->buffer->addCommand(QPaintBufferPrivate::Cmd_SystemStateChanged, QVariant(systemClip));
     }
+
+    QTransform last;
 };
 
 
@@ -492,6 +496,32 @@ void QPaintBufferEngine::renderHintsChanged()
 
 void QPaintBufferEngine::transformChanged()
 {
+    Q_D(QPaintBufferEngine);
+    const QTransform &transform = state()->matrix;
+
+    QTransform delta;
+
+    bool invertible = false;
+    if (transform.type() <= QTransform::TxScale && transform.type() == d->last.type())
+        delta = transform * d->last.inverted(&invertible);
+
+    d->last = transform;
+
+    if (invertible && delta.type() == QTransform::TxNone)
+        return;
+
+    if (invertible && delta.type() == QTransform::TxTranslate) {
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+        qDebug() << "QPaintBufferEngine: transformChanged (translate only) " << state()->matrix;
+#endif
+        QPaintBufferCommand *cmd =
+            buffer->addCommand(QPaintBufferPrivate::Cmd_Translate);
+
+        qreal data[] = { delta.dx(), delta.dy() };
+        cmd->extra = buffer->addData((qreal *) data, 2);
+        return;
+    }
+
     // ### accumulate, like in QBrush case...
     if (!buffer->commands.isEmpty()
         && buffer->commands.last().id == QPaintBufferPrivate::Cmd_SetTransform) {
@@ -960,6 +990,18 @@ void QPaintBufferEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         buffer->updateBoundingRect(r);
 }
 
+void QPaintBufferEngine::drawStaticTextItem(QStaticTextItem *staticTextItem)
+{
+    QString text = QString(staticTextItem->chars, staticTextItem->numChars);
+
+    QStaticText staticText(text);
+    staticText.prepare(state()->matrix, staticTextItem->font);
+
+    QVariantList variants;
+    variants << QVariant(staticTextItem->font) << QVariant::fromValue(staticText);
+    buffer->addCommand(QPaintBufferPrivate::Cmd_DrawStaticText, QVariant(variants));
+}
+
 void QPaintBufferEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
 {
 #ifdef QPAINTBUFFER_DEBUG_DRAW
@@ -999,6 +1041,7 @@ void QPaintBufferEngine::drawTextItem(const QPointF &pos, const QTextItem &ti)
 
 void QPaintBufferEngine::setState(QPainterState *s)
 {
+    Q_D(QPaintBufferEngine);
     if (m_begin_detected) {
 #ifdef QPAINTBUFFER_DEBUG_DRAW
             qDebug() << "QPaintBufferEngine: setState: begin, ignoring.";
@@ -1016,6 +1059,8 @@ void QPaintBufferEngine::setState(QPainterState *s)
 #endif
         buffer->addCommand(QPaintBufferPrivate::Cmd_Restore);
     }
+
+    d->last = s->matrix;
 
     QPaintEngineEx::setState(s);
 }
@@ -1137,6 +1182,15 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
 #endif
         painter->setTransform(xform * m_world_matrix);
         break; }
+
+    case QPaintBufferPrivate::Cmd_Translate: {
+        QPointF delta(d->floats.at(cmd.extra), d->floats.at(cmd.extra+1));
+#ifdef QPAINTBUFFER_DEBUG_DRAW
+        qDebug() << " -> Cmd_Translate, offset: " << cmd.offset << delta;
+#endif
+        painter->translate(delta.x(), delta.y());
+        return;
+    }
 
     case QPaintBufferPrivate::Cmd_SetCompositionMode: {
         QPainter::CompositionMode mode = (QPainter::CompositionMode) cmd.extra;
@@ -1425,6 +1479,19 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
 #endif
         painter->setClipRegion(region, Qt::ClipOperation(cmd.extra));
         break; }
+        
+    case QPaintBufferPrivate::Cmd_DrawStaticText: {
+            
+            QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
+            
+            QFont font(variants.at(0).value<QFont>());
+            QStaticText text(variants.at(0).value<QStaticText>());
+            
+            painter->setFont(font);
+            painter->drawStaticText(QPointF(0, 0), text);
+            
+        break;
+    }
 
     case QPaintBufferPrivate::Cmd_DrawText: {
         QPointF pos(d->floats.at(cmd.extra), d->floats.at(cmd.extra+1));
@@ -1770,8 +1837,28 @@ struct QPaintBufferCacheEntry
     QVariant::Type type;
     quint64 cacheKey;
 };
+
+struct QPaintBufferCacheEntryV2
+{
+    enum Type {
+        ImageKey,
+        PixmapKey
+    };
+
+    struct Flags {
+        uint type : 8;
+        uint key : 24;
+    };
+
+    union {
+        Flags flags;
+        uint bits;
+    };
+};
+
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QPaintBufferCacheEntry)
+Q_DECLARE_METATYPE(QPaintBufferCacheEntryV2)
 QT_BEGIN_NAMESPACE
 
 QDataStream &operator<<(QDataStream &stream, const QPaintBufferCacheEntry &entry)
@@ -1784,10 +1871,22 @@ QDataStream &operator>>(QDataStream &stream, QPaintBufferCacheEntry &entry)
     return stream >> entry.type >> entry.cacheKey;
 }
 
+QDataStream &operator<<(QDataStream &stream, const QPaintBufferCacheEntryV2 &entry)
+{
+    return stream << entry.bits;
+}
+
+QDataStream &operator>>(QDataStream &stream, QPaintBufferCacheEntryV2 &entry)
+{
+    return stream >> entry.bits;
+}
+
 static int qRegisterPaintBufferMetaTypes()
 {
     qRegisterMetaType<QPaintBufferCacheEntry>();
     qRegisterMetaTypeStreamOperators<QPaintBufferCacheEntry>("QPaintBufferCacheEntry");
+    qRegisterMetaType<QPaintBufferCacheEntryV2>();
+    qRegisterMetaTypeStreamOperators<QPaintBufferCacheEntryV2>("QPaintBufferCacheEntryV2");
 
     return 0; // something
 }
@@ -1796,6 +1895,9 @@ Q_CONSTRUCTOR_FUNCTION(qRegisterPaintBufferMetaTypes)
 
 QDataStream &operator<<(QDataStream &stream, const QPaintBuffer &buffer)
 {
+    QHash<qint64, uint> pixmapKeys;
+    QHash<qint64, uint> imageKeys;
+
     QHash<qint64, QPixmap> pixmaps;
     QHash<qint64, QImage> images;
 
@@ -1804,19 +1906,33 @@ QDataStream &operator<<(QDataStream &stream, const QPaintBuffer &buffer)
         const QVariant &v = variants.at(i);
         if (v.type() == QVariant::Image) {
             const QImage image(v.value<QImage>());
-            images[image.cacheKey()] = image;
 
-            QPaintBufferCacheEntry entry;
-            entry.type = QVariant::Image;
-            entry.cacheKey = image.cacheKey();
+            QPaintBufferCacheEntryV2 entry;
+            entry.flags.type = QPaintBufferCacheEntryV2::ImageKey;
+
+            QHash<qint64, uint>::iterator it = imageKeys.find(image.cacheKey());
+            if (it != imageKeys.end()) {
+                entry.flags.key = *it;
+            } else {
+                imageKeys[image.cacheKey()] = entry.flags.key = images.size();
+                images[images.size()] = image;
+            }
+
             variants[i] = QVariant::fromValue(entry);
         } else if (v.type() == QVariant::Pixmap) {
             const QPixmap pixmap(v.value<QPixmap>());
-            pixmaps[pixmap.cacheKey()] = pixmap;
 
-            QPaintBufferCacheEntry entry;
-            entry.type = QVariant::Pixmap;
-            entry.cacheKey = pixmap.cacheKey();
+            QPaintBufferCacheEntryV2 entry;
+            entry.flags.type = QPaintBufferCacheEntryV2::PixmapKey;
+
+            QHash<qint64, uint>::iterator it = pixmapKeys.find(pixmap.cacheKey());
+            if (it != pixmapKeys.end()) {
+                entry.flags.key = *it;
+            } else {
+                pixmapKeys[pixmap.cacheKey()] = entry.flags.key = pixmaps.size();
+                pixmaps[pixmaps.size()] = pixmap;
+            }
+
             variants[i] = QVariant::fromValue(entry);
         }
     }
@@ -1858,6 +1974,15 @@ QDataStream &operator>>(QDataStream &stream, QPaintBuffer &buffer)
                 variants[i] = QVariant(images.value(entry.cacheKey));
             else
                 variants[i] = QVariant(pixmaps.value(entry.cacheKey));
+        } else if (v.canConvert<QPaintBufferCacheEntryV2>()) {
+            QPaintBufferCacheEntryV2 entry = v.value<QPaintBufferCacheEntryV2>();
+
+            if (entry.flags.type == QPaintBufferCacheEntryV2::ImageKey)
+                variants[i] = QVariant(images.value(entry.flags.key));
+            else if (entry.flags.type == QPaintBufferCacheEntryV2::PixmapKey)
+                variants[i] = QVariant(pixmaps.value(entry.flags.key));
+            else
+                qWarning() << "operator<<(QDataStream &stream, QPaintBuffer &buffer): unrecognized cache entry type:" << entry.flags.type;
         }
     }
 

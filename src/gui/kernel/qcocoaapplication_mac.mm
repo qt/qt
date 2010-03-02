@@ -79,6 +79,8 @@
 #include <private/qcocoaapplicationdelegate_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 
+QT_USE_NAMESPACE
+
 @implementation NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
 
 - (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu
@@ -106,7 +108,6 @@
             | NSFontPanelUnderlineEffectModeMask
             | NSFontPanelStrikethroughEffectModeMask;
 }
-
 
 - (void)qt_sendPostedMessage:(NSEvent *)event
 {

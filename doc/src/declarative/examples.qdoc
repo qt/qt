@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-\page qmlexamples.html
+\page qdeclarativeexamples.html
 \title QML Examples and Walkthroughs
 
 \section1 Running Examples and Demos
@@ -77,10 +77,10 @@ These will be documented, and demonstrate how to achieve various things in QML.
     \o Elastic Dial
     \o \image dial-example.gif
 \row
-    \o \l{qmlexampletoggleswitch.html}{Toggle Switch}
+    \o \l{qdeclarativeexampletoggleswitch.html}{Toggle Switch}
     \o \image switch-example.gif
 \row
-    \o \l{Advanced Tutorial}{SameGame}
+    \o \l{QML Advanced Tutorial}{SameGame}
     \o \image declarative-adv-tutorial4.gif
 \endtable
 

@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <qtest.h>
-#include <QmlEngine>
-#include <QmlComponent>
+#include <QDeclarativeEngine>
+#include <QDeclarativeComponent>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -58,7 +58,7 @@ private slots:
 
 private:
     static QStringList findJSFiles(const QDir &);
-    QmlEngine engine;
+    QDeclarativeEngine engine;
 };
 
 QStringList tst_parserstress::findJSFiles(const QDir &d)
@@ -130,7 +130,7 @@ void tst_parserstress::ecmascript()
 
     QByteArray qmlData = qml.toUtf8();
 
-    QmlComponent component(&engine);
+    QDeclarativeComponent component(&engine);
     component.setData(qmlData, QUrl::fromLocalFile(SRCDIR + QString("/dummy.qml")));
     QSet<QString> failingTests;
     failingTests << "uc-003.js" << "uc-005.js" << "regress-352044-02-n.js"

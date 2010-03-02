@@ -80,6 +80,8 @@ class tst_QDBusConnection: public QObject
     int signalsReceived;
 public slots:
     void oneSlot() { ++signalsReceived; }
+    void exitLoop() { ++signalsReceived; QTestEventLoop::instance().exitLoop(); }
+    void secondCallWithCallback();
 
 private slots:
     void noConnection();
@@ -102,6 +104,7 @@ private slots:
     void multipleInterfacesInQObject();
 
     void slotsWithLessParameters();
+    void nestedCallWithCallback();
 
 public:
     QString serviceName() const { return "com.trolltech.Qt.Autotests.QDBusConnection"; }
@@ -615,6 +618,32 @@ void tst_QDBusConnection::slotsWithLessParameters()
                         signal.member(), "s", this, SLOT(oneSlot())));
     QVERIFY(con.send(signal));
     QTest::qWait(100);
+    QCOMPARE(signalsReceived, 1);
+}
+
+void tst_QDBusConnection::secondCallWithCallback()
+{
+    qDebug("Hello");
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QDBusMessage msg = QDBusMessage::createMethodCall(con.baseService(), "/test", QString(),
+                                                      "test0");
+    con.callWithCallback(msg, this, SLOT(exitLoop()), SLOT(secondCallWithCallback()));
+}
+
+void tst_QDBusConnection::nestedCallWithCallback()
+{
+    TestObject testObject;
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    QVERIFY(connection.registerObject("/test", &testObject,
+            QDBusConnection::ExportAllContents));
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(connection.baseService(), "/test", QString(),
+                                                      "ThisFunctionDoesntExist");
+    signalsReceived = 0;
+
+    connection.callWithCallback(msg, this, SLOT(exitLoop()), SLOT(secondCallWithCallback()), 10);
+    QTestEventLoop::instance().enterLoop(15);
+    QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(signalsReceived, 1);
 }
 

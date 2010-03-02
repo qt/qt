@@ -205,7 +205,8 @@ public:
         TranslationsPath,
         SettingsPath,
         DemosPath,
-        ExamplesPath
+        ExamplesPath,
+        ImportsPath
     };
     static QString location(LibraryLocation);
 };
