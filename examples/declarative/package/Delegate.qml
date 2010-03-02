@@ -2,24 +2,26 @@ import Qt 4.6
 
 //![0]
 Package {
-    Text { id: listDelegate; width: 200; height: 25; text: "Empty"; Package.name: "list" }
-    Text { id: gridDelegate; width: 100; height: 50; text: "Empty"; Package.name: "grid" }
+    Text { id: listDelegate; width: 200; height: 25; text: 'Empty'; Package.name: 'list' }
+    Text { id: gridDelegate; width: 100; height: 50; text: 'Empty'; Package.name: 'grid' }
 
     Rectangle {
         id: wrapper
         width: 200; height: 25
-        color: "lightsteelblue"
+        color: 'lightsteelblue'
+
         Text { text: display; anchors.centerIn: parent }
         MouseRegion {
             anchors.fill: parent
             onClicked: {
-                if (wrapper.state == "inList")
-                    wrapper.state = "inGrid";
+                if (wrapper.state == 'inList')
+                    wrapper.state = 'inGrid';
                 else
-                    wrapper.state = "inList";
+                    wrapper.state = 'inList';
             }
         }
-        state: "inList"
+
+        state: 'inList'
         states: [
             State {
                 name: 'inList'
@@ -27,15 +29,17 @@ Package {
             },
             State {
                 name: 'inGrid'
-                ParentChange { target: wrapper; parent: gridDelegate }
-                PropertyChanges { target: wrapper; x: 0; y: 0; width: gridDelegate.width; height: gridDelegate.height }
+                ParentChange {
+                    target: wrapper; parent: gridDelegate
+                    x: 0; y: 0; width: gridDelegate.width; height: gridDelegate.height
+                }
             }
         ]
+
         transitions: [
             Transition {
-                SequentialAnimation {
-                    ParentAction { target: wrapper }
-                    NumberAnimation { targets: wrapper; properties: 'x,y,width,height'; duration: 300 }
+                ParentAnimation {
+                    NumberAnimation { properties: 'x,y,width,height'; duration: 300 }
                 }
             }
         ]

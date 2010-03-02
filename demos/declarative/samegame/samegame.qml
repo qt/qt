@@ -39,7 +39,7 @@ Rectangle {
     Dialog {
         id: scoreName; anchors.centerIn: parent; z: 22;
         property int initialWidth: 0
-        width: Behavior{NumberAnimation{} enabled: initialWidth!=0}
+        Behavior on width {NumberAnimation{} enabled: initialWidth!=0}
         Text {
             id: spacer
             anchors.left: scoreName.left

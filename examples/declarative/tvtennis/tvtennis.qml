@@ -16,7 +16,7 @@ Rectangle {
         x: 20; width: 20; height: 20; z: 1
 
         // Move the ball to the right and back to the left repeatedly
-        x: SequentialAnimation {
+        SequentialAnimation on x {
             repeat: true
             NumberAnimation { to: page.width - 40; duration: 2000 }
             ScriptAction { script: Qt.playSound('paddle.wav') }
@@ -27,7 +27,7 @@ Rectangle {
         }
 
         // Make y follow the target y coordinate, with a velocity of 200
-        y: SpringFollow { source: ball.targetY; velocity: 200 }
+        SpringFollow on y { source: ball.targetY; velocity: 200 }
 
         // Detect the ball hitting the top or bottom of the view and bounce it
         onYChanged: {
@@ -47,7 +47,7 @@ Rectangle {
         id: leftBat
         color: "Lime"
         x: 2; width: 20; height: 90
-        y: SpringFollow {
+        SpringFollow on y {
             source: ball.y - 45; velocity: 300
             enabled: ball.direction == 'left'
         }
@@ -56,7 +56,7 @@ Rectangle {
         id: rightBat
         color: "Lime"
         x: page.width - 22; width: 20; height: 90
-        y: SpringFollow {
+        SpringFollow on y {
             source: ball.y-45; velocity: 300
             enabled: ball.direction == 'right'
         }
