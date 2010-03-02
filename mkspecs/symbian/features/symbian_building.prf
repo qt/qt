@@ -1,14 +1,10 @@
-gcceExtraFlags = -I${EPOCROOT}epoc32/include/ --include=${EPOCROOT}epoc32/include/gcce/gcce.h -march=armv5t -mapcs -mthumb-interwork -nostdinc -c -fvisibility-inlines-hidden -msoft-float -T script
-QMAKE_CFLAGS += $${gcceExtraFlags}
-QMAKE_CXXFLAGS += $${gcceExtraFlags} -x c++ -fexceptions -fno-unit-at-a-time
-
 # we have some module specific options (defined in qt.prf) lets add them
 eval(TMPVAR = \$\$QMAKE_$${TARGET}_CXXFLAGS)
 !isEmpty(TMPVAR):QMAKE_CXXFLAGS += $$TMPVAR
 eval(TMPVAR = \$\$QMAKE_$${TARGET}_LFLAGS)
 !isEmpty(TMPVAR) {
     QMAKE_LFLAGS += $$TMPVAR
-} else {  # lets provide a simple default. Without elf2e32 complains
+} else :linux-gcce {  # lets provide a simple default. Without elf2e32 complains
     QMAKE_LFLAGS += -Ttext 0x80000 -Tdata 0x400000
 }
 
@@ -21,7 +17,7 @@ isEmpty(symbianDestdir) {
     symbianDestdir = .
 }
 
-contains(QMAKE_CFLAGS, "-mthumb")|contains(QMAKE_CXXFLAGS, "-mthumb") {
+contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb")|contains(QMAKE_CFLAGS, "-mthumb")|contains(QMAKE_CXXFLAGS, "-mthumb") {
     DEFINES += __MARM_THUMB__
 }
 
@@ -30,22 +26,35 @@ for(library, LIBS) {
     library = $$replace(library, "^-l", "")
     isFullName = $$find(library, \.)
     isEmpty(isFullName):library="$${library}.dso"
-    newLIBS += "-l:$${library}"
+    linux-gcce {
+         newLIBS += "-l:$${library}"
+    } else {
+         newLIBS += "$${library}"
+    }
 }
 LIBS = $$newLIBS
 newLIBS =
-QMAKE_LIBS           += dfpaeabi drtaeabi scppnwdl
 for(library, QMAKE_LIBS) {
     library = $$replace(library, "\.dll$", ".dso")
     library = $$replace(library, "^-l", "")
     isFullName = $$find(library, \.)
     isEmpty(isFullName):library="$${library}.dso"
-    newLIBS += "-l:$${library}"
+    linux-gcce {
+         newLIBS += "-l:$${library}"
+    } else {
+         newLIBS += "$${library}"
+    }
 }
 QMAKE_LIBS = $$newLIBS
 
-# This needs to be done after the above LIBS mangling.
-include(../platformlibs.conf)
+linux-gcce {
+    QMAKE_LIBS	+= -l:usrt2_2.lib \
+                   -l:dfpaeabi.dso \
+                   -l:drtaeabi.dso \
+                   -l:scppnwdl.dso \
+                   -lsupc++ \
+                   -lgcc
+}
 
 elf2e32_LIBPATH =
 for(libPath, QMAKE_LIBDIR) {
@@ -101,11 +110,14 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.dso
     QMAKE_CLEAN += $${symbianObjdir}/$${TARGET}.def
 
-    QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
-    --target1-abs \
-    --no-undefined \
-    --strip-debug \
-    --nostdlib
+    linux-armcc: {
+        QMAKE_LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
+    } else :linux-gcce {
+        #QMAKE_LIBS += -l:edllstub.lib -l:edll.lib
+    }
+
+    QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll -u _E32Dll --entry=_E32Dll
+    DEFINES += __DLL__
 }
 
 contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
@@ -119,17 +131,20 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
     QMAKE_DISTCLEAN += $${symbianDestdir}/$${TARGET}.exe
     QMAKE_CLEAN += $${symbianDestdir}/$${TARGET}
 
-    QMAKE_LFLAGS += --soname=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
-    --target1-abs \
-    --no-undefined \
-    --strip-debug \
-    --shared \
-    --nostdlib
+    linux-armcc: {
+        QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
+    } else :linux-gcce {
+        #QMAKE_LIBS += -l:eexe.lib
+    }
+
+    QMAKE_LFLAGS += --soname $${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe
+# TODO gcce added --shared here...
+    DEFINES += __EXE__
 }
 
 # Symbian resource files
 
-#linux-armcc:symbian_resources_INCLUDES = -I$$(RVCT22INC)
+linux-armcc:symbian_resources_INCLUDES = -I$$(RVCT22INC)
 symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
 symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
@@ -163,9 +178,7 @@ QMAKE_EXTRA_COMPILERS += symbianresources
 
 contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
     baseTarget = $$basename(TARGET)
-    baseTarget = $$replace(baseTarget, -,_)
-    baseTarget = $$replace(baseTarget, :,_)
-    baseTarget = $$replace(baseTarget, \.,_)
+    # If you change this, also see application_icon.prf
     baseTarget = $$replace(baseTarget, " ",_)
 
     # Make our own extra compiler target in order to get dependencies for generated
