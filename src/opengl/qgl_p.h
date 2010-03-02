@@ -356,6 +356,7 @@ public:
     QEglContext *eglContext;
     EGLSurface eglSurface;
     void destroyEglSurfaceForDevice();
+    EGLSurface eglSurfaceForDevice() const;
 #elif defined(Q_WS_X11) || defined(Q_WS_MAC)
     void* cx;
 #endif
