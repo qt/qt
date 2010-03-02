@@ -1,6 +1,10 @@
 import Qt 4.6
 
 Rectangle {
+    id: root
+    property int added: -1
+    property var removed
+
     width: 240
     height: 320
     color: "#ffffff"
@@ -33,6 +37,8 @@ Rectangle {
                     text: number
                 }
                 color: GridView.isCurrentItem ? "lightsteelblue" : "white"
+                GridView.onAdd: root.added = index
+                GridView.onRemove: root.removed = name
             }
         }
     ]

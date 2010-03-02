@@ -57,19 +57,19 @@ class Q_DECLARATIVE_EXPORT QDeclarativeGridView : public QDeclarativeFlickable
     Q_OBJECT
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeGridView)
 
-    Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QDeclarativeItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
-    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight)
-    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightChanged)
+    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
+    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
 
-    Q_PROPERTY(Flow flow READ flow WRITE setFlow)
-    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
-    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
+    Q_PROPERTY(Flow flow READ flow WRITE setFlow NOTIFY flowChanged)
+    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled NOTIFY keyNavigationWrapsChanged)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer NOTIFY cacheBufferChanged)
     Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellWidthChanged)
     Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellHeightChanged)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -129,6 +129,12 @@ Q_SIGNALS:
     void cellWidthChanged();
     void cellHeightChanged();
     void highlightChanged();
+    void highlightItemChanged();
+    void modelChanged();
+    void delegateChanged();
+    void flowChanged();
+    void keyNavigationWrapsChanged();
+    void cacheBufferChanged();
 
 protected:
     virtual void viewportMoved();

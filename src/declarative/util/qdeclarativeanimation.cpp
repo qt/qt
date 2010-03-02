@@ -1573,7 +1573,8 @@ QDeclarativeSequentialAnimation::QDeclarativeSequentialAnimation(QObject *parent
     QDeclarativeAnimationGroup(parent)
 {
     Q_D(QDeclarativeAnimationGroup);
-    d->ag = new QSequentialAnimationGroup(this);
+    d->ag = new QSequentialAnimationGroup;
+    QDeclarative_setParent_noEvent(d->ag, this);
 }
 
 QDeclarativeSequentialAnimation::~QDeclarativeSequentialAnimation()
@@ -1638,7 +1639,8 @@ QDeclarativeParallelAnimation::QDeclarativeParallelAnimation(QObject *parent) :
     QDeclarativeAnimationGroup(parent)
 {
     Q_D(QDeclarativeAnimationGroup);
-    d->ag = new QParallelAnimationGroup(this);
+    d->ag = new QParallelAnimationGroup;
+    QDeclarative_setParent_noEvent(d->ag, this);
 }
 
 QDeclarativeParallelAnimation::~QDeclarativeParallelAnimation()
@@ -1797,7 +1799,7 @@ QDeclarativePropertyAnimation::~QDeclarativePropertyAnimation()
 void QDeclarativePropertyAnimationPrivate::init()
 {
     Q_Q(QDeclarativePropertyAnimation);
-    va = new QDeclarativeTimeLineValueAnimator;
+    va = new QDeclarativeBulkValueAnimator;
     QDeclarative_setParent_noEvent(va, q);
 }
 
@@ -2213,7 +2215,7 @@ QAbstractAnimation *QDeclarativePropertyAnimation::qtAnimation()
     return d->va;
 }
 
-struct PropertyUpdater : public QDeclarativeTimeLineValue
+struct PropertyUpdater : public QDeclarativeBulkValueUpdater
 {
     QDeclarativeStateActions actions;
     int interpolatorType;       //for Number/ColorAnimation
@@ -2231,7 +2233,6 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
         wasDeleted = &deleted;
         if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
             v = 1 - v;
-        QDeclarativeTimeLineValue::setValue(v);
         for (int ii = 0; ii < actions.count(); ++ii) {
             QDeclarativeAction &action = actions[ii];
 

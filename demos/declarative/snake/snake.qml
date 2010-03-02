@@ -65,7 +65,7 @@ Rectangle {
             anchors.fill: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            opacity: Behavior { NumberAnimation { duration: 500 } }
+            Behavior on opacity { NumberAnimation { duration: 500 } }
 
             Text {
                 color: "white"
@@ -121,7 +121,7 @@ Rectangle {
     Rectangle {
         id: progressBar
         opacity: 0
-        opacity: Behavior { NumberAnimation { duration: 200 } }
+        Behavior on opacity { NumberAnimation { duration: 200 } }
         color: "transparent"
         border.width: 2
         border.color: "#221edd"
@@ -137,7 +137,7 @@ Rectangle {
             id: progressIndicator
             color: "#221edd";
             width: 0;
-            width: Behavior { NumberAnimation { duration: startHeartbeatTimer.running ? 1000 : 0}}
+            Behavior on width { NumberAnimation { duration: startHeartbeatTimer.running ? 1000 : 0}}
             height: 30;
         }
     }

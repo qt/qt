@@ -14,7 +14,7 @@ Rectangle {
     property Item text: myText
     color: "white"; border.width: 1; width: myText.width + 20; height: myText.height + 40;
     opacity: 0
-    opacity: Behavior {
+    Behavior on opacity {
         NumberAnimation { duration: 1000 }
     }
     Text { id: myText; anchors.centerIn: parent; text: "Hello World!" }
