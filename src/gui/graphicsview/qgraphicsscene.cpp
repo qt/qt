@@ -5972,12 +5972,12 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 
     QList<QGesture *> allGestures = event->gestures();
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
-            << "Delivering gestures:" <<  allGestures;
+            << "Gestures:" <<  allGestures;
 
     QSet<QGesture *> startedGestures;
-    QPoint delta = graphicsView->mapFromGlobal(QPoint());
-    QTransform toScene =  QTransform::fromTranslate(delta.x(), delta.y())
-                          * graphicsView->viewportTransform().inverted();
+    QPoint delta = viewport->mapFromGlobal(QPoint());
+    QTransform toScene = QTransform::fromTranslate(delta.x(), delta.y())
+                         * graphicsView->viewportTransform().inverted();
     foreach (QGesture *gesture, allGestures) {
         // cache scene coordinates of the hot spot
         if (gesture->hasHotSpot()) {
@@ -6003,7 +6003,8 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         cachedTargetItems = cachedItemGestures.keys();
         qSort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);
         DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
-                << "Conflicting gestures:" <<  conflictedGestures;
+                << "Normal gestures:" << normalGestures
+                << "Conflicting gestures:" << conflictedGestures;
 
         // deliver conflicted gestures as override events AND remember
         // initial gesture targets
@@ -6080,6 +6081,10 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             const Qt::GestureFlags flags = d->gestureContext.value(gesture->gestureType());
             if (flags & Qt::IgnoredGesturesPropagateToParent)
                 parentPropagatedGestures.insert(gesture);
+        } else {
+            DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                    << "no target for" << gesture << "at"
+                    << gesture->hotSpot() << gesture->d_func()->sceneHotSpot;
         }
     }
     qSort(cachedTargetItems.begin(), cachedTargetItems.end(), qt_closestItemFirst);
