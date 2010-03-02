@@ -42,7 +42,6 @@
 /*
   generator.cpp
 */
-#include <QtCore>
 #include <qdir.h>
 #include <qdebug.h>
 #include "codemarker.h"
