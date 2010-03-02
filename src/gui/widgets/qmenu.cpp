@@ -487,7 +487,7 @@ void QMenuPrivate::popupAction(QAction *action, int delay, bool activateFirst)
     if (action && action->isEnabled()) {
         if (!delay)
             q->internalDelayedPopup();
-        else
+        else if (!QMenuPrivate::menuDelayTimer.isActive() && (!action->menu() || !action->menu()->isVisible()))
             QMenuPrivate::menuDelayTimer.start(delay, q);
         if (activateFirst && action->menu())
             action->menu()->d_func()->setFirstActionActive();
@@ -543,15 +543,6 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
 {
     Q_Q(QMenu);
     tearoffHighlighted = 0;
-    if (action == currentAction) {
-        if (!action || !action->menu() || action->menu() == activeMenu) {
-            if(QMenu *menu = qobject_cast<QMenu*>(causedPopup.widget)) {
-                if(causedPopup.action && menu->d_func()->activeMenu == q)
-                    menu->d_func()->setCurrentAction(causedPopup.action, 0, reason, false);
-            }
-        }
-        return;
-    }
     if (currentAction)
         q->update(actionRect(currentAction));
 
@@ -565,6 +556,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
 #ifdef QT3_SUPPORT
     emitHighlighted = action;
 #endif
+
     currentAction = action;
     if (action) {
         if (!action->isSeparator()) {
