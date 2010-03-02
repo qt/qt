@@ -428,14 +428,6 @@ QFont QFontDialog::getFont(bool *ok, QWidget *parent)
 QFont QFontDialogPrivate::getFont(bool *ok, const QFont &initial, QWidget *parent,
                                   const QString &title, QFontDialog::FontDialogOptions options)
 {
-#ifdef Q_WS_MAC
-    if (!(options & QFontDialog::DontUseNativeDialog)
-            && QFontDialogPrivate::sharedFontPanelAvailable) {
-        return QFontDialogPrivate::execCocoaFontPanel(ok, initial, parent,
-                       title.isEmpty() ? QFontDialog::tr("Select Font") : title, options);
-    }
-#endif
-
     QFontDialog dlg(parent);
     dlg.setOptions(options);
     dlg.setCurrentFont(initial);

@@ -139,13 +139,7 @@ public:
     QByteArray memberToDisconnectOnClose;
 
 #ifdef Q_WS_MAC
-    static void *openCocoaFontPanel(const QFont &initial,
-            QWidget *parent, const QString &title,
-            QFontDialog::FontDialogOptions options,
-            QFontDialogPrivate *priv = 0);
     static void closeCocoaFontPanel(void *delegate);
-    static QFont execCocoaFontPanel(bool *ok, const QFont &initial, QWidget *parent,
-            const QString &title, QFontDialog::FontDialogOptions options);
     static void setFont(void *delegate, const QFont &font);
 
     inline void done(int result) { q_func()->done(result); }
