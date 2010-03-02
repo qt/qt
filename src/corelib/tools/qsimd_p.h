@@ -118,6 +118,8 @@ enum CPUFeatures {
 
 Q_CORE_EXPORT uint qDetectCPUFeatures();
 
+Q_CORE_EXPORT uint qDetectCPUFeatures();
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
