@@ -154,7 +154,6 @@ void QDeclarativeFlickablePrivate::init()
 */
 qreal QDeclarativeFlickablePrivate::overShootDistance(qreal velocity, qreal size)
 {
-    Q_Q(QDeclarativeFlickable);
     if (maxVelocity <= 0)
         return 0.0;
 
