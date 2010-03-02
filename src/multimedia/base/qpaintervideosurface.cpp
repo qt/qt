@@ -1158,14 +1158,14 @@ QAbstractVideoSurface::Error QVideoSurfaceGlslPainter::paint(
             glBindTexture(GL_TEXTURE_2D, m_textureIds[2]);
             glActiveTexture(GL_TEXTURE0);
 
-            m_program.setUniformValue("texY", 0);
-            m_program.setUniformValue("texU", 1);
-            m_program.setUniformValue("texV", 2);
+            m_program.setUniformValue("texY", GLint(0));
+            m_program.setUniformValue("texU", GLint(1));
+            m_program.setUniformValue("texV", GLint(2));
         } else {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, m_textureIds[0]);
 
-            m_program.setUniformValue("texRgb", 0);
+            m_program.setUniformValue("texRgb", GLint(0));
         }
         m_program.setUniformValue("colorMatrix", m_colorMatrix);
 
