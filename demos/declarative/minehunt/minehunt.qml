@@ -32,7 +32,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         source: "pics/flag.png"
                         opacity: modelData.hasFlag
-                        opacity: Behavior {
+                        Behavior on opacity {
                             NumberAnimation {
                                 property: "opacity"
                                 duration: 250

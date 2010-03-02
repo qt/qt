@@ -502,10 +502,9 @@ void tst_qdeclarativevaluetypes::valueInterceptors()
     QDeclarativeComponent component(&engine, TEST_FILE("valueInterceptors.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     checkNoErrors(component);
-    QEXPECT_FAIL("", "QT-2920", Abort);
     QVERIFY(object != 0);
 
-    QCOMPARE(object->rect().x(), 26);
+    QCOMPARE(object->rect().x(), 13);
 
     object->setProperty("value", 99);
 

@@ -1,4 +1,5 @@
 import Qt 4.6
+import org.webkit 1.0
 
 // The WebView supports QML data through the HTML OBJECT tag
 Rectangle {

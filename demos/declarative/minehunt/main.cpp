@@ -101,7 +101,7 @@ public:
     ~MyWidget();
 
     Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT);
-    QDeclarativeListProperty<Tile> tiles() { return _tilesProperty; }
+    QDeclarativeListProperty<Tile> tiles() { return QDeclarativeListProperty<Tile>(this, _tiles); }
 
     Q_PROPERTY(bool isPlaying READ isPlaying NOTIFY isPlayingChanged);
     bool isPlaying() {return playing;}
@@ -136,7 +136,6 @@ private:
     QDeclarativeView *canvas;
 
     QList<Tile *> _tiles;
-    QDeclarativeListProperty<Tile> _tilesProperty;
     int numCols;
     int numRows;
     bool playing;
@@ -166,8 +165,6 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     canvas = new QDeclarativeView(this);
     canvas->setFixedSize(width, height);
     vbox->addWidget(canvas);
-
-    _tilesProperty = QDeclarativeListProperty<Tile>(this, _tiles);
 
     QDeclarativeContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);

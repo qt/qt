@@ -38,29 +38,38 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef TESTTYPES_H
-#define TESTTYPES_H
+#include <qtest.h>
 
-#include <private/qdeclarativewebview_p.h>
+#include <QtDeclarative/qdeclarativeengine.h>
+#include <QtDeclarative/qdeclarativecomponent.h>
 
-class MyWebView : public QDeclarativeWebView
+class tst_qdeclarativecomponent : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int pixelsPainted READ pixelsPainted);
-
 public:
-    MyWebView() : pp(0) {}
+    tst_qdeclarativecomponent() { }
 
-    int pixelsPainted() const { return pp; }
-
-    void drawContents(QPainter *p, const QRect &r);
+private slots:
+    void loadEmptyUrl();
 
 private:
-    int pp;
+    QDeclarativeEngine engine;
 };
 
-QML_DECLARE_TYPE(MyWebView);
+void tst_qdeclarativecomponent::loadEmptyUrl()
+{
+    QDeclarativeComponent c(&engine);
+    c.loadUrl(QUrl());
 
-void registerTypes();
+    QVERIFY(c.isError());
+    QCOMPARE(c.errors().count(), 1);
+    QDeclarativeError error = c.errors().first();
+    QCOMPARE(error.url(), QUrl());
+    QCOMPARE(error.line(), -1);
+    QCOMPARE(error.column(), -1);
+    QCOMPARE(error.description(), QLatin1String("Invalid empty URL"));
+}
 
-#endif // TESTTYPES_H
+QTEST_MAIN(tst_qdeclarativecomponent)
+
+#include "tst_qdeclarativecomponent.moc"

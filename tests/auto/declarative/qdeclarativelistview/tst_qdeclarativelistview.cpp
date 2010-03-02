@@ -38,15 +38,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QtTest/QtTest>
-#include <QStringListModel>
-#include <private/qlistmodelinterface_p.h>
-#include <qdeclarativeview.h>
-#include <private/qdeclarativelistview_p.h>
-#include <private/qdeclarativetext_p.h>
-#include <private/qdeclarativevisualitemmodel_p.h>
-#include <qdeclarativecontext.h>
-#include <qdeclarativeexpression.h>
+#include <QtGui/QStringListModel>
+#include <QtDeclarative/qdeclarativeview.h>
+#include <QtDeclarative/qdeclarativeengine.h>
+#include <QtDeclarative/qdeclarativecontext.h>
+#include <QtDeclarative/qdeclarativeexpression.h>
+#include <QtDeclarative/private/qdeclarativelistview_p.h>
+#include <QtDeclarative/private/qdeclarativetext_p.h>
+#include <QtDeclarative/private/qdeclarativevisualitemmodel_p.h>
+#include <QtDeclarative/private/qdeclarativelistmodel_p.h>
+#include <QtDeclarative/private/qlistmodelinterface_p.h>
 
 class tst_QDeclarativeListView : public QObject
 {
@@ -82,6 +85,9 @@ private slots:
     void cacheBuffer();
     void positionViewAtIndex();
     void resetModel();
+    void propertyChanges();
+    void componentChanges();
+    void modelChanges();
 
 private:
     template <class T> void items();
@@ -240,7 +246,7 @@ public:
         setRoleNames(roles);
     }
 
-    int rowCount(const QModelIndex &parent=QModelIndex()) const { return list.count(); }
+    int rowCount(const QModelIndex &parent=QModelIndex()) const { Q_UNUSED(parent); return list.count(); }
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const {
         QVariant rv;
         if (role == Name)
@@ -378,6 +384,7 @@ void tst_QDeclarativeListView::items()
 
     delete canvas;
 }
+
 
 template <class T>
 void tst_QDeclarativeListView::changed()
@@ -1273,6 +1280,149 @@ void tst_QDeclarativeListView::resetModel()
         QVERIFY(display != 0);
         QCOMPARE(display->text(), strings.at(i));
     }
+}
+
+void tst_QDeclarativeListView::propertyChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativeListView *listView = canvas->rootObject()->findChild<QDeclarativeListView*>("listView");
+    QVERIFY(listView);
+
+    QSignalSpy highlightFollowsCurrentItemSpy(listView, SIGNAL(highlightFollowsCurrentItemChanged()));
+    QSignalSpy preferredHighlightBeginSpy(listView, SIGNAL(preferredHighlightBeginChanged()));
+    QSignalSpy preferredHighlightEndSpy(listView, SIGNAL(preferredHighlightEndChanged()));
+    QSignalSpy highlightRangeModeSpy(listView, SIGNAL(highlightRangeModeChanged()));
+    QSignalSpy keyNavigationWrapsSpy(listView, SIGNAL(keyNavigationWrapsChanged()));
+    QSignalSpy cacheBufferSpy(listView, SIGNAL(cacheBufferChanged()));
+    QSignalSpy snapModeSpy(listView, SIGNAL(snapModeChanged()));
+
+    QCOMPARE(listView->highlightFollowsCurrentItem(), true);
+    QCOMPARE(listView->preferredHighlightBegin(), 0.0);
+    QCOMPARE(listView->preferredHighlightEnd(), 0.0);
+    QCOMPARE(listView->highlightRangeMode(), QDeclarativeListView::ApplyRange);
+    QCOMPARE(listView->isWrapEnabled(), true);
+    QCOMPARE(listView->cacheBuffer(), 10);
+    QCOMPARE(listView->snapMode(), QDeclarativeListView::SnapToItem);
+
+    listView->setHighlightFollowsCurrentItem(false);
+    listView->setPreferredHighlightBegin(1.0);
+    listView->setPreferredHighlightEnd(1.0);
+    listView->setHighlightRangeMode(QDeclarativeListView::StrictlyEnforceRange);
+    listView->setWrapEnabled(false);
+    listView->setCacheBuffer(3);
+    listView->setSnapMode(QDeclarativeListView::SnapOneItem);
+
+    QCOMPARE(listView->highlightFollowsCurrentItem(), false);
+    QCOMPARE(listView->preferredHighlightBegin(), 1.0);
+    QCOMPARE(listView->preferredHighlightEnd(), 1.0);
+    QCOMPARE(listView->highlightRangeMode(), QDeclarativeListView::StrictlyEnforceRange);
+    QCOMPARE(listView->isWrapEnabled(), false);
+    QCOMPARE(listView->cacheBuffer(), 3);
+    QCOMPARE(listView->snapMode(), QDeclarativeListView::SnapOneItem);
+
+    QCOMPARE(highlightFollowsCurrentItemSpy.count(),1);
+    QCOMPARE(preferredHighlightBeginSpy.count(),1);
+    QCOMPARE(preferredHighlightEndSpy.count(),1);
+    QCOMPARE(highlightRangeModeSpy.count(),1);
+    QCOMPARE(keyNavigationWrapsSpy.count(),1);
+    QCOMPARE(cacheBufferSpy.count(),1);
+    QCOMPARE(snapModeSpy.count(),1);
+
+    listView->setHighlightFollowsCurrentItem(false);
+    listView->setPreferredHighlightBegin(1.0);
+    listView->setPreferredHighlightEnd(1.0);
+    listView->setHighlightRangeMode(QDeclarativeListView::StrictlyEnforceRange);
+    listView->setWrapEnabled(false);
+    listView->setCacheBuffer(3);
+    listView->setSnapMode(QDeclarativeListView::SnapOneItem);
+
+    QCOMPARE(highlightFollowsCurrentItemSpy.count(),1);
+    QCOMPARE(preferredHighlightBeginSpy.count(),1);
+    QCOMPARE(preferredHighlightEndSpy.count(),1);
+    QCOMPARE(highlightRangeModeSpy.count(),1);
+    QCOMPARE(keyNavigationWrapsSpy.count(),1);
+    QCOMPARE(cacheBufferSpy.count(),1);
+    QCOMPARE(snapModeSpy.count(),1);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::componentChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativeListView *listView = canvas->rootObject()->findChild<QDeclarativeListView*>("listView");
+    QVERIFY(listView);
+
+    QDeclarativeComponent component(canvas->engine());
+    component.setData("import Qt 4.6; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
+
+    QDeclarativeComponent delegateComponent(canvas->engine());
+    delegateComponent.setData("import Qt 4.6; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+
+    QSignalSpy highlightSpy(listView, SIGNAL(highlightChanged()));
+    QSignalSpy delegateSpy(listView, SIGNAL(delegateChanged()));
+    QSignalSpy headerSpy(listView, SIGNAL(headerChanged()));
+    QSignalSpy footerSpy(listView, SIGNAL(footerChanged()));
+
+    listView->setHighlight(&component);
+    listView->setHeader(&component);
+    listView->setFooter(&component);
+    listView->setDelegate(&delegateComponent);
+
+    QCOMPARE(listView->highlight(), &component);
+    QCOMPARE(listView->header(), &component);
+    QCOMPARE(listView->footer(), &component);
+    QCOMPARE(listView->delegate(), &delegateComponent);
+
+    QCOMPARE(highlightSpy.count(),1);
+    QCOMPARE(delegateSpy.count(),1);
+    QCOMPARE(headerSpy.count(),1);
+    QCOMPARE(footerSpy.count(),1);
+
+    listView->setHighlight(&component);
+    listView->setHeader(&component);
+    listView->setFooter(&component);
+    listView->setDelegate(&delegateComponent);
+
+    QCOMPARE(highlightSpy.count(),1);
+    QCOMPARE(delegateSpy.count(),1);
+    QCOMPARE(headerSpy.count(),1);
+    QCOMPARE(footerSpy.count(),1);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::modelChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativeListView *listView = canvas->rootObject()->findChild<QDeclarativeListView*>("listView");
+    QVERIFY(listView);
+
+    QDeclarativeListModel *alternateModel = canvas->rootObject()->findChild<QDeclarativeListModel*>("alternateModel");
+    QVERIFY(alternateModel);
+    QVariant modelVariant = QVariant::fromValue(alternateModel);
+    QSignalSpy modelSpy(listView, SIGNAL(modelChanged()));
+
+    listView->setModel(modelVariant);
+    QCOMPARE(listView->model(), modelVariant);
+    QCOMPARE(modelSpy.count(),1);
+
+    listView->setModel(modelVariant);
+    QCOMPARE(modelSpy.count(),1);
+
+    listView->setModel(QVariant());
+    QCOMPARE(modelSpy.count(),2);
+
+    delete canvas;    
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

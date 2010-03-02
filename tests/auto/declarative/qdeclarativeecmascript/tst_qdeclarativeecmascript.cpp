@@ -122,6 +122,7 @@ private slots:
     void listToVariant();
     void multiEngineObject();
     void deletedObject();
+    void scriptScope();
 
     void bug1();
 
@@ -1655,6 +1656,33 @@ void tst_qdeclarativeecmascript::deletedObject()
     QCOMPARE(object->property("test4").toBool(), true);
 
     delete object;
+}
+
+void tst_qdeclarativeecmascript::scriptScope()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptScope.1.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QEXPECT_FAIL("", "QTBUG-8641", Continue);
+        QCOMPARE(object->property("result").toString(), QLatin1String("undefined"));
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptScope.2.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        emit object->basicSignal();
+        QEXPECT_FAIL("", "QTBUG-8641", Continue);
+        QCOMPARE(object->property("result").toString(), QLatin1String("world"));
+
+        delete object;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

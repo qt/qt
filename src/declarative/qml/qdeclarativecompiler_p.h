@@ -219,6 +219,11 @@ private:
                                        QDeclarativeParser::Object *obj,
                                        QDeclarativeParser::Value *value,
                                        const BindingContext &ctxt);
+    bool buildPropertyOnAssignment(QDeclarativeParser::Property *prop,
+                                   QDeclarativeParser::Object *obj,
+                                   QDeclarativeParser::Object *baseObj,
+                                   QDeclarativeParser::Value *value,
+                                   const BindingContext &ctxt);
     bool buildPropertyLiteralAssignment(QDeclarativeParser::Property *prop,
                                         QDeclarativeParser::Object *obj,
                                         QDeclarativeParser::Value *value,
