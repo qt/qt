@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
 class QTimer;
 class QIODevice;
 
-namespace
+namespace QtMultimediaInternal
 {
 class QAudioInputBuffer;
 }
@@ -97,7 +97,7 @@ public:
     UInt64          startTime;
     QAudio::Error   errorCode;
     QAudio::State   stateCode;
-    QAudioInputBuffer*   audioBuffer;
+    QtMultimediaInternal::QAudioInputBuffer*   audioBuffer;
     QMutex          mutex;
     QWaitCondition  threadFinished;
     QAtomicInt      audioThreadState;
