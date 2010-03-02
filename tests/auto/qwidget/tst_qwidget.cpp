@@ -8829,7 +8829,15 @@ void tst_QWidget::translucentWidget()
 #endif
     QTest::qWait(200);
 
-    QPixmap widgetSnapshot = QPixmap::grabWindow(label.winId());
+    QPixmap widgetSnapshot;
+
+#ifdef Q_WS_WIN
+    QWidget *desktopWidget = QApplication::desktop()->screen(0);
+    if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+        widgetSnapshot = QPixmap::grabWindow(desktopWidget->winId(), 0,0, label.width(), label.height());
+    else
+#endif
+        widgetSnapshot = QPixmap::grabWindow(label.winId());
     QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
     QImage expected = pm.toImage().convertToFormat(QImage::Format_RGB32);
     QCOMPARE(actual.size(),expected.size());

@@ -19,9 +19,12 @@ INCLUDEPATH = \
               $$QT_SOURCE_TREE/tools/qtestlib/ce/cetest \
               $$QT_SOURCE_TREE/qmake \
               $$QT_SOURCE_TREE/qmake/generators/symbian \
+			  $$QT_SOURCE_TREE/tools/shared \
               $$QT_BUILD_TREE/include \
               $$QT_BUILD_TREE/include/QtCore \
               $$QT_BUILD_TREE/src/corelib/global
+			  
+VPATH += $$QT_SOURCE_TREE/tools/shared
 
 DEPENDPATH += $$QT_BUILD_TREE/src/corelib/tools $$QT_BUILD_TREE/src/corelib/io
 
@@ -33,6 +36,8 @@ HEADERS += \
 SOURCES += \
         remoteconnection.cpp \
         deployment.cpp \
+        symbian/epocroot.cpp \
+		windows/registry.cpp \
         main.cpp
 
 LIBS += ole32.lib advapi32.lib

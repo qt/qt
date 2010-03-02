@@ -147,10 +147,14 @@ QString SymbianMakefileGenerator::absolutizePath(const QString& origPath)
         resultPath = QDir::fromNativeSeparators(epocRoot()) + resultPath.mid(1);
 
     QFileInfo fi(fileInfo(resultPath));
-    if (fi.isDir()) {
-        resultPath = fi.absoluteFilePath();
-    } else {
+
+    // Since origPath can be something given in HEADERS, we need to check if we are dealing
+    // with a file or a directory. In case the origPath doesn't yet exist, isFile() returns
+    // false and we default to assuming it is a dir.
+    if (fi.isFile()) {
         resultPath = fi.absolutePath();
+    } else {
+        resultPath = fi.absoluteFilePath();
     }
 
     resultPath = QDir::cleanPath(resultPath);
@@ -753,15 +757,14 @@ void SymbianMakefileGenerator::initMmpVariables()
     QStringList restrictedMmpKeywords;
     bool inResourceBlock = false;
 
-    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE);
+    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE) << QLatin1String(MMP_EPOCHEAPSIZE);
     restrictableMmpKeywords << QLatin1String(MMP_TARGET) << QLatin1String(MMP_SECUREID)
        << QLatin1String(MMP_OPTION_CW) << QLatin1String(MMP_OPTION_ARMCC)
        << QLatin1String(MMP_OPTION_GCCE) << QLatin1String(MMP_LINKEROPTION_CW)
        << QLatin1String(MMP_LINKEROPTION_ARMCC) << QLatin1String(MMP_LINKEROPTION_GCCE)
        << QLatin1String(MMP_CAPABILITY) << QLatin1String(MMP_EPOCALLOWDLLDATA)
-       << QLatin1String(MMP_EPOCHEAPSIZE) << QLatin1String(MMP_EPOCSTACKSIZE)
-       << QLatin1String(MMP_UID) << QLatin1String(MMP_VENDORID)
-       << QLatin1String(MMP_VERSION);
+       << QLatin1String(MMP_EPOCSTACKSIZE) << QLatin1String(MMP_UID)
+       << QLatin1String(MMP_VENDORID) << QLatin1String(MMP_VERSION);
 
     foreach (QString item, project->values("MMP_RULES")) {
         if (project->values(item).isEmpty()) {
@@ -931,6 +934,7 @@ void SymbianMakefileGenerator::addMacro(QTextStream& t, const QString& value)
 void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 {
     bool skipTargetType = overriddenMmpKeywords.contains(MMP_TARGETTYPE);
+    bool skipEpocHeapSize = overriddenMmpKeywords.contains(MMP_EPOCHEAPSIZE);
 
     if (targetType == TypeExe) {
         t << MMP_TARGET "\t\t" << fixedTarget << ".exe" << endl;
@@ -982,7 +986,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
 
     if (0 != project->first("TARGET.EPOCSTACKSIZE").size())
         t << MMP_EPOCSTACKSIZE "\t\t" << project->first("TARGET.EPOCSTACKSIZE") << endl;
-    if (0 != project->values("TARGET.EPOCHEAPSIZE").size())
+    if (!skipEpocHeapSize && 0 != project->values("TARGET.EPOCHEAPSIZE").size())
         t << MMP_EPOCHEAPSIZE "\t\t" << project->values("TARGET.EPOCHEAPSIZE").join(" ") << endl;
     if (0 != project->values("TARGET.EPOCALLOWDLLDATA").size())
         t << MMP_EPOCALLOWDLLDATA << endl;
@@ -1313,6 +1317,10 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
             fixedItem = item;
         }
 
+        QString condition;
+        if (!project->isEmpty(item + ".condition"))
+            condition = project->first(item + ".condition");
+
         QFileInfo subdir(fileInfo(fixedItem));
         QString relativePath = directory.relativeFilePath(fixedItem);
         QString subdirFileName = subdir.completeBaseName();
@@ -1341,9 +1349,16 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
         bldinfDefine = bldinfDefine.toUpper();
         removeSpecialCharacters(bldinfDefine);
 
+        if (!condition.isEmpty())
+            t << "#if defined(" << condition << ")" << endl;
+
         t << "#ifndef " << bldinfDefine << endl;
         t << "\t#include \"" << bldinfFilename << "\"" << endl;
-        t << "#endif // " << bldinfDefine << endl;
+        t << "#endif" << endl;
+
+        if (!condition.isEmpty())
+            t << "#endif" << endl;
+
     }
 
     // Add supported project platforms

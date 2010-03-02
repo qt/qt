@@ -58,11 +58,16 @@
 
 QT_BEGIN_INCLUDE_NAMESPACE
 
-#if defined(QT_GLES_EGL)
-#include <GLES/egl.h>
-#else
-#include <EGL/egl.h>
+#if defined(QT_OPENGL_ES_2)
+#   include <GLES2/gl2.h>
 #endif
+
+#if defined(QT_GLES_EGL)
+#   include <GLES/egl.h>
+#else
+#   include <EGL/egl.h>
+#endif
+
 
 #if defined(Q_WS_X11)
 // If <EGL/egl.h> included <X11/Xlib.h>, then the global namespace

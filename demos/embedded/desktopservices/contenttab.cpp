@@ -114,20 +114,6 @@ QUrl ContentTab::itemUrl(QListWidgetItem *item)
 void ContentTab::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
-    case Qt::Key_Up:
-        if (currentRow() == 0) {
-            setCurrentRow(count() - 1);
-        } else {
-            setCurrentRow(currentRow() - 1);
-        }
-        break;
-    case Qt::Key_Down:
-        if (currentRow() == (count() - 1)) {
-            setCurrentRow(0);
-        } else {
-            setCurrentRow(currentRow() + 1);
-        }
-        break;
     case Qt::Key_Select:
         openItem(currentItem());
     default:

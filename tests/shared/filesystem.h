@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,52 +38,60 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+// Helper functions for creating file-system hierarchies and cleaning up.
 
-#ifndef SOFTKEYS_H
-#define SOFTKEYS_H
+#ifndef QT_TESTS_SHARED_FILESYSTEM_H_INCLUDED
+#define QT_TESTS_SHARED_FILESYSTEM_H_INCLUDED
 
-#include <QtGui>
+#include <QString>
+#include <QStringList>
+#include <QDir>
+#include <QFile>
 
-class MainWindow : public QMainWindow
+struct FileSystem
 {
-    Q_OBJECT
-public:
+    ~FileSystem()
+    {
+        Q_FOREACH(QString fileName, createdFiles)
+            QFile::remove(fileName);
 
-private slots:
-    void clearTextEditor();
-    void openDialog();
-    void addSoftKeys();
-    void exitApplication();
-    void okPressed();
-    void cancelPressed();
-    void setCustomSoftKeys();
-    void setMode();
-public:
-    MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+        Q_FOREACH(QString dirName, createdDirectories)
+            currentDir.rmdir(dirName);
+    }
+
+    bool createDirectory(const QString &dirName)
+    {
+        if (currentDir.mkdir(dirName)) {
+            createdDirectories.prepend(dirName);
+            return true;
+        }
+        return false;
+    }
+
+    bool createFile(const QString &fileName)
+    {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly)) {
+            createdFiles << fileName;
+            return true;
+        }
+        return false;
+    }
+
+    bool createLink(const QString &destination, const QString &linkName)
+    {
+        if (QFile::link(destination, linkName)) {
+            createdFiles << linkName;
+            return true;
+        }
+        return false;
+    }
+
 private:
-    QGridLayout *layout;
-    QWidget *central;
-    QTextEdit *textEditor;
-    QLabel *infoLabel;
-    QPushButton *toggleButton;
-    QPushButton *pushButton;
-    QPushButton *modeButton;
-    QLabel *modeLabel;
-    QMenu *fileMenu;
-    QAction *addSoftKeysAct;
-    QAction *exit;
-    QAction *ok;
-    QAction *cancel;
+    QDir currentDir;
+
+    QStringList createdDirectories;
+    QStringList createdFiles;
 };
 
-//! [0]
-class SoftKey : public QWidget
-{
-    Q_OBJECT
-public:
-    SoftKey(QWidget *parent = 0);
-};
-//! [0]
-
-#endif
+#endif // include guard

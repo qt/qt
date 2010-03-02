@@ -969,3 +969,30 @@ DEPLOYMENT.installer_header = 0x12345678
 //! [147]
 DEPLOYMENT.installer_header = "$${LITERAL_HASH}{\"My Application Installer\"},(0x12345678),1,0,0"
 //! [147]
+
+//! [148]
+# Set conditional libraries
+LIB.MARM = "LIBRARY myarm.lib"
+LIB.WINSCW = "LIBRARY mywinscw.lib"
+LIB.default = "LIBRARY mydefault.lib"
+
+# Add the conditional MMP rules
+MYCONDITIONS = MARM WINSCW
+MYVARIABLES = LIB
+
+addMMPRules(MYCONDITIONS, MYVARIABLES)
+//! [148]
+
+//! [149]
+SUBDIRS += my_executable my_library
+my_executable.subdir = app
+my_executable.depends = my_library
+my_library.subdir = lib
+//! [149]
+
+//! [150]
+symbian {
+    SUBDIRS += emulator_dll
+    emulator_dll.condition = WINSCW
+}
+//! [150]

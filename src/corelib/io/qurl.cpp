@@ -437,17 +437,19 @@ static bool QT_FASTCALL _unreserved(const char **ptr)
 }
 
 // scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-static void QT_FASTCALL _scheme(const char **ptr, QUrlParseData *parseData)
+static bool QT_FASTCALL _scheme(const char **ptr, QUrlParseData *parseData)
 {
     bool first = true;
+    bool isSchemeValid = true;
 
     parseData->scheme = *ptr;
     for (;;) {
         char ch = **ptr;
         if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
             ;
-        } else if (!first && ((ch >= '0' && ch <= '9') || ch == '+' || ch == '-' || ch == '.')) {
-            ;
+        } else if ((ch >= '0' && ch <= '9') || ch == '+' || ch == '-' || ch == '.') {
+            if (first)
+                isSchemeValid = false;
         } else {
             break;
         }
@@ -457,11 +459,14 @@ static void QT_FASTCALL _scheme(const char **ptr, QUrlParseData *parseData)
     }
 
     if (**ptr != ':') {
+        isSchemeValid = true;
         *ptr = parseData->scheme;
     } else {
         parseData->schemeLength = *ptr - parseData->scheme;
         ++(*ptr); // skip ':'
     }
+
+    return isSchemeValid;
 }
 
 // IPvFuture  = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
@@ -3743,7 +3748,19 @@ void QUrlPrivate::parse(ParseOptions parseOptions) const
 #endif
 
     // optional scheme
-    _scheme(ptr, &parseData);
+    bool isSchemeValid = _scheme(ptr, &parseData);
+
+    if (isSchemeValid == false) {
+        that->isValid = false;
+        char ch = *((*ptr)++);
+        that->errorInfo.setParams(*ptr, QT_TRANSLATE_NOOP(QUrl, "unexpected URL scheme"),
+                                  0, ch);
+        QURL_SETFLAG(that->stateFlags, Validated | Parsed);
+#if defined (QURL_DEBUG)
+        qDebug("QUrlPrivate::parse(), unrecognized: %c%s", ch, *ptr);
+#endif
+        return;
+    }
 
     // hierpart
     _hierPart(ptr, &parseData);

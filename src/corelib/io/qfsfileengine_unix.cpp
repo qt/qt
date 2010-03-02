@@ -668,6 +668,16 @@ bool QFSFileEnginePrivate::doStat() const
             could_stat = (QT_FSTAT(QT_FILENO(fh), &st) == 0);
         } else if (fd == -1) {
             // ### actually covers two cases: d->fh and when the file is not open
+#if defined(Q_OS_SYMBIAN)
+            // Optimisation for Symbian where fileFlags() calls both doStat() and isSymlink(), but rarely on real links.
+            // When the filename is not a link, lstat will return the same info as stat, but this also removes
+            // any need for a further call to lstat to check if the file is a link.
+            need_lstat = false;
+            could_stat = (QT_LSTAT(nativeFilePath.constData(), &st) == 0);
+            is_link = could_stat ? S_ISLNK(st.st_mode) : false;
+            // if it turns out this was a link, we can call stat too.
+            if (is_link)
+#endif
             could_stat = (QT_STAT(nativeFilePath.constData(), &st) == 0);
         } else {
             could_stat = (QT_FSTAT(fd, &st) == 0);
@@ -1270,7 +1280,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     int pageSize = getpagesize();
     int extra = offset % pageSize;
 
-    if (size + extra > (size_t)-1) {
+    if (quint64(size + extra) > quint64((size_t)-1)) {
         q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
     }

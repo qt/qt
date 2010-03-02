@@ -597,7 +597,9 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         TUint s60Keysym = QApplicationPrivate::resolveS60ScanCode(keyEvent.iScanCode,
                 keyEvent.iCode);
         int keyCode;
-        if (s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) {
+        if (s60Keysym == EKeyNull){ //some key events have 0 in iCode, for them iScanCode should be used
+            keyCode = qt_keymapper_private()->mapS60ScanCodesToQt(keyEvent.iScanCode);
+        } else if (s60Keysym >= 0x20 && s60Keysym < ENonCharacterKeyBase) {
             // Normal characters keys.
             keyCode = s60Keysym;
         } else {
@@ -964,13 +966,26 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        CEikStatusPane* statusPane = S60->statusPane();
-        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        CEikStatusPane *statusPane = S60->statusPane();
+        CEikButtonGroupContainer *buttonGroup = S60->buttonGroupContainer();
         TBool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
         if (statusPane)
             statusPane->MakeVisible(visible);
-        if (buttonGroup)
-            buttonGroup->MakeVisible(visible);
+        if (buttonGroup) {
+            // Visibility
+            const TBool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
+            const TBool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+            buttonGroup->MakeVisible(visible || (isFullscreen && cbaVisibilityHint));
+
+            // Responsiviness
+            CEikCba *cba = static_cast<CEikCba *>( buttonGroup->ButtonGroup() ); // downcast from MEikButtonGroup
+            TUint cbaFlags = cba->ButtonGroupFlags();
+            if(qwidget->windowFlags() & Qt::WindowSoftkeysRespondHint)
+                cbaFlags |= EAknCBAFlagRespondWhenInvisible;
+            else
+                cbaFlags &= ~EAknCBAFlagRespondWhenInvisible;
+            cba->SetButtonGroupFlags(cbaFlags);
+        }
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
         if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
@@ -1014,6 +1029,16 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         } else if (qwidget->isMaximized()) {
             TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
             SetExtent(r.iTl, r.Size());
+        } else if (!qwidget->isMinimized()){ // Normal geometry
+            if (!qwidget->testAttribute(Qt::WA_Resized)) {
+                qwidget->adjustSize();
+                qwidget->setAttribute(Qt::WA_Resized, false); //not a user resize
+            }
+            if (!qwidget->testAttribute(Qt::WA_Moved)) {
+                TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+                SetPosition(r.iTl);
+                qwidget->setAttribute(Qt::WA_Moved, false); // not really an explicit position
+            }
         }
         break;
     }
@@ -1227,7 +1252,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             S60->avkonComponentsSupportTransparency = (value==1) ? true : false;
         }
     }
-#endif    
+#endif
 
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;

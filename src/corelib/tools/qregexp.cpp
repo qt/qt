@@ -523,7 +523,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \endtable
 
     In the mode Wildcard, the wildcard characters cannot be
-    escaped. In the mode WildcardUnix, the character '\' escapes the
+    escaped. In the mode WildcardUnix, the character '\\' escapes the
     wildcard.
 
     For example if we are in wildcard mode and have strings which
@@ -3774,7 +3774,7 @@ static void invalidateEngine(QRegExpPrivate *priv)
 
     \value WildcardUnix This is similar to Wildcard but with the
     behavior of a Unix shell. The wildcard characters can be escaped
-    with the character "\".
+    with the character "\\".
 
     \value FixedString The pattern is a fixed string. This is
     equivalent to using the RegExp pattern on a string in

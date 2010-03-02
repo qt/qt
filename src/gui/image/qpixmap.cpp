@@ -831,21 +831,14 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    bool ok;
-
-    if (data) {
-        ok = data->fromFile(fileName, format, flags);
-    } else {
-        QScopedPointer<QPixmapData> tmp(QPixmapData::create(0, 0, QPixmapData::PixmapType));
-        ok = tmp->fromFile(fileName, format, flags);
-        if (ok)
-            data = tmp.take();
+    QScopedPointer<QPixmapData> tmp(QPixmapData::create(0, 0, data ? data->type : QPixmapData::PixmapType));
+    if (tmp->fromFile(fileName, format, flags)) {
+        data = tmp.take();
+        QPixmapCache::insert(key, *this);
+        return true;
     }
 
-    if (ok)
-        QPixmapCache::insert(key, *this);
-
-    return ok;
+    return false;
 }
 
 /*!
@@ -2026,11 +2019,15 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     over the one you grab, you get pixels from the overlying window,
     too. The mouse cursor is generally not grabbed.
 
-    Note on X11that if the given \a window doesn't have the same depth
+    Note on X11 that if the given \a window doesn't have the same depth
     as the root window, and another window partially or entirely
     obscures the one you grab, you will \e not get pixels from the
     overlying window.  The contents of the obscured areas in the
     pixmap will be undefined and uninitialized.
+
+    On Windows Vista and above grabbing a layered window, which is
+    created by setting the Qt::WA_TranslucentBackground attribute, will
+    not work. Instead grabbing the desktop widget should work.
 
     \warning In general, grabbing an area outside the screen is not
     safe. This depends on the underlying window system.

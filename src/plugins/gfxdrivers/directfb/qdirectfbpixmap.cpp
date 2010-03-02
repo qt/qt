@@ -425,7 +425,7 @@ void QDirectFBPixmapData::fill(const QColor &color)
 
     Q_ASSERT(dfbSurface);
 
-    alpha = (color.alpha() < 255);
+    alpha |= (color.alpha() < 255);
 
     if (alpha && isOpaqueFormat(imageFormat)) {
         QSize size;

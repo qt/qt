@@ -73,11 +73,21 @@ bool QSoftKeyManagerPrivateS60::skipCbaUpdate()
     // Lets not update softkeys if
     // 1. We don't have application panes, i.e. cba
     // 2. Our CBA is not active, i.e. S60 native dialog or menu with custom CBA is shown
+    //    2.1. Except if thre is no current CBA at all and WindowSoftkeysRespondHint is set
+
     // Note: Cannot use IsDisplayingMenuOrDialog since CBA update can be triggered before
     // menu/dialog CBA is actually displayed i.e. it is being costructed.
     CEikButtonGroupContainer *appUiCba = S60->buttonGroupContainer();
+    // CEikButtonGroupContainer::Current returns 0 if CBA is not visible at all
     CEikButtonGroupContainer *currentCba = CEikButtonGroupContainer::Current();
-    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes) || appUiCba != currentCba) {
+    // Check if softkey need to be update even they are not visible
+    bool cbaRespondsWhenInvisible = false;
+    QWidget *window = QApplication::activeWindow();
+    if (window && (window->windowFlags() & Qt::WindowSoftkeysRespondHint))
+        cbaRespondsWhenInvisible = true;
+
+    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+            || (appUiCba != currentCba && !cbaRespondsWhenInvisible)) {
         return true;
     }
     return false;
