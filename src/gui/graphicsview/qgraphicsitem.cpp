@@ -10810,6 +10810,7 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
     }
 }
 
+// sourceRect must be in the given coordinate system
 QRect QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded) const
 {
     QRectF effectRectF;
@@ -10819,7 +10820,8 @@ QRect QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem sy
 
     if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         if (info) {
-            effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+            QRectF deviceRect = system == Qt::DeviceCoordinates ? sourceRect : info->painter->worldTransform().mapRect(sourceRect);
+            effectRectF = item->graphicsEffect()->boundingRectFor(deviceRect);
             if (unpadded)
                 *unpadded = (effectRectF.size() == sourceRect.size());
             if (info && system == Qt::LogicalCoordinates)
@@ -10868,30 +10870,6 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         return static_cast<QGraphicsPixmapItem *>(item)->pixmap();
     }
 
-    if (deviceCoordinates) {
-        // Clip to viewport rect.
-        int left, top, right, bottom;
-        effectRect.getCoords(&left, &top, &right, &bottom);
-        if (left < 0) {
-            if (offset)
-                offset->rx() += -left;
-            effectRect.setX(0);
-        }
-        if (top < 0) {
-            if (offset)
-                offset->ry() += -top;
-            effectRect.setY(0);
-        }
-        // NB! We use +-1 for historical reasons (see QRect documentation).
-        QPaintDevice *device = info->painter->device();
-        const int deviceWidth = device->width();
-        const int deviceHeight = device->height();
-        if (right + 1 > deviceWidth)
-            effectRect.setRight(deviceWidth - 1);
-        if (bottom + 1 > deviceHeight)
-            effectRect.setBottom(deviceHeight -1);
-
-    }
     if (effectRect.isEmpty())
         return QPixmap();
 
