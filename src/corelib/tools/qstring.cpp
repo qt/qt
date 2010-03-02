@@ -3185,7 +3185,7 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
         if (!empty || !(flags & SectionSkipEmpty))
             x++;
     }
-    if((flags & SectionIncludeLeadingSep)) {
+    if((flags & SectionIncludeLeadingSep) && first_i < sections.size()) {
         const qt_section_chunk &section = sections.at(first_i);
         ret.prepend(section.string.left(section.length));
     }
