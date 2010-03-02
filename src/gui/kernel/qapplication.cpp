@@ -2309,6 +2309,19 @@ static bool qt_detectRTLLanguage()
                          " languages or to 'RTL' in right-to-left languages (such as Hebrew"
                          " and Arabic) to get proper widget layout.") == QLatin1String("RTL"));
 }
+#if defined(QT_MAC_USE_COCOA)
+static const char *application_menu_strings[] = {
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
+    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All")
+    };
+QString qt_mac_applicationmenu_string(int type)
+{
+    return qApp->translate("MAC_APPLICATION_MENU",
+                           application_menu_strings[type]);
+}
+#endif
 #endif
 
 /*!\reimp
@@ -2336,6 +2349,9 @@ bool QApplication::event(QEvent *e)
     } else if(e->type() == QEvent::LanguageChange) {
 #ifndef QT_NO_TRANSLATION
         setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
+#endif
+#if defined(QT_MAC_USE_COCOA)
+        qt_mac_post_retranslateAppMenu();
 #endif
         QWidgetList list = topLevelWidgets();
         for (int i = 0; i < list.size(); ++i) {

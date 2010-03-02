@@ -208,4 +208,6 @@ bool qt_cocoaPostMessage(id target, SEL selector);
 
 #endif
 
+void qt_mac_post_retranslateAppMenu();
+
 QT_END_NAMESPACE

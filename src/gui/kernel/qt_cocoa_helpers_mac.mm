@@ -1386,4 +1386,12 @@ QMacCocoaAutoReleasePool::~QMacCocoaAutoReleasePool()
     [(NSAutoreleasePool*)pool release];
 }
 
+void qt_mac_post_retranslateAppMenu()
+{
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    qt_cocoaPostMessage([NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)], @selector(qtTranslateApplicationMenu));
+#endif
+}
+
 QT_END_NAMESPACE
