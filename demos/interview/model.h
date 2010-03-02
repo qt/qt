@@ -44,6 +44,7 @@
 
 #include <QAbstractItemModel>
 #include <QFileIconProvider>
+#include <QIcon>
 #include <QVector>
 
 class Model : public QAbstractItemModel
@@ -80,6 +81,7 @@ private:
     Node *parent(Node *child) const;
     int row(Node *node) const;
 
+    QIcon services;
     int rc, cc;
     QVector<Node> *tree;
     QFileIconProvider iconProvider;

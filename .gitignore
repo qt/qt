@@ -83,7 +83,7 @@ bin/kmap2qmap*
 bin/qlalr*
 bin/qmlconv*
 bin/qmldebugger*
-bin/qmlviewer*
+bin/qml*
 bin/qttracereplay*
 configure.cache
 config.status

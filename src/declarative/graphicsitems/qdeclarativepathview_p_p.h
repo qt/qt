@@ -60,6 +60,7 @@
 
 #include <qdeclarative.h>
 #include <qdeclarativeanimation_p_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qdatetime.h>
 
@@ -132,7 +133,7 @@ public:
     int pathOffset;
     int requestedIndex;
     QList<QDeclarativeItem *> items;
-    QGuard<QDeclarativeVisualModel> model;
+    QDeclarativeGuard<QDeclarativeVisualModel> model;
     QVariant modelVariant;
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;

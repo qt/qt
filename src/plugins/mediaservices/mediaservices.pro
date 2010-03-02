@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 contains(QT_CONFIG, mediaservice) {
-    win32:!wince: SUBDIRS += directshow
+    win32:!wince*: SUBDIRS += directshow
 
     mac: SUBDIRS += qt7
 

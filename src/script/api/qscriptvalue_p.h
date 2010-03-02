@@ -88,8 +88,8 @@ public:
 
     inline JSC::JSValue property(const JSC::Identifier &id, int resolveMode) const;
     inline JSC::JSValue property(quint32 index, int resolveMode) const;
-    inline JSC::JSValue property(const QString &, int resolveMode) const;
-    inline void setProperty(const QString &name, const JSC::JSValue &value,
+    inline JSC::JSValue property(const JSC::UString &, int resolveMode) const;
+    inline void setProperty(const JSC::UString &name, const JSC::JSValue &value,
                             const QScriptValue::PropertyFlags &flags);
     inline void setProperty(const JSC::Identifier &id, const JSC::JSValue &value,
                             const QScriptValue::PropertyFlags &flags);
