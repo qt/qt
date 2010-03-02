@@ -12,6 +12,7 @@ Connection: syntax and rename:
     Connection { sender: a; signal: bar(); script: yyy }
   becomes:
     Connections { target: a; onFoo: xxx; onBar: yyy }
+Using WebView now requires "import org.webkit 1.0"
 
 QmlView
 -------
