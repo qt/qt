@@ -51,6 +51,7 @@
 #include <qdeclarativedebug_p.h>
 #include <qdeclarativedebugservice_p.h>
 #include <qdeclarativeglobal_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qscriptvalueiterator.h>
 #include <qdebug.h>
@@ -136,8 +137,8 @@ public:
 
     QDeclarativeView *q;
 
-    QGuard<QGraphicsObject> root;
-    QGuard<QDeclarativeItem> qmlRoot;
+    QDeclarativeGuard<QGraphicsObject> root;
+    QDeclarativeGuard<QDeclarativeItem> qmlRoot;
 
     QUrl source;
 

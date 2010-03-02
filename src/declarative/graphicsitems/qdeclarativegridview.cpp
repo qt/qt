@@ -45,6 +45,7 @@
 #include "qdeclarativeflickable_p_p.h"
 
 #include <qdeclarativeeasefollow_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
@@ -251,7 +252,7 @@ public:
         }
     }
 
-    QGuard<QDeclarativeVisualModel> model;
+    QDeclarativeGuard<QDeclarativeVisualModel> model;
     QVariant modelVariant;
     QList<FxGridItem*> visibleItems;
     QHash<QDeclarativeItem*,int> unrequestedItems;
