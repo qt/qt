@@ -729,6 +729,16 @@ void tst_qdeclarativeecmascript::scope()
         QCOMPARE(object->property("test5").toInt(), 24);
         QCOMPARE(object->property("test6").toInt(), 24);
     }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scope.3.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test1").toBool(), true);
+        QCOMPARE(object->property("test2").toBool(), true);
+        QCOMPARE(object->property("test3").toBool(), true);
+    }
 }
 
 /*
@@ -1666,8 +1676,7 @@ void tst_qdeclarativeecmascript::scriptScope()
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         emit object->argumentSignal(19, "Hello world!", 10.3);
-        QEXPECT_FAIL("", "QTBUG-8641", Continue);
-        QCOMPARE(object->property("result").toString(), QLatin1String("undefined"));
+        QCOMPARE(object->property("result").toString(), QString());
 
         delete object;
     }

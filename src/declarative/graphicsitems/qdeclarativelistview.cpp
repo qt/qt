@@ -1431,7 +1431,7 @@ QDeclarativeListView::~QDeclarativeListView()
         id: myDelegate
         Item {
             id: wrapper
-            ListView.onRemove: SequentialAnimation {
+            SequentialAnimation on ListView.onRemove {
                 PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: true }
                 NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
                 PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: false }

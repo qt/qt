@@ -268,7 +268,7 @@ class QPluginServiceProvider : public QMediaServiceProvider
 public:
     QMediaService* requestService(const QByteArray &type, const QMediaServiceProviderHint &hint)
     {
-        QString key(type);
+        QString key(QString::fromLatin1(type.constData(),type.length()));
 
         QList<QMediaServiceProviderPlugin *>plugins;
         foreach (QObject *obj, loader()->instances(key)) {
@@ -383,7 +383,8 @@ public:
                                      const QStringList& codecs,
                                      int flags) const
     {
-        QList<QObject*> instances = loader()->instances(serviceType);
+        QList<QObject*> instances = loader()->instances(
+                QString::fromLatin1(serviceType.constData(),serviceType.length()));
 
         if (instances.isEmpty())
             return QtMultimedia::NotSupported;
@@ -424,7 +425,8 @@ public:
 
     QStringList supportedMimeTypes(const QByteArray &serviceType, int flags) const
     {
-        QList<QObject*> instances = loader()->instances(serviceType);
+        QList<QObject*> instances = loader()->instances(
+                QString::fromLatin1(serviceType.constData(),serviceType.length()));
 
         QStringList supportedTypes;
 
@@ -457,7 +459,8 @@ public:
     {
         QList<QByteArray> res;
 
-        foreach(QObject *obj, loader()->instances(serviceType)) {
+        foreach(QObject *obj, loader()->instances(
+                    QString::fromLatin1(serviceType.constData(),serviceType.length()))) {
             QMediaServiceSupportedDevicesInterface *iface =
                     qobject_cast<QMediaServiceSupportedDevicesInterface*>(obj);
 
@@ -471,7 +474,8 @@ public:
 
     QString deviceDescription(const QByteArray &serviceType, const QByteArray &device)
     {
-        foreach(QObject *obj, loader()->instances(serviceType)) {
+        foreach(QObject *obj, loader()->instances(
+                    QString::fromLatin1(serviceType.constData(),serviceType.length()))) {
             QMediaServiceSupportedDevicesInterface *iface =
                     qobject_cast<QMediaServiceSupportedDevicesInterface*>(obj);
 

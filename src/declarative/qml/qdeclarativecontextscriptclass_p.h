@@ -70,6 +70,7 @@ public:
     QScriptValue newSharedContext();
 
     QDeclarativeContext *contextFromValue(const QScriptValue &);
+    QObject *setOverrideObject(QScriptValue &, QObject *);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
