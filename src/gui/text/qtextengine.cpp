@@ -1434,9 +1434,7 @@ void QTextEngine::itemize() const
         layoutData->hasBidi = bidiItemize(const_cast<QTextEngine *>(this), analysis, control);
     }
 
-    const ushort *unicode = layoutData->string.utf16();
-    // correctly assign script, isTab and isObject to the script analysis
-    const ushort *uc = unicode;
+    const ushort *uc = reinterpret_cast<const ushort *>(layoutData->string.unicode());
     const ushort *e = uc + length;
     int lastScript = QUnicodeTables::Common;
     while (uc < e) {
