@@ -42,7 +42,9 @@
 #ifndef QDECLARATIVEWEBVIEW_H
 #define QDECLARATIVEWEBVIEW_H
 
-#include "qdeclarativepainteditem_p.h"
+#include "webkitqmlplugin_export.h"
+
+#include <private/qdeclarativepainteditem_p.h>
 
 #include <QtGui/QAction>
 #include <QtCore/QUrl>
@@ -61,7 +63,7 @@ class QDeclarativeWebViewPrivate;
 class QNetworkRequest;
 class QDeclarativeWebView;
 
-class Q_DECLARATIVE_EXPORT QDeclarativeWebPage : public QWebPage
+class WEBKITQMLPLUGIN_EXPORT QDeclarativeWebPage : public QWebPage
 {
     Q_OBJECT
 public:
@@ -82,11 +84,10 @@ private:
 
 
 class QDeclarativeWebViewAttached;
-class QDeclarativeWebSettings;
 
 //### TODO: browser plugins
 
-class Q_DECLARATIVE_EXPORT QDeclarativeWebView : public QDeclarativePaintedItem
+class WEBKITQMLPLUGIN_EXPORT QDeclarativeWebView : public QDeclarativePaintedItem
 {
     Q_OBJECT
 
@@ -112,7 +113,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeWebView : public QDeclarativePaintedItem
     Q_PROPERTY(QAction* forward READ forwardAction CONSTANT)
     Q_PROPERTY(QAction* stop READ stopAction CONSTANT)
 
-    Q_PROPERTY(QDeclarativeWebSettings* settings READ settingsObject CONSTANT)
+    Q_PROPERTY(QObject* settings READ settingsObject CONSTANT)
 
     Q_PROPERTY(QDeclarativeListProperty<QObject> javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
@@ -169,7 +170,7 @@ public:
 
     QWebHistory *history() const;
     QWebSettings *settings() const;
-    QDeclarativeWebSettings *settingsObject() const;
+    QObject *settingsObject() const;
 
     bool renderingEnabled() const;
     void setRenderingEnabled(bool);

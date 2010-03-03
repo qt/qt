@@ -69,14 +69,15 @@ int main(int argc, char** argv)
 
     QNetworkConfigurationManager manager;
     QList<QNetworkConfiguration> discovered =
-#if defined (Q_OS_SYMBIAN)
-        // On Symbian, on the first query (before updateConfigurations() call
-        // the discovered-states are not correct, so defined-state will do.
-        manager.allConfigurations(QNetworkConfiguration::Defined);
-#else
         manager.allConfigurations(QNetworkConfiguration::Discovered);
-#endif
+
+        foreach(QNetworkConfiguration config, discovered) {
+            qDebug() << "Lackey: Name of the config enumerated: " << config.name();
+            qDebug() << "Lackey: State of the config enumerated: " << config.state();
+        }
+
     if (discovered.isEmpty()) {
+        qDebug("Lackey: no discovered configurations, returning empty error.");
         return NO_DISCOVERED_CONFIGURATIONS_ERROR;
     }
 

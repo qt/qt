@@ -49,6 +49,7 @@
 
 #include <maemo_icd.h>
 #include <iapconf.h>
+#include <proxyconf.h>
 
 #include <sys/types.h>
 #include <ifaddrs.h>
@@ -299,6 +300,8 @@ void IcdListener::cleanupSession(QNetworkSessionPrivateImpl *ptr)
 void QNetworkSessionPrivateImpl::cleanupSession(void)
 {
     icdListener()->cleanupSession(this);
+
+    QObject::disconnect(q, SIGNAL(stateChanged(QNetworkSession::State)), this, SLOT(updateProxies(QNetworkSession::State)));
 }
 
 
@@ -450,6 +453,8 @@ void QNetworkSessionPrivateImpl::syncStateWithInterface()
 
     connect(&manager, SIGNAL(configurationChanged(QNetworkConfiguration)),
             this, SLOT(configurationChanged(QNetworkConfiguration)));
+
+    QObject::connect(q, SIGNAL(stateChanged(QNetworkSession::State)), this, SLOT(updateProxies(QNetworkSession::State)));
 
     state = QNetworkSession::Invalid;
     lastError = QNetworkSession::UnknownSessionError;
@@ -867,7 +872,6 @@ void QNetworkSessionPrivateImpl::do_open()
 	    qDebug() << "connect to"<< iap << "failed, result is empty";
 #endif
 	    updateState(QNetworkSession::Disconnected);
-	    emit quitPendingWaitsForOpened();
         emit QNetworkSessionPrivate::error(QNetworkSession::InvalidConfigurationError);
 	    if (publicConfig.type() == QNetworkConfiguration::UserChoice)
 		cleanupAnyConfiguration();
@@ -882,7 +886,6 @@ void QNetworkSessionPrivateImpl::do_open()
 	if ((publicConfig.type() != QNetworkConfiguration::UserChoice) &&
 	    (connected_iap != config.identifier())) {
 	    updateState(QNetworkSession::Disconnected);
-	    emit quitPendingWaitsForOpened();
         emit QNetworkSessionPrivate::error(QNetworkSession::InvalidConfigurationError);
 	    return;
 	}
@@ -946,7 +949,6 @@ void QNetworkSessionPrivateImpl::do_open()
 	updateState(QNetworkSession::Disconnected);
 	if (publicConfig.type() == QNetworkConfiguration::UserChoice)
 	    cleanupAnyConfiguration();
-	emit quitPendingWaitsForOpened();
     emit QNetworkSessionPrivate::error(QNetworkSession::UnknownSessionError);
     }
 }
@@ -1097,6 +1099,30 @@ QString QNetworkSessionPrivateImpl::errorString() const
 QNetworkSession::SessionError QNetworkSessionPrivateImpl::error() const
 {
     return QNetworkSession::UnknownSessionError;
+}
+
+void QNetworkSessionPrivateImpl::updateProxies(QNetworkSession::State newState)
+{
+    if ((newState == QNetworkSession::Connected) &&
+	(newState != currentState))
+	updateProxyInformation();
+    else if ((newState == QNetworkSession::Disconnected) &&
+	    (currentState == QNetworkSession::Closing))
+	clearProxyInformation();
+
+    currentState = newState;
+}
+
+
+void QNetworkSessionPrivateImpl::updateProxyInformation()
+{
+    Maemo::ProxyConf::update();
+}
+
+
+void QNetworkSessionPrivateImpl::clearProxyInformation()
+{
+    Maemo::ProxyConf::clear();
 }
 
 #include "qnetworksession_impl.moc"

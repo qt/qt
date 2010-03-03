@@ -30,6 +30,12 @@ General Improvements
 Third party components
 ----------------------
 
+ - Updated libpng to version 1.4.0
+
+ - Updated libjpeg to version 8
+
+ - Updated libtiff to version 3.9.2
+
 
 ****************************************************************************
 *                          Library                                         *

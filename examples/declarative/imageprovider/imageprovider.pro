@@ -1,9 +1,11 @@
-TEMPLATE = app
-TARGET = imageprovider
-DEPENDPATH += .
-INCLUDEPATH += .
+TEMPLATE = lib
+TARGET  = imageprovider
 QT += declarative
+CONFIG += qt plugin
+
+TARGET = $$qtLibraryTarget($$TARGET)
+DESTDIR = ImageProviderCore
 
 # Input
-SOURCES += main.cpp
-RESOURCES += imageprovider.qrc
+SOURCES += imageprovider.cpp
+

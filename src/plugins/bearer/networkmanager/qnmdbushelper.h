@@ -52,6 +52,8 @@ class QNmDBusHelper: public QObject, protected QDBusContext
  {
      Q_OBJECT
  public:
+    QNmDBusHelper(QObject *parent = 0);
+    ~QNmDBusHelper();
 
  public slots:
     void deviceStateChanged(quint32);

@@ -189,13 +189,8 @@ void QIcdEngine::doRequestUpdate()
     QList<QString> all_iaps;
     Maemo::IAPConf::getAll(all_iaps);
 
-    foreach (QString escaped_iap_id, all_iaps) {
+    foreach (QString iap_id, all_iaps) {
         QByteArray ssid;
-
-        /* The key that is returned by getAll() needs to be unescaped */
-        gchar *unescaped_id = gconf_unescape_key(escaped_iap_id.toUtf8().data(), -1);
-        QString iap_id = QString((char *)unescaped_id);
-        g_free(unescaped_id);
 
         previous.removeAll(iap_id);
 
@@ -231,11 +226,12 @@ void QIcdEngine::doRequestUpdate()
             IcdNetworkConfigurationPrivate *cpPriv = new IcdNetworkConfigurationPrivate;
 
             cpPriv->name = saved_ap.value("name").toString();
-            if (cpPriv->name.isEmpty())
-                if (!ssid.isEmpty() && ssid.size() > 0)
-                    cpPriv->name = ssid.data();
-            else
-                cpPriv->name = iap_id;
+            if (cpPriv->name.isEmpty()) {
+                    if (!ssid.isEmpty() && ssid.size() > 0)
+                        cpPriv->name = ssid.data();
+                    else
+                        cpPriv->name = iap_id;
+            }
             cpPriv->isValid = true;
             cpPriv->id = iap_id;
             cpPriv->network_id = ssid;
@@ -379,9 +375,9 @@ void QIcdEngine::deleteConfiguration(const QString &iap_id)
 {
     QMutexLocker locker(&mutex);
 
-    /* Called when IAPs are deleted in gconf, in this case we do not scan
-     * or read all the IAPs from gconf because it might take too much power
-     * (multiple applications would need to scan and read all IAPs from gconf)
+    /* Called when IAPs are deleted in db, in this case we do not scan
+     * or read all the IAPs from db because it might take too much power
+     * (multiple applications would need to scan and read all IAPs from db)
      */
     if (accessPointConfigurations.contains(iap_id)) {
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(iap_id);

@@ -53,7 +53,7 @@
 class QIcdEngine;
 
 /* The IapAddTimer is a helper class that makes sure we update
- * the configuration only after all gconf additions to certain
+ * the configuration only after all db additions to certain
  * iap are finished (after a certain timeout)
  */
 class _IapAddTimer : public QObject
@@ -64,10 +64,10 @@ public:
     _IapAddTimer() {}
     ~_IapAddTimer()
     {
-    if (timer.isActive()) {
-        QObject::disconnect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
-        timer.stop();
-    }
+        if (timer.isActive()) {
+            QObject::disconnect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
+            timer.stop();
+        }
     }
 
     void add(QString& iap_id, QIcdEngine *d);
@@ -92,23 +92,21 @@ public:
     void removeAll();
 };
 
-class IapMonitor
+class IapMonitor : public Maemo::IAPMonitor
 {
 public:
     IapMonitor() : first_call(true) { }
-    friend void notify_iap(GConfClient *, guint,
-            GConfEntry *entry, gpointer user_data);
 
     void setup(QIcdEngine *d);
     void cleanup();
 
+protected:
+    void iapAdded(const QString &iapId);
+    void iapRemoved(const QString &iapId);
+
 private:
     bool first_call;
 
-    void iapAdded(const char *key, GConfEntry *entry);
-    void iapDeleted(const char *key, GConfEntry *entry);
-
-    Maemo::IAPMonitor *iap;
     QIcdEngine *d;
     IapAddTimer timers;
 };

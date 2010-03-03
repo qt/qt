@@ -2225,7 +2225,7 @@ struct PropertyUpdater : public QDeclarativeBulkValueUpdater
     bool fromSourced;
     bool fromDefined;
     bool *wasDeleted;
-    PropertyUpdater() : wasDeleted(0) {}
+    PropertyUpdater() : prevInterpolatorType(0), wasDeleted(0) {}
     ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
     void setValue(qreal v)
     {

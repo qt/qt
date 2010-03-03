@@ -1,5 +1,5 @@
 import Qt 4.6
-import "content"
+import SamegameCore 1.0
 
 Rectangle {
     id: screen
@@ -12,7 +12,7 @@ Rectangle {
 
         Image {
             id: background
-            anchors.fill: parent; source: "content/pics/background.png"
+            anchors.fill: parent; source: "SamegameCore/pics/background.png"
             fillMode: Image.PreserveAspectCrop
             smooth: true
         }
@@ -22,7 +22,7 @@ Rectangle {
             property int score: 0
             property int tileSize: 40
 
-            Script { source: "content/samegame.js" }
+            Script { source: "SamegameCore/samegame.js" }
 
             z: 20; anchors.centerIn: parent
             width: parent.width - (parent.width % getTileSize());

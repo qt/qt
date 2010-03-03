@@ -38,21 +38,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qdeclarativeengine.h"
-#include "qdeclarativecontext.h"
-#include "qdeclarative.h"
-#include <qdeclarativeitem.h>
-#include <qdeclarativeview.h>
 
-#include <QWidget>
-#include <QApplication>
-#include <QFile>
+#include <stdlib.h>
+#include <qdeclarativeextensionplugin.h>
+#include <qdeclarativecontext.h>
+#include <qdeclarativeengine.h>
+#include <qdeclarative.h>
+
 #include <QTime>
 #include <QTimer>
-#include <QVBoxLayout>
-#include <QFileInfo>
-
-QString fileName = "minehunt.qml";
 
 class Tile : public QObject
 {
@@ -91,14 +85,11 @@ private:
     bool _flipped;
 };
 
-QML_DECLARE_TYPE(Tile);
-
-class MyWidget : public QWidget
+class MinehuntGame : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    MyWidget(int = 370, int = 480, QWidget *parent=0, Qt::WindowFlags flags=0);
-    ~MyWidget();
+    MinehuntGame();
 
     Q_PROPERTY(QDeclarativeListProperty<Tile> tiles READ tiles CONSTANT);
     QDeclarativeListProperty<Tile> tiles() { return QDeclarativeListProperty<Tile>(this, _tiles); }
@@ -133,8 +124,6 @@ private:
     int getHint(int row, int col);
     void setPlaying(bool b){if(b==playing) return; playing=b; emit isPlayingChanged();}
 
-    QDeclarativeView *canvas;
-
     QList<Tile *> _tiles;
     int numCols;
     int numRows;
@@ -145,11 +134,10 @@ private:
     int nFlags;
 };
 
-Q_DECLARE_METATYPE(QList<Tile*>)
-MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags)
-: QWidget(parent, flags), canvas(0), numCols(9), numRows(9), playing(true), won(false)
+MinehuntGame::MinehuntGame()
+: numCols(9), numRows(9), playing(true), won(false)
 {
-    setObjectName("mainWidget");
+    setObjectName("mainObject");
     srand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
     //initialize array
@@ -158,25 +146,9 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
     }
     reset();
 
-    QVBoxLayout *vbox = new QVBoxLayout;
-    vbox->setMargin(0);
-    setLayout(vbox);
-
-    canvas = new QDeclarativeView(this);
-    canvas->setFixedSize(width, height);
-    vbox->addWidget(canvas);
-
-    QDeclarativeContext *ctxt = canvas->rootContext();
-    ctxt->addDefaultObject(this);
-
-    canvas->setSource(QUrl::fromLocalFile(fileName));
 }
 
-MyWidget::~MyWidget()
-{
-}
-
-void MyWidget::setBoard()
+void MinehuntGame::setBoard()
 {
     foreach(Tile* t, _tiles){
         t->setHasMine(false);
@@ -210,7 +182,7 @@ void MyWidget::setBoard()
     setPlaying(true);
 }
 
-void MyWidget::reset()
+void MinehuntGame::reset()
 {
     foreach(Tile* t, _tiles){
         t->unflip();
@@ -222,7 +194,7 @@ void MyWidget::reset()
     QTimer::singleShot(600,this, SLOT(setBoard()));
 }
 
-int MyWidget::getHint(int row, int col)
+int MinehuntGame::getHint(int row, int col)
 {
     int hint = 0;
     for (int c = col-1; c <= col+1; c++)
@@ -234,7 +206,7 @@ int MyWidget::getHint(int row, int col)
     return hint;
 }
 
-bool MyWidget::flip(int row, int col)
+bool MinehuntGame::flip(int row, int col)
 {
     if(!playing)
         return false;
@@ -299,7 +271,7 @@ bool MyWidget::flip(int row, int col)
     return true;
 }
 
-bool MyWidget::flag(int row, int col)
+bool MinehuntGame::flag(int row, int col)
 {
     Tile *t = tile(row, col);
     if(!t)
@@ -310,42 +282,33 @@ bool MyWidget::flag(int row, int col)
     emit numFlagsChanged();
     return true;
 }
-/////////////////////////////////////////////////////////
 
-int main(int argc, char ** argv)
+QML_DECLARE_TYPE(Tile);
+QML_DECLARE_TYPE(MinehuntGame);
+
+class MinehuntExtensionPlugin : public QDeclarativeExtensionPlugin
 {
-#ifdef Q_WS_X11
-    // native on X11 is terrible for this demo.
-    QApplication::setGraphicsSystem("raster");
-#endif
-    QApplication app(argc, argv);
+    Q_OBJECT
 
-    bool frameless = false;
-
-    int width = 370;
-    int height = 480;
-
-    QML_REGISTER_TYPE(0,0,0,Tile,Tile);
-
-    for (int i = 1; i < argc; ++i) {
-        QString arg = argv[i];
-        if (arg == "-frameless") {
-            frameless = true;
-        } else if(arg == "-width" && i < (argc - 1)) {
-            ++i;
-            width = ::atoi(argv[i]);
-        } else if(arg == "-height" && i < (argc - 1)) {
-            ++i;
-            height = ::atoi(argv[i]);
-        } else if (arg[0] != '-') {
-            fileName = arg;
-        }
+    public:
+    void registerTypes(const char *uri) {
+        Q_UNUSED(uri);
+        QML_REGISTER_TYPE(SameGameCore, 0, 1, Tile, Tile);
+        QML_REGISTER_TYPE(SameGameCore, 0, 1, Game, MinehuntGame);
     }
 
-    MyWidget wid(width, height, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
-    wid.show();
+    void initializeEngine(QDeclarativeEngine *engine, const char *uri) {
+        Q_UNUSED(uri);
 
-    return app.exec();
-}
+        srand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
-#include "main.moc"
+        MinehuntGame* game = new MinehuntGame();
+
+        engine->rootContext()->addDefaultObject(game);
+    }
+};
+
+#include "minehunt.moc"
+
+Q_EXPORT_PLUGIN(MinehuntExtensionPlugin);
+

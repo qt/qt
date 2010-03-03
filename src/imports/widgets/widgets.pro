@@ -1,5 +1,6 @@
 TARGET  = widgets
-include(../../qpluginbase.pri)
+TARGETPATH = $$[QT_INSTALL_IMPORTS]/Qt/widgets
+include(../qimportbase.pri)
 
 QT += declarative
 
@@ -12,9 +13,10 @@ HEADERS += \
     graphicslayouts_p.h
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/Qt/widgets
-target.path = $$[QT_INSTALL_IMPORTS]/Qt/widgets
+target.path = $$TARGETPATH
 
-qmldir.files += $$QT_BUILD_TREE/imports/Qt/widgets/qmldir
-qmldir.path +=  $$[QT_INSTALL_IMPORTS]/Qt/widgets
+# install qmldir file
+qmldir.files += qmldir
+qmldir.path = $$TARGETPATH
 
 INSTALLS += target qmldir

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,29 +38,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef TESTTYPES_H
-#define TESTTYPES_H
 
-#include <private/qdeclarativewebview_p.h>
+#ifndef WEBKITQMLPLUGIN_EXPORT_H
+#define WEBKITQMLPLUGIN_EXPORT_H
 
-class MyWebView : public QDeclarativeWebView
-{
-    Q_OBJECT
-    Q_PROPERTY(int pixelsPainted READ pixelsPainted);
+#include <QtCore/QtGlobal>
 
-public:
-    MyWebView() : pp(0) {}
+#if defined WEBKITQMLPLUGIN_EXPORTS
+#    define WEBKITQMLPLUGIN_EXPORT Q_DECL_EXPORT
+#else
+#    define WEBKITQMLPLUGIN_EXPORT Q_DECL_IMPORT
+#endif
 
-    int pixelsPainted() const { return pp; }
-
-    void drawContents(QPainter *p, const QRect &r);
-
-private:
-    int pp;
-};
-
-QML_DECLARE_TYPE(MyWebView);
-
-void registerTypes();
-
-#endif // TESTTYPES_H
+#endif // WEBKITQMLPLUGIN_EXPORT_H
