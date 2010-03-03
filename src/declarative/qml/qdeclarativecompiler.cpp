@@ -65,6 +65,7 @@
 #include "qdeclarativescriptparser_p.h"
 #include "qdeclarativebinding_p.h"
 #include "qdeclarativecompiledbindings_p.h"
+#include "qdeclarativeglobalscriptclass_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -110,32 +111,6 @@ bool QDeclarativeCompiler::isError() const
 QList<QDeclarativeError> QDeclarativeCompiler::errors() const
 {
     return exceptions;
-}
-
-/*!
-    Returns true if \a val is a legal object id, false otherwise.
-
-    Legal ids must start with a lower-case letter or underscore, and contain only
-    letters, numbers and underscores.
-*/
-bool QDeclarativeCompiler::isValidId(const QString &val)
-{
-    if (val.isEmpty())
-        return false;
-
-    if (val.at(0).isLetter() && !val.at(0).isLower()) {
-        qWarning().nospace() << "id " << val << " is invalid: ids cannot start with uppercase letters";
-        return false;
-    }
-
-    QChar u(QLatin1Char('_'));
-    for (int ii = 0; ii < val.count(); ++ii)
-        if (val.at(ii) != u &&
-           ((ii == 0 && !val.at(ii).isLetter()) ||
-           (ii != 0 && !val.at(ii).isLetterOrNumber())) )
-            return false;
-
-    return true;
 }
 
 /*!
@@ -718,6 +693,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     BindingContext objCtxt(obj);
 
     // Create the synthesized meta object, ignoring aliases
+    COMPILE_CHECK(checkDynamicMeta(obj)); 
     COMPILE_CHECK(mergeDynamicMetaProperties(obj));
     COMPILE_CHECK(buildDynamicMeta(obj, IgnoreAliases));
 
@@ -1139,10 +1115,11 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
     if (obj->properties.count())
         idProp = *obj->properties.begin();
 
-    if (idProp && (idProp->value || idProp->values.count() > 1 || !isValidId(idProp->values.first()->primitive())))
-        COMPILE_EXCEPTION(idProp, QCoreApplication::translate("QDeclarativeCompiler","Invalid component id specification"));
-
     if (idProp) {
+       if (idProp->value || idProp->values.count() > 1 || idProp->values.at(0)->object) 
+           COMPILE_EXCEPTION(idProp, QCoreApplication::translate("QDeclarativeCompiler","Invalid component id specification"));
+       COMPILE_CHECK(checkValidId(idProp->values.first(), idProp->values.first()->primitive()));
+
         QString idVal = idProp->values.first()->primitive();
 
         if (compileState.ids.contains(idVal))
@@ -1623,6 +1600,10 @@ void QDeclarativeCompiler::genPropertyAssignment(QDeclarativeParser::Property *p
     for (int ii = 0; ii < prop->values.count(); ++ii) {
         QDeclarativeParser::Value *v = prop->values.at(ii);
 
+        Q_ASSERT(v->type == Value::CreatedObject ||
+                 v->type == Value::PropertyBinding ||
+                 v->type == Value::Literal);
+
         if (v->type == Value::CreatedObject) {
 
             genObject(v->object);
@@ -1652,7 +1633,27 @@ void QDeclarativeCompiler::genPropertyAssignment(QDeclarativeParser::Property *p
                 output->bytecode << store;
 
             }
-        } else if (v->type == Value::ValueSource) {
+        } else if (v->type == Value::PropertyBinding) {
+
+            genBindingAssignment(v, prop, obj, valueTypeProperty);
+
+        } else if (v->type == Value::Literal) {
+
+            QMetaProperty mp = obj->metaObject()->property(prop->index);
+            genLiteralAssignment(mp, v);
+
+        }
+
+    }
+
+    for (int ii = 0; ii < prop->onValues.count(); ++ii) {
+
+        QDeclarativeParser::Value *v = prop->onValues.at(ii);
+
+        Q_ASSERT(v->type == Value::ValueSource ||
+                 v->type == Value::ValueInterceptor);
+
+        if (v->type == Value::ValueSource) {
             genObject(v->object);
 
             QDeclarativeInstruction store;
@@ -1685,16 +1686,6 @@ void QDeclarativeCompiler::genPropertyAssignment(QDeclarativeParser::Property *p
             QDeclarativeType *valueType = toQmlType(v->object);
             store.assignValueInterceptor.castValue = valueType->propertyValueInterceptorCast();
             output->bytecode << store;
-
-        } else if (v->type == Value::PropertyBinding) {
-
-            genBindingAssignment(v, prop, obj, valueTypeProperty);
-
-        } else if (v->type == Value::Literal) {
-
-            QMetaProperty mp = obj->metaObject()->property(prop->index);
-            genLiteralAssignment(mp, v);
-
         }
 
     }
@@ -1711,8 +1702,7 @@ bool QDeclarativeCompiler::buildIdProperty(QDeclarativeParser::Property *prop,
     QDeclarativeParser::Value *idValue = prop->values.at(0);
     QString val = idValue->primitive();
 
-    if (!isValidId(val))
-        COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" is not a valid object id").arg(val));
+    COMPILE_CHECK(checkValidId(idValue, val));
 
     // We disallow id's that conflict with import prefixes and types
     QDeclarativeEnginePrivate::ImportedNamespace *ns = 0;
@@ -1793,8 +1783,8 @@ bool QDeclarativeCompiler::buildAttachedProperty(QDeclarativeParser::Property *p
 // }
 // font is a nested property.  pointSize and family are not.
 bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *prop,
-                                       QDeclarativeParser::Object *obj,
-                                       const BindingContext &ctxt)
+                                                QDeclarativeParser::Object *obj,
+                                                const BindingContext &ctxt)
 {
     Q_ASSERT(prop->type != 0);
     Q_ASSERT(prop->index != -1);
@@ -1829,9 +1819,9 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
 }
 
 bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
-                                         QDeclarativeParser::Object *obj,
-                                         QDeclarativeParser::Object *baseObj,
-                                         const BindingContext &ctxt)
+                                                  QDeclarativeParser::Object *obj,
+                                                  QDeclarativeParser::Object *baseObj,
+                                                  const BindingContext &ctxt)
 {
     if (obj->defaultProperty)
         COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Invalid property use"));
@@ -1848,37 +1838,36 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
         if (prop->value)
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Property assignment expected"));
 
-        if (prop->values.count() != 1)
+        if (prop->values.count() > 1) {
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Single property assignment expected"));
+        } else if (prop->values.count()) {
+            Value *value = prop->values.at(0);
 
-        Value *value = prop->values.at(0);
-
-        if (value->object) {
-            bool isPropertyValue = output->types.at(value->object->type).type->propertyValueSourceCast() != -1;
-            bool isPropertyInterceptor = output->types.at(value->object->type).type->propertyValueInterceptorCast() != -1;
-            if (!isPropertyValue && !isPropertyInterceptor) {
+            if (value->object) {
                 COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Unexpected object assignment"));
-            } else {
-                COMPILE_CHECK(buildObject(value->object, ctxt));
-
-                if (isPropertyInterceptor && baseObj->synthdata.isEmpty())
-                    buildDynamicMeta(baseObj, ForceCreation);
-                value->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
+            } else if (value->value.isScript()) {
+                // ### Check for writability
+                BindingReference reference;
+                reference.expression = value->value;
+                reference.property = prop;
+                reference.value = value;
+                reference.bindingContext = ctxt;
+                reference.bindingContext.owner++;
+                addBindingReference(reference);
+                value->type = Value::PropertyBinding;
+            } else  {
+                COMPILE_CHECK(testLiteralAssignment(p, value));
+                value->type = Value::Literal;
             }
-        } else if (value->value.isScript()) {
-            // ### Check for writability
-            BindingReference reference;
-            reference.expression = value->value;
-            reference.property = prop;
-            reference.value = value;
-            reference.bindingContext = ctxt;
-            reference.bindingContext.owner++;
-            addBindingReference(reference);
-            value->type = Value::PropertyBinding;
-        } else  {
-            COMPILE_CHECK(testLiteralAssignment(p, value));
-            value->type = Value::Literal;
         }
+
+        for (int ii = 0; ii < prop->onValues.count(); ++ii) {
+            Value *v = prop->onValues.at(ii);
+            Q_ASSERT(v->object);
+
+            COMPILE_CHECK(buildPropertyOnAssignment(prop, obj, baseObj, v, ctxt)); 
+        }
+
         obj->addValueProperty(prop);
     }
 
@@ -1886,13 +1875,11 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
 }
 
 // Build assignments to QML lists.  QML lists are properties of type
-// QList<T *> * and QDeclarativeList<T *> *.
-//
-// QList<T *> * types can accept a list of objects, or a single binding
-// QDeclarativeList<T *> * types can accept a list of objects
+// QDeclarativeListProperty<T>.  List properties can accept a list of 
+// objects, or a single binding.
 bool QDeclarativeCompiler::buildListProperty(QDeclarativeParser::Property *prop,
-                                    QDeclarativeParser::Object *obj,
-                                    const BindingContext &ctxt)
+                                             QDeclarativeParser::Object *obj,
+                                             const BindingContext &ctxt)
 {
     Q_ASSERT(QDeclarativeEnginePrivate::get(engine)->isList(prop->type));
 
@@ -1950,20 +1937,6 @@ bool QDeclarativeCompiler::buildScriptStringProperty(QDeclarativeParser::Propert
 }
 
 // Compile regular property assignments of the form "property: <value>"
-//
-// ### The following problems exist
-//
-// There is no distinction between how "lists" of values are specified.  This
-//    Item {
-//        children: Item {}
-//        children: Item {}
-//    }
-// is identical to
-//    Item {
-//        children: [ Item {}, Item {} ]
-//    }
-//
-// We allow assignming multiple values to single value properties
 bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property *prop,
                                           QDeclarativeParser::Object *obj,
                                           const BindingContext &ctxt)
@@ -1983,14 +1956,21 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
         }
     }
 
+    for (int ii = 0; ii < prop->onValues.count(); ++ii) {
+        Value *v = prop->onValues.at(ii);
+
+        Q_ASSERT(v->object);
+        COMPILE_CHECK(buildPropertyOnAssignment(prop, obj, obj, v, ctxt));
+    }
+
     return true;
 }
 
 // Compile assigning a single object instance to a regular property
 bool QDeclarativeCompiler::buildPropertyObjectAssignment(QDeclarativeParser::Property *prop,
-                                                QDeclarativeParser::Object *obj,
-                                                QDeclarativeParser::Value *v,
-                                                const BindingContext &ctxt)
+                                                         QDeclarativeParser::Object *obj,
+                                                         QDeclarativeParser::Value *v,
+                                                         const BindingContext &ctxt)
 {
     Q_ASSERT(prop->index != -1);
     Q_ASSERT(v->object->type != -1);
@@ -2018,15 +1998,6 @@ bool QDeclarativeCompiler::buildPropertyObjectAssignment(QDeclarativeParser::Pro
         // on this type, as they are not relevant for assignability testing
         v->object->metatype = output->types.at(v->object->type).metaObject();
         Q_ASSERT(v->object->metaObject());
-
-        // Will be true if the assigned type inherits QDeclarativePropertyValueSource
-        bool isPropertyValue = false;
-        // Will be true if the assigned type inherits QDeclarativePropertyValueInterceptor
-        bool isPropertyInterceptor = false;
-        if (QDeclarativeType *valueType = toQmlType(v->object)) {
-            isPropertyValue = valueType->propertyValueSourceCast() != -1;
-            isPropertyInterceptor = valueType->propertyValueInterceptorCast() != -1;
-        }
 
         // We want to raw metaObject here as the raw metaobject is the
         // actual property type before we applied any extensions that might
@@ -2063,16 +2034,58 @@ bool QDeclarativeCompiler::buildPropertyObjectAssignment(QDeclarativeParser::Pro
             component->getDefaultProperty()->addValue(componentValue);
             v->object = component;
             COMPILE_CHECK(buildPropertyObjectAssignment(prop, obj, v, ctxt));
-        } else if (isPropertyValue || isPropertyInterceptor) {
-            // Assign as a property value source
-            COMPILE_CHECK(buildObject(v->object, ctxt));
-
-            if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
-                   buildDynamicMeta(prop->parent, ForceCreation);
-            v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
         } else {
             COMPILE_EXCEPTION(v->object, QCoreApplication::translate("QDeclarativeCompiler","Cannot assign object to property"));
         }
+    }
+
+    return true;
+}
+
+// Compile assigning a single object instance to a regular property using the "on" syntax.
+//
+// For example:
+//     Item {
+//         NumberAnimation on x { }
+//     }
+bool QDeclarativeCompiler::buildPropertyOnAssignment(QDeclarativeParser::Property *prop,
+                                                     QDeclarativeParser::Object *obj,
+                                                     QDeclarativeParser::Object *baseObj,
+                                                     QDeclarativeParser::Value *v,
+                                                     const BindingContext &ctxt)
+{
+    Q_ASSERT(prop->index != -1);
+    Q_ASSERT(v->object->type != -1);
+
+    if (!obj->metaObject()->property(prop->index).isWritable())
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
+
+
+    // Normally buildObject() will set this up, but we need the static
+    // meta object earlier to test for assignability.  It doesn't matter
+    // that there may still be outstanding synthesized meta object changes
+    // on this type, as they are not relevant for assignability testing
+    v->object->metatype = output->types.at(v->object->type).metaObject();
+    Q_ASSERT(v->object->metaObject());
+
+    // Will be true if the assigned type inherits QDeclarativePropertyValueSource
+    bool isPropertyValue = false;
+    // Will be true if the assigned type inherits QDeclarativePropertyValueInterceptor
+    bool isPropertyInterceptor = false;
+    if (QDeclarativeType *valueType = toQmlType(v->object)) {
+        isPropertyValue = valueType->propertyValueSourceCast() != -1;
+        isPropertyInterceptor = valueType->propertyValueInterceptorCast() != -1;
+    }
+
+    if (isPropertyValue || isPropertyInterceptor) {
+        // Assign as a property value source
+        COMPILE_CHECK(buildObject(v->object, ctxt));
+
+        if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
+            buildDynamicMeta(baseObj, ForceCreation);
+        v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
+    } else {
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" cannot operate on \"%2\"").arg(v->object->typeName.constData()).arg(prop->name.constData()));
     }
 
     return true;
@@ -2203,10 +2216,13 @@ bool QDeclarativeCompiler::mergeDynamicMetaProperties(QDeclarativeParser::Object
             continue;
 
         Property *property = 0;
-        if (p.isDefaultProperty)
+        if (p.isDefaultProperty) {
             property = obj->getDefaultProperty();
-        else
+        } else {
             property = obj->getProperty(p.name);
+            if (!property->values.isEmpty()) 
+                COMPILE_EXCEPTION(property, QCoreApplication::translate("QDeclarativeCompiler","Property value set multiple times"));
+        }
 
         if (property->value)
             COMPILE_EXCEPTION(property, QCoreApplication::translate("QDeclarativeCompiler","Invalid property nesting"));
@@ -2232,8 +2248,6 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         obj->dynamicSignals.isEmpty() &&
         obj->dynamicSlots.isEmpty())
         return true;
-
-    COMPILE_CHECK(checkDynamicMeta(obj));
 
     QByteArray dynamicData(sizeof(QDeclarativeVMEMetaData), (char)0);
 
@@ -2433,6 +2447,31 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         compileState.aliasingObjects << obj;
 
     obj->synthdata = dynamicData;
+
+    return true;
+}
+
+bool QDeclarativeCompiler::checkValidId(QDeclarativeParser::Value *v, const QString &val)
+{
+    if (val.isEmpty()) 
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "Invalid empty ID"));
+
+    if (val.at(0).isLetter() && !val.at(0).isLower()) 
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs cannot start with an uppercase letter"));
+
+    QChar u(QLatin1Char('_'));
+    for (int ii = 0; ii < val.count(); ++ii) {
+
+        if (ii == 0 && !val.at(ii).isLetter() && val.at(ii) != u) {
+            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs must start with a letter or underscore"));
+        } else if (ii != 0 && !val.at(ii).isLetterOrNumber() && val.at(ii) != u)  {
+            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs must contain only letters, numbers, and underscores"));
+        }
+
+    }
+
+    if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(val))
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "ID illegally masks global JavaScript property"));
 
     return true;
 }

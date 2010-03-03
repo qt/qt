@@ -10,7 +10,7 @@ Rectangle {
     Image {
         id: image; source: "content/bg1.jpg"; anchors.centerIn: parent; transformOrigin: Item.Center
 	rotation: window.angle
-        rotation: Behavior { NumberAnimation { easing.type: "OutCubic"; duration: 300 } }
+        Behavior on rotation { NumberAnimation { easing.type: "OutCubic"; duration: 300 } }
     }
 
     Button {

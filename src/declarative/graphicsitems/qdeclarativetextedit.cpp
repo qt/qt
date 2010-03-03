@@ -613,6 +613,11 @@ void QDeclarativeTextEdit::setPersistentSelection(bool on)
     emit persistentSelectionChanged(d->persistentSelection);
 }
 
+/*
+   \qmlproperty number TextEdit::textMargin
+
+   The margin, in pixels, around the text in the TextEdit.
+*/
 qreal QDeclarativeTextEdit::textMargin() const
 {
     Q_D(const QDeclarativeTextEdit);

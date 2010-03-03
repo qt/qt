@@ -663,10 +663,12 @@ void tst_qdeclarativetextedit::delegateLoading()
     QVERIFY(delegate);
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
     view->show();
+    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
     view->setFocus();
     QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
     view->show();
+    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
     view->setFocus();
     QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
     //ErrorB should get a component which is ready but component.create() returns null

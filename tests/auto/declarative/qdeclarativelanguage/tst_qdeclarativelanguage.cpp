@@ -232,6 +232,9 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidID.4") << "invalidID.4.qml" << "invalidID.4.errors.txt" << false;
     QTest::newRow("invalidID.5") << "invalidID.5.qml" << "invalidID.5.errors.txt" << false;
     QTest::newRow("invalidID.6") << "invalidID.6.qml" << "invalidID.6.errors.txt" << false;
+    QTest::newRow("invalidID.7") << "invalidID.7.qml" << "invalidID.7.errors.txt" << false;
+    QTest::newRow("invalidID.8") << "invalidID.8.qml" << "invalidID.8.errors.txt" << false;
+    QTest::newRow("invalidID.9") << "invalidID.9.qml" << "invalidID.9.errors.txt" << false;
 
     QTest::newRow("unsupportedProperty") << "unsupportedProperty.qml" << "unsupportedProperty.errors.txt" << false;
     QTest::newRow("nullDotProperty") << "nullDotProperty.qml" << "nullDotProperty.errors.txt" << true;
@@ -288,6 +291,17 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("Component.5") << "component.5.qml" << "component.5.errors.txt" << false;
     QTest::newRow("Component.6") << "component.6.qml" << "component.6.errors.txt" << false;
 
+    QTest::newRow("MultiSet.1") << "multiSet.1.qml" << "multiSet.1.errors.txt" << false;
+    QTest::newRow("MultiSet.2") << "multiSet.2.qml" << "multiSet.2.errors.txt" << false;
+    QTest::newRow("MultiSet.3") << "multiSet.3.qml" << "multiSet.3.errors.txt" << false;
+    QTest::newRow("MultiSet.4") << "multiSet.4.qml" << "multiSet.4.errors.txt" << false;
+    QTest::newRow("MultiSet.5") << "multiSet.5.qml" << "multiSet.5.errors.txt" << false;
+    QTest::newRow("MultiSet.6") << "multiSet.6.qml" << "multiSet.6.errors.txt" << false;
+    QTest::newRow("MultiSet.7") << "multiSet.7.qml" << "multiSet.7.errors.txt" << false;
+    QTest::newRow("MultiSet.8") << "multiSet.8.qml" << "multiSet.8.errors.txt" << false;
+    QTest::newRow("MultiSet.9") << "multiSet.9.qml" << "multiSet.9.errors.txt" << false;
+    QTest::newRow("MultiSet.10") << "multiSet.10.qml" << "multiSet.10.errors.txt" << false;
+
     QTest::newRow("invalidAttachedProperty.1") << "invalidAttachedProperty.1.qml" << "invalidAttachedProperty.1.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.2") << "invalidAttachedProperty.2.qml" << "invalidAttachedProperty.2.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.3") << "invalidAttachedProperty.3.qml" << "invalidAttachedProperty.3.errors.txt" << false;
@@ -315,9 +329,6 @@ void tst_qdeclarativelanguage::errors()
     QFETCH(QString, file);
     QFETCH(QString, errorFile);
     QFETCH(bool, create);
-
-    if (file == "invalidID.6.qml")
-        QTest::ignoreMessage(QtWarningMsg, "id \"StartsWithUpperCase\" is invalid: ids cannot start with uppercase letters");
 
     QDeclarativeComponent component(&engine, TEST_FILE(file));
 
@@ -702,6 +713,11 @@ void tst_qdeclarativelanguage::attachedProperties()
     QVERIFY(attached != 0);
     QCOMPARE(attached->property("value"), QVariant(10));
     QCOMPARE(attached->property("value2"), QVariant(13));
+
+    QEXPECT_FAIL("", "QTBUG-8677", Abort);
+    attached->setProperty("value", QVariant(12));
+    int val = object->property("value2").toInt();
+    QCOMPARE(val, 12);
 }
 
 // Tests non-static object properties

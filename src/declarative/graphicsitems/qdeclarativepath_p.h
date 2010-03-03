@@ -67,7 +67,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativePathAttribute : public QDeclarativePathEl
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY changed)
 public:
     QDeclarativePathAttribute(QObject *parent=0) : QDeclarativePathElement(parent), _value(0) {}
@@ -78,6 +78,9 @@ public:
 
     qreal value() const;
     void setValue(qreal value);
+
+Q_SIGNALS:
+    void nameChanged();
 
 private:
     QString _name;
@@ -190,8 +193,8 @@ class Q_DECLARATIVE_EXPORT QDeclarativePath : public QObject, public QDeclarativ
 
     Q_INTERFACES(QDeclarativeParserStatus)
     Q_PROPERTY(QDeclarativeListProperty<QDeclarativePathElement> pathElements READ pathElements)
-    Q_PROPERTY(qreal startX READ startX WRITE setStartX)
-    Q_PROPERTY(qreal startY READ startY WRITE setStartY)
+    Q_PROPERTY(qreal startX READ startX WRITE setStartX NOTIFY startXChanged)
+    Q_PROPERTY(qreal startY READ startY WRITE setStartY NOTIFY startYChanged)
     Q_PROPERTY(bool closed READ isClosed NOTIFY changed)
     Q_CLASSINFO("DefaultProperty", "pathElements")
     Q_INTERFACES(QDeclarativeParserStatus)
@@ -216,6 +219,8 @@ public:
 
 Q_SIGNALS:
     void changed();
+    void startXChanged();
+    void startYChanged();
 
 protected:
     virtual void componentComplete();

@@ -54,12 +54,12 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeVisualTest : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<QObject *>* events READ events CONSTANT)
+    Q_PROPERTY(QDeclarativeListProperty<QObject> events READ events CONSTANT)
     Q_CLASSINFO("DefaultProperty", "events")
 public:
     QDeclarativeVisualTest() {}
 
-    QList<QObject *> *events() { return &m_events; }
+    QDeclarativeListProperty<QObject> events() { return QDeclarativeListProperty<QObject>(this, m_events); }
 
     int count() const { return m_events.count(); }
     QObject *event(int idx) { return m_events.at(idx); }

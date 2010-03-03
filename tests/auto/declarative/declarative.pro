@@ -7,6 +7,7 @@ SUBDIRS += \
            qdeclarativeanimations \          # Cover
            qdeclarativebehaviors \           # Cover
            qdeclarativebinding \             # Cover
+           qdeclarativecomponent \           # Cover
            qdeclarativeconnection \          # Cover
            qdeclarativecontext \             # Cover
            qdeclarativedatetimeformatter \   # Cover
@@ -55,6 +56,8 @@ SUBDIRS += \
            qdeclarativexmllistmodel \        # Cover
            qpacketprotocol \        # Cover
            qdeclarativerepeater \    # Cover
+           qdeclarativeworkerscript \    # Cover
+           qdeclarativeworkerlistmodel \    # Cover
            qdeclarativevaluetypes \          # Cover
            qdeclarativexmlhttprequest \      # Cover
            qdeclarativeimageprovider \       # Cover
