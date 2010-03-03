@@ -153,9 +153,11 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
                 new QScriptProgram(data->expression, data->url, data->line);
         }
 
-        data->expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx));
+        data->expressionFunction = evalInObjectScope(ctxt, me, *dd->cachedPrograms.at(progIdx), 
+                                                     &data->expressionContext);
 #else
-        data->expressionFunction = evalInObjectScope(ctxt, me, data->expression);
+        data->expressionFunction = evalInObjectScope(ctxt, me, data->expression, 
+                                                     &data->expressionContext);
 #endif
 
         data->expressionFunctionValid = true;
@@ -166,11 +168,16 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
 }
 
 QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContext *context, QObject *object, 
-                                                     const QString &program)
+                                                              const QString &program, QScriptValue *contextObject)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
-    scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    if (contextObject) {
+        *contextObject = ep->contextClass->newContext(context, object);
+        scriptContext->pushScope(*contextObject);
+    } else {
+        scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    }
     scriptContext->pushScope(ep->globalClass->globalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program);
     ep->scriptEngine.popContext();
@@ -178,11 +185,16 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
 }
 
 QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContext *context, QObject *object, 
-                                                     const QScriptProgram &program)
+                                                     const QScriptProgram &program, QScriptValue *contextObject)
 {
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
-    scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    if (contextObject) {
+        *contextObject = ep->contextClass->newContext(context, object);
+        scriptContext->pushScope(*contextObject);
+    } else {
+        scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    }
     scriptContext->pushScope(ep->globalClass->globalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program);
     ep->scriptEngine.popContext();
@@ -330,15 +342,13 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
     QDeclarativeEngine *engine = data->context()->engine();
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
 
-    if (secondaryScope)
-       ctxtPriv->defaultObjects.append(secondaryScope);
-
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     if (!data->expressionFunctionValid) {
 
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
-        scriptContext->pushScope(ep->contextClass->newContext(data->context(), data->me));
+        data->expressionContext = ep->contextClass->newContext(data->context(), data->me);
+        scriptContext->pushScope(data->expressionContext);
         scriptContext->pushScope(ep->globalClass->globalObject());
 
         if (data->expressionRewritten) {
@@ -362,11 +372,14 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
 
     QDeclarativeContext *oldSharedContext = 0;
     QObject *oldSharedScope = 0;
+    QObject *oldOverride = 0;
     if (data->isShared) {
         oldSharedContext = ep->sharedContext;
         oldSharedScope = ep->sharedScope;
         ep->sharedContext = data->context();
         ep->sharedScope = data->me;
+    } else {
+        oldOverride = ep->contextClass->setOverrideObject(data->expressionContext, secondaryScope);
     }
 
     QScriptValue svalue = data->expressionFunction.call();
@@ -374,6 +387,8 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
     if (data->isShared) {
         ep->sharedContext = oldSharedContext;
         ep->sharedScope = oldSharedScope;
+    } else {
+        ep->contextClass->setOverrideObject(data->expressionContext, oldOverride);
     }
 
     if (isUndefined)
@@ -386,12 +401,6 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
        return QVariant();
     } else {
         data->error = QDeclarativeError();
-    }
-
-    if (secondaryScope) {
-        QObject *last = ctxtPriv->defaultObjects.takeLast();
-        Q_ASSERT(last == secondaryScope);
-        Q_UNUSED(last);
     }
 
     QVariant rv;

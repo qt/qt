@@ -1676,8 +1676,7 @@ void tst_qdeclarativeecmascript::scriptScope()
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         emit object->argumentSignal(19, "Hello world!", 10.3);
-        QEXPECT_FAIL("", "QTBUG-8641", Continue);
-        QCOMPARE(object->property("result").toString(), QLatin1String("undefined"));
+        QCOMPARE(object->property("result").toString(), QString());
 
         delete object;
     }
