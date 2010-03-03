@@ -1028,7 +1028,10 @@ static int qCocoaViewCount = 0;
 {
     if (!qwidget)
         return NO;
-    if (qwidget->isWindow())
+    // Before accepting the focus for a window, we check that
+    // the focusWidget (if any) is not contained in the same window.
+    if (qwidget->isWindow() && (!qApp->focusWidget()
+				|| qApp->focusWidget()->window() != qwidget))
         return YES;  // Always do it, so that windows can accept key press events.
     return qwidget->focusPolicy() != Qt::NoFocus;
 }
