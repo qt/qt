@@ -10294,6 +10294,29 @@ const QPixmap *QWidget::icon() const
 
 #endif // QT3_SUPPORT
 
+ /*!
+  \internal
+
+  This just sets the corresponding attribute bit to 1 or 0
+ */
+static void setAttribute_internal(Qt::WidgetAttribute attribute, bool on, QWidgetData *data,
+                                  QWidgetPrivate *d)
+{
+    if (attribute < int(8*sizeof(uint))) {
+        if (on)
+            data->widget_attributes |= (1<<attribute);
+        else
+            data->widget_attributes &= ~(1<<attribute);
+    } else {
+        const int x = attribute - 8*sizeof(uint);
+        const int int_off = x / (8*sizeof(uint));
+        if (on)
+            d->high_attributes[int_off] |= (1<<(x-(int_off*8*sizeof(uint))));
+        else
+            d->high_attributes[int_off] &= ~(1<<(x-(int_off*8*sizeof(uint))));
+    }
+}
+
 /*!
     Sets the attribute \a attribute on this widget if \a on is true;
     otherwise clears the attribute.
@@ -10320,19 +10343,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     }
 #endif
 
-    if (attribute < int(8*sizeof(uint))) {
-        if (on)
-            data->widget_attributes |= (1<<attribute);
-        else
-            data->widget_attributes &= ~(1<<attribute);
-    } else {
-        const int x = attribute - 8*sizeof(uint);
-        const int int_off = x / (8*sizeof(uint));
-        if (on)
-            d->high_attributes[int_off] |= (1<<(x-(int_off*8*sizeof(uint))));
-        else
-            d->high_attributes[int_off] &= ~(1<<(x-(int_off*8*sizeof(uint))));
-    }
+    setAttribute_internal(attribute, on, data, d);
 
     switch (attribute) {
 
@@ -10391,14 +10402,11 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #ifdef Q_WS_MAC
         {
             // We can only have one of these set at a time
-            static const int MacSizes[] = { Qt::WA_MacNormalSize, Qt::WA_MacSmallSize,
-                                            Qt::WA_MacMiniSize, 0 };
-            for (int i = 0; MacSizes[i] != 0; ++i) {
-                if (MacSizes[i] == attribute)
-                    continue;
-                int macsize_x = MacSizes[i] - 8*sizeof(uint);
-                int macsize_int_off = macsize_x / (8*sizeof(uint));
-                d->high_attributes[macsize_int_off] &= ~(1<<(macsize_x-(macsize_int_off*8*sizeof(uint))));
+            const Qt::WidgetAttribute MacSizes[] = { Qt::WA_MacNormalSize, Qt::WA_MacSmallSize,
+                                                     Qt::WA_MacMiniSize };
+            for (int i = 0; i < 3; ++i) {
+                if (MacSizes[i] != attribute)
+                    setAttribute_internal(MacSizes[i], false, data, d);
             }
             d->macUpdateSizeAttribute();
         }
