@@ -57,7 +57,6 @@ QT_BEGIN_NAMESPACE
 QGstreamerPlayerSession::QGstreamerPlayerSession(QObject *parent)
     :QObject(parent),
      m_state(QMediaPlayer::StoppedState),
-     m_mediaStatus(QMediaPlayer::UnknownMediaStatus),
      m_busHelper(0),
      m_playbin(0),
      m_nullVideoOutput(0),
@@ -92,6 +91,7 @@ QGstreamerPlayerSession::QGstreamerPlayerSession(QObject *parent)
         m_busHelper->installSyncEventFilter(this);
 
         m_nullVideoOutput = gst_element_factory_make("fakesink", NULL);
+        gst_object_ref(GST_OBJECT(m_nullVideoOutput));
         g_object_set(G_OBJECT(m_playbin), "video-sink", m_nullVideoOutput, NULL);
 
         // Initial volume
@@ -109,12 +109,14 @@ QGstreamerPlayerSession::~QGstreamerPlayerSession()
         delete m_busHelper;
         gst_object_unref(GST_OBJECT(m_bus));
         gst_object_unref(GST_OBJECT(m_playbin));
+        gst_object_unref(GST_OBJECT(m_nullVideoOutput));
     }
 }
 
 void QGstreamerPlayerSession::load(const QUrl &url)
 {
     m_url = url;
+
     if (m_playbin) {
         m_tags.clear();
         emit tagsChanged();
@@ -259,26 +261,36 @@ bool QGstreamerPlayerSession::isSeekable() const
     return m_seekable;
 }
 
-void QGstreamerPlayerSession::play()
+bool QGstreamerPlayerSession::play()
 {
     if (m_playbin) {
         if (gst_element_set_state(m_playbin, GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE) {
             qWarning() << "GStreamer; Unable to play -" << m_url.toString();
-            m_state = QMediaPlayer::StoppedState;
-            m_mediaStatus = QMediaPlayer::InvalidMedia;
+            m_state = QMediaPlayer::StoppedState;            
 
             emit stateChanged(m_state);
-            emit mediaStatusChanged(m_mediaStatus);
-
             emit error(int(QMediaPlayer::ResourceError), tr("Unable to play %1").arg(m_url.path()));
-        }
+        } else
+            return true;
     }
+
+    return false;
 }
 
-void QGstreamerPlayerSession::pause()
+bool QGstreamerPlayerSession::pause()
 {
-    if (m_playbin)
-        gst_element_set_state(m_playbin, GST_STATE_PAUSED);
+    if (m_playbin) {
+        if (gst_element_set_state(m_playbin, GST_STATE_PAUSED) == GST_STATE_CHANGE_FAILURE) {
+            qWarning() << "GStreamer; Unable to play -" << m_url.toString();
+            m_state = QMediaPlayer::StoppedState;
+
+            emit stateChanged(m_state);
+            emit error(int(QMediaPlayer::ResourceError), tr("Unable to play %1").arg(m_url.path()));
+        } else
+            return true;
+    }
+
+    return false;
 }
 
 void QGstreamerPlayerSession::stop()
@@ -292,31 +304,45 @@ void QGstreamerPlayerSession::stop()
     }
 }
 
-void QGstreamerPlayerSession::seek(qint64 ms)
+bool QGstreamerPlayerSession::seek(qint64 ms)
 {
     if (m_playbin && m_state != QMediaPlayer::StoppedState) {
         gint64  position = (gint64)ms * 1000000;
-        gst_element_seek_simple(m_playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, position);
+        return gst_element_seek_simple(m_playbin, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, position);
     }
+
+    return false;
 }
 
 void QGstreamerPlayerSession::setVolume(int volume)
 {
-    m_volume = volume;
-    emit volumeChanged(m_volume);
+    if (m_volume != volume) {
+        m_volume = volume;
 
-    if (!m_muted && m_playbin)
-        g_object_set(G_OBJECT(m_playbin), "volume", m_volume/100.0, NULL);
+        if (m_playbin) {
+#ifndef USE_PLAYBIN2
+            if(!m_muted)
+#endif
+                g_object_set(G_OBJECT(m_playbin), "volume", m_volume/100.0, NULL);
+        }
+
+        emit volumeChanged(m_volume);
+    }
 
 }
 
 void QGstreamerPlayerSession::setMuted(bool muted)
 {
-    m_muted = muted;
+    if (m_muted != muted) {
+        m_muted = muted;
 
-    g_object_set(G_OBJECT(m_playbin), "volume", (m_muted ? 0 : m_volume/100.0), NULL);
-
-    emit mutedStateChanged(m_muted);
+#ifdef USE_PLAYBIN2
+        g_object_set(G_OBJECT(m_playbin), "mute", m_muted, NULL);
+#else
+        g_object_set(G_OBJECT(m_playbin), "volume", (m_muted ? 0 : m_volume/100.0), NULL);
+#endif
+        emit mutedStateChanged(m_muted);
+    }
 }
 
 static void addTagToMap(const GstTagList *list,
@@ -388,14 +414,6 @@ void QGstreamerPlayerSession::setSeekable(bool seekable)
     }
 }
 
-void QGstreamerPlayerSession::setMediaStatus(QMediaPlayer::MediaStatus status)
-{
-    if (m_mediaStatus != status) {
-        m_mediaStatus = status;
-        emit mediaStatusChanged(status);
-    }
-}
-
 bool QGstreamerPlayerSession::processSyncMessage(const QGstreamerMessage &message)
 {
     GstMessage* gm = message.rawMessage();
@@ -440,9 +458,6 @@ void QGstreamerPlayerSession::busMessage(const QGstreamerMessage &message)
 
         if (GST_MESSAGE_SRC(gm) == GST_OBJECT_CAST(m_playbin)) {
             switch (GST_MESSAGE_TYPE(gm))  {
-            case GST_MESSAGE_DURATION:
-                break;
-
             case GST_MESSAGE_STATE_CHANGED:
                 {
                     GstState    oldState;
@@ -462,23 +477,18 @@ void QGstreamerPlayerSession::busMessage(const QGstreamerMessage &message)
                     switch (newState) {
                     case GST_STATE_VOID_PENDING:
                     case GST_STATE_NULL:
-                        setMediaStatus(QMediaPlayer::UnknownMediaStatus);
                         setSeekable(false);
                         if (m_state != QMediaPlayer::StoppedState)
                             emit stateChanged(m_state = QMediaPlayer::StoppedState);
                         break;
                     case GST_STATE_READY:
-                        setMediaStatus(QMediaPlayer::LoadedMedia);
                         setSeekable(false);
                         if (m_state != QMediaPlayer::StoppedState)
                             emit stateChanged(m_state = QMediaPlayer::StoppedState);
                         break;
                     case GST_STATE_PAUSED:
-                        //don't emit state changes for intermediate states
-                        if (m_state != QMediaPlayer::PausedState && pending == GST_STATE_VOID_PENDING)
+                        if (m_state != QMediaPlayer::PausedState)
                             emit stateChanged(m_state = QMediaPlayer::PausedState);
-
-                        setMediaStatus(QMediaPlayer::LoadedMedia);
 
                         //check for seekable
                         if (oldState == GST_STATE_READY) {
@@ -513,17 +523,13 @@ void QGstreamerPlayerSession::busMessage(const QGstreamerMessage &message)
 
                         if (m_state != QMediaPlayer::PlayingState)
                             emit stateChanged(m_state = QMediaPlayer::PlayingState);
+
                         break;
                     }
                 }
                 break;
 
             case GST_MESSAGE_EOS:
-                if (m_state != QMediaPlayer::StoppedState)
-                    emit stateChanged(m_state = QMediaPlayer::StoppedState);
-
-                setMediaStatus(QMediaPlayer::EndOfMedia);
-
                 emit playbackFinished();
                 break;
 
@@ -546,7 +552,11 @@ void QGstreamerPlayerSession::busMessage(const QGstreamerMessage &message)
             case GST_MESSAGE_INFO:
                 break;
             case GST_MESSAGE_BUFFERING:
-                setMediaStatus(QMediaPlayer::BufferingMedia);
+                {
+                    int progress = 0;
+                    gst_message_parse_buffering(gm, &progress);
+                    emit bufferingProgressChanged(progress);
+                }
                 break;
             case GST_MESSAGE_STATE_DIRTY:
             case GST_MESSAGE_STEP_DONE:
@@ -556,8 +566,32 @@ void QGstreamerPlayerSession::busMessage(const QGstreamerMessage &message)
             case GST_MESSAGE_STRUCTURE_CHANGE:
             case GST_MESSAGE_APPLICATION:
             case GST_MESSAGE_ELEMENT:
+                break;
             case GST_MESSAGE_SEGMENT_START:
+                {
+                    const GstStructure *structure = gst_message_get_structure(gm);
+                    qint64 position = g_value_get_int64(gst_structure_get_value(structure, "position"));
+                    position /= 1000000;
+                    m_lastPosition = position;
+                    emit positionChanged(position);
+                }
+                break;
             case GST_MESSAGE_SEGMENT_DONE:
+                break;
+            case GST_MESSAGE_DURATION:
+                {
+                    GstFormat   format = GST_FORMAT_TIME;
+                    gint64      duration = 0;
+
+                    if (gst_element_query_duration(m_playbin, &format, &duration)) {
+                        int newDuration = duration / 1000000;
+                        if (m_duration != newDuration) {
+                            m_duration = newDuration;
+                            emit durationChanged(m_duration);
+                        }
+                    }
+                }
+                break;
             case GST_MESSAGE_LATENCY:
 #if (GST_VERSION_MAJOR >= 0) &&  (GST_VERSION_MINOR >= 10) && (GST_VERSION_MICRO >= 13)
             case GST_MESSAGE_ASYNC_START:
@@ -604,7 +638,7 @@ void QGstreamerPlayerSession::getStreamsInfo()
     haveAudio = audioStreamsCount > 0;
     haveVideo = videoStreamsCount > 0;
 
-    m_playbin2StreamOffset[QMediaStreamsControl::AudioStream] = 0;
+    /*m_playbin2StreamOffset[QMediaStreamsControl::AudioStream] = 0;
     m_playbin2StreamOffset[QMediaStreamsControl::VideoStream] = audioStreamsCount;
     m_playbin2StreamOffset[QMediaStreamsControl::SubPictureStream] = audioStreamsCount+videoStreamsCount;
 
@@ -648,7 +682,9 @@ void QGstreamerPlayerSession::getStreamsInfo()
         }
 
         m_streamProperties.append(streamProperties);
+        
     }
+    */
 
 #else
     enum {

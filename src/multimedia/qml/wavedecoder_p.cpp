@@ -122,7 +122,7 @@ void WaveDecoder::handleData()
     else {
         int bps = qFromLittleEndian<quint16>(header.wave.bitsPerSample);
 
-        format.setCodec("audio/pcm");
+        format.setCodec(QLatin1String("audio/pcm"));
         format.setSampleType(bps == 8 ? QAudioFormat::UnSignedInt : QAudioFormat::SignedInt);
         format.setByteOrder(QAudioFormat::LittleEndian);
         format.setFrequency(qFromLittleEndian<quint32>(header.wave.sampleRate));

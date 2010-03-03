@@ -53,7 +53,7 @@ Rectangle {
                     Text { id: albumTitle; text: name; color: 'white'; font.bold: true; anchors.centerIn: parent }
                 }
 
-                MouseRegion { anchors.fill: parent; onClicked: wrapper.state = 'inGrid' }
+                MouseArea { anchors.fill: parent; onClicked: wrapper.state = 'inGrid' }
 
                 states: [
                 State {

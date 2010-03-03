@@ -1,5 +1,5 @@
 import Qt 4.6
-import ImageProviderCore 1.0
+import "ImageProviderCore" 
 //![0]
 ListView {
     width: 100
