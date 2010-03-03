@@ -1168,7 +1168,7 @@ void tst_qdeclarativexmlhttprequest::redirects()
         TestHTTPServer server(SERVER_PORT);
         QVERIFY(server.isValid());
         server.addRedirect("redirect.html", "http://127.0.0.1:14445/redirecttarget.html");
-        server.serveDirectory("data");
+        server.serveDirectory(SRCDIR "/data");
 
         QDeclarativeComponent component(&engine, TEST_FILE("redirects.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
@@ -1187,7 +1187,7 @@ void tst_qdeclarativexmlhttprequest::redirects()
         TestHTTPServer server(SERVER_PORT);
         QVERIFY(server.isValid());
         server.addRedirect("redirect.html", "http://127.0.0.1:14445/redirectmissing.html");
-        server.serveDirectory("data");
+        server.serveDirectory(SRCDIR "/data");
 
         QDeclarativeComponent component(&engine, TEST_FILE("redirectError.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
@@ -1206,7 +1206,7 @@ void tst_qdeclarativexmlhttprequest::redirects()
         TestHTTPServer server(SERVER_PORT);
         QVERIFY(server.isValid());
         server.addRedirect("redirect.html", "http://127.0.0.1:14445/redirect.html");
-        server.serveDirectory("data");
+        server.serveDirectory(SRCDIR "/data");
 
         QDeclarativeComponent component(&engine, TEST_FILE("redirectRecur.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
