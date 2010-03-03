@@ -5339,7 +5339,6 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
                             const QRegion &sourceRegion, QWidget::RenderFlags renderFlags,
                             bool readyToRender)
 {
-    Q_Q(QWidget);
     if (!target) {
         qWarning("QWidget::render: null pointer to paint device");
         return;
