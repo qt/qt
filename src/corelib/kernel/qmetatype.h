@@ -173,7 +173,7 @@ namespace QtPrivate {
 template <typename T>
 int qRegisterMetaType(const char *typeName
 #ifndef qdoc
-    , typename QMetaTypeId2<T>::CustomType * dummy = 0
+    , T * dummy = 0
 #endif
 )
 {
@@ -189,17 +189,6 @@ int qRegisterMetaType(const char *typeName
     return QMetaType::registerType(typeName, reinterpret_cast<QMetaType::Destructor>(dptr),
                                    reinterpret_cast<QMetaType::Constructor>(cptr));
 }
-
-template <typename T>
-int qRegisterMetaType(const char *typeName
-#ifndef qdoc
-    , typename QMetaTypeId2<T>::BuiltinType * /* dummy */ = 0
-#endif
-)
-{
-    return QMetaType::registerTypedef(typeName, QMetaTypeId2<T>::MetaType);
-}
-
 
 #ifndef QT_NO_DATASTREAM
 template <typename T>
@@ -229,7 +218,6 @@ struct QMetaTypeId
 template <typename T>
 struct QMetaTypeId2
 {
-    typedef T CustomType;
     enum { Defined = QMetaTypeId<T>::Defined };
     static inline int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
@@ -297,7 +285,6 @@ inline int qRegisterMetaTypeStreamOperators()
     QT_BEGIN_NAMESPACE \
     template<> struct QMetaTypeId2<TYPE> \
     { \
-        typedef TYPE BuiltinType; \
         enum { Defined = 1, MetaType = QMetaType::NAME }; \
         static inline int qt_metatype_id() { return QMetaType::NAME; } \
     }; \
