@@ -71,8 +71,9 @@ private:
         QEventLoop loop;
         QVERIFY(connect(worker, SIGNAL(done()), &loop, SLOT(quit())));
         QTimer timer;
+        timer.setSingleShot(true);
         connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-        timer.start(1000);
+        timer.start(10000);
         loop.exec();
         QVERIFY(timer.isActive());
     }

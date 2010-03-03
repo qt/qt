@@ -4,7 +4,7 @@ var maxX = 10;//Nums are for gameCanvas.tileSize 40
 var maxY = 15;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
-var tileSrc = "content/BoomBlock.qml";
+var tileSrc = "SamegameCore/BoomBlock.qml";
 var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
 var scoresURL = "";
 var timer;
