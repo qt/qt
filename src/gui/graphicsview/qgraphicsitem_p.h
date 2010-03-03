@@ -414,7 +414,8 @@ public:
 
     inline void markParentDirty(bool updateBoundingRect = false);
 
-    void setFocusHelper(Qt::FocusReason focusReason, bool climb);
+    void setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromShow);
+    void clearFocusHelper(bool giveFocusToParent);
     void setSubFocus(QGraphicsItem *rootItem = 0);
     void clearSubFocus(QGraphicsItem *rootItem = 0);
     void resetFocusProxy();
