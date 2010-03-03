@@ -91,6 +91,7 @@ QGstreamerPlayerSession::QGstreamerPlayerSession(QObject *parent)
         m_busHelper->installSyncEventFilter(this);
 
         m_nullVideoOutput = gst_element_factory_make("fakesink", NULL);
+        gst_object_ref(GST_OBJECT(m_nullVideoOutput));
         g_object_set(G_OBJECT(m_playbin), "video-sink", m_nullVideoOutput, NULL);
 
         // Initial volume
@@ -108,6 +109,7 @@ QGstreamerPlayerSession::~QGstreamerPlayerSession()
         delete m_busHelper;
         gst_object_unref(GST_OBJECT(m_bus));
         gst_object_unref(GST_OBJECT(m_playbin));
+        gst_object_unref(GST_OBJECT(m_nullVideoOutput));
     }
 }
 
