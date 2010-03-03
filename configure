@@ -6074,6 +6074,15 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     fi
 fi
 
+# select Carbon when using the 10.4u SDK
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "TEST$CFG_SDK" = "TEST/Developer/SDKs/MacOSX10.4u.sdk/" ]; then
+        echo "Carbon on";
+        CFG_MAC_COCOA="no";
+        CFG_MAC_CARBON="yes";
+    fi
+fi
+
 # set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
 case "$PLATFORM,$CFG_MAC_COCOA" in
