@@ -525,6 +525,17 @@ Option::init(int argc, char **argv)
             }
 #endif
         }
+    } else if (Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
+#if defined(Q_OS_MAC)
+        Option::host_mode = Option::HOST_MACX_MODE;
+        Option::target_mode = Option::TARG_MACX_MODE;
+#elif defined(Q_OS_UNIX)
+        Option::host_mode = Option::HOST_UNIX_MODE;
+        Option::target_mode = Option::TARG_UNIX_MODE;
+#else
+        Option::host_mode = Option::HOST_WIN_MODE;
+        Option::target_mode = Option::TARG_WIN_MODE;
+#endif
     }
 
     //defaults for globals
