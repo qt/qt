@@ -205,6 +205,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , nativeGesturePanEnabled(0)
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
+      , hasAlienChildren(0)
       , window_event(0)
       , qd_hd(0)
 #endif
@@ -1168,6 +1169,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
 
+#ifdef Q_WS_MAC
+    q->setAttribute(Qt::WA_NativeWindow);
+#endif
+
     q->setAttribute(Qt::WA_QuitOnClose); // might be cleared in adjustQuitOnCloseAttribute()
     adjustQuitOnCloseAttribute();
 
@@ -1263,6 +1268,10 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     }
 
     if (QWidget *parent = parentWidget()) {
+#ifdef Q_WS_MAC
+        if (testAttribute(Qt::WA_NativeWindow) == false)
+            parent->d_func()->hasAlienChildren = true;
+#endif
         if (type & Qt::Window) {
             if (!parent->testAttribute(Qt::WA_WState_Created))
                 parent->createWinId();
@@ -1433,7 +1442,7 @@ QWidget::~QWidget()
         }
     }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
     else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
 #ifdef Q_WS_QWS
@@ -2306,6 +2315,9 @@ QWidget *QWidget::find(WId id)
 WId QWidget::winId() const
 {
     if (!testAttribute(Qt::WA_WState_Created) || !internalWinId()) {
+#ifdef ALIEN_DEBUG
+        qDebug() << "QWidget::winId: creating native window for" << this;
+#endif
         QWidget *that = const_cast<QWidget*>(this);
         that->setAttribute(Qt::WA_NativeWindow);
         that->d_func()->createWinId();
@@ -2318,6 +2330,10 @@ WId QWidget::winId() const
 void QWidgetPrivate::createWinId(WId winid)
 {
     Q_Q(QWidget);
+
+#ifdef ALIEN_DEBUG
+    qDebug() << "QWidgetPrivate::createWinId for" << q << winid;
+#endif
     const bool forceNativeWindow = q->testAttribute(Qt::WA_NativeWindow);
     if (!q->testAttribute(Qt::WA_WState_Created) || (forceNativeWindow && !q->internalWinId())) {
         if (!q->isWindow()) {
@@ -2360,6 +2376,9 @@ Ensures that the widget has a window system identifier, i.e. that it is known to
 void QWidget::createWinId()
 {
     Q_D(QWidget);
+#ifdef ALIEN_DEBUG
+    qDebug()  << "QWidget::createWinId" << this;
+#endif
 //    qWarning("QWidget::createWinId is obsolete, please fix your code.");
     d->createWinId();
 }
@@ -5249,7 +5268,15 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             QPaintEngine *paintEngine = pdev->paintEngine();
             if (paintEngine) {
                 setRedirected(pdev, -offset);
+#ifdef Q_WS_MAC
+                // (Alien support) Special case for Mac when redirecting: If the paint device
+                // is of the Widget type we need to set WA_WState_InPaintEvent since painting
+                // outside the paint event is not supported on QWidgets. The attributeis
+                // restored further down.
+                if (pdev->devType() == QInternal::Widget)
+                    static_cast<QWidget *>(pdev)->setAttribute(Qt::WA_WState_InPaintEvent);
 
+#endif
                 if (sharedPainter)
                     paintEngine->d_func()->systemClip = toBePainted;
                 else
@@ -5290,6 +5317,10 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
             //restore
             if (paintEngine) {
+#ifdef Q_WS_MAC
+                if (pdev->devType() == QInternal::Widget)
+                    static_cast<QWidget *>(pdev)->setAttribute(Qt::WA_WState_InPaintEvent, false);
+#endif
                 restoreRedirected();
                 if (!sharedPainter)
                     paintEngine->d_func()->systemRect = QRect();
@@ -7322,7 +7353,7 @@ void QWidgetPrivate::hide_helper()
     // next bit tries to move the focus if the focus widget is now
     // hidden.
     if (wasVisible) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
         qApp->d_func()->sendSyntheticEnterLeave(q);
 #endif
 
@@ -7454,7 +7485,7 @@ void QWidget::setVisible(bool visible)
 
             d->show_helper();
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
             qApp->d_func()->sendSyntheticEnterLeave(this);
 #endif
         }
@@ -7569,7 +7600,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
                 widget->d_func()->hide_sys();
             }
         }
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #endif
 #ifndef QT_NO_ACCESSIBILITY
@@ -9787,7 +9818,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
         desktopWidget = parent;
     bool newParent = (parent != parentWidget()) || !wasCreated || desktopWidget;
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_MAC)
     if (newParent && parent && !desktopWidget) {
         if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
             parent->d_func()->enforceNativeChildren();
@@ -10433,7 +10464,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     }
     case Qt::WA_PaintOnScreen:
         d->updateIsOpaque();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC)
         // Recreate the widget if it's already created as an alien widget and
         // WA_PaintOnScreen is enabled. Paint on screen widgets must have win id.
         // So must their children.

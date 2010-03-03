@@ -498,9 +498,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     if (!widget)
         return false;
-#if defined(Q_WS_MAC) // Fake alien behavior on the Mac :)
-    return !widget->isWindow() && widget->window()->testAttribute(Qt::WA_DontShowOnScreen);
-#elif defined(Q_WS_QWS)
+#if defined(Q_WS_QWS)
     return !widget->isWindow()
 # ifdef Q_BACKINGSTORE_SUBSURFACES
         && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
@@ -3013,7 +3011,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -3073,7 +3071,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
     sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
 #endif // QT_NO_CURSOR
 }
-#endif // Q_WS_WIN || Q_WS_X11
+#endif // Q_WS_WIN || Q_WS_X11 || Q_WS_MAC
 
 /*!
     Returns the desktop widget (also called the root window).

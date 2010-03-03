@@ -139,7 +139,7 @@ void QMacWindowFader::performFade()
 
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event); // qapplication.cpp;
 extern QWidget * mac_mouse_grabber;
-extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
+extern QWidget *qt_button_down; //qapplication_mac.cpp
 
 void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds)
 {
@@ -686,6 +686,12 @@ bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEve
     if ([event type] == NSKeyDown) {
         qt_keymapper_private()->updateKeyMap(0, key_event, 0);
     }
+
+    // Redirect keys to alien widgets.
+    if (widgetToGetEvent->testAttribute(Qt::WA_NativeWindow) == false) {
+        widgetToGetEvent = qApp->focusWidget();
+    }
+
     if (widgetToGetEvent == 0)
         return false;
 
@@ -940,7 +946,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
                 [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(tmpView) qt_qwidget];
         }
     } else {
-        extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
+        extern QWidget * qt_button_down; //qapplication_mac.cpp
         QPoint pos;
         widgetToGetMouse = QApplicationPrivate::pickMouseReceiver(qwidget, qglobalPoint,
                                                                   pos, eventType,
@@ -952,7 +958,20 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
         return false;
 
     NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
-    QPoint qlocalPoint(localPoint.x, localPoint.y);
+    QPoint qlocalPoint = QPoint(localPoint.x, localPoint.y);
+
+    // Search for alien child widgets (either on this qwidget or on the popup)
+    if (widgetToGetMouse->testAttribute(Qt::WA_NativeWindow) == false || qt_widget_private(widgetToGetMouse)->hasAlienChildren) {
+        QPoint qScreenPoint = flipPoint(globalPoint).toPoint();
+#ifdef ALIEN_DEBUG
+        qDebug() << "alien mouse event" << qScreenPoint << possibleAlien;
+#endif
+        QWidget *possibleAlien =  widgetToGetMouse->childAt(qlocalPoint);
+        if (possibleAlien) {
+            qlocalPoint = possibleAlien->mapFromGlobal(widgetToGetMouse->mapToGlobal(qlocalPoint));
+            widgetToGetMouse = possibleAlien;
+        }
+    }
 
     EventRef carbonEvent = static_cast<EventRef>(const_cast<void *>([theEvent eventRef]));
     if (qt_mac_sendMacEventToWidget(widgetToGetMouse, carbonEvent))
@@ -997,7 +1016,19 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     }
     [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent]->localPoint = localPoint;
     QMouseEvent qme(eventType, qlocalPoint, qglobalPoint, button, buttons, keyMods);
-    qt_sendSpontaneousEvent(widgetToGetMouse, &qme);
+
+#ifdef ALIEN_DEBUG
+    qDebug() << "sending mouse event to" << widgetToGetMouse;
+#endif
+    extern QWidget *qt_button_down;
+    extern QPointer<QWidget> qt_last_mouse_receiver;
+
+    if (qwidget->testAttribute(Qt::WA_NativeWindow) && qt_widget_private(qwidget)->hasAlienChildren == false)
+        qt_sendSpontaneousEvent(widgetToGetMouse, &qme);
+    else
+        QApplicationPrivate::sendMouseEvent(widgetToGetMouse, &qme, widgetToGetMouse, qwidget, &qt_button_down,
+                                            qt_last_mouse_receiver);
+
     if (eventType == QEvent::MouseButtonPress && button == Qt::RightButton) {
         QContextMenuEvent qcme(QContextMenuEvent::Mouse, qlocalPoint, qglobalPoint, keyMods);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qcme);

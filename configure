@@ -4322,7 +4322,7 @@ if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt" ]; then
     [ "$CFG_DEV" = "yes" ] && SYNCQT_OPTS="$SYNCQT_OPTS -check-includes"
     if [ "$OPT_SHADOW" = "yes" ]; then
         "$outpath/bin/syncqt" $SYNCQT_OPTS
-    elif [ "$CFG_DEV" = "yes" ] || [ ! -d $relpath/include ]; then
+    elif [ "$CFG_DEV" = "yes" ] || [ ! -d $relpath/include ] || [ -d $relpath/.git ]; then
         QTDIR="$relpath" perl "$outpath/bin/syncqt" $SYNCQT_OPTS
     fi
 fi
@@ -6069,6 +6069,15 @@ fi
 if [ "$PLATFORM_MAC" = "yes" ]; then
     VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
     if [ "$VERSION" == 8 ]; then
+        CFG_MAC_COCOA="no";
+        CFG_MAC_CARBON="yes";
+    fi
+fi
+
+# select Carbon when using the 10.4u SDK
+if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "TEST$CFG_SDK" = "TEST/Developer/SDKs/MacOSX10.4u.sdk/" ]; then
+        echo "Carbon on";
         CFG_MAC_COCOA="no";
         CFG_MAC_CARBON="yes";
     fi
