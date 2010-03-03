@@ -152,6 +152,7 @@ static bool qt_mac_raise_process = true;
 static OSWindowRef qt_root_win = 0;
 QWidget *mac_mouse_grabber = 0;
 QWidget *mac_keyboard_grabber = 0;
+extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
 #ifndef QT_MAC_USE_COCOA
 #ifdef QT_NAMESPACE
@@ -866,7 +867,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                                                            & ~Qt::WindowMaximized));
                 QApplication::sendSpontaneousEvent(widget, &e);
             }
-            extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowCollapsed) {
             if (!widget->isMinimized()) {
@@ -894,7 +894,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             //we send a hide to be like X11/Windows
             QEvent e(QEvent::Hide);
             QApplication::sendSpontaneousEvent(widget, &e);
-            extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
             qt_button_down = 0;
         } else if(ekind == kEventWindowToolbarSwitchMode) {
             macSendToolbarChangeEvent(widget);
@@ -1519,7 +1518,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
             if (widget) {
                 qt_event_request_window_change(widget);
                 if (!HIViewIsVisible(HIViewRef(widget->winId()))) {
-                    extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
                     if (widget == qt_button_down)
                         qt_button_down = 0;
                 }
@@ -1528,7 +1526,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
         break; }
     case kEventClassMouse: {
         bool send_to_app = false;
-        extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
         if(qt_button_down)
             send_to_app = true;
         if(send_to_app) {
@@ -3405,7 +3402,6 @@ void QWidgetPrivate::hide_sys()
     Q_Q(QWidget);
     if((q->windowType() == Qt::Desktop)) //you can't hide the desktop!
         return;
-
     QMacCocoaAutoReleasePool pool;
     if(q->isWindow()) {
         OSWindowRef window = qt_mac_window_for(q);
