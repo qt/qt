@@ -64,7 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_AUTOTEST_EXPORT QDeclarativeAbstractBinding
+class Q_DECLARATIVE_EXPORT QDeclarativeAbstractBinding
 {
 public:
     QDeclarativeAbstractBinding();
@@ -101,7 +101,7 @@ private:
 
 class QDeclarativeContext;
 class QDeclarativeBindingPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeBinding : public QDeclarativeExpression, public QDeclarativeAbstractBinding
+class Q_DECLARATIVE_EXPORT QDeclarativeBinding : public QDeclarativeExpression, public QDeclarativeAbstractBinding
 {
 Q_OBJECT
 public:
