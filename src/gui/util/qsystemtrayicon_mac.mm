@@ -530,7 +530,11 @@ private:
             [item setToolTip:(NSString*)QCFString::toCFStringRef(action->toolTip())];
             const QIcon icon = action->icon();
             if(!icon.isNull()) {
+#ifndef QT_MAC_USE_COCOA
+                const short scale = GetMBarHeight();
+#else
                 const short scale = [[NSApp mainMenu] menuBarHeight];
+#endif
                 NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(icon.pixmap(QSize(scale, scale))));
                 [item setImage: nsimage];
                 [nsimage release];
