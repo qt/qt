@@ -62,7 +62,10 @@ public:
     MyInterface() : id(913) {}
     int id;
 };
+
+QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(MyInterface, "com.trolltech.Qt.Test.MyInterface");
+QT_END_NAMESPACE
 QML_DECLARE_INTERFACE(MyInterface);
 
 struct MyCustomVariantType

@@ -69,7 +69,9 @@ class QtTestMediaControlA : public QMediaControl
 
 
 #define QtTestMediaControlA_iid "com.nokia.QtTestMediaControlA"
+QT_BEGIN_NAMESPACE
 Q_MEDIA_DECLARE_CONTROL(QtTestMediaControlA, QtTestMediaControlA_iid)
+QT_END_NAMESPACE
 
 
 class QtTestMediaControlB : public QMediaControl
@@ -78,7 +80,9 @@ class QtTestMediaControlB : public QMediaControl
 };
 
 #define QtTestMediaControlB_iid "com.nokia.QtTestMediaControlB"
+QT_BEGIN_NAMESPACE
 Q_MEDIA_DECLARE_CONTROL(QtTestMediaControlB, QtTestMediaControlB_iid)
+QT_END_NAMESPACE
 
 
 class QtTestMediaControlC : public QMediaControl
@@ -87,7 +91,9 @@ class QtTestMediaControlC : public QMediaControl
 };
 
 #define QtTestMediaControlC_iid "com.nokia.QtTestMediaControlC"
+QT_BEGIN_NAMESPACE
 Q_MEDIA_DECLARE_CONTROL(QtTestMediaControlC, QtTestMediaControlA_iid) // Yes A.
+QT_END_NAMESPACE
 
 class QtTestMediaControlD : public QMediaControl
 {
@@ -95,7 +101,9 @@ class QtTestMediaControlD : public QMediaControl
 };
 
 #define QtTestMediaControlD_iid "com.nokia.QtTestMediaControlD"
+QT_BEGIN_NAMESPACE
 Q_MEDIA_DECLARE_CONTROL(QtTestMediaControlD, QtTestMediaControlD_iid)
+QT_END_NAMESPACE
 
 class QtTestMediaControlE : public QMediaControl
 {
