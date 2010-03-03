@@ -96,6 +96,11 @@ extern "C" {
 }
 #endif
 
+#ifndef QT_GUI_DOUBLE_CLICK_RADIUS
+#define QT_GUI_DOUBLE_CLICK_RADIUS 5
+#endif
+
+
 //#define ALIEN_DEBUG
 
 #if !defined(QT_NO_GLIB)
