@@ -46,6 +46,7 @@
 #include "qdeclarativecontext_p.h"
 #include "qdeclarativerewrite_p.h"
 #include "qdeclarativecompiler_p.h"
+#include "qdeclarativeglobalscriptclass_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtScript/qscriptprogram.h>
@@ -135,6 +136,7 @@ void QDeclarativeExpressionPrivate::init(QDeclarativeContext *ctxt, void *expr, 
         if (!dd->cachedClosures.at(progIdx)) {
             QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
             scriptContext->pushScope(ep->contextClass->newSharedContext());
+            scriptContext->pushScope(ep->globalClass->globalObject());
             dd->cachedClosures[progIdx] = new QScriptValue(scriptEngine->evaluate(data->expression, data->url, data->line));
             scriptEngine->popContext();
         }
@@ -169,6 +171,7 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
     scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    scriptContext->pushScope(ep->globalClass->globalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program);
     ep->scriptEngine.popContext();
     return rv;
@@ -180,6 +183,7 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
     QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context->engine());
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(&ep->scriptEngine);
     scriptContext->pushScope(ep->contextClass->newContext(context, object));
+    scriptContext->pushScope(ep->globalClass->globalObject());
     QScriptValue rv = ep->scriptEngine.evaluate(program);
     ep->scriptEngine.popContext();
     return rv;
@@ -335,6 +339,7 @@ QVariant QDeclarativeExpressionPrivate::evalQtScript(QObject *secondaryScope, bo
 
         QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
         scriptContext->pushScope(ep->contextClass->newContext(data->context(), data->me));
+        scriptContext->pushScope(ep->globalClass->globalObject());
 
         if (data->expressionRewritten) {
             data->expressionFunction = scriptEngine->evaluate(data->expression, 

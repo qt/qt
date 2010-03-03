@@ -65,6 +65,7 @@
 #include "qdeclarativescriptparser_p.h"
 #include "qdeclarativebinding_p.h"
 #include "qdeclarativecompiledbindings_p.h"
+#include "qdeclarativeglobalscriptclass_p.h"
 
 #include <qfxperf_p_p.h>
 
@@ -110,32 +111,6 @@ bool QDeclarativeCompiler::isError() const
 QList<QDeclarativeError> QDeclarativeCompiler::errors() const
 {
     return exceptions;
-}
-
-/*!
-    Returns true if \a val is a legal object id, false otherwise.
-
-    Legal ids must start with a lower-case letter or underscore, and contain only
-    letters, numbers and underscores.
-*/
-bool QDeclarativeCompiler::isValidId(const QString &val)
-{
-    if (val.isEmpty())
-        return false;
-
-    if (val.at(0).isLetter() && !val.at(0).isLower()) {
-        qWarning().nospace() << "id " << val << " is invalid: ids cannot start with uppercase letters";
-        return false;
-    }
-
-    QChar u(QLatin1Char('_'));
-    for (int ii = 0; ii < val.count(); ++ii)
-        if (val.at(ii) != u &&
-           ((ii == 0 && !val.at(ii).isLetter()) ||
-           (ii != 0 && !val.at(ii).isLetterOrNumber())) )
-            return false;
-
-    return true;
 }
 
 /*!
@@ -1140,10 +1115,11 @@ bool QDeclarativeCompiler::buildComponent(QDeclarativeParser::Object *obj,
     if (obj->properties.count())
         idProp = *obj->properties.begin();
 
-    if (idProp && (idProp->value || idProp->values.count() > 1 || !isValidId(idProp->values.first()->primitive())))
-        COMPILE_EXCEPTION(idProp, QCoreApplication::translate("QDeclarativeCompiler","Invalid component id specification"));
-
     if (idProp) {
+       if (idProp->value || idProp->values.count() > 1 || idProp->values.at(0)->object) 
+           COMPILE_EXCEPTION(idProp, QCoreApplication::translate("QDeclarativeCompiler","Invalid component id specification"));
+       COMPILE_CHECK(checkValidId(idProp->values.first(), idProp->values.first()->primitive()));
+
         QString idVal = idProp->values.first()->primitive();
 
         if (compileState.ids.contains(idVal))
@@ -1726,8 +1702,7 @@ bool QDeclarativeCompiler::buildIdProperty(QDeclarativeParser::Property *prop,
     QDeclarativeParser::Value *idValue = prop->values.at(0);
     QString val = idValue->primitive();
 
-    if (!isValidId(val))
-        COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","\"%1\" is not a valid object id").arg(val));
+    COMPILE_CHECK(checkValidId(idValue, val));
 
     // We disallow id's that conflict with import prefixes and types
     QDeclarativeEnginePrivate::ImportedNamespace *ns = 0;
@@ -2472,6 +2447,31 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         compileState.aliasingObjects << obj;
 
     obj->synthdata = dynamicData;
+
+    return true;
+}
+
+bool QDeclarativeCompiler::checkValidId(QDeclarativeParser::Value *v, const QString &val)
+{
+    if (val.isEmpty()) 
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "Invalid empty ID"));
+
+    if (val.at(0).isLetter() && !val.at(0).isLower()) 
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs cannot start with an uppercase letter"));
+
+    QChar u(QLatin1Char('_'));
+    for (int ii = 0; ii < val.count(); ++ii) {
+
+        if (ii == 0 && !val.at(ii).isLetter() && val.at(ii) != u) {
+            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs must start with a letter or underscore"));
+        } else if (ii != 0 && !val.at(ii).isLetterOrNumber() && val.at(ii) != u)  {
+            COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "IDs must contain only letters, numbers, and underscores"));
+        }
+
+    }
+
+    if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(val))
+        COMPILE_EXCEPTION(v, QCoreApplication::translate("QDeclarativeCompiler", "ID illegally masks global JavaScript property"));
 
     return true;
 }
