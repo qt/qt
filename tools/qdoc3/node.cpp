@@ -1315,8 +1315,11 @@ void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 void QmlClassNode::subclasses(const QString& base, NodeList& subs)
 {
     subs.clear();
-    if (inheritedBy.contains(base))
+    if (inheritedBy.count(base) > 0) {
         subs = inheritedBy.values(base);
+        qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
+                 << "subs:" << subs.size();
+    }
 }
 
 /*!
