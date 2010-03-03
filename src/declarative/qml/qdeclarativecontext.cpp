@@ -78,6 +78,7 @@ void QDeclarativeContextPrivate::addScript(const QDeclarativeParser::Object::Scr
     
     QScriptValue scope = scriptEngine->newObject();
     scriptContext->setActivationObject(scope);
+    scriptContext->pushScope(scope);
 
     for (int ii = 0; ii < script.codes.count(); ++ii) {
         scriptEngine->evaluate(script.codes.at(ii), script.files.at(ii), script.lineNumbers.at(ii));
