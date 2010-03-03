@@ -1985,7 +1985,10 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                         emit widget->dockLocationChanged(toDockWidgetArea(dockPos));
                     }
                 }
-
+		if (testing) {
+		  //was it is not really added to the layout, we need to delete the object here
+		  delete item.widgetItem;
+		}
             }
         } else if (nextMarker == SequenceMarker) {
             int dummy;
