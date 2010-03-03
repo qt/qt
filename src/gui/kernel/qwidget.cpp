@@ -160,6 +160,7 @@ static inline bool hasBackingStoreSupport()
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
+extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
@@ -7535,6 +7536,23 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
         QWidget *widget = qobject_cast<QWidget*>(childList.at(i));
         if (!widget || widget->isWindow() || widget->testAttribute(Qt::WA_WState_Hidden))
             continue;
+#ifdef QT_MAC_USE_COCOA
+        // Before doing anything we need to make sure that we don't leave anything in a non-consistent state.
+        // When hiding a widget we need to make sure that no mouse_down events are active, because
+        // the mouse_up event will never be received by a hidden widget or one of its descendants.
+        // The solution is simple, before going through with this we check if there are any mouse_down events in
+        // progress, if so we check if it is related to this widget or not. If so, we just reset the mouse_down and
+        // then we continue.
+        // In X11 and Windows we send a mouse_release event, however we don't do that here because we were already
+        // ignoring that from before. I.e. Carbon did not send the mouse release event, so we will not send the
+        // mouse release event. There are two ways to interpret this:
+        // 1. If we don't send the mouse release event, the widget might get into an inconsistent state, i.e. it
+        // might be waiting for a release event that will never arrive.
+        // 2. If we send the mouse release event, then the widget might decide to trigger an action that is not
+        // supposed to trigger because it is not visible.
+        if(widget == qt_button_down)
+            qt_button_down = 0;
+#endif // QT_MAC_USE_COCOA
         if (spontaneous)
             widget->setAttribute(Qt::WA_Mapped, false);
         else
