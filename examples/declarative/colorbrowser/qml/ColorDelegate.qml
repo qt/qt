@@ -27,7 +27,7 @@ Package {
             value: hex; when: delegate.open && list.ListView.isCurrentItem
         }
 
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.RightButton | Qt.LeftButton
             onClicked: {

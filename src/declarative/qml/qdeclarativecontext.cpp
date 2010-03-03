@@ -47,6 +47,7 @@
 #include "qdeclarativeengine.h"
 #include "qdeclarativecompiledbindings_p.h"
 #include "qdeclarativeinfo.h"
+#include "qdeclarativeglobalscriptclass_p.h"
 
 #include <qscriptengine.h>
 #include <QtCore/qvarlengtharray.h>
@@ -74,7 +75,9 @@ void QDeclarativeContextPrivate::addScript(const QDeclarativeParser::Object::Scr
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
+
     scriptContext->pushScope(enginePriv->contextClass->newContext(q, scopeObject));
+    scriptContext->pushScope(enginePriv->globalClass->globalObject());
     
     QScriptValue scope = scriptEngine->newObject();
     scriptContext->setActivationObject(scope);

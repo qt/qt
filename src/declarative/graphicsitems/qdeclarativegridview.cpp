@@ -744,7 +744,7 @@ QDeclarativeGridView::~QDeclarativeGridView()
         id: myDelegate
         Item {
             id: wrapper
-            GridView.onRemove: SequentialAnimation {
+            SequentialAnimation on GridView.onRemove {
                 PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: true }
                 NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
                 PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: false }
@@ -989,8 +989,8 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
       id: myHighlight
       Rectangle {
           id: wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60
-          y: SpringFollow { source: Wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
-          x: SpringFollow { source: Wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
+          SpringFollow on y { source: Wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
+          SpringFollow on x { source: Wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
       }
   }
   \endcode

@@ -144,7 +144,7 @@ QDeclarativeVisualItemModel::QDeclarativeVisualItemModel()
 QDeclarativeListProperty<QDeclarativeItem> QDeclarativeVisualItemModel::children()
 {
     Q_D(QDeclarativeVisualItemModel);
-    return QDeclarativeListProperty<QDeclarativeItem>(this, d, d->children_append, 
+    return QDeclarativeListProperty<QDeclarativeItem>(this, d, d->children_append,
                                                       d->children_count, d->children_at);
 }
 
@@ -483,7 +483,7 @@ QVariant QDeclarativeVisualDataModelDataMetaObject::initialValue(int propId)
 
 QDeclarativeVisualDataModelData::QDeclarativeVisualDataModelData(int index,
                                                QDeclarativeVisualDataModel *model)
-: m_index(index), m_model(model), 
+: m_index(index), m_model(model),
 m_meta(new QDeclarativeVisualDataModelDataMetaObject(this, QDeclarativeVisualDataModelPrivate::get(model)->m_delegateDataType))
 {
     QDeclarativeVisualDataModelPrivate *modelPriv = QDeclarativeVisualDataModelPrivate::get(model);
@@ -550,7 +550,7 @@ QVariant QDeclarativeVisualDataModelPartsMetaObject::initialValue(int id)
 }
 
 QDeclarativeVisualDataModelParts::QDeclarativeVisualDataModelParts(QDeclarativeVisualDataModel *parent)
-: QObject(parent), model(parent) 
+: QObject(parent), model(parent)
 {
     new QDeclarativeVisualDataModelPartsMetaObject(this);
 }
@@ -840,7 +840,7 @@ void QDeclarativeVisualDataModel::setDelegate(QDeclarativeComponent *delegate)
                 Rectangle {
                     height: 25; width: 100
                     Text { text: path }
-                    MouseRegion {
+                    MouseArea {
                         anchors.fill: parent;
                         onClicked: myModel.setRoot(path)
                     }
@@ -969,7 +969,7 @@ QDeclarativeVisualDataModel::ReleaseFlags QDeclarativeVisualDataModel::release(Q
 QObject *QDeclarativeVisualDataModel::parts()
 {
     Q_D(QDeclarativeVisualDataModel);
-    if (!d->m_parts) 
+    if (!d->m_parts)
         d->m_parts = new QDeclarativeVisualDataModelParts(this);
     return d->m_parts;
 }

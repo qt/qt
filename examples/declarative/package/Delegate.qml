@@ -11,7 +11,7 @@ Package {
         color: 'lightsteelblue'
 
         Text { text: display; anchors.centerIn: parent }
-        MouseRegion {
+        MouseArea {
             anchors.fill: parent
             onClicked: {
                 if (wrapper.state == 'inList')
