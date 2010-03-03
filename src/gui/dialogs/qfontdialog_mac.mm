@@ -514,7 +514,7 @@ void *QFontDialogPrivate::_q_constructNativePanel()
 #ifdef QT_MAC_USE_COCOA
     [[NSFontManager sharedFontManager] setTarget:delegate];
 #endif
-    setFont(delegate, QApplication::font());
+    setFont(delegate, q_func()->currentFont());
 
     {
         // hack to get correct initial layout
