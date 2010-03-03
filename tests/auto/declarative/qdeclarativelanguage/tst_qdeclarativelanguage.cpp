@@ -713,6 +713,11 @@ void tst_qdeclarativelanguage::attachedProperties()
     QVERIFY(attached != 0);
     QCOMPARE(attached->property("value"), QVariant(10));
     QCOMPARE(attached->property("value2"), QVariant(13));
+
+    QEXPECT_FAIL("", "QTBUG-8677", Abort);
+    attached->setProperty("value", QVariant(12));
+    int val = object->property("value2").toInt();
+    QCOMPARE(val, 12);
 }
 
 // Tests non-static object properties
