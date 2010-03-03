@@ -352,6 +352,7 @@ public:
     QMetaType::SaveOperator saveOp;
     QMetaType::LoadOperator loadOp;
 #endif
+    int alias;
 };
 
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
@@ -436,8 +437,11 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
         return 0;
 
     for (int v = 0; v < ct->count(); ++v) {
-        if ((length == ct->at(v).typeName.size())
-            && !strcmp(typeName, ct->at(v).typeName.constData())) {
+        const QCustomTypeInfo &customInfo = ct->at(v);
+        if ((length == customInfo.typeName.size())
+            && !strcmp(typeName, customInfo.typeName.constData())) {
+            if (customInfo.alias >= 0)
+                return customInfo.alias;
             return v + QMetaType::User;
         }
     }
@@ -475,11 +479,57 @@ int QMetaType::registerType(const char *typeName, Destructor destructor,
             inf.typeName = normalizedTypeName;
             inf.constr = constructor;
             inf.destr = destructor;
+            inf.alias = -1;
             idx = ct->size() + User;
             ct->append(inf);
         }
     }
     return idx;
+}
+
+/*! \internal
+    \since 4.7
+
+    Registers a user type for marshalling, as an alias of another type (typedef)
+*/
+int QMetaType::registerTypedef(const char* typeName, int aliasId)
+{
+    QVector<QCustomTypeInfo> *ct = customTypes();
+    if (!ct || !typeName)
+        return -1;
+
+#ifdef QT_NO_QOBJECT
+    NS(QByteArray) normalizedTypeName = typeName;
+#else
+    NS(QByteArray) normalizedTypeName = QMetaObject::normalizedType(typeName);
+#endif
+
+    int idx = qMetaTypeStaticType(normalizedTypeName.constData(),
+                                  normalizedTypeName.size());
+
+    if (idx) {
+        Q_ASSERT(idx == aliasId);
+        return idx;
+    }
+
+    QWriteLocker locker(customTypesLock());
+    idx = qMetaTypeCustomType_unlocked(normalizedTypeName.constData(),
+                                           normalizedTypeName.size());
+
+    if (idx) {
+        Q_ASSERT(idx == aliasId);
+        return idx;
+    }
+
+    if (!idx) {
+        QCustomTypeInfo inf;
+        inf.typeName = normalizedTypeName;
+        inf.alias = aliasId;
+        inf.constr = 0;
+        inf.destr = 0;
+        ct->append(inf);
+    }
+    return aliasId;
 }
 
 /*!
@@ -507,6 +557,7 @@ void QMetaType::unregisterType(const char *typeName)
             inf.typeName.clear();
             inf.constr = 0;
             inf.destr = 0;
+            inf.alias = -1;
         }
     }
 }
@@ -1348,6 +1399,11 @@ void QMetaType::destroy(int type, void *data)
     This example registers the class \c{MyClass}:
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 4
+
+    This function is usefull to register typedefs so they can be used
+    by QMetaProperty, or in QueuedConnections
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qmetatype.cpp 9
 
     \sa qRegisterMetaTypeStreamOperators(), QMetaType::isRegistered(),
         Q_DECLARE_METATYPE()

@@ -40,8 +40,14 @@
 ****************************************************************************/
 
 #include <QtOpenGL/qgl.h>
+#include <QtOpenGL/qglpixelbuffer.h>
 #include "qgl_p.h"
 #include "qgl_egl_p.h"
+#include "qglpixelbuffer_p.h"
+
+#ifdef Q_WS_X11
+#include <QtGui/private/qpixmap_x11_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -154,12 +160,12 @@ void QGLContext::reset()
 void QGLContext::makeCurrent()
 {
     Q_D(QGLContext);
-    if (!d->valid || !d->eglContext || d->eglSurface == EGL_NO_SURFACE) {
+    if (!d->valid || !d->eglContext || d->eglSurfaceForDevice() == EGL_NO_SURFACE) {
         qWarning("QGLContext::makeCurrent(): Cannot make invalid context current");
         return;
     }
 
-    if (d->eglContext->makeCurrent(d->eglSurface))
+    if (d->eglContext->makeCurrent(d->eglSurfaceForDevice()))
         QGLContextPrivate::setCurrentContext(this);
 }
 
@@ -179,7 +185,7 @@ void QGLContext::swapBuffers() const
     if (!d->valid || !d->eglContext)
         return;
 
-    d->eglContext->swapBuffers(d->eglSurface);
+    d->eglContext->swapBuffers(d->eglSurfaceForDevice());
 }
 
 void QGLContextPrivate::destroyEglSurfaceForDevice()
@@ -200,6 +206,27 @@ void QGLContextPrivate::destroyEglSurfaceForDevice()
             eglDestroySurface(eglContext->display(), eglSurface);
         eglSurface = EGL_NO_SURFACE;
     }
+}
+
+EGLSurface QGLContextPrivate::eglSurfaceForDevice() const
+{
+    if (paintDevice->devType() == QInternal::Widget)
+        return eglSurface;
+    if (paintDevice->devType() == QInternal::Pixmap) {
+#ifdef Q_WS_X11
+        QPixmapData *pmd = static_cast<QPixmap*>(paintDevice)->data_ptr().data();
+        if (pmd->classId() == QPixmapData::X11Class) {
+            QX11PixmapData* x11PixmapData = static_cast<QX11PixmapData*>(pmd);
+            return (EGLSurface)x11PixmapData->gl_surface;
+        } else
+#endif
+            return eglSurface;
+    }
+    if (paintDevice->devType() == QInternal::Pbuffer) {
+        QGLPixelBuffer* pbuf = static_cast<QGLPixelBuffer*>(paintDevice);
+        return pbuf->d_func()->pbuf;
+    }
+    return EGL_NO_SURFACE;
 }
 
 void QGLWidget::setMouseTracking(bool enable)
