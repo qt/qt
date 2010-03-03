@@ -160,7 +160,6 @@ static inline bool hasBackingStoreSupport()
 
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
-extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
