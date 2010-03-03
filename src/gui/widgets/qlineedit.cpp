@@ -544,6 +544,11 @@ void QLineEdit::setEchoMode(EchoMode mode)
     } else {
         imHints &= ~Qt::ImhHiddenText;
     }
+    if (mode != Normal) {
+        imHints |= (Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    } else {
+        imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
+    }
     setInputMethodHints(imHints);
     d->control->setEchoMode(mode);
     update();
