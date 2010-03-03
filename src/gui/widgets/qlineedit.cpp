@@ -383,8 +383,6 @@ void QLineEdit::setText(const QString& text)
     d->control->setText(text);
 }
 
-// ### Qt 4.7: remove this #if guard
-#if (QT_VERSION >= 0x407000) || defined(Q_WS_MAEMO_5)
 /*!
     \since 4.7
 
@@ -414,7 +412,6 @@ void QLineEdit::setPlaceholderText(const QString& placeholderText)
             update();
     }
 }
-#endif
 
 /*!
     \property QLineEdit::displayText
