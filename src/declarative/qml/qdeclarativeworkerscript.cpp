@@ -365,6 +365,8 @@ void QDeclarativeWorkerScriptEnginePrivate::processLoad(int id, const QUrl &url)
         workerEngine->evaluate(script);
 
         workerEngine->popContext();
+    } else {
+        qWarning().nospace() << "WorkerScript: Cannot find source file " << url.toString();
     }
 }
 
@@ -382,7 +384,7 @@ QVariant QDeclarativeWorkerScriptEnginePrivate::scriptValueToVariant(const QScri
         quint32 length = (quint32)value.property(QLatin1String("length")).toNumber();
 
         for (quint32 ii = 0; ii < length; ++ii) {
-            QVariant v = scriptValueToVariant(ii);
+            QVariant v = scriptValueToVariant(value.property(ii));
             list << v;
         }
 
@@ -561,6 +563,65 @@ void QDeclarativeWorkerScriptEngine::run()
     delete d->workerEngine; d->workerEngine = 0;
 }
 
+
+/*!
+    \qmlclass WorkerScript QDeclarativeWorkerScript
+    \brief The WorkerScript element enables the use of threads in QML.
+
+    Use WorkerScript to run operations in a new thread.
+    This is useful for running operations in the background so
+    that the main GUI thread is not blocked.
+
+    Messages can be passed between the new thread and the parent thread
+    using sendMessage() and the onMessage() handler.
+    
+    Here is an example:
+
+    \qml
+    import Qt 4.6
+
+    Rectangle {
+        width: 300
+        height: 300
+
+        Text {
+            id: myText
+            text: 'Click anywhere'
+        }
+
+        WorkerScript {
+            id: myWorker
+            source: "script.js"
+
+            onMessage: {
+                myText.text = messageObject.reply
+            }
+        }
+
+        MouseArea { 
+            anchors.fill: parent
+            onClicked: myWorker.sendMessage( {'x': mouse.x, 'y': mouse.y} );
+        }
+    }
+    \endqml
+
+    The above worker script specifies a javascript file, "script.js", that handles
+    the operations to be performed in the new thread:
+
+    \qml
+    WorkerScript.onMessage = function(message) {
+        // ... long-running operations and calculations are done here
+        WorkerScript.sendMessage( {'reply': 'Mouse is at ' + message.x + ',' + message.y} );
+    }
+    \endqml
+    
+    When the user clicks anywhere within the rectangle, \c sendMessage() is
+    called, triggering the \tt WorkerScript.onMessage() handler in
+    \tt source.js. This in turn sends a reply message that is then received
+    by the \tt onMessage() handler of \tt myWorker.
+
+    \sa WorkerListModel
+*/
 QDeclarativeWorkerScript::QDeclarativeWorkerScript(QObject *parent)
 : QObject(parent), m_engine(0), m_scriptId(-1)
 {
@@ -571,6 +632,12 @@ QDeclarativeWorkerScript::~QDeclarativeWorkerScript()
     if (m_scriptId != -1) m_engine->removeWorkerScript(m_scriptId);
 }
 
+/*!
+    \qmlproperty url WorkerScript::source
+
+    This holds the url of the javascript file that implements the
+    \tt WorkerScript.onMessage() handler for threaded operations.
+*/
 QUrl QDeclarativeWorkerScript::source() const
 {
     return m_source;
@@ -589,6 +656,13 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
     emit sourceChanged();
 }
 
+/*
+    \qmlmethod WorkerScript::sendMessage(jsobject message)
+
+    Sends the given \a message to a worker script handler in another
+    thread. The other worker script handler can receive this message
+    through the onMessage() handler.
+*/
 void QDeclarativeWorkerScript::sendMessage(const QScriptValue &message)
 {
     if (!m_engine) {
@@ -615,6 +689,13 @@ void QDeclarativeWorkerScript::componentComplete()
             m_engine->executeUrl(m_scriptId, m_source);
     }
 }
+
+/*!
+    \qmlsignal WorkerScript::onMessage(jsobject msg)
+
+    This handler is called when a message \a msg is received from a worker
+    script in another thread through a call to sendMessage().
+*/
 
 bool QDeclarativeWorkerScript::event(QEvent *event)
 {
