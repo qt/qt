@@ -232,6 +232,9 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidID.4") << "invalidID.4.qml" << "invalidID.4.errors.txt" << false;
     QTest::newRow("invalidID.5") << "invalidID.5.qml" << "invalidID.5.errors.txt" << false;
     QTest::newRow("invalidID.6") << "invalidID.6.qml" << "invalidID.6.errors.txt" << false;
+    QTest::newRow("invalidID.7") << "invalidID.7.qml" << "invalidID.7.errors.txt" << false;
+    QTest::newRow("invalidID.8") << "invalidID.8.qml" << "invalidID.8.errors.txt" << false;
+    QTest::newRow("invalidID.9") << "invalidID.9.qml" << "invalidID.9.errors.txt" << false;
 
     QTest::newRow("unsupportedProperty") << "unsupportedProperty.qml" << "unsupportedProperty.errors.txt" << false;
     QTest::newRow("nullDotProperty") << "nullDotProperty.qml" << "nullDotProperty.errors.txt" << true;
@@ -326,9 +329,6 @@ void tst_qdeclarativelanguage::errors()
     QFETCH(QString, file);
     QFETCH(QString, errorFile);
     QFETCH(bool, create);
-
-    if (file == "invalidID.6.qml")
-        QTest::ignoreMessage(QtWarningMsg, "id \"StartsWithUpperCase\" is invalid: ids cannot start with uppercase letters");
 
     QDeclarativeComponent component(&engine, TEST_FILE(file));
 
