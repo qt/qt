@@ -4,8 +4,9 @@ WorkerScript {
     id: worker
     source: "script.js"
 
-    property bool done : false
     property var response
+
+    signal done()
 
     function testSend(value) {
         worker.sendMessage(value)
@@ -21,7 +22,7 @@ WorkerScript {
     }
 
     onMessage: {
-        worker.done = true
         worker.response = messageObject
+        worker.done()
     }
 }

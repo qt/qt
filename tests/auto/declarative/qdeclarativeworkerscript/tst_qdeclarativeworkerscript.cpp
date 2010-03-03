@@ -40,6 +40,7 @@
 ****************************************************************************/
 #include <qtest.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qtimer.h>
 #include <QtScript/qscriptengine.h>
 
 #include <QtDeclarative/qdeclarativecomponent.h>
@@ -67,11 +68,14 @@ private slots:
 
 private:
     void waitForEchoMessage(QDeclarativeWorkerScript *worker) {
-        const QMetaObject *mo = worker->metaObject();
-        int index = mo->indexOfProperty("done");
-        QVERIFY(index >= 0);
-        QTRY_COMPARE(mo->property(index).read(worker).toBool(), true);
-        QTRY_COMPARE(mo->property(mo->indexOfProperty("done")).read(worker).toBool(), true);
+        QEventLoop loop;
+        QVERIFY(connect(worker, SIGNAL(done()), &loop, SLOT(quit())));
+        QTimer timer;
+        timer.setSingleShot(true);
+        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        timer.start(10000);
+        loop.exec();
+        QVERIFY(timer.isActive());
     }
 
     QDeclarativeEngine m_engine;
