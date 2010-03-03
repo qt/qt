@@ -1383,7 +1383,11 @@ public:
             paths += QFileInfo(base.toLocalFile()).path();
             paths += importPath;
             paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
             QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
+#else
+            QString builtinPath;
+#endif
             if (!builtinPath.isEmpty())
                 paths += builtinPath;
 
@@ -1687,6 +1691,7 @@ QString QDeclarativeEngine::offlineStoragePath() const
   \internal
 
   Returns the result of the merge of \a baseName with \a dir, \a suffixes, and \a prefix.
+  The \a prefix must contain the dot.
  */
 QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName,
                                         const QStringList &suffixes,
@@ -1696,7 +1701,6 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
         QString pluginFileName = prefix;
 
         pluginFileName += baseName;
-        pluginFileName += QLatin1Char('.');
         pluginFileName += suffix;
 
         QFileInfo fileInfo(dir, pluginFileName);
@@ -1728,14 +1732,26 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
 QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString &baseName)
 {
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    return resolvePlugin(dir, baseName, QStringList(QLatin1String("dll")));
+    return resolvePlugin(dir, baseName,
+                         QStringList()
+# ifdef QT_DEBUG
+                         << QLatin1String("d.dll") // try a qmake-style debug build first
+# endif
+                         << QLatin1String(".dll"));
 #elif defined(Q_OS_SYMBIAN)
-    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dll") << QLatin1String("qtplugin"));
+    return resolvePlugin(dir, baseName,
+                         QStringList()
+                         << QLatin1String(".dll")
+                         << QLatin1String(".qtplugin"));
 #else
 
 # if defined(Q_OS_DARWIN)
 
-    return resolvePlugin(dir, baseName, QStringList() << QLatin1String("dylib") << QLatin1String("so") << QLatin1String("bundle"),
+    return resolvePlugin(dir, baseName,
+                         QStringList()
+                         << QLatin1String(".dylib")
+                         << QLatin1String(".so")
+                         << QLatin1String(".bundle"),
                          QLatin1String("lib"));
 # else  // Generic Unix
     QStringList validSuffixList;
@@ -1746,14 +1762,14 @@ QString QDeclarativeEnginePrivate::resolvePlugin(const QDir &dir, const QString 
     "In PA-RISC (PA-32 and PA-64) shared libraries are suffixed with .sl. In IPF (32-bit and 64-bit),
     the shared libraries are suffixed with .so. For compatibility, the IPF linker also supports the .sl suffix."
  */
-    validSuffixList << QLatin1String("sl");
+    validSuffixList << QLatin1String(".sl");
 #   if defined __ia64
-    validSuffixList << QLatin1String("so");
+    validSuffixList << QLatin1String(".so");
 #   endif
 #  elif defined(Q_OS_AIX)
-    validSuffixList << QLatin1String("a") << QLatin1String("so");
+    validSuffixList << QLatin1String(".a") << QLatin1String(".so");
 #  elif defined(Q_OS_UNIX)
-    validSuffixList << QLatin1String("so");
+    validSuffixList << QLatin1String(".so");
 #  endif
 
     // Examples of valid library names:

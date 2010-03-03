@@ -98,7 +98,7 @@ QString SymbianNetworkConfigurationPrivate::bearerName() const
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
-:   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iInitOk(true)
+:   QBearerEngine(parent), CActive(CActive::EPriorityIdle), iFirstUpdate(true), iInitOk(true)
 {
     CActiveScheduler::Add(this);
 
@@ -136,9 +136,12 @@ SymbianEngine::SymbianEngine(QObject *parent)
 
     updateConfigurations();
     updateStatesToSnaps();
+
+    updateAvailableAccessPoints(); // On first time updates synchronously (without WLAN scans)
     
     // Start monitoring IAP and/or SNAP changes in Symbian CommsDB
     startCommsDatabaseNotifications();
+    iFirstUpdate = false;
 }
 
 SymbianEngine::~SymbianEngine()
@@ -153,7 +156,14 @@ SymbianEngine::~SymbianEngine()
 #endif
     
     delete ipAccessPointsAvailabilityScanner;
+
+    // CCommsDatabase destructor uses cleanup stack. Since QNetworkConfigurationManager
+    // is a global static, but the time we are here, E32Main() has been exited already and
+    // the thread's default cleanup stack has been deleted. Without this line, a
+    // 'E32USER-CBase 69' -panic will occur.
+    CTrapCleanup* cleanup = CTrapCleanup::New();
     delete ipCommsDB;
+    delete cleanup;
 }
 
 bool SymbianEngine::hasIdentifier(const QString &id)
@@ -692,9 +702,10 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
 
     updateStatesToSnaps();
     
-    startCommsDatabaseNotifications();
-    
-    emit updateCompleted();
+    if (!iFirstUpdate) {
+        startCommsDatabaseNotifications();
+        emit updateCompleted();
+    }
 }
 
 void SymbianEngine::updateStatesToSnaps()
@@ -987,11 +998,22 @@ void AccessPointsAvailabilityScanner::DoCancel()
 
 void AccessPointsAvailabilityScanner::StartScanning()
 {
-    iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
-    if (!IsActive()) {
-        SetActive();
+    if (iOwner.iFirstUpdate) {
+        // On first update (the mgr is being instantiated) update only those bearers who
+        // don't need time-consuming scans (WLAN).
+        // Note: EBearerIdWCDMA covers also GPRS bearer
+        iConnectionMonitor.GetPckgAttribute(EBearerIdWCDMA, 0, KIapAvailability, iIapBuf, iStatus);
+        User::WaitForRequest(iStatus);
+        if (iStatus.Int() == KErrNone) {
+            iOwner.accessPointScanningReady(true,iIapBuf());
+        }
+    } else {
+        iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
+        if (!IsActive()) {
+            SetActive();
+        }
     }
-}    
+}
 
 void AccessPointsAvailabilityScanner::RunL()
 {

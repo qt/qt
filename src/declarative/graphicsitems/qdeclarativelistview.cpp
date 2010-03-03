@@ -47,6 +47,7 @@
 #include <qdeclarativeeasefollow_p.h>
 #include <qdeclarativeexpression.h>
 #include <qdeclarativeengine.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
@@ -429,7 +430,7 @@ public:
     virtual void flickX(qreal velocity);
     virtual void flickY(qreal velocity);
 
-    QGuard<QDeclarativeVisualModel> model;
+    QDeclarativeGuard<QDeclarativeVisualModel> model;
     QVariant modelVariant;
     QList<FxListItem*> visibleItems;
     QHash<QDeclarativeItem*,int> unrequestedItems;
@@ -1430,7 +1431,7 @@ QDeclarativeListView::~QDeclarativeListView()
         id: myDelegate
         Item {
             id: wrapper
-            ListView.onRemove: SequentialAnimation {
+            SequentialAnimation on ListView.onRemove {
                 PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: true }
                 NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
                 PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: false }

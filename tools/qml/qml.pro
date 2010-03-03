@@ -41,9 +41,11 @@ INSTALLS += target
 wince* {
 QT += scripttools \
     xml \
-    xmlpatterns \
     phonon
 
+    contains(QT_CONFIG, xmlpatterns) {
+        QT += xmlpatterns
+    }
     contains(QT_CONFIG, webkit) {
         QT += webkit 
     }

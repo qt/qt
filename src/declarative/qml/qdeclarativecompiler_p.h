@@ -155,7 +155,6 @@ public:
     bool isError() const;
     QList<QDeclarativeError> errors() const;
 
-    static bool isValidId(const QString &);
     static bool isAttachedPropertyName(const QByteArray &);
     static bool isSignalPropertyName(const QByteArray &);
 
@@ -247,6 +246,7 @@ private:
                       QDeclarativeParser::Object *obj, 
                       const QDeclarativeParser::Object::DynamicProperty &);
     bool completeComponentBuild();
+    bool checkValidId(QDeclarativeParser::Value *, const QString &);
 
 
     void genObject(QDeclarativeParser::Object *obj);

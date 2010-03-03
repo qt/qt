@@ -43,7 +43,10 @@
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
 #include <QtCore/qdebug.h>
+
 #include "qegl_p.h"
+#include "qeglcontext_p.h"
+
 
 QT_BEGIN_NAMESPACE
 
@@ -53,8 +56,6 @@ QT_BEGIN_NAMESPACE
 // happen is a redundant eglMakeCurrent() in the foreground thread.
 static QEglContext * volatile currentGLContext = 0;
 static QEglContext * volatile currentVGContext = 0;
-
-EGLDisplay QEglContext::dpy = EGL_NO_DISPLAY;
 
 QEglContext::QEglContext()
     : apiType(QEgl::OpenGL)
@@ -87,15 +88,177 @@ bool QEglContext::isCurrent() const
     return current;
 }
 
-// Choose a configuration that matches "properties".
-bool QEglContext::chooseConfig
-        (const QEglProperties& properties, QEgl::PixelFormatMatch match)
+EGLConfig QEgl::defaultConfig(int devType, API api, ConfigOptions options)
 {
-    QEglProperties props(properties);
+    if ( (devType != QInternal::Pixmap) && ((options & Renderable) == 0))
+        qWarning("QEgl::defaultConfig() - Only configs for pixmaps make sense to be read-only!");
+
+    EGLConfig* targetConfig = 0;
+
+    static EGLConfig defaultVGConfigs[] = {
+        QEGL_NO_CONFIG, // 0    Window  Renderable  Translucent
+        QEGL_NO_CONFIG, // 1    Window  Renderable  Opaque
+        QEGL_NO_CONFIG, // 2    Pixmap  Renderable  Translucent
+        QEGL_NO_CONFIG, // 3    Pixmap  Renderable  Opaque
+        QEGL_NO_CONFIG, // 4    Pixmap  ReadOnly    Translucent
+        QEGL_NO_CONFIG  // 5    Pixmap  ReadOnly    Opaque
+    };
+    if (api == OpenVG) {
+        if (devType == QInternal::Widget) {
+            if (options & Translucent)
+                targetConfig = &(defaultVGConfigs[0]);
+            else
+                targetConfig = &(defaultVGConfigs[1]);
+        } else if (devType == QInternal::Pixmap) {
+            if (options & Renderable) {
+                if (options & Translucent)
+                    targetConfig = &(defaultVGConfigs[2]);
+                else // Opaque
+                    targetConfig = &(defaultVGConfigs[3]);
+            } else { // Read-only
+                if (options & Translucent)
+                    targetConfig = &(defaultVGConfigs[4]);
+                else // Opaque
+                    targetConfig = &(defaultVGConfigs[5]);
+            }
+        }
+    }
+
+
+    static EGLConfig defaultGLConfigs[] = {
+        QEGL_NO_CONFIG, // 0    Window  Renderable  Translucent
+        QEGL_NO_CONFIG, // 1    Window  Renderable  Opaque
+        QEGL_NO_CONFIG, // 2    PBuffer Renderable  Translucent
+        QEGL_NO_CONFIG, // 3    PBuffer Renderable  Opaque
+        QEGL_NO_CONFIG, // 4    Pixmap  Renderable  Translucent
+        QEGL_NO_CONFIG, // 5    Pixmap  Renderable  Opaque
+        QEGL_NO_CONFIG, // 6    Pixmap  ReadOnly    Translucent
+        QEGL_NO_CONFIG  // 7    Pixmap  ReadOnly    Opaque
+    };
+    if (api == OpenGL) {
+        if (devType == QInternal::Widget) {
+            if (options & Translucent)
+                targetConfig = &(defaultGLConfigs[0]);
+            else // Opaque
+                targetConfig = &(defaultGLConfigs[1]);
+        } else if (devType == QInternal::Pbuffer) {
+            if (options & Translucent)
+                targetConfig = &(defaultGLConfigs[2]);
+            else // Opaque
+                targetConfig = &(defaultGLConfigs[3]);
+        } else if (devType == QInternal::Pixmap) {
+            if (options & Renderable) {
+                if (options & Translucent)
+                    targetConfig = &(defaultGLConfigs[4]);
+                else // Opaque
+                    targetConfig = &(defaultGLConfigs[5]);
+            } else { // ReadOnly
+                if (options & Translucent)
+                    targetConfig = &(defaultGLConfigs[6]);
+                else // Opaque
+                    targetConfig = &(defaultGLConfigs[7]);
+            }
+        }
+    }
+
+    if (!targetConfig) {
+        qWarning("QEgl::defaultConfig() - No default config for device/api/options combo");
+        return QEGL_NO_CONFIG;
+    }
+    if (*targetConfig != QEGL_NO_CONFIG)
+        return *targetConfig;
+
+
+    // We haven't found an EGL config for the target config yet, so do it now:
+
+
+    // Allow overriding from an environment variable:
+    QByteArray configId;
+    if (api == OpenVG)
+        configId = qgetenv("QT_VG_EGL_CONFIG");
+    else
+        configId = qgetenv("QT_GL_EGL_CONFIG");
+    if (!configId.isEmpty()) {
+        // Overriden, so get the EGLConfig for the specified config ID:
+        EGLint properties[] = {
+            EGL_CONFIG_ID, (EGLint)configId.toInt(),
+            EGL_NONE
+        };
+        EGLint configCount = 0;
+        eglChooseConfig(display(), properties, targetConfig, 1, &configCount);
+        if (configCount > 0)
+            return *targetConfig;
+        qWarning() << "QEgl::defaultConfig() -" << configId << "appears to be invalid";
+    }
+
+    QEglProperties configAttribs;
+    configAttribs.setRenderableType(api);
+
+    EGLint surfaceType;
+    switch (devType) {
+        case QInternal::Widget:
+            surfaceType = EGL_WINDOW_BIT;
+            break;
+        case QInternal::Pixmap:
+            surfaceType = EGL_PIXMAP_BIT;
+            break;
+        case QInternal::Pbuffer:
+            surfaceType = EGL_PBUFFER_BIT;
+            break;
+        default:
+            qWarning("QEgl::defaultConfig() - Can't create EGL surface for %d device type", devType);
+            return QEGL_NO_CONFIG;
+    };
+#ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
+    // For OpenVG, we try to create a surface using a pre-multiplied format if
+    // the surface needs to have an alpha channel:
+    if (api == OpenVG && (options & Translucent))
+        surfaceType |= EGL_VG_ALPHA_FORMAT_PRE_BIT;
+#endif
+    configAttribs.setValue(EGL_SURFACE_TYPE, surfaceType);
+
+#ifdef EGL_BIND_TO_TEXTURE_RGBA
+    if (devType == QInternal::Pixmap || devType == QInternal::Pbuffer) {
+        if (options & Translucent)
+            configAttribs.setValue(EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE);
+        else
+            configAttribs.setValue(EGL_BIND_TO_TEXTURE_RGB, EGL_TRUE);
+    }
+#endif
+
+    // Add paint engine requirements
+    if (api == OpenVG) {
+#ifndef QVG_SCISSOR_CLIP
+        configAttribs.setValue(EGL_ALPHA_MASK_SIZE, 1);
+#endif
+    } else {
+        // Both OpenGL paint engines need to have stencil and sample buffers
+        configAttribs.setValue(EGL_STENCIL_SIZE, 1);
+        configAttribs.setValue(EGL_SAMPLE_BUFFERS, 1);
+#ifndef QT_OPENGL_ES_2
+        // Aditionally, the GL1 engine likes to have a depth buffer for clipping
+        configAttribs.setValue(EGL_DEPTH_SIZE, 1);
+#endif
+    }
+
+    if (options & Translucent)
+        configAttribs.setValue(EGL_ALPHA_SIZE, 1);
+
+    *targetConfig = chooseConfig(&configAttribs, QEgl::BestPixelFormat);
+    return *targetConfig;
+}
+
+
+// Choose a configuration that matches "properties".
+EGLConfig QEgl::chooseConfig(const QEglProperties* properties, QEgl::PixelFormatMatch match)
+{
+    QEglProperties props(*properties);
+    EGLConfig cfg = QEGL_NO_CONFIG;
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
-        if (!eglChooseConfig(display(), props.properties(), 0, 0, &matching) || !matching)
+        EGLDisplay dpy = QEgl::display();
+        if (!eglChooseConfig(dpy, props.properties(), 0, 0, &matching) || !matching)
             continue;
 
         // If we want the best pixel format, then return the first
@@ -104,7 +267,7 @@ bool QEglContext::chooseConfig
             eglChooseConfig(display(), props.properties(), &cfg, 1, &matching);
             if (matching < 1)
                 continue;
-            return true;
+            return cfg;
         }
 
         // Fetch all of the matching configurations and find the
@@ -125,7 +288,7 @@ bool QEglContext::chooseConfig
                      alpha == props.value(EGL_ALPHA_SIZE))) {
                 cfg = configs[index];
                 delete [] configs;
-                return true;
+                return cfg;
             }
         }
         delete [] configs;
@@ -142,10 +305,22 @@ bool QEglContext::chooseConfig
         qWarning() << "QEglContext::chooseConfig(): Could not find a suitable EGL configuration";
         qWarning() << "Requested:" << props.toString();
         qWarning() << "Available:";
-        dumpAllConfigs();
+        QEgl::dumpAllConfigs();
     }
-    return false;
+    return QEGL_NO_CONFIG;
 }
+
+bool QEglContext::chooseConfig(const QEglProperties& properties, QEgl::PixelFormatMatch match)
+{
+    cfg = QEgl::chooseConfig(&properties, match);
+    return cfg != QEGL_NO_CONFIG;
+}
+
+EGLSurface QEglContext::createSurface(QPaintDevice* device, const QEglProperties *properties)
+{
+    return QEgl::createSurface(device, cfg, properties);
+}
+
 
 // Create the EGLContext.
 bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties *properties)
@@ -172,9 +347,9 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (shareContext && shareContext->ctx == EGL_NO_CONTEXT)
         shareContext = 0;
     if (shareContext) {
-        ctx = eglCreateContext(display(), cfg, shareContext->ctx, contextProps.properties());
+        ctx = eglCreateContext(QEgl::display(), cfg, shareContext->ctx, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
-            qWarning() << "QEglContext::createContext(): Could not share context:" << errorString(eglGetError());
+            qWarning() << "QEglContext::createContext(): Could not share context:" << QEgl::errorString();
             shareContext = 0;
         } else {
             sharing = true;
@@ -183,7 +358,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
     if (ctx == EGL_NO_CONTEXT) {
         ctx = eglCreateContext(display(), cfg, 0, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
-            qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << errorString(eglGetError());
+            qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << QEgl::errorString();
             return false;
         }
     }
@@ -240,9 +415,9 @@ bool QEglContext::makeCurrent(EGLSurface surface)
         eglBindAPI(EGL_OPENVG_API);
 #endif
 
-    bool ok = eglMakeCurrent(display(), surface, surface, ctx);
+    bool ok = eglMakeCurrent(QEgl::display(), surface, surface, ctx);
     if (!ok)
-        qWarning() << "QEglContext::makeCurrent():" << errorString(eglGetError());
+        qWarning() << "QEglContext::makeCurrent():" << QEgl::errorString();
     return ok;
 }
 
@@ -269,9 +444,9 @@ bool QEglContext::doneCurrent()
         eglBindAPI(EGL_OPENVG_API);
 #endif
 
-    bool ok = eglMakeCurrent(display(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    bool ok = eglMakeCurrent(QEgl::display(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     if (!ok)
-        qWarning() << "QEglContext::doneCurrent():" << errorString(eglGetError());
+        qWarning() << "QEglContext::doneCurrent():" << QEgl::errorString();
     return ok;
 }
 
@@ -291,9 +466,9 @@ bool QEglContext::swapBuffers(EGLSurface surface)
     if(ctx == EGL_NO_CONTEXT)
         return false;
 
-    bool ok = eglSwapBuffers(display(), surface);
+    bool ok = eglSwapBuffers(QEgl::display(), surface);
     if (!ok)
-        qWarning() << "QEglContext::swapBuffers():" << errorString(eglGetError());
+        qWarning() << "QEglContext::swapBuffers():" << QEgl::errorString();
     return ok;
 }
 
@@ -330,43 +505,43 @@ void QEglContext::waitClient()
 // Query the value of a configuration attribute.
 bool QEglContext::configAttrib(int name, EGLint *value) const
 {
-    return eglGetConfigAttrib(display(), cfg, name, value);
+    return eglGetConfigAttrib(QEgl::display(), cfg, name, value);
 }
 
-// Retrieve all of the properties on "cfg".  If zero, return
-// the context's configuration.
-QEglProperties QEglContext::configProperties(EGLConfig cfg) const
+int QEglContext::configAttrib(int name) const
 {
-    if (!cfg)
-        cfg = config();
-    QEglProperties props;
-    for (int name = 0x3020; name <= 0x304F; ++name) {
-        EGLint value;
-        if (name != EGL_NONE && eglGetConfigAttrib(display(), cfg, name, &value))
-            props.setValue(name, value);
-    }
-    eglGetError();  // Clear the error state.
-    return props;
+    EGLint value;
+    EGLBoolean success = eglGetConfigAttrib(QEgl::display(), cfg, name, &value);
+    if (success)
+        return value;
+    else
+        return EGL_DONT_CARE;
 }
 
-EGLDisplay QEglContext::display()
+QEglProperties QEglContext::configProperties() const
 {
+    return QEglProperties(config());
+}
+
+EGLDisplay QEgl::display()
+{
+    static EGLDisplay dpy = EGL_NO_DISPLAY;
     static bool openedDisplay = false;
 
     if (!openedDisplay) {
         dpy = eglGetDisplay(nativeDisplay());
         openedDisplay = true;
         if (dpy == EGL_NO_DISPLAY) {
-            qWarning("QEglContext::display(): Falling back to EGL_DEFAULT_DISPLAY");
+            qWarning("QEgl::display(): Falling back to EGL_DEFAULT_DISPLAY");
             dpy = eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
         }
         if (dpy == EGL_NO_DISPLAY) {
-            qWarning("QEglContext::display(): Can't even open the default display");
+            qWarning("QEgl::display(): Can't even open the default display");
             return EGL_NO_DISPLAY;
         }
 
         if (!eglInitialize(dpy, NULL, NULL)) {
-            qWarning() << "QEglContext::display(): Cannot initialize EGL display:" << errorString(eglGetError());
+            qWarning() << "QEgl::display(): Cannot initialize EGL display:" << QEgl::errorString();
             return EGL_NO_DISPLAY;
         }
     }
@@ -374,15 +549,49 @@ EGLDisplay QEglContext::display()
     return dpy;
 }
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WINCE) // WinCE & X11 implement this properly
-EGLNativeDisplayType QEglContext::nativeDisplay()
+#ifndef Q_WS_X11
+EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig cfg, const QEglProperties *properties)
 {
-    return EGL_DEFAULT_DISPLAY;
+    // Create the native drawable for the paint device.
+    int devType = device->devType();
+    EGLNativePixmapType pixmapDrawable = 0;
+    EGLNativeWindowType windowDrawable = 0;
+    bool ok;
+    if (devType == QInternal::Pixmap) {
+        pixmapDrawable = nativePixmap(static_cast<QPixmap *>(device));
+        ok = (pixmapDrawable != 0);
+    } else if (devType == QInternal::Widget) {
+        windowDrawable = nativeWindow(static_cast<QWidget *>(device));
+        ok = (windowDrawable != 0);
+    } else {
+        ok = false;
+    }
+    if (!ok) {
+        qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
+        return EGL_NO_SURFACE;
+    }
+
+    // Create the EGL surface to draw into, based on the native drawable.
+    const int *props;
+    if (properties)
+        props = properties->properties();
+    else
+        props = 0;
+    EGLSurface surf;
+    if (devType == QInternal::Widget)
+        surf = eglCreateWindowSurface(QEgl::display(), cfg, windowDrawable, props);
+    else
+        surf = eglCreatePixmapSurface(QEgl::display(), cfg, pixmapDrawable, props);
+    if (surf == EGL_NO_SURFACE) {
+        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
+    }
+    return surf;
 }
 #endif
 
+
 // Return the error string associated with a specific code.
-QString QEglContext::errorString(EGLint code)
+QString QEgl::errorString(EGLint code)
 {
     static const char * const errors[] = {
         "Success (0x3000)",                 // No tr
@@ -408,8 +617,24 @@ QString QEglContext::errorString(EGLint code)
     }
 }
 
+QString QEgl::errorString()
+{
+    return errorString(error());
+}
+
+void QEgl::clearError()
+{
+    eglGetError();
+}
+
+EGLint QEgl::error()
+{
+    return eglGetError();
+}
+
+
 // Dump all of the EGL configurations supported by the system.
-void QEglContext::dumpAllConfigs()
+void QEgl::dumpAllConfigs()
 {
     QEglProperties props;
     EGLint count = 0;
@@ -418,23 +643,23 @@ void QEglContext::dumpAllConfigs()
     EGLConfig *configs = new EGLConfig [count];
     eglGetConfigs(display(), configs, count, &count);
     for (EGLint index = 0; index < count; ++index) {
-        props = configProperties(configs[index]);
+        props = QEglProperties(configs[index]);
         qWarning() << props.toString();
     }
     delete [] configs;
 }
 
-QString QEglContext::extensions()
+QString QEgl::extensions()
 {
-    const char* exts = eglQueryString(QEglContext::display(), EGL_EXTENSIONS);
+    const char* exts = eglQueryString(QEgl::display(), EGL_EXTENSIONS);
     return QString(QLatin1String(exts));
 }
 
-bool QEglContext::hasExtension(const char* extensionName)
+bool QEgl::hasExtension(const char* extensionName)
 {
     QList<QByteArray> extensions =
         QByteArray(reinterpret_cast<const char *>
-            (eglQueryString(QEglContext::display(), EGL_EXTENSIONS))).split(' ');
+            (eglQueryString(QEgl::display(), EGL_EXTENSIONS))).split(' ');
     return extensions.contains(extensionName);
 }
 

@@ -134,6 +134,7 @@ public:
     Q_INVOKABLE void insert(int index, const QScriptValue&);
     Q_INVOKABLE QScriptValue get(int index) const;
     Q_INVOKABLE void set(int index, const QScriptValue &);
+    Q_INVOKABLE void sync();
 
     QDeclarativeWorkerListModelAgent *agent();
 

@@ -356,12 +356,13 @@ sub fixPaths {
 
     #setup
     my $ret = $file;
+    $ret =~ s,/cygdrive/([a-zA-Z])/,$1:/,g;
     my $file_dir = dirname($file);
     if($file_dir eq ".") {
         $file_dir = getcwd();
         $file_dir =~ s=\\=/=g;
     }
-    $file_dir =~ s,/cygdrive/([a-zA-Z])/,$1:,g;
+    $file_dir =~ s,/cygdrive/([a-zA-Z])/,$1:/,g;
     if($dir eq ".") {
         $dir = getcwd();
         $dir =~ s=\\=/=g;

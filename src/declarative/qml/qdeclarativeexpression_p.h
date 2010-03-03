@@ -119,6 +119,7 @@ public:
     bool expressionFunctionValid:1;
     bool expressionRewritten:1;
     QScriptValue expressionFunction;
+    QScriptValue expressionContext;
 
     QObject *me;
     bool trackChange;
@@ -180,8 +181,8 @@ public:
     virtual void emitValueChanged();
 
     static void exceptionToError(QScriptEngine *, QDeclarativeError &);
-    static QScriptValue evalInObjectScope(QDeclarativeContext *, QObject *, const QString &);
-    static QScriptValue evalInObjectScope(QDeclarativeContext *, QObject *, const QScriptProgram &);
+    static QScriptValue evalInObjectScope(QDeclarativeContext *, QObject *, const QString &, QScriptValue * = 0);
+    static QScriptValue evalInObjectScope(QDeclarativeContext *, QObject *, const QScriptProgram &, QScriptValue * = 0);
 };
 
 QT_END_NAMESPACE

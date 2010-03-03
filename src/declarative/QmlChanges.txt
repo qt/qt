@@ -53,6 +53,16 @@ matchProperties and matchTargets have been renamed back to properties and target
 The semantics are explained in the PropertyAnimation::properties documentation
 and the animation overview documentation.
 
+Behavior and Animation syntax
+-----------------------------
+
+Previously animations and behaviors could be "assigned" to properties like this:
+    Item { x: Behavior {}; y: NumberAnimation {} }
+To make it more obvious that these are not regular value assignments a new "on"
+syntax has been introduced:
+    Item { Behavior on x {}; NumberAnimation on y {} }
+Only the syntax has changed, the behavior is identical.
+
 =============================================================================
 The changes below are pre-4.6.0 release.
 

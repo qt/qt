@@ -654,8 +654,8 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                                 matchDistance += 10;
                             }
                         } else {
-                            QString sval = QScriptEnginePrivate::toString(exec, actual);
-                            int ival = m.keyToValue(sval.toLatin1());
+                            JSC::UString sval = QScriptEnginePrivate::toString(exec, actual);
+                            int ival = m.keyToValue(convertToLatin1(sval));
                             if (ival != -1) {
                                 qVariantSetValue(v, ival);
                                 converted = true;
@@ -1168,7 +1168,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
 {
     //Note: this has to be kept in sync with getOwnPropertyDescriptor
 #ifndef QT_NO_PROPERTIES
-    QByteArray name = QString(propertyName.ustring()).toLatin1();
+    QByteArray name = convertToLatin1(propertyName.ustring());
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
@@ -1285,7 +1285,7 @@ bool QObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object, JSC::ExecS
 {
     //Note: this has to be kept in sync with getOwnPropertySlot abd getPropertyAttributes
 #ifndef QT_NO_PROPERTIES
-    QByteArray name = QString(propertyName.ustring()).toLatin1();
+    QByteArray name = convertToLatin1(propertyName.ustring());
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
@@ -1419,7 +1419,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                           JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
 #ifndef QT_NO_PROPERTIES
-    QByteArray name = ((QString)propertyName.ustring()).toLatin1();
+    QByteArray name = convertToLatin1(propertyName.ustring());
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
@@ -1517,7 +1517,7 @@ bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec
                                      bool checkDontDelete)
 {
 #ifndef QT_NO_PROPERTIES
-    QByteArray name = ((QString)propertyName.ustring()).toLatin1();
+    QByteArray name = convertToLatin1(propertyName.ustring());
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
@@ -1567,7 +1567,7 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
 {
 #ifndef QT_NO_PROPERTIES
     //Note: this has to be kept in sync with getOwnPropertyDescriptor and getOwnPropertySlot
-    QByteArray name = ((QString)propertyName.ustring()).toLatin1();
+    QByteArray name = convertToLatin1(propertyName.ustring());
     QObject *qobject = data->value;
     if (!qobject)
         return false;
@@ -1853,7 +1853,7 @@ bool QMetaObjectWrapperObject::getOwnPropertySlot(
         return true;
     }
 
-    QByteArray name = QString(propertyName.ustring()).toLatin1();
+    QByteArray name = convertToLatin1(propertyName.ustring());
 
     for (int i = 0; i < meta->enumeratorCount(); ++i) {
         QMetaEnum e = meta->enumerator(i);
@@ -1881,7 +1881,7 @@ void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& 
     }
     const QMetaObject *meta = data->value;
     if (meta) {
-        QByteArray name = QString(propertyName.ustring()).toLatin1();
+        QByteArray name = convertToLatin1(propertyName.ustring());
         for (int i = 0; i < meta->enumeratorCount(); ++i) {
             QMetaEnum e = meta->enumerator(i);
             for (int j = 0; j < e.keyCount(); ++j) {
@@ -1901,7 +1901,7 @@ bool QMetaObjectWrapperObject::deleteProperty(
         return false;
     const QMetaObject *meta = data->value;
     if (meta) {
-        QByteArray name = QString(propertyName.ustring()).toLatin1();
+        QByteArray name = convertToLatin1(propertyName.ustring());
         for (int i = 0; i < meta->enumeratorCount(); ++i) {
             QMetaEnum e = meta->enumerator(i);
             for (int j = 0; j < e.keyCount(); ++j) {
@@ -1923,7 +1923,7 @@ bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
     }
     const QMetaObject *meta = data->value;
     if (meta) {
-        QByteArray name = QString(propertyName.ustring()).toLatin1();
+        QByteArray name = convertToLatin1(propertyName.ustring());
         for (int i = 0; i < meta->enumeratorCount(); ++i) {
             QMetaEnum e = meta->enumerator(i);
             for (int j = 0; j < e.keyCount(); ++j) {

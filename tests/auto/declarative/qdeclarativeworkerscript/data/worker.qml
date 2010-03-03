@@ -1,0 +1,28 @@
+import Qt 4.6
+
+WorkerScript {
+    id: worker
+    source: "script.js"
+
+    property var response
+
+    signal done()
+
+    function testSend(value) {
+        worker.sendMessage(value)
+    }
+
+    function testSendLiteral(value) {
+        eval('worker.sendMessage(' + value +')')
+    }
+
+    function compareLiteralResponse(expected) {
+        var e = eval('(' + expected + ')')
+        return worker.response == e
+    }
+
+    onMessage: {
+        worker.response = messageObject
+        worker.done()
+    }
+}

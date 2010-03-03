@@ -116,11 +116,10 @@ enum CPUFeatures {
     NEON        = 0x100
 };
 
+Q_CORE_EXPORT uint qDetectCPUFeatures();
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
-
-Q_CORE_EXPORT uint qDetectCPUFeatures();
 
 #endif // QSIMD_P_H

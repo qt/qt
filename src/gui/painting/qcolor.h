@@ -225,6 +225,8 @@ public:
     QT3_SUPPORT uint pixel(int screen = -1) const;
 #endif
 
+    static bool isValidColor(const QString &name);
+
 private:
 #ifndef QT3_SUPPORT
     // do not allow a spec to be used as an alpha value
@@ -232,6 +234,7 @@ private:
 #endif
 
     void invalidate();
+    bool setColorFromString(const QString &name);
 
     Spec cspec;
     union {
