@@ -1383,7 +1383,11 @@ public:
             paths += QFileInfo(base.toLocalFile()).path();
             paths += importPath;
             paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
             QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
+#else
+            QString builtinPath;
+#endif
             if (!builtinPath.isEmpty())
                 paths += builtinPath;
 
