@@ -1122,7 +1122,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
         qFatal("QWidget: Cannot create a QWidget when no GUI is being used");
 
     Q_ASSERT(allWidgets);
-    allWidgets->insert(q);
+    if (allWidgets)
+        allWidgets->insert(q);
 
     QWidget *desktopWidget = 0;
     if (parentWidget && parentWidget->windowType() == Qt::Desktop) {
@@ -6500,7 +6501,7 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
 //    QWidget *fp = first->d_func()->focus_prev;
     QWidget *fn = first->d_func()->focus_next;
 
-    if (fn == second)
+    if (fn == second || first == second)
         return;
 
     QWidget *sp = second->d_func()->focus_prev;
