@@ -59,6 +59,7 @@ class QWebSettings;
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+class QDeclarativeWebSettings;
 class QDeclarativeWebViewPrivate;
 class QNetworkRequest;
 class QDeclarativeWebView;
@@ -113,7 +114,7 @@ class WEBKITQMLPLUGIN_EXPORT QDeclarativeWebView : public QDeclarativePaintedIte
     Q_PROPERTY(QAction* forward READ forwardAction CONSTANT)
     Q_PROPERTY(QAction* stop READ stopAction CONSTANT)
 
-    Q_PROPERTY(QObject* settings READ settingsObject CONSTANT)
+    Q_PROPERTY(QDeclarativeWebSettings* settings READ settingsObject CONSTANT)
 
     Q_PROPERTY(QDeclarativeListProperty<QObject> javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
@@ -170,7 +171,7 @@ public:
 
     QWebHistory *history() const;
     QWebSettings *settings() const;
-    QObject *settingsObject() const;
+    QDeclarativeWebSettings *settingsObject() const;
 
     bool renderingEnabled() const;
     void setRenderingEnabled(bool);

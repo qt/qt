@@ -50,7 +50,6 @@ class tst_qdeclarativemoduleplugin : public QObject
 public:
     tst_qdeclarativemoduleplugin() {
         QCoreApplication::addLibraryPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("plugin"));
-qDebug() << QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("plugin");
     }
 
 private slots:
