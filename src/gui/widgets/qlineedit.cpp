@@ -2038,9 +2038,10 @@ void QLineEdit::dropEvent(QDropEvent* e)
 */
 void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
 {
-    QMenu *menu = createStandardContextMenu();
-    menu->setAttribute(Qt::WA_DeleteOnClose);
-    menu->popup(event->globalPos());
+    if (QMenu *menu = createStandardContextMenu()) {
+        menu->setAttribute(Qt::WA_DeleteOnClose);
+        menu->popup(event->globalPos());
+    }
 }
 
 #if defined(Q_WS_WIN)
