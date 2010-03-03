@@ -60,7 +60,7 @@ const int LSK_POSITION = 0;
 const int MSK_POSITION = 3;
 const int RSK_POSITION = 2;
 
-QSoftKeyManagerPrivateS60::QSoftKeyManagerPrivateS60()
+QSoftKeyManagerPrivateS60::QSoftKeyManagerPrivateS60() : cbaHasImage(4) // 4 since MSK position index is 3
 {
     cachedCbaIconSize[0] = QSize(0,0);
     cachedCbaIconSize[1] = QSize(0,0);
@@ -265,10 +265,14 @@ bool QSoftKeyManagerPrivateS60::setSoftkeyImage(CEikButtonGroupContainer *cba,
             myimage->SetPicture( nBitmap, nMask ); // nBitmap and nMask ownership transfered
 
             EikSoftkeyImage::SetImage(cba, *myimage, left); // Takes myimage ownership
+            cbaHasImage[position] = true;
             ret = true;
         } else {
             // Restore softkey to text based
-            EikSoftkeyImage::SetLabel(cba, left);
+            if (cbaHasImage[position]) {
+                EikSoftkeyImage::SetLabel(cba, left);
+                cbaHasImage[position] = false;
+            }
         }
     }
     return ret;
@@ -326,7 +330,10 @@ bool QSoftKeyManagerPrivateS60::setRightSoftkey(CEikButtonGroupContainer &cba)
         if (windowType != Qt::Dialog && windowType != Qt::Popup) {
             QString text(QSoftKeyManager::tr("Exit"));
             TPtrC nativeText = qt_QString2TPtrC(text);
-            EikSoftkeyImage::SetLabel(&cba, false);
+            if (cbaHasImage[RSK_POSITION]) {
+                EikSoftkeyImage::SetLabel(&cba, false);
+                cbaHasImage[RSK_POSITION] = false;
+            }
             setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyExit, nativeText);
             return true;
         }
