@@ -62,7 +62,10 @@ public:
     MyInterface() : id(913) {}
     int id;
 };
+
+QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(MyInterface, "com.trolltech.Qt.Test.MyInterface");
+QT_END_NAMESPACE
 QML_DECLARE_INTERFACE(MyInterface);
 
 struct MyCustomVariantType
@@ -75,16 +78,19 @@ Q_DECLARE_METATYPE(MyCustomVariantType);
 class MyAttachedObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int value READ value WRITE setValue)
+    Q_PROPERTY(int value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(int value2 READ value2 WRITE setValue2)
 public:
     MyAttachedObject(QObject *parent) : QObject(parent), m_value(0), m_value2(0) {}
 
     int value() const { return m_value; }
-    void setValue(int v) { m_value = v; }
+    void setValue(int v) { if (m_value != v) { m_value = v; emit valueChanged(); } }
 
     int value2() const { return m_value2; }
     void setValue2(int v) { m_value2 = v; }
+
+signals:
+    void valueChanged();
 
 private:
     int m_value;

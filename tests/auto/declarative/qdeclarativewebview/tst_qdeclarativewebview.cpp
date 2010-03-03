@@ -181,7 +181,8 @@ void tst_qdeclarativewebview::settings()
     QVERIFY(wv != 0);
     QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
-    QObject *s = qvariant_cast<QObject*>(wv->property("settings"));
+    QObject *s = QDeclarativeProperty(wv,"settings").object();
+    QVERIFY(s != 0);
 
     // merely tests that setting gets stored (in QWebSettings)
     // behavioural tests are in WebKit.

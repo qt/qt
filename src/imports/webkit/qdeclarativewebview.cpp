@@ -931,7 +931,7 @@ QWebPage *QDeclarativeWebView::page() const
         }
     \endqml
 */
-QObject *QDeclarativeWebView::settingsObject() const
+QDeclarativeWebSettings *QDeclarativeWebView::settingsObject() const
 {
     Q_D(const QDeclarativeWebView);
     d->settings.s = page()->settings();

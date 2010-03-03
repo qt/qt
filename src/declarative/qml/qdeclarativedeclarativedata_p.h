@@ -120,6 +120,11 @@ public:
 template<class T>
 void QDeclarativeGuard<T>::addGuard()
 {
+    if (QObjectPrivate::get(o)->wasDeleted) {
+        if (prev) remGuard();
+        return;
+    }
+   
     QDeclarativeDeclarativeData *data = QDeclarativeDeclarativeData::get(o, true);
     next = data->guards;
     if (next) reinterpret_cast<QDeclarativeGuard<T> *>(next)->prev = &next;

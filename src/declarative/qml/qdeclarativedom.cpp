@@ -374,7 +374,7 @@ QDeclarativeDomValue QDeclarativeDomProperty::value() const
     QDeclarativeDomValue rv;
     if (d->property) {
         rv.d->property = d->property;
-        if (d->property->values.count()) 
+        if (d->property->values.count())
             rv.d->value = d->property->values.at(0);
         else
             rv.d->value = d->property->onValues.at(0);
@@ -508,7 +508,7 @@ int QDeclarativeDomDynamicProperty::propertyType() const
 
 QByteArray QDeclarativeDomDynamicProperty::propertyTypeName() const
 {
-    if (isValid()) 
+    if (isValid())
         return d->property.customType;
 
     return QByteArray();
@@ -1184,7 +1184,7 @@ QDeclarativeDomObject QDeclarativeDomValueValueSource::object() const
 
     \qml
 Rectangle {
-    x: Behavior { NumberAnimation { duration: 500 } }
+    Behavior on x { NumberAnimation { duration: 500 } }
 }
     \endqml
 */
@@ -1228,7 +1228,7 @@ QDeclarativeDomValueValueInterceptor &QDeclarativeDomValueValueInterceptor::oper
     returned.
     \qml
 Rectangle {
-    x: Behavior { NumberAnimation { duration: 500 } }
+    Behavior on x { NumberAnimation { duration: 500 } }
 }
     \endqml
 */

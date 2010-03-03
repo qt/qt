@@ -793,7 +793,7 @@ QVariant QDeclarativeProperty::read(QObject *object, const QString &name, QDecla
 
 QVariant QDeclarativePropertyPrivate::readValueProperty()
 {
-    if(isValueType()) {
+    if (isValueType()) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(context);
         QDeclarativeValueType *valueType = 0;
@@ -809,12 +809,19 @@ QVariant QDeclarativePropertyPrivate::readValueProperty()
         if (!ep) delete valueType;
         return rv;
 
-    } else if(core.flags & QDeclarativePropertyCache::Data::IsQList) {
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQList) {
 
         QDeclarativeListProperty<QObject> prop;
         void *args[] = { &prop, 0 };
         QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
         return QVariant::fromValue(QDeclarativeListReferencePrivate::init(prop, core.propType, engine)); 
+
+    } else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived) {
+
+        QObject *rv = 0;
+        void *args[] = { &rv, 0 };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty, core.coreIndex, args);
+        return QVariant::fromValue(rv);
 
     } else {
 

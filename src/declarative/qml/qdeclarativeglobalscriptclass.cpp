@@ -53,15 +53,17 @@ QT_BEGIN_NAMESPACE
 QDeclarativeGlobalScriptClass::QDeclarativeGlobalScriptClass(QScriptEngine *engine)
 : QScriptClass(engine)
 {
-    QScriptValue v = engine->newObject();
-    globalObject = engine->globalObject();
+    QScriptValue globalObject = engine->globalObject();
+    m_globalObject = engine->newObject();
 
     QScriptValueIterator iter(globalObject);
     while (iter.hasNext()) {
         iter.next();
-        v.setProperty(iter.scriptName(), iter.value());
+        m_globalObject.setProperty(iter.scriptName(), iter.value());
+        m_illegalNames.insert(iter.name());
     }
 
+    QScriptValue v = engine->newObject();
     v.setScriptClass(this);
     engine->setGlobalObject(v);
 }
@@ -101,12 +103,14 @@ void QDeclarativeGlobalScriptClass::setProperty(QScriptValue &object,
     engine()->currentContext()->throwError(error);
 }
 
+/* This method is for the use of tst_qdeclarativeecmascript::callQtInvokables() only */
 void QDeclarativeGlobalScriptClass::explicitSetProperty(const QString &name, const QScriptValue &value)
 {
-    QScriptValue v = engine()->newObject();
-    globalObject = engine()->globalObject();
+    QScriptValue globalObject = engine()->globalObject();
 
-    QScriptValueIterator iter(globalObject);
+    QScriptValue v = engine()->newObject();
+
+    QScriptValueIterator iter(v);
     while (iter.hasNext()) {
         iter.next();
         v.setProperty(iter.scriptName(), iter.value());
@@ -114,6 +118,7 @@ void QDeclarativeGlobalScriptClass::explicitSetProperty(const QString &name, con
 
     v.setProperty(name, value);
     v.setScriptClass(this);
+
     engine()->setGlobalObject(v);
 }
 
