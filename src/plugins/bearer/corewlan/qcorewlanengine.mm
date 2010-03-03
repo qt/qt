@@ -170,7 +170,7 @@ void QCoreWlanEngine::connectToId(const QString &id)
 
         while ((wProfile = [enumerator nextObject])) { //CWWirelessProfile
 
-            if(id == nsstringToQString([wProfile ssid])) {
+            if(id ==  QString::number(qHash(QLatin1String("corewlan:") + nsstringToQString([wProfile ssid])))) {
                 user8021XProfile = nil;
                 user8021XProfile = [ wProfile user8021XProfile];
 
