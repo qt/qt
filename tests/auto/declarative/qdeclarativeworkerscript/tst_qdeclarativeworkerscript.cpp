@@ -103,7 +103,7 @@ void tst_QDeclarativeWorkerScript::source_data()
     QTest::addColumn<bool>("valid");
 
     QTest::newRow("valid") << QUrl::fromLocalFile(SRCDIR "/data/worker.qml") << true;
-    QTest::newRow("invalid") << QUrl("file:///asdjfk.js") << false;
+    QTest::newRow("invalid") << QUrl::fromLocalFile("asdjfk.js") << false;
 }
 
 void tst_QDeclarativeWorkerScript::messaging()
