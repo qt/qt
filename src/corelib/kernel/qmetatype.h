@@ -86,7 +86,8 @@ public:
         FirstCoreExtType = 128 /* VoidStar */,
         VoidStar = 128, Long = 129, Short = 130, Char = 131, ULong = 132,
         UShort = 133, UChar = 134, Float = 135, QObjectStar = 136, QWidgetStar = 137,
-        LastCoreExtType = QWidgetStar,
+        QVariant = 138,
+        LastCoreExtType = QVariant,
 
 // This logic must match the one in qglobal.h
 #if defined(QT_COORD_TYPE)
@@ -353,6 +354,7 @@ class QVector2D;
 class QVector3D;
 class QVector4D;
 class QQuaternion;
+class QVariant;
 
 QT_END_NAMESPACE
 
@@ -421,6 +423,7 @@ Q_DECLARE_BUILTIN_METATYPE(QVector2D, QVector2D)
 Q_DECLARE_BUILTIN_METATYPE(QVector3D, QVector3D)
 Q_DECLARE_BUILTIN_METATYPE(QVector4D, QVector4D)
 Q_DECLARE_BUILTIN_METATYPE(QQuaternion, QQuaternion)
+Q_DECLARE_BUILTIN_METATYPE(QVariant, QVariant)
 
 QT_END_HEADER
 

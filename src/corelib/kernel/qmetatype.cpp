@@ -133,6 +133,7 @@ QT_BEGIN_NAMESPACE
     \value Float \c float
     \value QObjectStar QObject *
     \value QWidgetStar QWidget *
+    \value QVariant QVariant
 
     \value QColorGroup QColorGroup
     \value QCursor QCursor
@@ -300,6 +301,7 @@ static const struct { const char * typeName; int typeNameLength; int type; } typ
     QT_ADD_STATIC_METATYPE("float", QMetaType::Float),
     QT_ADD_STATIC_METATYPE("QObject*", QMetaType::QObjectStar),
     QT_ADD_STATIC_METATYPE("QWidget*", QMetaType::QWidgetStar),
+    QT_ADD_STATIC_METATYPE("QVariant", QMetaType::QVariant),
 
     /* Type aliases - order doesn't matter */
     QT_ADD_STATIC_METATYPE("unsigned long", QMetaType::ULong),
@@ -686,6 +688,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QVariantList:
         stream << *static_cast<const NS(QVariantList)*>(data);
         break;
+    case QMetaType::QVariant:
+        stream << *static_cast<const NS(QVariant)*>(data);
+        break;
 #endif
     case QMetaType::QByteArray:
         stream << *static_cast<const NS(QByteArray)*>(data);
@@ -888,6 +893,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QVariantList:
         stream >> *static_cast< NS(QVariantList)*>(data);
         break;
+    case QMetaType::QVariant:
+        stream >> *static_cast< NS(QVariant)*>(data);
+        break;
 #endif
     case QMetaType::QByteArray:
         stream >> *static_cast< NS(QByteArray)*>(data);
@@ -1055,6 +1063,8 @@ void *QMetaType::construct(int type, const void *copy)
             return new NS(QVariantHash)(*static_cast<const NS(QVariantHash)*>(copy));
         case QMetaType::QVariantList:
             return new NS(QVariantList)(*static_cast<const NS(QVariantList)*>(copy));
+        case QMetaType::QVariant:
+            return new NS(QVariant)(*static_cast<const NS(QVariant)*>(copy));
 #endif
         case QMetaType::QByteArray:
             return new NS(QByteArray)(*static_cast<const NS(QByteArray)*>(copy));
@@ -1150,6 +1160,8 @@ void *QMetaType::construct(int type, const void *copy)
             return new NS(QVariantHash);
         case QMetaType::QVariantList:
             return new NS(QVariantList);
+        case QMetaType::QVariant:
+            return new NS(QVariant);
 #endif
         case QMetaType::QByteArray:
             return new NS(QByteArray);
@@ -1290,6 +1302,9 @@ void QMetaType::destroy(int type, void *data)
         break;
     case QMetaType::QVariantList:
         delete static_cast< NS(QVariantList)* >(data);
+        break;
+    case QMetaType::QVariant:
+        delete static_cast< NS(QVariant)* >(data);
         break;
 #endif
     case QMetaType::QByteArray:
