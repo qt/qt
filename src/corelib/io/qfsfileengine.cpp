@@ -145,12 +145,15 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
 #endif
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extenstion we use here.
 #if defined(Q_OS_LINUX) || defined(Q_OS_SYMBIAN)
+    // ... but Linux with uClibc does not have it
+#if !defined(__UCLIBC__)
     char *ret = realpath(path.toLocal8Bit().constData(), (char*)0);
     if (ret) {
         QString canonicalPath = QDir::cleanPath(QString::fromLocal8Bit(ret));
         free(ret);
         return canonicalPath;
     }
+#endif
 #endif
 
     QFileInfo fi;
