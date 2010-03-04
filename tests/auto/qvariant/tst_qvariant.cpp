@@ -1969,7 +1969,7 @@ void tst_QVariant::operator_eq_eq_data()
         QTest::newRow("HashSecondLarger") << QVariant(hash1) << QVariant(hash2) << false;
     }
 
-    QTest::newRow( "UserType" ) << QVariant(QVariant::UserType) << QVariant(QVariant::UserType) << false;
+    QTest::newRow( "UserType" ) << QVariant(QVariant::UserType) << QVariant(QVariant::UserType) << true;
     QVariant mUserType(QVariant::UserType);
     QTest::newRow( "Shared UserType" ) << mUserType << mUserType << true;
 }

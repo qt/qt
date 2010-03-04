@@ -470,6 +470,9 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     if (typeNameLen > 0 && typeName[typeNameLen - 1] == '*')
         return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
 
+    if (a->is_null && b->is_null)
+        return true;
+
     return a_ptr == b_ptr;
 }
 
