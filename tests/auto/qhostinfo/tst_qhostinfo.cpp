@@ -213,8 +213,8 @@ void tst_QHostInfo::initTestCase()
 
     // run each testcase with and without test enabled
     QTest::addColumn<bool>("cache");
-    QTest::newRow("WithCache") << false;
-    QTest::newRow("WithoutCache") << true;
+    QTest::newRow("WithCache") << true;
+    QTest::newRow("WithoutCache") << false;
 }
 
 void tst_QHostInfo::init()
