@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtTest/QSignalSpy>
 #include <qtest.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
@@ -161,6 +162,18 @@ void tst_qdeclarativetimer::repeat()
     QVERIFY(helper.count == oldCount);
     QVERIFY(timer->isRunning() == false);
 
+    QSignalSpy spy(timer, SIGNAL(repeatChanged()));
+
+    timer->setRepeating(false);
+    QVERIFY(!timer->isRepeating());
+    QCOMPARE(spy.count(),1);
+
+    timer->setRepeating(false);
+    QCOMPARE(spy.count(),1);
+
+    timer->setRepeating(true);
+    QCOMPARE(spy.count(),2);
+
     delete timer;
 }
 
@@ -183,6 +196,18 @@ void tst_qdeclarativetimer::triggeredOnStart()
     QTest::qWait(TIMEOUT_TIMEOUT);
     QCOMPARE(helper.count, 2);
     QVERIFY(timer->isRunning() == false);
+
+    QSignalSpy spy(timer, SIGNAL(triggeredOnStartChanged()));
+
+    timer->setTriggeredOnStart(false);
+    QVERIFY(!timer->triggeredOnStart());
+    QCOMPARE(spy.count(),1);
+
+    timer->setTriggeredOnStart(false);
+    QCOMPARE(spy.count(),1);
+
+    timer->setTriggeredOnStart(true);
+    QCOMPARE(spy.count(),2);
 
     delete timer;
 }
@@ -249,6 +274,18 @@ void tst_qdeclarativetimer::changeDuration()
     QTest::qWait(600);
     QCOMPARE(helper.count, 3);
     QVERIFY(timer->isRunning());
+
+    QSignalSpy spy(timer, SIGNAL(intervalChanged()));
+
+    timer->setInterval(200);
+    QCOMPARE(timer->interval(), 200);
+    QCOMPARE(spy.count(),1);
+
+    timer->setInterval(200);
+    QCOMPARE(spy.count(),1);
+
+    timer->setInterval(300);
+    QCOMPARE(spy.count(),2);
 
     delete timer;
 }

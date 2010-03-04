@@ -571,9 +571,10 @@ void QDeclarativeXmlListModel::setSource(const QUrl &src)
 {
     Q_D(QDeclarativeXmlListModel);
     if (d->src != src) {
-        d->src = src;
         reload();
-    }
+        d->src = src;
+        emit sourceChanged();
+   }
 }
 
 /*!
@@ -593,8 +594,11 @@ QString QDeclarativeXmlListModel::xml() const
 void QDeclarativeXmlListModel::setXml(const QString &xml)
 {
     Q_D(QDeclarativeXmlListModel);
-    d->xml = xml;
-    reload();
+    if (d->xml != xml) {
+        d->xml = xml;
+        reload();
+        emit xmlChanged();
+    }
 }
 
 /*!
@@ -619,6 +623,7 @@ void QDeclarativeXmlListModel::setQuery(const QString &query)
     if (d->query != query) {
         d->query = query;
         reload();
+        emit queryChanged();
     }
 }
 
@@ -638,6 +643,7 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
     if (d->namespaces != declarations) {
         d->namespaces = declarations;
         reload();
+        emit namespaceDeclarationsChanged();
     }
 }
 
