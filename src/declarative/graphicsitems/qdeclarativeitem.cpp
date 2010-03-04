@@ -43,6 +43,7 @@
 #include "qdeclarativeitem.h"
 
 #include "qdeclarativeevents_p_p.h"
+#include <private/qdeclarativeengine_p.h>
 
 #include <qfxperf_p_p.h>
 #include <qdeclarativeengine.h>
@@ -51,6 +52,7 @@
 #include <qdeclarativeview.h>
 #include <qdeclarativestategroup_p.h>
 #include <qdeclarativecomponent.h>
+#include <qdeclarativeinfo.h>
 
 #include <QDebug>
 #include <QPen>
@@ -2159,6 +2161,58 @@ void QDeclarativeItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QDeclarativeItem);
     d->_keepMouse = keep;
+}
+
+/*!
+    \qmlmethod object Item::mapFromItem(Item item, int x, int y)
+
+    Maps the point (\a x, \a y), which is in \a item's coordinate system, to
+    this item's coordinate system, and returns an object with \c x and \c y 
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps the point from the coordinate
+    system of the root QML view.
+*/
+QScriptValue QDeclarativeItem::mapFromItem(const QScriptValue &item, int x, int y) const
+{
+    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
+    QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
+    if (!itemObj && !item.isNull()) {
+        qWarning().nospace() << "mapFromItem() given argument " << item.toString() << " which is neither null nor an Item";
+        return 0;
+    }
+
+    // If QGraphicsItem::mapFromItem() is called with 0, behaves the same as mapFromScene()
+    QPointF p = qobject_cast<QGraphicsItem*>(this)->mapFromItem(itemObj, x, y);
+    sv.setProperty("x", p.x());
+    sv.setProperty("y", p.y());
+    return sv;
+}
+
+/*!
+    \qmlmethod object Item::mapToItem(Item item, int x, int y)
+
+    Maps the point (\a x, \a y), which is in this item's coordinate system, to
+    \a item's coordinate system, and returns an object with \c x and \c y
+    properties matching the mapped cooordinate.
+
+    If \a item is a \c null value, this maps \a x and \a y to the coordinate
+    system of the root QML view.
+*/
+QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, int x, int y) const
+{
+    QScriptValue sv = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(this))->newObject();
+    QDeclarativeItem *itemObj = qobject_cast<QDeclarativeItem*>(item.toQObject());
+    if (!itemObj && !item.isNull()) {
+        qWarning().nospace() << "mapToItem() given argument " << item.toString() << " which is neither null nor an Item";
+        return 0;
+    }
+
+    // If QGraphicsItem::mapToItem() is called with 0, behaves the same as mapToScene()
+    QPointF p = qobject_cast<QGraphicsItem*>(this)->mapToItem(itemObj, x, y);
+    sv.setProperty("x", p.x());
+    sv.setProperty("y", p.y());
+    return sv;
 }
 
 /*!
