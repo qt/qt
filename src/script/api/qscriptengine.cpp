@@ -2901,6 +2901,9 @@ JSC::JSValue QScriptEnginePrivate::create(JSC::ExecState *exec, int type, const 
             result = eng->newQObject(*reinterpret_cast<QObject* const *>(ptr));
             break;
 #endif
+        case QMetaType::QVariant:
+            result = jscValueFromVariant(exec, *reinterpret_cast<const QVariant*>(ptr));
+            break;
         default:
             if (type == qMetaTypeId<QScriptValue>()) {
                 result = eng->scriptValueToJSCValue(*reinterpret_cast<const QScriptValue*>(ptr));
@@ -2922,8 +2925,6 @@ JSC::JSValue QScriptEnginePrivate::create(JSC::ExecState *exec, int type, const 
 
             else {
                 QByteArray typeName = QMetaType::typeName(type);
-                if (typeName == "QVariant")
-                    result = jscValueFromVariant(exec, *reinterpret_cast<const QVariant*>(ptr));
                 if (typeName.endsWith('*') && !*reinterpret_cast<void* const *>(ptr))
                     return JSC::jsNull();
                 else
@@ -3046,6 +3047,9 @@ bool QScriptEnginePrivate::convertValue(JSC::ExecState *exec, JSC::JSValue value
             *reinterpret_cast<QVariantMap *>(ptr) = variantMapFromObject(exec, value);
             return true;
         } break;
+    case QMetaType::QVariant:
+        *reinterpret_cast<QVariant*>(ptr) = toVariant(exec, value);
+        return true;
     default:
     ;
     }
@@ -3095,9 +3099,6 @@ bool QScriptEnginePrivate::convertValue(JSC::ExecState *exec, JSC::JSValue value
         if (!eng)
             return false;
         *reinterpret_cast<QScriptValue*>(ptr) = eng->scriptValueFromJSCValue(value);
-        return true;
-    } else if (name == "QVariant") {
-        *reinterpret_cast<QVariant*>(ptr) = toVariant(exec, value);
         return true;
     }
 
