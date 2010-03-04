@@ -2739,7 +2739,7 @@ void QScreen::compose(int level, const QRegion &exposed, QRegion &blend,
             default:
                 break;
             }
-            spanData.setup(qwsServer->backgroundBrush(), 256, QPainter::CompositionMode_SourceOver);
+            spanData.setup(qwsServer->backgroundBrush(), 256, QPainter::CompositionMode_Source);
             spanData.dx = off.x();
             spanData.dy = off.y();
         } else if (!surface->isBuffered()) {
