@@ -983,12 +983,15 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
 
         } else if (v->type == Value::SignalExpression) {
 
+            BindingContext ctxt = compileState.signalExpressions.value(v);
+
             QDeclarativeInstruction store;
             store.type = QDeclarativeInstruction::StoreSignal;
             store.line = v->location.start.line;
             store.storeSignal.signalIndex = prop->index;
             store.storeSignal.value =
                 output->indexForString(v->value.asScript().trimmed());
+            store.storeSignal.context = ctxt.stack;
             output->bytecode << store;
 
         }
@@ -1321,7 +1324,7 @@ QMetaMethod QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const 
 }
 
 bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj,
-                              const BindingContext &ctxt)
+                                       const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metaObject());
     Q_ASSERT(!prop->isEmpty());
@@ -1357,6 +1360,8 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
             QString script = prop->values.at(0)->value.asScript().trimmed();
             if (script.isEmpty())
                 COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Empty signal assignment"));
+
+            compileState.signalExpressions.insert(prop->values.at(0), ctxt);
         }
     }
 
@@ -2608,9 +2613,9 @@ bool QDeclarativeCompiler::buildBinding(QDeclarativeParser::Value *value,
 }
 
 void QDeclarativeCompiler::genBindingAssignment(QDeclarativeParser::Value *binding,
-                                       QDeclarativeParser::Property *prop,
-                                       QDeclarativeParser::Object *obj,
-                                       QDeclarativeParser::Property *valueTypeProperty)
+                                                QDeclarativeParser::Property *prop,
+                                                QDeclarativeParser::Object *obj,
+                                                QDeclarativeParser::Property *valueTypeProperty)
 {
     Q_UNUSED(obj);
     Q_ASSERT(compileState.bindings.contains(binding));
