@@ -1789,13 +1789,19 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
     Q_ASSERT(prop->type != 0);
     Q_ASSERT(prop->index != -1);
 
-    if (prop->values.count())
-        COMPILE_EXCEPTION(prop->values.first(), QCoreApplication::translate("QDeclarativeCompiler", "Invalid value in grouped property"));
-
     if (QDeclarativeValueTypeFactory::isValueType(prop->type)) {
         QDeclarativeEnginePrivate *ep =
             static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
         if (prop->type >= 0 /* QVariant == -1 */ && ep->valueTypes[prop->type]) {
+
+            if (prop->values.count()) {
+                if (prop->values.at(0)->location < prop->value->location) {
+                    COMPILE_EXCEPTION(prop->value, QCoreApplication::translate("QDeclarativeCompiler", "Property has already been assigned a value"));
+                } else {
+                    COMPILE_EXCEPTION(prop->values.at(0), QCoreApplication::translate("QDeclarativeCompiler", "Property has already been assigned a value"));
+                }
+            }
+
             COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
@@ -1809,6 +1815,9 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
             QDeclarativeEnginePrivate::get(engine)->metaObjectForType(prop->type);
         if (!prop->value->metatype)
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid grouped property access"));
+
+        if (prop->values.count()) 
+            COMPILE_EXCEPTION(prop->values.at(0), QCoreApplication::translate("QDeclarativeCompiler", "Cannot assign a value directly to a grouped property"));
 
         obj->addGroupedProperty(prop);
 

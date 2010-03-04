@@ -85,8 +85,8 @@ class ProcessAST: protected AST::Visitor
         {
             const State &state = top();
             if (state.property) {
-                State s(state.property->getValue(),
-                        state.property->getValue()->getProperty(name.toUtf8()));
+                State s(state.property->getValue(location),
+                        state.property->getValue(location)->getProperty(name.toUtf8()));
                 s.property->location = location;
                 push(s);
             } else {
