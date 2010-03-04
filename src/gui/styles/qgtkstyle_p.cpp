@@ -530,7 +530,7 @@ void QGtkStylePrivate::initGtkWidgets() const
             GtkWidget *gtkButton = QGtkStylePrivate::gtk_button_new();
             addWidget(gtkButton);
             g_signal_connect(gtkButton, "style-set", G_CALLBACK(gtkStyleSetCallback), 0);
-            addWidget(QGtkStylePrivate::gtk_tool_button_new(NULL, NULL));
+            addWidget(QGtkStylePrivate::gtk_tool_button_new(NULL, "Qt"));
             addWidget(QGtkStylePrivate::gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE));
             addWidget(QGtkStylePrivate::gtk_hbutton_box_new());
             addWidget(QGtkStylePrivate::gtk_check_button_new());
