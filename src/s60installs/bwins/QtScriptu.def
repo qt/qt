@@ -257,7 +257,7 @@ EXPORTS
 	?processEventsInterval@QScriptEngine@@QBEHXZ @ 256 NONAME ; int QScriptEngine::processEventsInterval(void) const
 	?property@QScriptClass@@UAE?AVQScriptValue@@ABV2@ABVQScriptString@@I@Z @ 257 NONAME ; class QScriptValue QScriptClass::property(class QScriptValue const &, class QScriptString const &, unsigned int)
 	?property@QScriptDeclarativeClass@@SA?AVQScriptValue@@ABV2@ABQAX@Z @ 258 NONAME ; class QScriptValue QScriptDeclarativeClass::property(class QScriptValue const &, void * const const &)
-	?property@QScriptDeclarativeClass@@UAE?AVQScriptValue@@PAUObject@1@ABQAX@Z @ 259 NONAME ; class QScriptValue QScriptDeclarativeClass::property(struct QScriptDeclarativeClass::Object *, void * const const &)
+	?property@QScriptDeclarativeClass@@UAE?AVQScriptValue@@PAUObject@1@ABQAX@Z @ 259 NONAME ABSENT ; class QScriptValue QScriptDeclarativeClass::property(struct QScriptDeclarativeClass::Object *, void * const const &)
 	?property@QScriptValue@@QBE?AV1@ABVQScriptString@@ABV?$QFlags@W4ResolveFlag@QScriptValue@@@@@Z @ 260 NONAME ; class QScriptValue QScriptValue::property(class QScriptString const &, class QFlags<enum QScriptValue::ResolveFlag> const &) const
 	?property@QScriptValue@@QBE?AV1@ABVQString@@ABV?$QFlags@W4ResolveFlag@QScriptValue@@@@@Z @ 261 NONAME ; class QScriptValue QScriptValue::property(class QString const &, class QFlags<enum QScriptValue::ResolveFlag> const &) const
 	?property@QScriptValue@@QBE?AV1@IABV?$QFlags@W4ResolveFlag@QScriptValue@@@@@Z @ 262 NONAME ; class QScriptValue QScriptValue::property(unsigned int, class QFlags<enum QScriptValue::ResolveFlag> const &) const
@@ -370,4 +370,29 @@ EXPORTS
 	?staticMetaObject@QScriptExtensionPlugin@@2UQMetaObject@@B @ 369 NONAME ; struct QMetaObject const QScriptExtensionPlugin::staticMetaObject
 	?staticMetaObject@QScriptEngine@@2UQMetaObject@@B @ 370 NONAME ; struct QMetaObject const QScriptEngine::staticMetaObject
 	?isQObject@QScriptDeclarativeClass@@UBE_NXZ @ 371 NONAME ; bool QScriptDeclarativeClass::isQObject(void) const
+	??0Value@QScriptDeclarativeClass@@QAE@ABV01@@Z @ 372 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptDeclarativeClass::Value const &)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@ABVQScriptValue@@@Z @ 373 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, class QScriptValue const &)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@ABVQString@@@Z @ 374 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, class QString const &)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@H@Z @ 375 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, int)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@I@Z @ 376 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, unsigned int)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@M@Z @ 377 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, float)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@N@Z @ 378 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, double)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptContext@@_N@Z @ 379 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptContext *, bool)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@ABVQScriptValue@@@Z @ 380 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptEngine *, class QScriptValue const &)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@ABVQString@@@Z @ 381 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptEngine *, class QString const &)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@H@Z @ 382 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptEngine *, int)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@I@Z @ 383 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptEngine *, unsigned int)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@M@Z @ 384 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptEngine *, float)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@N@Z @ 385 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptEngine *, double)
+	??0Value@QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@_N@Z @ 386 NONAME ; QScriptDeclarativeClass::Value::Value(class QScriptEngine *, bool)
+	??0Value@QScriptDeclarativeClass@@QAE@XZ @ 387 NONAME ; QScriptDeclarativeClass::Value::Value(void)
+	??1Value@QScriptDeclarativeClass@@QAE@XZ @ 388 NONAME ; QScriptDeclarativeClass::Value::~Value(void)
+	?call@QScriptDeclarativeClass@@UAE?AVValue@1@PAUObject@1@PAVQScriptContext@@@Z @ 389 NONAME ; class QScriptDeclarativeClass::Value QScriptDeclarativeClass::call(struct QScriptDeclarativeClass::Object *, class QScriptContext *)
+	?functionValue@QScriptDeclarativeClass@@SA?AVValue@1@ABVQScriptValue@@ABQAX@Z @ 390 NONAME ; class QScriptDeclarativeClass::Value QScriptDeclarativeClass::functionValue(class QScriptValue const &, void * const const &)
+	?newObjectValue@QScriptDeclarativeClass@@SA?AVValue@1@PAVQScriptEngine@@PAV1@PAUObject@1@@Z @ 391 NONAME ; class QScriptDeclarativeClass::Value QScriptDeclarativeClass::newObjectValue(class QScriptEngine *, class QScriptDeclarativeClass *, struct QScriptDeclarativeClass::Object *)
+	?property@QScriptDeclarativeClass@@UAE?AVValue@1@PAUObject@1@ABQAX@Z @ 392 NONAME ; class QScriptDeclarativeClass::Value QScriptDeclarativeClass::property(struct QScriptDeclarativeClass::Object *, void * const const &)
+	?propertyValue@QScriptDeclarativeClass@@SA?AVValue@1@ABVQScriptValue@@ABQAX@Z @ 393 NONAME ; class QScriptDeclarativeClass::Value QScriptDeclarativeClass::propertyValue(class QScriptValue const &, void * const const &)
+	?setSupportsCall@QScriptDeclarativeClass@@QAEX_N@Z @ 394 NONAME ; void QScriptDeclarativeClass::setSupportsCall(bool)
+	?supportsCall@QScriptDeclarativeClass@@QBE_NXZ @ 395 NONAME ; bool QScriptDeclarativeClass::supportsCall(void) const
+	?toScriptValue@Value@QScriptDeclarativeClass@@QBE?AVQScriptValue@@PAVQScriptEngine@@@Z @ 396 NONAME ; class QScriptValue QScriptDeclarativeClass::Value::toScriptValue(class QScriptEngine *) const
 
