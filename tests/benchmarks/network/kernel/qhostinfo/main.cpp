@@ -54,9 +54,9 @@ class tst_qhostinfo : public QObject
 {
     Q_OBJECT
 public slots:
-    void initTestCase();
     void init();
 private slots:
+    void lookupSpeed_data();
     void lookupSpeed();
 };
 
@@ -75,28 +75,23 @@ public slots:
     }
 };
 
-void tst_qhostinfo::initTestCase()
+void tst_qhostinfo::init()
 {
-    // run each testcase with and without cache enabled
+    // delete the cache so inidividual testcase results are independant from each other
+    qt_qhostinfo_clear_cache();
+}
+
+void tst_qhostinfo::lookupSpeed_data()
+{
     QTest::addColumn<bool>("cache");
     QTest::newRow("WithCache") << true;
     QTest::newRow("WithoutCache") << false;
 }
 
-void tst_qhostinfo::init()
-{
-    // delete the cache so inidividual testcase results are independant from each other
-    qt_qhostinfo_clear_cache();
-
-    QFETCH_GLOBAL(bool, cache);
-    qt_qhostinfo_enable_cache(cache);
-}
-
-
 void tst_qhostinfo::lookupSpeed()
 {
-    QFETCH_GLOBAL(bool, cache);
-    qDebug() << "Cache enabled:" << cache;
+    QFETCH(bool, cache);
+    qt_qhostinfo_enable_cache(cache);
 
     QStringList hostnameList;
     hostnameList << "www.ovi.com" << "www.nokia.com" << "qt.nokia.com" << "www.trolltech.com" << "troll.no"
