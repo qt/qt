@@ -128,6 +128,8 @@ private slots:
 
     void qmlAttachedPropertiesObjectMethod();
 
+    void customOnProperty();
+
     // regression tests for crashes
     void crash1();
     void crash2();
@@ -1397,6 +1399,19 @@ void tst_qdeclarativelanguage::crash2()
     QDeclarativeComponent component(&engine, TEST_FILE("crash2.qml"));
 }
 
+// QTBUG-8676
+void tst_qdeclarativelanguage::customOnProperty()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("customOnProperty.qml"));
+
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("on").toInt(), 10);
+
+    delete object;
+}
 
 void tst_qdeclarativelanguage::initTestCase()
 {
