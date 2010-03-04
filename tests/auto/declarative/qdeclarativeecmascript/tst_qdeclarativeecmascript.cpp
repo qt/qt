@@ -740,6 +740,23 @@ void tst_qdeclarativeecmascript::scope()
         QCOMPARE(object->property("test2").toBool(), true);
         QCOMPARE(object->property("test3").toBool(), true);
     }
+
+    // Signal argument scope
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scope.4.qml"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 0);
+        QCOMPARE(object->property("test2").toString(), QString());
+
+        emit object->argumentSignal(13, "Argument Scope", 9);
+
+        QCOMPARE(object->property("test").toInt(), 13);
+        QCOMPARE(object->property("test2").toString(), QString("Argument Scope"));
+
+        delete object;
+    }
 }
 
 /*
