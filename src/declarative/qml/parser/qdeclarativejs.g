@@ -1020,7 +1020,7 @@ case $rule_number: {
 JsIdentifier: T_ON ;
 /.
 case $rule_number: {
-    QString s = QLatin1String(QDeclarativeJSGrammar::spell[T_READONLY]);
+    QString s = QLatin1String(QDeclarativeJSGrammar::spell[T_ON]);
     sym(1).sval = driver->intern(s.constData(), s.length());
     break;
 }
