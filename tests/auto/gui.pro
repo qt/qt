@@ -210,7 +210,6 @@ SUBDIRS=\
     qwsinputmethod \
     qwswindowsystem \
     qx11info \
-    windowsmobile \
 
 win32:SUBDIRS -= qtextpiecetable
 
