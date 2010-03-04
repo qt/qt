@@ -953,7 +953,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
             QString format = ctxt->argument(1).toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
         } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toInteger());
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else
            return engine->nullValue();
     }
@@ -973,7 +973,7 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
             QString format = ctxt->argument(1).toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
         } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toInteger());
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else
            return engine->nullValue();
     }
@@ -993,7 +993,7 @@ QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScr
             QString format = ctxt->argument(1).toString();
             return engine->newVariant(qVariantFromValue(date.toString(format)));
         } else if (ctxt->argument(1).isNumber()) {
-            enumFormat = Qt::DateFormat(ctxt->argument(1).toInteger());
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
         } else
            return engine->nullValue();
     }
