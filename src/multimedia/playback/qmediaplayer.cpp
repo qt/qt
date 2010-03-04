@@ -43,6 +43,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qpointer.h>
+#include <QtCore/qdebug.h>
 
 #include <QtMultimedia/qmediaplayer.h>
 
@@ -55,6 +56,7 @@
 #include <QtMultimedia/qvideowidget.h>
 #include <QtMultimedia/qgraphicsvideoitem.h>
 
+//#define DEBUG_PLAYER_STATE
 
 QT_BEGIN_HEADER
 
@@ -152,9 +154,15 @@ public:
     void _q_playlistDestroyed();
 };
 
+#define ENUM_NAME(c,e,v) (c::staticMetaObject.enumerator(c::staticMetaObject.indexOfEnumerator(e)).valueToKey((v)))
+
 void QMediaPlayerPrivate::_q_stateChanged(QMediaPlayer::State ps)
 {
     Q_Q(QMediaPlayer);
+
+#ifdef DEBUG_PLAYER_STATE
+    qDebug() << "State changed:" << ENUM_NAME(QMediaPlayer, "State", ps) << (filterStates ? "(filtered)" : "");
+#endif
 
     if (filterStates)
         return;
@@ -182,6 +190,10 @@ void QMediaPlayerPrivate::_q_stateChanged(QMediaPlayer::State ps)
 void QMediaPlayerPrivate::_q_mediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
     Q_Q(QMediaPlayer);
+
+#ifdef DEBUG_PLAYER_STATE
+    qDebug() << "MediaStatus changed:" << ENUM_NAME(QMediaPlayer, "MediaStatus", status);
+#endif
 
     switch (status) {
     case QMediaPlayer::StalledMedia:
@@ -230,8 +242,12 @@ void QMediaPlayerPrivate::_q_updateMedia(const QMediaContent &media)
 
     state = control->state();
 
-    if (state != currentState)
+    if (state != currentState) {
+#ifdef DEBUG_PLAYER_STATE
+        qDebug() << "State changed:" << ENUM_NAME(QMediaPlayer, "State", state);
+#endif
         emit q_func()->stateChanged(state);
+    }
 }
 
 void QMediaPlayerPrivate::_q_playlistDestroyed()
