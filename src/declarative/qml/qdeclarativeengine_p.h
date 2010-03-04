@@ -319,13 +319,16 @@ public:
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
     static QScriptValue closestAngle(QScriptContext*, QScriptEngine*);
-    static QScriptValue playSound(QScriptContext*, QScriptEngine*);
     static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
     static QScriptValue md5(QScriptContext*, QScriptEngine*);
     static QScriptValue btoa(QScriptContext*, QScriptEngine*);
     static QScriptValue atob(QScriptContext*, QScriptEngine*);
     static QScriptValue consoleLog(QScriptContext*, QScriptEngine*);
     static QScriptValue quit(QScriptContext*, QScriptEngine*);
+
+    static QScriptValue formatDate(QScriptContext*, QScriptEngine*);
+    static QScriptValue formatTime(QScriptContext*, QScriptEngine*);
+    static QScriptValue formatDateTime(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QDeclarativeEngine *e) { return &e->d_func()->scriptEngine; }
     static QDeclarativeEngine *getEngine(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p->q_func(); }

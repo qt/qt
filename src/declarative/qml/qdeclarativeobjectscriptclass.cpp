@@ -232,7 +232,7 @@ QDeclarativeObjectScriptClass::property(QObject *obj, const Identifier &name)
                 QDeclarativeEnginePrivate::CapturedProperty(obj, lastData->coreIndex, lastData->notifyIndex);
         }
 
-        if ((uint)lastData->propType < QVariant::UserType) {
+        if (QDeclarativeValueTypeFactory::isValueType((uint)lastData->propType)) {
             QDeclarativeValueType *valueType = enginePriv->valueTypes[lastData->propType];
             if (valueType)
                 return Value(scriptEngine, enginePriv->valueTypeClass->newObject(obj, lastData->coreIndex, valueType));

@@ -484,7 +484,10 @@ QVariant QDeclarativeContext::contextProperty(const QString &name) const
         if (!value.isValid() && parentContext())
             value = parentContext()->contextProperty(name);
     } else {
-        value = d->propertyValues[idx];
+        if (idx >= d->propertyValues.count())
+            value = QVariant::fromValue(d->idValues[idx - d->propertyValues.count()].data());
+        else
+            value = d->propertyValues[idx];
     }
 
     return value;

@@ -1,4 +1,5 @@
 import Qt 4.6
+import Qt.multimedia 4.7
 
 Rectangle {
     id: page
@@ -15,14 +16,17 @@ Rectangle {
         color: "Lime"
         x: 20; width: 20; height: 20; z: 1
 
+        SoundEffect { id: paddle; source: "paddle.wav" }
+        SoundEffect { id: wall; source: "click.wav" }
+
         // Move the ball to the right and back to the left repeatedly
         SequentialAnimation on x {
             repeat: true
             NumberAnimation { to: page.width - 40; duration: 2000 }
-            ScriptAction { script: Qt.playSound('paddle.wav') }
+            ScriptAction { script: paddle.play() }
             PropertyAction { target: ball; property: "direction"; value: "left" }
             NumberAnimation { to: 20; duration: 2000 }
-            ScriptAction { script: Qt.playSound('paddle.wav') }
+            ScriptAction { script: paddle.play() }
             PropertyAction { target: ball; property: "direction"; value: "right" }
         }
 
@@ -32,10 +36,10 @@ Rectangle {
         // Detect the ball hitting the top or bottom of the view and bounce it
         onYChanged: {
             if (y <= 0) {
-                Qt.playSound('click.wav');
+                wall.play();
                 targetY = page.height - 20;
             } else if (y >= page.height - 20) {
-                Qt.playSound('click.wav');
+                wall.play();
                 targetY = 0;
             }
         }
