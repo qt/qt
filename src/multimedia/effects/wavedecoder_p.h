@@ -116,7 +116,6 @@ private:
     {
         RIFFHeader  riff;
         WAVEHeader  wave;
-        DATAHeader  data;
     };
 
     bool haveFormat;

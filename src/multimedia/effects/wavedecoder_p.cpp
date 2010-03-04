@@ -55,7 +55,7 @@ WaveDecoder::WaveDecoder(QIODevice *s, QObject *parent):
 {
     open(QIODevice::ReadOnly | QIODevice::Unbuffered);
 
-    if (source->bytesAvailable() >= sizeof(CombinedHeader))
+    if (source->bytesAvailable() >= qint64(sizeof(CombinedHeader) + sizeof(DATAHeader) + sizeof(quint16)))
         QTimer::singleShot(0, this, SLOT(handleData()));
     else
         connect(source, SIGNAL(readyRead()), SLOT(handleData()));
@@ -105,7 +105,7 @@ qint64 WaveDecoder::writeData(const char *data, qint64 len)
 
 void WaveDecoder::handleData()
 {
-    if (source->bytesAvailable() < sizeof(CombinedHeader))
+    if (source->bytesAvailable() < qint64(sizeof(CombinedHeader) + sizeof(DATAHeader) + sizeof(quint16)))
         return;
 
     source->disconnect(SIGNAL(readyRead()), this, SLOT(handleData()));
@@ -114,12 +114,23 @@ void WaveDecoder::handleData()
     if (qstrncmp(header.riff.descriptor.id, "RIFF", 4) != 0 ||
         qstrncmp(header.riff.type, "WAVE", 4) != 0 ||
         qstrncmp(header.wave.descriptor.id, "fmt ", 4) != 0 ||
-        (header.wave.audioFormat != 0 && header.wave.audioFormat != 1) ||
-        qstrncmp(header.data.descriptor.id, "data", 4) != 0) {
+        (header.wave.audioFormat != 0 && header.wave.audioFormat != 1)) {
 
         emit invalidFormat();
     }
     else {
+        DATAHeader dataHeader;
+
+        if (qFromLittleEndian<quint32>(header.wave.descriptor.size) > sizeof(WAVEHeader)) {
+            // Extended data available
+            quint16 extraFormatBytes;
+            source->peek((char*)&extraFormatBytes, sizeof(quint16));
+            extraFormatBytes = qFromLittleEndian<quint16>(extraFormatBytes);
+            source->read(sizeof(quint16) + extraFormatBytes);   // dump it all
+        }
+
+        source->read((char*)&dataHeader, sizeof(DATAHeader));
+
         int bps = qFromLittleEndian<quint16>(header.wave.bitsPerSample);
 
         format.setCodec(QLatin1String("audio/pcm"));
@@ -129,7 +140,7 @@ void WaveDecoder::handleData()
         format.setSampleSize(bps);
         format.setChannels(qFromLittleEndian<quint16>(header.wave.numChannels));
 
-        dataSize = qFromLittleEndian<quint32>(header.data.descriptor.size);
+        dataSize = qFromLittleEndian<quint32>(dataHeader.descriptor.size);
 
         haveFormat = true;
         connect(source, SIGNAL(readyRead()), SIGNAL(readyRead()));
