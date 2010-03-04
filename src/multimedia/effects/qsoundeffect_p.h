@@ -56,7 +56,6 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-#include <QtDeclarative/qdeclarative.h>
 
 
 QT_BEGIN_HEADER
@@ -64,7 +63,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QSoundEffectPrivate;
-class Q_AUTOTEST_EXPORT QSoundEffect : public QObject
+class Q_MULTIMEDIA_EXPORT QSoundEffect : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
@@ -117,8 +116,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QT_PREPEND_NAMESPACE(QSoundEffect))
 
 QT_END_HEADER
 

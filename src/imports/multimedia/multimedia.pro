@@ -4,7 +4,18 @@ include(../qimportbase.pri)
 
 QT += multimedia declarative
 
-SOURCES += multimedia.cpp
+HEADERS += \
+        qdeclarativeaudio_p.h \
+        qdeclarativemediabase_p.h \
+        qdeclarativevideo_p.h \
+        qmetadatacontrolmetaobject_p.h \
+
+SOURCES += \
+        multimedia.cpp \
+        qdeclarativeaudio.cpp \
+        qdeclarativemediabase.cpp \
+        qdeclarativevideo.cpp \
+        qmetadatacontrolmetaobject.cpp
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/imports/Qt/multimedia
 target.path = $$TARGETPATH

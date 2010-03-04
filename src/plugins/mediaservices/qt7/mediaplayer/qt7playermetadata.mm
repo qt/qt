@@ -251,6 +251,7 @@ void QT7PlayerMetaDataControl::updateTags()
             readFormattedData(metaDataRef, kQTMetaDataStorageFormatiTunes, metaMap);
         }
 #else
+        AutoReleasePool pool;
         NSString *name = [movie attributeForKey:@"QTMovieDisplayNameAttribute"];
         metaMap.insert(QLatin1String("nam"), QString::fromUtf8([name UTF8String]));
 #endif // QUICKTIME_C_API_AVAILABLE
