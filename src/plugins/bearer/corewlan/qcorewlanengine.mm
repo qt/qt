@@ -201,7 +201,6 @@ void QCoreWlanEngine::connectToId(const QString &id)
                                 return;
                             }
                         }
-                        [apNetwork release];
                     }
                 }
             }
@@ -292,7 +291,7 @@ void QCoreWlanEngine::doRequestUpdate()
         if (!interface.addressEntries().isEmpty())
             state = QNetworkConfiguration::Active;
 
-        if (accessPointConfigurations.contains(id)) {
+        if (accessPointConfigurations.contains(id)) { //handle only scanned AP's
             QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
             bool changed = false;
@@ -319,20 +318,6 @@ void QCoreWlanEngine::doRequestUpdate()
 
             if (changed)
                 emit configurationChanged(ptr);
-        } else {
-            QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
-
-            ptr->name = name;
-            ptr->isValid = true;
-            ptr->id = id;
-            ptr->state = state;
-            ptr->type = QNetworkConfiguration::InternetAccessPoint;
-            ptr->bearer = qGetInterfaceType(interface.name());
-
-            accessPointConfigurations.insert(id, ptr);
-            configurationInterface.insert(id, interface.name());
-
-            emit configurationAdded(ptr);
         }
     }
 
@@ -496,12 +481,6 @@ bool QCoreWlanEngine::getAllScInterfaces()
             CFStringRef type = SCNetworkInterfaceGetInterfaceType((SCNetworkInterfaceRef)thisInterface);
             if ( CFEqual(type, kSCNetworkInterfaceTypeIEEE80211)) {
                 typeStr = "WLAN";
-//            } else if (CFEqual(type, kSCNetworkInterfaceTypeBluetooth)) {
-//                typeStr = "Bluetooth";
-            } else if(CFEqual(type, kSCNetworkInterfaceTypeEthernet)) {
-                typeStr = "Ethernet";
-            } else if(CFEqual(type, kSCNetworkInterfaceTypeFireWire)) {
-                typeStr = "Ethernet"; //ok a bit fudged
             }
             if(!networkInterfaces.contains(interfaceName) && !typeStr.isEmpty()) {
                 networkInterfaces.insert(interfaceName,typeStr);
