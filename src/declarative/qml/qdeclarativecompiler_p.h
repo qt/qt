@@ -307,6 +307,7 @@ private:
         QByteArray compiledBindingData;
 
         QHash<QDeclarativeParser::Value *, BindingReference> bindings;
+        QHash<QDeclarativeParser::Value *, BindingContext> signalExpressions;
         QList<QDeclarativeParser::Object *> aliasingObjects;
         QDeclarativeParser::Object *root;
     };
