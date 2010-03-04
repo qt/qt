@@ -172,6 +172,10 @@
     This signal is emitted after connectToHost() has been called and
     the host lookup has succeeded.
 
+    \note Since Qt 4.6.3 QAbstractSocket may emit hostFound()
+    directly from the connectToHost() call since a DNS result could have been
+    cached.
+
     \sa connected()
 */
 
@@ -180,6 +184,10 @@
 
     This signal is emitted after connectToHost() has been called and
     a connection has been successfully established.
+
+    \note On some operating systems the connected() signal may
+    be directly emitted from the connectToHost() call for connections
+    to the localhost.
 
     \sa connectToHost(), disconnected()
 */

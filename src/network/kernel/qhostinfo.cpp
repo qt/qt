@@ -112,6 +112,13 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
     To retrieve the name of the local host, use the static
     QHostInfo::localHostName() function.
 
+    \note Since Qt 4.6.1 QHostInfo is using multiple threads for DNS lookup
+    instead of one dedicated DNS thread. This improves performance,
+    but also changes the order of signal emissions when using lookupHost()
+    compared to previous versions of Qt.
+    \note Since Qt 4.6.3 QHostInfo is using a small internal 60 second DNS cache
+    for performance improvements.
+
     \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492}
 */
 
@@ -435,12 +442,24 @@ void QHostInfoRunnable::run()
         return;
     }
 
-    // if not in cache: OS lookup
-    QHostInfo hostInfo = QHostInfoAgent::fromName(toBeLookedUp);
+    QHostInfo hostInfo;
 
-    // save to cache
-    if (manager->cache.isEnabled())
-        manager->cache.put(toBeLookedUp, hostInfo);
+    // QHostInfo::lookupHost already checks the cache. However we need to check
+    // it here too because it might have been cache saved by another QHostInfoRunnable
+    // in the meanwhile while this QHostInfoRunnable was scheduled but not running
+    if (manager->cache.isEnabled()) {
+        // check the cache first
+        bool valid = false;
+        hostInfo = manager->cache.get(toBeLookedUp, &valid);
+        if (!valid) {
+            // not in cache, we need to do the lookup and store the result in the cache
+            hostInfo = QHostInfoAgent::fromName(toBeLookedUp);
+            manager->cache.put(toBeLookedUp, hostInfo);
+        }
+    } else {
+        // cache is not enabled, just do the lookup and continue
+        hostInfo = QHostInfoAgent::fromName(toBeLookedUp);
+    }
 
     // check aborted again
     if (manager->wasAborted(id)) {

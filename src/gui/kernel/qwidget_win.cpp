@@ -2052,6 +2052,8 @@ void QWidgetPrivate::winSetupGestures()
     if (!q || !q->isVisible() || !nativeGesturePanEnabled)
         return;
 
+    if (!QApplicationPrivate::HasTouchSupport)
+        return;
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
     if (!qAppPriv->SetGestureConfig)
         return;
