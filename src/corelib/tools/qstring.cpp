@@ -7241,7 +7241,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
@@ -7266,7 +7266,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload operator!=()
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
@@ -7292,7 +7292,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
@@ -7318,7 +7318,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
@@ -7344,7 +7344,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
     \since 4.3
     \overload
 
-    The \a other const char pointer is converted to a QLatin1String using
+    The \a other const char pointer is converted to a QString using
     the QString::fromAscii() function.
 
     You can disable this operator by defining \c
