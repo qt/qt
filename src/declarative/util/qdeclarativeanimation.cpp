@@ -52,6 +52,7 @@
 #include <qdeclarativestringconverters_p.h>
 #include <qdeclarativeglobal_p.h>
 #include <qdeclarativemetatype_p.h>
+#include <qdeclarativevaluetype_p.h>
 #include <qdeclarativeproperty_p.h>
 
 #include <qvariant.h>
@@ -1710,12 +1711,13 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
         break;
     }
     default:
-        if ((uint)type >= QVariant::UserType) {
+        if (QDeclarativeValueTypeFactory::isValueType((uint)type)) {
+            variant.convert((QVariant::Type)type);
+        } else {
             QDeclarativeMetaType::StringConverter converter = QDeclarativeMetaType::customStringConverter(type);
             if (converter)
                 variant = converter(variant.toString());
-        } else
-            variant.convert((QVariant::Type)type);
+        }
         break;
     }
 }

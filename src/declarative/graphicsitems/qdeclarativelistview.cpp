@@ -1359,6 +1359,11 @@ void QDeclarativeListViewPrivate::flickY(qreal velocity)
 
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
+
+    Note that views do not enable \e clip automatically.  If the view
+    is not clipped by another item or the screen, it will be necessary
+    to set \e {clip: true} in order to have the out of view items clipped
+    nicely.
 */
 
 QDeclarativeListView::QDeclarativeListView(QDeclarativeItem *parent)
@@ -2281,6 +2286,12 @@ void QDeclarativeListView::decrementCurrentIndex()
     Positions the view such that the \a index is at the top (or left for horizontal orientation) of the view.
     If positioning the view at the index would cause empty space to be displayed at
     the end of the view, the view will be positioned at the end.
+
+    It is not recommended to use contentX or contentY to position the view
+    at a particular index.  This is unreliable since removing items from the start
+    of the list does not cause all other items to be repositioned, and because
+    the actual start of the view can vary based on the size of the delegates.
+    The correct way to bring an item into view is with positionViewAtIndex.
 */
 void QDeclarativeListView::positionViewAtIndex(int index)
 {

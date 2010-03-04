@@ -194,6 +194,7 @@ void QDeclarativeViewPrivate::execute()
     \o Initializes QGraphicsView for QML key handling:
         \list
         \o QGraphicsView::viewport()->setFocusPolicy(Qt::NoFocus);
+        \o QGraphicsView::setFocusPolicy(Qt::StrongFocus);
         \o QGraphicsScene::setStickyFocus(true);
         \endlist
     \endlist
@@ -268,6 +269,7 @@ void QDeclarativeViewPrivate::init()
     q->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     q->viewport()->setFocusPolicy(Qt::NoFocus);
+    q->setFocusPolicy(Qt::StrongFocus);
 
     scene.setStickyFocus(true);  //### needed for correct focus handling
 }

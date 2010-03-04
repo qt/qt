@@ -1792,7 +1792,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
     if (prop->values.count())
         COMPILE_EXCEPTION(prop->values.first(), QCoreApplication::translate("QDeclarativeCompiler", "Invalid value in grouped property"));
 
-    if (prop->type < (int)QVariant::UserType) {
+    if (QDeclarativeValueTypeFactory::isValueType(prop->type)) {
         QDeclarativeEnginePrivate *ep =
             static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
         if (prop->type >= 0 /* QVariant == -1 */ && ep->valueTypes[prop->type]) {
