@@ -72,6 +72,7 @@
 #include <QtGui/QStatusBar>
 #include <QtGui/QMenu>
 #include <QtGui/QAction>
+#include <QtGui/QLabel>
 
 QT_BEGIN_NAMESPACE
 
