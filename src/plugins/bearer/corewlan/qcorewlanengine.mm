@@ -243,8 +243,7 @@ void QCoreWlanEngine::requestUpdate()
 {
     QMutexLocker locker(&mutex);
 
-    pollTimer.stop();
-    QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
+    doRequestUpdate();
 }
 
 void QCoreWlanEngine::doRequestUpdate()
@@ -342,8 +341,6 @@ void QCoreWlanEngine::doRequestUpdate()
         configurationInterface.remove(ptr->id);
         emit configurationRemoved(ptr);
     }
-
-    pollTimer.start();
 
     emit updateCompleted();
 }
@@ -608,6 +605,11 @@ QNetworkSessionPrivate *QCoreWlanEngine::createSessionBackend()
 QNetworkConfigurationPrivatePointer QCoreWlanEngine::defaultConfiguration()
 {
     return QNetworkConfigurationPrivatePointer();
+}
+
+bool QCoreWlanEngine::requiresPolling() const
+{
+    return true;
 }
 
 QT_END_NAMESPACE

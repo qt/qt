@@ -174,7 +174,8 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
     : QObject(parent)
 {
-    QNetworkConfigurationManagerPrivate* priv = connManager();
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+
     connect(priv, SIGNAL(configurationAdded(QNetworkConfiguration)),
             this, SIGNAL(configurationAdded(QNetworkConfiguration)));
     connect(priv, SIGNAL(configurationRemoved(QNetworkConfiguration)),
@@ -185,6 +186,8 @@ QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
             this, SIGNAL(onlineStateChanged(bool)));
     connect(priv, SIGNAL(configurationChanged(QNetworkConfiguration)),
             this, SIGNAL(configurationChanged(QNetworkConfiguration)));
+
+    priv->enablePolling();
 }
 
 /*!
@@ -192,6 +195,9 @@ QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
 */
 QNetworkConfigurationManager::~QNetworkConfigurationManager()
 {
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+
+    priv->disablePolling();
 }
 
 

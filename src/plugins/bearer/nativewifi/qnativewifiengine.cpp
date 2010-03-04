@@ -95,10 +95,6 @@ QNativeWifiEngine::QNativeWifiEngine(QObject *parent)
     if (result != ERROR_SUCCESS)
         qWarning("%s: WlanRegisterNotification failed with error %ld\n", __FUNCTION__, result);
 
-    // On Windows XP SP2 and SP3 only connection and disconnection notifications are available.
-    // We need to poll for changes in available wireless networks.
-    connect(&pollTimer, SIGNAL(timeout()), this, SLOT(scanComplete()));
-    pollTimer.setInterval(10000);
     scanComplete();
 }
 
@@ -221,8 +217,6 @@ void QNativeWifiEngine::scanComplete()
 
         emit configurationRemoved(ptr);
     }
-
-    pollTimer.start();
 
     emit updateCompleted();
 }
@@ -490,6 +484,13 @@ QNetworkSessionPrivate *QNativeWifiEngine::createSessionBackend()
 QNetworkConfigurationPrivatePointer QNativeWifiEngine::defaultConfiguration()
 {
     return QNetworkConfigurationPrivatePointer();
+}
+
+bool QNativeWifiEngine::requiresPolling() const
+{
+    // On Windows XP SP2 and SP3 only connection and disconnection notifications are available.
+    // We need to poll for changes in available wireless networks.
+    return true;
 }
 
 QT_END_NAMESPACE
