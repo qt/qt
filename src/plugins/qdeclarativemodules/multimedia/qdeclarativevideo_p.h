@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMultimedia module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtMultimedia/private/qdeclarativemediabase_p.h>
+#include "qdeclarativemediabase_p.h"
 
 #include <QtMultimedia/qgraphicsvideoitem.h>
 
@@ -69,7 +69,7 @@ class QTimerEvent;
 class QVideoSurfaceFormat;
 
 
-class Q_AUTOTEST_EXPORT QDeclarativeVideo : public QDeclarativeItem, public QDeclarativeMediaBase
+class QDeclarativeVideo : public QDeclarativeItem, public QDeclarativeMediaBase
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtMultimedia module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,22 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QTMULTIMEDIA_QML_H
-#define QTMULTIMEDIA_QML_H
+#ifndef QMETADATACONTROLMETAOBJECT_P_H
+#define QMETADATACONTROLMETAOJBECT_P_H
 
-#include <QtCore/qglobal.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qmetaobject.h>
+#include <QtMultimedia/qtmedianamespace.h>
+
+#include <QtCore/private/qobject_p.h>
 
 QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Multimedia)
+class QMetaDataControl;
 
-namespace QtMultimedia
+class QMetaDataControlMetaObject : public QAbstractDynamicMetaObject
 {
-extern void Q_MULTIMEDIA_EXPORT qRegisterDeclarativeElements(const char *uri);
-}
+public:
+    QMetaDataControlMetaObject(QMetaDataControl *control, QObject *object);
+    ~QMetaDataControlMetaObject();
+
+    int metaCall(QMetaObject::Call call, int _id, void **arguments);
+    int createProperty(const char *, const char *);
+
+    void metaDataChanged();
+
+private:
+    QMetaDataControl *m_control;
+    QObject *m_object;
+    char *m_string;
+    uint *m_data;
+
+    int m_propertyOffset;
+    int m_signalOffset;
+};
 
 QT_END_NAMESPACE
+
 QT_END_HEADER
 
-#endif  // ifndef QTMULTIMEDIA_QML_H
+#endif
