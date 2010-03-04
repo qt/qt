@@ -502,6 +502,9 @@ void QPrintDialogPrivate::setupPrinter()
     } else if (options.printSelection->isChecked()) {
         p->setPrintRange(QPrinter::Selection);
         p->setFromTo(0,0);
+    } else if (options.printCurrentPage->isChecked()) {
+        p->setPrintRange(QPrinter::CurrentPage);
+        p->setFromTo(0,0);
     } else if (options.printRange->isChecked()) {
         p->setPrintRange(QPrinter::PageRange);
         p->setFromTo(options.from->value(), qMax(options.from->value(), options.to->value()));
@@ -518,10 +521,12 @@ void QPrintDialogPrivate::updateWidgets()
 {
     Q_Q(QPrintDialog);
     options.gbPrintRange->setVisible(q->isOptionEnabled(QPrintDialog::PrintPageRange) ||
-                                q->isOptionEnabled(QPrintDialog::PrintSelection));
+                                     q->isOptionEnabled(QPrintDialog::PrintSelection) ||
+                                     q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
 
     options.printRange->setEnabled(q->isOptionEnabled(QPrintDialog::PrintPageRange));
     options.printSelection->setVisible(q->isOptionEnabled(QPrintDialog::PrintSelection));
+    options.printCurrentPage->setVisible(q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
     options.collate->setVisible(q->isOptionEnabled(QPrintDialog::PrintCollateCopies));
 
     switch (q->printRange()) {
@@ -533,6 +538,10 @@ void QPrintDialogPrivate::updateWidgets()
         break;
     case QPrintDialog::PageRange:
         options.printRange->setChecked(true);
+        break;
+    case QPrintDialog::CurrentPage:
+        if (q->isOptionEnabled(QPrintDialog::PrintCurrentPage))
+            options.printCurrentPage->setChecked(true);
         break;
     default:
         break;

@@ -77,6 +77,8 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #undef Type
 #undef FontChange
 #undef CursorShape
+#undef Unsorted
+#undef GrayScale
 #endif
 
 // Internally we use the EGL-prefixed native types which are used in EGL >= 1.3.
