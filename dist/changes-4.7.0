@@ -2,7 +2,7 @@ Qt 4.7 introduces many new features and improvements as well as bugfixes
 over the 4.6.x series. For more details, refer to the online documentation
 included in this distribution. The documentation is also available online:
 
-  http://doc.trolltech.com/4.7
+  http://qt.nokia.com/doc/4.7
 
 The Qt version 4.7 series is binary compatible with the 4.6.x series.
 Applications compiled for 4.6 will continue to run with 4.7.
@@ -10,7 +10,7 @@ Applications compiled for 4.6 will continue to run with 4.7.
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Task Tracker:
 
-  http://www.qtsoftware.com/developer/task-tracker
+  http://qt.nokia.com/developer/task-tracker
 
 Each of these identifiers can be entered in the task tracker to obtain more
 information about a particular change.
