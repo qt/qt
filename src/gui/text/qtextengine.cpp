@@ -81,7 +81,7 @@ public:
     void generate(int start, int length, QFont::Capitalization caps)
     {
         if ((int)caps == (int)QFont::SmallCaps)
-            generateScriptItemsSmallCaps(m_string.utf16(), start, length);
+            generateScriptItemsSmallCaps(reinterpret_cast<const ushort *>(m_string.unicode()), start, length);
         else if(caps == QFont::Capitalize)
             generateScriptItemsCapitalize(start, length);
         else if(caps != QFont::MixedCase) {
