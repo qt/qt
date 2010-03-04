@@ -112,6 +112,13 @@ Q_GLOBAL_STATIC(QHostInfoLookupManager, theHostInfoLookupManager)
     To retrieve the name of the local host, use the static
     QHostInfo::localHostName() function.
 
+    \note Since Qt 4.6.1 QHostInfo is using multiple threads for DNS lookup
+    instead of one dedicated DNS thread. This improves performance,
+    but also changes the order of signal emissions when using lookupHost()
+    compared to previous versions of Qt.
+    \note Since Qt 4.6.3 QHostInfo is using a small internal 60 second DNS cache
+    for performance improvements.
+
     \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492}
 */
 
