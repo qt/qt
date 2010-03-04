@@ -799,10 +799,13 @@ void QDeclarativeListViewPrivate::createHighlight()
         if (item) {
             item->setParent(q->viewport());
             highlight = new FxListItem(item, q);
-            if (orient == QDeclarativeListView::Vertical)
-                highlight->item->setHeight(currentItem->item->height());
-            else
-                highlight->item->setWidth(currentItem->item->width());
+            if (currentItem && autoHighlight) {
+                if (orient == QDeclarativeListView::Vertical) {
+                    highlight->item->setHeight(currentItem->item->height());
+                } else {
+                    highlight->item->setWidth(currentItem->item->width());
+                }
+            }
             const QLatin1String posProp(orient == QDeclarativeListView::Vertical ? "y" : "x");
             highlightPosAnimator = new QDeclarativeEaseFollow(q);
             highlightPosAnimator->setTarget(QDeclarativeProperty(highlight->item, posProp));
