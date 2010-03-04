@@ -236,6 +236,11 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         qtObject.setProperty(QLatin1String("tint"), newFunction(QDeclarativeEnginePrivate::tint, 2));
     }
 
+    //date/time formatting
+    qtObject.setProperty(QLatin1String("formatDate"),newFunction(QDeclarativeEnginePrivate::formatDate, 2));
+    qtObject.setProperty(QLatin1String("formatTime"),newFunction(QDeclarativeEnginePrivate::formatTime, 2));
+    qtObject.setProperty(QLatin1String("formatDateTime"),newFunction(QDeclarativeEnginePrivate::formatDateTime, 2));
+
     //misc methods
     qtObject.setProperty(QLatin1String("closestAngle"), newFunction(QDeclarativeEnginePrivate::closestAngle, 2));
     qtObject.setProperty(QLatin1String("playSound"), newFunction(QDeclarativeEnginePrivate::playSound, 1));
@@ -934,6 +939,66 @@ QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngi
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
     return engine->newVariant(qVariantFromValue(QVector3D(x, y, z)));
+}
+
+QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QDate date = ctxt->argument(0).toDateTime().date();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toInteger());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
+QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QTime date = ctxt->argument(0).toDateTime().time();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toInteger());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
+QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QDateTime date = ctxt->argument(0).toDateTime();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toInteger());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
 }
 
 QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine *engine)

@@ -87,6 +87,82 @@ This function returns a Point with the specified \c x and \c y coordinates.
 This function returns as Size with the specified \c width and \c height.
 \section3 Qt.vector3d(real x, real y, real z)
 This function returns a Vector3D with the specified \c x, \c y and \c z.
+
+\section2 Formatters
+The Qt object contains several functions for formatting dates and times.
+
+\section3 Qt.formatDate(datetime date, variant format)
+This function returns the string representation of \c date, formatted according to \c format.
+\section3 Qt.formatTime(datetime time, variant format)
+This function returns the string representation of \c time, formatted according to \c format.
+\section3 Qt.formatDateTime(datetime dateTime, variant format)
+This function returns the string representation of \c dateTime, formatted according to \c format.
+
+\c format for the above formatting functions can be specified as follows.
+
+    These expressions may be used for the date:
+
+    \table
+    \header \i Expression \i Output
+    \row \i d \i the day as number without a leading zero (1 to 31)
+    \row \i dd \i the day as number with a leading zero (01 to 31)
+    \row \i ddd
+            \i the abbreviated localized day name (e.g. 'Mon' to 'Sun').
+            Uses QDate::shortDayName().
+    \row \i dddd
+            \i the long localized day name (e.g. 'Monday' to 'Qt::Sunday').
+            Uses QDate::longDayName().
+    \row \i M \i the month as number without a leading zero (1-12)
+    \row \i MM \i the month as number with a leading zero (01-12)
+    \row \i MMM
+            \i the abbreviated localized month name (e.g. 'Jan' to 'Dec').
+            Uses QDate::shortMonthName().
+    \row \i MMMM
+            \i the long localized month name (e.g. 'January' to 'December').
+            Uses QDate::longMonthName().
+    \row \i yy \i the year as two digit number (00-99)
+    \row \i yyyy \i the year as four digit number
+    \endtable
+
+    These expressions may be used for the time:
+
+    \table
+    \header \i Expression \i Output
+    \row \i h
+         \i the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+    \row \i hh
+         \i the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \i m \i the minute without a leading zero (0 to 59)
+    \row \i mm \i the minute with a leading zero (00 to 59)
+    \row \i s \i the second without a leading zero (0 to 59)
+    \row \i ss \i the second with a leading zero (00 to 59)
+    \row \i z \i the milliseconds without leading zeroes (0 to 999)
+    \row \i zzz \i the milliseconds with leading zeroes (000 to 999)
+    \row \i AP
+            \i use AM/PM display. \e AP will be replaced by either "AM" or "PM".
+    \row \i ap
+            \i use am/pm display. \e ap will be replaced by either "am" or "pm".
+    \endtable
+
+    All other input characters will be ignored. Any sequence of characters that
+    are enclosed in singlequotes will be treated as text and not be used as an
+    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    in the output.
+
+    Example format strings (assumed that the date and time is 21 May 2001
+    14:13:09):
+
+    \table
+    \header \i Format       \i Result
+    \row \i dd.MM.yyyy      \i 21.05.2001
+    \row \i ddd MMMM d yy   \i Tue May 21 01
+    \row \i hh:mm:ss.zzz    \i 14:13:09.042
+    \row \i h:m:s ap        \i 2:13:9 pm
+    \endtable
+
+If no format is specified the locale's short format is used. Alternatively, you can specify
+\c Qt.DefaultLocaleLongDate to get the locale's long format.
+
 \section2 Functions
 The Qt object also contains the following miscellaneous functions which expose Qt functionality for use in QML.
 

@@ -327,6 +327,10 @@ public:
     static QScriptValue consoleLog(QScriptContext*, QScriptEngine*);
     static QScriptValue quit(QScriptContext*, QScriptEngine*);
 
+    static QScriptValue formatDate(QScriptContext*, QScriptEngine*);
+    static QScriptValue formatTime(QScriptContext*, QScriptEngine*);
+    static QScriptValue formatDateTime(QScriptContext*, QScriptEngine*);
+
     static QScriptEngine *getScriptEngine(QDeclarativeEngine *e) { return &e->d_func()->scriptEngine; }
     static QDeclarativeEngine *getEngine(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p->q_func(); }
     static QDeclarativeEnginePrivate *get(QDeclarativeEngine *e) { return e->d_func(); }
