@@ -43,7 +43,11 @@
   config.cpp
 */
 
-#include <QtCore>
+#include <QDir>
+#include <QVariant>
+#include <QFile>
+#include <QTemporaryFile>
+#include <QTextStream>
 
 #include "archiveextractor.h"
 #include "config.h"

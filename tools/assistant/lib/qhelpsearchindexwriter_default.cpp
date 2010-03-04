@@ -191,7 +191,7 @@ void QHelpSearchIndexWriter::updateIndex(const QString &collectionFile,
     this->m_collectionFile = collectionFile;
     this->m_indexFilesFolder = indexFilesFolder;
 
-    start(QThread::NormalPriority);
+    start(QThread::LowestPriority);
 }
 
 void QHelpSearchIndexWriter::run()
