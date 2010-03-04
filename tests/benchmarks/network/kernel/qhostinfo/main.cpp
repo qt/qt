@@ -48,9 +48,14 @@
 #include <qtest.h>
 #include <qtesteventloop.h>
 
+#include "private/qhostinfo_p.h"
+
 class tst_qhostinfo : public QObject
 {
     Q_OBJECT
+public slots:
+    void initTestCase();
+    void init();
 private slots:
     void lookupSpeed();
 };
@@ -70,14 +75,38 @@ public slots:
     }
 };
 
+void tst_qhostinfo::initTestCase()
+{
+    // run each testcase with and without cache enabled
+    QTest::addColumn<bool>("cache");
+    QTest::newRow("WithCache") << true;
+    QTest::newRow("WithoutCache") << false;
+}
+
+void tst_qhostinfo::init()
+{
+    // delete the cache so inidividual testcase results are independant from each other
+    qt_qhostinfo_clear_cache();
+
+    QFETCH_GLOBAL(bool, cache);
+    qt_qhostinfo_enable_cache(cache);
+}
+
+
 void tst_qhostinfo::lookupSpeed()
 {
+    QFETCH_GLOBAL(bool, cache);
+    qDebug() << "Cache enabled:" << cache;
+
     QStringList hostnameList;
     hostnameList << "www.ovi.com" << "www.nokia.com" << "qt.nokia.com" << "www.trolltech.com" << "troll.no"
             << "www.qtcentre.org" << "forum.nokia.com" << "www.forum.nokia.com" << "wiki.forum.nokia.com"
             << "www.nokia.no" << "nokia.de" << "127.0.0.1" << "----";
     // also add some duplicates:
     hostnameList << "www.nokia.com" << "127.0.0.1" << "www.trolltech.com";
+    // and some more
+    hostnameList << hostnameList;
+
     const int COUNT = hostnameList.size();
 
     SignalReceiver receiver(COUNT);
