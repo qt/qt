@@ -52,6 +52,7 @@
 #include <qdeclarativestringconverters_p.h>
 #include <qdeclarativeglobal_p.h>
 #include <qdeclarativemetatype_p.h>
+#include <qdeclarativevaluetype_p.h>
 #include <qdeclarativeproperty_p.h>
 
 #include <qvariant.h>
@@ -110,7 +111,7 @@ QDeclarativeAbstractAnimation::QDeclarativeAbstractAnimation(QDeclarativeAbstrac
     \code
     Rectangle {
         width: 100; height: 100
-        x: NumberAnimation {
+        NumberAnimation on x {
             running: myMouse.pressed
             from: 0; to: 100
         }
@@ -310,7 +311,7 @@ void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool f)
 
     \code
     Rectangle {
-        rotation: NumberAnimation { running: true; repeat: true; from: 0 to: 360 }
+        NumberAnimation on rotation { running: true; repeat: true; from: 0 to: 360 }
     }
     \endcode
 */
@@ -412,7 +413,7 @@ void QDeclarativeAbstractAnimation::resume()
     no further influence on property values.  In this example animation
     \code
     Rectangle {
-        x: NumberAnimation { from: 0; to: 100; duration: 500 }
+        NumberAnimation on x { from: 0; to: 100; duration: 500 }
     }
     \endcode
     was stopped at time 250ms, the \c x property will have a value of 50.
@@ -450,7 +451,7 @@ void QDeclarativeAbstractAnimation::restart()
     its end.  In the following example,
     \code
     Rectangle {
-        x: NumberAnimation { from: 0; to: 100; duration: 500 }
+        NumberAnimation on x { from: 0; to: 100; duration: 500 }
     }
     \endcode
     calling \c stop() at time 250ms will result in the \c x property having
@@ -1292,7 +1293,7 @@ QDeclarativeVector3dAnimation::QDeclarativeVector3dAnimation(QObject *parent)
     Q_D(QDeclarativePropertyAnimation);
     d->interpolatorType = QMetaType::QVector3D;
     d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
-	d->defaultToInterpolatorType = true;
+    d->defaultToInterpolatorType = true;
 }
 
 QDeclarativeVector3dAnimation::~QDeclarativeVector3dAnimation()
@@ -1573,7 +1574,8 @@ QDeclarativeSequentialAnimation::QDeclarativeSequentialAnimation(QObject *parent
     QDeclarativeAnimationGroup(parent)
 {
     Q_D(QDeclarativeAnimationGroup);
-    d->ag = new QSequentialAnimationGroup(this);
+    d->ag = new QSequentialAnimationGroup;
+    QDeclarative_setParent_noEvent(d->ag, this);
 }
 
 QDeclarativeSequentialAnimation::~QDeclarativeSequentialAnimation()
@@ -1638,7 +1640,8 @@ QDeclarativeParallelAnimation::QDeclarativeParallelAnimation(QObject *parent) :
     QDeclarativeAnimationGroup(parent)
 {
     Q_D(QDeclarativeAnimationGroup);
-    d->ag = new QParallelAnimationGroup(this);
+    d->ag = new QParallelAnimationGroup;
+    QDeclarative_setParent_noEvent(d->ag, this);
 }
 
 QDeclarativeParallelAnimation::~QDeclarativeParallelAnimation()
@@ -1708,12 +1711,13 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
         break;
     }
     default:
-        if ((uint)type >= QVariant::UserType) {
+        if (QDeclarativeValueTypeFactory::isValueType((uint)type)) {
+            variant.convert((QVariant::Type)type);
+        } else {
             QDeclarativeMetaType::StringConverter converter = QDeclarativeMetaType::customStringConverter(type);
             if (converter)
                 variant = converter(variant.toString());
-        } else
-            variant.convert((QVariant::Type)type);
+        }
         break;
     }
 }
@@ -1739,7 +1743,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Animate all changes to a rectangle's x property.
     \qml
     Rectangle {
-        x: Behavior { PropertyAnimation {} }
+        Behavior on x { PropertyAnimation {} }
     }
     \endqml
     \o As a property value source
@@ -1747,7 +1751,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Repeatedly animate the rectangle's x property.
     \qml
     Rectangle {
-        x: SequentialAnimation {
+        SequentialAnimation on x {
             repeat: true
             PropertyAnimation { to: 50 }
             PropertyAnimation { to: 0 }
@@ -1797,7 +1801,7 @@ QDeclarativePropertyAnimation::~QDeclarativePropertyAnimation()
 void QDeclarativePropertyAnimationPrivate::init()
 {
     Q_Q(QDeclarativePropertyAnimation);
-    va = new QDeclarativeTimeLineValueAnimator;
+    va = new QDeclarativeBulkValueAnimator;
     QDeclarative_setParent_noEvent(va, q);
 }
 
@@ -2138,8 +2142,8 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
            id: theRect
            width: 100; height: 100
            color: Qt.rgba(0,0,1)
-           x: NumberAnimation { to: 500; repeat: true } //animate theRect's x property
-           y: Behavior { NumberAnimation {} } //animate theRect's y property
+           NumberAnimation on x { to: 500; repeat: true } //animate theRect's x property
+           Behavior on y { NumberAnimation {} } //animate theRect's y property
        }
        \endqml
     \row
@@ -2213,7 +2217,7 @@ QAbstractAnimation *QDeclarativePropertyAnimation::qtAnimation()
     return d->va;
 }
 
-struct PropertyUpdater : public QDeclarativeTimeLineValue
+struct PropertyUpdater : public QDeclarativeBulkValueUpdater
 {
     QDeclarativeStateActions actions;
     int interpolatorType;       //for Number/ColorAnimation
@@ -2223,7 +2227,7 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
     bool fromSourced;
     bool fromDefined;
     bool *wasDeleted;
-    PropertyUpdater() : wasDeleted(0) {}
+    PropertyUpdater() : prevInterpolatorType(0), wasDeleted(0) {}
     ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
     void setValue(qreal v)
     {
@@ -2231,7 +2235,6 @@ struct PropertyUpdater : public QDeclarativeTimeLineValue
         wasDeleted = &deleted;
         if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
             v = 1 - v;
-        QDeclarativeTimeLineValue::setValue(v);
         for (int ii = 0; ii < actions.count(); ++ii) {
             QDeclarativeAction &action = actions[ii];
 

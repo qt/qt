@@ -42,7 +42,7 @@
 #include <qtest.h>
 #include <QDeclarativeEngine>
 #include <QDeclarativeComponent>
-#include <QDeclarativeMetaType>
+#include <private/qdeclarativemetatype_p.h>
 #include <QDebug>
 #include <QGraphicsScene>
 #include <QGraphicsItem>
@@ -339,7 +339,8 @@ void tst_creation::itemtree_data_cpp()
         for (int i = 0; i < 30; ++i) {
             QDeclarativeItem *child = new QDeclarativeItem;
             QDeclarativeGraphics_setParent_noEvent(child,item);
-            item->data()->append(child);
+            QDeclarativeListReference ref(item, "data");
+            ref.append(child);
         }
         delete item;
     }

@@ -1,4 +1,5 @@
 import Qt 4.6
+import org.webkit 1.0
 
 // Note that zooming is better done using zoomFactor and careful
 // control of rendering to avoid excessive re-rendering during

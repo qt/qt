@@ -38,20 +38,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <private/qdeclarativepathview_p.h>
-#include <private/qdeclarativepath_p.h>
-#include <qdeclarativecontext.h>
-#include <qdeclarativeexpression.h>
-#include <qtest.h>
+
+#include <QtTest/QtTest>
+#include <QtDeclarative/qdeclarativeview.h>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
-#include <QtDeclarative/qdeclarativeview.h>
+#include <QtDeclarative/qdeclarativecontext.h>
+#include <QtDeclarative/qdeclarativeexpression.h>
+#include <QtDeclarative/private/qdeclarativepathview_p.h>
+#include <QtDeclarative/private/qdeclarativepath_p.h>
 #include <QtDeclarative/private/qdeclarativetext_p.h>
 #include <QtDeclarative/private/qdeclarativerectangle_p.h>
+#include <QtDeclarative/private/qdeclarativelistmodel_p.h>
+#include <QtDeclarative/private/qdeclarativevaluetype_p.h>
 #include <QAbstractListModel>
 #include <QStringListModel>
 #include <QFile>
-#include <private/qdeclarativevaluetype_p.h>
+
 #include "../../../shared/util.h"
 
 class tst_QDeclarativePathView : public QObject
@@ -69,6 +72,11 @@ private slots:
     void path();
     void pathMoved();
     void resetModel();
+    void propertyChanges();
+    void pathChanges();
+    void componentChanges();
+    void modelChanges();
+
 
 private:
     QDeclarativeView *createView();
@@ -120,7 +128,7 @@ public:
         setRoleNames(roles);
     }
 
-    int rowCount(const QModelIndex &parent=QModelIndex()) const { return list.count(); }
+    int rowCount(const QModelIndex &parent=QModelIndex()) const { Q_UNUSED(parent); return list.count(); }
     QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const {
         QVariant rv;
         if (role == Name)
@@ -465,6 +473,149 @@ void tst_QDeclarativePathView::resetModel()
     }
 }
 
+void tst_QDeclarativePathView::propertyChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QSignalSpy snapPositionSpy(pathView, SIGNAL(snapPositionChanged()));
+    QSignalSpy dragMarginSpy(pathView, SIGNAL(dragMarginChanged()));
+
+    QCOMPARE(pathView->snapPosition(), 0.1);
+    QCOMPARE(pathView->dragMargin(), 5.0);
+
+    pathView->setSnapPosition(0.4);
+    pathView->setDragMargin(20.0);
+
+    QCOMPARE(pathView->snapPosition(), 0.4);
+    QCOMPARE(pathView->dragMargin(), 20.0);
+
+    QCOMPARE(snapPositionSpy.count(), 1);
+    QCOMPARE(dragMarginSpy.count(), 1);
+
+    pathView->setSnapPosition(0.4);
+    pathView->setDragMargin(20.0);
+
+    QCOMPARE(snapPositionSpy.count(), 1);
+    QCOMPARE(dragMarginSpy.count(), 1);
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::pathChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QDeclarativePath *path = canvas->rootObject()->findChild<QDeclarativePath*>("path");
+    QVERIFY(path);
+
+    QSignalSpy startXSpy(path, SIGNAL(startXChanged()));
+    QSignalSpy startYSpy(path, SIGNAL(startYChanged()));
+
+    QCOMPARE(path->startX(), 220.0);
+    QCOMPARE(path->startY(), 200.0);
+
+    path->setStartX(240.0);
+    path->setStartY(220.0);
+
+    QCOMPARE(path->startX(), 240.0);
+    QCOMPARE(path->startY(), 220.0);
+
+    QCOMPARE(startXSpy.count(),1);
+    QCOMPARE(startYSpy.count(),1);
+
+    path->setStartX(240);
+    path->setStartY(220);
+
+    QCOMPARE(startXSpy.count(),1);
+    QCOMPARE(startYSpy.count(),1);
+
+    QDeclarativePath *alternatePath = canvas->rootObject()->findChild<QDeclarativePath*>("alternatePath");
+    QVERIFY(alternatePath);
+
+    QSignalSpy pathSpy(pathView, SIGNAL(pathChanged()));
+
+    QCOMPARE(pathView->path(), path);
+
+    pathView->setPath(alternatePath);
+    QCOMPARE(pathView->path(), alternatePath);
+    QCOMPARE(pathSpy.count(),1);
+
+    pathView->setPath(alternatePath);
+    QCOMPARE(pathSpy.count(),1);
+
+    QDeclarativePathAttribute *pathAttribute = canvas->rootObject()->findChild<QDeclarativePathAttribute*>("pathAttribute");
+    QVERIFY(pathAttribute);
+
+    QSignalSpy nameSpy(pathAttribute, SIGNAL(nameChanged()));
+    QCOMPARE(pathAttribute->name(), QString("opacity"));
+
+    pathAttribute->setName("scale");
+    QCOMPARE(pathAttribute->name(), QString("scale"));
+    QCOMPARE(nameSpy.count(),1);
+
+    pathAttribute->setName("scale");
+    QCOMPARE(nameSpy.count(),1);
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::componentChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QDeclarativeComponent delegateComponent(canvas->engine());
+    delegateComponent.setData("import Qt 4.6; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+
+    QSignalSpy delegateSpy(pathView, SIGNAL(delegateChanged()));
+
+    pathView->setDelegate(&delegateComponent);
+    QCOMPARE(pathView->delegate(), &delegateComponent);
+    QCOMPARE(delegateSpy.count(),1);
+
+    pathView->setDelegate(&delegateComponent);
+    QCOMPARE(delegateSpy.count(),1);
+    delete canvas;
+}
+
+void tst_QDeclarativePathView::modelChanges()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/propertychanges.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QDeclarativeListModel *alternateModel = canvas->rootObject()->findChild<QDeclarativeListModel*>("alternateModel");
+    QVERIFY(alternateModel);
+    QVariant modelVariant = QVariant::fromValue(alternateModel);
+    QSignalSpy modelSpy(pathView, SIGNAL(modelChanged()));
+
+    pathView->setModel(modelVariant);
+    QCOMPARE(pathView->model(), modelVariant);
+    QCOMPARE(modelSpy.count(),1);
+
+    pathView->setModel(modelVariant);
+    QCOMPARE(modelSpy.count(),1);
+
+    pathView->setModel(QVariant());
+    QCOMPARE(modelSpy.count(),2);
+
+    delete canvas;
+}
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
 {

@@ -9,7 +9,7 @@ Rectangle {
         objectName: "MyRect"
         width: 100; height: 100; color: "green"
         x: basex
-        x: Behavior { NumberAnimation { duration: 500; } }
+        Behavior on x { NumberAnimation { duration: 500; } }
     }
     MouseArea {
         id: clicker

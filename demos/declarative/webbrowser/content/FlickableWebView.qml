@@ -1,4 +1,5 @@
 import Qt 4.6
+import org.webkit 1.0
 
 Flickable {
     property alias title: webView.title
@@ -22,6 +23,7 @@ Flickable {
     WebView {
         id: webView
         pixelCacheSize: 4000000
+        transformOrigin: Item.TopLeft
 
         Script {
             function fixUrl(url)

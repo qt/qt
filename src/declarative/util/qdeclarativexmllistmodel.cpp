@@ -647,9 +647,19 @@ void QDeclarativeXmlListModel::setNamespaceDeclarations(const QString &declarati
     This property holds the status of data source loading.  It can be one of:
     \list
     \o Null - no data source has been set
-    \o Ready - nthe data source has been loaded
+    \o Ready - the data source has been loaded
     \o Loading - the data source is currently being loaded
     \o Error - an error occurred while loading the data source
+    \endlist
+
+    Note that a change in the status property does not cause anything to happen
+    (although it reflects what has happened to the XmlListModel internally). If you wish
+    to react to the change in status you need to do it yourself, for example in one
+    of the following ways:
+    \list
+    \o Create a state, so that a state change occurs, e.g. State{name: 'loaded'; when: xmlListModel.status = XmlListModel.Ready;}
+    \o Do something inside the onStatusChanged signal handler, e.g. XmlListModel{id: xmlListModel; onStatusChanged: if(xmlListModel.status == XmlListModel.Ready) console.log('Loaded');}
+    \o Bind to the status variable somewhere, e.g. Text{text: if(xmlListModel.status!=XmlListModel.Ready){'Not Loaded';}else{'Loaded';}}
     \endlist
 
     \sa progress

@@ -23,7 +23,7 @@
          Item {
              anchors.centerIn: parent
              scale: 0.0
-             scale: Behavior { NumberAnimation { easing.type: "InOutQuad"} }
+             Behavior on scale { NumberAnimation { easing.type: "InOutQuad"} }
              id: scaleMe
 
              Rectangle { height: 79; width: 79; id: blackRect;  anchors.centerIn: parent; color: "black"; smooth: true }

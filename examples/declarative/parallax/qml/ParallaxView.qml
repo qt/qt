@@ -25,6 +25,7 @@ Item {
         anchors.fill: parent
         model: VisualItemModel { id: visualModel }
 
+        highlightRangeMode: ListView.StrictlyEnforceRange
         snapMode: ListView.SnapOneItem
     }
 

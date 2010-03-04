@@ -103,8 +103,8 @@ void tst_binding::objectproperty_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("binding");
 
-    QTest::newRow("object.value") << "data/objectproperty.txt" << "object.value";
-    QTest::newRow("object.value + 10") << "data/objectproperty.txt" << "object.value + 10";
+    QTest::newRow("object.value") << SRCDIR "/data/objectproperty.txt" << "object.value";
+    QTest::newRow("object.value + 10") << SRCDIR "/data/objectproperty.txt" << "object.value + 10";
 }
 
 void tst_binding::objectproperty()
@@ -132,13 +132,13 @@ void tst_binding::basicproperty_data()
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("binding");
 
-    QTest::newRow("value") << "data/localproperty.txt" << "value";
-    QTest::newRow("value + 10") << "data/localproperty.txt" << "value + 10";
-    QTest::newRow("value + value + 10") << "data/localproperty.txt" << "value + value + 10";
+    QTest::newRow("value") << SRCDIR "/data/localproperty.txt" << "value";
+    QTest::newRow("value + 10") << SRCDIR "/data/localproperty.txt" << "value + 10";
+    QTest::newRow("value + value + 10") << SRCDIR "/data/localproperty.txt" << "value + value + 10";
 
-    QTest::newRow("MyObject.value") << "data/idproperty.txt" << "MyObject.value";
-    QTest::newRow("MyObject.value + 10") << "data/idproperty.txt" << "MyObject.value + 10";
-    QTest::newRow("MyObject.value + MyObject.value + 10") << "data/idproperty.txt" << "MyObject.value + MyObject.value + 10";
+    QTest::newRow("myObject.value") << SRCDIR "/data/idproperty.txt" << "myObject.value";
+    QTest::newRow("myObject.value + 10") << SRCDIR "/data/idproperty.txt" << "myObject.value + 10";
+    QTest::newRow("myObject.value + myObject.value + 10") << SRCDIR "/data/idproperty.txt" << "myObject.value + myObject.value + 10";
 }
 
 void tst_binding::basicproperty()
