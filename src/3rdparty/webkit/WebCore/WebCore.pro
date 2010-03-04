@@ -8,7 +8,7 @@ symbian: {
     TARGET.CAPABILITY = All -Tcb
     TARGET.UID3 = 0x200267C2
 
-    webkitlibs.sources = QtWebKit.dll
+    webkitlibs.sources = $$QMAKE_LIBDIR_QT/QtWebKit.dll
     webkitlibs.path = /sys/bin
     vendorinfo = \
         "; Localised Vendor name" \
