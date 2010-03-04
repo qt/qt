@@ -117,7 +117,7 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     QVariant value = prop.read(obj);
     rv.value = valueContents(value);
 
-    if (QVariant::Type(prop.userType()) < QVariant::UserType) {
+    if (QDeclarativeValueTypeFactory::isValueType(prop.userType())) {
         rv.type = QDeclarativeObjectProperty::Basic;
     } else if (QDeclarativeMetaType::isQObject(prop.userType()))  {
         rv.type = QDeclarativeObjectProperty::Object;
@@ -131,7 +131,7 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
 QVariant QDeclarativeEngineDebugServer::valueContents(const QVariant &value) const
 {
     int userType = value.userType();
-    if (QVariant::Type(userType) < QVariant::UserType)
+    if (QDeclarativeValueTypeFactory::isValueType(userType))
         return value;
 
     /*

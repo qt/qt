@@ -238,10 +238,10 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
             if (property->flags & QDeclarativePropertyCache::Data::IsFunction) 
                 return; // Not an object property 
 
-            if (ii == (path.count() - 2) && property->propType < (int)QVariant::UserType) {
+            if (ii == (path.count() - 2) && QDeclarativeValueTypeFactory::isValueType(property->propType)) {
                 // We're now at a value type property.  We can use a global valuetypes array as we 
                 // never actually use the objects, just look up their properties.
-                QObject *typeObject = qmlValueTypes()->valueTypes[property->propType];
+                QObject *typeObject = (*qmlValueTypes())[property->propType];
                 if (!typeObject) return; // Not a value type
 
                 int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
@@ -346,7 +346,7 @@ QDeclarativePropertyPrivate::propertyTypeCategory() const
         int type = propertyType();
         if (type == QVariant::Invalid)
             return QDeclarativeProperty::InvalidCategory;
-        else if ((uint)type < QVariant::UserType)
+        else if (QDeclarativeValueTypeFactory::isValueType((uint)type))
             return QDeclarativeProperty::Normal;
         else if (core.flags & QDeclarativePropertyCache::Data::IsQObjectDerived)
             return QDeclarativeProperty::Object;
