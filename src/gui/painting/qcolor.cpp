@@ -537,23 +537,25 @@ void QColor::setNamedColor(const QString &name)
 }
 
 /*!
-   Checks if the \a name is a valid color name. The algorithm used is the same as with
-   \a setNamedColor().
+   \since 4.7
 
-   \return true if the color name is valid, false otherwise.
+   Returns true if the \a name is a valid color name and can
+   be used to construct a valid QColor object, otherwise returns
+   false.
 
+   The algorithm used is the same as with \a setNamedColor().
    \sa setNamedColor()
 */
 bool QColor::isValidColor(const QString &name)
 {
-    return QColor().setColorFromString(name);
+    return !name.isEmpty() && QColor().setColorFromString(name);
 }
 
 bool QColor::setColorFromString(const QString &name)
 {
     if (name.isEmpty()) {
         invalidate();
-        return false;
+        return true;
     }
 
     if (name.startsWith(QLatin1Char('#'))) {

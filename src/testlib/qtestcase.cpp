@@ -877,6 +877,19 @@ int qt_snprintf(char *str, int size, const char *format, ...)
     return res;
 }
 
+/*! \internal
+    Invoke a method of the object without generating warning if the method does not exist
+ */
+static void invokeMethod(QObject *obj, const char *methodName)
+{
+    const QMetaObject *metaObject = obj->metaObject();
+    int funcIndex = metaObject->indexOfMethod(methodName);
+    if (funcIndex >= 0) {
+        QMetaMethod method = metaObject->method(funcIndex);
+        method.invoke(obj, Qt::DirectConnection);
+    }
+}
+
 bool Q_TESTLIB_EXPORT defaultKeyVerbose()
 {
     if (keyVerbose == -1) {
@@ -1213,7 +1226,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
         bool invokeOk;
         do {
             QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
-            QMetaObject::invokeMethod(QTest::currentTestObject, "init");
+            invokeMethod(QTest::currentTestObject, "init()");
             if (QTestResult::skipCurrentTest())
                 break;
 
@@ -1233,7 +1246,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
                 QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
 
             QTestResult::setCurrentTestLocation(QTestResult::CleanupFunc);
-            QMetaObject::invokeMethod(QTest::currentTestObject, "cleanup");
+            invokeMethod(QTest::currentTestObject, "cleanup()");
             QTestResult::setCurrentTestLocation(QTestResult::NoWhere);
 
             // If this test method has a benchmark, repeat until all measurements are
@@ -1300,8 +1313,9 @@ static bool qInvokeTestMethod(const char *slotName, const char *data=0)
 
         if (curGlobalDataIndex == 0) {
             QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
-            QTest::qt_snprintf(member, 512, "%s_data", slot);
-            QMetaObject::invokeMethod(QTest::currentTestObject, member, Qt::DirectConnection);
+            QTest::qt_snprintf(member, 512, "%s_data()", slot);
+            invokeMethod(QTest::currentTestObject, member);
+
             // if we encounter a SkipAll in the _data slot, we skip the whole
             // testfunction, no matter how much global data exists
             if (QTestResult::skipCurrentTest()) {
@@ -1466,11 +1480,11 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestResult::setCurrentTestFunction("initTestCase");
     QTestResult::setCurrentTestLocation(QTestResult::DataFunc);
     QTestTable::globalTestTable();
-    QMetaObject::invokeMethod(testObject, "initTestCase_data", Qt::DirectConnection);
+    invokeMethod(testObject, "initTestCase_data()");
 
     if (!QTestResult::skipCurrentTest() && !QTest::currentTestFailed()) {
         QTestResult::setCurrentTestLocation(QTestResult::InitFunc);
-        QMetaObject::invokeMethod(testObject, "initTestCase");
+        invokeMethod(testObject, "initTestCase()");
 
         // finishedCurrentTestFunction() resets QTestResult::testFailed(), so use a local copy.
         const bool previousFailed = QTestResult::testFailed();
@@ -1498,7 +1512,7 @@ static void qInvokeTestMethods(QObject *testObject)
 
         QTestResult::setSkipCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
-        QMetaObject::invokeMethod(testObject, "cleanupTestCase");
+        invokeMethod(testObject, "cleanupTestCase()");
     }
     QTestResult::finishedCurrentTestFunction();
     QTestResult::setCurrentTestFunction(0);

@@ -3136,11 +3136,11 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         }
     } else if (var == QLatin1String("QMAKE_QMAKE")) {
         if (place[var].isEmpty()) {
-            var = ".BUILTIN." + var;
             if (!Option::qmake_abslocation.isNull())
                 place[var] = QStringList(Option::qmake_abslocation);
             else
-                place[var] = QStringList("qmake");
+                place[var] = QStringList(Option::fixPathToTargetOS(
+                        QLibraryInfo::location(QLibraryInfo::BinariesPath) + "/qmake", false));
         }
     } else if (var == QLatin1String("EPOCROOT")) {
         if (place[var].isEmpty())

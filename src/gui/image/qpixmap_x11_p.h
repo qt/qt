@@ -94,6 +94,11 @@ public:
 
     static Qt::HANDLE createBitmapFromImage(const QImage &image);
 
+    Qt::HANDLE gl_surface;
+#ifndef QT_NO_XRENDER
+    void convertToARGB32(bool preserveContents = true);
+#endif
+
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
 
@@ -105,6 +110,7 @@ private:
     friend class QRasterWindowSurface;
     friend class QGLContextPrivate; // Needs to access xinfo, gl_surface & flags
     friend class QEglContext; // Needs gl_surface
+    friend class QGLContext; // Needs gl_surface
     friend class QX11GLPixmapData; // Needs gl_surface
     friend bool  qt_createEGLSurfaceForPixmap(QPixmapData*, bool); // Needs gl_surface
 
@@ -130,10 +136,6 @@ private:
     Qt::HANDLE picture;
     Qt::HANDLE mask_picture;
     Qt::HANDLE hd2; // sorted in the default display depth
-    Qt::HANDLE gl_surface;
-#ifndef QT_NO_XRENDER
-    void convertToARGB32(bool preserveContents = true);
-#endif
     QPixmap::ShareMode share_mode;
 
     QX11PaintEngine *pengine;

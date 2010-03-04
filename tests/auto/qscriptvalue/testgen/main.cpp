@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     if (argc != 2) {
-        qWarning() << "./prog outputfile";
+        qWarning() << "./prog outputdir";
         exit(1);
     }
 

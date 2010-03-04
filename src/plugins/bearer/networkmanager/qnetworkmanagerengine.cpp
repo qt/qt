@@ -49,7 +49,6 @@
 
 #include <QtCore/qdebug.h>
 
-#include <NetworkManager/NetworkManager.h>
 #include <QtDBus>
 #include <QDBusConnection>
 #include <QDBusError>
@@ -147,7 +146,7 @@ QString QNetworkManagerEngine::getInterfaceFromId(const QString &id)
                 continue;
 
             QNetworkManagerInterfaceDevice device(devices.at(0).path());
-            return device.interface().name();
+            return device.networkInterface().name();
         }
     }
 

@@ -169,6 +169,13 @@ class Generator
                            const QList<RelatedClass> &classes,
                            CodeMarker *marker);
 
+ protected:
+    void appendSortedQmlNames(Text& text,
+                              const Node* base,
+                              const NodeList& subs,
+                              CodeMarker *marker);
+
+ private:
     QString amp;
     QString lt;
     QString gt;
