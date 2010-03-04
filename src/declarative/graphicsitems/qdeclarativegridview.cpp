@@ -52,8 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QHash<QObject*, QDeclarativeGridViewAttached*> QDeclarativeGridViewAttached::attachedProperties;
-
 
 //----------------------------------------------------------------------------
 
@@ -61,8 +59,9 @@ class FxGridItem
 {
 public:
     FxGridItem(QDeclarativeItem *i, QDeclarativeGridView *v) : item(i), view(v) {
-        attached = QDeclarativeGridViewAttached::properties(item);
-        attached->m_view = view;
+        attached = static_cast<QDeclarativeGridViewAttached*>(qmlAttachedPropertiesObject<QDeclarativeGridView>(item));
+        if (attached)
+            attached->m_view = view;
     }
     ~FxGridItem() {}
 
@@ -1748,7 +1747,7 @@ void QDeclarativeGridView::refill()
 
 QDeclarativeGridViewAttached *QDeclarativeGridView::qmlAttachedProperties(QObject *obj)
 {
-    return QDeclarativeGridViewAttached::properties(obj);
+    return new QDeclarativeGridViewAttached(obj);
 }
 
 QT_END_NAMESPACE
