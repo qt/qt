@@ -47,6 +47,8 @@
 
 #include "command.h"
 
+#include <stdlib.h>
+
 QT_BEGIN_NAMESPACE
 
 void executeCommand(const Location& location,
@@ -69,6 +71,12 @@ void executeCommand(const Location& location,
     if (space != -1)
 	toolName.truncate(space);
 
+#ifdef QT_BOOTSTRAPPED
+    int status = system(qPrintable(actualCommand));
+    int exitCode = WEXITSTATUS(status);
+    if (status == -1 || exitCode != EXIT_SUCCESS)
+        location.fatal(QString("Error executing '$1': $2").arg(toolName).arg(exitCode));
+#else
     QProcess process;
     process.start(QLatin1String("sh"),
         QStringList() << QLatin1String("-c") << actualCommand);
@@ -89,6 +97,7 @@ void executeCommand(const Location& location,
                        tr("The tool was invoked like this:\n%1\n"
                           "It emitted these errors:\n%2")
                        .arg(actualCommand).arg(errors));
+#endif
 }
 
 QT_END_NAMESPACE

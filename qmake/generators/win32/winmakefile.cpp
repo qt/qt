@@ -591,8 +591,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     writeIncPart(t);
     writeLibsPart(t);
 
-    t << "QMAKE         = " << (project->isEmpty("QMAKE_QMAKE") ? QString("qmake") :
-                              Option::fixPathToTargetOS(var("QMAKE_QMAKE"), false)) << endl;
+    t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
     t << "IDC           = " << (project->isEmpty("QMAKE_IDC") ? QString("idc") :
                               Option::fixPathToTargetOS(var("QMAKE_IDC"), false)) << endl;
     t << "IDL           = " << (project->isEmpty("QMAKE_IDL") ? QString("midl") :

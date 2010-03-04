@@ -10,4 +10,3 @@ INCLUDEPATH += .
 # Input
 SOURCES += generate_keywords.cpp
 CONFIG += qt create_prl link_prl
-OBJECTS_DIR=.obj/debug-shared

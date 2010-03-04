@@ -156,8 +156,6 @@ void NmakeMakefileGenerator::init()
         MakefileGenerator::init();
         if(project->values("MAKEFILE").isEmpty())
             project->values("MAKEFILE").append("Makefile");
-        if(project->values("QMAKE_QMAKE").isEmpty())
-            project->values("QMAKE_QMAKE").append("qmake");
         if(project->isEmpty("QMAKE_COPY_FILE"))
             project->values("QMAKE_COPY_FILE").append("$(COPY)");
         if(project->isEmpty("QMAKE_COPY_DIR"))

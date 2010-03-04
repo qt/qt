@@ -10,8 +10,6 @@ INCLUDEPATH += .
 # Input
 SOURCES += waitconditions.cpp
 CONFIG += qt warn_on create_prl link_prl console
-OBJECTS_DIR=obj/debug-shared
-MOC_DIR=moc/debug-shared
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/threads/waitconditions
