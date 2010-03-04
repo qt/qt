@@ -91,33 +91,33 @@ class Q_DECLARATIVE_EXPORT QDeclarativeListView : public QDeclarativeFlickable
     Q_OBJECT
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeListView)
 
-    Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QDeclarativeItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
-    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight)
-    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightChanged)
-    Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
+    Q_PROPERTY(QDeclarativeComponent *highlight READ highlight WRITE setHighlight NOTIFY highlightChanged)
+    Q_PROPERTY(QDeclarativeItem *highlightItem READ highlightItem NOTIFY highlightItemChanged)
+    Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem NOTIFY highlightFollowsCurrentItemChanged)
     Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
     Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
 
-    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin)
-    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd)
-    Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode)
+    Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin NOTIFY preferredHighlightBeginChanged)
+    Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd NOTIFY preferredHighlightEndChanged)
+    Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode NOTIFY highlightRangeModeChanged)
 
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
-    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
-    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
+    Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled NOTIFY keyNavigationWrapsChanged)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer NOTIFY cacheBufferChanged)
     Q_PROPERTY(QDeclarativeViewSection *section READ sectionCriteria CONSTANT)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
 
-    Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode)
+    Q_PROPERTY(SnapMode snapMode READ snapMode WRITE setSnapMode NOTIFY snapModeChanged)
 
-    Q_PROPERTY(QDeclarativeComponent *header READ header WRITE setHeader)
-    Q_PROPERTY(QDeclarativeComponent *footer READ footer WRITE setFooter)
+    Q_PROPERTY(QDeclarativeComponent *header READ header WRITE setHeader NOTIFY headerChanged)
+    Q_PROPERTY(QDeclarativeComponent *footer READ footer WRITE setFooter NOTIFY footerChanged)
 
     Q_ENUMS(HighlightRangeMode)
     Q_ENUMS(Orientation)
@@ -205,6 +205,18 @@ Q_SIGNALS:
     void highlightMoveSpeedChanged();
     void highlightResizeSpeedChanged();
     void highlightChanged();
+    void highlightItemChanged();
+    void modelChanged();
+    void delegateChanged();
+    void highlightFollowsCurrentItemChanged();
+    void preferredHighlightBeginChanged();
+    void preferredHighlightEndChanged();
+    void highlightRangeModeChanged();
+    void keyNavigationWrapsChanged();
+    void cacheBufferChanged();
+    void snapModeChanged();
+    void headerChanged();
+    void footerChanged();
 
 protected:
     virtual void viewportMoved();

@@ -289,12 +289,14 @@ class QDeclarativeKeyNavigationAttachedPrivate : public QObjectPrivate
 {
 public:
     QDeclarativeKeyNavigationAttachedPrivate()
-        : QObjectPrivate(), left(0), right(0), up(0), down(0) {}
+        : QObjectPrivate(), left(0), right(0), up(0), down(0), tab(0), backtab(0) {}
 
     QDeclarativeItem *left;
     QDeclarativeItem *right;
     QDeclarativeItem *up;
     QDeclarativeItem *down;
+    QDeclarativeItem *tab;
+    QDeclarativeItem *backtab;
 };
 
 class QDeclarativeKeyNavigationAttached : public QObject, public QDeclarativeItemKeyFilter
@@ -306,6 +308,9 @@ class QDeclarativeKeyNavigationAttached : public QObject, public QDeclarativeIte
     Q_PROPERTY(QDeclarativeItem *right READ right WRITE setRight NOTIFY changed)
     Q_PROPERTY(QDeclarativeItem *up READ up WRITE setUp NOTIFY changed)
     Q_PROPERTY(QDeclarativeItem *down READ down WRITE setDown NOTIFY changed)
+    Q_PROPERTY(QDeclarativeItem *tab READ tab WRITE setTab NOTIFY changed)
+    Q_PROPERTY(QDeclarativeItem *backtab READ backtab WRITE setBacktab NOTIFY changed)
+
 public:
     QDeclarativeKeyNavigationAttached(QObject * = 0);
 
@@ -317,6 +322,10 @@ public:
     void setUp(QDeclarativeItem *);
     QDeclarativeItem *down() const;
     void setDown(QDeclarativeItem *);
+    QDeclarativeItem *tab() const;
+    void setTab(QDeclarativeItem *);
+    QDeclarativeItem *backtab() const;
+    void setBacktab(QDeclarativeItem *);
 
     static QDeclarativeKeyNavigationAttached *qmlAttachedProperties(QObject *);
 
@@ -407,6 +416,8 @@ Q_SIGNALS:
     void rightPressed(QDeclarativeKeyEvent *event);
     void upPressed(QDeclarativeKeyEvent *event);
     void downPressed(QDeclarativeKeyEvent *event);
+    void tabPressed(QDeclarativeKeyEvent *event);
+    void backtabPressed(QDeclarativeKeyEvent *event);
 
     void asteriskPressed(QDeclarativeKeyEvent *event);
     void numberSignPressed(QDeclarativeKeyEvent *event);

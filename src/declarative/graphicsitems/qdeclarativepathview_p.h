@@ -56,15 +56,15 @@ class Q_DECLARATIVE_EXPORT QDeclarativePathView : public QDeclarativeItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QDeclarativePath *path READ path WRITE setPath)
+    Q_PROPERTY(QVariant model READ model WRITE setModel NOTIFY modelChanged)
+    Q_PROPERTY(QDeclarativePath *path READ path WRITE setPath NOTIFY pathChanged)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(qreal offset READ offset WRITE setOffset NOTIFY offsetChanged)
-    Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition)
-    Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin)
+    Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition NOTIFY snapPositionChanged)
+    Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin NOTIFY dragMarginChanged)
     Q_PROPERTY(int count READ count)
-    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate)
-    Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount)
+    Q_PROPERTY(QDeclarativeComponent *delegate READ delegate WRITE setDelegate NOTIFY delegateChanged)
+    Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount NOTIFY pathItemCountChanged)
 
 public:
     QDeclarativePathView(QDeclarativeItem *parent=0);
@@ -101,6 +101,12 @@ public:
 Q_SIGNALS:
     void currentIndexChanged();
     void offsetChanged();
+    void modelChanged();
+    void pathChanged();
+    void dragMarginChanged();
+    void snapPositionChanged();
+    void delegateChanged();
+    void pathItemCountChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

@@ -663,15 +663,17 @@ void tst_qdeclarativetextedit::delegateLoading()
     QVERIFY(delegate);
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail1.qml"));
     view->show();
+    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
     view->setFocus();
     QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
     view->setSource(QUrl("http://localhost:42332/cursorHttpTestFail2.qml"));
     view->show();
+    QTRY_VERIFY(view->status()==QDeclarativeView::Error);
     view->setFocus();
     QTRY_VERIFY(!view->rootObject()); // there is fail item inside this test
-    //ErrorB should get a component which is ready but component.create() returns null
+    //A test should be added here with a component which is ready but component.create() returns null
     //Not sure how to accomplish this with QDeclarativeTextEdits cursor delegate
-    //###This could be a case of overzealous defensive programming
+    //###This was only needed for code coverage, and could be a case of overzealous defensive programming
     //delegate = view->rootObject()->findChild<QDeclarativeItem*>("delegateErrorB");
     //QVERIFY(!delegate);
 }

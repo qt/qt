@@ -45,13 +45,12 @@
 #include "qdeclarativeflickable_p_p.h"
 
 #include <qdeclarativeeasefollow_p.h>
+#include <qdeclarativeguard_p.h>
 
 #include <qlistmodelinterface_p.h>
 #include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
-
-QHash<QObject*, QDeclarativeGridViewAttached*> QDeclarativeGridViewAttached::attachedProperties;
 
 
 //----------------------------------------------------------------------------
@@ -60,8 +59,9 @@ class FxGridItem
 {
 public:
     FxGridItem(QDeclarativeItem *i, QDeclarativeGridView *v) : item(i), view(v) {
-        attached = QDeclarativeGridViewAttached::properties(item);
-        attached->m_view = view;
+        attached = static_cast<QDeclarativeGridViewAttached*>(qmlAttachedPropertiesObject<QDeclarativeGridView>(item));
+        if (attached)
+            attached->m_view = view;
     }
     ~FxGridItem() {}
 
@@ -251,7 +251,7 @@ public:
         }
     }
 
-    QGuard<QDeclarativeVisualModel> model;
+    QDeclarativeGuard<QDeclarativeVisualModel> model;
     QVariant modelVariant;
     QList<FxGridItem*> visibleItems;
     QHash<QDeclarativeItem*,int> unrequestedItems;
@@ -618,7 +618,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
         }
     }
     if (changed)
-        emit q->highlightChanged();
+        emit q->highlightItemChanged();
 }
 
 void QDeclarativeGridViewPrivate::updateHighlight()
@@ -696,6 +696,11 @@ void QDeclarativeGridViewPrivate::updateCurrent(int modelIndex)
 
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
+
+    Note that views do not enable \e clip automatically.  If the view
+    is not clipped by another item or the screen, it will be necessary
+    to set \e {clip: true} in order to have the out of view items clipped
+    nicely.
 */
 QDeclarativeGridView::QDeclarativeGridView(QDeclarativeItem *parent)
     : QDeclarativeFlickable(*(new QDeclarativeGridViewPrivate), parent)
@@ -743,7 +748,7 @@ QDeclarativeGridView::~QDeclarativeGridView()
         id: myDelegate
         Item {
             id: wrapper
-            GridView.onRemove: SequentialAnimation {
+            SequentialAnimation on GridView.onRemove {
                 PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: true }
                 NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
                 PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: false }
@@ -784,6 +789,8 @@ QVariant QDeclarativeGridView::model() const
 void QDeclarativeGridView::setModel(const QVariant &model)
 {
     Q_D(QDeclarativeGridView);
+    if (d->modelVariant == model)
+        return;
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -828,6 +835,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         emit countChanged();
     }
+    emit modelChanged();
 }
 
 /*!
@@ -871,6 +879,7 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
         }
+        emit delegateChanged();
     }
 }
 
@@ -966,6 +975,7 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
     if (highlight != d->highlightComponent) {
         d->highlightComponent = highlight;
         d->updateCurrent(d->currentIndex);
+        emit highlightChanged();
     }
 }
 
@@ -983,8 +993,8 @@ void QDeclarativeGridView::setHighlight(QDeclarativeComponent *highlight)
       id: myHighlight
       Rectangle {
           id: wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60
-          y: SpringFollow { source: Wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
-          x: SpringFollow { source: Wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
+          SpringFollow on y { source: Wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
+          SpringFollow on x { source: Wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
       }
   }
   \endcode
@@ -1039,6 +1049,7 @@ void QDeclarativeGridView::setFlow(Flow flow)
         d->updateGrid();
         refill();
         d->updateCurrent(d->currentIndex);
+        emit flowChanged();
     }
 }
 
@@ -1058,7 +1069,10 @@ bool QDeclarativeGridView::isWrapEnabled() const
 void QDeclarativeGridView::setWrapEnabled(bool wrap)
 {
     Q_D(QDeclarativeGridView);
+    if (d->wrap == wrap)
+        return;
     d->wrap = wrap;
+    emit keyNavigationWrapsChanged();
 }
 
 /*!
@@ -1082,6 +1096,7 @@ void QDeclarativeGridView::setCacheBuffer(int buffer)
         d->buffer = buffer;
         if (isComponentComplete())
             refill();
+        emit cacheBufferChanged();
     }
 }
 
@@ -1325,6 +1340,18 @@ void QDeclarativeGridView::moveCurrentIndexRight()
     }
 }
 
+/*!
+    \qmlmethod GridView::positionViewAtIndex(int index)
+
+    Positions the view such that the \a index is at the top (or left for horizontal orientation) of the view.
+    If positioning the view at the index would cause empty space to be displayed at
+    the end of the view, the view will be positioned at the end.
+
+    It is not recommended to use contentX or contentY to position the view
+    at a particular index.  This is unreliable since removing items from the start
+    of the list does not cause all other items to be repositioned.
+    The correct way to bring an item into view is with positionViewAtIndex.
+*/
 void QDeclarativeGridView::positionViewAtIndex(int index)
 {
     Q_D(QDeclarativeGridView);
@@ -1732,7 +1759,7 @@ void QDeclarativeGridView::refill()
 
 QDeclarativeGridViewAttached *QDeclarativeGridView::qmlAttachedProperties(QObject *obj)
 {
-    return QDeclarativeGridViewAttached::properties(obj);
+    return new QDeclarativeGridViewAttached(obj);
 }
 
 QT_END_NAMESPACE

@@ -238,7 +238,8 @@ public:
     QHash<const QMetaObject *, QDeclarativePropertyCache *> propertyCache;
     QDeclarativePropertyCache *cache(QObject *obj) { 
         Q_Q(QDeclarativeEngine);
-        if (!obj || QObjectPrivate::get(obj)->metaObject) return 0;
+        if (!obj || QObjectPrivate::get(obj)->metaObject || 
+            QObjectPrivate::get(obj)->wasDeleted) return 0;
         const QMetaObject *mo = obj->metaObject();
         QDeclarativePropertyCache *rv = propertyCache.value(mo);
         if (!rv) {
@@ -318,13 +319,16 @@ public:
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
     static QScriptValue closestAngle(QScriptContext*, QScriptEngine*);
-    static QScriptValue playSound(QScriptContext*, QScriptEngine*);
     static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
     static QScriptValue md5(QScriptContext*, QScriptEngine*);
     static QScriptValue btoa(QScriptContext*, QScriptEngine*);
     static QScriptValue atob(QScriptContext*, QScriptEngine*);
     static QScriptValue consoleLog(QScriptContext*, QScriptEngine*);
     static QScriptValue quit(QScriptContext*, QScriptEngine*);
+
+    static QScriptValue formatDate(QScriptContext*, QScriptEngine*);
+    static QScriptValue formatTime(QScriptContext*, QScriptEngine*);
+    static QScriptValue formatDateTime(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QDeclarativeEngine *e) { return &e->d_func()->scriptEngine; }
     static QDeclarativeEngine *getEngine(QScriptEngine *e) { return static_cast<QDeclarativeScriptEngine*>(e)->p->q_func(); }

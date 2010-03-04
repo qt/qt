@@ -190,7 +190,6 @@ void tst_examples::examples()
               << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
               << file;
     QProcess p;
-qDebug() << qmlruntime << arguments;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
