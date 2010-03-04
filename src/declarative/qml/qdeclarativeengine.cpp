@@ -243,7 +243,6 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
 
     //misc methods
     qtObject.setProperty(QLatin1String("closestAngle"), newFunction(QDeclarativeEnginePrivate::closestAngle, 2));
-    qtObject.setProperty(QLatin1String("playSound"), newFunction(QDeclarativeEnginePrivate::playSound, 1));
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
     qtObject.setProperty(QLatin1String("md5"),newFunction(QDeclarativeEnginePrivate::md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),newFunction(QDeclarativeEnginePrivate::btoa, 1));
@@ -1103,30 +1102,6 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
         return engine->nullValue();
     color = color.darker();
     return qScriptValueFromValue(engine, qVariantFromValue(color));
-}
-
-QScriptValue QDeclarativeEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *engine)
-{
-    if (ctxt->argumentCount() != 1)
-        return engine->undefinedValue();
-
-    QUrl url(ctxt->argument(0).toString());
-
-    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
-    if (url.isRelative()) {
-        QDeclarativeContext *context = enginePriv->getContext(ctxt);
-        if (!context)
-            return engine->undefinedValue();
-
-        url = context->resolvedUrl(url);
-    }
-
-    if (url.scheme() == QLatin1String("file")) {
-
-        QSound::play(url.toLocalFile());
-
-    }
-    return engine->undefinedValue();
 }
 
 QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)

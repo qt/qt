@@ -67,7 +67,6 @@ private slots:
     void darker();
     void tint();
     void closestAngle();
-    void playSound();
     void openUrlExternally();
     void md5();
     void createComponent();
@@ -278,12 +277,6 @@ void tst_qdeclarativeqt::closestAngle()
     QCOMPARE(qvariant_cast<qreal>(object->property("test7")), 1.11);
 
     delete object;
-}
-
-void tst_qdeclarativeqt::playSound()
-{
-    QEXPECT_FAIL("", "How do we test this?", Abort);
-    QVERIFY(false);
 }
 
 void tst_qdeclarativeqt::openUrlExternally()

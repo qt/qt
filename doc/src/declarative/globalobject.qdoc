@@ -195,9 +195,6 @@ while the following would rotate myItem clockwise from 350 degrees to 370 degree
 NumberAnimation { target: myItem; property: "rotation"; from: 350; to: Qt.closetAngle(350, 10) }
 \endqml
 
-\section3 Qt.playSound(url soundLocation)
-This function plays the audio file located at \c soundLocation. Only .wav files are supported.
-
 \section3 Qt.openUrlExternally(url target)
 This function attempts to open the specified \c target url in an external application, based on the user's desktop preferences. It will return true if it succeeds, and false otherwise.
 
