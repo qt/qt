@@ -12,10 +12,6 @@ WorkerScript {
         worker.sendMessage(value)
     }
 
-    function testSendLiteral(value) {
-        eval('worker.sendMessage(' + value +')')
-    }
-
     function compareLiteralResponse(expected) {
         var e = eval('(' + expected + ')')
         return worker.response == e

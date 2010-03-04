@@ -52,8 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QHash<QObject*, QDeclarativeGridViewAttached*> QDeclarativeGridViewAttached::attachedProperties;
-
 
 //----------------------------------------------------------------------------
 
@@ -61,8 +59,9 @@ class FxGridItem
 {
 public:
     FxGridItem(QDeclarativeItem *i, QDeclarativeGridView *v) : item(i), view(v) {
-        attached = QDeclarativeGridViewAttached::properties(item);
-        attached->m_view = view;
+        attached = static_cast<QDeclarativeGridViewAttached*>(qmlAttachedPropertiesObject<QDeclarativeGridView>(item));
+        if (attached)
+            attached->m_view = view;
     }
     ~FxGridItem() {}
 
@@ -697,6 +696,11 @@ void QDeclarativeGridViewPrivate::updateCurrent(int modelIndex)
 
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
+
+    Note that views do not enable \e clip automatically.  If the view
+    is not clipped by another item or the screen, it will be necessary
+    to set \e {clip: true} in order to have the out of view items clipped
+    nicely.
 */
 QDeclarativeGridView::QDeclarativeGridView(QDeclarativeItem *parent)
     : QDeclarativeFlickable(*(new QDeclarativeGridViewPrivate), parent)
@@ -1336,6 +1340,18 @@ void QDeclarativeGridView::moveCurrentIndexRight()
     }
 }
 
+/*!
+    \qmlmethod GridView::positionViewAtIndex(int index)
+
+    Positions the view such that the \a index is at the top (or left for horizontal orientation) of the view.
+    If positioning the view at the index would cause empty space to be displayed at
+    the end of the view, the view will be positioned at the end.
+
+    It is not recommended to use contentX or contentY to position the view
+    at a particular index.  This is unreliable since removing items from the start
+    of the list does not cause all other items to be repositioned.
+    The correct way to bring an item into view is with positionViewAtIndex.
+*/
 void QDeclarativeGridView::positionViewAtIndex(int index)
 {
     Q_D(QDeclarativeGridView);
@@ -1743,7 +1759,7 @@ void QDeclarativeGridView::refill()
 
 QDeclarativeGridViewAttached *QDeclarativeGridView::qmlAttachedProperties(QObject *obj)
 {
-    return QDeclarativeGridViewAttached::properties(obj);
+    return new QDeclarativeGridViewAttached(obj);
 }
 
 QT_END_NAMESPACE
