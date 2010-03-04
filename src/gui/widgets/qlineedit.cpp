@@ -539,7 +539,7 @@ void QLineEdit::setEchoMode(EchoMode mode)
     if (mode == (EchoMode)d->control->echoMode())
         return;
     Qt::InputMethodHints imHints = inputMethodHints();
-    if (mode == Password) {
+    if (mode == Password || mode == NoEcho) {
         imHints |= Qt::ImhHiddenText;
     } else {
         imHints &= ~Qt::ImhHiddenText;
