@@ -293,6 +293,7 @@ public:
         struct {
             int signalIndex;
             int value;
+            int context;
         } storeSignal;
         struct {
             int signal;
