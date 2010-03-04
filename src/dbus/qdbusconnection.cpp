@@ -491,6 +491,12 @@ bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *rec
     its return value, which will be either of type
     QDBusMessage::ReplyMessage or QDBusMessage::ErrorMessage.
 
+    If no reply is received within \a timeout milliseconds, an automatic
+    error will be delivered indicating the expiration of the call.
+    The default \a timeout is -1, which will be replaced with an
+    implementation-defined value that is suitable for inter-process
+    communications (generally, 25 seconds).
+
     See the QDBusInterface::call() function for a more friendly way
     of placing calls.
 
@@ -526,9 +532,14 @@ QDBusMessage QDBusConnection::call(const QDBusMessage &message, QDBus::CallMode 
     Sends the \a message over this connection and returns
     immediately. This function is suitable for method calls only. It
     returns an object of type QDBusPendingCall which can be used to
-    track the status of the reply. The \a timeout parameter is used to
-    determine when an auto-generated error reply may be emitted and is
-    also the upper limit for waiting in QDBusPendingCall::waitForFinished().
+    track the status of the reply.
+
+    If no reply is received within \a timeout milliseconds, an automatic
+    error will be delivered indicating the expiration of the call. The
+    default \a timeout is -1, which will be replaced with an
+    implementation-defined value that is suitable for inter-process
+    communications (generally, 25 seconds). This timeout is also the
+    upper limit for waiting in QDBusPendingCall::waitForFinished().
 
     See the QDBusInterface::asyncCall() function for a more friendly way
     of placing calls.
