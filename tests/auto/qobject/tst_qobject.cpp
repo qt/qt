@@ -1112,6 +1112,8 @@ void tst_QObject::streamCustomTypes()
     QCOMPARE(instanceCount, 0);
 }
 
+typedef QString CustomString;
+
 class PropertyObject : public QObject
 {
     Q_OBJECT
@@ -1125,6 +1127,7 @@ class PropertyObject : public QObject
     Q_PROPERTY(CustomType* custom READ custom WRITE setCustom)
     Q_PROPERTY(float myFloat READ myFloat WRITE setMyFloat)
     Q_PROPERTY(qreal myQReal READ myQReal WRITE setMyQReal)
+    Q_PROPERTY(CustomString customString READ customString WRITE setCustomString )
 
 public:
     enum Alpha {
@@ -1163,6 +1166,9 @@ public:
     void setMyQReal(qreal value) { m_qreal = value; }
     qreal myQReal() const { return m_qreal; }
 
+    CustomString customString() const { return m_customString; }
+    void setCustomString(const QString &string) { m_customString = string; }
+
 private:
     Alpha m_alpha;
     Priority m_priority;
@@ -1172,6 +1178,7 @@ private:
     CustomType *m_custom;
     float m_float;
     qreal m_qreal;
+    CustomString m_customString;
 };
 
 Q_DECLARE_METATYPE(PropertyObject::Priority)
@@ -1626,6 +1633,15 @@ void tst_QObject::property()
     QCOMPARE(qVariantValue<PropertyObject::Priority>(object.property("priority")), PropertyObject::Low);
     object.setProperty("priority", var);
     QCOMPARE(qVariantValue<PropertyObject::Priority>(object.property("priority")), PropertyObject::High);
+
+    qRegisterMetaType<CustomString>("CustomString");
+    QVERIFY(mo->indexOfProperty("customString") != -1);
+    QCOMPARE(object.property("customString").toString(), QString());
+    object.setCustomString("String1");
+    QCOMPARE(object.property("customString"), QVariant("String1"));
+    QVERIFY(object.setProperty("customString", "String2"));
+    QCOMPARE(object.property("customString"), QVariant("String2"));
+    QVERIFY(!object.setProperty("customString", QVariant()));
 }
 
 void tst_QObject::metamethod()

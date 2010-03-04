@@ -157,6 +157,7 @@ private slots:
     void invokeQueuedMetaMember();
     void invokeCustomTypes();
     void invokeMetaConstructor();
+    void invokeTypedefTypes();
     void qtMetaObjectInheritance();
     void normalizedSignature_data();
     void normalizedSignature();
@@ -598,6 +599,8 @@ struct MyType
     int i1, i2, i3;
 };
 
+typedef QString CustomString;
+
 class QtTestCustomObject: public QObject
 {
     Q_OBJECT
@@ -606,6 +609,9 @@ public:
 
 public slots:
     void sl1(MyType myType);
+
+signals:
+    void sig_custom(const CustomString &string);
 
 public:
     int sum;
@@ -662,6 +668,20 @@ void tst_QMetaObject::invokeMetaConstructor()
         QCOMPARE(obj2->parent(), (QObject*)&obj);
         QVERIFY(qobject_cast<NamespaceWithConstructibleClass::ConstructibleClass*>(obj2) != 0);
     }
+}
+
+void tst_QMetaObject::invokeTypedefTypes()
+{
+    qRegisterMetaType<CustomString>("CustomString");
+    QtTestCustomObject obj;
+    QSignalSpy spy(&obj, SIGNAL(sig_custom(CustomString)));
+
+    QCOMPARE(spy.count(), 0);
+    CustomString arg("hello");
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sig_custom", Q_ARG(CustomString, arg)));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).count(), 1);
+    QCOMPARE(spy.at(0).at(0), QVariant(arg));
 }
 
 void tst_QMetaObject::normalizedSignature_data()

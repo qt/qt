@@ -291,7 +291,7 @@ QSize QCheckBox::sizeHint() const
     QFontMetrics fm = fontMetrics();
     QStyleOptionButton opt;
     initStyleOption(&opt);
-    QSize sz = style()->itemTextRect(fm, QRect(0, 0, 1, 1), Qt::TextShowMnemonic, false,
+    QSize sz = style()->itemTextRect(fm, QRect(), Qt::TextShowMnemonic, false,
                                      text()).size();
     if (!opt.icon.isNull())
         sz = QSize(sz.width() + opt.iconSize.width() + 4, qMax(sz.height(), opt.iconSize.height()));

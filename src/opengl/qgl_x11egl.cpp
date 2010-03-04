@@ -229,7 +229,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     //    QWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface
     //    QGLWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface
     //    QPixmap - yes, create the EGLSurface but store it in QX11PixmapData::gl_surface
-    //    QGLPixelBuffer - no, it creates the surface itself
+    //    QGLPixelBuffer - no, it creates the surface itself and stores it in QGLPixelBufferPrivate::pbuf
 
     if (devType == QInternal::Widget) {
         if (d->eglSurface != EGL_NO_SURFACE)

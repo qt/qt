@@ -523,19 +523,15 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
         QByteArray returnTypeName = method.typeName();
         int rtype = QMetaType::type(returnTypeName);
         if ((rtype == 0) && !returnTypeName.isEmpty()) {
-            if (returnTypeName == "QVariant") {
-                types.append(QScriptMetaType::variant());
-            } else {
-                int enumIndex = indexOfMetaEnum(meta, returnTypeName);
-                if (enumIndex != -1)
-                    types.append(QScriptMetaType::metaEnum(enumIndex, returnTypeName));
-                else
-                    types.append(QScriptMetaType::unresolved(returnTypeName));
-            }
+            int enumIndex = indexOfMetaEnum(meta, returnTypeName);
+            if (enumIndex != -1)
+                types.append(QScriptMetaType::metaEnum(enumIndex, returnTypeName));
+            else
+                types.append(QScriptMetaType::unresolved(returnTypeName));
         } else {
             if (callType == QMetaMethod::Constructor)
                 types.append(QScriptMetaType::metaType(QMetaType::QObjectStar, "QObject*"));
-            else if (returnTypeName == "QVariant")
+            else if (rtype == QMetaType::QVariant)
                 types.append(QScriptMetaType::variant());
             else
                 types.append(QScriptMetaType::metaType(rtype, returnTypeName));
@@ -547,20 +543,15 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
             QByteArray argTypeName = parameterTypeNames.at(i);
             int atype = QMetaType::type(argTypeName);
             if (atype == 0) {
-                if (argTypeName == "QVariant") {
-                    types.append(QScriptMetaType::variant());
-                } else {
-                    int enumIndex = indexOfMetaEnum(meta, argTypeName);
-                    if (enumIndex != -1)
-                        types.append(QScriptMetaType::metaEnum(enumIndex, argTypeName));
-                    else
-                        types.append(QScriptMetaType::unresolved(argTypeName));
-                }
-            } else {
-                if (argTypeName == "QVariant")
-                    types.append(QScriptMetaType::variant());
+                int enumIndex = indexOfMetaEnum(meta, argTypeName);
+                if (enumIndex != -1)
+                    types.append(QScriptMetaType::metaEnum(enumIndex, argTypeName));
                 else
-                    types.append(QScriptMetaType::metaType(atype, argTypeName));
+                    types.append(QScriptMetaType::unresolved(argTypeName));
+            } else if (atype == QMetaType::QVariant) {
+                types.append(QScriptMetaType::variant());
+            } else {
+                types.append(QScriptMetaType::metaType(atype, argTypeName));
             }
         }
 
@@ -2174,14 +2165,12 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
         QByteArray typeName = parameterTypes.at(i);
         int argType = QMetaType::type(parameterTypes.at(i));
         if (!argType) {
-            if (typeName == "QVariant") {
-                actual = QScriptEnginePrivate::jscValueFromVariant(exec, *reinterpret_cast<QVariant*>(arg));
-            } else {
-                qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
-                         "when invoking handler of signal %s::%s",
-                         typeName.constData(), meta->className(), method.signature());
-                actual = JSC::jsUndefined();
-            }
+            qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
+                        "when invoking handler of signal %s::%s",
+                        typeName.constData(), meta->className(), method.signature());
+            actual = JSC::jsUndefined();
+        } else if (argType == QMetaType::QVariant) {
+            actual = QScriptEnginePrivate::jscValueFromVariant(exec, *reinterpret_cast<QVariant*>(arg));
         } else {
             actual = QScriptEnginePrivate::create(exec, argType, arg);
         }
