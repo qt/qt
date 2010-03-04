@@ -1342,7 +1342,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
 
     }  else {
 
-        if (prop->value || prop->values.count() > 1)
+        if (prop->value || prop->values.count() != 1)
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Incorrectly specified signal"));
 
         prop->index = sigIdx;
