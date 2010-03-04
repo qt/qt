@@ -3,8 +3,6 @@ TARGET = qtdemo
 DEMO_DESTDIR = $$QT_BUILD_TREE
 isEmpty(DEMO_DESTDIR):DEMO_DESTDIR=../..
 DESTDIR = $$DEMO_DESTDIR/bin
-OBJECTS_DIR = .obj
-MOC_DIR = .moc
 INSTALLS += target sources
 
 
