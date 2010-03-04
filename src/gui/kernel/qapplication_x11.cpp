@@ -320,9 +320,14 @@ static const char * x11_atomnames = {
     "_XEMBED\0"
     "_XEMBED_INFO\0"
 
+    // Wacom old. (before version 0.10)
     "Wacom Stylus\0"
     "Wacom Cursor\0"
     "Wacom Eraser\0"
+
+    // Tablet
+    "STYLUS\0"
+    "ERASER\0"
 };
 
 Q_GUI_EXPORT QX11Data *qt_x11Data = 0;
@@ -2366,12 +2371,12 @@ void qt_init(QApplicationPrivate *priv, int,
                     gotStylus = true;
                 }
 #else
-                if (devs->type == ATOM(XWacomStylus)) {
+                if (devs->type == ATOM(XWacomStylus) || devs->type == ATOM(XTabletStylus)) {
                     deviceType = QTabletEvent::Stylus;
                     if (wacomDeviceName()->isEmpty())
                         wacomDeviceName()->append(devs->name);
                     gotStylus = true;
-                } else if (devs->type == ATOM(XWacomEraser)) {
+                } else if (devs->type == ATOM(XWacomEraser) || devs->type == ATOM(XTabletEraser)) {
                     deviceType = QTabletEvent::XFreeEraser;
                     gotEraser = true;
                 }

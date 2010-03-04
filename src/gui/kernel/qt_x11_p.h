@@ -675,6 +675,9 @@ struct QX11Data
         XWacomCursor,
         XWacomEraser,
 
+        XTabletStylus,
+        XTabletEraser,
+
         NPredefinedAtoms,
 
         _QT_SETTINGS_TIMESTAMP = NPredefinedAtoms,
