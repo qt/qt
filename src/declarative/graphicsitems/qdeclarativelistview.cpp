@@ -223,7 +223,7 @@ public:
         if (!visibleItems.isEmpty()) {
             pos = (*visibleItems.constBegin())->position();
             if (visibleIndex > 0)
-                pos -= visibleIndex * (averageSize + spacing) - spacing;
+                pos -= visibleIndex * (averageSize + spacing);
         }
         return pos;
     }
@@ -2414,7 +2414,8 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
-        if (d->visibleItems.at(i)->index + 1 == modelIndex) {
+        if (d->visibleItems.at(i)->index + 1 == modelIndex
+            && d->visibleItems.at(i)->endPosition() < d->buffer+d->position()+d->size()-1) {
             // Special case of appending an item to the model.
             modelIndex = d->visibleIndex + d->visibleItems.count();
         } else {
