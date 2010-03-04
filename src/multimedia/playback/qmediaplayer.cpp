@@ -243,10 +243,17 @@ void QMediaPlayerPrivate::_q_playlistDestroyed()
 
 static QMediaService *playerService(QMediaPlayer::Flags flags, QMediaServiceProvider *provider)
 {
-    if (flags && QMediaPlayer::LowLatency)
+    if (flags) {
+        QMediaServiceProviderHint::Features features = 0;
+        if (flags & QMediaPlayer::LowLatency)
+            features |= QMediaServiceProviderHint::LowLatencyPlayback;
+
+        if (flags & QMediaPlayer::StreamPlayback)
+            features |= QMediaServiceProviderHint::StreamPlayback;
+
         return provider->requestService(Q_MEDIASERVICE_MEDIAPLAYER,
-                                        QMediaServiceProviderHint(QMediaServiceProviderHint::LowLatencyPlayback));
-    else
+                                        QMediaServiceProviderHint(features));
+    } else
         return provider->requestService(Q_MEDIASERVICE_MEDIAPLAYER);
 }
 
@@ -945,6 +952,11 @@ QStringList QMediaPlayer::supportedMimeTypes(Flags flags)
             The player is expected to be used with simple audio formats,
             but playback should start without significant delay.
             Such playback service can be used for beeps, ringtones, etc.
+
+    \value StreamPlayback
+            The player is expected to play QIODevice based streams.
+            If passed to QMediaPlayer constructor, the service supporting
+            streams playback will be choosen.
 */
 
 QT_END_NAMESPACE
