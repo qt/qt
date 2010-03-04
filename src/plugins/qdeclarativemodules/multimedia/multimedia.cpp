@@ -47,10 +47,9 @@
 #include "qdeclarativeaudio_p.h"
 
 
+QML_DECLARE_TYPE(QSoundEffect)
 
 QT_BEGIN_NAMESPACE
-
-QML_DECLARE_TYPE(QSoundEffect)
 
 class QMultimediaDeclarativeModule : public QDeclarativeExtensionPlugin
 {
