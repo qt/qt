@@ -1341,24 +1341,26 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     \brief The RotationAnimation element allows you to animate rotations.
 
     RotationAnimation is a specialized PropertyAnimation that gives control
-    over the direction of rotation.
+    over the direction of rotation. By default, it will rotate
+    via the shortest path; for example, a rotation from 20 to 340 degrees will
+    rotation 40 degrees counterclockwise.
 
-    The RotationAnimation in the following example ensures that we always take
-    the shortest rotation path when switching between our states.
+    When used in a transition RotationAnimation will rotate all
+    properties named "rotation" or "angle". You can override this by providing
+    your own properties via \c properties or \c property.
+
+    In the following example we use RotationAnimation to animate the rotation
+    between states via the shortest path.
     \qml
     states: {
         State { name: "180"; PropertyChanges { target: myItem; rotation: 180 } }
-        State { name: "-180"; PropertyChanges { target: myItem; rotation: -180 } }
-        State { name: "180"; PropertyChanges { target: myItem; rotation: 270 } }
+        State { name: "90"; PropertyChanges { target: myItem; rotation: 90 } }
+        State { name: "-90"; PropertyChanges { target: myItem; rotation: -90 } }
     }
     transition: Transition {
-        RotationAnimation { direction: RotationAnimation.Shortest }
+        RotationAnimation { }
     }
     \endqml
-
-    By default, when used in a transition RotationAnimation will rotate all
-    properties named "rotation" or "angle". You can override this by providing
-    your own properties via \c properties or \c property.
 */
 
 /*!
