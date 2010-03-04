@@ -335,7 +335,7 @@ const QString::Null QString::null = { };
   \macro QT_NO_CAST_TO_ASCII
   \relates QString
 
-  disables automatic conversion from QString to ASCII 8-bit strings (char *)
+  disables automatic conversion from QString to 8-bit strings (char *)
 
   \sa QT_NO_CAST_FROM_ASCII, QT_NO_CAST_FROM_BYTEARRAY
 */
@@ -391,10 +391,10 @@ const QString::Null QString::null = { };
     with code values above 65535 are stored using surrogate pairs,
     i.e., two consecutive \l{QChar}s.)
 
-    \l{Unicode} is an international standard that supports most of
-    the writing systems in use today. It is a superset of ASCII and
-    Latin-1 (ISO 8859-1), and all the ASCII/Latin-1 characters are
-    available at the same code positions.
+    \l{Unicode} is an international standard that supports most of the
+    writing systems in use today. It is a superset of US-ASCII (ANSI
+    X3.4-1986) and Latin-1 (ISO 8859-1), and all the US-ASCII/Latin-1
+    characters are available at the same code positions.
 
     Behind the scenes, QString uses \l{implicit sharing}
     (copy-on-write) to reduce memory usage and to avoid the needless
@@ -562,11 +562,13 @@ const QString::Null QString::null = { };
     toLatin1(), toUtf8(), and toLocal8Bit().
 
     \list
-    \o toAscii() returns an ASCII encoded 8-bit string.
+    \o toAscii() returns an 8-bit string encoded using the codec
+       specified by QTextCodec::codecForCStrings (by default, that's
+       Latin 1).
     \o toLatin1() returns a Latin-1 (ISO 8859-1) encoded 8-bit string.
     \o toUtf8() returns a UTF-8 encoded 8-bit string. UTF-8 is a
-       superset of ASCII that supports the entire Unicode character
-       set through multibyte sequences.
+       superset of US-ASCII (ANSI X3.4-1986) that supports the entire
+       Unicode character set through multibyte sequences.
     \o toLocal8Bit() returns an 8-bit string using the system's local
        encoding.
     \endlist
@@ -578,7 +580,7 @@ const QString::Null QString::null = { };
     As mentioned above, QString provides a lot of functions and
     operators that make it easy to interoperate with \c{const char *}
     strings. But this functionality is a double-edged sword: It makes
-    QString more convenient to use if all strings are ASCII or
+    QString more convenient to use if all strings are US-ASCII or
     Latin-1, but there is always the risk that an implicit conversion
     from or to \c{const char *} is done using the wrong 8-bit
     encoding. To minimize these risks, you can turn off these implicit
@@ -586,9 +588,9 @@ const QString::Null QString::null = { };
 
     \list
     \o \c QT_NO_CAST_FROM_ASCII disables automatic conversions from
-       ASCII to Unicode.
+       C string literals and pointers to Unicode.
     \o \c QT_NO_CAST_TO_ASCII disables automatic conversion from QString
-       to ASCII.
+       to C strings.
     \endlist
 
     One way to define these preprocessor symbols globally for your
@@ -837,7 +839,7 @@ int QString::grow(int size)
 
 /*! \fn QString::QString(const char *str)
 
-    Constructs a string initialized with the ASCII string \a str. The
+    Constructs a string initialized with the 8-bit string \a str. The
     given const char pointer is converted to Unicode using the
     fromAscii() function.
 
@@ -1337,8 +1339,9 @@ QString &QString::operator=(const QString &other)
 
     \overload operator=()
 
-    Assigns \a ba to this string. The byte array is converted to
-    Unicode using the fromAscii() function.
+    Assigns \a ba to this string. The byte array is converted to Unicode
+    using the fromAscii() function. This function stops conversion at the
+    first NUL character found, or the end of the \a ba byte array.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2131,7 +2134,8 @@ bool QString::operator==(const QLatin1String &other) const
     \overload operator==()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. This function stops conversion at the
+    first NUL character found, or the end of the \a ba byte array.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2192,7 +2196,8 @@ bool QString::operator<(const QLatin1String &other) const
     \overload operator<()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the \a ba byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2234,7 +2239,8 @@ bool QString::operator<(const QLatin1String &other) const
     \overload operator<=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the \a ba byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2292,7 +2298,8 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator>()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the \a ba byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -2334,7 +2341,8 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator>=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the \a ba byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -2376,7 +2384,8 @@ bool QString::operator>(const QLatin1String &other) const
     \overload operator!=()
 
     The \a other byte array is converted to a QString using the
-    fromAscii() function.
+    fromAscii() function. If any NUL characters ('\0') are embedded
+    in the \a ba byte array, they will be included in the transformation.
 
     You can disable this operator by defining \c QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -3578,11 +3587,14 @@ QByteArray QString::toLatin1() const
 // isn't necessary in the header. See task 177402.
 
 /*!
-    Returns an 8-bit ASCII representation of the string as a QByteArray.
+    Returns an 8-bit representation of the string as a QByteArray.
 
     If a codec has been set using QTextCodec::setCodecForCStrings(),
     it is used to convert Unicode to 8-bit char; otherwise this
     function does the same as toLatin1().
+
+    Note that, despite the name, this function does not necessarily return an US-ASCII
+    (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
 
     \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
@@ -3952,14 +3964,16 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
 /*!
     Returns a QString initialized with the first \a size characters
-    of the 8-bit ASCII string \a str.
+    of the 8-bit string \a str.
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
 
-    If a codec has been set using QTextCodec::setCodecForCStrings(),
-    it is used to convert \a str to Unicode; otherwise this function
-    does the same as fromLatin1().
+    Note that, despite the name, this function actually uses the codec
+    defined by QTextCodec::setCodecForCStrings() to convert \a str to
+    Unicode. Depending on the codec, it may not accept valid US-ASCII (ANSI
+    X3.4-1986) input. If no codec has been set, this function does the same
+    as fromLatin1().
 
     \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
 */
@@ -4399,8 +4413,10 @@ QString& QString::fill(QChar ch, int size)
 
     \overload operator+=()
 
-    Appends the byte array \a ba to this string. The byte array is
-    converted to Unicode using the fromAscii() function.
+    Appends the byte array \a ba to this string. The byte array is converted
+    to Unicode using the fromAscii() function. If any NUL characters ('\0')
+    are embedded in the \a ba byte array, they will be included in the
+    transformation.
 
     You can disable this function by defining \c
     QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -7085,9 +7101,9 @@ void QString::updateProperties() const
     This operator is mostly useful to pass a QString to a function
     that accepts a std::string object.
 
-    If the QString contains non-ASCII Unicode characters, using this
-    operator can lead to loss of information, since the implementation
-    calls toAscii().
+    If the QString contains Unicode characters that the
+    QTextCodec::codecForCStrings() codec cannot handle, using this operator
+    can lead to loss of information.
 
     This operator is only available if Qt is configured with STL
     compatibility enabled.
@@ -7138,7 +7154,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 }
 
 /*! \class QLatin1String
-    \brief The QLatin1String class provides a thin wrapper around an ASCII/Latin-1 encoded string literal.
+    \brief The QLatin1String class provides a thin wrapper around an US-ASCII/Latin-1 encoded string literal.
 
     \ingroup string-processing
     \reentrant
