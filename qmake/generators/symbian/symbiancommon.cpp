@@ -206,7 +206,8 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, Deployment
     // name of application, UID and version
     QString applicationVersion = project->first("VERSION").isEmpty() ? "1,0,0" : project->first("VERSION").replace('.', ',');
     QString sisHeader = "; SIS header: name, uid, version\n#{\"%1\"},(%2),%3\n\n";
-    QString visualTarget = generator->escapeFilePath(generator->fileFixify(project->first("TARGET")));
+    QString visualTarget = generator->escapeFilePath(project->first("TARGET"));
+
     visualTarget = removePathSeparators(visualTarget);
     QString wrapperTarget = visualTarget + " installer";
 
