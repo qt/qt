@@ -70,6 +70,8 @@
 # define SRCDIR ""
 #endif
 
+extern bool isLikelyToBeNfs(int /* handle */);
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -939,6 +941,8 @@ void tst_QFileInfo::fileTimes()
         QEXPECT_FAIL("longfile absolutepath", "Maximum total filepath cannot exceed 256 characters in Symbian", Abort);
 #endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
+        if(isLikelyToBeNfs(file.handle()))
+            QSKIP("This Test doesn't work on NFS", SkipAll);
         QTextStream ts(&file);
         ts << fileName << endl;
     }
