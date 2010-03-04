@@ -2174,14 +2174,12 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
         QByteArray typeName = parameterTypes.at(i);
         int argType = QMetaType::type(parameterTypes.at(i));
         if (!argType) {
-            if (typeName == "QVariant") {
-                actual = QScriptEnginePrivate::jscValueFromVariant(exec, *reinterpret_cast<QVariant*>(arg));
-            } else {
-                qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
-                         "when invoking handler of signal %s::%s",
-                         typeName.constData(), meta->className(), method.signature());
-                actual = JSC::jsUndefined();
-            }
+            qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
+                        "when invoking handler of signal %s::%s",
+                        typeName.constData(), meta->className(), method.signature());
+            actual = JSC::jsUndefined();
+        } else if (argType == QMetaType::QVariant) {
+            actual = QScriptEnginePrivate::jscValueFromVariant(exec, *reinterpret_cast<QVariant*>(arg));
         } else {
             actual = QScriptEnginePrivate::create(exec, argType, arg);
         }
