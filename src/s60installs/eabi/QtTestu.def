@@ -69,4 +69,5 @@ EXPORTS
 	_ZNK9QTestData9dataCountEv @ 68 NONAME
 	_ZTI14QTestEventLoop @ 69 NONAME
 	_ZTV14QTestEventLoop @ 70 NONAME
+	_ZN5QTest18setBenchmarkResultEfNS_16QBenchmarkMetricE @ 71 NONAME
 
