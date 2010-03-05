@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
         id: playSound
         source: "test.wav"
     }
-    MouseRegion {
+    MouseArea {
         id: playArea
         anchors.fill: parent
         onPressed: {

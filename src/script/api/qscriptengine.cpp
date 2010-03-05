@@ -1591,7 +1591,9 @@ QRegExp QScriptEnginePrivate::toRegExp(JSC::ExecState *exec, JSC::JSValue value)
 
 QVariant QScriptEnginePrivate::toVariant(JSC::ExecState *exec, JSC::JSValue value)
 {
-    if (isObject(value)) {
+    if (!value) {
+        return QVariant();
+    } else if (isObject(value)) {
         if (isVariant(value))
             return variantValue(value);
 #ifndef QT_NO_QOBJECT

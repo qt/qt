@@ -149,6 +149,9 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
     eglGetConfigAttrib(display(), config, EGL_BUFFER_SIZE, &eglValue);
     int configBitDepth = eglValue;
 
+    eglGetConfigAttrib(display(), config, EGL_CONFIG_ID, &eglValue);
+    int configId = eglValue;
+
     // See if EGL provided a valid VisualID:
     eglGetConfigAttrib(display(), config, EGL_NATIVE_VISUAL_ID, &eglValue);
     visualId = (VisualID)eglValue;
@@ -170,14 +173,14 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
                     format = XRenderFindVisualFormat(X11->display, chosenVisualInfo->visual);
                     if (!format || (format->type != PictTypeDirect) || (!format->direct.alphaMask)) {
                         qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this is not ARGB",
-                                 (int)visualId, (int)config);
+                                 (int)visualId, configId);
                         visualId = 0;
                     }
                 }
 #endif
             } else {
                 qWarning("Warning: EGL suggested using X visual ID %d (%d bpp) for config %d (%d bpp), but the depths do not match!",
-                         (int)visualId, chosenVisualInfo->depth, (int)config, configBitDepth);
+                         (int)visualId, chosenVisualInfo->depth, configId, configBitDepth);
                 visualId = 0;
             }
         }
@@ -187,9 +190,9 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
     if (visualId) {
 #ifdef QT_DEBUG_X11_VISUAL_SELECTION
         if (configAlphaSize > 0)
-            qDebug("Using ARGB Visual ID %d provided by EGL for config %d", (int)visualId, (int)config);
+            qDebug("Using ARGB Visual ID %d provided by EGL for config %d", (int)visualId, configId);
         else
-            qDebug("Using Opaque Visual ID %d provided by EGL for config %d", (int)visualId, (int)config);
+            qDebug("Using Opaque Visual ID %d provided by EGL for config %d", (int)visualId, configId);
 #endif
         return visualId;
     }
@@ -232,9 +235,9 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
     if (visualId) {
 # ifdef QT_DEBUG_X11_VISUAL_SELECTION
         if (configAlphaSize > 0)
-            qDebug("Using ARGB Visual ID %d provided by XRender for EGL config %d", (int)visualId, (int)config);
+            qDebug("Using ARGB Visual ID %d provided by XRender for EGL config %d", (int)visualId, configId);
         else
-            qDebug("Using Opaque Visual ID %d provided by XRender for EGL config %d", (int)visualId, (int)config);
+            qDebug("Using Opaque Visual ID %d provided by XRender for EGL config %d", (int)visualId, configId);
 # endif // QT_DEBUG_X11_VISUAL_SELECTION
         return visualId;
     }
@@ -263,12 +266,12 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
 
     if (visualId) {
 #ifdef QT_DEBUG_X11_VISUAL_SELECTION
-        qDebug("Using Visual ID %d provided by XGetVisualInfo for EGL config %d", (int)visualId, (int)config);
+        qDebug("Using Visual ID %d provided by XGetVisualInfo for EGL config %d", (int)visualId, configId);
 #endif
         return visualId;
     }
 
-    qWarning("Unable to find an X11 visual which matches EGL config %d", (int)config);
+    qWarning("Unable to find an X11 visual which matches EGL config %d", configId);
     return (VisualID)0;
 }
 

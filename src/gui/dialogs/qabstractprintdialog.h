@@ -65,7 +65,8 @@ public:
     enum PrintRange {
         AllPages,
         Selection,
-        PageRange
+        PageRange,
+        CurrentPage
     };
 
     enum PrintDialogOption {
@@ -75,7 +76,8 @@ public:
         PrintPageRange          = 0x0004,
         PrintShowPageSize       = 0x0008,
         PrintCollateCopies      = 0x0010,
-        DontUseSheet            = 0x0020
+        DontUseSheet            = 0x0020,
+        PrintCurrentPage        = 0x0040
     };
 
     Q_DECLARE_FLAGS(PrintDialogOptions, PrintDialogOption)

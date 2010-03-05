@@ -41,6 +41,8 @@
 
 #include "qdeclarativevaluetype_p.h"
 
+#include "qdeclarativemetatype_p.h"
+
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -48,6 +50,32 @@ QT_BEGIN_NAMESPACE
 #if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
 Q_DECLARE_METATYPE(QEasingCurve);
 #endif
+
+template<typename T>
+int qmlRegisterValueTypeEnums(const char *qmlName)
+{
+    QByteArray name(T::staticMetaObject.className());
+
+    QByteArray pointerName(name + '*');
+
+    QDeclarativePrivate::RegisterType type = {
+        0, 
+
+        qRegisterMetaType<T *>(pointerName.constData()), 0, 0,
+
+        "Qt", 4, 6, qmlName, &T::staticMetaObject,
+
+        0, 0, 
+
+        0, 0, 0,
+
+        0, 0,
+
+        0
+    };
+
+    return QDeclarativePrivate::registerType(type);
+}
 
 QDeclarativeValueTypeFactory::QDeclarativeValueTypeFactory()
 {
@@ -78,6 +106,12 @@ bool QDeclarativeValueTypeFactory::isValueType(int idx)
         return true;
 #endif
     return false;
+}
+
+void QDeclarativeValueTypeFactory::registerValueTypes()
+{
+    qmlRegisterValueTypeEnums<QDeclarativeEasingValueType>("Easing");
+    qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("Font");
 }
 
 QDeclarativeValueType *QDeclarativeValueTypeFactory::operator[](int idx) const

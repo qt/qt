@@ -58,6 +58,8 @@ private slots:
     void keyNavigation();
     void smooth();
     void clip();
+    void mapCoordinates();
+    void mapCoordinates_data();
 
 private:
     template<typename T>
@@ -278,6 +280,8 @@ void tst_QDeclarativeItem::keyNavigation()
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
+
+    delete canvas;
 }
 
 void tst_QDeclarativeItem::smooth()
@@ -301,6 +305,8 @@ void tst_QDeclarativeItem::smooth()
     QCOMPARE(spy.count(),2);
     item->setSmooth(false);
     QCOMPARE(spy.count(),2);
+
+    delete item;
 }
 
 void tst_QDeclarativeItem::clip()
@@ -324,6 +330,66 @@ void tst_QDeclarativeItem::clip()
     QCOMPARE(spy.count(),2);
     item->setClip(false);
     QCOMPARE(spy.count(),2);
+
+    delete item;
+}
+
+void tst_QDeclarativeItem::mapCoordinates()
+{
+    QFETCH(int, x);
+    QFETCH(int, y);
+
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(300, 300);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/mapCoordinates.qml"));
+    canvas->show();
+    qApp->processEvents();
+
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(canvas->rootObject());
+    QVERIFY(root != 0);
+    QDeclarativeItem *a = findItem<QDeclarativeItem>(canvas->rootObject(), "itemA");
+    QVERIFY(a != 0);
+    QDeclarativeItem *b = findItem<QDeclarativeItem>(canvas->rootObject(), "itemB");
+    QVERIFY(b != 0);
+
+    QVariant result;
+
+    QVERIFY(QMetaObject::invokeMethod(root, "mapAToB",
+            Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QGraphicsItem*>(a)->mapToItem(b, x, y));
+
+    QVERIFY(QMetaObject::invokeMethod(root, "mapAFromB",
+            Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QGraphicsItem*>(a)->mapFromItem(b, x, y));
+
+    QVERIFY(QMetaObject::invokeMethod(root, "mapAToNull",
+            Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QGraphicsItem*>(a)->mapToScene(x, y));
+
+    QVERIFY(QMetaObject::invokeMethod(root, "mapAFromNull",
+            Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
+    QCOMPARE(result.value<QPointF>(), qobject_cast<QGraphicsItem*>(a)->mapFromScene(x, y));
+
+    QTest::ignoreMessage(QtWarningMsg, "mapToItem() given argument \"1122\" which is neither null nor an Item");
+    QVERIFY(QMetaObject::invokeMethod(root, "checkMapAToInvalid",
+            Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
+    QVERIFY(result.toBool());
+
+    QTest::ignoreMessage(QtWarningMsg, "mapFromItem() given argument \"1122\" which is neither null nor an Item");
+    QVERIFY(QMetaObject::invokeMethod(root, "checkMapAFromInvalid",
+            Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
+    QVERIFY(result.toBool());
+
+    delete canvas;
+}
+
+void tst_QDeclarativeItem::mapCoordinates_data()
+{
+    QTest::addColumn<int>("x");
+    QTest::addColumn<int>("y");
+
+    for (int i=-20; i<=20; i+=10)
+        QTest::newRow(QTest::toString(i)) << i << i;
 }
 
 template<typename T>
