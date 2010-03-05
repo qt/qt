@@ -1057,14 +1057,7 @@ JSC::JSValue JSC_HOST_CALL QtPropertyFunction::call(
     if (!callee->inherits(&QtPropertyFunction::info))
         return throwError(exec, JSC::TypeError, "callee is not a QtPropertyFunction object");
     QtPropertyFunction *qfun =  static_cast<QtPropertyFunction*>(callee);
-    QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
-    JSC::ExecState *previousFrame = eng_p->currentFrame;
-    eng_p->currentFrame = exec;
-    eng_p->pushContext(exec, thisValue, args, callee);
-    JSC::JSValue result = qfun->execute(eng_p->currentFrame, thisValue, args);
-    eng_p->popContext();
-    eng_p->currentFrame = previousFrame;
-    return result;
+    return qfun->execute(exec, thisValue, args);
 }
 
 JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
@@ -1074,12 +1067,15 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
     JSC::JSValue result = JSC::jsUndefined();
 
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
-    thisValue = engine->toUsableValue(thisValue);
-    QObject *qobject = QScriptEnginePrivate::toQObject(exec, thisValue);
+    JSC::ExecState *previousFrame = engine->currentFrame;
+    engine->currentFrame = exec;
+
+    JSC::JSValue qobjectValue = engine->toUsableValue(thisValue);
+    QObject *qobject = QScriptEnginePrivate::toQObject(exec, qobjectValue);
     while ((!qobject || (qobject->metaObject() != data->meta))
-        && JSC::asObject(thisValue)->prototype().isObject()) {
-        thisValue = JSC::asObject(thisValue)->prototype();
-        qobject = QScriptEnginePrivate::toQObject(exec, thisValue);
+        && JSC::asObject(qobjectValue)->prototype().isObject()) {
+        qobjectValue = JSC::asObject(qobjectValue)->prototype();
+        qobject = QScriptEnginePrivate::toQObject(exec, qobjectValue);
     }
     Q_ASSERT_X(qobject, Q_FUNC_INFO, "this-object must be a QObject");
 
@@ -1091,14 +1087,17 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
             QScriptable *scriptable = scriptableFromQObject(qobject);
             QScriptEngine *oldEngine = 0;
             if (scriptable) {
+                engine->pushContext(exec, thisValue, args, this);
                 oldEngine = QScriptablePrivate::get(scriptable)->engine;
                 QScriptablePrivate::get(scriptable)->engine = QScriptEnginePrivate::get(engine);
             }
 
             QVariant v = prop.read(qobject);
 
-            if (scriptable)
+            if (scriptable) {
                 QScriptablePrivate::get(scriptable)->engine = oldEngine;
+                engine->popContext();
+            }
 
             result = QScriptEnginePrivate::jscValueFromVariant(exec, v);
         }
@@ -1118,17 +1117,21 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
         QScriptable *scriptable = scriptableFromQObject(qobject);
         QScriptEngine *oldEngine = 0;
         if (scriptable) {
+            engine->pushContext(exec, thisValue, args, this);
             oldEngine = QScriptablePrivate::get(scriptable)->engine;
             QScriptablePrivate::get(scriptable)->engine = QScriptEnginePrivate::get(engine);
         }
 
         prop.write(qobject, v);
 
-        if (scriptable)
+        if (scriptable) {
             QScriptablePrivate::get(scriptable)->engine = oldEngine;
+            engine->popContext();
+        }
 
         result = arg;
     }
+    engine->currentFrame = previousFrame;
     return result;
 }
 
