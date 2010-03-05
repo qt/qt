@@ -308,7 +308,7 @@ void tst_QFtp::connectToUnresponsiveHost()
     if (setProxy)
         QSKIP( "This test takes too long if we test with proxies too", SkipSingle );
 
-    QString host = "1.2.3.4";
+    QString host = "192.0.2.42"; // IP out of TEST-NET, should be unreachable
     uint port = 21;
 
     ftp = newFtp();

@@ -213,8 +213,8 @@ void tst_QHostInfo::initTestCase()
 
     // run each testcase with and without test enabled
     QTest::addColumn<bool>("cache");
-    QTest::newRow("WithCache") << false;
-    QTest::newRow("WithoutCache") << true;
+    QTest::newRow("WithCache") << true;
+    QTest::newRow("WithoutCache") << false;
 }
 
 void tst_QHostInfo::init()
@@ -484,7 +484,8 @@ void tst_QHostInfo::cache()
 
     // lookup once, wait in event loop, result should not come directly.
     bool valid = true;
-    QHostInfo result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid);
+    int id = -1;
+    QHostInfo result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(valid == false);
@@ -492,7 +493,7 @@ void tst_QHostInfo::cache()
 
     // loopkup second time, result should come directly
     valid = false;
-    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid);
+    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QVERIFY(valid == true);
     QVERIFY(!result.addresses().isEmpty());
 
@@ -501,7 +502,7 @@ void tst_QHostInfo::cache()
 
     // lookup third time, result should not come directly.
     valid = true;
-    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid);
+    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(valid == false);
