@@ -204,21 +204,36 @@ static void initRasterFallbacksMasks(int *warningMask, int *disableMask)
         { 0, ALL }
     };
 
-    const QStringList warning = QString::fromLatin1(qgetenv("QT_DIRECTFB_WARN_ON_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'));
-    const QStringList disable = QString::fromLatin1(qgetenv("QT_DIRECTFB_DISABLE_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'));
+    QStringList warning = QString::fromLatin1(qgetenv("QT_DIRECTFB_WARN_ON_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
+                                                                                                              QString::SkipEmptyParts);
+    QStringList disable = QString::fromLatin1(qgetenv("QT_DIRECTFB_DISABLE_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
+                                                                                                              QString::SkipEmptyParts);
     *warningMask = 0;
     *disableMask = 0;
     if (!warning.isEmpty() || !disable.isEmpty()) {
         for (int i=0; operations[i].name; ++i) {
             const QString name = QString::fromLatin1(operations[i].name);
-            if (warning.contains(name)) {
+            int idx = warning.indexOf(name);
+            if (idx != -1) {
                 *warningMask |= operations[i].operation;
+                warning.remove(warning.begin() + idx);
             }
-            if (disable.contains(name)) {
+            idx = disable.indexOf(name);
+            if (idx != -1) {
                 *disableMask |= operations[i].operation;
+                disable.remove(disable.begin() + idx);
             }
         }
     }
+    if (!warning.isEmpty()) {
+        qWarning("QDirectFBPaintEngine QT_DIRECTFB_WARN_ON_RASTERFALLBACKS Unknown operation(s): %s",
+                 qPrintable(warning.join(QLatin1String("|"))));
+    }
+    if (!disable.isEmpty()) {
+        qWarning("QDirectFBPaintEngine QT_DIRECTFB_DISABLE_RASTERFALLBACKS Unknown operation(s): %s",
+                 qPrintable(disable.join(QLatin1String("|"))));
+    }
+
 }
 #endif
 
