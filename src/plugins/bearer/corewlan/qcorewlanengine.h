@@ -78,7 +78,9 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    bool getAllScInterfaces();
+    bool getWifiInterfaces();
+
+    bool requiresPolling() const;
 
 private Q_SLOTS:
     void doRequestUpdate();
@@ -86,7 +88,6 @@ private Q_SLOTS:
 private:
     bool isWifiReady(const QString &dev);
     QMap<QString, QString> configurationInterface;
-    QTimer pollTimer;
     QStringList scanForSsids(const QString &interfaceName);
 
     bool isKnownSsid(const QString &interfaceName, const QString &ssid);

@@ -3433,8 +3433,10 @@ void QWidgetPrivate::show_sys()
                 // The window is modally shaddowed, so we need to make
                 // sure that we don't pop in front of the modal window:
                 [window orderFront:window];
-                if (NSWindow *modalWin = qt_mac_window_for(top))
-                    [modalWin orderFront:window];
+                if (!top->testAttribute(Qt::WA_DontShowOnScreen)) {
+                    if (NSWindow *modalWin = qt_mac_window_for(top))
+                        [modalWin orderFront:window];
+                }
             }
 #endif
             if (q->windowType() == Qt::Popup) {
