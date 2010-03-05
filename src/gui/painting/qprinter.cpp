@@ -382,6 +382,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
     \value AllPages All pages should be printed.
     \value Selection Only the selection should be printed.
     \value PageRange The specified page range should be printed.
+    \value CurrentPage Only the current page should be printed.
 
     \sa QAbstractPrintDialog::PrintRange
 */
@@ -571,6 +572,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   \value AllPages All the pages should be printed.
   \value Selection Only the selection should be printed.
   \value PageRange Print according to the from page and to page options.
+  \value CurrentPage Only the current page should be printed.
 
   \sa setPrintRange(), printRange()
 */
@@ -586,6 +588,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   \value PrintSelection Describes if printing selections should be enabled.
   \value PrintPageRange Describes if printing page ranges (from, to) should
   be enabled
+  \value PrintCurrentPage if Print Current Page option should be enabled
 
   \sa setOptionEnabled(), isOptionEnabled()
 */

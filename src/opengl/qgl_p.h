@@ -65,13 +65,7 @@
 #include "qglpaintdevice_p.h"
 
 #ifdef QT_OPENGL_ES
-QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(QT_OPENGL_ES_2)
-#include <EGL/egl.h>
-#else
-#include <GLES/egl.h>
-#endif
-QT_END_INCLUDE_NAMESPACE
+#include <QtGui/private/qegl_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
