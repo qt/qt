@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     Updates the display text based of the current edit text
     If the text has changed will emit displayTextChanged()
 */
-void QLineControl::updateDisplayText()
+void QLineControl::updateDisplayText(bool forceUpdate)
 {
     QString orig = m_textLayout.text();
     QString str;
@@ -102,7 +102,7 @@ void QLineControl::updateDisplayText()
     m_textLayout.endLayout();
     m_ascent = qRound(l.ascent());
 
-    if (str != orig)
+    if (str != orig || forceUpdate)
         emit displayTextChanged(str);
 }
 
@@ -476,7 +476,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         }
     }
     m_textLayout.setAdditionalFormats(formats);
-    updateDisplayText();
+    updateDisplayText(/*force*/ true);
     if (cursorPositionChanged)
         emitCursorPositionChanged();
     if (isGettingInput)

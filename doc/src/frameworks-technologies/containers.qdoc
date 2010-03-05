@@ -612,11 +612,14 @@
 
     Qt automatically takes a copy of the container when it enters a
     \c foreach loop. If you modify the container as you are
-    iterating, that won't affect the loop. (If you don't modify the
+    iterating, that won't affect the loop. (If you do not modify the
     container, the copy still takes place, but thanks to \l{implicit
-    sharing} copying a container is very fast.) Similarly, declaring
-    the variable to be a non-const reference, in order to modify the
-    current item in the list will not work either.
+    sharing} copying a container is very fast.)
+
+    Since foreach creates a copy of the container, using a non-const
+    reference for the variable does not allow you to modify the original
+    container. It only affects the copy, which is probably not what you
+    want.
 
     In addition to \c foreach, Qt also provides a \c forever
     pseudo-keyword for infinite loops:

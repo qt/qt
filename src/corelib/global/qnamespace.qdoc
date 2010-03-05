@@ -2978,6 +2978,11 @@
     the Qt::GestureStarted state and ending with a gesture in the
     Qt::GestureFinished or Qt::GestureCanceled states.
 
+    \value IgnoredGesturesPropagateToParent Since Qt 4.7, this flag allows you
+    to fine-tune gesture event propagation. By setting the flag when
+    \l{QGraphicsObject::grabGesture}{grabbing} a gesture all ignored partial
+    gestures will propagate to their parent items.
+
     \sa QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */
 

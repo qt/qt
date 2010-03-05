@@ -70,6 +70,7 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
     updateColor(0);
     setupMenuBar();
     setupContents();
+    setupContextMenu();
     setCentralWidget(table);
 
     statusBar();

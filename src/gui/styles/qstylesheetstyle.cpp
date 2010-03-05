@@ -3457,10 +3457,17 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
     case CE_RadioButton:
     case CE_CheckBox:
-        rule.drawRule(p, opt->rect);
-        ParentStyle::drawControl(ce, opt, p, w);
-        return;
-
+        if (rule.hasBox() || !rule.hasNativeBorder() || rule.hasDrawable() || hasStyleRule(w, PseudoElement_Indicator)) {
+            rule.drawRule(p, opt->rect);
+            ParentStyle::drawControl(ce, opt, p, w);
+            return;
+        } else if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QStyleOptionButton butOpt(*btn);
+            rule.configurePalette(&butOpt.palette, QPalette::ButtonText, QPalette::Button);
+            baseStyle()->drawControl(ce, &butOpt, p, w);
+            return;
+        }
+        break;
     case CE_RadioButtonLabel:
     case CE_CheckBoxLabel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {

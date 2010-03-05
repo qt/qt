@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the Qt Designer of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,24 +39,36 @@
 **
 ****************************************************************************/
 
-#include "testgenerator.h"
-#include <QtCore/qdebug.h>
-#include <QtCore/qfile.h>
-#include <QtCore/qstringlist.h>
-#include <QtCore/QCoreApplication>
+#ifndef QDECLARATIVEVIEW_PLUGIN_H
+#define QDECLARATIVEVIEW_PLUGIN_H
 
-int main(int argc, char *argv[])
+#include <QtDesigner/QDesignerCustomWidgetInterface>
+
+QT_BEGIN_NAMESPACE
+
+class QDeclarativeViewPlugin: public QObject, public QDesignerCustomWidgetInterface
 {
-    QCoreApplication a(argc, argv);
+    Q_OBJECT
+    Q_INTERFACES(QDesignerCustomWidgetInterface)
+public:
+    QDeclarativeViewPlugin(QObject *parent = 0);
 
-    if (argc != 2) {
-        qWarning() << "./prog outputdir";
-        exit(1);
-    }
+    virtual QString name() const;
+    virtual QString group() const;
+    virtual QString toolTip() const;
+    virtual QString whatsThis() const;
+    virtual QString includeFile() const;
+    virtual QIcon icon() const;
+    virtual bool isContainer() const;
+    virtual QWidget *createWidget(QWidget *parent);
+    virtual bool isInitialized() const;
+    virtual void initialize(QDesignerFormEditorInterface *core);
+    virtual QString domXml() const;
 
-    //Procced
-    TestGenerator gen(a.arguments()[1]);
-    gen.run();
+private:
+    bool m_initialized;
+};
 
-    return 0;
-}
+QT_END_NAMESPACE
+
+#endif // QDECLARATIVEVIEW_PLUGIN_H

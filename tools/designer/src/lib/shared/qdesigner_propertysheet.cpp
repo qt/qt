@@ -271,6 +271,7 @@ bool QDesignerPropertySheetPrivate::isReloadableProperty(int index) const
 {
     return isResourceProperty(index)
            || propertyType(index) == QDesignerPropertySheet::PropertyStyleSheet
+           || propertyType(index) == QDesignerPropertySheet::PropertyText
            || q->property(index).type() == QVariant::Url;
 }
 
@@ -549,6 +550,7 @@ QDesignerPropertySheet::PropertyType QDesignerPropertySheet::propertyTypeFromNam
         propertyTypeHash.insert(QLatin1String("windowModality"),          PropertyWindowModality);
         propertyTypeHash.insert(QLatin1String("windowModified"),          PropertyWindowModified);
         propertyTypeHash.insert(QLatin1String("styleSheet"),              PropertyStyleSheet);
+        propertyTypeHash.insert(QLatin1String("text"),                    PropertyText);
     }
     return propertyTypeHash.value(name, PropertyNone);
 }
