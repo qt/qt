@@ -2953,8 +2953,8 @@ qint64 QDateTime::currentMsecsSinceEpoch()
     qint64 value = gmTime.Int64();
 
     // whereas 1970-01-01T00:00:00 is (in the same representation):
-    static const qint64 unixEpoch = qint64(1970 * 365 + 1970 / 4 - 1970 / 100 + 1970 / 400) * Q_INT64_C(86400)
-                                    * Q_INT64_C(1000000);
+    //   ((1970 * 365) + (1970 / 4) - (1970 / 100) + (1970 / 400) - 13) * 86400 * 1000000
+    static const qint64 unixEpoch = Q_INT64_C(0xdcddb30f2f8000);
 
     return (value - unixEpoch) / 1000;
 }

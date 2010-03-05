@@ -40,12 +40,15 @@
 ****************************************************************************/
 
 #include "qelapsedtimer.h"
+#include "qpair.h"
 #include <e32std.h>
+#include <sys/time.h>
+#include <hal.h>
 
 QT_BEGIN_NAMESPACE
 
 // return quint64 to avoid sign-extension
-static quint64 getMillisecondFromTick()
+static quint64 getMicrosecondFromTick()
 {
     static TInt nanokernel_tick_period;
     if (!nanokernel_tick_period)
@@ -59,6 +62,21 @@ static quint64 getMillisecondFromTick()
     lastval = val;
 
     return nanokernel_tick_period * (val | (quint64(highdword) << 32));
+}
+
+static quint64 getMillisecondFromTick()
+{
+    return getMicrosecondFromTick() / 1000;
+}
+
+timeval qt_gettime()
+{
+    timeval tv;
+    quint64 now = getMicrosecondFromTick();
+    tv.tv_sec = now / 1000000;
+    tv.tv_usec = now % 1000000;
+
+    return tv;
 }
 
 QElapsedTimer::ClockType QElapsedTimer::clockType()
