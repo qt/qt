@@ -60,6 +60,7 @@
 //#include <QTextCodec>
 
 _LIT(KIapNameSetting, "IAP\\Name");             // text - mandatory
+_LIT(KIapTableIdField, "IAP\Id");
 _LIT(KIapDialogPref, "IAP\\DialogPref");        // TUnit32 - optional
 _LIT(KIapService, "IAP\\IAPService");           // TUnit32 - mandatory
 _LIT(KIapServiceType, "IAP\\IAPServiceType");   // text - mandatory
@@ -367,20 +368,25 @@ static QString qt_OfferIapDialog() {
     CleanupClosePushL(connection);
 
     socketServ.Connect();
+
+    TCommDbConnPref prefs;
+    prefs.SetDialogPreference(ECommDbDialogPrefPrompt);
+
     connection.Open(socketServ);
-    connection.Start();
+    connection.Start(prefs);
 
     connection.GetDesSetting(TPtrC(KIapNameSetting), iapName);
-
     //connection.Stop();
 
     iapName.ZeroTerminate();
     QString strIapName((char*)iapName.Ptr());
 
     int error = 0;
-    if(!qt_SetDefaultIapName(strIapName, error)) {
-        //printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
-        strIapName = QString("");
+    if(!strIapName.isEmpty()) {
+        if(!qt_SetDefaultIapName(strIapName, error)) {
+            //printf("failed setdefaultif @ %i with %s and errno = %d \n", __LINE__, strIapName.toUtf8().data(), error);
+            strIapName = QString("");
+        }
     }
 
     CleanupStack::PopAndDestroy(&connection);

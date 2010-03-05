@@ -1473,6 +1473,9 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         QWidget *fw = QApplicationPrivate::active_window ? QApplicationPrivate::active_window->focusWidget()
               : q_func()->focusWidget();
           if (fw) {
+              if(fw->window()->isModal()) // restore pointer capture for modal window
+                  fw->effectiveWinId()->SetPointerCapture(true);
+
               if (fw != q_func()->focusWidget()) {
                   fw->setFocus(Qt::PopupFocusReason);
               } else {
