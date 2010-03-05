@@ -242,6 +242,8 @@ void tst_QDeclarativeItem::keyNavigation()
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasFocus());
+
+    delete canvas;
 }
 
 void tst_QDeclarativeItem::smooth()
@@ -265,6 +267,8 @@ void tst_QDeclarativeItem::smooth()
     QCOMPARE(spy.count(),2);
     item->setSmooth(false);
     QCOMPARE(spy.count(),2);
+
+    delete item;
 }
 
 void tst_QDeclarativeItem::clip()
@@ -288,6 +292,8 @@ void tst_QDeclarativeItem::clip()
     QCOMPARE(spy.count(),2);
     item->setClip(false);
     QCOMPARE(spy.count(),2);
+
+    delete item;
 }
 
 void tst_QDeclarativeItem::mapCoordinates()
@@ -335,6 +341,8 @@ void tst_QDeclarativeItem::mapCoordinates()
     QVERIFY(QMetaObject::invokeMethod(root, "checkMapAFromInvalid",
             Q_RETURN_ARG(QVariant, result), Q_ARG(QVariant, x), Q_ARG(QVariant, y)));
     QVERIFY(result.toBool());
+
+    delete canvas;
 }
 
 void tst_QDeclarativeItem::mapCoordinates_data()
