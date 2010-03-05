@@ -7,8 +7,8 @@ Item { id:block
     property int targetX: 0
     property int targetY: 0
 
-    x: SpringFollow { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
-    y: SpringFollow { source: targetY; spring: 2; damping: 0.2 }
+    SpringFollow on x { enabled: spawned; source: targetX; spring: 2; damping: 0.2 }
+    SpringFollow on y { source: targetY; spring: 2; damping: 0.2 }
 
     Image { id: img
         source: {
@@ -21,7 +21,7 @@ Item { id:block
             }
         }
         opacity: 0
-        opacity: Behavior { NumberAnimation { duration: 200 } }
+        Behavior on opacity { NumberAnimation { duration: 200 } }
         anchors.fill: parent
     }
 

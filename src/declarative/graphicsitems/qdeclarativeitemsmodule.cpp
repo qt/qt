@@ -106,7 +106,6 @@ void QDeclarativeItemModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,LayoutItem,QDeclarativeLayoutItem);
     QML_REGISTER_TYPE(Qt,4,6,ListView,QDeclarativeListView);
     QML_REGISTER_TYPE(Qt,4,6,Loader,QDeclarativeLoader);
-    QML_REGISTER_TYPE(Qt,4,6,MouseRegion,QDeclarativeMouseArea);
     QML_REGISTER_TYPE(Qt,4,6,MouseArea,QDeclarativeMouseArea);
     QML_REGISTER_TYPE(Qt,4,6,Opacity,QGraphicsOpacityEffect);
     QML_REGISTER_TYPE(Qt,4,6,ParticleMotion,QDeclarativeParticleMotion);

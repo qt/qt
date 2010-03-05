@@ -784,6 +784,7 @@ OPT_HELP=
 CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
 CFG_ALSA=auto
+CFG_PULSEAUDIO=auto
 CFG_NETWORKMANAGER=auto
 CFG_COREWLAN=auto
 
@@ -5945,6 +5946,14 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
+if [ "$CFG_PULSEAUDIO" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/pulseaudio "pulseaudio" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_PULSEAUDIO=yes
+    else
+        CFG_PULSEAUDIO=no
+    fi
+fi
+
 if [ "$CFG_NETWORKMANAGER" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/networkmanager "NetworkManager" $L_FLAGS $I_FLAGS $l_FLAGS; then
         CFG_NETWORKMANAGER=yes
@@ -6437,6 +6446,10 @@ fi
 
 if [ "$CFG_ALSA" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG alsa"
+fi
+
+if [ "$CFG_PULSEAUDIO" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG pulseaudio"
 fi
 
 if [ "$CFG_NETWORKMANAGER" = "yes" ]; then
@@ -7154,6 +7167,7 @@ fi
 [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
 [ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
 [ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
+[ "$CFG_PULSEAUDIO" = "no" ]          && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_PULSEAUDIO"
 [ "$CFG_NETWORKMANAGER" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NETWORKMANAGER"
 [ "$CFG_COREWLAN" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_COREWLAN"
 
@@ -7657,6 +7671,7 @@ elif [ "$CFG_OPENSSL" = "linked" ]; then
 fi
 echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
 echo "Alsa support ........... $CFG_ALSA"
+echo "Pulse Audio support .... $CFG_PULSEAUDIO"
 echo "NetworkManager support . $CFG_NETWORKMANAGER"
 if [ "$PLATFORM_MAC" = "yes" ]; then
     echo "CoreWlan support ....... $CFG_COREWLAN"

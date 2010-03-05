@@ -597,7 +597,7 @@ void tst_qdeclarativevaluetypes::enums()
     QDeclarativeComponent component(&engine, TEST_FILE("enums.1.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
-    QVERIFY(object->font().capitalization() == QFont::MixedCase);
+    QVERIFY(object->font().capitalization() == QFont::AllUppercase);
     delete object;
     }
 
@@ -605,7 +605,23 @@ void tst_qdeclarativevaluetypes::enums()
     QDeclarativeComponent component(&engine, TEST_FILE("enums.2.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
-    QVERIFY(object->font().capitalization() == QFont::MixedCase);
+    QVERIFY(object->font().capitalization() == QFont::AllUppercase);
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("enums.3.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->font().capitalization() == QFont::AllUppercase);
+    delete object;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("enums.4.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QVERIFY(object->font().capitalization() == QFont::AllUppercase);
     delete object;
     }
 }

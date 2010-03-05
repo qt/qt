@@ -223,7 +223,7 @@ public:
         if (!visibleItems.isEmpty()) {
             pos = (*visibleItems.constBegin())->position();
             if (visibleIndex > 0)
-                pos -= visibleIndex * (averageSize + spacing) - spacing;
+                pos -= visibleIndex * (averageSize + spacing);
         }
         return pos;
     }
@@ -799,10 +799,13 @@ void QDeclarativeListViewPrivate::createHighlight()
         if (item) {
             item->setParent(q->viewport());
             highlight = new FxListItem(item, q);
-            if (orient == QDeclarativeListView::Vertical)
-                highlight->item->setHeight(currentItem->item->height());
-            else
-                highlight->item->setWidth(currentItem->item->width());
+            if (currentItem && autoHighlight) {
+                if (orient == QDeclarativeListView::Vertical) {
+                    highlight->item->setHeight(currentItem->item->height());
+                } else {
+                    highlight->item->setWidth(currentItem->item->width());
+                }
+            }
             const QLatin1String posProp(orient == QDeclarativeListView::Vertical ? "y" : "x");
             highlightPosAnimator = new QDeclarativeEaseFollow(q);
             highlightPosAnimator->setTarget(QDeclarativeProperty(highlight->item, posProp));
@@ -1359,6 +1362,11 @@ void QDeclarativeListViewPrivate::flickY(qreal velocity)
 
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
+
+    Note that views do not enable \e clip automatically.  If the view
+    is not clipped by another item or the screen, it will be necessary
+    to set \e {clip: true} in order to have the out of view items clipped
+    nicely.
 */
 
 QDeclarativeListView::QDeclarativeListView(QDeclarativeItem *parent)
@@ -2281,6 +2289,12 @@ void QDeclarativeListView::decrementCurrentIndex()
     Positions the view such that the \a index is at the top (or left for horizontal orientation) of the view.
     If positioning the view at the index would cause empty space to be displayed at
     the end of the view, the view will be positioned at the end.
+
+    It is not recommended to use contentX or contentY to position the view
+    at a particular index.  This is unreliable since removing items from the start
+    of the list does not cause all other items to be repositioned, and because
+    the actual start of the view can vary based on the size of the delegates.
+    The correct way to bring an item into view is with positionViewAtIndex.
 */
 void QDeclarativeListView::positionViewAtIndex(int index)
 {
@@ -2403,7 +2417,8 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
-        if (d->visibleItems.at(i)->index + 1 == modelIndex) {
+        if (d->visibleItems.at(i)->index + 1 == modelIndex
+            && d->visibleItems.at(i)->endPosition() < d->buffer+d->position()+d->size()-1) {
             // Special case of appending an item to the model.
             modelIndex = d->visibleIndex + d->visibleItems.count();
         } else {

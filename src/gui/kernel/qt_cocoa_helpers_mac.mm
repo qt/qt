@@ -373,7 +373,7 @@ QMacTabletHash *qt_mac_tablet_hash()
 // Clears the QWidget pointer that each QCocoaView holds.
 void qt_mac_clearCocoaViewQWidgetPointers(QWidget *widget)
 {
-    QCocoaView *cocoaView = reinterpret_cast<QCocoaView *>(qt_mac_nativeview_for(widget));
+    QT_MANGLE_NAMESPACE(QCocoaView) *cocoaView = reinterpret_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     if (cocoaView && [cocoaView respondsToSelector:@selector(qt_qwidget)]) {
         [cocoaView qt_clearQWidget];
     }

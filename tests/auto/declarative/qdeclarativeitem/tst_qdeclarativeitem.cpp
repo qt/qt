@@ -178,6 +178,26 @@ void tst_QDeclarativeItem::keys()
 
     testObject->reset();
 
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, int(Qt::Key_Tab));
+    QCOMPARE(testObject->mForwardedKey, int(Qt::Key_Tab));
+    QCOMPARE(testObject->mText, QLatin1String("Tab"));
+    QVERIFY(testObject->mModifiers == Qt::NoModifier);
+    QVERIFY(key.isAccepted());
+
+    testObject->reset();
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, int(Qt::Key_Backtab));
+    QCOMPARE(testObject->mForwardedKey, int(Qt::Key_Backtab));
+    QCOMPARE(testObject->mText, QLatin1String("Backtab"));
+    QVERIFY(testObject->mModifiers == Qt::NoModifier);
+    QVERIFY(key.isAccepted());
+
+    testObject->reset();
+
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(false));
 
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier, "", false, 1);
@@ -236,6 +256,24 @@ void tst_QDeclarativeItem::keyNavigation()
 
     // up
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasFocus());
+
+    // tab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
+    QVERIFY(item);
+    QVERIFY(item->hasFocus());
+
+    // backtab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
 

@@ -161,154 +161,180 @@ public:
 
     Type type;
     unsigned short line;
+
+    struct InitInstruction {
+        int bindingsSize;
+        int parserStatusSize;
+        int contextCache;
+        int compiledBinding;
+    };
+    struct CreateInstruction {
+        int type;
+        int data;
+        int bindingBits;
+        ushort column;
+    };
+    struct StoreMetaInstruction {
+        int data;
+        int aliasData;
+        int propertyCache;
+    };
+    struct SetIdInstruction {
+        int value;
+        int index;
+    };
+    struct AssignValueSourceInstruction {
+        int property;
+        int owner;
+        int castValue;
+    };
+    struct AssignValueInterceptorInstruction {
+        int property;
+        int owner;
+        int castValue;
+    };
+    struct AssignBindingInstruction {
+        unsigned int property;
+        int value;
+        short context;
+        short owner;
+    };
+    struct FetchInstruction {
+        int property;
+    };
+    struct FetchValueInstruction {
+        int property;
+        int type;
+    };
+    struct FetchQmlListInstruction {
+        int property;
+        int type;
+    };
+    struct BeginInstruction {
+        int castValue;
+    }; 
+    struct StoreFloatInstruction {
+        int propertyIndex;
+        float value;
+    };
+    struct StoreDoubleInstruction {
+        int propertyIndex;
+        double value;
+    };
+    struct StoreIntegerInstruction {
+        int propertyIndex;
+        int value;
+    };
+    struct StoreBoolInstruction {
+        int propertyIndex;
+        bool value;
+    };
+    struct StoreStringInstruction {
+        int propertyIndex;
+        int value;
+    };
+    struct StoreScriptStringInstruction {
+        int propertyIndex;
+        int value;
+        int scope;
+    }; 
+    struct StoreScriptInstruction {
+        int value;
+    };
+    struct StoreUrlInstruction {
+        int propertyIndex;
+        int value;
+    };
+    struct StoreColorInstruction {
+        int propertyIndex;
+        unsigned int value;
+    };
+    struct StoreDateInstruction {
+        int propertyIndex;
+        int value;
+    };
+    struct StoreTimeInstruction {
+        int propertyIndex;
+        int valueIndex;
+    };
+    struct StoreDateTimeInstruction {
+        int propertyIndex;
+        int valueIndex;
+    };
+    struct StoreRealPairInstruction {
+        int propertyIndex;
+        int valueIndex;
+    };
+    struct StoreRectInstruction {
+        int propertyIndex;
+        int valueIndex;
+    };
+    struct StoreVector3DInstruction {
+        int propertyIndex;
+        int valueIndex;
+    };
+    struct StoreObjectInstruction {
+        int propertyIndex;
+    };
+    struct AssignCustomTypeInstruction {
+        int propertyIndex;
+        int valueIndex;
+    };
+    struct StoreSignalInstruction {
+        int signalIndex;
+        int value;
+        int context;
+    };
+    struct AssignSignalObjectInstruction {
+        int signal;
+    };
+    struct CreateComponentInstruction {
+        int count;
+        ushort column;
+        int endLine;
+        int metaObject;
+    };
+    struct FetchAttachedInstruction {
+        int id;
+    };
+    struct DeferInstruction {
+        int deferCount;
+    };
+
     union {
-        struct {
-            int bindingsSize;
-            int parserStatusSize;
-            int contextCache;
-            int compiledBinding;
-        } init;
-        struct {
-            int type;
-            int data;
-            int bindingBits;
-            ushort column;
-        } create;
-        struct {
-            int data;
-            int aliasData;
-            int propertyCache;
-        } storeMeta;
-        struct {
-            int value;
-            int index;
-        } setId;
-        struct {
-            int property;
-            int owner;
-            int castValue;
-        } assignValueSource;
-        struct {
-            int property;
-            int owner;
-            int castValue;
-        } assignValueInterceptor;
-        struct {
-            unsigned int property;
-            int value;
-            short context;
-            short owner;
-        } assignBinding;
-        struct {
-            int property;
-            int id;
-        } assignIdOptBinding;
-        struct {
-            int property;
-            int contextIdx;
-            short context;
-            short notifyIdx;
-        } assignObjPropBinding;
-        struct {
-            int property;
-        } fetch;
-        struct {
-            int property;
-            int type;
-        } fetchValue;
-        struct {
-            int property;
-            int type;
-        } fetchQmlList;
-        struct {
-            int castValue;
-        } begin;
-        struct {
-            int propertyIndex;
-            float value;
-        } storeFloat;
-        struct {
-            int propertyIndex;
-            double value;
-        } storeDouble;
-        struct {
-            int propertyIndex;
-            int value;
-        } storeInteger;
-        struct {
-            int propertyIndex;
-            bool value;
-        } storeBool;
-        struct {
-            int propertyIndex;
-            int value;
-        } storeString;
-        struct {
-            int propertyIndex;
-            int value;
-            int scope;
-        } storeScriptString;
-        struct {
-            int value;
-        } storeScript;
-        struct {
-            int propertyIndex;
-            int value;
-        } storeUrl;
-        struct {
-            int propertyIndex;
-            unsigned int value;
-        } storeColor;
-        struct {
-            int propertyIndex;
-            int value;
-        } storeDate;
-        struct {
-            int propertyIndex;
-            int valueIndex;
-        } storeTime;
-        struct {
-            int propertyIndex;
-            int valueIndex;
-        } storeDateTime;
-        struct {
-            int propertyIndex;
-            int valueIndex;
-        } storeRealPair;
-        struct {
-            int propertyIndex;
-            int valueIndex;
-        } storeRect;
-        struct {
-            int propertyIndex;
-            int valueIndex;
-        } storeVector3D;
-        struct {
-            int propertyIndex;
-        } storeObject;
-        struct {
-            int propertyIndex;
-            int valueIndex;
-        } assignCustomType;
-        struct {
-            int signalIndex;
-            int value;
-        } storeSignal;
-        struct {
-            int signal;
-        } assignSignalObject;
-        struct {
-            int count;
-            ushort column;
-            int endLine;
-            int metaObject;
-        } createComponent;
-        struct {
-            int id;
-        } fetchAttached;
-        struct {
-            int deferCount;
-        } defer;
+        InitInstruction init;
+        CreateInstruction create;
+        StoreMetaInstruction storeMeta;
+        SetIdInstruction setId;
+        AssignValueSourceInstruction assignValueSource;
+        AssignValueInterceptorInstruction assignValueInterceptor;
+        AssignBindingInstruction assignBinding;
+        FetchInstruction fetch;
+        FetchValueInstruction fetchValue;
+        FetchQmlListInstruction fetchQmlList;
+        BeginInstruction begin;
+        StoreFloatInstruction storeFloat;
+        StoreDoubleInstruction storeDouble;
+        StoreIntegerInstruction storeInteger;
+        StoreBoolInstruction storeBool;
+        StoreStringInstruction storeString;
+        StoreScriptStringInstruction storeScriptString;
+        StoreScriptInstruction storeScript;
+        StoreUrlInstruction storeUrl;
+        StoreColorInstruction storeColor;
+        StoreDateInstruction storeDate;
+        StoreTimeInstruction storeTime;
+        StoreDateTimeInstruction storeDateTime;
+        StoreRealPairInstruction storeRealPair;
+        StoreRectInstruction storeRect;
+        StoreVector3DInstruction storeVector3D;
+        StoreObjectInstruction storeObject;
+        AssignCustomTypeInstruction assignCustomType;
+        StoreSignalInstruction storeSignal;
+        AssignSignalObjectInstruction assignSignalObject;
+        CreateComponentInstruction createComponent;
+        FetchAttachedInstruction fetchAttached;
+        DeferInstruction defer;
     };
 
     void dump(QDeclarativeCompiledData *);

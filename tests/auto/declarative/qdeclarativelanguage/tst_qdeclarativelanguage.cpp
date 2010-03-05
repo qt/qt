@@ -128,6 +128,8 @@ private slots:
 
     void qmlAttachedPropertiesObjectMethod();
 
+    void customOnProperty();
+
     // regression tests for crashes
     void crash1();
     void crash2();
@@ -255,6 +257,9 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidGroupedProperty.5") << "invalidGroupedProperty.5.qml" << "invalidGroupedProperty.5.errors.txt" << false;
     QTest::newRow("invalidGroupedProperty.6") << "invalidGroupedProperty.6.qml" << "invalidGroupedProperty.6.errors.txt" << false;
     QTest::newRow("invalidGroupedProperty.7") << "invalidGroupedProperty.7.qml" << "invalidGroupedProperty.7.errors.txt" << true;
+    QTest::newRow("invalidGroupedProperty.8") << "invalidGroupedProperty.8.qml" << "invalidGroupedProperty.8.errors.txt" << false;
+    QTest::newRow("invalidGroupedProperty.9") << "invalidGroupedProperty.9.qml" << "invalidGroupedProperty.9.errors.txt" << false;
+    QTest::newRow("invalidGroupedProperty.10") << "invalidGroupedProperty.10.qml" << "invalidGroupedProperty.10.errors.txt" << false;
 
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
     QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
@@ -321,6 +326,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidRoot") << "invalidRoot.qml" << "invalidRoot.errors.txt" << false;
     QTest::newRow("missingValueTypeProperty") << "missingValueTypeProperty.qml" << "missingValueTypeProperty.errors.txt" << false;
     QTest::newRow("objectValueTypeProperty") << "objectValueTypeProperty.qml" << "objectValueTypeProperty.errors.txt" << false;
+    QTest::newRow("enumTypes") << "enumTypes.qml" << "enumTypes.errors.txt" << false;
 }
 
 
@@ -713,11 +719,6 @@ void tst_qdeclarativelanguage::attachedProperties()
     QVERIFY(attached != 0);
     QCOMPARE(attached->property("value"), QVariant(10));
     QCOMPARE(attached->property("value2"), QVariant(13));
-
-    QEXPECT_FAIL("", "QTBUG-8677", Abort);
-    attached->setProperty("value", QVariant(12));
-    int val = object->property("value2").toInt();
-    QCOMPARE(val, 12);
 }
 
 // Tests non-static object properties
@@ -1394,6 +1395,19 @@ void tst_qdeclarativelanguage::crash2()
     QDeclarativeComponent component(&engine, TEST_FILE("crash2.qml"));
 }
 
+// QTBUG-8676
+void tst_qdeclarativelanguage::customOnProperty()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("customOnProperty.qml"));
+
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("on").toInt(), 10);
+
+    delete object;
+}
 
 void tst_qdeclarativelanguage::initTestCase()
 {

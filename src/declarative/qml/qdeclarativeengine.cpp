@@ -167,6 +167,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         QDeclarativeItemModule::defineModule();
         QDeclarativeUtilModule::defineModule();
         QDeclarativeEnginePrivate::defineModule();
+        QDeclarativeValueTypeFactory::registerValueTypes();
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
 
@@ -236,9 +237,13 @@ QDeclarativeScriptEngine::QDeclarativeScriptEngine(QDeclarativeEnginePrivate *pr
         qtObject.setProperty(QLatin1String("tint"), newFunction(QDeclarativeEnginePrivate::tint, 2));
     }
 
+    //date/time formatting
+    qtObject.setProperty(QLatin1String("formatDate"),newFunction(QDeclarativeEnginePrivate::formatDate, 2));
+    qtObject.setProperty(QLatin1String("formatTime"),newFunction(QDeclarativeEnginePrivate::formatTime, 2));
+    qtObject.setProperty(QLatin1String("formatDateTime"),newFunction(QDeclarativeEnginePrivate::formatDateTime, 2));
+
     //misc methods
     qtObject.setProperty(QLatin1String("closestAngle"), newFunction(QDeclarativeEnginePrivate::closestAngle, 2));
-    qtObject.setProperty(QLatin1String("playSound"), newFunction(QDeclarativeEnginePrivate::playSound, 1));
     qtObject.setProperty(QLatin1String("openUrlExternally"),newFunction(QDeclarativeEnginePrivate::desktopOpenUrl, 1));
     qtObject.setProperty(QLatin1String("md5"),newFunction(QDeclarativeEnginePrivate::md5, 1));
     qtObject.setProperty(QLatin1String("btoa"),newFunction(QDeclarativeEnginePrivate::btoa, 1));
@@ -936,6 +941,66 @@ QScriptValue QDeclarativeEnginePrivate::vector(QScriptContext *ctxt, QScriptEngi
     return engine->newVariant(qVariantFromValue(QVector3D(x, y, z)));
 }
 
+QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QDate date = ctxt->argument(0).toDateTime().date();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
+QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QTime date = ctxt->argument(0).toDateTime().time();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
+QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScriptEngine*engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount == 0 || argCount > 2)
+        return engine->nullValue();
+
+    QDateTime date = ctxt->argument(0).toDateTime();
+    Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
+    if (argCount == 2) {
+        if (ctxt->argument(1).isString()) {
+            QString format = ctxt->argument(1).toString();
+            return engine->newVariant(qVariantFromValue(date.toString(format)));
+        } else if (ctxt->argument(1).isNumber()) {
+            enumFormat = Qt::DateFormat(ctxt->argument(1).toUInt32());
+        } else
+           return engine->nullValue();
+    }
+    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+}
+
 QScriptValue QDeclarativeEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine *engine)
 {
     int argCount = ctxt->argumentCount();
@@ -1038,30 +1103,6 @@ QScriptValue QDeclarativeEnginePrivate::darker(QScriptContext *ctxt, QScriptEngi
         return engine->nullValue();
     color = color.darker();
     return qScriptValueFromValue(engine, qVariantFromValue(color));
-}
-
-QScriptValue QDeclarativeEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *engine)
-{
-    if (ctxt->argumentCount() != 1)
-        return engine->undefinedValue();
-
-    QUrl url(ctxt->argument(0).toString());
-
-    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
-    if (url.isRelative()) {
-        QDeclarativeContext *context = enginePriv->getContext(ctxt);
-        if (!context)
-            return engine->undefinedValue();
-
-        url = context->resolvedUrl(url);
-    }
-
-    if (url.scheme() == QLatin1String("file")) {
-
-        QSound::play(url.toLocalFile());
-
-    }
-    return engine->undefinedValue();
 }
 
 QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
@@ -1383,7 +1424,11 @@ public:
             paths += QFileInfo(base.toLocalFile()).path();
             paths += importPath;
             paths += QDeclarativeEnginePrivate::get(engine)->environmentImportPath;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
             QString builtinPath = QLibraryInfo::location(QLibraryInfo::ImportsPath);
+#else
+            QString builtinPath;
+#endif
             if (!builtinPath.isEmpty())
                 paths += builtinPath;
 

@@ -229,7 +229,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     //    QWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface
     //    QGLWidget - yes, create the EGLSurface and store it in QGLContextPrivate::eglSurface
     //    QPixmap - yes, create the EGLSurface but store it in QX11PixmapData::gl_surface
-    //    QGLPixelBuffer - no, it creates the surface itself
+    //    QGLPixelBuffer - no, it creates the surface itself and stores it in QGLPixelBufferPrivate::pbuf
 
     if (devType == QInternal::Widget) {
         if (d->eglSurface != EGL_NO_SURFACE)
@@ -404,7 +404,7 @@ EGLConfig Q_OPENGL_EXPORT qt_chooseEGLConfigForPixmap(bool hasAlpha, bool readOn
             if (configCount > 0) {
                 // Got one
                 qDebug() << "Found an" << (hasAlpha ? "ARGB" : "RGB") << (readOnly ? "readonly" : "target" )
-                         << "config (" << int(*targetConfig) << ") to create a pixmap surface:";
+                         << "config to create a pixmap surface:";
 
 //                QEglProperties configProps(*targetConfig);
 //                qDebug() << configProps.toString();
@@ -446,8 +446,7 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
 //    qDebug("qt_createEGLSurfaceForPixmap() created surface 0x%x for pixmap 0x%x",
 //           pixmapSurface, pixmapData->handle());
     if (pixmapSurface == EGL_NO_SURFACE) {
-        qWarning() << "Failed to create a pixmap surface using config" << (int)pixmapConfig
-                   << ":" << QEgl::errorString();
+        qWarning() << "Failed to create a pixmap surface:" << QEgl::errorString();
         return false;
     }
 

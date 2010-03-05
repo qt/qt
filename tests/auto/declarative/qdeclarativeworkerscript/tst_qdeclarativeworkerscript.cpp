@@ -48,9 +48,9 @@
 #include <QtDeclarative/qdeclarativeitem.h>
 
 #include <private/qdeclarativeworkerscript_p.h>
+#include <private/qdeclarativeengine_p.h>
 #include "../../../shared/util.h"
 
-Q_DECLARE_METATYPE(QList<QObject*>)
 Q_DECLARE_METATYPE(QScriptValue)
 
 class tst_QDeclarativeWorkerScript : public QObject
@@ -86,13 +86,14 @@ void tst_QDeclarativeWorkerScript::source()
     QFETCH(QUrl, source);
     QFETCH(bool, valid);
 
-    QDeclarativeComponent component(&m_engine);
-    component.setData("import Qt 4.6\nWorkerScript { source: '" + source.toString().toUtf8() + "'; }", QUrl());
-
     if (!valid) {
         QByteArray w = "WorkerScript: Cannot find source file \"" + source.toString().toUtf8() + "\"";
         QTest::ignoreMessage(QtWarningMsg, w.constData());
     }
+
+    QDeclarativeComponent component(&m_engine);
+    component.setData("import Qt 4.6\nWorkerScript { source: '" + source.toString().toUtf8() + "'; }", QUrl());
+
     QDeclarativeWorkerScript *item = qobject_cast<QDeclarativeWorkerScript*>(component.create());
     QVERIFY(item != 0);
 
@@ -172,9 +173,15 @@ void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
     QDeclarativeWorkerScript *worker = qobject_cast<QDeclarativeWorkerScript*>(component.create());
     QVERIFY(worker != 0);
 
-    QString jsObject = "{'spell power': 3101, 'haste': 1125}";
+    QString jsObject = "{'name': 'zyz', 'spell power': 3101, 'haste': 1125}";
 
-    QVERIFY(QMetaObject::invokeMethod(worker, "testSendLiteral", Q_ARG(QVariant, jsObject)));
+    QScriptEngine *engine = QDeclarativeEnginePrivate::getScriptEngine(qmlEngine(worker));
+    QScriptValue sv = engine->newObject();
+    sv.setProperty("name", "zyz");
+    sv.setProperty("spell power", 3101);
+    sv.setProperty("haste", 1125);
+
+    QVERIFY(QMetaObject::invokeMethod(worker, "testSend", Q_ARG(QVariant, qVariantFromValue(sv))));
     waitForEchoMessage(worker);
 
     QVariant result = qVariantFromValue(false);
@@ -189,4 +196,3 @@ void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
 QTEST_MAIN(tst_QDeclarativeWorkerScript)
 
 #include "tst_qdeclarativeworkerscript.moc"
-

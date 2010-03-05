@@ -102,6 +102,9 @@ public:
 
     \value RecordingSupport
             The service provides audio or video recording functions.
+
+    \value StreamPlayback
+            The service is capable of playing QIODevice based streams.
 */
 
 /*!
@@ -396,14 +399,25 @@ public:
             QMediaServiceSupportedFormatsInterface *iface =
                     qobject_cast<QMediaServiceSupportedFormatsInterface*>(obj);
 
-            //if low latency playback was asked, skip services known
-            //not to provide low latency playback
-            if (flags & QMediaPlayer::LowLatency) {
+
+            if (flags) {
                 QMediaServiceFeaturesInterface *iface =
                         qobject_cast<QMediaServiceFeaturesInterface*>(obj);
 
-                if (iface && !(iface->supportedFeatures(serviceType) & QMediaServiceProviderHint::LowLatencyPlayback))
-                    continue;
+                if (iface) {
+                    QMediaServiceProviderHint::Features features = iface->supportedFeatures(serviceType);
+
+                    //if low latency playback was asked, skip services known
+                    //not to provide low latency playback
+                    if ((flags & QMediaPlayer::LowLatency) &&
+                        !(features & QMediaServiceProviderHint::LowLatencyPlayback))
+                            continue;
+
+                    //the same for QIODevice based streams support
+                    if ((flags & QMediaPlayer::StreamPlayback) &&
+                        !(features & QMediaServiceProviderHint::StreamPlayback))
+                            continue;
+                }
             }
 
             if (iface)
@@ -434,14 +448,25 @@ public:
             QMediaServiceSupportedFormatsInterface *iface =
                     qobject_cast<QMediaServiceSupportedFormatsInterface*>(obj);
 
-            // If low latency playback was asked for, skip MIME types from services known
-            // not to provide low latency playback
+
             if (flags & QMediaPlayer::LowLatency) {
                 QMediaServiceFeaturesInterface *iface =
                         qobject_cast<QMediaServiceFeaturesInterface*>(obj);
 
-                if (iface && !(iface->supportedFeatures(serviceType) & QMediaServiceProviderHint::LowLatencyPlayback))
-                    continue;
+                if (iface) {
+                    QMediaServiceProviderHint::Features features = iface->supportedFeatures(serviceType);
+
+                    // If low latency playback was asked for, skip MIME types from services known
+                    // not to provide low latency playback
+                    if ((flags & QMediaPlayer::LowLatency) &&
+                        !(features & QMediaServiceProviderHint::LowLatencyPlayback))
+                        continue;
+
+                    //the same for QIODevice based streams support
+                    if ((flags & QMediaPlayer::StreamPlayback) &&
+                        !(features & QMediaServiceProviderHint::StreamPlayback))
+                            continue;
+                }
             }
 
             if (iface) {

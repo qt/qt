@@ -52,6 +52,7 @@
 #include <qdeclarativestringconverters_p.h>
 #include <qdeclarativeglobal_p.h>
 #include <qdeclarativemetatype_p.h>
+#include <qdeclarativevaluetype_p.h>
 #include <qdeclarativeproperty_p.h>
 
 #include <qvariant.h>
@@ -1710,12 +1711,13 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
         break;
     }
     default:
-        if ((uint)type >= QVariant::UserType) {
+        if (QDeclarativeValueTypeFactory::isValueType((uint)type)) {
+            variant.convert((QVariant::Type)type);
+        } else {
             QDeclarativeMetaType::StringConverter converter = QDeclarativeMetaType::customStringConverter(type);
             if (converter)
                 variant = converter(variant.toString());
-        } else
-            variant.convert((QVariant::Type)type);
+        }
         break;
     }
 }
@@ -1734,7 +1736,7 @@ void QDeclarativePropertyAnimationPrivate::convertVariant(QVariant &variant, int
     Animate any objects that have changed their x or y properties in the target state using
     an InOutQuad easing curve:
     \qml
-    Transition { PropertyAnimation { properties: "x,y"; easing: "InOutQuad" } }
+    Transition { PropertyAnimation { properties: "x,y"; easing.type: "InOutQuad" } }
     \endqml
     \o In a Behavior
 
@@ -1875,7 +1877,13 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
     \qmlproperty QEasingCurve PropertyAnimation::easing
     \brief the easing curve used for the transition.
 
-    Available values are:
+    For the easing you can specify the following parameters: type, amplitude, period and overshoot.
+
+    \qml
+    PropertyAnimation { properties: "y"; easing.type: "InOutElastc"; easing.amplitude: 2.0; easing.period: 1.5 }
+    \endqml
+
+    Available types are:
 
     \table
     \row
@@ -2046,6 +2054,15 @@ void QDeclarativePropertyAnimation::setTo(const QVariant &t)
         \o \inlineimage qeasingcurve-outinbounce.png
     \endtable
 
+    easing.amplitude is not applicable for all curve types. It is only applicable for bounce and elastic curves (curves of type
+    QEasingCurve::InBounce, QEasingCurve::OutBounce, QEasingCurve::InOutBounce, QEasingCurve::OutInBounce, QEasingCurve::InElastic,
+    QEasingCurve::OutElastic, QEasingCurve::InOutElastic or QEasingCurve::OutInElastic).
+
+    easing.overshoot is not applicable for all curve types. It is only applicable if type is: QEasingCurve::InBack, QEasingCurve::OutBack,
+    QEasingCurve::InOutBack or QEasingCurve::OutInBack.
+
+    easing.period is not applicable for all curve types. It is only applicable if type is: QEasingCurve::InElastic, QEasingCurve::OutElastic,
+    QEasingCurve::InOutElastic or QEasingCurve::OutInElastic.
 */
 QEasingCurve QDeclarativePropertyAnimation::easing() const
 {
