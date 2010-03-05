@@ -204,21 +204,36 @@ static void initRasterFallbacksMasks(int *warningMask, int *disableMask)
         { 0, ALL }
     };
 
-    const QStringList warning = QString::fromLatin1(qgetenv("QT_DIRECTFB_WARN_ON_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'));
-    const QStringList disable = QString::fromLatin1(qgetenv("QT_DIRECTFB_DISABLE_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'));
+    QStringList warning = QString::fromLatin1(qgetenv("QT_DIRECTFB_WARN_ON_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
+                                                                                                              QString::SkipEmptyParts);
+    QStringList disable = QString::fromLatin1(qgetenv("QT_DIRECTFB_DISABLE_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'),
+                                                                                                              QString::SkipEmptyParts);
     *warningMask = 0;
     *disableMask = 0;
     if (!warning.isEmpty() || !disable.isEmpty()) {
         for (int i=0; operations[i].name; ++i) {
             const QString name = QString::fromLatin1(operations[i].name);
-            if (warning.contains(name)) {
+            int idx = warning.indexOf(name);
+            if (idx != -1) {
                 *warningMask |= operations[i].operation;
+                warning.remove(warning.begin() + idx);
             }
-            if (disable.contains(name)) {
+            idx = disable.indexOf(name);
+            if (idx != -1) {
                 *disableMask |= operations[i].operation;
+                disable.remove(disable.begin() + idx);
             }
         }
     }
+    if (!warning.isEmpty()) {
+        qWarning("QDirectFBPaintEngine QT_DIRECTFB_WARN_ON_RASTERFALLBACKS Unknown operation(s): %s",
+                 qPrintable(warning.join(QLatin1String("|"))));
+    }
+    if (!disable.isEmpty()) {
+        qWarning("QDirectFBPaintEngine QT_DIRECTFB_DISABLE_RASTERFALLBACKS Unknown operation(s): %s",
+                 qPrintable(disable.join(QLatin1String("|"))));
+    }
+
 }
 #endif
 
@@ -790,13 +805,14 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (d->clipType != QDirectFBPaintEnginePrivate::ComplexClip) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
+            const QColor color = brush.color();
+            if (!color.isValid())
+                return;
+
             if (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported
                 || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
                 break;
             }
-            const QColor color = brush.color();
-            if (!color.isValid())
-                return;
             d->setDFBColor(color);
             const QRect r = state()->matrix.mapRect(rect).toRect();
             CLIPPED_PAINT(d->surface->FillRectangle(d->surface, r.x(), r.y(), r.width(), r.height()));
@@ -989,7 +1005,7 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
     case QPainter::CompositionMode_DestinationOut:
         surface->SetPorterDuff(surface, DSPD_DST_OUT);
         break;
-#if (Q_DIRECTFB_VERSION >= 0x010200)
+#if (Q_DIRECTFB_VERSION >= 0x010209)
     case QPainter::CompositionMode_Destination:
         surface->SetPorterDuff(surface, DSPD_DST);
         break;
