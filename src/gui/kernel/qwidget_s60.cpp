@@ -1237,8 +1237,10 @@ void QWidget::releaseMouse()
 {
     if (!qt_nograb() && QWidgetPrivate::mouseGrabber == this) {
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
-        WId id = effectiveWinId();
-        id->SetPointerCapture(false);
+        if(!window()->isModal()) {
+            WId id = effectiveWinId();
+            id->SetPointerCapture(false);
+        }
         QWidgetPrivate::mouseGrabber = 0;
 #ifndef QT_NO_CURSOR
         QApplication::restoreOverrideCursor();
