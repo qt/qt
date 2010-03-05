@@ -1,5 +1,5 @@
 import Qt 4.6
-import "content"
+import SamegameCore 1.0
 
 Rectangle {
     id: screen
@@ -12,7 +12,7 @@ Rectangle {
 
         Image {
             id: background
-            anchors.fill: parent; source: "content/pics/background.png"
+            anchors.fill: parent; source: "SamegameCore/pics/background.png"
             fillMode: Image.PreserveAspectCrop
             smooth: true
         }
@@ -22,7 +22,7 @@ Rectangle {
             property int score: 0
             property int tileSize: 40
 
-            Script { source: "content/samegame.js" }
+            Script { source: "SamegameCore/samegame.js" }
 
             z: 20; anchors.centerIn: parent
             width: parent.width - (parent.width % getTileSize());
@@ -39,7 +39,7 @@ Rectangle {
     Dialog {
         id: scoreName; anchors.centerIn: parent; z: 22;
         property int initialWidth: 0
-        width: Behavior{NumberAnimation{} enabled: initialWidth!=0}
+        Behavior on width {NumberAnimation{} enabled: initialWidth!=0}
         Text {
             id: spacer
             anchors.left: scoreName.left

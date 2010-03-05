@@ -155,7 +155,6 @@ public:
     bool isError() const;
     QList<QDeclarativeError> errors() const;
 
-    static bool isValidId(const QString &);
     static bool isAttachedPropertyName(const QByteArray &);
     static bool isSignalPropertyName(const QByteArray &);
 
@@ -219,6 +218,11 @@ private:
                                        QDeclarativeParser::Object *obj,
                                        QDeclarativeParser::Value *value,
                                        const BindingContext &ctxt);
+    bool buildPropertyOnAssignment(QDeclarativeParser::Property *prop,
+                                   QDeclarativeParser::Object *obj,
+                                   QDeclarativeParser::Object *baseObj,
+                                   QDeclarativeParser::Value *value,
+                                   const BindingContext &ctxt);
     bool buildPropertyLiteralAssignment(QDeclarativeParser::Property *prop,
                                         QDeclarativeParser::Object *obj,
                                         QDeclarativeParser::Value *value,
@@ -242,6 +246,7 @@ private:
                       QDeclarativeParser::Object *obj, 
                       const QDeclarativeParser::Object::DynamicProperty &);
     bool completeComponentBuild();
+    bool checkValidId(QDeclarativeParser::Value *, const QString &);
 
 
     void genObject(QDeclarativeParser::Object *obj);
@@ -302,6 +307,7 @@ private:
         QByteArray compiledBindingData;
 
         QHash<QDeclarativeParser::Value *, BindingReference> bindings;
+        QHash<QDeclarativeParser::Value *, BindingContext> signalExpressions;
         QList<QDeclarativeParser::Object *> aliasingObjects;
         QDeclarativeParser::Object *root;
     };

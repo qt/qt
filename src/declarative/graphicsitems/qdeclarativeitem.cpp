@@ -498,6 +498,32 @@ void QDeclarativeKeyNavigationAttached::setDown(QDeclarativeItem *i)
     emit changed();
 }
 
+QDeclarativeItem *QDeclarativeKeyNavigationAttached::tab() const
+{
+    Q_D(const QDeclarativeKeyNavigationAttached);
+    return d->tab;
+}
+
+void QDeclarativeKeyNavigationAttached::setTab(QDeclarativeItem *i)
+{
+    Q_D(QDeclarativeKeyNavigationAttached);
+    d->tab = i;
+    emit changed();
+}
+
+QDeclarativeItem *QDeclarativeKeyNavigationAttached::backtab() const
+{
+    Q_D(const QDeclarativeKeyNavigationAttached);
+    return d->backtab;
+}
+
+void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
+{
+    Q_D(QDeclarativeKeyNavigationAttached);
+    d->backtab = i;
+    emit changed();
+}
+
 void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
 {
     Q_D(QDeclarativeKeyNavigationAttached);
@@ -526,6 +552,18 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event)
     case Qt::Key_Down:
         if (d->down) {
             d->down->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Tab:
+        if (d->tab) {
+            d->tab->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Backtab:
+        if (d->backtab) {
+            d->backtab->setFocus(true);
             event->accept();
         }
         break;
@@ -560,6 +598,16 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event)
         break;
     case Qt::Key_Down:
         if (d->down) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Tab:
+        if (d->tab) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Backtab:
+        if (d->backtab) {
             event->accept();
         }
         break;
@@ -902,6 +950,8 @@ const QDeclarativeKeysAttached::SigMap QDeclarativeKeysAttached::sigMap[] = {
     { Qt::Key_Right, "rightPressed" },
     { Qt::Key_Up, "upPressed" },
     { Qt::Key_Down, "downPressed" },
+    { Qt::Key_Tab, "tabPressed" },
+    { Qt::Key_Backtab, "backtabPressed" },
     { Qt::Key_Asterisk, "asteriskPressed" },
     { Qt::Key_NumberSign, "numberSignPressed" },
     { Qt::Key_Escape, "escapePressed" },
@@ -1440,7 +1490,7 @@ QDeclarativeAnchors *QDeclarativeItem::anchors()
 void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
     QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(o);
-    if (i) 
+    if (i)
         i->setParentItem(static_cast<QDeclarativeItem *>(prop->object));
     else
         o->setParent(static_cast<QDeclarativeItem *>(prop->object));
@@ -1568,7 +1618,7 @@ void QDeclarativeItemPrivate::transform_clear(QDeclarativeListProperty<QGraphics
 */
 
 /*! \internal */
-QDeclarativeListProperty<QObject> QDeclarativeItem::data() 
+QDeclarativeListProperty<QObject> QDeclarativeItem::data()
 {
     return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::data_append);
 }
@@ -2179,16 +2229,16 @@ void QDeclarativeItem::focusChanged(bool flag)
 QDeclarativeListProperty<QDeclarativeItem> QDeclarativeItem::fxChildren()
 {
     return QDeclarativeListProperty<QDeclarativeItem>(this, 0, QDeclarativeItemPrivate::children_append,
-                                                     QDeclarativeItemPrivate::children_count, 
-                                                     QDeclarativeItemPrivate::children_at); 
+                                                     QDeclarativeItemPrivate::children_count,
+                                                     QDeclarativeItemPrivate::children_at);
 }
 
 /*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItem::resources()
 {
-    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append, 
-                                             QDeclarativeItemPrivate::resources_count, 
-                                             QDeclarativeItemPrivate::resources_at); 
+    return QDeclarativeListProperty<QObject>(this, 0, QDeclarativeItemPrivate::resources_append,
+                                             QDeclarativeItemPrivate::resources_count,
+                                             QDeclarativeItemPrivate::resources_at);
 }
 
 /*!
@@ -2465,14 +2515,26 @@ QPointF QDeclarativeItemPrivate::computeTransformOrigin() const
 /*! \internal */
 bool QDeclarativeItem::sceneEvent(QEvent *event)
 {
-    bool rv = QGraphicsItem::sceneEvent(event);
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *k = static_cast<QKeyEvent *>(event);
 
-    if (event->type() == QEvent::FocusIn ||
-        event->type() == QEvent::FocusOut) {
-        focusChanged(hasFocus());
+        if ((k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) &&
+            !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
+            keyPressEvent(static_cast<QKeyEvent *>(event));
+            if (!event->isAccepted())
+                QGraphicsItem::sceneEvent(event);
+        } else {
+            QGraphicsItem::sceneEvent(event);
+        }
+    } else {
+        bool rv = QGraphicsItem::sceneEvent(event);
+
+        if (event->type() == QEvent::FocusIn ||
+            event->type() == QEvent::FocusOut) {
+            focusChanged(hasFocus());
+        }
+        return rv;
     }
-
-    return rv;
 }
 
 /*! \internal */

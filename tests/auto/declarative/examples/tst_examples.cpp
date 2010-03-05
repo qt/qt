@@ -168,10 +168,12 @@ void tst_examples::examples_data()
 
     QString examples = QLibraryInfo::location(QLibraryInfo::ExamplesPath);
     QString demos = QLibraryInfo::location(QLibraryInfo::DemosPath);
+    QString snippets = QLatin1String(SRCDIR) + "/../../../../doc/src/snippets/";
 
     QStringList files;
     files << findQmlFiles(QDir(examples));
     files << findQmlFiles(QDir(demos));
+    files << findQmlFiles(QDir(snippets));
 
     foreach (const QString &file, files)
         QTest::newRow(file.toLatin1().constData()) << file;
@@ -190,7 +192,6 @@ void tst_examples::examples()
               << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
               << file;
     QProcess p;
-qDebug() << qmlruntime << arguments;
     p.start(qmlruntime, arguments);
     QVERIFY(p.waitForFinished());
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);

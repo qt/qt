@@ -81,10 +81,17 @@ class Q_DECLARATIVE_EXPORT QDeclarativeValueTypeFactory
 public:
     QDeclarativeValueTypeFactory();
     ~QDeclarativeValueTypeFactory();
+    static bool isValueType(int);
     static QDeclarativeValueType *valueType(int);
 
+    QDeclarativeValueType *operator[](int idx) const;
+
+private:
     QDeclarativeValueType *valueTypes[QVariant::UserType - 1]; 
-    QDeclarativeValueType *operator[](int idx) const { return valueTypes[idx]; }
+#if (QT_VERSION < QT_VERSION_CHECK(4,7,0))
+    int easingType;
+    QDeclarativeValueType *easingValueType;
+#endif
 };
 
 class Q_AUTOTEST_EXPORT QDeclarativePointFValueType : public QDeclarativeValueType

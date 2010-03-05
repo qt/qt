@@ -42,7 +42,7 @@
 #include <qtest.h>
 #include <QDeclarativeEngine>
 #include <QDeclarativeComponent>
-#include <QDeclarativeMetaProperty>
+#include <QDeclarativeProperty>
 #include <QFile>
 #include <QDebug>
 
@@ -89,8 +89,8 @@ void tst_qmlmetaproperty::lookup_data()
 {
     QTest::addColumn<QString>("file");
 
-    QTest::newRow("Simple Object") << "data/object.qml";
-    QTest::newRow("Synthesized Object") << "data/synthesized_object.qml";
+    QTest::newRow("Simple Object") << SRCDIR "/data/object.qml";
+    QTest::newRow("Synthesized Object") << SRCDIR "/data/synthesized_object.qml";
 }
 
 void tst_qmlmetaproperty::lookup()
@@ -103,7 +103,7 @@ void tst_qmlmetaproperty::lookup()
     QObject *obj = c.create();
 
     QBENCHMARK {
-        QDeclarativeMetaProperty p(obj, "x");
+        QDeclarativeProperty p(obj, "x");
     }
 
     delete obj;

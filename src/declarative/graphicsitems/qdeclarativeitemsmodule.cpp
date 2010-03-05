@@ -106,7 +106,6 @@ void QDeclarativeItemModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,LayoutItem,QDeclarativeLayoutItem);
     QML_REGISTER_TYPE(Qt,4,6,ListView,QDeclarativeListView);
     QML_REGISTER_TYPE(Qt,4,6,Loader,QDeclarativeLoader);
-    QML_REGISTER_TYPE(Qt,4,6,MouseRegion,QDeclarativeMouseArea);
     QML_REGISTER_TYPE(Qt,4,6,MouseArea,QDeclarativeMouseArea);
     QML_REGISTER_TYPE(Qt,4,6,Opacity,QGraphicsOpacityEffect);
     QML_REGISTER_TYPE(Qt,4,6,ParticleMotion,QDeclarativeParticleMotion);
@@ -139,9 +138,6 @@ void QDeclarativeItemModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,VisibleArea,QDeclarativeFlickableVisibleArea);
     QML_REGISTER_TYPE(Qt,4,6,VisualDataModel,QDeclarativeVisualDataModel);
     QML_REGISTER_TYPE(Qt,4,6,VisualItemModel,QDeclarativeVisualItemModel);
-#ifdef QT_WEBKIT_LIB
-    QML_REGISTER_TYPE(Qt,4,6,WebView,QDeclarativeWebView);
-#endif
 
     QML_REGISTER_NOCREATE_TYPE(QDeclarativeAnchors);
     QML_REGISTER_NOCREATE_TYPE(QGraphicsEffect);
