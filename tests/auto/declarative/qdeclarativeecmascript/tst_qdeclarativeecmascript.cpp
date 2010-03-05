@@ -124,6 +124,8 @@ private slots:
     void deletedObject();
     void scriptScope();
     void attachedPropertyScope();
+    void scriptConnect();
+    void scriptDisconnect();
 
     void bug1();
 
@@ -1729,6 +1731,166 @@ void tst_qdeclarativeecmascript::attachedPropertyScope()
     QCOMPARE(object->property("value2").toInt(), 9);
 
     delete object;
+}
+
+void tst_qdeclarativeecmascript::scriptConnect()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptConnect.1.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toBool(), false);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toBool(), true);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptConnect.2.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toBool(), false);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toBool(), true);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptConnect.3.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toBool(), false);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toBool(), true);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptConnect.4.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->methodCalled(), false);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->methodCalled(), true);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptConnect.5.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->methodCalled(), false);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->methodCalled(), true);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptConnect.6.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 0);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 2);
+
+        delete object;
+    }
+}
+
+void tst_qdeclarativeecmascript::scriptDisconnect()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptDisconnect.1.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 0);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 1);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->basicSignal();
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 2);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptDisconnect.2.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 0);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 1);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->basicSignal();
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 2);
+
+        delete object;
+    }
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptDisconnect.3.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 0);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 1);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->basicSignal();
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 3);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scriptDisconnect.4.qml"));
+
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 0);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 1);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->basicSignal();
+        QCOMPARE(object->property("test").toInt(), 2);
+        emit object->argumentSignal(19, "Hello world!", 10.3);
+        QCOMPARE(object->property("test").toInt(), 3);
+
+        delete object;
+    }
+
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

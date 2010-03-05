@@ -158,17 +158,17 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
     \qmlclass ParentChange QDeclarativeParentChange
     \brief The ParentChange element allows you to reparent an Item in a state change.
 
-    ParentChange reparents an Item while preserving its visual appearance (position, rotation,
-    and scale) on screen. You can then specify a transition to move/rotate/scale the Item to
-    its final intended appearance.
+    ParentChange reparents an item while preserving its visual appearance (position, size,
+    rotation, and scale) on screen. You can then specify a transition to move/resize/rotate/scale
+    the item to its final intended appearance.
 
     ParentChange can only preserve visual appearance if no complex transforms are involved.
     More specifically, it will not work if the transform property has been set for any
-    Items involved in the reparenting (defined as any Items in the common ancestor tree
+    items involved in the reparenting (i.e. items in the common ancestor tree
     for the original and new parent).
 
     You can specify at which point in a transition you want a ParentChange to occur by
-    using a ParentAction.
+    using a ParentAnimation or ParentAction.
 */
 
 
@@ -181,6 +181,16 @@ QDeclarativeParentChange::~QDeclarativeParentChange()
 {
 }
 
+/*!
+    \qmlproperty real ParentChange::x
+    \qmlproperty real ParentChange::y
+    \qmlproperty real ParentChange::width
+    \qmlproperty real ParentChange::height
+    \qmlproperty real ParentChange::scale
+    \qmlproperty real ParentChange::rotation
+    These properties hold the new position, size, scale, and rotation
+    for the item in this state.
+*/
 qreal QDeclarativeParentChange::x() const
 {
     Q_D(const QDeclarativeParentChange);
@@ -314,7 +324,7 @@ void QDeclarativeParentChange::setObject(QDeclarativeItem *target)
 
 /*!
     \qmlproperty Item ParentChange::parent
-    This property holds the parent for the item in this state
+    This property holds the new parent for the item in this state.
 */
 
 QDeclarativeItem *QDeclarativeParentChange::parent() const

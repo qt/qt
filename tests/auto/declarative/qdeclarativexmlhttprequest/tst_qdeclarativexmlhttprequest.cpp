@@ -69,6 +69,7 @@ private slots:
     void constructor();
     void defaultState();
     void open();
+    void open_data();
     void open_invalid_method();
     void open_sync();
     void open_arg_count();
@@ -82,6 +83,7 @@ private slots:
     void send_alreadySent();
     void send_ignoreData();
     void send_withdata();
+    void send_withdata_data();
     void abort();
     void abort_unsent();
     void abort_opened();
@@ -94,11 +96,15 @@ private slots:
     void getAllResponseHeaders_sent();
     void getAllResponseHeaders_args();
     void status();
+    void status_data();
     void statusText();
+    void statusText_data();
     void responseText();
+    void responseText_data();
     void responseXML_invalid();
     void invalidMethodUsage();
     void redirects();
+    void nonUtf8();
 
     // Attributes
     void document();
@@ -257,99 +263,50 @@ void tst_qdeclarativexmlhttprequest::defaultState()
 // Test valid XMLHttpRequest.open() calls
 void tst_qdeclarativexmlhttprequest::open()
 {
-    // Relative url
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("open.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "testdocument.html");
-        component.completeCreate();
+    QFETCH(QUrl, qmlFile);
+    QFETCH(QString, url);
+    QFETCH(bool, remote);
 
-        QCOMPARE(object->property("readyState").toBool(), true);
-        QCOMPARE(object->property("openedState").toBool(), true);
-        QCOMPARE(object->property("status").toBool(), true);
-        QCOMPARE(object->property("statusText").toBool(), true);
-        QCOMPARE(object->property("responseText").toBool(), true);
-        QCOMPARE(object->property("responseXML").toBool(), true);
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
+    TestHTTPServer *server = 0;
+    if (remote) {
+        server = new TestHTTPServer(SERVER_PORT);
+        QVERIFY(server->isValid());
+        QVERIFY(server->wait(TEST_FILE("open_network.expect"), 
+                             TEST_FILE("open_network.reply"), 
+                             TEST_FILE("testdocument.html")));
     }
 
-    // Absolute url
-    {
-        QDeclarativeComponent component(&engine, TEST_FILE("open.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", TEST_FILE("testdocument.html").toString());
-        component.completeCreate();
+    QDeclarativeComponent component(&engine, qmlFile);
+    QObject *object = component.beginCreate(engine.rootContext());
+    QVERIFY(object != 0);
+    object->setProperty("url", url);
+    component.completeCreate();
 
-        QCOMPARE(object->property("readyState").toBool(), true);
-        QCOMPARE(object->property("openedState").toBool(), true);
-        QCOMPARE(object->property("status").toBool(), true);
-        QCOMPARE(object->property("statusText").toBool(), true);
-        QCOMPARE(object->property("responseText").toBool(), true);
-        QCOMPARE(object->property("responseXML").toBool(), true);
+    QCOMPARE(object->property("readyState").toBool(), true);
+    QCOMPARE(object->property("openedState").toBool(), true);
+    QCOMPARE(object->property("status").toBool(), true);
+    QCOMPARE(object->property("statusText").toBool(), true);
+    QCOMPARE(object->property("responseText").toBool(), true);
+    QCOMPARE(object->property("responseXML").toBool(), true);
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+    TRY_WAIT(object->property("dataOK").toBool() == true);
 
-        delete object;
-    }
+    delete server;
+    delete object;
+}
 
-    // Absolute network url
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("open_network.expect"), 
-                            TEST_FILE("open_network.reply"), 
-                            TEST_FILE("testdocument.html")));
+void tst_qdeclarativexmlhttprequest::open_data()
+{
+    QTest::addColumn<QUrl>("qmlFile");
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<bool>("remote");
 
-        QDeclarativeComponent component(&engine, TEST_FILE("open.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
+    QTest::newRow("Relative url)") << TEST_FILE("open.qml") << "testdocument.html" << false;
+    QTest::newRow("Absolute url)") << TEST_FILE("open.qml") << TEST_FILE("testdocument.html").toString() << false;
+    QTest::newRow("Absolute network url)") << TEST_FILE("open.qml") << "http://127.0.0.1:14445/testdocument.html" << true;
 
-        QCOMPARE(object->property("readyState").toBool(), true);
-        QCOMPARE(object->property("openedState").toBool(), true);
-        QCOMPARE(object->property("status").toBool(), true);
-        QCOMPARE(object->property("statusText").toBool(), true);
-        QCOMPARE(object->property("responseText").toBool(), true);
-        QCOMPARE(object->property("responseXML").toBool(), true);
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
-    }
-
-    // User/pass
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("open_network.expect"), 
-                            TEST_FILE("open_network.reply"), 
-                            TEST_FILE("testdocument.html")));
-
-        QDeclarativeComponent component(&engine, TEST_FILE("open_user.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
-
-        QCOMPARE(object->property("readyState").toBool(), true);
-        QCOMPARE(object->property("openedState").toBool(), true);
-        QCOMPARE(object->property("status").toBool(), true);
-        QCOMPARE(object->property("statusText").toBool(), true);
-        QCOMPARE(object->property("responseText").toBool(), true);
-        QCOMPARE(object->property("responseXML").toBool(), true);
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        // ### Check that the username/password were sent to the server
-
-        delete object;
-    }
+    // ### Check that the username/password were sent to the server
+    QTest::newRow("User/pass") << TEST_FILE("open_user.qml") << "http://127.0.0.1:14445/testdocument.html" << true;
 }
 
 // Test that calling XMLHttpRequest.open() with an invalid method raises an exception
@@ -594,138 +551,38 @@ void tst_qdeclarativexmlhttprequest::send_ignoreData()
 // Test that send()'ing data works
 void tst_qdeclarativexmlhttprequest::send_withdata()
 {
-    // No content-type
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
-                            TEST_FILE("send_data.reply"), 
-                            TEST_FILE("testdocument.html")));
+    QFETCH(QString, file_expected);
+    QFETCH(QString, file_qml);
 
-        QDeclarativeComponent component(&engine, TEST_FILE("send_data.1.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    QVERIFY(server.wait(TEST_FILE(file_expected), 
+                        TEST_FILE("send_data.reply"), 
+                        TEST_FILE("testdocument.html")));
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+    QDeclarativeComponent component(&engine, TEST_FILE(file_qml));
+    QObject *object = component.beginCreate(engine.rootContext());
+    QVERIFY(object != 0);
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
+    component.completeCreate();
 
-        delete object;
-    }
+    TRY_WAIT(object->property("dataOK").toBool() == true);
 
-    // Correct content-type
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
-                            TEST_FILE("send_data.reply"), 
-                            TEST_FILE("testdocument.html")));
+    delete object;
+}
 
-        QDeclarativeComponent component(&engine, TEST_FILE("send_data.2.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
+void tst_qdeclarativexmlhttprequest::send_withdata_data()
+{
+    QTest::addColumn<QString>("file_expected");
+    QTest::addColumn<QString>("file_qml");
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
-    }
-
-    // Incorrect content-type
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
-                            TEST_FILE("send_data.reply"), 
-                            TEST_FILE("testdocument.html")));
-
-        QDeclarativeComponent component(&engine, TEST_FILE("send_data.3.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
-    }
-    
-    // Correct content-type - out of order
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_data.4.expect"), 
-                            TEST_FILE("send_data.reply"), 
-                            TEST_FILE("testdocument.html")));
-
-        QDeclarativeComponent component(&engine, TEST_FILE("send_data.4.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
-    }
-
-    // Incorrect content-type - out of order
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_data.4.expect"), 
-                            TEST_FILE("send_data.reply"), 
-                            TEST_FILE("testdocument.html")));
-
-        QDeclarativeComponent component(&engine, TEST_FILE("send_data.5.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
-    }
-
-    // PUT
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_data.6.expect"), 
-                            TEST_FILE("send_data.reply"), 
-                            TEST_FILE("testdocument.html")));
-
-        QDeclarativeComponent component(&engine, TEST_FILE("send_data.6.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
-    }
-
-    // Correct content-type - no charset
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
-                            TEST_FILE("send_data.reply"), 
-                            TEST_FILE("testdocument.html")));
-
-        QDeclarativeComponent component(&engine, TEST_FILE("send_data.7.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        component.completeCreate();
-
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        delete object;
-    }
+    QTest::newRow("No content-type") << "send_data.1.expect" << "send_data.1.qml";
+    QTest::newRow("Correct content-type") << "send_data.1.expect" << "send_data.2.qml";
+    QTest::newRow("Incorrect content-type") << "send_data.1.expect" << "send_data.3.qml";
+    QTest::newRow("Correct content-type - out of order") << "send_data.4.expect" << "send_data.4.qml";
+    QTest::newRow("Incorrect content-type - out of order") << "send_data.4.expect" << "send_data.5.qml";
+    QTest::newRow("PUT") << "send_data.6.expect" << "send_data.6.qml";
+    QTest::newRow("Correct content-type - no charset") << "send_data.1.expect" << "send_data.7.qml";
 }
 
 // Test abort() has no effect in unsent state
@@ -940,200 +797,149 @@ void tst_qdeclarativexmlhttprequest::getAllResponseHeaders_args()
 
 void tst_qdeclarativexmlhttprequest::status()
 {
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("status.expect"), 
-                            TEST_FILE("status.200.reply"), 
-                            TEST_FILE("testdocument.html")));
+    QFETCH(QUrl, replyUrl);
+    QFETCH(int, status);
 
-        QDeclarativeComponent component(&engine, TEST_FILE("status.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        object->setProperty("expectedStatus", 200);
-        component.completeCreate();
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    QVERIFY(server.wait(TEST_FILE("status.expect"), 
+                        replyUrl,
+                        TEST_FILE("testdocument.html")));
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+    QDeclarativeComponent component(&engine, TEST_FILE("status.qml"));
+    QObject *object = component.beginCreate(engine.rootContext());
+    QVERIFY(object != 0);
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
+    object->setProperty("expectedStatus", status);
+    component.completeCreate();
 
-        QCOMPARE(object->property("unsentException").toBool(), true);
-        QCOMPARE(object->property("openedException").toBool(), true);
-        QCOMPARE(object->property("sentException").toBool(), true);
-        QCOMPARE(object->property("headersReceived").toBool(), true);
-        QCOMPARE(object->property("loading").toBool(), true);
-        QCOMPARE(object->property("done").toBool(), true);
-        QCOMPARE(object->property("resetException").toBool(), true);
+    TRY_WAIT(object->property("dataOK").toBool() == true);
 
-        delete object;
-    }
+    QCOMPARE(object->property("unsentException").toBool(), true);
+    QCOMPARE(object->property("openedException").toBool(), true);
+    QCOMPARE(object->property("sentException").toBool(), true);
+    QCOMPARE(object->property("headersReceived").toBool(), true);
+    QCOMPARE(object->property("loading").toBool(), true);
+    QCOMPARE(object->property("done").toBool(), true);
+    QCOMPARE(object->property("resetException").toBool(), true);
 
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("status.expect"), 
-                            TEST_FILE("status.404.reply"), 
-                            TEST_FILE("testdocument.html")));
+    delete object;
+}
 
-        QDeclarativeComponent component(&engine, TEST_FILE("status.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        object->setProperty("expectedStatus", 404);
-        component.completeCreate();
+void tst_qdeclarativexmlhttprequest::status_data()
+{
+    QTest::addColumn<QUrl>("replyUrl");
+    QTest::addColumn<int>("status");
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        QCOMPARE(object->property("unsentException").toBool(), true);
-        QCOMPARE(object->property("openedException").toBool(), true);
-        QCOMPARE(object->property("sentException").toBool(), true);
-        QCOMPARE(object->property("headersReceived").toBool(), true);
-        QCOMPARE(object->property("loading").toBool(), true);
-        QCOMPARE(object->property("done").toBool(), true);
-        QCOMPARE(object->property("resetException").toBool(), true);
-
-        delete object;
-    }
+    QTest::newRow("OK") << TEST_FILE("status.200.reply") << 200;
+    QTest::newRow("Not Found") << TEST_FILE("status.404.reply") << 404;
 }
 
 void tst_qdeclarativexmlhttprequest::statusText()
 {
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("status.expect"), 
-                            TEST_FILE("status.200.reply"), 
-                            TEST_FILE("testdocument.html")));
+    QFETCH(QUrl, replyUrl);
+    QFETCH(QString, statusText);
 
-        QDeclarativeComponent component(&engine, TEST_FILE("statusText.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        object->setProperty("expectedStatus", "OK");
-        component.completeCreate();
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    QVERIFY(server.wait(TEST_FILE("status.expect"), 
+                        replyUrl, 
+                        TEST_FILE("testdocument.html")));
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+    QDeclarativeComponent component(&engine, TEST_FILE("statusText.qml"));
+    QObject *object = component.beginCreate(engine.rootContext());
+    QVERIFY(object != 0);
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
+    object->setProperty("expectedStatus", statusText);
+    component.completeCreate();
 
-        QCOMPARE(object->property("unsentException").toBool(), true);
-        QCOMPARE(object->property("openedException").toBool(), true);
-        QCOMPARE(object->property("sentException").toBool(), true);
-        QCOMPARE(object->property("headersReceived").toBool(), true);
-        QCOMPARE(object->property("loading").toBool(), true);
-        QCOMPARE(object->property("done").toBool(), true);
-        QCOMPARE(object->property("resetException").toBool(), true);
+    TRY_WAIT(object->property("dataOK").toBool() == true);
 
-        delete object;
-    }
+    QCOMPARE(object->property("unsentException").toBool(), true);
+    QCOMPARE(object->property("openedException").toBool(), true);
+    QCOMPARE(object->property("sentException").toBool(), true);
+    QCOMPARE(object->property("headersReceived").toBool(), true);
+    QCOMPARE(object->property("loading").toBool(), true);
+    QCOMPARE(object->property("done").toBool(), true);
+    QCOMPARE(object->property("resetException").toBool(), true);
 
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("status.expect"), 
-                            TEST_FILE("status.404.reply"), 
-                            TEST_FILE("testdocument.html")));
+    delete object;
+}
 
-        QDeclarativeComponent component(&engine, TEST_FILE("statusText.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        object->setProperty("expectedStatus", "Document not found");
-        component.completeCreate();
+void tst_qdeclarativexmlhttprequest::statusText_data()
+{
+    QTest::addColumn<QUrl>("replyUrl");
+    QTest::addColumn<QString>("statusText");
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
-
-        QCOMPARE(object->property("unsentException").toBool(), true);
-        QCOMPARE(object->property("openedException").toBool(), true);
-        QCOMPARE(object->property("sentException").toBool(), true);
-        QCOMPARE(object->property("headersReceived").toBool(), true);
-        QCOMPARE(object->property("loading").toBool(), true);
-        QCOMPARE(object->property("done").toBool(), true);
-        QCOMPARE(object->property("resetException").toBool(), true);
-
-        delete object;
-    }
+    QTest::newRow("OK") << TEST_FILE("status.200.reply") << "OK";
+    QTest::newRow("Not Found") << TEST_FILE("status.404.reply") << "Document not found";
 }
 
 void tst_qdeclarativexmlhttprequest::responseText()
 {
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("status.expect"), 
-                            TEST_FILE("status.200.reply"), 
-                            TEST_FILE("testdocument.html")));
+    QFETCH(QUrl, replyUrl);
+    QFETCH(QUrl, bodyUrl);
+    QFETCH(QString, responseText);
 
-        QDeclarativeComponent component(&engine, TEST_FILE("responseText.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        object->setProperty("expectedText", "QML Rocks!\n");
-        component.completeCreate();
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    QVERIFY(server.wait(TEST_FILE("status.expect"), 
+                        replyUrl, 
+                        bodyUrl));
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+    QDeclarativeComponent component(&engine, TEST_FILE("responseText.qml"));
+    QObject *object = component.beginCreate(engine.rootContext());
+    QVERIFY(object != 0);
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
+    object->setProperty("expectedText", responseText);
+    component.completeCreate();
 
-        QCOMPARE(object->property("unsent").toBool(), true);
-        QCOMPARE(object->property("opened").toBool(), true);
-        QCOMPARE(object->property("sent").toBool(), true);
-        QCOMPARE(object->property("headersReceived").toBool(), true);
-        QCOMPARE(object->property("loading").toBool(), true);
-        QCOMPARE(object->property("done").toBool(), true);
-        QCOMPARE(object->property("reset").toBool(), true);
+    TRY_WAIT(object->property("dataOK").toBool() == true);
 
-        delete object;
-    }
+    QCOMPARE(object->property("unsent").toBool(), true);
+    QCOMPARE(object->property("opened").toBool(), true);
+    QCOMPARE(object->property("sent").toBool(), true);
+    QCOMPARE(object->property("headersReceived").toBool(), true);
+    QCOMPARE(object->property("loading").toBool(), true);
+    QCOMPARE(object->property("done").toBool(), true);
+    QCOMPARE(object->property("reset").toBool(), true);
 
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("status.expect"), 
-                            TEST_FILE("status.200.reply"), 
-                            QUrl()));
+    delete object;
+}
 
-        QDeclarativeComponent component(&engine, TEST_FILE("responseText.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        object->setProperty("expectedText", "");
-        component.completeCreate();
+void tst_qdeclarativexmlhttprequest::responseText_data()
+{
+    QTest::addColumn<QUrl>("replyUrl");
+    QTest::addColumn<QUrl>("bodyUrl");
+    QTest::addColumn<QString>("responseText");
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+    QTest::newRow("OK") << TEST_FILE("status.200.reply") << TEST_FILE("testdocument.html") << "QML Rocks!\n";
+    QTest::newRow("empty body") << TEST_FILE("status.200.reply") << QUrl() << "";
+    QTest::newRow("Not Found") << TEST_FILE("status.404.reply") << TEST_FILE("testdocument.html") << "";
+}
 
-        QCOMPARE(object->property("unsent").toBool(), true);
-        QCOMPARE(object->property("opened").toBool(), true);
-        QCOMPARE(object->property("sent").toBool(), true);
-        QCOMPARE(object->property("headersReceived").toBool(), true);
-        QCOMPARE(object->property("loading").toBool(), true);
-        QCOMPARE(object->property("done").toBool(), true);
-        QCOMPARE(object->property("reset").toBool(), true);
+void tst_qdeclarativexmlhttprequest::nonUtf8()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("utf16.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 
-        delete object;
-    }
+    QString uc;
+    uc.resize(3);
+    uc[0] = QChar(0x10e3);
+    uc[1] = QChar(' ');
+    uc[2] = QChar(0x03a3);
+    QString xml = "<?xml version=\"1.0\" encoding=\"UTF-16\" standalone='yes'?>\n<root>\n" + uc + "\n</root>\n";
 
-    {
-        TestHTTPServer server(SERVER_PORT);
-        QVERIFY(server.isValid());
-        QVERIFY(server.wait(TEST_FILE("status.expect"), 
-                            TEST_FILE("status.404.reply"), 
-                            TEST_FILE("testdocument.html")));
+    TRY_WAIT(object->property("dataOK").toBool() == true);
 
-        QDeclarativeComponent component(&engine, TEST_FILE("responseText.qml"));
-        QObject *object = component.beginCreate(engine.rootContext());
-        QVERIFY(object != 0);
-        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
-        object->setProperty("expectedText", "");
-        component.completeCreate();
+    QString responseText = object->property("responseText").toString();
+    QCOMPARE(responseText, xml);
 
-        TRY_WAIT(object->property("dataOK").toBool() == true);
+    QString responseXmlText = object->property("responseXmlRootNodeValue").toString();
+    QCOMPARE(responseXmlText, '\n' + uc + '\n');
 
-        QCOMPARE(object->property("unsent").toBool(), true);
-        QCOMPARE(object->property("opened").toBool(), true);
-        QCOMPARE(object->property("sent").toBool(), true);
-        QCOMPARE(object->property("headersReceived").toBool(), true);
-        QCOMPARE(object->property("loading").toBool(), true);
-        QCOMPARE(object->property("done").toBool(), true);
-        QCOMPARE(object->property("reset").toBool(), true);
-
-        delete object;
-    }
+    delete object;
 }
 
 // Test that calling hte XMLHttpRequest methods on a non-XMLHttpRequest object

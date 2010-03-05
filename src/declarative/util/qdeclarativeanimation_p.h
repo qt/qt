@@ -457,7 +457,7 @@ class QDeclarativeParentAnimation : public QDeclarativeAnimationGroup
     Q_DECLARE_PRIVATE(QDeclarativeParentAnimation)
 
     Q_PROPERTY(QDeclarativeItem *target READ target WRITE setTarget)
-    //Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent)
+    Q_PROPERTY(QDeclarativeItem *newParent READ newParent WRITE setNewParent)
     Q_PROPERTY(QDeclarativeItem *via READ via WRITE setVia)
 
 public:

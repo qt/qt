@@ -561,9 +561,11 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
         QDeclarativeCompositeTypeData::TypeReference &tref = unit->types[ii];
         QDeclarativeCompiledData::TypeReference ref;
         QDeclarativeScriptParser::TypeReference *parserRef = unit->data.referencedTypes().at(ii);
-        if (tref.type)
+        if (tref.type) {
             ref.type = tref.type;
-        else if (tref.unit) {
+            if (!ref.type->isCreatable()) 
+                COMPILE_EXCEPTION(parserRef->refObjects.first(), QCoreApplication::translate("QDeclarativeCompiler", "Element is not creatable."));
+        } else if (tref.unit) {
             ref.component = tref.unit->toComponent(engine);
 
             if (ref.component->isError()) {

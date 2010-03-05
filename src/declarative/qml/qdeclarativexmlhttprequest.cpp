@@ -52,6 +52,7 @@
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptengine.h>
 #include <QtNetwork/qnetworkreply.h>
+#include <QtCore/qtextcodec.h>
 #include <QtCore/qxmlstream.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qdebug.h>
@@ -312,7 +313,7 @@ public:
 
     // C++ API
     static QScriptValue prototype(QScriptEngine *);
-    static QScriptValue load(QScriptEngine *engine, const QString &data);
+    static QScriptValue load(QScriptEngine *engine, const QByteArray &data);
 };
 
 QT_END_NAMESPACE
@@ -619,7 +620,7 @@ QScriptValue Document::prototype(QScriptEngine *engine)
     return proto;
 }
 
-QScriptValue Document::load(QScriptEngine *engine, const QString &data)
+QScriptValue Document::load(QScriptEngine *engine, const QByteArray &data)
 {
     Q_ASSERT(engine);
 
@@ -960,6 +961,7 @@ public:
     QScriptValue abort(QScriptValue *me);
 
     QString responseBody() const;
+    const QByteArray & rawResponseBody() const;
 private slots:
     void downloadProgress(qint64);
     void error(QNetworkReply::NetworkError);
@@ -1279,7 +1281,18 @@ void QDeclarativeXMLHttpRequest::finished()
 
 QString QDeclarativeXMLHttpRequest::responseBody() const
 {
+    QXmlStreamReader reader(m_responseEntityBody);
+    reader.readNext();
+    QTextCodec *codec = QTextCodec::codecForName(reader.documentEncoding().toString().toUtf8());
+    if (codec)
+        return codec->toUnicode(m_responseEntityBody);
+
     return QString::fromUtf8(m_responseEntityBody);
+}
+
+const QByteArray &QDeclarativeXMLHttpRequest::rawResponseBody() const
+{
+    return m_responseEntityBody;
 }
 
 QScriptValue QDeclarativeXMLHttpRequest::dispatchCallback(QScriptValue *me)
@@ -1538,7 +1551,7 @@ static QScriptValue qmlxmlhttprequest_responseXML(QScriptContext *context, QScri
         request->readyState() != QDeclarativeXMLHttpRequest::Done)
         return engine->nullValue();
     else  
-        return Document::load(engine, request->responseBody());
+        return Document::load(engine, request->rawResponseBody());
 }
 
 static QScriptValue qmlxmlhttprequest_onreadystatechange(QScriptContext *context, QScriptEngine *engine)

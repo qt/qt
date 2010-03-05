@@ -17,15 +17,17 @@ Item {
     }
 
     // stars (when there's no sun)
-    Particles { id: stars
-        x: 0; y: 0; width: parent.width; height: parent.height/2
+    Particles {
+        id: stars
+        x: 0; y: 0; width: parent.width; height: parent.height / 2
         source: "images/star.png"; angleDeviation: 360; velocity: 0
         velocityDeviation: 0; count: parent.width / 10; fadeInDuration: 2800
         opacity: 1
     }
 
     // ground, which has a z such that the sun can set behind it
-    Rectangle { id: ground
+    Rectangle {
+        id: ground
         z: 2
         anchors { left: parent.left; top: parent.verticalCenter; right: toolbox.right; bottom: parent.bottom }
         gradient: Gradient {
@@ -35,7 +37,8 @@ Item {
     }
 
     //Day state, for when you place a sun
-    states: State { name: "Day"; when: window.activeSuns > 0
+    states: State {
+        name: "Day"; when: window.activeSuns > 0
         PropertyChanges { target: stopA; color: "DeepSkyBlue"}
         PropertyChanges { target: stopB; color: "SkyBlue"}
         PropertyChanges { target: stars; opacity: 0 }
@@ -56,56 +59,57 @@ Item {
         width: 480
         anchors { right: parent.right; top:parent.top; bottom: parent.bottom }
         Rectangle { //Not a child of any positioner
-            color: "white"; border.color: "black"; 
+            color: "white"; border.color: "black";
             width: toolRow.width + 4
             height: toolRow.height + 4
             x: toolboxPositioner.x + toolRow.x - 2
             y: toolboxPositioner.y + toolRow.y - 2
         }
-        Column{
+        Column {
             id: toolboxPositioner
             anchors.centerIn: parent
             spacing: 8
-            Text{ text: "Drag an item into the scene." }
-            Row{ id: toolRow
-                spacing: 8; 
-                PaletteItem{ 
+            Text { text: "Drag an item into the scene." }
+            Row {
+                id: toolRow
+                spacing: 8;
+                PaletteItem {
                     anchors.verticalCenter: parent.verticalCenter
                     file: "Sun.qml";
                     image: "../images/sun.png"
                 }
-                PaletteItem{ 
+                PaletteItem {
                     file: "GenericItem.qml"
                     image: "../images/moon.png"
                 }
-                PaletteItem{ 
+                PaletteItem {
                     anchors.verticalCenter: parent.verticalCenter
                     file: "PerspectiveItem.qml"
                     image: "../images/tree_s.png"
                 }
-                PaletteItem{ 
+                PaletteItem {
                     anchors.verticalCenter: parent.verticalCenter
                     file: "PerspectiveItem.qml"
                     image: "../images/rabbit_brown.png"
                 }
-                PaletteItem{ 
+                PaletteItem {
                     anchors.verticalCenter: parent.verticalCenter
                     file: "PerspectiveItem.qml"
                     image: "../images/rabbit_bw.png"
                 }
             }
-            Text{ text: "Active Suns: " + activeSuns }
+            Text { text: "Active Suns: " + activeSuns }
             Rectangle { width: 440; height: 1; color: "black" }
-            Text{ text: "Arbitrary QML: " }
+            Text { text: "Arbitrary QML: " }
             TextEdit {
                 id: qmlText
                 width: 460
                 height: 220
                 readOnly: false
                 focusOnPress: true
-                font.pixelSize: 16
-                
-                text: "import Qt 4.6\nImage { id: smile;\n  x: 500*Math.random();\n  y: 200*Math.random(); \n  source: 'images/face-smile.png';\n  opacity: NumberAnimation{ \n    to: 0; duration: 1500;\n  }\n   Component.onCompleted: smile.destroy(1500);\n}"
+                font.pixelSize: 14
+
+                text: "import Qt 4.6\nImage {\n  id: smile;\n  x: 500*Math.random();\n  y: 200*Math.random(); \n  source: 'images/face-smile.png';\n  NumberAnimation on opacity { \n    to: 0; duration: 1500;\n  }\n   Component.onCompleted: smile.destroy(1500);\n}"
             }
             Button {
                 text: "Create"
