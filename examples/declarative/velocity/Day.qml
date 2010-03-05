@@ -33,7 +33,7 @@ Rectangle {
                 id: sticky
                 scale: 0.5
                 Image {
-                    id: stickyImage; source: "sticky.png"
+                    id: stickyImage; source: "sticky.png"; transformOrigin: Item.TopLeft
                     smooth: true; y: -20; x: 8 + -width * 0.6 / 2; scale: 0.6
                 }
 
@@ -59,7 +59,7 @@ Rectangle {
             }
 
             Image {
-                source: "tack.png"
+                source: "tack.png"; transformOrigin: Item.TopLeft
                 x: -width / 2; y: -height * 0.7 / 2; scale: 0.7
             }
 

@@ -7,11 +7,8 @@ Rectangle {
     color: "steelblue"
 
     FontLoader { id: fixedFont; name: "Courier" }
-
     FontLoader { id: localFont; source: "fonts/tarzenau-ocr-a.ttf" }
-
     FontLoader { id: webFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
-    FontLoader { id: webFont2; source: "http://wrong.address.org" }
 
     Column {
         anchors.fill: parent; spacing: 10
@@ -54,16 +51,6 @@ Rectangle {
             color: "lightsteelblue"
             width: parent.width; elide: Text.ElideMiddle
             font.family: webFont.name; font.pointSize: 36
-        }
-        Text {
-            text: {
-                if (webFont2.status == 1) myText
-                else if (webFont2.status == 2) "Loading..."
-                else if (webFont2.status == 3) "Error loading font"
-            }
-            color: "lightsteelblue"
-            width: parent.width; elide: Text.ElideRight
-            font.family: webFont2.name; font.pointSize: 36
         }
     }
 }
