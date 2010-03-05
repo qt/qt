@@ -2,6 +2,22 @@
 <!DOCTYPE TS>
 <TS version="2.0">
 <context>
+    <name>A1::B::Test</name>
+    <message>
+        <location filename="main.cpp" line="191"/>
+        <source>yeeee-ha!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AA::B::C::Test</name>
+    <message>
+        <location filename="main.cpp" line="174"/>
+        <source>howdy?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Class</name>
     <message>
         <location filename="main.cpp" line="52"/>
@@ -76,6 +92,14 @@
     <message>
         <location filename="main.cpp" line="123"/>
         <source>innermost three b</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="main.cpp" line="148"/>
+        <source>Bla</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
