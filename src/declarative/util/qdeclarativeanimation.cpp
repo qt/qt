@@ -2391,6 +2391,52 @@ void QDeclarativePropertyAnimation::transition(QDeclarativeStateActions &actions
     }
 }
 
+/*!
+    \qmlclass ParentAnimation QDeclarativeParentAnimation
+    \since 4.7
+    \inherits Animation
+    \brief The ParentAnimation element allows you to animate parent changes.
+
+    ParentAnimation is used in conjunction with NumberAnimation to smoothly
+    animate changing an item's parent. In the following example,
+    ParentAnimation wraps a NumberAnimation which animates from the
+    current position in the old parent to the new position in the new
+    parent.
+
+    \qml
+    ...
+    State {
+        //reparent myItem to newParent. myItem's final location
+        //should be 10,10 in newParent.
+        ParentChange {
+            target: myItem
+            parent: newParent
+            x: 10; y: 10
+        }
+    }
+    ...
+    Transition {
+        //smoothly reparent myItem and move into new position
+        ParentAnimation {
+            target: theItem
+            NumberAnimation { properties: "x,y" }
+        }
+    }
+    \endqml
+
+    ParentAnimation can wrap any number of animations -- those animations will
+    be run in parallel (like those in a ParallelAnimation group).
+
+    In some cases, such as reparenting between items with clipping, it's useful
+    to animate the parent change \i via another item with no clipping.
+
+    When used in a transition, ParentAnimation will by default animate
+    all ParentChanges.
+*/
+/*!
+    \internal
+    \class QDeclarativeParentAnimation
+*/
 QDeclarativeParentAnimation::QDeclarativeParentAnimation(QObject *parent)
     : QDeclarativeAnimationGroup(*(new QDeclarativeParentAnimationPrivate), parent)
 {
@@ -2412,6 +2458,10 @@ QDeclarativeParentAnimation::~QDeclarativeParentAnimation()
 {
 }
 
+/*!
+    \qmlproperty item ParentAnimation::target
+    The item to reparent.
+*/
 QDeclarativeItem *QDeclarativeParentAnimation::target() const
 {
     Q_D(const QDeclarativeParentAnimation);
@@ -2436,6 +2486,19 @@ void QDeclarativeParentAnimation::setNewParent(QDeclarativeItem *newParent)
     d->newParent = newParent;
 }
 
+/*!
+    \qmlproperty item ParentAnimation::via
+    The item to reparent via. This provides a way to do an unclipped animation
+    when both the old parent and new parent are clipped
+
+    \qml
+    ParentAnimation {
+        target: myItem
+        via: topLevelItem
+        ...
+    }
+    \endqml
+*/
 QDeclarativeItem *QDeclarativeParentAnimation::via() const
 {
     Q_D(const QDeclarativeParentAnimation);
