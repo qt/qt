@@ -60,6 +60,7 @@
 
 - (TransparentQTMovieView *) init;
 - (void) setDrawRect:(QRect &)rect;
+- (CIImage *) view:(QTMovieView *)view willDisplayImage:(CIImage *)img;
 - (void) setContrast:(qreal) contrast;
 @end
 
