@@ -107,15 +107,8 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
                 *cursor++ = 0xc0 | ((uchar) (u >> 6));
             } else {
                 if (u > 0xffff) {
-                    // see QString::fromUtf8() and QString::utf8() for explanations
-                    if (u > 0x10fe00 && u < 0x10ff00) {
-                        *cursor++ = (u - 0x10fe00);
-                        ++ch;
-                        continue;
-                    } else {
-                        *cursor++ = 0xf0 | ((uchar) (u >> 18));
-                        *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
-                    }
+                    *cursor++ = 0xf0 | ((uchar) (u >> 18));
+                    *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
                 } else {
                     *cursor++ = 0xe0 | (((uchar) (u >> 12)) & 0x3f);
                 }
