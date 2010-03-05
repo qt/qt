@@ -41,19 +41,32 @@
 
 #include "qgraphicssystem_raster_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "private/qpixmap_s60_p.h"
+#include "private/qwindowsurface_s60_p.h"
+#else
 #include "private/qpixmap_raster_p.h"
 #include "private/qwindowsurface_raster_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
 QPixmapData *QRasterGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
+#ifdef Q_OS_SYMBIAN
+    return new QS60PixmapData(type);
+#else
     return new QRasterPixmapData(type);
+#endif
 }
 
 QWindowSurface *QRasterGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
+#ifdef Q_OS_SYMBIAN
+    return new QS60WindowSurface(widget);
+#else
     return new QRasterWindowSurface(widget);
+#endif
 }
 
 QT_END_NAMESPACE
