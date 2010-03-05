@@ -3572,8 +3572,10 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
 
 /*!
     Returns a Latin-1 representation of the string as a QByteArray.
-    The returned byte array is undefined if the string contains
-    non-Latin1 characters.
+
+    The returned byte array is undefined if the string contains non-Latin1
+    characters. Those characters may be suppressed or replaced with a
+    question mark.
 
     \sa fromLatin1(), toAscii(), toUtf8(), toLocal8Bit(), QTextCodec
 */
@@ -3623,8 +3625,13 @@ static QByteArray toLocal8Bit_helper(const QChar *data, int length)
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
 
-    QTextCodec::codecForLocale() is used to perform the conversion
-    from Unicode.
+    QTextCodec::codecForLocale() is used to perform the conversion from
+    Unicode. If the locale encoding could not be determined, this function
+    does the same as toLatin1().
+
+    If this string contains any characters that cannot be encoded in the
+    locale, the returned byte array is undefined. Those characters may be
+    suppressed or replaced by another.
 
     \sa fromLocal8Bit(), toAscii(), toLatin1(), toUtf8(), QTextCodec
 */
@@ -3639,6 +3646,17 @@ QByteArray QString::toLocal8Bit() const
 
 /*!
     Returns a UTF-8 representation of the string as a QByteArray.
+
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QString.
+
+    However, in the Unicode range, there are certain codepoints that are not
+    considered characters. The Unicode standard reserves the last two
+    codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
+    U+2FFFE, etc.), as well as 16 codepoints in the range U+FDD0..U+FDDF,
+    inclusive, as non-characters. If any of those appear in the string, they
+    may be discarded and will not appear in the UTF-8 representation, or they
+    may be replaced by one or more replacement characters.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec
 */
@@ -3687,7 +3705,10 @@ QByteArray QString::toUtf8() const
 /*!
     \since 4.2
 
-    Returns a UCS-4 representation of the string as a QVector<uint>.
+    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+
+    UCS-4 is a Unicode codec and is lossless. All characters from this string
+    can be encoded in UCS-4.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -3988,6 +4009,18 @@ QString QString::fromAscii(const char *str, int size)
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
+
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QString. However, invalid sequences are possible with UTF-8
+    and, if any such are found, they will be replaced with one or more
+    "replacement characters", or suppressed. These include non-Unicode
+    sequences, non-characters, overlong sequences or surrogate codepoints
+    encoded into UTF-8.
+
+    Non-characters are codepoints that the Unicode standard reserves and must
+    not be used in text interchange. They are the last two codepoints in each
+    Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF, U+2FFFE, etc.), as well
+    as 16 codepoints in the range U+FDD0..U+FDDF, inclusive.
 
     \sa toUtf8(), fromAscii(), fromLatin1(), fromLocal8Bit()
 */
