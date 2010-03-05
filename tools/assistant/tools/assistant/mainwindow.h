@@ -112,7 +112,7 @@ private slots:
     void lookForNewQtDocumentation();
     void indexingStarted();
     void indexingFinished();
-    void qtDocumentationInstalled(bool newDocsInstalled);
+    void qtDocumentationInstalled();
     void registerDocumentation(const QString &component,
         const QString &absFileName);
     void resetQtDocInfo(const QString &component);

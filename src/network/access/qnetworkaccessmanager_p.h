@@ -105,6 +105,7 @@ public:
 
     void createSession(const QNetworkConfiguration &config);
 
+    void _q_networkSessionClosed();
     void _q_networkSessionNewConfigurationActivated();
     void _q_networkSessionPreferredConfigurationChanged(const QNetworkConfiguration &config,
                                                         bool isSeamless);
@@ -121,6 +122,7 @@ public:
 #endif
 
     QNetworkSession *networkSession;
+    QString networkConfiguration;
     bool networkAccessEnabled;
     bool initializeSession;
 

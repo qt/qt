@@ -139,25 +139,21 @@ public:
     QByteArray memberToDisconnectOnClose;
 
 #ifdef Q_WS_MAC
-    static void *openCocoaFontPanel(const QFont &initial,
-            QWidget *parent, const QString &title,
-            QFontDialog::FontDialogOptions options,
-            QFontDialogPrivate *priv = 0);
-    static void closeCocoaFontPanel(void *delegate);
-    static QFont execCocoaFontPanel(bool *ok, const QFont &initial, QWidget *parent,
-            const QString &title, QFontDialog::FontDialogOptions options);
     static void setFont(void *delegate, const QFont &font);
 
     inline void done(int result) { q_func()->done(result); }
     inline QFontDialog *fontDialog() { return q_func(); }
 
     void *delegate;
+    void closeCocoaFontPanel();
     bool nativeDialogInUse;
     bool canBeNativeDialog();
     bool setVisible_sys(bool visible);
-    void *_q_constructNativePanel();
+    void createNSFontPanelDelegate();
     void _q_macRunNativeAppModalPanel();
     void mac_nativeDialogModalHelp();
+    bool showCocoaFontPanel();
+    bool hideCocoaFontPanel();
 
     static bool sharedFontPanelAvailable;
 #endif

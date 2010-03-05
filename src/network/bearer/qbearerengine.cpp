@@ -70,6 +70,44 @@ QBearerEngine::~QBearerEngine()
     }
 }
 
+bool QBearerEngine::requiresPolling() const
+{
+    return false;
+}
+
+/*
+    Returns true if configurations are in use; otherwise returns false.
+
+    If configurations are in use and requiresPolling() returns true, polling will be enabled for
+    this engine.
+*/
+bool QBearerEngine::configurationsInUse() const
+{
+    QHash<QString, QNetworkConfigurationPrivatePointer>::ConstIterator it;
+    QHash<QString, QNetworkConfigurationPrivatePointer>::ConstIterator end;
+
+    QMutexLocker locker(&mutex);
+
+    for (it = accessPointConfigurations.begin(),
+         end = accessPointConfigurations.end(); it != end; ++it) {
+        if (it.value()->ref > 1)
+            return true;
+    }
+
+    for (it = snapConfigurations.begin(), end = snapConfigurations.end(); it != end; ++it) {
+        if (it.value()->ref > 1)
+            return true;
+    }
+
+    for (it = userChoiceConfigurations.begin(),
+         end = userChoiceConfigurations.end(); it != end; ++it) {
+        if (it.value()->ref > 1)
+            return true;
+    }
+
+    return false;
+}
+
 #include "moc_qbearerengine_p.cpp"
 
 QT_END_NAMESPACE

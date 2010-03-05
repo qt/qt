@@ -72,6 +72,7 @@ private slots:
     void toLower();
     void toTitle();
     void toCaseFolded();
+    void isPrint();
     void isUpper();
     void isLower();
     void category();
@@ -218,6 +219,12 @@ void tst_QChar::toCaseFolded()
     QVERIFY(QChar::toCaseFolded((ushort)0xb5) == 0x3bc);
 }
 
+void tst_QChar::isPrint()
+{
+    QVERIFY(QChar('A').isPrint());
+    QVERIFY(!QChar(0x1aff).isPrint()); // General_Gategory =Cn
+}
+
 void tst_QChar::isUpper()
 {
     QVERIFY(QChar('A').isUpper());
@@ -259,6 +266,12 @@ void tst_QChar::category()
     QVERIFY(QChar::category(0xd900u) == QChar::Other_Surrogate);
     QVERIFY(QChar::category(0xdc00u) == QChar::Other_Surrogate);
     QVERIFY(QChar::category(0xdc01u) == QChar::Other_Surrogate);
+
+    QVERIFY(QChar::category((uint)0x10fffdu) == QChar::Other_PrivateUse);
+    QVERIFY(QChar::category((uint)0x110000u) == QChar::NoCategory);
+
+    QVERIFY(QChar::category((uint)0x1aff) == QChar::Other_NotAssigned);
+    QVERIFY(QChar::category((uint)0x10ffffu) == QChar::Other_NotAssigned);
 }
 
 void tst_QChar::direction()

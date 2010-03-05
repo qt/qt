@@ -42,10 +42,10 @@
 // Don't define it while compiling this module, or USERS of Qt will
 // not be able to link.
 #ifdef QT_NO_CAST_FROM_ASCII
-#undef QT_NO_CAST_FROM_ASCII
+#  undef QT_NO_CAST_FROM_ASCII
 #endif
 #ifdef QT_NO_CAST_TO_ASCII
-#undef QT_NO_CAST_TO_ASCII
+#  undef QT_NO_CAST_TO_ASCII
 #endif
 #include "qchar.h"
 #include "qdatastream.h"
@@ -57,17 +57,16 @@
 
 QT_BEGIN_NAMESPACE
 
-#define LAST_UNICODE_CHAR 0x10ffff
-
 #ifndef QT_NO_CODEC_FOR_C_STRINGS
-#ifdef QT_NO_TEXTCODEC
-#define QT_NO_CODEC_FOR_C_STRINGS
-#endif
+#  ifdef QT_NO_TEXTCODEC
+#    define QT_NO_CODEC_FOR_C_STRINGS
+#  endif
 #endif
 
 #define FLAG(x) (1 << (x))
 
-/*! \class QLatin1Char
+/*!
+    \class QLatin1Char
     \brief The QLatin1Char class provides an 8-bit ASCII/Latin-1 character.
 
     \ingroup string-processing
@@ -550,7 +549,7 @@ bool QChar::isSpace() const
 /*!
     Returns true if the character is a mark (Mark_* categories);
     otherwise returns false.
-    
+
     See QChar::Category for more information regarding marks.
 */
 bool QChar::isMark() const
@@ -647,45 +646,44 @@ bool QChar::isSymbol() const
 }
 
 /*!
-  \fn bool QChar::isHighSurrogate() const
+    \fn bool QChar::isHighSurrogate() const
 
-  Returns true if the QChar is the high part of a utf16 surrogate
-  (ie. if its code point is between 0xd800 and 0xdbff).
+    Returns true if the QChar is the high part of a utf16 surrogate
+    (ie. if its code point is between 0xd800 and 0xdbff).
 */
 
 /*!
-  \fn bool QChar::isLowSurrogate() const
+    \fn bool QChar::isLowSurrogate() const
 
-  Returns true if the QChar is the low part of a utf16 surrogate
-  (ie. if its code point is between 0xdc00 and 0xdfff).
+    Returns true if the QChar is the low part of a utf16 surrogate
+    (ie. if its code point is between 0xdc00 and 0xdfff).
 */
 
 /*!
-  \fn static uint QChar::surrogateToUcs4(ushort high, ushort low)
+    \fn static uint QChar::surrogateToUcs4(ushort high, ushort low)
 
-  Converts a UTF16 surrogate pair with the given \a high and \a low values
-  to its UCS-4 code point.
+    Converts a UTF16 surrogate pair with the given \a high and \a low values
+    to its UCS-4 code point.
 */
 
 /*!
-  \fn static uint QChar::surrogateToUcs4(QChar high, QChar low)
+    \fn static uint QChar::surrogateToUcs4(QChar high, QChar low)
 
-  Converts a utf16 surrogate pair (\a high, \a low) to its ucs4 code
-  point.
+    Converts a utf16 surrogate pair (\a high, \a low) to its ucs4 code point.
 */
 
 /*!
-  \fn static ushort QChar::highSurrogate(uint ucs4)
+    \fn static ushort QChar::highSurrogate(uint ucs4)
 
-  Returns the high surrogate value of a ucs4 code point.
-  The returned result is undefined if \a ucs4 is smaller than 0x10000.
+    Returns the high surrogate value of a ucs4 code point.
+    The returned result is undefined if \a ucs4 is smaller than 0x10000.
 */
 
 /*!
-  \fn static ushort QChar::lowSurrogate(uint ucs4)
+    \fn static ushort QChar::lowSurrogate(uint ucs4)
 
-  Returns the low surrogate value of a ucs4 code point.
-  The returned result is undefined if \a ucs4 is smaller than 0x10000.
+    Returns the low surrogate value of a ucs4 code point.
+    The returned result is undefined if \a ucs4 is smaller than 0x10000.
 */
 
 /*!
@@ -714,7 +712,7 @@ int QChar::digitValue(ushort ucs2)
 */
 int QChar::digitValue(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return 0;
     return qGetProp(ucs4)->digitValue;
 }
@@ -727,22 +725,22 @@ QChar::Category QChar::category() const
     return (QChar::Category) qGetProp(ucs)->category;
 }
 
-/*! 
+/*!
     \overload
     \since 4.3
     Returns the category of the UCS-4-encoded character specified by \a ucs4.
- */
+*/
 QChar::Category QChar::category(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return QChar::NoCategory;
     return (QChar::Category) qGetProp(ucs4)->category;
 }
 
-/*! 
+/*!
     \overload
     Returns the category of the UCS-2-encoded character specified by \a ucs2.
- */
+*/
 QChar::Category QChar::category(ushort ucs2)
 {
     return (QChar::Category) qGetProp(ucs2)->category;
@@ -757,21 +755,21 @@ QChar::Direction QChar::direction() const
     return (QChar::Direction) qGetProp(ucs)->direction;
 }
 
-/*! 
-\overload
-Returns the direction of the UCS-4-encoded character specified by \a ucs4.
- */
+/*!
+    \overload
+    Returns the direction of the UCS-4-encoded character specified by \a ucs4.
+*/
 QChar::Direction QChar::direction(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return QChar::DirL;
     return (QChar::Direction) qGetProp(ucs4)->direction;
 }
 
-/*! 
-\overload
-Returns the direction of the UCS-2-encoded character specified by \a ucs2.
- */
+/*!
+    \overload
+    Returns the direction of the UCS-2-encoded character specified by \a ucs2.
+*/
 QChar::Direction QChar::direction(ushort ucs2)
 {
     return (QChar::Direction) qGetProp(ucs2)->direction;
@@ -786,25 +784,25 @@ QChar::Joining QChar::joining() const
     return (QChar::Joining) qGetProp(ucs)->joining;
 }
 
-/*! 
-\overload
-Returns information about the joining properties of the UCS-4-encoded
-character specified by \a ucs4 (needed for certain languages such as
-Arabic).
- */
+/*!
+    \overload
+    Returns information about the joining properties of the UCS-4-encoded
+    character specified by \a ucs4 (needed for certain languages such as
+    Arabic).
+*/
 QChar::Joining QChar::joining(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return QChar::OtherJoining;
     return (QChar::Joining) qGetProp(ucs4)->joining;
 }
 
-/*! 
-\overload
-Returns information about the joining properties of the UCS-2-encoded
-character specified by \a ucs2 (needed for certain languages such as
-Arabic).
- */
+/*!
+    \overload
+    Returns information about the joining properties of the UCS-2-encoded
+    character specified by \a ucs2 (needed for certain languages such as
+    Arabic).
+*/
 QChar::Joining QChar::joining(ushort ucs2)
 {
     return (QChar::Joining) qGetProp(ucs2)->joining;
@@ -863,26 +861,27 @@ QChar QChar::mirroredChar() const
     return ucs + qGetProp(ucs)->mirrorDiff;
 }
 
-/*! \overload
-Returns the mirrored character if the UCS-4-encoded character specified
-by \a ucs4 is a mirrored character; otherwise returns the character itself.
+/*!
+    \overload
+    Returns the mirrored character if the UCS-4-encoded character specified
+    by \a ucs4 is a mirrored character; otherwise returns the character itself.
 
-\sa hasMirrored()
- */
+    \sa hasMirrored()
+*/
 uint QChar::mirroredChar(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
     return ucs4 + qGetProp(ucs4)->mirrorDiff;
 }
 
-/*! 
-\overload
-Returns the mirrored character if the UCS-2-encoded character specified
-by \a ucs2 is a mirrored character; otherwise returns the character itself.
+/*!
+    \overload
+    Returns the mirrored character if the UCS-2-encoded character specified
+    by \a ucs2 is a mirrored character; otherwise returns the character itself.
 
-\sa hasMirrored()
- */
+    \sa hasMirrored()
+*/
 ushort QChar::mirroredChar(ushort ucs2)
 {
     return ucs2 + qGetProp(ucs2)->mirrorDiff;
@@ -906,7 +905,7 @@ static const unsigned short * QT_FASTCALL decompositionHelper
     (uint ucs4, int *length, int *tag, unsigned short *buffer)
 {
     *length = 0;
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return 0;
     if (ucs4 >= Hangul_SBase && ucs4 < Hangul_SBase + Hangul_SCount) {
         int SIndex = ucs4 - Hangul_SBase;
@@ -936,11 +935,11 @@ QString QChar::decomposition() const
     return decomposition(ucs);
 }
 
-/*! 
-\overload
-Decomposes the UCS-4-encoded character specified by \a ucs4 into its
-constituent parts. Returns an empty string if no decomposition exists.
- */
+/*!
+    \overload
+    Decomposes the UCS-4-encoded character specified by \a ucs4 into its
+    constituent parts. Returns an empty string if no decomposition exists.
+*/
 QString QChar::decomposition(uint ucs4)
 {
     unsigned short buffer[3];
@@ -959,14 +958,14 @@ QChar::Decomposition QChar::decompositionTag() const
     return decompositionTag(ucs);
 }
 
-/*! 
-\overload
-Returns the tag defining the composition of the UCS-4-encoded character
-specified by \a ucs4. Returns QChar::Single if no decomposition exists.
- */
+/*!
+    \overload
+    Returns the tag defining the composition of the UCS-4-encoded character
+    specified by \a ucs4. Returns QChar::Single if no decomposition exists.
+*/
 QChar::Decomposition QChar::decompositionTag(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return QChar::NoDecomposition;
     const unsigned short index = GET_DECOMPOSITION_INDEX(ucs4);
     if (index == 0xffff)
@@ -987,26 +986,27 @@ unsigned char QChar::combiningClass() const
     return (unsigned char) qGetProp(ucs)->combiningClass;
 }
 
-/*! \overload
-Returns the combining class for the UCS-4-encoded character specified by
-\a ucs4, as defined in the Unicode standard.
- */
+/*!
+    \overload
+    Returns the combining class for the UCS-4-encoded character specified by
+    \a ucs4, as defined in the Unicode standard.
+*/
 unsigned char QChar::combiningClass(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return 0;
     return (unsigned char) qGetProp(ucs4)->combiningClass;
 }
 
-/*! \overload
-Returns the combining class for the UCS-2-encoded character specified by
-\a ucs2, as defined in the Unicode standard.
- */
+/*!
+    \overload
+    Returns the combining class for the UCS-2-encoded character specified by
+    \a ucs2, as defined in the Unicode standard.
+*/
 unsigned char QChar::combiningClass(ushort ucs2)
 {
     return (unsigned char) qGetProp(ucs2)->combiningClass;
 }
-
 
 /*!
     Returns the Unicode version that introduced this character.
@@ -1016,21 +1016,23 @@ QChar::UnicodeVersion QChar::unicodeVersion() const
     return (QChar::UnicodeVersion) qGetProp(ucs)->unicodeVersion;
 }
 
-/*! \overload
-Returns the Unicode version that introduced the character specified in
-its UCS-4-encoded form as \a ucs4.
- */
+/*!
+    \overload
+    Returns the Unicode version that introduced the character specified in
+    its UCS-4-encoded form as \a ucs4.
+*/
 QChar::UnicodeVersion QChar::unicodeVersion(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return QChar::Unicode_Unassigned;
     return (QChar::UnicodeVersion) qGetProp(ucs4)->unicodeVersion;
 }
 
-/*! \overload
-Returns the Unicode version that introduced the character specified in
-its UCS-2-encoded form as \a ucs2.
- */
+/*!
+    \overload
+    Returns the Unicode version that introduced the character specified in
+    its UCS-2-encoded form as \a ucs2.
+*/
 QChar::UnicodeVersion QChar::unicodeVersion(ushort ucs2)
 {
     return (QChar::UnicodeVersion) qGetProp(ucs2)->unicodeVersion;
@@ -1049,14 +1051,15 @@ QChar QChar::toLower() const
     return ucs;
 }
 
-/*! \overload
-Returns the lowercase equivalent of the UCS-4-encoded character specified
-by \a ucs4 if the character is uppercase or titlecase; otherwise returns
-the character itself.
- */
+/*!
+    \overload
+    Returns the lowercase equivalent of the UCS-4-encoded character specified
+    by \a ucs4 if the character is uppercase or titlecase; otherwise returns
+    the character itself.
+*/
 uint QChar::toLower(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
     const QUnicodeTables::Properties *p = qGetProp(ucs4);
     if (!p->lowerCaseSpecial)
@@ -1064,11 +1067,12 @@ uint QChar::toLower(uint ucs4)
     return ucs4;
 }
 
-/*! \overload
-Returns the lowercase equivalent of the UCS-2-encoded character specified
-by \a ucs2 if the character is uppercase or titlecase; otherwise returns
-the character itself.
- */
+/*!
+    \overload
+    Returns the lowercase equivalent of the UCS-2-encoded character specified
+    by \a ucs2 if the character is uppercase or titlecase; otherwise returns
+    the character itself.
+*/
 ushort QChar::toLower(ushort ucs2)
 {
     const QUnicodeTables::Properties *p = qGetProp(ucs2);
@@ -1089,14 +1093,15 @@ QChar QChar::toUpper() const
     return ucs;
 }
 
-/*! \overload
-Returns the uppercase equivalent of the UCS-4-encoded character specified
-by \a ucs4 if the character is lowercase or titlecase; otherwise returns
-the character itself.
- */
+/*!
+    \overload
+    Returns the uppercase equivalent of the UCS-4-encoded character specified
+    by \a ucs4 if the character is lowercase or titlecase; otherwise returns
+    the character itself.
+*/
 uint QChar::toUpper(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
     const QUnicodeTables::Properties *p = qGetProp(ucs4);
     if (!p->upperCaseSpecial)
@@ -1104,11 +1109,12 @@ uint QChar::toUpper(uint ucs4)
     return ucs4;
 }
 
-/*! \overload
-Returns the uppercase equivalent of the UCS-2-encoded character specified
-by \a ucs2 if the character is lowercase or titlecase; otherwise returns
-the character itself.
- */
+/*!
+    \overload
+    Returns the uppercase equivalent of the UCS-2-encoded character specified
+    by \a ucs2 if the character is lowercase or titlecase; otherwise returns
+    the character itself.
+*/
 ushort QChar::toUpper(ushort ucs2)
 {
     const QUnicodeTables::Properties *p = qGetProp(ucs2);
@@ -1137,7 +1143,7 @@ QChar QChar::toTitleCase() const
 */
 uint QChar::toTitleCase(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
     const QUnicodeTables::Properties *p = qGetProp(ucs4);
     if (!p->titleCaseSpecial)
@@ -1198,7 +1204,7 @@ QChar QChar::toCaseFolded() const
 */
 uint QChar::toCaseFolded(uint ucs4)
 {
-    if (ucs4 > LAST_UNICODE_CHAR)
+    if (ucs4 > UNICODE_LAST_CODEPOINT)
         return ucs4;
     return ucs4 + qGetProp(ucs4)->caseFoldDiff;
 }
@@ -1292,28 +1298,25 @@ QChar QChar::fromAscii(char c)
 
 #ifndef QT_NO_DATASTREAM
 /*!
-  \relates QChar
+    \relates QChar
 
-  Writes the char \a chr to the stream \a out.
+    Writes the char \a chr to the stream \a out.
 
-  \sa {Format of the QDataStream operators}
- */
-
+    \sa {Format of the QDataStream operators}
+*/
 QDataStream &operator<<(QDataStream &out, const QChar &chr)
 {
     out << quint16(chr.unicode());
     return out;
 }
 
-
 /*!
-  \relates QChar
+    \relates QChar
 
-  Reads a char from the stream \a in into char \a chr.
+    Reads a char from the stream \a in into char \a chr.
 
-  \sa {Format of the QDataStream operators}
- */
-
+    \sa {Format of the QDataStream operators}
+*/
 QDataStream &operator>>(QDataStream &in, QChar &chr)
 {
     quint16 u;
@@ -1602,11 +1605,9 @@ int QT_FASTCALL QUnicodeTables::script(unsigned int uc)
     return script;
 }
 
-
 Q_CORE_EXPORT QUnicodeTables::LineBreakClass QT_FASTCALL QUnicodeTables::lineBreakClass(uint ucs4)
 {
     return (QUnicodeTables::LineBreakClass) qGetProp(ucs4)->line_break_class;
 }
-
 
 QT_END_NAMESPACE
