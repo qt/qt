@@ -52,7 +52,7 @@ Rectangle {
                         id: mouse
                         onClicked: { myText.focus = true }
                         anchors.fill: parent
-                        drag.target: stickyPage; drag.axis: "XandYAxis"; drag.minimumY: 0; drag.maximumY: 500
+                        drag.target: stickyPage; drag.axis: MouseArea.XandYAxis; drag.minimumY: 0; drag.maximumY: 500
                         drag.minimumX: 0; drag.maximumX: 400
                     }
                 }
