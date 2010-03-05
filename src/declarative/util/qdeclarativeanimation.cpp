@@ -2461,6 +2461,9 @@ QDeclarativeParentAnimation::~QDeclarativeParentAnimation()
 /*!
     \qmlproperty item ParentAnimation::target
     The item to reparent.
+
+    When used in a transition, if no target is specified all
+    ParentChanges will be animated by the ParentAnimation.
 */
 QDeclarativeItem *QDeclarativeParentAnimation::target() const
 {
@@ -2474,6 +2477,12 @@ void QDeclarativeParentAnimation::setTarget(QDeclarativeItem *target)
     d->target = target;
 }
 
+/*!
+    \qmlproperty item ParentAnimation::newParent
+    The new parent to animate to.
+
+    If not set, then the parent defined in the end state of the transition.
+*/
 QDeclarativeItem *QDeclarativeParentAnimation::newParent() const
 {
     Q_D(const QDeclarativeParentAnimation);
@@ -2545,12 +2554,13 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
 
     struct QDeclarativeParentActionData : public QAbstractAnimationAction
     {
-        QDeclarativeParentActionData(): pc(0) {}
-        ~QDeclarativeParentActionData() { delete pc; }
+        QDeclarativeParentActionData() {}
+        ~QDeclarativeParentActionData() { qDeleteAll(pc); }
 
         QDeclarativeStateActions actions;
+        //### reverse should probably apply on a per-action basis
         bool reverse;
-        QDeclarativeParentChange *pc;
+        QList<QDeclarativeParentChange *> pc;
         virtual void doAction()
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
@@ -2565,6 +2575,33 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
 
     QDeclarativeParentActionData *data = new QDeclarativeParentActionData;
     QDeclarativeParentActionData *viaData = new QDeclarativeParentActionData;
+
+    bool hasExplicit = false;
+    if (d->target && d->newParent) {
+        data->reverse = false;
+        QDeclarativeAction myAction;
+        QDeclarativeParentChange *pc = new QDeclarativeParentChange;
+        pc->setObject(d->target);
+        pc->setParent(d->newParent);
+        myAction.event = pc;
+        data->pc << pc;
+        data->actions << myAction;
+        hasExplicit = true;
+        if (d->via) {
+            viaData->reverse = false;
+            QDeclarativeAction myVAction;
+            QDeclarativeParentChange *vpc = new QDeclarativeParentChange;
+            vpc->setObject(d->target);
+            vpc->setParent(d->via);
+            myVAction.event = vpc;
+            viaData->pc << vpc;
+            viaData->actions << myVAction;
+        }
+        //### once actions have concept of modified,
+        //    loop to match appropriate ParentChanges and mark as modified
+    }
+
+    if (!hasExplicit)
     for (int i = 0; i < actions.size(); ++i) {
         QDeclarativeAction &action = actions[i];
         if (action.event && action.event->typeName() == QLatin1String("ParentChange")
@@ -2573,8 +2610,21 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
             QDeclarativeParentChange *pc = static_cast<QDeclarativeParentChange*>(action.event);
             QDeclarativeAction myAction = action;
             data->reverse = action.reverseEvent;
-            action.actionDone = true;
-            data->actions << myAction;
+
+            //### this logic differs from PropertyAnimation
+            //    (probably a result of modified vs. done)
+            if (d->newParent) {
+                QDeclarativeParentChange *epc = new QDeclarativeParentChange;
+                epc->setObject(static_cast<QDeclarativeParentChange*>(action.event)->object());
+                epc->setParent(d->newParent);
+                myAction.event = epc;
+                data->pc << epc;
+                data->actions << myAction;
+                pc = epc;
+            } else {
+                action.actionDone = true;
+                data->actions << myAction;
+            }
 
             if (d->via) {
                 viaData->reverse = false;
@@ -2583,7 +2633,7 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
                 vpc->setObject(pc->object());
                 vpc->setParent(d->via);
                 myAction.event = vpc;
-                viaData->pc = vpc;
+                viaData->pc << vpc;
                 viaData->actions << myAction;
                 QDeclarativeAction dummyAction;
                 QDeclarativeAction &xAction = pc->xIsSet() ? actions[++i] : dummyAction;
