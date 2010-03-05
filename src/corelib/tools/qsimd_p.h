@@ -47,9 +47,6 @@
 
 QT_BEGIN_HEADER
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Core)
 
 #if defined(QT_NO_MAC_XARCH) || (defined(Q_OS_DARWIN) && (defined(__ppc__) || defined(__ppc64__)))
 // Disable MMX and SSE on Mac/PPC builds, or if the compiler
@@ -102,6 +99,10 @@ QT_MODULE(Core)
 #if defined(QT_HAVE_3DNOW)
 #include <mm3dnow.h>
 #endif
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Core)
 
 enum CPUFeatures {
     None        = 0,

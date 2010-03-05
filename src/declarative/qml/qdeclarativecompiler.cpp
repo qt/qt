@@ -561,9 +561,11 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
         QDeclarativeCompositeTypeData::TypeReference &tref = unit->types[ii];
         QDeclarativeCompiledData::TypeReference ref;
         QDeclarativeScriptParser::TypeReference *parserRef = unit->data.referencedTypes().at(ii);
-        if (tref.type)
+        if (tref.type) {
             ref.type = tref.type;
-        else if (tref.unit) {
+            if (!ref.type->isCreatable()) 
+                COMPILE_EXCEPTION(parserRef->refObjects.first(), QCoreApplication::translate("QDeclarativeCompiler", "Element is not creatable."));
+        } else if (tref.unit) {
             ref.component = tref.unit->toComponent(engine);
 
             if (ref.component->isError()) {
@@ -983,12 +985,15 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
 
         } else if (v->type == Value::SignalExpression) {
 
+            BindingContext ctxt = compileState.signalExpressions.value(v);
+
             QDeclarativeInstruction store;
             store.type = QDeclarativeInstruction::StoreSignal;
             store.line = v->location.start.line;
             store.storeSignal.signalIndex = prop->index;
             store.storeSignal.value =
                 output->indexForString(v->value.asScript().trimmed());
+            store.storeSignal.context = ctxt.stack;
             output->bytecode << store;
 
         }
@@ -1321,7 +1326,7 @@ QMetaMethod QDeclarativeCompiler::findSignalByName(const QMetaObject *mo, const 
 }
 
 bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj,
-                              const BindingContext &ctxt)
+                                       const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metaObject());
     Q_ASSERT(!prop->isEmpty());
@@ -1342,7 +1347,7 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
 
     }  else {
 
-        if (prop->value || prop->values.count() > 1)
+        if (prop->value || prop->values.count() != 1)
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Incorrectly specified signal"));
 
         prop->index = sigIdx;
@@ -1357,6 +1362,8 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
             QString script = prop->values.at(0)->value.asScript().trimmed();
             if (script.isEmpty())
                 COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Empty signal assignment"));
+
+            compileState.signalExpressions.insert(prop->values.at(0), ctxt);
         }
     }
 
@@ -1789,13 +1796,19 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
     Q_ASSERT(prop->type != 0);
     Q_ASSERT(prop->index != -1);
 
-    if (prop->values.count())
-        COMPILE_EXCEPTION(prop->values.first(), QCoreApplication::translate("QDeclarativeCompiler", "Invalid value in grouped property"));
-
-    if (prop->type < (int)QVariant::UserType) {
+    if (QDeclarativeValueTypeFactory::isValueType(prop->type)) {
         QDeclarativeEnginePrivate *ep =
             static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
         if (prop->type >= 0 /* QVariant == -1 */ && ep->valueTypes[prop->type]) {
+
+            if (prop->values.count()) {
+                if (prop->values.at(0)->location < prop->value->location) {
+                    COMPILE_EXCEPTION(prop->value, QCoreApplication::translate("QDeclarativeCompiler", "Property has already been assigned a value"));
+                } else {
+                    COMPILE_EXCEPTION(prop->values.at(0), QCoreApplication::translate("QDeclarativeCompiler", "Property has already been assigned a value"));
+                }
+            }
+
             COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
@@ -1809,6 +1822,9 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
             QDeclarativeEnginePrivate::get(engine)->metaObjectForType(prop->type);
         if (!prop->value->metatype)
             COMPILE_EXCEPTION(prop, QCoreApplication::translate("QDeclarativeCompiler","Invalid grouped property access"));
+
+        if (prop->values.count()) 
+            COMPILE_EXCEPTION(prop->values.at(0), QCoreApplication::translate("QDeclarativeCompiler", "Cannot assign a value directly to a grouped property"));
 
         obj->addGroupedProperty(prop);
 
@@ -2599,9 +2615,9 @@ bool QDeclarativeCompiler::buildBinding(QDeclarativeParser::Value *value,
 }
 
 void QDeclarativeCompiler::genBindingAssignment(QDeclarativeParser::Value *binding,
-                                       QDeclarativeParser::Property *prop,
-                                       QDeclarativeParser::Object *obj,
-                                       QDeclarativeParser::Property *valueTypeProperty)
+                                                QDeclarativeParser::Property *prop,
+                                                QDeclarativeParser::Object *obj,
+                                                QDeclarativeParser::Property *valueTypeProperty)
 {
     Q_UNUSED(obj);
     Q_ASSERT(compileState.bindings.contains(binding));

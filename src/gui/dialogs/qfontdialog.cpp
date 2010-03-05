@@ -988,13 +988,10 @@ void QFontDialog::open(QObject *receiver, const char *member)
 */
 void QFontDialog::setVisible(bool visible)
 {
-    Q_D(QFontDialog);
-    if (visible) {
-        if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
-            return;
-    } else if  (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden))
+    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
         return;
 #ifdef Q_WS_MAC
+    Q_D(QFontDialog);
     if (d->canBeNativeDialog()){
         if (d->setVisible_sys(visible)){
             d->nativeDialogInUse = true;

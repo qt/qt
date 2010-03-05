@@ -41,17 +41,27 @@
 
 #include <QtDeclarative/qdeclarativeextensionplugin.h>
 #include <QtDeclarative/qdeclarative.h>
-#include <QtMultimedia/multimediadeclarative.h>
+#include <QtMultimedia/private/qsoundeffect_p.h>
+
+#include "qdeclarativevideo_p.h"
+#include "qdeclarativeaudio_p.h"
+
+
+QML_DECLARE_TYPE(QSoundEffect)
 
 QT_BEGIN_NAMESPACE
 
-class QMultimediaQmlModule : public QDeclarativeExtensionPlugin
+class QMultimediaDeclarativeModule : public QDeclarativeExtensionPlugin
 {
     Q_OBJECT
 public:
     virtual void registerTypes(const char *uri)
     {
-        QtMultimedia::qRegisterDeclarativeElements(uri);
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("Qt.multimedia"));
+
+        qmlRegisterType<QSoundEffect>(uri, 4, 7, "SoundEffect");
+        qmlRegisterType<QDeclarativeAudio>(uri, 4, 7, "Audio");
+        qmlRegisterType<QDeclarativeVideo>(uri, 4, 7, "Video");
     }
 };
 
@@ -59,5 +69,5 @@ QT_END_NAMESPACE
 
 #include "multimedia.moc"
 
-Q_EXPORT_PLUGIN2(qmultimediaqmlmodule, QT_PREPEND_NAMESPACE(QMultimediaQmlModule));
+Q_EXPORT_PLUGIN2(qmultimediadeclarativemodule, QT_PREPEND_NAMESPACE(QMultimediaDeclarativeModule));
 

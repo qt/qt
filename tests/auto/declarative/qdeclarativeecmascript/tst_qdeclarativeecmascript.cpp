@@ -123,6 +123,7 @@ private slots:
     void multiEngineObject();
     void deletedObject();
     void scriptScope();
+    void attachedPropertyScope();
 
     void bug1();
 
@@ -738,6 +739,23 @@ void tst_qdeclarativeecmascript::scope()
         QCOMPARE(object->property("test1").toBool(), true);
         QCOMPARE(object->property("test2").toBool(), true);
         QCOMPARE(object->property("test3").toBool(), true);
+    }
+
+    // Signal argument scope
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("scope.4.qml"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test").toInt(), 0);
+        QCOMPARE(object->property("test2").toString(), QString());
+
+        emit object->argumentSignal(13, "Argument Scope", 9);
+
+        QCOMPARE(object->property("test").toInt(), 13);
+        QCOMPARE(object->property("test2").toString(), QString("Argument Scope"));
+
+        delete object;
     }
 }
 
@@ -1691,6 +1709,26 @@ void tst_qdeclarativeecmascript::scriptScope()
 
         delete object;
     }
+}
+
+void tst_qdeclarativeecmascript::attachedPropertyScope()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("attachedPropertyScope.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    MyQmlAttachedObject *attached = 
+        qobject_cast<MyQmlAttachedObject *>(qmlAttachedPropertiesObject<MyQmlObject>(object));
+    QVERIFY(attached != 0);
+
+    QCOMPARE(object->property("value2").toInt(), 0);
+
+    attached->emitMySignal();
+
+    QCOMPARE(object->property("value2").toInt(), 9);
+
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

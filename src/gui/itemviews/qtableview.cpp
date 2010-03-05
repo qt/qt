@@ -1960,12 +1960,7 @@ QModelIndexList QTableView::selectedIndexes() const
 void QTableView::rowCountChanged(int /*oldCount*/, int /*newCount*/ )
 {
     Q_D(QTableView);
-    updateGeometries();
-    if (verticalScrollMode() == QAbstractItemView::ScrollPerItem)
-        d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
-    else
-        d->verticalHeader->setOffset(verticalScrollBar()->value());
-    d->viewport->update();
+    d->doDelayedItemsLayout();
 }
 
 /*!

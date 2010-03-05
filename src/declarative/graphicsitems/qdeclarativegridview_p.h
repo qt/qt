@@ -167,9 +167,7 @@ class QDeclarativeGridViewAttached : public QObject
 public:
     QDeclarativeGridViewAttached(QObject *parent)
         : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
-    ~QDeclarativeGridViewAttached() {
-        attachedProperties.remove(parent());
-    }
+    ~QDeclarativeGridViewAttached() {}
 
     Q_PROPERTY(QDeclarativeGridView *view READ view CONSTANT)
     QDeclarativeGridView *view() { return m_view; }
@@ -192,15 +190,6 @@ public:
         }
     }
 
-    static QDeclarativeGridViewAttached *properties(QObject *obj) {
-        QDeclarativeGridViewAttached *rv = attachedProperties.value(obj);
-        if (!rv) {
-            rv = new QDeclarativeGridViewAttached(obj);
-            attachedProperties.insert(obj, rv);
-        }
-        return rv;
-    }
-
     void emitAdd() { emit add(); }
     void emitRemove() { emit remove(); }
 
@@ -212,10 +201,8 @@ Q_SIGNALS:
 
 public:
     QDeclarativeGridView *m_view;
-    bool m_isCurrent;
-    bool m_delayRemove;
-
-    static QHash<QObject*, QDeclarativeGridViewAttached*> attachedProperties;
+    bool m_isCurrent : 1;
+    bool m_delayRemove : 1;
 };
 
 

@@ -226,9 +226,9 @@ QDeclarativeParser::Property::~Property()
     if (value) value->release(); 
 }
 
-Object *QDeclarativeParser::Property::getValue()
+Object *QDeclarativeParser::Property::getValue(const LocationSpan &l)
 {
-    if (!value) value = new Object;
+    if (!value) { value = new Object; value->location = l; }
     return value;
 }
 

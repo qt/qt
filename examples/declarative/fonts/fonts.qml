@@ -7,43 +7,40 @@ Rectangle {
     color: "steelblue"
 
     FontLoader { id: fixedFont; name: "Courier" }
-
     FontLoader { id: localFont; source: "fonts/tarzenau-ocr-a.ttf" }
-
     FontLoader { id: webFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
-    FontLoader { id: webFont2; source: "http://wrong.address.org" }
 
     Column {
-        anchors.fill: parent; spacing: 10
+        anchors.fill: parent; spacing: 15
         anchors.leftMargin: 10; anchors.rightMargin: 10
         Text {
             text: myText; color: "lightsteelblue"
             width: parent.width; elide: Text.ElideRight
-            font.family: "Times"; font.pointSize: 36
+            font.family: "Times"; font.pointSize: 42
         }
         Text {
             text: myText; color: "lightsteelblue"
             width: parent.width; elide: Text.ElideLeft
-            font.family: "Times"; font.pointSize: 36
-            font.capitalization: "AllUppercase"
+            font.family: "Times"; font.pointSize: 42
+            font.capitalization: Font.AllUppercase
         }
         Text {
             text: myText; color: "lightsteelblue"
             width: parent.width; elide: Text.ElideMiddle
-            font.family: fixedFont.name; font.pointSize: 36; font.weight: "Bold"
-            font.capitalization: "AllLowercase"
+            font.family: fixedFont.name; font.pointSize: 42; font.weight: Font.Bold
+            font.capitalization: Font.AllLowercase
         }
         Text {
             text: myText; color: "lightsteelblue"
             width: parent.width; elide: Text.ElideRight
-            font.family: fixedFont.name; font.pointSize: 36; font.italic: true
-            font.capitalization: "SmallCaps"
+            font.family: fixedFont.name; font.pointSize: 42; font.italic: true
+            font.capitalization: Font.SmallCaps
         }
         Text {
             text: myText; color: "lightsteelblue"
             width: parent.width; elide: Text.ElideLeft
-            font.family: localFont.name; font.pointSize: 36
-            font.capitalization: "Capitalize"
+            font.family: localFont.name; font.pointSize: 42
+            font.capitalization: Font.Capitalize
         }
         Text {
             text: {
@@ -53,17 +50,7 @@ Rectangle {
             }
             color: "lightsteelblue"
             width: parent.width; elide: Text.ElideMiddle
-            font.family: webFont.name; font.pointSize: 36
-        }
-        Text {
-            text: {
-                if (webFont2.status == 1) myText
-                else if (webFont2.status == 2) "Loading..."
-                else if (webFont2.status == 3) "Error loading font"
-            }
-            color: "lightsteelblue"
-            width: parent.width; elide: Text.ElideRight
-            font.family: webFont2.name; font.pointSize: 36
+            font.family: webFont.name; font.pointSize: 42
         }
     }
 }

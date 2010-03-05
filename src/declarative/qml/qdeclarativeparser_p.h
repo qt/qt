@@ -104,6 +104,11 @@ namespace QDeclarativeParser
         Location start;
         Location end;
         LocationRange range;
+
+        bool operator<(LocationSpan &o) const {
+            return (start.line < o.start.line) ||
+                   (start.line == o.start.line && start.column < o.start.column);
+        }
     };
 
     class Property;
@@ -318,7 +323,7 @@ namespace QDeclarativeParser
         // The Object to which this property is attached
         Object *parent;
 
-        Object *getValue();
+        Object *getValue(const LocationSpan &);
         void addValue(Value *v);
         void addOnValue(Value *v);
 

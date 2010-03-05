@@ -60,6 +60,7 @@ private slots:
     void setContextProperty();
     void addDefaultObject();
     void destruction();
+    void idAsContextProperty();
 
 private:
     QDeclarativeEngine engine;
@@ -427,6 +428,25 @@ void tst_qdeclarativecontext::destruction()
 
     QCOMPARE(ctxt, QDeclarativeEngine::contextForObject(&obj));
     QCOMPARE(ctxt, expr.context());
+}
+
+void tst_qdeclarativecontext::idAsContextProperty()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import Qt 4.6; QtObject { property var a; a: QtObject { id: myObject } }", QUrl());
+
+    QObject *obj = component.create();
+    QVERIFY(obj);
+
+    QVariant a = obj->property("a");
+    QVERIFY(a.userType() == QMetaType::QObjectStar);
+
+    QVariant ctxt = qmlContext(obj)->contextProperty("myObject");
+    QVERIFY(ctxt.userType() == QMetaType::QObjectStar);
+
+    QVERIFY(a == ctxt);
+
+    delete obj;
 }
 
 QTEST_MAIN(tst_qdeclarativecontext)
