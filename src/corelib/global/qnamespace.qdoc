@@ -2146,6 +2146,14 @@
     \value WindowCancelButtonHint Adds a Cancel button to the window decoration of a dialog.
            Only supported for Windows CE.
 
+    \value WindowSoftkeysVisibleHint Makes softkeys visible when widget is fullscreen.
+           Only supported for Symbian.
+
+    \value WindowSoftkeysRespondHint Makes softkeys to receive key events even
+           when invisible. With this hint the softkey actions are triggered
+           even the softkeys are invisible i.e. the window is displayed with
+           \c showFullscreen(). Only supported for Symbian.
+
     \value WindowType_Mask  A mask for extracting the window type
                             part of the window flags.
 

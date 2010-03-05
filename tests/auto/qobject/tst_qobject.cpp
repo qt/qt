@@ -2647,6 +2647,16 @@ void tst_QObject::installEventFilter()
     QVERIFY(spy.eventList().isEmpty());
 }
 
+class EmitThread : public QThread
+{   Q_OBJECT
+public:
+    void run(void) {
+        emit work();
+    }
+signals:
+    void work();
+};
+
 class DeleteObject : public QObject
 {
     Q_OBJECT
@@ -2711,6 +2721,16 @@ void tst_QObject::deleteSelfInSlot()
         QVERIFY(p.isNull());
 
         QVERIFY(thread.wait(10000));
+    }
+
+    {
+        EmitThread sender;
+        DeleteObject *receiver = new DeleteObject();
+        connect(&sender, SIGNAL(work()), receiver, SLOT(deleteSelf()), Qt::DirectConnection);
+        QPointer<DeleteObject> p = receiver;
+        sender.start();
+        QVERIFY(sender.wait(10000));
+        QVERIFY(p.isNull());
     }
 }
 

@@ -68,11 +68,10 @@ public:
     };
 
     enum CompositionModeStatus {
-        PorterDuff_None = 0x00,
-        PorterDuff_SupportedBlits = 0x01,
-        PorterDuff_SupportedPrimitives = 0x02,
-        PorterDuff_SupportedOpaquePrimitives = 0x04,
-        PorterDuff_Dirty = 0x10
+        PorterDuff_None = 0x0,
+        PorterDuff_Supported = 0x1,
+        PorterDuff_PremultiplyColors = 0x2,
+        PorterDuff_AlwaysBlend = 0x4
     };
 
     enum ClipType {
@@ -97,7 +96,6 @@ public:
     inline void unlock();
     static inline void unlock(QDirectFBPaintDevice *device);
 
-    inline bool testCompositionMode(const QPen *pen, const QBrush *brush, const QColor *color = 0) const;
     inline bool isSimpleBrush(const QBrush &brush) const;
 
     void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &pos);
@@ -130,6 +128,7 @@ public:
     ClipType clipType;
     QDirectFBPaintDevice *dfbDevice;
     uint compositionModeStatus;
+    bool isPremultiplied;
 
     bool inClip;
     QRect currentClip;
@@ -168,7 +167,7 @@ struct CachedImage
 static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
 #endif
 
-#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
+#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS || defined QT_DEBUG
 #define VOID_ARG() static_cast<bool>(false)
 enum PaintOperation {
     DRAW_RECTS = 0x0001, DRAW_LINES = 0x0002, DRAW_IMAGE = 0x0004,
@@ -178,9 +177,74 @@ enum PaintOperation {
     FILL_RECT = 0x1000, DRAW_COLORSPANS = 0x2000, DRAW_ROUNDED_RECT = 0x4000,
     ALL = 0xffff
 };
+
+#ifdef QT_DEBUG
+static void initRasterFallbacksMasks(int *warningMask, int *disableMask)
+{
+    struct {
+        const char *name;
+        PaintOperation operation;
+    } const operations[] = {
+        { "DRAW_RECTS", DRAW_RECTS },
+        { "DRAW_LINES", DRAW_LINES },
+        { "DRAW_IMAGE", DRAW_IMAGE },
+        { "DRAW_PIXMAP", DRAW_PIXMAP },
+        { "DRAW_TILED_PIXMAP", DRAW_TILED_PIXMAP },
+        { "STROKE_PATH", STROKE_PATH },
+        { "DRAW_PATH", DRAW_PATH },
+        { "DRAW_POINTS", DRAW_POINTS },
+        { "DRAW_ELLIPSE", DRAW_ELLIPSE },
+        { "DRAW_POLYGON", DRAW_POLYGON },
+        { "DRAW_TEXT", DRAW_TEXT },
+        { "FILL_PATH", FILL_PATH },
+        { "FILL_RECT", FILL_RECT },
+        { "DRAW_COLORSPANS", DRAW_COLORSPANS },
+        { "DRAW_ROUNDED_RECT", DRAW_ROUNDED_RECT },
+        { "ALL", ALL },
+        { 0, ALL }
+    };
+
+    const QStringList warning = QString::fromLatin1(qgetenv("QT_DIRECTFB_WARN_ON_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'));
+    const QStringList disable = QString::fromLatin1(qgetenv("QT_DIRECTFB_DISABLE_RASTERFALLBACKS")).toUpper().split(QLatin1Char('|'));
+    *warningMask = 0;
+    *disableMask = 0;
+    if (!warning.isEmpty() || !disable.isEmpty()) {
+        for (int i=0; operations[i].name; ++i) {
+            const QString name = QString::fromLatin1(operations[i].name);
+            if (warning.contains(name)) {
+                *warningMask |= operations[i].operation;
+            }
+            if (disable.contains(name)) {
+                *disableMask |= operations[i].operation;
+            }
+        }
+    }
+}
 #endif
 
+static inline int rasterFallbacksMask(bool warn)
+{
 #ifdef QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
+    if (warn)
+        return QT_DIRECTFB_WARN_ON_RASTERFALLBACKS;
+#endif
+#ifdef QT_DIRECTFB_DISABLE_RASTERFALLBACKS
+    if (!warn)
+        return QT_DIRECTFB_DISABLE_RASTERFALLBACKS;
+#endif
+#ifndef QT_DEBUG
+    return 0;
+#else
+    static int warnMask = -1;
+    static int disableMask = -1;
+    if (warnMask == -1)
+        initRasterFallbacksMasks(&warnMask, &disableMask);
+    return warn ? warnMask : disableMask;
+#endif
+}
+#endif
+
+#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DEBUG
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                uint transformationType, bool simplePen,
@@ -190,25 +254,31 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                                const char *nameThree, const T3 &three);
 #endif
 
-#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS && defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
+#if defined QT_DEBUG || (defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS && defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS)
 #define RASTERFALLBACK(op, one, two, three)                             \
-    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
-        rasterFallbackWarn("Disabled raster engine operation",          \
-                           __FUNCTION__, state()->painter->device(),    \
-                           d_func()->transformationType,                \
-                           d_func()->simplePen,                         \
-                           d_func()->clipType,                          \
-                           d_func()->compositionModeStatus,             \
-                           #one, one, #two, two, #three, three);        \
-    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
-        return;
+    {                                                                   \
+        const bool disable = op & rasterFallbacksMask(false);           \
+        if (op & rasterFallbacksMask(true))                             \
+            rasterFallbackWarn(disable                                  \
+                               ? "Disabled raster engine operation"     \
+                               : "Falling back to raster engine for",   \
+                               __FUNCTION__,                            \
+                               state()->painter->device(),              \
+                               d_func()->transformationType,            \
+                               d_func()->simplePen,                     \
+                               d_func()->clipType,                      \
+                               d_func()->compositionModeStatus,         \
+                               #one, one, #two, two, #three, three);    \
+        if (disable)                                                    \
+            return;                                                     \
+    }
 #elif defined QT_DIRECTFB_DISABLE_RASTERFALLBACKS
-#define RASTERFALLBACK(op, one, two, three)             \
-    if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))     \
+#define RASTERFALLBACK(op, one, two, three)                             \
+    if (op & rasterFallbacksMask(false))                                \
         return;
 #elif defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
 #define RASTERFALLBACK(op, one, two, three)                             \
-    if (op & (QT_DIRECTFB_WARN_ON_RASTERFALLBACKS))                     \
+    if (op & rasterFallbacksMask(true))                                 \
         rasterFallbackWarn("Falling back to raster engine for",         \
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->transformationType,                \
@@ -287,6 +357,7 @@ bool QDirectFBPaintEngine::begin(QPaintDevice *device)
         qFatal("QDirectFBPaintEngine used on an invalid device: 0x%x",
                device->devType());
     }
+    d->isPremultiplied = QDirectFBScreen::isPremultiplied(d->dfbDevice->format());
 
     d->prepare(d->dfbDevice);
     gccaps = AllFeatures;
@@ -413,7 +484,7 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
         || !d->simplePen
         || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
         || !d->isSimpleBrush(brush)
-        || !d->testCompositionMode(&pen, &brush)) {
+        || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
@@ -443,7 +514,7 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
         || !d->simplePen
         || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
         || !d->isSimpleBrush(brush)
-        || !d->testCompositionMode(&pen, &brush)) {
+        || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
@@ -468,7 +539,7 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
     const QPen &pen = state()->pen;
     if (!d->simplePen
         || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
-        || !d->testCompositionMode(&pen, 0)) {
+        || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
@@ -488,7 +559,7 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
     const QPen &pen = state()->pen;
     if (!d->simplePen
         || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
-        || !d->testCompositionMode(&pen, 0)) {
+        || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
@@ -526,7 +597,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     */
 
 #if !defined QT_NO_DIRECTFB_PREALLOCATED || defined QT_DIRECTFB_IMAGECACHE
-    if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
+    if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)
         || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
         || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
         || (!d->supportsStretchBlit() && state()->matrix.mapRect(r).size() != sr.size())
@@ -575,7 +646,7 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QPixmapData *data = pixmap.pixmapData();
         Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
         QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
-        if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
+        if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)
             || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
             || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
             || (!d->supportsStretchBlit() && state()->matrix.mapRect(r).size() != sr.size())) {
@@ -606,7 +677,7 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), offset);
         d->lock();
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, offset);
-    } else if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
+    } else if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)
                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
                || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
                || (!d->supportsStretchBlit() && state()->matrix.isScaling())) {
@@ -720,7 +791,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         switch (brush.style()) {
         case Qt::SolidPattern: {
             if (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported
-                || !d->testCompositionMode(0, &brush)) {
+                || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
                 break;
             }
             const QColor color = brush.color();
@@ -732,7 +803,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             return; }
 
         case Qt::TexturePattern: {
-            if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
+            if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)
                 || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
                 || (!d->supportsStretchBlit() && state()->matrix.isScaling())) {
                 break;
@@ -760,7 +831,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     Q_D(QDirectFBPaintEngine);
     if ((d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
         || (d->clipType == QDirectFBPaintEnginePrivate::ComplexClip)
-        || !d->testCompositionMode(0, 0, &color)) {
+        || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
         RASTERFALLBACK(FILL_RECT, rect, color, VOID_ARG());
         d->lock();
         QRasterPaintEngine::fillRect(rect, color);
@@ -804,7 +875,7 @@ QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p
     : surface(0), antialiased(false), simplePen(false),
       transformationType(0), opacity(255),
       clipType(ClipUnset), dfbDevice(0),
-      compositionModeStatus(0), inClip(false), q(p)
+      compositionModeStatus(0), isPremultiplied(false), inClip(false), q(p)
 {
     fb = QDirectFBScreen::instance()->dfb();
     surfaceCache = new SurfaceCache;
@@ -819,36 +890,6 @@ bool QDirectFBPaintEnginePrivate::isSimpleBrush(const QBrush &brush) const
 {
     return (brush.style() == Qt::NoBrush) || (brush.style() == Qt::SolidPattern && !antialiased);
 }
-
-bool QDirectFBPaintEnginePrivate::testCompositionMode(const QPen *pen, const QBrush *brush, const QColor *color) const
-{
-    Q_ASSERT(!pen || pen->style() == Qt::NoPen || pen->style() == Qt::SolidLine);
-    Q_ASSERT(!brush || brush->style() == Qt::NoBrush || brush->style() == Qt::SolidPattern);
-    switch (compositionModeStatus & (QDirectFBPaintEnginePrivate::PorterDuff_SupportedOpaquePrimitives
-                                     |QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)) {
-    case QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives:
-        return true;
-    case QDirectFBPaintEnginePrivate::PorterDuff_SupportedOpaquePrimitives:
-        if (pen && pen->style() == Qt::SolidLine && pen->color().alpha() != 255)
-            return false;
-        if (brush) {
-            if (brush->style() == Qt::SolidPattern && brush->color().alpha() != 255) {
-                return false;
-            }
-        } else if (color && color->alpha() != 255) {
-            return false;
-        }
-        return true;
-    case QDirectFBPaintEnginePrivate::PorterDuff_None:
-        return false;
-    default:
-        // ### PorterDuff_SupportedOpaquePrimitives|PorterDuff_SupportedPrimitives can't be combined
-        break;
-    }
-    Q_ASSERT(0);
-    return false;
-}
-
 
 void QDirectFBPaintEnginePrivate::lock()
 {
@@ -912,21 +953,23 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
 
     static const bool forceRasterFallBack = qgetenv("QT_DIRECTFB_FORCE_RASTER").toInt() > 0;
     if (forceRasterFallBack) {
-        compositionModeStatus = 0;
+        compositionModeStatus = PorterDuff_None;
         return;
     }
 
-    compositionModeStatus = PorterDuff_SupportedBlits;
+    compositionModeStatus = PorterDuff_Supported|PorterDuff_PremultiplyColors|PorterDuff_AlwaysBlend;
     switch (mode) {
     case QPainter::CompositionMode_Clear:
         surface->SetPorterDuff(surface, DSPD_CLEAR);
         break;
     case QPainter::CompositionMode_Source:
         surface->SetPorterDuff(surface, DSPD_SRC);
-        compositionModeStatus |= PorterDuff_SupportedOpaquePrimitives;
+        compositionModeStatus &= ~PorterDuff_AlwaysBlend;
+        if (!isPremultiplied)
+            compositionModeStatus &= ~PorterDuff_PremultiplyColors;
         break;
     case QPainter::CompositionMode_SourceOver:
-        compositionModeStatus |= PorterDuff_SupportedPrimitives;
+        compositionModeStatus &= ~PorterDuff_AlwaysBlend;
         surface->SetPorterDuff(surface, DSPD_SRC_OVER);
         break;
     case QPainter::CompositionMode_DestinationOver:
@@ -934,6 +977,8 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
         break;
     case QPainter::CompositionMode_SourceIn:
         surface->SetPorterDuff(surface, DSPD_SRC_IN);
+        if (!isPremultiplied)
+            compositionModeStatus &= ~PorterDuff_PremultiplyColors;
         break;
     case QPainter::CompositionMode_DestinationIn:
         surface->SetPorterDuff(surface, DSPD_DST_IN);
@@ -944,6 +989,11 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
     case QPainter::CompositionMode_DestinationOut:
         surface->SetPorterDuff(surface, DSPD_DST_OUT);
         break;
+#if (Q_DIRECTFB_VERSION >= 0x010200)
+    case QPainter::CompositionMode_Destination:
+        surface->SetPorterDuff(surface, DSPD_DST);
+        break;
+#endif
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     case QPainter::CompositionMode_SourceAtop:
         surface->SetPorterDuff(surface, DSPD_SRC_ATOP);
@@ -959,7 +1009,7 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
         break;
 #endif
     default:
-        compositionModeStatus = 0;
+        compositionModeStatus = PorterDuff_None;
         break;
     }
 }
@@ -981,9 +1031,6 @@ void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
     }
     surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
     surface->SetBlittingFlags(surface, blittingFlags);
-    if (compositionModeStatus & PorterDuff_Dirty) {
-        setCompositionMode(q->state()->composition_mode);
-    }
 }
 
 static inline uint ALPHA_MUL(uint x, uint a)
@@ -996,12 +1043,20 @@ static inline uint ALPHA_MUL(uint x, uint a)
 void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
 {
     Q_ASSERT(surface);
+    Q_ASSERT(compositionModeStatus & PorterDuff_Supported);
     const quint8 alpha = (opacity == 255 ?
                           color.alpha() : ALPHA_MUL(color.alpha(), opacity));
-    surface->SetColor(surface, color.red(), color.green(), color.blue(), alpha);
-    surface->SetPorterDuff(surface, DSPD_NONE);
-    surface->SetDrawingFlags(surface, alpha == 255 ? DSDRAW_NOFX : DSDRAW_BLEND);
-    compositionModeStatus |= PorterDuff_Dirty;
+    QColor col;
+    if (compositionModeStatus & PorterDuff_PremultiplyColors) {
+        col = QColor(ALPHA_MUL(color.red(), alpha),
+                     ALPHA_MUL(color.green(), alpha),
+                     ALPHA_MUL(color.blue(), alpha),
+                     alpha);
+    } else {
+        col = QColor(color.red(), color.green(), color.blue(), alpha);
+    }
+    surface->SetColor(surface, col.red(), col.green(), col.blue(), col.alpha());
+    surface->SetDrawingFlags(surface, alpha == 255 && !(compositionModeStatus & PorterDuff_AlwaysBlend) ? DSDRAW_NOFX : DSDRAW_BLEND);
 }
 
 IDirectFBSurface *QDirectFBPaintEnginePrivate::getSurface(const QImage &img, bool *release)
@@ -1283,7 +1338,7 @@ static inline void drawRects(const T *rects, int n, const QTransform &transform,
     }
 }
 
-#ifdef QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
+#if defined QT_DIRECTFB_WARN_ON_RASTERFALLBACKS || defined QT_DEBUG
 template <typename T> inline const T *ptr(const T &t) { return &t; }
 template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>

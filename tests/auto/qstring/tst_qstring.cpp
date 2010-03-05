@@ -3503,7 +3503,10 @@ void tst_QString::section_data()
                         << QString("\\b") << 3 << 3
                         << int(QString::SectionDefault)
                         << QString("is") << true;
-
+    QTest::newRow( "task257941-rx" ) << QString("99.0 42.3")
+                        << QString("\\s*[AaBb]\\s*") << 1 << 1
+                        << int(QString::SectionIncludeLeadingSep)
+                        << QString() << true;
 }
 
 void tst_QString::section()

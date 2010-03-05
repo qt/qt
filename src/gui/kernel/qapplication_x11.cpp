@@ -96,6 +96,11 @@ extern "C" {
 }
 #endif
 
+#ifndef QT_GUI_DOUBLE_CLICK_RADIUS
+#define QT_GUI_DOUBLE_CLICK_RADIUS 5
+#endif
+
+
 //#define ALIEN_DEBUG
 
 #if !defined(QT_NO_GLIB)
@@ -315,9 +320,14 @@ static const char * x11_atomnames = {
     "_XEMBED\0"
     "_XEMBED_INFO\0"
 
+    // Wacom old. (before version 0.10)
     "Wacom Stylus\0"
     "Wacom Cursor\0"
     "Wacom Eraser\0"
+
+    // Tablet
+    "STYLUS\0"
+    "ERASER\0"
 };
 
 Q_GUI_EXPORT QX11Data *qt_x11Data = 0;
@@ -2361,12 +2371,12 @@ void qt_init(QApplicationPrivate *priv, int,
                     gotStylus = true;
                 }
 #else
-                if (devs->type == ATOM(XWacomStylus)) {
+                if (devs->type == ATOM(XWacomStylus) || devs->type == ATOM(XTabletStylus)) {
                     deviceType = QTabletEvent::Stylus;
                     if (wacomDeviceName()->isEmpty())
                         wacomDeviceName()->append(devs->name);
                     gotStylus = true;
-                } else if (devs->type == ATOM(XWacomEraser)) {
+                } else if (devs->type == ATOM(XWacomEraser) || devs->type == ATOM(XTabletEraser)) {
                     deviceType = QTabletEvent::XFreeEraser;
                     gotEraser = true;
                 }
@@ -4215,8 +4225,8 @@ bool QETWidget::translateMouseEvent(const XEvent *event)
                 mouseButtonPressed == button &&
                 (long)event->xbutton.time -(long)mouseButtonPressTime
                 < QApplication::doubleClickInterval() &&
-                qAbs(event->xbutton.x - mouseXPos) < 5 &&
-                qAbs(event->xbutton.y - mouseYPos) < 5) {
+                qAbs(event->xbutton.x - mouseXPos) < QT_GUI_DOUBLE_CLICK_RADIUS &&
+                qAbs(event->xbutton.y - mouseYPos) < QT_GUI_DOUBLE_CLICK_RADIUS) {
                 type = QEvent::MouseButtonDblClick;
                 mouseButtonPressTime -= 2000;        // no double-click next time
             } else {

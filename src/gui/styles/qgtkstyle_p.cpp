@@ -91,8 +91,8 @@ Ptr_gtk_widget_set_default_direction QGtkStylePrivate::gtk_widget_set_default_di
 Ptr_gtk_widget_modify_color QGtkStylePrivate::gtk_widget_modify_fg = 0;
 Ptr_gtk_widget_modify_color QGtkStylePrivate::gtk_widget_modify_bg = 0;
 Ptr_gtk_arrow_new QGtkStylePrivate::gtk_arrow_new = 0;
-Ptr_gtk_menu_item_new QGtkStylePrivate::gtk_menu_item_new = 0;
-Ptr_gtk_check_menu_item_new QGtkStylePrivate::gtk_check_menu_item_new = 0;
+Ptr_gtk_menu_item_new_with_label QGtkStylePrivate::gtk_menu_item_new_with_label = 0;
+Ptr_gtk_check_menu_item_new_with_label QGtkStylePrivate::gtk_check_menu_item_new_with_label = 0;
 Ptr_gtk_menu_bar_new QGtkStylePrivate::gtk_menu_bar_new = 0;
 Ptr_gtk_menu_new QGtkStylePrivate::gtk_menu_new = 0;
 Ptr_gtk_button_new QGtkStylePrivate::gtk_button_new = 0;
@@ -347,8 +347,8 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_widget_modify_fg = (Ptr_gtk_widget_modify_color)libgtk.resolve("gtk_widget_modify_fg");
     gtk_widget_modify_bg = (Ptr_gtk_widget_modify_color)libgtk.resolve("gtk_widget_modify_bg");
     gtk_arrow_new = (Ptr_gtk_arrow_new)libgtk.resolve("gtk_arrow_new");
-    gtk_menu_item_new = (Ptr_gtk_menu_item_new)libgtk.resolve("gtk_menu_item_new");
-    gtk_check_menu_item_new = (Ptr_gtk_check_menu_item_new)libgtk.resolve("gtk_check_menu_item_new");
+    gtk_menu_item_new_with_label = (Ptr_gtk_menu_item_new_with_label)libgtk.resolve("gtk_menu_item_new_with_label");
+    gtk_check_menu_item_new_with_label = (Ptr_gtk_check_menu_item_new_with_label)libgtk.resolve("gtk_check_menu_item_new_with_label");
     gtk_menu_bar_new = (Ptr_gtk_menu_bar_new)libgtk.resolve("gtk_menu_bar_new");
     gtk_menu_new = (Ptr_gtk_menu_new)libgtk.resolve("gtk_menu_new");
     gtk_toolbar_new = (Ptr_gtk_toolbar_new)libgtk.resolve("gtk_toolbar_new");
@@ -439,7 +439,7 @@ void QGtkStylePrivate::initGtkMenu() const
     GtkWidget *gtkMenuBar = QGtkStylePrivate::gtk_menu_bar_new();
     setupGtkWidget(gtkMenuBar);
 
-    GtkWidget *gtkMenuBarItem = QGtkStylePrivate::gtk_menu_item_new();
+    GtkWidget *gtkMenuBarItem = QGtkStylePrivate::gtk_menu_item_new_with_label("X");
     gtk_menu_shell_append((GtkMenuShell*)(gtkMenuBar), gtkMenuBarItem);
     gtk_widget_realize(gtkMenuBarItem);
 
@@ -448,14 +448,11 @@ void QGtkStylePrivate::initGtkMenu() const
     gtk_menu_item_set_submenu((GtkMenuItem*)(gtkMenuBarItem), gtkMenu);
     gtk_widget_realize(gtkMenu);
 
-    GtkWidget *gtkMenuItem = QGtkStylePrivate::gtk_menu_item_new();
-    g_object_set(gtkMenuItem, "label", "X", NULL);
-
+    GtkWidget *gtkMenuItem = QGtkStylePrivate::gtk_menu_item_new_with_label("X");
     gtk_menu_shell_append((GtkMenuShell*)gtkMenu, gtkMenuItem);
     gtk_widget_realize(gtkMenuItem);
 
-    GtkWidget *gtkCheckMenuItem = QGtkStylePrivate::gtk_check_menu_item_new();
-    g_object_set(gtkCheckMenuItem, "label", "X", NULL);
+    GtkWidget *gtkCheckMenuItem = QGtkStylePrivate::gtk_check_menu_item_new_with_label("X");
     gtk_menu_shell_append((GtkMenuShell*)gtkMenu, gtkCheckMenuItem);
     gtk_widget_realize(gtkCheckMenuItem);
 
@@ -533,7 +530,7 @@ void QGtkStylePrivate::initGtkWidgets() const
             GtkWidget *gtkButton = QGtkStylePrivate::gtk_button_new();
             addWidget(gtkButton);
             g_signal_connect(gtkButton, "style-set", G_CALLBACK(gtkStyleSetCallback), 0);
-            addWidget(QGtkStylePrivate::gtk_tool_button_new(NULL, NULL));
+            addWidget(QGtkStylePrivate::gtk_tool_button_new(NULL, "Qt"));
             addWidget(QGtkStylePrivate::gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE));
             addWidget(QGtkStylePrivate::gtk_hbutton_box_new());
             addWidget(QGtkStylePrivate::gtk_check_button_new());

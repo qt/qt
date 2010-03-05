@@ -147,6 +147,7 @@ void tst_QStringList::split_data() const
 
 void tst_QStringList::split_std() const
 {
+#ifndef QT_NO_STL
     QFETCH(QString, input);
     const char split_char = ':';
     std::string stdinput = input.toStdString();
@@ -159,10 +160,12 @@ void tst_QStringList::split_std() const
              token.push_back(each))
             ;
     }
+#endif
 }
 
 void tst_QStringList::split_stdw() const
 {
+#ifndef QT_NO_STL
     QFETCH(QString, input);
     const wchar_t split_char = ':';
     std::wstring stdinput = input.toStdWString();
@@ -175,6 +178,7 @@ void tst_QStringList::split_stdw() const
              token.push_back(each))
             ;
     }
+#endif
 }
 
 void tst_QStringList::split_ba() const

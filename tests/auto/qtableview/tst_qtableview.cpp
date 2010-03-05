@@ -199,6 +199,7 @@ private slots:
     void taskQTBUG_5062_spansInconsistency();
     void taskQTBUG_4516_clickOnRichTextLabel();
     void taskQTBUG_5237_wheelEventOnHeader();
+    void taskQTBUG_8585_crashForNoGoodReason();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3947,6 +3948,51 @@ void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
     int sbValueAfter = view.verticalScrollBar()->value();
     QVERIFY(sbValueBefore != sbValueAfter);
 }
+
+class TestTableView : public QTableView {
+Q_OBJECT
+public:
+    TestTableView(QWidget *parent = 0) : QTableView(parent)
+    {
+        connect(this, SIGNAL(entered(const QModelIndex&)), this, SLOT(openEditor(const QModelIndex&)));
+    }
+    ~TestTableView(){}
+public slots:
+    void onDataChanged()
+    {
+        for (int i = 0; i < model()->rowCount(); i++) {
+            setRowHidden(i, model()->data(model()->index(i, 0)).toBool());
+        }
+    }
+
+    void openEditor(const QModelIndex& index)
+    { openPersistentEditor(index); }
+};
+
+
+void tst_QTableView::taskQTBUG_8585_crashForNoGoodReason()
+{
+    QStandardItemModel model;
+    model.insertColumn(0, QModelIndex());
+    for(int i = 0; i < 20; i++)
+    {
+        model.insertRow(i);
+    }
+
+    TestTableView w;
+    w.setMouseTracking(true);
+    w.setModel(&model);
+    connect(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), &w, SLOT(onDataChanged()));
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    for (int i = 0; i < 10; i++)
+    {
+        QTest::mouseMove(w.viewport(), QPoint(50, 20));
+        w.model()->setData(w.indexAt(QPoint(50, 20)), true);
+        QTest::mouseMove(w.viewport(), QPoint(50, 25));
+    }
+}
+
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

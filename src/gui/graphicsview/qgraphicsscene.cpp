@@ -4714,31 +4714,18 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (sourced->currentCachedSystem() != Qt::LogicalCoordinates
             && sourced->lastEffectTransform != painter->worldTransform())
         {
-            bool unclipped = false;
             if (sourced->lastEffectTransform.type() <= QTransform::TxTranslate
                 && painter->worldTransform().type() <= QTransform::TxTranslate)
             {
-                QRectF itemRect = item->boundingRect();
-                if (!item->d_ptr->children.isEmpty())
-                    itemRect |= item->childrenBoundingRect();
+                QRectF sourceRect = sourced->boundingRect(Qt::DeviceCoordinates);
+                QRect effectRect = sourced->paddedEffectRect(Qt::DeviceCoordinates, sourced->currentCachedMode(), sourceRect);
 
-                QRectF oldSourceRect = sourced->lastEffectTransform.mapRect(itemRect);
-                QRectF newSourceRect = painter->worldTransform().mapRect(itemRect);
-
-                QRect oldEffectRect = sourced->paddedEffectRect(sourced->currentCachedSystem(), sourced->currentCachedMode(), oldSourceRect);
-                QRect newEffectRect = sourced->paddedEffectRect(sourced->currentCachedSystem(), sourced->currentCachedMode(), newSourceRect);
-
-                QRect deviceRect(0, 0, painter->device()->width(), painter->device()->height());
-                if (deviceRect.contains(oldEffectRect) && deviceRect.contains(newEffectRect)) {
-                    sourced->setCachedOffset(newEffectRect.topLeft());
-                    unclipped = true;
-                }
+                sourced->setCachedOffset(effectRect.topLeft());
+            } else {
+                sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
             }
 
             sourced->lastEffectTransform = painter->worldTransform();
-
-            if (!unclipped)
-                sourced->invalidateCache(QGraphicsEffectSourcePrivate::TransformChanged);
         }
 
         item->d_ptr->graphicsEffect->draw(painter);

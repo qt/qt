@@ -75,10 +75,6 @@
 #  undef _MSC_VER
 #endif
 
-#ifndef Q_ODBC_VERSION_2
-#include <sqlucode.h>
-#endif
-
 #include <sqlext.h>
 
 QT_BEGIN_HEADER

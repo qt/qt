@@ -119,6 +119,7 @@ void QMainWindowPrivate::init()
     q->setAttribute(Qt::WA_Hover);
 #ifdef QT_SOFTKEYS_ENABLED
     menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, q);
+    menuBarAction->setVisible(false);
 #endif
 }
 

@@ -119,8 +119,8 @@ private:
     QPushButton *m_suspendResumeButton;
     QComboBox *m_deviceBox;
 
-    AudioInfo *m_audioInfo;
     QAudioDeviceInfo m_device;
+    AudioInfo *m_audioInfo;
     QAudioFormat m_format;
     QAudioInput *m_audioInput;
     QIODevice *m_input;
