@@ -299,6 +299,32 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
 
 Q_GLOBAL_STATIC(QThreadStorage<QIconvCodec::IconvState *>, fromUnicodeState)
 
+static bool setByteOrder(iconv_t cd)
+{
+#if !defined(NO_BOM)
+    // give iconv() a BOM
+    char buf[4];
+    ushort bom[] = { QChar::ByteOrderMark };
+
+    char *outBytes = buf;
+    char *inBytes = reinterpret_cast<char *>(bom);
+    size_t outBytesLeft = sizeof buf;
+    size_t inBytesLeft = sizeof bom;
+
+#if defined(GNU_LIBICONV)
+    const char **inBytesPtr = const_cast<const char **>(&inBytes);
+#else
+    char **inBytesPtr = &inBytes;
+#endif
+
+    if (iconv(cd, inBytesPtr, &inBytesLeft, &outBytes, &outBytesLeft) == (size_t) -1) {
+        return false;
+    }
+#endif // NO_BOM
+
+    return true;
+}
+
 QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterState *convState) const
 {
     char *inBytes;
@@ -325,17 +351,8 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     IconvState *&state = ts->localData();
     if (!state) {
         state = new IconvState(QIconvCodec::createIconv_t(0, UTF16));
-        if (state->cd != reinterpret_cast<iconv_t>(-1)) {
-            size_t outBytesLeft = len + 3; // +3 for the BOM
-            QByteArray ba(outBytesLeft, Qt::Uninitialized);
-            outBytes = ba.data();
-
-#if !defined(NO_BOM)
-            // give iconv() a BOM
-            QChar bom[] = { QChar(QChar::ByteOrderMark) };
-            inBytes = reinterpret_cast<char *>(bom);
-            inBytesLeft = sizeof(bom);
-            if (iconv(state->cd, inBytesPtr, &inBytesLeft, &outBytes, &outBytesLeft) == (size_t) -1) {
+        if (state->cd == reinterpret_cast<iconv_t>(-1)) {
+            if (!setByteOrder(state->cd)) {
                 perror("QIconvCodec::convertFromUnicode: using ASCII for conversion, iconv failed for BOM");
 
                 iconv_close(state->cd);
@@ -343,7 +360,6 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
 
                 return QString(uc, len).toAscii();
             }
-#endif // NO_BOM
         }
     }
     if (state->cd == reinterpret_cast<iconv_t>(-1)) {
@@ -422,6 +438,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
 
     // reset to initial state
     iconv(state->cd, 0, &inBytesLeft, 0, &outBytesLeft);
+    setByteOrder(state->cd);
 
     ba.resize(ba.size() - outBytesLeft);
 

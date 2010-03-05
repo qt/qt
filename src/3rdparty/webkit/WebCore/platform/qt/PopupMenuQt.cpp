@@ -39,7 +39,7 @@
 #include <QGraphicsProxyWidget>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include <QGraphicsWebView>
+#include <qgraphicswebview.h>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMenu>

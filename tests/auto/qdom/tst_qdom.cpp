@@ -131,6 +131,7 @@ private slots:
     void setContentWhitespace_data() const;
 
     void taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const;
+    void cloneDTD_QTBUG8398() const;
 
     void cleanupTestCase() const;
 
@@ -1912,5 +1913,29 @@ void tst_QDom::taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() co
     QVERIFY(true);
 }
 
+void tst_QDom::cloneDTD_QTBUG8398() const
+{
+    QString dtd("<?xml version='1.0' encoding='UTF-8'?>\n"
+                   "<!DOCTYPE first [\n"
+                   "<!ENTITY secondFile SYSTEM 'second.xml'>\n"
+                   "<!ENTITY thirdFile SYSTEM 'third.xml'>\n"
+                   "]>\n"
+                   "<first/>\n");
+    QDomDocument domDocument;
+    QVERIFY(domDocument.setContent(dtd));
+    QDomDocument domDocument2 = domDocument.cloneNode(true).toDocument();
+
+    // for some reason, our DOM implementation reverts the order of entities
+    QString expected("<?xml version='1.0' encoding='UTF-8'?>\n"
+                   "<!DOCTYPE first [\n"
+                   "<!ENTITY thirdFile SYSTEM 'third.xml'>\n"
+                   "<!ENTITY secondFile SYSTEM 'second.xml'>\n"
+                   "]>\n"
+                   "<first/>\n");
+    QString output;
+    QTextStream stream(&output);
+    domDocument2.save(stream, 0);
+    QCOMPARE(output, expected);
+}
 QTEST_MAIN(tst_QDom)
 #include "tst_qdom.moc"
