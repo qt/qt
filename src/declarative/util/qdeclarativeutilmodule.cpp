@@ -46,13 +46,11 @@
 #include "qdeclarativebehavior_p.h"
 #include "qdeclarativebind_p.h"
 #include "qdeclarativeconnections_p.h"
-#include "qdeclarativedatetimeformatter_p.h"
 #include "qdeclarativeeasefollow_p.h"
 #include "qdeclarativefontloader_p.h"
 #include "qdeclarativelistaccessor_p.h"
 #include "qdeclarativelistmodel_p.h"
 #include "qdeclarativenullablevalue_p_p.h"
-#include "qdeclarativenumberformatter_p.h"
 #include "qdeclarativeopenmetaobject_p.h"
 #include "qdeclarativepackage_p.h"
 #include "qdeclarativepixmapcache_p.h"
@@ -73,7 +71,6 @@
 #ifndef QT_NO_XMLPATTERNS
 #include "qdeclarativexmllistmodel_p.h"
 #endif
-#include "qnumberformat_p.h"
 #include "qperformancelog_p_p.h"
 
 void QDeclarativeUtilModule::defineModule()
@@ -83,12 +80,10 @@ void QDeclarativeUtilModule::defineModule()
     QML_REGISTER_TYPE(Qt,4,6,Binding,QDeclarativeBind);
     QML_REGISTER_TYPE(Qt,4,6,ColorAnimation,QDeclarativeColorAnimation);
     QML_REGISTER_TYPE(Qt,4,6,Connections,QDeclarativeConnections);
-    QML_REGISTER_TYPE(Qt,4,6,DateTimeFormatter,QDeclarativeDateTimeFormatter);
     QML_REGISTER_TYPE(Qt,4,6,EaseFollow,QDeclarativeEaseFollow);;
     QML_REGISTER_TYPE(Qt,4,6,FontLoader,QDeclarativeFontLoader);
     QML_REGISTER_TYPE(Qt,4,6,ListElement,QDeclarativeListElement);
     QML_REGISTER_TYPE(Qt,4,6,NumberAnimation,QDeclarativeNumberAnimation);
-    QML_REGISTER_TYPE(Qt,4,6,NumberFormatter,QDeclarativeNumberFormatter);;
     QML_REGISTER_TYPE(Qt,4,6,Package,QDeclarativePackage);
     QML_REGISTER_TYPE(Qt,4,6,ParallelAnimation,QDeclarativeParallelAnimation);
     QML_REGISTER_TYPE(Qt,4,6,ParentAction,QDeclarativeParentAction);
@@ -116,7 +111,6 @@ void QDeclarativeUtilModule::defineModule()
     QML_REGISTER_NOCREATE_TYPE(QDeclarativeAnchors);
     QML_REGISTER_NOCREATE_TYPE(QDeclarativeAbstractAnimation);
     QML_REGISTER_NOCREATE_TYPE(QDeclarativeStateOperation);
-    QML_REGISTER_NOCREATE_TYPE(QNumberFormat);
 
     QML_REGISTER_CUSTOM_TYPE(Qt, 4,6, ListModel, QDeclarativeListModel, QDeclarativeListModelParser);
     QML_REGISTER_CUSTOM_TYPE(Qt, 4,6, PropertyChanges, QDeclarativePropertyChanges, QDeclarativePropertyChangesParser);

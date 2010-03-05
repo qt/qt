@@ -10,7 +10,6 @@ SUBDIRS += \
            qdeclarativecomponent \           # Cover
            qdeclarativeconnection \          # Cover
            qdeclarativecontext \             # Cover
-           qdeclarativedatetimeformatter \   # Cover
            qdeclarativedebug \               # Cover
            qdeclarativedebugclient \         # Cover
            qdeclarativedebugservice \        # Cover
@@ -45,7 +44,6 @@ SUBDIRS += \
            qdeclarativeproperty \        # Cover
            qdeclarativemetatype \            # Cover
            qdeclarativemoduleplugin \        # Cover
-           qdeclarativenumberformatter \     # Cover
            qdeclarativepixmapcache \         # Cover
            qdeclarativepropertymap \         # Cover
            qdeclarativeqt \                  # Cover

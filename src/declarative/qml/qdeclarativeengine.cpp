@@ -167,6 +167,7 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
         QDeclarativeItemModule::defineModule();
         QDeclarativeUtilModule::defineModule();
         QDeclarativeEnginePrivate::defineModule();
+        QDeclarativeValueTypeFactory::registerValueTypes();
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
 
