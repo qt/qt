@@ -93,8 +93,6 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l Package
 \o \l XmlListModel and XmlRole
 \o \l WorkerListModel
-\o \l DateTimeFormatter
-\o \l NumberFormatter
 \endlist
 
 \o
