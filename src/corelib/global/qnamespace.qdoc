@@ -1639,6 +1639,8 @@
     \value Key_LaunchD On X11 this key is mapped to XF86XK_LaunchB key for legacy reasons.
     \value Key_LaunchE On X11 this key is mapped to XF86XK_LaunchC key for legacy reasons.
     \value Key_LaunchF On X11 this key is mapped to XF86XK_LaunchD key for legacy reasons.
+    \value Key_LaunchG On X11 this key is mapped to XF86XK_LaunchE key for legacy reasons.
+    \value Key_LaunchH On X11 this key is mapped to XF86XK_LaunchF key for legacy reasons.
     \value Key_MonBrightnessUp
     \value Key_MonBrightnessDown
     \value Key_KeyboardLightOnOff
