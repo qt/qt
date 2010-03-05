@@ -2062,6 +2062,7 @@ void QVGPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
 void QVGPaintEnginePrivate::ensureMask
         (QVGPaintEngine *engine, int width, int height)
 {
+    scissorMask = false;
     if (maskIsSet) {
         vgMask(VG_INVALID_HANDLE, VG_FILL_MASK, 0, 0, width, height);
         maskRect = QRect();
