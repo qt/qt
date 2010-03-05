@@ -805,13 +805,14 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (d->clipType != QDirectFBPaintEnginePrivate::ComplexClip) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
+            const QColor color = brush.color();
+            if (!color.isValid())
+                return;
+
             if (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported
                 || !(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)) {
                 break;
             }
-            const QColor color = brush.color();
-            if (!color.isValid())
-                return;
             d->setDFBColor(color);
             const QRect r = state()->matrix.mapRect(rect).toRect();
             CLIPPED_PAINT(d->surface->FillRectangle(d->surface, r.x(), r.y(), r.width(), r.height()));
