@@ -61,14 +61,78 @@
 #include <Foundation/NSEnumerator.h>
 #include <Foundation/NSKeyValueObserving.h>
 #include <Foundation/NSAutoreleasePool.h>
+#include <Foundation/NSLock.h>
 
 #include <SystemConfiguration/SCNetworkConfiguration.h>
+#include <private/qt_cocoa_helpers_mac_p.h>
+
 QMap <QString, QString> networkInterfaces;
+
+#ifdef MAC_SDK_10_6
+@interface QNSListener : NSObject
+{
+    NSNotificationCenter *center;
+    CWInterface *currentInterface;
+    QCoreWlanEngine *engine;
+    NSAutoreleasePool *autoreleasepool;
+    NSLock *locker;
+}
+- (void)notificationHandler:(NSNotification *)notification;
+- (void)remove;
+- (void)setEngine:(QCoreWlanEngine *)coreEngine;
+- (void)dealloc;
+
+@property (assign) QCoreWlanEngine* engine;
+
+@end
+
+@implementation QNSListener
+- (id) init
+{
+    [locker lock];
+    autoreleasepool = [[NSAutoreleasePool alloc] init];
+    center = [NSNotificationCenter defaultCenter];
+    currentInterface = [CWInterface interface];
+//    [center addObserver:self selector:@selector(notificationHandler:) name:kCWLinkDidChangeNotification object:nil];
+    [center addObserver:self selector:@selector(notificationHandler:) name:kCWPowerDidChangeNotification object:nil];
+    [locker unlock];
+    return self;
+}
+
+-(void)dealloc
+{
+    [autoreleasepool release];
+    [super dealloc];
+}
+
+-(void)setEngine:(QCoreWlanEngine *)coreEngine
+{
+    [locker lock];
+    if(!engine)
+        engine = coreEngine;
+    [locker unlock];
+}
+
+-(void)remove
+{
+    [locker lock];
+    [center removeObserver:self];
+    [locker unlock];
+}
+
+- (void)notificationHandler:(NSNotification *)notification
+{
+    engine->requestUpdate();
+}
+@end
+
+QNSListener *listener = 0;
+
+#endif
 
 QT_BEGIN_NAMESPACE
 
 inline QString cfstringRefToQstring(CFStringRef cfStringRef) {
-//    return QString([cfStringRef UTF8String]);
     QString retVal;
     CFIndex maxLength = 2 * CFStringGetLength(cfStringRef) + 1/*zero term*/; // max UTF8
     char *cstring = new char[maxLength];
@@ -122,12 +186,22 @@ QCoreWlanEngine::QCoreWlanEngine(QObject *parent)
 :   QBearerEngineImpl(parent)
 {
     startNetworkChangeLoop();
+
+#if defined(MAC_SDK_10_6)
+    if(!listener) {
+        listener = [[QNSListener alloc] init];
+        listener.engine = this;
+    }
+#endif
 }
 
 QCoreWlanEngine::~QCoreWlanEngine()
 {
     while (!foundConfigurations.isEmpty())
         delete foundConfigurations.takeFirst();
+
+    [listener remove];
+    [listener release];
 }
 
 QString QCoreWlanEngine::getInterfaceFromId(const QString &id)
@@ -242,15 +316,14 @@ void QCoreWlanEngine::requestUpdate()
 {
     QMutexLocker locker(&mutex);
 
-    pollTimer.stop();
-    QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
+    doRequestUpdate();
 }
 
 void QCoreWlanEngine::doRequestUpdate()
 {
     QMutexLocker locker(&mutex);
 
-    getAllScInterfaces();
+    getWifiInterfaces();
 
     QStringList previous = accessPointConfigurations.keys();
 
@@ -328,8 +401,6 @@ void QCoreWlanEngine::doRequestUpdate()
         emit configurationRemoved(ptr);
     }
 
-    pollTimer.start();
-
     emit updateCompleted();
 }
 
@@ -340,7 +411,7 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
     QStringList found;
 
 #if defined(MAC_SDK_10_6)
-    NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
+   QMacCocoaAutoReleasePool pool;
 
     CWInterface *currentInterface = [CWInterface interfaceWithName:qstringToNSString(interfaceName)];
     if([currentInterface power]) {
@@ -351,7 +422,6 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
         CWNetwork *apNetwork;
         if (!err) {
             for(uint row=0; row < [apArray count]; row++ ) {
-                NSAutoreleasePool *looppool = [[NSAutoreleasePool alloc] init];
 
                 apNetwork = [apArray objectAtIndex:row];
 
@@ -414,11 +484,9 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
 
                     emit configurationAdded(ptr);
                 }
-                [looppool release];
             }
         }
     }
-    [autoreleasepool drain];
 #else
     Q_UNUSED(interfaceName);
 #endif
@@ -458,39 +526,18 @@ bool QCoreWlanEngine::isKnownSsid(const QString &interfaceName, const QString &s
     return false;
 }
 
-bool QCoreWlanEngine::getAllScInterfaces()
+bool QCoreWlanEngine::getWifiInterfaces()
 {
     QMutexLocker locker(&mutex);
 
     networkInterfaces.clear();
-    NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
+    QMacCocoaAutoReleasePool pool;
 
-    CFArrayRef interfaces = SCNetworkInterfaceCopyAll();
-    if (interfaces != NULL) {
-        CFIndex interfaceCount;
-        CFIndex interfaceIndex;
-        interfaceCount = CFArrayGetCount(interfaces);
-        for (interfaceIndex = 0; interfaceIndex < interfaceCount; interfaceIndex++) {
-            NSAutoreleasePool *looppool = [[NSAutoreleasePool alloc] init];
-
-            CFStringRef bsdName;
-            CFTypeRef thisInterface = CFArrayGetValueAtIndex(interfaces, interfaceIndex);
-            bsdName = SCNetworkInterfaceGetBSDName((SCNetworkInterfaceRef)thisInterface);
-            QString interfaceName = cfstringRefToQstring(bsdName);
-            QString typeStr;
-            CFStringRef type = SCNetworkInterfaceGetInterfaceType((SCNetworkInterfaceRef)thisInterface);
-            if ( CFEqual(type, kSCNetworkInterfaceTypeIEEE80211)) {
-                typeStr = "WLAN";
-            }
-            if(!networkInterfaces.contains(interfaceName) && !typeStr.isEmpty()) {
-                networkInterfaces.insert(interfaceName,typeStr);
-            }
-            [looppool release];
-        }
+    NSArray *wifiInterfaces = [CWInterface supportedInterfaces];
+    for(uint row=0; row < [wifiInterfaces count]; row++ ) {
+        networkInterfaces.insert( nsstringToQString([wifiInterfaces objectAtIndex:row]),"WLAN");
     }
-    CFRelease(interfaces);
 
-    [autoreleasepool drain];
     return true;
 }
 
@@ -587,6 +634,11 @@ QNetworkSessionPrivate *QCoreWlanEngine::createSessionBackend()
 QNetworkConfigurationPrivatePointer QCoreWlanEngine::defaultConfiguration()
 {
     return QNetworkConfigurationPrivatePointer();
+}
+
+bool QCoreWlanEngine::requiresPolling() const
+{
+    return true;
 }
 
 QT_END_NAMESPACE
