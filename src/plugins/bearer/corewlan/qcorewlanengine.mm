@@ -199,9 +199,10 @@ QCoreWlanEngine::~QCoreWlanEngine()
 {
     while (!foundConfigurations.isEmpty())
         delete foundConfigurations.takeFirst();
-
+#if defined(MAC_SDK_10_6)
     [listener remove];
     [listener release];
+#endif
 }
 
 QString QCoreWlanEngine::getInterfaceFromId(const QString &id)
