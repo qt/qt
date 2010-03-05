@@ -84,6 +84,8 @@ public:
     static bool isValueType(int);
     static QDeclarativeValueType *valueType(int);
 
+    static void registerValueTypes();
+
     QDeclarativeValueType *operator[](int idx) const;
 
 private:

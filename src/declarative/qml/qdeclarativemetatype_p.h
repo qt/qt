@@ -114,6 +114,8 @@ public:
 
     QDeclarativeCustomParser *customParser() const;
 
+    bool isCreatable() const;
+
     bool isInterface() const;
     int typeId() const;
     int qListTypeId() const;

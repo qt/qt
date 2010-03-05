@@ -87,7 +87,9 @@ public:
 
     static QGraphicsScenePrivate *get(QGraphicsScene *q);
 
-    static int changedSignalIndex;
+    int changedSignalIndex;
+    int processDirtyItemsIndex;
+    int polishItemsIndex;
 
     QGraphicsScene::ItemIndexMethod indexMethod;
     QGraphicsSceneIndex *index;

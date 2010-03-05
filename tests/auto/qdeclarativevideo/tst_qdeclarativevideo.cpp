@@ -41,7 +41,7 @@
 
 #include <QtTest/QtTest>
 
-#include "../../../src/plugins/qdeclarativemodules/multimedia/qdeclarativevideo_p.h"
+#include "../../../src/imports/multimedia/qdeclarativevideo_p.h"
 
 #include <QtGui/qapplication.h>
 #include <QtMultimedia/qabstractvideosurface.h>
