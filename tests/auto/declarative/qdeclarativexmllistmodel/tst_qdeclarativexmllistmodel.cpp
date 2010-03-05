@@ -267,6 +267,8 @@ void tst_qdeclarativexmllistmodel::reload()
 
     QCOMPARE(spyRemove[0][0].toInt(), 0);
     QCOMPARE(spyRemove[0][1].toInt(), 9);
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::useKeys()
@@ -285,7 +287,7 @@ void tst_qdeclarativexmllistmodel::useKeys()
     QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleKeys.qml"));
     QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
     QVERIFY(model != 0);
-    
+
     model->setXml(oldXml);
     QTRY_COMPARE(model->count(), oldCount);
 
@@ -320,6 +322,8 @@ void tst_qdeclarativexmllistmodel::useKeys()
         QCOMPARE(spyRemove[i][0].toInt(), removeRanges[i].first);
         QCOMPARE(spyRemove[i][1].toInt(), removeRanges[i].second);
     }
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::useKeys_data()
@@ -451,18 +455,16 @@ void tst_qdeclarativexmllistmodel::noKeysValueChanges()
     model->setXml(xml);
 
     // wait for the new xml data to be set, and verify no signals were emitted
-    for (int i=0; i<50; i++) {
-        QTest::qWait(100);
-        if (model->data(0, model->roles()[2]).toString() != QLatin1String("AussieRules"))
-            break;
-    }
+    QTRY_VERIFY(model->data(0, model->roles()[2]).toString() != QLatin1String("Football"));
     QCOMPARE(model->data(0, model->roles()[2]).toString(), QLatin1String("AussieRules"));
 
     QVERIFY(spyInsert.count() == 0);
     QVERIFY(spyRemove.count() == 0);
     QVERIFY(spyCount.count() == 0);
-    
+
     QCOMPARE(model->count(), 2);
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::keysChanged()
@@ -499,6 +501,8 @@ void tst_qdeclarativexmllistmodel::keysChanged()
     QCOMPARE(spyRemove[0][1].toInt(), 2);
 
     QCOMPARE(spyCount.count(), 0);
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::propertyChanges()
