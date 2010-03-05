@@ -78,7 +78,7 @@ public:
 
     QNetworkConfigurationPrivatePointer defaultConfiguration();
 
-    bool getAllScInterfaces();
+    bool getWifiInterfaces();
 
     bool requiresPolling() const;
 
