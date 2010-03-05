@@ -184,7 +184,8 @@ bool qt_mac_app_fullscreen = false;
 bool qt_scrollbar_jump_to_pos = false;
 static bool qt_mac_collapse_on_dblclick = true;
 extern int qt_antialiasing_threshold; // from qapplication.cpp
-QPointer<QWidget> qt_button_down;                // widget got last button-down
+QWidget * qt_button_down;                // widget got last button-down
+QPointer<QWidget> qt_last_mouse_receiver;
 #ifndef QT_MAC_USE_COCOA
 static bool qt_button_down_in_content; // whether the button_down was in the content area.
 static bool qt_mac_previous_press_in_popup_mode = false;

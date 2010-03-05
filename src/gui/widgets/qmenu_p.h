@@ -202,7 +202,7 @@ public:
     bool activationRecursionGuard;
 
     //selection
-    static QPointer<QMenu> mouseDown;
+    static QMenu *mouseDown;
     QPoint mousePopupPos;
     uint hasHadMouse : 1;
     uint aboutToHide : 1;
@@ -212,7 +212,7 @@ public:
     QAction *selectAction;
     QAction *cancelAction;
 #endif
-    static QBasicTimer menuDelayTimer;
+    QBasicTimer menuDelayTimer;
     enum SelectionReason {
         SelectedFromKeyboard,
         SelectedFromElsewhere
@@ -272,7 +272,7 @@ public:
     mutable bool hasCheckableItems;
 
     //sloppy selection
-    static QBasicTimer sloppyDelayTimer;
+    static int sloppyDelayTimer;
     mutable QAction *sloppyAction;
     QRegion sloppyRegion;
 

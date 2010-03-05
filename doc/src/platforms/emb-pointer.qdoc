@@ -154,9 +154,9 @@
     in the build environment.
 
     The tslib sources can be downloaded from \l
-    http://tslib.berlios.de. Use the \c configure script's -L and
-    -I options to explicitly specify the location of the library and
-    its headers:
+    http://tslib.berlios.de. Specify the location of the library and
+    its headers using -L and -I options in the \c qmake.conf file in 
+    your \c mkspec. Also it can be helpful to add a -rpath-link:
 
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 7
 

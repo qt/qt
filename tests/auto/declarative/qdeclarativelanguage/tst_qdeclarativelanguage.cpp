@@ -128,6 +128,8 @@ private slots:
 
     void qmlAttachedPropertiesObjectMethod();
 
+    void customOnProperty();
+
     // regression tests for crashes
     void crash1();
     void crash2();
@@ -232,6 +234,9 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidID.4") << "invalidID.4.qml" << "invalidID.4.errors.txt" << false;
     QTest::newRow("invalidID.5") << "invalidID.5.qml" << "invalidID.5.errors.txt" << false;
     QTest::newRow("invalidID.6") << "invalidID.6.qml" << "invalidID.6.errors.txt" << false;
+    QTest::newRow("invalidID.7") << "invalidID.7.qml" << "invalidID.7.errors.txt" << false;
+    QTest::newRow("invalidID.8") << "invalidID.8.qml" << "invalidID.8.errors.txt" << false;
+    QTest::newRow("invalidID.9") << "invalidID.9.qml" << "invalidID.9.errors.txt" << false;
 
     QTest::newRow("unsupportedProperty") << "unsupportedProperty.qml" << "unsupportedProperty.errors.txt" << false;
     QTest::newRow("nullDotProperty") << "nullDotProperty.qml" << "nullDotProperty.errors.txt" << true;
@@ -252,6 +257,9 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidGroupedProperty.5") << "invalidGroupedProperty.5.qml" << "invalidGroupedProperty.5.errors.txt" << false;
     QTest::newRow("invalidGroupedProperty.6") << "invalidGroupedProperty.6.qml" << "invalidGroupedProperty.6.errors.txt" << false;
     QTest::newRow("invalidGroupedProperty.7") << "invalidGroupedProperty.7.qml" << "invalidGroupedProperty.7.errors.txt" << true;
+    QTest::newRow("invalidGroupedProperty.8") << "invalidGroupedProperty.8.qml" << "invalidGroupedProperty.8.errors.txt" << false;
+    QTest::newRow("invalidGroupedProperty.9") << "invalidGroupedProperty.9.qml" << "invalidGroupedProperty.9.errors.txt" << false;
+    QTest::newRow("invalidGroupedProperty.10") << "invalidGroupedProperty.10.qml" << "invalidGroupedProperty.10.errors.txt" << false;
 
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
     QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
@@ -288,6 +296,17 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("Component.5") << "component.5.qml" << "component.5.errors.txt" << false;
     QTest::newRow("Component.6") << "component.6.qml" << "component.6.errors.txt" << false;
 
+    QTest::newRow("MultiSet.1") << "multiSet.1.qml" << "multiSet.1.errors.txt" << false;
+    QTest::newRow("MultiSet.2") << "multiSet.2.qml" << "multiSet.2.errors.txt" << false;
+    QTest::newRow("MultiSet.3") << "multiSet.3.qml" << "multiSet.3.errors.txt" << false;
+    QTest::newRow("MultiSet.4") << "multiSet.4.qml" << "multiSet.4.errors.txt" << false;
+    QTest::newRow("MultiSet.5") << "multiSet.5.qml" << "multiSet.5.errors.txt" << false;
+    QTest::newRow("MultiSet.6") << "multiSet.6.qml" << "multiSet.6.errors.txt" << false;
+    QTest::newRow("MultiSet.7") << "multiSet.7.qml" << "multiSet.7.errors.txt" << false;
+    QTest::newRow("MultiSet.8") << "multiSet.8.qml" << "multiSet.8.errors.txt" << false;
+    QTest::newRow("MultiSet.9") << "multiSet.9.qml" << "multiSet.9.errors.txt" << false;
+    QTest::newRow("MultiSet.10") << "multiSet.10.qml" << "multiSet.10.errors.txt" << false;
+
     QTest::newRow("invalidAttachedProperty.1") << "invalidAttachedProperty.1.qml" << "invalidAttachedProperty.1.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.2") << "invalidAttachedProperty.2.qml" << "invalidAttachedProperty.2.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.3") << "invalidAttachedProperty.3.qml" << "invalidAttachedProperty.3.errors.txt" << false;
@@ -315,9 +334,6 @@ void tst_qdeclarativelanguage::errors()
     QFETCH(QString, file);
     QFETCH(QString, errorFile);
     QFETCH(bool, create);
-
-    if (file == "invalidID.6.qml")
-        QTest::ignoreMessage(QtWarningMsg, "id \"StartsWithUpperCase\" is invalid: ids cannot start with uppercase letters");
 
     QDeclarativeComponent component(&engine, TEST_FILE(file));
 
@@ -1378,6 +1394,19 @@ void tst_qdeclarativelanguage::crash2()
     QDeclarativeComponent component(&engine, TEST_FILE("crash2.qml"));
 }
 
+// QTBUG-8676
+void tst_qdeclarativelanguage::customOnProperty()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("customOnProperty.qml"));
+
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("on").toInt(), 10);
+
+    delete object;
+}
 
 void tst_qdeclarativelanguage::initTestCase()
 {

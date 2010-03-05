@@ -178,6 +178,10 @@ void QPrintDialogPrivate::_q_okClicked()
         q->setPrintRange(QPrintDialog::PageRange);
         q->setFromTo(firstPage->value(), lastPage->value());
         break;
+    case (int)QPrintDialog::CurrentPage:
+        q->setPrintRange(QPrintDialog::CurrentPage);
+        q->setFromTo(0, 0);
+        break;
     }
     q->accept();
 }
@@ -375,6 +379,7 @@ void QPrintDialogPrivate::setupOptions()
     rangeCombo->addItem(QPrintDialog::tr("Print all"), QPrintDialog::AllPages);
     rangeCombo->addItem(QPrintDialog::tr("Print selection"), QPrintDialog::Selection);
     rangeCombo->addItem(QPrintDialog::tr("Print range"), QPrintDialog::PageRange);
+    rangeCombo->addItem(QPrintDialog::tr("Print current page"), QPrintDialog::CurrentPage);
     QObject::connect(rangeCombo, SIGNAL(activated(int)),
             q, SLOT(_q_printRangeSelected(int)));
 
@@ -490,6 +495,9 @@ void QPrintDialogPrivate::setPrinter(QPrinter *p, bool pickUpSettings)
         if (!q->isOptionEnabled(QPrintDialog::PrintPageRange)
                 && rangeCombo->findData(QPrintDialog::PageRange) > 0)
             rangeCombo->removeItem(rangeCombo->findData(QPrintDialog::PageRange));
+        if (!q->isOptionEnabled(QPrintDialog::PrintCurrentPage)
+                && rangeCombo->findData(QPrintDialog::CurrentPage) > 0)
+            rangeCombo->removeItem(rangeCombo->findData(QPrintDialog::CurrentPage));
 
         switch (q->printRange()) {
         case QPrintDialog::AllPages:
@@ -500,6 +508,9 @@ void QPrintDialogPrivate::setPrinter(QPrinter *p, bool pickUpSettings)
             break;
         case QPrintDialog::PageRange:
             rangeCombo->setCurrentIndex((int)(QPrintDialog::PageRange));
+            break;
+        case QPrintDialog::CurrentPage:
+            rangeCombo->setCurrentIndex((int)(QPrintDialog::CurrentPage));
             break;
         }
     }

@@ -548,14 +548,14 @@ void QColor::setNamedColor(const QString &name)
 */
 bool QColor::isValidColor(const QString &name)
 {
-    return QColor().setColorFromString(name);
+    return !name.isEmpty() && QColor().setColorFromString(name);
 }
 
 bool QColor::setColorFromString(const QString &name)
 {
     if (name.isEmpty()) {
         invalidate();
-        return false;
+        return true;
     }
 
     if (name.startsWith(QLatin1Char('#'))) {

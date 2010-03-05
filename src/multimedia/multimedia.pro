@@ -12,6 +12,6 @@ include(audio/audio.pri)
 include(video/video.pri)
 include(base/base.pri)
 include(playback/playback.pri)
-include(qml/qml.pri)
+include(effects/effects.pri)
 
 symbian: TARGET.UID3 = 0x2001E627

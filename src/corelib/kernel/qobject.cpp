@@ -132,7 +132,8 @@ QObjectPrivate::QObjectPrivate(int version)
     : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
     if (version != QObjectPrivateVersion)
-        qFatal("Cannot mix incompatible Qt libraries");
+        qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
+                version, QObjectPrivateVersion);
 
     // QObjectData initialization
     q_ptr = 0;

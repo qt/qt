@@ -45,7 +45,7 @@
 #include "qvgcompositionhelper_p.h"
 #include "qvgimagepool_p.h"
 #if !defined(QT_NO_EGL)
-#include <QtGui/private/qegl_p.h>
+#include <QtGui/private/qeglcontext_p.h>
 #include "qwindowsurface_vgegl_p.h"
 #endif
 #include <QtCore/qvarlengtharray.h>

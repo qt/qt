@@ -1478,7 +1478,8 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
         return;
 
     // ### Disable the unified toolbar when using anything but the native graphics system.
-    if (windowSurface())
+    // ### Disable when using alien widgets as well
+    if (windowSurface() || testAttribute(Qt::WA_NativeWindow) == false)
         return;
 
     d->useHIToolBar = set;

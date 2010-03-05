@@ -167,6 +167,13 @@ HelpEngineWrapper::HelpEngineWrapper(const QString &collectionFile)
 HelpEngineWrapper::~HelpEngineWrapper()
 {
     TRACE_OBJ
+    const QStringList &namespaces = d->m_helpEngine->registeredDocumentations();
+    foreach (const QString &nameSpace, namespaces) {
+        const QString &docFile
+            = d->m_helpEngine->documentationFileName(nameSpace);
+        d->m_qchWatcher->removePath(docFile);
+    }
+
     delete d;
 }
 

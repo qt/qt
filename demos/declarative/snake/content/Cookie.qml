@@ -17,7 +17,7 @@ Item  {
         anchors.fill: parent
         source: "pics/cookie.png"
         opacity: 0
-        opacity: Behavior { NumberAnimation { duration: 100 } }
+        Behavior on opacity { NumberAnimation { duration: 100 } }
         Text {
             font.bold: true
             anchors.verticalCenter: parent.verticalCenter

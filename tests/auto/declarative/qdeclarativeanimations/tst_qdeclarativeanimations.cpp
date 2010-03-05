@@ -217,21 +217,21 @@ void tst_qdeclarativeanimations::resume()
     animation.setProperty("x");
     animation.setFrom(10);
     animation.setTo(200);
-    animation.setDuration(500);
+    animation.setDuration(1000);
     QVERIFY(animation.from() == 10);
 
     animation.start();
-    QTest::qWait(100);
+    QTest::qWait(400);
     animation.pause();
     qreal x = rect.x();
-    QVERIFY(x != qreal(200));
+    QVERIFY(x != qreal(200) && x != qreal(10));
     QVERIFY(animation.isRunning());
     QVERIFY(animation.isPaused());
 
     animation.resume();
     QVERIFY(animation.isRunning());
     QVERIFY(!animation.isPaused());
-    QTest::qWait(100);
+    QTest::qWait(400);
     animation.stop();
     QVERIFY(rect.x() > x);
 }

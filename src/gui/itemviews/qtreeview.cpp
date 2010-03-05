@@ -2524,8 +2524,7 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
             d->viewItems[parentItem].hasChildren = true;
         d->updateChildCount(parentItem, delta);
 
-        updateGeometries();
-        viewport()->update();
+        d->doDelayedItemsLayout();
     } else if ((parentItem != -1) && d->viewItems.at(parentItem).expanded) {
         d->doDelayedItemsLayout();
     } else if (parentItem != -1 && (d->model->rowCount(parent) == end - start + 1)) {
@@ -3780,8 +3779,7 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
             }
         }
         if (after) {
-            q->updateGeometries();
-            viewport->update();
+            doDelayedItemsLayout();
         } else {
             //we have removed items: we should at least update the scroll bar values.
             // They are used to determine the item geometry.

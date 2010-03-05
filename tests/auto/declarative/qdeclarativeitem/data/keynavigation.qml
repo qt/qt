@@ -11,6 +11,8 @@ Grid {
         color: focus ? "red" : "lightgray"
         KeyNavigation.right: item2
         KeyNavigation.down: item3
+        KeyNavigation.tab: item2
+        KeyNavigation.backtab: item4
     }
     Rectangle {
         id: item2
@@ -19,6 +21,8 @@ Grid {
         color: focus ? "red" : "lightgray"
         KeyNavigation.left: item1
         KeyNavigation.down: item4
+        KeyNavigation.tab: item3
+        KeyNavigation.backtab: item1
     }
     Rectangle {
         id: item3
@@ -27,6 +31,8 @@ Grid {
         color: focus ? "red" : "lightgray"
         KeyNavigation.right: item4
         KeyNavigation.up: item1
+        KeyNavigation.tab: item4
+        KeyNavigation.backtab: item2
     }
     Rectangle {
         id: item4
@@ -35,5 +41,7 @@ Grid {
         color: focus ? "red" : "lightgray"
         KeyNavigation.left: item3
         KeyNavigation.up: item2
+        KeyNavigation.tab: item1
+        KeyNavigation.backtab: item3
     }
 }

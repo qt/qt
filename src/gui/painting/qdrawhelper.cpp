@@ -5072,7 +5072,7 @@ static void blend_tiled_argb8565(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
 {
-#if defined(QT_QWS_DEPTH_16)
+#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
@@ -7813,7 +7813,6 @@ static void qt_blend_color_argb_armv6(int count, const QSpan *spans, void *userD
 
 void qInitDrawhelperAsm()
 {
-    const uint features = qDetectCPUFeatures();
 
     qt_memfill32 = qt_memfill_template<quint32, quint32>;
     qt_memfill16 = qt_memfill_quint16; //qt_memfill_template<quint16, quint16>;
@@ -7822,6 +7821,7 @@ void qInitDrawhelperAsm()
     CompositionFunctionSolid *functionForModeSolidAsm = 0;
 
 #ifdef QT_NO_DEBUG
+    const uint features = qDetectCPUFeatures();
     if (false) {
 #ifdef QT_HAVE_SSE2
     } else if (features & SSE2) {
