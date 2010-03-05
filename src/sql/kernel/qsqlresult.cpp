@@ -564,6 +564,9 @@ bool QSqlResult::isForwardOnly() const
     scrollable. isForwardOnly() will always return the correct status of
     the result set.
 
+    \note Calling setForwardOnly after execution of the query will result
+    in unexpected results at best, and crashes at worst.
+
     \sa isForwardOnly(), fetchNext(), QSqlQuery::setForwardOnly()
 */
 void QSqlResult::setForwardOnly(bool forward)
