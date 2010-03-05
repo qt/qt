@@ -152,7 +152,7 @@ namespace QtMultimedia
         NotSupported,
         MaybeSupported,
         ProbablySupported,
-        PreferedService
+        PreferredService
     };
 
     enum EncodingQuality
