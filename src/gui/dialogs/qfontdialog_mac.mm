@@ -103,6 +103,8 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
     BOOL mPanelHackedWithButtons;
     CGFloat mDialogExtraWidth;
     CGFloat mDialogExtraHeight;
+    int mReturnCode;
+    BOOL mAppModal;
 }
 - (id)initWithFontPanel:(NSFontPanel *)panel
       stolenContentView:(NSView *)stolenContentView
@@ -172,6 +174,8 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     mPanelHackedWithButtons = (okButton != 0);
     mDialogExtraWidth = extraWidth;
     mDialogExtraHeight = extraHeight;
+    mReturnCode = -1;
+    mAppModal = false;
 
     if (mPanelHackedWithButtons) {
         [self relayout];
@@ -208,6 +212,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 - (void)showModelessPanel
 {
+    mAppModal = false;
     NSWindow *ourPanel = [mStolenContentView window];
     [ourPanel makeKeyAndOrderFront:self];
 }
@@ -215,24 +220,37 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 - (void)runApplicationModalPanel
 {
     QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
+    mAppModal = true;
     NSWindow *ourPanel = [mStolenContentView window];
     [NSApp runModalForWindow:ourPanel];
     QAbstractEventDispatcher::instance()->interrupt();
+
+    if (mReturnCode == NSOKButton)
+        mPriv->fontDialog()->accept();
+    else
+        mPriv->fontDialog()->reject();
 }
 
 - (void)showWindowModalSheet:(QWidget *)docWidget
 {
 #ifdef QT_MAC_USE_COCOA
-    Q_UNUSED(docWidget);
+    NSWindow *window = qt_mac_window_for(docWidget);
+#else
+    WindowRef hiwindowRef = qt_mac_window_for(docWidget);
+    NSWindow *window = [[NSWindow alloc] initWithWindowRef:hiwindowRef];
+    CFRetain(hiwindowRef);
+#endif
+
+    mAppModal = false;
     NSWindow *ourPanel = [mStolenContentView window];
     [NSApp beginSheet:ourPanel
-        modalForWindow:qt_mac_window_for(docWidget)
+        modalForWindow:window
         modalDelegate:0
         didEndSelector:0
         contextInfo:0 ];
-#else
-    Q_UNUSED(docWidget);
-    [self showModelessPanel];
+
+#ifndef QT_MAC_USE_COCOA
+    CFRelease(hiwindowRef);
 #endif
 }
 
@@ -420,12 +438,18 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     }
 #endif
 
-    [NSApp stopModalWithCode:code];
     if(code == NSOKButton)
         mPriv->sampleEdit->setFont([self qtFont]);
-    QMetaObject::invokeMethod(mPriv->fontDialog(),
-            (code == NSOKButton) ?  "accept" : "reject",
-            Qt::QueuedConnection);
+
+    if (mAppModal) {
+        mReturnCode = code;
+        [NSApp stopModalWithCode:code];
+    } else {
+        if (code == NSOKButton)
+            mPriv->fontDialog()->accept();
+        else
+            mPriv->fontDialog()->reject();
+    }
 }
 
 - (void)cleanUpAfterMyself
