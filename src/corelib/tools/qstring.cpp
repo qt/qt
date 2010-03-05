@@ -563,7 +563,7 @@ const QString::Null QString::null = { };
 
     \list
     \o toAscii() returns an 8-bit string encoded using the codec
-       specified by QTextCodec::codecForCStrings (by default, that's
+       specified by QTextCodec::codecForCStrings (by default, that is
        Latin 1).
     \o toLatin1() returns a Latin-1 (ISO 8859-1) encoded 8-bit string.
     \o toUtf8() returns a UTF-8 encoded 8-bit string. UTF-8 is a
@@ -3662,44 +3662,10 @@ QByteArray QString::toLocal8Bit() const
 */
 QByteArray QString::toUtf8() const
 {
-    QByteArray ba;
-    if (d->size) {
-        int l = d->size;
-        int rlen = l*3+1;
-        ba.resize(rlen);
-        uchar *cursor = (uchar*)ba.data();
-        const ushort *ch =d->data;
-        for (int i=0; i < l; i++) {
-            uint u = *ch;
-            if (u < 0x80) {
-                *cursor++ = (uchar)u;
-            } else {
-                if (u < 0x0800) {
-                    *cursor++ = 0xc0 | ((uchar) (u >> 6));
-                } else {
-                    if (QChar(u).isHighSurrogate() && i < l-1) {
-                        ushort low = ch[1];
-                        if (QChar(low).isLowSurrogate()) {
-                            ++ch;
-                            ++i;
-                            u = QChar::surrogateToUcs4(u,low);
-                        }
-                    }
-                    if (u > 0xffff) {
-                        *cursor++ = 0xf0 | ((uchar) (u >> 18));
-                        *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
-                    } else {
-                        *cursor++ = 0xe0 | ((uchar) (u >> 12));
-                    }
-                    *cursor++ = 0x80 | (((uchar) (u >> 6)) & 0x3f);
-                }
-                *cursor++ = 0x80 | ((uchar) (u&0x3f));
-            }
-            ++ch;
-        }
-        ba.resize(cursor - (uchar*)ba.constData());
-    }
-    return ba;
+    if (isNull())
+        return QByteArray();
+
+    return QUtf8::convertFromUnicode(constData(), length(), 0);
 }
 
 /*!
