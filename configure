@@ -5486,7 +5486,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     fi
 
     if [ "$CFG_COREWLAN" = "auto" ]; then
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/mac/corewlan "CoreWlan" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
             CFG_COREWLAN=yes
         else
             CFG_COREWLAN=no
