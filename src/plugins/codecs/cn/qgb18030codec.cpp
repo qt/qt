@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 #define Is3rdByte(c)        (InRange((c), 0x81, 0xFE))
 #define Is4thByte(c)        (InRange((c), 0x30, 0x39))
 
-#define QValidChar(u)        ((u) ? QChar((ushort)(u)) : QChar(QChar::ReplacementCharacter))
+#define qValidChar(u)        ((u) ? (u) : static_cast<ushort>(QChar::ReplacementCharacter))
 
 /* User-defined areas:        UDA 1: 0xAAA1 - 0xAFFE (564/0)
                         UDA 2: 0xF8A1 - 0xFEFE (658/0)
@@ -160,7 +160,7 @@ QString QGb18030Codec::convertToUnicode(const char* chars, int len, ConverterSta
 {
     uchar buf[4];
     int nbuf = 0;
-    QChar replacement = QChar::ReplacementCharacter;
+    ushort replacement = QChar::ReplacementCharacter;
     if (state) {
         if (state->flags & ConvertInvalidToNull)
             replacement = QChar::Null;
@@ -175,7 +175,7 @@ QString QGb18030Codec::convertToUnicode(const char* chars, int len, ConverterSta
     QString result;
     result.resize(len);
     int unicodeLen = 0;
-    QChar *const resultData = result.data();
+    ushort *const resultData = reinterpret_cast<ushort*>(result.data());
     //qDebug("QGb18030Decoder::toUnicode(const char* chars, int len = %d)", len);
     for (int i = 0; i < len; i++) {
         uchar ch = chars[i];
@@ -183,7 +183,7 @@ QString QGb18030Codec::convertToUnicode(const char* chars, int len, ConverterSta
         case 0:
             if (ch < 0x80) {
                 // ASCII
-                resultData[unicodeLen] = QChar(ch);
+                resultData[unicodeLen] = ch;
                 ++unicodeLen;
             } else if (Is1stByte(ch)) {
                 // GB18030?
@@ -203,7 +203,7 @@ QString QGb18030Codec::convertToUnicode(const char* chars, int len, ConverterSta
                 int clen = 2;
                 uint u = qt_Gb18030ToUnicode(buf, clen);
                 if (clen == 2) {
-                    resultData[unicodeLen] = QValidChar(u);
+                    resultData[unicodeLen] = qValidChar(static_cast<ushort>(u));
                     ++unicodeLen;
                 } else {
                     resultData[unicodeLen] = replacement;
@@ -241,7 +241,7 @@ QString QGb18030Codec::convertToUnicode(const char* chars, int len, ConverterSta
                 int clen = 4;
                 uint u = qt_Gb18030ToUnicode(buf, clen);
                 if (clen == 4) {
-                    resultData[unicodeLen] = QValidChar(u);
+                    resultData[unicodeLen] = qValidChar(u);
                     ++unicodeLen;
                 } else {
                     resultData[unicodeLen] = replacement;
@@ -356,7 +356,7 @@ QString QGbkCodec::convertToUnicode(const char* chars, int len, ConverterState *
                 int clen = 2;
                 uint u = qt_Gb18030ToUnicode(buf, clen);
                 if (clen == 2) {
-                    result += QValidChar(u);
+                    result += qValidChar(u);
                 } else {
                     result += replacement;
                     ++invalid;
@@ -459,7 +459,7 @@ QString QGb2312Codec::convertToUnicode(const char* chars, int len, ConverterStat
 {
     uchar buf[2];
     int nbuf = 0;
-    QChar replacement = QChar::ReplacementCharacter;
+    ushort replacement = QChar::ReplacementCharacter;
     if (state) {
         if (state->flags & ConvertInvalidToNull)
             replacement = QChar::Null;
@@ -472,7 +472,7 @@ QString QGb2312Codec::convertToUnicode(const char* chars, int len, ConverterStat
     QString result;
     result.resize(len);
     int unicodeLen = 0;
-    QChar *const resultData = result.data();
+    ushort *const resultData = reinterpret_cast<ushort*>(result.data());
     //qDebug("QGb2312Decoder::toUnicode(const char* chars, int len = %d)", len);
     for (int i=0; i<len; i++) {
         uchar ch = chars[i];
@@ -480,7 +480,7 @@ QString QGb2312Codec::convertToUnicode(const char* chars, int len, ConverterStat
         case 0:
             if (ch < 0x80) {
                 // ASCII
-                resultData[unicodeLen] = QChar(ch);
+                resultData[unicodeLen] = ch;
                 ++unicodeLen;
             } else if (IsByteInGb2312(ch)) {
                 // GB2312 1st byte?
@@ -500,7 +500,7 @@ QString QGb2312Codec::convertToUnicode(const char* chars, int len, ConverterStat
                 int clen = 2;
                 uint u = qt_Gb18030ToUnicode(buf, clen);
                 if (clen == 2) {
-                    resultData[unicodeLen] = QValidChar(u);
+                    resultData[unicodeLen] = qValidChar(static_cast<ushort>(u));
                     ++unicodeLen;
                 } else {
                     resultData[unicodeLen] = replacement;
