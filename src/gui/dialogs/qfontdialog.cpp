@@ -174,6 +174,11 @@ void QFontDialogPrivate::init()
 {
     Q_Q(QFontDialog);
 
+#ifdef Q_WS_MAC
+    nativeDialogInUse = false;
+    delegate = 0;
+#endif
+
     q->setSizeGripEnabled(true);
     q->setWindowTitle(QFontDialog::tr("Select Font"));
 
@@ -329,10 +334,6 @@ void QFontDialogPrivate::init()
 
     familyList->setFocus();
     retranslateStrings();
-
-#ifdef Q_WS_MAC
-    delegate = 0;
-#endif
 }
 
 /*!
@@ -345,8 +346,7 @@ QFontDialog::~QFontDialog()
 #ifdef Q_WS_MAC
     Q_D(QFontDialog);
     if (d->delegate) {
-        QFontDialogPrivate::closeCocoaFontPanel(d->delegate);
-        QFontDialogPrivate::sharedFontPanelAvailable = true;
+        d->closeCocoaFontPanel();
         return;
     }
 #endif
@@ -428,14 +428,6 @@ QFont QFontDialog::getFont(bool *ok, QWidget *parent)
 QFont QFontDialogPrivate::getFont(bool *ok, const QFont &initial, QWidget *parent,
                                   const QString &title, QFontDialog::FontDialogOptions options)
 {
-#ifdef Q_WS_MAC
-    if (!(options & QFontDialog::DontUseNativeDialog)
-            && QFontDialogPrivate::sharedFontPanelAvailable) {
-        return QFontDialogPrivate::execCocoaFontPanel(ok, initial, parent,
-                       title.isEmpty() ? QFontDialog::tr("Select Font") : title, options);
-    }
-#endif
-
     QFontDialog dlg(parent);
     dlg.setOptions(options);
     dlg.setCurrentFont(initial);

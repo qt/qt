@@ -317,8 +317,9 @@ QDeclarativeVideo::Error QDeclarativeVideo::error() const
 /*!
     \qmlsignal Video::onError(error, errorString)
 
-    This handler is called when an \l {Error}{error} has occurred.  The errorString parameter
-    may contain more detailed information about the error.
+    This handler is called when an \l {QMediaPlayer::Error}{error} has
+    occurred.  The errorString parameter may contain more detailed
+    information about the error.
 */
 
 /*!

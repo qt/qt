@@ -223,7 +223,7 @@ bool HelpPage::acceptNavigationRequest(QWebFrame *,
     if (type == QWebPage::NavigationTypeLinkClicked
         && (m_keyboardModifiers & Qt::ControlModifier
         || m_pressedButtons == Qt::MidButton)) {
-            if (HelpViewer* viewer = centralWidget->newEmptyTab())
+            if (centralWidget->newEmptyTab())
                 centralWidget->setSource(url);
             m_pressedButtons = Qt::NoButton;
             m_keyboardModifiers = Qt::NoModifier;
