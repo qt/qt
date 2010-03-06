@@ -640,14 +640,18 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
         } else if (getCf(formatetc) == CF_INETURL_W) {
             QList<QUrl> urls = mimeData->urls();
             QByteArray result;
-            QString url = urls.at(0).toString();
-            result = QByteArray((const char *)url.utf16(), url.length() * sizeof(ushort));
+            if (!urls.isEmpty()) {
+                QString url = urls.at(0).toString();
+                result = QByteArray((const char *)url.utf16(), url.length() * sizeof(ushort));
+            }
             result.append('\0');
             result.append('\0');
             return setData(result, pmedium);
         } else if (getCf(formatetc) == CF_INETURL) {
             QList<QUrl> urls = mimeData->urls();
-            QByteArray result = urls.at(0).toString().toLocal8Bit();
+            QByteArray result;
+            if (!urls.isEmpty())
+                result = urls.at(0).toString().toLocal8Bit();
             return setData(result, pmedium);
         }
     }

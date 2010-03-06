@@ -352,6 +352,10 @@ void QWidgetBackingStore::beginPaint(QRegion &toClean, QWidget *widget, QWindowS
     // Always flush repainted areas.
     dirtyOnScreen += toClean;
 
+#ifdef Q_WS_QWS
+    toClean.translate(tlwOffset);
+#endif
+
 #ifdef QT_NO_PAINT_DEBUG
     windowSurface->beginPaint(toClean);
 #else
@@ -766,7 +770,12 @@ void QWidgetBackingStore::paintWindowDecoration()
     if (decorationRegion.isEmpty())
         return;
 
-    windowSurface->beginPaint(decorationRegion);
+    //### The QWS decorations do not always paint the pixels they promise to paint.
+    // This causes painting problems with QWSMemorySurface. Since none of the other
+    // window surfaces actually use the region, passing an empty region is a safe
+    // workaround.
+
+    windowSurface->beginPaint(QRegion());
 
     QPaintEngine *engine = windowSurface->paintDevice()->paintEngine();
     Q_ASSERT(engine);

@@ -80,7 +80,7 @@ static void qt_insertWindowSurface(int winId, QWSWindowSurface *surface)
 
 inline bool isWidgetOpaque(const QWidget *w)
 {
-    return w->d_func()->isOpaque;
+    return w->d_func()->isOpaque && !w->testAttribute(Qt::WA_TranslucentBackground);
 }
 
 static inline QScreen *getScreen(const QWidget *w)
@@ -871,6 +871,21 @@ bool QWSMemorySurface::isValid() const
         return false;
 
     return true;
+}
+
+// ### copied from qwindowsurface_raster.cpp -- should be cross-platform
+void QWSMemorySurface::beginPaint(const QRegion &rgn)
+{
+    if (!isWidgetOpaque(window())) {
+        QPainter p(&img);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        const QVector<QRect> rects = rgn.rects();
+        const QColor blank = Qt::transparent;
+        for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
+            p.fillRect(*it, blank);
+        }
+    }
+    QWSWindowSurface::beginPaint(rgn);
 }
 
 // from qwindowsurface.cpp

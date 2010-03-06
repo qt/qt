@@ -60,7 +60,7 @@ const int LSK_POSITION = 0;
 const int MSK_POSITION = 3;
 const int RSK_POSITION = 2;
 
-QSoftKeyManagerPrivateS60::QSoftKeyManagerPrivateS60()
+QSoftKeyManagerPrivateS60::QSoftKeyManagerPrivateS60() : cbaHasImage(4) // 4 since MSK position index is 3
 {
     cachedCbaIconSize[0] = QSize(0,0);
     cachedCbaIconSize[1] = QSize(0,0);
@@ -73,11 +73,21 @@ bool QSoftKeyManagerPrivateS60::skipCbaUpdate()
     // Lets not update softkeys if
     // 1. We don't have application panes, i.e. cba
     // 2. Our CBA is not active, i.e. S60 native dialog or menu with custom CBA is shown
+    //    2.1. Except if thre is no current CBA at all and WindowSoftkeysRespondHint is set
+
     // Note: Cannot use IsDisplayingMenuOrDialog since CBA update can be triggered before
     // menu/dialog CBA is actually displayed i.e. it is being costructed.
     CEikButtonGroupContainer *appUiCba = S60->buttonGroupContainer();
+    // CEikButtonGroupContainer::Current returns 0 if CBA is not visible at all
     CEikButtonGroupContainer *currentCba = CEikButtonGroupContainer::Current();
-    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes) || appUiCba != currentCba) {
+    // Check if softkey need to be update even they are not visible
+    bool cbaRespondsWhenInvisible = false;
+    QWidget *window = QApplication::activeWindow();
+    if (window && (window->windowFlags() & Qt::WindowSoftkeysRespondHint))
+        cbaRespondsWhenInvisible = true;
+
+    if (QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+            || (appUiCba != currentCba && !cbaRespondsWhenInvisible)) {
         return true;
     }
     return false;
@@ -255,10 +265,14 @@ bool QSoftKeyManagerPrivateS60::setSoftkeyImage(CEikButtonGroupContainer *cba,
             myimage->SetPicture( nBitmap, nMask ); // nBitmap and nMask ownership transfered
 
             EikSoftkeyImage::SetImage(cba, *myimage, left); // Takes myimage ownership
+            cbaHasImage[position] = true;
             ret = true;
         } else {
             // Restore softkey to text based
-            EikSoftkeyImage::SetLabel(cba, left);
+            if (cbaHasImage[position]) {
+                EikSoftkeyImage::SetLabel(cba, left);
+                cbaHasImage[position] = false;
+            }
         }
     }
     return ret;
@@ -274,7 +288,12 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
         setNativeSoftkey(cba, position, command, nativeText);
-        cba.DimCommand(command, !action->isEnabled());
+        // QMainWindow "Options" action is set to invisible in order it does not appear in context menu
+        // and all invisible actions are by default disabled.
+        // However we never want to dim options softkey, even it is set to invisible
+        QVariant property = action->property(MENU_ACTION_PROPERTY);
+        const bool dimmed = (property.isValid() && property.toBool()) ? false : !action->isEnabled();
+        cba.DimCommand(command, dimmed);
         realSoftKeyActions.insert(command, action);
         return true;
     }
@@ -311,7 +330,10 @@ bool QSoftKeyManagerPrivateS60::setRightSoftkey(CEikButtonGroupContainer &cba)
         if (windowType != Qt::Dialog && windowType != Qt::Popup) {
             QString text(QSoftKeyManager::tr("Exit"));
             TPtrC nativeText = qt_QString2TPtrC(text);
-            EikSoftkeyImage::SetLabel(&cba, false);
+            if (cbaHasImage[RSK_POSITION]) {
+                EikSoftkeyImage::SetLabel(&cba, false);
+                cbaHasImage[RSK_POSITION] = false;
+            }
             setNativeSoftkey(cba, RSK_POSITION, EAknSoftkeyExit, nativeText);
             return true;
         }

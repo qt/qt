@@ -175,6 +175,9 @@ void tst_QTcpServer::ipv6LoopbackPerformanceTest()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
+#if defined(Q_WS_WINCE_WM)
+    QSKIP("WinCE WM: Not yet supported", SkipAll);
+#endif
 
 #if defined(Q_OS_SYMBIAN)
     QSKIP("Symbian: IPv6 is not yet supported", SkipAll);

@@ -50,23 +50,27 @@ class tst_MakeTestSelfTest: public QObject
     Q_OBJECT
 
 private slots:
-    void auto_dot_pro();
-    void auto_dot_pro_data();
+    void tests_pro_files();
+    void tests_pro_files_data();
 };
 
-/* Verify that all tests are listed somewhere in auto.pro */
-void tst_MakeTestSelfTest::auto_dot_pro()
+/* Verify that all tests are listed somewhere in one of the autotest .pro files */
+void tst_MakeTestSelfTest::tests_pro_files()
 {
     static QStringList lines;
 
     if (lines.isEmpty()) {
-        QString filename = QString::fromLatin1(SRCDIR "/../auto.pro");
-        QFile file(filename);
-        if (!file.open(QIODevice::ReadOnly)) {
-            QFAIL(qPrintable(QString("open %1: %2").arg(filename).arg(file.errorString())));
-        }
-        while (!file.atEnd()) {
-            lines << file.readLine().trimmed();
+        QDir dir(SRCDIR "/..");
+        QStringList proFiles = dir.entryList(QStringList() << "*.pro");
+        foreach (QString const& proFile, proFiles) {
+            QString filename = QString("%1/../%2").arg(SRCDIR).arg(proFile);
+            QFile file(filename);
+            if (!file.open(QIODevice::ReadOnly)) {
+                QFAIL(qPrintable(QString("open %1: %2").arg(filename).arg(file.errorString())));
+            }
+            while (!file.atEnd()) {
+                lines << file.readLine().trimmed();
+            }
         }
     }
 
@@ -79,13 +83,14 @@ void tst_MakeTestSelfTest::auto_dot_pro()
     }
 
     QFAIL(qPrintable(QString(
-        "Subdir `%1' is missing from tests/auto/auto.pro\n"
+        "Subdir `%1' is missing from tests/auto/*.pro\n"
         "This means the test won't be compiled or run on any platform.\n"
-        "If this is intentional, please put the test name in a comment in auto.pro.").arg(subdir))
+        "If this is intentional, please put the test name in a comment in one of the .pro files.").arg(subdir))
     );
+
 }
 
-void tst_MakeTestSelfTest::auto_dot_pro_data()
+void tst_MakeTestSelfTest::tests_pro_files_data()
 {
     QTest::addColumn<QString>("subdir");
     QDir dir(SRCDIR "/..");

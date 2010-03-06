@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 
 class QIODevice;
 
-namespace
+namespace QtMultimediaInternal
 {
 class QAudioOutputBuffer;
 }
@@ -96,7 +96,7 @@ public:
     UInt64          startTime;
     AudioStreamBasicDescription deviceFormat;
     AudioStreamBasicDescription streamFormat;
-    QAudioOutputBuffer*   audioBuffer;
+    QtMultimediaInternal::QAudioOutputBuffer*   audioBuffer;
     QAtomicInt      audioThreadState;
     QWaitCondition  threadFinished;
     QMutex          mutex;
