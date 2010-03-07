@@ -273,7 +273,20 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     QWidget *pageEdit = new QWidget(toolbar);
     QVBoxLayout *vboxLayout = new QVBoxLayout;
     vboxLayout->setContentsMargins(0, 0, 0, 0);
+#ifdef Q_WS_MAC
+    // We query the widgets about their size and then we fix the size.
+    // This should do the trick for the laying out part...
+    QSize pageNumEditSize, pageNumLabelSize;
+    pageNumEditSize = pageNumEdit->minimumSizeHint();
+    pageNumLabelSize = pageNumLabel->minimumSizeHint();
+    pageNumEdit->resize(pageNumEditSize);
+    pageNumLabel->resize(pageNumLabelSize);
+#endif
     QFormLayout *formLayout = new QFormLayout;
+#ifdef Q_WS_MAC
+    // We have to change the growth policy in Mac.
+    formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+#endif
     formLayout->setWidget(0, QFormLayout::LabelRole, pageNumEdit);
     formLayout->setWidget(0, QFormLayout::FieldRole, pageNumLabel);
     vboxLayout->addLayout(formLayout);

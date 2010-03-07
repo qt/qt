@@ -299,7 +299,9 @@ public:
         MacWindowToolBarButtonHint = 0x10000000,
         BypassGraphicsProxyWidget = 0x20000000,
         WindowOkButtonHint = 0x00080000,
-        WindowCancelButtonHint = 0x00100000
+        WindowCancelButtonHint = 0x00100000,
+        WindowSoftkeysVisibleHint = 0x40000000,
+        WindowSoftkeysRespondHint = 0x80000000
 
 #ifdef QT3_SUPPORT
         ,

@@ -314,6 +314,7 @@ void QMessageBoxPrivate::updateSize()
             }
             width = hardLimit;
         }
+    }
 #ifdef Q_WS_S60
         // in S60 portait messageBoxes should always occupy maximum width
         if (QApplication::desktop()->size().height() > QApplication::desktop()->size().width()){
@@ -323,7 +324,6 @@ void QMessageBoxPrivate::updateSize()
             width = qMin(QApplication::desktop()->size().height(), hardLimit);
         }
 #endif
-    }
 
     if (informativeLabel) {
         label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);

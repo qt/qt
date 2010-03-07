@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include "qbitarray.h"
 #include "private/qobject_p.h"
 #include "private/qsoftkeymanager_common_p.h"
 
@@ -98,6 +99,7 @@ private:
 private:
     QHash<int, QAction*> realSoftKeyActions;
     QSize cachedCbaIconSize[4];
+    QBitArray cbaHasImage;
 };
 
 
