@@ -100,6 +100,7 @@ void tst_QDeclarativeWorkerScript::source()
     QCOMPARE(item->source(), source);
 
     qApp->processEvents();
+    delete item;
 }
 
 void tst_QDeclarativeWorkerScript::source_data()
@@ -126,6 +127,7 @@ void tst_QDeclarativeWorkerScript::messaging()
     QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).value<QVariant>(), value);
 
     qApp->processEvents();
+    delete item;
 }
 
 void tst_QDeclarativeWorkerScript::messaging_data()
@@ -162,6 +164,7 @@ void tst_QDeclarativeWorkerScript::messaging_sendQObjectList()
     QCOMPARE(result, (QVariantList() << QVariant() << QVariant() << QVariant()));
 
     qApp->processEvents();
+    delete item;
 }
 
 void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
@@ -187,6 +190,7 @@ void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
     QVERIFY(result.toBool());
 
     qApp->processEvents();
+    delete item;
 }
 
 QTEST_MAIN(tst_QDeclarativeWorkerScript)

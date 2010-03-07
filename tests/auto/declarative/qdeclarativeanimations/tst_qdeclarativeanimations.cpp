@@ -59,6 +59,7 @@ private slots:
     void simpleProperty();
     void simpleNumber();
     void simpleColor();
+    void simpleRotation();
     void alwaysRunToEnd();
     void complete();
     void resume();
@@ -73,6 +74,7 @@ private slots:
     void propertyValueSourceDefaultStart();
     void dontStart();
     void easingProperties();
+    void rotation();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -166,6 +168,32 @@ void tst_qdeclarativeanimations::simpleColor()
     QVERIFY(animation.isRunning());
     animation.setCurrentTime(125);
     QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
+}
+
+void tst_qdeclarativeanimations::simpleRotation()
+{
+    QDeclarativeRectangle rect;
+    QDeclarativeRotationAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("rotation");
+    animation.setTo(270);
+    QVERIFY(animation.target() == &rect);
+    QVERIFY(animation.property() == "rotation");
+    QVERIFY(animation.to() == 270);
+    QVERIFY(animation.direction() == QDeclarativeRotationAnimation::Shortest);
+    animation.start();
+    QVERIFY(animation.isRunning());
+    QTest::qWait(animation.duration());
+    QTIMED_COMPARE(rect.rotation(), qreal(270));
+
+    rect.setRotation(0);
+    animation.start();
+    animation.pause();
+    QVERIFY(animation.isRunning());
+    QVERIFY(animation.isPaused());
+    animation.setCurrentTime(125);
+    QVERIFY(animation.currentTime() == 125);
+    QCOMPARE(rect.rotation(), qreal(-45));
 }
 
 void tst_qdeclarativeanimations::alwaysRunToEnd()
@@ -665,6 +693,36 @@ void tst_qdeclarativeanimations::easingProperties()
         QCOMPARE(animObject->easing().type(), QEasingCurve::InOutBack);
         QCOMPARE(animObject->easing().overshoot(), 2.0);
     }
+}
+
+void tst_qdeclarativeanimations::rotation()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/rotation.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect);
+
+    QDeclarativeRectangle *rr = rect->findChild<QDeclarativeRectangle*>("rr");
+    QDeclarativeRectangle *rr2 = rect->findChild<QDeclarativeRectangle*>("rr2");
+    QDeclarativeRectangle *rr3 = rect->findChild<QDeclarativeRectangle*>("rr3");
+    QDeclarativeRectangle *rr4 = rect->findChild<QDeclarativeRectangle*>("rr4");
+
+    rect->setState("state1");
+    QTest::qWait(800);
+    qreal r1 = rr->rotation();
+    qreal r2 = rr2->rotation();
+    qreal r3 = rr3->rotation();
+    qreal r4 = rr4->rotation();
+
+    QVERIFY(r1 > qreal(0) && r1 < qreal(370));
+    QVERIFY(r2 > qreal(0) && r2 < qreal(370));
+    QVERIFY(r3 < qreal(0) && r3 > qreal(-350));
+    QVERIFY(r4 > qreal(0) && r4 < qreal(10));
+    QCOMPARE(r1,r2);
+    QVERIFY(r4 < r2);
+
+    QTest::qWait(800);
+    QTIMED_COMPARE(rr->rotation() + rr2->rotation() + rr3->rotation() + rr4->rotation(), qreal(370*4));
 }
 
 QTEST_MAIN(tst_qdeclarativeanimations)

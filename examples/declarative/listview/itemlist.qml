@@ -26,14 +26,12 @@ Rectangle {
 
     ListView {
         id: view
-        anchors.fill: parent
-        anchors.bottomMargin: 30
+        anchors.fill: parent; anchors.bottomMargin: 30
         model: itemModel
-        preferredHighlightBegin: 0
-        preferredHighlightEnd: 0
+        preferredHighlightBegin: 0; preferredHighlightEnd: 0
         highlightRangeMode: "StrictlyEnforceRange"
         orientation: ListView.Horizontal
-        flickDeceleration: 2000
+        snapMode: ListView.SnapOneItem; flickDeceleration: 2000
     }
 
     Rectangle {

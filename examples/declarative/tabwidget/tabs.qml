@@ -2,28 +2,47 @@ import Qt 4.6
 
 TabWidget {
     id: tabs
-    width: 200
-    height: 200
-    current: 2
+    width: 640; height: 480
+
     Rectangle {
         property string title: "Red"
-        color: "red"
-        anchors.fill: parent
-        Text { anchors.centerIn: parent; text: "<div align=center>Roses are red"; font.pixelSize: 24
-            wrap: true; width: parent.width-20 }
+        anchors.fill: parent; color: "#e3e3e3"
+        Rectangle {
+            anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
+            color: "#ff7f7f"
+            Text {
+                anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
+                text: "Roses are red"; font.pixelSize: 20
+                wrap: true; width: parent.width - 20
+            }
+        }
     }
+
     Rectangle {
         property string title: "Green"
-        color: "green"
-        anchors.fill: parent
-        Text { anchors.centerIn: parent; text: "<div align=center>Flower stems are green"; font.pixelSize: 24;
-            wrap: true; width: parent.width-20 }
+        anchors.fill: parent; color: "#e3e3e3"
+        Rectangle {
+            anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
+            color: "#7fff7f"
+            Text {
+                anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
+                text: "Flower stems are green"; font.pixelSize: 20
+                wrap: true; width: parent.width - 20
+            }
+        }
     }
+
     Rectangle {
         property string title: "Blue"
-        color: "blue"
-        anchors.fill: parent
-        Text { anchors.centerIn: parent; text: "<div align=center>Violets are blue"; color: "white"; font.pixelSize: 24
-            wrap: true; width: parent.width-20 }
+        anchors.fill: parent; color: "#e3e3e3"
+        Rectangle {
+            anchors { fill: parent; topMargin: 20; leftMargin: 20; rightMargin: 20; bottomMargin: 20 }
+            color: "#7f7fff"
+            Text {
+                anchors.centerIn: parent; horizontalAlignment: Qt.AlignHCenter
+                text: "Violets are blue"; font.pixelSize: 20
+                wrap: true; width: parent.width - 20
+            }
+        }
     }
 }

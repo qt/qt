@@ -228,6 +228,7 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/QMetaMethod>
 #include <QtGui/qapplication.h>
 #include <QtGui/qdesktopwidget.h>
 #include <QtGui/qevent.h>
@@ -276,8 +277,6 @@ static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraph
     hover->setModifiers(mouseEvent->modifiers());
     hover->setAccepted(mouseEvent->isAccepted());
 }
-
-int QGraphicsScenePrivate::changedSignalIndex;
 
 /*!
     \internal
@@ -329,9 +328,10 @@ void QGraphicsScenePrivate::init()
     index = new QGraphicsSceneBspTreeIndex(q);
 
     // Keep this index so we can check for connected slots later on.
-    if (!changedSignalIndex) {
-        changedSignalIndex = signalIndex("changed(QList<QRectF>)");
-    }
+    changedSignalIndex = signalIndex("changed(QList<QRectF>)");
+    processDirtyItemsIndex = q->metaObject()->indexOfSlot("_q_processDirtyItems()");
+    polishItemsIndex = q->metaObject()->indexOfSlot("_q_polishItems()");
+
     qApp->d_func()->scene_list.append(q);
     q->update();
 }
@@ -2537,8 +2537,10 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         return;
     }
 
-    if (d->unpolishedItems.isEmpty())
-        QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+    if (d->unpolishedItems.isEmpty()) {
+        QMetaMethod method = metaObject()->method(d->polishItemsIndex);
+        method.invoke(this, Qt::QueuedConnection);
+    }
     d->unpolishedItems.append(item);
     item->d_ptr->pendingPolish = true;
 
@@ -4879,7 +4881,9 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
 
     if (!processDirtyItemsEmitted) {
-        QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
+        QMetaMethod method = q_ptr->metaObject()->method(processDirtyItemsIndex);
+        method.invoke(q_ptr, Qt::QueuedConnection);
+//        QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
         processDirtyItemsEmitted = true;
     }
 
