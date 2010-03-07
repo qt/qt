@@ -212,7 +212,6 @@ public:
     bool maybeOverloaded() const;
     int mostGeneralMethod(QMetaMethod *out = 0) const;
     QList<int> overloadedIndexes() const;
-    QString functionName() const;
 
 private:
     Data *data;

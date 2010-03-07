@@ -89,6 +89,9 @@ public:
 
     virtual QNetworkConfigurationPrivatePointer defaultConfiguration() = 0;
 
+    virtual bool requiresPolling() const;
+    bool configurationsInUse() const;
+
 Q_SIGNALS:
     void configurationAdded(QNetworkConfigurationPrivatePointer config);
     void configurationRemoved(QNetworkConfigurationPrivatePointer config);
