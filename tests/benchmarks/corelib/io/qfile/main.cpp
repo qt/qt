@@ -175,7 +175,10 @@ void tst_qfile::cleanupTestCase()
 
 void tst_qfile::readBigFile_QFile() { readBigFile(); }
 void tst_qfile::readBigFile_QFSFileEngine() { readBigFile(); }
-void tst_qfile::readBigFile_posix() { readBigFile(); }
+void tst_qfile::readBigFile_posix() 
+{ 
+    readBigFile(); 
+}
 void tst_qfile::readBigFile_Win32() { readBigFile(); }
 
 void tst_qfile::readBigFile_QFile_data()
@@ -476,8 +479,14 @@ void tst_qfile::open()
 
 void tst_qfile::readSmallFiles_QFile() { readSmallFiles(); }
 void tst_qfile::readSmallFiles_QFSFileEngine() { readSmallFiles(); }
-void tst_qfile::readSmallFiles_posix() { readSmallFiles(); }
-void tst_qfile::readSmallFiles_Win32() { readSmallFiles(); }
+void tst_qfile::readSmallFiles_posix() 
+{
+    readSmallFiles(); 
+}
+void tst_qfile::readSmallFiles_Win32() 
+{ 
+    readSmallFiles(); 
+}
 
 void tst_qfile::readSmallFiles_QFile_data()
 {
@@ -534,7 +543,7 @@ void tst_qfile::createSmallFiles()
     dir.cd("tst");
     tmpDirName = dir.absolutePath();
 
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE)  
     for (int i = 0; i < 100; ++i)
 #else
     for (int i = 0; i < 1000; ++i)

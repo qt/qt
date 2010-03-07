@@ -72,6 +72,7 @@ private slots:
     void drawPixmapItem();
     void deviceCoordinateTranslateCaching();
     void inheritOpacity();
+    void dropShadowClipping();
 };
 
 void tst_QGraphicsEffect::initTestCase()
@@ -588,6 +589,28 @@ void tst_QGraphicsEffect::inheritOpacity()
 
     // item should have been rerendered due to opacity changing
     QTRY_VERIFY(item->numRepaints > numRepaints);
+}
+
+void tst_QGraphicsEffect::dropShadowClipping()
+{
+    QImage img(128, 128, QImage::Format_ARGB32_Premultiplied);
+    img.fill(0xffffffff);
+
+    QGraphicsScene scene;
+    QGraphicsRectItem *item = new QGraphicsRectItem(-5, -500, 10, 1000);
+    item->setGraphicsEffect(new QGraphicsDropShadowEffect);
+    item->setPen(Qt::NoPen);
+    item->setBrush(Qt::red);
+
+    scene.addItem(item);
+
+    QPainter p(&img);
+    scene.render(&p, img.rect(), QRect(-64, -64, 128, 128));
+    p.end();
+
+    for (int y = 1; y < img.height(); ++y)
+        for (int x = 0; x < img.width(); ++x)
+            QCOMPARE(img.pixel(x, y), img.pixel(x, y-1));
 }
 
 QTEST_MAIN(tst_QGraphicsEffect)

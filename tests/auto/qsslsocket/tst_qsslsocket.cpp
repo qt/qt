@@ -54,6 +54,8 @@
 #include <QNetworkProxy>
 #include <QAuthenticator>
 
+#include "private/qhostinfo_p.h"
+
 #include "../network-settings.h"
 
 Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
@@ -288,6 +290,8 @@ void tst_QSslSocket::init()
         }
         QNetworkProxy::setApplicationProxy(proxy);
     }
+
+    qt_qhostinfo_clear_cache();
 }
 
 void tst_QSslSocket::cleanup()
@@ -477,7 +481,7 @@ void tst_QSslSocket::simpleConnectWithIgnore()
 
     // Start connecting
     socket.connectToHost(QtNetworkSettings::serverName(), 993);
-    QCOMPARE(socket.state(), QAbstractSocket::HostLookupState);
+    QVERIFY(socket.state() != QAbstractSocket::UnconnectedState); // something must be in progress
     enterLoop(10);
 
     // Start handshake

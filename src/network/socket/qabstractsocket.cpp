@@ -172,6 +172,10 @@
     This signal is emitted after connectToHost() has been called and
     the host lookup has succeeded.
 
+    \note Since Qt 4.6.3 QAbstractSocket may emit hostFound()
+    directly from the connectToHost() call since a DNS result could have been
+    cached.
+
     \sa connected()
 */
 
@@ -180,6 +184,10 @@
 
     This signal is emitted after connectToHost() has been called and
     a connection has been successfully established.
+
+    \note On some operating systems the connected() signal may
+    be directly emitted from the connectToHost() call for connections
+    to the localhost.
 
     \sa connectToHost(), disconnected()
 */
@@ -353,6 +361,8 @@
 
 #include "qabstractsocket.h"
 #include "qabstractsocket_p.h"
+
+#include "private/qhostinfo_p.h"
 
 #include <qabstracteventdispatcher.h>
 #include <qdatetime.h>
@@ -1369,8 +1379,20 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
         return;
 #endif
     } else {
-        if (d->threadData->eventDispatcher)
-            d->hostLookupId = QHostInfo::lookupHost(hostName, this, SLOT(_q_startConnecting(QHostInfo)));
+        if (d->threadData->eventDispatcher) {
+            // this internal API for QHostInfo either immediatly gives us the desired
+            // QHostInfo from cache or later calls the _q_startConnecting slot.
+            bool immediateResultValid = false;
+            QHostInfo hostInfo = qt_qhostinfo_lookup(hostName,
+                                                     this,
+                                                     SLOT(_q_startConnecting(QHostInfo)),
+                                                     &immediateResultValid,
+                                                     &d->hostLookupId);
+            if (immediateResultValid) {
+                d->hostLookupId = -1;
+                d->_q_startConnecting(hostInfo);
+            }
+        }
     }
 
 #if defined(QABSTRACTSOCKET_DEBUG)

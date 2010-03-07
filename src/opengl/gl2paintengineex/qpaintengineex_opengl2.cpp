@@ -1867,6 +1867,7 @@ bool QGL2PaintEngineEx::end()
 
     delete d->shaderManager;
     d->shaderManager = 0;
+    d->currentBrush = QBrush();
 
 #ifdef QT_OPENGL_CACHE_AS_VBOS
     if (!d->unusedVBOSToClean.isEmpty()) {

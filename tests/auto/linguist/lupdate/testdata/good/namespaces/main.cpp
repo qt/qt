@@ -135,4 +135,64 @@ Q_OBJECT
     }
 };
 
+// QTBUG-8360
+namespace A {
+
+void foo()
+{
+    using namespace A;
+}
+
+void goo()
+{
+    return QObject::tr("Bla");
+}
+
+}
+
+
+namespace AA {
+namespace B {
+
+using namespace AA;
+
+namespace C {
+
+class Test : public QObject {
+    Q_OBJECT
+};
+
+}
+
+}
+
+using namespace B;
+using namespace C;
+
+void goo()
+{
+    AA::Test::tr("howdy?");
+}
+
+}
+
+
+namespace A1 {
+namespace B {
+
+class Test : public QObject {
+    Q_OBJECT
+};
+
+using namespace A1;
+
+void foo()
+{
+    B::B::B::Test::tr("yeeee-ha!");
+}
+
+}
+}
+
+
 #include "main.moc"

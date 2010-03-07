@@ -371,6 +371,7 @@ QProcessActive::QProcessActive()
 // Called from ProcessManagerThread
 QProcessActive::~QProcessActive()
 {
+    Cancel();
     process = NULL;
     pproc = NULL;
 }
@@ -477,6 +478,7 @@ QProcessManagerMediator::QProcessManagerMediator()
 // Called from ProcessManagerThread
 QProcessManagerMediator::~QProcessManagerMediator()
 {
+    Cancel();
     processManagerThread.Close();
     currentCommand = ENoCommand;
     currentObserver = NULL;
