@@ -300,10 +300,10 @@ Q_SIGNALS:
 
 public:
     QDeclarativeListView *m_view;
-    bool m_isCurrent;
     mutable QString m_section;
     QString m_prevSection;
-    bool m_delayRemove;
+    bool m_isCurrent : 1;
+    bool m_delayRemove : 1;
 };
 
 

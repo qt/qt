@@ -127,7 +127,6 @@ QT_BEGIN_NAMESPACE
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)
     : QDeclarativeImageBase(*(new QDeclarativeImagePrivate), parent)
 {
-    connect(this, SIGNAL(pixmapChanged()), this, SLOT(updatePaintedGeometry()));
 }
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeImagePrivate &dd, QDeclarativeItem *parent)
@@ -172,7 +171,7 @@ void QDeclarativeImagePrivate::setPixmap(const QPixmap &pixmap)
     status = pix.isNull() ? QDeclarativeImageBase::Null : QDeclarativeImageBase::Ready;
 
     q->update();
-    emit q->pixmapChanged();
+    q->pixmapChange();
 }
 
 /*!
@@ -382,6 +381,12 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
+}
+
+void QDeclarativeImage::pixmapChange()
+{
+    updatePaintedGeometry();
+    QDeclarativeImageBase::pixmapChange();
 }
 
 QT_END_NAMESPACE

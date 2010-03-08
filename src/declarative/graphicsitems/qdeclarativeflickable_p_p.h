@@ -56,6 +56,7 @@
 #include "qdeclarativeflickable_p.h"
 
 #include "qdeclarativeitem_p.h"
+#include "qdeclarativeitemchangelistener_p.h"
 
 #include <qdeclarative.h>
 #include <qdeclarativetimeline_p_p.h>
@@ -66,69 +67,14 @@
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeFlickableVisibleArea;
-class QDeclarativeFlickablePrivate : public QDeclarativeItemPrivate
+class QDeclarativeFlickablePrivate : public QDeclarativeItemPrivate, public QDeclarativeItemChangeListener
 {
     Q_DECLARE_PUBLIC(QDeclarativeFlickable)
 
 public:
     QDeclarativeFlickablePrivate();
     void init();
-    virtual void flickX(qreal velocity);
-    virtual void flickY(qreal velocity);
-    virtual void fixupX();
-    virtual void fixupY();
-    void updateBeginningEnd();
 
-    void captureDelayedPress(QGraphicsSceneMouseEvent *event);
-    void clearDelayedPress();
-
-    void setRoundedViewportX(qreal x);
-    void setRoundedViewportY(qreal y);
-
-    qreal overShootDistance(qreal velocity, qreal size);
-
-public:
-    QDeclarativeItem *viewport;
-    QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> _moveX;
-    QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> _moveY;
-    QDeclarativeTimeLine timeline;
-    qreal vWidth;
-    qreal vHeight;
-    bool overShoot : 1;
-    bool flicked : 1;
-    bool moving : 1;
-    bool stealMouse : 1;
-    bool pressed : 1;
-    bool atXEnd : 1;
-    bool atXBeginning : 1;
-    bool atYEnd : 1;
-    bool atYBeginning : 1;
-    bool interactive : 1;
-    QTime lastPosTime;
-    QPointF lastPos;
-    QPointF pressPos;
-    qreal pressX;
-    qreal pressY;
-    qreal velocityX;
-    qreal velocityY;
-    QTime pressTime;
-    qreal deceleration;
-    qreal maxVelocity;
-    QTime velocityTime;
-    QPointF lastFlickablePosition;
-    qreal reportedVelocitySmoothing;
-    qreal flickTargetX;
-    qreal flickTargetY;
-    QGraphicsSceneMouseEvent *delayedPressEvent;
-    QGraphicsItem *delayedPressTarget;
-    QBasicTimer delayedPressTimer;
-    int pressDelay;
-    int fixupDuration;
-
-    static void fixupY_callback(void *);
-    static void fixupX_callback(void *);
-
-    void updateVelocity();
     struct Velocity : public QDeclarativeTimeLineValue
     {
         Velocity(QDeclarativeFlickablePrivate *p)
@@ -141,8 +87,75 @@ public:
         }
         QDeclarativeFlickablePrivate *parent;
     };
-    Velocity horizontalVelocity;
-    Velocity verticalVelocity;
+
+    struct AxisData {
+        AxisData(QDeclarativeFlickablePrivate *fp, void (QDeclarativeFlickablePrivate::*func)(qreal))
+            : move(fp, func), viewSize(-1), smoothVelocity(fp), atEnd(false), atBeginning(true)
+        {}
+
+        QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> move;
+        qreal viewSize;
+        qreal pressPos;
+        qreal velocity;
+        qreal flickTarget;
+        QDeclarativeFlickablePrivate::Velocity smoothVelocity;
+        bool atEnd : 1;
+        bool atBeginning : 1;
+    };
+
+    void flickX(qreal velocity);
+    void flickY(qreal velocity);
+    virtual void flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
+                        QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity);
+
+    void fixupX();
+    void fixupY();
+    virtual void fixup(AxisData &data, qreal minExtent, qreal maxExtent);
+
+    void updateBeginningEnd();
+
+    void captureDelayedPress(QGraphicsSceneMouseEvent *event);
+    void clearDelayedPress();
+
+    void setRoundedViewportX(qreal x);
+    void setRoundedViewportY(qreal y);
+
+    qreal overShootDistance(qreal velocity, qreal size);
+
+    void itemGeometryChanged(QDeclarativeItem *, const QRectF &, const QRectF &);
+
+public:
+    QDeclarativeItem *viewport;
+
+    AxisData hData;
+    AxisData vData;
+
+    QDeclarativeTimeLine timeline;
+    bool overShoot : 1;
+    bool flicked : 1;
+    bool moving : 1;
+    bool stealMouse : 1;
+    bool pressed : 1;
+    bool interactive : 1;
+    QTime lastPosTime;
+    QPointF lastPos;
+    QPointF pressPos;
+    QTime pressTime;
+    qreal deceleration;
+    qreal maxVelocity;
+    QTime velocityTime;
+    QPointF lastFlickablePosition;
+    qreal reportedVelocitySmoothing;
+    QGraphicsSceneMouseEvent *delayedPressEvent;
+    QGraphicsItem *delayedPressTarget;
+    QBasicTimer delayedPressTimer;
+    int pressDelay;
+    int fixupDuration;
+
+    static void fixupY_callback(void *);
+    static void fixupX_callback(void *);
+
+    void updateVelocity();
     int vTime;
     QDeclarativeTimeLine velocityTimeline;
     QDeclarativeFlickableVisibleArea *visibleArea;
