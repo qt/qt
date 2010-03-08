@@ -164,6 +164,7 @@ QLinuxFbGraphicsSystem::QLinuxFbGraphicsSystem()
 
     if (!connect(displaySpec))
         qFatal("QLinuxFbGraphicsSystem: could not initialize screen");
+    initDevice();
 
     // Create a QImage directly on the screen's framebuffer.
     // This is the blit target for copying windows to the screen.

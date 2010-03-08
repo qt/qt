@@ -12,7 +12,6 @@ class QMouseEvent;
 class QSize;
 class QPainter;
 
-class QGraphicsSystemFbWindowSurface;
 class QGraphicsSystemFbScreen;
 
 class QGraphicsSystemSoftwareCursor : public QGraphicsSystemCursor
