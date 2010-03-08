@@ -81,6 +81,7 @@ Q_SIGNALS:
 protected:
     virtual void load();
     virtual void componentComplete();
+    virtual void pixmapChange();
     QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent);
 
 private Q_SLOTS:

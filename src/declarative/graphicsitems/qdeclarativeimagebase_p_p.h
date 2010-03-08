@@ -71,6 +71,7 @@ public:
         pendingPixmapCache(false),
         async(false)
     {
+        QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
     }
 
     QPixmap pix;
