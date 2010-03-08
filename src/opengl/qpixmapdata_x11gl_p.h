@@ -59,6 +59,10 @@
 
 #include <qgl.h>
 
+#ifndef QT_NO_EGL
+#include <QtGui/private/qeglcontext_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QX11GLPixmapData : public QX11PixmapData, public QGLPaintDevice
@@ -76,6 +80,11 @@ public:
 
     static bool hasX11GLPixmaps();
     static QGLFormat glFormat();
+
+#ifndef QT_NO_EGL
+    static QEglContext* rgbContext;
+    static QEglContext* argbContext;
+#endif
 private:
     mutable QGLContext* ctx;
 };

@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeContext;
 class QDeclarativeEnginePrivate;
 class QDeclarativeExpression;
-class Q_AUTOTEST_EXPORT QDeclarativePropertyPrivate
+class Q_DECLARATIVE_EXPORT QDeclarativePropertyPrivate
 {
 public:
     enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };

@@ -43,8 +43,8 @@
   node.cpp
 */
 
-#include <QtCore>
 #include "node.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1161,7 +1161,8 @@ QString FunctionNode::signature(bool values) const
  */
 void FunctionNode::debug() const
 {
-    qDebug() << "QML METHOD" << name() << "rt" << rt << "pp" << pp;
+    qDebug("QML METHOD %s rt %s pp %s",
+            qPrintable(name()), qPrintable(rt), qPrintable(pp.join(" ")));
 }
 
 /*!
@@ -1314,8 +1315,11 @@ void QmlClassNode::addInheritedBy(const QString& base, Node* sub)
 void QmlClassNode::subclasses(const QString& base, NodeList& subs)
 {
     subs.clear();
-    if (inheritedBy.contains(base))
+    if (inheritedBy.count(base) > 0) {
         subs = inheritedBy.values(base);
+        qDebug() << "QmlClassNode::subclasses():" <<  inheritedBy.count(base) << base
+                 << "subs:" << subs.size();
+    }
 }
 
 /*!

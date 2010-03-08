@@ -1260,7 +1260,11 @@ void QDeclarativeParticlesPainter::paint(QPainter *p, const QStyleOptionGraphics
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
 
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     QVarLengthArray<QPainter::Fragment, 256> pixmapData;
+#else
+    QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
+#endif
     pixmapData.resize(d->particles.count());
 
     const QRectF sourceRect = d->image.rect();
@@ -1268,20 +1272,32 @@ void QDeclarativeParticlesPainter::paint(QPainter *p, const QStyleOptionGraphics
     qreal halfPHeight = sourceRect.height()/2.;
     for (int i = 0; i < d->particles.count(); ++i) {
         const QDeclarativeParticle &particle = d->particles.at(i);
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
         pixmapData[i].x = particle.x - myX + halfPWidth;
         pixmapData[i].y = particle.y - myY + halfPHeight;
+#else
+         pixmapData[i].point = QPointF(particle.x - myX + halfPWidth, particle.y - myY + halfPHeight);
+#endif
         pixmapData[i].opacity = particle.opacity;
 
         //these never change
         pixmapData[i].rotation = 0;
         pixmapData[i].scaleX = 1;
         pixmapData[i].scaleY = 1;
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
         pixmapData[i].sourceLeft = sourceRect.left();
         pixmapData[i].sourceTop = sourceRect.top();
         pixmapData[i].width = sourceRect.width();
         pixmapData[i].height = sourceRect.height();
+#else
+        pixmapData[i].source = sourceRect;
+#endif
     }
+#if (QT_VERSION >= QT_VERSION_CHECK(4,7,0))
     p->drawPixmapFragments(pixmapData.data(), d->particles.count(), d->image);
+#else
+    qDrawPixmaps(p, pixmapData.data(), d->particles.count(), d->image);
+#endif
 }
 
 void QDeclarativeParticles::componentComplete()

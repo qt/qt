@@ -172,9 +172,11 @@ tst_qdeclarativenumberformatter::tst_qdeclarativenumberformatter()
           << "00,000,001.0000"
           << "00,000,001.0100"; // end 
 
+    /*
     qDebug() << "strings.size()" << strings.size()
              << "\nformats.size()" << formats.size()
              << "texts.size()" << texts.size();
+    */
 }
 
 void tst_qdeclarativenumberformatter::text_data()

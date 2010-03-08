@@ -100,7 +100,7 @@ AddressBook::AddressBook(QWidget *parent)
     mainLayout->addWidget(addressLabel, 1, 0, Qt::AlignTop);
     mainLayout->addWidget(addressText, 1, 1);
     mainLayout->addLayout(buttonLayout1, 1, 2);
-    mainLayout->addLayout(buttonLayout2, 3, 1);
+    mainLayout->addLayout(buttonLayout2, 2, 1);
 
     setLayout(mainLayout);
     setWindowTitle(tr("Simple Address Book"));

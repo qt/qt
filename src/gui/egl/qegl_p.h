@@ -97,9 +97,13 @@ QT_END_INCLUDE_NAMESPACE
 
 #include <QtGui/qpaintdevice.h>
 
+#include <QFlags>
+
 QT_BEGIN_NAMESPACE
 
 #define QEGL_NO_CONFIG ((EGLConfig)-1)
+
+
 
 class QEglProperties;
 
@@ -116,12 +120,14 @@ namespace QEgl {
         BestPixelFormat
     };
 
-    enum ConfigOptions
+    enum ConfigOption
     {
         NoOptions   = 0,
         Translucent = 0x01,
         Renderable  = 0x02  // Config will be compatable with the paint engines (VG or GL)
     };
+    Q_DECLARE_FLAGS(ConfigOptions, ConfigOption);
+
 
     // Most of the time we use the same config for things like widgets & pixmaps, so rather than
     // go through the eglChooseConfig loop every time, we use defaultConfig, which will return
@@ -153,6 +159,7 @@ namespace QEgl {
 #endif
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QEgl::ConfigOptions);
 
 QT_END_NAMESPACE
 

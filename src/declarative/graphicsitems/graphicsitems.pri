@@ -84,10 +84,3 @@ SOURCES += \
     $$PWD/qdeclarativegraphicsobjectcontainer.cpp \
     $$PWD/qdeclarativeparticles.cpp \
     $$PWD/qdeclarativelayoutitem.cpp \
-
-contains(QT_CONFIG, webkit) {
-    QT+=webkit
-    SOURCES += $$PWD/qdeclarativewebview.cpp
-    HEADERS += $$PWD/qdeclarativewebview_p.h
-    HEADERS += $$PWD/qdeclarativewebview_p_p.h
-}

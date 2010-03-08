@@ -91,7 +91,7 @@ AddressBook::AddressBook(QWidget *parent)
     mainLayout->addWidget(addressText, 1, 1);
     mainLayout->addLayout(buttonLayout1, 1, 2);
 //! [adding navigation layout]
-    mainLayout->addLayout(buttonLayout2, 3, 1);
+    mainLayout->addLayout(buttonLayout2, 2, 1);
 //! [adding navigation layout]
     setLayout(mainLayout);
     setWindowTitle(tr("Simple Address Book"));

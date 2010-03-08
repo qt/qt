@@ -203,6 +203,9 @@ QVariant QDeclarativePathView::model() const
 void QDeclarativePathView::setModel(const QVariant &model)
 {
     Q_D(QDeclarativePathView);
+    if (d->modelVariant == model)
+        return;
+
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -242,6 +245,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
     d->pathOffset = 0;
     d->regenerate();
     d->fixOffset();
+    emit modelChanged();
 }
 
 /*!
@@ -269,9 +273,12 @@ QDeclarativePath *QDeclarativePathView::path() const
 void QDeclarativePathView::setPath(QDeclarativePath *path)
 {
     Q_D(QDeclarativePathView);
+    if (d->path == path)
+        return;
     d->path = path;
     connect(d->path, SIGNAL(changed()), this, SLOT(refill()));
     d->regenerate();
+    emit pathChanged();
 }
 
 /*!
@@ -333,7 +340,7 @@ void QDeclarativePathViewPrivate::setOffset(qreal o)
 /*!
     \qmlproperty real PathView::snapPosition
 
-    This property determines the position (0-100) the nearest item will snap to.
+    This property determines the position (0.0-1.0) the nearest item will snap to.
 */
 qreal QDeclarativePathView::snapPosition() const
 {
@@ -344,8 +351,12 @@ qreal QDeclarativePathView::snapPosition() const
 void QDeclarativePathView::setSnapPosition(qreal pos)
 {
     Q_D(QDeclarativePathView);
-    d->snapPos = pos/100;
+    qreal normalizedPos = pos - int(pos);
+    if (qFuzzyCompare(normalizedPos, d->snapPos))
+        return;
+    d->snapPos = normalizedPos;
     d->fixOffset();
+    emit snapPositionChanged();
 }
 
 /*!
@@ -365,7 +376,10 @@ qreal QDeclarativePathView::dragMargin() const
 void QDeclarativePathView::setDragMargin(qreal dragMargin)
 {
     Q_D(QDeclarativePathView);
+    if (d->dragMargin == dragMargin)
+        return;
     d->dragMargin = dragMargin;
+    emit dragMarginChanged();
 }
 
 /*!
@@ -392,16 +406,19 @@ QDeclarativeComponent *QDeclarativePathView::delegate() const
     return 0;
 }
 
-void QDeclarativePathView::setDelegate(QDeclarativeComponent *c)
+void QDeclarativePathView::setDelegate(QDeclarativeComponent *delegate)
 {
     Q_D(QDeclarativePathView);
+    if (delegate == this->delegate())
+        return;
     if (!d->ownModel) {
         d->model = new QDeclarativeVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
-        dataModel->setDelegate(c);
+        dataModel->setDelegate(delegate);
         d->regenerate();
+        emit delegateChanged();
     }
 }
 
@@ -422,6 +439,7 @@ void QDeclarativePathView::setPathItemCount(int i)
         return;
     d->pathItems = i;
     d->regenerate();
+    pathItemCountChanged();
 }
 
 QPointF QDeclarativePathViewPrivate::pointNear(const QPointF &point, qreal *nearPercent) const

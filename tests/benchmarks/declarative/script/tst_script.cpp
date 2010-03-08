@@ -96,11 +96,6 @@ private slots:
 private:
 };
 
-void tst_script::initTestCase()
-{
-    QML_REGISTER_TYPE(Qt.test, 1, 0, TestObject, TestObject);
-}
-
 inline QUrl TEST_FILE(const QString &filename)
 {
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
@@ -146,6 +141,12 @@ int TestObject::x()
 {
     return m_x++;
 }
+
+void tst_script::initTestCase()
+{
+    QML_REGISTER_TYPE(Qt.test, 1, 0, TestObject, TestObject);
+}
+
 
 #define PROPERTY_PROGRAM \
     "(function(testObject) { return (function() { " \

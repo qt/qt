@@ -142,7 +142,7 @@ QPixmap QGtkPainter::renderTheme(uchar *bdata, uchar *wdata, const QRect &rect)
     }
 
 QGtkPainter::QGtkPainter(QPainter *_painter)
-        : m_window(QGtkStylePrivate::gtkWidget(QLatin1String("GtkWindow")))
+        : m_window(QGtkStylePrivate::gtkWidget("GtkWindow"))
         , m_painter(_painter)
         , m_alpha(true)
         , m_hflipped(false)

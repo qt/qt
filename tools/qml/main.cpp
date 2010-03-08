@@ -311,8 +311,11 @@ int main(int argc, char ** argv)
         usage();
     }
 
+    viewer.addLibraryPath(QCoreApplication::applicationDirPath());
+
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
+
     viewer.setNetworkCacheSize(cache);
     viewer.setRecordFile(recordfile);
     if (resizeview)

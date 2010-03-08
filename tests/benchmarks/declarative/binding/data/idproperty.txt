@@ -1,7 +1,7 @@
 import Test 1.0
 
 MyQmlObject {
-    id: MyObject
+    id: myObject
 
     MyQmlObject {
         result: ###

@@ -11,14 +11,14 @@ Image {
 
     //x and y get set when instantiated
     //head offscreen
-    y: NumberAnimation {
-        to: parent.height;
-        duration: 10000;
+    NumberAnimation on y {
+        to: window.height / 2;
         running: created
+        onRunningChanged: if (running) duration = (window.height - sun.y) * 10; else state = "OffScreen";
     }
 
     states: State {
-        name: "OffScreen"; when: created && y > window.height / 2;//Below the ground
+        name: "OffScreen";
         StateChangeScript { script: { sun.created = false; sun.destroy() } }
     }
 }
