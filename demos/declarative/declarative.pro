@@ -1,9 +1,17 @@
 TEMPLATE = subdirs
-SUBDIRS = calculator \
-    flickr \
-    minehunt \
-    samegame \
-    snake \
-    twitter \
-    webbrowser
+
+# These demos contain C++ and need to be compiled
+SUBDIRS = \
+    minehunt
+
+# These examples contain no C++ and can simply be copied
+sources.files = \
+   calculator \
+   flickr \
+   samegame \
+   snake \
+   twitter \
+   webbrowser
+sources.path = $$[QT_INSTALL_DEMOS]/declarative
+INSTALLS += sources
 
