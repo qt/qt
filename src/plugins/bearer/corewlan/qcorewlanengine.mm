@@ -240,7 +240,9 @@ void QCoreWlanEngine::connectToId(const QString &id)
                             bool result = [wifiInterface associateToNetwork: apNetwork parameters:[NSDictionary dictionaryWithDictionary:params] error:&err];
 
                             if(!result) {
+                                locker.unlock();
                                 emit connectionError(id, ConnectError);
+                                locker.relock();
                             } else {
                                 [autoreleasepool release];
                                 return;
@@ -252,11 +254,15 @@ void QCoreWlanEngine::connectToId(const QString &id)
             index++;
         }
 
+        locker.unlock();
         emit connectionError(id, InterfaceLookupError);
+        locker.relock();
 #endif
     } else {
         // not wifi
     }
+
+    locker.unlock();
     emit connectionError(id, OperationNotSupported);
         [autoreleasepool release];
 }
@@ -272,7 +278,9 @@ void QCoreWlanEngine::disconnectFromId(const QString &id)
         CWInterface *wifiInterface = [CWInterface interfaceWithName:  qt_mac_QStringToNSString(interfaceString)];
         [wifiInterface disassociate];
         if([[wifiInterface interfaceState]intValue] != kCWInterfaceStateInactive) {
+            locker.unlock();
             emit connectionError(id, DisconnectionError);
+            locker.relock();
         }
        [autoreleasepool release];
        return;
@@ -280,13 +288,13 @@ void QCoreWlanEngine::disconnectFromId(const QString &id)
     } else {
 
     }
+
+    locker.unlock();
     emit connectionError(id, OperationNotSupported);
 }
 
 void QCoreWlanEngine::requestUpdate()
 {
-    QMutexLocker locker(&mutex);
-
     doRequestUpdate();
 }
 
@@ -340,6 +348,8 @@ void QCoreWlanEngine::doRequestUpdate()
 
             bool changed = false;
 
+            ptr->mutex.lock();
+
             if (!ptr->isValid) {
                 ptr->isValid = true;
                 changed = true;
@@ -360,8 +370,13 @@ void QCoreWlanEngine::doRequestUpdate()
                 changed = true;
             }
 
-            if (changed)
+            ptr->mutex.unlock();
+
+            if (changed) {
+                locker.unlock();
                 emit configurationChanged(ptr);
+                locker.relock();
+            }
         }
     }
 
@@ -369,9 +384,13 @@ void QCoreWlanEngine::doRequestUpdate()
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(previous.takeFirst());
 
         configurationInterface.remove(ptr->id);
+
+        locker.unlock();
         emit configurationRemoved(ptr);
+        locker.relock();
     }
 
+    locker.unlock();
     emit updateCompleted();
 }
 
@@ -418,6 +437,8 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
 
                     bool changed = false;
 
+                    ptr->mutex.lock();
+
                     if (!ptr->isValid) {
                         ptr->isValid = true;
                         changed = true;
@@ -438,8 +459,13 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                         changed = true;
                     }
 
-                    if (changed)
+                    ptr->mutex.unlock();
+
+                    if (changed) {
+                        locker.unlock();
                         emit configurationChanged(ptr);
+                        locker.relock();
+                    }
                 } else {
                     QNetworkConfigurationPrivatePointer ptr(new QNetworkConfigurationPrivate);
 
@@ -453,7 +479,9 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                     accessPointConfigurations.insert(id, ptr);
                     configurationInterface.insert(id, interfaceName);
 
+                    locker.unlock();
                     emit configurationAdded(ptr);
+                    locker.relock();
                 }
             }
         }
