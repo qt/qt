@@ -447,10 +447,10 @@ static void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
 
 
 
-static void qt_blend_argb32_on_rgb16_const_alpha(uchar *destPixels, int dbpl,
-                                                 const uchar *srcPixels, int sbpl,
-                                                 int w, int h,
-                                                 int const_alpha)
+void qt_blend_argb32_on_rgb16_const_alpha(uchar *destPixels, int dbpl,
+                                          const uchar *srcPixels, int sbpl,
+                                          int w, int h,
+                                          int const_alpha)
 {
     quint16 *dst = (quint16 *) destPixels;
     const quint32 *src = (const quint32 *) srcPixels;

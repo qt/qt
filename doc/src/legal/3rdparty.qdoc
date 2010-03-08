@@ -454,4 +454,43 @@
     OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
 
     See \c src/3rdparty/webkit/JavaScriptCore/wtf/dtoa.cpp for license details.
+
+    \section1 Pixman (\c pixman) version 0.17.11
+
+    \e{pixman is a library that provides low-level pixel manipulation
+    features such as image compositing and trapezoid rasterization.} -- quoted
+    from \c src/3rdparty/pixman/README
+
+    We are only using the pixman-arm-neon-asm.h and pixman-arm-neon-asm.S
+    source files which have the following copyright and license header:
+
+    \hr
+
+    Copyright © 2009 Nokia Corporation
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
+    Author:  Siarhei Siamashka (siarhei.siamashka@nokia.com)
+
+    \hr
+
+    See \c src/3rdparty/pixman/pixman-arm-neon-asm.h and
+    \c src/3rdparty/pixman/pixman-arm-neon-asm.S
 */
