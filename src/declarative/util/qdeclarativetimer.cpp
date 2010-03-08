@@ -123,6 +123,7 @@ void QDeclarativeTimer::setInterval(int interval)
     if (interval != d->interval) {
         d->interval = interval;
         update();
+        emit intervalChanged();
     }
 }
 
@@ -183,6 +184,7 @@ void QDeclarativeTimer::setRepeating(bool repeating)
     if (repeating != d->repeating) {
         d->repeating = repeating;
         update();
+        emit repeatChanged();
     }
 }
 
@@ -215,6 +217,7 @@ void QDeclarativeTimer::setTriggeredOnStart(bool triggeredOnStart)
     if (d->triggeredOnStart != triggeredOnStart) {
         d->triggeredOnStart = triggeredOnStart;
         update();
+        emit triggeredOnStartChanged();
     }
 }
 

@@ -154,7 +154,6 @@ private Q_SLOTS:
     void destroyRemoved();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
-    void sizeChange();
     void layout();
 
 private:

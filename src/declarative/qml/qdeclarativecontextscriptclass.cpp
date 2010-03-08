@@ -262,8 +262,9 @@ QDeclarativeContextScriptClass::property(Object *object, const Identifier &name)
             }
         }
 
-        ep->capturedProperties << 
-            QDeclarativeEnginePrivate::CapturedProperty(bindContext, -1, lastPropertyIndex + cp->notifyIndex);
+        if (ep->captureProperties) 
+            ep->capturedProperties << QDeclarativeEnginePrivate::CapturedProperty(bindContext, -1, lastPropertyIndex + cp->notifyIndex);
+
 
         return Value(scriptEngine, rv);
     } else if(lastDefaultObject != -1) {

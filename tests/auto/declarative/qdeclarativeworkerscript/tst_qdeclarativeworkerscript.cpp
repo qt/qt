@@ -60,7 +60,6 @@ public:
     tst_QDeclarativeWorkerScript() {}
 private slots:
     void source();
-    void source_data();
     void messaging();
     void messaging_data();
     void messaging_sendQObjectList();
@@ -83,13 +82,7 @@ private:
 
 void tst_QDeclarativeWorkerScript::source()
 {
-    QFETCH(QUrl, source);
-    QFETCH(bool, valid);
-
-    if (!valid) {
-        QByteArray w = "WorkerScript: Cannot find source file \"" + source.toString().toUtf8() + "\"";
-        QTest::ignoreMessage(QtWarningMsg, w.constData());
-    }
+    QUrl source = QUrl::fromLocalFile(SRCDIR "/data/worker.qml");
 
     QDeclarativeComponent component(&m_engine);
     component.setData("import Qt 4.6\nWorkerScript { source: '" + source.toString().toUtf8() + "'; }", QUrl());
@@ -100,15 +93,7 @@ void tst_QDeclarativeWorkerScript::source()
     QCOMPARE(item->source(), source);
 
     qApp->processEvents();
-}
-
-void tst_QDeclarativeWorkerScript::source_data()
-{
-    QTest::addColumn<QUrl>("source");
-    QTest::addColumn<bool>("valid");
-
-    QTest::newRow("valid") << QUrl::fromLocalFile(SRCDIR "/data/worker.qml") << true;
-    QTest::newRow("invalid") << QUrl::fromLocalFile("asdjfk.js") << false;
+    delete item;
 }
 
 void tst_QDeclarativeWorkerScript::messaging()
@@ -126,6 +111,7 @@ void tst_QDeclarativeWorkerScript::messaging()
     QCOMPARE(mo->property(mo->indexOfProperty("response")).read(worker).value<QVariant>(), value);
 
     qApp->processEvents();
+    delete worker;
 }
 
 void tst_QDeclarativeWorkerScript::messaging_data()
@@ -162,6 +148,7 @@ void tst_QDeclarativeWorkerScript::messaging_sendQObjectList()
     QCOMPARE(result, (QVariantList() << QVariant() << QVariant() << QVariant()));
 
     qApp->processEvents();
+    delete worker;
 }
 
 void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
@@ -187,6 +174,7 @@ void tst_QDeclarativeWorkerScript::messaging_sendJsObject()
     QVERIFY(result.toBool());
 
     qApp->processEvents();
+    delete worker;
 }
 
 QTEST_MAIN(tst_QDeclarativeWorkerScript)
