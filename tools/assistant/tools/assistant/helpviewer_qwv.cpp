@@ -41,8 +41,6 @@
 
 #include "helpviewer_qwv.h"
 
-#if !defined(QT_NO_WEBKIT)
-
 #include "centralwidget.h"
 #include "helpenginewrapper.h"
 #include "tracer.h"
@@ -385,5 +383,3 @@ void HelpViewer::setLoadFinished(bool ok)
 }
 
 QT_END_NAMESPACE
-
-#endif  // !QT_NO_WEBKIT
