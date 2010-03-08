@@ -399,9 +399,35 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
     return s;
 }
 
-QByteArray QWindowsLocalCodec::convertFromUnicode(const QChar *uc, int len, ConverterState *) const
+QByteArray QWindowsLocalCodec::convertFromUnicode(const QChar *ch, int uclen, ConverterState *) const
 {
-    return qt_winQString2MB(uc, len);
+    if (!ch)
+        return QByteArray();
+    if (uclen == 0)
+        return QByteArray("");
+    BOOL used_def;
+    QByteArray mb(4096, 0);
+    int len;
+    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
+                mb.data(), mb.size()-1, 0, &used_def)))
+    {
+        int r = GetLastError();
+        if (r == ERROR_INSUFFICIENT_BUFFER) {
+            mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
+                                (const wchar_t*)ch, uclen,
+                                0, 0, 0, &used_def));
+                // and try again...
+        } else {
+#ifndef QT_NO_DEBUG
+            // Fail.
+            qWarning("WideCharToMultiByte: Cannot convert multibyte text (error %d): %s (UTF-8)",
+                r, QString(ch, uclen).toLocal8Bit().data());
+#endif
+            break;
+        }
+    }
+    mb.resize(len);
+    return mb;
 }
 
 
