@@ -1935,7 +1935,7 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar)
         if (w->isVisible() && w->windowModality() == Qt::ApplicationModal) {
             for (int i=0; i<topLevelWidgets.size(); ++i) {
                 QWidget *top = topLevelWidgets.at(i);
-                if (w != top && [qt_mac_window_for(top) isVisible]) {
+                if (w != top && top->isVisible()) {
                     // INVARIANT: we found another visible window
                     // on screen other than our modalWidget. We therefore
                     // disable the menu bar to follow normal modality logic:
