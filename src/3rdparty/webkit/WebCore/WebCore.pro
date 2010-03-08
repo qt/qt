@@ -3418,7 +3418,7 @@ CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4
 symbian {
     shared {
         contains(CONFIG, def_files) {
-            defFilePath=../WebKit/qt/symbian
+            DEF_FILE=../WebKit/qt/symbian
         }
     }
 }
