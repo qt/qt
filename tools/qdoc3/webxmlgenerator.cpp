@@ -43,14 +43,14 @@
   webxmlgenerator.cpp
 */
 
-#include <QtXml>
-
 #include "codemarker.h"
 #include "pagegenerator.h"
 #include "webxmlgenerator.h"
 #include "node.h"
 #include "separator.h"
 #include "tree.h"
+
+#include <QtCore/qxmlstream.h>
 
 QT_BEGIN_NAMESPACE
 

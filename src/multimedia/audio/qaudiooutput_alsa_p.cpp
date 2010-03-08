@@ -369,10 +369,52 @@ bool QAudioOutputPrivate::open()
         }
     }
     if ( !fatal ) {
+        unsigned int maxBufferTime = 0;
+        unsigned int minBufferTime = 0;
+        unsigned int maxPeriodTime = 0;
+        unsigned int minPeriodTime = 0;
+
+        err = snd_pcm_hw_params_get_buffer_time_max(hwparams, &maxBufferTime, &dir);
+        if ( err >= 0)
+            err = snd_pcm_hw_params_get_buffer_time_min(hwparams, &minBufferTime, &dir);
+        if ( err >= 0)
+            err = snd_pcm_hw_params_get_period_time_max(hwparams, &maxPeriodTime, &dir);
+        if ( err >= 0)
+            err = snd_pcm_hw_params_get_period_time_min(hwparams, &minPeriodTime, &dir);
+
+        if ( err < 0 ) {
+            fatal = true;
+            errMessage = QString::fromLatin1("QAudioOutput: buffer/period min and max: err = %1").arg(err);
+        } else {
+            if (maxBufferTime < buffer_time || buffer_time < minBufferTime || maxPeriodTime < period_time || minPeriodTime > period_time) {
+#ifdef DEBUG_AUDIO
+                qDebug()<<"defaults out of range";
+                qDebug()<<"pmin="<<minPeriodTime<<", pmax="<<maxPeriodTime<<", bmin="<<minBufferTime<<", bmax="<<maxBufferTime;
+#endif
+                period_time = minPeriodTime;
+                if (period_time*4 <= maxBufferTime) {
+                    // Use 4 periods if possible
+                    buffer_time = period_time*4;
+                    chunks = 4;
+                } else if (period_time*2 <= maxBufferTime) {
+                    // Use 2 periods if possible
+                    buffer_time = period_time*2;
+                    chunks = 2;
+                } else {
+                    qWarning()<<"QAudioOutput: alsa only supports single period!";
+                    fatal = true;
+                }
+#ifdef DEBUG_AUDIO
+                qDebug()<<"used: buffer_time="<<buffer_time<<", period_time="<<period_time;
+#endif
+            }
+        }
+    }
+    if ( !fatal ) {
         err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, &dir);
         if ( err < 0 ) {
             fatal = true;
-                errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_buffer_time_near: err = %1").arg(err);
+            errMessage = QString::fromLatin1("QAudioOutput: snd_pcm_hw_params_set_buffer_time_near: err = %1").arg(err);
         }
     }
     if ( !fatal ) {

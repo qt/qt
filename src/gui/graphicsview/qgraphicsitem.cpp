@@ -641,10 +641,10 @@
     are children of a modal panel are not blocked.
 
     The values are:
-    
+
     \value NonModal The panel is not modal and does not block input to
     other panels. This is the default value for panels.
-    
+
     \value PanelModal The panel is modal to a single item hierarchy
     and blocks input to its parent pane, all grandparent panels, and
     all siblings of its parent and grandparent panels.
@@ -2182,6 +2182,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Certain properties are dropped as an item becomes invisible.
+    bool hasFocus = q_ptr->hasFocus();
     if (!newVisible) {
         if (scene) {
             if (scene->d_func()->mouseGrabberItems.contains(q))
@@ -2191,7 +2192,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
             if (q->isPanel() && panelModality != QGraphicsItem::NonModal)
                 scene->d_func()->leaveModal(q_ptr);
         }
-        if (q_ptr->hasFocus() && scene) {
+        if (hasFocus && scene) {
             // Hiding the closest non-panel ancestor of the focus item
             QGraphicsItem *focusItem = scene->focusItem();
             bool clear = true;
@@ -2204,7 +2205,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
                 } while ((focusItem = focusItem->parentWidget()) && !focusItem->isPanel());
             }
             if (clear)
-                q_ptr->clearFocus();
+                clearFocusHelper(/* giveFocusToParent = */ false);
         }
         if (q_ptr->isSelected())
             q_ptr->setSelected(false);
@@ -2242,26 +2243,45 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Enable subfocus
-    if (scene && newVisible) {
-        QGraphicsItem *p = parent;
-        bool done = false;
-        while (p) {
-            if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-                QGraphicsItem *fsi = p->d_ptr->focusScopeItem;
-                if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
-                    done = true;
-                    while (fsi->d_ptr->focusScopeItem && fsi->d_ptr->focusScopeItem->isVisible())
-                        fsi = fsi->d_ptr->focusScopeItem;
-                    scene->setFocusItem(fsi);
+    if (scene) {
+        if (newVisible) {
+            // Item is shown
+            QGraphicsItem *p = parent;
+            bool done = false;
+            while (p) {
+                if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+                    QGraphicsItem *fsi = p->d_ptr->focusScopeItem;
+                    if (q_ptr == fsi || q_ptr->isAncestorOf(fsi)) {
+                        done = true;
+                        while (fsi->d_ptr->focusScopeItem && fsi->d_ptr->focusScopeItem->isVisible())
+                            fsi = fsi->d_ptr->focusScopeItem;
+                        fsi->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ true,
+                                                   /* focusFromShow = */ true);
+                    }
+                    break;
                 }
-                break;
+                p = p->d_ptr->parent;
             }
-            p = p->d_ptr->parent;
-        }
-        if (!done) {
-            QGraphicsItem *fi = subFocusItem;
-            if (fi && fi != scene->focusItem()) {
-                scene->setFocusItem(fi);
+            if (!done) {
+                QGraphicsItem *fi = subFocusItem;
+                if (fi && fi != scene->focusItem()) {
+                    scene->setFocusItem(fi);
+                }
+            }
+        } else {
+            // Item is hidden
+            if (hasFocus) {
+                QGraphicsItem *p = parent;
+                while (p) {
+                    if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+                        if (p->d_ptr->visible) {
+                            p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ true,
+                                                     /* focusFromShow = */ true);
+                        }
+                        break;
+                    }
+                    p = p->d_ptr->parent;
+                }
             }
         }
     }
@@ -3112,13 +3132,13 @@ bool QGraphicsItem::hasFocus() const
 */
 void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 {
-    d_ptr->setFocusHelper(focusReason, /* climb = */ true);
+    d_ptr->setFocusHelper(focusReason, /* climb = */ true, /* focusFromShow = */ false);
 }
 
 /*!
     \internal
 */
-void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool climb)
+void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromShow)
 {
     // Disabled / unfocusable items cannot accept focus.
     if (!q_ptr->isEnabled() || !(flags & QGraphicsItem::ItemIsFocusable))
@@ -3138,7 +3158,7 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     while (p) {
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             p->d_ptr->focusScopeItem = q_ptr;
-            if (!p->focusItem()) {
+            if (!p->focusItem() && !focusFromShow) {
                 // If you call setFocus on a child of a focus scope that
                 // doesn't currently have a focus item, then stop.
                 return;
@@ -3179,24 +3199,35 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 */
 void QGraphicsItem::clearFocus()
 {
-    // Pass focus to the closest parent focus scope.
-    if (!d_ptr->inDestructor) {
-        QGraphicsItem *p = d_ptr->parent;
-        while (p) {
-            if (p->flags() & ItemIsFocusScope) {
-                p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false);
-                return;
+    d_ptr->clearFocusHelper(/* giveFocusToParent = */ true);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::clearFocusHelper(bool giveFocusToParent)
+{
+    if (giveFocusToParent) {
+        // Pass focus to the closest parent focus scope
+        if (!inDestructor) {
+            QGraphicsItem *p = parent;
+            while (p) {
+                if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
+                    p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false,
+                                             /* focusFromShow = */ false);
+                    return;
+                }
+                p = p->d_ptr->parent;
             }
-            p = p->d_ptr->parent;
         }
     }
 
     // Invisible items with focus must explicitly clear subfocus.
-    d_ptr->clearSubFocus(this);
+    clearSubFocus(q_ptr);
 
-    if (hasFocus()) {
+    if (q_ptr->hasFocus()) {
         // If this item has the scene's input focus, clear it.
-        d_ptr->scene->setFocusItem(0);
+        scene->setFocusItem(0);
     }
 }
 
@@ -10817,6 +10848,7 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
     }
 }
 
+// sourceRect must be in the given coordinate system
 QRect QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded) const
 {
     QRectF effectRectF;
@@ -10826,7 +10858,8 @@ QRect QGraphicsItemEffectSourcePrivate::paddedEffectRect(Qt::CoordinateSystem sy
 
     if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         if (info) {
-            effectRectF = item->graphicsEffect()->boundingRectFor(boundingRect(Qt::DeviceCoordinates));
+            QRectF deviceRect = system == Qt::DeviceCoordinates ? sourceRect : info->painter->worldTransform().mapRect(sourceRect);
+            effectRectF = item->graphicsEffect()->boundingRectFor(deviceRect);
             if (unpadded)
                 *unpadded = (effectRectF.size() == sourceRect.size());
             if (info && system == Qt::LogicalCoordinates)
@@ -10875,30 +10908,6 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
         return static_cast<QGraphicsPixmapItem *>(item)->pixmap();
     }
 
-    if (deviceCoordinates) {
-        // Clip to viewport rect.
-        int left, top, right, bottom;
-        effectRect.getCoords(&left, &top, &right, &bottom);
-        if (left < 0) {
-            if (offset)
-                offset->rx() += -left;
-            effectRect.setX(0);
-        }
-        if (top < 0) {
-            if (offset)
-                offset->ry() += -top;
-            effectRect.setY(0);
-        }
-        // NB! We use +-1 for historical reasons (see QRect documentation).
-        QPaintDevice *device = info->painter->device();
-        const int deviceWidth = device->width();
-        const int deviceHeight = device->height();
-        if (right + 1 > deviceWidth)
-            effectRect.setRight(deviceWidth - 1);
-        if (bottom + 1 > deviceHeight)
-            effectRect.setBottom(deviceHeight -1);
-
-    }
     if (effectRect.isEmpty())
         return QPixmap();
 

@@ -24,7 +24,7 @@ EXPORTS
 	?defaultKeyDelay@QTest@@YAHXZ @ 23 NONAME ; int QTest::defaultKeyDelay(void)
 	?defaultKeyVerbose@QTest@@YA_NXZ @ 24 NONAME ; bool QTest::defaultKeyVerbose(void)
 	?defaultMouseDelay@QTest@@YAHXZ @ 25 NONAME ; int QTest::defaultMouseDelay(void)
-	?endBenchmarkMeasurement@QTest@@YA_JXZ @ 26 NONAME ; long long QTest::endBenchmarkMeasurement(void)
+	?endBenchmarkMeasurement@QTest@@YA_JXZ @ 26 NONAME ABSENT ; long long QTest::endBenchmarkMeasurement(void)
 	?enterLoop@QTestEventLoop@@QAEXH@Z @ 27 NONAME ; void QTestEventLoop::enterLoop(int)
 	?exitLoop@QTestEventLoop@@QAEXXZ @ 28 NONAME ; void QTestEventLoop::exitLoop(void)
 	?getStaticMetaObject@QTestEventLoop@@SAABUQMetaObject@@XZ @ 29 NONAME ; struct QMetaObject const & QTestEventLoop::getStaticMetaObject(void)
@@ -75,4 +75,6 @@ EXPORTS
 	?trUtf8@QTestEventLoop@@SA?AVQString@@PBD0@Z @ 74 NONAME ; class QString QTestEventLoop::trUtf8(char const *, char const *)
 	?trUtf8@QTestEventLoop@@SA?AVQString@@PBD0H@Z @ 75 NONAME ; class QString QTestEventLoop::trUtf8(char const *, char const *, int)
 	?staticMetaObject@QTestEventLoop@@2UQMetaObject@@B @ 76 NONAME ; struct QMetaObject const QTestEventLoop::staticMetaObject
+	?endBenchmarkMeasurement@QTest@@YA_KXZ @ 77 NONAME ; unsigned long long QTest::endBenchmarkMeasurement(void)
+	?setBenchmarkResult@QTest@@YAXMW4QBenchmarkMetric@1@@Z @ 78 NONAME ; void QTest::setBenchmarkResult(float, enum QTest::QBenchmarkMetric)
 

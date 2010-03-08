@@ -1164,4 +1164,44 @@
     <source>Table of Contents</source>
     <target>Оглавление</target>
 </phrase>
+<phrase>
+    <source>parse</source>
+    <target>разобрать</target>
+</phrase>
+<phrase>
+    <source>parsing</source>
+    <target>разбор</target>
+</phrase>
+<phrase>
+    <source>phrasebook</source>
+    <target>глоссарий</target>
+</phrase>
+<phrase>
+    <source>phrase book</source>
+    <target>глоссарий</target>
+</phrase>
+<phrase>
+    <source>In use</source>
+    <target>Используется</target>
+</phrase>
+<phrase>
+    <source>Access denied</source>
+    <target>Доступ запрещён</target>
+</phrase>
+<phrase>
+    <source>No error</source>
+    <target>Нет ошибки</target>
+</phrase>
+<phrase>
+    <source>Not supported</source>
+    <target>Не поддерживается</target>
+</phrase>
+<phrase>
+    <source>Already exists</source>
+    <target>Уже существует</target>
+</phrase>
+<phrase>
+    <source>Permission denied</source>
+    <target>Доступ запрещён</target>
+</phrase>
 </QPH>

@@ -152,7 +152,7 @@ public:
         Q_UNUSED(codecs);
 
         if (mimeType == "audio/wav")
-            return QtMultimedia::PreferedService;        
+            return QtMultimedia::PreferredService;
 
         return QtMultimedia::NotSupported;
     }

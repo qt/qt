@@ -442,6 +442,13 @@ QDeclarativeObjectMethodScriptClass::QDeclarativeObjectMethodScriptClass(QDeclar
   engine(bindEngine)
 {
     setSupportsCall(true);
+
+    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
+
+    m_connect = scriptEngine->newFunction(connect);
+    m_connectId = createPersistentIdentifier(QLatin1String("connect"));
+    m_disconnect = scriptEngine->newFunction(disconnect);
+    m_disconnectId = createPersistentIdentifier(QLatin1String("disconnect"));
 }
 
 QDeclarativeObjectMethodScriptClass::~QDeclarativeObjectMethodScriptClass()
@@ -453,6 +460,80 @@ QScriptValue QDeclarativeObjectMethodScriptClass::newMethod(QObject *object, con
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
     return newObject(scriptEngine, this, new MethodData(object, *method));
+}
+
+QScriptValue QDeclarativeObjectMethodScriptClass::connect(QScriptContext *context, QScriptEngine *engine)
+{
+    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
+
+    QScriptValue that = context->thisObject();
+    if (&p->objectClass->methods != scriptClass(that))
+        return engine->undefinedValue();
+
+    MethodData *data = (MethodData *)object(that);
+
+    if (!data->object || context->argumentCount() == 0)
+        return engine->undefinedValue();
+
+    QByteArray signal("2");
+    signal.append(data->object->metaObject()->method(data->data.coreIndex).signature());
+
+    if (context->argumentCount() == 1) {
+        qScriptConnect(data->object, signal.constData(), QScriptValue(), context->argument(0));
+    } else {
+        qScriptConnect(data->object, signal.constData(), context->argument(0), context->argument(1));
+    }
+    
+    return engine->undefinedValue();
+}
+
+QScriptValue QDeclarativeObjectMethodScriptClass::disconnect(QScriptContext *context, QScriptEngine *engine)
+{
+    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
+
+    QScriptValue that = context->thisObject();
+    if (&p->objectClass->methods != scriptClass(that))
+        return engine->undefinedValue();
+
+    MethodData *data = (MethodData *)object(that);
+
+    if (!data->object || context->argumentCount() == 0)
+        return engine->undefinedValue();
+
+    QByteArray signal("2");
+    signal.append(data->object->metaObject()->method(data->data.coreIndex).signature());
+
+    if (context->argumentCount() == 1) {
+        qScriptDisconnect(data->object, signal.constData(), QScriptValue(), context->argument(0));
+    } else {
+        qScriptDisconnect(data->object, signal.constData(), context->argument(0), context->argument(1));
+    }
+    
+    return engine->undefinedValue();
+}
+
+QScriptClass::QueryFlags 
+QDeclarativeObjectMethodScriptClass::queryProperty(Object *, const Identifier &name, 
+                                                   QScriptClass::QueryFlags flags)
+{
+    if (name == m_connectId.identifier || name == m_disconnectId.identifier)
+        return QScriptClass::HandlesReadAccess;
+    else
+        return 0;
+
+}
+
+QDeclarativeObjectScriptClass::ScriptValue
+QDeclarativeObjectMethodScriptClass::property(Object *, const Identifier &name)
+{
+    QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
+
+    if (name == m_connectId.identifier)
+        return Value(scriptEngine, m_connect);
+    else if (name == m_disconnectId.identifier)
+        return Value(scriptEngine, m_disconnect);
+    else
+        return Value();
 }
 
 namespace {

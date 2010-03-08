@@ -404,9 +404,11 @@ EGLSurface QEgl::createSurface(QPaintDevice *device, EGLConfig config, const QEg
         else
             surfaceAttribs.setValue(EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGB);
 
-        return eglCreatePixmapSurface(QEgl::display(), config,
-                                      (EGLNativePixmapType) x11PixmapData->handle(),
-                                      surfaceAttribs.properties());
+        EGLSurface surf = eglCreatePixmapSurface(QEgl::display(), config,
+                                                 (EGLNativePixmapType) x11PixmapData->handle(),
+                                                 surfaceAttribs.properties());
+        x11PixmapData->gl_surface = (Qt::HANDLE)surf;
+        return surf;
     }
 
     return EGL_NO_SURFACE;

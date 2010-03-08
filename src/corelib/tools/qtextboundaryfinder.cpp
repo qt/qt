@@ -100,7 +100,8 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
         HB_GetSentenceBoundaries(string, length, scriptItems.data(), scriptItems.count(), attributes);
 }
 
-/*! \class QTextBoundaryFinder
+/*! 
+    \class QTextBoundaryFinder
 
     \brief The QTextBoundaryFinder class provides a way of finding Unicode text boundaries in a string.
 
@@ -331,7 +332,7 @@ QString QTextBoundaryFinder::string() const
 /*!
   Moves the QTextBoundaryFinder to the next boundary position and returns that position.
 
-  Returns -1 is there is no next boundary.
+  Returns -1 if there is no next boundary.
 */
 int QTextBoundaryFinder::toNextBoundary()
 {
@@ -373,7 +374,7 @@ int QTextBoundaryFinder::toNextBoundary()
 /*!
   Moves the QTextBoundaryFinder to the previous boundary position and returns that position.
 
-  Returns -1 is there is no previous boundary.
+  Returns -1 if there is no previous boundary.
 */
 int QTextBoundaryFinder::toPreviousBoundary()
 {

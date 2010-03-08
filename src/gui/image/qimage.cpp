@@ -480,9 +480,12 @@ bool QImageData::checkForAlphaPixels() const
     \row
     \o Low-level information
     \o
+
     The depth() function returns the depth of the image. The supported
-    depths are 1 (monochrome), 8 and 32 (for more information see the
-    \l {QImage#Image Formats}{Image Formats} section).
+    depths are 1 (monochrome), 8, 16, 24 and 32 bits. The
+    bitPlaneCount() function tells how many of those bits that are
+    used. For more information see the
+    \l {QImage#Image Formats}{Image Formats} section.
 
     The format(), bytesPerLine(), and byteCount() functions provide
     low-level information about the data stored in the image.
@@ -707,7 +710,7 @@ bool QImageData::checkForAlphaPixels() const
                             packed with the less significant bit (LSB) first.
 
     \value Format_Indexed8  The image is stored using 8-bit indexes
-                            into a colormap. 
+                            into a colormap.
 
     \value Format_RGB32     The image is stored using a 32-bit RGB format (0xffRRGGBB).
 
@@ -1580,12 +1583,12 @@ QRect QImage::rect() const
 /*!
     Returns the depth of the image.
 
-    The image depth is the number of bits used to encode a single
+    The image depth is the number of bits used to store a single
     pixel, also called bits per pixel (bpp).
 
     The supported depths are 1, 8, 16, 24 and 32.
 
-    \sa convertToFormat(), {QImage#Image Formats}{Image Formats},
+    \sa bitPlaneCount(), convertToFormat(), {QImage#Image Formats}{Image Formats},
     {QImage#Image Information}{Image Information}
 
 */
@@ -5845,6 +5848,48 @@ bool QImage::hasAlphaChannel() const
                  || (d->has_alpha_clut && (d->format == Format_Indexed8
                                            || d->format == Format_Mono
                                            || d->format == Format_MonoLSB)));
+}
+
+
+/*!
+    \since 4.7
+    Returns the number of bit planes in the image.
+
+    The number of bit planes is the number of bits of color and
+    transparency information for each pixel. This is different from
+    (i.e. smaller than) the depth when the image format contains
+    unused bits.
+
+    \sa depth(), format(), {QImage#Image Formats}{Image Formats}
+*/
+int QImage::bitPlaneCount() const
+{
+    if (!d)
+        return 0;
+    int bpc = 0;
+    switch (d->format) {
+    case QImage::Format_Invalid:
+        break;
+    case QImage::Format_RGB32:
+        bpc = 24;
+        break;
+    case QImage::Format_RGB666:
+        bpc = 18;
+        break;
+    case QImage::Format_RGB555:
+        bpc = 15;
+        break;
+    case QImage::Format_ARGB8555_Premultiplied:
+        bpc = 23;
+        break;
+    case QImage::Format_RGB444:
+        bpc = 12;
+        break;
+    default:
+        bpc = depthForFormat(d->format);
+        break;
+    }
+    return bpc;
 }
 
 

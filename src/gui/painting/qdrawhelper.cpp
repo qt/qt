@@ -5072,7 +5072,7 @@ static void blend_tiled_argb8565(int count, const QSpan *spans, void *userData)
 
 static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
 {
-#if defined(QT_QWS_DEPTH_16)
+#if !defined(Q_WS_QWS) || defined(QT_QWS_DEPTH_16)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     if (data->texture.format == QImage::Format_ARGB8565_Premultiplied)
