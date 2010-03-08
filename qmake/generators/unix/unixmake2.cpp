@@ -177,6 +177,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isEmpty("QMAKE_MACOSX_DEPLOYMENT_TARGET"))
         t << "export MACOSX_DEPLOYMENT_TARGET = " //exported to children processes
           << project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET") << endl;
+
+    if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB"))
+        t << "vpath %.dso " << project->values("QMAKE_LIBDIR").join(":") << endl;
+
     t << endl;
 
     t << "####### Output directory" << endl << endl;
