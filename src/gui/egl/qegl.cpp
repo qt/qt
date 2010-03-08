@@ -392,6 +392,11 @@ bool QEglContext::makeCurrent(EGLSurface surface)
         return false;
     }
 
+    if (surface == EGL_NO_SURFACE) {
+        qWarning() << "QEglContext::makeCurrent(): Cannot make invalid surface current";
+        return false;
+    }
+
     // If lazyDoneCurrent() was called on the surface, then we may be able
     // to assume that it is still current within the thread.
     if (surface == currentSurface && currentContext(apiType) == this) {
@@ -417,7 +422,7 @@ bool QEglContext::makeCurrent(EGLSurface surface)
 
     bool ok = eglMakeCurrent(QEgl::display(), surface, surface, ctx);
     if (!ok)
-        qWarning() << "QEglContext::makeCurrent():" << QEgl::errorString();
+        qWarning() << "QEglContext::makeCurrent(" << surface << "):" << QEgl::errorString();
     return ok;
 }
 

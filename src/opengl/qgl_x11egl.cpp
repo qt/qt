@@ -243,7 +243,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (x11PixmapData->gl_surface)
             eglDestroySurface(d->eglContext->display(), (EGLSurface)x11PixmapData->gl_surface);
 
-        x11PixmapData->gl_surface = (Qt::HANDLE)QEgl::createSurface(device(), d->eglContext->config());
+        x11PixmapData->gl_surface = (void*)QEgl::createSurface(device(), d->eglContext->config());
     }
 
     return true;
@@ -404,8 +404,8 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
                                                hasAlpha ? QEgl::Translucent : QEgl::NoOptions);
 
         QPixmap tmpPixmap(pixmapData); //###
-        pixmapData->gl_surface = (Qt::HANDLE)QEgl::createSurface(&tmpPixmap, config);
-        if (pixmapData->gl_surface == (Qt::HANDLE)EGL_NO_SURFACE) {
+        pixmapData->gl_surface = (void*)QEgl::createSurface(&tmpPixmap, config);
+        if (pixmapData->gl_surface == (void*)EGL_NO_SURFACE) {
             haveTFP = false;
             return 0;
         }
@@ -423,7 +423,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
     if (success == EGL_FALSE) {
         qWarning() << "eglBindTexImage() failed:" << QEgl::errorString();
         eglDestroySurface(eglContext->display(), (EGLSurface)pixmapData->gl_surface);
-        pixmapData->gl_surface = (Qt::HANDLE)EGL_NO_SURFACE;
+        pixmapData->gl_surface = (void*)EGL_NO_SURFACE;
         haveTFP = false;
         return 0;
     }

@@ -235,8 +235,14 @@ void QX11GLPixmapData::beginPaint()
     if ((EGLSurface)gl_surface == EGL_NO_SURFACE) {
         QPixmap tmpPixmap(this);
         EGLConfig cfg = ctx->d_func()->eglContext->config();
-        gl_surface = (Qt::HANDLE)QEgl::createSurface(&tmpPixmap, cfg);
-        ctx->d_func()->eglSurface = (EGLSurface)gl_surface;
+
+        EGLSurface surface = QEgl::createSurface(&tmpPixmap, cfg);
+        if (surface == EGL_NO_SURFACE) {
+            qWarning() << "Error creating EGL surface for pixmap:" << QEgl::errorString();
+            return;
+        }
+        gl_surface = (void*)surface;
+        ctx->d_func()->eglSurface = surface;
         ctx->d_func()->valid = true;
     }
     QGLPaintDevice::beginPaint();
