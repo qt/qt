@@ -42,7 +42,7 @@
 #define HAPPYBIRTHDAY_H
 
 #include <QDeclarativePropertyValueSource>
-#include <QDeclarativeMetaProperty>
+#include <QDeclarativeProperty>
 #include <qdeclarative.h>
 
 #include <QStringList>
@@ -57,7 +57,7 @@ Q_PROPERTY(QString name READ name WRITE setName)
 public:
     HappyBirthday(QObject *parent = 0);
 
-    virtual void setTarget(const QDeclarativeMetaProperty &);
+    virtual void setTarget(const QDeclarativeProperty &);
 // ![1]
 
     QString name() const;
@@ -69,7 +69,7 @@ private slots:
 private:
     int m_line;
     QStringList m_lyrics;
-    QDeclarativeMetaProperty m_target;
+    QDeclarativeProperty m_target;
     QString m_name;
 // ![2]
 };
