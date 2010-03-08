@@ -93,6 +93,7 @@ public slots:
     void updateNativeVideoSize();
 
 private:
+    void createVideoWidget();
     void windowExposed();
 
     GstElement *m_videoSink;
