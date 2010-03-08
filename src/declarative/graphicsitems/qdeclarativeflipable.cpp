@@ -68,56 +68,31 @@ public:
     \brief The Flipable item provides a surface that can be flipped.
     \inherits Item
 
-    Flipable allows you to specify a front and a back and then flip between those sides.
+    Flipable is an item that can be visibly "flipped" between its front and
+    back sides. It is used together with Rotation and State/Transition to
+    produce a flipping effect.
 
-    Here's an example that flips between the front and back sides when clicked:
+    Here is a Flipable that flips whenever it is clicked:
 
-    \qml
-
-    Flipable {
-        id: flipable
-        width: 250; height: 250
-        property int angle: 0
-
-        transform: Rotation {
-            id: rotation
-            origin.x: flipable.width/2; origin.y: flipable.height/2
-            axis.x: 0; axis.y: 1; axis.z: 0     // rotate around y-axis
-            angle: flipable.angle
-        }
-
-        front: Image { source: "front.png" }
-        back: Image { source: "back.png" }
-
-        states: State {
-            name: "back"
-            PropertyChanges { target: flipable; angle: 180 }
-        }
-
-        transitions: Transition {
-            NumberAnimation { properties: "angle"; duration: 2000 }
-        }
-
-        MouseArea {
-            // change between default and 'back' states
-            onClicked: flipable.state = (flipable.state == 'back' ? '' : 'back')
-            anchors.fill: parent
-        }
-    }
-    \endqml
+    \snippet examples/declarative/flipable/flipable.qml 0
 
     \image flipable.gif
+
+    The Rotation element is used to specify the angle and axis of the flip,
+    and the State defines the changes in angle which produce the flipping
+    effect. Finally, the Transition creates the animation that changes the
+    angle over one second.
 */
 
 /*!
     \internal
     \class QDeclarativeFlipable
-    \brief The QDeclarativeFlipable class provides a flipable surface.
+    \brief The Flipable item provides a surface that can be flipped.
 
     \ingroup group_widgets
 
-    QDeclarativeFlipable allows you to specify a front and a back, as well as an
-    axis for the flip.
+    Flipable is an item that can be visibly "flipped" between its front and
+    back sides.
 */
 
 QDeclarativeFlipable::QDeclarativeFlipable(QDeclarativeItem *parent)
