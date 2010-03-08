@@ -85,6 +85,9 @@ private slots:
     void sessionOpenCloseStop_data();
     void sessionOpenCloseStop();
 
+    void sessionAutoClose_data();
+    void sessionAutoClose();
+
 private:
     QNetworkConfigurationManager manager;
 
@@ -1202,7 +1205,67 @@ bool closeSession(QNetworkSession *session, bool lastSessionOnConfiguration) {
     return true;
 }
 
+void tst_QNetworkSession::sessionAutoClose_data()
+{
+    QTest::addColumn<QNetworkConfiguration>("configuration");
 
+    bool testData = false;
+    foreach (const QNetworkConfiguration &config,
+             manager.allConfigurations(QNetworkConfiguration::Discovered)) {
+        QNetworkSession session(config);
+        if (!session.sessionProperty(QLatin1String("AutoCloseSessionTimeout")).isValid())
+            continue;
+
+        testData = true;
+
+        const QString name = config.name().isEmpty() ? QString("<Hidden>") : config.name();
+        QTest::newRow(name.toLocal8Bit().constData()) << config;
+    }
+
+    if (!testData)
+        QSKIP("No applicable configurations to test", SkipAll);
+}
+
+void tst_QNetworkSession::sessionAutoClose()
+{
+    QFETCH(QNetworkConfiguration, configuration);
+
+    QNetworkSession session(configuration);
+
+    QVERIFY(session.configuration() == configuration);
+
+    QVariant autoCloseSession = session.sessionProperty(QLatin1String("AutoCloseSessionTimeout"));
+
+    QVERIFY(autoCloseSession.isValid());
+
+    // property defaults to false
+    QCOMPARE(autoCloseSession.toInt(), -1);
+
+    QSignalSpy closeSpy(&session, SIGNAL(closed()));
+
+    session.open();
+    session.waitForOpened();
+
+    if (!session.isOpen())
+        QSKIP("Session not open", SkipSingle);
+
+    // set session to auto close at next polling interval.
+    session.setSessionProperty(QLatin1String("AutoCloseSessionTimeout"), 0);
+
+    QTRY_VERIFY(!closeSpy.isEmpty());
+
+    QCOMPARE(session.state(), QNetworkSession::Connected);
+
+    QVERIFY(!session.isOpen());
+
+    QVERIFY(session.configuration() == configuration);
+
+    autoCloseSession = session.sessionProperty(QLatin1String("AutoCloseSessionTimeout"));
+
+    QVERIFY(autoCloseSession.isValid());
+
+    QCOMPARE(autoCloseSession.toInt(), -1);
+}
 
 QTEST_MAIN(tst_QNetworkSession)
 

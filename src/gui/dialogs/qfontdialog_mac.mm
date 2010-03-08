@@ -58,6 +58,14 @@
 typedef float CGFloat;  // Should only not be defined on 32-bit platforms
 #endif
 
+QT_BEGIN_NAMESPACE
+
+extern void macStartInterceptNSPanelCtor();
+extern void macStopInterceptNSPanelCtor();
+extern NSButton *macCreateButton(const char *text, NSView *superview);
+extern bool qt_mac_is_macsheet(const QWidget *w); // qwidget_mac.mm
+
+QT_END_NAMESPACE
 QT_USE_NAMESPACE
 
 // should a priori be kept in sync with qcolordialog_mac.mm
@@ -95,7 +103,8 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
     BOOL mPanelHackedWithButtons;
     CGFloat mDialogExtraWidth;
     CGFloat mDialogExtraHeight;
-    NSModalSession mModalSession;
+    int mReturnCode;
+    BOOL mAppModal;
 }
 - (id)initWithFontPanel:(NSFontPanel *)panel
       stolenContentView:(NSView *)stolenContentView
@@ -104,9 +113,11 @@ const int StyleMask = NSTitledWindowMask | NSClosableWindowMask | NSResizableWin
                    priv:(QFontDialogPrivate *)priv
              extraWidth:(CGFloat)extraWidth
             extraHeight:(CGFloat)extraHeight;
+- (void)showModelessPanel;
+- (void)showWindowModalSheet:(QWidget *)docWidget;
+- (void)runApplicationModalPanel;
 - (void)changeFont:(id)sender;
 - (void)changeAttributes:(id)sender;
-- (void)setModalSession:(NSModalSession)session;
 - (BOOL)windowShouldClose:(id)window;
 - (NSSize)windowWillResize:(NSWindow *)window toSize:(NSSize)proposedFrameSize;
 - (void)relayout;
@@ -163,7 +174,8 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     mPanelHackedWithButtons = (okButton != 0);
     mDialogExtraWidth = extraWidth;
     mDialogExtraHeight = extraHeight;
-    mModalSession = 0;
+    mReturnCode = -1;
+    mAppModal = false;
 
     if (mPanelHackedWithButtons) {
         [self relayout];
@@ -174,6 +186,20 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
         [cancelButton setAction:@selector(onCancelClicked)];
         [cancelButton setTarget:self];
     }
+
+#ifdef QT_MAC_USE_COCOA
+    // Stack the native dialog in front of its parent, if any:
+    QFontDialog *q = mPriv->fontDialog();
+    if (!qt_mac_is_macsheet(q)) {
+        if (QWidget *parent = q->parentWidget()) {
+            if (parent->isWindow()) {
+                [qt_mac_window_for(parent)
+                    addChildWindow:[mStolenContentView window] ordered:NSWindowAbove];
+            }
+        }
+    }
+#endif
+
     mQtFont = new QFont();
     return self;
 }
@@ -182,6 +208,50 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 {
     delete mQtFont;
     [super dealloc];
+}
+
+- (void)showModelessPanel
+{
+    mAppModal = false;
+    NSWindow *ourPanel = [mStolenContentView window];
+    [ourPanel makeKeyAndOrderFront:self];
+}
+
+- (void)runApplicationModalPanel
+{
+    QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
+    mAppModal = true;
+    NSWindow *ourPanel = [mStolenContentView window];
+    [NSApp runModalForWindow:ourPanel];
+    QAbstractEventDispatcher::instance()->interrupt();
+
+    if (mReturnCode == NSOKButton)
+        mPriv->fontDialog()->accept();
+    else
+        mPriv->fontDialog()->reject();
+}
+
+- (void)showWindowModalSheet:(QWidget *)docWidget
+{
+#ifdef QT_MAC_USE_COCOA
+    NSWindow *window = qt_mac_window_for(docWidget);
+#else
+    WindowRef hiwindowRef = qt_mac_window_for(docWidget);
+    NSWindow *window = [[NSWindow alloc] initWithWindowRef:hiwindowRef];
+    CFRetain(hiwindowRef);
+#endif
+
+    mAppModal = false;
+    NSWindow *ourPanel = [mStolenContentView window];
+    [NSApp beginSheet:ourPanel
+        modalForWindow:window
+        modalDelegate:0
+        didEndSelector:0
+        contextInfo:0 ];
+
+#ifndef QT_MAC_USE_COCOA
+    CFRelease(hiwindowRef);
+#endif
 }
 
 - (void)changeFont:(id)sender
@@ -214,12 +284,6 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
     if (mPriv)
         mPriv->updateSampleFont(*mQtFont);
-}
-
-- (void)setModalSession:(NSModalSession)session
-{
-    Q_ASSERT(!mModalSession);
-    mModalSession = session;
 }
 
 - (BOOL)windowShouldClose:(id)window
@@ -282,9 +346,8 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     NSSize cancelSizeHint = [mCancelButton frame].size;
 
     const CGFloat ButtonWidth = qMin(qMax(ButtonMinWidth,
-                                          qMax(okSizeHint.width, cancelSizeHint.width)),
-                                     CGFloat((frameSize.width - 2.0 * ButtonSideMargin
-                                              - ButtonSpacing) * 0.5));
+                qMax(okSizeHint.width, cancelSizeHint.width)),
+            CGFloat((frameSize.width - 2.0 * ButtonSideMargin - ButtonSpacing) * 0.5));
     const CGFloat ButtonHeight = qMax(ButtonMinHeight,
                                      qMax(okSizeHint.height, cancelSizeHint.height));
 
@@ -317,14 +380,12 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     NSFontManager *fontManager = [NSFontManager sharedFontManager];
     [self setQtFont:qfontForCocoaFont([fontManager convertFont:[fontManager selectedFont]],
                                       *mQtFont)];
-    [[mStolenContentView window] close];
     [self finishOffWithCode:NSOKButton];
 }
 
 - (void)onCancelClicked
 {
     Q_ASSERT(mPanelHackedWithButtons);
-    [[mStolenContentView window] close];
     [self finishOffWithCode:NSCancelButton];
 }
 
@@ -368,20 +429,26 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 - (void)finishOffWithCode:(NSInteger)code
 {
-    if (mPriv) {
-        if (mModalSession) {
-            [NSApp endModalSession:mModalSession];
-            mModalSession = 0;
+#ifdef QT_MAC_USE_COCOA
+    QFontDialog *q = mPriv->fontDialog();
+    if (QWidget *parent = q->parentWidget()) {
+        if (parent->isWindow()) {
+            [qt_mac_window_for(parent) removeChildWindow:[mStolenContentView window]];
         }
-        // Hack alert!
-        // Since this code path was never intended to be followed when starting from exec
-        // we need to force the dialog to communicate the new font, otherwise the signal
-        // won't get emitted.
-        if(code == NSOKButton)
-            mPriv->sampleEdit->setFont([self qtFont]);
-        mPriv->done((code == NSOKButton) ? QDialog::Accepted : QDialog::Rejected);
-    } else {
+    }
+#endif
+
+    if(code == NSOKButton)
+        mPriv->sampleEdit->setFont([self qtFont]);
+
+    if (mAppModal) {
+        mReturnCode = code;
         [NSApp stopModalWithCode:code];
+    } else {
+        if (code == NSOKButton)
+            mPriv->fontDialog()->accept();
+        else
+            mPriv->fontDialog()->reject();
     }
 }
 
@@ -408,206 +475,16 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 
 QT_BEGIN_NAMESPACE
 
-extern void macStartInterceptNSPanelCtor();
-extern void macStopInterceptNSPanelCtor();
-extern NSButton *macCreateButton(const char *text, NSView *superview);
-
-void *QFontDialogPrivate::openCocoaFontPanel(const QFont &initial,
-        QWidget *parent, const QString &title, QFontDialog::FontDialogOptions options,
-        QFontDialogPrivate *priv)
-{
-    Q_UNUSED(parent);   // we would use the parent if only NSFontPanel could be a sheet
-    QMacCocoaAutoReleasePool pool;
-
-    /*
-        The standard Cocoa font panel has no OK or Cancel button and
-        is created as a utility window. For strange reasons (which seem
-        to stem from the fact that the font panel is based on a NIB
-        file), the approach we use for the color panel doesn't work for
-        the font panel (and, inversely, the approach we use here doesn't
-        quite work for color panel, and crashed last time I tried). So
-        instead, we take the following steps:
-
-         1. Constructs a plain NSPanel that looks the way we want it
-            to look. Specifically, if the NoButtons option is off, we
-            construct a panel without the NSUtilityWindowMask flag
-            and with buttons (OK and Cancel).
-
-         2. Steal the content view from the shared NSFontPanel and
-            put it inside our new NSPanel's content view, together
-            with the OK and Cancel buttons.
-
-         3. Lay out the original content view and the buttons when
-            the font panel is shown and whenever it is resized.
-
-         4. Clean up after ourselves.
-
-         PS. Some customization is also done in QCocoaApplication
-         validModesForFontPanel:.
-    */
-
-    Qt::WindowModality modality = Qt::ApplicationModal;
-    if (priv)
-        modality = priv->fontDialog()->windowModality();
-
-    bool needButtons = !(options & QFontDialog::NoButtons);
-    // don't need our own panel if the title bar isn't visible anyway (in a sheet)
-    bool needOwnPanel = (needButtons && modality != Qt::WindowModal);
-
-    bool sharedFontPanelExisted = [NSFontPanel sharedFontPanelExists];
-    NSFontPanel *sharedFontPanel = [NSFontPanel sharedFontPanel];
-    [sharedFontPanel setHidesOnDeactivate:false];
-
-    // hack to ensure that QCocoaApplication's validModesForFontPanel:
-    // implementation is honored
-    if (!sharedFontPanelExisted && needOwnPanel) {
-        [sharedFontPanel makeKeyAndOrderFront:sharedFontPanel];
-        [sharedFontPanel close];
-    }
-
-    NSPanel *ourPanel = 0;
-    NSView *stolenContentView = 0;
-    NSButton *okButton = 0;
-    NSButton *cancelButton = 0;
-
-    CGFloat dialogExtraWidth = 0.0;
-    CGFloat dialogExtraHeight = 0.0;
-
-    if (!needOwnPanel) {
-        // we can reuse the NSFontPanel unchanged
-        ourPanel = sharedFontPanel;
-    } else {
-        // compute dialogExtra{Width,Height}
-        dialogExtraWidth = 2.0 * DialogSideMargin;
-        dialogExtraHeight = DialogTopMargin + ButtonTopMargin + ButtonMinHeight
-                            + ButtonBottomMargin;
-
-        // compute initial contents rectangle
-        NSRect contentRect = [sharedFontPanel contentRectForFrameRect:[sharedFontPanel frame]];
-        contentRect.size.width += dialogExtraWidth;
-        contentRect.size.height += dialogExtraHeight;
-
-        // create the new panel
-        ourPanel = [[NSPanel alloc] initWithContentRect:contentRect
-                                              styleMask:StyleMask
-                                                backing:NSBackingStoreBuffered
-                                                  defer:YES];
-        [ourPanel setReleasedWhenClosed:YES];
-    }
-
-    stolenContentView = [sharedFontPanel contentView];
-
-    if (needButtons) {
-        // steal the font panel's contents view
-        [stolenContentView retain];
-        [sharedFontPanel setContentView:0];
-
-        // create a new content view and add the stolen one as a subview
-        NSRect frameRect = { { 0.0, 0.0 }, { 0.0, 0.0 } };
-        NSView *ourContentView = [[NSView alloc] initWithFrame:frameRect];
-        [ourContentView addSubview:stolenContentView];
-
-        // create OK and Cancel buttons and add these as subviews
-        okButton = macCreateButton("&OK", ourContentView);
-        cancelButton = macCreateButton("Cancel", ourContentView);
-
-        [ourPanel setContentView:ourContentView];
-        [ourPanel setDefaultButtonCell:[okButton cell]];
-    }
-
-    // create a delegate and set it
-    QCocoaFontPanelDelegate *delegate =
-            [[QCocoaFontPanelDelegate alloc] initWithFontPanel:sharedFontPanel
-                                             stolenContentView:stolenContentView
-                                                      okButton:okButton
-                                                  cancelButton:cancelButton
-                                                          priv:priv
-                                                    extraWidth:dialogExtraWidth
-                                                   extraHeight:dialogExtraHeight];
-    [ourPanel setDelegate:delegate];
-    [[NSFontManager sharedFontManager] setDelegate:delegate];
-#ifdef QT_MAC_USE_COCOA
-    [[NSFontManager sharedFontManager] setTarget:delegate];
-#endif
-    setFont(delegate, initial);
-
-    // hack to get correct initial layout
-    NSRect frameRect = [ourPanel frame];
-    frameRect.size.width += 1.0;
-    [ourPanel setFrame:frameRect display:NO];
-    frameRect.size.width -= 1.0;
-    frameRect.size = [delegate windowWillResize:ourPanel toSize:frameRect.size];
-    [ourPanel setFrame:frameRect display:NO];
-    [ourPanel center];
-
-    [ourPanel setTitle:(NSString*)(CFStringRef)QCFString(title)];
-
-    if (priv) {
-        switch (modality) {
-        case Qt::WindowModal:
-            if (parent) {
-#ifndef QT_MAC_USE_COCOA
-                WindowRef hiwindowRef = qt_mac_window_for(parent);
-                NSWindow *window =
-                    [[NSWindow alloc] initWithWindowRef:hiwindowRef];
-                // Cocoa docs say I should retain the Carbon ref.
-                CFRetain(hiwindowRef);
-#else
-                NSWindow *window = qt_mac_window_for(parent);
-#endif
-                [NSApp beginSheet:ourPanel
-                   modalForWindow:window
-                    modalDelegate:0
-                   didEndSelector:0
-                      contextInfo:0];
-#ifndef QT_MAC_USE_COCOA
-                [window release];
-#endif
-                break;
-            }
-            // fallthrough
-        case Qt::ApplicationModal:
-            [delegate setModalSession:[NSApp beginModalSessionForWindow:ourPanel]];
-            break;
-        default:
-            [ourPanel makeKeyAndOrderFront:ourPanel];
-        }
-    }
-    return delegate;
-}
-
-void QFontDialogPrivate::closeCocoaFontPanel(void *delegate)
+void QFontDialogPrivate::closeCocoaFontPanel()
 {
     QMacCocoaAutoReleasePool pool;
     QCocoaFontPanelDelegate *theDelegate = static_cast<QCocoaFontPanelDelegate *>(delegate);
     NSWindow *ourPanel = [theDelegate actualPanel];
     [ourPanel close];
     [theDelegate cleanUpAfterMyself];
-    [theDelegate autorelease];
-}
-
-QFont QFontDialogPrivate::execCocoaFontPanel(bool *ok, const QFont &initial,
-        QWidget *parent, const QString &title, QFontDialog::FontDialogOptions options)
-{
-    QMacCocoaAutoReleasePool pool;
-    QCocoaFontPanelDelegate *delegate =
-            static_cast<QCocoaFontPanelDelegate *>(
-                openCocoaFontPanel(initial, parent, title, options));
-    NSWindow *ourPanel = [delegate actualPanel];
-    [ourPanel retain];
-    int rval = [NSApp runModalForWindow:ourPanel];
-    QFont font([delegate qtFont]);
-    [ourPanel release];
-    [delegate cleanUpAfterMyself];
-    [delegate release];
-    bool isOk = ((options & QFontDialog::NoButtons) || rval == NSOKButton);
-    if (ok)
-        *ok = isOk;
-    if (isOk) {
-        return font;
-    } else {
-        return initial;
-    }
+    [theDelegate release];
+    this->delegate = 0;
+    sharedFontPanelAvailable = true;
 }
 
 void QFontDialogPrivate::setFont(void *delegate, const QFont &font)
@@ -645,10 +522,13 @@ void QFontDialogPrivate::setFont(void *delegate, const QFont &font)
     [static_cast<QCocoaFontPanelDelegate *>(delegate) setQtFont:font];
 }
 
-void *QFontDialogPrivate::_q_constructNativePanel()
+void QFontDialogPrivate::createNSFontPanelDelegate()
 {
-    QMacCocoaAutoReleasePool pool;
+    if (delegate)
+        return;
 
+    sharedFontPanelAvailable = false;
+    QMacCocoaAutoReleasePool pool;
     bool sharedFontPanelExisted = [NSFontPanel sharedFontPanelExists];
     NSFontPanel *sharedFontPanel = [NSFontPanel sharedFontPanel];
     [sharedFontPanel setHidesOnDeactivate:false];
@@ -670,8 +550,7 @@ void *QFontDialogPrivate::_q_constructNativePanel()
 
     // compute dialogExtra{Width,Height}
     dialogExtraWidth = 2.0 * DialogSideMargin;
-    dialogExtraHeight = DialogTopMargin + ButtonTopMargin + ButtonMinHeight
-                        + ButtonBottomMargin;
+    dialogExtraHeight = DialogTopMargin + ButtonTopMargin + ButtonMinHeight + ButtonBottomMargin;
 
     // compute initial contents rectangle
     NSRect contentRect = [sharedFontPanel contentRectForFrameRect:[sharedFontPanel frame]];
@@ -684,7 +563,6 @@ void *QFontDialogPrivate::_q_constructNativePanel()
                     backing:NSBackingStoreBuffered
                         defer:YES];
     [ourPanel setReleasedWhenClosed:YES];
-
     stolenContentView = [sharedFontPanel contentView];
 
     // steal the font panel's contents view
@@ -704,21 +582,23 @@ void *QFontDialogPrivate::_q_constructNativePanel()
         [ourPanel setContentView:ourContentView];
         [ourPanel setDefaultButtonCell:[okButton cell]];
     }
-    // create a delegate and set it
-    QCocoaFontPanelDelegate *delegate =
-            [[QCocoaFontPanelDelegate alloc] initWithFontPanel:sharedFontPanel
+
+    // create the delegate and set it
+    QCocoaFontPanelDelegate *del = [[QCocoaFontPanelDelegate alloc] initWithFontPanel:sharedFontPanel
                                              stolenContentView:stolenContentView
                                                       okButton:okButton
                                                   cancelButton:cancelButton
                                                           priv:this
                                                     extraWidth:dialogExtraWidth
                                                    extraHeight:dialogExtraHeight];
-    [ourPanel setDelegate:delegate];
-    [[NSFontManager sharedFontManager] setDelegate:delegate];
+    delegate = del;
+    [ourPanel setDelegate:del];
+
+    [[NSFontManager sharedFontManager] setDelegate:del];
 #ifdef QT_MAC_USE_COCOA
-    [[NSFontManager sharedFontManager] setTarget:delegate];
+    [[NSFontManager sharedFontManager] setTarget:del];
 #endif
-    setFont(delegate, QApplication::font());
+    setFont(del, q_func()->currentFont());
 
     {
         // hack to get correct initial layout
@@ -726,15 +606,12 @@ void *QFontDialogPrivate::_q_constructNativePanel()
         frameRect.size.width += 1.0;
         [ourPanel setFrame:frameRect display:NO];
         frameRect.size.width -= 1.0;
-        frameRect.size = [delegate windowWillResize:ourPanel toSize:frameRect.size];
+        frameRect.size = [del windowWillResize:ourPanel toSize:frameRect.size];
         [ourPanel setFrame:frameRect display:NO];
         [ourPanel center];
     }
     NSString *title = @"Select font";
     [ourPanel setTitle:title];
-
-    [delegate setModalSession:[NSApp beginModalSessionForWindow:ourPanel]];
-    return delegate;
 }
 
 void QFontDialogPrivate::mac_nativeDialogModalHelp()
@@ -759,29 +636,47 @@ void QFontDialogPrivate::mac_nativeDialogModalHelp()
 // and "adding" the buttons.
 void QFontDialogPrivate::_q_macRunNativeAppModalPanel()
 {
-    QBoolBlocker nativeDialogOnTop(QApplicationPrivate::native_modal_dialog_active);
-    Q_Q(QFontDialog);
-    QCocoaFontPanelDelegate *delegate = (QCocoaFontPanelDelegate *)_q_constructNativePanel();
-    NSWindow *ourPanel = [delegate actualPanel];
-    [ourPanel retain];
-    int rval = [NSApp runModalForWindow:ourPanel];
-    QAbstractEventDispatcher::instance()->interrupt();
-    [ourPanel release];
-    [delegate cleanUpAfterMyself];
-    [delegate release];
-    bool isOk = (rval == NSOKButton);
-    if(isOk)
-        rescode = QDialog::Accepted;
-    else
-        rescode = QDialog::Rejected;
+    createNSFontPanelDelegate();
+    QCocoaFontPanelDelegate *del = static_cast<QCocoaFontPanelDelegate *>(delegate);
+    [del runApplicationModalPanel];
 }
 
+bool QFontDialogPrivate::showCocoaFontPanel()
+{
+    if (!sharedFontPanelAvailable)
+        return false;
+
+    Q_Q(QFontDialog);
+    QMacCocoaAutoReleasePool pool;
+    createNSFontPanelDelegate();
+    QCocoaFontPanelDelegate *del = static_cast<QCocoaFontPanelDelegate *>(delegate);
+    if (qt_mac_is_macsheet(q))
+        [del showWindowModalSheet:q->parentWidget()];
+    else
+        [del showModelessPanel];
+    return true;
+}
+
+bool QFontDialogPrivate::hideCocoaFontPanel()
+{
+    if (!delegate){
+        // Nothing to do. We return false to leave the question
+        // open regarding whether or not to go native:
+        return false;
+    } else {
+        closeCocoaFontPanel();
+        // Even when we hide it, we are still using a
+        // native dialog, so return true:
+        return true;
+    }
+}
 bool QFontDialogPrivate::setVisible_sys(bool visible)
 {
     Q_Q(QFontDialog);
     if (!visible == q->isHidden())
         return false;
-    return visible;
+
+    return visible ? showCocoaFontPanel() : hideCocoaFontPanel();
 }
 
 QT_END_NAMESPACE
