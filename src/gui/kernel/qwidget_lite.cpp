@@ -48,7 +48,7 @@
 #include "private/qapplication_p.h"
 #include "qdesktopwidget.h"
 
-#include "qgraphicssystemcursor.h"
+#include <QGraphicsSystemCursor>
 
 QT_BEGIN_NAMESPACE
 static QGraphicsSystemScreen *qt_screenForWidget(const QWidget *w);

@@ -44,7 +44,7 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 
-#include <qgraphicssystemcursor.h>
+#include <QGraphicsSystemCursor>
 
 
 #include "x11util.h"

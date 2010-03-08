@@ -6,7 +6,7 @@
 #include <qimage.h>
 #include <qtimer.h>
 #include <qpainter.h>
-#include <qgraphicssystemcursor.h>
+#include <QGraphicsSystemCursor>
 
 class QMouseEvent;
 class QSize;

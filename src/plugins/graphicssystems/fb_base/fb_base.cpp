@@ -3,7 +3,7 @@
 #include <qpainter.h>
 #include <qdebug.h>
 #include <qbitmap.h>
-#include <qgraphicssystemcursor.h>
+#include <QGraphicsSystemCursor>
 #include <QWindowSystemInterface>
 
 QGraphicsSystemSoftwareCursor::QGraphicsSystemSoftwareCursor(QGraphicsSystemScreen *scr)

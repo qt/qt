@@ -57,7 +57,7 @@
 
 #include <qinputcontext.h>
 #include "private/qgraphicssystem_p.h"
-#include "qgraphicssystemcursor.h"
+#include <QGraphicsSystemCursor>
 #include <qdebug.h>
 #include <QWindowSystemInterface>
 

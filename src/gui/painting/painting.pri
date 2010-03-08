@@ -183,9 +183,9 @@ embedded_lite {
         SOURCES += \
                 painting/qcolormap_lite.cpp \
                 painting/qpaintdevice_lite.cpp \
-                painting/qgraphicssystemcursor.cpp
+                painting/qgraphicssystemcursor_lite.cpp
         HEADERS += \
-                painting/qgraphicssystemcursor.h
+                painting/qgraphicssystemcursor_lite.h
 }
 
 symbian {
