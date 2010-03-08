@@ -273,7 +273,7 @@ void QDeclarativeContents::calcHeight()
     m_height = qMax(bottom - top, qreal(0.0));
 
     if (m_height != oldheight || m_y != oldy)
-        emit rectChanged();
+        emit rectChanged(rectF());
 }
 
 //TODO: optimization: only check sender(), if there is one
@@ -301,7 +301,7 @@ void QDeclarativeContents::calcWidth()
     m_width = qMax(right - left, qreal(0.0));
 
     if (m_width != oldwidth || m_x != oldx)
-        emit rectChanged();
+        emit rectChanged(rectF());
 }
 
 void QDeclarativeContents::setItem(QDeclarativeItem *item)
@@ -313,11 +313,11 @@ void QDeclarativeContents::setItem(QDeclarativeItem *item)
         QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(i));
         if(!child)//### Should this be ignoring non-QDeclarativeItem graphicsobjects?
             continue;
-        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(heightChanged(qreal)), this, SLOT(calcHeight()));
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(widthChanged(qreal)), this, SLOT(calcWidth()));
         connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
-        connect(this, SIGNAL(rectChanged()), m_item, SIGNAL(childrenRectChanged()));
+        connect(this, SIGNAL(rectChanged(QRectF)), m_item, SIGNAL(childrenRectChanged(QRectF)));
     }
 
     calcHeight();
@@ -1652,7 +1652,7 @@ void QDeclarativeItem::setClip(bool c)
     if (clip() == c)
         return;
     setFlag(ItemClipsChildrenToShape, c);
-    emit clipChanged();
+    emit clipChanged(c);
 }
 
 /*!
@@ -1792,11 +1792,11 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
-        emit widthChanged();
+        emit widthChanged(newGeometry.width());
     if (newGeometry.y() != oldGeometry.y())
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
-        emit heightChanged();
+        emit heightChanged(newGeometry.height());
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2058,7 +2058,6 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
         return;
 
     d->_baselineOffset = offset;
-    emit baselineOffsetChanged();
 
     for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
         const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
@@ -2068,6 +2067,7 @@ void QDeclarativeItem::setBaselineOffset(qreal offset)
                 anchor->updateVerticalAnchors();
         }
     }
+    emit baselineOffsetChanged(offset);
 }
 
 /*!
@@ -2265,18 +2265,10 @@ QScriptValue QDeclarativeItem::mapToItem(const QScriptValue &item, qreal x, qrea
     return sv;
 }
 
-/*!
-  \internal
-
-  This function emits the \e focusChanged signal.
-
-  Subclasses overriding this function should call up
-  to their base class.
-*/
-void QDeclarativeItem::focusChanged(bool flag)
+void QDeclarativeItemPrivate::focusChanged(bool flag)
 {
-    Q_UNUSED(flag);
-    emit focusChanged();
+    Q_Q(QDeclarativeItem);
+    emit q->focusChanged(flag);
 }
 
 /*! \internal */
@@ -2569,9 +2561,9 @@ QPointF QDeclarativeItemPrivate::computeTransformOrigin() const
 /*! \internal */
 bool QDeclarativeItem::sceneEvent(QEvent *event)
 {
+    Q_D(QDeclarativeItem);
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *k = static_cast<QKeyEvent *>(event);
-
         if ((k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) &&
             !(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
             keyPressEvent(static_cast<QKeyEvent *>(event));
@@ -2587,7 +2579,7 @@ bool QDeclarativeItem::sceneEvent(QEvent *event)
 
         if (event->type() == QEvent::FocusIn ||
             event->type() == QEvent::FocusOut) {
-            focusChanged(hasFocus());
+            d->focusChanged(hasFocus());
         }
         return rv;
     }
@@ -2600,7 +2592,7 @@ QVariant QDeclarativeItem::itemChange(GraphicsItemChange change,
     Q_D(const QDeclarativeItem);
     switch (change) {
     case ItemParentHasChanged:
-        emit parentChanged();
+        emit parentChanged(parentItem());
         break;
     case ItemChildAddedChange:
     case ItemChildRemovedChange:
@@ -2713,7 +2705,7 @@ void QDeclarativeItem::setSmooth(bool smooth)
     if (d->smooth == smooth)
         return;
     d->smooth = smooth;
-    emit smoothChanged();
+    emit smoothChanged(smooth);
     update();
 }
 
