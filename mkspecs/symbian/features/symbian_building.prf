@@ -69,7 +69,7 @@ isEmpty(VERSION) {
 }
 
 splitVersion = $$split(VERSION, ".")
-count(splitVersion, 1) {
+count(splitVersion, 0) {
     # Default Symbian version if none is specified.
     hexVersion = "000a0000"
     decVersion = "10.0"
@@ -172,8 +172,10 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
 }
 
 # Symbian resource files
-
-linux-armcc:symbian_resources_INCLUDES = -I$$(RVCT22INC)
+linux-armcc: {
+    SYMBIAN_RVCT22INC=$$(RVCT22INC)
+    !isEmpty(SYMBIAN_RVCT22INC):symbian_resources_INCLUDES = -I$${SYMBIAN_RVCT22INC}
+}
 symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
 symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")

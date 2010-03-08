@@ -1,1 +1,1 @@
-QMAKE_LIBDIR_QT        += $${EPOCROOT}epoc32/release/armv5/udeb
+QMAKE_LIBDIR        += $${EPOCROOT}epoc32/release/armv5/udeb

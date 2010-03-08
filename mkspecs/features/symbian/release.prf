@@ -1,1 +1,1 @@
-QMAKE_LIBDIR_QT        += $${EPOCROOT}epoc32/release/armv5/urel
+QMAKE_LIBDIR        += $${EPOCROOT}epoc32/release/armv5/urel
