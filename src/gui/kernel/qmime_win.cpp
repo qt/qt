@@ -952,6 +952,8 @@ bool QWindowsMimeImage::convertFromMime(const FORMATETC &formatetc, const QMimeD
         QDataStream s(&ba, QIODevice::WriteOnly);
         s.setByteOrder(QDataStream::LittleEndian);// Intel byte order ####
         if (cf == CF_DIB) {
+            if (img.format() > QImage::Format_ARGB32)
+                img = img.convertToFormat(QImage::Format_RGB32);
             if (qt_write_dib(s, img))
                 return setData(ba, pmedium);
         } else {

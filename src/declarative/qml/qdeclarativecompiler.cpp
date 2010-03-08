@@ -2204,6 +2204,8 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         if (propNames.contains(prop.name))
             COMPILE_EXCEPTION(&prop, QCoreApplication::translate("QDeclarativeCompiler","Duplicate property name"));
 
+        if (QString::fromUtf8(prop.name).at(0).isUpper()) 
+            COMPILE_EXCEPTION(&prop, QCoreApplication::translate("QDeclarativeCompiler","Property names cannot begin with an upper case letter"));
         propNames.insert(prop.name);
     }
 
@@ -2211,12 +2213,16 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QByteArray name = obj->dynamicSignals.at(ii).name;
         if (methodNames.contains(name))
             COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Duplicate signal name"));
+        if (QString::fromUtf8(name).at(0).isUpper()) 
+            COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Signal names cannot begin with an upper case letter"));
         methodNames.insert(name);
     }
     for (int ii = 0; ii < obj->dynamicSlots.count(); ++ii) {
         QByteArray name = obj->dynamicSlots.at(ii).name;
         if (methodNames.contains(name))
             COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Duplicate method name"));
+        if (QString::fromUtf8(name).at(0).isUpper()) 
+            COMPILE_EXCEPTION(obj, QCoreApplication::translate("QDeclarativeCompiler","Method names cannot begin with an upper case letter"));
         methodNames.insert(name);
     }
 

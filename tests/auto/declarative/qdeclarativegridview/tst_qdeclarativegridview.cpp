@@ -659,9 +659,14 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->contentY(), 0.0);
 
     // Test keys
-    qApp->setActiveWindow(canvas);
     canvas->show();
-    canvas->setFocus();
+    qApp->setActiveWindow(canvas);
+#ifdef Q_WS_X11
+    // to be safe and avoid failing setFocus with window managers
+    qt_x11_wait_for_window_manager(canvas);
+#endif
+    QVERIFY(canvas->hasFocus());
+    QVERIFY(canvas->scene()->hasFocus());
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
@@ -672,7 +677,6 @@ void tst_QDeclarativeGridView::currentIndex()
 
     gridview->setFlow(QDeclarativeGridView::TopToBottom);
 
-    QEXPECT_FAIL("", "QTBUG-8475", Abort);
     QTest::keyClick(canvas, Qt::Key_Right);
     QCOMPARE(gridview->currentIndex(), 5);
 

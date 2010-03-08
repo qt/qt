@@ -1,7 +1,7 @@
 
 
-unix {
-    unix:contains(QT_CONFIG, pulseaudio) {
+unix:!mac {
+   contains(QT_CONFIG, pulseaudio) {
         DEFINES += QT_MULTIMEDIA_PULSEAUDIO
         HEADERS += $$PWD/qsoundeffect_pulse_p.h
         SOURCES += $$PWD/qsoundeffect_pulse_p.cpp

@@ -39,9 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qmediacontent.h"
-#include "qmediaplayer.h"
-
 #include "qsoundeffect_p.h"
 
 #if defined(QT_MULTIMEDIA_PULSEAUDIO)
@@ -103,12 +100,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty int SoundEffect::duration
-
-    This property holds the duration in milliseconds of the current source audio.
-*/
-
-/*!
     \qmlsignal SoundEffect::sourceChanged()
 
     This handler is called when the source has changed.
@@ -132,24 +123,13 @@ QT_BEGIN_NAMESPACE
     This handler is called when the mute state has changed.
 */
 
-/*!
-    \qmlsignal SoundEffect::durationChanged()
-
-    This handler is called when the duration has changed.
-*/
 
 QSoundEffect::QSoundEffect(QObject *parent) :
-    QObject(parent),
-    m_loopCount(1),
-    m_vol(100),
-    m_muted(false),
-    m_runningCount(0)
+    QObject(parent)
 {
     d = new QSoundEffectPrivate(this);
-    connect(d, SIGNAL(volumeChanged(int)), SIGNAL(volumeChanged()));
-    connect(d, SIGNAL(mutedChanged(bool)), SIGNAL(mutedChanged()));
-    connect(d, SIGNAL(durationChanged(qint64)), SIGNAL(durationChanged()));
-    connect(d, SIGNAL(stateChanged(QMediaPlayer::State)), SLOT(repeat()));
+    connect(d, SIGNAL(volumeChanged()), SIGNAL(volumeChanged()));
+    connect(d, SIGNAL(mutedChanged()), SIGNAL(mutedChanged()));
 }
 
 QSoundEffect::~QSoundEffect()
@@ -159,97 +139,64 @@ QSoundEffect::~QSoundEffect()
 
 QUrl QSoundEffect::source() const
 {
-    return d != 0 ? d->media().canonicalUrl() : QUrl();
+    return d->source();
 }
 
 void QSoundEffect::setSource(const QUrl &url)
 {
-    if (d != 0 && d->media().canonicalUrl() == url)
+    if (d->source() == url)
         return;
 
-    d->setVolume(m_vol);
-    d->setMuted(m_muted);
-    d->setMedia(url);
-
-    if (url.isEmpty())
-        return;
+    d->setSource(url);
 
     emit sourceChanged();
 }
 
 int QSoundEffect::loopCount() const
 {
-    return m_loopCount;
+    return d->loopCount();
 }
 
 void QSoundEffect::setLoopCount(int loopCount)
 {
-    if (m_loopCount == loopCount)
+    if (d->loopCount() == loopCount)
         return;
 
-    m_loopCount = loopCount;
+    d->setLoopCount(loopCount);
     emit loopCountChanged();
 }
 
 int QSoundEffect::volume() const
 {
-    return d != 0 ? d->volume() : m_vol;
+    return d->volume();
 }
 
 void QSoundEffect::setVolume(int volume)
 {
-    if (m_vol == volume)
+    if (d->volume() == volume)
         return;
 
-    m_vol = volume;
-    if (d != 0)
-        d->setVolume(volume);
-    else
-        emit volumeChanged();
+    d->setVolume(volume);
+    emit volumeChanged();
 }
 
 bool QSoundEffect::isMuted() const
 {
-    return d !=  0 ? d->isMuted() : m_muted;
+    return d->isMuted();
 }
 
 void QSoundEffect::setMuted(bool muted)
 {
-    if (m_muted == muted)
+    if (d->isMuted() == muted)
         return;
 
-    m_muted = muted;
-    if (d != 0)
-        d->setMuted(muted);
-    else
-        emit mutedChanged();
-}
-
-int QSoundEffect::duration() const
-{
-    return d != 0 ? d->duration() : 0;
+    d->setMuted(muted);
+    emit mutedChanged();
 }
 
 void QSoundEffect::play()
 {
-    m_runningCount = 0;
-
-    if (d != 0)
-        d->play();
-}
-
-void QSoundEffect::stop()
-{
-    if (d != 0)
-        d->stop();
-}
-
-void QSoundEffect::repeat()
-{
-    if (d->state() == QMediaPlayer::StoppedState) {
-        if (++m_runningCount < m_loopCount)
-            d->play();
-    }
+    d->play();
 }
 
 QT_END_NAMESPACE

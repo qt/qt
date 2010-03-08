@@ -77,11 +77,11 @@ public:
     bool isSequential() const;
     qint64 bytesAvailable() const;
 
-signals:
+Q_SIGNALS:
     void formatKnown();
     void invalidFormat();
 
-private slots:
+private Q_SLOTS:
     void handleData();
 
 private:
