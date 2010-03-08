@@ -1,5 +1,5 @@
 TARGET  = widgets
-TARGETPATH = $$[QT_INSTALL_IMPORTS]/Qt/widgets
+TARGETPATH = Qt/widgets
 include(../qimportbase.pri)
 
 QT += declarative
@@ -17,6 +17,6 @@ target.path = $$TARGETPATH
 
 # install qmldir file
 qmldir.files += qmldir
-qmldir.path = $$TARGETPATH
+qmldir.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 INSTALLS += target qmldir
