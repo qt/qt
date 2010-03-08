@@ -42,7 +42,6 @@
 #include "qgl.h"
 #include <private/qt_x11_p.h>
 #include <private/qpixmap_x11_p.h>
-#include <private/qimagepixmapcleanuphooks_p.h>
 #include <private/qgl_p.h>
 #include <private/qpaintengine_opengl_p.h>
 #include "qgl_egl_p.h"
