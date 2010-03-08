@@ -1329,9 +1329,13 @@
     \target DEF_FILE
     \section1 DEF_FILE
 
-    \e {This is only used on Windows when using the \c app template}.
+    \e {This is only used on Windows when using the \c app template,
+    and on Symbian when building a shared DLL}.
 
-    Specifies a \c .def file to be included in the project.
+    Specifies a \c .def file to be included in the project. On Symbian
+    a directory may be specified instead, in which case the real files
+    will be located under the standard Symbian directories \c bwins and
+    \c eabi.
 
     \target DEPENDPATH
     \section1 DEPENDPATH

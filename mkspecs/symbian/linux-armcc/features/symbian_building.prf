@@ -102,6 +102,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                       --dso=$$symbianObjdir/$${TARGET}.dso --defoutput=$$symbianObjdir/$${TARGET}.def \
                       --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
                       --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability \
+                      $$QMAKE_ELF2E32_FLAGS \
                       | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
                       && if ! diff -q $${symbianObjdir}/$${TARGET}.dso $${symbianDestdir}/$${TARGET}.dso \
                       > /dev/null 2>&1; then \
@@ -132,6 +133,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@.*") {
                       --elfinput=$${symbianDestdir}/$${TARGET}.sym --output=$${symbianDestdir}/$${TARGET}.exe \
                       --unfrozen --linkas=$${TARGET}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
                       --compressionmethod bytepair $$elf2e32_LIBPATH --unpaged $$capability \
+                      $$QMAKE_ELF2E32_FLAGS \
                       | tee elf2e32.log && test `grep -c 'Error:' elf2e32.log` = 0 && rm elf2e32.log \
                       $$QMAKE_POST_LINK
     QMAKE_POST_LINK += && ln "$${TARGET}.exe" "$$TARGET"
