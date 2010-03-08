@@ -69,7 +69,6 @@ QSoundEffectPrivate::QSoundEffectPrivate(QObject* parent):
     m_player = new QMediaPlayer(this, QMediaPlayer::LowLatency);
     connect(m_player, SIGNAL(volumeChanged(int)), SIGNAL(volumeChanged()));
     connect(m_player, SIGNAL(mutedChanged(bool)), SIGNAL(mutedChanged()));
-    connect(m_player, SIGNAL(durationChanged(qint64)), SIGNAL(durationChanged()));
     connect(m_player, SIGNAL(stateChanged(QMediaPlayer::State)), SLOT(stateChanged(QMediaPlayer::State)));
 }
 
@@ -115,11 +114,6 @@ bool QSoundEffectPrivate::isMuted() const
 void QSoundEffectPrivate::setMuted(bool muted)
 {
     m_player->setMuted(muted);
-}
-
-int QSoundEffectPrivate::duration() const
-{
-    return m_player->duration();
 }
 
 void QSoundEffectPrivate::play()

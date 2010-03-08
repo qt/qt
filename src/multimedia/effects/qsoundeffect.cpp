@@ -100,12 +100,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty int SoundEffect::duration
-
-    This property holds the duration in milliseconds of the current source audio.
-*/
-
-/*!
     \qmlsignal SoundEffect::sourceChanged()
 
     This handler is called when the source has changed.
@@ -129,11 +123,6 @@ QT_BEGIN_NAMESPACE
     This handler is called when the mute state has changed.
 */
 
-/*!
-    \qmlsignal SoundEffect::durationChanged()
-
-    This handler is called when the duration has changed.
-*/
 
 QSoundEffect::QSoundEffect(QObject *parent) :
     QObject(parent)
@@ -141,7 +130,6 @@ QSoundEffect::QSoundEffect(QObject *parent) :
     d = new QSoundEffectPrivate(this);
     connect(d, SIGNAL(volumeChanged()), SIGNAL(volumeChanged()));
     connect(d, SIGNAL(mutedChanged()), SIGNAL(mutedChanged()));
-    connect(d, SIGNAL(durationChanged()), SIGNAL(durationChanged()));
 }
 
 QSoundEffect::~QSoundEffect()
@@ -204,11 +192,6 @@ void QSoundEffect::setMuted(bool muted)
 
     d->setMuted(muted);
     emit mutedChanged();
-}
-
-int QSoundEffect::duration() const
-{
-    return d->duration();
 }
 
 void QSoundEffect::play()

@@ -85,13 +85,11 @@ public:
     void setVolume(int volume);
     bool isMuted() const;
     void setMuted(bool muted);
-    qint64 duration() const;
 
 public Q_SLOTS:
     void play();
 
 Q_SIGNALS:
-    void durationChanged();
     void volumeChanged();
     void mutedChanged();
 

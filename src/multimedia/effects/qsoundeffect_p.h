@@ -70,7 +70,6 @@ class Q_MULTIMEDIA_EXPORT QSoundEffect : public QObject
     Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount NOTIFY loopCountChanged)
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY mutedChanged)
-    Q_PROPERTY(int duration READ duration NOTIFY durationChanged)
 
 public:
     explicit QSoundEffect(QObject *parent = 0);
@@ -88,14 +87,11 @@ public:
     bool isMuted() const;
     void setMuted(bool muted);
 
-    int duration() const;
-
 Q_SIGNALS:
     void sourceChanged();
     void loopCountChanged();
     void volumeChanged();
     void mutedChanged();
-    void durationChanged();
 
 public Q_SLOTS:
     void play();

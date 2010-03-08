@@ -123,11 +123,6 @@ void QSoundEffectPrivate::setMuted(bool muted)
     m_muted = muted;
 }
 
-int QSoundEffectPrivate::duration() const
-{
-    return 1000;
-}
-
 void QSoundEffectPrivate::play()
 {
     m_sound->play();

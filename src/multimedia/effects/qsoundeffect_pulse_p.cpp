@@ -308,11 +308,6 @@ void QSoundEffectPrivate::setMuted(bool muted)
     m_muted = muted;
 }
 
-qint64 QSoundEffectPrivate::duration() const
-{
-    return m_duration;
-}
-
 void QSoundEffectPrivate::play()
 {
     if (!m_sampleLoaded) {
@@ -437,7 +432,6 @@ void QSoundEffectPrivate::stream_write_callback(pa_stream *s, size_t length, voi
         pa_stream_finish_upload(s);
 
         self->m_duration = self->m_waveDecoder->duration();
-        emit self->durationChanged();
 
         self->m_waveDecoder->deleteLater();
         self->m_stream->deleteLater();
