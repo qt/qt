@@ -67,6 +67,7 @@ public:
     QDeclarativeRectanglePrivate() :
     color(Qt::white), gradient(0), pen(0), radius(0), paintmargin(0)
     {
+        QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
     }
 
     ~QDeclarativeRectanglePrivate()
@@ -74,13 +75,13 @@ public:
         delete pen;
     }
 
-    void init()
-    {
-    }
-
-    QColor getColor();
     QColor color;
     QDeclarativeGradient *gradient;
+    QDeclarativePen *pen;
+    qreal radius;
+    qreal paintmargin;
+    QPixmap rectImage;
+
     QDeclarativePen *getPen() {
         if (!pen) {
             Q_Q(QDeclarativeRectangle);
@@ -89,10 +90,6 @@ public:
         }
         return pen;
     }
-    QDeclarativePen *pen;
-    qreal radius;
-    qreal paintmargin;
-    QPixmap rectImage;
 
     void setPaintMargin(qreal margin)
     {
