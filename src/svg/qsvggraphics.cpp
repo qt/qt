@@ -78,33 +78,29 @@ void QSvgAnimation::draw(QPainter *, QSvgExtraStates &)
     qWarning("<animation> no implemented");
 }
 
-static inline QRectF boundsOnStroke(const QPainterPath &path, qreal width)
+static inline QRectF boundsOnStroke(QPainter *p, const QPainterPath &path, qreal width)
 {
     QPainterPathStroker stroker;
     stroker.setWidth(width);
     QPainterPath stroke = stroker.createStroke(path);
-    return stroke.boundingRect();
+    return p->transform().map(stroke).boundingRect();
 }
 
-QSvgCircle::QSvgCircle(QSvgNode *parent, const QRectF &rect)
+QSvgEllipse::QSvgEllipse(QSvgNode *parent, const QRectF &rect)
     : QSvgNode(parent), m_bounds(rect)
 {
 }
 
 
-QRectF QSvgCircle::bounds() const
+QRectF QSvgEllipse::bounds(QPainter *p, QSvgExtraStates &) const
 {
-    qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
-        return m_bounds;
-    else {
-        QPainterPath path;
-        path.addRect(m_bounds);
-        return boundsOnStroke(path, sw);
-    }
+    QPainterPath path;
+    path.addEllipse(m_bounds);
+    qreal sw = strokeWidth(p);
+    return qFuzzyIsNull(sw) ? p->transform().map(path).boundingRect() : boundsOnStroke(p, path, sw);
 }
 
-void QSvgCircle::draw(QPainter *p, QSvgExtraStates &states)
+void QSvgEllipse::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
     QT_SVG_DRAW_SHAPE(p->drawEllipse(m_bounds));
@@ -112,9 +108,8 @@ void QSvgCircle::draw(QPainter *p, QSvgExtraStates &states)
 }
 
 QSvgArc::QSvgArc(QSvgNode *parent, const QPainterPath &path)
-    : QSvgNode(parent), cubic(path)
+    : QSvgNode(parent), m_path(path)
 {
-    m_cachedBounds = path.boundingRect();
 }
 
 void QSvgArc::draw(QPainter *p, QSvgExtraStates &states)
@@ -123,33 +118,9 @@ void QSvgArc::draw(QPainter *p, QSvgExtraStates &states)
     if (p->pen().widthF() != 0) {
         qreal oldOpacity = p->opacity();
         p->setOpacity(oldOpacity * states.strokeOpacity);
-        p->drawPath(cubic);
+        p->drawPath(m_path);
         p->setOpacity(oldOpacity);
     }
-    revertStyle(p, states);
-}
-
-QSvgEllipse::QSvgEllipse(QSvgNode *parent, const QRectF &rect)
-    : QSvgNode(parent), m_bounds(rect)
-{
-}
-
-QRectF QSvgEllipse::bounds() const
-{
-    qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
-        return m_bounds;
-    else {
-        QPainterPath path;
-        path.addEllipse(m_bounds);
-        return boundsOnStroke(path, sw);
-    }
-}
-
-void QSvgEllipse::draw(QPainter *p, QSvgExtraStates &states)
-{
-    applyStyle(p, states);
-    QT_SVG_DRAW_SHAPE(p->drawEllipse(m_bounds));
     revertStyle(p, states);
 }
 
@@ -173,7 +144,7 @@ void QSvgImage::draw(QPainter *p, QSvgExtraStates &states)
 
 
 QSvgLine::QSvgLine(QSvgNode *parent, const QLineF &line)
-    : QSvgNode(parent), m_bounds(line)
+    : QSvgNode(parent), m_line(line)
 {
 }
 
@@ -184,7 +155,7 @@ void QSvgLine::draw(QPainter *p, QSvgExtraStates &states)
     if (p->pen().widthF() != 0) {
         qreal oldOpacity = p->opacity();
         p->setOpacity(oldOpacity * states.strokeOpacity);
-        p->drawLine(m_bounds);
+        p->drawLine(m_line);
         p->setOpacity(oldOpacity);
     }
     revertStyle(p, states);
@@ -203,19 +174,11 @@ void QSvgPath::draw(QPainter *p, QSvgExtraStates &states)
     revertStyle(p, states);
 }
 
-QRectF QSvgPath::bounds() const
+QRectF QSvgPath::bounds(QPainter *p, QSvgExtraStates &) const
 {
-    qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw)) {
-        if (m_cachedBounds.isNull())
-            //m_cachedBounds = m_path.controlPointRect();
-            m_cachedBounds = m_path.boundingRect();
-
-        return m_cachedBounds;
-    }
-    else {
-        return boundsOnStroke(m_path, sw);
-    }
+    qreal sw = strokeWidth(p);
+    return qFuzzyIsNull(sw) ? p->transform().map(m_path).boundingRect()
+        : boundsOnStroke(p, m_path, sw);
 }
 
 QSvgPolygon::QSvgPolygon(QSvgNode *parent, const QPolygonF &poly)
@@ -223,15 +186,15 @@ QSvgPolygon::QSvgPolygon(QSvgNode *parent, const QPolygonF &poly)
 {
 }
 
-QRectF QSvgPolygon::bounds() const
+QRectF QSvgPolygon::bounds(QPainter *p, QSvgExtraStates &) const
 {
-    qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
-        return m_poly.boundingRect();
-    else {
+    qreal sw = strokeWidth(p);
+    if (qFuzzyIsNull(sw)) {
+        return p->transform().map(m_poly).boundingRect();
+    } else {
         QPainterPath path;
         path.addPolygon(m_poly);
-        return boundsOnStroke(path, sw);
+        return boundsOnStroke(p, path, sw);
     }
 }
 
@@ -274,15 +237,15 @@ QSvgRect::QSvgRect(QSvgNode *node, const QRectF &rect, int rx, int ry)
 {
 }
 
-QRectF QSvgRect::bounds() const
+QRectF QSvgRect::bounds(QPainter *p, QSvgExtraStates &) const
 {
-    qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
-        return m_rect;
-    else {
+    qreal sw = strokeWidth(p);
+    if (qFuzzyIsNull(sw)) {
+        return p->transform().mapRect(m_rect);
+    } else {
         QPainterPath path;
         path.addRect(m_rect);
-        return boundsOnStroke(path, sw);
+        return boundsOnStroke(p, path, sw);
     }
 }
 
@@ -322,7 +285,7 @@ void QSvgText::setTextArea(const QSizeF &size)
     m_type = TEXTAREA;
 }
 
-//QRectF QSvgText::bounds() const {}
+//QRectF QSvgText::bounds(QPainter *p, QSvgExtraStates &) const {}
 
 void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
 {
@@ -593,80 +556,57 @@ QSvgNode::Type QSvgVideo::type() const
     return VIDEO;
 }
 
-QRectF QSvgUse::bounds() const
-{
-    if (m_link && m_bounds.isEmpty())  {
-        m_bounds = m_link->bounds();
-        m_bounds = QRectF(m_bounds.x()+m_start.x(),
-                          m_bounds.y()+m_start.y(),
-                          m_bounds.width(),
-                          m_bounds.height());
-
-        return m_bounds;
-    }
-    return m_bounds;
-}
-
-QRectF QSvgUse::transformedBounds(const QTransform &transform) const
+QRectF QSvgUse::bounds(QPainter *p, QSvgExtraStates &states) const
 {
     QRectF bounds;
-    QTransform t = transform;
-
-    if (m_link)  {
-        QSvgTransformStyle *transStyle = m_style.transform;
-        if (transStyle) {
-            t = transStyle->qtransform() * t;
-        }
-        t.translate(m_start.x(), m_start.y());
-
-        bounds = m_link->transformedBounds(t);
-
-        return bounds;
+    if (m_link) {
+        p->translate(m_start);
+        bounds = m_link->transformedBounds(p, states);
+        p->translate(-m_start);
     }
     return bounds;
 }
 
-QRectF QSvgPolyline::bounds() const
+QRectF QSvgPolyline::bounds(QPainter *p, QSvgExtraStates &) const
 {
-    qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
-        return m_poly.boundingRect();
-    else {
-        QPainterPath path;
-        path.addPolygon(m_poly);
-        return boundsOnStroke(path, sw);
-    }
-}
-
-QRectF QSvgArc::bounds() const
-{
-    qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
-        return m_cachedBounds;
-    else {
-        return boundsOnStroke(cubic, sw);
-    }
-}
-
-QRectF QSvgImage::bounds() const
-{
-    return m_bounds;
-}
-
-QRectF QSvgLine::bounds() const
-{
-    qreal sw = strokeWidth();
+    qreal sw = strokeWidth(p);
     if (qFuzzyIsNull(sw)) {
-        qreal minX = qMin(m_bounds.x1(), m_bounds.x2());
-        qreal minY = qMin(m_bounds.y1(), m_bounds.y2());
-        qreal maxX = qMax(m_bounds.x1(), m_bounds.x2());
-        qreal maxY = qMax(m_bounds.y1(), m_bounds.y2());
-        return QRectF(minX, minY, maxX-minX, maxY-minY);
+        return p->transform().map(m_poly).boundingRect();
     } else {
         QPainterPath path;
-        path.moveTo(m_bounds.x1(), m_bounds.y1());
-        path.lineTo(m_bounds.x2(), m_bounds.y2());
-        return boundsOnStroke(path, sw);
+        path.addPolygon(m_poly);
+        return boundsOnStroke(p, path, sw);
+    }
+}
+
+QRectF QSvgArc::bounds(QPainter *p, QSvgExtraStates &) const
+{
+    qreal sw = strokeWidth(p);
+    return qFuzzyIsNull(sw) ? p->transform().map(m_path).boundingRect()
+        : boundsOnStroke(p, m_path, sw);
+}
+
+QRectF QSvgImage::bounds(QPainter *p, QSvgExtraStates &) const
+{
+    return p->transform().mapRect(m_bounds);
+}
+
+QRectF QSvgLine::bounds(QPainter *p, QSvgExtraStates &) const
+{
+    qreal sw = strokeWidth(p);
+    if (qFuzzyIsNull(sw)) {
+        QPointF p1 = p->transform().map(m_line.p1());
+        QPointF p2 = p->transform().map(m_line.p2());
+        qreal minX = qMin(p1.x(), p2.x());
+        qreal minY = qMin(p1.y(), p2.y());
+        qreal maxX = qMax(p1.x(), p2.x());
+        qreal maxY = qMax(p1.y(), p2.y());
+        return QRectF(minX, minY, maxX - minX, maxY - minY);
+    } else {
+        QPainterPath path;
+        path.moveTo(m_line.p1());
+        path.lineTo(m_line.p2());
+        return boundsOnStroke(p, path, sw);
     }
 }
 

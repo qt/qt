@@ -277,7 +277,7 @@ void QSvgTinyDocument::draw(QPainter *p, const QString &id,
 
     p->save();
 
-    const QRectF elementBounds = node->transformedBounds(QTransform());
+    const QRectF elementBounds = node->transformedBounds();
 
     mapSourceToTarget(p, bounds, elementBounds);
     QTransform originalTransform = p->worldTransform();
@@ -299,7 +299,7 @@ void QSvgTinyDocument::draw(QPainter *p, const QString &id,
 
     for (int i = parentApplyStack.size() - 1; i >= 0; --i)
         parentApplyStack[i]->applyStyle(p, m_states);
-    
+
     // Reset the world transform so that our parents don't affect
     // the position
     QTransform currentTransform = p->worldTransform();
@@ -432,8 +432,7 @@ QRectF QSvgTinyDocument::boundsOnElement(const QString &id) const
     const QSvgNode *node = scopeNode(id);
     if (!node)
         node = this;
-
-    return node->transformedBounds(QTransform());
+    return node->transformedBounds();
 }
 
 bool QSvgTinyDocument::elementExists(const QString &id) const

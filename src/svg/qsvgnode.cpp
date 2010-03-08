@@ -45,6 +45,7 @@
 #ifndef QT_NO_SVG
 
 #include "qdebug.h"
+#include "qstack.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -114,12 +115,12 @@ void QSvgNode::appendStyleProperty(QSvgStyleProperty *prop, const QString &id)
     }
 }
 
-void QSvgNode::applyStyle(QPainter *p, QSvgExtraStates &states)
+void QSvgNode::applyStyle(QPainter *p, QSvgExtraStates &states) const
 {
-    m_style.apply(p, bounds(), this, states);
+    m_style.apply(p, this, states);
 }
 
-void QSvgNode::revertStyle(QPainter *p, QSvgExtraStates &states)
+void QSvgNode::revertStyle(QPainter *p, QSvgExtraStates &states) const
 {
     m_style.revert(p, states);
 }
@@ -195,9 +196,38 @@ QSvgFillStyleProperty * QSvgNode::styleProperty(const QString &id) const
     return doc ? doc->namedStyle(rid) : 0;
 }
 
-QRectF QSvgNode::bounds() const
+QRectF QSvgNode::bounds(QPainter *, QSvgExtraStates &) const
 {
     return QRectF(0, 0, 0, 0);
+}
+
+QRectF QSvgNode::transformedBounds() const
+{
+    if (!m_cachedBounds.isEmpty())
+        return m_cachedBounds;
+
+    QImage dummy(1, 1, QImage::Format_RGB32);
+    QPainter p(&dummy);
+    QSvgExtraStates states;
+
+    QPen pen(Qt::NoBrush, 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+    pen.setMiterLimit(4);
+    p.setPen(pen);
+
+    QStack<QSvgNode*> parentApplyStack;
+    QSvgNode *parent = m_parent;
+    while (parent) {
+        parentApplyStack.push(parent);
+        parent = parent->parent();
+    }
+
+    for (int i = parentApplyStack.size() - 1; i >= 0; --i)
+        parentApplyStack[i]->applyStyle(&p, states);
+    
+    p.setWorldTransform(QTransform());
+
+    m_cachedBounds = transformedBounds(&p, states);
+    return m_cachedBounds;
 }
 
 QSvgTinyDocument * QSvgNode::document() const
@@ -274,19 +304,11 @@ void QSvgNode::setVisible(bool visible)
     m_visible = visible;
 }
 
-QRectF QSvgNode::transformedBounds(const QTransform &transform) const
+QRectF QSvgNode::transformedBounds(QPainter *p, QSvgExtraStates &states) const
 {
-    QTransform t = transform;
-
-    QSvgTransformStyle *transStyle = m_style.transform;
-    if (transStyle) {
-        t = transStyle->qtransform() * t;
-    }
-
-    QRectF rect = bounds();
-
-    rect = t.mapRect(rect);
-
+    applyStyle(p, states);
+    QRectF rect = bounds(p, states);
+    revertStyle(p, states);
     return rect;
 }
 
@@ -310,15 +332,12 @@ QSvgNode::DisplayMode QSvgNode::displayMode() const
     return m_displayMode;
 }
 
-qreal QSvgNode::strokeWidth() const
+qreal QSvgNode::strokeWidth(QPainter *p)
 {
-    QSvgStrokeStyle *stroke = static_cast<QSvgStrokeStyle*>(
-        styleProperty(QSvgStyleProperty::STROKE));
-    if (!stroke)
+    QPen pen = p->pen();
+    if (pen.style() == Qt::NoPen || pen.brush().style() == Qt::NoBrush || pen.isCosmetic())
         return 0;
-    if (stroke->stroke().brush().style() == Qt::NoBrush)
-        return 0;
-    return stroke->width();
+    return pen.widthF();
 }
 
 QT_END_NAMESPACE
