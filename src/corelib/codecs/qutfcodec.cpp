@@ -121,7 +121,7 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
             } else {
                 // is it one of the Unicode non-characters?
                 if (isUnicodeNonCharacter(u)) {
-                    *cursor = replacement;
+                    *cursor++ = replacement;
                     ++ch;
                     ++invalid;
                     continue;
