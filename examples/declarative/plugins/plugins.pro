@@ -17,7 +17,7 @@ qdeclarativesources.files += \
 
 qdeclarativesources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
 
-sources.files += plugins.pro plugin.cpp plugins.qml
+sources.files += plugins.pro plugin.cpp plugins.qml README
 sources.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins
 
 target.path += $$[QT_INSTALL_EXAMPLES]/declarative/plugins/com/nokia/TimeExample
