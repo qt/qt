@@ -90,28 +90,18 @@ public:
 
     int duration() const;
 
-signals:
+Q_SIGNALS:
     void sourceChanged();
     void loopCountChanged();
     void volumeChanged();
     void mutedChanged();
     void durationChanged();
 
-public slots:
+public Q_SLOTS:
     void play();
-    void stop();
-
-private slots:
-    void repeat();
 
 private:
     Q_DISABLE_COPY(QSoundEffect)
-
-    int m_loopCount;
-    int m_vol;
-    bool m_muted;
-    int m_runningCount;
-
     QSoundEffectPrivate* d;
 };
 

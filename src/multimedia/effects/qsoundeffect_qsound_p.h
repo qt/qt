@@ -55,20 +55,14 @@
 
 
 #include <QtCore/qobject.h>
-#include <QtCore/qdatetime.h>
-#include <QtMultimedia/qmediaplayer.h>
-
-#include "qsoundeffect_p.h"
+#include <QtCore/qurl.h>
 
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTimer;
 class QSound;
-class QFile;
-class WaveDecoder;
 
 class QSoundEffectPrivate : public QObject
 {
@@ -77,49 +71,30 @@ public:
     explicit QSoundEffectPrivate(QObject* parent);
     ~QSoundEffectPrivate();
 
-    qint64 duration() const;
+    QUrl source() const;
+    void setSource(const QUrl &url);
+    int loopCount() const;
+    void setLoopCount(int loopCount);
     int volume() const;
+    void setVolume(int volume);
     bool isMuted() const;
-    QMediaContent media() const;
-    QMediaPlayer::State state() const;
-    QMediaPlayer::MediaStatus mediaStatus() const;
+    void setMuted(bool muted);
+    int duration() const;
 
 public Q_SLOTS:
     void play();
-    void stop();
-    void setVolume(int volume);
-    void setMuted(bool muted);
-    void setMedia(const QMediaContent &media);
 
 Q_SIGNALS:
-    void mediaChanged(const QMediaContent &media);
-    void mediaStatusChanged(QMediaPlayer::MediaStatus status);
-    void stateChanged(QMediaPlayer::State newState);
-    void durationChanged(qint64 duration);
-    void volumeChanged(int volume);
-    void mutedChanged(bool muted);
-    void error(QMediaPlayer::Error error);
-
-private slots:
-    void decoderReady();
-    void decoderError();
-    void checkPlayTime();
+    void durationChanged();
+    void volumeChanged();
+    void mutedChanged();
 
 private:
-    void loadSample();
-    void unloadSample();
-
-    bool    m_queued;
-    bool    m_muted;
-    QTime  m_playbackTime;
-    QMediaPlayer::State m_state;
-    QMediaPlayer::MediaStatus m_status;
-    QFile *m_file;
-    QByteArray m_name;
-    QMediaContent   m_media;
-    WaveDecoder *m_waveDecoder;
+    bool m_muted;
+    int m_loopCount;
+    int m_volume;
     QSound *m_sound;
-    QTimer *m_timer;
+    QUrl m_source;
 };
 
 QT_END_NAMESPACE
