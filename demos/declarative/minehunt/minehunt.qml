@@ -1,4 +1,5 @@
 import Qt 4.6
+import MinehuntCore 1.0
 
 Item {
     id: field
@@ -24,13 +25,13 @@ Item {
                     angle: flipable.angle;
                 }
                 front: Image {
-                    source: "pics/front.png"
+                    source: "MinehuntCore/pics/front.png"
                     width: 40
                     height: 40
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "pics/flag.png"
+                        source: "MinehuntCore/pics/flag.png"
                         opacity: modelData.hasFlag
                         opacity: Behavior {
                             NumberAnimation {
@@ -41,7 +42,7 @@ Item {
                     }
                 }
                 back: Image {
-                    source: "pics/back.png"
+                    source: "MinehuntCore/pics/back.png"
                     width: 40
                     height: 40
                     Text {
@@ -55,7 +56,7 @@ Item {
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "pics/bomb.png"
+                        source: "MinehuntCore/pics/bomb.png"
                         opacity: modelData.hasMine
                     }
                     Explosion {
@@ -120,15 +121,8 @@ Item {
         }
     ]
     Image {
-        source: "pics/No-Ones-Laughing-3.jpg"
+        source: "MinehuntCore/pics/No-Ones-Laughing-3.jpg"
         fillMode: Image.Tile
-    }
-    Description {
-        text: "Use the 'minehunt' executable to run this demo!"
-        width: 300
-        opacity: tiles?0:1
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
     }
     Repeater {
         id: repeater
@@ -156,7 +150,7 @@ Item {
             Image {
          //       x: 100
          //       y: 20
-                source: "pics/bomb-color.png"
+                source: "MinehuntCore/pics/bomb-color.png"
             }
             Text {
          //       x: 100
@@ -172,7 +166,7 @@ Item {
             Image {
          //       x: 140
          //       y: 20
-                source: "pics/flag-color.png"
+                source: "MinehuntCore/pics/flag-color.png"
             }
             Text {
          //       x: 140
@@ -187,7 +181,7 @@ Item {
         y: 390
         anchors.right: field.right
         anchors.rightMargin: 20
-        source: isPlaying ? 'pics/face-smile.png' : hasWon ? 'pics/face-smile-big.png': 'pics/face-sad.png'
+        source: isPlaying ? 'MinehuntCore/pics/face-smile.png' : hasWon ? 'MinehuntCore/pics/face-smile-big.png': 'MinehuntCore/pics/face-sad.png'
         MouseArea {
             anchors.fill: parent
             onPressed: { reset() }
