@@ -180,9 +180,6 @@ void QDeclarativeGradient::doUpdate()
 QDeclarativeRectangle::QDeclarativeRectangle(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRectanglePrivate), parent)
 {
-    Q_D(QDeclarativeRectangle);
-    d->init();
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
 void QDeclarativeRectangle::doUpdate()
