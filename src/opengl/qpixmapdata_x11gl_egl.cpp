@@ -138,6 +138,10 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
                 break;
             }
         }
+
+        // The pixmap surface destruction hooks are installed by QGLTextureCache, so we
+        // must make sure this is instanciated:
+        QGLTextureCache::instance();
     } while (0);
 
     if (!haveX11Pixmaps) {
