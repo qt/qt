@@ -590,6 +590,8 @@ bool QMetaType::isRegistered(int type)
 int QMetaType::type(const char *typeName)
 {
     int length = qstrlen(typeName);
+    if (!length)
+        return 0;
     int type = qMetaTypeStaticType(typeName, length);
     if (!type) {
         QReadLocker locker(customTypesLock());

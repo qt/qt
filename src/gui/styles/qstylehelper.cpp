@@ -44,7 +44,6 @@
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>
-#include <qstringbuilder.h>
 #include <private/qmath_p.h>
 #include <private/qstyle_p.h>
 #include <qmath.h>
@@ -54,6 +53,8 @@
 #elif defined(Q_WS_MAC)
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
+
+#include <qstringbuilder.h>
 
 QT_BEGIN_NAMESPACE
 

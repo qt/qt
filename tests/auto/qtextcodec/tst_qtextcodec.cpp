@@ -384,9 +384,12 @@ void tst_QTextCodec::flagCodepointFFFF() const
     Q_ASSERT(codec);
 
     const QByteArray asDecoded(codec->fromUnicode(input));
+    QCOMPARE(asDecoded, QByteArray("?"));
+
+    QByteArray ffff("\357\277\277");
     QTextCodec::ConverterState state(QTextCodec::ConvertInvalidToNull);
-    QVERIFY(codec->toUnicode(asDecoded.constData(), asDecoded.length(), &state) == QChar(0));
-    QVERIFY(codec->toUnicode(asDecoded) == QChar(0xfffd));
+    QVERIFY(codec->toUnicode(ffff.constData(), ffff.length(), &state) == QChar(0));
+    QVERIFY(codec->toUnicode(ffff) == QChar(0xfffd));
 }
 
 void tst_QTextCodec::flagF7808080() const
@@ -447,12 +450,11 @@ void tst_QTextCodec::flagEFBFBF() const
     /* When 0xEFBFBF is preceeded by what seems to be an arbitrary character,
      * QTextCodec fails to flag it. */
     {
-        QEXPECT_FAIL("", "This is a bug and needs to be fixed.", Continue);
         QByteArray start("B");
         start.append(invalidInput);
 
         QTextCodec::ConverterState state(QTextCodec::ConvertInvalidToNull);
-        QVERIFY(codec->toUnicode(start.constData(), start.length(), &state) == QChar(0));
+        QVERIFY(codec->toUnicode(start.constData(), start.length(), &state) == QString::fromLatin1("B\0", 2));
     }
 }
 
@@ -695,15 +697,15 @@ void tst_QTextCodec::utf8Codec_data()
     str = QChar(QChar::ReplacementCharacter);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 2.3.3") << utf8 << str << -1;
 
-    // 2.3.4 U+0010FFFF
+    // 2.3.4 U+0010FFFD
     utf8.clear();
     utf8 += char(0xf4);
     utf8 += char(0x8f);
     utf8 += char(0xbf);
-    utf8 += char(0xbf);
+    utf8 += char(0xbd);
     str.clear();
     str += QChar(0xdbff);
-    str += QChar(0xdfff);
+    str += QChar(0xdffd);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 2.3.4") << utf8 << str << -1;
 
     // 2.3.5 U+00110000

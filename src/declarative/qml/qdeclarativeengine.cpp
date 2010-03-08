@@ -1656,10 +1656,8 @@ void QDeclarativeEngine::addImportPath(const QString& path)
 }
 
 /*!
-  Imports the given \a extension into this QDeclarativeEngine.  Returns
-  true if the extension was successfully imported.
-
-  \sa QDeclarativeExtensionInterface
+  Imports the extension named \a fileName from the \a uri provided.
+  Returns true if the extension was successfully imported.
 */
 bool QDeclarativeEngine::importExtension(const QString &fileName, const QString &uri)
 {
