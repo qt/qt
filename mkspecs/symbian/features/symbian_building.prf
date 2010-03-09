@@ -31,6 +31,7 @@ defineReplace(processSymbianLibraries) {
     } else {
         newLIB = "$${library}"
     }
+    contains(library, "\.dso$")|contains(library, ".lib$"):PRE_TARGETDEPS += $$library
     return($$newLIB)
 }
 
@@ -38,13 +39,11 @@ for(libraries, LIBS) {
     newLIBS += $$processSymbianLibraries($$libraries)
 }
 LIBS = $$newLIBS
-PRE_TARGETDEPS += $$replace(newLIBS, "-l", "")
 newLIBS =
 for(libraries, QMAKE_LIBS) {
     newLIBS += $$processSymbianLibraries($$libraries)
 }
 QMAKE_LIBS = $$newLIBS
-PRE_TARGETDEPS += $$replace(newLIBS, "-l", "")
 
 linux-gcce {
     QMAKE_LIBS	+= -l:usrt2_2.lib \
