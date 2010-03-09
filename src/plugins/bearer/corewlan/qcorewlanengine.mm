@@ -65,6 +65,7 @@
 
 #include <SystemConfiguration/SCNetworkConfiguration.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include "private/qcore_mac_p.h"
 
 QMap <QString, QString> networkInterfaces;
 
@@ -132,37 +133,6 @@ QNSListener *listener = 0;
 
 QT_BEGIN_NAMESPACE
 
-inline QString cfstringRefToQstring(CFStringRef cfStringRef) {
-    QString retVal;
-    CFIndex maxLength = 2 * CFStringGetLength(cfStringRef) + 1/*zero term*/; // max UTF8
-    char *cstring = new char[maxLength];
-    if (CFStringGetCString(CFStringRef(cfStringRef), cstring, maxLength, kCFStringEncodingUTF8)) {
-        retVal = QString::fromUtf8(cstring);
-    }
-    delete[] cstring;
-    return retVal;
-}
-
-inline CFStringRef qstringToCFStringRef(const QString &string)
-{
-    return CFStringCreateWithCharacters(0, reinterpret_cast<const UniChar *>(string.unicode()),
-                                        string.length());
-}
-
-inline NSString *qstringToNSString(const QString &qstr)
-{ return [reinterpret_cast<const NSString *>(qstringToCFStringRef(qstr)) autorelease]; }
-
-inline QString nsstringToQString(const NSString *nsstr)
-{ return cfstringRefToQstring(reinterpret_cast<const CFStringRef>(nsstr)); }
-
-inline QStringList nsarrayToQStringList(void *nsarray)
-{
-    QStringList result;
-    NSArray *array = static_cast<NSArray *>(nsarray);
-    for (NSUInteger i=0; i<[array count]; ++i)
-        result << nsstringToQString([array objectAtIndex:i]);
-    return result;
-}
 
 static QString qGetInterfaceType(const QString &interfaceString)
 {
@@ -173,8 +143,8 @@ void networkChangeCallback(SCDynamicStoreRef/* store*/, CFArrayRef changedKeys, 
 {
     for ( long i = 0; i < CFArrayGetCount(changedKeys); i++) {
 
-        CFStringRef changed = (CFStringRef)CFArrayGetValueAtIndex(changedKeys, i);
-        if( cfstringRefToQstring(changed).contains("/Network/Global/IPv4")) {
+        QString changed =  QCFString::toQString((CFStringRef)CFArrayGetValueAtIndex(changedKeys, i));
+        if( changed.contains("/Network/Global/IPv4")) {
             QCoreWlanEngine* wlanEngine = static_cast<QCoreWlanEngine*>(info);
             wlanEngine->requestUpdate();
         }
@@ -228,7 +198,7 @@ void QCoreWlanEngine::connectToId(const QString &id)
 
     if(networkInterfaces.value(interfaceString) == "WLAN") {
 #if defined(MAC_SDK_10_6)
-        CWInterface *wifiInterface = [CWInterface interfaceWithName: qstringToNSString(interfaceString)];
+        CWInterface *wifiInterface = [CWInterface interfaceWithName: qt_mac_QStringToNSString(interfaceString)];
         CWConfiguration *userConfig = [ wifiInterface configuration];
 
         NSSet *remNets = [userConfig rememberedNetworks]; //CWWirelessProfile
@@ -245,7 +215,7 @@ void QCoreWlanEngine::connectToId(const QString &id)
 
         while ((wProfile = [enumerator nextObject])) { //CWWirelessProfile
 
-            if(id ==  QString::number(qHash(QLatin1String("corewlan:") + nsstringToQString([wProfile ssid])))) {
+            if(id ==  QString::number(qHash(QLatin1String("corewlan:") + qt_mac_NSStringToQString([wProfile ssid])))) {
                 user8021XProfile = nil;
                 user8021XProfile = [ wProfile user8021XProfile];
 
@@ -299,7 +269,7 @@ void QCoreWlanEngine::disconnectFromId(const QString &id)
     if(networkInterfaces.value(getInterfaceFromId(id)) == "WLAN") { //wifi only for now
 #if defined(MAC_SDK_10_6)
         NSAutoreleasePool *autoreleasepool = [[NSAutoreleasePool alloc] init];
-        CWInterface *wifiInterface = [CWInterface interfaceWithName:  qstringToNSString(interfaceString)];
+        CWInterface *wifiInterface = [CWInterface interfaceWithName:  qt_mac_QStringToNSString(interfaceString)];
         [wifiInterface disassociate];
         if([[wifiInterface interfaceState]intValue] != kCWInterfaceStateInactive) {
             emit connectionError(id, DisconnectionError);
@@ -414,7 +384,7 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
 #if defined(MAC_SDK_10_6)
    QMacCocoaAutoReleasePool pool;
 
-    CWInterface *currentInterface = [CWInterface interfaceWithName:qstringToNSString(interfaceName)];
+    CWInterface *currentInterface = [CWInterface interfaceWithName:qt_mac_QStringToNSString(interfaceName)];
     if([currentInterface power]) {
         NSError *err = nil;
         NSDictionary *parametersDict = nil;
@@ -426,7 +396,7 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
 
                 apNetwork = [apArray objectAtIndex:row];
 
-                const QString networkSsid = nsstringToQString([apNetwork ssid]);
+                const QString networkSsid = qt_mac_NSStringToQString([apNetwork ssid]);
 
                 const QString id = QString::number(qHash(QLatin1String("corewlan:") + networkSsid));
                 found.append(id);
@@ -434,7 +404,7 @@ QStringList QCoreWlanEngine::scanForSsids(const QString &interfaceName)
                 QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Undefined;
 
                 if ([currentInterface.interfaceState intValue] == kCWInterfaceStateRunning) {
-                    if (networkSsid == nsstringToQString([currentInterface ssid]))
+                    if (networkSsid == qt_mac_NSStringToQString([currentInterface ssid]))
                         state = QNetworkConfiguration::Active;
                 } else {
                     if (isKnownSsid(interfaceName, networkSsid))
@@ -499,7 +469,7 @@ bool QCoreWlanEngine::isWifiReady(const QString &wifiDeviceName)
     QMutexLocker locker(&mutex);
 
 #if defined(MAC_SDK_10_6)
-    CWInterface *defaultInterface = [CWInterface interfaceWithName: qstringToNSString(wifiDeviceName)];
+    CWInterface *defaultInterface = [CWInterface interfaceWithName: qt_mac_QStringToNSString(wifiDeviceName)];
     if([defaultInterface power])
         return true;
 #else
@@ -513,11 +483,11 @@ bool QCoreWlanEngine::isKnownSsid(const QString &interfaceName, const QString &s
     QMutexLocker locker(&mutex);
 
 #if defined(MAC_SDK_10_6)
-    CWInterface *wifiInterface = [CWInterface interfaceWithName: qstringToNSString(interfaceName)];
+    CWInterface *wifiInterface = [CWInterface interfaceWithName: qt_mac_QStringToNSString(interfaceName)];
     CWConfiguration *userConfig = [wifiInterface configuration];
     NSSet *remNets = [userConfig rememberedNetworks];
     for (CWWirelessProfile *wProfile in remNets) {
-        if(ssid == nsstringToQString([wProfile ssid]))
+        if(ssid == qt_mac_NSStringToQString([wProfile ssid]))
             return true;
     }
 #else
@@ -536,7 +506,7 @@ bool QCoreWlanEngine::getWifiInterfaces()
 
     NSArray *wifiInterfaces = [CWInterface supportedInterfaces];
     for(uint row=0; row < [wifiInterfaces count]; row++ ) {
-        networkInterfaces.insert( nsstringToQString([wifiInterfaces objectAtIndex:row]),"WLAN");
+        networkInterfaces.insert( qt_mac_NSStringToQString([wifiInterfaces objectAtIndex:row]),"WLAN");
     }
 
     return true;
