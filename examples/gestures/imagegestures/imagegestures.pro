@@ -14,3 +14,8 @@ sources.files = $$SOURCES \
 sources.path = $$[QT_INSTALL_EXAMPLES]/gestures/imagegestures
 INSTALLS += target \
     sources
+
+symbian {
+    TARGET.UID3 = 0xA000D7D0
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+}
