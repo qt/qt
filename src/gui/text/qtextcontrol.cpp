@@ -848,9 +848,9 @@ void QTextControl::copy()
     QApplication::clipboard()->setMimeData(data);
 }
 
-void QTextControl::paste()
+void QTextControl::paste(QClipboard::Mode mode)
 {
-    const QMimeData *md = QApplication::clipboard()->mimeData();
+    const QMimeData *md = QApplication::clipboard()->mimeData(mode);
     if (md)
         insertFromMimeData(md);
 }
@@ -1230,7 +1230,12 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
            q->cut();
     }
     else if (e == QKeySequence::Paste) {
-           q->paste();
+        QClipboard::Mode mode = QClipboard::Clipboard;
+#ifdef Q_WS_X11
+        if (e->modifiers() == (Qt::CTRL | Qt::SHIFT) && e->key() == Qt::Key_Insert)
+            mode = QClipboard::Selection;
+#endif
+        q->paste(mode);
     }
 #endif
     else if (e == QKeySequence::Delete) {
