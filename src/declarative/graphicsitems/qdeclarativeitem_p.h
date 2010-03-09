@@ -259,7 +259,7 @@ public:
 
     static int consistentTime;
     static QTime currentTime();
-    static void Q_DECLARATIVE_EXPORT setConsistentTime(int t);
+    static void setConsistentTime(int t);
     static void start(QTime &);
     static int elapsed(QTime &);
     static int restart(QTime &);
