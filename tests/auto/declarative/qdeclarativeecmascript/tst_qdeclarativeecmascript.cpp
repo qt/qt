@@ -126,6 +126,7 @@ private slots:
     void attachedPropertyScope();
     void scriptConnect();
     void scriptDisconnect();
+    void ownership();
 
     void bug1();
 
@@ -889,6 +890,7 @@ void tst_qdeclarativeecmascript::dynamicDestruction()
     }
     QVERIFY(!createdQmlObject);
 
+    QDeclarativeEngine::setObjectOwnership(object, QDeclarativeEngine::QMLOwnership);
     QMetaObject::invokeMethod(object, "killMe");
     QVERIFY(object);
     QTest::qWait(0);
@@ -1890,7 +1892,57 @@ void tst_qdeclarativeecmascript::scriptDisconnect()
 
         delete object;
     }
+}
 
+class OwnershipObject : public QObject
+{
+    Q_OBJECT
+public:
+    OwnershipObject() { object = new QObject; }
+
+    QPointer<QObject> object;
+
+public slots:
+    QObject *getObject() { return object; }
+};
+
+void tst_qdeclarativeecmascript::ownership()
+{
+    OwnershipObject own;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    context->addDefaultObject(&own);
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("ownership.qml"));
+
+        QVERIFY(own.object != 0);
+
+        QObject *object = component.create(context);
+        QDeclarativeEnginePrivate::getScriptEngine(&engine)->collectGarbage();
+
+        QCoreApplication::processEvents(QEventLoop::DeferredDeletion);
+
+        QVERIFY(own.object == 0);
+
+        delete object;
+    }
+
+    own.object = new QObject(&own);
+
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("ownership.qml"));
+
+        QVERIFY(own.object != 0);
+
+        QObject *object = component.create(context);
+        QDeclarativeEnginePrivate::getScriptEngine(&engine)->collectGarbage();
+
+        QCoreApplication::processEvents(QEventLoop::DeferredDeletion);
+
+        QVERIFY(own.object != 0);
+
+        delete object;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

@@ -59,6 +59,15 @@ QT_BEGIN_NAMESPACE
 
 struct ObjectData : public QScriptDeclarativeClass::Object {
     ObjectData(QObject *o, int t) : object(o), type(t) {}
+
+    virtual ~ObjectData() {
+        if (object && !object->parent()) {
+            QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, false);
+            if (ddata && !ddata->indestructible)
+                object->deleteLater();
+        }
+    }
+
     QDeclarativeGuard<QObject> object;
     int type;
 };
@@ -87,7 +96,7 @@ QDeclarativeObjectScriptClass::~QDeclarativeObjectScriptClass()
 {
 }
 
-QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type) 
+QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type)
 {
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
@@ -96,7 +105,11 @@ QScriptValue QDeclarativeObjectScriptClass::newQObject(QObject *object, int type
 
     QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(object, true);
 
-    if (!ddata->scriptValue.isValid()) {
+    if (!ddata) {
+       return scriptEngine->undefinedValue();
+    } else if (!ddata->indestructible && !object->parent()) {
+        return newObject(scriptEngine, this, new ObjectData(object, type));
+    } else if (!ddata->scriptValue.isValid()) {
         ddata->scriptValue = newObject(scriptEngine, this, new ObjectData(object, type));
         return ddata->scriptValue;
     } else if (ddata->scriptValue.engine() == QDeclarativeEnginePrivate::getScriptEngine(engine)) {
@@ -392,17 +405,30 @@ QScriptValue QDeclarativeObjectScriptClass::tostring(QScriptContext *context, QS
 
 QScriptValue QDeclarativeObjectScriptClass::destroy(QScriptContext *context, QScriptEngine *engine)
 {
-    QObject* obj = context->thisObject().toQObject();
-    if(obj){
-        int delay = 0;
-        if(context->argumentCount() > 0)
-            delay = context->argument(0).toInt32();
-        if (delay > 0)
-            QTimer::singleShot(delay, obj, SLOT(deleteLater()));
-        else
-            obj->deleteLater();
-    }
-    return engine->nullValue();
+    QDeclarativeEnginePrivate *p = QDeclarativeEnginePrivate::get(engine);
+    QScriptValue that = context->thisObject();
+
+    if (scriptClass(that) != p->objectClass)
+        return engine->undefinedValue();
+
+    ObjectData *data = (ObjectData *)p->objectClass->object(that);
+    if (!data->object)
+        return engine->undefinedValue();
+
+    QDeclarativeDeclarativeData *ddata = QDeclarativeDeclarativeData::get(data->object, false);
+    if (!ddata || ddata->indestructible) 
+        return engine->currentContext()->throwError(QLatin1String("Invalid attempt  to destroy() an indestructible object"));
+
+    QObject *obj = data->object;
+    int delay = 0;
+    if (context->argumentCount() > 0)
+        delay = context->argument(0).toInt32();
+    if (delay > 0)
+        QTimer::singleShot(delay, obj, SLOT(deleteLater()));
+    else
+        obj->deleteLater();
+
+    return engine->undefinedValue();
 }
 
 QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
@@ -426,6 +452,14 @@ QStringList QDeclarativeObjectScriptClass::propertyNames(Object *object)
         return QStringList();
 
     return cache->propertyNames();
+}
+
+bool QDeclarativeObjectScriptClass::compare(Object *o1, Object *o2)
+{
+    ObjectData *d1 = (ObjectData *)o1;
+    ObjectData *d2 = (ObjectData *)o2;
+
+    return d1 == d2 || d1->object == d2->object;
 }
 
 #if (QT_VERSION > QT_VERSION_CHECK(4, 6, 2)) || defined(QT_HAVE_QSCRIPTDECLARATIVECLASS_VALUE)
@@ -685,7 +719,10 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
     } else if (type == QMetaType::QString) {
         return QScriptDeclarativeClass::Value(engine, *((QString *)data));
     } else if (type == QMetaType::QObjectStar) {
-        return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->objectClass->newQObject(*((QObject **)data)));
+        QObject *object = *((QObject **)data);
+        QDeclarativeDeclarativeData::get(object, true)->setImplicitDestructible();
+        QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(e);
+        return QScriptDeclarativeClass::Value(engine, priv->objectClass->newQObject(object));
     } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
         return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->scriptValueFromVariant(*((QVariant *)data)));
     } else {
