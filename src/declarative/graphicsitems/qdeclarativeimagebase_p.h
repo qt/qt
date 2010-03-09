@@ -75,7 +75,6 @@ Q_SIGNALS:
     void sourceChanged(const QUrl &);
     void statusChanged(Status);
     void progressChanged(qreal progress);
-    void pixmapChanged();
     void asynchronousChanged();
 
 protected:
