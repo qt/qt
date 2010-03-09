@@ -890,7 +890,7 @@ void tst_qdeclarativeecmascript::dynamicDestruction()
     }
     QVERIFY(!createdQmlObject);
 
-    QDeclarativeEngine::setObjectOwnership(object, QDeclarativeEngine::QMLOwnership);
+    QDeclarativeEngine::setObjectOwnership(object, QDeclarativeEngine::JavaScriptOwnership);
     QMetaObject::invokeMethod(object, "killMe");
     QVERIFY(object);
     QTest::qWait(0);
