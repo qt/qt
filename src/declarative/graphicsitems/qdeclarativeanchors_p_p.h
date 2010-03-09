@@ -59,12 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeAnchorLine
+struct QDeclarativeAnchorLine
 {
-public:
-    QDeclarativeAnchorLine() : item(0), anchorLine(Invalid)
-    {
-    }
+    QDeclarativeAnchorLine() : item(0), anchorLine(Invalid) {}
 
     enum AnchorLine {
         Invalid = 0x0,
@@ -81,27 +78,22 @@ public:
 
     QDeclarativeItem *item;
     AnchorLine anchorLine;
-
-    bool operator==(const QDeclarativeAnchorLine& other) const
-    {
-        return item == other.item && anchorLine == other.anchorLine;
-    }
 };
+
+inline bool operator==(const QDeclarativeAnchorLine& a, const QDeclarativeAnchorLine& b)
+{
+    return a.item == b.item && a.anchorLine == b.anchorLine;
+}
 
 class QDeclarativeAnchorsPrivate : public QObjectPrivate, public QDeclarativeItemChangeListener
 {
     Q_DECLARE_PUBLIC(QDeclarativeAnchors)
 public:
     QDeclarativeAnchorsPrivate(QDeclarativeItem *i)
-      : updatingMe(false), updatingHorizontalAnchor(0),
+      : componentComplete(true), updatingMe(false), updatingHorizontalAnchor(0),
         updatingVerticalAnchor(0), updatingFill(0), updatingCenterIn(0), item(i), usedAnchors(0), fill(0),
         centerIn(0), leftMargin(0), rightMargin(0), topMargin(0), bottomMargin(0),
-        margins(0), vCenterOffset(0), hCenterOffset(0), baselineOffset(0),
-        componentComplete(true)
-    {
-    }
-
-    void init()
+        margins(0), vCenterOffset(0), hCenterOffset(0), baselineOffset(0)
     {
     }
 
@@ -111,11 +103,12 @@ public:
     void remDepend(QDeclarativeItem *);
     bool isItemComplete() const;
 
-    bool updatingMe;
-    int updatingHorizontalAnchor;
-    int updatingVerticalAnchor;
-    int updatingFill;
-    int updatingCenterIn;
+    bool componentComplete:1;
+    bool updatingMe:1;
+    uint updatingHorizontalAnchor:2;
+    uint updatingVerticalAnchor:2;
+    uint updatingFill:2;
+    uint updatingCenterIn:2;
 
     void setItemHeight(qreal);
     void setItemWidth(qreal);
@@ -164,8 +157,6 @@ public:
     qreal vCenterOffset;
     qreal hCenterOffset;
     qreal baselineOffset;
-
-    bool componentComplete;
 };
 
 QT_END_NAMESPACE
